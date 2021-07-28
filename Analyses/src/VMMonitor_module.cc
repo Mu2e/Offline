@@ -2,7 +2,7 @@
 //
 // Rob Kutschke, 2015
 
-#include "GeneralUtilities/inc/VMInfo.hh"
+#include "Offline/GeneralUtilities/inc/VMInfo.hh"
 
 #include <iostream>
 #include <fstream>

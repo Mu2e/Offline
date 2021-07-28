@@ -1,9 +1,9 @@
 #ifndef TrackerConditions_FullReadoutStrawCache_hh
 #define TrackerConditions_FullReadoutStrawCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 //#include "DbService/inc/DbHandle.hh"
-#include "TrackerConditions/inc/FullReadoutStrawMaker.hh"
+#include "Offline/TrackerConditions/inc/FullReadoutStrawMaker.hh"
 
 
 namespace mu2e {

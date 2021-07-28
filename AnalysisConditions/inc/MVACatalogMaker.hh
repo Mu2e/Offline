@@ -5,9 +5,9 @@
 // Makes the MVACatalog ProditionsEntitiy
 //
 
-#include "AnalysisConditions/inc/MVACatalog.hh"
-#include "AnalysisConfig/inc/MVACatalogConfig.hh"
-#include "DbTables/inc/MVAToolDb.hh"
+#include "Offline/AnalysisConditions/inc/MVACatalog.hh"
+#include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
+#include "Offline/DbTables/inc/MVAToolDb.hh"
 
 namespace mu2e {
 

@@ -16,8 +16,8 @@
 //
 
 // Mu2e includes
-#include "DataProducts/inc/PDGCode.hh"
-#include "MCDataProducts/inc/GenId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
 
 // Includes from external packages.
 #include "CLHEP/Vector/LorentzVector.h"

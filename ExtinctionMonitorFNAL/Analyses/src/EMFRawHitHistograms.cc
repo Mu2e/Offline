@@ -1,14 +1,14 @@
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
-#include "ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
+#include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
 
-#include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
-#include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "ConditionsService/inc/ExtMonFNALConditions.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
+#include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

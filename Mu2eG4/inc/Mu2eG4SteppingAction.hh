@@ -9,12 +9,12 @@
 #include <string>
 
 // Mu2e includes
-#include "Mu2eG4/inc/EventNumberList.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/MCTrajectoryPoint.hh"
-#include "Mu2eG4/inc/IMu2eG4Cut.hh"
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/EventNumberList.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryPoint.hh"
+#include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 // G4 includes
 #include "CLHEP/Vector/ThreeVector.h"

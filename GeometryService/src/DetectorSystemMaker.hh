@@ -11,8 +11,8 @@
 #include <memory>
 
 // Mu2e includes.
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
 namespace mu2e {
 

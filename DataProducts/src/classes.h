@@ -9,33 +9,33 @@
 #include <vector>
 
 // straws
-#include "DataProducts/inc/StrawEnd.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
-#include "DataProducts/inc/PanelId.hh"
-#include "DataProducts/inc/LayerId.hh"
-#include "DataProducts/inc/PlaneId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
+#include "Offline/DataProducts/inc/PanelId.hh"
+#include "Offline/DataProducts/inc/LayerId.hh"
+#include "Offline/DataProducts/inc/PlaneId.hh"
 
 // tracker
-#include "DataProducts/inc/Helicity.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
 
 // calorimeter
-#include "DataProducts/inc/CaloId.hh"
+#include "Offline/DataProducts/inc/CaloId.hh"
 
 // CRV
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 // ExtMon
-#include "DataProducts/inc/ExtMonFNALModuleId.hh"
-#include "DataProducts/inc/ExtMonFNALChipId.hh"
-#include "DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALChipId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
 
 // General
-#include "DataProducts/inc/IndexMap.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/DataProducts/inc/IndexMap.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 // trigger
-#include "DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 // CLHEP
 #include "CLHEP/Vector/TwoVector.h"

@@ -30,19 +30,20 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art_root_io/TFileService.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include <memory>
 
-#include "MCDataProducts/inc/StrawGasStep.hh"
-#include "MCDataProducts/inc/CaloShowerStep.hh"
-#include "MCDataProducts/inc/CrvStep.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Compression/inc/CompressionLevel.hh"
-#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/StrawGasStep.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/Compression/inc/CompressionLevel.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
 
 namespace mu2e {
   class CompressDetStepMCs;

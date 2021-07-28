@@ -28,7 +28,7 @@
 //
 #include <cmath>
 
-#include "Mu2eUtilities/inc/PoissonHistogramBinning.hh"
+#include "Offline/Mu2eUtilities/inc/PoissonHistogramBinning.hh"
 
 using namespace std;
 

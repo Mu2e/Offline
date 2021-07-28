@@ -3,8 +3,8 @@
 // that are present in an art format event-data file.
 //
 
-#include "Print/eventCount/Arguments.hh"
-#include "Print/eventCount/FileInfo.hh"
+#include "Offline/Print/eventCount/Arguments.hh"
+#include "Offline/Print/eventCount/FileInfo.hh"
 
 #include <iostream>
 #include <string>

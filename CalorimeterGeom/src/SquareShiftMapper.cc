@@ -39,7 +39,7 @@
 // next ring of neighbours, add (0,-2) and go around the ring,...
 //
 
-#include "CalorimeterGeom/inc/SquareShiftMapper.hh"
+#include "Offline/CalorimeterGeom/inc/SquareShiftMapper.hh"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 

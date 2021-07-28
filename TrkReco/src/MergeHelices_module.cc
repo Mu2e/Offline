@@ -3,6 +3,7 @@
 //  on MergeHelixFinder.  P. Murat, D. Brown (LBNL)
 //
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -11,10 +12,10 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
-#include "RecoDataProducts/inc/HelixSeed.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 // utilities
-#include "TrkReco/inc/TrkUtilities.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
 // C++
 #include <vector>
 #include <memory>

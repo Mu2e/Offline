@@ -1,5 +1,5 @@
 
-#include "Print/inc/TrkCaloIntersectPrinter.hh"
+#include "Offline/Print/inc/TrkCaloIntersectPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

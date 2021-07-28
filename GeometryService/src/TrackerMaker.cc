@@ -8,15 +8,15 @@
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/TrackerMaker.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/TrackerMaker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "GeometryService/inc/G4GeometryOptions.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeneralUtilities/inc/HepTransform.hh"
+#include "Offline/GeometryService/inc/G4GeometryOptions.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeneralUtilities/inc/HepTransform.hh"
 
 #include <cmath>
 #include <iomanip>

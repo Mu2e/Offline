@@ -15,7 +15,7 @@
 #include "fhiclcpp/coding.h"
 #include "fhiclcpp/exception.h"
 
-#include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
+#include "Offline/Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 
 namespace mu2e {
 

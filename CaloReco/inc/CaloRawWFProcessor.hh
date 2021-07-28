@@ -2,7 +2,7 @@
 #define CaloRawWFProcessor_HH
 
 
-#include "CaloReco/inc/CaloWaveformProcessor.hh"
+#include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include <vector>

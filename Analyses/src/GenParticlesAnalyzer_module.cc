@@ -11,10 +11,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/GenParticle.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
-#include "Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
+#include "Offline/Mu2eUtilities/inc/GeneratorSummaryHistograms.hh"
 
 namespace mu2e {
 

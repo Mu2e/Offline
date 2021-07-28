@@ -5,13 +5,13 @@
 // Modified by MyeongJae Lee. See docdb-2049
 //
 
-#include "EventGenerator/inc/ParticleGun.hh"
+#include "Offline/EventGenerator/inc/ParticleGun.hh"
 
 #include <iostream>
 
 // Mu2e includes
-#include "DataProducts/inc/PDGCode.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // Other external includes.
 #include "CLHEP/Units/PhysicalConstants.h"

@@ -9,7 +9,7 @@
 #include <string>
 #include <memory>
 
-#include "Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 
 // Forward references in global namespace.
 class G4Box;

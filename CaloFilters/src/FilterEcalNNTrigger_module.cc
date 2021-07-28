@@ -5,13 +5,13 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
 #include <vector>
 #include <string>

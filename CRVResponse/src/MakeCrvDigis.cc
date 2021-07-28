@@ -1,4 +1,4 @@
-#include "CRVResponse/inc/MakeCrvDigis.hh"
+#include "Offline/CRVResponse/inc/MakeCrvDigis.hh"
 
 namespace mu2eCrv
 {
@@ -12,7 +12,9 @@ void MakeCrvDigis::SetWaveform(const std::vector<double> &waveform, double ADCco
     else _ADCs.push_back(0);
   }
 
-  if(startTime>0) _TDC=static_cast<unsigned int>(startTime/digitizationPrecision); else _TDC=0;
+  int TDCtmp=lrint(startTime/digitizationPrecision);
+  if(TDCtmp<0) throw std::logic_error("ERROR: found a waveform start time (relative to the event marker) < 0"); //this shouldn't happen
+  _TDC=static_cast<unsigned int>(TDCtmp);
 }
 
 }

@@ -8,8 +8,8 @@
 // This code looks after the translation and caches results.
 //
 
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 #include "BTrk/BaBar/ParticleInfoInterface.hh"
 

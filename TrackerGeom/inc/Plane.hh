@@ -12,10 +12,10 @@
 #include <array>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
-#include "TrackerGeom/inc/Panel.hh"
-#include "GeneralUtilities/inc/HepTransform.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
+#include "Offline/TrackerGeom/inc/Panel.hh"
+#include "Offline/GeneralUtilities/inc/HepTransform.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

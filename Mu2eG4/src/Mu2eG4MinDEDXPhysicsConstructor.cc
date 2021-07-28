@@ -34,7 +34,7 @@
 // This class constructs special limited EM physics
 //
 
-#include "Mu2eG4/inc/Mu2eG4MinDEDXPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4MinDEDXPhysicsConstructor.hh"
 #include "Geant4/G4SystemOfUnits.hh"
 #include "Geant4/G4ParticleDefinition.hh"
 #include "Geant4/G4EmParameters.hh"

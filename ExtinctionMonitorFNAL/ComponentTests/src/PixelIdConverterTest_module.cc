@@ -1,8 +1,8 @@
 // Andrei Gaponenko, 2012
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelIdConverter.hh"
-#include "DataProducts/inc/ExtMonFNALPixelId.hh"
-#include "DataProducts/inc/ExtMonFNALPixelDenseId.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelIdConverter.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelDenseId.hh"
 
 #include <iostream>
 #include <cstdlib>
@@ -18,9 +18,9 @@
 
 #include "CLHEP/Random/RandFlat.h"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 namespace mu2e {
 

@@ -7,11 +7,12 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
 
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
 #include <string>
 #include <vector>

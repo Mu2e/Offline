@@ -13,8 +13,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 
-#include "GeomPrimitives/inc/Polycone.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
 

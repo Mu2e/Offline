@@ -2,7 +2,7 @@
 #define CalorimeterGeom_SqaureMapper_hh
 
 
-#include "CalorimeterGeom/inc/CrystalMapper.hh"
+#include "Offline/CalorimeterGeom/inc/CrystalMapper.hh"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include <vector>

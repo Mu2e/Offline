@@ -3,5 +3,5 @@
 
 // deprecated please include StrawDigiMC directly
 
-#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #endif /* MCDataProducts_StrawDigiMCCollection_hh */

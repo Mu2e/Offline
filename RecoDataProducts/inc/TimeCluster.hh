@@ -12,8 +12,8 @@
 // art includes
 #include "canvas/Persistency/Common/Ptr.h"
 // Mu2e includes
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 // BTrk includes
 #include "BTrk/TrkBase/TrkT0.hh"
 // c++

@@ -14,7 +14,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/ProcessCode.hh"
 
 #include <boost/static_assert.hpp>
 

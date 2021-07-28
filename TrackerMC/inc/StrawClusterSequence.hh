@@ -10,8 +10,8 @@
 #include <iostream>
 #include <list>
 // Mu2e includes
-#include "TrackerMC/inc/StrawCluster.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerMC/inc/StrawCluster.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 
 namespace mu2e {
   namespace TrackerMC {

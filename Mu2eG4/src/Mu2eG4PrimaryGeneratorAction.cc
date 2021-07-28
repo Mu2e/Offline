@@ -23,18 +23,18 @@
 #include "Geant4/G4NuclideTable.hh"
 
 // Mu2e includes
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
-#include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
-#include "Mu2eUtilities/inc/ThreeVectorUtil.hh"
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StageParticle.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
-#include "Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PrimaryGeneratorAction.hh"
+#include "Offline/Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Offline/Mu2eUtilities/inc/ThreeVectorUtil.hh"
+#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/WorldG4.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
 
 
 using namespace std;

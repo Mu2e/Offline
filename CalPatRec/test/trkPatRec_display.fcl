@@ -3,13 +3,13 @@
 # read data from the input file,
 # assume the file contains the digitized hits
 #------------------------------------------------------------------------------
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "CaloCluster/fcl/prolog.fcl"
-#include "TrackCaloMatching/fcl/prolog.fcl"
-#include "CalPatRec/fcl/prolog.fcl"
-#include "ParticleID/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CaloCluster/fcl/prolog.fcl"
+#include "Offline/TrackCaloMatching/fcl/prolog.fcl"
+#include "Offline/CalPatRec/fcl/prolog.fcl"
+#include "Offline/ParticleID/fcl/prolog.fcl"
 #include "Stntuple/fcl/prolog.fcl"
 
 #                             Give this process a name
@@ -37,9 +37,9 @@ services : {
     TFileService          : { fileName   : "trkPatRec_display.art" }
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
-    GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-    ConditionsService      : { conditionsfile : "ConditionsService/data/conditions_01.txt" }
-    GlobalConstantsService : { inputFile : "GlobalConstantsService/data/globalConstants_01.txt" }
+    GeometryService        : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }
+    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : @local::automaticSeeds
@@ -130,7 +130,7 @@ services.SeedService.maxUniqueEngines :  20
 #------------------------------------------------------------------------------
 # event generation,simulation and digitization
 #------------------------------------------------------------------------------
-# physics.producers.generate.inputfile               : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
+# physics.producers.generate.inputfile               : "Offline/Mu2eG4/test/genconfig_DownstreameMinus.txt"
  physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
  physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 #------------------------------------------------------------------------------

@@ -6,25 +6,25 @@
 //
 
 // Mu2e includes.
-#include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/StraightSection.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeomPrimitives/inc/PolyconsParams.hh"
-#include "MBSGeom/inc/MBS.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/constructDS.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestPolycone.hh"
-#include "Mu2eG4/inc/nestExtrudedSolid.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/StraightSection.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeomPrimitives/inc/PolyconsParams.hh"
+#include "Offline/MBSGeom/inc/MBS.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/constructDS.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestPolycone.hh"
+#include "Offline/Mu2eG4/inc/nestExtrudedSolid.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "Geant4/G4ThreeVector.hh"
@@ -480,7 +480,8 @@ namespace mu2e {
       dss->getVPSPendFlange()->zEnd(),
       dss->getIFBmain()->zEnd(),
       dss->getIFBendPlug()->zBegin(),
-      dss->getIFBendPlug()->zEnd() };
+      dss->getIFBendPlug()->zEnd()
+    };
 
     vector<double> tmp_rOuterDs3  = {
       ds->rIn1(),
@@ -495,8 +496,6 @@ namespace mu2e {
       dss->getIFBmain()->outerRadius(),
       dss->getIFBendPlug()->outerRadius(),
       dss->getIFBendPlug()->outerRadius()
-      // (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius(),
-      // (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius()
     };
 
     assert( tmp_zPlanesDs3.size() == tmp_rOuterDs3.size() );

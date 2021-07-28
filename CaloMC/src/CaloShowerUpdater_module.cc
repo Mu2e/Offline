@@ -6,8 +6,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "MCDataProducts/inc/CaloShowerStep.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 #include <iostream>
 #include <string>

@@ -3,7 +3,7 @@
 // Mu2e simulation framework
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "Mu2eG4/inc/InitEnvToolBase.hh"
+#include "Offline/Mu2eG4/inc/InitEnvToolBase.hh"
 
 namespace mu2e {
 

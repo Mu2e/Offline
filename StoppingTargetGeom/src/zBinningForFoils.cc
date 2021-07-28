@@ -11,8 +11,8 @@
 
 #include "cetlib_except/exception.h"
 
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "StoppingTargetGeom/inc/zBinningForFoils.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/StoppingTargetGeom/inc/zBinningForFoils.hh"
 
 namespace mu2e{
 

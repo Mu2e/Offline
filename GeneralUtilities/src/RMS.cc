@@ -5,7 +5,7 @@
 // Contact person Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/RMS.hh"
+#include "Offline/GeneralUtilities/inc/RMS.hh"
 
 #include <cmath>
 #include <sstream>

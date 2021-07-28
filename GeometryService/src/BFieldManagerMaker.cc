@@ -29,18 +29,18 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Includes from Mu2e
-#include "BFieldGeom/inc/BFInterpolationStyle.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "BFieldGeom/inc/DiskRecord.hh"
-#include "GeneralUtilities/inc/MinMax.hh"
-#include "GeometryService/inc/BFieldManagerMaker.hh"
+#include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/BFieldGeom/inc/DiskRecord.hh"
+#include "Offline/GeneralUtilities/inc/MinMax.hh"
+#include "Offline/GeometryService/inc/BFieldManagerMaker.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
 
 // CSV reader
-#include "GeneralUtilities/inc/csv.hh"
+#include "Offline/GeneralUtilities/inc/csv.hh"
 
 using namespace std;
 

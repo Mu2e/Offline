@@ -15,8 +15,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "MCDataProducts/inc/SimParticleRemapping.hh"
+#include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 
 namespace mu2e {
 

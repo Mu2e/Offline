@@ -3,7 +3,7 @@
 // Read a .fcl file and form a parameter set object.
 //
 
-#include "GeneralUtilities/inc/ParameterSetFromFile.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 
 #include "fhiclcpp/intermediate_table.h"
 #include "fhiclcpp/parse.h"

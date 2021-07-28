@@ -1,10 +1,10 @@
 
-#include "TrackerConditions/inc/AlignedTrackerMaker.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerConditions/inc/AlignedTrackerMaker.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "cetlib_except/exception.h"
-#include "GeneralUtilities/inc/HepTransform.hh"
+#include "Offline/GeneralUtilities/inc/HepTransform.hh"
 #include <iostream>
 
 using namespace std;

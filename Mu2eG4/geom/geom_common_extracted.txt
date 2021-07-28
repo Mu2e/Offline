@@ -1,7 +1,7 @@
 // Top level geometry file for extracted detector cosmics running
 
 // Start from recent baseline geometry
-#include "Mu2eG4/geom/geom_common_current.txt"
+#include "Offline/Mu2eG4/geom/geom_common_current.txt"
 
 // Special - for garage position!
 bool inGaragePosition   = true;
@@ -44,7 +44,7 @@ double calorimeter.caloMotherZ1                 = 27220;
 double calorimeter.calorimeterZFront            = 25843.0;
 
 //CRV in the extracted position for the detector KPP
-#include "Mu2eG4/geom/crv_counters_extracted_v01.txt"
+#include "Offline/Mu2eG4/geom/crv_counters_extracted_v01.txt"
 
 //
 // End notes:

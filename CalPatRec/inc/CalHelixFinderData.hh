@@ -2,20 +2,20 @@
 #ifndef CalHelixFinderData_HH
 #define CalHelixFinderData_HH
 
-#include "Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "DataProducts/inc/Helicity.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/DataProducts/inc/Helicity.hh"
 
-#include "TrkReco/inc/TrkFaceData.hh"
+#include "Offline/TrkReco/inc/TrkFaceData.hh"
 
 #include <array>
 

@@ -8,13 +8,13 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include "TrackerGeom/inc/Straw.hh"
-#include "DataProducts/inc/TrkTypes.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 
 namespace mu2e {

@@ -11,13 +11,13 @@
 // Framework includes.
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "TrkExt/inc/TrkExtProtonAbsorber.hh"
-#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeneralUtilities/inc/safeSqrt.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/TrkExt/inc/TrkExtProtonAbsorber.hh"
+#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeneralUtilities/inc/safeSqrt.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 using namespace CLHEP;
 

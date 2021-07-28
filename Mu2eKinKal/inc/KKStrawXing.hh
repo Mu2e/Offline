@@ -5,7 +5,7 @@
 //
 #include "KinKal/Detector/StrawXing.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 namespace mu2e {
   template <class KTRAJ> class KKStrawXing : public KinKal::StrawXing<KTRAJ> {
     public:

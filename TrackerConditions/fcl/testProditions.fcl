@@ -1,5 +1,5 @@
 
-#include "Validation/fcl/ceSimReco.fcl"
+#include "Offline/Validation/fcl/ceSimReco.fcl"
 
 services : @local::Services.SimAndReco
 
@@ -17,7 +17,7 @@ services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 # use the geometry on the head
-services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_current.txt"
 
 # chose what database calibrations to use
 services.DbService.purpose : "TRK_TEST"

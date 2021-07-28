@@ -19,10 +19,11 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 
-#include "SeedService/inc/SeedService.hh"
-#include "Mu2eUtilities/inc/artURBG.hh"
-#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/Mu2eUtilities/inc/artURBG.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 namespace mu2e {
 

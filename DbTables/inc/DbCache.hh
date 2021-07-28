@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <map>
-#include "DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
 
 namespace mu2e {
 

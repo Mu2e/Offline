@@ -45,21 +45,23 @@
 //Mu2e:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 //...TEveMu2e
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
-#include "TEveEventDisplay/src/dict_classes/Geom_Interface.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
-#include "TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCInterface.h"
-#include "TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eProjectionInterface.h"
+
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eHit.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCluster.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCRVEvent.h"
+#include "Offline/TEveEventDisplay/src/dict_classes/Geom_Interface.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2e2DProjection.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCalorimeter.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
+#include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCInterface.h"
+#include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eProjectionInterface.h"
 class TBox;
 class TGTextEntry;
 class TPad;

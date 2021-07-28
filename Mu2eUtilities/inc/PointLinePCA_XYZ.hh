@@ -1,7 +1,7 @@
 #ifndef Mu2eUtilities_PointLinePCA_XYZ_hh
 #define Mu2eUtilities_PointLinePCA_XYZ_hh
 
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 
 namespace mu2e {
 

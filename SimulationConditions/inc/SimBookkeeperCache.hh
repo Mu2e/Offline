@@ -8,11 +8,11 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "DbTables/inc/DbIoV.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/SimEfficiencies.hh"
-#include "SimulationConditions/inc/SimBookkeeperMaker.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/SimEfficiencies.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeperMaker.hh"
 
 namespace mu2e {
 

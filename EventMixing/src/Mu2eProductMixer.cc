@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2018
 
-#include "EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
 
 #include <utility>
 #include <algorithm>
@@ -47,6 +47,9 @@ namespace mu2e {
       , timeOffsetTag_{ conf.simTimeOffset() }
       , stoff_(0.0)
   {
+    if(applyTimeOffset_){
+      std::cout << "Mu2eProductMixer: Applying time offsets from " << timeOffsetTag_ << std::endl;
+    }
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
       helper.declareMixOp

@@ -5,7 +5,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/StrawDigiFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiFlag.hh"
 #include <stdexcept>
 #include <iostream>
 #include <stdio.h>

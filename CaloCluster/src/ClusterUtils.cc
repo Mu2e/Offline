@@ -1,6 +1,6 @@
-#include "CaloCluster/inc/ClusterUtils.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/CaloCluster/inc/ClusterUtils.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 
 #include <iostream>
 #include <list>
