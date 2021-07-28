@@ -25,7 +25,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"

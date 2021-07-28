@@ -69,8 +69,8 @@
 #include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceCollection.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 // ExtMon
