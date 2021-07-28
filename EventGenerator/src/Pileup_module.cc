@@ -39,6 +39,7 @@
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
 #include <TH1F.h>
+#include <TTree.h>
 namespace mu2e {
   //================================================================
   class Pileup : public art::EDProducer {
@@ -67,11 +68,14 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
-    TH1F *pmag_gen;
-    TH1F *time_gen;
-    TH1F *x_gen;
-    TH1F *y_gen;
-    TH1F *z_gen;
+    Int_t nEv;
+    Float_t pmag_gen;
+    Float_t time_gen;
+    Float_t x_gen;
+    Float_t y_gen;
+    Float_t z_gen;
+    TTree*  _Ntup;
+    
     double muonLifeTime_;
     double decayFraction_;
 
@@ -112,11 +116,14 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
 
-    pmag_gen     = tfdir.make<TH1F>( "pmag", "Produced Momentum", 100,  0.,  120.  );
-    time_gen     = tfdir.make<TH1F>( "time", "Produced Time", 100,  0.,  1700.  );
-    x_gen     = tfdir.make<TH1F>( "x", "Produced x", 100,  -5000,  5000.  );
-    y_gen     = tfdir.make<TH1F>( "y", "Produced y", 100,  -5000,  5000.  );
-    z_gen     = tfdir.make<TH1F>( "z", "Produced z", 100,  0.,  17000.  );
+    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
+	  _Ntup->Branch("nEv", &nEv , "nEv/I");	    
+	  _Ntup->Branch("pmag_gen", &pmag_gen , "pmag_gen/F");
+	  _Ntup->Branch("time_gen", &time_gen, "time_gen/F");
+	  _Ntup->Branch("x_gen", &x_gen, "x_gen/F");
+	  _Ntup->Branch("y_gen", &y_gen, "y_gen/F");
+	  _Ntup->Branch("z_gen", &z_gen, "z_gen/F");
+	  
     if(conf().stoppingTargetMaterial() != "Al" and conf().stoppingTargetMaterial() != "IPA" ) {
       throw   cet::exception("NOT_IMPLEMENTED")
         <<"Pileup_module: emisson spectra for other than Al target are not impelmented\n";
@@ -179,7 +186,7 @@ namespace mu2e {
   {
     auto daughters = gen->generate();
     for(const auto& d: daughters) {
-      time = 1000;
+      //time = 1000;
       output->emplace_back(mustop,
                            d.creationCode,
                            d.pdgId,
@@ -188,11 +195,12 @@ namespace mu2e {
                            time
                            );
        double mag = sqrt(d.fourmom.px()*d.fourmom.px() + d.fourmom.py()*d.fourmom.py() + d.fourmom.pz()*d.fourmom.pz());
-       pmag_gen->Fill(mag);
-       time_gen->Fill(time);
-       x_gen->Fill(mustop->endPosition().x());
-       y_gen->Fill(mustop->endPosition().y());
-       z_gen->Fill(mustop->endPosition().z());
+       pmag_gen = mag;
+       time_gen = time;
+       x_gen = mustop->endPosition().x();
+       y_gen = mustop->endPosition().y();
+       z_gen = mustop->endPosition().z();
+       _Ntup->Fill();
 
     }
   }
