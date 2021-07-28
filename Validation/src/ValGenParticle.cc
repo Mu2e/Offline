@@ -1,5 +1,5 @@
 
-#include "Validation/inc/ValGenParticle.hh"
+#include "Offline/Validation/inc/ValGenParticle.hh"
 
 
 int mu2e::ValGenParticle::declare(art::TFileDirectory tfs) {

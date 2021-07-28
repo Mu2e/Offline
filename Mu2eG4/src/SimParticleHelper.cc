@@ -1,7 +1,7 @@
 // Andrei Gaponenko, 2013
 
-#include "Mu2eG4/inc/SimParticleHelper.hh"
-#include "Mu2eG4/inc/Mu2eG4Inputs.hh"
+#include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4Inputs.hh"
 
 #include "art/Framework/Principal/Event.h"
 #include "Geant4/G4Track.hh"

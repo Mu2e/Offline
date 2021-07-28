@@ -6,7 +6,7 @@
 //
 // Original author KLG
 //
-#include "BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Geant4/G4Material.hh"
 
 namespace mu2e {

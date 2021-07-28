@@ -5,10 +5,10 @@
 #include "BTrk/TrkBase/TrkDifPieceTraj.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 
-#include "RecoDataProducts/inc/HitT0.hh"
+#include "Offline/RecoDataProducts/inc/HitT0.hh"
 // Mu2e
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // c++

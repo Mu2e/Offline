@@ -8,7 +8,7 @@
 // Framework includes
 
 // Mu2e includes
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 using namespace std;

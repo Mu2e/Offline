@@ -16,9 +16,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "MCDataProducts/inc/CaloShowerSim.hh"
-#include "MCDataProducts/inc/CaloMCTruthAssns.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
+#include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
 
 #include "TDirectory.h"
 #include "TNtuple.h"

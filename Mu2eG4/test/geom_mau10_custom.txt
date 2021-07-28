@@ -1,4 +1,4 @@
-#include "Mu2eG4/test/geom_01.txt"
+#include "Offline/Mu2eG4/test/geom_01.txt"
 
 // "BFieldMaps/Mau10/Standard_Maps/Mu2e_DSMap.header",
 //  "/mu2e/app/users/bpollack/BTrk/BTrk_working/Offline/BFieldGeom/test/Mau10_800mm_long.csv",

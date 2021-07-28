@@ -28,7 +28,7 @@
 #include <iostream>
 #include <iomanip>
 #include <Rtypes.h>
-#include "GeneralUtilities/inc/MVAStatus.hh"
+#include "Offline/GeneralUtilities/inc/MVAStatus.hh"
 namespace mu2e {
 
   template < class DETAIL > class MVAStruct : public DETAIL {

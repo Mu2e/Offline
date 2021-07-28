@@ -4,8 +4,8 @@
 //
 
 // Mu2e include files
-#include "ConditionsService/inc/DAQParams.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/ConditionsService/inc/DAQParams.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
 

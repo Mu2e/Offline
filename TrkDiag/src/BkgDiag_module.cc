@@ -8,9 +8,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // root 
@@ -19,20 +19,20 @@
 #include "TTree.h"
 #include "Math/VectorUtil.h"
 // data
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/BkgCluster.hh"
-#include "RecoDataProducts/inc/BkgClusterHit.hh"
-#include "RecoDataProducts/inc/BkgQual.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "TrkDiag/inc/BkgHitInfo.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/BkgCluster.hh"
+#include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
+#include "Offline/RecoDataProducts/inc/BkgQual.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/TrkDiag/inc/BkgHitInfo.hh"
 /// Utilities
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
-#include "TrkDiag/inc/StrawHitInfo.hh"
+#include "Offline/TrkDiag/inc/StrawHitInfo.hh"
 using namespace std;
 using CLHEP::Hep3Vector;
 using namespace ROOT::Math::VectorUtil;

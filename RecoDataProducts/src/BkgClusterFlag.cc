@@ -5,7 +5,7 @@
 // Original author David Brown
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/BkgClusterFlag.hh"
+#include "Offline/RecoDataProducts/inc/BkgClusterFlag.hh"
 #include <stdexcept>
 #include <iostream>
 #include <stdio.h>

@@ -6,11 +6,11 @@
 //
 #ifndef mu2e_PanelAmbig_PanelAmbigStructs_HH
 #define mu2e_PanelAmbig_PanelAmbigStructs_HH
-#include "DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
-#include "BTrkData/inc/TrkStrawHit.hh"
+#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Rtypes.h"
 #include <cstddef>
 #include <vector>

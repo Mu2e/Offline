@@ -1,7 +1,7 @@
 #ifndef DbTables_DbTableFactory_hh
 #define DbTables_DbTableFactory_hh
 
-#include "DbTables/inc/DbTable.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
 
 namespace mu2e  {
 

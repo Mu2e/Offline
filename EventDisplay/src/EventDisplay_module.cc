@@ -7,8 +7,8 @@
 #include <memory>
 #include <string>
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -19,11 +19,11 @@
 #include "TApplication.h"
 #include "TGMsgBox.h"
 
-#include "EventDisplay/src/EventDisplayFrame.h"
-#include "EventDisplay/src/RootFileManager.h"
+#include "Offline/EventDisplay/src/EventDisplayFrame.h"
+#include "Offline/EventDisplay/src/RootFileManager.h"
 
 using namespace CLHEP;
-#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 
 namespace mu2e
 {

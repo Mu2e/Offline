@@ -1,5 +1,5 @@
 
-#include "Print/inc/MCTrajectoryPrinter.hh"
+#include "Offline/Print/inc/MCTrajectoryPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

@@ -15,20 +15,20 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Units/GlobalPhysicalConstants.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art_root_io/TFileService.h"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "HepPDT/ParticleData.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
-#include "MCDataProducts/inc/CrvStep.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/MCRelationship.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <utility>
 #include <algorithm>
 // root

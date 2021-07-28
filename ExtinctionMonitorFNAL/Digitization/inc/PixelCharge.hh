@@ -9,7 +9,7 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 
-#include "DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "Offline/DataProducts/inc/ExtMonFNALPixelId.hh"
 
 namespace mu2e {
 

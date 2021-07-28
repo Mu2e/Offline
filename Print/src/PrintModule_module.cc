@@ -10,42 +10,44 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "Print/inc/ProductPrinter.hh"
-#include "Print/inc/StatusG4Printer.hh"
-#include "Print/inc/GenParticlePrinter.hh"
-#include "Print/inc/SimParticlePrinter.hh"
-#include "Print/inc/SimParticlePtrPrinter.hh"
-#include "Print/inc/StepPointMCPrinter.hh"
-#include "Print/inc/MCTrajectoryPrinter.hh"
-#include "Print/inc/CaloShowerStepPrinter.hh"
-#include "Print/inc/CaloDigiPrinter.hh"
-#include "Print/inc/CaloRecoDigiPrinter.hh"
-#include "Print/inc/CaloHitPrinter.hh"
-#include "Print/inc/CaloClusterPrinter.hh"
-#include "Print/inc/CrvStepPrinter.hh"
-#include "Print/inc/CrvDigiPrinter.hh"
-#include "Print/inc/CrvDigiMCPrinter.hh"
-#include "Print/inc/CrvRecoPulsePrinter.hh"
-#include "Print/inc/CrvCoincidenceClusterPrinter.hh"
-#include "Print/inc/StrawGasStepPrinter.hh"
-#include "Print/inc/StrawDigiPrinter.hh"
-#include "Print/inc/StrawDigiADCWaveformPrinter.hh"
-#include "Print/inc/StrawDigiMCPrinter.hh"
-#include "Print/inc/StrawHitPrinter.hh"
-#include "Print/inc/StrawHitFlagPrinter.hh"
-#include "Print/inc/BkgClusterPrinter.hh"
-#include "Print/inc/BkgQualPrinter.hh"
-#include "Print/inc/TrackClusterMatchPrinter.hh"
-#include "Print/inc/TrkCaloIntersectPrinter.hh"
-#include "Print/inc/TrackSummaryPrinter.hh"
-#include "Print/inc/KalRepPrinter.hh"
-#include "Print/inc/SimParticleTimeMapPrinter.hh"
-#include "Print/inc/ComboHitPrinter.hh"
-#include "Print/inc/TimeClusterPrinter.hh"
-#include "Print/inc/KalSeedPrinter.hh"
-#include "Print/inc/PhysicalVolumePrinter.hh"
-#include "Print/inc/TriggerResultsPrinter.hh"
-#include "Print/inc/PrimaryParticlePrinter.hh"
+#include "Offline/Print/inc/ProductPrinter.hh"
+#include "Offline/Print/inc/StatusG4Printer.hh"
+#include "Offline/Print/inc/GenParticlePrinter.hh"
+#include "Offline/Print/inc/SimParticlePrinter.hh"
+#include "Offline/Print/inc/SimParticlePtrPrinter.hh"
+#include "Offline/Print/inc/StepPointMCPrinter.hh"
+#include "Offline/Print/inc/MCTrajectoryPrinter.hh"
+#include "Offline/Print/inc/CaloShowerStepPrinter.hh"
+#include "Offline/Print/inc/CaloDigiPrinter.hh"
+#include "Offline/Print/inc/CaloRecoDigiPrinter.hh"
+#include "Offline/Print/inc/CaloHitPrinter.hh"
+#include "Offline/Print/inc/CaloHitMCPrinter.hh"
+#include "Offline/Print/inc/CaloClusterPrinter.hh"
+#include "Offline/Print/inc/CaloClusterMCPrinter.hh"
+#include "Offline/Print/inc/CrvStepPrinter.hh"
+#include "Offline/Print/inc/CrvDigiPrinter.hh"
+#include "Offline/Print/inc/CrvDigiMCPrinter.hh"
+#include "Offline/Print/inc/CrvRecoPulsePrinter.hh"
+#include "Offline/Print/inc/CrvCoincidenceClusterPrinter.hh"
+#include "Offline/Print/inc/StrawGasStepPrinter.hh"
+#include "Offline/Print/inc/StrawDigiPrinter.hh"
+#include "Offline/Print/inc/StrawDigiADCWaveformPrinter.hh"
+#include "Offline/Print/inc/StrawDigiMCPrinter.hh"
+#include "Offline/Print/inc/StrawHitPrinter.hh"
+#include "Offline/Print/inc/StrawHitFlagPrinter.hh"
+#include "Offline/Print/inc/BkgClusterPrinter.hh"
+#include "Offline/Print/inc/BkgQualPrinter.hh"
+#include "Offline/Print/inc/TrackClusterMatchPrinter.hh"
+#include "Offline/Print/inc/TrkCaloIntersectPrinter.hh"
+#include "Offline/Print/inc/TrackSummaryPrinter.hh"
+#include "Offline/Print/inc/KalRepPrinter.hh"
+#include "Offline/Print/inc/SimParticleTimeMapPrinter.hh"
+#include "Offline/Print/inc/ComboHitPrinter.hh"
+#include "Offline/Print/inc/TimeClusterPrinter.hh"
+#include "Offline/Print/inc/KalSeedPrinter.hh"
+#include "Offline/Print/inc/PhysicalVolumePrinter.hh"
+#include "Offline/Print/inc/TriggerResultsPrinter.hh"
+#include "Offline/Print/inc/PrimaryParticlePrinter.hh"
 
 using namespace std;
 
@@ -76,8 +78,12 @@ namespace mu2e {
 	fhicl::Name("caloRecoDigiPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> CaloHitPrinter { 
 	fhicl::Name("caloHitPrinter") }; 
+      fhicl::Table<ProductPrinter::ConfigE> CaloHitMCPrinter { 
+	fhicl::Name("caloHitMCPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> caloClusterPrinter { 
 	fhicl::Name("caloClusterPrinter") }; 
+      fhicl::Table<ProductPrinter::ConfigE> caloClusterMCPrinter { 
+	fhicl::Name("caloClusterMCPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> crvStepPrinter { 
 	fhicl::Name("crvStepPrinter") }; 
       fhicl::Table<ProductPrinter::Config> crvDigiPrinter { 
@@ -161,7 +167,9 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<CaloDigiPrinter>( conf().caloDigiPrinter() ) );
   _printers.push_back( make_unique<CaloRecoDigiPrinter>( conf().caloRecoDigiPrinter() ) );
   _printers.push_back( make_unique<CaloHitPrinter>( conf().CaloHitPrinter() ) );
+  _printers.push_back( make_unique<CaloHitMCPrinter>( conf().CaloHitMCPrinter() ) );
   _printers.push_back( make_unique<CaloClusterPrinter>( conf().caloClusterPrinter() ) );
+  _printers.push_back( make_unique<CaloClusterMCPrinter>( conf().caloClusterMCPrinter() ) );
   _printers.push_back( make_unique<CrvStepPrinter>( conf().crvStepPrinter() ) );
   _printers.push_back( make_unique<CrvDigiPrinter>( conf().crvDigiPrinter() ) );
   _printers.push_back( make_unique<CrvDigiMCPrinter>( conf().crvDigiMCPrinter() ) );

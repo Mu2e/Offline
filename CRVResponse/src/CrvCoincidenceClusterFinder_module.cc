@@ -4,17 +4,17 @@
 // 
 // Original Author: Ralf Ehrlich
 
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"

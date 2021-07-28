@@ -7,40 +7,42 @@
 // framework
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "art/Framework/Principal/Run.h"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 // conditions
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/TrackerStatus.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/ConditionsBase/inc/TrackerCalibrationStructs.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 
-#include "TrkHitReco/inc/PeakFit.hh"
-#include "TrkHitReco/inc/PeakFitRoot.hh"
-#include "TrkHitReco/inc/PeakFitFunction.hh"
-#include "TrkHitReco/inc/ComboPeakFitRoot.hh"
-#include "TrkHitReco/inc/StrawHitRecoUtils.hh"
+#include "Offline/TrkHitReco/inc/PeakFit.hh"
+#include "Offline/TrkHitReco/inc/PeakFitRoot.hh"
+#include "Offline/TrkHitReco/inc/PeakFitFunction.hh"
+#include "Offline/TrkHitReco/inc/ComboPeakFitRoot.hh"
+#include "Offline/TrkHitReco/inc/StrawHitRecoUtils.hh"
 
-#include "RecoDataProducts/inc/ProtonBunchTime.hh"
-#include "DataProducts/inc/StrawEnd.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
+#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include "TH1F.h"
@@ -116,7 +118,7 @@ class art::StrawHitRecoFromFragments : public art::EDProducer {
     TH1F* _maxiter;
     // helper function
     //
-    void analyze_tracker_(const artdaq::Fragment& f, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
+    void analyze_tracker_(const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
 	std::unique_ptr<mu2e::ComboHitCollection> const& chCol, mu2e::StrawHitRecoUtils &shrUtils, mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
 	const mu2e::CaloClusterCollection* caloClusters, mu2e::Tracker const& tt
 	);
@@ -194,8 +196,33 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event)
   auto const& srep = _strawResponse_h.get(event.id());
   //_tfTag = art::InputTag("test");
 
-  art::Handle<artdaq::Fragments> trkFragments;
-  event.getByLabel(_tfTag, trkFragments);
+
+  size_t numTrkFrags = 0;
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
+
+  for (const auto& handle : fragmentHandles) {
+      if (!handle.isValid() || handle->empty()) {
+          continue;
+      }
+
+      if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
+          for (const auto& cont : *handle) {
+              mu2e::Mu2eEventFragment mef(cont);
+              for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
+                  numTrkFrags++;
+              }
+          }
+      }
+      else {
+          if (handle->front().type() == mu2e::detail::FragmentType::TRK) {
+              for (auto frag : *handle) {
+                  numTrkFrags++;
+              }
+          }
+      }
+  }
+
   //auto sdH = event.getValidHandle(_sdctoken);
   //const StrawDigiCollection& sdcol(*sdH);
 
@@ -223,14 +250,13 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event)
   }
   std::unique_ptr<mu2e::ComboHitCollection> chCol(new mu2e::ComboHitCollection());
 
-  if (!trkFragments.isValid()) {
+  if (numTrkFrags == 0) {
     std::cout << "[StrawAndCaloDigisFromFragments::produce] found no Tracker fragments!"
       << std::endl;
     if(_writesh)event.put(std::move(shCol));
     event.put(std::move(chCol));
     return;
   }
-  size_t numTrkFrags = trkFragments->size();
 
   if(_writesh){
     shCol->reserve(numTrkFrags);
@@ -241,9 +267,29 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event)
     _diagLevel, _maxiter, _mask, nplanes, npanels, _writesh, _minT, _maxT, _minE, _maxE, _filter, _flagXT,
     _ctE, _ctMinT, _ctMaxT, _usecc, _clusterDt, numTrkFrags);
 
+  for (const auto& handle : fragmentHandles) {
+      if (!handle.isValid() || handle->empty()) {
+          continue;
+      }
 
-  for (size_t idx = 0; idx < numTrkFrags; ++idx) {
-    analyze_tracker_((*trkFragments)[idx], shCol, chCol, shrUtils, trackerStatus, srep, caloClusters, tt);
+      if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
+          for (const auto& cont : *handle) {
+              mu2e::Mu2eEventFragment mef(cont);
+              for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
+                  auto pair = mef.trackerAtPtr(ii);
+                  mu2e::TrackerFragment cc(pair);
+                  analyze_tracker_(cc, shCol, chCol, shrUtils, trackerStatus, srep, caloClusters, tt);
+              }
+          }
+      }
+      else {
+          if (handle->front().type() == mu2e::detail::FragmentType::TRK) {
+              for (auto frag : *handle) {
+                  mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+                  analyze_tracker_(cc, shCol, chCol, shrUtils, trackerStatus, srep, caloClusters, tt);
+              }
+          }
+      }
   }
 
   if(_writesh)event.put(std::move(shCol));
@@ -252,19 +298,16 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event)
 
 
 void art::StrawHitRecoFromFragments::analyze_tracker_(
-    const artdaq::Fragment& f, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
+    const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
     std::unique_ptr<mu2e::ComboHitCollection> const& chCol, mu2e::StrawHitRecoUtils &shrUtils, 
     mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
     const mu2e::CaloClusterCollection* caloClusters, mu2e::Tracker const& tt
     ) {
 
-  mu2e::TrackerFragment cc(f);
-
   if (_diagLevel > 1) {
     std::cout << std::endl;
     std::cout << "TrackerFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
       << "====== Example Block Sizes ======" << std::endl;
@@ -288,13 +331,13 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
 
     if (_diagLevel > 1) {
 
-      std::cout << "timestamp: " << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true))
+      std::cout << "timestamp: " << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true))
 	<< std::endl;
-      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
-      std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
-      std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
-      std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
+      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
+      std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
+      std::cout << "packetCount: " << static_cast<int>(hdr->GetPacketCount()) << std::endl;
+      std::cout << "EVB mode: " << static_cast<int>(hdr->GetEVBMode()) << std::endl;
 
       std::cout << std::endl;
     }
@@ -303,7 +346,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
     if (_fittype != mu2e::TrkHitReco::FitType::firmwarepmp)  getADC = true;
 
     // Parse phyiscs information from TRK packets
-    if (hdr.GetPacketCount() > 0) {
+    if (hdr->GetPacketCount() > 0) {
 
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx,getADC);
@@ -333,7 +376,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
       }
     }
   }
-  cc.ClearUpgradedPackets();
+  //cc.ClearUpgradedPackets();
 }
 
 

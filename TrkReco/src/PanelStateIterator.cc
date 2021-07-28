@@ -3,7 +3,7 @@
 // This also interacts with the hits themselves
 // Dave Brown
 
-#include "TrkReco/inc/PanelStateIterator.hh"
+#include "Offline/TrkReco/inc/PanelStateIterator.hh"
 #include <algorithm>
 
 namespace mu2e {

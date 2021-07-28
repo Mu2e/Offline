@@ -11,10 +11,10 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "RecoDataProducts/inc/StrawDigi.hh"
-#include "RecoDataProducts/inc/ProtonBunchTime.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "TH1F.h"
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/error_of.hpp>

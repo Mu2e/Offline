@@ -1,6 +1,6 @@
-#include "Print/inc/PrimaryParticlePrinter.hh"
-#include "Print/inc/GenParticlePrinter.hh"
-#include "Print/inc/SimParticlePrinter.hh"
+#include "Offline/Print/inc/PrimaryParticlePrinter.hh"
+#include "Offline/Print/inc/GenParticlePrinter.hh"
+#include "Offline/Print/inc/SimParticlePrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 #include <iomanip>

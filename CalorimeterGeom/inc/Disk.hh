@@ -8,9 +8,9 @@
 //
 
 
-#include "CalorimeterGeom/inc/DiskGeomInfo.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
-#include "CalorimeterGeom/inc/CrystalMapper.hh"
+#include "Offline/CalorimeterGeom/inc/DiskGeomInfo.hh"
+#include "Offline/CalorimeterGeom/inc/Crystal.hh"
+#include "Offline/CalorimeterGeom/inc/CrystalMapper.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"

@@ -1,7 +1,7 @@
-#include "CaloCluster/inc/ClusterFinder.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/CaloCluster/inc/ClusterFinder.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 
 #include <iostream>
 #include <vector>

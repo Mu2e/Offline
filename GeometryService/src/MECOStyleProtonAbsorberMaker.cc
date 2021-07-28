@@ -22,11 +22,11 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "GeometryService/inc/MECOStyleProtonAbsorberMaker.hh"
-#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/GeometryService/inc/MECOStyleProtonAbsorberMaker.hh"
+#include "Offline/MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"

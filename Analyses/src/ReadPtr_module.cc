@@ -22,13 +22,13 @@ using namespace CLHEP;
 #include "BTrk/TrkBase/TrkParticle.hh"
 
 // mu2e tracking
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
 //#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include "TH1D.h"
 

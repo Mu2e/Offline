@@ -5,7 +5,7 @@
 //  Original author Rob Kutschke
 //
 
-#include "TrackerGeom/inc/SupportStructure.hh"
+#include "Offline/TrackerGeom/inc/SupportStructure.hh"
 #include <iostream>
 
 namespace mu2e {

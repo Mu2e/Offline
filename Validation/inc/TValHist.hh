@@ -1,7 +1,7 @@
 #ifndef Tools_TValHist_hh
 #define Tools_TValHist_hh
 
-#include "Validation/inc/TValPar.hh"
+#include "Offline/Validation/inc/TValPar.hh"
 #include "TH1.h"
 #include "TString.h"
 

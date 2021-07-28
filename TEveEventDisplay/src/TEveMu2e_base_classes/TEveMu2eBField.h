@@ -7,9 +7,9 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wtautological-compare"
-#include "BFieldGeom/inc/BFieldConfig.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
 #pragma GCC diagnostic pop
 
 

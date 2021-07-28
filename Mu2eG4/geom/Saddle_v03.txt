@@ -1,6 +1,6 @@
 // Update to the TS saddle hole radius to match updated support collar radius
 // M. MacKenzie, May 2020
-#include "Mu2eG4/geom/Saddle_v02.txt"
+#include "Offline/Mu2eG4/geom/Saddle_v02.txt"
 
 //increment version number
 int Saddle.version    = 3;

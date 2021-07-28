@@ -32,16 +32,16 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 
 // Mu2e includes
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/constructTracker.hh"
-#include "Mu2eG4/inc/ConstructTrackerDetail5.hh"
-#include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/Mu2eG4/inc/StrawSD.hh"
+#include "Offline/Mu2eG4/inc/constructTracker.hh"
+#include "Offline/Mu2eG4/inc/ConstructTrackerDetail5.hh"
+#include "Offline/Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "Offline/Mu2eG4/inc/finishNesting.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "Geant4/G4Box.hh"

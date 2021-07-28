@@ -1,15 +1,15 @@
 #ifndef TrackerConditions_StrawElectronicsCache_hh
 #define TrackerConditions_StrawElectronicsCache_hh
 
-#include "Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "DbTables/inc/DbIoV.hh"
-#include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TrkDelayPanel.hh"
-#include "DbTables/inc/TrkDelayRStraw.hh"
-#include "DbTables/inc/TrkPreampStraw.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/DbTables/inc/DbIoV.hh"
+#include "Offline/DbService/inc/DbHandle.hh"
+#include "Offline/DbTables/inc/TrkDelayPanel.hh"
+#include "Offline/DbTables/inc/TrkDelayRStraw.hh"
+#include "Offline/DbTables/inc/TrkPreampStraw.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
-#include "TrackerConditions/inc/StrawElectronicsMaker.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronicsMaker.hh"
 
 
 namespace mu2e {

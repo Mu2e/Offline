@@ -2,10 +2,10 @@
 #  This script runs ComboHitDiag off of digis
 # David Brown (LBNL) 24 Oct. 2019
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 
 process_name : ComboHitDiag
 

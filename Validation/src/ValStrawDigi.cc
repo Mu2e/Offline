@@ -1,6 +1,6 @@
 
-#include "Validation/inc/ValStrawDigi.hh"
-#include "DataProducts/inc/StrawEnd.hh"
+#include "Offline/Validation/inc/ValStrawDigi.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 
 int mu2e::ValStrawDigi::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);

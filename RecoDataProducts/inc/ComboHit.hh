@@ -7,12 +7,12 @@
 // Original author David Brown Dec 2017
 //
 // Mu2e includes
-#include "DataProducts/inc/StrawEnd.hh"
-#include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIdMask.hh"
-#include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include <stdint.h>
 // root includes
 #include "Rtypes.h"

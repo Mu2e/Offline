@@ -1,4 +1,4 @@
-#include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSEnclosure.hh"
 
 namespace mu2e {
 

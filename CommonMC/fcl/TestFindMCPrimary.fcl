@@ -1,10 +1,10 @@
 #
 #  Simple test of finding the MC primary in an event
 #
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
 
 process_name : TestFindMCPrimary
 source : { module_type : RootInput }

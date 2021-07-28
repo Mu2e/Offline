@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2012
 
-#include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 
 #include <limits>
 #include <algorithm>
@@ -12,11 +12,11 @@
 
 #include "CLHEP/Vector/TwoVector.h"
 
-#include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 namespace mu2e {
 

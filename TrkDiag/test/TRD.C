@@ -1,6 +1,6 @@
 
-#include "TrkDiag/test/FillChain.C+"
-#include "TrkDiag/test/TrkRecoDiag.C+"
+#include "Offline/TrkDiag/test/FillChain.C+"
+#include "Offline/TrkDiag/test/TrkRecoDiag.C+"
 
 void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   TChain* mtce = new TChain("TrkRecoDiag/trdiag");

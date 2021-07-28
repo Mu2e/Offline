@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "BTrk/BaBar/BbrCollectionUtils.hh"
-#include "TrkReco/inc/KalFitData.hh"
+#include "Offline/TrkReco/inc/KalFitData.hh"
 
 namespace mu2e {
 

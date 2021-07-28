@@ -16,9 +16,9 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Includes from Mu2e
-#include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
-#include "CosmicRayShieldGeom/inc/CRSSupportStructure.hh"
-#include "Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSSupportStructure.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 
 namespace mu2e 

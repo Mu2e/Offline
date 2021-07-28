@@ -6,13 +6,13 @@
 //  Used as part of the kinematic Kalman fit
 //
 // mu2eKinKal classes
-#include "Mu2eKinKal/inc/KKStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitUpdater.hh"
 //KinKal classes
 #include "KinKal/Detector/WireHit.hh"
 // Mu2e-specific classes
-#include "TrackerGeom/inc/Straw.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
 // Other
 #include "cetlib_except/exception.h"
 #include <memory>

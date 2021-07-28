@@ -10,8 +10,8 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 // Mu2e include files
-#include "GlobalConstantsService/inc/PhysicsParams.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // Framework includes
 #include "cetlib/pow.h"

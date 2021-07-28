@@ -1,10 +1,10 @@
 // Andrei Gaponenko, following GeneratorSummaryHistograms by Rob Kutschke
 
-#include "ExtinctionMonitorFNAL/Analyses/inc/EMFRecoClusterHistograms.hh"
+#include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFRecoClusterHistograms.hh"
 
-#include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

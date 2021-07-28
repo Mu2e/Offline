@@ -10,8 +10,8 @@
 // The position is given in the Mu2e coordinate system.
 //
 
-#include "EventGenerator/inc/GeneratorBase.hh"
-#include "EventGenerator/inc/ParticleGunImpl.hh"
+#include "Offline/EventGenerator/inc/GeneratorBase.hh"
+#include "Offline/EventGenerator/inc/ParticleGunImpl.hh"
 
 // Forward references.
 namespace art{ class Run; }

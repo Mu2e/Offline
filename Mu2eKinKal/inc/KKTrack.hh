@@ -4,10 +4,10 @@
 // subclass of KinKal Track specialized for Mu2e 
 //
 #include "KinKal/Fit/Track.hh"
-#include "DataProducts/inc/PDGCode.hh"
-#include "Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Mu2eKinKal/inc/KKStrawXing.hh"
-#include "Mu2eKinKal/inc/KKCaloHit.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
+#include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 namespace mu2e {
 
   using KinKal::Config;

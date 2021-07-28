@@ -12,9 +12,9 @@
 
 // Framework includes.
 #include "art/Framework/Principal/Event.h"
-#include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "cetlib/map_vector.h"
 
 namespace mu2e {

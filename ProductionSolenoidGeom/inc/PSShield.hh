@@ -13,9 +13,9 @@
 
 #include <CLHEP/Geometry/Transform3D.h>
 
-#include "Mu2eInterfaces/inc/Detector.hh"
-#include "GeomPrimitives/inc/Tube.hh"
-#include "GeomPrimitives/inc/Polycone.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/GeomPrimitives/inc/Tube.hh"
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 

@@ -15,8 +15,8 @@
 // --> the first peak is never a pile-up
 //
 
-#include "CaloReco/inc/CaloWaveformProcessor.hh"
-#include "CaloReco/inc/CaloTemplateWFUtil.hh"
+#include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
+#include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "TH2.h"

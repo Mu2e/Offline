@@ -6,14 +6,14 @@
 #include <algorithm>
 #include "TMath.h"
 
-#include "TrackerConditions/inc/StrawDriftMaker.hh"
+#include "Offline/TrackerConditions/inc/StrawDriftMaker.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "CLHEP/Matrix/Vector.h"
 
 

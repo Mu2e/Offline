@@ -3,28 +3,28 @@
 // Original author: Dave Brown LBNL 2012
 //
 //
-#include "TrkReco/inc/KalFit.hh"
-#include "TrkReco/inc/PanelAmbigResolver.hh"
-#include "TrkReco/inc/HitAmbigResolver.hh"
-#include "TrkReco/inc/FixedAmbigResolver.hh"
-#include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
+#include "Offline/TrkReco/inc/KalFit.hh"
+#include "Offline/TrkReco/inc/PanelAmbigResolver.hh"
+#include "Offline/TrkReco/inc/HitAmbigResolver.hh"
+#include "Offline/TrkReco/inc/FixedAmbigResolver.hh"
+#include "Offline/TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Offline/TrkReco/inc/TrkUtilities.hh"
+#include "Offline/Mu2eBTrk/inc/BaBarMu2eField.hh"
 //geometry
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 // conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 // data
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 // tracker
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/KalmanTrack/KalBend.hh"

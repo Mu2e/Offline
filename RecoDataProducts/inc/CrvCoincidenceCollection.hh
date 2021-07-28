@@ -6,7 +6,7 @@
 // Contact person Ralf Ehrlich
 //
 
-#include "RecoDataProducts/inc/CrvCoincidence.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 
 #include <vector>
 

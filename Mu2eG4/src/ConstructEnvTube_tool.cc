@@ -15,12 +15,12 @@
 
 // Mu2e includes.
 
-#include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/InitEnvToolBase.hh"
-#include "Mu2eG4/inc/nestTubs.hh"
-#include "Mu2eG4/inc/nestBox.hh"
-#include "Mu2eG4Helper/inc/VolumeInfo.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Offline/Mu2eG4/inc/MaterialFinder.hh"
+#include "Offline/Mu2eG4/inc/InitEnvToolBase.hh"
+#include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestBox.hh"
+#include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
+#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes
 #include "Geant4/G4ThreeVector.hh"
@@ -28,7 +28,7 @@
 #include "Geant4/G4Color.hh"
 #include "Geant4/G4Tubs.hh"
 #include "Geant4/G4RotationMatrix.hh"
-#include "Mu2eG4Helper/inc/Mu2eG4Helper.hh"
+#include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;

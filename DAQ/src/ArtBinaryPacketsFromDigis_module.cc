@@ -24,10 +24,10 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 // geometry
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // mu2e-artdaq-core includes
 #include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
@@ -38,15 +38,15 @@
 #include "dtcInterfaceLib/DTC_Packets.h"
 
 // Mu2e includes.
-#include "RecoDataProducts/inc/CaloDigi.hh"
-#include "RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-//#include "DAQDataProducts/inc/DataBlockCollection.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
-#include "CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+//#include "Offline/DAQDataProducts/inc/DataBlockCollection.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
 
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include <fstream>
 #include <stdexcept>

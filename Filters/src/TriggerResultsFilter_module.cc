@@ -16,8 +16,9 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/types/Sequence.h"
 // mu2e includes
-#include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
+#include "Offline/Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 
 using namespace std;
 

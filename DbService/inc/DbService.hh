@@ -11,7 +11,7 @@
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "cetlib_except/exception.h"
-#include "DbService/inc/DbEngine.hh"
+#include "Offline/DbService/inc/DbEngine.hh"
 
 
 

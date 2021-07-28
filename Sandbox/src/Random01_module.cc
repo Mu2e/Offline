@@ -9,7 +9,7 @@
 //    service does not know the identity of the engine to which to restore the state.
 //
 
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

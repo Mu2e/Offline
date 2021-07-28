@@ -5,8 +5,8 @@
 //
 // Original author David Brown, LBNL
 //
-#include "TrackerConditions/inc/StrawElectronics.hh"
-#include "GeneralUtilities/inc/DigitalFiltering.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/GeneralUtilities/inc/DigitalFiltering.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <cmath>

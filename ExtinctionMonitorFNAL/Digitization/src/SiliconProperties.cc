@@ -2,7 +2,7 @@
 //
 // Adapted for Mu2e by Andrei Gaponenko.
 
-#include "ExtinctionMonitorFNAL/Digitization/inc/SiliconProperties.hh"
+#include "Offline/ExtinctionMonitorFNAL/Digitization/inc/SiliconProperties.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 

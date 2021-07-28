@@ -44,7 +44,7 @@
 //
 
 // Mu2e includes.
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "cetlib/maybe_ref.h"
 
 // External includes.

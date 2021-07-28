@@ -5,10 +5,10 @@
 // Contact person, Rob Kutschke
 //
 
-#include "GeneralUtilities/inc/EnumToStringSparse.hh"
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 #include "cetlib_except/exception.h"
 
-#include "Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"
+#include "Offline/Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"
 
 mu2e::KalRepInstanceNameDecoder::KalRepInstanceNameDecoder( std::string const& instanceName ):
   instanceName_(instanceName),

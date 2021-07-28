@@ -4,9 +4,9 @@
 // C++ includes
 
 // Mu2e includes
-#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
-#include "Mu2eG4/inc/customizeChargedPionDecay.hh"
-#include "Mu2eG4/inc/toggleProcesses.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/customizeChargedPionDecay.hh"
+#include "Offline/Mu2eG4/inc/toggleProcesses.hh"
 
 // G4 includes
 #include "Geant4/G4BuilderType.hh"

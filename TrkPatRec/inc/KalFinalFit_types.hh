@@ -5,9 +5,9 @@
 #include "TH1.h"
 
 #include <vector>
-#include "BTrkData/inc/Doublet.hh"
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/BTrkData/inc/Doublet.hh"
+#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 
 namespace art {
   class Event;

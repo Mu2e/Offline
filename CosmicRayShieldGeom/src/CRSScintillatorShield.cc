@@ -9,7 +9,7 @@
 #include <vector>
 #include <sstream>
 
-#include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 
 using namespace std;
 

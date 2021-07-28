@@ -1,7 +1,7 @@
 
-#include "Validation/inc/ValStrawHit.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "TrackerGeom/inc/Tracker.hh"
+#include "Offline/Validation/inc/ValStrawHit.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 int mu2e::ValStrawHit::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);

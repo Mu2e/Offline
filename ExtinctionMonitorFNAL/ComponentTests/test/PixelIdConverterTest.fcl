@@ -2,9 +2,9 @@
 //
 // Andrei Gaponenko, 2011
 
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 // Give this job a name.
 process_name : PixelIdConverterTest
@@ -18,7 +18,7 @@ services : {
     message : @local::default_message
     scheduler: { defaultExceptions : false }
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
-    GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
+    GeometryService : { inputFile : "Offline/ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
     SeedService       : @local::automaticSeeds
 }
 

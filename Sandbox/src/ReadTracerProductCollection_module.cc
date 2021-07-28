@@ -6,8 +6,8 @@
 //
 
 // Mu2e includes.
-#include "Sandbox/inc/TracerProduct.hh"
-#include "Sandbox/inc/TracerProductCollection.hh"
+#include "Offline/Sandbox/inc/TracerProduct.hh"
+#include "Offline/Sandbox/inc/TracerProductCollection.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

@@ -15,12 +15,12 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "BFieldGeom/inc/BFInterpolationStyle.hh"
-#include "BFieldGeom/inc/BFMap.hh"
-#include "BFieldGeom/inc/BFMapType.hh"
-#include "BFieldGeom/inc/Container3D.hh"
+#include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
+#include "Offline/BFieldGeom/inc/BFMap.hh"
+#include "Offline/BFieldGeom/inc/BFMapType.hh"
+#include "Offline/BFieldGeom/inc/Container3D.hh"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "GeneralUtilities/inc/csv.hh"
+#include "Offline/GeneralUtilities/inc/csv.hh"
 
 using namespace std;
 

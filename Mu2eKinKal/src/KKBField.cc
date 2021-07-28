@@ -1,4 +1,4 @@
-#include "Mu2eKinKal/inc/KKBField.hh"
+#include "Offline/Mu2eKinKal/inc/KKBField.hh"
 namespace mu2e {
   using Grad = ROOT::Math::SMatrix<double,3>;
   using SVEC3 = KinKal::SVEC3;

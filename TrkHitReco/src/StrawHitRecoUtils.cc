@@ -1,13 +1,13 @@
-#include "TrkHitReco/inc/PeakFit.hh"
-#include "TrkHitReco/inc/PeakFitRoot.hh"
-#include "TrkHitReco/inc/PeakFitFunction.hh"
-#include "TrkHitReco/inc/ComboPeakFitRoot.hh"
+#include "Offline/TrkHitReco/inc/PeakFit.hh"
+#include "Offline/TrkHitReco/inc/PeakFitRoot.hh"
+#include "Offline/TrkHitReco/inc/PeakFitFunction.hh"
+#include "Offline/TrkHitReco/inc/ComboPeakFitRoot.hh"
 
-#include "DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 
 #include <numeric>
 
-#include "TrkHitReco/inc/StrawHitRecoUtils.hh"
+#include "Offline/TrkHitReco/inc/StrawHitRecoUtils.hh"
 
 namespace mu2e {
 

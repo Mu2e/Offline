@@ -16,8 +16,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-#include "MCDataProducts/inc/SimTimeOffset.hh"
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 
