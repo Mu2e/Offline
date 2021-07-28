@@ -75,9 +75,8 @@ namespace mu2e {
       for(const auto& ks : *ic) {
         if (ks.segments().begin()->mom() > _momCutoff[mniter-moduleNames.begin()]){
           pass = true;
-          std::cout<<"passes RecoFilter "<<_momCutoff[mniter-moduleNames.begin()]<<" "<<ks.segments().begin()->mom()<<std::endl;
           break;
-        } if (ks.segments().begin()->mom() < _momCutoff[mniter-moduleNames.begin()]) { std::cout<<"fails RecoFilter "<<ks.segments().begin()->mom()<<std::endl;}
+        } 
       }
     }
 
