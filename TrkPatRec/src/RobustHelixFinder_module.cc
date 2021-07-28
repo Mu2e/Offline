@@ -287,14 +287,15 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void RobustHelixFinder::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+         std::cout<<"BEGIN RUN "<<std::endl;
+	  mu2e::GeomHandle<mu2e::Calorimeter> ch;
 
     _hfit.setCalorimeter(ch.get());
   }
   //--------------------------------------------------------------------------------
 
   void RobustHelixFinder::beginJob() {
-
+std::cout<<"BEGIN JOB "<<std::endl;
     _stmva.initMVA();
     _nsmva.initMVA();
     if (_debug > 0)
@@ -316,7 +317,7 @@ namespace mu2e {
   }
 
   void RobustHelixFinder::produce(art::Event& event ) {
-      
+      std::cout<<"PRODUCE "<<std::endl;
     _tracker = _alignedTracker_h.getPtr(event.id()).get();
     _hfit.setTracker    (_tracker);
 
@@ -447,7 +448,8 @@ namespace mu2e {
 // function to select the best Helix among the results of the two helicity hypo
 //--------------------------------------------------------------------------------
   void  RobustHelixFinder::pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best){
-    if (HelVec.size() == 1) {
+   std::cout<<"PICK BEST HELIX"<<std::endl;
+      if (HelVec.size() == 1) {
       Index_best = 0;
       return;
     }
@@ -508,10 +510,10 @@ namespace mu2e {
 //
 //--------------------------------------------------------------------------------
   void RobustHelixFinder::fillGoodHits(RobustHelixFinderData& helixData){
-
+    std::cout<<"FILL GOOD HITS"<<std::endl;
     ComboHit*     hit(0);
     unsigned      nhits = helixData._chHitsToProcess.size();
-
+   
     for (unsigned f=0; f<nhits; ++f){
       hit = &helixData._chHitsToProcess[f];
       if (hit->_flag.hasAnyProperty(_outlier))     continue;
@@ -529,12 +531,12 @@ namespace mu2e {
 
 
   void RobustHelixFinder::fillMVA(RobustHelixFinderData& helixData)
-  {
+  {std::cout<<"FILL MVA"<<std::endl;
     RobustHelix& helix = helixData._hseed._helix;
 
     static XYZVec  zaxis(0.0,0.0,1.0); // unit in z direction
     ComboHit*      hhit(0);
-
+    
     for (unsigned f=0; f<helixData._chHitsToProcess.size(); ++f){
       hhit = &helixData._chHitsToProcess[f];
 
@@ -581,7 +583,7 @@ namespace mu2e {
   }
 
   bool RobustHelixFinder::filterHitsMVA(RobustHelixFinderData& helixData)
-  {
+  {std::cout<<"FILTER HITS MVA"<<std::endl;
     bool           changed(false);
     ComboHit*      hhit(0);
 
@@ -603,7 +605,7 @@ namespace mu2e {
 
   // 3d selection on top of radial selection
   bool RobustHelixFinder::filterHits(RobustHelixFinderData& helixData)
-  {
+  { std::cout<<"FILTER HITS"<<std::endl;
     RobustHelix& helix = helixData._hseed._helix;
     bool changed(false);
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
@@ -615,7 +617,7 @@ namespace mu2e {
 
     int           nhitsFace(0);
     float         chCounter(1e-10), chi2dZPhi(0);
-
+    std::cout<<"nTotalFaces = "<<StrawId::_ntotalfaces<<std::endl;
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
 
@@ -625,6 +627,7 @@ namespace mu2e {
       nhitsFace = facez->nChHits();
       if (nhitsFace == 0)                        continue;
       int        idFirstFaceCh(facez->idChBegin);
+	    std::cout<<"nHitsFace = "<<nHitsFace<<std::endl;
       for (int ip=0; ip<nhitsFace; ++ip){
 	hit = &helixData._chHitsToProcess[idFirstFaceCh + ip];
 	bool trash=hit->_flag.hasAnyProperty(_outlier);
@@ -703,11 +706,11 @@ namespace mu2e {
   void RobustHelixFinder::prefilterHits(RobustHelixFinderData& HelixData, int& NRemovedStrawHits)
   {
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
-
+    std::cout<<"PRE FILTER HITS"<<std::endl;
     bool changed(true);
     // size_t nhit = hhits.size();
     int nhit = HelixData._nFiltComboHits;
-
+    std::cout<<"nhit = "<<nhit<<std::endl;
     ComboHit*  hit(0);
     ComboHit*  worsthit(0);
 
@@ -758,9 +761,10 @@ namespace mu2e {
   }
 
   void RobustHelixFinder::updateT0(RobustHelixFinderData& helixData)
-  {
+  { std::cout<<" UPDATE T0"<<std::endl;
   // compute the pitch
     float pitch = helixData._hseed.helix().pitch();
+    std::cout<<" helix pitch = "<<pitch<<std::endl;
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
   // update t0 from calo cluster according to current pitch
     if (helixData._hseed.caloCluster().isNonnull()){
@@ -783,7 +787,7 @@ namespace mu2e {
 
   //------------------------------------------------------------------------------------------
   void     RobustHelixFinder::fillFaceOrderedHits(RobustHelixFinderData& HelixData){
-
+    std::cout<<"FILL FACE ORDERED HITS"<<std::endl;
     const vector<StrawHitIndex>& shIndices = HelixData._timeCluster->hits();
     mu2e::RobustHelixFinderData::ChannelID cx, co;
 
@@ -797,7 +801,7 @@ namespace mu2e {
     //sort the hits by z coordinate
     ComboHitCollection ordChCol;
     ordChCol.reserve(size);
-
+    
     for (int i=0; i<size; ++i) {
       loc = shIndices[i];
       const ComboHit& ch  = (*_hfResult._chcol)[loc];
@@ -813,7 +817,7 @@ namespace mu2e {
       printf("[RobustHelixFinder::FillHits]     i     Face     Panel      X         Y         Z        \n");
       printf("[RobustHelixFinder::FillHits]-----------------------------------------------------------\n");
     }
-
+    std::cout<<"ord chcol = "<<ordChCol.size()<<std::endl;
     for (unsigned i=0; i<ordChCol.size(); ++i) {
       // loc = shIndices[i];
       // const ComboHit& ch  = _hfResult._chcol->at(loc);
@@ -921,7 +925,7 @@ namespace mu2e {
   }
 
   unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
-  {
+  { std::cout<<"FILTER CIRCLE HITS"<<std::endl;
     unsigned changed(0);
     int      nGoodSH(0);
     static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
@@ -1043,6 +1047,7 @@ namespace mu2e {
 
   void RobustHelixFinder::fitHelix(RobustHelixFinderData& helixData){
     // iteratively fit the helix including filtering
+    std::cout<<"FIT HELIX IN ROBUST HELIX FINDER"<<std::endl;
     unsigned niter(0);
     unsigned nitermva(0);
     bool     changed(true), xychanged(true), fzchanged(true);
