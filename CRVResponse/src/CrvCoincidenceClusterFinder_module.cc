@@ -13,8 +13,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceCollection.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
