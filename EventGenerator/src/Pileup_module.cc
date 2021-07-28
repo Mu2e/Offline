@@ -59,6 +59,7 @@ namespace mu2e {
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("A sequence of ParticleGenerator tools implementing decay products.")};
 
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
+      fhicl::Atom<bool> makeHistograms{Name("makeHistograms"),false};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -86,7 +87,7 @@ namespace mu2e {
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandFlat randFlat_;
     CLHEP::RandExponential randExp_;
-
+    bool makeHistograms_;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> muonDecayGenerators_;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> muonCaptureGenerators_;
 
@@ -103,6 +104,7 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randFlat_{eng_}
     , randExp_{eng_}
+    , makeHistograms_{conf().makeHistograms()}
   {
     produces<mu2e::StageParticleCollection>();
     if(verbosity_ > 0) {
@@ -112,18 +114,18 @@ namespace mu2e {
          <<", decay fraction = "<<decayFraction_
          <<std::endl;
     }
-    
-    art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
+    if(makeHistograms_){
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
 
-    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
-	  _Ntup->Branch("nEv", &nEv , "nEv/I");	    
-	  _Ntup->Branch("pmag_gen", &pmag_gen , "pmag_gen/F");
-	  _Ntup->Branch("time_gen", &time_gen, "time_gen/F");
-	  _Ntup->Branch("x_gen", &x_gen, "x_gen/F");
-	  _Ntup->Branch("y_gen", &y_gen, "y_gen/F");
-	  _Ntup->Branch("z_gen", &z_gen, "z_gen/F");
-	  
+      _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
+	    _Ntup->Branch("nEv", &nEv , "nEv/I");	    
+	    _Ntup->Branch("pmag_gen", &pmag_gen , "pmag_gen/F");
+	    _Ntup->Branch("time_gen", &time_gen, "time_gen/F");
+	    _Ntup->Branch("x_gen", &x_gen, "x_gen/F");
+	    _Ntup->Branch("y_gen", &y_gen, "y_gen/F");
+	    _Ntup->Branch("z_gen", &z_gen, "z_gen/F");
+	  }
     if(conf().stoppingTargetMaterial() != "Al" and conf().stoppingTargetMaterial() != "IPA" ) {
       throw   cet::exception("NOT_IMPLEMENTED")
         <<"Pileup_module: emisson spectra for other than Al target are not impelmented\n";
@@ -194,14 +196,15 @@ namespace mu2e {
                            d.fourmom,
                            time
                            );
-       double mag = sqrt(d.fourmom.px()*d.fourmom.px() + d.fourmom.py()*d.fourmom.py() + d.fourmom.pz()*d.fourmom.pz());
-       pmag_gen = mag;
-       time_gen = time;
-       x_gen = mustop->endPosition().x();
-       y_gen = mustop->endPosition().y();
-       z_gen = mustop->endPosition().z();
-       _Ntup->Fill();
-
+       if(makeHistograms_){
+         double mag = sqrt(d.fourmom.px()*d.fourmom.px() + d.fourmom.py()*d.fourmom.py() + d.fourmom.pz()*d.fourmom.pz());
+         pmag_gen = mag;
+         time_gen = time;
+         x_gen = mustop->endPosition().x();
+         y_gen = mustop->endPosition().y();
+         z_gen = mustop->endPosition().z();
+         _Ntup->Fill();
+      }
     }
   }
 
