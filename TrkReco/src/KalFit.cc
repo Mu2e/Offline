@@ -230,6 +230,7 @@ namespace mu2e
   void KalFit::makeTrack(StrawResponse::cptr_t srep, 
 			 Mu2eDetector::cptr_t detmodel,
 			 KalFitData& kalData){
+
 // test if fitable
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
@@ -271,6 +272,7 @@ namespace mu2e
 	makeTrkCaloHit(kalData, tch);
 	if (tch != 0) thv.push_back(tch);
       }
+ 
       TrkT0 t0(kalData.kalSeed->t0());
       // create Kalman rep
       kalData.krep = new KalRep(htraj, thv, detinter, *this, TrkParticle(TrkParticle::type(kalData.kalSeed->particle())), t0, flt0);
@@ -300,6 +302,7 @@ namespace mu2e
   //2017-05-02: Gianipez. In this function inten
 // there must be a valid Kalman fit to add hits to
    KalRep* krep = kalData.krep;
+   
    if(kalData.krep != 0 && kalData.missingHits.size() > 0 && krep->fitStatus().success()){
       TrkHitVector::iterator ihigh;
       TrkHitVector::reverse_iterator ilow;
