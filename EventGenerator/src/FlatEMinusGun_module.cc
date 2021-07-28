@@ -1,8 +1,8 @@
-// Generates electron at the endpoint energy that will be attached to a mu- in
+// Generates electrons in a flat shaped spectrum, size determined by FCL params these will be attached to a mu- in
 // the input SimParticleCollection.
 // This module throws an exception if no suitable muon is found.
 //
-// Andrei Gaponenko, 2021
+// S Middleton, 2021
 
 #include <iostream>
 #include <string>
@@ -47,6 +47,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material"),"Al" };
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
+      fhicl::Atom<bool> makeHistograms{Name("makeHistograms"),false};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -56,7 +57,6 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
-    Int_t nEv;
     Float_t pmag_gen;
     Float_t time_gen;
     Float_t x_gen;
@@ -77,6 +77,7 @@ namespace mu2e {
     CLHEP::RandFlat randFlat_;
     CLHEP::RandExponential randExp_;
     RandomUnitSphere   randomUnitSphere_;
+    bool makeHistograms_;
   };
 
   //================================================================
@@ -92,18 +93,21 @@ namespace mu2e {
     , randFlat_{eng_}
     , randExp_{eng_}
     , randomUnitSphere_{eng_}
+    , makeHistograms_(conf().makeHistograms())
   {
     produces<mu2e::StageParticleCollection>();
-    art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
 
-    _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
-	  _Ntup->Branch("nEv", &nEv , "nEv/I");	    
-	  _Ntup->Branch("pmag_gen", &pmag_gen , "pmag_gen/F");
-	  _Ntup->Branch("time_gen", &time_gen, "time_gen/F");
-	  _Ntup->Branch("x_gen", &x_gen, "x_gen/F");
-	  _Ntup->Branch("y_gen", &y_gen, "y_gen/F");
-	  _Ntup->Branch("z_gen", &z_gen, "z_gen/F");
+
+    if(makeHistograms_){
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
+      _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
+	    _Ntup->Branch("pmag_gen", &pmag_gen , "pmag_gen/F");
+	    _Ntup->Branch("time_gen", &time_gen, "time_gen/F");
+	    _Ntup->Branch("x_gen", &x_gen, "x_gen/F");
+	    _Ntup->Branch("y_gen", &y_gen, "y_gen/F");
+	    _Ntup->Branch("z_gen", &z_gen, "z_gen/F");
+	    }
   }
 
   //================================================================
@@ -131,13 +135,14 @@ namespace mu2e {
                          time
                          );
 
-    pmag_gen = randomMom;
-    time_gen = time;
-    x_gen = mustop->endPosition().x();
-    y_gen = mustop->endPosition().y();
-    z_gen = mustop->endPosition().z();
-    _Ntup->Fill();
-   
+    if(makeHistograms_){
+      pmag_gen = randomMom;
+      time_gen = time;
+      x_gen = mustop->endPosition().x();
+      y_gen = mustop->endPosition().y();
+      z_gen = mustop->endPosition().z();
+      _Ntup->Fill();
+    }
     event.put(std::move(output));
   }
 
