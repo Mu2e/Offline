@@ -231,7 +231,7 @@ KFSeed : {
   # interate the fit twice: once at the physical size of the straw, once at its RMS
     #  hiterr                          : [ 5.0, 1.44 ]
   # time external error, assuming s drift velocity of 62.5 #mu m / ns
-  hiterr                          : [ 80., 40.04]
+  hiterr                          : [ 80., 23.04]
   ambiguityStrategy       	  : [ 0  , 0    ]
   t0Tolerance			  : [ 5.0, 5.0  ]
   weedhits			  : [ true, true ]
