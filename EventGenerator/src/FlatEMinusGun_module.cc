@@ -48,6 +48,8 @@ namespace mu2e {
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material"),"Al" };
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
       fhicl::Atom<bool> makeHistograms{Name("makeHistograms"),false};
+      fhicl::Atom<std::string> processcode{Name("processcode")};
+      fhicl::Atom<int> pdgId{Name("pdgId")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -78,6 +80,8 @@ namespace mu2e {
     CLHEP::RandExponential randExp_;
     RandomUnitSphere   randomUnitSphere_;
     bool makeHistograms_;
+    std::string processcode_;
+    int pdgId_;
   };
 
   //================================================================
@@ -94,6 +98,8 @@ namespace mu2e {
     , randExp_{eng_}
     , randomUnitSphere_{eng_}
     , makeHistograms_(conf().makeHistograms())
+    , processcode_(conf().processcode())
+    , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
 
@@ -127,9 +133,11 @@ namespace mu2e {
     double randomMom = randFlat_.fire(startMom_, endMom_);
     double randomE = sqrt(electronMass_*electronMass_ + randomMom*randomMom);
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
+    ProcessCode pcode_ = ProcessCode::findByName(processcode_);
+    PDGCode::type pid = static_cast<PDGCode::type>(pdgId_);
     output->emplace_back(mustop,
-                         ProcessCode::mu2eFlateMinus,
-                         PDGCode::e_minus,
+                         pcode_,
+                         pid,
                          mustop->endPosition(),
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(randomMom), randomE},
                          time
