@@ -100,7 +100,7 @@ namespace mu2e {
 
     if(makeHistograms_){
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
+      art::TFileDirectory tfdir = tfs->mkdir( "FlatGun" );
       _Ntup  = tfs->make<TTree>("GenTree", "GenTree");
 	    _Ntup->Branch("pmag_gen", &pmag_gen , "pmag_gen/F");
 	    _Ntup->Branch("time_gen", &time_gen, "time_gen/F");
