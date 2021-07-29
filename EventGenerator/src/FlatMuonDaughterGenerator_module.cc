@@ -67,7 +67,7 @@ namespace mu2e {
     Float_t z_gen;
     TTree*  _Ntup;
     const PDGCode::type electronId_ = PDGCode::e_minus;
-    double electronMass_;
+    double particleMass_;
     double startMom_;
     double endMom_;
     double muonLifeTime_;
@@ -89,7 +89,7 @@ namespace mu2e {
   //================================================================
   FlatMuonDaughterGenerator::FlatMuonDaughterGenerator(const Parameters& conf)
     : EDProducer{conf}
-    , electronMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(electronId_).ref().mass().value())
+    , particleMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(static_cast<PDGCode::type>(conf().pdgId())).ref().mass().value())
     , startMom_(conf().startMom())
     , endMom_(conf().endMom())
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
@@ -99,7 +99,7 @@ namespace mu2e {
     , randFlat_{eng_}
     , randExp_{eng_}
     , randomUnitSphere_{eng_}
-    ,    processcode_(conf().processcode())
+    , processcode_(conf().processcode())
     , pdgId_(conf().pdgId())
     , makeHistograms_(conf().makeHistograms())
 
@@ -132,7 +132,7 @@ namespace mu2e {
 
     const auto mustop = mus.at(eng_.operator unsigned int() % mus.size());
     double randomMom = randFlat_.fire(startMom_, endMom_);
-    double randomE = sqrt(electronMass_*electronMass_ + randomMom*randomMom);
+    double randomE = sqrt(particleMass_*particleMass_ + randomMom*randomMom);
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
     ProcessCode pcode_ = ProcessCode::findByName(processcode_);
     PDGCode::type pid = static_cast<PDGCode::type>(pdgId_);
