@@ -13,7 +13,7 @@ BEGIN_PROLOG
 		      calibrated : true
  }
 
-  TrkQualCatalog : {
+  TrkQualCatalog : { 
    verbose : 1
    useDb : false
    mvaConfigs : [ @local::TrkQualConfig, @local::TrkQualNegConfig, @local::TrkQualPosConfig ]
