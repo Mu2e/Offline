@@ -47,9 +47,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material"),"Al" };
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
-      fhicl::Atom<std::string> processcode{Name("processcode")};
       fhicl::Atom<int> pdgId{Name("pdgId")};
-      fhicl::Atom<bool> makeHistograms{Name("makeHistograms"),false};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -66,7 +64,7 @@ namespace mu2e {
     Float_t y_gen;
     Float_t z_gen;
     TTree*  _Ntup;
-    const PDGCode::type electronId_ = PDGCode::e_minus;
+
     double particleMass_;
     double startMom_;
     double endMom_;
@@ -81,9 +79,7 @@ namespace mu2e {
     CLHEP::RandExponential randExp_;
     RandomUnitSphere   randomUnitSphere_;
 
-    std::string processcode_;
     int pdgId_;
-        bool makeHistograms_;
   };
 
   //================================================================
@@ -99,22 +95,11 @@ namespace mu2e {
     , randFlat_{eng_}
     , randExp_{eng_}
     , randomUnitSphere_{eng_}
-    , processcode_(conf().processcode())
     , pdgId_(conf().pdgId())
-    , makeHistograms_(conf().makeHistograms())
 
   {
     produces<mu2e::StageParticleCollection>();
-    if(makeHistograms_){
-      art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = tfs->mkdir( "IPAGun" );
-      _Ntup  = tfs->make<TTree>("GenTree", "GenTree"); 
-	    _Ntup->Branch("pmag_gen", &pmag_gen , "pmag_gen/F");
-	    _Ntup->Branch("time_gen", &time_gen, "time_gen/F");
-	    _Ntup->Branch("x_gen", &x_gen, "x_gen/F");
-	    _Ntup->Branch("y_gen", &y_gen, "y_gen/F");
-	    _Ntup->Branch("z_gen", &z_gen, "z_gen/F");
-	  }
+   
   }
 
   //================================================================
@@ -134,24 +119,16 @@ namespace mu2e {
     double randomMom = randFlat_.fire(startMom_, endMom_);
     double randomE = sqrt(particleMass_*particleMass_ + randomMom*randomMom);
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-    ProcessCode pcode_ = ProcessCode::findByName(processcode_);
+    
     PDGCode::type pid = static_cast<PDGCode::type>(pdgId_);
     output->emplace_back(mustop,
-                         pcode_,
+                         ProcessCode::mu2eFlateMinus,
                          pid,
                          mustop->endPosition(),
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(randomMom), randomE},
                          time
                          );
-    if(makeHistograms_){
-      pmag_gen = randomMom;
-      time_gen = time;
-      x_gen = mustop->endPosition().x();
-      y_gen = mustop->endPosition().y();
-      z_gen = mustop->endPosition().z();
-      _Ntup->Fill();
-    }
-
+    
     event.put(std::move(output));
   }
 
