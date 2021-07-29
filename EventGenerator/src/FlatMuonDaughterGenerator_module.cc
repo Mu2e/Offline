@@ -37,7 +37,7 @@
 namespace mu2e {
 
   //================================================================
-  class Flateminus : public art::EDProducer {
+  class FlatMuonDaughterGenerator : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -53,7 +53,7 @@ namespace mu2e {
     };
 
     using Parameters= art::EDProducer::Table<Config>;
-    explicit Flateminus(const Parameters& conf);
+    explicit FlatMuonDaughterGenerator(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
 
@@ -85,7 +85,7 @@ namespace mu2e {
   };
 
   //================================================================
-  Flateminus::Flateminus(const Parameters& conf)
+  FlatMuonDaughterGenerator::FlatMuonDaughterGenerator(const Parameters& conf)
     : EDProducer{conf}
     , electronMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(electronId_).ref().mass().value())
     , startMom_(conf().startMom())
@@ -117,7 +117,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void Flateminus::produce(art::Event& event) {
+  void FlatMuonDaughterGenerator::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
@@ -125,7 +125,7 @@ namespace mu2e {
 
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")
-        <<"Flateminus::produce(): no suitable stopped mu- in the input SimParticleCollection\n";
+        <<"FlatMuonDaughterGenerator::produce(): no suitable stopped mu- in the input SimParticleCollection\n";
 
     }
     
@@ -157,4 +157,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::Flateminus);
+DEFINE_ART_MODULE(mu2e::FlatMuonDaughterGenerator);
