@@ -135,6 +135,7 @@ namespace mu2e {
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
     ProcessCode pcode_ = ProcessCode::findByName(processcode_);
     PDGCode::type pid = static_cast<PDGCode::type>(pdgId_);
+    std::cout<<pcode_<<" "<<processcode_<<std::endl;
     output->emplace_back(mustop,
                          pcode_,
                          pid,
