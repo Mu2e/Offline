@@ -52,13 +52,6 @@ namespace mu2e {
 
       Int_t _genPdgId;
       Int_t _genCrCode;
-
-      Float_t _genmomX;
-      Float_t _genmomY;
-      Float_t _genmomZ;
-      Float_t _genStartX;
-      Float_t _genStartY;
-      Float_t _genStartZ;
       XYZVec _genmom;
       XYZVec _genpos;
       Float_t _genStartT;
@@ -79,13 +72,7 @@ namespace mu2e {
     _Ntup->Branch("genId",        &_genPdgId,     "genId/I");
     _Ntup->Branch("genCrCode",    &_genCrCode,    "genCrCode/I");
     _Ntup->Branch("genmom",       &_genmom,       "genmom/F");
-    _Ntup->Branch("genMomX",      &_genmomX,      "genMomX/F");
-    _Ntup->Branch("genMomY",      &_genmomY,      "genMomY/F");
-    _Ntup->Branch("genMomZ",      &_genmomZ,      "genMomZ/F");
     _Ntup->Branch("genPos",       &_genpos,       "genpos/F");
-    _Ntup->Branch("genStartX",    &_genStartX,    "genStartX/F");
-    _Ntup->Branch("genStartY",    &_genStartY,    "genStartY/F");
-    _Ntup->Branch("genStartZ",    &_genStartZ,    "genStartZ/F");
     _Ntup->Branch("genStartT",    &_genStartT,    "genStartT/F");
   }
 
@@ -108,12 +95,6 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
     _genCrCode  = particle.creationCode();
     _genmom = particle.startMomentum();
     _genpos = particle.startPosition();
-    _genmomX    = particle.startMomentum().x();
-    _genmomY    = particle.startMomentum().y();
-    _genmomZ    = particle.startMomentum().z();
-    _genStartX  = particle.startPosition().x();
-    _genStartY  = particle.startPosition().y();
-    _genStartZ  = particle.startPosition().z();
     _genStartT  = particle.startGlobalTime();
     _Ntup->Fill();
   } 
