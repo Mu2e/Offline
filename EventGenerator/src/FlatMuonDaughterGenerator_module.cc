@@ -47,7 +47,9 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material"),"Al" };
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
+      fhicl::Atom<std::string> processcode{Name("processcode")};
       fhicl::Atom<int> pdgId{Name("pdgId")};
+
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -79,6 +81,7 @@ namespace mu2e {
     CLHEP::RandExponential randExp_;
     RandomUnitSphere   randomUnitSphere_;
 
+    std::string processcode_;
     int pdgId_;
   };
 
@@ -95,6 +98,7 @@ namespace mu2e {
     , randFlat_{eng_}
     , randExp_{eng_}
     , randomUnitSphere_{eng_}
+    , processcode_(conf().processcode())
     , pdgId_(conf().pdgId())
 
   {
@@ -118,10 +122,10 @@ namespace mu2e {
     double randomMom = randFlat_.fire(startMom_, endMom_);
     double randomE = sqrt(particleMass_*particleMass_ + randomMom*randomMom);
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-    
+    ProcessCode pcode_ = ProcessCode::findByName(processcode_);
     PDGCode::type pid = static_cast<PDGCode::type>(pdgId_);
     output->emplace_back(mustop,
-                         ProcessCode::mu2eFlateMinus,
+                         pcode_,
                          pid,
                          mustop->endPosition(),
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(randomMom), randomE},

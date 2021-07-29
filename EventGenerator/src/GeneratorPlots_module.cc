@@ -3,6 +3,7 @@
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -58,6 +59,8 @@ namespace mu2e {
       Float_t _genStartX;
       Float_t _genStartY;
       Float_t _genStartZ;
+      XYZVec _genmom;
+      XYZVec _genpos;
       Float_t _genStartT;
       bool findData(const art::Event& evt);
       void GetGenPartInfo(const art::Event& evt);
@@ -75,9 +78,11 @@ namespace mu2e {
     _Ntup  = tfs->make<TTree>("GenAna", "GenAna");
     _Ntup->Branch("genId",        &_genPdgId,     "genId/I");
     _Ntup->Branch("genCrCode",    &_genCrCode,    "genCrCode/I");
+    _Ntup->Branch("genmom",       &_genmom,       "genmom/F");
     _Ntup->Branch("genMomX",      &_genmomX,      "genMomX/F");
     _Ntup->Branch("genMomY",      &_genmomY,      "genMomY/F");
     _Ntup->Branch("genMomZ",      &_genmomZ,      "genMomZ/F");
+    _Ntup->Branch("genPos",       &_genpos,       "genpos/F");
     _Ntup->Branch("genStartX",    &_genStartX,    "genStartX/F");
     _Ntup->Branch("genStartY",    &_genStartY,    "genStartY/F");
     _Ntup->Branch("genStartZ",    &_genStartZ,    "genStartZ/F");
@@ -101,6 +106,8 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
     const mu2e::SimParticle& particle = iter->second;
     _genPdgId   = particle.pdgId();
     _genCrCode  = particle.creationCode();
+    _genmom = particle.startMomentum();
+    _genpos = particle.startPosition();
     _genmomX    = particle.startMomentum().x();
     _genmomY    = particle.startMomentum().y();
     _genmomZ    = particle.startMomentum().z();
