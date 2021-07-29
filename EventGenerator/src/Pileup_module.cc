@@ -60,6 +60,7 @@ namespace mu2e {
 
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
       fhicl::Atom<bool> makeHistograms{Name("makeHistograms"),false};
+
     };
 
     using Parameters= art::EDProducer::Table<Config>;
