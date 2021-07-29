@@ -1,4 +1,4 @@
-// Generates electrons in a flat shaped spectrum, size determined by FCL params these will be attached to a mu- in
+// Generates particles in a flat shaped spectrum, size determined by FCL params these will be attached to a mu- in
 // the input SimParticleCollection.
 // This module throws an exception if no suitable muon is found.
 //
