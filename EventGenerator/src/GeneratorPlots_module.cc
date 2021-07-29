@@ -1,10 +1,8 @@
 // Module to plot generator output for any generator
 // S. Middleton 2021
 
-#include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
-
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -14,7 +12,7 @@
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "cetlib_except/exception.h"
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <iostream>
@@ -32,7 +30,7 @@ namespace mu2e {
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
         fhicl::Atom<int> diagLevel{Name("diagLevel"),Comment("diag level"),0};
-        fhicl::Atom<art::InputTag> genTag{Name("StageParticleCollection"), Comment("gen particle info")};
+        fhicl::Atom<art::InputTag> genTag{Name("SimParticleCollection"), Comment("gen particle info")};
       };
       typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -48,7 +46,7 @@ namespace mu2e {
       Config _conf;
       int _diagLevel;
       art::InputTag _genTag;
-      const StageParticleCollection *_gencol;
+      const SimParticleCollection *_gencol;
       TTree* _Ntup;
 
       Int_t _genPdgId;
@@ -97,19 +95,19 @@ namespace mu2e {
 
 void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
 	
-  for (unsigned int i=0; i <_gencol->size(); ++i)
+  cet::map_vector<mu2e::SimParticle>::const_iterator iter;
+  for(iter=_gencol->begin(); iter!=_gencol->end(); iter++)
   {
-    StageParticle const& gen = (*_gencol)[i];
-    _genPdgId   = gen.pdgId();
-    _genCrCode  = gen.creationCode();
-    _genmomX    = gen.momentum().x();
-    _genmomY    = gen.momentum().y();
-    _genmomZ    = gen.momentum().z();
-    art::Ptr<mu2e::SimParticle> parent = gen.parent();
-    _genStartX  = parent->endPosition().x();
-    _genStartY  = parent->endPosition().y();
-    _genStartZ  = parent->endPosition().z();
-    _genStartT  = gen.time();
+    const mu2e::SimParticle& particle = iter->second;
+    _genPdgId   = particle.pdgId();
+    _genCrCode  = particle.creationCode();
+    _genmomX    = particle.startMomentum().x();
+    _genmomY    = particle.startMomentum().y();
+    _genmomZ    = particle.startMomentum().z();
+    _genStartX  = particle.startPosition().x();
+    _genStartY  = particle.startPosition().y();
+    _genStartZ  = particle.startPosition().z();
+    _genStartT  = particle.startGlobalTime();
     _Ntup->Fill();
   } 
 }
@@ -117,7 +115,7 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
 
   bool GeneratorPlots::findData(const art::Event& evt){
     _gencol=0;
-    auto genpart = evt.getValidHandle<StageParticleCollection>(_genTag);
+    auto genpart = evt.getValidHandle<SimParticleCollection>(_genTag);
     _gencol = genpart.product();
     return  _gencol!=0 ;
   }
