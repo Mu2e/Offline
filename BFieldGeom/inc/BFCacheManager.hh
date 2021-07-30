@@ -3,6 +3,7 @@
 // Andrei Gaponenko, 2012
 //
 // Modifed by Brian Pollack to use shared_ptrs to BFMaps for consistent use across classes.
+// Helenka added this comment line
 
 #ifndef BFCacheManager_hh
 #define BFCacheManager_hh
