@@ -69,13 +69,6 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
-    Int_t nEv;
-    Float_t pmag_gen;
-    Float_t time_gen;
-    Float_t x_gen;
-    Float_t y_gen;
-    Float_t z_gen;
-    TTree*  _Ntup;
     
     double muonLifeTime_;
     double decayFraction_;
