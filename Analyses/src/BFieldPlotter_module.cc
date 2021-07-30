@@ -3,6 +3,7 @@
 //
 // Original author Michael MacKenzie (March 2020)
 //
+// Helenka added this comment line
 
 // Mu2e includes
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
