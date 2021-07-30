@@ -817,7 +817,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
       printf("[RobustHelixFinder::FillHits]     i     Face     Panel      X         Y         Z        \n");
       printf("[RobustHelixFinder::FillHits]-----------------------------------------------------------\n");
     }
-    std::cout<<"ord chcol = "<<ordChCol.size()<<std::endl;
+    std::cout<<"ord chcol in fillfaceordered hits = "<<ordChCol.size()<<std::endl;
     for (unsigned i=0; i<ordChCol.size(); ++i) {
       // loc = shIndices[i];
       // const ComboHit& ch  = _hfResult._chcol->at(loc);
@@ -868,7 +868,8 @@ std::cout<<"BEGIN JOB "<<std::endl;
       if (_debug>0){
 	printf("[RobustHelixFinder::FillHits] %4i %6i %10i %10.3f %10.3f %10.3f\n", nFiltComboHits, faceId, op, ch.pos().x(), ch.pos().y(), ch.pos().z() );
       }
-
+std::cout<<"[RobustHelixFinder::FillHits] %4i %6i %10i %10.3f %10.3f %10.3f\n", nFiltComboHits, faceId, op, ch.pos().x(), ch.pos().y(), ch.pos().z() )<<std::endl;
+    std::cout<<"Station id = "<<stationId<<" "<<os<<std::endl;
       // if (pz->nChHits() > PanelZ_t::kNMaxPanelHits) printf("[RobustHelixDataFinderAlg::fillFaceOrderedHits] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
       ++nFiltComboHits;
       nFiltStrawHits += ch.nStrawHits();
@@ -914,11 +915,12 @@ std::cout<<"BEGIN JOB "<<std::endl;
       }
       for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	facez     = &HelixData._oTracker[f];
-
+       
 	for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	  panelz = &facez->panelZs[p];
 	  nhitsFace = panelz->nChHits();
 	  if ( nhitsFace > HelixData._diag.nChPPanel) HelixData._diag.nChPPanel = nhitsFace;
+		std::cout<<"panelz = "<<panelz<<" facez = "<<facez<<" nhitsFace = "<<nhitsFace<<std::endl;
 	}//end loop over the panel
       }//end loop over the faces
     }
@@ -1172,7 +1174,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
       if (hit->_flag.hasAnyProperty(_outlier))   continue;
       ++nHits;
     }//end faces loop
-
+   
     return nHits;
   }
 
