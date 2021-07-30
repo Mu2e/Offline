@@ -52,10 +52,6 @@ namespace mu2e {
 
       Int_t _genPdgId;
       Int_t _genCrCode;
-<<<<<<< HEAD
-=======
-
->>>>>>> 5557cb458011f09e336a5f2ca6c0f7c80582e6e8
       XYZVec _genmom;
       XYZVec _genpos;
       Float_t _genStartT;
