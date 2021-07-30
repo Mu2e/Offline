@@ -868,7 +868,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
       if (_debug>0){
 	printf("[RobustHelixFinder::FillHits] %4i %6i %10i %10.3f %10.3f %10.3f\n", nFiltComboHits, faceId, op, ch.pos().x(), ch.pos().y(), ch.pos().z() );
       }
-std::cout<<"[RobustHelixFinder::FillHits] %4i %6i %10i %10.3f %10.3f %10.3f\n", nFiltComboHits, faceId, op, ch.pos().x(), ch.pos().y(), ch.pos().z() )<<std::endl;
+std::cout<<"faceID : "<<faceId<<" "<<op<<"Combo hit pos = "<<ch.pos().x()<<" "<<ch.pos().y()<<" "<<ch.pos().z()<<std::endl;
     std::cout<<"Station id = "<<stationId<<" "<<os<<std::endl;
       // if (pz->nChHits() > PanelZ_t::kNMaxPanelHits) printf("[RobustHelixDataFinderAlg::fillFaceOrderedHits] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
       ++nFiltComboHits;
