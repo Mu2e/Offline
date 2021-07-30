@@ -1,0 +1,23 @@
+//titanium pbar window and updated wedge to match, used first in SU2020
+#include "Offline/Mu2eG4/geom/TransportSolenoid_v07.txt"
+
+//-----------------------------------------------------------------------------
+// TS3 window: 150 um Ti
+//-----------------------------------------------------------------------------
+string pbar.materialName                  = "G4_Ti";
+double pbar.halfLength                    = 0.075;   // 150 um thick
+
+//-----------------------------------------------------------------------------
+// TS3 pbar wedge : 2 strips 127 um starting from 50 mm
+//                  heights 90mm and 140 mm
+//-----------------------------------------------------------------------------
+string         pbar.Type                  = "wedge";
+string         pbarwedge.wedgeMaterial    = "A1100";
+int            pbarwedge.nStrips          = 2;
+vector<double> pbarwedge.stripThicknesses = { 0.127, 0.127 };  // mm
+vector<double> pbarwedge.stripHeights     = {  90.0, 140.0 };  // mm
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
