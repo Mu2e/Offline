@@ -125,25 +125,25 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, f
                                     size_t peakStart, float &sum, size_t &pulseStart, size_t &pulseEnd)
 {
   float maxADC=waveform[peakStart]-pedestal;
-  float FWHMthreshold=maxADC/2.0;
+  float pulseRangeThreshold=std::max(maxADC/2,_minADCdifference);  //used to determine the pulse start/end
   bool  foundPulseStart=false;
   bool  foundPulseEnd=false;
   sum=0;
   for(size_t i=peakStart+1; i<waveform.size(); ++i)
   {
     float ADC=waveform[i]-pedestal;
-    if(ADC>maxADC) {pulseEnd=i-1; foundPulseEnd=true; break;} //don't include larger neighboring pulse //stopping here will overestimate the pulse length
+    if(ADC>maxADC) {if(!foundPulseEnd) {pulseEnd=i-1; foundPulseEnd=true;} break;} //don't include larger neighboring pulse
     sum+=ADC;
-    if(ADC<FWHMthreshold && !foundPulseEnd) {pulseEnd=i; foundPulseEnd=true;}
+    if(ADC<pulseRangeThreshold && !foundPulseEnd) {pulseEnd=i; foundPulseEnd=true;}
     if(ADC<_minADCdifference) break;
   }
   if(!foundPulseEnd) pulseEnd=waveform.size()-1;
   for(size_t i=peakStart; ; --i)
   {
     float ADC=waveform[i]-pedestal;
-    if(ADC>maxADC) {pulseStart=i+1; foundPulseStart=true; break;} //don't include larger neighboring pulse //stopping here will overestimate the pulse length
+    if(ADC>maxADC) {if(!foundPulseStart) {pulseStart=i+1; foundPulseStart=true;} break;} //don't include larger neighboring pulse
     sum+=ADC;
-    if(ADC<FWHMthreshold && !foundPulseStart) {pulseStart=i; foundPulseStart=true;}
+    if(ADC<pulseRangeThreshold && !foundPulseStart) {pulseStart=i; foundPulseStart=true;}
     if(ADC<_minADCdifference || i==0) break;
   }
   if(!foundPulseStart) pulseStart=0;
