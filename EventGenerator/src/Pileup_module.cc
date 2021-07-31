@@ -28,7 +28,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
-#include "art_root_io/TFileService.h"
+
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
@@ -38,8 +38,6 @@
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
-#include <TH1F.h>
-#include <TTree.h>
 namespace mu2e {
   //================================================================
   class Pileup : public art::EDProducer {
