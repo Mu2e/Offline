@@ -76,7 +76,7 @@ namespace mu2e {
         if (ks.segments().begin()->mom() > _momCutoff[mniter-moduleNames.begin()]){
           pass = true;
           break;
-        }
+        } 
       }
     }
 
