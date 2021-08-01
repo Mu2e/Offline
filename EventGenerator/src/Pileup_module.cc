@@ -57,6 +57,7 @@ namespace mu2e {
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("A sequence of ParticleGenerator tools implementing decay products.")};
 
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
+
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -66,6 +67,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
+    
     double muonLifeTime_;
     double decayFraction_;
 
@@ -76,7 +78,7 @@ namespace mu2e {
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandFlat randFlat_;
     CLHEP::RandExponential randExp_;
-
+  
     std::vector<std::unique_ptr<ParticleGeneratorTool>> muonDecayGenerators_;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> muonCaptureGenerators_;
 
@@ -133,7 +135,6 @@ namespace mu2e {
       // decay or capture time for this muon, should
       // be the same for all its daughters
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-
       double rand = randFlat_.fire();
       if (rand < decayFraction_) {
         for (const auto& gen : muonDecayGenerators_) {
@@ -145,11 +146,13 @@ namespace mu2e {
           addParticles(output.get(), mustop, time, gen.get());
         }
       }
-
+      
     }
 
+    
     if(verbosity_ >= 9) {
       std::cout<<"Pileup output: "<<*output<<std::endl;
+      
     }
 
     event.put(std::move(output));
@@ -163,6 +166,7 @@ namespace mu2e {
   {
     auto daughters = gen->generate();
     for(const auto& d: daughters) {
+
       output->emplace_back(mustop,
                            d.creationCode,
                            d.pdgId,
@@ -170,6 +174,7 @@ namespace mu2e {
                            d.fourmom,
                            time
                            );
+
     }
   }
 
