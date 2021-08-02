@@ -54,7 +54,7 @@ namespace mu2e {
       PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic, // 47
       StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic, // 51
       XiZeroInelastic,        mu2eLowEKine,            mu2eKillerVolume,    mu2eMaxSteps,  // 55
-      mu2ePrimary,            unused001,               hadElastic,          CoulombScat, // 59
+      mu2ePrimary,            mu2eSpecialCutsProcess,  hadElastic,          CoulombScat, // 59
       nuclearStopping,        mu2eMaxGlobalTime,       TNuclearCapture,     muMinusAtomicCapture, // 63
       MuAtomDecay,            Rayl,                    ionInelastic,        He3Inelastic, // 67
       alphaInelastic,         AntiHe3InelasticProcess, AntiAlphaInelasticProcess, AntiDeuteronInelastic, // 71
@@ -72,7 +72,7 @@ namespace mu2e {
       muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr, // 119
       G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary, // 123
       Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit, // 127
-      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,  // 131
+      G4ErrorMagFieldLimit,   ePairProd,               mu2eFieldPropagator, mu2eRecorderProcess,  // 131
       mu2eProtonInelastic,    RadioactiveDecayBase,    B_PlusInelastic,     B_MinusInelastic, // 135
       B0Inelastic,            Bc_PlusInelastic,        Bc_MinusInelastic,   Bs0Inelastic, // 139
       D_PlusInelastic,        D_MinusInelastic,        D0Inelastic,         Ds_PlusInelastic, // 143
@@ -108,7 +108,7 @@ namespace mu2e {
     "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
     "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
     "XiZeroInelastic",        "mu2eLowEKine",            "mu2eKillerVolume",    "mu2eMaxSteps",              \
-    "mu2ePrimary",            "unused001",		 "hadElastic",          "CoulombScat",               \
+    "mu2ePrimary",            "mu2eSpecialCutsProcess",  "hadElastic",          "CoulombScat",               \
     "nuclearStopping",        "mu2eMaxGlobalTime",       "TNuclearCapture",     "muMinusAtomicCapture",      \
     "MuAtomDecay",            "Rayl",                    "ionInelastic",        "He3Inelastic",              \
     "alphaInelastic",         "AntiHe3InelasticProcess", "AntiAlphaInelasticProcess", "AntiDeuteronInelastic", \
@@ -126,7 +126,7 @@ namespace mu2e {
     "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr", \
     "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
     "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
-    "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator",        "Mu2eRecorderProcess", \
+    "G4ErrorMagFieldLimit",   "ePairProd",               "mu2eFieldPropagator",    "mu2eRecorderProcess", \
     "mu2eProtonInelastic",    "RadioactiveDecayBase",      "B+Inelastic",         "B-Inelastic", \
     "B0Inelastic",            "Bc+Inelastic",            "Bc-Inelastic",        "Bs0Inelastic", \
     "D+Inelastic",            "D-Inelastic",             "D0Inelastic",         "Ds+Inelastic", \
