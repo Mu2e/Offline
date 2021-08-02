@@ -18,6 +18,7 @@
 #include <condition_variable>
 
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 
 namespace art { class Run; }
 
@@ -29,7 +30,7 @@ namespace mu2e {
   class MTMasterThread
   {
   public:
-    explicit MTMasterThread(const Mu2eG4Config::Top& conf);
+    MTMasterThread(const Mu2eG4Config::Top& conf, const Mu2eG4ResourceLimits& lim);
     ~MTMasterThread();
 
 

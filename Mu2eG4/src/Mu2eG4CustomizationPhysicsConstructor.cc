@@ -24,10 +24,14 @@ namespace mu2e {
   G4ThreadLocal G4bool Mu2eG4CustomizationPhysicsConstructor::wasActivated = false;
 
   Mu2eG4CustomizationPhysicsConstructor::
-  Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys, const Mu2eG4Config::Debug* debug)
+  Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys
+                                        , const Mu2eG4Config::Debug* debug
+                                        , const Mu2eG4ResourceLimits* lim
+                                        )
     : G4VPhysicsConstructor("Mu2eCustomizations",bUnknown)
     , phys_(phys)
     , debug_(debug)
+    , mu2elimits_(lim)
       // bUnknown disables duplication check for physics builder type
   {}
 
@@ -37,6 +41,7 @@ namespace mu2e {
     : G4VPhysicsConstructor("Mu2eCustomizations",bUnknown)
     , phys_(nullptr)
     , debug_(nullptr)
+    , mu2elimits_(nullptr)
   {}
 
   Mu2eG4CustomizationPhysicsConstructor::~Mu2eG4CustomizationPhysicsConstructor()
@@ -69,7 +74,7 @@ namespace mu2e {
     switchDecayOff(*phys_, *debug_);
 
     // add conditional and special mu2e processes
-    addUserProcesses(*phys_, *debug_);
+    addUserProcesses(*phys_, *debug_, *mu2elimits_);
 
     // swap Bertini Cascade with Precompound model in G4MuonMinusCapture if requested
     switchCaptureDModel(*phys_, *debug_);
