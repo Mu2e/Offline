@@ -498,6 +498,9 @@ void mu2e::CompressDetStepMCs::compressGenParticles() {
       // Copy GenParticle to the new collection
       _newGenParticles->emplace_back(*newsim.genParticle());
       newsim.genParticle() = art::Ptr<mu2e::GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
+      if (_debugLevel > 0) {
+        std::cout << "Keeping GenParticle with Ptr " << newsim.genParticle() << std::endl;
+      }
     }
   }
 }
