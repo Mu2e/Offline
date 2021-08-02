@@ -13,8 +13,8 @@
 //
 // There is also the concept of "genealogy" compression, which uses the fhicl parameter
 // keepNGenerations and takes an integer corresponding to the
-// number of generations back you want to keep. All missing generations are
-// replaced with a new SimParticle to identify that a truncation has occured
+// number of generations back you want to keep. The "oldest" SimParticle remaining
+// has a status code of "truncated" to identify that a truncation has occured
 // - Note 1: N = -1 means keep all generations (i.e. no compression)
 // - Note 2: the very first SimParticle (i.e. the one that has a valid Ptr to a GenParticle) is always kept
 //
