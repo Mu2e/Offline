@@ -471,6 +471,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
             // If we have got to the very SimParticle (i.e. the one that points to the GenParticle)
             if (i_ancestorPtr->isPrimary()) {
               newsim.genParticle() = i_ancestorPtr->genParticle();// set this particle's GenParticlePtr
+              newsim.parent() = art::Ptr<SimParticle>(); // remove the parent
               break; // don't need to go any further
             }
             else { // this is just another step in the genealogy
