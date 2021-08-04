@@ -38,8 +38,8 @@ namespace mu2e {
     int run();
     int init();
 
+    int printContent();
     int printCalibration();
-    int printTable();
     int printIov();
     int printGroup();
     int printExtension();

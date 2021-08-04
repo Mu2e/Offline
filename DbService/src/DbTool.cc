@@ -15,8 +15,8 @@ mu2e::DbTool::DbTool():_verbose(0),_pretty(false),_admin(false) {
 int mu2e::DbTool::run() {
 
   if(_action=="help")  return help();
+  if(_action=="print-content")  return printContent();
   if(_action=="print-calibration")  return printCalibration();
-  if(_action=="print-table")  return printTable();
   if(_action=="print-iov")  return printIov();
   if(_action=="print-group")  return printGroup();
   if(_action=="print-extension")  return printExtension();
@@ -70,9 +70,9 @@ int mu2e::DbTool::init() {
   return 0;
 }
 
-// ****************************************  printCalibration
+// ****************************************  printContent
 
-int mu2e::DbTool::printCalibration() {
+int mu2e::DbTool::printContent() {
   int rc = 0;
 
   std::string name;
@@ -120,7 +120,7 @@ int mu2e::DbTool::printCalibration() {
     }
   }
 
-  if(_verbose>1) std::cout << "print-calibration: printing tables for "
+  if(_verbose>1) std::cout << "print-content: printing tables for "
 			   << cids.size() <<" cids" <<std::endl;
   
   for(auto cid : cids) {
@@ -144,9 +144,9 @@ int mu2e::DbTool::printCalibration() {
   return 0;
 }
 
-// ****************************************  printTable
+// ****************************************  printCalibration
 
-int mu2e::DbTool::printTable() {
+int mu2e::DbTool::printCalibration() {
   int rc = 0;
 
   std::string name;
@@ -164,7 +164,7 @@ int mu2e::DbTool::printTable() {
 
   // if this is a val table, just exit - there is no summary line
   if(name.substr(0,3)=="Val") {
-    std::cout << "print-table: Val* tables have no summary line"
+    std::cout << "print-calibration: Val* tables have no summary line"
 	      <<std::endl;
     return 0;
   }
@@ -189,7 +189,7 @@ int mu2e::DbTool::printTable() {
     }
   }
 
-  if(_verbose>1) std::cout << "print-table: printing tables for "
+  if(_verbose>1) std::cout << "print-calibration: printing tables for "
 			   << cids.size() <<" cids" <<std::endl;
   
   std::cout << "       CID          Table      create_user        create_date " <<std::endl;
@@ -1059,10 +1059,20 @@ int mu2e::DbTool::commitExtension() {
   }
 
   int vid = -1;
+  int lid = -1;
+  std::vector<int> allowedtids;  // tids allowed in this version
   for(auto const& vr : _valcache.valVersions().rows()) {
     if(vr.pid()==pid && vr.major()==version.major() 
        && vr.minor()==version.minor()) {
+      // version found in version list
       vid = vr.vid();
+      lid = vr.lid();
+
+      // extract the list of allowed table IDs
+      for(auto const& lr : _valcache.valTableLists().rows()) {
+	if(lr.lid()==lid) allowedtids.emplace_back(lr.tid());
+      }
+
       break;
     }
   }
@@ -1089,6 +1099,85 @@ int mu2e::DbTool::commitExtension() {
     }
   }
 
+  // check that the tables in the gids are in the allowed table list
+
+  // we will also need to check IOV overlap, 
+  // so collect IOVs while we are looping
+  // for each table, collect the proprosed IOVs
+  std::map<int,std::vector<DbIoV>> newiovs;
+  // save run range of the proposed IOVs so we can filter the existing 
+  // IOVs to just the basic potential overlapping range
+  int startlim= 999999;
+  int endlim = 0;
+
+  for(auto g : gids) {
+    for(auto const& glr: _valcache.valGroupLists().rows()) {
+      if(glr.gid()==g) {
+	auto const& ir = _valcache.valIovs().row(glr.iid());
+	auto const& cr = _valcache.valCalibrations().row(ir.cid());
+	int tid = cr.tid();
+	bool found = false;
+	for (auto t : allowedtids ) {
+	  if (t==tid) found=true;
+	}
+	if( ! found ) {
+	  std::cout << "commit-extension: GID " << g <<", IID " <<
+	    ir.iid() << ", CID="<<cr.cid()<<" has  TID "<<tid<<std::endl;
+	  std::cout << "    which is not in the table list TIDs:";
+	  for (auto t : allowedtids ) std::cout << " " << t;
+	  std::cout << std::endl;
+	  return 1;
+	}
+	newiovs[tid].emplace_back(ir.iov());
+	if(ir.start_run()<startlim) startlim = ir.start_run();
+	if(ir.end_run() >endlim) endlim = ir.end_run();
+      }
+    }
+  }
+
+  // now collect existing IOV to prepare for overlap check
+  std::map<int,std::vector<DbIoV>> oldiovs;
+
+  // loop over extensions, dig down to relevant IOVs
+  for(auto const& er: _valcache.valExtensions().rows()) {
+    if(er.vid()==vid) { // if this extension applies to our version
+      int eid = er.eid();
+      for(auto const& elr: _valcache.valExtensionLists().rows()) {
+	if(elr.eid()==eid) { // if this group is in our extension
+	  int gid = elr.gid(); 
+	  // find the IOVs in this group
+	  for(auto const& glr: _valcache.valGroupLists().rows()) {
+	    if(glr.gid()==gid) { // if this iov is in the group
+	      auto const& ir = _valcache.valIovs().row(glr.iid());
+	      auto const& cr = _valcache.valCalibrations().row(ir.cid());
+	      if( ir.start_run()<=endlim && ir.end_run()>=startlim ) {
+		int tid = cr.tid();
+		oldiovs[tid].emplace_back(ir.iov());
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  // use reduced IOV lists to do detailed overlap check
+  for(auto t : allowedtids ) {
+    auto const& vec1 = oldiovs[t];
+    auto const& vec2 = newiovs[t];
+    for(auto const& iov1 : vec1 ) { 
+      for(auto const& iov2 : vec2 ) { 
+	if(iov1.isOverlapping(iov2)) {
+	  std::cout << "commit-extension: found overlapping IOV in table TID "
+		    <<t<<std::endl;
+	  std::cout << "    with new IOV" << iov2.to_string(true) << std::endl;
+	  return 1;
+	}
+      }
+    }
+  }
+
+  // finally done checks  
 
   // find the max extension for this version
   int emax = 0;
@@ -1655,8 +1744,8 @@ int mu2e::DbTool::help() {
       "   --admin   use admin privs to gain subdetector privs\n"
       " \n"
       " <ACTION>\n"
-      "    print-calibration : print any table calibration content\n"
-      "    print-table : print summary of calibration commits\n"
+      "    print-content : print any table calibration content\n"
+      "    print-calibration : print summary of calibration commits\n"
       "    print-iov : print summary of IOV commits\n"
       "    print-group : print summary of group commits\n"
       "    print-extension : print extensions to a calibration set\n"
@@ -1684,10 +1773,10 @@ int mu2e::DbTool::help() {
       "         where each word in the file is an integer\n"
       " \n"
       <<std::endl;
-  } else if(_action=="print-calibration") {
+  } else if(_action=="print-content") {
     std::cout << 
       " \n"
-      " dbTool print-calibration [OPTIONS]\n"
+      " dbTool print-content [OPTIONS]\n"
       " \n"
       " Print calibration table contents.\n"
       " \n"
@@ -1697,17 +1786,17 @@ int mu2e::DbTool::help() {
       "    --cid CID : only print contents for this cid \n"
       " \n"
       << std::endl;
-  } else if(_action=="print-table") {
+  } else if(_action=="print-calibration") {
     std::cout << 
       " \n"
-      " dbTool print-table [OPTIONS]\n"
+      " dbTool print-calibration [OPTIONS]\n"
       " \n"
       " Print calibration table commit summary.\n"
       " \n"
       " [OPTIONS]\n"
       "    --name NAME : name of the table\n"
       "    --user USERNAME : only print tables committed by this user \n"
-      "    --cid INT or INT LIST : only print contents for this cid \n"
+      "    --cid INT or INT LIST : only print this cid \n"
       " \n"
       << std::endl;
   } else if(_action=="print-iov") {
