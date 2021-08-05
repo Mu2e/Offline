@@ -58,10 +58,11 @@ namespace mu2e {
     int commitCalibration();
     int commitCalibrationTable(DbTable::cptr_t const& ptr, 
 			       bool qdr=false, bool admin=false);
-    int commitCalibrationList(DbTableCollection const& coll,
+    int commitCalibrationList(DbTableCollection& coll,
+			      bool qai=false, bool qag=false,
 			      bool qdr=false, bool admin=false);
-    int commitIov(int cid=0, std::string iovtext="");
-    int commitGroup(std::vector<int> iids=std::vector<int>());
+    int commitIov(int& iid, int cid=0, std::string iovtext="");
+    int commitGroup(int& gid, std::vector<int> iids=std::vector<int>());
     int commitExtension();
     int commitTable();
     int commitList();
@@ -85,6 +86,7 @@ namespace mu2e {
     bool _pretty;
     std::string _database;
     bool _admin;
+    bool _dryrun;
 
     DbId _id;
     DbReader _reader;
