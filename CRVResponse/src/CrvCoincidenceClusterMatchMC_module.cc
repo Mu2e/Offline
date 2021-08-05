@@ -17,7 +17,7 @@
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"

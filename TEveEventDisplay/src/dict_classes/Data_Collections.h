@@ -14,7 +14,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //CRV:
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 //Art/FCL:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
