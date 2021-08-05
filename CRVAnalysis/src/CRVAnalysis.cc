@@ -8,7 +8,7 @@
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "art/Framework/Core/ModuleMacros.h"
