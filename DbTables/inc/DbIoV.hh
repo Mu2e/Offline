@@ -56,6 +56,14 @@ namespace mu2e {
       return true;
     }
 
+    bool isOverlapping(DbIoV const& iov) const {
+      if(iov.endRun()<_startRun) return false;
+      if(iov.endRun()==_startRun and iov.endSubrun()<_startSubrun) return false;
+      if(iov.startRun()>_endRun) return false;
+      if(iov.startRun()==_endRun and iov.startSubrun()>_endSubrun) return false;
+      return true;
+    }
+
     uint32_t startRun() const {return _startRun;}
     uint32_t startSubrun() const {return _startSubrun;}
     uint32_t endRun() const {return _endRun;}
