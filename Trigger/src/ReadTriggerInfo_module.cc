@@ -1306,11 +1306,11 @@ namespace mu2e {
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
-	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
+	CLHEP::Hep3Vector sp = simptr->startPosition();
 	XYZVec origin;
-	origin.SetX(sp->x()+3904);
-	origin.SetY(sp->y());
-	origin.SetZ(sp->z());
+	origin.SetX(sp.x()+3904);
+	origin.SetY(sp.y());
+	origin.SetZ(sp.z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
 	double pz     = sqrt(p*p - pt*pt);
 
@@ -1482,11 +1482,11 @@ namespace mu2e {
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
-	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
+	CLHEP::Hep3Vector sp = simptr->startPosition();
 	XYZVec origin;
-	origin.SetX(sp->x()+3904);
-	origin.SetY(sp->y());
-	origin.SetZ(sp->z());
+	origin.SetX(sp.x()+3904);
+	origin.SetY(sp.y());
+	origin.SetZ(sp.z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
 	// trackSeed->fOrigin1.SetXYZT(sp->x(),sp->y(),sp->z(),simptr->startGlobalTime());
 	double pz     = sqrt(p*p - pt*pt);
