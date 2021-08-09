@@ -1486,7 +1486,8 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
     std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator traj_iter;
     for(traj_iter=mcTrajectories->begin(); traj_iter!=mcTrajectories->end(); traj_iter++)
     {
-      if(traj_iter->first->id()==id)
+      if(traj_iter->first.key()==id.asUint())
+//      if(traj_iter->first->id()==id)
 //      if(traj_iter->second.sim()->id()==id)
       {
         const auto& points = traj_iter->second.points();
@@ -1499,7 +1500,6 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
         }
       }
     }
-    return;
   }
 }
 
