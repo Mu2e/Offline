@@ -3,13 +3,19 @@
 // typedef for cartesian vector used in reconstruction
 /// root
 #include "Math/Vector3D.h"
+#include "Math/Vector4D.h"
+#include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include <string>
 typedef ROOT::Math::XYZVectorF  XYZVec;
+typedef ROOT::Math::XYZTVectorF XYZTVec;
 namespace Geom {
 // provide a generic translation from CLHEP
+// the following is deprecated, XYZVec templated constructor now does this
   XYZVec toXYZVec(CLHEP::Hep3Vector const& cvec);
+
   CLHEP::Hep3Vector Hep3Vec(XYZVec const& rvec);
+  CLHEP::HepLorentzVector HepLorentzVec(XYZTVec const& rvec);
   // z direction definition; this is missing from GenVector
   XYZVec const& ZDir();
   // define names for the leaves of this class.   Optionally prepand a nmae

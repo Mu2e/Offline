@@ -20,6 +20,7 @@
 //    versions are available.  We will get rid of them as soon as we check
 //    backwards compatibility.
 
+#include "Offline/DataProducts/inc/XYZVec.hh"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -41,9 +42,9 @@ namespace mu2e {
 
     // Parameters used by GEANT4 to describe excited ions
     struct IonDetail {
-      double excitationEnergy;
+      float excitationEnergy;
       short int floatLevelBaseIndex;
-      IonDetail(double e, short int i) : excitationEnergy{e}, floatLevelBaseIndex{i} {}
+      IonDetail(float e, short int i) : excitationEnergy{e}, floatLevelBaseIndex{i} {}
       IonDetail(): excitationEnergy{0.}, floatLevelBaseIndex{0} {}
     };
 
@@ -74,8 +75,7 @@ namespace mu2e {
       _endKE(-1.),
       _nSteps(0),
       _trackLength(-1.),
-      _daughterSims(),
-      _endDefined(false){
+      _daughterSims(){
     }
 
     SimParticle( key_type                       aid,
@@ -116,8 +116,7 @@ namespace mu2e {
       _endKE(-1),
       _nSteps(0),
       _trackLength(-1.),
-      _daughterSims(),
-      _endDefined(false)
+      _daughterSims()
     {}
 
     // Accept compiler generated d'tor, copy c'tor and assignment operator.
@@ -132,7 +131,6 @@ namespace mu2e {
                      float                   endKE,
                      int                     nSteps,
                      double                  trackLength){
-      _endDefined      = true;
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
       _endGlobalTime   = aendGlobalTime;
@@ -190,8 +188,8 @@ namespace mu2e {
     bool madeInG4()      const { return _genParticle.isNull();    }
 
     // Information at the start of the track.
-    CLHEP::Hep3Vector const& startPosition()       const { return _startPosition;}
-    CLHEP::HepLorentzVector const& startMomentum() const { return _startMomentum;}
+    CLHEP::Hep3Vector startPosition()       const { return Geom::Hep3Vec(_startPosition);}
+    CLHEP::HepLorentzVector startMomentum() const { return Geom::HepLorentzVec(_startMomentum);}
     double      startGlobalTime()  const { return _startGlobalTime;}
     double&     startGlobalTime()        { return _startGlobalTime;}
     double      startProperTime()  const { return _startProperTime;}
@@ -207,18 +205,18 @@ namespace mu2e {
     int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
     // Information at the end of the track.
-    CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
-    CLHEP::HepLorentzVector const& endMomentum() const { return _endMomentum;}
+    CLHEP::Hep3Vector endPosition() const { return Geom::Hep3Vec(_endPosition);}
+    CLHEP::HepLorentzVector endMomentum() const { return Geom::HepLorentzVec(_endMomentum);}
     double       endGlobalTime()  const { return _endGlobalTime; }
     double&      endGlobalTime()        { return _endGlobalTime; }
     double       endProperTime()  const { return _endProperTime; }
     unsigned     endVolumeIndex() const { return _endVolumeIndex;}
     unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
-    double       preLastStepKineticEnergy() const { return _preLastStepKE; }
+    float preLastStepKineticEnergy() const { return _preLastStepKE; }
     float        endKineticEnergy() const { return _endKE; }
     int          nSteps()         const { return _nSteps;        }
-    double       trackLength()    const { return _trackLength;   }
+    float       trackLength()    const { return _trackLength;   }
 
     // SimParticle daughters of this track.
     std::vector<art::Ptr<SimParticle> > const& daughters()   const { return _daughterSims; }
@@ -229,7 +227,7 @@ namespace mu2e {
     std::vector<key_type>                      daughterIds() const;
 
     // Is the second half defined?
-    bool endDefined() const { return _endDefined;}
+    bool endDefined() const { return _stoppingCode != ProcessCode::unknown; }
 
     // Modifiers;
     void setDaughterPtrs  ( std::vector<art::Ptr<SimParticle> > const& ptr){
@@ -269,8 +267,8 @@ namespace mu2e {
     art::Ptr<GenParticle>  _genParticle;
 
     // Information at the start of the track.
-    CLHEP::Hep3Vector       _startPosition;
-    CLHEP::HepLorentzVector _startMomentum;
+    XYZVec                  _startPosition;
+    XYZTVec                 _startMomentum;
     double                  _startGlobalTime;
     double                  _startProperTime;
     unsigned                _startVolumeIndex;
@@ -279,23 +277,20 @@ namespace mu2e {
     IonDetail               _ion;
 
     // Information at the end of the track.
-    CLHEP::Hep3Vector       _endPosition;
-    CLHEP::HepLorentzVector _endMomentum;
+    XYZVec                  _endPosition;
+    XYZTVec		    _endMomentum;
     double                  _endGlobalTime;
     double                  _endProperTime;
     unsigned                _endVolumeIndex;
     unsigned                _endG4Status;
     ProcessCode             _stoppingCode;
-    double                  _preLastStepKE;
+    float		    _preLastStepKE;
     float                   _endKE;
     int                     _nSteps;
-    double                  _trackLength;
+    float                   _trackLength;
 
     // SimParticle IDs of daughters of this track.
     std::vector<art::Ptr<SimParticle> > _daughterSims;
-
-    // Is the second half defined?
-    bool _endDefined;
 
   };
   typedef cet::map_vector<mu2e::SimParticle> SimParticleCollection;
