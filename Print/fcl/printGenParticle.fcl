@@ -1,0 +1,39 @@
+#
+#  print products with a moderate amount of output - includes cuts on energy
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : print
+
+services : {
+   @table::Services.Reco
+}
+
+physics :{
+  analyzers: {
+
+    printModule : {
+      module_type : PrintModule
+      genParticlePrinter : {
+        verbose : 2
+      }
+    } # printModule
+
+
+  }  # analyzers
+
+  ana       : [ printModule, printProductList ]
+  end_paths : [ ana ]
+
+}
+
+outputs: {
+  printProductList : {
+    module_type : DataProductDump
+  }
+}
+
+services.message.destinations.log.categories.ArtSummary.limit : 0
+services.message.destinations.statistics.stats : @local::mf_null
