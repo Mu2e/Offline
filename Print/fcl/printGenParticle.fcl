@@ -9,6 +9,7 @@ process_name : print
 
 services : {
   message : @local::default_message
+  GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 }
 
 physics :{
