@@ -8,7 +8,7 @@
 process_name : print
 
 services : {
-   @table::Services.Reco
+  message : @local::default_message
 }
 
 physics :{
