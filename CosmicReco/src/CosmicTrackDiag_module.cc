@@ -21,7 +21,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 //Utilities

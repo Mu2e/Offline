@@ -8,7 +8,7 @@
 
 // Mu2e
 #include "Offline/DataProducts/inc/Helicity.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixParams.hh"
 // CLHEP
@@ -33,9 +33,9 @@ namespace mu2e {
     float cosDip() const { return 1.0/sqrt(1.0 + tanDip()*tanDip()); }
     float sinDip() const { return tanDip()*cosDip(); }
     // simple geometric functions; can't do momentum as we don't know BField here
-    void position(float fltlen,XYZVec& pos) const; 
-    void position(const XYZVec& pos, float& fltlen) const; // to go from XYZVec to fltlen
-    void direction(float fltlen,XYZVec& pos) const; 
+    void position(float fltlen,XYZVectorF& pos) const; 
+    void position(const XYZVectorF& pos, float& fltlen) const; // to go from XYZVectorF to fltlen
+    void direction(float fltlen,XYZVectorF& pos) const; 
     float phi(float fltlen) const; // local azimuthal angle 
     float zFlight(float zpos) const { return (zpos-z0())/sinDip(); } // local flight distance for a given z value
       

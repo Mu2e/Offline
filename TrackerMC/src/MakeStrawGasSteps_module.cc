@@ -319,13 +319,13 @@ namespace mu2e {
     if(first.isNull() || last.isNull())
       throw cet::exception("SIM")<<"mu2e::MakeStrawGasSteps: No first or last step" << endl;
     // Define the position at entrance and exit; note the StepPointMC position is at the start of the step, so we have to extend the last
-    XYZVec start = Geom::toXYZVec(first->position());
+    XYZVectorF start = XYZVectorF(first->position());
     // determine the type of step
     StrawGasStep::StepType stype;
     setStepType(first,pdata,stype);
     // compute the end position and step type
-    XYZVec end = Geom::toXYZVec(last->postPosition());
-    XYZVec momvec = Geom::toXYZVec(0.5*(first->momentum() + last->momentum()));	// average first and last momentum
+    XYZVectorF end = XYZVectorF(last->postPosition());
+    XYZVectorF momvec = XYZVectorF(0.5*(first->momentum() + last->momentum()));	// average first and last momentum
     float  mom = sqrt(momvec.mag2()); 
     // determine the width from the sigitta or curl radius
     auto pdir = first->momentum().unit();

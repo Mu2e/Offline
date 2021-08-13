@@ -1361,7 +1361,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const mu2e::KalSegment &segmentLast = kalseed.segments().back();
       double fltLMin=segmentFirst.fmin();
       double fltLMax=segmentLast.fmax();
-      XYZVec momvec1, momvec2;
+      XYZVectorF momvec1, momvec2;
       segmentFirst.mom(fltLMin, momvec1);
       segmentLast.mom(fltLMax, momvec2);
       double p1=Geom::Hep3Vec(momvec1).mag();
@@ -1398,7 +1398,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
 */
 
-        XYZVec pos1, pos2;
+        XYZVectorF pos1, pos2;
         segment.helix().position(fltLMin,pos1);
         segment.helix().position(fltLMax,pos2);
         double x1=Geom::Hep3Vec(pos1).x();
@@ -1418,7 +1418,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
         {
           double t=t0+(fltL-flt0)/v;
-          XYZVec pos;
+          XYZVectorF pos;
           segment.helix().position(fltL,pos);
           CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
           findBoundaryT(_tracksTimeMinmax, t);

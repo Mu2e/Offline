@@ -42,7 +42,7 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 
 //MC dataproducts
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -1307,7 +1307,7 @@ namespace mu2e {
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
 	CLHEP::Hep3Vector sp = simptr->startPosition();
-	XYZVec origin;
+	XYZVectorF origin;
 	origin.SetX(sp.x()+3904);
 	origin.SetY(sp.y());
 	origin.SetZ(sp.z());
@@ -1444,7 +1444,7 @@ namespace mu2e {
 	int   indexMother(-1);
 
 	if (pdgM == 13){ //negative muon
-	  XYZVec  mother_origin;
+	  XYZVectorF  mother_origin;
 	  mother_origin.SetX(mother->startPosition().x()+3904);
 	  mother_origin.SetY(mother->startPosition().y());
 	  mother_origin.SetZ(mother->startPosition().z());
@@ -1483,7 +1483,7 @@ namespace mu2e {
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
 	CLHEP::Hep3Vector sp = simptr->startPosition();
-	XYZVec origin;
+	XYZVectorF origin;
 	origin.SetX(sp.x()+3904);
 	origin.SetY(sp.y());
 	origin.SetZ(sp.z());

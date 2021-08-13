@@ -54,6 +54,23 @@
  <class name="std::pair<art::Ptr<mu2e::SimParticle>,Float_t>" />
  <class name="std::vector<std::pair<art::Ptr<mu2e::SimParticle>,Float_t>>" />
 
+<!-- sim particle evolution to use XYZVector -->
+
+
+<ioread sourceClass="mu2e::SimParticle"
+        source="CLHEP::Hep3Vector _startPosition; CLHEP::Hep3Vector _endPosition;  CLHEP::HepLorentzVector _startMomentum;  CLHEP::HepLorentzVector _endMomentum;"
+	checksum="[0xeb56e52b]"
+	targetClass="mu2e::SimParticle"
+	target="_startPosition, _endPosition,  _startMomentum,  _endMomentum"
+	include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/Vector/ThreeVector.h" >
+	<![CDATA[
+	  _startPosition = ROOT::Math::XYZVectorD(onfile._startPosition);
+	  _endPosition = ROOT::Math::XYZVectorD(onfile._startPosition);
+	  _startMomentum = ROOT::Math::XYZTVectorF(onfile._startMomentum);
+	  _endMomentum = ROOT::Math::XYZTVectorF(onfile._startMomentum);
+	]]>
+</ioread>
+
  <class name="mu2e::SimParticleTimeMap" />
  <class name="std::pair<art::Ptr<mu2e::SimParticle>,double>" />
  <class name="art::Wrapper<mu2e::SimParticleTimeMap>" />

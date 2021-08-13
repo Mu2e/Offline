@@ -32,7 +32,7 @@ namespace mu2e {
   // struct for weighted positions
   class XYWVec : public XYVec {
   public :
-    XYWVec(XYZVec pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
+    XYWVec(XYZVectorF pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
     float weight() const { return _weight; }
     int   face() const { return _face; }
 
@@ -176,7 +176,7 @@ namespace mu2e {
     ::LsqSums4         _sxy;
     ::LsqSums4         _szphi;
 
-    // XYZVec             _center;
+    // XYZVectorF             _center;
     // double             _radius;
 
     // double             _chi2;

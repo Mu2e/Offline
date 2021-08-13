@@ -2,7 +2,7 @@
 // Date : 2019
 // Purpose : Stores functions associted with Cosmic Drift Fit
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 #include "Math/VectorUtil.h"
 #include "TMath.h"
@@ -35,14 +35,14 @@ using namespace mu2e;
 	
 	Straw const& straw = tracker->getStraw(chit.strawId());
 
-	XYZVec track_position(a0,b0,0);
-	XYZVec track_direction(a1,b1,1);
+	XYZVectorF track_position(a0,b0,0);
+	XYZVectorF track_direction(a1,b1,1);
 
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
 	const CLHEP::Hep3Vector& sdir = straw.getDirection();
 
-	XYZVec wire_position = Geom::toXYZVec(spos);
-	XYZVec wire_direction= Geom::toXYZVec(sdir);
+	XYZVectorF wire_position = XYZVectorF(spos);
+	XYZVectorF wire_direction= XYZVectorF(sdir);
 
 	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_position,
 		track_direction,
@@ -56,14 +56,14 @@ using namespace mu2e;
 	return dca;
 }
 
-    double DriftFitUtils::GetTestDOCA(ComboHit const& chit, XYZVec const& track_position, XYZVec const&  track_direction, const Tracker* tracker) {
+    double DriftFitUtils::GetTestDOCA(ComboHit const& chit, XYZVectorF const& track_position, XYZVectorF const&  track_direction, const Tracker* tracker) {
 	
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
 	const CLHEP::Hep3Vector& sdir = straw.getDirection();
 	
-	XYZVec wire_position = Geom::toXYZVec(spos);
-        XYZVec wire_direction= Geom::toXYZVec(sdir);
+	XYZVectorF wire_position = XYZVectorF(spos);
+        XYZVectorF wire_direction= XYZVectorF(sdir);
 	
 	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_position,
                 track_direction,
@@ -80,16 +80,16 @@ using namespace mu2e;
      double DriftFitUtils::GetRPerp(StrawResponse const& _srep, ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker){
 	StrawId const& straw_id = chit.strawId();
 	Straw const& straw = tracker->getStraw(straw_id);
-	XYZVec track_pos(a0,b0,0);
-	XYZVec track_dir(a1,b1,1);
+	XYZVectorF track_pos(a0,b0,0);
+	XYZVectorF track_dir(a1,b1,1);
 
  	Hep3Vector td(a1, b1, 1);
 	td = td.unit();
 	Hep3Vector rperp = td - (td.dot(straw.getDirection()) * straw.getDirection());
 	auto const& straw_mp = straw.getMidPoint();
         auto const& wire_dir = straw.getDirection().unit();
-	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_pos, track_dir, Geom::toXYZVec(straw_mp),
-		                        Geom::toXYZVec(wire_dir), 1.e-8);
+	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_pos, track_dir, XYZVectorF(straw_mp),
+		                        XYZVectorF(wire_dir), 1.e-8);
 
 	double phi = rperp.theta();
 	double drift_distance = 
@@ -102,8 +102,8 @@ using namespace mu2e;
     double DriftFitUtils::GetDriftDistance(StrawResponse const& _srep, ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker){
 	StrawId const& straw_id = chit.strawId();
 	Straw const& straw = tracker->getStraw(straw_id);
-	XYZVec track_pos(a0,b0,0);
-	XYZVec track_dir(a1,b1,1);
+	XYZVectorF track_pos(a0,b0,0);
+	XYZVectorF track_dir(a1,b1,1);
 
  	Hep3Vector td(a1, b1, 1);
 	td = td.unit();
@@ -116,14 +116,14 @@ using namespace mu2e;
 }
 
 
-    int DriftFitUtils::GetAmbig(ComboHit const& chit, XYZVec const& track_position, XYZVec const&  track_direction, const Tracker* tracker) {
+    int DriftFitUtils::GetAmbig(ComboHit const& chit, XYZVectorF const& track_position, XYZVectorF const&  track_direction, const Tracker* tracker) {
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
 	const CLHEP::Hep3Vector& sdir = straw.getDirection();
 	
-	XYZVec wire_position = Geom::toXYZVec(spos);
-        XYZVec wire_direction= Geom::toXYZVec(sdir);
+	XYZVectorF wire_position = XYZVectorF(spos);
+        XYZVectorF wire_direction= XYZVectorF(sdir);
 	
 	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_position,
                 track_direction,
@@ -140,14 +140,14 @@ using namespace mu2e;
     int DriftFitUtils::GetAmbig(ComboHit const& chit, double a0, double a1, double b0, double b1,  const Tracker* tracker) {
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	
-	XYZVec track_position(a0,b0,0);
-	XYZVec track_direction(a1,b1,1);
+	XYZVectorF track_position(a0,b0,0);
+	XYZVectorF track_direction(a1,b1,1);
 
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
 	const CLHEP::Hep3Vector& sdir = straw.getDirection();
 	
-	XYZVec wire_position = Geom::toXYZVec(spos);
-        XYZVec wire_direction= Geom::toXYZVec(sdir);
+	XYZVectorF wire_position = XYZVectorF(spos);
+        XYZVectorF wire_direction= XYZVectorF(sdir);
 	
 	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_position,
                 track_direction,

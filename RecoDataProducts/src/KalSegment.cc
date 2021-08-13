@@ -29,12 +29,12 @@ namespace mu2e {
   }
 
 
-  void KalSegment::mom(double flt, XYZVec& momvec) const { 
+  void KalSegment::mom(double flt, XYZVectorF& momvec) const { 
     auto chel = centralHelix();
     // momentum at the time corresponding to this flight
     auto momv = chel.momentum3(fltToTime(flt));
     // translate
-    momvec = XYZVec(momv.X(),momv.Y(),momv.Z());
+    momvec = XYZVectorF(momv.X(),momv.Y(),momv.Z());
   }
 
   double KalSegment::fltToTime(double flt) const {

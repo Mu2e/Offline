@@ -3,7 +3,7 @@
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -52,8 +52,8 @@ namespace mu2e {
 
       Int_t _genPdgId;
       Int_t _genCrCode;
-      XYZVec _genmom;
-      XYZVec _genpos;
+      XYZVectorF _genmom;
+      XYZVectorF _genpos;
       Float_t _genStartT;
       bool findData(const art::Event& evt);
       void GetGenPartInfo(const art::Event& evt);

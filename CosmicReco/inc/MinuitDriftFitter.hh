@@ -2,7 +2,7 @@
 #define _COSMIC_RECO_MINUITDRIFTFITTER_HH
 
 #include "Offline/CosmicReco/inc/PDFFit.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"

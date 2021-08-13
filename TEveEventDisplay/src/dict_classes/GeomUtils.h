@@ -1,7 +1,7 @@
 #ifndef GeomUtils_h
 #define GeomUtils_h
 // Math
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
@@ -14,7 +14,7 @@ using namespace CLHEP;
 namespace mu2e{
     inline double pointmmTocm(double mm){ return mm/10; };
     inline void hep3vectorTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()/10, vector.y()/10, vector.z()/10);}
-    inline void XYZVecTocm(XYZVec &vector){ vector.SetXYZ(vector.x()/10, vector.y()/10, vector.z()/10);}
+    inline void XYZVectorFTocm(XYZVectorF &vector){ vector.SetXYZ(vector.x()/10, vector.y()/10, vector.z()/10);}
    
     inline CLHEP::Hep3Vector GetTrackerCenter(){
       std::string filename("Mu2eG4/geom/geom_common_current.txt");

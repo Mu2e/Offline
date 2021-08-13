@@ -295,16 +295,16 @@ void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const
   tseed._t0._t0 = tseed._track.MinuitParams.T0;
   tseed._t0._t0err = tseed._track.MinuitParams.deltaT0;
 
-  XYZVec X(1, 0, 0);
-  XYZVec Y(0, 1, 0);
-  XYZVec Z(0, 0, 1);
+  XYZVectorF X(1, 0, 0);
+  XYZVectorF Y(0, 1, 0);
+  XYZVectorF Z(0, 0, 1);
 
   TrackAxes XYZ(X, Y, Z);
   tseed._track.MinuitCoordSystem = XYZ;
   tseed._track.MinuitEquation.Pos =
-      XYZVec(tseed._track.MinuitParams.A0, 0, tseed._track.MinuitParams.B0);
+      XYZVectorF(tseed._track.MinuitParams.A0, 0, tseed._track.MinuitParams.B0);
   tseed._track.MinuitEquation.Dir =
-      XYZVec(tseed._track.MinuitParams.A1, -1, tseed._track.MinuitParams.B1);
+      XYZVectorF(tseed._track.MinuitParams.A1, -1, tseed._track.MinuitParams.B1);
 
   for (size_t i = 0; i < tseed._straw_chits.size(); i++) {
     Straw const& straw = tracker->getStraw(tseed._straw_chits[i].strawId());
