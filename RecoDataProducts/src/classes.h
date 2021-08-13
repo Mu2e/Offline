@@ -40,9 +40,7 @@
 #include "Offline/RecoDataProducts/inc/BkgQual.hh"
 
 // tracking output
-
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
-//#include "Offline/RecoDataProducts/inc/CosmicKalSeed.hh"
 
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
