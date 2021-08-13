@@ -300,6 +300,7 @@ namespace mu2e {
     // put the output products into the event
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
+    event.put(move(kkseedassns));
   }
 
   KTRAJ KinematicLineFit::makeSeedTraj(CosmicTrackSeed const& hseed) const {
