@@ -9,7 +9,7 @@
 #define RecoDataProducts_KalSegment_HH
 #include <Rtypes.h>
 #include "Offline/RecoDataProducts/inc/HelixVal.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "KinKal/General/ParticleState.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
@@ -34,7 +34,7 @@ namespace mu2e {
     KinKal::VEC3 momentum3() const { return _pstate.momentum3(); }
     KinKal::VEC3 velocity() const { return _pstate.velocity(); }
     KinKal::VEC3 position3() const { return _pstate.position3(); }
- //   void mom(float fltlen, XYZVec& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); } // momentum as a function of local flightlength
+ //   void mom(float fltlen, XYZVectorF& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); } // momentum as a function of local flightlength
     // convert content to a LoopHelix
     KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
     // convert to a CentralHelix
@@ -45,17 +45,17 @@ namespace mu2e {
     auto tref() const { return _pstate.time(); }
     // t0 = time (and error) for when particle goes through z=0; 
     HitT0 t0() const;
-    XYZVec const& bnom() const { return _bnom; }
+    XYZVectorF const& bnom() const { return _bnom; }
     KinKal::VEC3 KKbnom() const { return KinKal::VEC3(_bnom); }
     Float_t _tmin, _tmax; // time range
 // main payload is the particle state estimate.  this includes all the kinematic information to
 // interpret as anything else.  BField is needed to interpret geometrically
-    XYZVec _bnom; // Bfield associated with this segment, needed to reconstitute helix
+    XYZVectorF _bnom; // Bfield associated with this segment, needed to reconstitute helix
     KinKal::ParticleStateEstimate _pstate; // particle state at this sample
  // the following are deprecated legacy functions specific to the BTrk fit and will go away eventually
     HelixVal helix() const;
     HelixCov covar() const;
-    void mom(double flt, XYZVec& momvec) const;
+    void mom(double flt, XYZVectorF& momvec) const;
     double fmin() const { return timeToFlt(_tmin); } // local 3D flight range
     double fmax() const { return timeToFlt(_tmax); }
     Float_t _dflt;    

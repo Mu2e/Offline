@@ -11,7 +11,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include <Rtypes.h>
 
@@ -38,7 +38,7 @@ namespace mu2e {
       StrawGasStep() : _eIon(0.0), _pathLen(0.), _width(0.0), _time(0.0) {}
       StrawGasStep( StrawId    strawId, StepType stype,
 	Float_t  Edep, Float_t    stepLength, Float_t width, Double_t   time, 
-	XYZVec const& startPosition, XYZVec const& endPosition, XYZVec const& mom, art::Ptr<SimParticle> const& simp) :
+	XYZVectorF const& startPosition, XYZVectorF const& endPosition, XYZVectorF const& mom, art::Ptr<SimParticle> const& simp) :
 	_strawId(strawId), _stype(stype), _eIon(Edep),
 	_pathLen(stepLength), _width(width), _time(time),
 	_startpos(startPosition), _endpos(endPosition),
@@ -50,9 +50,9 @@ namespace mu2e {
       Float_t    stepLength()   const { return _pathLen; }
       Float_t    width()   const { return _width; } 
       Double_t   time()         const { return _time; } // time the particle entered the gas (without offsets!)
-      XYZVec const& startPosition() const { return _startpos; }
-      XYZVec const& endPosition() const { return _endpos; }
-      XYZVec const& momentum() const { return _mom; }
+      XYZVectorF const& startPosition() const { return _startpos; }
+      XYZVectorF const& endPosition() const { return _endpos; }
+      XYZVectorF const& momentum() const { return _mom; }
       art::Ptr<SimParticle> const& simParticle() const { return _simp; }
       art::Ptr<SimParticle>& simParticle() { return _simp; }
 
@@ -68,8 +68,8 @@ namespace mu2e {
       Float_t       _pathLen;  // Length the primary particle traveled in this straw gas: this is NOT necessarily the end-start distance
       Float_t       _width; // transverse RMS of the charge cloud WRT the wire
       Double_t      _time; // time particle enters this gas volume; must be double to allow for long-lived particles
-      XYZVec	    _startpos, _endpos; //entrance and exit to the gas volume
-      XYZVec	    _mom; //momentum at the start of this step
+      XYZVectorF	    _startpos, _endpos; //entrance and exit to the gas volume
+      XYZVectorF	    _mom; //momentum at the start of this step
       art::Ptr<SimParticle> _simp;  // primary simparticle of this step
   };
 

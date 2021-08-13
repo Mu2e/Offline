@@ -33,7 +33,7 @@
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 #include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
 #include "Offline/CosmicReco/inc/DriftFitUtils.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 
 //ROOT:
 #include "TMatrixD.h"
@@ -58,8 +58,8 @@ using namespace ROOT::Math;
 
 std::vector<double> TrackerConstraints(1500, 1500);
 
-struct ycomp : public std::binary_function<XYZVec,XYZVec,bool> {
-    bool operator()(XYZVec const& p1, XYZVec p2) { return p1.y() > p2.y(); }
+struct ycomp : public std::binary_function<XYZVectorF,XYZVectorF,bool> {
+    bool operator()(XYZVectorF const& p1, XYZVectorF p2) { return p1.y() > p2.y(); }
   };
   
 
@@ -96,8 +96,8 @@ namespace mu2e
 	return is_ok;
   }
 
-  std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY){
-        std::vector<XYZVec> sortedPoints;
+  std::vector<XYZVectorF> SortPoints(std::vector<XYZVectorF> pointY){
+        std::vector<XYZVectorF> sortedPoints;
   	std::sort(pointY.begin(), pointY.end(),ycomp());
   	for (unsigned i=0; i<pointY.size(); ++i) { 
       		sortedPoints.push_back(pointY[i]);
@@ -109,26 +109,26 @@ namespace mu2e
     Range of methods for finding track directions - some are redundent-check!
   //----------------------------------------------*/
 
-  XYZVec CosmicTrackFit::InitLineDirection(const ComboHit *ch0, const ComboHit *chN) {
+  XYZVectorF CosmicTrackFit::InitLineDirection(const ComboHit *ch0, const ComboHit *chN) {
       float tx = chN->pos().x() - ch0->pos().x();
       float ty = chN->pos().y() - ch0->pos().y();
       float tz = chN->pos().z() - ch0->pos().z();       
-      XYZVec track(tx,ty,tz);
+      XYZVectorF track(tx,ty,tz);
     
       return track.Unit();
     } 
 
   
-    XYZVec CosmicTrackFit::LineDirection(double a1, double b1, const ComboHit *ch0, const ComboHit *chN, XYZVec ZPrime) {
-      XYZVec track(a1,b1,1);
+    XYZVectorF CosmicTrackFit::LineDirection(double a1, double b1, const ComboHit *ch0, const ComboHit *chN, XYZVectorF ZPrime) {
+      XYZVectorF track(a1,b1,1);
       return track.Unit();
     } 
   
-    XYZVec CosmicTrackFit::ConvertPointToDetFrame(XYZVec vec){
+    XYZVectorF CosmicTrackFit::ConvertPointToDetFrame(XYZVectorF vec){
         Hep3Vector vec1(vec.x(),vec.y(),vec.z());
         GeomHandle<DetectorSystem> det;
         Hep3Vector vec2 = det->toDetector(vec1);
-	XYZVec XYZ(vec2.x(), vec2.y(), vec2.z());
+	XYZVectorF XYZ(vec2.x(), vec2.y(), vec2.z());
 	return XYZ;
 
     }
@@ -199,20 +199,20 @@ namespace mu2e
      const ComboHit* chN = &combohits[combohits.size()-1]; 
 
      //Step 1: Get Initial Estimate of track direction
-     XYZVec ZPrime;
+     XYZVectorF ZPrime;
      if (_useTSeedDirection){
        ZPrime = tseed._track.FitEquation.Dir;
      }else{
        ZPrime = InitLineDirection(ch0, chN);
      }
-     std::vector<XYZVec> AxesList = ParametricFit::GetAxes(ZPrime);
+     std::vector<XYZVectorF> AxesList = ParametricFit::GetAxes(ZPrime);
      TrackAxes InitAxes = ParametricFit::GetTrackAxes(ZPrime);
     
     //Step 2: Loop over hits and get track parameters based on above estimated track direction
     for (size_t f1=0; f1<nHits; ++f1){  
       hitP1 = &combohits[f1];  
       if (!use_hit(*hitP1) && hitP1->nStrawHits() < _minnsh)  continue;  
-      XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
+      XYZVectorF point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
       std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, InitAxes._XDoublePrime, InitAxes._YDoublePrime); 
       S.addPoint(point, InitAxes._XDoublePrime, InitAxes._YDoublePrime, InitAxes._ZPrime, ErrorsXY[0], ErrorsXY[1]); 
      }    
@@ -222,8 +222,8 @@ namespace mu2e
       double a1 = S.GetAlphaX()[1][0];
       double b0 = S.GetAlphaY()[0][0];
       double b1 = S.GetAlphaY()[1][0];
-      XYZVec Direction(a1,b1,1);
-      XYZVec UpdatedTrackDirection =Direction.Unit();
+      XYZVectorF Direction(a1,b1,1);
+      XYZVectorF UpdatedTrackDirection =Direction.Unit();
     
       //Step 4: Update axes and store them as initial axes for plotting
       ZPrime = UpdatedTrackDirection;
@@ -266,7 +266,7 @@ namespace mu2e
      	      
      	      hitP2 = &combohits[f4];
       	      if (((!use_hit(*hitP2) ) && (hitP2->nStrawHits() < _minnsh) )) continue;   
-	      XYZVec point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());	    	  
+	      XYZVectorF point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());	    	  
 	      std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP2, Axes._XDoublePrime, Axes._YDoublePrime);	 
 	      S_niteration.addPoint(point, Axes._XDoublePrime, Axes._YDoublePrime, Axes._ZPrime, ErrorsXY[0],ErrorsXY[1]);
     	  }
@@ -277,8 +277,8 @@ namespace mu2e
 	  b1 = S_niteration.GetAlphaY()[1][0];
 	 
     	  //Step 9: Get new direction:
-	   //XYZVec DirectionSecond(a1,b1,1);
-	   //XYZVec UpdatedTrackDirectionSecond = DirectionSecond.Unit();
+	   //XYZVectorF DirectionSecond(a1,b1,1);
+	   //XYZVectorF UpdatedTrackDirectionSecond = DirectionSecond.Unit();
 	   
  	   //Step 10 - Get New Axes:
  	   //Axes = ParametricFit::GetTrackAxes(UpdatedTrackDirectionSecond);
@@ -307,7 +307,7 @@ namespace mu2e
 	   	BestTrack->SetFitParams(FitParams);
 	        BestTrack->SetFitCoordSystem(Axes);
 	        
-      		XYZVec EndTrackPosition(BestTrack->FitParams.A0,BestTrack->FitParams.B0,0);
+      		XYZVectorF EndTrackPosition(BestTrack->FitParams.A0,BestTrack->FitParams.B0,0);
       		TrackEquation EndTrack(EndTrackPosition, BestTrack->FitCoordSystem._ZPrime);
       		BestTrack->SetFitEquation(EndTrack);
       		
@@ -339,8 +339,8 @@ namespace mu2e
 	 for (size_t f5=0; f5<nHits; ++f5){
      		hitP2 = &combohits[f5];
                 if (((!use_hit(*hitP2) ) && (hitP2->nStrawHits() < _minnsh) )) continue;
-		XYZVec point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());
-		XYZVec point_prime(point.Dot(BestTrack->FitCoordSystem._XDoublePrime), point.Dot(BestTrack->FitCoordSystem._YDoublePrime), point.Dot(BestTrack->FitCoordSystem._ZPrime));
+		XYZVectorF point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());
+		XYZVectorF point_prime(point.Dot(BestTrack->FitCoordSystem._XDoublePrime), point.Dot(BestTrack->FitCoordSystem._YDoublePrime), point.Dot(BestTrack->FitCoordSystem._ZPrime));
 		
 		std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, BestTrack->FitCoordSystem._XDoublePrime, BestTrack->FitCoordSystem._YDoublePrime);  
 		
@@ -368,7 +368,7 @@ namespace mu2e
 /*------------Translate fit back into XYZ and/or the detector frame------//
 Using matrices to ctransform from local to global coordinates
 //-----------------------------------------------------------------------*/
-void CosmicTrackFit::ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool seed, bool det){
+void CosmicTrackFit::ConvertFitToDetectorFrame(TrackAxes axes, XYZVectorF Position, XYZVectorF Direction, CosmicTrack* cosmictrack, bool seed, bool det){
 	TMatrixD A(3,3);
 	A[0][0] = axes._XDoublePrime.X();
 	A[0][1] = axes._YDoublePrime.X();
@@ -436,12 +436,12 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, 
 	sigmaDir[2][0] = 0;
 	TMatrixD sigmaDirXYZ(A*sigmaDir);
 
-	XYZVec Pos(PXYZ[0][0], PXYZ[1][0], PXYZ[2][0]);
-	XYZVec Dir(DXYZ[0][0], DXYZ[1][0] , DXYZ[2][0]);
+	XYZVectorF Pos(PXYZ[0][0], PXYZ[1][0], PXYZ[2][0]);
+	XYZVectorF Dir(DXYZ[0][0], DXYZ[1][0] , DXYZ[2][0]);
 
 	if(seed == true){//is this the local coords at start?
 		if (det == true){ // is this detector frame?
-			XYZVec PosInDet = ConvertPointToDetFrame(Pos);
+			XYZVectorF PosInDet = ConvertPointToDetFrame(Pos);
 			TrackEquation XYZTrack(PosInDet, Dir);
 			cosmictrack->SetFitEquation(XYZTrack);
 			
@@ -497,14 +497,14 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, 
       }
       if(endresult.NLL !=0){ tseed._track.minuit_converged = true; }
 
-      XYZVec X(1,0,0);
-      XYZVec Y(0,1,0);
-      XYZVec Z(0,0,1);
+      XYZVectorF X(1,0,0);
+      XYZVectorF Y(0,1,0);
+      XYZVectorF Z(0,0,1);
 
       TrackAxes XYZ(X,Y,Z);
       tseed._track.MinuitCoordSystem = XYZ; 
-      tseed._track.MinuitEquation.Pos = XYZVec(tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,0);
-      tseed._track.MinuitEquation.Dir = XYZVec(tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,1);
+      tseed._track.MinuitEquation.Pos = XYZVectorF(tseed._track.MinuitParams.A0,tseed._track.MinuitParams.B0,0);
+      tseed._track.MinuitEquation.Dir = XYZVectorF(tseed._track.MinuitParams.A1,tseed._track.MinuitParams.B1,1);
 
       unsigned int n_outliers = 0;
       if(endresult.FullFitEndTimeResiduals.size() >0){

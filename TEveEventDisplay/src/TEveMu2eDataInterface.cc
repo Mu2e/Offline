@@ -408,7 +408,7 @@ namespace mu2e{
             }
             for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0){
 	            GeomHandle<DetectorSystem> det;
-              XYZVec pos;
+              XYZVectorF pos;
               segment.helix().position(fltL,pos);
               CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
               CLHEP::Hep3Vector InMu2e = det->toMu2e(p);

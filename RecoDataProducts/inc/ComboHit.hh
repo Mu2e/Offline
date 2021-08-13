@@ -10,7 +10,7 @@
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include <stdint.h>
@@ -32,9 +32,9 @@ namespace mu2e {
     // compatibility constructor (deprecated)
     ComboHit(const ComboHit&, StrawHitIndex, double);
     // accessors
-    XYZVec centerPos() const { return _pos - _wdist*_wdir; }
-    XYZVec const& pos() const { return _pos; }
-    XYZVec const& wdir() const { return _wdir; }
+    XYZVectorF centerPos() const { return _pos - _wdist*_wdir; }
+    XYZVectorF const& pos() const { return _pos; }
+    XYZVectorF const& wdir() const { return _wdir; }
 // CLHEP-versions of these for backwards compatibilty
     CLHEP::Hep3Vector centerPosCLHEP() const { return Geom::Hep3Vec(_pos - _wdist*_wdir); }
     CLHEP::Hep3Vector posCLHEP() const { return Geom::Hep3Vec(_pos); }
@@ -68,9 +68,9 @@ namespace mu2e {
     PIArray const& indexArray() const { return _pind; }
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     //
-    XYZVec _pos; // position of this hit
-    XYZVec _wdir; // 'direction' of this hit, used to define error elipsoid axis
-    XYZVec _sdir;           // straw radial direction, perp to Z and wire direction
+    XYZVectorF _pos; // position of this hit
+    XYZVectorF _wdir; // 'direction' of this hit, used to define error elipsoid axis
+    XYZVectorF _sdir;           // straw radial direction, perp to Z and wire direction
     Float_t _wres, _tres; // resolution along and transverse to the 'wire' direction
     Float_t _wdist; // distance from wire center along this direction (agregate)
     Float_t _time, _edep, _qual; // derived StrawHit (agregate) info

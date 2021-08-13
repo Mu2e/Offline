@@ -97,7 +97,7 @@ namespace mu2e {
 	    kseed.caloHit().flag().hasAllProperties(StrawHitFlag::active)){
 	  auto const& tchs = kseed.caloHit();
 	  auto const& cc = tchs.caloCluster();
-	  XYZVec trkmom;
+	  XYZVectorF trkmom;
 	  auto ikseg = kseed.nearestSegment(tchs.trkLen());
 	  if(ikseg != kseed.segments().end())
 	    ikseg->mom(ikseg->localFlt(tchs.trkLen()),trkmom);
@@ -107,7 +107,7 @@ namespace mu2e {
 	  tchpid[TrkCaloHitPID::DeltaE] = cc->energyDep() - sqrt(trkmom.Mag2());
 	  tchpid[TrkCaloHitPID::ClusterLen] = tchs.hitLen();
 	  // move into detector coordinates.  Yikes!!
-	  XYZVec cpos = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));
+	  XYZVectorF cpos = XYZVectorF(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));
 	  tchpid[TrkCaloHitPID::RPOCA] = sqrt(cpos.Perp2());
 	  // compute transverse direction WRT position
 	  cpos.SetZ(0.0);

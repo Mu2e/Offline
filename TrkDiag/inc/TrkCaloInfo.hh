@@ -8,9 +8,18 @@
 // 
 #ifndef TrkCaloInfo_HH
 #define TrkCaloInfo_HH
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "Rtypes.h"
 #include <string>
+namespace {
+  std::string XYZnames(const char* vname) {
+    std::string svname(vname);
+    static std::string leaves; leaves = svname + std::string("x/F:") +
+      svname + std::string("y/F:") + svname + std::string("z/F");
+    return leaves;
+  }
+}
+
 namespace mu2e
 {
   using std::string;
@@ -29,25 +38,25 @@ namespace mu2e
     Float_t _eclust; // cluster energy
     Float_t _tclust; // cluster time
     Int_t _section; // cluster section
-    XYZVec _cpos; // calorimeter cluster position
-    XYZVec _tpos; // extrapolated track position near calorimeter cluster
-    XYZVec _tdir; // extrapolated track position near calorimeter cluster
+    XYZVectorF _cpos; // calorimeter cluster position
+    XYZVectorF _tpos; // extrapolated track position near calorimeter cluster
+    XYZVectorF _tdir; // extrapolated track position near calorimeter cluster
     Float_t _ttrk; // track time at intersection point
     static string leafnames() { 
       static string leaves;
       leaves = 
       string("dt/F:du/F:dv/F:ds/F:ep/F:uvchisq/F:tchisq/F:dtllr/F:epllr/F:") + // matching info
       string("eclust/F:tclust/F:section/I:") + // cluster information
-      Geom::XYZnames("cpos").c_str() + string(":") +
-      Geom::XYZnames("tpos").c_str() + string(":") +
-      Geom::XYZnames("tdir").c_str() + string(":") +
+      XYZnames("cpos").c_str() + string(":") +
+      XYZnames("tpos").c_str() + string(":") +
+      XYZnames("tdir").c_str() + string(":") +
       string("ttrk/F");
       return leaves;
     }
 
     void reset() {
       _dt = _du = _dv = _ds = _ep = _uvChisq = _tChisq = _dtllr = _epllr = _eclust = _tclust = _ttrk = 0.0;
-      _cpos = _tpos = _tdir = XYZVec();
+      _cpos = _tpos = _tdir = XYZVectorF();
     }
   };
 }

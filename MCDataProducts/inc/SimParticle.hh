@@ -20,7 +20,7 @@
 //    versions are available.  We will get rid of them as soon as we check
 //    backwards compatibility.
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/Geom.hh"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -85,8 +85,8 @@ namespace mu2e {
                  art::Ptr<GenParticle> const&   agenParticle,
                  const CLHEP::Hep3Vector&       aposition,
                  const CLHEP::HepLorentzVector& amomentum,
-                 double                         astartGlobalTime,
-                 double                         astartProperTime,
+                 float                         astartGlobalTime,
+                 float                         astartProperTime,
                  unsigned                       astartVolumeIndex,
                  unsigned                       astartG4Status,
                  ProcessCode                    acreationCode,
@@ -123,14 +123,14 @@ namespace mu2e {
 
     void addEndInfo( CLHEP::Hep3Vector       aendPosition,
                      CLHEP::HepLorentzVector aendMomentum,
-                     double                  aendGlobalTime,
-                     double                  aendProperTime,
+                     float                  aendGlobalTime,
+                     float                  aendProperTime,
                      unsigned                aendVolumeIndex,
                      unsigned                aendG4Status,
                      ProcessCode             astoppingCode,
                      float                   endKE,
                      int                     nSteps,
-                     double                  trackLength){
+                     float                  trackLength){
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
       _endGlobalTime   = aendGlobalTime;
@@ -190,9 +190,11 @@ namespace mu2e {
     // Information at the start of the track.
     CLHEP::Hep3Vector startPosition()       const { return Geom::Hep3Vec(_startPosition);}
     CLHEP::HepLorentzVector startMomentum() const { return Geom::HepLorentzVec(_startMomentum);}
-    double      startGlobalTime()  const { return _startGlobalTime;}
-    double&     startGlobalTime()        { return _startGlobalTime;}
-    double      startProperTime()  const { return _startProperTime;}
+    XYZVectorD& startPosXYZ() { return _startPosition;}
+    XYZTVectorF& startMomXYZT() { return _startMomentum;}
+    float      startGlobalTime()  const { return _startGlobalTime;}
+    float&     startGlobalTime()        { return _startGlobalTime;}
+    float      startProperTime()  const { return _startProperTime;}
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()     const { return _creationCode;   }
@@ -201,15 +203,17 @@ namespace mu2e {
 
     // the following is for excited ions
     IonDetail const& ion()                      const { return _ion; }
-    double           startExcitationEnergy()    const { return _ion.excitationEnergy;}
+    float           startExcitationEnergy()    const { return _ion.excitationEnergy;}
     int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
     // Information at the end of the track.
     CLHEP::Hep3Vector endPosition() const { return Geom::Hep3Vec(_endPosition);}
     CLHEP::HepLorentzVector endMomentum() const { return Geom::HepLorentzVec(_endMomentum);}
-    double       endGlobalTime()  const { return _endGlobalTime; }
-    double&      endGlobalTime()        { return _endGlobalTime; }
-    double       endProperTime()  const { return _endProperTime; }
+    XYZVectorD& endPosXYZ() { return _endPosition;}
+    XYZTVectorF& endMomXYZT() { return _endMomentum;}
+    float       endGlobalTime()  const { return _endGlobalTime; }
+    float&      endGlobalTime()        { return _endGlobalTime; }
+    float       endProperTime()  const { return _endProperTime; }
     unsigned     endVolumeIndex() const { return _endVolumeIndex;}
     unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
@@ -267,20 +271,20 @@ namespace mu2e {
     art::Ptr<GenParticle>  _genParticle;
 
     // Information at the start of the track.
-    XYZVec                  _startPosition;
-    XYZTVec                 _startMomentum;
-    double                  _startGlobalTime;
-    double                  _startProperTime;
+    XYZVectorD		    _startPosition;
+    XYZTVectorF             _startMomentum;
+    float		    _startGlobalTime;
+    float		    _startProperTime;
     unsigned                _startVolumeIndex;
     unsigned                _startG4Status;
     ProcessCode             _creationCode;
     IonDetail               _ion;
 
     // Information at the end of the track.
-    XYZVec                  _endPosition;
-    XYZTVec		    _endMomentum;
-    double                  _endGlobalTime;
-    double                  _endProperTime;
+    XYZVectorD              _endPosition;
+    XYZTVectorF		    _endMomentum;
+    float                  _endGlobalTime;
+    float                  _endProperTime;
     unsigned                _endVolumeIndex;
     unsigned                _endG4Status;
     ProcessCode             _stoppingCode;
