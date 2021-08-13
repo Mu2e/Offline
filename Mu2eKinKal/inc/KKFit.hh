@@ -152,7 +152,6 @@ namespace mu2e {
     // loop over the individual straw hits
     for(auto strawidx : strawHitIdxs) {
       const ComboHit& strawhit(chcol.at(strawidx));
-      std::cout<<strawhit.mask().level()<<std::endl;
       if(strawhit.mask().level() != StrawIdMask::uniquestraw){
 	      throw cet::exception("RECO")<<"mu2e::KKFit: ComboHit error"<< endl;
 	    }

@@ -94,7 +94,7 @@ KKLineSeedFit : {
     }
     
     KKFitSettings: {
-      PrintLevel : 0
+      PrintLevel : 3
       TimeBuffer : 0.1 # ns
       TPOCAPrecision : 1e-4 # mm
       NullHitDimension : 2 # constrain position or position+time
@@ -120,7 +120,7 @@ KKLineSeedFit : {
     }
     
     KinKalFitSettings : {
-      PrintLevel : 0
+      PrintLevel : 3
       MinNDOF : 5
       MaxNIter : 10
       Deweight : 1.0e6
@@ -138,7 +138,7 @@ KKLineSeedFit : {
       ]
     }
     KinKalExtensionSettings : {
-      PrintLevel : 0
+      PrintLevel : 3
       MinNDOF : 5
       MaxNIter : 10
       Deweight : 1.0e6
@@ -156,7 +156,7 @@ KKLineSeedFit : {
     ModuleSettings : {
       SeedErrors : [5.0, 5.0, 5.0, 0.1, 25.0,1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,cost_ = 3,t0_ = 4,mom_ = 5,
       CosmicTrackSeedCollections : ["CosmicTrackFinderTimeFit"]
-      ComboHitCollection : "makePH"
+      ComboHitCollection : "makeSH"
       StrawHitFlagCollection : "FlagBkgHits:StrawHits"
       LineFlags : [ "HelixOK" ] //should work for cosmics too (I think)
       
