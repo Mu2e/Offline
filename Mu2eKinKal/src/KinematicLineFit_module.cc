@@ -91,7 +91,7 @@ namespace mu2e {
   using KinKal::TimeRange;
   using KinKal::DMAT;
   using KinKal::Status;
-  using HPtr = art::Ptr<HelixSeed>;
+  using HPtr = art::Ptr<CosmicTrackSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
@@ -179,7 +179,7 @@ namespace mu2e {
     for(const auto& hseedtag : settings().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
     produces<KKLineCollection>();
     produces<KalSeedCollection>();
-    produces<KalHelixAssns>();
+    produces<KalLineAssns>();
     // build the initial seed covariance
     auto const& seederrors = settings().modSettings().seederrors();
     if(seederrors.size() != KinKal::NParams()) 
@@ -227,7 +227,7 @@ namespace mu2e {
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
         auto const& hseed = hseedcol[iseed];
         
-        art::Ptr<HelixSeed> hptr;
+        art::Ptr<CosmicTrackSeed> hptr;
 
         // check helicity.  The test on the charge and helicity 
         if(hseed.status().hasAllProperties(goodline_) ){
@@ -248,7 +248,7 @@ namespace mu2e {
 	  
 	        //here
 	        KKCALOHITCOL calohits;
-          if (kkfit_.useCalo()) kkfit_.makeCaloHit(hptr->caloCluster(),*calo_h, pseedtraj, calohits);
+          //if (kkfit_.useCalo()) kkfit_.makeCaloHit(hptr->caloCluster(),*calo_h, pseedtraj, calohits); --> CosmicTrackSeed has no CaloClusters....
 
           if(print_ > 2){
             for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
@@ -288,7 +288,7 @@ namespace mu2e {
             kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,savetimes));
             //kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             kktrkcol->push_back(kktrk.release());
-            // fill assns with the helix seed
+            // fill assns with the cosmic seed
 	          auto hptr = art::Ptr<CosmicTrackSeed>(hseedcol_h,iseed);
 	          auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
 	          kkseedassns->addSingle(kseedptr,hptr);
