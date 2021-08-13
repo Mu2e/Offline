@@ -191,9 +191,6 @@
  <class name="std::vector<art::Ptr<mu2e::KalSeed> >"/>
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
 
-
- 
-
  <class name="mu2e::KalHelixAssns" />
  <class name="art::Wrapper<mu2e::KalHelixAssns>"/>
  <class name="art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void>"/>
