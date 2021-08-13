@@ -1,4 +1,3 @@
-
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"

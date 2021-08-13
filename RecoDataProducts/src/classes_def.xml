@@ -195,6 +195,11 @@
  <class name="art::Wrapper<mu2e::KalHelixAssns>"/>
  <class name="art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void>"/>
  <class name="art::Wrapper<art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void> >"/>
+ 
+ <class name="mu2e::KalLineAssns" />
+ <class name="art::Wrapper<mu2e::KalLineAssns>"/>
+ <class name="art::Assns<mu2e::CosmicTrackSeed,mu2e::KalSeed,void>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::CosmicTrackSeed,mu2e::KalSeed,void> >"/>
 
 <!-- KinKal products: these cannot be directly persisted -->
 
