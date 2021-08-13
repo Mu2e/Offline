@@ -227,8 +227,7 @@ namespace mu2e {
       for(size_t iseed=0; iseed < hseedcol.size(); ++iseed) {
         auto const& hseed = hseedcol[iseed];
         
-        art::Ptr<CosmicTrackSeed> hptr;
-
+        auto hptr = HPtr(hseedcol_h,iseed);
         // check helicity.  The test on the charge and helicity 
         if(hseed.status().hasAllProperties(goodline_) ){
           // construt the seed trajectory
