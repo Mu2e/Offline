@@ -192,11 +192,6 @@
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
 
 
- <class name="mu2e::CosmicKalSeed"/>
- <class name="mu2e::CosmicKalSeedCollection"/>
- <class name="art::Ptr<mu2e::CosmicKalSeed>"/>
- <class name="std::vector<art::Ptr<mu2e::CosmicKalSeed> >"/>
- <class name="art::Wrapper<mu2e::CosmicKalSeedCollection>"/>
  
 
  <class name="mu2e::KalHelixAssns" />
