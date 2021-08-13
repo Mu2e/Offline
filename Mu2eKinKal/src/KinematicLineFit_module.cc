@@ -100,7 +100,7 @@ namespace mu2e {
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKMaterialConfig = KKMaterial::Config;
   
-  class NewKinematicLineFit : public art::EDProducer {
+  class KinematicLineFit : public art::EDProducer {
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
 
@@ -129,8 +129,8 @@ namespace mu2e {
     using GlobalSettings = art::EDProducer::Table<GlobalConfig>;
 
     public:
-    explicit NewKinematicLineFit(const GlobalSettings& settings);
-    virtual ~NewKinematicLineFit();
+    explicit KinematicLineFit(const GlobalSettings& settings);
+    virtual ~KinematicLineFit();
     void beginRun(art::Run& run) override;
     void produce(art::Event& event) override;
     private:
@@ -157,7 +157,7 @@ namespace mu2e {
     Config exconfig_; // extension configuration object
   };
 
-  NewKinematicLineFit::NewKinematicLineFit(const GlobalSettings& settings) : art::EDProducer{settings}, 
+  KinematicLineFit::KinematicLineFit(const GlobalSettings& settings) : art::EDProducer{settings}, 
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
     goodline_(settings().modSettings().lineFlags()),
@@ -192,9 +192,9 @@ namespace mu2e {
     
   }
 
-  NewKinematicLineFit::~NewKinematicLineFit(){}
+  KinematicLineFit::~KinematicLineFit(){}
 
-  void NewKinematicLineFit::beginRun(art::Run& run) {
+  void KinematicLineFit::beginRun(art::Run& run) {
     // setup particle parameters
     auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
     mass_ = ptable->particle(kkfit_.fitParticle()).ref().mass().value(); 
@@ -205,7 +205,7 @@ namespace mu2e {
     kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
   }
 
-  void NewKinematicLineFit::produce(art::Event& event ) {
+  void KinematicLineFit::produce(art::Event& event ) {
     GeomHandle<mu2e::Calorimeter> calo_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
@@ -302,7 +302,7 @@ namespace mu2e {
     event.put(move(kkseedcol));
   }
 
-  KTRAJ NewKinematicLineFit::makeSeedTraj(CosmicTrackSeed const& hseed) const {
+  KTRAJ KinematicLineFit::makeSeedTraj(CosmicTrackSeed const& hseed) const {
     //exctract CosmicTrack (contains parameters)
     auto const& scosmic = hseed.track();
     VEC3 bnom(0.0,0.0,0.0);
@@ -322,4 +322,4 @@ namespace mu2e {
     return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange()); //TODO: better constructor
   }
 }
-DEFINE_ART_MODULE(mu2e::NewKinematicLineFit);
+DEFINE_ART_MODULE(mu2e::KinematicLineFit);
