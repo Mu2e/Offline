@@ -141,8 +141,8 @@ namespace mu2e {
       auto pph = event.getValidHandle<PrimaryParticle>(ppToken_);
       auto const& primaryParticles = *pph;
       
-      std::unique_ptr<CaloHitMCCollection>  caloHitMCs(new CaloHitMCCollection);
-      std::unique_ptr<CaloHitMCTruthAssn>   caloHitMCTruth(new CaloHitMCTruthAssn);
+      std::unique_ptr<CaloHitMCCollection>   caloHitMCs(new CaloHitMCCollection);
+      std::unique_ptr<CaloHitMCTruthAssn>    caloHitMCTruth(new CaloHitMCTruthAssn);
       std::unique_ptr<CaloShowerMCTruthAssn> caloShowerMCTruth(new CaloShowerMCTruthAssn);
 
       makeTruthMatch(event, *caloHitMCs, *caloHitMCTruth, *caloShowerMCTruth, primaryParticles);
@@ -213,7 +213,7 @@ namespace mu2e {
                                        <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<nbin*digiSampling_<<" "<<deltaTimePlus<<std::endl;
 
 
-          //forward until we reach the recoHit time, then loop as long as the shower time is witthin the recoTime window
+          //forward until we reach the recoHit time, then loop as long as the shower time is within the recoTime window
           bool hitIsMatched(false);
           std::vector<CaloEDepMC> edeps; 
           while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - 2*digiSampling_) ) ++showerIt;                           
@@ -236,7 +236,7 @@ namespace mu2e {
                                            <<" / "<<showerSim->time()<<" / "<<showerSim->energyDep()<<std::endl;
               ++showerIt;
           }
-
+ 
           //sort CaloEDepMC by decreasing energy, create caloHit and keep track of hit -> MChit association
           std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
           caloHitMCs.emplace_back(CaloHitMC(std::move(edeps)));
