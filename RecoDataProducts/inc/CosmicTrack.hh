@@ -208,14 +208,13 @@ namespace mu2e {
         XYZVec POCA = PCA.point1()-PCA.point2();
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
-        
+
         double d0 = amsign*DOCA; 
         double phi0 = dir.Phi(); 
         double z0 = PCA.point1().Z();
         double cost = dir.Z();
         double t0 = this->MinuitParams.T0; //TODO
         double mom = 1.0;//TODO
-        //SetKinKalParams(d0_,phi0_,z0_,cost_, t0_, mom_);
         info = make_tuple(d0,phi0,z0,cost, t0, mom);
         return info;
       }

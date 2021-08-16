@@ -5,7 +5,7 @@
 //
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
-#include "GeneralUtilities/inc/OwningPointerCollection.hh"
+#include "Offline/GeneralUtilities/inc/OwningPointerCollection.hh"
 
 namespace mu2e {
   using KKLine = KinKal::Track<KinKal::KinematicLine>;

@@ -154,7 +154,7 @@ KKLineSeedFit : {
   
   
     ModuleSettings : {
-      SeedErrors : [36, 0.025, 700, 0.1, 25.0,1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,cost_ = 3,t0_ = 4,mom_ = 5,
+      SeedErrors : [36, 0.025,600, 1.0, 25.0,1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,cost_ = 3,t0_ = 4,mom_ = 5,
       CosmicTrackSeedCollections : ["CosmicTrackFinderTimeFit"]
       ComboHitCollection : "makeSH"
       StrawHitFlagCollection : "FlagBkgHits:StrawHits"
