@@ -252,10 +252,10 @@ namespace mu2e
         _TrueB1 = get<3>(info);
         
         _Trued0 = amsign*DOCA;
-        _Truez0 = dir.Z();
-        _TrueCosT = PCA.point1().Z();
+        _Truez0 = PCA.point1().Z();
+        _TrueCosT = dir.Z();
         _TruePhi0 = dir.Phi();
-        
+
         _Diffd0 = _Recod0 - _Trued0;
         _Diffz0 = _Recoz0 - _Truez0;
         _DiffCosT =  _RecoCosT - _TrueCosT;
