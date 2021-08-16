@@ -157,16 +157,6 @@ CosmicFitDisplay : {
     
 }
 
-CosmicFitDisplayNew : {
-    module_type : CosmicFitDisplayNew
-    ComboHitCollection : "makePH"
-    TimeClusterCollection : TimeClusterFinderCosmics
-    CosmicTrackSeedCollection : CosmicTrackFinderTimeFit
-    doDisplay            : true
-    TimeClusterCollection : TimeClusterFinderCosmicsr
-    CosmicTrackSeedCollection : CosmicTrackFinderTimeFit
-    
-}
 
 CosmicTrackDiag : {
     module_type : CosmicTrackDiag
@@ -207,7 +197,6 @@ CosmicTracking : {
 
 	CosmicAnalysis : @local::CosmicAnalysis
 	CosmicFitDisplay : @local::CosmicFitDisplay
-	CosmicFitDisplayNew : @local::CosmicFitDisplayNew
 	CosmicTrackDetails : @local::CosmicTrackDetails
 	CosmicMCRecoDiff  : @local::CosmicMCRecoDiff 
 	CosmicTrackDiag : @local::CosmicTrackDiag
