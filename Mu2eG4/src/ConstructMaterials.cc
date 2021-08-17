@@ -1557,8 +1557,7 @@ namespace mu2e {
       wires->AddMaterial(findMaterialOrThrow("G4_Au"), 0.06);
     }
 
-    // Stainless Steel (Medical Physics, Vol 25, No 10, Oct 1998) based on brachytherapy example
-    // FIXME is there a better reference?
+    //Carbon steel
     mat = uniqueMaterialOrThrow( "Steel");
     {
       G4Material* Steel = new G4Material(mat.name, 7.86*CLHEP::g/CLHEP::cm3, 4); //used an example density of steel
