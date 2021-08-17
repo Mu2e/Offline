@@ -6,15 +6,13 @@
 #include "Math/Vector4D.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
-#include <string>
 using ROOT::Math::XYZVectorF;
 using ROOT::Math::XYZTVectorF;
 using ROOT::Math::XYZVectorD;
 using XYZTVectorD = ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D <double> >;
 namespace mu2e {
   namespace GenVector {
-    // provide a generic translation from CLHEP
-    // the following is deprecated, XYZVec templated constructor now does this
+    // provide translation from XYZ to CLHEP
     CLHEP::Hep3Vector Hep3Vec(XYZVectorF const& rvec);
     CLHEP::Hep3Vector Hep3Vec(XYZVectorD const& rvec);
     CLHEP::HepLorentzVector HepLorentzVec(XYZTVectorF const& rvec);
