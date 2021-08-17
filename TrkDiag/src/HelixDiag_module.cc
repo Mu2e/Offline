@@ -329,10 +329,10 @@ namespace mu2e {
 	    hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
 	    // compute the chisquared componentes for this hit
 	    XYZVectorF const& wdir = hhit.wdir();
-	    XYZVectorF wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
-	    XYZVectorF cvec = PerpVector(hhit.pos() - rhel.center(),Geom::ZDir()); // vector from the circle center to the hit
+	    XYZVectorF wtdir = GenVector::ZDir().Cross(wdir); // transverse direction to the wire
+	    XYZVectorF cvec = PerpVector(hhit.pos() - rhel.center(),GenVector::ZDir()); // vector from the circle center to the hit
 	    XYZVectorF cdir = cvec.unit(); // direction from the circle center to the hit
-	    XYZVectorF cperp = Geom::ZDir().Cross(cdir); // direction perp to the radius
+	    XYZVectorF cperp = GenVector::ZDir().Cross(cdir); // direction perp to the radius
 	    hhinfo._whdot = wdir.Dot(cdir); // compare wire and circle radius direction
 	    hhinfo._hrho = sqrt(cvec.Mag2()); // radius of this hit WRT the circle center
 
@@ -788,7 +788,7 @@ namespace mu2e {
       for(auto imcd = _mcdigis->begin();imcd != _mcdigis->end(); ++imcd){
 	auto const& stepptr = imcd->strawGasStep(imcd->earlyEnd());
 	if(stepptr->simParticle() == pspp){
-	  mom = Geom::Hep3Vec(stepptr->momentum());
+	  mom = GenVector::Hep3Vec(stepptr->momentum());
 	  pos = stepptr->position();
 	  retval = true;
 	  break;

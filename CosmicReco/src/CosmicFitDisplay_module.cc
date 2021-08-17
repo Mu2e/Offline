@@ -290,9 +290,9 @@ Below here are a series of macros -  they are not glamorous but they produce use
 					double z0prime{(p.Dot(zprimes_drift[0]))};                      
 					poly.DrawPolyMarker( 1, &z0prime, &x0prime );
 					XYZVectorF major = (s*w);
-					XYZVectorF minor = Geom::ZDir().Cross(w) * t;
+					XYZVectorF minor = GenVector::ZDir().Cross(w) * t;
 					double major2 = (s*w).Mag2();
-					double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+					double minor2 = (GenVector::ZDir().Cross(w) * t).Mag2();
 			
 					double major_x1 = p.Dot(xprimes_drift[0])+sqrt(major2)*(major.Unit()).Dot(xprimes_drift[0]);
 					double major_x2 = p.Dot(xprimes_drift[0])-sqrt(major2)*(major.Unit()).Dot(xprimes_drift[0]);
@@ -387,9 +387,9 @@ Below here are a series of macros -  they are not glamorous but they produce use
 					double z0prime{(p.Dot(zprimes_seed[0]))};                      
 					poly.DrawPolyMarker( 1, &z0prime, &x0prime );
 					XYZVectorF major = (s*w);
-					XYZVectorF minor = Geom::ZDir().Cross(w) * t;
+					XYZVectorF minor = GenVector::ZDir().Cross(w) * t;
 					double major2 = (s*w).Mag2();
-					double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+					double minor2 = (GenVector::ZDir().Cross(w) * t).Mag2();
 			
 					double major_x1 = p.Dot(xprimes_seed[0])+sqrt(major2)*(major.Unit()).Dot(xprimes_seed[0]);
 					double major_x2 = p.Dot(xprimes_seed[0])-sqrt(major2)*(major.Unit()).Dot(xprimes_seed[0]);
@@ -623,9 +623,9 @@ Below here are a series of macros -  they are not glamorous but they produce use
 			double z0prime{(p.Dot(zprimes[0]))};                      
 			poly.DrawPolyMarker( 1, &z0prime, &x0prime );
 			XYZVectorF major = (s*w);
-			XYZVectorF minor = Geom::ZDir().Cross(w) * t;
+			XYZVectorF minor = GenVector::ZDir().Cross(w) * t;
 			double major2 = (s*w).Mag2();
-			double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+			double minor2 = (GenVector::ZDir().Cross(w) * t).Mag2();
 			
 			double major_x1 = p.Dot(xprimes[0])+sqrt(major2)*(major.Unit()).Dot(xprimes[0]);
 			double major_x2 = p.Dot(xprimes[0])-sqrt(major2)*(major.Unit()).Dot(xprimes[0]);

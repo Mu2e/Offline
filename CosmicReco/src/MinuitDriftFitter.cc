@@ -309,8 +309,8 @@ void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const
   for (size_t i = 0; i < tseed._straw_chits.size(); i++) {
     Straw const& straw = tracker->getStraw(tseed._straw_chits[i].strawId());
     TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(),
-                   Geom::Hep3Vec(tseed._track.MinuitEquation.Pos),
-                   Geom::Hep3Vec(tseed._track.MinuitEquation.Dir));
+                   GenVector::Hep3Vec(tseed._track.MinuitEquation.Pos),
+                   GenVector::Hep3Vec(tseed._track.MinuitEquation.Dir));
     if (pca.dca() > 2.5) {
       tseed._straw_chits[i]._flag.merge(StrawHitFlag::outlier);
     }

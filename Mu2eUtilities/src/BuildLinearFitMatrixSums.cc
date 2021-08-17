@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cmath>
 #include<exception>
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 BuildLinearFitMatrixSums::BuildLinearFitMatrixSums() {

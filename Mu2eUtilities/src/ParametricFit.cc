@@ -183,7 +183,7 @@ XYZVectorF MajorAxis(ComboHit* Hit){
 
 XYZVectorF MinorAxis(ComboHit* Hit){
       XYZVectorF const& wdir = Hit->wdir();//direction along wire
-      XYZVectorF wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
+      XYZVectorF wtdir = GenVector::ZDir().Cross(wdir); // transverse direction to the wire
       double terr_mag = Hit->transRes(); //hit minor error axis
       XYZVectorF minor_axis = terr_mag*wtdir;
       return minor_axis;

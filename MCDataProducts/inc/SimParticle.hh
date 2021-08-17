@@ -20,7 +20,7 @@
 //    versions are available.  We will get rid of them as soon as we check
 //    backwards compatibility.
 
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -188,10 +188,10 @@ namespace mu2e {
     bool madeInG4()      const { return _genParticle.isNull();    }
 
     // Information at the start of the track.
-    CLHEP::Hep3Vector startPosition()       const { return Geom::Hep3Vec(_startPosition);}
-    CLHEP::HepLorentzVector startMomentum() const { return Geom::HepLorentzVec(_startMomentum);}
-    XYZVectorD& startPosXYZ() { return _startPosition;}
-    XYZTVectorF& startMomXYZT() { return _startMomentum;}
+    CLHEP::Hep3Vector startPosition()       const { return GenVector::Hep3Vec(_startPosition);}
+    CLHEP::HepLorentzVector startMomentum() const { return GenVector::HepLorentzVec(_startMomentum);}
+    XYZVectorD const& startPosXYZ() const { return _startPosition;}
+    XYZTVectorF const& startMomXYZT() const { return _startMomentum;}
     float      startGlobalTime()  const { return _startGlobalTime;}
     float&     startGlobalTime()        { return _startGlobalTime;}
     float      startProperTime()  const { return _startProperTime;}
@@ -207,10 +207,10 @@ namespace mu2e {
     int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
     // Information at the end of the track.
-    CLHEP::Hep3Vector endPosition() const { return Geom::Hep3Vec(_endPosition);}
-    CLHEP::HepLorentzVector endMomentum() const { return Geom::HepLorentzVec(_endMomentum);}
-    XYZVectorD& endPosXYZ() { return _endPosition;}
-    XYZTVectorF& endMomXYZT() { return _endMomentum;}
+    CLHEP::Hep3Vector endPosition() const { return GenVector::Hep3Vec(_endPosition);}
+    CLHEP::HepLorentzVector endMomentum() const { return GenVector::HepLorentzVec(_endMomentum);}
+    XYZVectorD const& endPosXYZ() const { return _endPosition;}
+    XYZTVectorF const& endMomXYZT() const { return _endMomentum;}
     float       endGlobalTime()  const { return _endGlobalTime; }
     float&      endGlobalTime()        { return _endGlobalTime; }
     float       endProperTime()  const { return _endProperTime; }

@@ -25,7 +25,7 @@
 //
 //
 
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 namespace mu2e {
 

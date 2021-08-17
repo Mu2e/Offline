@@ -10,7 +10,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include <Rtypes.h>
 
@@ -39,9 +39,9 @@ namespace mu2e
       XYZVectorF const&                startMom() const    {return _startMom;}
       float                        endMom() const      {return _endMom;}
 
-      CLHEP::Hep3Vector            startPosition() const {return Geom::Hep3Vec(_startPos);}
-      CLHEP::Hep3Vector            endPosition() const   {return Geom::Hep3Vec(_endPos);}
-      CLHEP::Hep3Vector            startMomentum() const {return Geom::Hep3Vec(_startMom);}
+      CLHEP::Hep3Vector            startPosition() const {return GenVector::Hep3Vec(_startPos);}
+      CLHEP::Hep3Vector            endPosition() const   {return GenVector::Hep3Vec(_endPos);}
+      CLHEP::Hep3Vector            startMomentum() const {return GenVector::Hep3Vec(_startMom);}
 
       float                        pathLength() const  {return _pathLength;}
 

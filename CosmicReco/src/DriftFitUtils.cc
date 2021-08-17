@@ -2,7 +2,7 @@
 // Date : 2019
 // Purpose : Stores functions associted with Cosmic Drift Fit
 
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 #include "Math/VectorUtil.h"
 #include "TMath.h"

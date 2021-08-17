@@ -1011,7 +1011,7 @@ namespace mu2e {
 	  // compute direction perpendicular to wire and momentum
 	  auto const& sgs = ixing->at(iend)._iclust->strawGasStep();
 	  if(!sgs.isNull()){
-	    Hep3Vector pdir = straw.getDirection().cross(Geom::Hep3Vec(sgs->momentum())).unit();
+	    Hep3Vector pdir = straw.getDirection().cross(GenVector::Hep3Vec(sgs->momentum())).unit();
 	    // project the differences in position to get the perp distance
 	    _xpdist[iend] = pdir.dot(sgs->position()-straw.getMidPoint());
 	  }
@@ -1023,7 +1023,7 @@ namespace mu2e {
 	    _xwdist[iend] = clusts.front().wireDistance();
 	    auto const& sgs = clusts.front().strawGasStep();
 	    if(!sgs.isNull()){
-	      Hep3Vector pdir = straw.getDirection().cross(Geom::Hep3Vec(sgs->momentum())).unit();
+	      Hep3Vector pdir = straw.getDirection().cross(GenVector::Hep3Vec(sgs->momentum())).unit();
 	      // project the differences in position to get the perp distance
 	      _xpdist[iend] = pdir.dot(sgs->position()-straw.getMidPoint());
 	    }
@@ -1183,7 +1183,7 @@ namespace mu2e {
       _mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle()) + _pbtimemc; 
       // compute the doca for this step
       TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
-	  Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+	  GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
       _mcdca = pca.dca();
       auto spos = strawPosition(XYZVectorF(pca.point2()),straw);
       _mcdcaphi = spos.Phi(); 

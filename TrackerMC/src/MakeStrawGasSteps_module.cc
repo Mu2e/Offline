@@ -269,7 +269,7 @@ namespace mu2e {
 	  // check if end is inside physical straw
 	  const Straw& straw = tracker.getStraw(sgs.strawId());
 	  static double r2 = tracker.strawProperties()._strawInnerRadius * tracker.strawProperties()._strawInnerRadius;
-	  Hep3Vector hend = Geom::Hep3Vec(sgs.endPosition());
+	  Hep3Vector hend = GenVector::Hep3Vec(sgs.endPosition());
 	  double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
 	  if(rd2 - r2 > 1e-5 ) cout << "End outside straw, radius " << sqrt(rd2) << endl;
 	}
@@ -446,7 +446,7 @@ namespace mu2e {
   }
 
   void MakeStrawGasSteps::fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs) {
-    _erad = sqrt((Geom::Hep3Vec(sgs.endPosition())-straw.getMidPoint()).perpPart(straw.getDirection()).mag2());
+    _erad = sqrt((GenVector::Hep3Vec(sgs.endPosition())-straw.getMidPoint()).perpPart(straw.getDirection()).mag2());
     _hendrad->Fill(_erad);
     _hphi->Fill(_brot);
     if(_diag > 1){
@@ -460,16 +460,16 @@ namespace mu2e {
       _elen = spmc.stepLength();
       _width = sgs.width();
       // compute DOCA to the wire
-      TwoLinePCA poca(Geom::Hep3Vec(sgs.startPosition()),Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()),
+      TwoLinePCA poca(GenVector::Hep3Vec(sgs.startPosition()),GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()),
 	  straw.getMidPoint(),straw.getDirection());
       _doca = poca.dca();
       _sdist.clear();
       _sdot.clear();
       _sp.clear();
       _slen.clear();
-      auto sdir = Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()).unit();
+      auto sdir = GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()).unit();
       for(auto const& spmcptr : spmcptrs){
-	auto dist = ((spmcptr->position()-Geom::Hep3Vec(sgs.startPosition())).cross(sdir)).mag(); 
+	auto dist = ((spmcptr->position()-GenVector::Hep3Vec(sgs.startPosition())).cross(sdir)).mag(); 
 	_sdist.push_back(dist);
 	_sdot.push_back(sdir.dot(spmcptr->momentum().unit()));
 	_sp.push_back(spmcptr->momentum().mag());

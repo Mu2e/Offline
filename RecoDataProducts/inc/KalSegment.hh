@@ -9,7 +9,7 @@
 #define RecoDataProducts_KalSegment_HH
 #include <Rtypes.h>
 #include "Offline/RecoDataProducts/inc/HelixVal.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "KinKal/General/ParticleState.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"

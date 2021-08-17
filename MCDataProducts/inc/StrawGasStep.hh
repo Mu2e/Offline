@@ -11,7 +11,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include <Rtypes.h>
 
@@ -57,8 +57,8 @@ namespace mu2e {
       art::Ptr<SimParticle>& simParticle() { return _simp; }
 
       // legacy accessors, for compatibility with StepPointMC consumers
-      CLHEP::Hep3Vector position() const { return Geom::Hep3Vec(_startpos); }
-      CLHEP::Hep3Vector momvec() const { return Geom::Hep3Vec(_mom); }
+      CLHEP::Hep3Vector position() const { return GenVector::Hep3Vec(_startpos); }
+      CLHEP::Hep3Vector momvec() const { return GenVector::Hep3Vec(_mom); }
       float eDep() const { return _eIon; }
       float totalEDep() const { return _eIon; }
     private:

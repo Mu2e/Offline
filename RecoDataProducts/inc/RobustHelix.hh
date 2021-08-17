@@ -6,7 +6,7 @@
 #define RecoDataProducts_RobustHelix_HH
 // Mu2e
 #include "Offline/DataProducts/inc/Helicity.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 // Root
 #include "Rtypes.h"
 // C++

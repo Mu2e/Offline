@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Offline/DataProducts/inc/StrawEnd.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Math/VectorUtil.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"

@@ -5,7 +5,7 @@
 #ifndef TrkDiag_TimeClusterInfo_HH
 #define TrkDiag_TimeClusterInfo_HH
 // mu2e includes
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 // root includes
 #include "Rtypes.h"
 // C++ includes

@@ -1,6 +1,6 @@
 #ifndef TrackerMC_IonCluster_hh
 #define TrackerMC_IonCluster_hh
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/TrackerMC/inc/StrawPosition.hh"
 #include "Rtypes.h"
 namespace mu2e {

@@ -23,7 +23,7 @@
 #include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 //Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"

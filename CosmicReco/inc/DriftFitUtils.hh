@@ -5,7 +5,7 @@
 //Purpose: Add in drift fit functionality in seperate file for ease
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"

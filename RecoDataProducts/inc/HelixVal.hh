@@ -8,7 +8,7 @@
 
 // Mu2e
 #include "Offline/DataProducts/inc/Helicity.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixParams.hh"
 // CLHEP

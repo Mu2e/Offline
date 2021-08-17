@@ -4,7 +4,7 @@
 #ifndef StrawHitInfo_hh
 #define StrawHitInfo_hh
 //#include "BTrk/BaBar/BaBar.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Rtypes.h"
 
 namespace mu2e {
