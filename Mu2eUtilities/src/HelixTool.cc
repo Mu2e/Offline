@@ -5,7 +5,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/GeomPrimitives/inc/TubsParams.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"

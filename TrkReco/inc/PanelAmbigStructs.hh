@@ -6,7 +6,7 @@
 //
 #ifndef mu2e_PanelAmbig_PanelAmbigStructs_HH
 #define mu2e_PanelAmbig_PanelAmbigStructs_HH
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"

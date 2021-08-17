@@ -25,6 +25,7 @@ using namespace std;
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "HepPID/ParticleName.hh"
 #include "HepPDT/ParticleData.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
@@ -1364,8 +1365,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       XYZVectorF momvec1, momvec2;
       segmentFirst.mom(fltLMin, momvec1);
       segmentLast.mom(fltLMax, momvec2);
-      double p1=Geom::Hep3Vec(momvec1).mag();
-      double p2=Geom::Hep3Vec(momvec2).mag();
+      double p1=mu2e::GenVector::Hep3Vec(momvec1).mag();
+      double p2=mu2e::GenVector::Hep3Vec(momvec2).mag();
 
       double t0   = kalseed.t0().t0();
       double flt0 = kalseed.flt0();
@@ -1401,12 +1402,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         XYZVectorF pos1, pos2;
         segment.helix().position(fltLMin,pos1);
         segment.helix().position(fltLMax,pos2);
-        double x1=Geom::Hep3Vec(pos1).x();
-        double y1=Geom::Hep3Vec(pos1).y();
-        double z1=Geom::Hep3Vec(pos1).z();
-        double x2=Geom::Hep3Vec(pos2).x();
-        double y2=Geom::Hep3Vec(pos2).y();
-        double z2=Geom::Hep3Vec(pos2).z();
+        double x1=mu2e::GenVector::Hep3Vec(pos1).x();
+        double y1=mu2e::GenVector::Hep3Vec(pos1).y();
+        double z1=mu2e::GenVector::Hep3Vec(pos1).z();
+        double x2=mu2e::GenVector::Hep3Vec(pos2).x();
+        double y2=mu2e::GenVector::Hep3Vec(pos2).y();
+        double z2=mu2e::GenVector::Hep3Vec(pos2).z();
         double t1=t0+(fltLMin-flt0)/v;
         double t2=t0+(fltLMax-flt0)/v;
         boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
@@ -1420,7 +1421,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           double t=t0+(fltL-flt0)/v;
           XYZVectorF pos;
           segment.helix().position(fltL,pos);
-          CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
+          CLHEP::Hep3Vector p = mu2e::GenVector::Hep3Vec(pos);
           findBoundaryT(_tracksTimeMinmax, t);
           findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);

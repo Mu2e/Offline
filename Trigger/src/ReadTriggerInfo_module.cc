@@ -42,7 +42,7 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 //MC dataproducts
 #include "Offline/MCDataProducts/inc/SimParticle.hh"

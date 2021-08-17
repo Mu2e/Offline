@@ -13,7 +13,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 // Mu2e includes
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 // BTrk includes
 #include "BTrk/TrkBase/TrkT0.hh"
 // c++

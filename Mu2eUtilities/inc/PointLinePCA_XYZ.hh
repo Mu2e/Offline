@@ -1,7 +1,7 @@
 #ifndef Mu2eUtilities_PointLinePCA_XYZ_hh
 #define Mu2eUtilities_PointLinePCA_XYZ_hh
 
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 namespace mu2e {
 

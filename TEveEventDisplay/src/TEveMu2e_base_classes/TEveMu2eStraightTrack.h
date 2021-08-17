@@ -3,7 +3,7 @@
 
 #include <TObject.h>
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include <TEveStraightLineSet.h>
 
 namespace mu2e {

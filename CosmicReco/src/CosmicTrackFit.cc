@@ -33,7 +33,7 @@
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 #include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
 #include "Offline/CosmicReco/inc/DriftFitUtils.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 //ROOT:
 #include "TMatrixD.h"

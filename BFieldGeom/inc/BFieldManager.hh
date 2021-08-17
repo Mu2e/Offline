@@ -23,7 +23,7 @@
 #include "Offline/BFieldGeom/inc/BFMap.hh"
 #include "Offline/BFieldGeom/inc/BFMapType.hh"
 #include "Offline/BFieldGeom/inc/BFParamMap.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {

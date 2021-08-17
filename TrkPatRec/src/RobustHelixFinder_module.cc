@@ -542,7 +542,7 @@ namespace mu2e {
 
       const XYZVectorF& wdir = hhit->wdir();
       XYZVectorF wtdir = zaxis.Cross(wdir); // transverse direction to the wire
-      XYZVectorF cvec = PerpVector(hhit->pos() - helix.center(),Geom::ZDir());// direction from the circle center to the hit
+      XYZVectorF cvec = PerpVector(hhit->pos() - helix.center(),GenVector::ZDir());// direction from the circle center to the hit
       XYZVectorF cdir = cvec.Unit();        // direction from the circle center to the hit
       XYZVectorF cperp = zaxis.Cross(cdir); // direction perp to the radius
 
@@ -635,7 +635,7 @@ namespace mu2e {
 
 	const XYZVectorF& wdir = hit->wdir();
 	XYZVectorF wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
-	XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
+	XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
 	XYZVectorF cdir = cvec.Unit();          // direction from the circle center to the hit
 	XYZVectorF cperp = zaxis.Cross(cdir);   // direction perp to the radius
 
@@ -956,7 +956,7 @@ namespace mu2e {
 	hit->_flag.clear(_outlier);
 
 	const XYZVectorF& wdir = hit->wdir();
-	XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
+	XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
 	XYZVectorF cdir = cvec.Unit(); // direction from the circle center to the hit
 	float rwdot = wdir.Dot(cdir); // compare directions of radius and wire
 	if(rwdot > _maxrwdot){

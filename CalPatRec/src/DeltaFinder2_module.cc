@@ -24,7 +24,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 //#include "RecoDataProducts/inc/TimeCluster.hh"
 
 // diagnostics

@@ -10,7 +10,7 @@
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include <stdint.h>
@@ -36,9 +36,9 @@ namespace mu2e {
     XYZVectorF const& pos() const { return _pos; }
     XYZVectorF const& wdir() const { return _wdir; }
 // CLHEP-versions of these for backwards compatibilty
-    CLHEP::Hep3Vector centerPosCLHEP() const { return Geom::Hep3Vec(_pos - _wdist*_wdir); }
-    CLHEP::Hep3Vector posCLHEP() const { return Geom::Hep3Vec(_pos); }
-    CLHEP::Hep3Vector wdirCLHEP() const { return Geom::Hep3Vec(_wdir); }
+    CLHEP::Hep3Vector centerPosCLHEP() const { return GenVector::Hep3Vec(_pos - _wdist*_wdir); }
+    CLHEP::Hep3Vector posCLHEP() const { return GenVector::Hep3Vec(_pos); }
+    CLHEP::Hep3Vector wdirCLHEP() const { return GenVector::Hep3Vec(_wdir); }
 //
     Float_t posRes(edir dir) const;
     Float_t energyDep() const { return _edep; }

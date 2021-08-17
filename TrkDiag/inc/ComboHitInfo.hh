@@ -1,7 +1,7 @@
 #ifndef TrkDiag_ComboHitInfo_HH
 #define TrkDiag_ComboHitInfo_HH
 #include "Rtypes.h"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 namespace mu2e {
   // info about each hit in the combo hit
   struct ComboHitInfo {

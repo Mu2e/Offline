@@ -8,7 +8,7 @@
 // Mu2e includes
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 // CLHEP includes
@@ -60,7 +60,7 @@ namespace mu2e {
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
 // legacy functions
-    CLHEP::HepLorentzVector clusterPosition(StrawEnd strawend) const { return CLHEP::HepLorentzVector(Geom::Hep3Vec(_cpos[strawend]),_ctime[strawend]); }
+    CLHEP::HepLorentzVector clusterPosition(StrawEnd strawend) const { return CLHEP::HepLorentzVector(GenVector::Hep3Vec(_cpos[strawend]),_ctime[strawend]); }
 
   private:
     StrawId  _strawid;      // Straw sid

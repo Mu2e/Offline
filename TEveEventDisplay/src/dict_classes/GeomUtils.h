@@ -1,7 +1,7 @@
 #ifndef GeomUtils_h
 #define GeomUtils_h
 // Math
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"

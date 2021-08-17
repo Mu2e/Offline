@@ -8,7 +8,7 @@
 // 
 #ifndef TrkCaloInfo_HH
 #define TrkCaloInfo_HH
-#include "Offline/DataProducts/inc/Geom.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Rtypes.h"
 #include <string>
 namespace {
