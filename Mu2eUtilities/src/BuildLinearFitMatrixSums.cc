@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cmath>
 #include<exception>
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
 BuildLinearFitMatrixSums::BuildLinearFitMatrixSums() {
@@ -50,8 +50,8 @@ void BuildLinearFitMatrixSums::init(const BuildLinearFitMatrixSums& S) {
   chi2 = S.chi2;
 }
 
-void BuildLinearFitMatrixSums::addPoint( XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
-	XYZVec h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));//hit in X"Y"Z'
+void BuildLinearFitMatrixSums::addPoint( XYZVectorF point_i, XYZVectorF XPrime, XYZVectorF YPrime, XYZVectorF ZPrime,  double errX, double errY){
+	XYZVectorF h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));//hit in X"Y"Z'
 
 	if(errX == 0) return;
 	if(errY ==0) return;

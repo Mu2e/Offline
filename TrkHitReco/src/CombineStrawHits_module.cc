@@ -159,7 +159,7 @@ namespace mu2e {
       combohit._flag.merge(StrawHitFlag::panelcombo);
 
       float eacc(0),tacc(0),dtacc(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
-      XYZVec midpos;
+      XYZVectorF midpos;
       combohit._nsh = 0;
       if (_debug > 2) std::cout << "Combining " << combohit.nCombo() << " hits: ";
 

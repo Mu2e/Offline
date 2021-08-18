@@ -21,7 +21,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 //Utilities
@@ -336,8 +336,8 @@ namespace mu2e
       _converged = tseed._track.converged;
       _minuitconverged = tseed._track.minuit_converged;
       _ntrack = 0;
-      auto minuitpos = Geom::Hep3Vec(tseed._track.MinuitEquation.Pos);
-      auto minuitdir = Geom::Hep3Vec(tseed._track.MinuitEquation.Dir.unit());
+      auto minuitpos = GenVector::Hep3Vec(tseed._track.MinuitEquation.Pos);
+      auto minuitdir = GenVector::Hep3Vec(tseed._track.MinuitEquation.Dir.unit());
       // convert to y orientation
       if (minuitdir.y() > 0)
         minuitdir *= -1;
@@ -430,14 +430,14 @@ namespace mu2e
       auto const& sgsptr = mcdigi.earlyStrawGasStep();
       auto const& sgs = *sgsptr;
       auto const& sp = *sgs.simParticle();
-      auto posi = Geom::Hep3Vec(sgs.startPosition());
+      auto posi = GenVector::Hep3Vec(sgs.startPosition());
       if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
         for (size_t j=i+1;j<mccol.size();j++){
           StrawDigiMC jmcdigi = mccol[j]; 
           auto const& jsgsptr = jmcdigi.earlyStrawGasStep();
           auto const& jsgs = *jsgsptr;
           auto const& jsp = *jsgs.simParticle();
-          auto posj = Geom::Hep3Vec(jsgs.startPosition());
+          auto posj = GenVector::Hep3Vec(jsgs.startPosition());
           if ((jsp.pdgId() == 13 || jsp.pdgId() == -13) && jsp.creationCode() == 56){
             pppos.push_back(posi);
             ppdir.push_back((posi-posj).unit());
@@ -463,7 +463,7 @@ namespace mu2e
 
         if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
-              Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+              GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
           double true_doca = pca.dca(); 
 
           TwoLinePCA pca2( straw.getMidPoint(), straw.getDirection(),
@@ -523,7 +523,7 @@ namespace mu2e
         auto const& sp = *sgs.simParticle();
         if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
-              Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+              GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
           double true_doca = pca.dca(); 
 
           TwoLinePCA pca2( straw.getMidPoint(), straw.getDirection(),
@@ -596,7 +596,7 @@ namespace mu2e
 
         // get true ambiguity
         CLHEP::Hep3Vector mcsep = sgs.position()-straw.getMidPoint();
-        CLHEP::Hep3Vector sgsdir = Geom::Hep3Vec(sgs.momentum()).unit();
+        CLHEP::Hep3Vector sgsdir = GenVector::Hep3Vec(sgs.momentum()).unit();
         CLHEP::Hep3Vector mcperp = (sgsdir.cross(straw.getDirection())).unit();
         double mcdperp = mcperp.dot(mcsep);
         _hitmcambig = mcdperp > 0 ? -1 : 1;
@@ -607,9 +607,9 @@ namespace mu2e
 
         // Get the actual DOCA of the MC step
         TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
-            Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+            GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
         _hittruedoca = pca.dca(); 
-        _hittruelong = (Geom::Hep3Vec(sgs.startPosition())-straw.getMidPoint()).dot(straw.getDirection());
+        _hittruelong = (GenVector::Hep3Vec(sgs.startPosition())-straw.getMidPoint()).dot(straw.getDirection());
 
         // Get the DOCA from the MC straight line track
         TwoLinePCA pca1( straw.getMidPoint(), straw.getDirection(),
@@ -621,10 +621,10 @@ namespace mu2e
         _hitmclong = (pca1.point1()-straw.getMidPoint()).dot(straw.getDirection());
 
         TwoLinePCA mcpca( _mcpos, _mcdir,
-            Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+            GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
         _hitmctrajtime = (mcpca.point1()-_mcpos).dot(_mcdir.unit())/299.9;
         if (mcpca.closeToParallel()){
-          _hitmctrajtime = (Geom::Hep3Vec(sgs.startPosition())-_mcpos).dot(_mcdir.unit())/299.9;
+          _hitmctrajtime = (GenVector::Hep3Vec(sgs.startPosition())-_mcpos).dot(_mcdir.unit())/299.9;
         }
         _hitmcdrifttime = srep.driftDistanceToTime(sh.strawId(), pca1.dca(), 0);
         _hitmcdrifttimeoffset = srep.driftDistanceOffset(sh.strawId(), 0, 0, pca1.dca());
@@ -635,8 +635,8 @@ namespace mu2e
 
       if (_tscol->size() > 0){
         auto tseed = _tscol->at(0);
-        auto minuitpos = Geom::Hep3Vec(tseed._track.MinuitEquation.Pos); 
-        auto minuitdir = Geom::Hep3Vec(tseed._track.MinuitEquation.Dir.unit());
+        auto minuitpos = GenVector::Hep3Vec(tseed._track.MinuitEquation.Pos); 
+        auto minuitdir = GenVector::Hep3Vec(tseed._track.MinuitEquation.Dir.unit());
         // convert to y orientation
         if (minuitdir.y() > 0)
           minuitdir *= -1;

@@ -1,13 +1,13 @@
 #ifndef TrkDiag_ComboHitInfo_HH
 #define TrkDiag_ComboHitInfo_HH
 #include "Rtypes.h"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 namespace mu2e {
   // info about each hit in the combo hit
   struct ComboHitInfo {
     
-    XYZVec _pos; // position of this hit
-    XYZVec _wdir; // direction of this hit
+    XYZVectorF _pos; // position of this hit
+    XYZVectorF _wdir; // direction of this hit
     Float_t _wdist; // distance from wire center along this direction
     Float_t _wres; // estimated error along this direction
     Float_t _tres; // estimated error perpendicular to this direction
@@ -27,7 +27,7 @@ namespace mu2e {
   };
   struct ComboHitInfoMC {
     Int_t _rel; // relation to the 1st hit
-    XYZVec _mcpos; // position of this hit
+    XYZVectorF _mcpos; // position of this hit
   };
 
 }

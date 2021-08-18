@@ -344,7 +344,7 @@ bool mu2e::CosmicMuonInfo::filter(art::Event& event) {
     const double p        = trkinfo.second.p;
     const double pDelta   = pStart-p;
     const bool isMuon = (std::abs(sim.pdgId()) == PDGCode::mu_minus);
-    XYZVec momStart(sim.startMomentum().vect().x(),sim.startMomentum().vect().y(), sim.startMomentum().vect().z());
+    XYZVectorF momStart(sim.startMomentum().vect().x(),sim.startMomentum().vect().y(), sim.startMomentum().vect().z());
     //const double phi_start = atan2(sim.startMomentum().vect().y(),sim.startMomentum().vect().z());
     //double mag = sqrt((sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x()));
     

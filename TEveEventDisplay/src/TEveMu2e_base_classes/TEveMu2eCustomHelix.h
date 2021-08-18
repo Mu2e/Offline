@@ -34,8 +34,8 @@ namespace mu2e {
       void SetMomentumExt();
       void SetParticleExt();
 
-      XYZVec Direction_;
-      XYZVec Position_;
+      XYZVectorF Direction_;
+      XYZVectorF Position_;
       double Momentum_;
       int PDGcode_;
       double Charge_;

@@ -225,7 +225,7 @@ namespace mu2e {
       // fill other info directly from the StrawDigiMC
       tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
       const auto& mcstep = *(sdmc.earlyStrawGasStep());
-      tshmc._cpos = Geom::toXYZVec(sdmc.clusterPosition(sdmc.earlyEnd()));
+      tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
       tshmc._mom = mcstep.momentum();
       tshmc._time = fmod(mcstep.time(),_mbtime);
       tshmc._strawId = sdmc.strawId();
@@ -258,7 +258,7 @@ namespace mu2e {
 	    tshmc._sdmcindex = isdmc;
 	    tshmc._spindex = isp;
 	    tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
-	    tshmc._cpos = Geom::toXYZVec(sdmc.clusterPosition(sdmc.earlyEnd()));
+	    tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
 	    tshmc._mom = mcstep.momentum();
 	    tshmc._time = sdmc.clusterTime(sdmc.earlyEnd());
 	    tshmc._strawId = sdmc.strawId();

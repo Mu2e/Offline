@@ -42,7 +42,7 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 //MC dataproducts
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -1306,11 +1306,11 @@ namespace mu2e {
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
-	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
-	XYZVec origin;
-	origin.SetX(sp->x()+3904);
-	origin.SetY(sp->y());
-	origin.SetZ(sp->z());
+	CLHEP::Hep3Vector sp = simptr->startPosition();
+	XYZVectorF origin;
+	origin.SetX(sp.x()+3904);
+	origin.SetY(sp.y());
+	origin.SetZ(sp.z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
 	double pz     = sqrt(p*p - pt*pt);
 
@@ -1444,7 +1444,7 @@ namespace mu2e {
 	int   indexMother(-1);
 
 	if (pdgM == 13){ //negative muon
-	  XYZVec  mother_origin;
+	  XYZVectorF  mother_origin;
 	  mother_origin.SetX(mother->startPosition().x()+3904);
 	  mother_origin.SetY(mother->startPosition().y());
 	  mother_origin.SetZ(mother->startPosition().z());
@@ -1482,11 +1482,11 @@ namespace mu2e {
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
-	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
-	XYZVec origin;
-	origin.SetX(sp->x()+3904);
-	origin.SetY(sp->y());
-	origin.SetZ(sp->z());
+	CLHEP::Hep3Vector sp = simptr->startPosition();
+	XYZVectorF origin;
+	origin.SetX(sp.x()+3904);
+	origin.SetY(sp.y());
+	origin.SetZ(sp.z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
 	// trackSeed->fOrigin1.SetXYZT(sp->x(),sp->y(),sp->z(),simptr->startGlobalTime());
 	double pz     = sqrt(p*p - pt*pt);
