@@ -23,7 +23,7 @@
 #include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 //Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -410,33 +410,33 @@ namespace mu2e
 	StrawDigiMC first = (*_mcdigis)[0];
 
 	auto const& spmcp0= first.earlyStrawGasStep();
-	XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
-	XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
+	XYZVectorF pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
+	XYZVectorF dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
 
         for(size_t ich = 0;ich < _mcdigis->size(); ++ich){
             hitP1 = (*_mcdigis)[ich];
 
 	    auto const& spmcp= hitP1.earlyStrawGasStep();
-            XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+            XYZVectorF posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
 
-            XYZVec ZPrime = (spmcp->momentum().Unit());
+            XYZVectorF ZPrime = (spmcp->momentum().Unit());
 
             TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);
             TrackTrueInfo.TrueTrackCoordSystem = (TrueAxes);
 
-            XYZVec point(posN.x(), posN.y(), posN.z());
-            XYZVec X(1,0,0);
-            XYZVec Y(0,1,0);
-            XYZVec Z(0,0,1);
+            XYZVectorF point(posN.x(), posN.y(), posN.z());
+            XYZVectorF X(1,0,0);
+            XYZVectorF Y(0,1,0);
+            XYZVectorF Z(0,0,1);
             S.addPoint( point, X,Y,Z, 1,1);
 
         }
 
 	TrackParams RawTrueParams(S.GetAlphaX()[0][0], S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
 
-	XYZVec TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
+	XYZVectorF TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
 
-	XYZVec TrueDir(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1);
+	XYZVectorF TrueDir(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1);
 	TrueDir = TrueDir.Unit();
 	TrueDir = TrueDir/TrueDir.Z();
 

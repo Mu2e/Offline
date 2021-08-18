@@ -8,7 +8,7 @@
 // Mu2e includes
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 // CLHEP includes
@@ -30,7 +30,7 @@ namespace mu2e {
   public:
     typedef art::Ptr<StrawGasStep> SGSP;
     typedef std::array<SGSP,StrawEnd::nends> SGSPA;
-    typedef std::array<XYZVec,StrawEnd::nends> PA;
+    typedef std::array<XYZVectorF,StrawEnd::nends> PA;
     typedef std::array<float,StrawEnd::nends> FA;
 
     StrawDigiMC();
@@ -48,7 +48,7 @@ namespace mu2e {
     SGSP const&  earlyStrawGasStep() const { return strawGasStep(earlyEnd()); }
     double energySum() const;// sum of all MC true energy deposited
 
-    XYZVec const& clusterPos(StrawEnd strawend) const { return _cpos[strawend]; }
+    XYZVectorF const& clusterPos(StrawEnd strawend) const { return _cpos[strawend]; }
     // note that all the time functions below have time offsets already applied!
     float clusterTime(StrawEnd strawend) const { return _ctime[strawend]; } // time the ion cluster was created
     float wireEndTime(StrawEnd strawend) const { return _wtime[strawend]; } // time the signal reaches the end of the wire
@@ -60,7 +60,7 @@ namespace mu2e {
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
 // legacy functions
-    CLHEP::HepLorentzVector clusterPosition(StrawEnd strawend) const { return CLHEP::HepLorentzVector(Geom::Hep3Vec(_cpos[strawend]),_ctime[strawend]); }
+    CLHEP::HepLorentzVector clusterPosition(StrawEnd strawend) const { return CLHEP::HepLorentzVector(GenVector::Hep3Vec(_cpos[strawend]),_ctime[strawend]); }
 
   private:
     StrawId  _strawid;      // Straw sid

@@ -37,7 +37,7 @@ namespace mu2e {
     return retval;
   }
 
-  std::vector<KalSegment>::const_iterator KalSeed::nearestSegment(const XYZVec& pos)  const {
+  std::vector<KalSegment>::const_iterator KalSeed::nearestSegment(const XYZVectorF& pos)  const {
     auto retval = segments().end();
     float dmin(std::numeric_limits<float>::max());
     for(auto ikseg = segments().begin(); ikseg !=segments().end(); ikseg++) {

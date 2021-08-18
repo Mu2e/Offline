@@ -147,7 +147,7 @@ namespace mu2e {
       PanelZ_t*                      panelz   [kNFaces];
       std::vector<const HitData_t*>  hitlist  [kNFaces];
       std::vector<McPart_t*>         fMcPart  [kNFaces];
-      XYZVec                         CofM;
+      XYZVectorF                         CofM;
       float                          fMinTime;          // min and max times of the included hits
       float                          fMaxTime;
       float                          fMaxDriftTime;
@@ -211,7 +211,7 @@ namespace mu2e {
       float                 dxy    [kNStations];   // used only for diagnostics
       float                 fT0Min [kNStations];
       float                 fT0Max [kNStations];
-      XYZVec                CofM;
+      XYZVectorF                CofM;
       float                 phi;
       int                   n_seeds;
       McPart_t*             fMcPart;

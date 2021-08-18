@@ -142,7 +142,7 @@ namespace mu2e {
     HepPoint    p2(v2.x(),v2.y(),v2.z());
 
     TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
-    TrkLineTraj trstep (p2,Geom::Hep3Vec(step->momentum()).unit(),0.,0.);
+    TrkLineTraj trstep (p2,GenVector::Hep3Vec(step->momentum()).unit(),0.,0.);
 
     TrkPoca poca(trstep, 0., trstraw, 0.);
 

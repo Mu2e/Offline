@@ -3,7 +3,7 @@
 ////S. Middleton, Feb 2019 - Cosmic track class, main purpose id to store diagnostics.
 #include "TMath.h"
 #include "TMatrixD.h"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
 #include<vector>
 #include<bitset>
@@ -42,25 +42,25 @@ using namespace std;
 	TrackCov Covarience; //FIXME backwards compatibility
         std::vector<double> cov;
 
-	XYZVec Direction() const { return XYZVec(A1, B1, 1).unit();};
-	XYZVec Position() const { return XYZVec(A0, B0, 0);};
+	XYZVectorF Direction() const { return XYZVectorF(A1, B1, 1).unit();};
+	XYZVectorF Position() const { return XYZVectorF(A0, B0, 0);};
    };
 
    //Struct to hold Coordinate System
    struct TrackAxes{
-  	XYZVec _XDoublePrime;
-  	XYZVec _YDoublePrime;
-  	XYZVec _ZPrime;
+  	XYZVectorF _XDoublePrime;
+  	XYZVectorF _YDoublePrime;
+  	XYZVectorF _ZPrime;
   	TrackAxes();
-  	TrackAxes(XYZVec X, XYZVec Y, XYZVec Z) : _XDoublePrime(X),_YDoublePrime(Y),_ZPrime(Z){};
+  	TrackAxes(XYZVectorF const& X, XYZVectorF const& Y, XYZVectorF const& Z) : _XDoublePrime(X),_YDoublePrime(Y),_ZPrime(Z){};
    };
 
    //Struct to store a Track Equation (optional)
    struct TrackEquation{
-   	XYZVec Pos;
-        XYZVec Dir;
+   	XYZVectorF Pos;
+        XYZVectorF Dir;
         TrackEquation();
-        TrackEquation(XYZVec P, XYZVec D) : Pos(P), Dir(D){};
+        TrackEquation(XYZVectorF const& P, XYZVectorF const& D) : Pos(P), Dir(D){};
    };
 
    //Struct to store Diagnostics associated with seed fit:

@@ -137,9 +137,9 @@ namespace mu2e {
     float propd = straw.halfLength()+dw;
     if (eend == mu2e::StrawEnd(mu2e::StrawEnd::cal))
       propd = straw.halfLength()-dw;
-    XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
+    XYZVectorF pos = XYZVectorF(straw.getMidPoint()+dw*straw.getDirection());
     // create combo hit
-    static const XYZVec _zdir(0.0,0.0,1.0);
+    static const XYZVectorF _zdir(0.0,0.0,1.0);
     mu2e::ComboHit ch;
     ch._nsh = 1; // 'combo' of 1 hit
     ch._pos = pos;

@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Math/GenVector/Cartesian3D.h"
 #include "Math/GenVector/DisplacementVector3D.h"
 
@@ -20,10 +20,10 @@ using namespace std;
 namespace mu2e {
 
 
-  TwoLinePCA_XYZ::TwoLinePCA_XYZ( XYZVec const& p1,
-                          XYZVec const& t1,
-                          XYZVec const& p2,
-                          XYZVec const& t2,
+  TwoLinePCA_XYZ::TwoLinePCA_XYZ( XYZVectorF const& p1,
+                          XYZVectorF const& t1,
+                          XYZVectorF const& p2,
+                          XYZVectorF const& t2,
                           double cut
                           ):
     _p1(p1),
@@ -61,7 +61,7 @@ namespace mu2e {
     // Normal case: lines far from parallel.
     else {
 
-      XYZVec delta(_p1-_p2);
+      XYZVectorF delta(_p1-_p2);
       double dDotT1 = delta.Dot(_t1);
       double dDotT2 = delta.Dot(_t2);
 
@@ -73,7 +73,7 @@ namespace mu2e {
       _LRambig = _s2 > 0 ? 1 : -1;//int ambig_sign= ambig > 0 ? 1 : -1;
     }
 
-    XYZVec diff = (_pca1-_pca2);
+    XYZVectorF diff = (_pca1-_pca2);
     _dca   = sqrt(diff.Mag2());
     _dca2d = sqrt(diff.Perp2());
 

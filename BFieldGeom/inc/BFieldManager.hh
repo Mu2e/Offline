@@ -23,7 +23,7 @@
 #include "Offline/BFieldGeom/inc/BFMap.hh"
 #include "Offline/BFieldGeom/inc/BFMapType.hh"
 #include "Offline/BFieldGeom/inc/BFParamMap.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 namespace mu2e {
@@ -60,13 +60,13 @@ namespace mu2e {
             return result;
         }
 
-        XYZVec getBField(const XYZVec& pos) const {
+        XYZVectorF getBField(const XYZVectorF& pos) const {
           // Default c'tor sets all components to zero - which is what we need here.
           CLHEP::Hep3Vector b;
 
           CLHEP::Hep3Vector p(pos.x(), pos.y(), pos.z());
           getBFieldWithStatus(p, b);
-          XYZVec result(b.x(), b.y(), b.z());
+          XYZVectorF result(b.x(), b.y(), b.z());
 
           return result;
         }

@@ -451,13 +451,13 @@ namespace mu2e {
 // reproduce DeltaFinder2 algorithm
 //-----------------------------------------------------------------------------
 	  const StrawHitPosition* shp  = hd->fPos;
-	  XYZVec       dxyz = shp->pos()-Seed->CofM; // distance from hit to preseed
+	  XYZVectorF       dxyz = shp->pos()-Seed->CofM; // distance from hit to preseed
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
 	  const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
-	  XYZVec d_par               = Geom::toXYZVec((dxyz.Dot(wdir))/(wdir.dot(wdir))*wdir); 
-	  XYZVec d_perp_z            = dxyz-d_par;
+	  XYZVectorF d_par((dxyz.Dot(wdir))/(wdir.dot(wdir))*wdir); 
+	  XYZVectorF d_perp_z            = dxyz-d_par;
 	  float  d_perp              = sqrt(d_perp_z.perp2());
 	  double sigw                = hd->fSigW;
 	  float  chi2_par            = d_par.mag2()/(sigw*sigw);
