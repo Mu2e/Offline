@@ -132,7 +132,7 @@ void mu2e::DbUtil::writeFile(std::string const& fn,
   for(auto livet : coll) {
     DbTable const& tt = livet.table();
     DbIoV const& iov = livet.iov();
-    myfile << "TABLE " << tt.name() << " " << iov.simpleString() ;
+    myfile << "TABLE " << tt.name() << " " << iov.to_string(true) <<std::endl;
     if(tt.csv().size()>0) {
       myfile << tt.csv();
     } else {
