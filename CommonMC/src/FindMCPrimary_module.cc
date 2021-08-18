@@ -46,8 +46,7 @@ namespace mu2e {
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
     art::EDProducer{config},
     _debug(config().debug()),
-    _spc(config().simPC()),
-    _pcode(ProcessCode::unknown)
+    _spc(config().simPC())
  {
    std::string pcode;
    std::vector<std::string> gcodes;
@@ -57,14 +56,14 @@ namespace mu2e {
 	_gcodes.emplace_back(GenId::findByName(gcodename));
       }
     }
-    if(_pcode != ProcessCode::unknown && _gcodes.size() > 0 )
+    if(_pcode != ProcessCode::uninitialized && _gcodes.size() > 0 )
       throw cet::exception("Configuration") << "Both process and gen codes specified " << std::endl;
-    else if(_pcode == ProcessCode::unknown && _gcodes.size() == 0)
+    else if(_pcode == ProcessCode::uninitialized && _gcodes.size() == 0)
       throw cet::exception("Configuration") << "Neither process or gen codes specified " << std::endl;
     consumes<SimParticleCollection>(_spc);
     produces <PrimaryParticle>();
     if(_debug > 0){
-      if(_pcode != ProcessCode::unknown)
+      if(_pcode != ProcessCode::uninitialized)
 	std::cout << "Looking for primary SimParticles with code " << _pcode << std::endl;
       else if(_gcodes.size() > 0){
 	std::cout << "Looking for primary GenParticles with code: " << std::endl;
