@@ -179,7 +179,7 @@ namespace mu2e {
 
     // Where was this particle created: in the event generator or in G4?
     bool isSecondary()   const { return _parentSim.isNonnull(); }
-    bool isPrimary()     const { return _genParticle.isNonnull(); }
+    bool isPrimary()     const { return _genParticle.isNonnull() && _creationCode == ProcessCode::mu2ePrimary; }
     bool selfParent()    const { return _parentSim.isNonnull() && _creationCode == ProcessCode::mu2ePrimary; }
 
     // Some synonyms for the previous two accessors.
@@ -198,8 +198,7 @@ namespace mu2e {
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()     const { return _creationCode;   }
-    void setCreationCode(ProcessCode newCode) { _creationCode = newCode;   }
-    bool isTruncated() { return (_creationCode == ProcessCode::truncated);}
+    bool isTruncated() const { return (_parentSim.isNull() && _creationCode != ProcessCode::mu2ePrimary); }
 
     // the following is for excited ions
     IonDetail const& ion()                      const { return _ion; }
