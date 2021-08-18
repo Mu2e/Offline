@@ -14,7 +14,7 @@
 // There is also the concept of "genealogy" compression, which uses the fhicl parameter
 // keepNGenerations and takes an integer corresponding to the
 // number of generations back you want to keep. The "oldest" SimParticle remaining
-// has a status code of "truncated" to identify that a truncation has occured
+// can be identified as "truncated" with the SimParticle::isTruncated() function
 // - Note 1: N = -1 means keep all generations (i.e. no compression)
 //
 // Dec 2020, Andy Edmonds
@@ -433,7 +433,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
             std::cout << "SimParticle " << i_parentPtr << " will not be in output collection because it has been compressed away by genealogy compression" << std::endl;
           }
 
-          (*_newSimParticles)[i_childPtr->id()].setCreationCode(ProcessCode::truncated);
+          (*_newSimParticles)[i_childPtr->id()].parent() = art::Ptr<SimParticle>(); // remove the parent so that we can see that it is truncated later
           break; // don't go further up the genealogy tree otherwise we will be adding particles
         }
         else {
@@ -468,10 +468,9 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
             break; // don't need to go any further
           }
           else {
-            // If we have got to the very SimParticle (i.e. the one that points to the GenParticle)
+            // If we have got to the very first SimParticle (i.e. the one that points to the GenParticle)
             if (i_ancestorPtr->isPrimary()) {
               newsim.genParticle() = i_ancestorPtr->genParticle();// set this particle's GenParticlePtr
-              newsim.parent() = art::Ptr<SimParticle>(); // remove the parent
               break; // don't need to go any further
             }
             else { // this is just another step in the genealogy
