@@ -231,7 +231,7 @@ namespace mu2e {
     std::vector<key_type>                      daughterIds() const;
 
     // Is the second half defined?
-    bool endDefined() const { return _stoppingCode != ProcessCode::unknown; }
+    bool endDefined() const { return _stoppingCode != ProcessCode::uninitialized; }
 
     // Modifiers;
     void setDaughterPtrs  ( std::vector<art::Ptr<SimParticle> > const& ptr){
