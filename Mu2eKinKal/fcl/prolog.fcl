@@ -162,6 +162,11 @@ KKLineSeedFit : {
       
       ZSavePositions : [-1522.0,0.0,1522.0]
     }
+    
+  }//KKLine end
+  
+  CosmicFilter : {
+    module_type : CosmicTrackFinderTimeFit
   }
 
 }
@@ -172,6 +177,9 @@ Mu2eKinKal : {
     KKDePSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
+  }
+  filters : {
+    CosmicFilter: @local::Mu2eKinKal.CosmicFilter
   }
 }
 Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
