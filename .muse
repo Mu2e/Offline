@@ -5,3 +5,4 @@ PYTHONPATH TrackerAlignment/scripts
 PYTHONPATH Trigger/python
 # add Offline/bin to path
 PATH bin
+# dummy
