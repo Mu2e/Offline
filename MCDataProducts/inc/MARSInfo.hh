@@ -70,6 +70,7 @@ namespace mu2e {
                                                                                        (a.protonNumber() < b.protonNumber()))));
     }
   };
+  typedef std::vector<MARSInfo> MARSInfoCollection;
 
   std::ostream& operator<<(std::ostream& os, const MARSInfo& mi);
 }

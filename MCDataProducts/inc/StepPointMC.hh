@@ -222,7 +222,10 @@ namespace mu2e {
     h.print(ost, false);
     return ost;
   }
-   typedef std::vector<mu2e::StepPointMC> StepPointMCCollection;
+
+  typedef std::vector<art::Ptr<StepPointMC> > PtrStepPointMCVector;
+  typedef std::vector<mu2e::StepPointMC> StepPointMCCollection;
+  typedef std::vector<PtrStepPointMCVector> PtrStepPointMCVectorCollection;
 
 } // namespace mu2e
 
