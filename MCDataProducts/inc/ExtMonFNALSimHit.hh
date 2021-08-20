@@ -85,7 +85,7 @@ namespace mu2e {
   };
 
   std::ostream& operator<<(std::ostream& os, const ExtMonFNALSimHit& hit);
-
+ typedef std::vector<mu2e::ExtMonFNALSimHit> ExtMonFNALSimHitCollection;
 } // namespace mu2e
 
 #endif /* MCDataProducts_ExtMonFNALSimHit_hh */
