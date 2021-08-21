@@ -1,5 +1,4 @@
 //
-//
 using namespace std;
 #include "Offline/EventDisplay/src/DataInterface.h"
 
@@ -37,8 +36,6 @@ using namespace std;
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
@@ -371,8 +368,6 @@ void DataInterface::fillGeometry()
     double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
     double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
 
-
-
     double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
     double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
     double FPCoolPipeRadius         = calo->caloInfo().getDouble("FPCoolPipeRadius");
@@ -431,7 +426,6 @@ void DataInterface::fillGeometry()
       }
     }
   }
-
 
   //MBS
 /*
@@ -1169,7 +1163,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-
   const mu2e::PhysicalVolumeInfoMultiCollection *physicalVolumesMulti=contentSelector->getPhysicalVolumeInfoMultiCollection();
 
   resetBoundaryP(_tracksMinmax);
@@ -1429,7 +1422,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-
 
   // TrkExt track
   trackInfos.clear();

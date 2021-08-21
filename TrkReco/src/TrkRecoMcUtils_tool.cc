@@ -19,9 +19,7 @@
 #include "CLHEP/Matrix/Vector.h"
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
@@ -110,7 +108,6 @@ namespace mu2e {
     return 0;
   }
 
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // returns ID of the SimParticle corresponding to straw hit 'Index'
 //-----------------------------------------------------------------------------

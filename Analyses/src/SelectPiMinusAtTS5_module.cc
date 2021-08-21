@@ -7,7 +7,6 @@
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -122,7 +121,6 @@ namespace mu2e {
     std::unique_ptr<StepPointMCCollection> outhits(new StepPointMCCollection());
     std::unique_ptr<StepPointMCCollection> extrahits(new StepPointMCCollection());
 
-
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
       if(std::find(_vids.begin(), _vids.end(), i->volumeId()) != _vids.end()) {
@@ -142,7 +140,6 @@ namespace mu2e {
         if (particle->pdgId() != PDGCode::pi_minus) continue;
 
           AGDEBUG("here: found a piminus!! "<<particle<<" (internal id = "<< particle->id()<< " pdgId = " << particle->pdgId() <<")"<<" for hit "<<*i);
-
 
         if(!particle.get()) {
           throw cet::exception("MISSINGINFO")
@@ -200,7 +197,6 @@ namespace mu2e {
         SimParticle& particle(outparts->getOrThrow(key));
 
         if (particle.pdgId() != PDGCode::pi_minus) continue;
-
 
         // Zero internal pointers: intermediate particles are not preserved to reduce data size
         AGDEBUG("here");

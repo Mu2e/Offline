@@ -9,7 +9,6 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/Print/inc/ProductPrinter.hh"
 #include "Offline/Print/inc/StatusG4Printer.hh"
 #include "Offline/Print/inc/GenParticlePrinter.hh"
@@ -152,7 +151,6 @@ namespace mu2e {
 
 }
 
-
 mu2e::PrintModule::PrintModule(const Parameters& conf):
   art::EDAnalyzer(conf) {
   //cout << "start main pset\n"<< pset.to_string() << "\n end main pset"<< endl;
@@ -197,7 +195,6 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<PrimaryParticlePrinter>( conf().primaryParticlePrinter() ) );
 }
 
-
 void mu2e::PrintModule::analyze(art::Event const& event) {
   cout 
     << "\n"
@@ -226,6 +223,5 @@ void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
   cout << endl;
 
 }
-
 
 DEFINE_ART_MODULE(mu2e::PrintModule)

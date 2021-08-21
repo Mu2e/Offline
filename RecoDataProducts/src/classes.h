@@ -53,7 +53,6 @@
 #include "Offline/RecoDataProducts/inc/TrkQual.hh"
 #include "Offline/RecoDataProducts/inc/RecoQual.hh"
 #include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
-#include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
 #include "KinKal/General/ParticleState.hh"
 
 // extrapolation and PID
@@ -75,15 +74,12 @@
 
 // ExtMon
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 
 // trigger

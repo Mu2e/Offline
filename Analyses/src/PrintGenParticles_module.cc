@@ -1,6 +1,5 @@
 // Prints out all GenParticles in a collection.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -12,7 +11,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 namespace mu2e {

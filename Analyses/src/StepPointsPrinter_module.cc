@@ -12,7 +12,6 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e {
 

@@ -1,7 +1,6 @@
 //
 // read ascii file for momentum and position of particle.  Set pdgid in constructor.
 //
-//
 // Original author Rob Kutschke
 //
 
@@ -32,7 +31,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-
 // Mu2e includes
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
@@ -47,10 +45,8 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "art_root_io/TFileService.h"
 
-
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 // ROOT includes
@@ -89,8 +85,6 @@ namespace mu2e {
     ifstream vertexFile_;
     int lengthOfVertexFile_;
     int ncalls;
-
-
 
     double mass_;
     double protonMass_;
@@ -160,15 +154,11 @@ namespace mu2e {
                                                  CLHEP::Hep3Vector(initialAntiProtonMomentumX_,initialAntiProtonMomentumY_,initialAntiProtonMomentumZ_));
    }
 
-
-
-
    lengthOfVertexFile_ = startPos_.size();
 
       std::cout << "length of vertex file =  " << startPos_.size() << std::endl;
 
   ncalls = 0;
-
 
    produces <mu2e::GenParticleCollection>();
 

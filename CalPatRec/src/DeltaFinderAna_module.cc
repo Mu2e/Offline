@@ -35,8 +35,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 // Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -46,7 +44,6 @@
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 using namespace std; 
@@ -242,7 +239,6 @@ namespace mu2e {
   DeltaFinderAna::~DeltaFinderAna() {
   }
 
-
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookEventHistograms(EventHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
     Hist->fEventNumber     = Dir->make<TH1F>(Form("event_%02i", HistSet), "Event Number", 100, 0., 100000.);
@@ -269,7 +265,6 @@ namespace mu2e {
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
   }
 
-
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookStrawHitHistograms(StrawHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
 
@@ -280,7 +275,6 @@ namespace mu2e {
     Hist->fDeltaT    = Dir->make<TH1F>("dt"  , "DeltaT"          , 200, -10,10);
     Hist->fPDGCode   = Dir->make<TH1F>("pdg" , "PDG code"        , 2000, -10000,10000);
   }
-
 
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookHistograms() {
@@ -364,12 +358,10 @@ namespace mu2e {
     }
   }
 
-
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::beginJob() {
     bookHistograms();
   }
-
 
  
 //----Get data------------------------------------------------------------------------------------------------
@@ -379,9 +371,6 @@ namespace mu2e {
     _tracker = ttHandle.get();
 
   }
-
-
-
 
 //-----------------------------------------------------------------------------
   void  DeltaFinderAna::fillEventHistograms(EventHist_t* Hist) {
@@ -403,7 +392,6 @@ namespace mu2e {
     Hist->fNHitsDeltaT->Fill(fNHitsDeltaTot);
     Hist->fNHitsDeltaR->Fill(fNHitsDeltaReco);
   }
-
 
 //-----------------------------------------------------------------------------
   void  DeltaFinderAna::fillStrawHitHistograms(StrawHitHist_t* Hist, const StrawHit* Hit, McHitInfo_t* McHitInfo) {
@@ -707,7 +695,6 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     return (_shcol != 0) && (_nsh > 0) && (_shfcol != 0) && (_mcdigis != 0) ;     
   }
 
-
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::produce(art::Event& Event) {
 
@@ -764,7 +751,6 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
       }
     }
   }
-
 
 // Part of the magic that makes this class a module.
 DEFINE_ART_MODULE(DeltaFinderAna)

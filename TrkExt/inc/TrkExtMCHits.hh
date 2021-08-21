@@ -1,7 +1,5 @@
 //
-//
 //  Original author MyeongJae Lee
-//
 //
 #ifndef TrkExtMCHits_HH
 #define TrkExtMCHits_HH
@@ -12,7 +10,6 @@
 
 // Framework includes.
 #include "art/Framework/Principal/Event.h"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "cetlib/map_vector.h"
@@ -49,12 +46,8 @@ namespace mu2e {
     std::vector<StepPointMCCollection> _hitcol;
     double _distcut;
 
-
   };
 
-
-
 } // end namespace mu2e
-
 
 #endif

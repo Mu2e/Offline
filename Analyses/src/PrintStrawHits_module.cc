@@ -1,6 +1,5 @@
 // Prints out all StrawHits in a collection.
 //
-//
 // Original author Pavel Murat
 //
 
@@ -12,7 +11,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 namespace mu2e {

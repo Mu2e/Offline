@@ -18,7 +18,6 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "HepPID/ParticleName.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"

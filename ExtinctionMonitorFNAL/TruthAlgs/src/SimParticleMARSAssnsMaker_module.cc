@@ -1,6 +1,5 @@
 // Associate SimParticles to MARSInfo in a newly produced compressed MARSInfoCollection.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -23,10 +22,7 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/SimParticleMARSAssns.hh"
 

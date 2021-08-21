@@ -1,7 +1,6 @@
 //
 // an EDAnalyzer module that writes out calorimeter and tracker information so that it can be used to study combined track/calo information.  Largely based on Echenard's CaloExample_module.cc
 
-
 //
 // Original author Robert Bernstein
 //
@@ -50,7 +49,6 @@
 #include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 
 // data
@@ -89,7 +87,6 @@
 #include <map>
 #include <vector>
 
-
 #include "Offline/GeneralUtilities/inc/sqrtOrThrow.hh"
 
 using namespace std;
@@ -97,10 +94,7 @@ using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 using CLHEP::keV;
 
-
-
 namespace mu2e {
-
 
   class KineticFracAnalysis : public art::EDAnalyzer {
 
@@ -109,8 +103,6 @@ namespace mu2e {
     typedef art::Ptr<StepPointMC> StepPtr;
     typedef std::vector<StepPtr>  StepPtrs;
     typedef std::map<int,StepPtrs > HitMap;
-
-
 
     explicit KineticFracAnalysis(fhicl::ParameterSet const& pset);
 
@@ -122,16 +114,11 @@ namespace mu2e {
     // This is called for each event.
     virtual void analyze(const art::Event& e);
 
-
-
-
-
   private:
 
     typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
     typedef art::Ptr< CaloHit> CaloHitPtr;
     typedef art::Ptr<SimParticle> SimParticlePtr;
-
 
     int _diagLevel;
     int _nProcess;
@@ -168,11 +155,8 @@ namespace mu2e {
     const StrawHitFlagCollection*     _bkfcol;
     const StrawHitPositionCollection* _shpcol;
 
-
-
     TH1F *_hcryE,*_hcryT,*_hcryX,*_hcryY,*_hcryZ;
     TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25;
-
 
     TH1F *_hfitstatus
       ,*_htrkcon
@@ -261,7 +245,6 @@ namespace mu2e {
       ,*_hCascade
       ,*_hShortestDistanceClusterTime;
 
-
     TH1F* _hZinter;
     TH1F* _hChisqDisk1GoodZ;
     TH1F* _hChisqDisk1BadZ;
@@ -296,7 +279,6 @@ namespace mu2e {
 
     TH2F *_hTanDipVsMomentumHiFrac, *_hTanDipVsMomentumLoFrac;
 
-
     TProfile *_hErrVsMomLoFrac, *_hErrVsD0LoFrac, *_hErrVsOmegaLoFrac, 
       *_hErrVsTanDipLoFrac;
 
@@ -306,7 +288,6 @@ namespace mu2e {
     int _timeDiff;
 
     TTree* _Ntup;
-
 
     int   _evt,_run;
 
@@ -336,7 +317,6 @@ namespace mu2e {
 
     float _trkt0[8192],_trkMom[8192], _trkd0[8192],_trkz0[8192],_trkOmega[8192],_trkPhi0[8192],_trkt0Err[8192]; //rhb added
 
-
     float _hitTime[32768];
     float _hitEnergy[32768];
     float _hitZ[32768];
@@ -346,14 +326,12 @@ namespace mu2e {
     int _nDeltas;
        
 
-
     int    _nMatch, _mTrkId[1024],_mCluId[1024];
     float  _mChi2[1024],_mChi2Pos[1024],_mChi2Time[1024];
     int    _nTrkHel,_trknHitHel[1024],_trkStatHel[1024],_trkCluIdxHel[1024];
     float  _trkx[1024],_trky[1024],_trkz[1024],_trkFFx[1024],_trkFFy[1024],_trkFFz[1024],_trke[1024],_trkt[1024];
     float  _trkpx[1024],_trkpy[1024],_trkpz[1024],_trkprob[1024];
     float  _trkphi0[1024],_trkomega[1024],_trkcdip[1024],_trkdlen[1024];
-
 
     int  _goodKfrac;
     //    CLHEP::Hep3Vector _firstDiskLoc;
@@ -365,7 +343,6 @@ namespace mu2e {
     double _density;
     double _tol = 1.0*CLHEP::mm; // for comparisons, slight differences in computations at 1e-9 level
   };
-
 
   KineticFracAnalysis::KineticFracAnalysis(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
@@ -421,8 +398,6 @@ namespace mu2e {
 
     _Ntup  = tfs->make<TTree>("KineticFrac", "KineticFrac");
 
-
-
     _Ntup->Branch("evt",          &_evt ,        "evt/I");
     _Ntup->Branch("run",          &_run ,        "run/I");
     _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
@@ -433,8 +408,6 @@ namespace mu2e {
     _Ntup->Branch("mChi2",     &_mChi2,     "mChi2[nMatch]/F");
     _Ntup->Branch("mChi2Pos",  &_mChi2Pos,  "mChi2Pos[nMatch]/F");
     _Ntup->Branch("mChi2Time", &_mChi2Time, "mChi2Time[nMatch]/F");
-
-
 
     _Ntup->Branch("nGen",         &_nGen ,        "nGen/I");
     _Ntup->Branch("genId",        &_genPdgId,     "genId[nGen]/I");
@@ -666,14 +639,11 @@ namespace mu2e {
     _hErrVsTanDipLoFrac = tfs->make<TProfile>("_hErrVsTanDipLoFrac","Err vs TanDip LoFrac Profile",300,0.,3.);
     _hTanDipVsMomentumLoFrac = new TH2F("_hTanDipVsMomentumLoFrac","Tan Dip vs Momentum LoFrac",300,0.,300.,100,0.,3.);
 
-
     _hErrVsMomMuon = tfs->make<TProfile>("_hErrVsMomMuon","Err vs Momentum Muon Profile",300,0.,300.);
     _hErrVsD0Muon = tfs->make<TProfile>("_hErrVsD0Muon","Err vs D0 Muon Profile",300,-100,500.);
     _hErrVsOmegaMuon = tfs->make<TProfile>("_hErrVsOmegaMuon","Err vs Omega Muon Profile",100,0.,.01);
     _hErrVsTanDipMuon = tfs->make<TProfile>("_hErrVsTanDipMuon","Err vs TanDip Muon Profile",300,0.,3.);
     _hTanDipVsMomentumMuon = new TH2F("_hTanDipVsMomentumMuon","Tan Dip vs Momentum Muon",300,0.,300.,100,0.,3.);
-
-
 
     _hErrVsMomPion = tfs->make<TProfile>("_hErrVsMomPion","Err vs Momentum Pion Profile",300,0.,300.);
     _hErrVsD0Pion = tfs->make<TProfile>("_hErrVsD0Pion","Err vs D0 Pion Profile",300,-100,500.);
@@ -681,20 +651,13 @@ namespace mu2e {
     _hErrVsTanDipPion = tfs->make<TProfile>("_hErrVsTanDipPion","Err vs TanDip Pion Profile",300,0.,3.);
     _hTanDipVsMomentumPion = tfs->make<TH2F>("_hTanDipVsMomentumPion","Tan Dip vs Momentum Pion",300,0.,300.,100,0.,3.);
 
-
     //set up some constants
 
-
   }
-
-
 
   void KineticFracAnalysis::endJob(){
 
   }
-
-
-
 
   void KineticFracAnalysis::analyze(const art::Event& event) {
 
@@ -702,7 +665,6 @@ namespace mu2e {
     if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from KineticFracAnalysis =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
 
     if (_diagLevel > 0){std::cout << "******************new event in KineticFracAnalysis*******************" << std::endl;}
-
 
     //   ConditionsHandle<AcceleratorParams> accPar("ignored");
     //double _mbtime = accPar->deBuncherPeriod;
@@ -740,7 +702,6 @@ namespace mu2e {
     event.getByLabel(_generatorModuleLabel, gensHandle);
     //GenParticleCollection const& genParticles(*gensHandle);
 
-
     //Calorimeter crystal hits (average from readouts)
     art::Handle<CaloHitCollection> CaloHitsHandle;
     event.getByLabel(_caloCrystalModuleLabel, CaloHitsHandle);
@@ -761,7 +722,6 @@ namespace mu2e {
     event.getByLabel(_caloClusterTruthModuleLabel, caloClusterTruthHandle);
     const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
-
     //Get virtual detector hits
     art::Handle<StepPointMCCollection> vdhits;
     event.getByLabel(_g4ModuleLabel,_virtualDetectorLabel,vdhits);
@@ -770,7 +730,6 @@ namespace mu2e {
     art::Handle<KalRepCollection> krepsHandle;
     event.getByLabel(_trkPatRecModuleLabel,_instanceName,krepsHandle);
     KalRepCollection const& kreps = *krepsHandle;
-
 
     //
     // handle to PDG
@@ -784,10 +743,7 @@ namespace mu2e {
     double numberOfTracks = 0;
     double numberOfClusters = 0;
 
-
-
     //--------------------------  Do generated particles --------------------------------
-
 
     _evt = event.id().event();
     _run = event.run();
@@ -896,7 +852,6 @@ namespace mu2e {
         ++_nCluster;
     }
 
-
     numberOfClusters = _nCluster;
 
     //
@@ -970,9 +925,7 @@ namespace mu2e {
 
       }
 
-
     _nTrk=0;
-
 
 	
     if (_diagLevel > 3)
@@ -1005,8 +958,6 @@ namespace mu2e {
 	if (_cluCogZ[bestCluster[trackNumber]] > 1800.) {break;}
 	double deltaTime = _cluTime[bestCluster[trackNumber]] - trkArrivalTime;
 
-
-
 	//
 	// this is for comparing to clusters
 
@@ -1025,7 +976,6 @@ namespace mu2e {
 	momvec = trkMomentum.unit();
 	BbrVectorErr momCov = trk.momentumErr(0);
 	double fitMomErr    = sqrt(momCov.covMatrix().similarity(momvec));
-
 
 	double tanDip = sqrt( 1. - tCosDip*tCosDip)/tCosDip;
 
@@ -1120,7 +1070,6 @@ namespace mu2e {
 	double tanDip0 = sqrt( 1. - tCosDip0*tCosDip0)/tCosDip0;
 	CLHEP::Hep3Vector momVec0 = trk.momentum(0);
 
-
 	// Does this fit pass cut set C?
 	bool cutC = ( tStatus0 >0)
 	  && ( tProb0             > 2.e-3  )
@@ -1144,7 +1093,6 @@ namespace mu2e {
 	if (! cutC){_hDistToTrackGoodCutC->Fill(_dist);}
 
     HepPoint point0 = trk.position(0);
-
 
 	if (_diagLevel >2 )
 	  {
@@ -1215,8 +1163,6 @@ namespace mu2e {
       double trkt0Err     = krep.t0().t0Err();
       double fitmompt = p0.mag()*(1.0-p0.cosTheta()*p0.cosTheta());
 
-
-
       // Does this fit pass cut set C?
       bool cutC = ( krep.fitStatus().success() >0) 
 	&& ( fitCon             > 2.e-3  ) 
@@ -1244,7 +1190,6 @@ namespace mu2e {
       _trkPhi0[_nTrk] = trkPhi0;
       _trkt0Err[_nTrk] = trkt0Err;
       ++_nTrk;
-
 
       if (_diagLevel > 4)
 	{
@@ -1298,14 +1243,12 @@ namespace mu2e {
 	     _bkfLabel.data());
     }
 
-
     _nTrackerHits = _shcol->size();
     _nGoodHits = 0;
     _nDeltas = 0;
 
     //   std::cout << "size of flag collection = " << _shfcol->size() << std::endl;
     //std::cout << "_ntrackerHits = " << _nTrackerHits << std::endl;
-
 
     _goodKfrac = 0;
 
@@ -1319,5 +1262,4 @@ namespace mu2e {
   }
 }// end namespace mu2e
 DEFINE_ART_MODULE(mu2e::KineticFracAnalysis);
-
 

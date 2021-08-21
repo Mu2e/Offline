@@ -1,7 +1,6 @@
 //
 // An EDAnalyzer module that reads back the hits created by the Calorimeter Digitization chain
 //
-//
 // Original author
 
 // ROOT includes
@@ -41,7 +40,6 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
@@ -49,7 +47,6 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
@@ -67,8 +64,6 @@
 #include <map>
 #include <memory>
 #include <vector>
-
-
 
 //tracker includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -95,7 +90,6 @@ using namespace std;
 using CLHEP::Hep3Vector;
 using CLHEP::keV;
 
-
 namespace mu2e {
   struct DAQ_t {
     TH1F*       _hNCaloDigi       [10];
@@ -120,7 +114,6 @@ namespace mu2e {
 
     // This is called for each event.
     virtual void analyze(const art::Event& e) override;
-
 
   private:
 
@@ -156,7 +149,6 @@ namespace mu2e {
     DAQ_t                      _histDisk0;
     DAQ_t                      _histDisk1;
     TH2F*                      _hNSamplesVsCrysId[10];
-
 
     int                        _nProcess;
 
@@ -201,14 +193,11 @@ namespace mu2e {
 
     Int_t                     _nTrkGood;
 
-
     //some histograms for DAQ analyses purposes
-
 
     const Calorimeter*        _calorimeter; // cached pointer to the calorimeter geometry
 
   };
-
 
   void     ReadCaloDigi::initVHits(){
 
@@ -233,7 +222,6 @@ namespace mu2e {
     // _vRadius = 0.;
     // _vId     = 0.;
   }
-
 
   ReadCaloDigi::ReadCaloDigi(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
@@ -303,10 +291,7 @@ namespace mu2e {
                                                           80, 300, 700, 2000, 0, 2000);
     }
 
-
     _Ntup  = tfs->make<TTree>("Calo", "Calo");
-
-
 
     _Ntup->Branch("evt",          &_evt ,        "evt/I");
     _Ntup->Branch("run",          &_run ,        "run/I");
@@ -325,7 +310,6 @@ namespace mu2e {
     _Ntup->Branch("recoDigiY"     , &_recoDigiY     , "recoDigiY[nRecoDigi]/F");
     _Ntup->Branch("recoDigiZ"     , &_recoDigiZ     , "recoDigiZ[nRecoDigi]/F");
     _Ntup->Branch("recoDigiPulse"  , &_recoDigiPulse  , "recoDigiPulse[nRecoDigi][350]/F");
-
 
     _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
 
@@ -380,13 +364,8 @@ namespace mu2e {
 
   }
 
-
-
   void ReadCaloDigi::endJob(){
   }
-
-
-
 
   void ReadCaloDigi::analyze(const art::Event& event) {
     // if (_nProcess == 0){
@@ -422,7 +401,6 @@ namespace mu2e {
        nCaloRecoDigi   = recoCaloDigiCol->size();
     }
 
-
     int         nCaloCrystals(0);
     const     CaloHitCollection*  CaloHits(0);
     art::Handle<CaloHitCollection> CaloHitsHandle;
@@ -435,8 +413,6 @@ namespace mu2e {
      nCaloCrystals   = CaloHits->size();
     }
 
-
-
     //data about clusters
     art::Handle<CaloClusterCollection> caloClustersHandle;
     const     CaloClusterCollection*  caloClusters(0);
@@ -447,13 +423,11 @@ namespace mu2e {
       nCaloClusters = caloClusters->size();
     }
 
-
     //Handle to VD steps
     art::ProductInstanceNameSelector selector_vdhits("virtualdetector");
     art::Handle<StepPointMCCollection> *vdStepsHandle;
     const StepPointMCCollection *vdHits;
     StepMCHandleVector vdStepsHandleVec = event.getMany<StepPointMCCollection>(selector_vdhits);
-
 
     //Handle to tracks collection
     art::Handle<mu2e::KalRepCollection> dem_handle;
@@ -474,9 +448,7 @@ namespace mu2e {
       nTraks             = list_of_ele_tracks->size();
     }
 
-
     GlobalConstantsHandle<ParticleDataTable> pdt;
-
 
     _evt          = event.id().event();
     _run          = event.run();
@@ -510,7 +482,6 @@ namespace mu2e {
 
       double fitmom_err = sqrt(momerr.covMatrix().similarity(momvec));
 
-
       if ( (trk->chisqConsistency().consistency() > fMinFitCons  ) &&
            (trk->nActive()                        > fMinNActive  ) &&
            (trk->t0().t0Err()                     < fMaxT0Err    ) &&
@@ -525,7 +496,6 @@ namespace mu2e {
       }
     }
     //--------------------------------------------------------------------------------
-
 
     int           vdVecSize = vdStepsHandleVec.size();
     initVHits();
@@ -548,7 +518,6 @@ namespace mu2e {
                 id == VirtualDetectorId::EMC_Disk_1_SurfIn  ||
                 id == VirtualDetectorId::EMC_Disk_0_EdgeIn  ||
                 id == VirtualDetectorId::EMC_Disk_1_EdgeIn    ) {
-
 
               art::Ptr<SimParticle> const& simptr = hit.simParticle();
               //2016-01-10 G. PEzzullo temporary comment for using
@@ -596,7 +565,6 @@ namespace mu2e {
               _vE    [_vNHits]  = sqrt(_vP[_vNHits]*_vP[_vNHits] + _vM[_vNHits]*_vM[_vNHits]);
               _vEKin [_vNHits]  = _vE[_vNHits] - _vM[_vNHits];
 
-
               _vX    [_vNHits]  = hit.position().x()+3904.;
               _vY    [_vNHits]  = hit.position().y();
               _vZ    [_vNHits]  = hit.position().z();
@@ -624,7 +592,6 @@ namespace mu2e {
     //    const CaloDigi                          *caloDigi;
     const CaloHitMC                        *caloDigiMC(0);
     const SimParticle                       *sim;
-
 
     //fill DAQ histograms
     double     amplitude(0);
@@ -754,7 +721,6 @@ namespace mu2e {
         }
       }
 
-
       for (int j=0; j<ncrystals; ++j){
         if (nWordsCrystals[j] > 0){
           _hNSamplesVsCrysId[k]->Fill(j, nWordsCrystals[j]);
@@ -765,14 +731,12 @@ namespace mu2e {
 
     for (int ic=0; ic<nCaloCrystals;++ic) {
 
-
       CaloHit const& hit    = CaloHits->at(ic);
       CLHEP::Hep3Vector crystalPos = _calorimeter->geomUtil().mu2eToDiskFF(diskId,_calorimeter->crystal(crystalID).position());
 
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();
       _cryEdep[_nHits]      = hit.energyDep();
-
 
       _cryPosX[_nHits]      = crystalPos.x();
       _cryPosY[_nHits]      = crystalPos.y();
@@ -788,7 +752,6 @@ namespace mu2e {
       //_cryAmp [_nHits]      = recoDigi->amplitude();
 
       indexMC          = 0;//caloDigi.index();
-
 
       if (nCaloHitMC > 0) {
         caloDigiMC       = &caloDigiMCCol->at(indexMC);
@@ -824,7 +787,6 @@ namespace mu2e {
       ++_nHits;
     }
 
-
     _nCluster = nCaloClusters;//caloClusters->size();
 
     for (int i=0; i<_nCluster; ++i){
@@ -843,7 +805,6 @@ namespace mu2e {
       	recoDigi         = crystalHit->recoCaloDigis().at(0).operator ->();
 
       	indexMC          = 0;//caloDigi.index();
-
 
       	eDep             = crystalHit->energyDep();
       	psd              = 0;//recoDigi  ->psd();

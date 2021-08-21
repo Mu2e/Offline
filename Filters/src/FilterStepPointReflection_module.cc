@@ -18,7 +18,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 

@@ -15,7 +15,6 @@
 
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"

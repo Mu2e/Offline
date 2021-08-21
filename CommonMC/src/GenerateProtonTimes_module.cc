@@ -21,7 +21,6 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/FixedTimeMap.hh"
 #include "Offline/SeedService/inc/SeedService.hh"

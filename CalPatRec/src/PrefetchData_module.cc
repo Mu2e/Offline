@@ -19,14 +19,11 @@
 #include "TVector2.h"
 // data
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 // Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -34,7 +31,6 @@
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 using namespace std; 
@@ -271,6 +267,5 @@ namespace mu2e {
 DEFINE_ART_MODULE(PrefetchData)
 
 }
-
 
    

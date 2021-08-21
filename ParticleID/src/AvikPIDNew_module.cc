@@ -40,8 +40,6 @@
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 #include "Offline/BTrkData/inc/Doublet.hh"
 
@@ -155,7 +153,6 @@ namespace mu2e {
     virtual void produce    (art::Event& event);
     virtual void endJob     ();
 
-
     static  void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t);
     static  int  findlowhist(float d);
 
@@ -195,9 +192,7 @@ namespace mu2e {
     // Save directory from beginJob so that we can go there in endJob.
     //    TDirectory* _directory;
 
-
   };
-
 
   TGraphErrors *error;
 
@@ -243,7 +238,6 @@ namespace mu2e {
 
     return -9999;
   }
-
 
 //-----------------------------------------------------------------------------
   AvikPIDNew::AvikPIDNew(fhicl::ParameterSet const& pset):
@@ -298,7 +292,6 @@ namespace mu2e {
 
   }
 
-
 //-----------------------------------------------------------------------------
   AvikPIDNew::~AvikPIDNew() {
     if (_minuit) delete _minuit;
@@ -331,7 +324,6 @@ namespace mu2e {
   void AvikPIDNew::beginRun(art::Run & run){
     if (_debugLevel >= 2) cout << "AvikPIDNew: From beginRun: " << run.id().run() << endl;
 
-
   }
 
 //-----------------------------------------------------------------------------
@@ -343,7 +335,6 @@ namespace mu2e {
   void AvikPIDNew::endJob(){
     if (_debugLevel>=2) cout << "AvikPIDNew: From endJob. " << endl;
   }
-
 
 //-----------------------------------------------------------------------------
 // Avik's weighted residual
@@ -694,7 +685,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
 // doublet ambiguity resolver best combinations: 0:(++) 1:(+-) 2:(--) 3:(-+)
 // so 0 and 2 correspond to the SS doublet, 1 and 3 - to the OS doublet
@@ -767,7 +757,6 @@ namespace mu2e {
 
     return 0;
   }
-
 
 //-----------------------------------------------------------------------------
 // calculate parameters of the straight line fit
@@ -882,7 +871,6 @@ namespace mu2e {
 
     const TrkHitVector*      hots;
     const TrkStrawHit*       hit ;
-
 
     _evtid = event.id().event();
 
