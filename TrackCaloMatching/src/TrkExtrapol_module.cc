@@ -39,10 +39,10 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 // data
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 
 
@@ -60,12 +60,12 @@
 // Mu2e includes.
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
-#include "Offline/MCDataProducts/inc/VisibleGenElTrackCollection.hh"
+#include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
 
 //root includes
 #include "TFile.h"

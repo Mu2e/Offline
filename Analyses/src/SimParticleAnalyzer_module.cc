@@ -7,7 +7,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "TH1F.h"
 #include "TNtuple.h"
 #include "art/Framework/Core/EDAnalyzer.h"

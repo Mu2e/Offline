@@ -8,7 +8,7 @@
 #include <string>
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/exception.h"
 #include "fhiclcpp/types/Atom.h"

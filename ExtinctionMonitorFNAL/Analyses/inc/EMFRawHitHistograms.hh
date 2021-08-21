@@ -14,7 +14,7 @@
 #include "art_root_io/TFileDirectory.h"
 
 #include "Offline/DataProducts/inc/ExtMonFNALChipId.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
 class TH1D;
 class TH2D;

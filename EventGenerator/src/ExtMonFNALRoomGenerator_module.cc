@@ -42,9 +42,9 @@
 #include "Offline/GlobalConstantsService/inc/MassCache.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
-#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 
 #include "TTree.h"

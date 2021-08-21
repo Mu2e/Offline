@@ -14,7 +14,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/TrkExt/inc/TrkExtMCHits.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"

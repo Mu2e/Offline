@@ -29,11 +29,11 @@
 
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
@@ -46,9 +46,9 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"

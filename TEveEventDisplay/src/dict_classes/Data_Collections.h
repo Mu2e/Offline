@@ -9,7 +9,7 @@
 //Kalman Tracks
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 //Tracker Hits:
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //CRV:

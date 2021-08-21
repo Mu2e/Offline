@@ -4,6 +4,7 @@
 // Simple holder for extra data available from G4Beamline generator
 //
 #include <iostream>
+#include <vector>
 
 namespace mu2e {
 

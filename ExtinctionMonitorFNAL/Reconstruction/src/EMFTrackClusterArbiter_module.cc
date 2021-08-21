@@ -36,7 +36,7 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

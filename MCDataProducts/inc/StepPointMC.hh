@@ -82,7 +82,7 @@
 #include "cetlib/map_vector.h"
 
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"

@@ -44,9 +44,9 @@ using namespace CLHEP;
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
@@ -56,7 +56,7 @@ using namespace CLHEP;
 
 #include "Offline/RecoDataProducts/inc/TrkExtTrajPoint.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/TrkExt/inc/TrkExtDetectors.hh"
 #include "Offline/TrkExt/inc/TrkExtInstanceName.hh"
 

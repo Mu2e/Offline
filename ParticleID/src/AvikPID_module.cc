@@ -40,10 +40,10 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
+#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 #include "Offline/BTrkData/inc/Doublet.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -51,7 +51,7 @@
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "Offline/ParticleID/inc/PIDUtilities.hh"
-#include "Offline/RecoDataProducts/inc/AvikPIDProductCollection.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDProduct.hh"
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/Mu2eDetector.hh"

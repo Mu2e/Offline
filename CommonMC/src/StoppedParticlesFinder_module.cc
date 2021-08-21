@@ -28,8 +28,8 @@
 
 // Mu2e includes.
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 

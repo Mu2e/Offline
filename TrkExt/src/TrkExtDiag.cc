@@ -30,7 +30,7 @@
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"

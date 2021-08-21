@@ -3,7 +3,7 @@
 // Andrei Gaponenko, 2012
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
 #include "art/Framework/Core/ModuleMacros.h"
 

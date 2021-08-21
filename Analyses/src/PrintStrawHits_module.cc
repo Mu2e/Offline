@@ -13,7 +13,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 namespace mu2e {
 

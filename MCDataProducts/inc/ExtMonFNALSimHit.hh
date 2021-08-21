@@ -16,7 +16,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 namespace mu2e {
 

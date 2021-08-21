@@ -21,7 +21,7 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
