@@ -3,7 +3,6 @@
 // Andrei Gaponenko, 2012
 
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 #include "art/Framework/Core/ModuleMacros.h"
 

@@ -39,10 +39,8 @@
 
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 
 // prefetching Digi
-#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -93,7 +91,6 @@ namespace mu2e {
     std::string _caloDigiModuleLabel;
     art::InputTag _shTag;   
     art::InputTag _shpTag;
-
 
     std::string _trkPatRecModuleLabel;
     art::InputTag _tqTag;
@@ -190,7 +187,6 @@ namespace mu2e {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     double _mbtime = accPar->deBuncherPeriod;
     _toff.updateMap(event);
-
 
     //--------------------------  Prefetch Calo Digis  --------------------------------    
     auto caloDigiFlag = event.getValidHandle<mu2e::CaloDigiCollection>(_caloDigiModuleLabel);

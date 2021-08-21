@@ -14,7 +14,6 @@
 
 // generation
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/GenSimParticleLink.hh"
@@ -24,7 +23,6 @@
 
 // simulation
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
@@ -46,10 +44,8 @@
 
 // G4
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 
 // MARS
-#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 #include "Offline/MCDataProducts/inc/SimParticleMARSAssns.hh"
@@ -79,7 +75,6 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 // ExtMon
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"

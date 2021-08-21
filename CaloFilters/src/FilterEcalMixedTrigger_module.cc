@@ -29,7 +29,6 @@
 #include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -39,7 +38,6 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
-
 
 // Root includes
 #include "TDirectory.h"
@@ -120,7 +118,6 @@ namespace mu2e {
     int nch; // number of combo hits
     const ComboHit*     comboHit;
     const ComboHitCollection* _chcol;
-
 
     std::string _MVAmethod;
     static const int nECALDISKs=2;
@@ -286,7 +283,6 @@ namespace mu2e {
 
   }
 
-
   void FilterEcalMixedTrigger::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("diag");
@@ -334,7 +330,6 @@ namespace mu2e {
 
     ++_nProcessed;
     if (_nProcessed%10==0 && _diagLevel > 0) std::cout<<"Processing event from FilterEcalMixedTrigger =  "<<_nProcessed <<std::endl;
-
 
     //Handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
@@ -400,7 +395,6 @@ namespace mu2e {
     if (_peaklist.size()<1) return false;
     
     if (_step==2) return false;
-
 
     // ------------------------- Unpack Straw Hits -------------------------------
     // (from ReadStrawHit_module.cc

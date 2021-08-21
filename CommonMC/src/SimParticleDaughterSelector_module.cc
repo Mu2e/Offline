@@ -23,7 +23,6 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "TH1D.h"
 

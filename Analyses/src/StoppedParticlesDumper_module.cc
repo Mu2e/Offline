@@ -23,8 +23,6 @@
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
@@ -189,7 +187,6 @@ namespace mu2e {
       auto spColl = event.getValidHandle<StepPointMCCollection>(iColl);
       spMCColls.push_back( *spColl );
     }
-
 
     if(dumpSimParticleLeaves_) {
       auto ih = event.getValidHandle<SimParticleCollection>(input_);

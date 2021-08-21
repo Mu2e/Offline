@@ -40,16 +40,12 @@
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 
 //MC dataproducts
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
@@ -70,9 +66,7 @@
 // #include <map>
 #include <vector>
 
-
 namespace mu2e {
-
 
   class ReadTriggerInfo : public art::EDAnalyzer {
 
@@ -214,7 +208,6 @@ namespace mu2e {
     void     bookCaloCalibInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, caloCalibrationHist_   &Hist);
     void     bookOccupancyInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_         &Hist);
 
-
     void     findTrigIndex            (std::vector<trigInfo_> &Vec, std::string &ModuleLabel, int &Index);
     void     fillTrackTrigInfo        (int TrkTrigIndex  , const KalSeed*   KSeed, trackInfoHist_         &Hist);
     void     fillHelixTrigInfo        (int HelTrigIndex  , const HelixSeed* HSeed, helixInfoHist_         &Hist);
@@ -291,7 +284,6 @@ namespace mu2e {
     float  _minPOT, _maxPOT;
   };
 
-
   ReadTriggerInfo::ReadTriggerInfo(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset), 
     _diagLevel     (pset.get<int>   ("diagLevel", 0)),
@@ -330,7 +322,6 @@ namespace mu2e {
 
   }
   
-  
   void     ReadTriggerInfo::bookHistograms           (){
     art::ServiceHandle<art::TFileService> tfs;
     
@@ -367,14 +358,12 @@ namespace mu2e {
 
     Hist._hTrigInfo[15]  = trigInfoDir.make<TH1F>("hTrigInfo_paths"     , "Rejection of all the Trigger paths"         , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     
-    
     Hist._hTrigInfo[16]  = trigInfoDir.make<TH1F>("hTrksVsPOT","nOfflineTracks vs inst lum; p/pulse; nOfflieTracks",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[17]  = trigInfoDir.make<TH1F>("hTrksTrigVsPOT","nOfflineTracks triggered vs inst lum; p/pulse; nOfflieTracks triggered",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[18]  = trigInfoDir.make<TH1F>("hNormVsPOT","events vs inst lum; p/pulse; Entries",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[19]  = trigInfoDir.make<TH1F>("hNPOT","nPOT; p/pulse; Entries",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[20]  = trigInfoDir.make<TH1F>("hCprNorm","cpr Good Offline tracks;p/pulse; Entries",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[21]  = trigInfoDir.make<TH1F>("hTprNorm","tpr Good Offline tracks;p/pulse; Entries",  1000, _minPOT, _maxPOT);
-
 
     Hist._h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map from all filters"   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     Hist._h2DTrigInfo[1] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));   
@@ -551,7 +540,6 @@ namespace mu2e {
       Hist._hHelInfo[i][118] = helInfoDir.make<TH1F>(Form("hEPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
       Hist._hHelInfo[i][119] = helInfoDir.make<TH1F>(Form("hEPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
 
-
       Hist._hHelInfo[i][120] = helInfoDir.make<TH1F>(Form("hNTrigHelixes_%i" , i), "NHelixes trigger matched; NHelixes trigger matched", 11, -0.5, 10);
     }
   }
@@ -573,7 +561,6 @@ namespace mu2e {
     }    
   }
 
-  //--------------------------------------------------------------------------------//
   //--------------------------------------------------------------------------------//
   void     ReadTriggerInfo::bookOccupancyInfoHist         (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_       &Hist){
     
@@ -815,8 +802,6 @@ namespace mu2e {
     }
 
   }
-
-
 
   void   ReadTriggerInfo::findCorrelatedEvents(std::vector<string>& VecLabels, double &NCorrelated){
     
@@ -1329,7 +1314,6 @@ namespace mu2e {
     }
   }
 
-
   void     ReadTriggerInfo::fillHelixTrigInfoAdd     (int HelTrigIndex  , int MCMotherIndex, const HelixSeed* HSeed, helixInfoHist_         &Hist, MCInfo &TMPMCInfo){
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 0]->Fill(TMPMCInfo.pMC);	   
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 1]->Fill(TMPMCInfo.p);	   
@@ -1342,7 +1326,6 @@ namespace mu2e {
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 8]->Fill(TMPMCInfo.origR);  
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 9]->Fill(TMPMCInfo.lambda);      
   }
-
 
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
@@ -1558,7 +1541,6 @@ namespace mu2e {
     Hist._h2DOccInfo[Index][1]->Fill(_nPOT, nCD);
   }
 
-  
   
 }  
 

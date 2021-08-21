@@ -22,7 +22,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "TH1D.h"
 

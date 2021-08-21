@@ -1,8 +1,6 @@
 #ifndef Mu2eUtilities_SortedStepPoints_hh
 #define Mu2eUtilities_SortedStepPoints_hh
 //
-//
-//
 // Original author Rob Kutschke
 //
 
@@ -10,8 +8,6 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e {
@@ -39,7 +35,6 @@ namespace mu2e {
     std::vector<StepPointMC const*> steps_;
 
     StepPointMC const* midByZ_;
-
 
   };
 

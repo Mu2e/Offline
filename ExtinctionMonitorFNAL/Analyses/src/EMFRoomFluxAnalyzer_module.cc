@@ -1,6 +1,5 @@
 // Precompute particle randomization from MARS inputs for g4s1 ExtMonFNALRoom jobs.
 //
-//
 // Original author Andrei Gaponenko, 2012
 
 #include <iostream>
@@ -42,13 +41,9 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
@@ -232,7 +227,6 @@ namespace mu2e {
 //old_geom:       building = &*bh;
       }
 
-
 //old_geom:      const double yFloor = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmin(),0)).y();
 //old_geom:      const double yCeiling = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmax(),0)).y();
 //old_geom:
@@ -378,7 +372,6 @@ namespace mu2e {
 
           if(!group.empty()) {
 
-
             if(verbosityLevel_ > 1) {
               std::cout<<"EMFRoomFluxAnalyzer: starting K nearest neighbors search for group size "
                        <<group.size()<<std::endl;
@@ -506,7 +499,6 @@ namespace mu2e {
 
       writeParticleNtuple();
     }
-
 
     //================================================================
     void EMFRoomFluxAnalyzer::writeParticleNtuple() {

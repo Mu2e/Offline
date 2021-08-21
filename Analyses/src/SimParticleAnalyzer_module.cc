@@ -17,7 +17,6 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "canvas/Persistency/Common/Ptr.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -64,7 +63,6 @@ namespace mu2e {
     // mu2e::SimParticlemv_g4run__stoppedMuonsSingleStage
 
     // DataType_ModuleLabel_InstanceName_ProcessName
-
 
     // Module label of the g4 module that produced the particles
     std::string _g4ModuleLabel;

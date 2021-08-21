@@ -1,5 +1,4 @@
 //
-//
 // Original author G. Pezzullo
 //
 
@@ -40,11 +39,9 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 // data
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
-
 
 //calorimeter includes
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
@@ -52,10 +49,8 @@
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
-
 // Other includes.
 #include "cetlib_except/exception.h"
-
 
 // Mu2e includes.
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -64,7 +59,6 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
 #include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
 
 //root includes
@@ -91,7 +85,6 @@
 #include <string>
 #include <vector>
 #include <functional>
-
 
 using namespace std;
 
@@ -209,7 +202,6 @@ namespace mu2e {
     double _solenoidOffSetZ;
     double _ZfrontFaceCalo;
     double _ZbackFaceCalo;
-
 
     CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec);
 
@@ -369,7 +361,6 @@ namespace mu2e {
     }
     //  }
 
-
     if (diagLevel>2) {
       cout<<"end search behindSection(), position is : "<<traj.position(tmpRange)<<endl;
     }
@@ -399,10 +390,6 @@ namespace mu2e {
 
   }//end proce_dUre
 
-
-
-
-
   void TrkExtrapol::beginJob() {
 
     if (_outPutNtup == 1) {
@@ -422,9 +409,7 @@ namespace mu2e {
       _trkdiag->Branch("trkmom[trkint]", _trkmom, "trkmom[trkint]/F");
     }
 
-
   }
-
 
   void TrkExtrapol::filltrkdiag(int itrk, IntersectData_t *intersec, int size, KalRep const* kalrep){
     _trkid = itrk;
@@ -454,7 +439,6 @@ namespace mu2e {
     doExtrapolation(evt, _skipEvent);
   }
 
-
 //-----------------------------------------------------------------------------
   void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
 
@@ -465,7 +449,6 @@ namespace mu2e {
 
     _ZfrontFaceCalo = cg->geomUtil().origin().z() + _solenoidOffSetZ;
     _ZbackFaceCalo = cg->geomUtil().origin().z() + _solenoidOffSetZ;
-
 
     const char* oname = "TrkExtrapol::doExtrapolation";
     double      lowrange, highrange, zmin, zmax;

@@ -20,10 +20,8 @@
 // data
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
@@ -635,7 +633,6 @@ namespace mu2e {
     if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
     if (_debugLevel > 0) _hmanager->debug(&_data,2);
 
-
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
 //-----------------------------------------------------------------------------
@@ -825,7 +822,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
   int DeltaFinder::findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result) {
     double x1, y1, x2, y2, nx1, ny1, nx2, ny2;
@@ -870,7 +866,6 @@ namespace mu2e {
 
     return 0;
   }
-
 
 //-----------------------------------------------------------------------------
 // pick up neighboring hits in 'Face'
@@ -951,7 +946,6 @@ namespace mu2e {
       }
     }
   }
-
 
 //-----------------------------------------------------------------------------
 // find delta electron seeds in 'Station' with hits in faces 'f' and 'f+1'

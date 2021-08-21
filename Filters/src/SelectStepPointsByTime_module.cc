@@ -21,7 +21,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 namespace mu2e {
 

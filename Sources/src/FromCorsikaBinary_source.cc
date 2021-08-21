@@ -32,7 +32,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 
 #include "Offline/Sources/inc/CosmicCORSIKA.hh"
@@ -165,7 +164,6 @@ namespace mu2e {
       return true;
 
     } // readNext()
-
 
   // Each time that we encounter a new run, a new subRun or a new event, we need to make a new principal
   // of the appropriate type.  This code does not need to change as the number and type of data products changes.

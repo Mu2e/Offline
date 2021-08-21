@@ -3,7 +3,6 @@
 #include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFRawHitHistograms.hh"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 

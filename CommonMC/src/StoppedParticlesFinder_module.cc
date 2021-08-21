@@ -29,7 +29,6 @@
 // Mu2e includes.
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 
@@ -39,7 +38,6 @@ namespace mu2e {
 
   class StoppedParticlesFinder : public art::EDProducer {
   public:
-
 
     struct Config {
       using Name=fhicl::Name;

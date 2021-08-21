@@ -30,7 +30,6 @@
 #include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 
 #include "Offline/Mu2eUtilities/inc/HistTrackSum.hh"

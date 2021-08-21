@@ -30,10 +30,8 @@
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -52,7 +50,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-
 
 namespace mu2e {
   namespace ExtMonFNAL {
@@ -382,7 +379,6 @@ namespace mu2e {
       const double moduleHalfThickness = (extMon_->module().sensorHalfSize()[2] + extMon_->module().chipHalfSize()[2]);
       const double driftSpeed = siProps_.electronDriftMobility() * siProps_.electricField();
 
-
       // We split SimHit into a number of charge clusters, and drift them individually
       const CLHEP::Hep3Vector step = (1./(nclusters_-1)) * (hit.localEndPosition() - hit.localStartPosition());
       const double tstep = (1./(nclusters_-1)) * (hit.endTime() - hit.startTime());
@@ -460,7 +456,6 @@ namespace mu2e {
       //
       // Larger margins are safe (for correctnes), but inefficient.
       // maxToT + max time of flight correction should be enough.
-
 
       PixelChargeHistory& in(*inout);
       PixelChargeHistory out;
@@ -601,7 +596,6 @@ namespace mu2e {
       } // while(!empty)
 
     } // discriminate(pixel)
-
 
     //================================================================
     void ExtMonFNALHitMaker::addVerilogHit(const ExtMonFNALPixelId& pix, double tstart, double tend) {

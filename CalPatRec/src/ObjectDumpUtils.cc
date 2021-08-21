@@ -21,11 +21,8 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfo.hh"
 
@@ -36,7 +33,6 @@
 #include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
 
 // #include "CalPatRec/inc/CalTimePeak.hh"
-
 
 //BaBar includes
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
@@ -72,7 +68,6 @@ namespace mu2e {
 // ObjectDumpUtils::~ObjectDumpUtils() {
 // }
 
-
 //-----------------------------------------------------------------------------
 void ObjectDumpUtils::printEventHeader(const art::Event* Event, const char* Message) {
 
@@ -82,7 +77,6 @@ void ObjectDumpUtils::printEventHeader(const art::Event* Event, const char* Mess
 	 Event->event(),
 	 Message);
 }
-
 
 //-----------------------------------------------------------------------------
 void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluster, const char* Opt) {
@@ -151,7 +145,6 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
   }
 }
 
-
 //-----------------------------------------------------------------------------
   void ObjectDumpUtils::printCaloProtoClusterCollection(const mu2e::CaloProtoClusterCollection* Coll) {
 
@@ -210,7 +203,6 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
     double phi0   = Krep->helix(s).phi0();
     double omega  = Krep->helix(s).omega();
     double tandip = Krep->helix(s).tanDip();
-
 
     CLHEP::Hep3Vector fitmom = Krep->momentum(s);
     CLHEP::Hep3Vector momdir = fitmom.unit();
@@ -378,7 +370,6 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 	printf("   %6.3f",hit->driftRadius());
       }
 
-
       printf("  %7.3f",mcdoca);
       printf(" %6.3f %6.3f %6.3f %6.3f %6.3f",
 	     hit->totalErr(),
@@ -397,7 +388,6 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
     }
   }
 }
-
 
 //-----------------------------------------------------------------------------
 void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        ,
@@ -431,6 +421,5 @@ void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        ,
   }
 
 }
-
 
 }

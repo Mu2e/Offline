@@ -15,7 +15,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
@@ -37,7 +36,6 @@ namespace mu2e {
     const double mass = info.ref().mass();
     return sqrt(hit.momentum().mag2() + std::pow(mass, 2)) - mass;
   }
-
 
   //================================================================
   class FilterStepPointKinEnPDG : public art::EDFilter {

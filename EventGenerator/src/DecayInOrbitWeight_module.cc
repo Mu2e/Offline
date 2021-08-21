@@ -31,7 +31,6 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/ShankerWatanabeSpectrum.hh"

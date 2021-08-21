@@ -19,8 +19,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
 
@@ -39,7 +37,6 @@ namespace mu2e {
         <<")";
       return os.str();
     }
-
 
     // In art v1_00_06 the ValidHandle::id() method needed by an
     // art::Ptr constructor was missing.  A workaround:

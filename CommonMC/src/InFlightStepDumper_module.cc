@@ -16,7 +16,6 @@
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 

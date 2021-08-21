@@ -11,7 +11,6 @@
 #include "art/Framework/Principal/Run.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -88,7 +87,6 @@ namespace mu2e {
       else if (i->pixelId().chip().module().number() >= extmon_->up().nModulesPerPlane()) {
         throw cet::exception("BUG")<<*i<<": invalid module number\n";
       }
-
 
       if(i->pixelId().chip().chipCol() >= extmon_->module().nxChips()) {
         throw cet::exception("BUG")<<*i<<": invalid chipCol\n";
