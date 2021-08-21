@@ -20,13 +20,13 @@
 #include "art_root_io/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"

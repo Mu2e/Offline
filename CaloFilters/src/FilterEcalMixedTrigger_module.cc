@@ -23,7 +23,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 
-//#include "MCDataProducts/inc/GenParticleCollection.hh"
+//#include "MCDataProducts/inc/GenParticle.hh"
 //#include "DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
@@ -32,9 +32,9 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 

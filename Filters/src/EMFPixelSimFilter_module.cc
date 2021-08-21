@@ -17,7 +17,7 @@
 #include "art_root_io/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"

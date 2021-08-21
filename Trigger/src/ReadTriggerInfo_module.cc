@@ -40,17 +40,17 @@
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 
 //MC dataproducts
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"

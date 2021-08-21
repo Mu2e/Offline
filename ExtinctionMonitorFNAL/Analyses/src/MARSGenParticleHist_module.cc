@@ -24,7 +24,7 @@
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 

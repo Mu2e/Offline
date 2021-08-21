@@ -5,7 +5,7 @@
 // Original author Rob Kutschke
 //
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 

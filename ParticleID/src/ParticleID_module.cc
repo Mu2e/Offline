@@ -41,10 +41,10 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
+#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 

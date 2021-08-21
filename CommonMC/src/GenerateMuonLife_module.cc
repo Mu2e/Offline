@@ -24,7 +24,7 @@
 #include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/SeedService/inc/SeedService.hh"

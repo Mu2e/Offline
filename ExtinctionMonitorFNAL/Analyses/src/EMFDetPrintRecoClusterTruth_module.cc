@@ -8,7 +8,7 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"

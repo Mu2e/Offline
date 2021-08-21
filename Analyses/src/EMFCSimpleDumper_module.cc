@@ -9,7 +9,7 @@
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"

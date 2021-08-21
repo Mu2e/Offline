@@ -3,7 +3,7 @@
 // Andrei Gaponenko, 2012
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 
 #include "art/Framework/Core/ModuleMacros.h"
 

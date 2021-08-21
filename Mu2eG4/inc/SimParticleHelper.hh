@@ -11,7 +11,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 class G4Track;
 namespace art { class Event; }

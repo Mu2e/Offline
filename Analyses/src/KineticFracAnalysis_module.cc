@@ -36,32 +36,32 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloMatchCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/RecoDataProducts/inc/TrackCaloAssnsCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 
 // data
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

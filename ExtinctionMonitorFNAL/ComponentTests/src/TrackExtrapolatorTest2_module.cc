@@ -22,7 +22,7 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"

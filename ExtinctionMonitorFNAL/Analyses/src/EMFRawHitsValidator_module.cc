@@ -11,7 +11,7 @@
 #include "art/Framework/Principal/Run.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"

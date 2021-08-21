@@ -19,7 +19,7 @@
 #include "Offline/MCDataProducts/inc/GenElHitData.hh"
 //#include "MCDataProducts/inc/SimParticle.hh"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 // CLHEP includes.
 #include "CLHEP/Units/PhysicalConstants.h"

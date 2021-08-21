@@ -24,7 +24,7 @@
 #include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeneralUtilities/inc/safeSqrt.hh"

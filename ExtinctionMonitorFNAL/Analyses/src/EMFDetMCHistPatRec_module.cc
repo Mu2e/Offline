@@ -16,11 +16,11 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 

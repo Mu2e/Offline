@@ -6,7 +6,7 @@
 #ifndef TrkDef_HH
 #define TrkDef_HH
 // Mu2e
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 // BTrk includes

@@ -31,9 +31,9 @@
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 

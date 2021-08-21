@@ -44,7 +44,7 @@
 //    the mother of a secondary has been deleted.
 //
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 
 #include "canvas/Persistency/Provenance/ProductID.h"

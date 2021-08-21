@@ -11,7 +11,7 @@
 // mu2e
 // data
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 // #include "RecoDataProducts/inc/TriggerInfo.hh"

@@ -11,7 +11,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"

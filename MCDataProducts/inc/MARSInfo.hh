@@ -4,6 +4,7 @@
 #define MCDataProducts_inc_MARSInfo_hh
 
 #include <ostream>
+#include <vector>
 
 namespace mu2e {
 

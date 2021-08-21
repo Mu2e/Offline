@@ -32,7 +32,7 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 // root

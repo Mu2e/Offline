@@ -95,9 +95,6 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::GenElHitData"/>
 <class name="std::pair<unsigned long,mu2e::GenElHitData>"/>
 <class name="std::map<unsigned long,mu2e::GenElHitData>"/>
-<class name="mu2e::VisibleGenElTrack"/>
-<class name="mu2e::VisibleGenElTrackCollection" persistent="false"/>
-<class name="art::Wrapper<mu2e::VisibleGenElTrackCollection>"/>
 
 <class name="mu2e::SimParticlePtrCollection"/>
 <class name="art::Wrapper<mu2e::SimParticlePtrCollection>"/>

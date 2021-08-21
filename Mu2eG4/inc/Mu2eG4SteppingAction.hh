@@ -11,7 +11,7 @@
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/EventNumberList.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryPoint.hh"
 #include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"

@@ -6,6 +6,7 @@
 #define AlgorithmID_HH
 
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
