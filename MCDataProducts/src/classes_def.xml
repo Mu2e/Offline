@@ -24,13 +24,13 @@
  <class name="mu2e::PrimaryParticle"/>
  <class name="art::Wrapper<mu2e::PrimaryParticle>"/>
  <class name="art::Ptr<mu2e::PrimaryParticle>"/>
- 
+
  <class name="mu2e::GenEventCount"/>
  <class name="art::Wrapper<mu2e::GenEventCount>"/>
 
  <class name="mu2e::GenParticleSPMHistory" />
  <class name="art::Wrapper<mu2e::GenParticleSPMHistory>"/>
-  
+
  <class name="mu2e::FixedTimeMap"/>
  <class name="art::Wrapper<mu2e::FixedTimeMap>" />
 
@@ -92,9 +92,6 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="art::Wrapper<mu2e::MCTrajectoryCollection>"/>
 
 <class name="std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>"/>
-<class name="mu2e::GenElHitData"/>
-<class name="std::pair<unsigned long,mu2e::GenElHitData>"/>
-<class name="std::map<unsigned long,mu2e::GenElHitData>"/>
 
 <class name="mu2e::SimParticlePtrCollection"/>
 <class name="art::Wrapper<mu2e::SimParticlePtrCollection>"/>
@@ -110,7 +107,7 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 
 <class name="mu2e::PhysicalVolumeInfo"/>
 <class name="std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo>"/>
-<class name="cet::map_vector<mu2e::PhysicalVolumeInfo>"/> 
+<class name="cet::map_vector<mu2e::PhysicalVolumeInfo>"/>
 <class name="std::pair<unsigned int,cet::map_vector<mu2e::PhysicalVolumeInfo> >"/>
 <class name="std::vector<std::pair<cet::map_vector_key,mu2e::PhysicalVolumeInfo> >"/>
 
@@ -127,7 +124,7 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::ProtonBunchIntensitySummary" />
 <class name="art::Wrapper<mu2e::ProtonBunchIntensitySummary>"/>
 
-<class name="mu2e::StepFilterMode"/> 
+<class name="mu2e::StepFilterMode"/>
 
 <!--  ********* G4  ********* -->
 <class name="mu2e::G4BeamlineInfo"/>
@@ -200,10 +197,10 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="art::Assns<mu2e::CaloHit,mu2e::SimParticle,void >" />
 <class name="art::Assns<mu2e::SimParticle,mu2e::CaloHit,art::Ptr<mu2e::CaloShowerSim> >" />
 <class name="art::Assns<mu2e::SimParticle,mu2e::CaloHit,void >" />
-<class name="art::Wrapper< art::Assns<mu2e::CaloHit,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> > >" /> 
-<class name="art::Wrapper< art::Assns<mu2e::CaloHit,mu2e::SimParticle,void > >" /> 
-<class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloHit,art::Ptr<mu2e::CaloShowerSim> > >" /> 
-<class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloHit,void > >" /> 
+<class name="art::Wrapper< art::Assns<mu2e::CaloHit,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> > >" />
+<class name="art::Wrapper< art::Assns<mu2e::CaloHit,mu2e::SimParticle,void > >" />
+<class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloHit,art::Ptr<mu2e::CaloShowerSim> > >" />
+<class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloHit,void > >" />
 
 <class name="mu2e::CosmicLivetime"/>
 <class name="art::Wrapper<mu2e::CosmicLivetime>"/>
