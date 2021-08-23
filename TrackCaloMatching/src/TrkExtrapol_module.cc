@@ -59,7 +59,6 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
 
 //root includes
 #include "TFile.h"

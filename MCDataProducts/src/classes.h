@@ -29,7 +29,6 @@
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
-#include "Offline/MCDataProducts/inc/VisibleGenElTrack.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 
@@ -62,7 +61,7 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 
-// tracking 
+// tracking
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
 
