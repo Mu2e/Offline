@@ -15,15 +15,13 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 //Mu2e Data Prods:
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
+
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 //Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -235,14 +233,14 @@ namespace mu2e
 	      //StrawDigiMC hitP1;
 	      //StrawDigiMC first = (*_mcdigis)[0];
 
-	      XYZVec zpos(0.,0.,0);
-        XYZVec  zdir(0.,0.,1.);
+	      XYZVectorF zpos(0.,0.,0);
+        XYZVectorF  zdir(0.,0.,1.);
         std::tuple <double,double, double, double, double> info = GetMCTrack(event, *_mcdigis);
-	      XYZVec pos0(get<0>(info),0, get<2>(info));//a0,0,b0
-	      XYZVec dir(get<1>(info), -1, get<3>(info));//a1,-1,b1
+	      XYZVectorF pos0(get<0>(info),0, get<2>(info));//a0,0,b0
+	      XYZVectorF dir(get<1>(info), -1, get<3>(info));//a1,-1,b1
        
         TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
-        XYZVec POCA = PCA.point1()-PCA.point2();
+        XYZVectorF POCA = PCA.point1()-PCA.point2();
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
 
@@ -285,14 +283,14 @@ namespace mu2e
       auto const& sgsptr = mcdigi.earlyStrawGasStep();
       auto const& sgs = *sgsptr;
       auto const& sp = *sgs.simParticle();
-      auto posi = Geom::Hep3Vec(sgs.startPosition());
+      auto posi = GenVector::Hep3Vec(sgs.startPosition());
       if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
         for (size_t j=i+1; j<mccol.size();j++){
           StrawDigiMC jmcdigi = mccol[j]; 
           auto const& jsgsptr = jmcdigi.earlyStrawGasStep();
           auto const& jsgs = *jsgsptr;
           auto const& jsp = *jsgs.simParticle();
-          auto posj = Geom::Hep3Vec(jsgs.startPosition());
+          auto posj = GenVector::Hep3Vec(jsgs.startPosition());
           if ((jsp.pdgId() == 13 || jsp.pdgId() == -13) && jsp.creationCode() == 56){
             pppos.push_back(posi);
             ppdir.push_back((posi-posj).unit());
@@ -318,7 +316,7 @@ namespace mu2e
 
         if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
-              Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+              GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
           double true_doca = pca.dca(); 
 
           TwoLinePCA pca2( straw.getMidPoint(), straw.getDirection(),
