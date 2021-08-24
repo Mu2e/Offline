@@ -50,9 +50,11 @@ namespace mu2e {
 
     // Private and unimplemented to prevent copying.
     explicit Mu2eG4MTRunManager( Mu2eG4MTRunManager const & ) =  delete;
+    explicit Mu2eG4MTRunManager( Mu2eG4MTRunManager && ) =  delete;
     Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & ) = delete;
+    Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager && ) = delete;
 
-    Mu2eG4Config::Top const & conf_;
+    Mu2eG4Config::Top const conf_;
     Mu2eG4ResourceLimits const & mu2elimits_;
 
     bool m_managerInitialized;
