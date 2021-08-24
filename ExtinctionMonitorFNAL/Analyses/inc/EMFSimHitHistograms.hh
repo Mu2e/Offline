@@ -13,7 +13,7 @@
 #include "art_root_io/TFileDirectory.h"
 
 #include "Offline/DataProducts/inc/ExtMonFNALModuleId.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 class TH1D;
 class TH2D;

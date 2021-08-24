@@ -26,7 +26,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // Utilities
@@ -61,8 +60,8 @@ namespace mu2e
       // diagnostics
       TTree *_chdiag;
       Int_t _evt; // add event id
-      XYZVec _pos; // average position
-      XYZVec _wdir; // direction at this position (typically the wire direction)
+      XYZVectorF _pos; // average position
+      XYZVectorF _wdir; // direction at this position (typically the wire direction)
       Float_t _wdist; // distance from wire center along this direction
       Float_t _wres; // estimated error along this direction
       Float_t _tres; // estimated error perpendicular to this direction
@@ -75,7 +74,7 @@ namespace mu2e
       Int_t _strawid; // strawid info
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
     // mc diag
-      XYZVec _mcpos; // average MC hit position
+      XYZVectorF _mcpos; // average MC hit position
       
       Float_t _mctime, _mcdist;
       Int_t _mcpdg, _mcproc, _mcgen; 
@@ -189,7 +188,7 @@ namespace mu2e
       _bkgclust = flag.hasAllProperties(StrawHitFlag::bkgclust);
       _dz = 0.0;
       // center of this wire
-      XYZVec cpos = _pos - _wdist*_wdir;
+      XYZVectorF cpos = _pos - _wdist*_wdir;
       // now hit-by-hit info
       _chinfo.clear();
       if(_diag > 1){
@@ -212,7 +211,7 @@ namespace mu2e
 	  chi._strawid = comp.strawId().straw();
 	  chi._panelid = comp.strawId().panel();
 	
-	  XYZVec dpos = comp.pos()-ch.pos();
+	  XYZVectorF dpos = comp.pos()-ch.pos();
 	  chi._dwire = dpos.Dot(ch.wdir());
 	  chi._dwerr = comp.wireRes();
 	  chi._dterr = comp.transRes();
@@ -246,18 +245,18 @@ namespace mu2e
 	else
 	  _mcgen = -1;
 	// find the relation with each hit
-	_mcpos = XYZVec(0.0,0.0,0.0);
+	_mcpos = XYZVectorF(0.0,0.0,0.0);
 	for(auto shi : shids) {
 	  ComboHitInfoMC chimc;
 	  StrawDigiMC const& mcd = _mcdigis->at(shi);
 	  //chimc._rel = MCRelationship::relationship(mcd,mcd1);
-	  chimc._mcpos = XYZVec(spmcp->position().x(),spmcp->position().y(), spmcp->position().z() );
+	  chimc._mcpos = XYZVectorF(spmcp->position().x(),spmcp->position().y(), spmcp->position().z() );
 	  
 	  MCRelationship rel(mcd,mcd1);
 	  chimc._rel = rel.relationship();
 	  _chinfomc.push_back(chimc);
 	  // find average MC properties
-	  _mcpos += XYZVec(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+	  _mcpos += XYZVectorF(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
 	}
 	_mcpos /= shids.size();
 	_mcdist = (_mcpos - cpos).Dot(_wdir);

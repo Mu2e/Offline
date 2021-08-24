@@ -6,7 +6,7 @@
 #ifndef ExtinctionMonitorFNAL_Digitization_PixelNoise_hh
 #define ExtinctionMonitorFNAL_Digitization_PixelNoise_hh
 
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandFlat.h"
 

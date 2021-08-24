@@ -24,6 +24,7 @@ CommonMC: {
         "cosmicDYB", "CosmicCRY", "CosmicCORSIKA",
         "InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
   }
+  
   SelectRecoMC : {
     module_type : SelectRecoMC
     debugLevel : 0

@@ -19,9 +19,9 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 #include "Offline/DataProducts/inc/Helicity.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
@@ -532,7 +532,7 @@ namespace mu2e {
   {
     RobustHelix& helix = helixData._hseed._helix;
 
-    static XYZVec  zaxis(0.0,0.0,1.0); // unit in z direction
+    static XYZVectorF  zaxis(0.0,0.0,1.0); // unit in z direction
     ComboHit*      hhit(0);
 
     for (unsigned f=0; f<helixData._chHitsToProcess.size(); ++f){
@@ -540,15 +540,15 @@ namespace mu2e {
 
       if (hhit->_flag.hasAnyProperty(_outlier))   continue;
 
-      const XYZVec& wdir = hhit->wdir();
-      XYZVec wtdir = zaxis.Cross(wdir); // transverse direction to the wire
-      XYZVec cvec = PerpVector(hhit->pos() - helix.center(),Geom::ZDir());// direction from the circle center to the hit
-      XYZVec cdir = cvec.Unit();        // direction from the circle center to the hit
-      XYZVec cperp = zaxis.Cross(cdir); // direction perp to the radius
+      const XYZVectorF& wdir = hhit->wdir();
+      XYZVectorF wtdir = zaxis.Cross(wdir); // transverse direction to the wire
+      XYZVectorF cvec = PerpVector(hhit->pos() - helix.center(),GenVector::ZDir());// direction from the circle center to the hit
+      XYZVectorF cdir = cvec.Unit();        // direction from the circle center to the hit
+      XYZVectorF cperp = zaxis.Cross(cdir); // direction perp to the radius
 
-      XYZVec hpos = hhit->pos();      // this sets the z position to the hit z
+      XYZVectorF hpos = hhit->pos();      // this sets the z position to the hit z
       helix.position(hpos);                     // this computes the helix expectation at that z
-      XYZVec dh = hhit->pos() - hpos; // this is the vector between them
+      XYZVectorF dh = hhit->pos() - hpos; // this is the vector between them
 
       _vmva._dtrans = fabs(dh.Dot(wtdir));              // transverse projection
       _vmva._dwire = fabs(dh.Dot(wdir));               // projection along wire direction
@@ -606,7 +606,7 @@ namespace mu2e {
   {
     RobustHelix& helix = helixData._hseed._helix;
     bool changed(false);
-    static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
+    static XYZVectorF zaxis(0.0,0.0,1.0); // unit in z direction
     int      nGoodSH(0);
 
     // loop over hits
@@ -633,15 +633,15 @@ namespace mu2e {
 	float hphi = polyAtan2(hit->pos().y(),hit->pos().x());//phi();
 	float dphi = fabs(Angles::deltaPhi(hphi,helix.fcent()));
 
-	const XYZVec& wdir = hit->wdir();
-	XYZVec wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
-	XYZVec cvec = PerpVector(hit->pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
-	XYZVec cdir = cvec.Unit();          // direction from the circle center to the hit
-	XYZVec cperp = zaxis.Cross(cdir);   // direction perp to the radius
+	const XYZVectorF& wdir = hit->wdir();
+	XYZVectorF wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
+	XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
+	XYZVectorF cdir = cvec.Unit();          // direction from the circle center to the hit
+	XYZVectorF cperp = zaxis.Cross(cdir);   // direction perp to the radius
 
-	XYZVec hpos = hit->pos(); // this sets the z position to the hit z
+	XYZVectorF hpos = hit->pos(); // this sets the z position to the hit z
 	helix.position(hpos);                // this computes the helix expectation at that z
-	XYZVec dh = hit->pos() - hpos;   // this is the vector between them
+	XYZVectorF dh = hit->pos() - hpos;   // this is the vector between them
 	float dtrans = fabs(dh.Dot(wtdir)); // transverse projection
 	float dwire = fabs(dh.Dot(wdir));   // projection along wire direction
 
@@ -924,7 +924,7 @@ namespace mu2e {
   {
     unsigned changed(0);
     int      nGoodSH(0);
-    static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
+    static XYZVectorF zaxis(0.0,0.0,1.0); // unit in z direction
     RobustHelix& helix = helixData._hseed._helix;
 
     // loop over hits
@@ -955,9 +955,9 @@ namespace mu2e {
 	bool oldout = hit->_flag.hasAnyProperty(_outlier);
 	hit->_flag.clear(_outlier);
 
-	const XYZVec& wdir = hit->wdir();
-	XYZVec cvec = PerpVector(hit->pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
-	XYZVec cdir = cvec.Unit(); // direction from the circle center to the hit
+	const XYZVectorF& wdir = hit->wdir();
+	XYZVectorF cvec = PerpVector(hit->pos() - helix.center(),GenVector::ZDir()); // direction from the circle center to the hit
+	XYZVectorF cdir = cvec.Unit(); // direction from the circle center to the hit
 	float rwdot = wdir.Dot(cdir); // compare directions of radius and wire
 	if(rwdot > _maxrwdot){
 	  hit->_flag.merge(_outlier);
@@ -1179,10 +1179,10 @@ namespace mu2e {
     for(auto& ch : helixData._hseed._hhits){
       if(ch.flag().hasAllProperties(stereo) && ch.nCombo() >=2) {
 	// local helix direction at the average z of this hit
-	XYZVec hdir;
+	XYZVectorF hdir;
 	helixData._hseed.helix().direction(ch.pos().z(),hdir);
 	// needs re-implementing with ComboHits FIXME!
-	//	XYZVec pos1, pos2;
+	//	XYZVectorF pos1, pos2;
 	//	sthit.position(shcol,tracker,pos1,pos2,hdir);
       }
     }

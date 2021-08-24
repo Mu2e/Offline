@@ -15,11 +15,10 @@
 
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "Offline/Mu2eUtilities/inc/particleEnteringG4Volume.hh"
 

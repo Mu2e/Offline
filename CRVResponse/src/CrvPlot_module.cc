@@ -15,7 +15,7 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/MCDataProducts/inc/CrvPhotons.hh"
 #include "Offline/MCDataProducts/inc/CrvSiPMCharges.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"

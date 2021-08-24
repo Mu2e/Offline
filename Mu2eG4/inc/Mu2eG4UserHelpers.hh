@@ -23,7 +23,7 @@
 
 // Mu2e includes
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 class G4Track;
 class G4Step;

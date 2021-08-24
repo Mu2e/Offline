@@ -1,8 +1,8 @@
 
 #include "art_root_io/TFileDirectory.h"
 #include "Offline/Validation/inc/ValTrackClusterMatch.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "TMath.h"
 
 int mu2e::ValTrackClusterMatch::declare(art::TFileDirectory tfs) {

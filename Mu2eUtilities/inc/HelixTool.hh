@@ -9,7 +9,7 @@
 #include "Math/VectorUtil.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
 namespace mu2e { class Tracker; }

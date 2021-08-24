@@ -8,9 +8,9 @@
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -32,7 +32,7 @@ namespace mu2e {
   // struct for weighted positions
   class XYWVec : public XYVec {
   public :
-    XYWVec(XYZVec pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
+    XYWVec(XYZVectorF pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
     float weight() const { return _weight; }
     int   face() const { return _face; }
 
@@ -176,7 +176,7 @@ namespace mu2e {
     ::LsqSums4         _sxy;
     ::LsqSums4         _szphi;
 
-    // XYZVec             _center;
+    // XYZVectorF             _center;
     // double             _radius;
 
     // double             _chi2;

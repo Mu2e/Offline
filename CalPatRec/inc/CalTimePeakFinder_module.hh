@@ -19,7 +19,6 @@ namespace art {
 // data
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/HelixVal.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"

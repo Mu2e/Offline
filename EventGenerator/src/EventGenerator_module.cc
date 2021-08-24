@@ -30,8 +30,8 @@
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/ConfigTools/inc/requireUniqueKey.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 
 // Particular generators that this code knows about.
 #include "Offline/EventGenerator/inc/CosmicDYB.hh"

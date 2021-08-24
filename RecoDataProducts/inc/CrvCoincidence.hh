@@ -17,17 +17,23 @@ namespace mu2e
 
     CrvCoincidence() {}
 
-    CrvCoincidence(const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, int crvSectorType) : 
-                   _crvRecoPulses(crvRecoPulses), _crvSectorType(crvSectorType) {}
+    CrvCoincidence(const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, int crvSectorType,
+                   const std::vector<float> &slopes, const std::vector<int> &layers) : 
+                   _crvRecoPulses(crvRecoPulses), _crvSectorType(crvSectorType), _slopes(slopes), _layers(layers) {}
 
     const std::vector<art::Ptr<CrvRecoPulse> > &GetCrvRecoPulses() const {return _crvRecoPulses;}
     int                                         GetCrvSectorType() const {return _crvSectorType;}
+    const std::vector<float>                          &GetSlopes() const {return _slopes;}
+    const std::vector<int>                            &GetLayers() const {return _layers;}
 
     private:
 
     std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
     int                                  _crvSectorType;
+    std::vector<float>                   _slopes; //width direction of counter / thickness direction of counter //slope=0 means straight through the module
+    std::vector<int>                     _layers;
   };
+  typedef std::vector<mu2e::CrvCoincidence> CrvCoincidenceCollection;
 }
 
 #endif /* RecoDataProducts_CrvCoincidence_hh */

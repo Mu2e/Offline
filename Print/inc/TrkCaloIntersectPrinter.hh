@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Offline/Print/inc/ProductPrinter.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

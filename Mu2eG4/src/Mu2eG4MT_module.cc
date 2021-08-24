@@ -26,9 +26,9 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
 // Data products that will be produced by this module.
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 
@@ -160,7 +160,7 @@ namespace mu2e {
     multiStagePars_(pars().inputs()),
     simStage_(-1u),
 
-    masterThread(std::make_unique<MTMasterThread>(pars())),
+    masterThread(std::make_unique<MTMasterThread>(pars(),mu2elimits_ )),
 
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),

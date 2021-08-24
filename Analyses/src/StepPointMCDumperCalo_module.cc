@@ -24,12 +24,11 @@
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 namespace mu2e {
 
@@ -66,10 +65,6 @@ namespace mu2e {
     return sqrt(hit.momentum().mag2() + std::pow(mass, 2)) - mass;
   }
 
-
-
-
-
   //================================================================
   class StepPointMCDumperCalo : public art::EDAnalyzer
   {
@@ -79,13 +74,11 @@ namespace mu2e {
       virtual void beginJob();
       virtual void analyze(const art::Event& event);
 
-
     private:
       
       art::InputTag           hitsInputTag_;
       SimParticleTimeOffset   toff_;
       int _nProcess;
-
 
       TTree *nt_;
 
@@ -93,8 +86,6 @@ namespace mu2e {
       float _stepX[16384],_stepY[16384],_stepZ[16384],_stepT[16384],_stepPx[16384],_stepPy[16384],_stepPz[16384],_stepEk[16384],_stepEdep[16384];
 
   };
-
-
 
   //================================================================
   StepPointMCDumperCalo::StepPointMCDumperCalo(const fhicl::ParameterSet& pset)
@@ -130,9 +121,7 @@ namespace mu2e {
       nt_->Branch("stepCrCode",   &_stepCrCode,    "stepCrCode[nStep]/I");
    }
 
-
  
-  
   
   //================================================================
   void StepPointMCDumperCalo::analyze(const art::Event& event)
@@ -173,7 +162,6 @@ namespace mu2e {
      }
 
     nt_->Fill();
-
 
   } 
  

@@ -217,13 +217,15 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
   tseed._track.FitParams.B0 = seedInt.y();
   tseed._track.FitParams.A1 = seedDir.x();
   tseed._track.FitParams.B1 = seedDir.y();
-  XYZVec X(1,0,0);
-  XYZVec Y(0,1,0);
-  XYZVec Z(0,0,1);
+  XYZVectorF X(1,0,0);
+  XYZVectorF Y(0,1,0);
+  XYZVectorF Z(0,0,1);
   TrackAxes XYZ(X,Y,Z);
   tseed._track.InitCoordSystem = XYZ;
   tseed._track.FitCoordSystem = XYZ;
-  TrackEquation XYZTrack(Geom::toXYZVec(seedInt), Geom::toXYZVec(seedDir));
+  XYZVectorF xyzint(seedInt);
+  XYZVectorF xyzdir(seedDir);
+  TrackEquation XYZTrack(xyzint,xyzdir);
   tseed._track.SetFitEquation(XYZTrack);
 
   // For compatibility FIXME

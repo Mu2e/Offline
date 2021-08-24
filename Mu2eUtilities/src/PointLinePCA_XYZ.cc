@@ -7,9 +7,9 @@
 
 using namespace std;
 namespace mu2e{
-	PointLinePCA_XYZ::PointLinePCA_XYZ( XYZVec const& point,
-                          XYZVec const& start,
-                          XYZVec const& end):
+	PointLinePCA_XYZ::PointLinePCA_XYZ( XYZVectorF const& point,
+                          XYZVectorF const& start,
+                          XYZVectorF const& end):
     _point(point),
     _start(start),
     _end(end),
@@ -19,7 +19,7 @@ namespace mu2e{
 	  double POCA_x = start.x() + (end.x()-start.x())*tMin;
 	  double POCA_y = start.y() + (end.x()-start.y())*tMin;
 	  double POCA_z = start.z() + (end.z()-start.z())*tMin;
-	  XYZVec closestPointOnLine;
+	  XYZVectorF closestPointOnLine;
 	  closestPointOnLine.SetXYZ(POCA_x ,POCA_y ,POCA_z);
 	 
 	 _pca = closestPointOnLine;

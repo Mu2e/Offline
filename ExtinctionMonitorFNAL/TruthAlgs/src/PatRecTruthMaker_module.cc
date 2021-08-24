@@ -1,6 +1,5 @@
 // Associate truth to track finding output.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -26,7 +25,6 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 #include "Offline/MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
