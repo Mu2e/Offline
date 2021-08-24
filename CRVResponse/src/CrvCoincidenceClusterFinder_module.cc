@@ -13,8 +13,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceCollection.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -59,18 +59,19 @@ namespace mu2e
     struct ClusterHit
     {
       art::Ptr<CrvRecoPulse> _crvRecoPulse; 
-      double _pos;
+      float  _x, _y;
       double _time;
       CLHEP::Hep3Vector _counterPosition;
-      ClusterHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, double pos, double time, const CLHEP::Hep3Vector &counterPosition) 
-            : _crvRecoPulse(crvRecoPulse), _pos(pos), _time(time), _counterPosition(counterPosition) {}
+      int    _layer;
+      ClusterHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, float x, float y, double time, const CLHEP::Hep3Vector &counterPosition, int layer) 
+            : _crvRecoPulse(crvRecoPulse), _x(x), _y(y), _time(time), _counterPosition(counterPosition), _layer(layer) {}
     };
 
     struct PosCompare
     {
       bool operator() (const ClusterHit &lhs, const ClusterHit &rhs) const 
       {                                                //identical hits will be removed, 
-        if(lhs._pos!=rhs._pos) return lhs._pos < rhs._pos; 
+        if(lhs._x!=rhs._x) return lhs._x < rhs._x; 
         return lhs._crvRecoPulse < rhs._crvRecoPulse;
       }
     };
@@ -133,7 +134,7 @@ namespace mu2e
     //loop through all coincidence combinations
     //extract all the hits of all coincidence combinations
     //distribute them into the crv sector types
-    //and put them into a (pos ordered) set
+    //and put them into a (x-pos ordered) set
     std::map<int, std::set<ClusterHit,PosCompare> > sectorTypeMap;
 
     CrvCoincidenceCollection::const_iterator iter;
@@ -148,9 +149,11 @@ namespace mu2e
         const mu2e::CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex(); 
         const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
         int widthDirection=crvCounter.getBarDetail().getWidthDirection();
-        double pos=crvCounter.getPosition()[widthDirection];
-
-        sectorTypeMap[crvSectorType].emplace(crvRecoPulse, pos, crvRecoPulse->GetPulseTime(), crvCounter.getPosition());
+        int thicknessDirection=crvCounter.getBarDetail().getThicknessDirection();
+        float x=crvCounter.getPosition()[widthDirection];
+        float y=crvCounter.getPosition()[thicknessDirection];
+        int layer=crvCounter.id().getLayerNumber();
+        sectorTypeMap[crvSectorType].emplace(crvRecoPulse, x, y, crvRecoPulse->GetPulseTime(), crvCounter.getPosition(), layer);
       }
     }
 
@@ -161,21 +164,21 @@ namespace mu2e
       int crvSectorType = sectorTypeMapIter->first;
       const std::set<ClusterHit,PosCompare> &posOrderedHits = sectorTypeMapIter->second; 
 
-      //loop through the vector of (position ordered) crv hits for this particular crv sector type
+      //loop through the vector of (x-position ordered) crv hits for this particular crv sector type
       std::set<ClusterHit,PosCompare>::const_iterator hp=posOrderedHits.begin();
       while(hp!=posOrderedHits.end())
       {
-        double startPos=hp->_pos;
-        std::set<ClusterHit,TimeCompare> posCluster;  //time ordered hits of this position cluster
+        double startPos=hp->_x;
+        std::set<ClusterHit,TimeCompare> posCluster;  //time ordered hits of this x-position cluster
         posCluster.insert(*hp);
         while(++hp!=posOrderedHits.end())
         {
-          if(hp->_pos-startPos>_maxDistance) break;
+          if(hp->_x-startPos>_maxDistance) break;
           posCluster.insert(*hp);
         }
-        //filled one full position cluster
+        //filled one full x-position cluster
 
-        //loop through the vector of (time ordered) crv hits for this position cluster
+        //loop through the vector of (time ordered) crv hits for this x-position cluster
         std::set<ClusterHit,TimeCompare>::const_iterator ht=posCluster.begin();
         while(ht!=posCluster.end())
         {
@@ -184,27 +187,44 @@ namespace mu2e
           crvRecoPulses.push_back(ht->_crvRecoPulse);
 
           double endTime=ht->_time;
-          int PEs=ht->_crvRecoPulse->GetPEs();
+          float PEs=ht->_crvRecoPulse->GetPEs();
           if(_usingPEsPulseHeight) PEs=ht->_crvRecoPulse->GetPEsPulseHeight();
-          CLHEP::Hep3Vector avgCounterPos=ht->_counterPosition;
+          CLHEP::Hep3Vector avgCounterPos=ht->_counterPosition*PEs;  //PE-weighted average position
 
+          std::set<int> layerSet;
+          layerSet.insert(ht->_layer);
+          int nPoints=1;
+          float sumX =ht->_x;
+          float sumY =ht->_y;
+          float sumYY=ht->_y*ht->_y;
+          float sumXY=ht->_x*ht->_y;
           while(++ht!=posCluster.end())
           {
             if(ht->_time-startTime>_maxTimeDifference) break;
             crvRecoPulses.push_back(ht->_crvRecoPulse);
 
             endTime=ht->_time;
-            if(_usingPEsPulseHeight) PEs+=ht->_crvRecoPulse->GetPEsPulseHeight();
-            else PEs+=ht->_crvRecoPulse->GetPEs();
-            avgCounterPos+=ht->_counterPosition;
+            float PEsTmp=ht->_crvRecoPulse->GetPEs();
+            if(_usingPEsPulseHeight) PEsTmp=ht->_crvRecoPulse->GetPEsPulseHeight();
+            PEs+=PEsTmp;
+            avgCounterPos+=ht->_counterPosition*PEsTmp;
+
+            layerSet.insert(ht->_layer);
+            ++nPoints;
+            sumX +=ht->_x;
+            sumY +=ht->_y;
+            sumYY+=ht->_y*ht->_y;
+            sumXY+=ht->_x*ht->_y;
           }
           //filled one full position&time cluster
 
-          //average counter position
-          avgCounterPos/=crvRecoPulses.size();
+          //average counter position (PE weighted), slope, layers
+          avgCounterPos/=PEs;
+          float slope=(nPoints*sumXY-sumX*sumY)/(nPoints*sumYY-sumY*sumY);
+          std::vector<int> layers(layerSet.begin(), layerSet.end());
 
           //insert the cluster information into the vector of the crv coincidence clusters
-          crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses);
+          crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses, slope, layers);
 
           //calculate dead time
           double deadTimeWindowStart = startTime-_deadTimeWindowStartMargin;

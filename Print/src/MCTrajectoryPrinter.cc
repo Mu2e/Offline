@@ -96,6 +96,8 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
     os 
       << " parentKey: " << std::setw(8) << pkey
       << "  npoint: " << std::setw(4) << points.size() << "\n";
+      os << " Sim start: " << obj.sim()->startPosition() << "\n"
+      << " Sim end  : " << obj.sim()->endPosition() << "\n";
     int i=0;
     for(auto const& pp : points ) {
       os

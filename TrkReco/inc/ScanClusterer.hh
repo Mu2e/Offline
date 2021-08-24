@@ -8,7 +8,7 @@
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkReco/inc/BkgClusterer.hh"
 
 

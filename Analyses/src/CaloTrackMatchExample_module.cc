@@ -23,9 +23,9 @@
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloMatchCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

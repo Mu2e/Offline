@@ -24,7 +24,7 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -318,8 +318,8 @@ namespace mu2e
 
         // create the CrvStep and emplace it back into the vector of crvSteps
         crvSteps->emplace_back(first->barIndex(), edep, startTime, endTime, 
-                               Geom::toXYZVec(startPos), Geom::toXYZVec(endPos),
-                               Geom::toXYZVec(startMomV), endMom,
+                               XYZVectorF(startPos), XYZVectorF(endPos),
+                               XYZVectorF(startMomV), endMom,
                                pathlen, first->simParticle());
       }
     }

@@ -247,9 +247,9 @@ int main()
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
   mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ,"/cvmfs/mu2e.opensciencegrid.org/DataFiles/CRVConditions/v6_0/photonMap.root");
-  sim.SetSiPMConstants(40, 40, 3.0, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
+  sim.SetSiPMConstants(40, 40, 3.0, 13.3, 8.84e-14, probabilities, inactivePixels);
 
-  sim.Simulate(photonTimes, SiPMresponseVector);
+  sim.Simulate(photonTimes, SiPMresponseVector, 500, 1695);
 
   for(unsigned int i=0; i<SiPMresponseVector.size(); i++)
   {

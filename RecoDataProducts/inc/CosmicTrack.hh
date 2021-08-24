@@ -3,13 +3,13 @@
 ////S. Middleton, Feb 2019 - Cosmic track class, main purpose id to store diagnostics.
 #include "TMath.h"
 #include "TMatrixD.h"
-
 #include "KinKal/General/Vectors.hh"
 #include <vector>
 #include <bitset>
 #include <tuple>
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
+
 #include "Offline/Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
@@ -33,41 +33,41 @@ using namespace std;
 
    //Struct To Hold Track Parameters
    struct TrackParams{
-    double A0;
-    double A1;
-    double B0;
-    double B1;
-    double T0;
-    double deltaA0;
-    double deltaA1;
-    double deltaB0;
-    double deltaB1;
-    double deltaT0;
-    TrackParams();
-    TrackParams(double a0, double a1, double  b0, double b1) : A0(a0), A1(a1), B0(b0) , B1(b1){};
-    TrackParams(double a0, double a1, double  b0, double b1, double t0) : A0(a0), A1(a1), B0(b0) , B1(b1), T0(t0) {};
-    TrackCov Covarience; //FIXME backwards compatibility
+  	double A0;
+  	double A1;
+  	double B0;
+  	double B1;
+  	double T0;
+	  double deltaA0;
+  	double deltaA1;
+  	double deltaB0;
+  	double deltaB1;
+  	double deltaT0;
+  	TrackParams();
+  	TrackParams(double a0, double a1, double  b0, double b1) : A0(a0), A1(a1), B0(b0) , B1(b1){};
+	  TrackCov Covarience; //FIXME backwards compatibility
     std::vector<double> cov;
 
-	  XYZVec Direction() const { return XYZVec(A1, -1, B1).unit();};
-	  XYZVec Position() const { return XYZVec(A0, 0, B0);};
+	  XYZVectorF Direction() const { return XYZVectorF(A1, B1, 1).unit();};
+	  XYZVectorF Position() const { return XYZVectorF(A0, B0, 0);};
+
    };
 
    //Struct to hold Coordinate System
    struct TrackAxes{
-  	XYZVec _XDoublePrime;
-  	XYZVec _YDoublePrime;
-  	XYZVec _ZPrime;
+  	XYZVectorF _XDoublePrime;
+  	XYZVectorF _YDoublePrime;
+  	XYZVectorF _ZPrime;
   	TrackAxes();
-  	TrackAxes(XYZVec X, XYZVec Y, XYZVec Z) : _XDoublePrime(X),_YDoublePrime(Y),_ZPrime(Z){};
+  	TrackAxes(XYZVectorF const& X, XYZVectorF const& Y, XYZVectorF const& Z) : _XDoublePrime(X),_YDoublePrime(Y),_ZPrime(Z){};
    };
 
    //Struct to store a Track Equation (optional)
    struct TrackEquation{
-   	XYZVec Pos;
-        XYZVec Dir;
+   	XYZVectorF Pos;
+        XYZVectorF Dir;
         TrackEquation();
-        TrackEquation(XYZVec P, XYZVec D) : Pos(P), Dir(D){};
+        TrackEquation(XYZVectorF const& P, XYZVectorF const& D) : Pos(P), Dir(D){};
    };
 
    //Struct to store Diagnostics associated with seed fit:
@@ -146,15 +146,15 @@ namespace mu2e {
         this->MinuitEquation = Track;
       }
 
-      std::tuple <XYZVec, double, double> GetTrackPOCAInfo();
+      std::tuple <XYZVectorF, double, double> GetTrackPOCAInfo();
 	    
-      XYZVec Pos0() const { 
-        XYZVec intercept(this->MinuitParams.A0, 0, this->MinuitParams.B0);
+      XYZVectorF Pos0() const { 
+        XYZVectorF intercept(this->MinuitParams.A0, 0, this->MinuitParams.B0);
         return intercept; 
       }
 
-      XYZVec Dir() const {
-        XYZVec direction(this->MinuitParams.A1, -1, this->MinuitParams.B1); 
+      XYZVectorF Dir() const {
+        XYZVectorF direction(this->MinuitParams.A1, -1, this->MinuitParams.B1); 
         return direction.Unit();
       }
 
@@ -198,14 +198,14 @@ namespace mu2e {
       
       //function to make tuple of kinkal params info
       std::tuple <double, double, double, double, double, double> KinKalTrackParams() const{
-        XYZVec zpos(0.,0.,0);
-        XYZVec  zdir(0.,0.,1.);
-        XYZVec  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
-        XYZVec  dir(this->MinuitParams.A1, -1, this->MinuitParams.B1);
+        XYZVectorF zpos(0.,0.,0);
+        XYZVectorF  zdir(0.,0.,1.);
+        XYZVectorF  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
+        XYZVectorF  dir(this->MinuitParams.A1, -1, this->MinuitParams.B1);
 
         std::tuple <double,double, double, double, double, double> info;
         TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
-        XYZVec POCA = PCA.point1()-PCA.point2();
+        XYZVectorF POCA = PCA.point1()-PCA.point2();
         double DOCA = PCA.dca();
         double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
 

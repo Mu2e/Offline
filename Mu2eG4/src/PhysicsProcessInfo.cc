@@ -94,10 +94,10 @@ namespace mu2e{
           jj = result.first;
 
         }
-        // we will artificially attach "FieldPropagator" to all particles
+        // we will artificially attach "mu2eFieldPropagator" to all particles
         // fixme : do it only for charged particles; factorize the code
 
-        G4String const pname = G4String("FieldPropagator");
+        G4String const pname = G4String("mu2eFieldPropagator");
         jj = _allProcesses.find(pname);
         // If not already in the map, then create it.
         if ( jj == _allProcesses.end() ){

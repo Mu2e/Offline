@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "Offline/Print/inc/ProductPrinter.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

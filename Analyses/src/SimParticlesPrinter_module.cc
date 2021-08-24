@@ -11,7 +11,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 namespace mu2e {

@@ -13,7 +13,7 @@ using namespace CLHEP;
 namespace mu2e {
 
   typedef std::shared_ptr<Tracker> ptr_t;
-  using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
+  using xyzVec = CLHEP::Hep3Vector; // switch to XYZVectorF TODO
 
   ptr_t AlignedTrackerMaker::fromFcl() {
   // this creates a deep copy of the nominal geometry

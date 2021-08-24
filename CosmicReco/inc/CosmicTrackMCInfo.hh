@@ -3,7 +3,7 @@
 
 #include "TMath.h"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 struct CosmicTrackMCInfo{
 

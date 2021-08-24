@@ -11,7 +11,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
@@ -151,7 +151,7 @@ namespace mu2e {
       float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
 
       int status(0);
-      if ( _steppingAction->nKilledStepLimit() > 0 ||
+      if ( _trackingAction->nKilledStepLimit() > 0 ||
            _trackingAction->nKilledByFieldPropagator() > 0 ) {
         status =  1;
       }
@@ -160,7 +160,7 @@ namespace mu2e {
       perThreadObjects_->statG4 = std::make_unique<StatusG4>(status,
                                                              _trackingAction->nG4Tracks(),
                                                              _trackingAction->overflowSimParticles(),
-                                                             _steppingAction->nKilledStepLimit(),
+                                                             _trackingAction->nKilledStepLimit(),
                                                              _trackingAction->nKilledByFieldPropagator(),
                                                              cpuTime,
                                                              _timer->GetRealElapsed()

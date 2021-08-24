@@ -6,8 +6,8 @@
 #define CalHelixFinderAlg_HH
 
 // data
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -177,28 +177,28 @@ namespace mu2e {
     float calculateWeight     (const mu2e::ComboHit&  Hit,
 				// const CLHEP::Hep3Vector& HitPos, 
 				// const CLHEP::Hep3Vector& StrawDir, 
-				const XYZVec& HelCenter, 
+				const XYZVectorF& HelCenter, 
 				float                   Radius);
 
     float calculatePhiWeight  (const ComboHit&  Hit,
-				// const XYZVec& HitPos   , 
-				// const XYZVec& StrawDir , 
-				const XYZVec& HelCenter, 
+				// const XYZVectorF& HitPos   , 
+				// const XYZVectorF& StrawDir , 
+				const XYZVectorF& HelCenter, 
 				float                   Radius   , 
 				int                      Print    , 
 				const char*              Banner=NULL);
 
-    void   resolve2PiAmbiguity (ComboHit* Hit, XYZVec& Center, float &Phi_ref, float &DPhi);
+    void   resolve2PiAmbiguity (ComboHit* Hit, XYZVectorF& Center, float &Phi_ref, float &DPhi);
 
     //calculates the residual along the radial direction of the helix-circle
-    float calculateRadialDist (const XYZVec& HitPos, 
-				const XYZVec& HelCenter, 
+    float calculateRadialDist (const XYZVectorF& HitPos, 
+				const XYZVectorF& HelCenter, 
 				float                   Radius);
 
-    bool   calculateTrackParameters(const XYZVec& p1, 
-				    const XYZVec& p2,
-                                    const XYZVec& p3,
-				    XYZVec&       Center, 
+    bool   calculateTrackParameters(const XYZVectorF& p1, 
+				    const XYZVectorF& p2,
+                                    const XYZVectorF& p3,
+				    XYZVectorF&       Center, 
 				    float&       Radius,
                                     float&       Phi0, 
 				    float&       TanLambda);
@@ -243,7 +243,7 @@ namespace mu2e {
     // fills the vector Weights which holds the calculated weights of the hits
     void   doWeightedCircleFit     (CalHelixFinderData& Helix,
 				    HitInfo_t           SeedIndex,
-				    XYZVec&             HelCenter, 
+				    XYZVectorF&             HelCenter, 
 				    float&             Radius, 
 				    int                 Print=0, 
 				    const char*         Banner=NULL);
@@ -302,7 +302,7 @@ namespace mu2e {
     void   rescueHits           (CalHelixFinderData&  Helix, HitInfo_t SeedIndex   ,
 				 int UsePhiResiduals = 0);
 
-    // void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, float DfDz, float Phi0);
+    // void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVectorF& Center, float DfDz, float Phi0);
 
     void   resetTrackParamters  ();
 //-----------------------------------------------------------------------------
@@ -315,7 +315,7 @@ namespace mu2e {
     void   searchWorstHitWeightedCircleFit(CalHelixFinderData& Helix,
 					   HitInfo_t          SeedIndex,
                                            // int*               IdVec,
-                                           const XYZVec& HelCenter,
+                                           const XYZVectorF& HelCenter,
                                            float&             Radius,
                                            // float*            Weights,
                                            HitInfo_t&         Iworst ,

@@ -1,6 +1,5 @@
 // Compute calibrated pixel clusters from raw ones.
 //
-//
 // Original author Andrei Gaponenko
 //
 
@@ -28,7 +27,6 @@
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 

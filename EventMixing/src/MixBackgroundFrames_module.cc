@@ -41,12 +41,12 @@ namespace mu2e {
     art::InputTag pbiTag_;
     double meanEventsPerProton_;
     const int debugLevel_;
+    const unsigned maxEventsToSkip_;
     art::RandomNumberGenerator::base_engine_t& engine_;
     artURBG urbg_;
 
     ProtonBunchIntensity pbi_;
     int totalBkgCount_;
-    float skipFactor_;
 
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
@@ -89,10 +89,9 @@ namespace mu2e {
           Comment("control the level of debug output"),
           0u
           };
-      fhicl::Atom<float> skipFactor { Name("skipFactor"),
-          Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
-          1
-          };
+      fhicl::Atom<unsigned> maxEventsToSkip { Name("MaxEventsToSkip"),
+          Comment("Maximum number of events to skip at the beginning of the first secondary input file in sequential readMode.\n"),
+          0u };
 
       fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
           Comment("Write out IDs of events on the secondary input stream."),
@@ -140,10 +139,10 @@ namespace mu2e {
     : spm_{ pars().mu2e().products(), helper }
     , pbiTag_{ pars().mu2e().protonBunchIntensityTag() }
     , debugLevel_{ pars().mu2e().debugLevel() }
+    , maxEventsToSkip_{ pars().mu2e().maxEventsToSkip() }
     , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , urbg_{ engine_ }
     , totalBkgCount_(0)
-    , skipFactor_{ pars().mu2e().skipFactor() }
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
     , simStageEfficiencyTags_{ pars().mu2e().simStageEfficiencyTags() }
     , meanEventsPerPOTFactors_{ pars().mu2e().meanEventsPerPOTFactors() }
@@ -218,16 +217,13 @@ namespace mu2e {
 
   //================================================================
   size_t MixBackgroundFramesDetail::eventsToSkip() {
-    //FIXME: Ideally, we would know the number of events in the secondary input file
-    double skipFactor = skipFactor_*pbi_.intensity();
-    if(mixingMeanOverride_) {
-      skipFactor *= meanEventsPerProton_;
+    static bool first(true);
+    size_t result(0);
+    if(first) {
+      first = false;
+      std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
+      result = uniform(urbg_);
     }
-    else {
-      skipFactor *= eff_;
-    }
-    std::uniform_int_distribution<size_t> uniform(0, skipFactor);
-    size_t result = uniform(urbg_);
     if(debugLevel_ > 0) {
       std::cout << " Skipping " << result << " Secondaries " << std::endl;
     }
@@ -244,8 +240,8 @@ namespace mu2e {
       std::cout << "The following bkg events were mixed in (START)" << std::endl;
       int counter = 0;
       for (const auto& i_eid : seq) {
-        std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
-        ++counter;
+	std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
+	++counter;
       }
       totalBkgCount_ += counter;
       std::cout << "Bkg Event Count  (this microbunch) = " << counter << std::endl;
