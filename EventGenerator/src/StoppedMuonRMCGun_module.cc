@@ -34,7 +34,6 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
@@ -59,7 +58,6 @@ namespace mu2e {
     double rhoInternal_;
     double elow_; // BinnedSpectrum does not store emin and emax reliably
     double ehi_;
-
 
     BinnedSpectrum spectrum_;
 
@@ -89,7 +87,6 @@ namespace mu2e {
     double internalNormalization{0.};
     double externalNormalization{0.};
 
-
     TH1F* _hmomentum;
     TH1F* _hCosz;
     TH1F* _hEnergyElectron;
@@ -113,7 +110,6 @@ namespace mu2e {
     ~StoppedMuonRMCGun();
     virtual void produce(art::Event& event);
   };
-
 
 //================================================================
   StoppedMuonRMCGun::StoppedMuonRMCGun(const fhicl::ParameterSet& pset)
@@ -220,7 +216,6 @@ namespace mu2e {
       if (spectrum_.getXMax() > kMax) upperEnergy = kMax;
       // papers measure R(photon>57) = 1.43e-05. Hardwire that.
       const double rGammaEnergy = 57.; // this is what was measured, won't change unless someone does it again. Measurements are e>57.
-
 
       if (spectrum_.getXMin() < rGammaEnergy){
         lowestEnergy = rGammaEnergy;
@@ -363,7 +358,6 @@ namespace mu2e {
       - ( (xLow*xLow)/2. - (4./3.)*xLow2*xLow + (7./4.)*(xLow2*xLow2) - (6./5.)*(xLow2)*(xLow2)*xLow + (1./3.)*(xLow2*xLow2*xLow2) );
     return result;
   }
-
 
   //================================================================
 } // namespace mu2e

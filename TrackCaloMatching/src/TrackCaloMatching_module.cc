@@ -24,7 +24,7 @@
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
 #include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"

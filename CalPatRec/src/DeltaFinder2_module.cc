@@ -19,10 +19,9 @@
 #include "TVector2.h"
 // data
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 //#include "RecoDataProducts/inc/TimeCluster.hh"
@@ -791,7 +790,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
 // pick up neighboring hits in 'Face'
 //-----------------------------------------------------------------------------
@@ -870,7 +868,6 @@ namespace mu2e {
       }
     }  
   }
-
 
 //-----------------------------------------------------------------------------
 // find delta electron seeds in 'Station' with hits in faces 'f' and 'f+1'

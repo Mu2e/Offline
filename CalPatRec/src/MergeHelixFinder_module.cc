@@ -41,7 +41,7 @@
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 #include "Offline/CalPatRec/inc/ObjectDumpUtils.hh"
 
-#include "Offline/RecoDataProducts/inc/AlgorithmIDCollection.hh"
+#include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"

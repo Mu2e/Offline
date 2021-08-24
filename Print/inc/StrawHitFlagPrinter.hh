@@ -8,7 +8,7 @@
 #include <iostream>
 
 #include "Offline/Print/inc/ProductPrinter.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

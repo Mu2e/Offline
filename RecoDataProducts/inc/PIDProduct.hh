@@ -6,6 +6,7 @@
 #define PIDProduct_HH
 
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -44,6 +45,7 @@ namespace mu2e {
 
   };
 
+  typedef std::vector<mu2e::PIDProduct> PIDProductCollection;
 
 
 } // end namespace mu2e
