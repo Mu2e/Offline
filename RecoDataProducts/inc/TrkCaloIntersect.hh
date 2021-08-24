@@ -9,6 +9,7 @@
 #define RecoDataProducts_TrkCaloIntersect_hh
 
 
+#include <vector>
 // Mu2e includes:
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -54,6 +55,7 @@ namespace mu2e {
 	   double      _pathLengthExit;
 
    };
+  typedef std::vector<mu2e::TrkCaloIntersect> TrkCaloIntersectCollection;
 
 
 } 

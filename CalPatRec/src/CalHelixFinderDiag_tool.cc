@@ -15,7 +15,7 @@
 #include "Offline/CalPatRec/inc/CalHelixFinder_types.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 

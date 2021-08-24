@@ -5,9 +5,7 @@
 //  G4 uses G4World coordinate
 //  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing. 
 //
-//
 //  Original author MyeongJae Lee
-//
 //
 
 // C++ includes.
@@ -44,9 +42,7 @@ using namespace CLHEP;
 #include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
@@ -56,7 +52,6 @@ using namespace CLHEP;
 
 #include "Offline/RecoDataProducts/inc/TrkExtTrajPoint.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "Offline/TrkExt/inc/TrkExtDetectors.hh"
 #include "Offline/TrkExt/inc/TrkExtInstanceName.hh"
 
@@ -69,8 +64,6 @@ namespace mu2e {
   const int MAXSIM = 5000;
   const int MAXNBACK = 10000;
   const double RUNGE_KUTTA_KQ = 1.e-9*VELOCITY_OF_LIGHT; //k = 2.99e-1, q = 1. Actual charge is multiplied in runtime. 
-
-
 
   namespace TrkExtExitCode {
     enum Enum {
@@ -149,7 +142,6 @@ namespace mu2e {
     TrkExtDetectors _mydet;
     TrkExtInstanceName _trkPatRecInstanceName;
 
-
     double _dummyStoppingTarget_halfLength;
     double _dummyStoppingTarget_z0;
     double _pa_HalfLength;
@@ -177,8 +169,6 @@ namespace mu2e {
     bool checkOutofReflectionLimit (bool updown, const Hep3Vector & x, const Hep3Vector & p); // in Detector coordinate
     HepMatrix getCovarianceTransport(TrkExtTrajPoint & r0, double ds, double deltapp, int charge);
     HepMatrix getCovarianceMultipleScattering(TrkExtTrajPoint & r0, double ds);
-
-
 
   };
 
@@ -255,7 +245,6 @@ namespace mu2e {
         _flagDiagnostics = false;
         break;
     }
-
 
   }
 
@@ -343,7 +332,6 @@ namespace mu2e {
     }
     _hNtracks = tfs->make<TNtuple>("hNtracks", "Extrapolation statistics", "hepid:dir:ntrk");
 
-
     //TODO : warn if uniform B-field. 
 
   }
@@ -356,7 +344,6 @@ namespace mu2e {
     _mu2eOriginInWorld = g4world->mu2eOriginInWorld(); // add this to transfer mu2e coord. to g4 coord. 
     if (_verbosity>=2) cout << "TrkExt: Detector coord origin in mu2e coord = " << _origin << endl;
     if (_verbosity>=2) cout << "TrkExt: Mu2e coord origin in G4 coord = " << _mu2eOriginInWorld << endl;
-
 
   }
 
@@ -374,7 +361,6 @@ namespace mu2e {
 
   }
 
-
 ////////// Produce ///////////
 
   void TrkExt::produce(art::Event& event) {
@@ -384,7 +370,6 @@ namespace mu2e {
       if (_verbosity>=1) cout << "TrkExt: processing " << _processed_events << "-th events at evtid=" << _evtid << endl;
     }
     if (_verbosity>=2) cout << "TrkExt: processing " << _processed_events << "-th events at evtid=" << _evtid << endl;
-
 
     art::Handle<KalRepCollection> trksHandle;
    
@@ -459,7 +444,6 @@ namespace mu2e {
 
   }
 
-
 ////////// Utility functions ///////////
 
   bool TrkExt::checkOutofReflectionLimit(bool updown, const Hep3Vector & x, const Hep3Vector & p) {
@@ -477,8 +461,6 @@ namespace mu2e {
     }
     return false;
   }
-
-
 
 ////////// BField functions ///////////
 
@@ -557,7 +539,6 @@ namespace mu2e {
     }
     return B0;
   }
-
 
 /////////// Read VD //////////////
 
@@ -691,7 +672,6 @@ namespace mu2e {
     return false;
   }
 
-
 /////////// Read TrkPatRec //////////////
 
   void TrkExt::readTrkPatRec(KalRep const & krep, Hep3Vector * xstart, Hep3Vector * pstart, Hep3Vector * xstop, Hep3Vector * pstop, HepMatrix * covstart, HepMatrix * covstop, double * timestart, double * timestop) {
@@ -715,7 +695,6 @@ namespace mu2e {
     krep.getAllCovs(_trkl0, xxcov0, ppcov0, xpcov0);
     krep.getAllCovs(_trkl1, xxcov1, ppcov1, xpcov1);
 
-    covstart_[0][0] = xxcov0[0][0];
     covstart_[0][0] = xxcov0[0][0];
     covstart_[0][1] = xxcov0[0][1];
     covstart_[0][2] = xxcov0[0][2];
@@ -806,7 +785,6 @@ namespace mu2e {
 
     TrkExtDetectorList::Enum prevolumeid = _mydet.volumeId(xx);
     TrkExtExitCode::Enum exitcode(TrkExtExitCode::Undefined);
-
 
     // Initialize TrajPoints
     //HepMatrix cov_init(6,6, 0);
@@ -970,7 +948,6 @@ namespace mu2e {
     return nsteps;
   }
 
-
 ///////// Covariance ////////////
 
   HepMatrix TrkExt::getCovarianceTransport(TrkExtTrajPoint & r0, double ds, double deltapp, int charge) {
@@ -1100,10 +1077,6 @@ namespace mu2e {
     return Em;
   }
 
-
-
-
-
 ///////// Functions for Runge-Kutta method ////////////
 
   TrkExtTrajPoint TrkExt::calculateNextPosition (TrkExtTrajPoint r00, double ds, double mass2, int charge) { 
@@ -1125,8 +1098,6 @@ namespace mu2e {
 
     return TrkExtTrajPoint(r00.trajPointId()+1, re, volid, r00.flightLength()+ds, r00.flightTime()+ft);
   }
-
-
 
   HepVector TrkExt::_runge_kutta_newpar_5th (HepVector r0, double ds, bool mode, int charge) {
 
@@ -1177,7 +1148,6 @@ namespace mu2e {
     }
   }
 
-
   HepVector TrkExt::_runge_kutta_newpar_f (HepVector r, Hep3Vector B, int charge) {
     HepVector ret(6);
     Hep3Vector p(r[3], r[4], r[5]);
@@ -1191,8 +1161,6 @@ namespace mu2e {
     ret[5] = p_.z();
     return ret;
   }
-
-
 
 } // end namespace mu2e
 

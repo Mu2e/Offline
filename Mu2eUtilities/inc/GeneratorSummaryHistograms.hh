@@ -3,14 +3,12 @@
 //
 // Make histograms summarizing the information in the event generator.
 //
-//
 // Contact person Rob Kutschke
 //
 
 #include <string>
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "art_root_io/TFileDirectory.h"
 
 namespace art { class TFileDirectory; }

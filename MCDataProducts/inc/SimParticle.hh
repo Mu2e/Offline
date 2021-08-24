@@ -297,6 +297,8 @@ namespace mu2e {
 
   };
   typedef cet::map_vector<mu2e::SimParticle> SimParticleCollection;
+  typedef art::Ptr<mu2e::SimParticle> SimParticlePtr;
+  typedef std::vector<mu2e::SimParticlePtr> SimParticlePtrCollection;
 
 }
 

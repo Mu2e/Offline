@@ -4,6 +4,7 @@
 #define RecoDataProducts_AvikPIDNewProduct_HH
 
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -72,7 +73,7 @@ namespace mu2e {
     float  sumAvikOs   () const { return _sumAvikOs; }
   };
 
-
+   typedef std::vector<mu2e::AvikPIDNewProduct> AvikPIDNewProductCollection;
 
 } // end namespace mu2e
 

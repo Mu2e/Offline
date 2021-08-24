@@ -26,15 +26,12 @@
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
-
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
-
 
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -109,7 +106,6 @@ namespace mu2e {
     int   pdgId;
     unsigned particleId;
     unsigned volumeCopyNumber;
-
 
     VDHit() : x(std::numeric_limits<double>::quiet_NaN())
             , y(std::numeric_limits<double>::quiet_NaN())
@@ -245,7 +241,6 @@ namespace mu2e {
     //if(writeProperTime_) {
     //  nt_->Branch("tau", &tau_, "tauNormalized/F");
     // }
-    // }
 
     void SensitiveTargetEnergyDumper::beginRun(art::Run const& run){
       art::ServiceHandle<art::TFileService> tfs;
@@ -285,7 +280,6 @@ namespace mu2e {
       _hHitZStartingFin = tfs->make<TH1F>("_hHitZStartingFin","Internal Z Position of Hit, Starting Fin Section, Energy Weighted",nbins+10
 					  ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
-
       _hHitNegRing = tfs->make<TH2F>("_hHitNegRing","Scatter Plot for Ring at Beginning of Target",50,-25.,25.,50,-25.,25.);
       _hHitPosRing = tfs->make<TH2F>("_hHitPosRing","Scatter Plot for Ring at End of Target",50,-25.,25.,50,-25.,25.);
 
@@ -297,8 +291,6 @@ namespace mu2e {
       booked = true;
     }
   
-
-
 
   //================================================================
   void SensitiveTargetEnergyDumper::analyze(const art::Event& event) {
@@ -325,11 +317,9 @@ namespace mu2e {
                  std::cout << "hitInputTagInstance Found " << hitInputTagInstance << " " << useThisInstance << std::endl;
     }
 
-
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
 
     for(const auto& i : *ih) {
-
 
       hit_ = VDHit(toff_, i);
       CLHEP::Hep3Vector hitLoc(hit_.x,hit_.y,hit_.z);

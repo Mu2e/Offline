@@ -10,7 +10,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/EventDisplay/src/ContentSelector.h"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/Mu2eBTrk/inc/ParticleInfo.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"

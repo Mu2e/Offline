@@ -82,7 +82,7 @@
 #include "cetlib/map_vector.h"
 
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -222,7 +222,10 @@ namespace mu2e {
     h.print(ost, false);
     return ost;
   }
-   typedef std::vector<mu2e::StepPointMC> StepPointMCCollection;
+
+  typedef std::vector<art::Ptr<StepPointMC> > PtrStepPointMCVector;
+  typedef std::vector<mu2e::StepPointMC> StepPointMCCollection;
+  typedef std::vector<PtrStepPointMCVector> PtrStepPointMCVectorCollection;
 
 } // namespace mu2e
 

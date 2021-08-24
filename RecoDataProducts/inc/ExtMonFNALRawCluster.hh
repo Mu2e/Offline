@@ -8,6 +8,7 @@
 #define RecoDataProducts_ExtMonFNALRawCluster_hh
 
 #include <ostream>
+#include <vector>
 
 #include "canvas/Persistency/Common/PtrVector.h"
 
@@ -32,6 +33,7 @@ namespace mu2e {
   };
 
   std::ostream& operator<<(std::ostream& os, const ExtMonFNALRawCluster& c);
+  typedef std::vector<ExtMonFNALRawCluster> ExtMonFNALRawClusterCollection;
 
 } // namespace mu2e
 
