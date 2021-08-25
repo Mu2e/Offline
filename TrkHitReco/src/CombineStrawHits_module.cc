@@ -43,6 +43,7 @@ namespace mu2e {
 	   fhicl::Atom<float>            minR    { Name("MinimumRadius"),         Comment("Minimum transverse radius squared") }; 
 	   fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverseradius squared") }; 
 	   fhicl::Atom<int>              maxds   { Name("MaxDS"),                 Comment("maximum straw number difference") }; 
+           fhicl::Atom<bool>             isVSTdata{ Name("IsVSTData"),            Comment("Data from VST and needs sorting"), false };
        };
 
        explicit CombineStrawHits(const art::EDProducer::Table<Config>& config);
@@ -66,6 +67,7 @@ namespace mu2e {
        float         _minR2; 
        float         _maxR2; 
        int           _maxds;         
+       bool          _isVSTdata;
        StrawIdMask   _mask;
   };
 
@@ -85,6 +87,7 @@ namespace mu2e {
     _minR2(     config().minR()*config().minR()),
     _maxR2(     config().maxR()*config().maxR()),
     _maxds(     config().maxds()),
+    _isVSTdata( config().isVSTdata()),
     _mask(      "uniquepanel")     // define the mask: ComboHits are made from straws in the same unique panel
   {
      consumes<ComboHitCollection>(_chTag);
@@ -103,7 +106,28 @@ namespace mu2e {
       chcolNew->reserve(chcolOrig->size());
       chcolNew->setParent(chH);
 
-      combine(chcolOrig, *chcolNew);
+      if (_isVSTdata){
+        // currently VST data is not sorted by panel number so we must sort manually
+        // sort hits by panel
+        ComboHitCollection* chcolsort = new ComboHitCollection();
+        chcolsort->reserve(chcolOrig->size());
+        chcolsort->setParent(chH);
+        std::array<std::vector<uint16_t>,StrawId::_nupanels> panels;
+        size_t nsh = chcolOrig->size();
+        for(uint16_t ish=0;ish<nsh;++ish){
+          ComboHit const& ch = (*chcolOrig)[ish];
+          // select hits based on flag
+          panels[ch.strawId().uniquePanel()].push_back(ish);
+        }
+        for (uint16_t ipanel=0;ipanel<StrawId::_nupanels;ipanel++){
+          for (uint16_t ish=0;ish<panels[ipanel].size();ish++){
+            chcolsort->push_back(chcolOrig->at(panels[ipanel][ish]));
+          }
+        }
+        combine(chcolsort, *chcolNew);
+      }else{
+        combine(chcolOrig, *chcolNew);
+      }
       event.put(std::move(chcolNew));
   }
 
@@ -128,7 +152,7 @@ namespace mu2e {
               const ComboHit& hit2 = (*chcolOrig)[jch];
 
               if (hit2.strawId().uniquePanel() != panel1) break;
-              if (hit2.strawId().straw()-hit1.strawId().straw()> _maxds ) break;
+              if (abs(hit2.strawId().straw()-hit1.strawId().straw())> _maxds ) continue; // hits are not sorted by straw number
               if ( _testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
 
               float dt = _useTOT ? fabs(hit1.correctedTime() - hit2.correctedTime()) : fabs(hit1.time() - hit2.time());

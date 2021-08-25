@@ -69,7 +69,7 @@ namespace mu2e
         fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
         fhicl::Atom<art::InputTag> tstag{Name("CosmicTrackSeedCollection"),Comment("CosmicTrackSeed collection tag")};
         fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
-        fhicl::Atom<art::InputTag> pbtmcTag{Name("ProtonBunchTimeMC"),Comment("ProtonbBunchTimeMC tag"),"EMProducer"};
+        fhicl::Atom<art::InputTag> pbtmcTag{Name("ProtonBunchTimeMC"),Comment("ProtonbBunchTimeMC tag"),"EWMProducer"};
         fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
       };
       typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -508,15 +508,12 @@ namespace mu2e
         const ComboHit &sh = _shcol->at(ich);
         const Straw& straw = tracker->getStraw( sh.strawId() );
 
-        // get the StrawDigi indices for this combohit
-        std::vector<StrawDigiIndex> shids;
-        _shcol->fillStrawDigiIndices(event,ich,shids);
         // shids.size() should be 1 if this is really all single StrawHits
-        if (shids.size() != 1){
-          std::cout << "INCORRECT NUMBER OF StrawDigis " << shids.size() << std::endl;
+        if (sh.nStrawHits() != 1){
+          std::cout << "INCORRECT NUMBER OF StrawDigis " << sh.nStrawHits() << std::endl;
           continue;
         }
-        const StrawDigiMC &mcdigi = _mcdigis->at(shids[0]);
+        const StrawDigiMC &mcdigi = _mcdigis->at(ich);
 
         auto const& sgsptr = mcdigi.earlyStrawGasStep();
         auto const& sgs = *sgsptr;
@@ -579,16 +576,12 @@ namespace mu2e
 
       CLHEP::Hep3Vector pcapoint2(0,0,0);
       if (_mcdiag){
-        // get the StrawDigi indices for this combohit
-        std::vector<StrawDigiIndex> shids;
-        _shcol->fillStrawDigiIndices(event,ich,shids);
-        // shids.size() should be 1 if this is really all single StrawHits
-        if (shids.size() != 1){
-          std::cout << "INCORRECT NUMBER OF StrawDigis " << shids.size() << std::endl;
+        if (sh.nStrawHits() != 1){
+          std::cout << "INCORRECT NUMBER OF StrawDigis " << sh.nStrawHits() << std::endl;
           continue;
         }
 
-        const StrawDigiMC &mcdigi = _mcdigis->at(shids[0]);
+        const StrawDigiMC &mcdigi = _mcdigis->at(ich);
 
         auto const& sgsptr = mcdigi.earlyStrawGasStep();
         auto const& sgs = *sgsptr;

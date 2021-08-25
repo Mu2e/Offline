@@ -34,8 +34,9 @@ namespace mu2e {
     //    auto maxIter = std::max_element(wfstart,adcData.end());
     auto maxIter = wfstart;
     auto nextIter = maxIter; nextIter++;
-    while(nextIter != adcData.end() && *nextIter > *maxIter){
-      ++maxIter;
+    while(nextIter != adcData.end()){
+      if (*nextIter > *maxIter)
+        maxIter = nextIter;
       ++nextIter;
     }
     float peak = *maxIter;
