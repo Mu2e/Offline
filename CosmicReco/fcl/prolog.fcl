@@ -43,6 +43,11 @@ LineFinder : {
     module_type : LineFinder
     ComboHitCollection : "makePH"
     TimeClusterCollection : "SimpleTimeCluster"
+    NSteps : 2
+    StepSize : 0.5
+    t0offset : 0
+    maxDOCA : 3
+    minPeak : 3
 }
 
 CosmicDriftFit : {
@@ -58,7 +63,7 @@ CosmicTrackFit : {
     minNComboHits : 8
     Noutliers : 2
     maxNiter : 1000
-    minNHitsTimeCluster : 1
+    minNHitsTimeCluster : 0
     MaxSeedChi2DOF : 2.5
     MaxDeltaChi2 : 0.001
     MaxPosDev : 200
@@ -78,7 +83,7 @@ CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
     LineFinderTag          : "LineFinder"
     minNStrawHits          : 2
     minNComboHits          : 8
-    minNHitsTimeCluster    : 1
+    minNHitsTimeCluster    : 0
     UseLineFinder          : false
     UseChiFit              : true
     DoDrift                : true
