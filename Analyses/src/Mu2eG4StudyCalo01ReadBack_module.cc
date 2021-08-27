@@ -548,29 +548,55 @@ namespace mu2e {
           ttp.ystop  = pos_end.y();
           ttp.zstop  = pos_end.z();
 
-          // calculation of the prestep info is more involved...
-          // assume the step points are sorted by time by construction, get the last one
-          size_t thei(-1);
-          size_t trackiid = sim.id().asInt();     
-          for ( size_t i=points->size()-1; i!=0; --i ){
-            if ( trackiid == ((*points)[i]).trackId().asInt() ) {
-              thei = i;
-              break;
-            }
-          }
-          // we may need to protect this
-          CLHEP::Hep3Vector const& mom_preend = (*points)[thei].momentum();
-
-          ttp.pxprestop = mom_preend.x();
-          ttp.pyprestop = mom_preend.y();
-          ttp.pzprestop = mom_preend.z();
-          ttp.pprestop  = mom_preend.mag();
-
           ttp.pxstop = mom_end.x();
           ttp.pystop = mom_end.y();
           ttp.pzstop = mom_end.z();
           ttp.pstop  = mom_end.mag();
           ttp.codestop = sim.stoppingCode();
+
+          // calculation of the prestep info is more involved...
+          // assume the step points are sorted by time by construction, get the last one
+          int thei(-1);
+          size_t trackiid = sim.id().asInt();
+          for ( int i=points->size()-1; i!=-1; --i ){
+            // if ( _nAnalyzed < _maxPrint){
+            //   cout << __func__ << " steppoint trackid = "
+            //        << ((*points)[i]).trackId().asInt()
+            //        << endl;
+            // }
+            if ( trackiid == ((*points)[i]).trackId().asInt() ) {
+              thei = i;
+              break;
+            }
+          }
+
+          if ( thei >= 0 ) {
+
+            CLHEP::Hep3Vector const& mom_preend = (*points)[thei].momentum();
+
+            ttp.pxprestop = mom_preend.x();
+            ttp.pyprestop = mom_preend.y();
+            ttp.pzprestop = mom_preend.z();
+            ttp.pprestop  = mom_preend.mag();
+
+          } else {
+
+            cout << __func__ << " WARNING thei = " << thei
+                 << " did not find matching steppoint in event "
+                 << event.id().event()
+                 << " points->size() "
+                 << points->size()
+                 << " for trackiid "
+                 << trackiid
+                 << endl;
+
+            ttp.pxprestop = 0.0;
+            ttp.pyprestop = 0.0;
+            ttp.pzprestop = 0.0;
+            ttp.pprestop  = 0.0;
+
+          }
+
         } else {
           ttp.isstop = false;
           ttp.tstop  = 0.0;

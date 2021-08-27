@@ -2,22 +2,23 @@
 // config file to perform Geant4 calorimetric studies using the Mu2e framework infrastructure
 // to be included in g4studyGeom.txt
 //
-// Original author K. Genser
+//
+// Original author K.L. Genser
 //
 
 // Units are mm, MeV
 
-#include "Offline/Mu2eG4/g4study/g4study_Box_geom.txt"
-
 // Change the name.
 string detector.name           = "g4studyCalo_01";
 
+bool g4.visible                = true;
+bool g4.solid                  = false;
+bool g4.forceAuxEdgeVisible    = true;    // make the volume mesh visible
+bool g4.doSurfaceCheck         = false;   // do not check for overlaps
+bool g4.placePV                = true;
+
 // overlaps check
 bool g4.doSurfaceCheck         = true;
-
-// version of the target geometry configuration
-
-// int            mu2e.studyEnvVersion      = 3;
 
 // the "World Box"
 
@@ -33,12 +34,12 @@ double world.halfLength          = 2000.0;
 double world.outerLayerThickness = 0.001;// the world "outer layer" to force a step point
 
 // copyNumber for volume tracking purposes
-// 0 & 1 are World and an auxiliary 
+// 0 & 1 are World and an auxiliary
 // volume almost filling up the world
 
 // calorimeter type target with the dimensions and materials specified by vectors of data
 
-// verbosity 
+// verbosity
 int    calo.verbosityLevel         = 1;
 
 bool   calo.visible = true;
