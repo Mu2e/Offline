@@ -24,19 +24,16 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/ModuleMacros.h"
 // the products that can be re-written
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CaloHitMC.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
 
-
 namespace mu2e {
-
 
   class PointerCheck : public art::EDAnalyzer {
 
@@ -332,7 +329,6 @@ namespace mu2e {
     return rc;
   }
 
-
   bool PointerCheck::checkStepPointMC(StepPointMCCollection const& coll) {
 
     int n,nn,na,ni;
@@ -615,8 +611,6 @@ namespace mu2e {
 
     return rc;
   }
-
-
 
 } // namespace mu2e
 

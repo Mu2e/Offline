@@ -13,6 +13,7 @@
 #include "gsl/gsl_sf_erf.h"
 
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "canvas/Utilities/InputTag.h"
@@ -33,8 +34,10 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
+      fhicl::Atom<int> debug{Name("debugLevel"), Comment("debug level"),0};
       fhicl::Atom<double> extendedMean{Name("extendedMean"), Comment("Mean number of protons per microbunch for distribution without cuts") };
-      fhicl::Atom<double> sigma{Name("sigma"), Comment("sigma of the lognormal distribution")};
+      fhicl::OptionalAtom<double> sigma{Name("sigma"), Comment("sigma of the lognormal distribution")};
+      fhicl::OptionalAtom<double> SDF{Name("SDF"), Comment("Spill Duty Factor. sigma =sqrt(-log(SDF))")};
       fhicl::Atom<double> cutMin{Name("cutMin"), Comment("The min number of protons to generate."), 0.};
       fhicl::Atom<double> cutMax{Name("cutMax"), Comment("The high tail of the distribution will be truncated at cutMax.")};
     };
@@ -48,6 +51,7 @@ namespace mu2e {
   private:
     artURBG urbg_;
     std::lognormal_distribution<double> lognd_;
+    int debug_;
     double mean_;
     double cutMin_;
     double cutMax_;
@@ -58,20 +62,25 @@ namespace mu2e {
   ProtonBunchIntensityLogNormal::ProtonBunchIntensityLogNormal(const Parameters& conf)
     : art::EDProducer{conf}
     , urbg_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , lognd_(solveForMu(conf().extendedMean(), conf().sigma()),
-             conf().sigma())
+    , debug_(conf().debug())
     , mean_(conf().extendedMean())
     , cutMin_(conf().cutMin())
     , cutMax_(conf().cutMax())
   {
     produces<mu2e::ProtonBunchIntensity>();
     produces<mu2e::ProtonBunchIntensity,art::InSubRun>("MeanIntensity");
+    double sigma(0.0), SDF(0.0);
+    if(conf().sigma(sigma) && conf().SDF(SDF))
+      throw cet::exception("BADCONFIG")<<"Only one of 'sigma' or 'SDF' can be specified" << std::endl;
+    if((!conf().sigma(sigma)) && (!conf().SDF(SDF)))
+      throw cet::exception("BADCONFIG")<<"One of 'sigma' or 'SDF' must be specified" << std::endl;
+    if(conf().SDF(SDF)) sigma = sqrt(-log(SDF));
+    lognd_ = std::lognormal_distribution<double>(solveForMu(conf().extendedMean(),sigma),sigma);
 
     if(cutMin_ < 0.) {
       throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal cutMin = "
                                        <<cutMin_<<" < 0.\n";
     }
-
     if(cutMax_ <= cutMin_) {
       throw cet::exception("BADCONFIG")<<"ProtonBunchIntensityLogNormal: illegal cutMax = "
                                        <<cutMax_<<" <= cutMin = "<<cutMin_<<"\n";
@@ -79,7 +88,6 @@ namespace mu2e {
 
     // Compute generation efficiency
     const double mu = lognd_.m();
-    const double sigma = lognd_.s();
     auto logNormalCDF = [mu, sigma](double x) {
       return 0.5*erfc( - (log(x) - mu)/(sigma*sqrt(2.)) );
     };
@@ -93,6 +101,10 @@ namespace mu2e {
                                        <<" result in a very low generation efficiency = "<<acceptance
                                        <<".  Write a better algorithm for the task."<<"\n";
     }
+    if(debug_ > 0)
+      std::cout << "LogNormal PBI with mean " << lognd_.m() << " sigma " << lognd_.s() 
+      << " SDF " << exp(-lognd_.s()*lognd_.s())
+      << " min " << lognd_.min() << " max " << lognd_.max() << std::endl;
   }
 
   void ProtonBunchIntensityLogNormal::produce(art::Event& event) {

@@ -23,7 +23,7 @@
 
 #include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "TH1.h"
 #include "TH2.h"

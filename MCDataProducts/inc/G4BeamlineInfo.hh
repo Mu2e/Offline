@@ -4,6 +4,7 @@
 // Simple holder for extra data available from G4Beamline generator
 //
 #include <iostream>
+#include <vector>
 
 namespace mu2e {
 
@@ -46,6 +47,7 @@ namespace mu2e {
     hit.print(ost,false);
     return ost;
   }
+   typedef std::vector<mu2e::G4BeamlineInfo> G4BeamlineInfoCollection;
 
 } // namespace mu2e
 

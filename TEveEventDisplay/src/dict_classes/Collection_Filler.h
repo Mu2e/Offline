@@ -18,12 +18,12 @@
 //Kalman Tracks
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 //Tracker Hits:
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //CRV:
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-//#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+//#include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 //Art:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"

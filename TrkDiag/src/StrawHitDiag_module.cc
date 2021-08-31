@@ -351,7 +351,7 @@ namespace mu2e
         _mcoe = osp.startMomentum().e();
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
-	Hep3Vector mdir = Geom::Hep3Vec(spmcp->momentum()).unit();
+	Hep3Vector mdir = GenVector::Hep3Vec(spmcp->momentum()).unit();
 	Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
 	double scos = mdir.dot(straw.getDirection());

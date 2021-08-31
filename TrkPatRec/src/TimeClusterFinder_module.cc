@@ -391,7 +391,7 @@ namespace mu2e {
       ComboHit const& ch = (*_chcol)[ish];
       unsigned nsh = ch.nStrawHits();
       tc._nsh += nsh;
-      const XYZVec& pos = ch.pos();
+      const XYZVectorF& pos = ch.pos();
       float htime = _ttcalc.comboHitTime(ch,_pitch);
       float hwt = ch.nStrawHits();
       tmin(htime);
@@ -414,7 +414,7 @@ namespace mu2e {
       tc._t0._t0err = ( boost::accumulators::extract::max(tmax)-boost::accumulators::extract::min(tmin))*invsqrt12/sqrt(nstrs);
     }
     //
-    tc._pos = XYZVec(extract_result<tag::weighted_median>(xacc),
+    tc._pos = XYZVectorF(extract_result<tag::weighted_median>(xacc),
         extract_result<tag::weighted_median>(yacc),
         extract_result<tag::weighted_median>(zacc));
 
@@ -544,7 +544,7 @@ namespace mu2e {
       tc._t0._t0err = sqrtf(std::max(double(1.0),2.0*extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
     }
     
-    tc._pos = XYZVec(extract_result<tag::weighted_mean>(xacc),
+    tc._pos = XYZVectorF(extract_result<tag::weighted_mean>(xacc),
 	extract_result<tag::weighted_mean>(yacc),
 	extract_result<tag::weighted_mean>(zacc));
   } 

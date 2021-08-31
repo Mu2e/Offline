@@ -11,16 +11,11 @@
 // Change the name.
 string detector.name           = "g4study";
 
-// version of the target geometry configuration
-
-// int            mu2e.studyEnvVersion      = 2;
-// 1 tube; 2 box; 3 "calorimeter", 4 tube and a box
-
-// make the volume mesh visible
-bool g4.forceAuxEdgeVisible    = true;
-
-// do not check for overlaps
-bool g4.doSurfaceCheck         = false;
+bool g4.visible                = true;
+bool g4.solid                  = false;
+bool g4.forceAuxEdgeVisible    = true;    // make the volume mesh visible
+bool g4.doSurfaceCheck         = false;   // do not check for overlaps
+bool g4.placePV                = true;
 
 // the "World Box"
 

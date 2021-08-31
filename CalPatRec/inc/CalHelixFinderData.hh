@@ -7,9 +7,9 @@
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -133,7 +133,7 @@ namespace mu2e {
     ::LsqSums4         _sxy;
     ::LsqSums4         _szphi;
 
-    XYZVec             _center;
+    XYZVectorF             _center;
     float             _radius;
 
     //    float             _chi2;
@@ -141,7 +141,7 @@ namespace mu2e {
 // 2015-02-06 P.Murat: fit with non-equal weights - XY-only
 //-----------------------------------------------------------------------------
     // ::LsqSums4         _sxyw;
-    // XYZVec             _cw;
+    // XYZVectorF             _cw;
     // float             _rw;
     // float             _chi2w;
 //-----------------------------------------------------------------------------

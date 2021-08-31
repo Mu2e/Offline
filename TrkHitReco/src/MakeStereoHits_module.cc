@@ -171,7 +171,7 @@ namespace mu2e {
       combohit.init(ch1,ihit);
       // zero values that accumulate in pairs
       combohit._qual = 0.0;
-      combohit._pos = XYZVec(0.0,0.0,0.0);
+      combohit._pos = XYZVectorF(0.0,0.0,0.0);
       // loop over the panels which overlap this hit's panel
       for (auto sid : _panelOverlap[ch1.strawId().uniquePanel()]) {
       // loop over hits in the overlapping panel
@@ -187,7 +187,7 @@ namespace mu2e {
 	    if(_debug > 3) cout << " dt = " << dt;
 	    if (dt < _maxDt){
 	      float ddot = ch1.wdir().Dot(ch2.wdir());
-	      XYZVec dp = ch1.pos()-ch2.pos();
+	      XYZVectorF dp = ch1.pos()-ch2.pos();
 	      float dperp = sqrt(dp.perp2());
 	      // negative crosings are in opposite quadrants and longitudinal separation isn't too big
 	      if(_debug > 3) cout << " ddot = " << ddot << " dperp = " << dperp;
@@ -216,7 +216,7 @@ namespace mu2e {
 		    if(combohit.addIndex(jhit)) {
 		      // average z 
 		      combohit._qual += chisq;
-		      combohit._pos += XYZVec(pca.point1().x(),pca.point1().y(),0.5*(pca.point1().z()+pca.point2().z()));	    
+		      combohit._pos += XYZVectorF(pca.point1().x(),pca.point1().y(),0.5*(pca.point1().z()+pca.point2().z()));	    
 		    } else
 		      std::cout << "MakeStereoHits can't add hit" << std::endl;
 		    used[jhit] = true;
@@ -270,7 +270,7 @@ namespace mu2e {
       combohit._wres = dz*_wfac;
       combohit._qual /= (combohit.nCombo()-1);// normalize by # of pairs
       combohit._pos /= (combohit.nCombo()-1);
-      combohit._wdir = XYZVec(0.0,0.0,1.0);
+      combohit._wdir = XYZVectorF(0.0,0.0,1.0);
     } else {
       size_t index = combohit.index(0);
       combohit._pos = (*_chcol)[index].pos();// put back original position

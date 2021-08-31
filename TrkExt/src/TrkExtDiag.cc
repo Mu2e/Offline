@@ -1,5 +1,4 @@
 //
-//
 // Functions for reading TrkExt
 //
 #include "art/Framework/Core/EDProducer.h"
@@ -30,7 +29,6 @@
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
-#include "Offline/MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -168,7 +166,6 @@ namespace mu2e
 ;
     return _extdiag;
   }
-
 
   void TrkExtDiag::setRunInfo(){ 
     GeomHandle<DetectorSystem> det;
@@ -318,12 +315,9 @@ namespace mu2e
     _extdiag->Fill();
   }
 
-
-
   /////////////
   // readHit //
   /////////////
-
 
   unsigned int TrkExtDiag::readHit(const art::Event &evt, const TrkHitVector & hots) {
     unsigned int i = 0;
@@ -345,8 +339,6 @@ namespace mu2e
     }
     return i;
   }
-
-
 
   /////////////
   // readTrk //
@@ -399,8 +391,6 @@ namespace mu2e
     _trk1.etd = sqrt(cov1(5,5));
     return (unsigned int)i;
   }
-
-
 
   ////////////
   // readMC //
@@ -724,8 +714,6 @@ namespace mu2e
     }
     return minsim;
   }
-
-
 
   /////////////
   // readExt //

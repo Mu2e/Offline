@@ -13,6 +13,7 @@
 
 //Mu2e includes
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Offline/Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
@@ -27,7 +28,7 @@ namespace mu2e {
 
   public:
 
-    Mu2eG4MTRunManager(const Mu2eG4Config::Top& conf);
+    Mu2eG4MTRunManager(const Mu2eG4Config::Top& conf, const Mu2eG4ResourceLimits& lim);
     virtual ~Mu2eG4MTRunManager();
 
     //we need our own versions of these functions in order to correctly control the event loop
@@ -49,9 +50,12 @@ namespace mu2e {
 
     // Private and unimplemented to prevent copying.
     explicit Mu2eG4MTRunManager( Mu2eG4MTRunManager const & ) =  delete;
+    explicit Mu2eG4MTRunManager( Mu2eG4MTRunManager && ) =  delete;
     Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & ) = delete;
+    Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager && ) = delete;
 
-    Mu2eG4Config::Top conf_;
+    Mu2eG4Config::Top const conf_;
+    Mu2eG4ResourceLimits const & mu2elimits_;
 
     bool m_managerInitialized;
     bool m_runTerminated;

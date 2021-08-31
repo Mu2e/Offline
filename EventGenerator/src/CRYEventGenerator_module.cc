@@ -2,8 +2,8 @@
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/ConfigTools/inc/requireUniqueKey.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 

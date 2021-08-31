@@ -5,7 +5,6 @@
 
 #include <vector>
 
-
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
@@ -24,7 +23,6 @@
 #include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeneralUtilities/inc/safeSqrt.hh"
@@ -37,7 +35,6 @@
 #include "fhiclcpp/types/ConfigurationTable.h"
 
 #include "Offline/Mu2eUtilities/inc/VectorVolume.hh"
-
 
 namespace art
 {

@@ -31,8 +31,8 @@
 
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloMatchCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkRep.hh"

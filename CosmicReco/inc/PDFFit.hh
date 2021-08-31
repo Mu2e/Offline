@@ -1,7 +1,7 @@
 #ifndef _COSMIC_RECO_PDFFit_HH
 #define _COSMIC_RECO_PDFFit_HH
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"

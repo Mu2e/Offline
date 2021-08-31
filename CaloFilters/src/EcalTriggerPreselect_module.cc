@@ -29,26 +29,24 @@
 
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
-#include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 
 // prefetching Digi
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
@@ -93,7 +91,6 @@ namespace mu2e {
     std::string _caloDigiModuleLabel;
     art::InputTag _shTag;   
     art::InputTag _shpTag;
-
 
     std::string _trkPatRecModuleLabel;
     art::InputTag _tqTag;
@@ -190,7 +187,6 @@ namespace mu2e {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     double _mbtime = accPar->deBuncherPeriod;
     _toff.updateMap(event);
-
 
     //--------------------------  Prefetch Calo Digis  --------------------------------    
     auto caloDigiFlag = event.getValidHandle<mu2e::CaloDigiCollection>(_caloDigiModuleLabel);

@@ -12,9 +12,11 @@ void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
   if(iov.startRun()>endRun() || 
      (iov.startRun()==endRun() && iov.startSubrun()>endSubrun()) ) return;
 
-  //check if iov start/end are inside this interval
-  bool sin = inInterval(iov.startRun(),iov.startSubrun());
-  bool ein = inInterval(iov.endRun(),iov.endSubrun());
+  //check if piece will be at begining or end
+  bool sin = ( (iov.startRun()>startRun()) || 
+	       ( iov.startRun()==startRun() && iov.startSubrun()>startSubrun() ) );
+  bool ein = ( (iov.endRun()<endRun()) || 
+	       ( iov.endRun()==endRun() && iov.endSubrun()<endSubrun() ) );
 
   int method = 0;
   if(! sin && ! ein) { // subtract all
@@ -90,6 +92,30 @@ void mu2e::DbIoV::overlap(DbIoV const& iov) {
 }
 
 
+int mu2e::DbIoV::isOverlapping(DbIoV const& iov) const {
+
+  // these check that there is non-zero overlap
+  bool sor = (iov.startRun()<endRun() || 
+     (iov.startRun()==endRun() && iov.startSubrun()<=endSubrun()) );
+  bool eor = ( iov.endRun()>startRun() || 
+     (iov.endRun()==startRun() && iov.endSubrun()>=startSubrun()) );
+
+  if( (!eor) ||  (!sor) ) return 0; // no overlap
+
+  // these check that the overlap is complete
+  bool scp = (iov.startRun()<startRun() || 
+     (iov.startRun()==startRun() && iov.startSubrun()<=startSubrun()) );
+  bool ecp = ( iov.endRun()>endRun() || 
+     (iov.endRun()==endRun() && iov.endSubrun()>=endSubrun()) );
+
+  if(scp && ecp) return 1; // complete overlap
+  if((!scp) && ecp) return 2; // non-ovelapping piece at begining
+  if(scp && (!ecp)) return 3; // non-overlapping piece at end 
+
+  return 4;  // non-overlapping piece at begining and end
+}
+
+
 std::string mu2e::DbIoV::simpleString() const {
   std::ostringstream ss;
   ss << startRun() << " " << startSubrun()  << " "
@@ -99,11 +125,28 @@ std::string mu2e::DbIoV::simpleString() const {
 
 std::string mu2e::DbIoV::to_string(bool compress) const {
   std::ostringstream ss;
-  int w = ( compress ? 0 : 6 );
-  ss << std::setw(w) << startRun() << ":";
-  ss << std::setw(w) << startSubrun() << "-";
-  ss << std::setw(w) << endRun() << ":";
-  ss << std::setw(w) << endSubrun();
+
+  if(compress) {
+    ss << startRun();
+    if(startSubrun()!=0) {
+      ss << ":"<< startSubrun();
+    }
+    bool onesr = ( startSubrun()==endSubrun() );
+    bool wholerun = ( startSubrun()==0 && endSubrun()==maxsr );
+    bool drop = (startRun()==endRun()) && (onesr || wholerun );
+    if(!drop) {
+      ss << "-" << endRun();
+      if(endSubrun()!=maxsr) {
+	ss << ":" << endSubrun();
+      }
+    }
+  } else {
+    ss << std::setw(6) << startRun() << ":";
+    ss << std::setw(6) << startSubrun() << "-"; 
+    ss << std::setw(6) << endRun() << ":";
+    ss << std::setw(6) << endSubrun();
+  }
+
   return ss.str();
 }
 

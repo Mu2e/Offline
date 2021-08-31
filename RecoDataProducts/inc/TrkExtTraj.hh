@@ -39,6 +39,7 @@
 #include "CLHEP/Matrix/Matrix.h"
 #include "Offline/RecoDataProducts/inc/TrkExtTrajPoint.hh"
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -119,6 +120,7 @@ namespace mu2e {
 
   };
 
+  typedef std::vector<mu2e::TrkExtTraj> TrkExtTrajCollection;
 
 
 } // end namespace mu2e

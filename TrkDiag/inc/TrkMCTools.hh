@@ -6,8 +6,7 @@
 #define TrkDiag_TrkMCTools_hh
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
@@ -55,7 +54,6 @@ namespace mu2e {
     struct timecomp : public std::binary_function<MCStepItr,MCStepItr, bool> {
       bool operator()(MCStepItr x,MCStepItr y) { return x->time() < y->time(); }
     };    
-
 
     // find associated sim particles to a track.  The first returns a hit-weighted vector of
     // all particles, the second just the one with the most hits

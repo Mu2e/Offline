@@ -25,8 +25,8 @@
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
