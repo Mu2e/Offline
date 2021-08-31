@@ -23,6 +23,7 @@ namespace mu2e{
       double dx=barDetail.getHalfLengths()[0];
       double dy=barDetail.getHalfLengths()[1];
       double dz=barDetail.getHalfLengths()[2];
+	     std::string shieldside = "CRV_D";
       std::cout<<"sci bar details :"<<dx<<" "<<dy<<" "<<dz<<std::endl;
       int nModules = shield.nModules();
       for (int im = 0; im < nModules; ++im)
@@ -40,9 +41,9 @@ namespace mu2e{
             CRSScintillatorBar const & bar = layer.getBar(ib);
             int index = bar.index().asInt();
             CLHEP::Hep3Vector barOffset = bar.getPosition() - _detSysOrigin;
-            double sibarpos[0]=barOffset.x();
-            double sibarpos[1]=barOffset.y()+1000.0;
-            double sibarpos[2]=barOffset.z();
+            sibarpos[0]=barOffset.x();
+            sibarpos[1]=barOffset.y()+1000.0;
+            sibarpos[2]=barOffset.z();
 
             //boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
             std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %i)",shieldName.c_str(),im,il,ib, index);
@@ -58,7 +59,8 @@ namespace mu2e{
 		  TEveGeoShape *sibar = new TEveGeoShape();
         sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(dx),pointmmTocm(dy),pointmmTocm(dz), sibarpos));
         sibar->SetMainTransparency(100); 
-        if(shieldName.c_str()=="CRV_R1") {std::cout<<"sipm"<<std::endl; orthodetT2->AddElement(sibar);}
+         if(shieldName.compare(4,1, shieldside, 4,1) == 0){ //std::cout<<shieldName<<std::endl;
+          orthodetT2->AddElement(sibar);}
           }
         }
       }
