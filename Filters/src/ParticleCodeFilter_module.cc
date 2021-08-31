@@ -29,7 +29,7 @@ namespace mu2e {
 	fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment ("Printout Level"), 0 };
 	fhicl::Atom<art::InputTag> simParticles { Name("SimParticles"), Comment("SimParticle collection") };
 	ParticleCodeConfig codeConfig { Name("ParticleCodes"), Comment("particle code to select: PDG, creation, and termination code \n"
-	"(select 'unknown' to disable testing creation and/or termination codes)") };
+	"(select 'uninitialized' to disable testing creation and/or termination codes)") };
       };
 
       struct ParticleCodeSelector {
@@ -37,8 +37,8 @@ namespace mu2e {
 	ProcessCode::enum_type creationCode_, terminationCode_;
 	bool select(SimParticle const& part) const {
 	  return part.pdgId() == pdgCode_
-	    && ( creationCode_ == ProcessCode::unknown || part.creationCode() == creationCode_) 
-	    && ( terminationCode_ == ProcessCode::unknown || part.stoppingCode() == terminationCode_);
+	    && ( creationCode_ == ProcessCode::uninitialized || part.creationCode() == creationCode_) 
+	    && ( terminationCode_ == ProcessCode::uninitialized || part.stoppingCode() == terminationCode_);
 	}
       };
 

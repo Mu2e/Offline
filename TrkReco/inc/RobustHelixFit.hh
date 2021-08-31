@@ -32,7 +32,7 @@ namespace mu2e
   {
     float _phi;
     float _z;
-    FZ(XYZVec const& hpos, XYZVec const& center);
+    FZ(XYZVectorF const& hpos, XYZVectorF const& center);
   };
 
   // struct to hold AGE sums
@@ -155,9 +155,9 @@ namespace mu2e
     void fitHelix(RobustHelixFinderData& helixData, bool forceTargetCon, bool useTripletAreaWt=false);
     void fitCircleAGE(RobustHelixFinderData& helixData);
     void fitCircleMean(RobustHelixFinderData& helixData);
-    void findAGE(RobustHelixFinderData  const& helixData, XYZVec const& center,float& rmed, float& age);
-    void fillSums(RobustHelixFinderData const& helixData, XYZVec const& center,float rmed,AGESums& sums);
-    void forceTargetInter(XYZVec& center, float& radius);
+    void findAGE(RobustHelixFinderData  const& helixData, XYZVectorF const& center,float& rmed, float& age);
+    void fillSums(RobustHelixFinderData const& helixData, XYZVectorF const& center,float rmed,AGESums& sums);
+    void forceTargetInter(XYZVectorF& center, float& radius);
 
     bool use(ComboHit const&) const;
     bool stereo(ComboHit const&) const;

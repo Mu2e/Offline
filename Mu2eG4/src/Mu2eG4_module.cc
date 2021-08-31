@@ -9,7 +9,7 @@
 // Mu2e includes
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Offline/Mu2eG4/inc/WorldMaker.hh"
 #include "Offline/Mu2eG4/inc/Mu2eWorld.hh"
@@ -42,8 +42,8 @@
 #endif
 
 // Data products that will be produced by this module.
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 #include "Offline/MCDataProducts/inc/StepInstanceName.hh"
@@ -309,7 +309,7 @@ namespace mu2e {
 
     _runManager->SetUserInitialization(allMu2e);
 
-    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug());
+    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug(), mu2elimits_);
     physicsList_->SetVerboseLevel(_rmvlevel);
 
 #if G4VERSION>4106

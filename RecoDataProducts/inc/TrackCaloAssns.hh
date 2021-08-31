@@ -50,6 +50,7 @@ namespace mu2e {
   // use as many-to-many Assns (want track, cluster, payload not Ptr's)
      typedef art::Assns<KalRepPtr,CaloCluster,TrackCaloMatchInfo> TrackCaloMatchAssns;
   //   typedef art::Assns<KalRep,CaloCluster,TrackCaloMatchInfo> TrackCaloMatchAssns;
+   typedef std::vector<mu2e::TrackCaloMatchInfo> TrackCaloAssnsCollection;
 }
 #endif /*RecoDataProducts_inc_TrackCaloAssns_hh*/
 

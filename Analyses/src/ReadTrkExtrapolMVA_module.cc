@@ -39,7 +39,7 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 // data
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
 
 // Other includes.
 #include "cetlib_except/exception.h"

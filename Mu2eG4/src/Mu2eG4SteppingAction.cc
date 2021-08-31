@@ -37,11 +37,8 @@ namespace mu2e {
 
     steppingCuts_(&steppingCuts),
     commonCuts_(&commonCuts),
-
     mu2elimits_(&lim),
-
     numTrackSteps_(),
-    numKilledTracks_(),
     stepLimitKillerVerbose_(debug.stepLimitKillerVerbose()),
 
   // Things related to time virtual detector
@@ -113,7 +110,6 @@ namespace mu2e {
 
   void Mu2eG4SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
                                           const SimParticleHelper& spHelper) {
-    numKilledTracks_ = 0;
     tvd_collection_  = &outputHits;
     tvd_warning_printed_ = false;
     _spHelper    = &spHelper;
@@ -122,7 +118,7 @@ namespace mu2e {
 
   void Mu2eG4SteppingAction::UserSteppingAction(const G4Step* step){
 
-    numTrackSteps_++;
+    ++numTrackSteps_;
 
     G4Track* track = step->GetTrack();
 
@@ -159,8 +155,6 @@ namespace mu2e {
       killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
     } else if(commonCuts_->steppingActionCut(step)) {
       killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
-    } else if(killTooManySteps(track)) {
-      killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
     }
 
     //----------------------------------------------------------------
@@ -238,23 +232,7 @@ namespace mu2e {
   } // end Mu2eG4SteppingAction
 
 
-  // Kill tracks that take too many steps.
-  bool Mu2eG4SteppingAction::killTooManySteps( const G4Track* const track ){
-    if(numTrackSteps_ <= mu2elimits_->maxStepsPerTrack()) {
-      return false;
-    }
-
-    if ( stepLimitKillerVerbose_ ) {
-      G4cout << __func__ << " WARNING: kill particle in "
-             << track->GetStep()->GetPreStepPoint()->
-        GetPhysicalVolume()->GetLogicalVolume()->GetName()
-             << " due to large number of steps." << G4endl;
-      Mu2eG4UserHelpers::printKilledTrackInfo(track);
-    }
-
-    ++numKilledTracks_;
-    return true;
-  }
+  // Kill tracks that take too many steps moved to Mu2eSpecialCutsProcess
 
   // Record why the track is to be killed, then kill it.
   void Mu2eG4SteppingAction::killTrack( G4Track* track,

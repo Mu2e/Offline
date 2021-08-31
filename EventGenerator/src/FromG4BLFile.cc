@@ -54,7 +54,7 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 // Root includes

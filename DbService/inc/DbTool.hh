@@ -14,6 +14,7 @@
 //
 
 #include <map>
+#include <list>
 #include "Offline/DbService/inc/DbReader.hh"
 #include "Offline/DbService/inc/DbSql.hh"
 #include "Offline/DbService/inc/DbEngine.hh"
@@ -38,15 +39,16 @@ namespace mu2e {
     int run();
     int init();
 
+    int printContent();
     int printCalibration();
-    int printTable();
     int printIov();
     int printGroup();
     int printExtension();
-    int printVersions();
-    int printPurposes();
-    int printTables();
-    int printLists();
+    int printVersion();
+    int printPurpose();
+    int printTable();
+    int printList();
+    int printSet();
 
     int printCIDLine(int cid, int indent=0);
     int printIOVLine(int iov, int details=0, int indent=0);
@@ -57,19 +59,45 @@ namespace mu2e {
 
     int commitCalibration();
     int commitCalibrationTable(DbTable::cptr_t const& ptr, 
-			       bool qdr=false, bool admin=false);
-    int commitCalibrationList(DbTableCollection const& coll,
-			      bool qdr=false, bool admin=false);
-    int commitIov(int cid=0, std::string iovtext="");
-    int commitGroup(std::vector<int> iids=std::vector<int>());
-    int commitExtension();
+			       bool admin=false);
+    int commitCalibrationList(DbTableCollection& coll,
+			      bool qai=false, bool qag=false,
+			      bool admin=false);
+    int commitIov(int& iid, int cid=0, std::string iovtext="");
+    int commitGroup(int& gid, std::vector<int> iids=std::vector<int>());
+    int commitExtension(int& eid, std::string purpose="", 
+			std::string version="", 
+			std::vector<int> gids=std::vector<int>());
     int commitTable();
     int commitList();
     int commitPurpose();
     int commitVersion();
+    int commitPatch();
+    int verifySet();
 
-    int findPidVid(std::string purpose, std::string version, int& pid, int& vid);
     int testUrl();
+
+  private:
+
+    // a couple of structures, useful in some operations
+    class eIoV {
+    public:
+      eIoV():_iid(0),_cid(0) {}
+      eIoV(int iid, int cid, DbIoV const& iov):_iid(iid),_cid(cid),_iov(iov) {}
+      int iid() {return _iid;}
+      int cid() {return _cid;}
+      DbIoV& iov() {return _iov;}
+      void setIid(int iid) {_iid = iid;}
+    private:
+      int _iid;
+      int _cid;
+      DbIoV _iov;
+    };
+    // map key is tid
+    typedef std::map<int,std::list<eIoV>> eiovMap;
+
+    // look up purpose and version IDs, given text or numbers
+    int findPidVid(std::string purpose, std::string version, int& pid, int& vid);
 
     int prettyTable(std::string title, std::string csv);
     int prettyColumns(std::vector<std::string> titles,
@@ -79,12 +107,24 @@ namespace mu2e {
     int getArgs(map_ss& fArgs);
     int help();
     std::vector<int> intList(std::string const& arg);
-  private:
+    std::vector<mu2e::DbIoV> runList(std::string const& arg);
+
+    // expand a gid into a vetor of iovs for each tid
+    // extend because it does not zero eset
+    int extendEiovMap(int gid, eiovMap& eset, int& minrun, int& maxrun);
+
+    // when committing several items, sometime the later items depend
+    // on fnding the earlier items in the cached val structure
+    // this is a way to refresh the val structure after the earlier commits
+    // Take caution with local caching of val info..
+    int refresh();
+
 
     int _verbose;
     bool _pretty;
     std::string _database;
     bool _admin;
+    bool _dryrun;
 
     DbId _id;
     DbReader _reader;

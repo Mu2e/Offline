@@ -91,7 +91,7 @@ namespace mu2e
 
 
        //collect all preFiltered hits in a single cluster
-       clusters.emplace_back(BkgCluster(XYZVec(0,0,0), 0));
+       clusters.emplace_back(BkgCluster(XYZVectorF(0,0,0), 0));
        for (unsigned ich=0; ich<chcol.size();++ich)
        {
            const ComboHit& hit = chcol[ich];          
@@ -166,7 +166,7 @@ namespace mu2e
        }
 
        //collect all preFiltered hits in a single cluster
-       clusters.emplace_back(BkgCluster(XYZVec(0,0,0), 0));
+       clusters.emplace_back(BkgCluster(XYZVectorF(0,0,0), 0));
        for (unsigned ich=0; ich<chcol.size();++ich)
        {
            const ComboHit& hit = chcol[ich];          

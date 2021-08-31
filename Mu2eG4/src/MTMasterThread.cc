@@ -19,7 +19,7 @@ using namespace std;
 
 namespace mu2e {
 
-  MTMasterThread::MTMasterThread(const Mu2eG4Config::Top& conf)
+  MTMasterThread::MTMasterThread(const Mu2eG4Config::Top& conf, const Mu2eG4ResourceLimits& lim)
     :
     m_mtDebugOutput(conf.debug().mtDebugOutput()),
     m_masterThreadState(ThreadState::NotExist),
@@ -42,7 +42,7 @@ namespace mu2e {
         std::unique_lock<std::mutex> lk2(m_threadMutex);
 
         // Create the master run manager, and share it with the art::mu2e thread
-        masterRunManager = std::make_shared<Mu2eG4MTRunManager>(conf);
+        masterRunManager = std::make_shared<Mu2eG4MTRunManager>(conf, lim);
         m_masterRunManager = masterRunManager;
 
         // State loop

@@ -4,7 +4,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Validation/inc/ValId.hh"
 #include "TH1D.h"
 #include <string>

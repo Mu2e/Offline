@@ -10,6 +10,7 @@
 #define RecoDataProducts_TrkCaloMatch_hh
 
 
+#include <vector>
 // Mu2e includes:
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -63,6 +64,7 @@ namespace mu2e {
 
    };
 
+  typedef std::vector<mu2e::TrkCaloMatch> TrkCaloMatchCollection;
 
 } 
 

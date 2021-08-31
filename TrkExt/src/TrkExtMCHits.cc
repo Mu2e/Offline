@@ -1,8 +1,5 @@
 //
-//
-//
 //  Original author MyeongJae Lee
-//
 //
 
 // C++ includes.
@@ -14,13 +11,11 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/TrkExt/inc/TrkExtMCHits.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-
 
 using namespace CLHEP;
 using namespace std;

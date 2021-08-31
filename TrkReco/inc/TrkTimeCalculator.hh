@@ -8,8 +8,8 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"

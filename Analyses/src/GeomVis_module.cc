@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <vector> 
 
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"

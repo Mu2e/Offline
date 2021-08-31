@@ -28,7 +28,7 @@ source : {
 services : {
   @table::Services.SimAndReco
   TFileService          : { fileName : "g4study.root" }
-  GeometryService        : { @table::Services.SimAndReco.GeometryService 
+  GeometryService        : { @table::Services.SimAndReco.GeometryService
     inputFile            : "Offline/Mu2eG4/g4study/g4study_Tube_geom.txt"
     simulatedDetector    : { tool_type   : "ConstructEnvTube" }
   }
@@ -50,6 +50,14 @@ physics : {
 
   }
 
+   filters : {
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+         maxAcceptedStatus: 0  //  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+
+   } // filters
 
   analyzers: {
 
@@ -66,7 +74,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run , randomsaver]
+  p1 : [generate , g4run , g4consistent, randomsaver]
 #  e1 : [dumper, outfile]
   e1 : [dumper, checkhits , outfile]
 #  e1 : [checkhits , outfile]
@@ -80,7 +88,7 @@ outputs:  {
 
   outfile : {
     module_type   :   RootOutput
-    fileName      :   "g4study_Tube.root"
+    fileName      :   "nts.owner.g4studyTube.version.sequencer.root"
   }
 
   dumper : {
@@ -94,6 +102,8 @@ outputs:  {
 services.SeedService.baseSeed         :   8
 services.SeedService.maxUniqueEngines :  20
 #services.message.destinations.log.noTimeStamps : true
+# inform the geometry service it is not the standard Mu2e Detector
+# done via the tool_type above now
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/visxz.mac"
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/vis/vismqt.mac"
 
@@ -115,4 +125,9 @@ physics.producers.g4run.SDConfig: {
 // The line below causes a StepPointMC being stored for each step; comment it out to disable it
 physics.producers.g4run.Mu2eG4SteppingOnlyCut : @local::stepperout
 physics.producers.g4run.Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
-#physics.producers.g4run.debug.trackingVerbosityLevel : 1
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+#physics.producers.g4run.debug.steppingVerbosityLevel : 1
+#physics.producers.g4run.debug.writeGDML: true
+physics.producers.g4run.debug.GDMLFileName: "g4study_Tube.gdml"
+#physics.producers.g4run.debug.printElements : true

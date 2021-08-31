@@ -13,6 +13,9 @@ GRANT USAGE ON SCHEMA tst TO PUBLIC;
 CREATE SCHEMA trk;
 GRANT USAGE ON SCHEMA trk TO PUBLIC;
 
+CREATE SCHEMA sim;
+GRANT USAGE ON SCHEMA sim TO PUBLIC;
+
 -- rows are calibration tables
 CREATE TABLE val.tables 
   (tid SERIAL, 
@@ -268,3 +271,24 @@ CREATE TABLE trk.strawstatuslong
 GRANT SELECT ON trk.strawstatuslong TO PUBLIC;
 GRANT INSERT ON trk.strawstatuslong TO trk_role;
 
+-- tracker calibration table added 7/2021
+
+CREATE TABLE trk.delayrstraw
+  (cid INTEGER, 
+   straw INTEGER,  delay_hv NUMERIC, delay_cal NUMERIC,  
+   CONSTRAINT trk_delayrstraw_pk PRIMARY KEY (cid,straw) );
+GRANT SELECT ON trk.delayrstraw TO PUBLIC;
+GRANT INSERT ON trk.delayrstraw TO trk_role;
+
+--
+-- sim schema tables
+--
+
+-- table of mixing efficiencies
+
+CREATE TABLE sim.efficiencies
+  (cid INTEGER, 
+   tag TEXT, numerator INTEGER, denominator INTEGER, eff NUMERIC,  
+   CONSTRAINT sim_efficiencies_pk PRIMARY KEY (cid,tag) );
+GRANT SELECT ON sim.efficiencies TO PUBLIC;
+GRANT INSERT ON sim.efficiencies TO sim_role;

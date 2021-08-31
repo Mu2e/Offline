@@ -20,19 +20,14 @@ namespace mu2e
        public:                    
           CaloHitMC()                                     : edeps_()      {};
           CaloHitMC(const std::vector<CaloEDepMC>& edeps) : edeps_(edeps) {};
-	  // reset SimParticle Ptrs
-          void resetSim(SimParticleRemapping const& remap) {
-	    for(auto& edep : edeps_){
-	      auto newsim = remap.at(edep.sim());
-	      edep.resetSim(newsim);
-	    }
-	  }
+	  
+          void resetSim(SimParticleRemapping const& remap);
         
           const std::vector<CaloEDepMC>& energyDeposits  ()           const {return edeps_;       }
-          std::vector<CaloEDepMC>& energyDeposits  ()           {return edeps_;       }
+          std::vector<CaloEDepMC>&       energyDeposits  ()                 {return edeps_;       }
           const CaloEDepMC&              energyDeposit   (unsigned i) const {return edeps_.at(i); } 
           unsigned                       nParticles      ()           const {return edeps_.size();}
-          float                          time            ()           const {return edeps_.at(0).time();}
+          float                          time            ()           const {return edeps_.empty() ? 0.0 : edeps_.at(0).time();}
           float                          totalEnergyDep  ()           const;
           float                          totalEnergyDepG4()           const;
 

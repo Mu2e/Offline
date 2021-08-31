@@ -24,7 +24,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"

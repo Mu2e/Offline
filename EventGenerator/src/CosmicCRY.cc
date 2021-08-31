@@ -29,7 +29,7 @@
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 #include "CRYGenerator.h"
 #include "CRYSetup.h"

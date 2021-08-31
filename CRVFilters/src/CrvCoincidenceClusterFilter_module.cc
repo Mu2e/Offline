@@ -16,7 +16,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 

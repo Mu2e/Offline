@@ -12,10 +12,10 @@
 #include "Geant4/G4Threading.hh"
 
 //Mu2e includes
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"

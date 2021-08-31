@@ -32,7 +32,6 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 // root
@@ -285,15 +284,15 @@ namespace mu2e {
 		HelixHitInfoMC hhinfomc;
 		StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
 		fillHitInfoMC(pspp,mcdigi,hhinfomc);
-		XYZVec mchpos = hhit.pos(); // sets z position
+		XYZVectorF mchpos = hhit.pos(); // sets z position
 		_mch.position(mchpos);
 		hhinfomc._hpos = mchpos;
 		hhinfomc._hphi = _mch.circleAzimuth(hhit.pos().z());
 
-		XYZVec mcdh = hhit.pos() - mchpos;
+		XYZVectorF mcdh = hhit.pos() - mchpos;
 		hhinfomc._dwire = mcdh.Dot(hhit.wdir());
-		static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
-		XYZVec wtdir = zaxis.Cross(hhit.wdir()); // transverse direction to the wire
+		static XYZVectorF zaxis(0.0,0.0,1.0); // unit in z direction
+		XYZVectorF wtdir = zaxis.Cross(hhit.wdir()); // transverse direction to the wire
 		hhinfomc._dtrans = mcdh.Dot(wtdir);
 		_hhinfomc.push_back(hhinfomc);
 	      }
@@ -323,21 +322,21 @@ namespace mu2e {
 	    hhinfo._hhpos = hhit.pos();
 	    hhinfo._werr = hhit.posRes(ComboHit::wire);
 	    hhinfo._terr = hhit.posRes(ComboHit::trans);
-	    XYZVec hpos = hhit.pos(); // this sets the z to the correct value
+	    XYZVectorF hpos = hhit.pos(); // this sets the z to the correct value
 	    rhel.position(hpos);
 	    hhinfo._hpos = hpos;
 	    hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
 	    // compute the chisquared componentes for this hit
-	    XYZVec const& wdir = hhit.wdir();
-	    XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
-	    XYZVec cvec = PerpVector(hhit.pos() - rhel.center(),Geom::ZDir()); // vector from the circle center to the hit
-	    XYZVec cdir = cvec.unit(); // direction from the circle center to the hit
-	    XYZVec cperp = Geom::ZDir().Cross(cdir); // direction perp to the radius
+	    XYZVectorF const& wdir = hhit.wdir();
+	    XYZVectorF wtdir = GenVector::ZDir().Cross(wdir); // transverse direction to the wire
+	    XYZVectorF cvec = PerpVector(hhit.pos() - rhel.center(),GenVector::ZDir()); // vector from the circle center to the hit
+	    XYZVectorF cdir = cvec.unit(); // direction from the circle center to the hit
+	    XYZVectorF cperp = GenVector::ZDir().Cross(cdir); // direction perp to the radius
 	    hhinfo._whdot = wdir.Dot(cdir); // compare wire and circle radius direction
 	    hhinfo._hrho = sqrt(cvec.Mag2()); // radius of this hit WRT the circle center
 
 	    // positions
-	    XYZVec dh = hhit.pos() - hpos;
+	    XYZVectorF dh = hhit.pos() - hpos;
 	    double dwire = dh.Dot(wdir); // projection along wire direction
 	    double dtrans = dh.Dot(wtdir); // transverse projection
 
@@ -399,7 +398,6 @@ namespace mu2e {
       && (_shfcol != 0 || (!_useshfcol));
   }
 
-
   void HelixDiag::plotZ(art::Event const& evt, art::Ptr<SimParticle> const& pspp, HelixSeed const& hseed, unsigned ihel) {
     RobustHelix const& rhel = hseed._helix;
     ComboHitCollection const& hhits = hseed._hhits;
@@ -459,7 +457,7 @@ namespace mu2e {
       ComboHit const& hhit = hhits[ihit];
     // compute the projected phi (y) error for this elipse.  Z error is always the straw width
     // create an elipse for this hit
-      XYZVec that = XYZVec(-(hhit.pos().y()-rhel.centery()),(hhit.pos().x()-rhel.centerx()),0.0).unit(); // local phi direction at this hit
+      XYZVectorF that = XYZVectorF(-(hhit.pos().y()-rhel.centery()),(hhit.pos().x()-rhel.centerx()),0.0).unit(); // local phi direction at this hit
       double proj = that.Dot(hhit.wdir());
       double fcent = rhel.circleAzimuth(hhit.pos().z());
       TEllipse* te = new TEllipse(hhit.pos().z(),hhit.helixPhi()-fcent,
@@ -496,11 +494,11 @@ namespace mu2e {
     if(timec.isNonnull()){
       for(auto ih : timec->hits()){
 	auto const& ch = _chcol->at(ih);
-	XYZVec rpos(ch.pos().x()-rhel.centerx(), ch.pos().y()-rhel.centery(), ch.pos().z());
+	XYZVectorF rpos(ch.pos().x()-rhel.centerx(), ch.pos().y()-rhel.centery(), ch.pos().z());
 	// resolve phi
 	double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
 	dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
-	XYZVec that = XYZVec(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
+	XYZVectorF that = XYZVectorF(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
 	double proj = that.Dot(ch.wdir());
 	TEllipse* te = new TEllipse(ch.pos().z(),dphi,
 	    ch._tres, ch._wres*proj/rhel.radius());
@@ -512,11 +510,11 @@ namespace mu2e {
   // background hits
     for(size_t ich = 0; ich< _chcol->size();++ich) {
       auto const& ch = _chcol->at(ich);
-      XYZVec rpos(ch.pos().x()-rhel.centerx(), ch.pos().y()-rhel.centery(), ch.pos().z());
+      XYZVectorF rpos(ch.pos().x()-rhel.centerx(), ch.pos().y()-rhel.centery(), ch.pos().z());
       // resolve phi
       double dphi = atan2(rpos.y(),rpos.x()) - rhel.circleAzimuth(rpos.z());
       dphi -= rint(dphi/CLHEP::twopi)*CLHEP::twopi;
-      XYZVec that = XYZVec(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
+      XYZVectorF that = XYZVectorF(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
       double proj = that.Dot(ch.wdir());
       TEllipse* te = new TEllipse(ch.pos().z(),dphi,
 	  ch._tres, ch._wres*proj/rhel.radius());
@@ -629,8 +627,8 @@ namespace mu2e {
       mct_list = mct->GetListOfFunctions();
     }
     // define plot center
-    XYZVec pcent;
-    if(_hcenter) pcent = XYZVec( rhel.centerx(), rhel.centery(), 0.0);
+    XYZVectorF pcent;
+    if(_hcenter) pcent = XYZVectorF( rhel.centerx(), rhel.centery(), 0.0);
     // draw the detector boundaries
     static double innerrad(380.0);
     static double outerrad(680.0);
@@ -788,7 +786,7 @@ namespace mu2e {
       for(auto imcd = _mcdigis->begin();imcd != _mcdigis->end(); ++imcd){
 	auto const& stepptr = imcd->strawGasStep(imcd->earlyEnd());
 	if(stepptr->simParticle() == pspp){
-	  mom = Geom::Hep3Vec(stepptr->momentum());
+	  mom = GenVector::Hep3Vec(stepptr->momentum());
 	  pos = stepptr->position();
 	  retval = true;
 	  break;

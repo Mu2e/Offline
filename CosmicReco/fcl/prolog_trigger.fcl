@@ -30,7 +30,7 @@ CstTrigger : {
     	CstTimeClusterFinder : @local::CstTimeClusterFinder
 	CstSimpleTimeCluster : @local::CstSimpleTimeCluster
 
-	CstCosmicTrackFinder :{ @table::CosmicTracking.producers.CosmicTrackFinder
+	CstCosmicTrackFinder :{ @table::CosmicTracking.producers.CosmicTrackFinderTimeFit
 	    ComboHitCollection     : "TTmakePH"
 	    TimeClusterCollection  : "CstSimpleTimeCluster"
 

@@ -152,8 +152,9 @@ namespace mu2e {
     // loop over the individual straw hits
     for(auto strawidx : strawHitIdxs) {
       const ComboHit& strawhit(chcol.at(strawidx));
-      if(strawhit.mask().level() != StrawIdMask::uniquestraw)
-	throw cet::exception("RECO")<<"mu2e::KKFit: ComboHit error"<< endl;
+      if(strawhit.mask().level() != StrawIdMask::uniquestraw){
+	      throw cet::exception("RECO")<<"mu2e::KKFit: ComboHit error"<< endl;
+	    }
       const Straw& straw = tracker.getStraw(strawhit.strawId());
       auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
       double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction

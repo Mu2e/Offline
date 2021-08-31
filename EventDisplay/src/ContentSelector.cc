@@ -414,6 +414,11 @@ const mu2e::PhysicalVolumeInfoMultiCollection* ContentSelector::getPhysicalVolum
 
 const double ContentSelector::getTDC0time() const
 {
+  if(!_protonBunchTime.isValid())
+  {
+    std::cout<<"ProtonBunchTime not found! Setting it to 0."<<std::endl;
+    return 0;
+  }
   double TDC0time = -_protonBunchTime->pbtime_;
   return TDC0time;
 }
