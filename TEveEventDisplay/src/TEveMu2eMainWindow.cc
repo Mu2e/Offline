@@ -92,7 +92,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfXYMgr,kTRUE);
      fViewer[0]->AddScene(proj0);
-  }
+   }
 
    frm = fSplitFrame->GetFirst()->GetSecond();
    frm->SetName("Calorimeter_RZ_View");
@@ -117,7 +117,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfRZMgr,kTRUE);
      fViewer[1]->AddScene(proj1);
-}
+   }
 
    frm = fSplitFrame->GetSecond()->GetFirst();
    frm->SetName("Tracker_XY_View");
@@ -142,7 +142,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(TfXYMgr,kTRUE);
      fViewer[2]->AddScene(proj2);
-}
+   }
 
    frm = fSplitFrame->GetSecond()->GetSecond();
    frm->SetName("Tracker_RZ_View");
@@ -167,19 +167,19 @@ namespace mu2e{
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(TfRZMgr,kTRUE);
      fViewer[3]->AddScene(proj3);
-}
-	  // create the split frames
-	  fPadCRV = new TEvePad();
+   }
+	  
+   fPadCRV = new TEvePad();
    fPadCRV->SetFillColor(kBlack);
    
    fSplitFrameCRV = new TGSplitFrame(this, 900, 1300);
    AddFrame(fSplitFrameCRV, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
    // split it once
    fSplitFrameCRV->HSplit(350);
-   fSplitFrameCRV->GetFirst()->VSplit(410);
+   //fSplitFrameCRV->GetFirst()->VSplit(410);
    //fSplitFrameCRV->GetSecond()->VSplit(410);
-  // get top (main) split frame
-   frmCRV = fSplitFrameCRV->GetFirst()->GetFirst();
+   // get top (main) split frame
+   frmCRV = fSplitFrameCRV->GetFirst();
    frmCRV->SetName("CRV_XY_View");
    fViewer4 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
    frmCRV->AddFrame(fViewer4->GetFrame(), new TGLayoutHints(kLHintsExpandX |
@@ -202,9 +202,9 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CrfXYMgr,kTRUE);
      fViewer[4]->AddScene(proj4);
-  }
+   }
 	  
-	  frmCRV = fSplitFrameCRV->GetFirst()->GetSecond();
+   frmCRV = fSplitFrameCRV->GetSecond();
    frmCRV->SetName("CRV_RZ_View");
    fViewer5 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
    frmCRV->AddFrame(fViewer5->GetFrame(), new TGLayoutHints(kLHintsExpandX |
@@ -219,7 +219,6 @@ namespace mu2e{
    if (fIsEmbedded && gEve) {
      gEve->GetViewers()->AddElement(fViewer[5]);
      proj5 = gEve->SpawnNewScene("CRV RZ Scene");
-     //fViewer[1]->AddScene(fdetXY);
      CrfRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
      proj5->AddElement(CrfRZMgr);
      TEveProjectionAxes* axes_xytracker = new TEveProjectionAxes(CrfRZMgr);
@@ -227,7 +226,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(CrfRZMgr,kTRUE);
      fViewer[5]->AddScene(proj5);
-}
+   }
 	
    Resize(GetDefaultSize());
    MapSubwindows();
@@ -514,12 +513,7 @@ namespace mu2e{
     gEve->AddToListTree(axes_xy,kTRUE);
     gEve->AddToListTree(CRV2Dproj->fXYMgr,kTRUE);
 
-    CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
-    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
-    CRV2Dproj->fDetRZScene->AddElement(axes_rz);
-    CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
-    gEve->AddToListTree(axes_rz,kTRUE);
-    gEve->AddToListTree(CRV2Dproj->fRZMgr,kTRUE);
+    
 
     // Create side-by-side ortho XY & RZ views in new tab & add det/evt scenes
     TEveWindowSlot *slot = 0;
@@ -536,8 +530,26 @@ namespace mu2e{
     CRV2Dproj->fXYView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
     CRV2Dproj->fXYView->AddScene(CRV2Dproj->fDetXYScene);
     CRV2Dproj->fXYView->AddScene(CRV2Dproj->fEvtXYScene);
+	  
+	  gEve->GetBrowser()->GetTabRight()->SetTab(0);
+	  
+	  CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
+    CRV2Dproj->fDetRZScene->AddElement(axes_rz);
+    CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
+    gEve->AddToListTree(axes_rz,kTRUE);
+    gEve->AddToListTree(CRV2Dproj->fRZMgr,kTRUE);
+	  
+	 TEveWindowSlot *slotnext = 0;
+    TEveWindowPack *packnext = 0;
+	  
+	  slotnext = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
+    packnext = slotnext->MakePack();
+    packnext->SetElementName("CRV Views2");
+    packnext->SetHorizontal();
+    packnext->SetShowTitleBar(kFALSE);
 
-    pack->NewSlot()->MakeCurrent();
+    packnext->NewSlot()->MakeCurrent();
     CRV2Dproj->fRZView = gEve->SpawnNewViewer("CRV RZ View", "");
     CRV2Dproj->fRZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
     CRV2Dproj->fRZView->AddScene(CRV2Dproj->fDetRZScene);
