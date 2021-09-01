@@ -40,7 +40,7 @@ namespace mu2e{
             int index = bar.index().asInt();
             CLHEP::Hep3Vector barOffset = bar.getPosition() - _detSysOrigin;
             sibarpos[0]=barOffset.x();
-            sibarpos[1]=barOffset.y() +1000.0;
+            sibarpos[1]=barOffset.y();// +1000.0;
             sibarpos[2]=barOffset.z();
 
             //boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
@@ -48,10 +48,11 @@ namespace mu2e{
             TEveGeoShape *sibar = new TEveGeoShape();
         sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(dx),pointmmTocm(dy),pointmmTocm(dz), sibarpos));
         sibar->SetMainTransparency(100);
-          
+        
         // if(strcmp(shieldName.c_str(), shieldside.c_str()) > 0) {std::cout<<shieldName<<std::endl;}
          if(shieldName.compare(4,1, shieldside, 4,1) == 0){ 
-          orthodetT2->AddElement(sibar);}
+          orthodetT2->AddElement(sibar);
+          }
           }
         }
       }
