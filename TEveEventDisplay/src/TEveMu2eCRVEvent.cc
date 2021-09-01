@@ -29,9 +29,9 @@ TEveMu2eCRVEvent::DrawSciBar(){
       std::string const& shieldName = shield.getName();
        if(shieldName.compare(4,1, shieldside, 4,1) == 0){
       CRSScintillatorBarDetail const& barDetail = shield.getCRSScintillatorBarDetail();
-      dx=pointmmTocm(barDetail.getHalfLengths()[0]);
-      dy=pointmmTocm(barDetail.getHalfLengths()[1]);
-      dz=pointmmTocm(barDetail.getHalfLengths()[2]);
+      dx=(barDetail.getHalfLengths()[0]);
+      dy=(barDetail.getHalfLengths()[1]);
+      dz=(barDetail.getHalfLengths()[2]);
      // std::cout<<dx<<" "<<dy<<" "<<dz<<std::endl;
       }
     }
@@ -43,14 +43,14 @@ TEveMu2eCRVEvent::DrawSciBar(){
            // GeomHandle<DetectorSystem> det;
 	   
 	    CLHEP::Hep3Vector barOffset = crvCounterPos - _detSysOrigin;
-            sibarpos[0]=pointmmTocm(barOffset.x());
-            sibarpos[1]=pointmmTocm(barOffset.y());// + 1000.0;
-            sibarpos[2]=pointmmTocm(barOffset.z());  
+            sibarpos[0]=(barOffset.x());
+            sibarpos[1]=(barOffset.y());// + 1000.0;
+            sibarpos[2]=(barOffset.z());  
             int index = 20;
                   strawtitle =Form("index %i", index);   
             colorid = index;
-            sposi.set(sibarpos[0]-dx, sibarpos[1]-dy, sibarpos[2]-dz);
-            sposf.set(sibarpos[0]+dx, sibarpos[1]+dy, sibarpos[2]+dz);
+            sposi.set(pointmmTocm(sibarpos[0]-dx), pointmmTocm(sibarpos[1]-dy), pointmmTocm(sibarpos[2]-dz));
+            sposf.set(pointmmTocm(sibarpos[0]+dx), pointmmTocm(sibarpos[1]+dy), pointmmTocm(sibarpos[2]+dz));
       
           // }
        
@@ -61,13 +61,13 @@ TEveMu2eCRVEvent::DrawSciBar(){
   {
           auto [sposi, sposf, title, colorid] = DrawSciBar();
     if(sposi.x()!=0){
-      GeomHandle<DetectorSystem> det;
-      CLHEP::Hep3Vector sposin = det->toMu2e(sposi);
-      CLHEP::Hep3Vector sposfn = det->toMu2e(sposf);
+      //GeomHandle<DetectorSystem> det;
+      //CLHEP::Hep3Vector sposin = det->toMu2e(sposi);
+      //CLHEP::Hep3Vector sposfn = det->toMu2e(sposf);
       TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
       line->SetLineWidth(1);
-      line->SetPoint(0,sposin.x(),sposin.y(),sposin.z());
-      line->SetNextPoint(sposfn.x(),sposfn.y(),sposfn.z());
+      line->SetPoint(0,sposi.x(),sposi.y(),sposi.z());
+      line->SetNextPoint(sposf.x(),sposf.y(),sposf.z());
       line->SetLineColor(colorid);
       line->SetTitle(Form(title.c_str()));
       CrvList3D->AddElement(line);
