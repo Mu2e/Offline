@@ -59,11 +59,25 @@ namespace mu2e {
     for (auto const& row : tpls_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tpls_p->sidMask(),row.status()));
     for (auto const& row : tpas_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tpas_p->sidMask(),row.status()));
     for (auto const& row : tssl_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tssl_p->sidMask(),row.status()));
-    for (auto const& row : tsss_p->rows()) estatus.insert(TrackerElementStatus(row.id(),tsss_p->sidMask(),row.status()));
+    unsigned ntotal = tpls_p->rows().size() + tpas_p->rows().size() + tssl_p->rows().size();
+    // tsss can have duplicate entries from tssl
+    for (auto const& row : tsss_p->rows()){
+      auto elem = TrackerElementStatus(row.id(),tsss_p->sidMask(),row.status());
+      auto iter = estatus.find(elem);
+      if (iter == estatus.end()){
+        estatus.insert(elem);
+        ntotal++;
+      }else{
+        TrackerElementStatus temp = *iter;;
+        estatus.erase(iter);
+        temp.status_.merge(row.status());
+        estatus.insert(temp);
+      }
+    }
 
     // check for consistency
     //
-    unsigned ntotal = tpls_p->rows().size() + tpas_p->rows().size() + tssl_p->rows().size() + tsss_p->rows().size();
+    //unsigned ntotal = tpls_p->rows().size() + tpas_p->rows().size() + tssl_p->rows().size() + tsss_p->rows().size();
     if(estatus.size() != ntotal){
       throw cet::exception("TrackerStatus BadTable")
 	<< "input table size inconsistency "<< ntotal 
