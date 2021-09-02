@@ -15,7 +15,7 @@ namespace mu2e{
   /*------------Function to display straws which are hit-------*/
   std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector, std::string, int>TEveMu2eCRVEvent::DrawSciBar(){
     CLHEP::Hep3Vector sposi(0.0,0.0,0.0), sposf(0.0,0.0,0.0);
-    std::string strawtitle;
+    std::string crvtitle;
     int colorid = 0;
     double dx=0.0,dy=0.0,dz=0.0;
     GeomHandle<CosmicRayShield> CRS;
@@ -48,11 +48,11 @@ namespace mu2e{
     sibarpos[1]=(barOffset.y());// + 1000.0;
     sibarpos[2]=(barOffset.z());
     int index = fCrvRecoPulse_.GetScintillatorBarIndex().asInt();
-    strawtitle =Form("index %i shield", index);
+    crvtitle =Form("index %i", index);
     colorid = index;
     sposi.set((sibarpos[0]-dx),(sibarpos[1]-dy),(sibarpos[2]-dz));
     sposf.set((sibarpos[0]+dx),(sibarpos[1]+dy),(sibarpos[2]+dz));
-    return {sposi, sposf, strawtitle, colorid};
+    return {sposi, sposf, crvtitle, colorid};
   }
           
   /*------------Function to 3D draw hits:-------------*/
