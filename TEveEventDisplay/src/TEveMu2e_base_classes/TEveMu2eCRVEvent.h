@@ -1,4 +1,4 @@
-ifndef TEveMu2eCRVEvent_h
+#ifndef TEveMu2eCRVEvent_h
 #define TEveMu2eCRVEvent_h
 
 #include <TObject.h>
