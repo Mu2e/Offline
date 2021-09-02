@@ -51,7 +51,7 @@ namespace mu2e{
       TEveElementList *fClusterList2D_disk0;
       TEveElementList *fClusterList2D_disk1;
       TEveElementList *fClusterList3D;
-     TEveElementList *fCrvList2DXY;
+      TEveElementList *fCrvList2DXY;
       TEveElementList *fCrvList2DXZ;
       TEveElementList *fCrvList3D;
       TEveElementList *fExtTrackList2D;
