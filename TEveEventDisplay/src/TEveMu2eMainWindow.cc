@@ -259,10 +259,7 @@ namespace mu2e{
         TGPictureButton *f = new TGPictureButton(navFrame, gClient->GetPicture(icondir + "GoForward.gif"),1001);
         navFrame->AddFrame(f);
         f->Associate(this);
-        TGPictureButton *f = new TGPictureButton(navFrame, gClient->GetPicture(icondir + "GoForward.gif"),1001);
-        navFrame->AddFrame(f);
-        f->Associate(this);
-      
+              
         // ... Create run num text entry widget and connect to "GotoEvent" rcvr in visutils
         TGHorizontalFrame* runoFrame = new TGHorizontalFrame(evtidFrame);
         fTlRun = new TGLabel(runoFrame,"Run Number");   
