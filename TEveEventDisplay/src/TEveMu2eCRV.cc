@@ -36,28 +36,28 @@ namespace mu2e{
           int nBars = layer.nBars();
           for (int ib = 0; ib < nBars; ++ib)
           { Double_t sibarpos[3];
- CRSScintillatorBar const & bar = layer.getBar(ib);
+            CRSScintillatorBar const & bar = layer.getBar(ib);
             int index = bar.index().asInt();
             CLHEP::Hep3Vector barOffset = bar.getPosition();// - _detSysOrigin;
             sibarpos[0]=barOffset.x();
             sibarpos[1]=barOffset.y();// +1000.0;
             sibarpos[2]=barOffset.z();
-      
+
             //boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
             std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %i)",shieldName.c_str(),im,il,ib, index);
             TEveGeoShape *sibar = new TEveGeoShape();
-        sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(dx),pointmmTocm(dy),pointmmTocm(dz), sibarpos));
+            sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(dx),pointmmTocm(dy),pointmmTocm(dz), sibarpos));
         sibar->SetMainTransparency(100);
-        
+     
         // if(strcmp(shieldName.c_str(), shieldside.c_str()) > 0) {std::cout<<shieldName<<std::endl;}
          if(shieldName.compare(4,1, shieldside, 4,1) == 0){
           orthodetT2->AddElement(sibar);
           }
           }
         }
-      }
+      }  
     }
-            
+          
     const std::string TopSectorNames[] = {"T1", "T2", "T3", "T4"};
     for (unsigned int i=0; i<4; i++){
             Double_t panelpos[3];
@@ -65,9 +65,9 @@ namespace mu2e{
       position = CRS.getSectorPosition(TopSectorNames[i]);
             
         panelpos [0] = position.x();
-        panelpos [1] = position.y();
+        panelpos [1] = position.y();  
         panelpos [2] = position.z();
-      
+            
       TEveGeoShape *sectorshape = new TEveGeoShape();
       sectorshape->SetShape(new TGeoBBox("sectorshape",pointmmTocm(2*halflen[0]), pointmmTocm(2*halflen[2]), pointmmTocm(2*halflen[1]),panelpos));
       sectorshape->SetMainTransparency(100);
@@ -87,4 +87,5 @@ namespace mu2e{
     }
   }
 }
-      
+        
+
