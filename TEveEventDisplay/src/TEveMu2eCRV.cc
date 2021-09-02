@@ -8,12 +8,11 @@ namespace mu2e{
   void TEveMu2eCRV::DrawCRVDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodetT1, TEveElementList *orthodetT2){
     TGeoMaterial *matSi = new TGeoMaterial("Si", 28.085,14,2.33);
     TGeoMedium *Si = new TGeoMedium("Silicon",2, matSi);
-   // CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
+    // CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
     std::vector<double> halflen;
     CLHEP::Hep3Vector position;
     CosmicRayShield const &CRS = *(GeomHandle<CosmicRayShield>());
-
-           std::vector<mu2e::CRSScintillatorShield> const& shields = CRS.getCRSScintillatorShields();
+    /*std::vector<mu2e::CRSScintillatorShield> const& shields = CRS.getCRSScintillatorShields();
     for(std::vector<mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield)
     {
       CRSScintillatorShield const& shield = *ishield;
@@ -56,8 +55,7 @@ namespace mu2e{
           }
         }
       }  
-    }
-          
+    }*/     
     const std::string TopSectorNames[] = {"T1", "T2", "T3", "T4"};
     for (unsigned int i=0; i<4; i++){
             Double_t panelpos[3];
@@ -82,8 +80,8 @@ namespace mu2e{
       if(i==1)  Config.getVectorDouble ("crs.firstCounterT2",Center);
       if(i==2)  Config.getVectorDouble("crs.firstCounterT3", Center);
       if(i==3)  Config.getVectorDouble("crs.firstCounterT4", Center) ;
-       orthodetT1->AddElement(sectorshape);
-       topvol->AddNode(crv0, 1, new TGeoTranslation(pointmmTocm(Center[0]),pointmmTocm(Center[1]),pointmmTocm(Center[2]/10)));
+      orthodetT1->AddElement(sectorshape);
+      topvol->AddNode(crv0, 1, new TGeoTranslation(pointmmTocm(Center[0]),pointmmTocm(Center[1]),pointmmTocm(Center[2]/10)));
     }
   }
 }
