@@ -13,17 +13,16 @@ namespace mu2e{
   }
 
   /*------------Function to display straws which are hit-------*/
-  std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector, std::string, int>
-TEveMu2eCRVEvent::DrawSciBar(){
-         CLHEP::Hep3Vector sposi(0.0,0.0,0.0), sposf(0.0,0.0,0.0);
-        std::string strawtitle;
-        int colorid = 0;
-        double dx=0.0,dy=0.0,dz=0.0;
-       // std::string shieldside;
-        //  CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
-          GeomHandle<CosmicRayShield> CRS;
+  std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector, std::string, int>TEveMu2eCRVEvent::DrawSciBar(){
+    CLHEP::Hep3Vector sposi(0.0,0.0,0.0), sposf(0.0,0.0,0.0);
+    std::string strawtitle;
+    int colorid = 0;
+    double dx=0.0,dy=0.0,dz=0.0;
+    GeomHandle<CosmicRayShield> CRS;
 
-   /* std::vector<mu2e::CRSScintillatorShield> const& shields = CRS->getCRSScintillatorShields();
+    /*std::string shieldside;
+    CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
+    std::vector<mu2e::CRSScintillatorShield> const& shields = CRS->getCRSScintillatorShields();
     for(std::vector<mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield)
     {
       CRSScintillatorShield const& shield = *ishield;
@@ -35,38 +34,33 @@ TEveMu2eCRVEvent::DrawSciBar(){
       std::cout<<dx<<" "<<dy<<" "<<dz<<std::endl;
 
     }*/
-          Double_t sibarpos[3];
-         // const CrvRecoPulseCollection *crvcoincol;
-          const CRSScintillatorBarIndex &crvBarIndexn = fCrvRecoPulse_.GetScintillatorBarIndex();
-          const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndexn);
-          CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
-          const CRSScintillatorBarDetail &barDetail = crvCounter.getBarDetail();
-          dx=(barDetail.getHalfLengths()[0]);
-          dy=(barDetail.getHalfLengths()[1]);
-          dz=(barDetail.getHalfLengths()[2]);
-
-            // GeomHandle<DetectorSystem> det;
-             CLHEP::Hep3Vector barOffset = crvCounterPos;// - _detSysOrigin;
-            sibarpos[0]=(barOffset.x());
-            sibarpos[1]=(barOffset.y());// + 1000.0;
-            sibarpos[2]=(barOffset.z());
-            int index = fCrvRecoPulse_.GetScintillatorBarIndex().asInt();
-            strawtitle =Form("index %i shield", index);
-            colorid = index;
-            sposi.set((sibarpos[0]-dx),(sibarpos[1]-dy),(sibarpos[2]-dz));
-            sposf.set((sibarpos[0]+dx),(sibarpos[1]+dy),(sibarpos[2]+dz));
-      
-          // }
-       
-          return {sposi, sposf, strawtitle, colorid};
+    Double_t sibarpos[3];
+    const CRSScintillatorBarIndex &crvBarIndexn = fCrvRecoPulse_.GetScintillatorBarIndex();
+    const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndexn);
+    CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
+    const CRSScintillatorBarDetail &barDetail = crvCounter.getBarDetail();
+    dx=(barDetail.getHalfLengths()[0]);
+    dy=(barDetail.getHalfLengths()[1]);
+    dz=(barDetail.getHalfLengths()[2]);
+    // GeomHandle<DetectorSystem> det;
+    CLHEP::Hep3Vector barOffset = crvCounterPos;// - _detSysOrigin;
+    sibarpos[0]=(barOffset.x());
+    sibarpos[1]=(barOffset.y());// + 1000.0;
+    sibarpos[2]=(barOffset.z());
+    int index = fCrvRecoPulse_.GetScintillatorBarIndex().asInt();
+    strawtitle =Form("index %i shield", index);
+    colorid = index;
+    sposi.set((sibarpos[0]-dx),(sibarpos[1]-dy),(sibarpos[2]-dz));
+    sposf.set((sibarpos[0]+dx),(sibarpos[1]+dy),(sibarpos[2]+dz));
+    return {sposi, sposf, strawtitle, colorid};
   }
           
   /*------------Function to 3D draw hits:-------------*/
   void TEveMu2eCRVEvent::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList3D)
   {
-          auto [sposi, sposf, title, colorid] = DrawSciBar();
+    auto [sposi, sposf, title, colorid] = DrawSciBar();
     if(sposi.x()!=0){
-       GeomHandle<DetectorSystem> det;
+      GeomHandle<DetectorSystem> det;
       CLHEP::Hep3Vector sposin = det->toMu2e(sposi);
       CLHEP::Hep3Vector sposfn = det->toMu2e(sposf);
       TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
@@ -87,13 +81,12 @@ TEveMu2eCRVEvent::DrawSciBar(){
   }       
   
          /*------------Function to 2D draw hits:-------------*/
-  void TEveMu2eCRVEvent::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList2DXY, TEveElementList
-*CrvList2DXZ)
+  void TEveMu2eCRVEvent::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList2DXY, TEveElementList *CrvList2DXZ)
   {
     auto [sposi, sposf, title, colorid] = DrawSciBar();
     if(sposi.x()!=0){
       TEveMu2eCustomHelix *line_twoDstrawXY = new TEveMu2eCustomHelix();
-            line_twoDstrawXY->SetLineWidth(1);
+      line_twoDstrawXY->SetLineWidth(1);
       line_twoDstrawXY->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y()),pointmmTocm(sposi.z()));
       line_twoDstrawXY->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y()),pointmmTocm(sposf.z()));
       line_twoDstrawXY->SetLineColor(colorid);
@@ -109,8 +102,8 @@ TEveMu2eCRVEvent::DrawSciBar(){
       CrvList2DXZ->AddElement(line_twoDstrawXZ);
     }
    
-     this->SetTitle((DataTitle(pstr, n)).c_str());
-   // hep3vectorTocm(pointInMu2e);
+    this->SetTitle((DataTitle(pstr, n)).c_str());
+    // hep3vectorTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     this->SetMarkerColor(mColor_);
     this->SetMarkerSize(mSize_);
