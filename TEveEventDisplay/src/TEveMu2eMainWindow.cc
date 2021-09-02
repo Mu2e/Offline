@@ -68,7 +68,7 @@ namespace mu2e{
    fSplitFrame->HSplit(350);
    fSplitFrame->GetFirst()->VSplit(410);
    fSplitFrame->GetSecond()->VSplit(410);
-  // get top (main) split frame
+   // get top (main) split frame
    frm = fSplitFrame->GetFirst()->GetFirst();
    frm->SetName("Calorimeter_XY_View");
    fViewer0 = new TGLEmbeddedViewer(frm, fPad);
@@ -92,8 +92,8 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfXYMgr,kTRUE);
      fViewer[0]->AddScene(proj0);
-  }
- frm = fSplitFrame->GetFirst()->GetSecond();
+   }
+   frm = fSplitFrame->GetFirst()->GetSecond();
    frm->SetName("Calorimeter_RZ_View");
    fViewer1 = new TGLEmbeddedViewer(frm, fPad);
    frm->AddFrame(fViewer1->GetFrame(), new TGLayoutHints(kLHintsExpandX |
@@ -116,7 +116,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CfRZMgr,kTRUE);
      fViewer[1]->AddScene(proj1);
-}  
+   }  
    
    frm = fSplitFrame->GetSecond()->GetFirst();
    frm->SetName("Tracker_XY_View");
@@ -141,7 +141,7 @@ namespace mu2e{
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(TfXYMgr,kTRUE);
      fViewer[2]->AddScene(proj2);
-	   }  
+   }  
    
    frm = fSplitFrame->GetSecond()->GetSecond();
    frm->SetName("Tracker_RZ_View");
@@ -166,29 +166,28 @@ namespace mu2e{
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(TfRZMgr,kTRUE);
      fViewer[3]->AddScene(proj3);
-}  
+   }  
           // create the split frames
-          fPadCRV = new TEvePad(); 
+   fPadCRV = new TEvePad(); 
    fPadCRV->SetFillColor(kBlack);
    
    fSplitFrameCRV = new TGSplitFrame(this, 900, 1300);
    AddFrame(fSplitFrameCRV, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
    // split it once
    fSplitFrameCRV->HSplit(350);
-//   fSplitFrameCRV->GetFirst()->VSplit(410);
+   //fSplitFrameCRV->GetFirst()->VSplit(410);
    //fSplitFrameCRV->GetSecond()->VSplit(410);
-  // get top (main) split frame
+   //get top (main) split frame
    frmCRV = fSplitFrameCRV->GetFirst();//->GetFirst();
    frmCRV->SetName("CRV_XY_View");
    fViewer4 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
-   frmCRV->AddFrame(fViewer4->GetFrame(), new TGLayoutHints(kLHintsExpandX |
-                 kLHintsExpandY));  
+   frmCRV->AddFrame(fViewer4->GetFrame(), new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));  
    // set the camera to perspective (XOZ) for this viewer
    fViewer4->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
    // connect signal we are interested to
      
    fViewer[4] = new TEveViewer("SplitGLViewer[4]");
-fViewer[4]->SetGLViewer(fViewer4, fViewer4->GetFrame());
+   fViewer[4]->SetGLViewer(fViewer4, fViewer4->GetFrame());
    fViewer[4]->IncDenyDestroy(); 
    if (fIsEmbedded && gEve) {
      gEve->GetViewers()->AddElement(fViewer[4]);
@@ -201,9 +200,9 @@ fViewer[4]->SetGLViewer(fViewer4, fViewer4->GetFrame());
      gEve->AddToListTree(axes_xy,kTRUE);
      gEve->AddToListTree(CrfXYMgr,kTRUE);
      fViewer[4]->AddScene(proj4);
-  }
+   }
    
-          frmCRV = fSplitFrameCRV->GetSecond();//->GetSecond();
+   frmCRV = fSplitFrameCRV->GetSecond();//->GetSecond();
    frmCRV->SetName("CRV_RZ_View");
    fViewer5 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
    frmCRV->AddFrame(fViewer5->GetFrame(), new TGLayoutHints(kLHintsExpandX |
@@ -213,7 +212,7 @@ fViewer[4]->SetGLViewer(fViewer4, fViewer4->GetFrame());
    // connect signal we are interested to
    
    fViewer[5] = new TEveViewer("SplitGLViewer[5]");
-fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
+   fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
    fViewer[5]->IncDenyDestroy();
    if (fIsEmbedded && gEve) {
      gEve->GetViewers()->AddElement(fViewer[5]); 
@@ -226,7 +225,7 @@ fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
      gEve->AddToListTree(axes_xytracker,kTRUE);
      gEve->AddToListTree(CrfRZMgr,kTRUE);
      fViewer[5]->AddScene(proj5);
-}  
+   }  
           
    Resize(GetDefaultSize());
    MapSubwindows();
@@ -260,7 +259,7 @@ fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
         TGPictureButton *f = new TGPictureButton(navFrame, gClient->GetPicture(icondir + "GoForward.gif"),1001);
         navFrame->AddFrame(f);
         f->Associate(this);
-    TGPictureButton *f = new TGPictureButton(navFrame, gClient->GetPicture(icondir + "GoForward.gif"),1001);
+        TGPictureButton *f = new TGPictureButton(navFrame, gClient->GetPicture(icondir + "GoForward.gif"),1001);
         navFrame->AddFrame(f);
         f->Associate(this);
       
@@ -288,7 +287,7 @@ fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
         _eventNumber->AddText(0, "Enter Run Number");
         
         evnoFrame->AddFrame(fTeEvt,new TGLayoutHints(kLHintsExpandX));
- fTeEvt->Associate(this);
+        fTeEvt->Associate(this);
         
         TGTextButton *Gobutton         = new TGTextButton(navFrame, "&Go", 1999);
         navFrame->AddFrame(Gobutton, new TGLayoutHints(kLHintsLeft,3,0,3,0));
@@ -336,7 +335,7 @@ fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
         hentenergyframe->AddFrame(hmaxenergy,new TGLayoutHints(kLHintsExpandX));
         hmaxenergy->Associate(this);
         timelabel = new TGLabel(evtidFrame, "Time Interval [ns]");
- TGHorizontalFrame *henttimeframe = new TGHorizontalFrame(evtidFrame);   
+        TGHorizontalFrame *henttimeframe = new TGHorizontalFrame(evtidFrame);   
         hmintime = new TGTextEntry(henttimeframe, _hitmintime = new TGTextBuffer(5), 1703);
         _hitmintime->AddText(0, "0.0");
         henttimeframe->AddFrame(hmintime,new TGLayoutHints(kLHintsExpandX));
@@ -384,7 +383,7 @@ fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
         
         // ... Add navFrame and evtidFrame to MainFrame
         frmMain->AddFrame(navFrame);
- TGHorizontal3DLine *separator = new TGHorizontal3DLine(frmMain);
+        TGHorizontal3DLine *separator = new TGHorizontal3DLine(frmMain);
         frmMain->AddFrame(separator, new TGLayoutHints(kLHintsExpandX));
         frmMain->AddFrame(evtidFrame);
         
@@ -480,7 +479,7 @@ fViewer[5]->SetGLViewer(fViewer5, fViewer5->GetFrame());
     TEveWindowPack *pack = 0;
     
     slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-pack = slot->MakePack();
+    pack = slot->MakePack();
     pack->SetElementName("Tracker Views");
     pack->SetHorizontal();
     pack->SetShowTitleBar(kFALSE);
@@ -516,19 +515,20 @@ pack = slot->MakePack();
     gEve->AddToListTree(axes_xy,kTRUE);
     gEve->AddToListTree(CRV2Dproj->fXYMgr,kTRUE);
     
-    //CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
-    //TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
-    //CRV2Dproj->fDetRZScene->AddElement(axes_rz);
-    //CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
-    //gEve->AddToListTree(axes_rz,kTRUE);
-    //gEve->AddToListTree(CRV2Dproj->fRZMgr,kTRUE);
-          
+    /*CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
+    CRV2Dproj->fDetRZScene->AddElement(axes_rz);
+    CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
+    gEve->AddToListTree(axes_rz,kTRUE);
+    gEve->AddToListTree(CRV2Dproj->fRZMgr,kTRUE);
+    */
+	  
     // Create side-by-side ortho XY & RZ views in new tab & add det/evt scenes
     TEveWindowSlot *slot = 0;
     TEveWindowPack *pack = 0;
     
     slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
-pack = slot->MakePack();
+    pack = slot->MakePack();
     pack->SetElementName("CRV Views");
     pack->SetHorizontal();
     pack->SetShowTitleBar(kFALSE);
@@ -575,7 +575,7 @@ pack = slot->MakePack();
     TEveElementList *orthodet1 = new TEveElementList("CaloOrthoDet1");
     TGeoVolume* topvol = geom->GetTopVolume();
     Mu2eCalo->DrawCaloDetector(run, topvol,orthodet0,orthodet1);
- gEve->AddGlobalElement(orthodet0);
+    gEve->AddGlobalElement(orthodet0);
     gEve->AddGlobalElement(orthodet1);
     
     //CfXYMgr->ImportElements(orthodet0);
@@ -623,7 +623,7 @@ pack = slot->MakePack();
     // ... Turn OFF rendering of duplicate detector in main 3D view
     gEve->GetGlobalScene()->FindChild("OrthoDetXY")->SetRnrState(kFALSE);   
     gEve->GetGlobalScene()->FindChild("OrthoDetXZ")->SetRnrState(kFALSE);
-//fdetXY->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
+    //fdetXY->FindChild("OrthoDet [P]")->SetRnrState(kTRUE);
     // ... Turn ON rendering of detector in RPhi and RZ views
     tracker2Dproj->fDetXYScene->FindChild("OrthoDetXY [P]")->SetRnrState(kTRUE);
     tracker2Dproj->fDetRZScene->FindChild("OrthoDetXZ [P]")->SetRnrState(kTRUE);
@@ -638,22 +638,22 @@ pack = slot->MakePack();
     
   TGeoVolume* topvol = geom->GetTopVolume();
     
-//TEveElementList *orthodetT1 = new TEveElementList("CRVT1OrthoDet");
- // TEveElementList *orthodetT2 = new TEveElementList("CRVT2OrthoDet");
+  //TEveElementList *orthodetT1 = new TEveElementList("CRVT1OrthoDet");
+  // TEveElementList *orthodetT2 = new TEveElementList("CRVT2OrthoDet");
   TEveElementList *orthodetT3 = new TEveElementList("CRVT3OrthoDet");
   TEveElementList *orthodetT4 = new TEveElementList("CRVT4OrthoDet");
-//TEveElementList *orthodetlist[] = {orthodetT1, orthodetT2, orthodetT3, orthodetT4};
+  //TEveElementList *orthodetlist[] = {orthodetT1, orthodetT2, orthodetT3, orthodetT4};
     
   Mu2eCRV->DrawCRVDetector(run, topvol, orthodetT3, orthodetT4);   
     
   //for (unsigned int i=0; i<2; i++){
-    gEve->AddGlobalElement(orthodetT3);
-          gEve->AddGlobalElement(orthodetT4);
- // }
+  gEve->AddGlobalElement(orthodetT3);
+  gEve->AddGlobalElement(orthodetT4);
+  // }
     
   //for (unsigned int i=0; i<2; i++){
-    CRV2Dproj->fXYMgr->ImportElements(orthodetT4, CRV2Dproj->fDetXYScene);
-           CRV2Dproj->fRZMgr->ImportElements(orthodetT4, CRV2Dproj->fDetRZScene);
+  CRV2Dproj->fXYMgr->ImportElements(orthodetT4, CRV2Dproj->fDetXYScene);
+  CRV2Dproj->fRZMgr->ImportElements(orthodetT4, CRV2Dproj->fDetRZScene);
  // }
   
   // ... Turn OFF rendering of duplicate detector in main 3D view
@@ -671,7 +671,7 @@ pack = slot->MakePack();
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
-gGeoManager->GetListOfShapes()->Delete();
+      gGeoManager->GetListOfShapes()->Delete();
     }
     gEve->GetGlobalScene()->DestroyElements();
     
@@ -720,7 +720,7 @@ gGeoManager->GetListOfShapes()->Delete();
       if (_data.chcol !=0){*hitenergy = pass_data->AddComboHits(_firstLoop, _emptydata.chcol, tracker2Dproj,  true, fhitmin, fhitmax,ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
       if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, ftimemin, ftimemax, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
 
- } 
+    } 
     if (type == "Tracks"){
       pass_data->AddHelixPieceWise3D(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     }
@@ -736,7 +736,7 @@ gGeoManager->GetListOfShapes()->Delete();
     gSystem->ProcessEvents();
     gClient->NeedRedraw(fTeRun);
     gApplication->Run(true);
-        }
+    }
   
   /*------------Function to call button options:-------------*/
   Bool_t TEveMu2eMainWindow::ProcessMessage(Long_t msg, Long_t param1, Long_t param2){
@@ -816,7 +816,7 @@ gGeoManager->GetListOfShapes()->Delete();
         if(cosmictrkscheck->IsDown()){
           pass_data->AddCosmicTrack(_firstLoop, _data.cosmiccol,  tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
           }
-if(!cosmictrkscheck->IsDown()){RedrawDataProducts("Cosmic Tracks");}
+      if(!cosmictrkscheck->IsDown()){RedrawDataProducts("Cosmic Tracks");}
       }
       if(param1==1205){
         if(mctrajcheck->IsDown()){
@@ -864,7 +864,7 @@ if(!cosmictrkscheck->IsDown()){RedrawDataProducts("Cosmic Tracks");}
     _accumulate = accumulate;
     _data.chcol = data.chcol;
     _data.clustercol = data.clustercol;
-_data.crvcoincol = data.crvcoincol;
+    _data.crvcoincol = data.crvcoincol;
     _data.track_tuple = data.track_tuple;
     _data.mctrajcol = data.mctrajcol;
     _data.crvcoincol = data.crvcoincol;
