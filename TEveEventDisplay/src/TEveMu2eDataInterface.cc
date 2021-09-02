@@ -149,22 +149,23 @@ namespace mu2e{
   }
   
  /*------------Function to add CRV information to the display:-------------*/
-  void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, 
-					 TEveMu2e2DProjection *CRV2Dproj, bool Redraw, bool accumulate, 
-					 TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
- 
+  void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, TEveMu2e2DProjection *CRV2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr,
+TEveProjectionManager *TRZMgr,
+TEveScene *scene1, TEveScene *scene2){
+     // std::cout<<"Add CRV Info"<<std::endl;
       DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY,&fCrvList2DXZ, CRV2Dproj);
 
         if(crvcoincol!=0){
-         TEveElementList *CrvList2DXY = new TEveElementList("CrvData2DXY");
+        //  std::cout<<"CRV"<<std::endl;
+         // DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY, &fCrvList2DXZ);
+          TEveElementList *CrvList2DXY = new TEveElementList("CrvData2DXY");
           TEveElementList *CrvList2DXZ = new TEveElementList("CrvData2DXZ");
           TEveElementList *CrvList3D = new TEveElementList("CrvData3D");
           GeomHandle<CosmicRayShield> CRS;
-		  
           for(unsigned int i=0; i <crvcoincol->size(); i++)
           {
             const CrvRecoPulse &crvRecoPulse = crvcoincol->at(i);
-
+          
             TEveMu2eCRVEvent *teve_crv3D = new TEveMu2eCRVEvent(crvRecoPulse);
             TEveMu2eCRVEvent *teve_crv2D = new TEveMu2eCRVEvent(crvRecoPulse);
             const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse.GetScintillatorBarIndex();
@@ -173,30 +174,29 @@ namespace mu2e{
             GeomHandle<DetectorSystem> det;
             CLHEP::Hep3Vector pointInMu2e = det->toMu2e(crvCounterPos);
             hep3vectorTocm(crvCounterPos);
-		  
             string pos3D = "(" + to_string((double)crvCounterPos.x()) + ", " + to_string((double)crvCounterPos.y()) + ", " + to_string((double)crvCounterPos.z()) + ")";
             if( (min_time == -1 && max_time == -1) or (crvRecoPulse.GetPulseTime() > min_time and crvRecoPulse.GetPulseTime() < max_time)){
              teve_crv3D->DrawHit3D("CRVHits3D, Position = " + pos3D + ", Pulse Time = " +
 to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+
 to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " +
 to_string(crvRecoPulse.GetPulseTime()),  i + 1, pointInMu2e, CrvList3D);
-  
-             teve_crv2D->DrawHit2D("CRVHits2D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ",
-Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " +
+    
+             teve_crv2D->DrawHit2D("CRVHits2D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " +
 to_string(crvRecoPulse.GetPulseTime()),  i + 1, crvCounterPos, CrvList2DXY, CrvList2DXZ);
-      
-             fCrvList3D->AddElement(CrvList3D);    
+ fCrvList3D->AddElement(CrvList3D);
              fCrvList2DXY->AddElement(CrvList2DXY);
              fCrvList2DXZ->AddElement(CrvList2DXZ);
            }
           }
-      
+          
           CRV2Dproj->fXYMgr->ImportElements(fCrvList2DXY, CRV2Dproj->fEvtXYScene);
           CRV2Dproj->fRZMgr->ImportElements(fCrvList2DXZ, CRV2Dproj->fEvtRZScene);
+            
           gEve->AddElement(fCrvList3D);
           gEve->Redraw3D(kTRUE);
         }
     }
+            
 
     
   /*------------Function to add ComboHits to Tracker in 3D and 2D displays:-------------*/
