@@ -1,8 +1,8 @@
-
 #include "Offline/TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 using namespace mu2e;
 namespace mu2e{
 
+#ifndef __ROOTCLING__
   Collection_Filler::Collection_Filler(const Config& conf) :
     chTag_(conf.chTag()),
     crvcoinTag_(conf.crvdigiTag()),
@@ -23,7 +23,7 @@ namespace mu2e{
     addMCTraj_(conf.addMCTraj()), 
     MCOnly_(conf.MCOnly())
   {}
-
+#endif
 
   /*------------Function to turn InputTag to string for track labels:-------------*/
   template <typename T>
@@ -90,6 +90,3 @@ namespace mu2e{
   }
 
 }
-
-
-
