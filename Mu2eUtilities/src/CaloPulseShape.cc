@@ -34,12 +34,12 @@ namespace mu2e {
        // Adjust binning to match digitizer sampling period, shift to zero and normalize
        int nbins = int((pshape->GetXaxis()->GetXmax()-pshape->GetXaxis()->GetXmin())/digiStep_);
        TH1F pulseShape("ps","ps", nbins, 0.0, pshape->GetXaxis()->GetXmax()-pshape->GetXaxis()->GetXmin());
-       for (int i=1;i<nbins;++i) pulseShape.SetBinContent(i,pshape->Interpolate(pulseShape.GetBinCenter(i)+pshape->GetXaxis()->GetXmin()));
+       for (int i=1;i<=nbins;++i) pulseShape.SetBinContent(i,pshape->Interpolate(pulseShape.GetBinCenter(i)));
        pulseShape.Scale(1.0/pulseShape.GetMaximum(),"nosw2");
 
        // Cache histogram content into vector and shift waveform (see note), 
        // calculate the number of bins for the digitized waveform
-       for (int j=1;j<nbins-1;++j)pulseVec_.push_back((j>nSteps_) ? pulseShape.GetBinContent(j-nSteps_) : 0.0);
+       for (int j=1;j<=(nbins+nSteps_);++j)pulseVec_.push_back((j>nSteps_) ? pulseShape.GetBinContent(j-nSteps_) : 0.0);
        nBinShape_      = int(nbins/nSteps_);
        digitizedPulse_ = std::vector<double>(nBinShape_,0);
 
