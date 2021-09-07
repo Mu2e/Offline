@@ -67,14 +67,14 @@ TEveEventDisplayUpstream : {
 TEveEventDisplayHelix : {
       module_type : TEveEventDisplay
       accumulate : false
-      showCRV : false
+      showCRV : true
       showBuilding : false  
       showDSOnly : true 
       showEvent : true
       isMCOnly : false
       filler : {
         ComboHitCollection 	  : "makeSH"
-        CrvRecoPulseCollection	  :  NULL
+        CrvRecoPulseCollection	  :  "SelectRecoMC"
         CosmicTrackSeedCollection :  NULL
         CaloClusterCollection     :  "CaloClusterMaker"
         CaloHitCollection  :  NULL
@@ -82,9 +82,9 @@ TEveEventDisplayHelix : {
         KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
-        addHits 		  : true
+        addHits 		  : false
         addTracks 		  : true
-        addCrvHits		  : false
+        addCrvHits		  : true
         addCosmicSeedFit	  : false
         addClusters		  : true
         addTrkExtTrajs		  : false
