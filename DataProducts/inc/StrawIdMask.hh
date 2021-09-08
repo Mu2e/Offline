@@ -21,7 +21,8 @@ namespace mu2e {
     // specify which levels to compare on construction.
     StrawIdMask(Level lev) : _level(lev), _mask(levelMask(_level)) {}
     // identity is obvious
-    bool operator ==(StrawIdMask const& other ) { return other._mask == _mask; } // must match exactly to be equal
+    bool operator ==(StrawIdMask const& other ) const { return other._mask == _mask; } // must match exactly to be equal
+    bool operator < (StrawIdMask const& other ) const { return other._level < _level; } // needed for sorting, no physical significance
     explicit StrawIdMask(std::string const& asstring); // valid values: 'plane', 'panel' (match ALL panels with the same value)
     // 'uniquepanel' (match exactly 1 panel), 'straw' (will match ALL straws with the same value), 'uniquestraw' (will match exactly 1 straw)
     // accessors
