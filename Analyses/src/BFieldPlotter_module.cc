@@ -13,8 +13,11 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/types/Atom.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 
 // ROOT includes
 #include "TFile.h"
@@ -26,6 +29,7 @@
 #include <iomanip>
 #include <vector>
 #include <string>
+#include <fstream>
 #include <cmath>
 
 using namespace std;
@@ -44,6 +48,8 @@ namespace mu2e {
       fhicl::Atom<double>      axisTwoMin{Name("axisTwoMin"), Comment("Axis two lower edge (bin centered) for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
       fhicl::Atom<double>      axisTwoMax{Name("axisTwoMax"), Comment("Axis two upper edge (bin centered) for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
       fhicl::Atom<double>      mapBinSize{Name("mapBinSize"), Comment("Map bin size (mm) (must be a divisor of both axis lengths)"), 10.};
+      fhicl::Atom<bool>	       dumpFile  {Name("dumpFile"),   Comment("Dump map samples as CSV"), false};
+      fhicl::Atom<bool>	       detector  {Name("detector"),   Comment("Use Detector coordinate system"), false};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -63,9 +69,11 @@ namespace mu2e {
     double      _axisTwoMin; // sampling axis values (mm)
     double      _axisTwoMax; // sampling axis values (mm)
     double      _mapBinSize; // histogram bin size (mm)
+    bool	_dump; // dump to CSV?
+    bool	_detector; // use detector system?
 
     std::map<std::string,TH2F*> _hMap; //histogram of the map
-    
+
   };
 
   BFieldPlotter::BFieldPlotter(const Parameters& pset) :
@@ -77,8 +85,10 @@ namespace mu2e {
     , _axisTwoMin(pset().axisTwoMin())
     , _axisTwoMax(pset().axisTwoMax())
     , _mapBinSize(pset().mapBinSize())
+    , _dump(pset().dumpFile())
+    , _detector(pset().detector())
   {
-    if(_axisOneMin >= _axisOneMax || _axisTwoMin >= _axisTwoMax) {
+    if(_axisOneMin > _axisOneMax || _axisTwoMin > _axisTwoMax) {
       throw cet::exception("BADCONFIG") << "BField mapping plane ill defined: "
 					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
 					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax;
@@ -88,7 +98,7 @@ namespace mu2e {
     }
 
     if(!(_plane == "x" || _plane == "y" || _plane == "z")) {
-      throw cet::exception("BADCONFIG") << "BField map plane not recognized! Options are x, y, or z but given " 
+      throw cet::exception("BADCONFIG") << "BField map plane not recognized! Options are x, y, or z but given "
 					<< _plane.c_str();
     }
 
@@ -100,16 +110,16 @@ namespace mu2e {
     GeomHandle<BFieldManager> bf;
     const BFieldManager::MapContainerType& innerMaps = bf->getInnerMaps();
     const BFieldManager::MapContainerType& outerMaps = bf->getOuterMaps();
- 
+
     //plot inner maps
-    for(std::shared_ptr<BFMap> const & map : innerMaps) { 
+    for(std::shared_ptr<BFMap> const & map : innerMaps) {
       fillHistogram(map.get(), tfs);
-    } 
-    
+    }
+
     //plot outer maps
-    for(std::shared_ptr<BFMap> const & map : outerMaps) { 
+    for(std::shared_ptr<BFMap> const & map : outerMaps) {
       fillHistogram(map.get(), tfs);
-    } 
+    }
 
     //plot the default field returned from the manager
     fillHistogram(NULL, tfs);
@@ -118,34 +128,46 @@ namespace mu2e {
 
   //fill a histogram with the magnetic field
   void BFieldPlotter::fillHistogram(BFMap const *map, art::ServiceHandle<art::TFileService> tfs) {
+    GeomHandle<DetectorSystem> det;
     //define histogram binning such that map edges are bin centers and inside histogram
     long nbinsOne = std::lround((_axisOneMax - _axisOneMin)/_mapBinSize) + 1;
     long nbinsTwo = std::lround((_axisTwoMax - _axisTwoMin)/_mapBinSize) + 1;
     //check that the map bin step size works with the edges given
-    if(std::abs(_axisOneMin + (nbinsOne-1)*_mapBinSize - _axisOneMax > (_axisOneMax-_axisOneMin)/(100.*(nbinsOne-1))))
+    if(nbinsOne > 1 && std::abs(_axisOneMin + (nbinsOne-1)*_mapBinSize - _axisOneMax > (_axisOneMax-_axisOneMin)/(100.*(nbinsOne-1))))
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
 					<< _axisOneMin << " < axisOneValues < " << _axisOneMax << ", "
 					<< "step size = " << _mapBinSize;
-	
-    if(std::abs(_axisTwoMin + (nbinsTwo-1)*_mapBinSize - _axisTwoMax > (_axisTwoMax-_axisTwoMin)/(100.*(nbinsTwo-1))))
+
+    if(nbinsTwo > 1 && std::abs(_axisTwoMin + (nbinsTwo-1)*_mapBinSize - _axisTwoMax > (_axisTwoMax-_axisTwoMin)/(100.*(nbinsTwo-1))))
       throw cet::exception("BADCONFIG") << "BField mapping axis values not steppable with step size given: "
 					<< _axisTwoMin << " < axisTwoValues < " << _axisTwoMax << ", "
 					<< "step size = " << _mapBinSize;
 
     //if a null map, plot the default field from the manager
     const std::string name = (map) ? map->getKey() : "default";
-
     if(_hMap[name]) return; //already filled the maps in a previous event
+
+    // if dumping, create the file
+    std::fstream fs;
+    if(_dump){
+      string dumpfile= name+"Dump.csv";
+      fs.open (dumpfile.c_str(), fstream::out);
+      if(fs.is_open()){
+	fs << "# Dump of " << name << endl;
+	fs <<  "#  x   ,  y   ,   z   ,  Bx   ,  By   ,  Bz" << endl;
+      }
+
+    }
 
     //make a directory for the map
     art::TFileDirectory tfdir = tfs->mkdir( ("BFieldMapper_"+name).c_str() );
 
     //define a histogram
-    _hMap[name] = tfdir.make<TH2F>(("hMap"+name).c_str()  , (name + " Magnetic field map").c_str(), 
+    _hMap[name] = tfdir.make<TH2F>(("hMap"+name).c_str()  , (name + " Magnetic field map").c_str(),
 				   // add offsets so all values are bin centers and fit edge into the map
 				   nbinsOne, _axisOneMin - _mapBinSize/2.,_axisOneMax + _mapBinSize/2.,
 				   nbinsTwo, _axisTwoMin - _mapBinSize/2.,_axisTwoMax + _mapBinSize/2.);
-    
+
     GeomHandle<BFieldManager> bf; //only needed in null map case
     //Loop through the points in the magnetic field
     double axisOne, axisTwo;
@@ -159,11 +181,11 @@ namespace mu2e {
 	  axisTwo += (binTwo) ? -_mapBinSize/100. : _mapBinSize/100.;
 	CLHEP::Hep3Vector point;
 	CLHEP::Hep3Vector field;
-	if(_plane == "x") 
+	if(_plane == "x")
 	  point = CLHEP::Hep3Vector(_planeValue, axisOne, axisTwo);
-	else if(_plane == "y") 
+	else if(_plane == "y")
 	  point = CLHEP::Hep3Vector(axisOne, _planeValue, axisTwo);
-	else if(_plane == "z") 
+	else if(_plane == "z")
 	  point = CLHEP::Hep3Vector(axisOne, axisTwo, _planeValue);
 	if(map)
 	  map->getBFieldWithStatus(point,field);
@@ -171,11 +193,23 @@ namespace mu2e {
 	  bf->getBFieldWithStatus(point,field);
 
 	_hMap[name]->Fill(axisOne, axisTwo, field.mag()); //fill with weight of the field magnitude
+
+	if(_detector) point = det->toDetector(point);
+	// if there's a dump file, fill it.
+	if(_dump && fs.is_open()){
+	  fs <<  std::setw(10) << std::setprecision(5)
+	  << point.x() << ", " << std::setprecision(5)
+	  << point.y() << ", " << std::setprecision(5)
+	  << point.z() << ", " << std::setprecision(5)
+	  << field.x() << ", " << std::setprecision(5)
+	  << field.y() << ", " << std::setprecision(5)
+	  << field.z() << endl;
+	}
+
       } //end axis two loop
     } //end axis one loop
+    if(_dump && fs.is_open())fs.close();
   } //end fillHistorgram
-
-
 }  // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::BFieldPlotter);
