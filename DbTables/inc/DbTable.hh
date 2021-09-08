@@ -38,6 +38,8 @@ namespace mu2e {
     // approx size in bytes - overridden by derived class
     virtual std::size_t size() const =0;
     std::size_t baseSize() const { return _csv.capacity(); }
+    // if table needs to be sorted
+    virtual const std::string orderBy() const {return std::string();}
 
     // take the cvs text from a query and build out the table contents
     int fill(const std::string& csv, bool saveCsv=true);
