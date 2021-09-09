@@ -73,7 +73,7 @@ int mu2e::DbReader::multiQuery(std::vector<QueryForm>& qfv) {
 int mu2e::DbReader::fillTableByCid(DbTable::ptr_t ptr, int cid) {
   std::string csv;
   std::string where="cid:eq:"+std::to_string(cid);
-  int rc = query(csv,ptr->query(),ptr->dbname(),where);
+  int rc = query(csv,ptr->query(),ptr->dbname(),where,ptr->orderBy());
   if(rc!=0) return rc;
   ptr->fill(csv,_saveCsv);
   return 0;
