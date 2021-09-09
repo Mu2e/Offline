@@ -26,6 +26,7 @@ namespace mu2e {
     size_t nrow() const override { return _rows.size(); };
     size_t nrowFix() const override { return StrawId::_nustraws; };
     size_t size() const override { return baseSize() + nrow()*sizeof(TrkStrawEndAlign); };
+    const std::string orderBy() const {return std::string("index");}
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(
