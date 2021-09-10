@@ -17,6 +17,9 @@ namespace mu2e {
    //----------------------------------------------------------------------------------------------------------------------
    void CaloPulseShape::buildShapes()
    {
+
+       pulseVec_.clear();
+
        // Get the pulse shape histogram
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
        std::string fileName = calorimeterCalibrations->pulseFileName();
