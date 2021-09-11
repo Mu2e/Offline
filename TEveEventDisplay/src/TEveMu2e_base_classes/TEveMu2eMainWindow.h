@@ -86,7 +86,7 @@ namespace mu2e{
       void CreateMultiViews();
       void CreateCaloProjection();
       void CreateTrackerProjection();
-		void CreateCRVProjection();
+      void CreateCRVProjection();
       void PrepareTrackerProjectionTab(const art::Run& run);
       void PrepareCaloProjectionTab(const art::Run& run);
       void PrepareCRVProjectionTab(const art::Run& run);
