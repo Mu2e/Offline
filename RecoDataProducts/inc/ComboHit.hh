@@ -17,8 +17,10 @@
 // root includes
 #include "Rtypes.h"
 // art includes
+#ifndef __ROOTCLING__
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#endif
 // C++ includes
 #include <array>
 #include <vector>
@@ -95,6 +97,7 @@ namespace mu2e {
       typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
       // fill a vector of indices to the underlying digis used in a given ComboHit
       // This function is called recursively, so the the vector must be empty on the top-most call
+#ifndef __ROOTCLING__
       void fillStrawDigiIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
       // similarly fill to the StrawHit level
       void fillStrawHitIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
@@ -110,6 +113,7 @@ namespace mu2e {
       // set the parent Id given a handle to the parent collection
       void setParent(art::Handle<ComboHitCollection> const& phandle);
       // or directly from the product ID
+#endif
       void setParent(art::ProductID const& par){ _parent = par; }
       // accessors
       art::ProductID const& parent() const { return _parent; }
@@ -128,5 +132,3 @@ namespace mu2e {
   }
 }
 #endif
-
-
