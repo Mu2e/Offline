@@ -17,6 +17,8 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -27,8 +29,11 @@
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+
+#include "KinKal/General/ParticleState.hh"
 
 namespace mu2e {
 
@@ -102,13 +107,11 @@ namespace mu2e {
     {}
 
     //----------------------------------------------------------------
-    VDHit(const SimParticleTimeOffset& toff, const StepPointMC& hit)
+    VDHit( const StepPointMC& hit)
       : x(hit.position().x())
       , y(hit.position().y())
       , z(hit.position().z())
-
-      , time(toff.timeWithOffsetsApplied(hit))
-
+      , time(hit.time())
       , px(hit.momentum().x())
       , py(hit.momentum().y())
       , pz(hit.momentum().z())
@@ -129,37 +132,51 @@ namespace mu2e {
   class StepPointMCDumper : public art::EDAnalyzer {
     typedef std::vector<std::string> VS;
     typedef std::vector<StepPointMCCollection> VspMC;
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<std::string> hits     {Name("hitsInputTag"     ), Comment("StepPointMC collection")};
+      fhicl::OptionalSequence<std::string> tauCollections     {Name("tauHitCollections"), Comment("StepPointMC collections for proper time calculation")};
+      fhicl::OptionalSequence<int> decayOffCodes     {Name("decayOffPDGCodes"), Comment("decayOffPDGCodes")};
+      fhicl::Atom<bool>	  writeVDHit  {Name("writeVDHit"),   Comment("Write VDHit format branch"), false};
+      fhicl::Atom<bool>	  writeParticleState  {Name("writeParticleState"),   Comment("Write ParticleState format branch"), false};
+      fhicl::Atom<bool>	  writeProperTime  {Name("writeProperTime"),   Comment("Write ProperTime format branch"), false};
+      fhicl::Atom<bool>	  detectorSystem  {Name("detectorSystem"),   Comment("Use DetectorSystem for position information for ParticleState"), false};
+    };
+    typedef art::EDAnalyzer::Table<Config> Parameters;
 
     art::InputTag hitsInputTag_;
-    SimParticleTimeOffset toff_;
 
-    bool writeProperTime_;
+    bool writeVDHit_, writeParticleState_, writeProperTime_, detectorSystem_;
     VS tauHitCollections_;
     std::vector<int> decayOffCodes_;
 
     // Members needed to write the ntuple
     TTree *nt_;
     VDHit hit_;
+    KinKal::ParticleState pstate_;
     float tau_;
 
   public:
-    explicit StepPointMCDumper(const fhicl::ParameterSet& pset);
+    explicit StepPointMCDumper(const Parameters& pset);
     virtual void beginJob();
     virtual void analyze(const art::Event& event);
   };
 
   //================================================================
-  StepPointMCDumper::StepPointMCDumper(const fhicl::ParameterSet& pset)
+  StepPointMCDumper::StepPointMCDumper(const Parameters& pset)
     : art::EDAnalyzer(pset)
-    , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
-    , toff_(pset.get<fhicl::ParameterSet>("TimeOffsets"))
-    , writeProperTime_(pset.get<bool>("writeProperTime", false))
-    , tauHitCollections_( writeProperTime_ ? pset.get<VS>("tauHitCollections") : VS() )
-    , nt_(0)
-    , tau_()
+    , hitsInputTag_(pset().hits())
+    , writeVDHit_(pset().writeVDHit())
+    , writeParticleState_(pset().writeParticleState())
+    , writeProperTime_(pset().writeProperTime())
+    , detectorSystem_(pset().detectorSystem())
+        , nt_(0)
+    , tau_(0.0)
   {
     if(writeProperTime_) {
-      decayOffCodes_ = pset.get<std::vector<int> >("decayOffPDGCodes");
+      pset().tauCollections(tauHitCollections_);
+      pset().decayOffCodes(decayOffCodes_);
       // must sort to use binary_search in SimParticleGetTau
       std::sort(decayOffCodes_.begin(), decayOffCodes_.end());
     }
@@ -170,15 +187,15 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     static const char branchDesc[] = "x/F:y/F:z/F:time/F:px/F:py/F:pz/F:pmag/F:ek/F:charge/F:pdgId/I:particleId/i:volumeCopy/i";
     nt_ = tfs->make<TTree>( "nt", "StepPointMCDumper ntuple");
-    nt_->Branch("hits", &hit_, branchDesc);
-    if(writeProperTime_) {
-      nt_->Branch("tau", &tau_, "tauNormalized/F");
-    }
+    if(writeVDHit_)nt_->Branch("hits", &hit_, branchDesc);
+    if(writeParticleState_)nt_->Branch("particle", &pstate_);
+    if(writeProperTime_) { nt_->Branch("tau", &tau_, "tauNormalized/F"); }
   }
 
   //================================================================
   void StepPointMCDumper::analyze(const art::Event& event) {
-    toff_.updateMap(event);
+    auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
+    GeomHandle<DetectorSystem> det;
 
     VspMC spMCColls;
     for ( const auto& iColl : tauHitCollections_ ){
@@ -189,11 +206,21 @@ namespace mu2e {
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
     for(const auto& i : *ih) {
 
-      hit_ = VDHit(toff_, i);
-
-      if(writeProperTime_) {
-        tau_ = SimParticleGetTau::calculate(i, spMCColls, decayOffCodes_);
+      if(writeVDHit_)hit_ = VDHit(i);
+      if(writeParticleState_) {
+	KinKal::VEC3 pos;
+	if(detectorSystem_)
+	  pos = KinKal::VEC3(det->toDetector(i.position()));
+	else
+	  pos = KinKal::VEC3(i.position());
+	KinKal::VEC3 mom(i.momentum());
+	double time = i.time();
+	double mass = i.simParticle()->startMomentum().invariantMass();
+	int charge = static_cast<int>(ptable->particle(i.simParticle()->pdgId()).ref().charge());
+	pstate_ = KinKal::ParticleState(pos,mom,time,mass,charge);
       }
+
+      if(writeProperTime_) { tau_ = SimParticleGetTau::calculate(i, spMCColls, decayOffCodes_); }
 
       nt_->Fill();
     }
