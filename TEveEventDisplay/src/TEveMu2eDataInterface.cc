@@ -151,10 +151,10 @@ namespace mu2e{
  /*------------Function to add CRV information to the display:-------------*/
   void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, TEveMu2e2DProjection *CRV2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
      
-    DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY,&fCrvList2DXZ, CRV2Dproj);
+    DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY,&fCrvList2DYZ, CRV2Dproj);
     if(crvcoincol!=0){
       TEveElementList *CrvList2DXY = new TEveElementList("CrvData2DXY");
-      TEveElementList *CrvList2DXZ = new TEveElementList("CrvData2DXZ");
+      TEveElementList *CrvList2DYZ = new TEveElementList("CrvData2DYZ");
       TEveElementList *CrvList3D = new TEveElementList("CrvData3D");
       GeomHandle<CosmicRayShield> CRS;
       for(unsigned int i=0; i <crvcoincol->size(); i++)
@@ -174,15 +174,15 @@ namespace mu2e{
           to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " + to_string(crvRecoPulse.GetPulseTime()),  i + 1, pointInMu2e, CrvList3D);
           
 	  teve_crv2D->DrawHit2D("CRVHits2D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " +
-          to_string(crvRecoPulse.GetPulseTime()),  i + 1, crvCounterPos, CrvList2DXY, CrvList2DXZ);
+          to_string(crvRecoPulse.GetPulseTime()),  i + 1, crvCounterPos, CrvList2DXY, CrvList2DYZ);
           fCrvList3D->AddElement(CrvList3D);
           fCrvList2DXY->AddElement(CrvList2DXY);
-          fCrvList2DXZ->AddElement(CrvList2DXZ);
+          fCrvList2DYZ->AddElement(CrvList2DYZ);
         }
       }
           
       CRV2Dproj->fXYMgr->ImportElements(fCrvList2DXY, CRV2Dproj->fEvtXYScene);
-      CRV2Dproj->fRZMgr->ImportElements(fCrvList2DXZ, CRV2Dproj->fEvtRZScene);
+      CRV2Dproj->fRZMgr->ImportElements(fCrvList2DYZ, CRV2Dproj->fEvtRZScene);
             
       gEve->AddElement(fCrvList3D);
       gEve->Redraw3D(kTRUE);
