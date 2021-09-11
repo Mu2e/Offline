@@ -203,7 +203,7 @@ namespace mu2e{
    }
    
    frmCRV = fSplitFrameCRV->GetSecond();//->GetSecond();
-   frmCRV->SetName("CRV_RZ_View");
+   frmCRV->SetName("CRV_YZ_View");
    fViewer5 = new TGLEmbeddedViewer(frmCRV, fPadCRV);
    frmCRV->AddFrame(fViewer5->GetFrame(), new TGLayoutHints(kLHintsExpandX |
                  kLHintsExpandY));
@@ -216,7 +216,7 @@ namespace mu2e{
    fViewer[5]->IncDenyDestroy();
    if (fIsEmbedded && gEve) {
      gEve->GetViewers()->AddElement(fViewer[5]); 
-     proj5 = gEve->SpawnNewScene("CRV RZ Scene");
+     proj5 = gEve->SpawnNewScene("CRV YZ Scene");
      //fViewer[1]->AddScene(fdetXY);
      CrfRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
      proj5->AddElement(CrfRZMgr);
@@ -526,7 +526,7 @@ namespace mu2e{
     
     slot = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
     pack = slot->MakePack();
-    pack->SetElementName("CRV Views");
+    pack->SetElementName("CRV XY View");
     pack->SetHorizontal();
     pack->SetShowTitleBar(kFALSE);
     
@@ -549,11 +549,11 @@ namespace mu2e{
     TEveWindowPack *packnew = 0;
     slotnew = TEveWindow::CreateWindowInTab(gEve->GetBrowser()->GetTabRight());
     packnew = slotnew->MakePack();
-    packnew->SetElementName("CRV Views2");
+    packnew->SetElementName("CRV YZ View");
     packnew->SetHorizontal();
     packnew->SetShowTitleBar(kFALSE);
     packnew->NewSlot()->MakeCurrent();
-    CRV2Dproj->fRZView = gEve->SpawnNewViewer("CRV RZ View", "");
+    CRV2Dproj->fRZView = gEve->SpawnNewViewer("CRV YZ View", "");
     CRV2Dproj->fRZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
     CRV2Dproj->fRZView->AddScene(CRV2Dproj->fDetRZScene);
     CRV2Dproj->fRZView->AddScene(CRV2Dproj->fEvtRZScene);
