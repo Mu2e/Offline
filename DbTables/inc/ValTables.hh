@@ -46,6 +46,7 @@ namespace mu2e {
       for (auto const& r : _rows) b += r.name().capacity() + r.dbname().capacity();
       return b;
     };
+    const std::string orderBy() const {return std::string("tid");}
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),columns[1],

@@ -54,6 +54,7 @@ namespace mu2e {
       for (auto const& r : _rows) b += r.comment().capacity();
       return b;
     };
+    const std::string orderBy() const {return std::string("vid");}
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),

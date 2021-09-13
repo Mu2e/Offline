@@ -38,6 +38,7 @@ namespace mu2e {
     std::size_t nrow() const override { return _rows.size(); };
     virtual std::size_t nrowFix() const override { return 96; }; 
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
+    const std::string orderBy() const {return std::string("straw");}
 
     void addRow(const std::vector<std::string>& columns) override {
       int straw = std::stoi(columns[0]);

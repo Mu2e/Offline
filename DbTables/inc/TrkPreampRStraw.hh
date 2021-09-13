@@ -47,9 +47,18 @@ namespace mu2e {
     std::size_t nrow() const override { return _rows.size(); };
     virtual std::size_t nrowFix() const override { return 96; }; 
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
+    const std::string orderBy() const {return std::string("index");}
 
     void addRow(const std::vector<std::string>& columns) override {
-      _rows.emplace_back(std::stoi(columns[0]),
+      int index = std::stoi(columns[0]);
+      // enforce a strict sequential order
+      if(index!=int(_rows.size())) {
+	throw cet::exception("TRKPREAMPRSTRAW_BAD_INDEX") 
+	  << "TrkPreampRStraw::addRow found index out of order: " 
+	  <<index << " != " << _rows.size() <<"\n";
+      }
+
+      _rows.emplace_back(index,
 			 std::stof(columns[1]),
 			 std::stof(columns[2]),
 			 std::stof(columns[3]),
