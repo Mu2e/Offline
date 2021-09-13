@@ -23,6 +23,27 @@ double building.tsArea.hatchblock.southTop.offsetFromFloorSurface.y = 7080.25;
 bool pbar.build = false;
 
 ///////////////////////////////////////
+//     Thinner tracker straws        //
+///////////////////////////////////////
+double tracker.strawOuterRadius     =     2.5;
+double tracker.strawWallThickness   =     0.008;
+double tracker.strawGap             =     1.25;
+double tracker.wireRadius           =     0.0125;
+string tracker.mat.strawgas  = "StrawGas";
+string tracker.mat.wire      = "G4_W";
+vector<string> tracker.strawMaterials = { "G4_MYLAR", "StrawGas", "G4_W" };
+// Define the parameters of the metal coatings on the straws and wires.
+// Remove the gold layer from the straw wall and wire plating
+double tracker.straw.wallOuterMetal.thickness  = 0.00005;
+string tracker.straw.wallOuterMetal.material   = "G4_Al";
+double tracker.straw.wallInnerMetal2.thickness = 0.00005; //switch the aluminum to being the innermost metal
+string tracker.straw.wallInnerMetal2.material  = "G4_Al";
+double tracker.straw.wallInnerMetal1.thickness = 0.00001;
+string tracker.straw.wallInnerMetal1.material  = "G4_MYLAR"; //same as straw material to ignore
+double tracker.straw.wirePlate.thickness       = 0.00001;
+string tracker.straw.wirePlate.material        = "G4_W"; //same as wire material to ignore
+
+///////////////////////////////////////
 //     Change production target      //
 ///////////////////////////////////////
 //Carbon conveyor target
