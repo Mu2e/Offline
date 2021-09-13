@@ -50,6 +50,7 @@ namespace mu2e {
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + 
 	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
+    const std::string orderBy() const {return std::string("idx");}
 
     void addRow(const std::vector<std::string>& columns) override {
       int idx = std::stoi(columns[0]);
