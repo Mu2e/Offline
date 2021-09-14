@@ -47,7 +47,8 @@ namespace mu2e {
       fhicl::Atom<double>      axisTwoMin{Name("axisTwoMin"), Comment("Axis two lower edge (bin centered) for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
       fhicl::Atom<double>      axisTwoMax{Name("axisTwoMax"), Comment("Axis two upper edge (bin centered) for plotting (mm) (plane = x/y/z --> axis two = z/z/y)")};
       fhicl::Atom<double>      mapBinSize{Name("mapBinSize"), Comment("Map bin size (mm) (must be a divisor of both axis lengths)"), 10.};
-      fhicl::Atom<bool>	       dumpFile  {Name("dumpFile"),   Comment("Dump map samples as CSV"), false};
+      fhicl::Atom<bool>	       dump      {Name("dump"),       Comment("Dump map samples to a CSV file"), false};
+      fhicl::Atom<std::string> dumpName  {Name("dumpName"),   Comment("Suffix to the dump file name"),"Dump"};
       fhicl::Atom<bool>	       detector  {Name("detector"),   Comment("Use Detector coordinate system"), false};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -69,6 +70,7 @@ namespace mu2e {
     double      _axisTwoMax; // sampling axis values (mm)
     double      _mapBinSize; // histogram bin size (mm)
     bool	_dump; // dump to CSV?
+    std::string _dumpname;
     bool	_detector; // use detector system?
 
     std::map<std::string,TH2F*> _hMap; //histogram of the map
@@ -84,7 +86,8 @@ namespace mu2e {
     , _axisTwoMin(pset().axisTwoMin())
     , _axisTwoMax(pset().axisTwoMax())
     , _mapBinSize(pset().mapBinSize())
-    , _dump(pset().dumpFile())
+    , _dump(pset().dump())
+    , _dumpname(pset().dumpName())
     , _detector(pset().detector())
   {
     if(_axisOneMin > _axisOneMax || _axisTwoMin > _axisTwoMax) {
@@ -149,7 +152,7 @@ namespace mu2e {
     // if dumping, create the file
     std::fstream fs;
     if(_dump){
-      string dumpfile= name+"Dump.csv";
+      string dumpfile= name+_dumpname+".csv";
       fs.open (dumpfile.c_str(), fstream::out);
       if(fs.is_open()){
 	fs << "# Dump of " << name << endl;
