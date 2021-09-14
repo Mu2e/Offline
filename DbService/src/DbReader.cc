@@ -105,26 +105,47 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
   // load up the queries
   qfv[0].select = tables.query();
   qfv[0].table = tables.dbname();
+  qfv[0].order = tables.orderBy();
+
   qfv[1].select = calibrations.query();
   qfv[1].table = calibrations.dbname();
+  qfv[1].order = calibrations.orderBy();
+
   qfv[2].select = iovs.query();
   qfv[2].table = iovs.dbname();
+  qfv[2].order = iovs.orderBy();
+
   qfv[3].select = groups.query();
   qfv[3].table = groups.dbname();
+  qfv[3].order = groups.orderBy();
+
   qfv[4].select = grouplists.query();
   qfv[4].table = grouplists.dbname();
+  qfv[4].order = grouplists.orderBy();
+
   qfv[5].select = purposes.query();
   qfv[5].table = purposes.dbname();
+  qfv[5].order = purposes.orderBy();
+
   qfv[6].select = lists.query();
   qfv[6].table = lists.dbname();
+  qfv[6].order = lists.orderBy();
+
   qfv[7].select = tablelists.query();
   qfv[7].table = tablelists.dbname();
+  qfv[7].order = tablelists.orderBy();
+
   qfv[8].select = versions.query();
   qfv[8].table = versions.dbname();
+  qfv[8].order = versions.orderBy();
+
   qfv[9].select = extensions.query();
   qfv[9].table = extensions.dbname();
+  qfv[9].order = extensions.orderBy();
+
   qfv[10].select = extensionlists.query();
   qfv[10].table = extensionlists.dbname();
+  qfv[10].order = extensionlists.orderBy();
 
   rc = multiQuery(qfv);
   if(rc!=0) return rc;

@@ -29,8 +29,16 @@ namespace mu2e {
     const std::string orderBy() const {return std::string("index");}
 
     void addRow(const std::vector<std::string>& columns) override {
+      int index = std::stoi(columns[0]);
+      // enforce a strict sequential order
+      if(index!=int(_rows.size())) {
+	throw cet::exception("TRKALIGNSTRAW_BAD_INDEX") 
+	  << "TrkAlignStraw::addRow found index out of order: " 
+	  <<index << " != " << _rows.size() <<"\n";
+      }
+
       _rows.emplace_back(
-	  std::stoi(columns[0]),
+	  index,
 	  StrawId(columns[1]),
 	  std::stof(columns[2]),
 	  std::stof(columns[3]),

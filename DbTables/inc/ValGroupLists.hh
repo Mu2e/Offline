@@ -32,6 +32,7 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + sizeof(this) + nrow()*8; };
+    const std::string orderBy() const {return std::string("gid,iid");}
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]));
