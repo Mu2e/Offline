@@ -72,7 +72,7 @@ namespace mu2e{
 
       TEveGeoShape *sibar = new TEveGeoShape();
       sibar->SetShape(new
-      TGeoBBox("sibar",pointmmTocm(sibardet[0]),pointmmTocm(sibardet[1]),pointmmTocm(sibardet[2]), sibarposition));
+      TGeoBBox("sibar",pointmmTocm(sibardet[0]),pointmmTocm(sibardet[1]),pointmmTocm(sibardet[2]/8), sibarposition));
       sibar->SetMainTransparency(100);
       CrvList2DXY->AddElement(sibar);
       CrvList2DYZ->AddElement(sibar);
