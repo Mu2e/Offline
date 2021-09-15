@@ -89,42 +89,42 @@ namespace mu2e {
     unsigned volumeCopyNumber;
 
     VDHit() : x(std::numeric_limits<double>::quiet_NaN())
-            , y(std::numeric_limits<double>::quiet_NaN())
-            , z(std::numeric_limits<double>::quiet_NaN())
+              , y(std::numeric_limits<double>::quiet_NaN())
+              , z(std::numeric_limits<double>::quiet_NaN())
 
-            , time(std::numeric_limits<double>::quiet_NaN())
+              , time(std::numeric_limits<double>::quiet_NaN())
 
-            , px(std::numeric_limits<double>::quiet_NaN())
-            , py(std::numeric_limits<double>::quiet_NaN())
-            , pz(std::numeric_limits<double>::quiet_NaN())
-            , pmag(std::numeric_limits<double>::quiet_NaN())
-            , ek(std::numeric_limits<double>::quiet_NaN())
+                , px(std::numeric_limits<double>::quiet_NaN())
+                , py(std::numeric_limits<double>::quiet_NaN())
+                , pz(std::numeric_limits<double>::quiet_NaN())
+                , pmag(std::numeric_limits<double>::quiet_NaN())
+                , ek(std::numeric_limits<double>::quiet_NaN())
 
-      , charge(std::numeric_limits<double>::quiet_NaN())
-      , pdgId(0)
-      , particleId(-1U)
-      , volumeCopyNumber(-1U)
-    {}
+                , charge(std::numeric_limits<double>::quiet_NaN())
+                , pdgId(0)
+                , particleId(-1U)
+                , volumeCopyNumber(-1U)
+                {}
 
     //----------------------------------------------------------------
     VDHit( const StepPointMC& hit)
       : x(hit.position().x())
-      , y(hit.position().y())
-      , z(hit.position().z())
-      , time(hit.time())
-      , px(hit.momentum().x())
-      , py(hit.momentum().y())
-      , pz(hit.momentum().z())
+        , y(hit.position().y())
+        , z(hit.position().z())
+        , time(hit.time())
+        , px(hit.momentum().x())
+        , py(hit.momentum().y())
+        , pz(hit.momentum().z())
 
-      , pmag(hit.momentum().mag())
-      , ek(getKineticEnergy(hit))
+        , pmag(hit.momentum().mag())
+          , ek(getKineticEnergy(hit))
 
-      , charge(getCharge(hit.simParticle()->pdgId()))
+          , charge(getCharge(hit.simParticle()->pdgId()))
 
-      , pdgId(hit.simParticle()->pdgId())
-      , particleId(hit.simParticle()->id().asUint())
-      , volumeCopyNumber(hit.volumeId())
-    {}
+          , pdgId(hit.simParticle()->pdgId())
+          , particleId(hit.simParticle()->id().asUint())
+          , volumeCopyNumber(hit.volumeId())
+          {}
 
   }; // struct VDHit
 
@@ -157,7 +157,7 @@ namespace mu2e {
     KinKal::ParticleState pstate_;
     float tau_;
 
-  public:
+    public:
     explicit StepPointMCDumper(const Parameters& pset);
     virtual void beginJob();
     virtual void analyze(const art::Event& event);
@@ -166,13 +166,13 @@ namespace mu2e {
   //================================================================
   StepPointMCDumper::StepPointMCDumper(const Parameters& pset)
     : art::EDAnalyzer(pset)
-    , hitsInputTag_(pset().hits())
-    , writeVDHit_(pset().writeVDHit())
-    , writeParticleState_(pset().writeParticleState())
-    , writeProperTime_(pset().writeProperTime())
-    , detectorSystem_(pset().detectorSystem())
-        , nt_(0)
-    , tau_(0.0)
+      , hitsInputTag_(pset().hits())
+      , writeVDHit_(pset().writeVDHit())
+      , writeParticleState_(pset().writeParticleState())
+      , writeProperTime_(pset().writeProperTime())
+      , detectorSystem_(pset().detectorSystem())
+      , nt_(0)
+      , tau_(0.0)
   {
     if(writeProperTime_) {
       pset().tauCollections(tauHitCollections_);
@@ -208,16 +208,12 @@ namespace mu2e {
 
       if(writeVDHit_)hit_ = VDHit(i);
       if(writeParticleState_) {
-	KinKal::VEC3 pos;
-	if(detectorSystem_)
-	  pos = KinKal::VEC3(det->toDetector(i.position()));
-	else
-	  pos = KinKal::VEC3(i.position());
-	KinKal::VEC3 mom(i.momentum());
-	double time = i.time();
-	double mass = i.simParticle()->startMomentum().invariantMass();
-	int charge = static_cast<int>(ptable->particle(i.simParticle()->pdgId()).ref().charge());
-	pstate_ = KinKal::ParticleState(pos,mom,time,mass,charge);
+        KinKal::VEC3 pos = detectorSystem_ ? KinKal::VEC3(det->toDetector(i.position())) : KinKal::VEC3(i.position());
+        KinKal::VEC3 mom(i.momentum());
+        double time = i.time();
+        double mass = i.simParticle()->startMomentum().invariantMass();
+        int charge = static_cast<int>(ptable->particle(i.simParticle()->pdgId()).ref().charge());
+        pstate_ = KinKal::ParticleState(pos,mom,time,mass,charge);
       }
 
       if(writeProperTime_) { tau_ = SimParticleGetTau::calculate(i, spMCColls, decayOffCodes_); }
@@ -227,7 +223,7 @@ namespace mu2e {
 
   } // analyze(event)
 
-    //================================================================
+  //================================================================
 
 } // namespace mu2e
 
