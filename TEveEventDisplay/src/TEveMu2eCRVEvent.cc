@@ -24,10 +24,9 @@ namespace mu2e{
     sibardet[0]=(barDetail.getHalfLengths()[0]);
     sibardet[1]=(barDetail.getHalfLengths()[1]);
     sibardet[2]=(barDetail.getHalfLengths()[2]);
-    CLHEP::Hep3Vector barOffset = crvCounterPos;
-    sibarpos[0]=(barOffset.x());
-    sibarpos[1]=(barOffset.y());
-    sibarpos[2]=(barOffset.z());
+    sibarpos[0]=(crvCounterPos.x());
+    sibarpos[1]=(crvCounterPos.y());
+    sibarpos[2]=(crvCounterPos.z());
     return {sibardet, sibarpos};
   }
 
@@ -73,7 +72,7 @@ namespace mu2e{
 
       TEveGeoShape *sibar = new TEveGeoShape();
       sibar->SetShape(new
-      TGeoBBox("sibar",pointmmTocm(sibardet[0]),pointmmTocm(sibardet[1]),pointmmTocm(sibardet[2]/8), sibarposition));
+      TGeoBBox("sibar",pointmmTocm(sibardet[0]),pointmmTocm(sibardet[1]),pointmmTocm(sibardet[2]), sibarposition));
       sibar->SetMainTransparency(100);
       CrvList2DXY->AddElement(sibar);
       CrvList2DYZ->AddElement(sibar);
