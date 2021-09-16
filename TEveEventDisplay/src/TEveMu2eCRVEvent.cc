@@ -34,7 +34,7 @@ namespace mu2e{
     sibarposition[1] = (spos.y());
     sibarposition[2] = (spos.z());
     TEveGeoShape *sibar = new TEveGeoShape();
-    sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(sibardetails.x()),pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.z()), sibarposition);
+    sibar->SetShape(new TGeoBBox("sibar",sibardetails.x(),sibardetails.y(),sibardetails.z(), sibarposition));
     CrvList3D->AddElement(sibar);
 
 
