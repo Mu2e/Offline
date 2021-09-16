@@ -20,7 +20,7 @@ namespace mu2e{
   CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
   const CRSScintillatorBarDetail &barDetail = crvCounter.getBarDetail();
   CLHEP::Hep3Vector sibardetails(barDetail.getHalfLengths()[0],barDetail.getHalfLengths()[1],barDetail.getHalfLengths()[2]);
-  return {sibardetails, crvCounterPos);
+  return {sibardetails, crvCounterPos};
   }
 
   /*------------Function to 3D draw hits:-------------*/
