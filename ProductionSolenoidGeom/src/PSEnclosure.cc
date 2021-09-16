@@ -28,7 +28,7 @@ namespace mu2e {
 
       }
 
-    } else {
+    } else if(pse.version() == 2){
 
       os<<"PSEnclosure("
 	<<"material="<<pse.shellCone().materialName()

@@ -12,6 +12,7 @@
 #include <vector>
 #include <ostream>
 
+#include "Offline/GeomPrimitives/inc/Polycone.hh"
 #include "Offline/GeomPrimitives/inc/Cone.hh"
 #include "Offline/GeomPrimitives/inc/Tube.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
@@ -32,8 +33,10 @@ namespace mu2e {
 
     const Tube& endPlate()  const { return endPlate_; }
     const std::vector<Tube>& windows() const { return windows_; }
-
     unsigned nWindows()     const { return windows_.size(); }
+
+    const Polycone& endPlatePolycone()  const { return endPlatePolycone_; }
+    const std::vector<Tube>& windowPipes() const { return windowPipes_; }
 
     void setExtraOffset( double zOff ) { zOffset_ = zOff; }
     const double& getExtraOffset() const { return zOffset_; }
@@ -51,6 +54,9 @@ namespace mu2e {
     PSEnclosure (const Cone& shellCone, const Tube& ep )
       : shell_(), shellCone_(shellCone), endPlate_(ep), version_(2)
     {};
+    PSEnclosure (const Cone& shellCone, const Polycone& ep )
+      : shell_(), shellCone_(shellCone), endPlatePolycone_(ep), version_(3)
+    {};
 
     // Or read back from persistent storage
     PSEnclosure();
@@ -61,8 +67,10 @@ namespace mu2e {
     Tube shell_;
     Cone shellCone_;
     Tube endPlate_;
+    Polycone endPlatePolycone_;
     int version_;
     std::vector<Tube> windows_;
+    std::vector<Tube> windowPipes_;
 
     // The updated version is shown in docdb-4087.  We use a conical frustrum.
     double zOffset_;
