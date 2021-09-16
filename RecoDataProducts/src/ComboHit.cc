@@ -55,6 +55,7 @@ namespace mu2e {
       return false;
   }
 
+#ifndef __ROOTCLING__
   void ComboHitCollection::setParentHandle(art::Event const& event, art::Handle<ComboHitCollection>& phandle) const  {
     // set the handle to an invalid state in case we find no such
     phandle = art::Handle<ComboHitCollection>();
@@ -212,6 +213,7 @@ namespace mu2e {
     }
     return retval; 
   }
+#endif
 
   uint16_t ComboHitCollection::nStrawHits() const {
     uint16_t retval(0);
@@ -241,4 +243,3 @@ namespace mu2e {
 
   }
 }
-

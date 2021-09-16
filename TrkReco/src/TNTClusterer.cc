@@ -117,7 +117,7 @@ namespace mu2e
        }
 
        //collect all preFiltered hits in a single cluster
-       clusters.emplace_back(BkgCluster(XYZVec(0,0,0), 0));
+       clusters.emplace_back(BkgCluster(XYZVectorF(0,0,0), 0));
        for (unsigned ich=0; ich<chcol.size();++ich)
        {
            const ComboHit& hit = chcol[ich];          
@@ -335,7 +335,7 @@ namespace mu2e
        if (d2 > dd2_) 
        {	
            //This is equivalent to but faster than - yes, that's nice
-           //XYZVec that(-hit.wdir().y(),hit.wdir().x(),0.0);
+           //XYZVectorF that(-hit.wdir().y(),hit.wdir().x(),0.0);
            //float dw = std::max(0.0f,hit.wdir().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
 	   //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;  //maxwt = 1/minerr
            float hwx = hit.wdir().x();
@@ -352,13 +352,13 @@ namespace mu2e
    void TNTClusterer::updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& BkgHits)
    {                    
        
-       if (cluster.hits().empty()) {cluster.time(0.0f); cluster.pos(XYZVec(0.0f,0.0f,0.0f));return;}  
+       if (cluster.hits().empty()) {cluster.time(0.0f); cluster.pos(XYZVectorF(0.0f,0.0f,0.0f));return;}  
       
        if (cluster.hits().size()==1)
        {
            int idx = BkgHits[cluster.hits().at(0)].chidx_;          
            cluster.time(chcol[idx].time());
-           cluster.pos(XYZVec(chcol[idx].pos().x(),chcol[idx].pos().y(),0.0f));
+           cluster.pos(XYZVectorF(chcol[idx].pos().x(),chcol[idx].pos().y(),0.0f));
            return;
        } 
               
@@ -421,7 +421,7 @@ namespace mu2e
        }
        
        cluster.time(ctime);       
-       cluster.pos(XYZVec(crho*cos(cphi),crho*sin(cphi),0.0f));
+       cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),0.0f));
    }
 
 

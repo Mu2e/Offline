@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "fhiclcpp/types/OptionalTable.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Random/RandGaussQ.h"
@@ -20,7 +21,6 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/FixedTimeMap.hh"
 #include "Offline/SeedService/inc/SeedService.hh"

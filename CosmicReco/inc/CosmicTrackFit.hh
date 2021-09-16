@@ -76,19 +76,19 @@ namespace mu2e
     		virtual ~CosmicTrackFit(){};
 
                 bool initCosmicTrack(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits);
-		std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY);
-                XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN);
+		std::vector<XYZVectorF> SortPoints(std::vector<XYZVectorF> pointY);
+                XYZVectorF InitLineDirection(const ComboHit *ch0, const ComboHit *chN);
                 
-                XYZVec LineDirection(double a0, double a1, const ComboHit *ch0, const ComboHit *chN, XYZVec ZPrime);
-                XYZVec ConvertPointToDetFrame(XYZVec vec);
+                XYZVectorF LineDirection(double a0, double a1, const ComboHit *ch0, const ComboHit *chN, XYZVectorF ZPrime);
+                XYZVectorF ConvertPointToDetFrame(XYZVectorF vec);
 
-                XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime); 
+                XYZVectorF GetTrackDirection(std::vector<XYZVectorF> hitXYZ, XYZVectorF XDoublePrime, XYZVectorF YDoublePrime, XYZVectorF ZPrime); 
                 void BeginFit(const char* title, CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs);
                 void RunFitChi2(const char* title, CosmicTrackSeed& tseed, ComboHitCollection &combohits);
                 void FitAll(const char* title, CosmicTrackSeed &tseed, ComboHitCollection &combohits, CosmicTrack* cosmictrack);
                 void FillTrackHitCollections(CosmicTrackSeed &tseed, art::Event const& event, ComboHitCollection const& chcol, std::vector<StrawHitIndex> &panelHitIdxs);
 
-		void ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool isseed, bool det);
+		void ConvertFitToDetectorFrame(TrackAxes axes, XYZVectorF Position, XYZVectorF Direction, CosmicTrack* cosmictrack, bool isseed, bool det);
 		
                 bool goodTrack(CosmicTrack& track);
 		void DriftFit(CosmicTrackSeed& tseed, StrawResponse const& srep);

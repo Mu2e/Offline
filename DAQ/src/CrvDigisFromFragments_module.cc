@@ -13,8 +13,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>
@@ -160,12 +160,12 @@ void CrvDigisFromFragments::produce(Event& event) {
       }
       auto hdr = block->GetHeader();
 
-      if (hdr.GetSubsystemID() != 2) {
+      if (hdr->GetSubsystemID() != 2) {
         throw cet::exception("DATA") << " CRV packet does not have system ID 2";
       }
 
       // Parse phyiscs information from the CRV packets
-      if (hdr.GetPacketCount() > 0) {
+      if (hdr->GetPacketCount() > 0) {
         auto crvRocHdr = cc.GetCRVROCStatusPacket(curBlockIdx);
         if (crvRocHdr == nullptr) {
           std::cerr << "Error retrieving CRV ROC Status Packet from DataBlock " << curBlockIdx
@@ -221,12 +221,12 @@ void CrvDigisFromFragments::produce(Event& event) {
             }
             std::cout << std::endl;
 
-            std::cout << "timestamp: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << std::endl;
-            std::cout << "hdr->SubsystemID: " << hdr.GetSubsystemID() << std::endl;
-            std::cout << "hdr->DTCID: " << hdr.GetID() << std::endl;
-            std::cout << "rocID: " << hdr.GetLinkID() << std::endl;
-            std::cout << "packetCount: " << hdr.GetPacketCount() << std::endl;
-            std::cout << "EVB mode: " << hdr.GetEVBMode() << std::endl;
+            std::cout << "timestamp: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+            std::cout << "hdr->SubsystemID: " << hdr->GetSubsystemID() << std::endl;
+            std::cout << "hdr->DTCID: " << hdr->GetID() << std::endl;
+            std::cout << "rocID: " << hdr->GetLinkID() << std::endl;
+            std::cout << "packetCount: " << hdr->GetPacketCount() << std::endl;
+            std::cout << "EVB mode: " << hdr->GetEVBMode() << std::endl;
 
             //	    for(int i=7; i>=0; i--) {
             //	      std::cout << (adc_t) *(pos+8+i);
@@ -253,7 +253,7 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "}" << std::endl;
             #else
             // Text format: timestamp sipmID tdc nsamples sample_list
-            std::cout << "GREPMECRV: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
+            std::cout << "GREPMECRV: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
             std::cout << crvHit.SiPMID << " ";
             std::cout << crvHit.HitTime << " ";
             auto hits = crvHit.Waveform();
@@ -268,7 +268,7 @@ void CrvDigisFromFragments::produce(Event& event) {
           }
 
           std::cout << "LOOP: " << eventNumber << " " << curBlockIdx << " "
-                    << "(" << hdr.GetEventWindowTag().GetEventWindowTag(true) << ")" << std::endl;
+                    << "(" << hdr->GetEventWindowTag().GetEventWindowTag(true) << ")" << std::endl;
 
         } // End debug output
       }   // End parsing CRV packets

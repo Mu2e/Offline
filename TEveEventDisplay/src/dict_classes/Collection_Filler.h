@@ -18,19 +18,21 @@
 //Kalman Tracks
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 //Tracker Hits:
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //CRV:
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-//#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+//#include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 //Art:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
+#ifndef __ROOTCLING__
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#endif
 
 using namespace CLHEP;
 
@@ -44,6 +46,8 @@ namespace mu2e{
 	class Collection_Filler
 	{
   public:
+#ifndef __ROOTCLING__
+
     struct Config{
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -74,9 +78,8 @@ namespace mu2e{
       fhicl::Atom<bool> MCOnly{Name("MCOnly"), Comment("set to see only MC Data Products"), false};
     };
 
-    #ifndef __CINT__
-
     explicit Collection_Filler(const Config& conf);
+#endif
     Collection_Filler(const Collection_Filler &);
     Collection_Filler& operator=(const Collection_Filler &);
 
@@ -101,6 +104,7 @@ namespace mu2e{
     virtual ~Collection_Filler(){};
 
   private:
+#ifndef __ROOTCLING__
     Config _conf;
     #endif
   ClassDef(Collection_Filler,0);

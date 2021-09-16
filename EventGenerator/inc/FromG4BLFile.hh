@@ -14,7 +14,7 @@
 // Mu2e includes
 #include "Offline/EventGenerator/inc/GeneratorBase.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 
 // External includes
 #include "CLHEP/Random/RandPoissonQ.h"

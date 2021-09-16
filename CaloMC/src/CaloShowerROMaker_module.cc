@@ -9,6 +9,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"

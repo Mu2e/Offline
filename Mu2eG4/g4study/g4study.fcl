@@ -38,9 +38,7 @@ physics : {
 
   producers:  {
 
-#    generate : @local::generate
-    generate:
-    {
+    generate: {
       module_type          : EventGenerator
       inputfile            : "Offline/Mu2eG4/g4study/g4studyParticleGun.txt"
       allowReplacement     : true
@@ -52,6 +50,14 @@ physics : {
 
   }
 
+   filters : {
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+         maxAcceptedStatus: 0  //  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+
+   } // filters
 
   analyzers: {
 
@@ -68,7 +74,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run , randomsaver]
+  p1 : [generate , g4run , g4consistent, randomsaver]
 #  e1 : [dumper, outfile]
   e1 : [dumper, checkhits , outfile]
 #  e1 : [checkhits , outfile]
@@ -82,7 +88,7 @@ outputs:  {
 
   outfile : {
     module_type   :   RootOutput
-    fileName      :   "data_g4study.root"
+    fileName      :   "nts.owner.g4studyTube.version.sequencer.root"
   }
 
   dumper : {
@@ -119,4 +125,9 @@ physics.producers.g4run.SDConfig: {
 // The line below causes a StepPointMC being stored for each step; comment it out to disable it
 physics.producers.g4run.Mu2eG4SteppingOnlyCut : @local::stepperout
 physics.producers.g4run.Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
-#physics.producers.g4run.debug.trackingVerbosityLevel : 1
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+#physics.producers.g4run.debug.steppingVerbosityLevel : 1
+#physics.producers.g4run.debug.writeGDML: true
+physics.producers.g4run.debug.GDMLFileName: "g4study_Tube.gdml"
+#physics.producers.g4run.debug.printElements : true

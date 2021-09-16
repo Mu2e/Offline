@@ -19,12 +19,11 @@
 #include "TVector2.h"
 // data
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 //#include "RecoDataProducts/inc/TimeCluster.hh"
 
 // diagnostics
@@ -791,7 +790,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
 // pick up neighboring hits in 'Face'
 //-----------------------------------------------------------------------------
@@ -870,7 +868,6 @@ namespace mu2e {
       }
     }  
   }
-
 
 //-----------------------------------------------------------------------------
 // find delta electron seeds in 'Station' with hits in faces 'f' and 'f+1'
@@ -1230,13 +1227,13 @@ namespace mu2e {
 		if (sh->time()               < seed->T0Min()          ) continue;
 
 		const StrawHitPosition* shp  = hd->fPos;
-		XYZVec dxyz = shp->pos()-seed->CofM; // distance from hit to preseed
+		XYZVectorF dxyz = shp->pos()-seed->CofM; // distance from hit to preseed
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
 		const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
-		XYZVec d_par               = Geom::toXYZVec((dxyz.Dot(wdir))/(wdir.dot(wdir))*wdir); 
-		XYZVec d_perp_z            = dxyz-d_par;
+		XYZVectorF d_par               = XYZVectorF((dxyz.Dot(wdir))/(wdir.dot(wdir))*wdir); 
+		XYZVectorF d_perp_z            = dxyz-d_par;
 		float  d_perp              = sqrt(d_perp_z.perp2());
 		double sigw                = hd->fSigW;
 		float  chi2_par            = d_par.mag2()/(sigw*sigw);
@@ -1307,13 +1304,13 @@ namespace mu2e {
 	      const HitData_t* hd = seed->HitData(face,ih);
 
 	      const StrawHitPosition* shp  = hd->fPos;
-	      XYZVec            dxyz = shp->pos()-seed->CofM; // distance from hit to the center-of-gravity
+	      XYZVectorF            dxyz = shp->pos()-seed->CofM; // distance from hit to the center-of-gravity
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
 	      const CLHEP::Hep3Vector& wdir = hd->fStraw->getDirection();
-	      XYZVec d_par                  = Geom::toXYZVec((dxyz.Dot(wdir))/(wdir.dot(wdir))*wdir); 
-	      XYZVec d_perp_z               = dxyz-d_par;
+	      XYZVectorF d_par((dxyz.Dot(wdir))/(wdir.dot(wdir))*wdir); 
+	      XYZVectorF d_perp_z               = dxyz-d_par;
 	      float  d_perp2                = d_perp_z.perp2();
 	      double sigw                   = hd->fSigW;
 	      float  chi2_par               = d_par.mag2()/(sigw*sigw);
@@ -1412,7 +1409,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // seed2 T0 is consistent with the predicted T0
 //-----------------------------------------------------------------------------
-	    XYZVec dxyz = seed2->CofM-delta.CofM;
+	    XYZVectorF dxyz = seed2->CofM-delta.CofM;
 	    dxy         = sqrt(dxyz.perp2());
 
 	    if (dxy < dxy_min) {

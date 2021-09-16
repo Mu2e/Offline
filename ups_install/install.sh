@@ -6,12 +6,12 @@
 # same product+version+qualifiers: use with care.
 #
 
-export COMPILER_CODE=e20
+export COMPILER_CODE=${MUSE_COMPILER_E}
 export ${MU2E_SETUP_BUILDOPTS}
-export DEBUG_LEVEL=${build}
+export DEBUG_LEVEL=${MUSE_BUILD}
 export PACKAGE_NAME=offline
-export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
-export PACKAGE_VERSION=v09_11_03
+export PACKAGE_SOURCE=${MUSE_WORK_DIR}/Offline
+export PACKAGE_VERSION=v10_01_00
 
 # Check that the installation directoy has been defined.
 if [ "${PRODUCTS_INSTALL}" = '' ];then
@@ -36,7 +36,7 @@ old_flavour=`ups flavor`
 new_flavour=`get-directory-name subdir`
 
 # Build the names of the directories into which we will write things
-fq=${new_flavour}.${COMPILER_CODE}.${MU2E_ART_SQUALIFIER}${haveTrigger}.${DEBUG_LEVEL}
+fq=${new_flavour}.${COMPILER_CODE}.${MUSE_ART}${haveTrigger}.${DEBUG_LEVEL}
 topdir=${PRODUCTS_INSTALL}/${PACKAGE_NAME}
 proddir=${PRODUCTS_INSTALL}/${PACKAGE_NAME}/${PACKAGE_VERSION}
 verdir=${PRODUCTS_INSTALL}/${PACKAGE_NAME}/${PACKAGE_VERSION}.version
@@ -88,8 +88,8 @@ rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_config.t
     ${PACKAGE_SOURCE}  ${cfgdir}
 
 # Libaries and binaries
-rsync -ar lib ${fqdir}
-rsync -ar bin ${fqdir}
+rsync -ar ${BUILD}/lib ${fqdir}
+rsync -ar ${BUILD}/bin ${fqdir}
 
 # A copy of the full source
 rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_source.txt \
@@ -97,13 +97,13 @@ rsync -ar --exclude-from  ${PACKAGE_SOURCE}/ups_install/tar_exclude_for_source.t
 
 # Create the ups fq files.
 ${PACKAGE_SOURCE}/ups_install/installFQFile.sh \
-  ${verdir}/${old_flavour}_${COMPILER_CODE}_${MU2E_ART_SQUALIFIER} \
-  ${COMPILER_CODE}:${MU2E_ART_SQUALIFIER}
+  ${verdir}/${old_flavour}_${COMPILER_CODE}_${MUSE_ART} \
+  ${COMPILER_CODE}:${MUSE_ART}
 
 # Repeat for the trig qualified fq files.
 ${PACKAGE_SOURCE}/ups_install/installFQFile.sh \
-  ${verdir}/${old_flavour}_${COMPILER_CODE}_${MU2E_ART_SQUALIFIER}_trig \
-  ${COMPILER_CODE}:${MU2E_ART_SQUALIFIER}:trig
+  ${verdir}/${old_flavour}_${COMPILER_CODE}_${MUSE_ART}_trig \
+  ${COMPILER_CODE}:${MUSE_ART}:trig
 
 unset old_flavour
 unset new_flavour

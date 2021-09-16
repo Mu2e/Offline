@@ -3,11 +3,14 @@
 // Finds and writes out information for generated photons that pair produce
 // Writes conversion point x, y, z, t, px, py, pz, material (z, zeff, and fraction) , event weight, and gen energy
 
+#include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
+
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
@@ -26,6 +29,7 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
@@ -88,8 +92,8 @@ namespace mu2e {
     double rMax_; //
     double zMin_; //
     double zMax_; //
-    double xoffset_; // detector solenoid x offset 
-    
+    double xoffset_; // detector solenoid x offset
+
     TH1F* hStoppingcode_;
     TH1D* hStoppingMat_;
     TTree* ntup_;
@@ -121,18 +125,18 @@ namespace mu2e {
     ntup_(0),
     nPassed_(0) {
       if(defaultZ_ > 0)
-	printf("GammaConversionPionts: Using Z=%i material for all stops!\n", defaultZ_);
+        printf("GammaConversionPionts: Using Z=%i material for all stops!\n", defaultZ_);
       if(generatorLabel_.size() == 0)
-	printf("GammaConversionPionts: No generator label passed, assuming all events have weight 1\n");
+        printf("GammaConversionPionts: No generator label passed, assuming all events have weight 1\n");
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "gammaStops" );
-      
+
       hStoppingcode_  = tfdir.make<TH1F>( "hStoppingcode", "Photon stopping code",   200, 0.,  200.);
       hStoppingMat_  = tfdir.make<TH1D>( "hStoppingMat", "Photon stopping material",  1, 0.,  1.);
-    
+
       ntup_ = tfdir.make<TTree>( "conversions", "Photon Conversions");
       ntup_->Branch("stops", &data_, IO::ConversionPointF::branchDescription().c_str());
-    }  
+    }
 
   bool GammaConversionPoints::beginSubRun(art::SubRun& sr) {
     if(defaultZ_ > 0) return true; //assuming a material so don't need the volume info
@@ -149,7 +153,7 @@ namespace mu2e {
 
   bool
   GammaConversionPoints::filter(art::Event& event) {
-    
+
     art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( g4ModuleLabel_, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
@@ -162,100 +166,100 @@ namespace mu2e {
     art::Handle<SimParticleCollection> simsHandle;
     event.getByLabel((simCollectionLabel_.size() > 0) ? simCollectionLabel_ : g4ModuleLabel_,simsHandle);
     SimParticleCollection const& sims(*simsHandle);
-    
+
     float weight = (generatorLabel_.size() > 0) ? event.getValidHandle<EventWeight>(generatorLabel_)->weight() : 1.;
     // printf("weight = %.4f\n", weight);
     //loop through sim particles looking for gen particle
     for(auto const& sim : sims) {
       //check if the generated particle
       if(sim.second.creationCode() == ProcessCode::mu2ePrimary) {
-	SimParticle const& parent = sim.second;
-	hStoppingcode_->Fill(parent.stoppingCode());
-	//check if pair conversion
-	if(parent.pdgId() == 22 && ProcessCode::conv == parent.stoppingCode()) {
-	  //get end position and momentum vectors
-	  CLHEP::Hep3Vector const&       pos(parent.endPosition());
-	  //check if it's within the region of interest
-	  double r = sqrt((pos.x()-xoffset_)*(pos.x()-xoffset_) + pos.y()*pos.y());
-	  if(r < rMin_ || r > rMax_ || pos.z() < zMin_ || pos.z() > zMax_) return !doFilter_;
+        SimParticle const& parent = sim.second;
+        hStoppingcode_->Fill(parent.stoppingCode());
+        //check if pair conversion
+        if(parent.pdgId() == 22 && ProcessCode::conv == parent.stoppingCode()) {
+          //get end position and momentum vectors
+          CLHEP::Hep3Vector const&       pos(parent.endPosition());
+          //check if it's within the region of interest
+          double r = sqrt((pos.x()-xoffset_)*(pos.x()-xoffset_) + pos.y()*pos.y());
+          if(r < rMin_ || r > rMax_ || pos.z() < zMin_ || pos.z() > zMax_) return !doFilter_;
 
-	  CLHEP::Hep3Vector const&       p(parent.endMomentum().vect());
-	  CLHEP::Hep3Vector const&       pStart(parent.startMomentum().vect()); //for RMC weight energy or if needed for momentum
-	  CLHEP::Hep3Vector pstart(pStart.x(), pStart.y(), pStart.z()); //to edit the vector
-	  bool useStart = false;
-	  
-	  if(p.mag() == 0.) { //in case the final momentum not saved, add the daughters
-	    std::vector<art::Ptr<SimParticle> > const& daughters = parent.daughters();
-	    if(daughters.size() < 1) {
-	      useStart = true; //no daughters saved
-	    } else {
-	      CLHEP::Hep3Vector pp(0.,0.,0.);
-	      int nConv = 0;
-	      for(unsigned int i = 0; i < daughters.size(); ++i) {
-		SimParticle const sp = *daughters[i];
-		if(sp.creationCode() == ProcessCode::conv) {
-		  ++nConv;
-		  pp += sp.startMomentum().vect();
-		} else { //remove other daughters as happening before the conversion in case not all conversions found
-		  pstart -= sp.startMomentum().vect();		  
-		}
-	      }
-	      if(nConv < 2) { //both conversion daughters weren't stored
-		useStart = true;
-	      }
-	      else { //both daughters stored
-		data_.px = pp.x();
-		data_.py = pp.y();
-		data_.pz = pp.z();
-	      }
-	    }
-	  } else { //end momentum is stored
-	    data_.px = p.x();
-	    data_.py = p.y();
-	    data_.pz = p.z();
-	  }
-	  if(useStart) { //if conversion daughters not stored and end momentum not stored
-	    data_.px = pstart.x();
-	    data_.py = pstart.y();
-	    data_.pz = pstart.z();
-	  }
+          CLHEP::Hep3Vector const&       p(parent.endMomentum().vect());
+          CLHEP::Hep3Vector const&       pStart(parent.startMomentum().vect()); //for RMC weight energy or if needed for momentum
+          CLHEP::Hep3Vector pstart(pStart.x(), pStart.y(), pStart.z()); //to edit the vector
+          bool useStart = false;
 
-	  data_.x = pos.x();
-	  data_.y = pos.y();
-	  data_.z = pos.z();
-	  data_.time = parent.endGlobalTime();
-	  data_.weight = weight;
-	  data_.genEnergy = pStart.mag();
+          if(p.mag() == 0.) { //in case the final momentum not saved, add the daughters
+            std::vector<art::Ptr<SimParticle> > const& daughters = parent.daughters();
+            if(daughters.size() < 1) {
+              useStart = true; //no daughters saved
+            } else {
+              CLHEP::Hep3Vector pp(0.,0.,0.);
+              int nConv = 0;
+              for(unsigned int i = 0; i < daughters.size(); ++i) {
+                SimParticle const sp = *daughters[i];
+                if(sp.creationCode() == ProcessCode::conv) {
+                  ++nConv;
+                  pp += sp.startMomentum().vect();
+                } else { //remove other daughters as happening before the conversion in case not all conversions found
+                  pstart -= sp.startMomentum().vect();
+                }
+              }
+              if(nConv < 2) { //both conversion daughters weren't stored
+                useStart = true;
+              }
+              else { //both daughters stored
+                data_.px = pp.x();
+                data_.py = pp.y();
+                data_.pz = pp.z();
+              }
+            }
+          } else { //end momentum is stored
+            data_.px = p.x();
+            data_.py = p.y();
+            data_.pz = p.z();
+          }
+          if(useStart) { //if conversion daughters not stored and end momentum not stored
+            data_.px = pstart.x();
+            data_.py = pstart.y();
+            data_.pz = pstart.z();
+          }
 
-	  //get material properties
-	  if(defaultZ_ <= 0) { //find actual Z of the material
-	    PhysicalVolumeMultiHelper vi(*vols_);
-	    PhysicalVolumeInfo const& endVolParent = vi.endVolume(parent);
-	    const std::string& materialName = endVolParent.materialName();
-	    hStoppingMat_->Fill(materialName.c_str(), 1.);
-	    const G4Material* material = findMaterialOrThrow(materialName);
-	    const int nElements = material->GetNumberOfElements();
-	    const G4ElementVector* elementVector = material->GetElementVector();
-	    const double* fractionVector = material->GetFractionVector();
-	    data_.matN = std::min(nElements, (int) IO::kMaxConversionMaterialElements);
-	    for(int index = 0; index < data_.matN; ++index) {
-	      float matZeff((*elementVector)[index]->GetZ()), matFrac(fractionVector[index]);
-	      data_.matZ   [index] = (*elementVector )[index]->GetZasInt();
-	      data_.matZeff[index] = matZeff;
-	      data_.matFrac[index] = matFrac;
-	    }
-	  } else {
-	    data_.matN = 1;
-	    data_.matZ   [0] = defaultZ_;
-	    data_.matZeff[0] = defaultZ_;
-	    data_.matFrac[0] = 1.;
-	  }
+          data_.x = pos.x();
+          data_.y = pos.y();
+          data_.z = pos.z();
+          data_.time = parent.endGlobalTime();
+          data_.weight = weight;
+          data_.genEnergy = pStart.mag();
 
-	  ntup_->Fill();
-	  ++nPassed_; 
-	  return true; //converted so done looking
-	} else return !doFilter_; //not a conversion
-      } 
+          //get material properties
+          if(defaultZ_ <= 0) { //find actual Z of the material
+            PhysicalVolumeMultiHelper vi(*vols_);
+            PhysicalVolumeInfo const& endVolParent = vi.endVolume(parent);
+            const std::string& materialName = endVolParent.materialName();
+            hStoppingMat_->Fill(materialName.c_str(), 1.);
+            const G4Material* material = findMaterialOrThrow(materialName);
+            const int nElements = material->GetNumberOfElements();
+            const G4ElementVector* elementVector = material->GetElementVector();
+            const double* fractionVector = material->GetFractionVector();
+            data_.matN = std::min(nElements, (int) IO::kMaxConversionMaterialElements);
+            for(int index = 0; index < data_.matN; ++index) {
+              float matZeff((*elementVector)[index]->GetZ()), matFrac(fractionVector[index]);
+              data_.matZ   [index] = (*elementVector )[index]->GetZasInt();
+              data_.matZeff[index] = matZeff;
+              data_.matFrac[index] = matFrac;
+            }
+          } else {
+            data_.matN = 1;
+            data_.matZ   [0] = defaultZ_;
+            data_.matZeff[0] = defaultZ_;
+            data_.matFrac[0] = 1.;
+          }
+
+          ntup_->Fill();
+          ++nPassed_;
+          return true; //converted so done looking
+        } else return !doFilter_; //not a conversion
+      }
     }
 
     return !doFilter_;
@@ -263,8 +267,8 @@ namespace mu2e {
   } // end of ::filter.
 
   void GammaConversionPoints::endJob() {
-    mf::LogInfo("Summary") 
-      << "GammaConversionPoints_module: Number of conversion events found: " 
+    mf::LogInfo("Summary")
+      << "GammaConversionPoints_module: Number of conversion events found: "
       << nPassed_
       << "\n";
   }
@@ -273,5 +277,3 @@ namespace mu2e {
 
 using mu2e::GammaConversionPoints;
 DEFINE_ART_MODULE(GammaConversionPoints);
-
-

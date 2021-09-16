@@ -2,8 +2,8 @@
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/ConfigTools/inc/requireUniqueKey.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
@@ -12,6 +12,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -32,7 +33,7 @@
 #include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/GeneralUtilities/inc/safeSqrt.hh"

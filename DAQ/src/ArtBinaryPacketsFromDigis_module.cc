@@ -39,10 +39,10 @@
 
 // Mu2e includes.
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
-//#include "DAQDataProducts/inc/DataBlockCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+//#include "Offline/DAQDataProducts/inc/DataBlockCollection.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/CaloConditions/inc/CaloDAQMap.hh"
 

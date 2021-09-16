@@ -54,11 +54,13 @@ mu2e::TriggerResultsPrinter::Print(const art::TriggerResults& obj, int ind, std:
   std::vector<std::string> text{"n", "1", "0", "e"};
 
   TriggerResultsNavigator   trigNavig(&obj);
-  auto pathNames = trigNavig.getTrigPaths();
-  for(auto name: pathNames) {
+  for (unsigned int i=0; i< trigNavig.getTrigPaths().size(); ++i) {
+    std::string path   = trigNavig.getTrigPathName(i);
+    size_t      pathID = trigNavig.findTrigPathID(path);
     os << "  " 
-       << (trigNavig.accepted(name) ? "pass" : "fail" )
-       << "  " << name << std::endl;
+       << (trigNavig.accepted(path) ? "pass" : "fail" )
+       << "  " << pathID
+       << "  " << path << std::endl;
   }
 
 }

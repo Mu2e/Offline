@@ -4,7 +4,6 @@
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -18,7 +17,6 @@
 #include "TH2D.h"
 
 #include <sstream>
-
 
 namespace mu2e {
 

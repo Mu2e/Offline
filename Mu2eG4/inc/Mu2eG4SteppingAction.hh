@@ -11,7 +11,7 @@
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/EventNumberList.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryPoint.hh"
 #include "Offline/Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
@@ -52,8 +52,6 @@ namespace mu2e {
     void BeginOfTrack();
     void EndOfTrack();
 
-    int nKilledStepLimit() const { return numKilledTracks_; }
-
     // Called by G4_plugin.
     void beginRun(PhysicsProcessInfo*, CLHEP::Hep3Vector const& mu2eOrigin );
 
@@ -86,7 +84,6 @@ namespace mu2e {
 
     // Protection against "too complicated" events
     unsigned numTrackSteps_;
-    int numKilledTracks_;
     bool stepLimitKillerVerbose_;
 
     // List of times for time virtual detector

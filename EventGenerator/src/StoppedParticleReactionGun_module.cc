@@ -8,6 +8,8 @@
 
 #include "cetlib_except/exception.h"
 
+#include "fhiclcpp/types/Sequence.h"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
@@ -28,7 +30,6 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
@@ -151,7 +152,6 @@ namespace mu2e {
     
   }
 
-
   //================================================================
   StoppedParticleReactionGun::SpectrumVar StoppedParticleReactionGun::parseSpectrumVar(const std::string& name) {
     if (name == "totalEnergy"  )  return TOTAL_ENERGY;
@@ -159,7 +159,6 @@ namespace mu2e {
     if (name == "momentum"     )  return MOMENTUM;
     throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown spectrum variable "<<name<<"\n";
   }
-
 
   //================================================================
   void StoppedParticleReactionGun::produce(art::Event& event) {

@@ -13,10 +13,9 @@
 //
 // There is also the concept of "genealogy" compression, which uses the fhicl parameter
 // keepNGenerations and takes an integer corresponding to the
-// number of generations back you want to keep. All missing generations are
-// replaced with a new SimParticle to identify that a truncation has occured
+// number of generations back you want to keep. The "oldest" SimParticle remaining
+// can be identified as "truncated" with the SimParticle::isTruncated() function
 // - Note 1: N = -1 means keep all generations (i.e. no compression)
-// - Note 2: the very first SimParticle (i.e. the one that has a valid Ptr to a GenParticle) is always kept
 //
 // Dec 2020, Andy Edmonds
 //
@@ -30,16 +29,17 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art_root_io/TFileService.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include <memory>
 
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Compression/inc/CompressionLevel.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
@@ -171,6 +171,7 @@ private:
 
   // record the SimParticles that we are keeping so we can use compressSimParticleCollection to do all the work for us
   std::map<art::ProductID, mu2e::SimParticleSet> _simParticlesToKeep;
+  std::map<art::ProductID, mu2e::SimParticleSet> _simParticlesToTruncate;
   SimParticleRemapping _simPtrRemap;
 };
 
@@ -231,6 +232,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   _newMCTrajectories = std::unique_ptr<MCTrajectoryCollection>(new MCTrajectoryCollection);
 
   _simParticlesToKeep.clear();
+  _simParticlesToTruncate.clear();
   _simPtrRemap.clear();
 
   // Compress detector steps and record which SimParticles we want to keep
@@ -419,8 +421,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
     }
   }
 
-  // If we asked for the genealogy to be compressed, we will now end up with some missing links
-  // add them back as truncated SimParticles
+  // If we asked for the genealogy to be compressed, we will now end up with some missing links which we need to fix
   if (_keepNGenerations >= 0) {
     // Go through the particles we are keeping and see if any parents are not there
     for (auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
@@ -434,7 +435,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
             std::cout << "SimParticle " << i_parentPtr << " will not be in output collection because it has been compressed away by genealogy compression" << std::endl;
           }
 
-          (*_newSimParticles)[i_childPtr->id()].setCreationCode(ProcessCode::truncated);
+          _simParticlesToTruncate[i_childPtr.id()].insert(i_childPtr);
           break; // don't go further up the genealogy tree otherwise we will be adding particles
         }
         else {
@@ -448,27 +449,34 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
       }
     }
 
-    // We might have turncated some SimParticles so go through the output SimParticleCollection and fix the parent/child links
-    for (auto& i_simParticle : *_newSimParticles) {
-      mu2e::SimParticle& newsim = i_simParticle.second;
-      if (newsim.isTruncated()) {
-        // go up genealogy to get the next ancestor that is in the output
-        art::Ptr<mu2e::SimParticle> i_ancestorPtr = newsim.parent();
-        if (_debugLevel>0) {
-          std::cout << "Look for a new parent for particle id " << newsim.id() << " (current parent = " << i_ancestorPtr << ")" << std::endl;
+    // Go through the truncated SimParticles and fix the parent/child links
+    for (const auto& i_truncatedSimPart : _simParticlesToTruncate[i_product_id]) {
+      //    for (auto& i_simParticle : *_newSimParticles) {
+      mu2e::SimParticle& newsim = (*_newSimParticles)[i_truncatedSimPart->id()];//_newSimParticles->at(i_truncatedSimPart.second);//i_simParticle.second;
+      // go up genealogy to get the next ancestor that is in the output
+      art::Ptr<mu2e::SimParticle> i_ancestorPtr = newsim.parent();
+      if (_debugLevel>0) {
+        std::cout << "Look for a new parent for particle id " << newsim.id() << " (current parent = " << i_ancestorPtr << ")" << std::endl;
+      }
+      while (i_ancestorPtr) {
+        const auto& findIter = _simPtrRemap.find(i_ancestorPtr);
+        if (findIter != _simPtrRemap.end()) {
+          newsim.parent() = findIter->second;
+          art::Ptr<mu2e::SimParticle> newChildPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
+          (*_newSimParticles)[i_ancestorPtr->id()].addDaughter(newChildPtr);
+          if (_debugLevel > 0) {
+            std::cout << "Because of truncation setting SimParticle (" << newsim.id() << ")'s parent to " << findIter->second << " and adding daughter " << newChildPtr << std::endl;
+          }
+          break; // don't need to go any further
         }
-        while (i_ancestorPtr) {
-          const auto& findIter = _simPtrRemap.find(i_ancestorPtr);
-          if (findIter != _simPtrRemap.end()) {
-            newsim.parent() = findIter->second;
-            art::Ptr<mu2e::SimParticle> newChildPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
-            (*_newSimParticles)[i_ancestorPtr->id()].addDaughter(newChildPtr);
-            if (_debugLevel > 0) {
-              std::cout << "Because of truncation setting SimParticle (" << newsim.id() << ")'s parent to " << findIter->second << " and adding daughter " << newChildPtr << std::endl;
-            }
+        else {
+          // If we have got to the very first SimParticle (i.e. the one that points to the GenParticle)
+          if (i_ancestorPtr->isPrimary()) {
+            newsim.genParticle() = i_ancestorPtr->genParticle();// set this particle's GenParticlePtr
+            newsim.parent() = art::Ptr<SimParticle>(); // remove the parent
             break; // don't need to go any further
           }
-          else {
+          else { // this is just another step in the genealogy
             i_ancestorPtr = i_ancestorPtr->parent();
           }
         }
@@ -491,12 +499,18 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
 
 void mu2e::CompressDetStepMCs::compressGenParticles() {
   // Loop through the new SimParticles to keep any GenParticles
+  if (_debugLevel > 0) {
+    std::cout << "Compressing GenParticles..." << std::endl;
+  }
   for (auto& i_simParticle : *_newSimParticles) {
     mu2e::SimParticle& newsim = i_simParticle.second;
     if(newsim.genParticle().isNonnull()) { // will crash if not resolvable
       // Copy GenParticle to the new collection
       _newGenParticles->emplace_back(*newsim.genParticle());
       newsim.genParticle() = art::Ptr<mu2e::GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
+      if (_debugLevel > 0) {
+        std::cout << "Keeping GenParticle with Ptr " << newsim.genParticle() << std::endl;
+      }
     }
   }
 }
@@ -613,12 +627,12 @@ void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticl
         std::cout << "and recording its ancestor " << parentPtr << " (NGen = " << (int)mcr.removal() << ")" << std::endl;
       }
     }
-    else if (parentPtr->isPrimary()) { // always keep the very first SimParticle
-      _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
-      if(_debugLevel>0) {
-        std::cout << "and recording the very first SimParticle " << parentPtr << std::endl;
-      }
-    }
+    // else if (parentPtr->isPrimary()) { // always keep the very first SimParticle
+    //   _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
+    //   if(_debugLevel>0) {
+    //     std::cout << "and recording the very first SimParticle " << parentPtr << std::endl;
+    //   }
+    // }
     else {
       if(_debugLevel>0) {
         std::cout << "and *not* recording its ancestor " << parentPtr << " (NGen = " << (int)mcr.removal() << ")" << std::endl;

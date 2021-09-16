@@ -4,7 +4,6 @@
 // based on algorithm in Striganov doc-db 1776, redone by Bernstein
 // in doc-db 8448, etc.
 //
-//
 // Original author Rob Kutschke
 //
 
@@ -35,7 +34,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-
 // Mu2e includes
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
@@ -50,19 +48,15 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "art_root_io/TFileService.h"
 
-
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 
-
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/Mu2eUtilities/inc/copySimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 // ROOT includes
 #include "TTree.h"
@@ -79,13 +73,10 @@
 #include <cstring>
 #include <iostream>
 
-
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include "cetlib/map_vector.h"
-
-
 
 using namespace std;
 
@@ -107,13 +98,10 @@ namespace mu2e {
 
     using Parameters = art::EDProducer::Table<Config>;
 
-
-
   private:
     //
     // tmi line
     int _verbosityLevel;
-
 
     // Limits on angles
     double _czmin;
@@ -165,8 +153,6 @@ namespace mu2e {
     int nonProtonInelastics{0};
     float eInitialProton{0.};
     bool first_protonInelastic{true};
-
-
 
   public:
     explicit PrimaryAntiProtonGun(Parameters const& config );
@@ -257,8 +243,6 @@ namespace mu2e {
       os << "\n" << "SimParticleCollection has size = " << simParticles.size() << " particles." << std::endl;
       os << "ind      key    parent  pdgId       Start  Position            P            End Position               P     vol   process \n" ;
     }
-
-
 
     int numberOfProtonInelastics{0};
     int nonProtonInelastics{0};
@@ -352,7 +336,6 @@ namespace mu2e {
     //
     // will have to dereference the pointer to the simparticle collection
     auto& outSimPart = *outSimPartPtr;
-
 
     //
     // need a new StepPointMCCollection with the outgoing proton to trigger G4 in next stage
@@ -455,7 +438,6 @@ namespace mu2e {
 
       }
 
-
     //
     // in order to make the pbar's art pointer to parent, need to
     // collect info about the parent product
@@ -470,7 +452,6 @@ namespace mu2e {
     //
     // make new SimParticle:  create pbar, copy starting point..
 
-
     if (_verbosityLevel > 0){
       os << "size of sim particle collection before pbar = " << outSimPart.size() << std::endl;
     }
@@ -478,7 +459,6 @@ namespace mu2e {
     // get key for new simpart
     // https://internal.dunescience.org/doxygen/map__vector_8h_source.html for next line;
     key_type newPbarKey = cet::map_vector_key(biggestSimParticleId + 1);
-
 
     if (_verbosityLevel > 1){
       os << "made newPbarKey, about to make newPbar" << std::endl;
@@ -501,7 +481,6 @@ namespace mu2e {
     if (_verbosityLevel > 1){
       os << "made newPbar" << std::endl;
     }
-
 
     //
     // add end information to complete SimParticle
@@ -529,7 +508,6 @@ namespace mu2e {
     }
 
     outSimPart[newPbarKey] = newPbar;
-
 
     //
     // write out new collection
@@ -612,11 +590,9 @@ namespace mu2e {
       throw cet::exception("DIDNT FIND PBAR IN COLLECTION") << " from " << __func__ << std::endl;
     }
 
-
     event.put(std::move(outSimPartPtr), "");
     event.put(std::move(outStepPointMCPtr),"");
   }
-
 
 // PrimaryAntiProtonGun::generate
 

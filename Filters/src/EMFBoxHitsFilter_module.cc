@@ -1,7 +1,6 @@
 // Filters outputs of ExtMonFNAL "room" jobs to select VD hits and
 // stopped muons that should be passed to the next stage "box" jobs.
 //
-//
 // Andrei Gaponenko, 2012
 
 #include <iostream>
@@ -20,13 +19,12 @@
 #include "art_root_io/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
@@ -96,7 +94,6 @@ namespace mu2e {
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
       , cutEKineAtStop_(pset.get<double>("cutEKineAtStop"))
       , cutStoppedMuonPosition_(pset.get<std::vector<double> >("cutStoppedMuonPosition"))
-
 
       , nVDHits_()
       , nStoppedMuons_()

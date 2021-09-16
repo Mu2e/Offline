@@ -12,7 +12,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidenceCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -47,14 +47,13 @@ namespace mu2e
     std::vector<int>         _PEthresholds;
     std::vector<double>      _adjacentPulseTimeDifferences;
     std::vector<double>      _maxTimeDifferences;
-    std::vector<bool>        _useFourLayers;
+    std::vector<int>         _coincidenceLayers;
     bool        _usePulseOverlaps;
     bool        _useNoFit;
     double      _minOverlapTime;
     bool        _usingPEsPulseHeight;
     double      _maxSlope;
     double      _maxSlopeDifference;
-    bool        _acceptThreeAdjacentCounters;
     double      _timeWindowStart;
     double      _timeWindowEnd;
 
@@ -75,12 +74,13 @@ namespace mu2e
       int                           _PEthreshold;
       double                        _adjacentPulseTimeDifference;
       double                        _maxTimeDifference;
-      bool                          _useFourLayers;
+      int                           _coincidenceLayers;
       CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, double timePulseStart, double timePulseEnd, float PEs, 
-             int layer, int counter, double x, double y, int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference, bool useFourLayers):
+             int layer, int counter, double x, double y, int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference,
+             int coincidenceLayers):
              _crvRecoPulse(crvRecoPulse), _time(time), _timePulseStart(timePulseStart), _timePulseEnd(timePulseEnd), _PEs(PEs),
              _layer(layer), _counter(counter), _x(x), _y(y), _PEthreshold(PEthreshold), _adjacentPulseTimeDifference(adjacentPulseTimeDifference),
-             _maxTimeDifference(maxTimeDifference), _useFourLayers(useFourLayers) {}
+             _maxTimeDifference(maxTimeDifference), _coincidenceLayers(coincidenceLayers) {}
       void Print(int sectorType) const
       {
         std::cout<<"sectorType: "<<sectorType<<"   layer: "<<_layer<<"   counter: "<<_counter<<"  SiPM: "<<_crvRecoPulse->GetSiPMNumber()<<"      ";
@@ -100,9 +100,12 @@ namespace mu2e
       int         PEthreshold;
       double      adjacentPulseTimeDifference;
       double      maxTimeDifference;
-      bool        useFourLayers;
+      int         coincidenceLayers;
     };
     std::map<int,sectorCoincidenceProperties> _sectorMap;
+
+    void checkCombination(const std::vector<std::vector<CrvHit>::const_iterator> &layerIterators,
+                          int sectorType, std::unique_ptr<CrvCoincidenceCollection> &crvCoincidenceCollection);
   };
 
   CrvCoincidenceCheck::CrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
@@ -113,14 +116,13 @@ namespace mu2e
     _PEthresholds(pset.get<std::vector<int> >("PEthresholds")),
     _adjacentPulseTimeDifferences(pset.get<std::vector<double> >("adjacentPulseTimeDifferences")),
     _maxTimeDifferences(pset.get<std::vector<double> >("maxTimeDifferences")),
-    _useFourLayers(pset.get<std::vector<bool> >("useFourLayers")),
+    _coincidenceLayers(pset.get<std::vector<int> >("coincidenceLayers")),
     _usePulseOverlaps(pset.get<bool>("usePulseOverlaps")),
     _useNoFit(pset.get<bool>("useNoFit")),
     _minOverlapTime(pset.get<double>("minOverlapTime")),
     _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxSlope(pset.get<double>("maxSlope")),
     _maxSlopeDifference(pset.get<double>("maxSlopeDifference")),
-    _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd"))
   {
@@ -175,7 +177,7 @@ namespace mu2e
       s.PEthreshold = _PEthresholds[userPropertyPosition];
       s.adjacentPulseTimeDifference = _adjacentPulseTimeDifferences[userPropertyPosition];
       s.maxTimeDifference = _maxTimeDifferences[userPropertyPosition];
-      s.useFourLayers = _useFourLayers[userPropertyPosition];
+      s.coincidenceLayers = _coincidenceLayers[userPropertyPosition];
 
       _sectorMap[i]=s;
     }
@@ -250,7 +252,7 @@ namespace mu2e
       {
         //get the right set of hits based on the hitmap key, and insert a new hit
         crvHits[sectorType].emplace_back(crvRecoPulse, time, timePulseStart, timePulseEnd, PEs, layerNumber, counterNumber, x,y,
-                                         sector.PEthreshold, sector.adjacentPulseTimeDifference, sector.maxTimeDifference, sector.useFourLayers);
+                                         sector.PEthreshold, sector.adjacentPulseTimeDifference, sector.maxTimeDifference, sector.coincidenceLayers);
         if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
       }//loop over SiPM
     }//loop over reco pulse collection
@@ -261,6 +263,7 @@ namespace mu2e
     for(iterHitMap = crvHits.begin(); iterHitMap!=crvHits.end(); iterHitMap++)
     {
       //this is the collection for which a coincidence needs to be found
+      int sectorType=iterHitMap->first;
       const std::vector<CrvHit> &crvHitsOfSectorType = iterHitMap->second;
 
       //remove hits below the threshold
@@ -314,8 +317,9 @@ namespace mu2e
         else {if(PEs_thisCounter+PEs_adjacentCounter2>=PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);}
       }
 
+      //***************************************************
+      //find coincidences using 4/4 coincidence requirement
       {
-      //find coincidences using 4 hits in 4 layers
         const std::vector<CrvHit> &layer0Hits=crvHitsFiltered[0];
         const std::vector<CrvHit> &layer1Hits=crvHitsFiltered[1];
         const std::vector<CrvHit> &layer2Hits=crvHitsFiltered[2];
@@ -325,55 +329,19 @@ namespace mu2e
         std::vector<CrvHit>::const_iterator layer2Iter;
         std::vector<CrvHit>::const_iterator layer3Iter;
 
+        //it will loop only, if all 4 layers have hits
         for(layer0Iter=layer0Hits.begin(); layer0Iter!=layer0Hits.end(); layer0Iter++)
         for(layer1Iter=layer1Hits.begin(); layer1Iter!=layer1Hits.end(); layer1Iter++)
         for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
         for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
         {
-          if(!_usePulseOverlaps)
-          {
-            double maxTimeDifferences[4]={layer0Iter->_maxTimeDifference,layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
-            double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+4);
-
-            double times[4]={layer0Iter->_time,layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
-            double timeMin = *std::min_element(times,times+4);
-            double timeMax = *std::max_element(times,times+4);
-            if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
-          }
-          else
-          {
-            double timesPulseStart[4]={layer0Iter->_timePulseStart,layer1Iter->_timePulseStart,layer2Iter->_timePulseStart,layer3Iter->_timePulseStart};
-            double timesPulseEnd[4]={layer0Iter->_timePulseEnd,layer1Iter->_timePulseEnd,layer2Iter->_timePulseEnd,layer3Iter->_timePulseEnd};
-            double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+4);
-            double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+4);
-            if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
-          }
-
-          double x[4]={layer0Iter->_x,layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
-          double y[4]={layer0Iter->_y,layer1Iter->_y,layer2Iter->_y,layer3Iter->_y};
-
-          bool coincidenceFound=true;
-          double slope[3];
-          for(int d=0; d<3; d++)
-          {
-            slope[d]=(x[d+1]-x[d])/(y[d+1]-y[d]);
-            if(fabs(slope[d])>_maxSlope) coincidenceFound=false;   //not more than maxSlope allowed for coincidence;
-          }
-
-          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-          if(fabs(slope[0]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-          if(fabs(slope[1]-slope[2])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-
-          if(coincidenceFound)
-          {
-            std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{layer0Iter->_crvRecoPulse,layer1Iter->_crvRecoPulse,layer2Iter->_crvRecoPulse,layer3Iter->_crvRecoPulse};
-            int sectorType=iterHitMap->first;
-            crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
-          }
+          const std::vector<std::vector<CrvHit>::const_iterator> layerIterators={layer0Iter, layer1Iter, layer2Iter, layer3Iter};
+          checkCombination(layerIterators, sectorType, crvCoincidenceCollection);
         }
       } // four layer coincidences
 
-      //find coincidences using 3 hits in 3 layers (ignored, if all three hits have a useFourLayers flag)
+      //***************************************************
+      //find coincidences using 3/4 coincidence requirement
       for(int layer1=0; layer1<4; layer1++)
       for(int layer2=layer1+1; layer2<4; layer2++)
       for(int layer3=layer2+1; layer3<4; layer3++)
@@ -386,108 +354,41 @@ namespace mu2e
         std::vector<CrvHit>::const_iterator layer2Iter;
         std::vector<CrvHit>::const_iterator layer3Iter;
 
+        //it will loop only, if all 3 layers have hits
+        //loops will exit, if all three hits require a 4/4 coincidence
         for(layer1Iter=layer1Hits.begin(); layer1Iter!=layer1Hits.end(); layer1Iter++)
         for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
         for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
         {
-          if(layer1Iter->_useFourLayers && layer2Iter->_useFourLayers && layer3Iter->_useFourLayers) continue; //all hits require a four layer coincidence
+          if(layer1Iter->_coincidenceLayers>3 && layer2Iter->_coincidenceLayers>3 && layer3Iter->_coincidenceLayers>3) continue; //all hits require at 4/4 coincidence
 
-          if(_usePulseOverlaps)
-          {
-            double maxTimeDifferences[3]={layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
-            double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3);
-
-            if(fabs(layer1Iter->_time-layer2Iter->_time)>maxTimeDifference) break;  //no need to check any triplets containing the current pair of layer1 and layer2
-
-            double times[3]={layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
-            double timeMin = *std::min_element(times,times+3);
-            double timeMax = *std::max_element(times,times+3);
-            if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
-          }
-          else
-          {
-            double timesPulseStart[3]={layer1Iter->_timePulseStart,layer2Iter->_timePulseStart,layer3Iter->_timePulseStart};
-            double timesPulseEnd[3]={layer1Iter->_timePulseEnd,layer2Iter->_timePulseEnd,layer3Iter->_timePulseEnd};
-            double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+3);
-            double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+3);
-            if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
-          }
-
-          double x[3]={layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
-          double y[3]={layer1Iter->_y,layer2Iter->_y,layer3Iter->_y};
-
-          bool coincidenceFound=true;
-          double slope[2];
-          for(int d=0; d<2; d++)
-          {
-            slope[d]=(x[d+1]-x[d])/(y[d+1]-y[d]);
-            if(fabs(slope[d])>_maxSlope) coincidenceFound=false;   //not more than maxSlope allowed for coincidence;
-          }
-
-          if(fabs(slope[0])>_maxSlope) break;  //no need to check any triplets containing the current pair of layer1 and layer2
-
-          if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
-
-          if(coincidenceFound)
-          {
-            std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{layer1Iter->_crvRecoPulse,layer2Iter->_crvRecoPulse,layer3Iter->_crvRecoPulse};
-            int sectorType=iterHitMap->first;
-            crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
-          }
+          const std::vector<std::vector<CrvHit>::const_iterator> layerIterators={layer1Iter, layer2Iter, layer3Iter};
+          checkCombination(layerIterators, sectorType, crvCoincidenceCollection);
         }
       }  //three layer coincidences
 
-
-      //find coincidences using 3 hits in adjacent counters in one layer
-      if(_acceptThreeAdjacentCounters)
+      //***************************************************
+      //find coincidences using 2/4 coincidence requirement
+      for(int layer1=0; layer1<4; layer1++)
+      for(int layer2=layer1+1; layer2<4; layer2++)
       {
-        for(int layer=0; layer<4; layer++)
+
+        const std::vector<CrvHit> &layer1Hits=crvHitsFiltered[layer1];
+        const std::vector<CrvHit> &layer2Hits=crvHitsFiltered[layer2];
+        std::vector<CrvHit>::const_iterator layer1Iter;
+        std::vector<CrvHit>::const_iterator layer2Iter;
+
+        //it will loop only, if both layers have hits
+        //loops will exit, if all three hits require a 3/4 or 4/4 coincidence
+        for(layer1Iter=layer1Hits.begin(); layer1Iter!=layer1Hits.end(); layer1Iter++)
+        for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
         {
-          const std::vector<CrvHit> &layerHits=crvHitsFiltered[layer];
-          if(layerHits.size()<3) continue; //less than three hits in this layer
+          if(layer1Iter->_coincidenceLayers>2 && layer2Iter->_coincidenceLayers>2) continue; //all hits require at least a 3/4 coincidence
 
-          std::vector<CrvHit>::const_iterator i1;
-          std::vector<CrvHit>::const_iterator i2;
-          std::vector<CrvHit>::const_iterator i3;
-          for(i1=layerHits.begin(); i1!=layerHits.end(); i1++)
-          for(i2=i1+1; i2!=layerHits.end(); i2++)
-          for(i3=i2+1; i3!=layerHits.end(); i3++)
-          {
-            if(_usePulseOverlaps)
-            {
-              double times[3]={i1->_time,i2->_time,i3->_time};
-              double timeMin = *std::min_element(times,times+3);
-              double timeMax = *std::max_element(times,times+3);
-
-              double maxTimeDifferences[3]={i1->_maxTimeDifference,i2->_maxTimeDifference,i3->_maxTimeDifference};
-              double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3);
-
-              if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
-            }
-            else
-            {
-              double timesPulseStart[3]={i1->_timePulseStart,i2->_timePulseStart,i3->_timePulseStart};
-              double timesPulseEnd[3]={i1->_timePulseEnd,i2->_timePulseEnd,i3->_timePulseEnd};
-              double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+3);
-              double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+3);
-              if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) continue;  //pulses don't overlap, or overlap time too short
-            }
-
-            std::set<int> counters{i1->_counter,i2->_counter,i3->_counter};
-            bool coincidenceFound=true;
-            if(counters.size()<3) coincidenceFound=false;
-            if(*counters.rbegin()-*counters.begin()!=2) coincidenceFound=false;
-
-            if(coincidenceFound)
-            {
-              std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses{i1->_crvRecoPulse,i2->_crvRecoPulse,i3->_crvRecoPulse};
-              int sectorType=iterHitMap->first;
-              crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType);
-            }
-          }
+          const std::vector<std::vector<CrvHit>::const_iterator> layerIterators={layer1Iter, layer2Iter};
+          checkCombination(layerIterators, sectorType, crvCoincidenceCollection);
         }
-      } //accept three adjacent counters
-
+      }  //two layer coincidences
     }
 
     _totalEvents++;
@@ -550,6 +451,66 @@ if(crvCoincidenceCollection->size()==0)
     event.put(std::move(crvCoincidenceCollection));
 
   } // end produce
+
+  void CrvCoincidenceCheck::checkCombination(const std::vector<std::vector<CrvHit>::const_iterator> &layerIterators, 
+                                             int sectorType, std::unique_ptr<CrvCoincidenceCollection> &crvCoincidenceCollection)
+  {
+    size_t n=layerIterators.size();
+    if(n==0) return;
+
+    double maxTimeDifferences[n];
+    double times[n];
+    double timesPulseStart[n], timesPulseEnd[n];
+    double x[n], y[n];
+    std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses;
+    std::vector<int> layers;
+    for(size_t i=0; i<n; ++i)
+    {
+      const std::vector<CrvHit>::const_iterator &iter=layerIterators[i];
+      maxTimeDifferences[i]=iter->_maxTimeDifference;
+      times[i]=iter->_time;
+      timesPulseStart[i]=iter->_timePulseStart;
+      timesPulseEnd[i]=iter->_timePulseEnd;
+      x[i]=iter->_x;
+      y[i]=iter->_y;
+      crvRecoPulses.push_back(iter->_crvRecoPulse);
+      layers.push_back(iter->_layer);
+    }
+
+    if(!_usePulseOverlaps)
+    {
+      double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+n);
+      double timeMin = *std::min_element(times,times+n);
+      double timeMax = *std::max_element(times,times+n);
+      if(timeMax-timeMin>maxTimeDifference) return;  //hits don't fall within the time window
+    }
+    else
+    {
+      double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+n);
+      double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+n);
+      if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) return;  //pulses don't overlap, or overlap time too short
+    }
+
+    std::vector<float> slopes;
+    for(size_t d=0; d<n-1; ++d)
+    {
+      slopes.push_back((x[d+1]-x[d])/(y[d+1]-y[d]));   //width direction / thickness direction
+      if(fabs(slopes.back())>_maxSlope) return;  //not more than maxSlope allowed for coincidence;
+    }
+
+    if(n>2)
+    {
+      //slope must not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
+      if(fabs(slopes[0]-slopes[1])>_maxSlopeDifference) return;
+      if(n>3)
+      {
+        if(fabs(slopes[0]-slopes[2])>_maxSlopeDifference) return;
+        if(fabs(slopes[1]-slopes[2])>_maxSlopeDifference) return;
+      }
+    }
+
+    crvCoincidenceCollection->emplace_back(crvRecoPulses, sectorType, slopes, layers);
+  } // end checkCombination
 
 } // end namespace mu2e
 

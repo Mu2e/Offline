@@ -15,7 +15,7 @@
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 #include "Offline/DataProducts/inc/ExtMonFNALModuleDenseId.hh"

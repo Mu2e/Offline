@@ -4,6 +4,7 @@
 #define MCDataProducts_inc_MARSInfo_hh
 
 #include <ostream>
+#include <vector>
 
 namespace mu2e {
 
@@ -70,6 +71,7 @@ namespace mu2e {
                                                                                        (a.protonNumber() < b.protonNumber()))));
     }
   };
+  typedef std::vector<MARSInfo> MARSInfoCollection;
 
   std::ostream& operator<<(std::ostream& os, const MARSInfo& mi);
 }

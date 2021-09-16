@@ -13,7 +13,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 // Mu2e includes
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 // BTrk includes
 #include "BTrk/TrkBase/TrkT0.hh"
 // c++
@@ -27,12 +27,12 @@ namespace mu2e {
     uint16_t	  nStrawHits() const { return _nsh; }
     const std::vector<StrawHitIndex>& hits       () const { return _strawHitIdxs; }
     const TrkT0&                      t0         () const { return _t0; }
-    const XYZVec&          position   () const { return _pos; }
+    const XYZVectorF&          position   () const { return _pos; }
     const art::Ptr<CaloCluster>&      caloCluster() const { return _caloCluster; }
     bool hasCaloCluster() const { return _caloCluster.isNonnull(); }
     std::vector<StrawHitIndex> _strawHitIdxs; // associated straw hits: can be empty
     TrkT0		       _t0;           // t0 and associated error
-    XYZVec          _pos;          // position of the time cluster   
+    XYZVectorF          _pos;          // position of the time cluster   
     uint16_t	    _nsh;	  // number of straw hits
     art::Ptr<CaloCluster>      _caloCluster;  // associated calorimeter cluster: can be null
   };

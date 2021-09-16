@@ -8,7 +8,7 @@ namespace mu2e{
   {
   public:
 
-    explicit Mu2eRecorderProcess(const G4String& processName ="Mu2eRecorderProcess" );
+    explicit Mu2eRecorderProcess(const G4String& processName ="mu2eRecorderProcess" );
 
     virtual ~Mu2eRecorderProcess();
 
@@ -31,4 +31,3 @@ namespace mu2e{
   };
 }
 #endif
-

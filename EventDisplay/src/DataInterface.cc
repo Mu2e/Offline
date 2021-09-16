@@ -1,5 +1,4 @@
 //
-//
 using namespace std;
 #include "Offline/EventDisplay/src/DataInterface.h"
 
@@ -25,20 +24,19 @@ using namespace std;
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "HepPID/ParticleName.hh"
 #include "HepPDT/ParticleData.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -370,8 +368,6 @@ void DataInterface::fillGeometry()
     double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
     double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
 
-
-
     double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
     double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
     double FPCoolPipeRadius         = calo->caloInfo().getDouble("FPCoolPipeRadius");
@@ -430,7 +426,6 @@ void DataInterface::fillGeometry()
       }
     }
   }
-
 
   //MBS
 /*
@@ -1168,7 +1163,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-
   const mu2e::PhysicalVolumeInfoMultiCollection *physicalVolumesMulti=contentSelector->getPhysicalVolumeInfoMultiCollection();
 
   resetBoundaryP(_tracksMinmax);
@@ -1361,11 +1355,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const mu2e::KalSegment &segmentLast = kalseed.segments().back();
       double fltLMin=segmentFirst.fmin();
       double fltLMax=segmentLast.fmax();
-      XYZVec momvec1, momvec2;
+      XYZVectorF momvec1, momvec2;
       segmentFirst.mom(fltLMin, momvec1);
       segmentLast.mom(fltLMax, momvec2);
-      double p1=Geom::Hep3Vec(momvec1).mag();
-      double p2=Geom::Hep3Vec(momvec2).mag();
+      double p1=mu2e::GenVector::Hep3Vec(momvec1).mag();
+      double p2=mu2e::GenVector::Hep3Vec(momvec2).mag();
 
       double t0   = kalseed.t0().t0();
       double flt0 = kalseed.flt0();
@@ -1398,15 +1392,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
 */
 
-        XYZVec pos1, pos2;
+        XYZVectorF pos1, pos2;
         segment.helix().position(fltLMin,pos1);
         segment.helix().position(fltLMax,pos2);
-        double x1=Geom::Hep3Vec(pos1).x();
-        double y1=Geom::Hep3Vec(pos1).y();
-        double z1=Geom::Hep3Vec(pos1).z();
-        double x2=Geom::Hep3Vec(pos2).x();
-        double y2=Geom::Hep3Vec(pos2).y();
-        double z2=Geom::Hep3Vec(pos2).z();
+        double x1=mu2e::GenVector::Hep3Vec(pos1).x();
+        double y1=mu2e::GenVector::Hep3Vec(pos1).y();
+        double z1=mu2e::GenVector::Hep3Vec(pos1).z();
+        double x2=mu2e::GenVector::Hep3Vec(pos2).x();
+        double y2=mu2e::GenVector::Hep3Vec(pos2).y();
+        double z2=mu2e::GenVector::Hep3Vec(pos2).z();
         double t1=t0+(fltLMin-flt0)/v;
         double t2=t0+(fltLMax-flt0)/v;
         boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
@@ -1418,9 +1412,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
         {
           double t=t0+(fltL-flt0)/v;
-          XYZVec pos;
+          XYZVectorF pos;
           segment.helix().position(fltL,pos);
-          CLHEP::Hep3Vector p = Geom::Hep3Vec(pos);
+          CLHEP::Hep3Vector p = mu2e::GenVector::Hep3Vec(pos);
           findBoundaryT(_tracksTimeMinmax, t);
           findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
@@ -1428,7 +1422,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-
 
   // TrkExt track
   trackInfos.clear();
@@ -1486,7 +1479,8 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
     std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator traj_iter;
     for(traj_iter=mcTrajectories->begin(); traj_iter!=mcTrajectories->end(); traj_iter++)
     {
-      if(traj_iter->first->id()==id)
+      if(traj_iter->first.key()==id.asUint())
+//      if(traj_iter->first->id()==id)
 //      if(traj_iter->second.sim()->id()==id)
       {
         const auto& points = traj_iter->second.points();
@@ -1499,7 +1493,6 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
         }
       }
     }
-    return;
   }
 }
 

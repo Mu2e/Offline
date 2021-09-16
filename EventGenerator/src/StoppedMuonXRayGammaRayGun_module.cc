@@ -13,6 +13,8 @@
 
 #include "cetlib_except/exception.h"
 
+#include "fhiclcpp/types/Sequence.h"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
@@ -35,7 +37,6 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "CLHEP/Random/RandFlat.h"
 #include "Offline/Mu2eUtilities/inc/Table.hh"
@@ -132,7 +133,6 @@ namespace mu2e {
     if ( _doHistograms ) bookHistograms();
   }
 
-
   //================================================================
   void StoppedMuonXRayGammaRayGun::produce(art::Event& event) {
 
@@ -211,10 +211,8 @@ namespace mu2e {
       }
     }
 
-
     event.put(std::move(output));
   }
-
 
   void StoppedMuonXRayGammaRayGun::bookHistograms(){
 
