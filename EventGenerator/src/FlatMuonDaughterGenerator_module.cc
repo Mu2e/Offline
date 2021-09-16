@@ -73,7 +73,7 @@ namespace mu2e {
     RandomUnitSphere   randomUnitSphere_;
     ProcessCode process;
     int pdgId_;
-    PDGCode::type pid 
+    PDGCode::type pid;
   };
 
   //================================================================
