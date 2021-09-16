@@ -95,9 +95,9 @@ namespace mu2e {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
     
-    if (pid == mu_minus) { process = ProcessCode::mu2eFlateMinus; } 
-    else if (pid == mu_plus) { process = ProcessCode::mu2eFlatePlus; }
-    else if (pid == gamma) { process = ProcessCode::mu2eFlatPhoton; }
+    if (pid == PDGCode::mu_minus) { process = ProcessCode::mu2eFlateMinus; } 
+    else if (pid == PDGCode::mu_plus) { process = ProcessCode::mu2eFlatePlus; }
+    else if (pid == PDGCode::gamma) { process = ProcessCode::mu2eFlatPhoton; }
     else {
       throw   cet::exception("BADINPUT")
         <<"FlatMuonDaughterGenerator::produce(): No process associated with chosen PDG id\n";
