@@ -33,7 +33,7 @@ namespace mu2e {
      
       std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector> DrawSciBar();
       void DrawHit2DXY(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list2DXY);
-      void DrawHit2DXY(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list2DYZ);
+      void DrawHit2DYZ(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list2DYZ);
       void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list3D);
       std::string DataTitle(const std::string &pstr, int n);
       #endif
