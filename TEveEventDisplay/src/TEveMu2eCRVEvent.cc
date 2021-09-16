@@ -34,7 +34,7 @@ namespace mu2e{
     sibarposition[1] = (spos.y());
     sibarposition[2] = (spos.z());
     TEveGeoShape *sibar = new TEveGeoShape();
-    sibar->SetShape(new TGeoBBox("sibar",sibardetails.x(),sibardetails.y(),sibardetails.z(), sibarposition));
+    sibar->SetShape(new TGeoBBox("sibar",sibardetails.z(),sibardetails.y(),sibardetails.x(), sibarposition));
     CrvList3D->AddElement(sibar);
 
 
@@ -47,7 +47,7 @@ namespace mu2e{
   }
 
          /*------------Function to 2D draw hits:-------------*/
-  void TEveMu2eCRVEvent::DrawHit2D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList2DXY, TEveElementList *CrvList2DYZ)
+  void TEveMu2eCRVEvent::DrawHit2DXY(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList2DXY)
   {
     auto [sibardetails, crvCounterPos] = DrawSciBar();  
     Double_t sibarposition[3];
@@ -56,10 +56,9 @@ namespace mu2e{
     sibarposition[2] = pointmmTocm(crvCounterPos.z());
 
     TEveGeoShape *sibar = new TEveGeoShape();
-    sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(sibardetails.x()),pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.z()/8), sibarposition));
+    sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(sibardetails.z()/6),pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.x()), sibarposition));
     sibar->SetMainTransparency(100);
     CrvList2DXY->AddElement(sibar);
-    CrvList2DYZ->AddElement(sibar);
 
     this->SetTitle((DataTitle(pstr, n)).c_str());
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
@@ -67,6 +66,26 @@ namespace mu2e{
     this->SetMarkerSize(mSize_);
     this->SetPickable(kTRUE);
     CrvList2DXY->AddElement(this);
+  }
+        
+  void TEveMu2eCRVEvent::DrawHit2DYZ(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList2DYZ)
+  {
+    auto [sibardetails, crvCounterPos] = DrawSciBar();  
+    Double_t sibarposition[3];
+    sibarposition[0] = 0.0;
+    sibarposition[1] = pointmmTocm(crvCounterPos.y());
+    sibarposition[2] = pointmmTocm(crvCounterPos.z());
+
+    TEveGeoShape *sibar = new TEveGeoShape();
+    sibar->SetShape(new TGeoBBox("sibar",0.0,pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.z()/8), sibarposition));
+    sibar->SetMainTransparency(100);
+    CrvList2DYZ->AddElement(sibar);
+
+    this->SetTitle((DataTitle(pstr, n)).c_str());
+    this->SetNextPoint(0.0, pointInMu2e.y(), pointInMu2e.z());
+    this->SetMarkerColor(mColor_);
+    this->SetMarkerSize(mSize_);
+    this->SetPickable(kTRUE);
     CrvList2DYZ->AddElement(this);
 
   }
