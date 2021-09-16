@@ -161,7 +161,8 @@ namespace mu2e{
       {
         const CrvRecoPulse &crvRecoPulse = crvcoincol->at(i);
         TEveMu2eCRVEvent *teve_crv3D = new TEveMu2eCRVEvent(crvRecoPulse);
-        TEveMu2eCRVEvent *teve_crv2D = new TEveMu2eCRVEvent(crvRecoPulse);
+        TEveMu2eCRVEvent *teve_crv2DXY = new TEveMu2eCRVEvent(crvRecoPulse);
+	TEveMu2eCRVEvent *teve_crv2DYZ = new TEveMu2eCRVEvent(crvRecoPulse);
         const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse.GetScintillatorBarIndex();
         const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
         CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
@@ -173,8 +174,10 @@ namespace mu2e{
           teve_crv3D->DrawHit3D("CRVHits3D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+
           to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " + to_string(crvRecoPulse.GetPulseTime()),  i + 1, pointInMu2e, CrvList3D);
           
-	  teve_crv2D->DrawHit2D("CRVHits2D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " +
-          to_string(crvRecoPulse.GetPulseTime()),  i + 1, crvCounterPos, CrvList2DXY, CrvList2DYZ);
+	  teve_crv2DXY->DrawHit2DXY("CRVHits2D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " +
+          to_string(crvRecoPulse.GetPulseTime()),  i + 1, crvCounterPos, CrvList2DXY);
+          teve_crv2DXY->DrawHit2DYZ("CRVHits2D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+ to_string(crvRecoPulse.GetPulseHeight()) + "Pulse Width = " +
+          to_string(crvRecoPulse.GetPulseTime()),  i + 1, crvCounterPos, CrvList2DYZ);
           fCrvList3D->AddElement(CrvList3D);
           fCrvList2DXY->AddElement(CrvList2DXY);
           fCrvList2DYZ->AddElement(CrvList2DYZ);
