@@ -71,7 +71,7 @@ namespace mu2e {
     CLHEP::RandFlat randFlat_;
     CLHEP::RandExponential randExp_;
     RandomUnitSphere   randomUnitSphere_;
-
+    ProcessCode process;
     int pdgId_;
   };
 
@@ -112,10 +112,18 @@ namespace mu2e {
     double randomMom = randFlat_.fire(startMom_, endMom_);
     double randomE = sqrt(particleMass_*particleMass_ + randomMom*randomMom);
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-    
     PDGCode::type pid = static_cast<PDGCode::type>(pdgId_);
+    
+    if (pid == 13) { process = ProcessCode::mu2eFlateMinus; } 
+    else if (pid == -13) { process = ProcessCode::mu2eFlatePlus; }
+    else if (pid == 22) { process = ProcessCode::mu2eFlatPhoton; }
+    else {
+      throw   cet::exception("BADINPUT")
+        <<"FlatMuonDaughterGenerator::produce(): No process associated with chosen PDG id\n";
+    }
+
     output->emplace_back(mustop,
-                         ProcessCode::mu2eFlateMinus,
+                         process,
                          pid,
                          mustop->endPosition(),
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(randomMom), randomE},
