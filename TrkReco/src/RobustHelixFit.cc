@@ -387,7 +387,7 @@ namespace mu2e
 
     if(!goodLambda( rhel.helicity(),lambda) ) return retval;
     rhel._lambda = lambda;
-
+    std::cout<<"rhel lambda in initFZ = "<<lambda<<std::endl;
     if (_diag){
       HelixData._diag.lambda_0 = rhel._lambda;
     }
@@ -741,7 +741,7 @@ namespace mu2e
       }
      
     fz0 /= count;
-    
+    std::cout<<"fz0 = "<<fz0<<" count = "<<count<<std::endl;
     if (_diag){
       HelixData._diag.nfz0counter = count;
     }
@@ -1034,7 +1034,7 @@ namespace mu2e
 	}
 	
 	rhel._lambda = xmp*dzdphisign;
-
+        std::cout<<"rhel lambda = "<<rhel._lambda<<std::endl;
 	if (_debug > 0) {
 	  printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   lambda = %1.1f\n", rhel._lambda);
 	}
@@ -1055,7 +1055,7 @@ namespace mu2e
 	if (acci.size() == 0) return;
 	float dphi = acci.weightedMedian();
 	rhel._fz0 = deltaPhi(0.0,rhel.fz0()+ dphi);
-
+        std::cout<<" rhel fz0 in fit FZ = "<<rhel._fz0<<std::endl;
 	// resolve the hit loops again
 	for (unsigned i=0; i<HelixData._chHitsToProcess.size(); ++i){ 
 	  hitP1    = &HelixData._chHitsToProcess[i];
@@ -1229,7 +1229,7 @@ namespace mu2e
         rhel->_rcent = sqrtf(center.Mag2());
         rhel->_fcent = polyAtan2(center.y(), center.x());//center.Phi();
         rhel->_radius = rho;
-
+        std::cout<<" rhel centre = "<<center.x()<<" "<<center.y()<<" radius = "<<rho<<std::endl;
 	// 	//check the number of strawHits associated with the track
 	// 	if (nStrawHits < _minnhit) return;
 
