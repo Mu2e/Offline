@@ -166,8 +166,7 @@ namespace mu2e{
         const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse.GetScintillatorBarIndex();
         const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
         CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
-        GeomHandle<DetectorSystem> det;
-        CLHEP::Hep3Vector pointInMu2e = det->toMu2e(crvCounterPos);
+        CLHEP::Hep3Vector pointInMu2e = crvCounterPos;
         hep3vectorTocm(crvCounterPos);
         string pos3D = "(" + to_string((double)crvCounterPos.x()) + ", " + to_string((double)crvCounterPos.y()) + ", " + to_string((double)crvCounterPos.z()) + ")";
         if((min_time == -1 && max_time == -1) or (crvRecoPulse.GetPulseTime() > min_time and crvRecoPulse.GetPulseTime() < max_time)){
