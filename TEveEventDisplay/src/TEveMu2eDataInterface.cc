@@ -1,4 +1,3 @@
-
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 
 using namespace mu2e;
@@ -110,7 +109,7 @@ namespace mu2e{
     double max, min;
     std::vector<double> alltime;
 
-    if (crvcoincol != 0){
+    if (crvcoincol->size() != 0){
       maxminCRV(crvcoincol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
@@ -135,10 +134,8 @@ namespace mu2e{
     if(alltime.size() !=0){
       auto order = std::minmax_element(alltime.begin(), alltime.end(),
          [] (auto const& lhs, auto const& rhs) { return lhs < rhs; });
-
       int min_pos = order.first - alltime.begin();
       int max_pos = order.second - alltime.begin();
-     
       time.at(0) = alltime.at(min_pos);
       time.at(1) = alltime.at(max_pos);
     }
@@ -148,7 +145,7 @@ namespace mu2e{
     return time;
   }
   
-  /*------------Function to add CRV information to the display:-------------*/
+ /*------------Function to add CRV information to the display:-------------*/
   void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, TEveMu2e2DProjection *CRV2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
      
     DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY,&fCrvList2DYZ, CRV2Dproj);
@@ -191,7 +188,9 @@ namespace mu2e{
       gEve->Redraw3D(kTRUE);
     }
   }
-      
+            
+
+    
   /*------------Function to add ComboHits to Tracker in 3D and 2D displays:-------------*/
   std::vector<double> TEveMu2eDataInterface::AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
 
