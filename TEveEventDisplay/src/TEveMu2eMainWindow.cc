@@ -882,11 +882,12 @@ namespace mu2e{
     
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
+      std::cout<<"times in "<<std::endl;
       std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-    
-      if(_data.crvcoincol->size()!=0 or _data.crvcoincol !=0){//std::cout<<"CRV info in set event"<<std::endl;
+      std::cout<<"times out "<<std::endl;
+      if(_data.crvcoincol->size()!=0 or _data.crvcoincol !=0){std::cout<<"CRV info in set event"<<std::endl;
       pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
-     // std::cout<<"CRV info in set event"<<std::endl;
+      std::cout<<"CRV info in set event"<<std::endl;
     
   }
       hitenergy = new vector<double>(2);

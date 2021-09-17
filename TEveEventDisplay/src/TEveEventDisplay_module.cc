@@ -86,7 +86,7 @@ namespace mu2e
   _accumulate(conf().accumulate()),
   _filler(conf().filler()),
   _particles(conf().particles())
-        {}
+  {}
       
       
   TEveEventDisplay::~TEveEventDisplay(){}

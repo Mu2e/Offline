@@ -109,20 +109,23 @@ namespace mu2e{
 	  std::vector <double> time = {-1, -1};
     double max, min;
     std::vector<double> alltime;
-
-    if (crvcoincol != 0){
+    std::cout<<"getting time "<<std::endl;
+    if (crvcoincol->size() != 0){
+    std::cout<<"getting time crv "<<std::endl;
       maxminCRV(crvcoincol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
     }
 
     if (chcol != 0){
+    std::cout<<"getting time chcol "<<std::endl;
       maxminT(chcol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
     }
  
     if (clustercol->size() != 0){
+    std::cout<<"getting clus "<<std::endl;
       maxminT(clustercol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
@@ -135,10 +138,10 @@ namespace mu2e{
     if(alltime.size() !=0){
       auto order = std::minmax_element(alltime.begin(), alltime.end(),
          [] (auto const& lhs, auto const& rhs) { return lhs < rhs; });
-
+       std::cout<<"getting time ordering "<<std::endl;
       int min_pos = order.first - alltime.begin();
       int max_pos = order.second - alltime.begin();
-     
+     std::cout<<"getting time "<<min_pos<<" "<<max_pos<<std::endl;
       time.at(0) = alltime.at(min_pos);
       time.at(1) = alltime.at(max_pos);
     }
@@ -153,6 +156,7 @@ namespace mu2e{
      
     DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY,&fCrvList2DYZ, CRV2Dproj);
     if(crvcoincol!=0){
+    
       TEveElementList *CrvList2DXY = new TEveElementList("CrvData2DXY");
       TEveElementList *CrvList2DYZ = new TEveElementList("CrvData2DYZ");
       TEveElementList *CrvList3D = new TEveElementList("CrvData3D");
@@ -185,7 +189,7 @@ namespace mu2e{
           
       CRV2Dproj->fXYMgr->ImportElements(fCrvList2DXY, CRV2Dproj->fEvtXYScene);
       CRV2Dproj->fRZMgr->ImportElements(fCrvList2DYZ, CRV2Dproj->fEvtRZScene);
-            
+      std::cout<<"TEve::CRV Point 5 "<<std::endl;
       gEve->AddElement(fCrvList3D);
       gEve->Redraw3D(kTRUE);
     }

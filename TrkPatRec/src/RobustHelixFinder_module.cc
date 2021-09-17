@@ -627,7 +627,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
       nhitsFace = facez->nChHits();
       if (nhitsFace == 0)                        continue;
       int        idFirstFaceCh(facez->idChBegin);
-	    std::cout<<"nHitsFace = "<<nHitsFace<<std::endl;
+	   
       for (int ip=0; ip<nhitsFace; ++ip){
 	hit = &helixData._chHitsToProcess[idFirstFaceCh + ip];
 	bool trash=hit->_flag.hasAnyProperty(_outlier);
