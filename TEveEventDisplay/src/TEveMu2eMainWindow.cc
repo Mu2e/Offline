@@ -889,7 +889,7 @@ namespace mu2e{
       pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
       std::cout<<"CRV info in set event"<<std::endl;
     
-  }
+    }
       hitenergy = new vector<double>(2);
     
       if(_data.chcol->size()!=0 or _data.chcol !=0) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
