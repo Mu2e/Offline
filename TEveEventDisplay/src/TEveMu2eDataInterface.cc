@@ -150,7 +150,7 @@ namespace mu2e{
   void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, TEveMu2e2DProjection *CRV2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
      
     DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY,&fCrvList2DYZ, CRV2Dproj);
-    if(crvcoincol!=0){
+    if(crvcoincol->size() !=0){
     
       TEveElementList *CrvList2DXY = new TEveElementList("CrvData2DXY");
       TEveElementList *CrvList2DYZ = new TEveElementList("CrvData2DYZ");
