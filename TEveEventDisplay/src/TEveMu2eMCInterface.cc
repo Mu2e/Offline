@@ -104,42 +104,42 @@ namespace mu2e{
       double posz = 3000.0;
       t->SetFontSize(15);
       switch(PDGCode) {
-          case 11:
+          case PDGCode::e_minus:
               color = 2;
               pid = "electron -";
               posy = 1400.0;
               break;
-          case -11:
+          case PDGCode::e_plus:
               color = 5;
               pid = "positron +";
               posy = 1500.0;
               break;
-          case 13:
+          case PDGCode::mu_minus:
               color = 3;
               pid = "muon - ";
               posy = 1600.0;
               break;
-          case -13:
+          case PDGCode::mu_plus:
               color = 46;
               pid = "muon + ";
               posy = 1700.0;
               break;
-          case -211:
+          case PDGCode::pi_minus:
               color = 6;
               pid = "pion -";
               posy = 1800.0;
               break;
-          case 211:
+          case PDGCode::pi_plus:
               color = 9;
               pid = "pion +";
               posy = 1900.0;
               break;
-          case 2212:
+          case PDGCode::proton:
               color = 4;
               pid = "proton";
               posy = 2000.0;
               break;
-          case 22:
+          case PDGCode::gamma:
               color = 8;
               pid = "gamma";
               posy = 2100.0;
