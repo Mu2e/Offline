@@ -27,14 +27,12 @@ namespace mu2e{
   void TEveMu2eCRVEvent::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList3D)
   {
     auto [sibardetails, crvCounterPos] = DrawSciBar();     
-    GeomHandle<DetectorSystem> det;
-    CLHEP::Hep3Vector spos = det->toMu2e(crvCounterPos);
     Double_t sibarposition[3];
-    sibarposition[0] = (spos.x());
-    sibarposition[1] = (spos.y());
-    sibarposition[2] = (spos.z());
+    sibarposition[0] = (crvCounterPos.x());
+    sibarposition[1] = (crvCounterPos.y());
+    sibarposition[2] = (crvCounterPos.z());
     TEveGeoShape *sibar = new TEveGeoShape();
-    sibar->SetShape(new TGeoBBox("sibar",sibardetails.z(),sibardetails.y(),sibardetails.x(), sibarposition));
+    sibar->SetShape(new TGeoBBox("sibar",sibardetails.x(),sibardetails.y(),sibardetails.z(), sibarposition));
     CrvList3D->AddElement(sibar);
 
 
@@ -56,7 +54,7 @@ namespace mu2e{
     sibarposition[2] = pointmmTocm(crvCounterPos.z());
 
     TEveGeoShape *sibar = new TEveGeoShape();
-    sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(sibardetails.z()/6),pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.x()), sibarposition));
+    sibar->SetShape(new TGeoBBox("sibar",pointmmTocm(sibardetails.x()),pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.z()), sibarposition));
     sibar->SetMainTransparency(100);
     CrvList2DXY->AddElement(sibar);
 
@@ -77,7 +75,7 @@ namespace mu2e{
     sibarposition[2] = pointmmTocm(crvCounterPos.z());
 
     TEveGeoShape *sibar = new TEveGeoShape();
-    sibar->SetShape(new TGeoBBox("sibar",0.0,pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.z()/8), sibarposition));
+    sibar->SetShape(new TGeoBBox("sibar",0.0,pointmmTocm(sibardetails.y()),pointmmTocm(sibardetails.z()), sibarposition));
     sibar->SetMainTransparency(100);
     CrvList2DYZ->AddElement(sibar);
 
