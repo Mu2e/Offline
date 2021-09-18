@@ -39,6 +39,7 @@
 #include <TEveProjectionManager.h>
 #include <TEveProjectionAxes.h>
 #include <TEveStraightLineSet.h>
+#include <TEveText.h>
 //libGeom
 #include <TGeoManager.h>
 //Mu2e:
@@ -85,6 +86,7 @@ namespace mu2e{
       void CreateMultiViews();
       void CreateCaloProjection();
       void CreateTrackerProjection();
+      void CreateCRVProjection();
       void PrepareTrackerProjectionTab(const art::Run& run);
       void PrepareCaloProjectionTab(const art::Run& run);
       void PrepareCRVProjectionTab(const art::Run& run);
@@ -97,7 +99,6 @@ namespace mu2e{
       Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
       
       void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int& runn, int& eventn, bool& update, bool isMCOnly);
-      void  fillEvent(bool firstLoop=false);
       bool  isClosed() const;
       int   getEventToFind(bool &findEvent) const;
       
@@ -114,17 +115,20 @@ namespace mu2e{
       std::vector<double> times;
 
       TEvePad *fPad;
+	TEvePad	*fPadCRV;
       TGSplitFrame *fSplitFrame;
-      TGSplitFrame *frm;
+	 TGSplitFrame *fSplitFrameCRV;
+      TGSplitFrame *frm; 
+	TGSplitFrame *frmCRV;
       TGLEmbeddedViewer *fViewer0;
       TGLEmbeddedViewer *fViewer1;
       TGLEmbeddedViewer *fViewer2;
       TGLEmbeddedViewer *fViewer3;
       TGLEmbeddedViewer *fViewer4;
-
+      TGLEmbeddedViewer *fViewer5;
       Bool_t fIsEmbedded;
 
-      TEveViewer *fViewer[5];
+      TEveViewer *fViewer[6];
       TEveProjectionManager *fRPhiMgr;
       TEveProjectionManager *fRhoZMgr;
       TEveProjectionManager *fXYMgr;
@@ -134,6 +138,8 @@ namespace mu2e{
       TEveProjectionManager *TfRZMgr = 0;
       TEveProjectionManager *CfXYMgr = 0;
       TEveProjectionManager *CfRZMgr = 0;
+		 TEveProjectionManager *CrfXYMgr = 0;
+      TEveProjectionManager *CrfRZMgr = 0;
       TGMainFrame* frmMain;
       TEveBrowser* browser;
       TEveScene *s = 0;
@@ -141,6 +147,8 @@ namespace mu2e{
       TEveScene *proj1 = 0;
       TEveScene *proj2 = 0;
       TEveScene *proj3 = 0;
+		TEveScene *proj4 = 0;
+		TEveScene *proj5 = 0;
 
       
       bool usereventSelected = false;
@@ -167,7 +175,6 @@ namespace mu2e{
       TEveMu2eTracker *Mu2eTracker  = new TEveMu2eTracker();
       TEveMu2eCRV *Mu2eCRV = new TEveMu2eCRV();
 
-      TText  *_eventNumberText, *_subrunNumberText, *_runNumberText, *_timeText, *_cminenergy;
       int _event, _subrun, _run;
       Data_Collections _data;
       Data_Collections _emptydata;
