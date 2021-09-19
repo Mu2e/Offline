@@ -17,7 +17,7 @@ CaloShowerStepMaker  :
     caloStepPointCollection : ["g4run:calorimeter"]
     usePhysVolInfo          : false
     physVolInfoInput        : "g4run"
-    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
+    caloMaterial            : ["G4_BARIUM_FLUORIDE", "Polyethylene092","CarbonFiber"]
     compressData            : true
     eDepThreshold           : 0 
     diagLevel               : 0
@@ -41,7 +41,7 @@ CaloShowerROMaker :
 #See doc-db 35519 for noise level discussion
 NoiseGenerator : 
 {
-    noiseWFSize             : 10000
+    noiseWFSize             : 2000
     elecNphotPerNs          : 0.18
     rinNphotPerNs           : 0.36
     darkNphotPerNs          : 0.60
@@ -68,7 +68,7 @@ CaloDigiMaker :
     minPeakADC              : @local::HitMakerMinPeakADC
     nBinsPeak		    : 2 
     endTimeBuffer           : 80
-    bufferDigi              : 16 
+    bufferDigi              : 20 
     diagLevel               : 0
 }
 

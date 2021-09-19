@@ -153,6 +153,8 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
               
+              if (diagLevel_ > 2) std::cout<<"Reco hit  id="<<SiPMID<<" eDep= "<<eDep<<"  time="<<time<<"   chi2="<<chi2/float(ndf)<<std::endl;
+              
               if (chi2/float(ndf) > maxChi2Cut_) continue;
            
               if (SiPMID%2==0) totEnergyReco += eDep;

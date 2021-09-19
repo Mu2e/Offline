@@ -18,8 +18,8 @@ TemplateProcessor :
 {
     windowPeak         : 3
     minPeakAmplitude   : 24
-    numNoiseBins       : 5
-    minDTPeaks         : 20
+    numNoiseBins       : 4
+    minDTPeaks         : 10
     psdThreshold       : 0.1
     chiThreshold       : 1.0
     refitLeadingEdge   : false
@@ -38,7 +38,7 @@ CaloRecoDigiMaker :
     TemplateProcessor   : { @table::TemplateProcessor }
     processorStrategy   : "TemplateFit"     
     digiSampling        : @local::HitMakerDigiSampling
-    maxChi2Cut          : 2.0
+    maxChi2Cut          : 7.0
     maxPlots            : 50
     diagLevel           : 0
 }
