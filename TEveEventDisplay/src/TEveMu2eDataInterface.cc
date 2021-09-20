@@ -110,7 +110,7 @@ namespace mu2e{
     double max, min;
     std::vector<double> alltime;
 
-    if (crvcoincol->size() != 0){
+    if (crvcoincol != 0){
       maxminCRV(crvcoincol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
@@ -122,7 +122,7 @@ namespace mu2e{
       alltime.push_back(min);
     }
  
-    if (clustercol->size() != 0){
+    if (clustercol != 0){
       maxminT(clustercol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
