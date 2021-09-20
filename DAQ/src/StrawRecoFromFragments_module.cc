@@ -13,9 +13,10 @@
 #include "art/Framework/Principal/Handle.h"
 #include "mu2e-artdaq-core/Overlays/FragmentType.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
+#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 
 #include "Offline/DataProducts/inc/TrkTypes.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
@@ -49,7 +50,7 @@ public:
   virtual void produce(Event&);
 
 private:
-  void analyze_tracker_(const artdaq::Fragment& f,
+  void analyze_tracker_(const mu2e::TrackerFragment& cc,
                         std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
                         std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs);
   int diagLevel_;
@@ -90,23 +91,47 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   pbt->pbtime_ = 0;
   pbt->pbterr_ = 0;
   event.put(std::move(pbt));
-
-  art::Handle<artdaq::Fragments> trkFragments;
-  size_t numTrkFrags(0);
+    
   size_t totalSize = 0;
-  event.getByLabel(trkFragmentsTag_, trkFragments);
-  if (!trkFragments.isValid()) {
+  size_t numTrkFrags = 0;
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
+
+  for (const auto& handle : fragmentHandles) {
+    if (!handle.isValid() || handle->empty()) {
+      continue;
+    }
+
+    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
+      for (const auto& cont : *handle) {
+        mu2e::Mu2eEventFragment mef(cont);
+        for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
+          auto pair = mef.trackerAtPtr(ii);
+          mu2e::TrackerFragment cc(pair);
+          analyze_tracker_(cc, straw_digis, straw_digi_adcs);
+
+          totalSize += pair.second;
+          numTrkFrags++;
+        }
+      }
+    } else {
+      if (handle->front().type() == mu2e::detail::FragmentType::TRK) {
+        for (auto frag : *handle) {
+          mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+          analyze_tracker_(cc, straw_digis, straw_digi_adcs);
+
+          totalSize += frag.dataSizeBytes();
+          numTrkFrags++;
+        }
+      }
+    }
+  }
+
+  if (numTrkFrags == 0) {
     std::cout << "[StrawRecoFromFragmnets::produce] found no Tracker fragments!"
 	      << std::endl;
     event.put(std::move(straw_digis));
     return;
-  }
-  numTrkFrags = trkFragments->size();
-  for (size_t idx = 0; idx < numTrkFrags; ++idx) {
-    auto size = ((*trkFragments)[idx]).sizeBytes(); // * sizeof(artdaq::RawDataType);
-    totalSize += size;
-    analyze_tracker_((*trkFragments)[idx], straw_digis, straw_digi_adcs);
-    //      std::cout << "\tTRK Fragment " << idx << " has size " << size << std::endl;
   }
   
   if (diagLevel_ > 1) {
@@ -131,16 +156,14 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
 } // produce()
 
 void art::StrawRecoFromFragmnets::analyze_tracker_(
-    const artdaq::Fragment& f, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
+    const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawDigiCollection> const& straw_digis,
     std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> const& straw_digi_adcs) {
 
-  mu2e::TrackerFragment cc(f);
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
     std::cout << "TrackerFragment: ";
     std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-    std::cout << "\tByte Count: " << f.dataSizeBytes() << std::endl;
     std::cout << std::endl;
     std::cout << "\t"
               << "====== Example Block Sizes ======" << std::endl;
@@ -184,19 +207,19 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
 
     if (diagLevel_ > 1) {
 
-      std::cout << "timestamp: " << static_cast<int>(hdr.GetEventWindowTag().GetEventWindowTag(true))
+      std::cout << "timestamp: " << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true))
                 << std::endl;
-      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr.GetSubsystemID()) << std::endl;
-      std::cout << "dtcID: " << static_cast<int>(hdr.GetID()) << std::endl;
-      std::cout << "rocID: " << static_cast<int>(hdr.GetLinkID()) << std::endl;
-      std::cout << "packetCount: " << static_cast<int>(hdr.GetPacketCount()) << std::endl;
-      std::cout << "EVB mode: " << static_cast<int>(hdr.GetEVBMode()) << std::endl;
+      std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
+      std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
+      std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
+      std::cout << "packetCount: " << static_cast<int>(hdr->GetPacketCount()) << std::endl;
+      std::cout << "EVB mode: " << static_cast<int>(hdr->GetEVBMode()) << std::endl;
 
       std::cout << std::endl;
     }
 
     // Parse phyiscs information from TRK packets
-    if (hdr.GetPacketCount() > 0 ) {
+    if (hdr->GetPacketCount() > 0) {
 
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx, useTrkADC_);
@@ -258,13 +281,14 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
           }
           std::cout << std::endl;
 
-          std::cout << "LOOP: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " " << curBlockIdx
+          std::cout << "LOOP: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " "
+                    << curBlockIdx
                     << std::endl;
 
           // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
           // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525
           // 1438
-          std::cout << "GREPMETRK: " << hdr.GetEventWindowTag().GetEventWindowTag(true) << " ";
+          std::cout << "GREPMETRK: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
           std::cout << sid.asUint16() << " ";
           std::cout << tdc[0] << " ";
           std::cout << tdc[1] << " ";
@@ -284,7 +308,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
     }
   }
 
-  cc.ClearUpgradedPackets();
+  //cc.ClearUpgradedPackets();
 }
 
 

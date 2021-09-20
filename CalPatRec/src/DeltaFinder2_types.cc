@@ -45,9 +45,9 @@ namespace mu2e {
       //-----------------------------------------------------------------------------
       // now define distances to the hits
       //-----------------------------------------------------------------------------
-      const XYZVec* h1 = &Hd1->fPos->pos();
+      const XYZVectorF* h1 = &Hd1->fPos->pos();
       Result->wd1 = (h1->x()-Result->x)*nx1+(h1->y()-Result->y)*ny1;
-      const XYZVec* h2 = &Hd2->fPos->pos();
+      const XYZVectorF* h2 = &Hd2->fPos->pos();
       Result->wd2 = (h2->x()-Result->x)*nx2+(h2->y()-Result->y)*ny2;
 
       return 0;

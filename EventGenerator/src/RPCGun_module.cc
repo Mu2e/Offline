@@ -27,6 +27,7 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "fhiclcpp/types/Sequence.h"
 
 // Mu2e includes
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -34,7 +35,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"

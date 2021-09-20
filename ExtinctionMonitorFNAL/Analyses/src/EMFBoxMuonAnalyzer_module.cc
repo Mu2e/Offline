@@ -21,12 +21,9 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
-#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 

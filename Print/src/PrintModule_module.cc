@@ -9,7 +9,6 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/Print/inc/ProductPrinter.hh"
 #include "Offline/Print/inc/StatusG4Printer.hh"
 #include "Offline/Print/inc/GenParticlePrinter.hh"
@@ -21,7 +20,9 @@
 #include "Offline/Print/inc/CaloDigiPrinter.hh"
 #include "Offline/Print/inc/CaloRecoDigiPrinter.hh"
 #include "Offline/Print/inc/CaloHitPrinter.hh"
+#include "Offline/Print/inc/CaloHitMCPrinter.hh"
 #include "Offline/Print/inc/CaloClusterPrinter.hh"
+#include "Offline/Print/inc/CaloClusterMCPrinter.hh"
 #include "Offline/Print/inc/CrvStepPrinter.hh"
 #include "Offline/Print/inc/CrvDigiPrinter.hh"
 #include "Offline/Print/inc/CrvDigiMCPrinter.hh"
@@ -76,8 +77,12 @@ namespace mu2e {
 	fhicl::Name("caloRecoDigiPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> CaloHitPrinter { 
 	fhicl::Name("caloHitPrinter") }; 
+      fhicl::Table<ProductPrinter::ConfigE> CaloHitMCPrinter { 
+	fhicl::Name("caloHitMCPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> caloClusterPrinter { 
 	fhicl::Name("caloClusterPrinter") }; 
+      fhicl::Table<ProductPrinter::ConfigE> caloClusterMCPrinter { 
+	fhicl::Name("caloClusterMCPrinter") }; 
       fhicl::Table<ProductPrinter::ConfigE> crvStepPrinter { 
 	fhicl::Name("crvStepPrinter") }; 
       fhicl::Table<ProductPrinter::Config> crvDigiPrinter { 
@@ -146,7 +151,6 @@ namespace mu2e {
 
 }
 
-
 mu2e::PrintModule::PrintModule(const Parameters& conf):
   art::EDAnalyzer(conf) {
   //cout << "start main pset\n"<< pset.to_string() << "\n end main pset"<< endl;
@@ -161,7 +165,9 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<CaloDigiPrinter>( conf().caloDigiPrinter() ) );
   _printers.push_back( make_unique<CaloRecoDigiPrinter>( conf().caloRecoDigiPrinter() ) );
   _printers.push_back( make_unique<CaloHitPrinter>( conf().CaloHitPrinter() ) );
+  _printers.push_back( make_unique<CaloHitMCPrinter>( conf().CaloHitMCPrinter() ) );
   _printers.push_back( make_unique<CaloClusterPrinter>( conf().caloClusterPrinter() ) );
+  _printers.push_back( make_unique<CaloClusterMCPrinter>( conf().caloClusterMCPrinter() ) );
   _printers.push_back( make_unique<CrvStepPrinter>( conf().crvStepPrinter() ) );
   _printers.push_back( make_unique<CrvDigiPrinter>( conf().crvDigiPrinter() ) );
   _printers.push_back( make_unique<CrvDigiMCPrinter>( conf().crvDigiMCPrinter() ) );
@@ -188,7 +194,6 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<TriggerResultsPrinter>( conf().triggerResultsPrinter() ) );
   _printers.push_back( make_unique<PrimaryParticlePrinter>( conf().primaryParticlePrinter() ) );
 }
-
 
 void mu2e::PrintModule::analyze(art::Event const& event) {
   cout 
@@ -218,6 +223,5 @@ void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
   cout << endl;
 
 }
-
 
 DEFINE_ART_MODULE(mu2e::PrintModule)

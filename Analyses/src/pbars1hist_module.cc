@@ -20,7 +20,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"

@@ -14,7 +14,7 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"

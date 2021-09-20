@@ -10,15 +10,17 @@
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include <stdint.h>
 // root includes
 #include "Rtypes.h"
 // art includes
+#ifndef __ROOTCLING__
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#endif
 // C++ includes
 #include <array>
 #include <vector>
@@ -32,13 +34,13 @@ namespace mu2e {
     // compatibility constructor (deprecated)
     ComboHit(const ComboHit&, StrawHitIndex, double);
     // accessors
-    XYZVec centerPos() const { return _pos - _wdist*_wdir; }
-    XYZVec const& pos() const { return _pos; }
-    XYZVec const& wdir() const { return _wdir; }
+    XYZVectorF centerPos() const { return _pos - _wdist*_wdir; }
+    XYZVectorF const& pos() const { return _pos; }
+    XYZVectorF const& wdir() const { return _wdir; }
 // CLHEP-versions of these for backwards compatibilty
-    CLHEP::Hep3Vector centerPosCLHEP() const { return Geom::Hep3Vec(_pos - _wdist*_wdir); }
-    CLHEP::Hep3Vector posCLHEP() const { return Geom::Hep3Vec(_pos); }
-    CLHEP::Hep3Vector wdirCLHEP() const { return Geom::Hep3Vec(_wdir); }
+    CLHEP::Hep3Vector centerPosCLHEP() const { return GenVector::Hep3Vec(_pos - _wdist*_wdir); }
+    CLHEP::Hep3Vector posCLHEP() const { return GenVector::Hep3Vec(_pos); }
+    CLHEP::Hep3Vector wdirCLHEP() const { return GenVector::Hep3Vec(_wdir); }
 //
     Float_t posRes(edir dir) const;
     Float_t energyDep() const { return _edep; }
@@ -68,9 +70,9 @@ namespace mu2e {
     PIArray const& indexArray() const { return _pind; }
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     //
-    XYZVec _pos; // position of this hit
-    XYZVec _wdir; // 'direction' of this hit, used to define error elipsoid axis
-    XYZVec _sdir;           // straw radial direction, perp to Z and wire direction
+    XYZVectorF _pos; // position of this hit
+    XYZVectorF _wdir; // 'direction' of this hit, used to define error elipsoid axis
+    XYZVectorF _sdir;           // straw radial direction, perp to Z and wire direction
     Float_t _wres, _tres; // resolution along and transverse to the 'wire' direction
     Float_t _wdist; // distance from wire center along this direction (agregate)
     Float_t _time, _edep, _qual; // derived StrawHit (agregate) info
@@ -95,6 +97,7 @@ namespace mu2e {
       typedef std::vector<ComboHitCollection::const_iterator> CHCIter;
       // fill a vector of indices to the underlying digis used in a given ComboHit
       // This function is called recursively, so the the vector must be empty on the top-most call
+#ifndef __ROOTCLING__
       void fillStrawDigiIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
       // similarly fill to the StrawHit level
       void fillStrawHitIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
@@ -110,6 +113,7 @@ namespace mu2e {
       // set the parent Id given a handle to the parent collection
       void setParent(art::Handle<ComboHitCollection> const& phandle);
       // or directly from the product ID
+#endif
       void setParent(art::ProductID const& par){ _parent = par; }
       // accessors
       art::ProductID const& parent() const { return _parent; }
@@ -128,5 +132,3 @@ namespace mu2e {
   }
 }
 #endif
-
-

@@ -54,7 +54,7 @@ namespace mu2e {
       PositronNuclear,        ProtonInelastic,         SigmaMinusInelastic, SigmaPlusInelastic, // 47
       StepLimiter,            Transportation,          TritonInelastic,     XiMinusInelastic, // 51
       XiZeroInelastic,        mu2eLowEKine,            mu2eKillerVolume,    mu2eMaxSteps,  // 55
-      mu2ePrimary,            unused001,               hadElastic,          CoulombScat, // 59
+      mu2ePrimary,            mu2eSpecialCutsProcess,  hadElastic,          CoulombScat, // 59
       nuclearStopping,        mu2eMaxGlobalTime,       TNuclearCapture,     muMinusAtomicCapture, // 63
       MuAtomDecay,            Rayl,                    ionInelastic,        He3Inelastic, // 67
       alphaInelastic,         AntiHe3InelasticProcess, AntiAlphaInelasticProcess, AntiDeuteronInelastic, // 71
@@ -72,7 +72,7 @@ namespace mu2e {
       muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr, // 119
       G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary, // 123
       Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit, // 127
-      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,  // 131
+      G4ErrorMagFieldLimit,   ePairProd,               mu2eFieldPropagator, mu2eRecorderProcess,  // 131
       mu2eProtonInelastic,    RadioactiveDecayBase,    B_PlusInelastic,     B_MinusInelastic, // 135
       B0Inelastic,            Bc_PlusInelastic,        Bc_MinusInelastic,   Bs0Inelastic, // 139
       D_PlusInelastic,        D_MinusInelastic,        D0Inelastic,         Ds_PlusInelastic, // 143
@@ -81,13 +81,15 @@ namespace mu2e {
       anti_xi_b_MinusInelastic, anti_xi_b0Inelastic,   anti_xi_c_PlusInelastic, anti_xi_c0Inelastic, // 155
       lambda_bInelastic,      lambda_c_PlusInelastic,  omega_b_MinusInelastic, omega_c0Inelastic, // 159
       xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, //163
-      truncated, // 164
-      mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest, // 166
       // stopped-muon physics processes, specific to Mu2e
+      truncated, mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest, // 166
       mu2eCeMinusEndpoint,    mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, // 170
       mu2eInternalRMC,        mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, // 174
       mu2eFlatPhoton, // 175
-      Mu2eGammaDaughterCut, //176
+      Mu2eGammaDaughterCut, //176, previously mu2eunused1
+      mu2eunused2, mu2eunused3, mu2eunused4,
+      mu2eunused5, mu2eunused6, mu2eunused7, mu2eunused8,
+      uninitialized,
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -99,20 +101,20 @@ namespace mu2e {
     "unknown",                "AlphaInelastic",          "annihil",             "AntiLambdaInelastic", \
     "AntiNeutronInelastic",   "AntiOmegaMinusInelastic", "AntiProtonInelastic", "AntiSigmaMinusInelastic", \
     "AntiSigmaPlusInelastic", "AntiXiMinusInelastic",    "AntiXiZeroInelastic", "CHIPSNuclearCaptureAtRest", \
-    "compt",                  "conv",                    "Decay",               "DeuteronInelastic", \
-    "eBrem",                  "eIoni",                   "ElectroNuclear",      "hBrems", \
-    "hElastic",               "hIoni",                   "hPairProd",           "ionIoni", \
-    "KaonMinusInelastic",     "KaonPlusInelastic",       "KaonZeroLInelastic",  "KaonZeroSInelastic", \
-    "LambdaInelastic",        "msc",                     "muBrems",             "muIoni", \
-    "muMinusCaptureAtRest",   "muMsc",                   "muPairProd",          "nCapture", \
-    "NeutronInelastic",       "nFission",                "nKiller",             "OmegaMinusInelastic", \
-    "phot",                   "PhotonInelastic",         "PionMinusInelastic",  "PionPlusInelastic", \
-    "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic", \
-    "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic", \
-    "XiZeroInelastic",        "mu2eLowEKine",            "mu2eKillerVolume",    "mu2eMaxSteps", \
-    "mu2ePrimary",            "unused001",		 "hadElastic",          "CoulombScat", \
-    "nuclearStopping",        "mu2eMaxGlobalTime",       "TNuclearCapture",     "muMinusAtomicCapture", \
-    "MuAtomDecay",            "Rayl",                    "ionInelastic",        "He3Inelastic", \
+    "compt",                  "conv",                    "Decay",               "DeuteronInelastic",         \
+    "eBrem",                  "eIoni",                   "ElectroNuclear",      "hBrems",                    \
+    "hElastic",               "hIoni",                   "hPairProd",           "ionIoni",                   \
+    "KaonMinusInelastic",     "KaonPlusInelastic",       "KaonZeroLInelastic",  "KaonZeroSInelastic",        \
+    "LambdaInelastic",        "msc",                     "muBrems",             "muIoni",                    \
+    "muMinusCaptureAtRest",   "muMsc",                   "muPairProd",          "nCapture",                  \
+    "NeutronInelastic",       "nFission",                "nKiller",             "OmegaMinusInelastic",       \
+    "phot",                   "PhotonInelastic",         "PionMinusInelastic",  "PionPlusInelastic",         \
+    "PositronNuclear",        "ProtonInelastic",         "SigmaMinusInelastic", "SigmaPlusInelastic",        \
+    "StepLimiter",            "Transportation",          "TritonInelastic",     "XiMinusInelastic",          \
+    "XiZeroInelastic",        "mu2eLowEKine",            "mu2eKillerVolume",    "mu2eMaxSteps",              \
+    "mu2ePrimary",            "mu2eSpecialCutsProcess",  "hadElastic",          "CoulombScat",               \
+    "nuclearStopping",        "mu2eMaxGlobalTime",       "TNuclearCapture",     "muMinusAtomicCapture",      \
+    "MuAtomDecay",            "Rayl",                    "ionInelastic",        "He3Inelastic",              \
     "alphaInelastic",         "AntiHe3InelasticProcess", "AntiAlphaInelasticProcess", "AntiDeuteronInelastic", \
     "dInelastic",             "tInelastic",              "RadioactiveDecay",    "CHIPS_Inelastic", \
     "NotSpecified",           "hFritiofCaptureAtRest",   "hBertiniCaptureAtRest", "AntiTritonInelasticProcess", \
@@ -128,7 +130,7 @@ namespace mu2e {
     "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr", \
     "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
     "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
-    "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator",        "Mu2eRecorderProcess", \
+    "G4ErrorMagFieldLimit",   "ePairProd",               "mu2eFieldPropagator",    "mu2eRecorderProcess", \
     "mu2eProtonInelastic",    "RadioactiveDecayBase",      "B+Inelastic",         "B-Inelastic", \
     "B0Inelastic",            "Bc+Inelastic",            "Bc-Inelastic",        "Bs0Inelastic", \
     "D+Inelastic",            "D-Inelastic",             "D0Inelastic",         "Ds+Inelastic", \
@@ -137,13 +139,14 @@ namespace mu2e {
     "anti_xi_b-Inelastic",    "anti_xi_b0Inelastic",     "anti_xi_c+Inelastic", "anti_xi_c0Inelastic", \
     "lambda_bInelastic",      "lambda_c+Inelastic",      "omega_b-Inelastic",   "omega_c0Inelastic", \
     "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic", \
-    "truncated",                                                      \
-    "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest",                   \
+    "truncated", "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest",                   \
     "mu2eCeMinusEndpoint",    "mu2eCeMinusLeadingLog",   "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", \
     "mu2eInternalRMC",        "mu2eExternalRMC",         "mu2eFlateMinus",      "mu2eFlatePlus", \
     "mu2eFlatPhoton",                                                 \
     "Mu2eGammaDaughterCut",                                           \
-
+    "mu2eunused2", "mu2eunused3", "mu2eunused4", \
+    "mu2eunused5", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
+    "uninitialized"
 
   public:
 
@@ -154,8 +157,8 @@ namespace mu2e {
 
     // ROOT requires a default c'tor.
     ProcessCode():
-      _id(unknown){
-    }
+      _id(uninitialized){
+      }
 
     // Accept compiler supplied d'tor, copy c'tor and assignment operator.
 
@@ -205,8 +208,7 @@ namespace mu2e {
 
     // Check validity of an Id. Unknown is defined to be valid.
     static bool isValid( enum_type id){
-      if ( id <  unknown  ) return false;
-      if ( id >= lastEnum ) return false;
+      if ( id <  unknown  || id >= lastEnum ) return false;
       return true;
     }
 

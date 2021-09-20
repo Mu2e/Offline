@@ -20,8 +20,8 @@
 
 // From Mu2e
 #include "Offline/Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"

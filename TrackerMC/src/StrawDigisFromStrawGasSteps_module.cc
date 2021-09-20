@@ -8,6 +8,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -265,8 +266,8 @@ namespace mu2e {
 	    SWFP const& wf, WFXPList const& xings);
 	void digiDiag(StrawPhysics const& strawphys, SWFP const& wf, WFXP const& xpair, StrawDigi const& digi, StrawDigiADCWaveform const& digiadc, StrawDigiMC const& mcdigi);
 	void stepDiag(StrawPhysics const& strawphys, StrawElectronics const& strawele, StrawGasStep const& sgs);
-	StrawPosition strawPosition( XYZVec const& cpos,Straw const& straw) const;
-	XYZVec strawPosition( StrawPosition const& cpos, Straw const& straw) const;
+	StrawPosition strawPosition( XYZVectorF const& cpos,Straw const& straw) const;
+	XYZVectorF strawPosition( StrawPosition const& cpos, Straw const& straw) const;
     };
 
     StrawDigisFromStrawGasSteps::StrawDigisFromStrawGasSteps(const Parameters& config) :
@@ -916,14 +917,14 @@ namespace mu2e {
 
     void StrawDigisFromStrawGasSteps::fillClusterPositions(StrawGasStep const& sgs, Straw const& straw, std::vector<StrawPosition>& cposv) {
       // generate a random position between the start and end points.
-      XYZVec path = sgs.endPosition() - sgs.startPosition();
+      XYZVectorF path = sgs.endPosition() - sgs.startPosition();
       for(auto& cpos : cposv) {
-	XYZVec pos = sgs.startPosition() + _randflat.fire(1.0)*path;
+	XYZVectorF pos = sgs.startPosition() + _randflat.fire(1.0)*path;
       	// randomize the position by width.  This needs to be 2-d to avoid problems at the origin
 	if(_randrad){
-	  XYZVec sdir = Geom::toXYZVec(straw.getDirection());
-	  XYZVec p1 = path.Cross(sdir).Unit();
-	  XYZVec p2 = path.Cross(p1).Unit();
+	  XYZVectorF sdir = XYZVectorF(straw.getDirection());
+	  XYZVectorF p1 = path.Cross(sdir).Unit();
+	  XYZVectorF p2 = path.Cross(p1).Unit();
 	  pos += p1*_randgauss.fire()*sgs.width();
 	  pos += p2*_randgauss.fire()*sgs.width();
 	}
@@ -1010,7 +1011,7 @@ namespace mu2e {
 	  // compute direction perpendicular to wire and momentum
 	  auto const& sgs = ixing->at(iend)._iclust->strawGasStep();
 	  if(!sgs.isNull()){
-	    Hep3Vector pdir = straw.getDirection().cross(Geom::Hep3Vec(sgs->momentum())).unit();
+	    Hep3Vector pdir = straw.getDirection().cross(GenVector::Hep3Vec(sgs->momentum())).unit();
 	    // project the differences in position to get the perp distance
 	    _xpdist[iend] = pdir.dot(sgs->position()-straw.getMidPoint());
 	  }
@@ -1022,7 +1023,7 @@ namespace mu2e {
 	    _xwdist[iend] = clusts.front().wireDistance();
 	    auto const& sgs = clusts.front().strawGasStep();
 	    if(!sgs.isNull()){
-	      Hep3Vector pdir = straw.getDirection().cross(Geom::Hep3Vec(sgs->momentum())).unit();
+	      Hep3Vector pdir = straw.getDirection().cross(GenVector::Hep3Vec(sgs->momentum())).unit();
 	      // project the differences in position to get the perp distance
 	      _xpdist[iend] = pdir.dot(sgs->position()-straw.getMidPoint());
 	    }
@@ -1182,9 +1183,9 @@ namespace mu2e {
       _mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle()) + _pbtimemc; 
       // compute the doca for this step
       TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
-	  Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+	  GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
       _mcdca = pca.dca();
-      auto spos = strawPosition(Geom::toXYZVec(pca.point2()),straw);
+      auto spos = strawPosition(XYZVectorF(pca.point2()),straw);
       _mcdcaphi = spos.Phi(); 
       _mcdcadtime = strawphys.driftDistanceToTime(_mcdca,_mcdcaphi); 
       _dmcmom = sqrt(sgs.momentum().mag2());
@@ -1230,28 +1231,28 @@ namespace mu2e {
       _sdiag->Fill();
     }
 
-    StrawPosition StrawDigisFromStrawGasSteps::strawPosition( XYZVec const& cpos,Straw const& straw) const {
-      static XYZVec zdir(0.0,0.0,1.0);
-      XYZVec smid = Geom::toXYZVec(straw.getMidPoint());
-      XYZVec delta = cpos - smid; // cluster position WRT straw middle
-      XYZVec sdir = Geom::toXYZVec(straw.getDirection());
-      XYZVec pdir = sdir.Cross(zdir); // radial direction
+    StrawPosition StrawDigisFromStrawGasSteps::strawPosition( XYZVectorF const& cpos,Straw const& straw) const {
+      static XYZVectorF zdir(0.0,0.0,1.0);
+      XYZVectorF smid = XYZVectorF(straw.getMidPoint());
+      XYZVectorF delta = cpos - smid; // cluster position WRT straw middle
+      XYZVectorF sdir = XYZVectorF(straw.getDirection());
+      XYZVectorF pdir = sdir.Cross(zdir); // radial direction
       if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
       float dw = delta.Dot(sdir);
-      XYZVec cperp = delta - dw*sdir; // just perp part
+      XYZVectorF cperp = delta - dw*sdir; // just perp part
       float phi = atan2(cperp.Dot(pdir),cperp.Dot(zdir));// angle around wire WRT Z axis in range -pi,pi
       float rho = min(sqrt(cperp.mag2()),(float)_rstraw); // truncate!
       return StrawPosition(rho,dw,phi);
     }
 
-    XYZVec StrawDigisFromStrawGasSteps::strawPosition( StrawPosition const& cpos, Straw const& straw) const {
-      static XYZVec zdir(0.0,0.0,1.0);
-      XYZVec smid = Geom::toXYZVec(straw.getMidPoint());
-      XYZVec sdir = Geom::toXYZVec(straw.getDirection());
-      XYZVec pdir = sdir.Cross(zdir);
+    XYZVectorF StrawDigisFromStrawGasSteps::strawPosition( StrawPosition const& cpos, Straw const& straw) const {
+      static XYZVectorF zdir(0.0,0.0,1.0);
+      XYZVectorF smid = XYZVectorF(straw.getMidPoint());
+      XYZVectorF sdir = XYZVectorF(straw.getDirection());
+      XYZVectorF pdir = sdir.Cross(zdir);
       if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
-      XYZVec cdir = cos(cpos.Phi())*zdir + sin(cpos.Phi())*pdir; // cluster direction perp to wire
-      XYZVec retval = smid + cpos.Z()*sdir + cpos.Rho()*cdir;
+      XYZVectorF cdir = cos(cpos.Phi())*zdir + sin(cpos.Phi())*pdir; // cluster direction perp to wire
+      XYZVectorF retval = smid + cpos.Z()*sdir + cpos.Rho()*cdir;
       return retval; 
     }
 

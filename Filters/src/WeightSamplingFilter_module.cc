@@ -21,7 +21,7 @@
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 
 

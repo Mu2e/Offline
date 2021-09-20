@@ -11,7 +11,7 @@
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
-#include "Offline/MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
 namespace mu2e {
 

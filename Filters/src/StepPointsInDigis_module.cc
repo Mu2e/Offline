@@ -26,9 +26,9 @@
 
 #include "TTree.h"
 
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CrvDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"

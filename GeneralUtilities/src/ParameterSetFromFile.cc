@@ -1,5 +1,4 @@
 //
-//
 // Read a .fcl file and form a parameter set object.
 //
 
@@ -12,7 +11,6 @@
 #include "cetlib/filepath_maker.h"
 
 #include <iostream>
-#include <iostream>
 
 mu2e::ParameterSetFromFile::
 ParameterSetFromFile( std::string const& fileName ):
@@ -24,7 +22,6 @@ ParameterSetFromFile( std::string const& fileName ):
   _pSet = fhicl::ParameterSet::make(tbl);
 
 }
-
 
 void
 mu2e::ParameterSetFromFile::printKeys( std::ostream& out ) const

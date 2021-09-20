@@ -9,8 +9,6 @@
 
 #include "Offline/Mu2eG4/g4study/g4study_Tube_geom.txt"
 
-// int            mu2e.studyEnvVersion      = 1;
-// 1 tube; 2 box
 string         tube.wallMaterialName = "G4_Al";
 
 //

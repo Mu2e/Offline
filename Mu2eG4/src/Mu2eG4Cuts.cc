@@ -24,7 +24,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 

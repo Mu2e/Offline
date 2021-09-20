@@ -19,7 +19,7 @@ namespace art {
 
 class KalRep;
 
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"

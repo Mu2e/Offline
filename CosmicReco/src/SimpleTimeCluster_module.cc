@@ -3,6 +3,7 @@
 //Purpose: To improve TimeClustering for Cosmics
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -41,6 +42,7 @@ namespace mu2e {
         using Comment=fhicl::Comment;
         fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
         fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),5};
+        fhicl::OptionalAtom<int> maxnsh {Name("maxNStrawHits"), Comment("maximum number of straw hits ")};
         fhicl::Atom<double> timewindow {Name("TimeWindow"), Comment("Width of time window in ns"),100};
         fhicl::Atom<bool> testflag {Name("TestFlag"),Comment("Test StrawHitFlags")};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
@@ -57,6 +59,8 @@ namespace mu2e {
       int               _iev;
       int               _debug;
       int               _minnsh;
+      bool              _hasmaxnsh;
+      int               _maxnsh;
       double            _timeWindow;
       bool		_testflag;
       art::InputTag  _chToken;
@@ -74,6 +78,8 @@ namespace mu2e {
     art::EDProducer(conf),
     _debug (conf().debug()),
     _minnsh (conf().minnsh()),
+    _hasmaxnsh (false),
+    _maxnsh (0),
     _timeWindow (conf().timewindow()),
     _testflag (conf().testflag()),
     _chToken (conf().chToken()),
@@ -81,6 +87,7 @@ namespace mu2e {
     _hsel (conf().hsel()),
     _hbkg (conf().hbkg())
   {
+    _hasmaxnsh = conf().maxnsh(_maxnsh);
     produces<TimeClusterCollection>();
   }
 
@@ -158,6 +165,7 @@ namespace mu2e {
     }
 
     if (maxCount < _minnsh) return;
+    if (_hasmaxnsh && maxCount > _maxnsh) return;
 
     TimeCluster tclust;
     tclust._nsh = 0;

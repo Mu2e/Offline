@@ -8,6 +8,8 @@
 
 #include "cetlib_except/exception.h"
 
+#include "fhiclcpp/types/Sequence.h"
+
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
@@ -25,7 +27,6 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"

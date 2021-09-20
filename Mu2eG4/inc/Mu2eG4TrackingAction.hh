@@ -12,7 +12,7 @@
 
 #include "Geant4/G4UserTrackingAction.hh"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "Offline/Mu2eG4/inc/EventNumberList.hh"
 #include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -32,6 +32,7 @@ namespace mu2e {
   class Mu2eG4SteppingAction;
   class Mu2eG4PerThreadStorage;
   class PhysicalVolumeHelper;
+  class Mu2eG4ResourceLimits;
   namespace Mu2eG4Config { class Top; }
 
 
@@ -68,6 +69,8 @@ namespace mu2e {
     unsigned        nG4Tracks() const { return _currentSize;}
     bool overflowSimParticles() const { return _overflowSimParticles; }
     unsigned nKilledByFieldPropagator() const { return _nKilledByFieldPropagator; }
+    unsigned nKilledStepLimit() const { return _numKilledTracks; }
+
 
   private:
 
@@ -102,7 +105,10 @@ namespace mu2e {
     double _saveTrajectoryMomentumCut;
     int    _mcTrajectoryMinSteps;
     unsigned _nKilledByFieldPropagator;
+    unsigned _numKilledTracks;
     double _rangeToIgnore;
+
+    const Mu2eG4ResourceLimits & _mu2elimits;
 
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
     Mu2eG4SteppingAction * _steppingAction;

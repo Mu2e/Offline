@@ -38,7 +38,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/Mu2eUtilities/inc/Table.hh"

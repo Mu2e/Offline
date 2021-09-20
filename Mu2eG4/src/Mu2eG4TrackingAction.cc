@@ -36,7 +36,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
@@ -77,7 +77,9 @@ namespace mu2e {
     _saveTrajectoryMomentumCut(pts->ioconf.trajectoryControl().saveTrajectoryMomentumCut()),
     _mcTrajectoryMinSteps(pts->ioconf.trajectoryControl().mcTrajectoryMinSteps()),
     _nKilledByFieldPropagator(0),
+    _numKilledTracks(0),
     _rangeToIgnore(conf.physics().rangeToIgnore()),
+    _mu2elimits(pts->ioconf.mu2elimits()),
     _steppingAction(steppingAction),
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
@@ -283,6 +285,7 @@ namespace mu2e {
     _currentSize          = 0;
     _overflowSimParticles = false;
     _nKilledByFieldPropagator = 0;
+    _numKilledTracks = 0;
 
   }//beginEvent
 
@@ -523,7 +526,7 @@ namespace mu2e {
 
     if (pname == "Transportation" &&
         Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trVerbosity)) {
-      pname = G4String("FieldPropagator");
+      pname = G4String("mu2eFieldPropagator");
       if ( !(trk->GetDefinition()->GetPDGEncoding() == 11 || // electron & proton codes hardcoded for now
              trk->GetDefinition()->GetPDGEncoding() == 2212 ) ||
            G4LossTableManager::Instance()->
@@ -533,6 +536,22 @@ namespace mu2e {
         // count non electrons/protons or electrons/protons which have a range which is likely to make them travel
         ++_nKilledByFieldPropagator;
       }
+
+    }
+
+    if ( pname == "mu2eSpecialCutsProcess"
+         && trk->GetCurrentStepNumber() >= static_cast<int>(_mu2elimits.maxStepsPerTrack())) {
+      if ( _stepLimitKillerVerbose ) {
+        G4cout << __func__ << " WARNING: kill particle in "
+               << trk->GetStep()->GetPreStepPoint()->
+          GetPhysicalVolume()->GetLogicalVolume()->GetName()
+               << " due to large number of steps." << G4endl;
+        Mu2eG4UserHelpers::printKilledTrackInfo(trk);
+      }
+      ++_numKilledTracks;
+
+      // Changing the pname to the old name used in such cases
+      pname = G4String("mu2eMaxSteps");
 
     }
 

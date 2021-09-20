@@ -28,7 +28,7 @@ TrkReco: { @table::TrkReco
 	mcUtils            : { @table::TrkReco.McUtils } # defined on top of this file
     }
 
-    RobustHelixFit : {
+  RobustHelixFit : {
 	diagLevel      : 0
 	debugLevel     : 0
 	CircleInitType : 0     # 0=median, 1=mean

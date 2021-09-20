@@ -14,7 +14,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Offline/Mu2eG4/inc/SimParticleHelper.hh"
 #include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 // G4 includes
 #include "Geant4/G4Step.hh"

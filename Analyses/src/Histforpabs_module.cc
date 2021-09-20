@@ -22,8 +22,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // Mu2e includes.
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 // Root includes.
 #include "TApplication.h"
