@@ -18,6 +18,7 @@ namespace mu2e {
       timeProp_ (), 
       cdf_      (), 
       nTimeDiv_ (0), 
+      nZDiv_ (0),
       dzTime_   (0), 
       randFlat_ (engine),
       lightSpeed_(300)
@@ -41,6 +42,7 @@ namespace mu2e {
 
        dzTime_   = hist->GetXaxis()->GetBinWidth(1);
        nTimeDiv_ = hist->GetNbinsY();
+       nZDiv_ = hist->GetNbinsX();
        for (unsigned iy=1;iy<=nTimeDiv_;++iy) timeProp_.push_back(hist->GetYaxis()->GetBinCenter(iy));
        cdf_.reserve(hist->GetNbinsX()*hist->GetNbinsY());
 
@@ -64,10 +66,11 @@ namespace mu2e {
    //----------------------------------------------------------------------------
    float CaloPhotonPropagation::propTimeSimu(float z)
    {       
-       int      iz   = int(z/dzTime_);       
+       unsigned iz   = z/dzTime_;
+       if(iz>=nZDiv_) iz = nZDiv_ - 1;
        float    test = randFlat_.fire(0.0,1.0);
        unsigned ibin = nTimeDiv_*iz;
-       unsigned iend = ibin + nTimeDiv_;
+       unsigned iend = ibin + nTimeDiv_ - 1;
        
        while (cdf_[ibin]<test && ibin < iend) ++ibin;
        return timeProp_[ibin-iz*nTimeDiv_];
