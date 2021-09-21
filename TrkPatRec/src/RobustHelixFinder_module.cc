@@ -1297,4 +1297,3 @@ namespace mu2e {
 }
 using mu2e::RobustHelixFinder;
 DEFINE_ART_MODULE(RobustHelixFinder);
-
