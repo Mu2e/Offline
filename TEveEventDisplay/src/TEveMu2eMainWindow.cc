@@ -21,11 +21,13 @@ using namespace mu2e;
 
 namespace mu2e{
 
+  /*------ Default Constructor ------ */
   TEveMu2eMainWindow::TEveMu2eMainWindow() : TGMainFrame(gClient->GetRoot(), 320, 320){}
 
   /*------------Function to construct main frame, add buttons and GUI:-------------*/
-  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset):
+  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, DrawOptions drawOpts) :
     TGMainFrame(p, w, h),
+    DrawOpts(drawOpts),
     fTeRun(0),
     fTeEvt(0),
     fTTEvt(0),
@@ -49,7 +51,7 @@ namespace mu2e{
 	    //Build GUI (function below)
       CreateGUI();
       //Build Multiple View Window:
-      //CreateMultiViews();
+      //CreateMultiViews(); --> option for pop up window no deprecated
       //Add your Event:
       gEve->AddEvent(new TEveEventManager("Event", "Empty Event"));
     
@@ -398,7 +400,7 @@ namespace mu2e{
   /*------------Function to create 2D Tabs:-------------*/
   void TEveMu2eMainWindow::StartProjectionTabs(){
           if(DrawOpts.addCRVInfo) {pass_proj->CreateCRVProjection(CRV2Dproj);}
-          pass_proj->CreateCaloProjection(calo2Dproj);
+          if(DrawOpts.addClusters or DrawOpts.addCryHits)pass_proj->CreateCaloProjection(calo2Dproj);
           pass_proj->CreateTrackerProjection(tracker2Dproj);
   }
         

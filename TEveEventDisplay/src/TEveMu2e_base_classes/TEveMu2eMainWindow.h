@@ -94,8 +94,8 @@ namespace mu2e{
       TEveMu2eMainWindow();
       TEveMu2eMainWindow(const TEveMu2eMainWindow &);
       TEveMu2eMainWindow& operator=(const TEveMu2eMainWindow &);
-      TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset);
-      TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, DrawOptions drawOpts) : DrawOpts(drawOpts) {};
+      
+      TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, DrawOptions drawOpts);
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
       
