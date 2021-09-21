@@ -72,6 +72,20 @@ class TText;
 class TGSplitFrame;
 class TGLOverlayButton;
 namespace mu2e{
+
+  struct DrawOptions{
+    // data options
+    bool addCRVInfo = false;
+    bool addCosmicTracks = false;
+    bool addTracks = false;
+    bool addClusters = false; 
+    bool addComboHits = false;
+    bool addCryHits = false;
+    bool addMCTraj = false;
+    DrawOptions(bool crv, bool cosmictracks, bool tracks, bool clusters, bool combohits, bool cryhits, bool mctraj) 
+    : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addCryHits(cryhits), addMCTraj(mctraj) {};
+   };
+   
 	class TEveMu2eMainWindow : public TGMainFrame {
     public:
       
@@ -79,18 +93,9 @@ namespace mu2e{
       TEveMu2eMainWindow();
       TEveMu2eMainWindow(const TEveMu2eMainWindow &);
       TEveMu2eMainWindow& operator=(const TEveMu2eMainWindow &);
-      TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset);// int &runn, int &subrunn, int &eventn);
+      TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, DrawOptions drawOpts) : DrawOpts(drawOpts);
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
-      void SetDrawOpts(bool crv, bool tracks, bool cosmictracks, bool clusters, bool combohits, bool cryhits, bool mctraj) {
-        addCRVInfo = crv;
-        addTracks = tracks;
-        addCosmicTracks = cosmictracks; 
-        addClusters = clusters; 
-        addComboHits = combohits; 
-        addCryHits = cryhits; 
-        addMCTraj = mctraj;
-      }
       
       // For viewers:
       void StartProjectionTabs();
@@ -124,14 +129,7 @@ namespace mu2e{
       TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();
       
       // data options
-      bool addCRVInfo = false;
-      bool addCosmicTracks = false;
-      bool addClusters = false; 
-      bool addTracks = false;
-      bool addComboHits = false;
-      bool addCryHits = false;
-      bool addMCTraj = false;
-      double texttime = -1;
+      DrawOptions DrawOpts;
       std::vector<double> *clusterenergy = 0;
       std::vector<double> *hitenergy = 0;
       std::vector<double> times;

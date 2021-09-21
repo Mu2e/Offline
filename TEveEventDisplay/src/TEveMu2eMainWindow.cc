@@ -397,9 +397,9 @@ namespace mu2e{
         
   /*------------Function to create 2D Tabs:-------------*/
   void TEveMu2eMainWindow::StartProjectionTabs(){
-          if(addCRVInfo) pass_proj->CreateCRVProjection(CRV2Dproj);
-          if(addClusters) pass_proj->CreateCaloProjection(calo2Dproj);
-          if(addComboHits or addTracks or addCosmicTracks or addMCTraj) pass_proj->CreateTrackerProjection(tracker2Dproj);
+          if(addCRVInfo) {pass_proj->CreateCRVProjection(CRV2Dproj);}
+          pass_proj->CreateCaloProjection(calo2Dproj);
+          pass_proj->CreateTrackerProjection(tracker2Dproj);
   }
         
     /*------------Function to add calo 2D projection to display:-------------*/
@@ -853,19 +853,20 @@ namespace mu2e{
   /*------------Function to add the actual data to the plot (entrance from module):-------------*/
   void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected, bool isMCOnly)
   { 
-    _event=event.id().event();
-    _subrun=event.id().subRun();
-    _run=event.id().run();
-    _firstLoop = firstLoop;
-    _accumulate = accumulate;
-    _data.chcol = data.chcol;
-    _data.clustercol = data.clustercol;
-    _data.crvcoincol = data.crvcoincol;
-    _data.track_tuple = data.track_tuple;
-    _data.mctrajcol = data.mctrajcol;
-    _data.crvcoincol = data.crvcoincol;
-    _data.cryHitcol = data.cryHitcol;
-    _data.cosmiccol = data.cosmiccol;
+      std::cout<<"Draw Options "<<DrawOpts.addComboHits<<" "<<DrawOpts.addCRVInfo<<std::endl;
+      _event=event.id().event();
+      _subrun=event.id().subRun();
+      _run=event.id().run();
+      _firstLoop = firstLoop;
+      _accumulate = accumulate;
+      _data.chcol = data.chcol;
+      _data.clustercol = data.clustercol;
+      _data.crvcoincol = data.crvcoincol;
+      _data.track_tuple = data.track_tuple;
+      _data.mctrajcol = data.mctrajcol;
+      _data.crvcoincol = data.crvcoincol;
+      _data.cryHitcol = data.cryHitcol;
+      _data.cosmiccol = data.cosmiccol;
       
       std::string eveinfo = Form("Event : %i Run : %i Subrun : %i",_event,_run,_subrun); 
       auto evinfo = new TEveText(eveinfo.c_str());
@@ -882,22 +883,21 @@ namespace mu2e{
       times.push_back(0);
       times.push_back(1700);
       if(addCRVInfo){
-        std::cout<<"Running in SetEvent "<<_data.crvcoincol->size()<<std::endl;
         pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
       }
       hitenergy = new vector<double>(2);
     
-      if(addComboHits) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(DrawOpts.addComboHits) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
       clusterenergy = new std::vector<double>(2);
       
-      if(addClusters ) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+      if(DrawOpts.addClusters ) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
       
-      if (addCryHits) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+      if (DrawOpts.addCryHits) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
       
-      if (addTracks) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if (DrawOpts.addTracks) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
-      if(addCosmicTracks) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(DrawOpts.addCosmicTracks) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
       _clustminenergy->Clear();
       _clustmaxenergy->Clear();
@@ -914,7 +914,7 @@ namespace mu2e{
       _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     } 
       
-    if(addMCTraj) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
+    if(DrawOpts.addMCTraj) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
       
     gSystem->ProcessEvents();
     gSystem->IgnoreInterrupt();
