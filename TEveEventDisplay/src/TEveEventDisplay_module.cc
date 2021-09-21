@@ -100,8 +100,9 @@ namespace mu2e
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     } 
     //construct GUI:
-    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
-    _frame->SetDrawOpts(_filler.addCrvHits_, _filler.addTracks_, _filler.addCosmicSeedFit_,_filler.addClusters_, false, _filler.addHits_, _filler.addMCTraj_);  
+    
+    DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, false, _filler.addMCTraj_); 
+    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts);
     //build 2D geometries:
     _frame->CreateCaloProjection();
     _frame->CreateTrackerProjection();
@@ -117,7 +118,6 @@ namespace mu2e
     //make 2D tracker and calo:
     _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
-    //_frame->PrepareCRVProjectionTab(run);
   }
       
   void TEveEventDisplay::analyze(const art::Event& event){
