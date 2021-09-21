@@ -3,6 +3,9 @@
 using namespace mu2e;
 namespace mu2e{
 
+  constexpr convertToCentimeters(double val){
+    return val/10;
+  }
   /*------------Function delete previous event from display:-------------*/
   template <typename T, typename U> void DataLists(T data, bool Redraw, bool accumulate, std::string title, TEveElementList **List3D, TEveElementList **List2DXY = 0, TEveElementList **List2DXZ = 0 , U projection = 0){	
     if(data == 0 && Redraw){
@@ -285,7 +288,7 @@ namespace mu2e{
             origin [2] = crystalPos.z();
             TEveGeoShape *crystalShape   = new TEveGeoShape();
             crystalShape->SetFillColor(kRed);
-            crystalShape->SetShape(new TGeoBBox("cryHit", (crystalXLen/2), (crystalYLen/2), (crystalZLen/2)/10, origin));
+            crystalShape->SetShape(new TGeoBBox("cryHit", (crystalXLen/2), (crystalYLen/2), convertToCentimeters((crystalZLen/2)), origin));
             crystals2D->SetNextPoint(origin [0],origin [1],origin [2]);
             if(diskID == 0){
               fClusterList2D_disk0->AddElement(crystals2D);
@@ -317,7 +320,7 @@ namespace mu2e{
         CLHEP::Hep3Vector pointInMu2e2D = PointToCalo(COG,cluster.diskID());
         CLHEP::Hep3Vector pointInMu2e3D = PointToCaloCM(COG,cluster.diskID());
        
-        string pos3D = "(" + to_string((double)pointInMu2e3D.x()/10) + ", " + to_string((double)pointInMu2e3D.y()/10) + ", " + to_string((double)pointInMu2e3D.z()/10) + ")";
+        string pos3D = "(" + to_string(convertToCentimeters((double)pointInMu2e3D.x())) + ", " + to_string(convertToCentimeters((double)pointInMu2e3D.y())) + ", " + to_string(convertToCentimeters((double)pointInMu2e3D.z())) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
         if (((min_time == -1 && max_time == -1) || (cluster.time() > min_time &&  cluster.time() < max_time )) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
