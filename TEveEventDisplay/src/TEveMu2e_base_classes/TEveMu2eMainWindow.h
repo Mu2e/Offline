@@ -82,7 +82,17 @@ namespace mu2e{
       TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset);// int &runn, int &subrunn, int &eventn);
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
-      void SetDrawOpts(bool crv, bool tracks, bool cosmictracks, bool clusters, bool combohits, bool cryhits, bool mctraj) : addCRVInfo(crv), addTracks(tracks), addCosmicTracks(cosmictracks), addClusters(clusters), addComboHits(combohits), addCryHits(cryhits), addMCTraj(mctraj);
+      void SetDrawOpts(bool crv, bool tracks, bool cosmictracks, bool clusters, bool combohits, bool cryhits, bool mctraj) {
+        addCRVInfo = crv;
+        addTracks = tracks;
+        addCosmicTracks = cosmictracks; 
+        addClusters = clusters; 
+        addComboHits = combohits; 
+        addCryHits = cryhits; 
+        addMCTraj = mctraj;
+      }
+      
+      // For viewers:
       void StartProjectionTabs();
       void CreateMultiViews();
       void CreateCaloProjection();
@@ -93,12 +103,15 @@ namespace mu2e{
       void PrepareCRVProjectionTab(const art::Run& run);
       void SetParticleOpts(std::vector<int> particles_) { particles = particles_;}
       
+      //GUI and geom:
       void CreateGUI();
       void SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV);
       void RedrawDataProducts(std::string type);
-      
+     
+      // for menu:
       Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
       
+      // to add event info:
       void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int& runn, int& eventn, bool& update, bool isMCOnly);
       bool  isClosed() const;
       int   getEventToFind(bool &findEvent) const;
