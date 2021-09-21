@@ -101,7 +101,7 @@ namespace mu2e
     } 
     //construct GUI:
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
-    _frame->SetDrawOpts(_filler.addCrvHits_, _filler.addTracks_, _filler.addCosmicSeedFit_,_filler.addClusters_,_filler.addHits_, _filler.addMCTraj_);  
+    _frame->SetDrawOpts(_filler.addCrvHits_, _filler.addTracks_, _filler.addCosmicSeedFit_,_filler.addClusters_, false, _filler.addHits_, _filler.addMCTraj_);  
     //build 2D geometries:
     _frame->CreateCaloProjection();
     _frame->CreateTrackerProjection();
