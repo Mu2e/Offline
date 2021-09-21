@@ -397,7 +397,7 @@ namespace mu2e{
         
   /*------------Function to create 2D Tabs:-------------*/
   void TEveMu2eMainWindow::StartProjectionTabs(){
-          if(addCRVInfo) {pass_proj->CreateCRVProjection(CRV2Dproj);}
+          if(DrawOpts.addCRVInfo) {pass_proj->CreateCRVProjection(CRV2Dproj);}
           pass_proj->CreateCaloProjection(calo2Dproj);
           pass_proj->CreateTrackerProjection(tracker2Dproj);
   }
@@ -882,7 +882,7 @@ namespace mu2e{
       std::vector<double> times;// = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
       times.push_back(0);
       times.push_back(1700);
-      if(addCRVInfo){
+      if(DrawOpts.addCRVInfo){
         pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
       }
       hitenergy = new vector<double>(2);
