@@ -82,6 +82,7 @@ namespace mu2e{
       TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset);// int &runn, int &subrunn, int &eventn);
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
+      void SetDrawOpts(bool crv, bool tracks, bool cosmictracks, bool clusters, bool combohits, bool cryhits, bool mctraj) : addCRVInfo(crv), addTracks(tracks), addCosmicTracks(cosmictracks), addClusters(clusters), addComboHits(combohits), addCryHits(cryhits), addMCTraj(mctraj);
       void StartProjectionTabs();
       void CreateMultiViews();
       void CreateCaloProjection();
@@ -109,17 +110,25 @@ namespace mu2e{
       TEveMu2eMCInterface *pass_mc	= new TEveMu2eMCInterface(); 
       TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();
       
+      // data options
+      bool addCRVInfo = false;
+      bool addCosmicTracks = false;
+      bool addClusters = false; 
+      bool addTracks = false;
+      bool addComboHits = false;
+      bool addCryHits = false;
+      bool addMCTraj = false;
       double texttime = -1;
       std::vector<double> *clusterenergy = 0;
       std::vector<double> *hitenergy = 0;
       std::vector<double> times;
 
       TEvePad *fPad;
-	TEvePad	*fPadCRV;
+      TEvePad	*fPadCRV;
       TGSplitFrame *fSplitFrame;
-	 TGSplitFrame *fSplitFrameCRV;
+      TGSplitFrame *fSplitFrameCRV;
       TGSplitFrame *frm; 
-	TGSplitFrame *frmCRV;
+      TGSplitFrame *frmCRV;
       TGLEmbeddedViewer *fViewer0;
       TGLEmbeddedViewer *fViewer1;
       TGLEmbeddedViewer *fViewer2;
@@ -138,7 +147,7 @@ namespace mu2e{
       TEveProjectionManager *TfRZMgr = 0;
       TEveProjectionManager *CfXYMgr = 0;
       TEveProjectionManager *CfRZMgr = 0;
-		 TEveProjectionManager *CrfXYMgr = 0;
+      TEveProjectionManager *CrfXYMgr = 0;
       TEveProjectionManager *CrfRZMgr = 0;
       TGMainFrame* frmMain;
       TEveBrowser* browser;
@@ -147,10 +156,10 @@ namespace mu2e{
       TEveScene *proj1 = 0;
       TEveScene *proj2 = 0;
       TEveScene *proj3 = 0;
-		TEveScene *proj4 = 0;
-		TEveScene *proj5 = 0;
+      TEveScene *proj4 = 0;
+      TEveScene *proj5 = 0;
 
-      
+
       bool usereventSelected = false;
       TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy, *hmintime, *hmaxtime;    
       TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel,*timelabel, *spacer, *spacer1;
@@ -158,7 +167,7 @@ namespace mu2e{
       TGCheckButton	  *clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
 
       TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time,  *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy, *_hitmintime, *_hitmaxtime;
-      
+
       int eventToFind, runToFind;
       int  _eventToFind = 0; 
 
@@ -166,11 +175,11 @@ namespace mu2e{
       bool _findEvent = true;
       bool _firstLoop = true;
       bool _accumulate = false;
-      
+
       TEveMu2e2DProjection *tracker2Dproj = new TEveMu2e2DProjection();
       TEveMu2e2DProjection *calo2Dproj = new TEveMu2e2DProjection();
       TEveMu2e2DProjection *CRV2Dproj = new TEveMu2e2DProjection();
-      
+
       TEveMu2eCalorimeter *Mu2eCalo = new TEveMu2eCalorimeter();
       TEveMu2eTracker *Mu2eTracker  = new TEveMu2eTracker();
       TEveMu2eCRV *Mu2eCRV = new TEveMu2eCRV();
@@ -178,14 +187,14 @@ namespace mu2e{
       int _event, _subrun, _run;
       Data_Collections _data;
       Data_Collections _emptydata;
-      
+
       double fclustmin = -1;
       double fclustmax = -1;
       double fhitmin = -1;
       double fhitmax = -1;
       double ftimemin = -1;
       double ftimemax = -1;
-      
+
       std::vector<int> particles;
       #endif
       ClassDef(TEveMu2eMainWindow,0);

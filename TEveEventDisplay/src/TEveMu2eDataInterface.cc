@@ -1,4 +1,3 @@
-
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eDataInterface.h"
 
 using namespace mu2e;
@@ -110,11 +109,11 @@ namespace mu2e{
     double max, min;
     std::vector<double> alltime;
 
-    if (crvcoincol != 0){
+    /*if (crvcoincol != 0){
       maxminCRV(crvcoincol, max, min);
       alltime.push_back(max);
       alltime.push_back(min);
-    }
+    }*/
 
     if (chcol != 0){
       maxminT(chcol, max, min);

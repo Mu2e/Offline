@@ -67,7 +67,7 @@ TEveEventDisplayUpstream : {
 TEveEventDisplayHelix : {
       module_type : TEveEventDisplay
       accumulate : false
-      showCRV : true
+      showCRV : false
       showBuilding : false  
       showDSOnly : true 
       showEvent : true
