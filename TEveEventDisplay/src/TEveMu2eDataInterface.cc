@@ -3,7 +3,7 @@
 using namespace mu2e;
 namespace mu2e{
 
-  constexpr convertToCentimeters(double val){
+  constexpr double convertToCentimeters(double val){
     return val/10;
   }
   /*------------Function delete previous event from display:-------------*/
@@ -278,7 +278,7 @@ namespace mu2e{
 
             CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(0,crystal.position());
             Double_t origin[3];
-            crystals2D ->SetMarkerStyle(9);
+            crystals2D ->SetMarkerStyle(9); //TODO - use name
             crystals2D ->SetMarkerSize(1);
             crystals2D ->SetMarkerColor(kRed);
             crystalPos = PointToCalo(crystalPos, diskID);
