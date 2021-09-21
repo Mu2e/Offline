@@ -40,6 +40,9 @@ namespace mu2e{
         TEveElementList *fTrackList2DXZ;
         TEveElementList *fTrackList3D;
         std::vector<int> particleIds_;
+        constexpr Int_t linewidth(){ return 3; }
+        constexpr Int_t fontsize(){ return 15; }
+        constexpr double text_z_pos(){ return 3000.; }
         ClassDef(TEveMu2eMCInterface,0);
 
   }; //end class def

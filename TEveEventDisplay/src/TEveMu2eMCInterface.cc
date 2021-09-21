@@ -101,51 +101,51 @@ namespace mu2e{
       auto t = new TEveText(pid);
       Color_t color;
       double posy = 0;
-      double posz = 3000.0;
-      t->SetFontSize(15);
+      double posz = text_z_pos();
+      t->SetFontSize(fontsize());
       switch(PDGCode) {
           case PDGCode::e_minus:
-              color = 2;
+              color = kRed;
               pid = "electron -";
               posy = 1400.0;
               break;
           case PDGCode::e_plus:
-              color = 5;
+              color = kYellow;
               pid = "positron +";
               posy = 1500.0;
               break;
           case PDGCode::mu_minus:
-              color = 3;
+              color = kGreen;
               pid = "muon - ";
               posy = 1600.0;
               break;
           case PDGCode::mu_plus:
-              color = 46;
+              color = kRed-9;
               pid = "muon + ";
               posy = 1700.0;
               break;
           case PDGCode::pi_minus:
-              color = 6;
+              color = kMagenta;
               pid = "pion -";
               posy = 1800.0;
               break;
           case PDGCode::pi_plus:
-              color = 9;
+              color = kViolet;
               pid = "pion +";
               posy = 1900.0;
               break;
           case PDGCode::proton:
-              color = 4;
+              color = kBlue;
               pid = "proton";
               posy = 2000.0;
               break;
           case PDGCode::gamma:
-              color = 8;
+              color = kOrange;
               pid = "gamma";
               posy = 2100.0;
               break;
           default:
-              color = 7;
+              color = kCyan;
               pid = "other";
               posy = 2200.0;
               break;
@@ -205,11 +205,11 @@ namespace mu2e{
               TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ, line_twoDXY);
               line_twoDXZ->SetTitle(Form(title.c_str()));
               line_twoDXY->SetTitle(Form(title.c_str()));
-              line->SetLineWidth(3);
+              line->SetLineWidth(linewidth());
               line->SetPickable(kTRUE);
-              line_twoDXZ->SetLineWidth(3);
+              line_twoDXZ->SetLineWidth(linewidth());
               line_twoDXZ->SetPickable(kTRUE);
-              line_twoDXY->SetLineWidth(3);
+              line_twoDXY->SetLineWidth(linewidth());
               line_twoDXY->SetPickable(kTRUE);
               fTrackList2DXZ->AddElement(line_twoDXZ);
               fTrackList2DXY->AddElement(line_twoDXY);
