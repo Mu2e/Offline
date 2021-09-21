@@ -101,10 +101,11 @@ namespace mu2e
     } 
     //construct GUI:
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
+    _frame->SetDrawOpts(_filler.addCrvHits_, _filler.addTracks_, _filler.addCosmicSeedFit_,_filler.addClusters_,_filler.addHits_, _filler.addMCTraj_);  
     //build 2D geometries:
     _frame->CreateCaloProjection();
     _frame->CreateTrackerProjection();
-    if(_filler.addCrvHits_)_frame->CreateCRVProjection();//StartProjectionTabs();
+    if(_filler.addCrvHits_)_frame->CreateCRVProjection();
     //send list of particles to viewer:
     _frame->SetParticleOpts(_particles);
   
@@ -117,7 +118,6 @@ namespace mu2e
     _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
     //_frame->PrepareCRVProjectionTab(run);
-    std::cout<<" end begin Run "<<std::endl;
   }
       
   void TEveEventDisplay::analyze(const art::Event& event){

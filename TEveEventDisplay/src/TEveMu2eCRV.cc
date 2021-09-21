@@ -41,5 +41,4 @@ namespace mu2e{
     }
   }
 }
-        
 
