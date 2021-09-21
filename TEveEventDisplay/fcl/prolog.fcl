@@ -73,7 +73,7 @@ TEveEventDisplayHelix : {
       showEvent : true
       isMCOnly : false
       filler : {
-        ComboHitCollection 	  : "makeSH"
+        ComboHitCollection 	  : "makePH"
         CrvRecoPulseCollection	  :  "SelectRecoMC"
         CosmicTrackSeedCollection :  NULL
         CaloClusterCollection     :  "CaloClusterMaker"
