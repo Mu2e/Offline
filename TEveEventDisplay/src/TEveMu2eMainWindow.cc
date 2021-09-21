@@ -855,7 +855,7 @@ namespace mu2e{
   /*------------Function to add the actual data to the plot (entrance from module):-------------*/
   void TEveMu2eMainWindow::setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int &runn, int &eventn, bool &eventSelected, bool isMCOnly)
   { 
-      std::cout<<"Draw Options "<<DrawOpts.addComboHits<<" "<<DrawOpts.addCRVInfo<<std::endl;
+
       _event=event.id().event();
       _subrun=event.id().subRun();
       _run=event.id().run();
@@ -870,7 +870,7 @@ namespace mu2e{
       _data.cryHitcol = data.cryHitcol;
       _data.cosmiccol = data.cosmiccol;
       
-      std::string eveinfo = Form("Event : %i Run : %i Subrun : %i",_event,_run,_subrun); 
+      std::string eveinfo = Form("Event : %i     Run : %i     Subrun : %i",_event,_run,_subrun); 
       auto evinfo = new TEveText(eveinfo.c_str());
       double posy = -1400.0;
       double posz = 0.0;
@@ -881,9 +881,8 @@ namespace mu2e{
     
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
-      std::vector<double> times;// = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-      times.push_back(0);
-      times.push_back(1700);
+      std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
+     
       if(DrawOpts.addCRVInfo){
         pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
       }
