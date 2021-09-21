@@ -287,15 +287,14 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void RobustHelixFinder::beginRun(art::Run& ) {
-         std::cout<<"BEGIN RUN "<<std::endl;
-	  mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
 
     _hfit.setCalorimeter(ch.get());
   }
   //--------------------------------------------------------------------------------
 
   void RobustHelixFinder::beginJob() {
-std::cout<<"BEGIN JOB "<<std::endl;
+
     _stmva.initMVA();
     _nsmva.initMVA();
     if (_debug > 0)
@@ -317,7 +316,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
   }
 
   void RobustHelixFinder::produce(art::Event& event ) {
-      std::cout<<"PRODUCE "<<std::endl;
+      
     _tracker = _alignedTracker_h.getPtr(event.id()).get();
     _hfit.setTracker    (_tracker);
 
@@ -448,8 +447,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
 // function to select the best Helix among the results of the two helicity hypo
 //--------------------------------------------------------------------------------
   void  RobustHelixFinder::pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best){
-   std::cout<<"PICK BEST HELIX"<<std::endl;
-      if (HelVec.size() == 1) {
+    if (HelVec.size() == 1) {
       Index_best = 0;
       return;
     }
@@ -510,10 +508,10 @@ std::cout<<"BEGIN JOB "<<std::endl;
 //
 //--------------------------------------------------------------------------------
   void RobustHelixFinder::fillGoodHits(RobustHelixFinderData& helixData){
-    std::cout<<"FILL GOOD HITS"<<std::endl;
+
     ComboHit*     hit(0);
     unsigned      nhits = helixData._chHitsToProcess.size();
-   
+
     for (unsigned f=0; f<nhits; ++f){
       hit = &helixData._chHitsToProcess[f];
       if (hit->_flag.hasAnyProperty(_outlier))     continue;
@@ -531,12 +529,12 @@ std::cout<<"BEGIN JOB "<<std::endl;
 
 
   void RobustHelixFinder::fillMVA(RobustHelixFinderData& helixData)
-  {std::cout<<"FILL MVA"<<std::endl;
+  {
     RobustHelix& helix = helixData._hseed._helix;
 
     static XYZVectorF  zaxis(0.0,0.0,1.0); // unit in z direction
     ComboHit*      hhit(0);
-    
+
     for (unsigned f=0; f<helixData._chHitsToProcess.size(); ++f){
       hhit = &helixData._chHitsToProcess[f];
 
@@ -583,7 +581,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
   }
 
   bool RobustHelixFinder::filterHitsMVA(RobustHelixFinderData& helixData)
-  {std::cout<<"FILTER HITS MVA"<<std::endl;
+  {
     bool           changed(false);
     ComboHit*      hhit(0);
 
@@ -605,7 +603,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
 
   // 3d selection on top of radial selection
   bool RobustHelixFinder::filterHits(RobustHelixFinderData& helixData)
-  { std::cout<<"FILTER HITS"<<std::endl;
+  {
     RobustHelix& helix = helixData._hseed._helix;
     bool changed(false);
     static XYZVectorF zaxis(0.0,0.0,1.0); // unit in z direction
@@ -617,7 +615,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
 
     int           nhitsFace(0);
     float         chCounter(1e-10), chi2dZPhi(0);
-    std::cout<<"nTotalFaces = "<<StrawId::_ntotalfaces<<std::endl;
+
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
 
@@ -627,7 +625,6 @@ std::cout<<"BEGIN JOB "<<std::endl;
       nhitsFace = facez->nChHits();
       if (nhitsFace == 0)                        continue;
       int        idFirstFaceCh(facez->idChBegin);
-	   
       for (int ip=0; ip<nhitsFace; ++ip){
 	hit = &helixData._chHitsToProcess[idFirstFaceCh + ip];
 	bool trash=hit->_flag.hasAnyProperty(_outlier);
@@ -706,11 +703,11 @@ std::cout<<"BEGIN JOB "<<std::endl;
   void RobustHelixFinder::prefilterHits(RobustHelixFinderData& HelixData, int& NRemovedStrawHits)
   {
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
-    std::cout<<"PRE FILTER HITS"<<std::endl;
+
     bool changed(true);
     // size_t nhit = hhits.size();
     int nhit = HelixData._nFiltComboHits;
-    std::cout<<"nhit = "<<nhit<<std::endl;
+
     ComboHit*  hit(0);
     ComboHit*  worsthit(0);
 
@@ -761,10 +758,9 @@ std::cout<<"BEGIN JOB "<<std::endl;
   }
 
   void RobustHelixFinder::updateT0(RobustHelixFinderData& helixData)
-  { std::cout<<" UPDATE T0"<<std::endl;
+  {
   // compute the pitch
     float pitch = helixData._hseed.helix().pitch();
-    std::cout<<" helix pitch = "<<pitch<<std::endl;
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
   // update t0 from calo cluster according to current pitch
     if (helixData._hseed.caloCluster().isNonnull()){
@@ -787,7 +783,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
 
   //------------------------------------------------------------------------------------------
   void     RobustHelixFinder::fillFaceOrderedHits(RobustHelixFinderData& HelixData){
-    std::cout<<"FILL FACE ORDERED HITS"<<std::endl;
+
     const vector<StrawHitIndex>& shIndices = HelixData._timeCluster->hits();
     mu2e::RobustHelixFinderData::ChannelID cx, co;
 
@@ -801,7 +797,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
     //sort the hits by z coordinate
     ComboHitCollection ordChCol;
     ordChCol.reserve(size);
-    
+
     for (int i=0; i<size; ++i) {
       loc = shIndices[i];
       const ComboHit& ch  = (*_hfResult._chcol)[loc];
@@ -817,7 +813,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
       printf("[RobustHelixFinder::FillHits]     i     Face     Panel      X         Y         Z        \n");
       printf("[RobustHelixFinder::FillHits]-----------------------------------------------------------\n");
     }
-    std::cout<<"ord chcol in fillfaceordered hits = "<<ordChCol.size()<<std::endl;
+
     for (unsigned i=0; i<ordChCol.size(); ++i) {
       // loc = shIndices[i];
       // const ComboHit& ch  = _hfResult._chcol->at(loc);
@@ -868,8 +864,7 @@ std::cout<<"BEGIN JOB "<<std::endl;
       if (_debug>0){
 	printf("[RobustHelixFinder::FillHits] %4i %6i %10i %10.3f %10.3f %10.3f\n", nFiltComboHits, faceId, op, ch.pos().x(), ch.pos().y(), ch.pos().z() );
       }
-std::cout<<"faceID : "<<faceId<<" "<<op<<"Combo hit pos = "<<ch.pos().x()<<" "<<ch.pos().y()<<" "<<ch.pos().z()<<std::endl;
-    std::cout<<"Station id = "<<stationId<<" "<<os<<std::endl;
+
       // if (pz->nChHits() > PanelZ_t::kNMaxPanelHits) printf("[RobustHelixDataFinderAlg::fillFaceOrderedHits] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
       ++nFiltComboHits;
       nFiltStrawHits += ch.nStrawHits();
@@ -915,19 +910,18 @@ std::cout<<"faceID : "<<faceId<<" "<<op<<"Combo hit pos = "<<ch.pos().x()<<" "<<
       }
       for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	facez     = &HelixData._oTracker[f];
-       
+
 	for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	  panelz = &facez->panelZs[p];
 	  nhitsFace = panelz->nChHits();
 	  if ( nhitsFace > HelixData._diag.nChPPanel) HelixData._diag.nChPPanel = nhitsFace;
-		std::cout<<"panelz = "<<panelz<<" facez = "<<facez<<" nhitsFace = "<<nhitsFace<<std::endl;
 	}//end loop over the panel
       }//end loop over the faces
     }
   }
 
   unsigned  RobustHelixFinder::filterCircleHits(RobustHelixFinderData& helixData)
-  { std::cout<<"FILTER CIRCLE HITS"<<std::endl;
+  {
     unsigned changed(0);
     int      nGoodSH(0);
     static XYZVectorF zaxis(0.0,0.0,1.0); // unit in z direction
@@ -1049,7 +1043,6 @@ std::cout<<"faceID : "<<faceId<<" "<<op<<"Combo hit pos = "<<ch.pos().x()<<" "<<
 
   void RobustHelixFinder::fitHelix(RobustHelixFinderData& helixData){
     // iteratively fit the helix including filtering
-    std::cout<<"FIT HELIX IN ROBUST HELIX FINDER"<<std::endl;
     unsigned niter(0);
     unsigned nitermva(0);
     bool     changed(true), xychanged(true), fzchanged(true);
@@ -1174,7 +1167,7 @@ std::cout<<"faceID : "<<faceId<<" "<<op<<"Combo hit pos = "<<ch.pos().x()<<" "<<
       if (hit->_flag.hasAnyProperty(_outlier))   continue;
       ++nHits;
     }//end faces loop
-   
+
     return nHits;
   }
 
@@ -1304,3 +1297,4 @@ std::cout<<"faceID : "<<faceId<<" "<<op<<"Combo hit pos = "<<ch.pos().x()<<" "<<
 }
 using mu2e::RobustHelixFinder;
 DEFINE_ART_MODULE(RobustHelixFinder);
+
