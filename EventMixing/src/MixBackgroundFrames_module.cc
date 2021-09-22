@@ -171,7 +171,7 @@ namespace mu2e {
 
   //================================================================
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
-  // call down to product mixer 
+  // call down to product mixer
     spm_.startEvent(event);
 
     pbi_ = *event.getValidHandle<ProtonBunchIntensity>(pbiTag_);
@@ -183,8 +183,8 @@ namespace mu2e {
       SimBookkeeper const& simbookkeeper = _simbookkeeperH.get(event.id());
       for (const auto& i_simStageEff : simStageEfficiencyTags_) {
         double this_eff = simbookkeeper.getEff(i_simStageEff);
+        if(this_eff < 0.0) throw cet::exception("MixBackgroundFrames") << "Unphysical SimStageEfficiency value "<< this_eff << std::endl;
         eff_ *= this_eff;
-
         if (debugLevel_ > 1 && !mixingMeanOverride_) {
           std::cout << " Sim Stage Efficiency (" << i_simStageEff << ") = " << this_eff << std::endl;
           std::cout << " Cumulative Total Eff = " << eff_ << std::endl;
