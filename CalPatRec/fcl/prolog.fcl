@@ -569,15 +569,28 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 CalPatRec: { @table::CalPatRec 
     producers : { @table::CalPatRec.producers
+
+	DeltaFinderUe : { @table::CalPatRec.producers.DeltaFinder 
+	    timePeakCollectionTag         : CalTimePeakFinderUe
+
+	}
+
 	DeltaFinderMu                  : { @table::CalPatRec.producers.DeltaFinder
 	    timePeakCollectionTag      : CalTimePeakFinderMu
 	}
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
 	    SeedCollection             : "CalHelixFinderDe:Positive"
 	}
+	CalSeedFitUem                  : { @table::CalPatRec.producers.CalSeedFit        
+	    SeedCollection             : "CalHelixFinderUe:Positive"
+	}
 	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muminus
 	    SeedCollection             : "CalHelixFinderDmu:Positive"
+	}
+	CalSeedFitUmm                  : { @table::CalPatRec.producers.CalSeedFit 
+	    fitparticle                : @local::Particle.muminus
+	    SeedCollection             : "CalHelixFinderUmu:Positive"
 	}
 	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
@@ -608,11 +621,19 @@ CalPatRec: { @table::CalPatRec
 	    SeedCollection             : CalSeedFitDem
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
+	CalTrkFitUem                   : { @table::CalPatRec.producers.CalTrkFit         
+	    SeedCollection             : CalSeedFitUem
+	    CalTimePeakModuleLabel     : CalTimePeakFinder
+	}
 	CalTrkFitDmm                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.muminus 
 	    SeedCollection             : CalSeedFitDmm
 	    CalTimePeakModuleLabel     : CalTimePeakFinderMu
 	    StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
+	}
+	CalTrkFitUmm                   : { @table::CalPatRec.producers.CalTrkFit         
+	    SeedCollection             : CalSeedFitUmm
+	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDep                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.eplus  
@@ -628,8 +649,14 @@ CalPatRec: { @table::CalPatRec
     }
     
     filters : { @table::CalPatRec.filters
+	CalTimePeakFinderUe            : { @table::CalPatRec.filters.CalTimePeakFinder   pitchAngle: -0.67                }
 	CalTimePeakFinderMu            : { @table::CalPatRec.filters.CalTimePeakFinder   beta: 0.7                        } 
 	CalHelixFinderDe               : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eminus  }
+	CalHelixFinderUe               : { @table::CalPatRec.filters.CalHelixFinder
+	    fitparticle                : @local::Particle.eminus  
+	    StrawHitFlagCollectionLabel: "DeltaFinderUe:ComboHits"
+	    TimeClusterCollectionLabel : CalTimePeakFinderUe
+	}
 	CalHelixFinderDmu              : { @table::CalPatRec.filters.CalHelixFinder 
 	    fitparticle                   : @local::Particle.muminus 
 	    StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits"

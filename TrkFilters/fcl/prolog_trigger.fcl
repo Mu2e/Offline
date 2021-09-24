@@ -71,12 +71,12 @@ TrkFilters : {
 	}
 	tprCosmicHelixUeMTCFilter : {
 	    module_type : TimeClusterFilter
-	    timeClusterCollection : "TTtimeClusterFinder"
+	    timeClusterCollection : "TTtimeClusterFinderUe"
 	    triggerPath            : "tprCosmicHelixUeM"
 	}
 	tprCosmicHelixUePTCFilter : {
 	    module_type : TimeClusterFilter
-	    timeClusterCollection : "TTtimeClusterFinder"
+	    timeClusterCollection : "TTtimeClusterFinderUe"
 	    triggerPath            : "tprCosmicHelixUeP"
 	}
 	cprCosmicSeedDeMTCFilter : {
@@ -102,6 +102,18 @@ TrkFilters : {
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
 	    triggerPath            : "cprCosmicHelixDeP"	    
+	}
+	cprCosmicHelixUeMTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTCalTimePeakFinderUe"
+	    minNHits              : 1  #just check if there are TimeClusters
+	    triggerPath            : "cprCosmicHelixUeM"	    
+	}
+	cprCosmicHelixUePTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTCalTimePeakFinderUe"
+	    minNHits              : 1  #just check if there are TimeClusters
+	    triggerPath            : "cprCosmicHelixUeP"	    
 	}
 
 	#low p particles from the ST
@@ -426,6 +438,42 @@ TrkFilters : {
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
 	    triggerPath         : "cprCosmicHelixDeP"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
+	}
+	cprCosmicHelixUeMHSFilter : {
+	    module_type : HelixFilter
+	    helixSeedCollection : "TTCalHelixMergerUeM"
+	    helicity            : -1
+	    minNStrawHits       : 15   
+	    minMomentum         : 40.  
+	    maxMomentum         : 500. 
+	    minPt               : 0    
+	    maxChi2XY           : 5.   
+	    maxChi2PhiZ         : 5.   
+	    maxD0               : 800. 
+	    minD0               : -800.
+	    minAbsLambda        : 50. 
+	    maxAbsLambda        : 1000. 
+	    triggerPath         : "cprCosmicHelixUeM"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
+	}
+	cprCosmicHelixUePHSFilter : {
+	    module_type : HelixFilter
+	    helixSeedCollection : "TTCalHelixMergerUeP"
+	    helicity            : 1
+	    minNStrawHits       : 15   
+	    minMomentum         : 40.  
+	    maxMomentum         : 500. 
+	    minPt               : 0    
+	    maxChi2XY           : 5.   
+	    maxChi2PhiZ         : 5.   
+	    maxD0               : 800. 
+	    minD0               : -800.
+	    minAbsLambda        : 50. 
+	    maxAbsLambda        : 1000. 
+	    triggerPath         : "cprCosmicHelixUeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -1578,6 +1626,13 @@ TrkFilters : {
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
+	cprCosmicHelixUeMEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    triggerPath        : "cprCosmicHelixUeM"	    
+	    triggerFlag   : ["PrescaleRandom"]	    
+	}
+
 	cprCosmicHelixDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
@@ -1590,6 +1645,13 @@ TrkFilters : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    triggerPath        : "cprCosmicHelixDeP"	    
+	    triggerFlag   : ["PrescaleRandom"]	    
+	}
+
+	cprCosmicHelixUePEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    triggerPath        : "cprCosmicHelixUeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
@@ -1701,10 +1763,10 @@ TrkFilters : {
 
 	tprCosmicHelixUeM     : [ tprCosmicHelixUeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprCosmicHelixUeMTCFilter, TThelixFinder, TTHelixMergerUeM, tprCosmicHelixUeMHSFilter, tprCosmicHelixUeMTriggerInfoMerger ]
+				 TTtimeClusterFinderUe, tprCosmicHelixUeMTCFilter, TThelixFinderUe, TTHelixMergerUeM, tprCosmicHelixUeMHSFilter, tprCosmicHelixUeMTriggerInfoMerger ]
 	tprCosmicHelixUeP     : [ tprCosmicHelixUePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprCosmicHelixUePTCFilter, TThelixFinder,TTHelixMergerUeP,  tprCosmicHelixUePHSFilter, tprCosmicHelixUePTriggerInfoMerger ]
+				 TTtimeClusterFinderUe, tprCosmicHelixUePTCFilter, TThelixFinderUe,TTHelixMergerUeP,  tprCosmicHelixUePHSFilter, tprCosmicHelixUePTriggerInfoMerger ]
 
 
 	# sequences that use a collection of combohits filtered using the calorimeter cluster info 
@@ -1758,6 +1820,12 @@ TrkFilters : {
 	cprCosmicHelixDeP     : [ cprCosmicHelixDePEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTCalTimePeakFinder, cprCosmicHelixDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicHelixDePHSFilter, cprCosmicHelixDePTriggerInfoMerger ]
+	cprCosmicHelixUeM     : [ cprCosmicHelixUeMEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
+				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+				 TTCalTimePeakFinderUe, cprCosmicHelixUeMTCFilter, TTCalHelixFinderUe, TTCalHelixMergerUeM, cprCosmicHelixUeMHSFilter ]
+	cprCosmicHelixUeP     : [ cprCosmicHelixUePEventPrescale,   @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
+				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+				 TTCalTimePeakFinderUe, cprCosmicHelixUePTCFilter, TTCalHelixFinderUe, TTCalHelixMergerUeP, cprCosmicHelixUePHSFilter ]
 
 	cprSeedUCCDeM        : [ cprSeedUCCDeMEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC,
