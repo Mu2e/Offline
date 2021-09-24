@@ -136,6 +136,7 @@ namespace mu2e {
       pulseShape_.buildShapes();
             
       noiseGenerator_.initialize(wfExtractor_); 
+noiseGenerator_.plotNoise("noise.pdf");
   }
 
 
@@ -183,10 +184,17 @@ namespace mu2e {
       {
           std::vector<double> waveform(waveformSize,0.0);
           fillROHits(iRO, waveform, CaloShowerROs, calorimeterCalibrations);
-          if (addNoise_ &&  generateSpotNoise_) generateNoise(waveform, iRO, calorimeterCalibrations);
-          if (addNoise_ && !generateSpotNoise_) noiseGenerator_.addFullNoise(waveform, false);
-          buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
-      }
+          if (addNoise_)
+          {
+              if (generateSpotNoise_) generateNoise(waveform, iRO, calorimeterCalibrations);
+              else                    noiseGenerator_.addFullNoise(waveform, false);
+              buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
+          }
+          else 
+	  {
+              buildOutputDigi(iRO, waveform, 0, caloDigiColl);
+	  }
+     }
   }
 
 
