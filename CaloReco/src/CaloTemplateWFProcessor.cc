@@ -258,9 +258,9 @@ namespace mu2e {
 	for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_fcn(xvec[j]);	
 	
 	std::vector<double> parInit(fmutil_.par());
-        for (auto i=windowPeak_;i<xvec.size()-windowPeak_;++i)
+        for (auto i=windowPeak_;i<ywork.size()-windowPeak_;++i)
         {
-             if (std::max_element(&ywork[i-windowPeak_],&ywork[i+windowPeak_+1]) != &ywork[i]) continue;
+             if (std::max_element(ywork.begin()+i-windowPeak_,ywork.begin()+i+windowPeak_+1) != ywork.begin()+i) continue;
              if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_) continue;
 	     if (checkPeakDist(xvec[i])) continue;	     
              if (yvec[i]>0 && ywork[i]/yvec[i] < psdThreshold_) continue;  
