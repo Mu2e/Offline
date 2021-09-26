@@ -1,0 +1,4 @@
+physics.filters.cprCosmicHelixUeMTCFilter.requireCaloCluster : false
+physics.filters.cprCosmicHelixUeMTCFilter.minNHits : 10.0
+physics.filters.cprCosmicHelixUeMTCFilter.minTime : 0.0
+physics.filters.cprCosmicHelixUeMTCFilter.maxTime : 1695.0

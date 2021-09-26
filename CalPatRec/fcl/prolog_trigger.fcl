@@ -129,11 +129,34 @@ CprTrigger : { @table::CprTrigger
 	    dtOffset                                    : -61. #-41.8 #FIXME! this is necessary because CaloClusterFast returns an uncalibrated time!
 	}
 
+	TTCalTimePeakFinderUe          : { @table::CalPatRec.filters.CalTimePeakFinder
+	    useAsFilter                                 : 0
+	    StrawHitCollectionLabel                     : TTmakePH          
+	    StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+	    caloClusterModuleLabel                      : CaloClusterFast
+	    HitSelectionBits                            : ["EnergySelection","TimeSelection"] 
+	    BackgroundSelectionBits                     : ["Background"] 
+	    minClusterEnergy                            : 50.    # MeV
+	    minClusterSize                              : 2      # number of crystals
+	    minClusterTime                              : 500.   # ns
+	    pitchAngle                                  : -0.67
+	}
+
 	TTCalHelixFinder             : { @table::CalPatRec.filters.CalHelixFinder
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : TTmakePH
 	    StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
 	    TimeClusterCollectionLabel                  : TTCalTimePeakFinder
+
+	    # HelixFinderAlg configuraton (pattern recognition)
+	    HelixFinderAlg                              : { @table::CprTrigger.TTHelixFinderAlg }
+	}
+
+	TTCalHelixFinderUe             : { @table::CalPatRec.filters.CalHelixFinder
+	    useAsFilter                                 : 0
+	    StrawHitCollectionLabel                     : TTmakePH
+	    StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+	    TimeClusterCollectionLabel                  : TTCalTimePeakFinderUe
 
 	    # HelixFinderAlg configuraton (pattern recognition)
 	    HelixFinderAlg                              : { @table::CprTrigger.TTHelixFinderAlg }

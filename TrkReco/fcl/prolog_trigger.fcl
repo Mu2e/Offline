@@ -14,12 +14,12 @@ TrkRecoTrigger : {
 # We need an instance for each track trigger sequence
 	TTHelixMergerUeM : {
 	    module_type : MergeHelices
-	    HelixFinders  : [ "TThelixFinder:Negative" ]
+	    HelixFinders  : [ "TThelixFinderUe:Negative" ]
 	}	
 
 	TTHelixMergerUeP : {
 	    module_type : MergeHelices
-	    HelixFinders  : [ "TThelixFinder:Positive" ]
+	    HelixFinders  : [ "TThelixFinderUe:Positive" ]
 	}	
 
 	TTHelixMergerDeM : {
@@ -50,6 +50,16 @@ TrkRecoTrigger : {
 	TTCalHelixMergerDeP : {
 	    module_type : MergeHelices
 	    HelixFinders  : [ "TTCalHelixFinderDe:Negative" ]
+	}
+
+	TTCalHelixMergerUeM : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TTCalHelixFinderUe:Negative" ]
+	}	
+
+	TTCalHelixMergerUeP : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TTCalHelixFinderUe:Positive" ]
 	}
 
 	TTCalHelixUCCMergerDeM : {
