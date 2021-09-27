@@ -57,7 +57,7 @@ namespace mu2e{
       TEveElementList *fExtTrackList2D;
       TEveElementList *fExtTrackList3D;
       
-      std::vector<double> getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloHitCollection *cryHitcol);
+      std::vector<double> getTimeRange(bool firstloop, const ComboHitCollection *chcol, const CrvRecoPulseCollection *crvcoincol, const CaloClusterCollection *clustercol, const CaloHitCollection *cryHitcol, bool addCRV,  bool addHits, bool addCalo);
 
       void AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol, double min_time, double max_time, TEveMu2e2DProjection *CRV2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr,TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);  
       std::vector<double> AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);

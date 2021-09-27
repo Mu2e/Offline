@@ -101,8 +101,8 @@ namespace mu2e{
       auto t = new TEveText(pid);
       Color_t color;
       double posy = 0;
-      double posz = text_z_pos();
-      t->SetFontSize(fontsize());
+      double posz = text_z_pos;
+      t->SetFontSize(fontsize);
       switch(PDGCode) {
           case PDGCode::e_minus:
               color = kRed;
@@ -205,11 +205,11 @@ namespace mu2e{
               TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ, line_twoDXY);
               line_twoDXZ->SetTitle(Form(title.c_str()));
               line_twoDXY->SetTitle(Form(title.c_str()));
-              line->SetLineWidth(linewidth());
+              line->SetLineWidth(linewidth);
               line->SetPickable(kTRUE);
-              line_twoDXZ->SetLineWidth(linewidth());
+              line_twoDXZ->SetLineWidth(linewidth);
               line_twoDXZ->SetPickable(kTRUE);
-              line_twoDXY->SetLineWidth(linewidth());
+              line_twoDXY->SetLineWidth(linewidth);
               line_twoDXY->SetPickable(kTRUE);
               fTrackList2DXZ->AddElement(line_twoDXZ);
               fTrackList2DXY->AddElement(line_twoDXY);
