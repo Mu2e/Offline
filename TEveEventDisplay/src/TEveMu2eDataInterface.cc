@@ -154,7 +154,7 @@ namespace mu2e{
   void TEveMu2eDataInterface::AddCRVInfo(bool firstloop, const CrvRecoPulseCollection *crvcoincol,  double min_time, double max_time, TEveMu2e2DProjection *CRV2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
      
     DataLists<const CrvRecoPulseCollection*, TEveMu2e2DProjection*>(crvcoincol, Redraw, accumulate,  "CRVRecoPulse", &fCrvList3D, &fCrvList2DXY,&fCrvList2DYZ, CRV2Dproj);
-    std::cout<<"Entering Add CRV"<<std::endl;
+    
     if(crvcoincol->size() !=0){
     
       TEveElementList *CrvList2DXY = new TEveElementList("CrvData2DXY");
@@ -189,7 +189,7 @@ namespace mu2e{
           
       CRV2Dproj->fXYMgr->ImportElements(fCrvList2DXY, CRV2Dproj->fEvtXYScene);
       CRV2Dproj->fRZMgr->ImportElements(fCrvList2DYZ, CRV2Dproj->fEvtRZScene);
-      std::cout<<"TEve::CRV Point 5 "<<std::endl;
+      
       gEve->AddElement(fCrvList3D);
       gEve->Redraw3D(kTRUE);
     }
@@ -199,7 +199,7 @@ namespace mu2e{
     
   /*------------Function to add ComboHits to Tracker in 3D and 2D displays:-------------*/
   std::vector<double> TEveMu2eDataInterface::AddComboHits(bool firstloop, const ComboHitCollection *chcol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
-    std::cout<<"Entering Add hit"<<std::endl;
+   
     std::vector<double> energies = {0,0};
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
     /*
@@ -251,7 +251,7 @@ namespace mu2e{
     DataLists<const CaloClusterCollection*, TEveMu2e2DProjection*>(clustercol, Redraw, accumulate, "CaloCluster", &fClusterList3D, &fClusterList2D_disk1, &fClusterList2D_disk1,calo2Dproj);
     //CfXYMgr->ImportElements(fClusterList2D_disk0, scene1); 
     //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); 
-    std::cout<<"Entering Add Calo"<<std::endl;
+    
     if(clustercol->size()!=0){ 
       TEveElementList *ClusterList3D = new TEveElementList("CaloClusters3D");
       TEveElementList *ClusterList2D_disk0 = new TEveElementList("CaloClusters2D_Disk0");
