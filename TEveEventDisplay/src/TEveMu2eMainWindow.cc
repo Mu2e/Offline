@@ -723,8 +723,8 @@ namespace mu2e{
     if (type == "Tracks"){
       pass_data->AddHelixPieceWise3D(_firstLoop, _emptydata.track_tuple, tracker2Dproj, ftimemin, ftimemax, true,  _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
     }
-    if (type == "Cosmics"){std::cout<<"Cosmics in TEveMainWindow"<<std::endl;
-      if(_data.crvcoincol!= 0){pass_data->AddCRVInfo(_firstLoop, _emptydata.crvcoincol, ftimemin, ftimemax, CRV2Dproj, true,  _accumulate, TfXYMgr, TfRZMgr, proj4, proj5); std::cout<<"data crvcoincol not equal to zero"<<std::endl;}
+    if (type == "Cosmics"){
+      if(_data.crvcoincol!= 0){pass_data->AddCRVInfo(_firstLoop, _emptydata.crvcoincol, ftimemin, ftimemax, CRV2Dproj, true,  _accumulate, TfXYMgr, TfRZMgr, proj4, proj5); }
       }
     if (type == "Cosmic Tracks"){std::cout<<"Cosmic tracks "<<std::endl;
       if(_data.cosmiccol!=0){pass_data->AddCosmicTrack(_firstLoop, _emptydata.cosmiccol, tracker2Dproj, ftimemin, ftimemax, true, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
