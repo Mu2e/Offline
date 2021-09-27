@@ -100,11 +100,14 @@ namespace mu2e
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     } 
     //construct GUI:
-    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
-    //build 2D geometries:
-    _frame->CreateCaloProjection();
+    std::cout<<"CRV coming in "<<_filler.addCrvHits_<<std::endl;
+    DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, false, _filler.addMCTraj_); 
+    std::cout<<"CRV coming in "<<DrawOpts.addCRVInfo<<std::endl;
+    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts);
+    //build 2D geometries (now optional):
+    if(DrawOpts.addCRVInfo)_frame->CreateCRVProjection();
+    if(DrawOpts.addClusters or DrawOpts.addCryHits) _frame->CreateCaloProjection();
     _frame->CreateTrackerProjection();
-    if(_filler.addCrvHits_)_frame->CreateCRVProjection();//StartProjectionTabs();
     //send list of particles to viewer:
     _frame->SetParticleOpts(_particles);
   
@@ -114,10 +117,8 @@ namespace mu2e
     //import 3D GDML geom:
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     //make 2D tracker and calo:
-    _frame->PrepareCaloProjectionTab(run);
+    if(_filler.addClusters_) _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
-    //_frame->PrepareCRVProjectionTab(run);
-    std::cout<<" end begin Run "<<std::endl;
   }
       
   void TEveEventDisplay::analyze(const art::Event& event){
@@ -155,3 +156,4 @@ namespace mu2e
 }
 using mu2e::TEveEventDisplay;
 DEFINE_ART_MODULE(TEveEventDisplay);
+
