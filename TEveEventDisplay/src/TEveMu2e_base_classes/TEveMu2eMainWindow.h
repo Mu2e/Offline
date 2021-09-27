@@ -125,7 +125,7 @@ namespace mu2e{
       
       //List of parameters:
       TGeoManager* geom = new TGeoManager("geom","Geom");
-      Geom_Interface *mu2e_geom	=new Geom_Interface(); 
+      Geom_Interface *mu2e_geom	= new Geom_Interface(); 
       TEveMu2eDataInterface *pass_data	= new TEveMu2eDataInterface(); 
       TEveMu2eMCInterface *pass_mc	= new TEveMu2eMCInterface(); 
       TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();

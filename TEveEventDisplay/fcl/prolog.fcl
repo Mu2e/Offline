@@ -83,12 +83,12 @@ TEveEventDisplayHelix : {
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
         addHits 		  : true
-        addTracks 		  : false
+        addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
-        addClusters		  : false
+        addClusters		  : true
         addTrkExtTrajs		  : false
-        addMCTraj		  : false
+        addMCTraj		  : true
       }
       particles :   [-11,11,13,-13,2212,2112,211,22,212]
   }   

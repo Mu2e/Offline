@@ -869,7 +869,7 @@ namespace mu2e{
       _data.crvcoincol = data.crvcoincol;
       _data.cryHitcol = data.cryHitcol;
       _data.cosmiccol = data.cosmiccol;
-      
+
       std::string eveinfo = Form("Event : %i     Run : %i     Subrun : %i",_event,_run,_subrun); 
       auto evinfo = new TEveText(eveinfo.c_str());
       double posy = -1400.0;
@@ -878,26 +878,26 @@ namespace mu2e{
       evinfo->SetMainColor(kRed);
       evinfo->RefMainTrans().SetPos(posz,posy,posz);
       gEve->AddElement(evinfo);
-    
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
-      std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol);
-     
+      std::cout<<"Set Event 0d "<<std::endl;
+      std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol, DrawOpts.addCRVInfo, DrawOpts.addComboHits, DrawOpts.addClusters );
+      std::cout<<"Set Event 1 "<<std::endl;
       if(DrawOpts.addCRVInfo){
         pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
       }
       hitenergy = new vector<double>(2);
-    
+ 
       if(DrawOpts.addComboHits) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
       clusterenergy = new std::vector<double>(2);
-      
+
       if(DrawOpts.addClusters ) *clusterenergy = pass_data->AddCaloClusters(firstLoop, data.clustercol, calo2Dproj, false, fclustmin, fclustmax, ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-      
+ 
       if (DrawOpts.addCryHits) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
-      
+
       if (DrawOpts.addTracks) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-      
+
       if(DrawOpts.addCosmicTracks) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
       _clustminenergy->Clear();
@@ -914,7 +914,7 @@ namespace mu2e{
       _hitmintime->AddText(0, (to_string(times.at(0))).c_str());
       _hitmaxtime->AddText(0, (to_string(times.at(1))).c_str());
     } 
-      
+
     if(DrawOpts.addMCTraj) pass_mc->AddFullMCTrajectory(firstLoop, data.mctrajcol, tracker2Dproj, false, _accumulate,  TfXYMgr, TfRZMgr, proj2, proj3, particles);
       
     gSystem->ProcessEvents();
