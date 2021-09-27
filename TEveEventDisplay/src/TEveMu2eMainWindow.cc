@@ -931,6 +931,7 @@ namespace mu2e{
       runn = runToFind;
       eventSelected = true;
     }
+    delete evinfo;
   }
       
   /*------------Function to find event:-------------*/
