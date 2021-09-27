@@ -880,9 +880,8 @@ namespace mu2e{
       gEve->AddElement(evinfo);
     if(!isMCOnly){
       std::vector<const KalSeedCollection*> track_list = std::get<1>(data.track_tuple);
-      std::cout<<"Set Event 0d "<<std::endl;
       std::vector<double> times = pass_data->getTimeRange(firstLoop, data.chcol, data.crvcoincol, data.clustercol, data.cryHitcol, DrawOpts.addCRVInfo, DrawOpts.addComboHits, DrawOpts.addClusters );
-      std::cout<<"Set Event 1 "<<std::endl;
+     
       if(DrawOpts.addCRVInfo){
         pass_data->AddCRVInfo(firstLoop, data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
       }
