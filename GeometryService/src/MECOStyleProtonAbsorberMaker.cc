@@ -132,21 +132,22 @@ namespace mu2e {
     // Decide which pabs will be turned on
     //////////////////////////////////////
 
-    bool pabs1 = true;
-    bool pabs2 = true;
+    bool pabs1 = _config.getBool("protonabsorber.buildIPA", true);
+    bool pabs2 = _config.getBool("protonabsorber.buildIPA", true);
     bool opa1 = _config.getBool("protonabsorber.outerPA", false);
     bool opa2 = true;
 
     // if pabs starts from DS3 region
-    if (distFromTargetEnd > targetEndToDS2End) {
+    if (pabs1 && distFromTargetEnd > targetEndToDS2End) {
       pabs1 = false;
     }
 
     // if pabs is short enouhg to locate at DS2 region only
-    if (distFromTargetEnd + pabsZHalfLen*2.< targetEndToDS2End) {
+    if (pabs2 && distFromTargetEnd + pabsZHalfLen*2.< targetEndToDS2End) {
       pabs2 = false;
     }
-    if (!pabs1 && !pabs2) {
+
+    if (!pabs1 && !pabs2 && _config.getBool("protonabsorber.buildIPA", true)) {
       return;
     }
 
