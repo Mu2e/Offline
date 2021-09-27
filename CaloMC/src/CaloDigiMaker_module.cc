@@ -136,7 +136,6 @@ namespace mu2e {
       pulseShape_.buildShapes();
             
       noiseGenerator_.initialize(wfExtractor_); 
-noiseGenerator_.plotNoise("noise.pdf");
   }
 
 
