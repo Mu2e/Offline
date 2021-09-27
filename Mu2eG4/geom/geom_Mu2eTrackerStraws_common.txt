@@ -1,25 +1,6 @@
 // Geometry using the Mu2e era tracker straws
 #include "Offline/Mu2eG4/geom/geom_common.txt"
-
-// Mu2e era straw parameters taken from tracker_v6.txt
-double tracker.strawOuterRadius     =     2.5;
-double tracker.strawWallThickness   =     0.015;
-double tracker.strawGap             =     1.25;
-double tracker.wireRadius           =     0.0125;
-string tracker.mat.strawgas  = "StrawGas";
-string tracker.mat.wire      = "G4_W";
-vector<string> tracker.strawMaterials = { "G4_MYLAR", "StrawGas", "G4_W" };
-// define an inactive length at each end of every straw
-double tracker.passivationMargin = -4.;
-// Define the parameters of the metal coatings on the straws and wires.
-double tracker.straw.wallOuterMetal.thickness  = 0.00005;
-string tracker.straw.wallOuterMetal.material   = "G4_Al";
-double tracker.straw.wallInnerMetal1.thickness = 0.00005;
-string tracker.straw.wallInnerMetal1.material  = "G4_Al";
-double tracker.straw.wallInnerMetal2.thickness = 0.00002;
-string tracker.straw.wallInnerMetal2.material  = "G4_Au";
-double tracker.straw.wirePlate.thickness       = 0.00025;
-string tracker.straw.wirePlate.material        = "G4_Au";
+#include "Offline/Mu2eG4/geom/tracker_straw_params_v01.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
