@@ -1,0 +1,9 @@
+// Geometry without the IPA
+#include "Offline/Mu2eG4/geom/geom_common.txt"
+bool protonabsorber.buildIPA = false;
+bool protonabsorber.ipa.buildSupports = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

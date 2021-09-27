@@ -1,0 +1,8 @@
+// Geometry using the Mu2e era tracker straws
+#include "Offline/Mu2eG4/geom/geom_common.txt"
+#include "Offline/Mu2eG4/geom/tracker_straw_params_v01.txt"
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
