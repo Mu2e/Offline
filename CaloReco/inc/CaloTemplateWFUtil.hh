@@ -27,6 +27,7 @@ namespace mu2e {
         double                      peakNorm      (const std::vector<double>& xvalues, const std::vector<double>& yvalues, double x0, unsigned i0, unsigned i1);
         double                      peakToFunc    (unsigned ip, double xmax, double ymax);
         void                        plotFit       (const std::string& pname) const;
+        void                        printResiduals();
  
         void                        setStrategy   (int val) {fitStrategy_ = val;}
         void                        setPrintLevel (int val) {printLevel_  = val;}

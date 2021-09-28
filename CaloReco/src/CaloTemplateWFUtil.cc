@@ -162,12 +162,12 @@ namespace mu2e {
 
        minuit.mnstat(chi2_,edm,errdef,nvpar,nparx,istat);        
        
-       //recalculate the chi2 removing the baseline to better reject the noise ?      
+       //recalculate the chi2 without correlations?      
        //chi2_=0;
        //for (unsigned i=x0_;i<x1_;++i)
        //{    
        //    double val = fitfunction(xvec_[i], &param_[0]);
-       //    if (yvec_[i]>1e-5) chi2_ += (yvec_[i]-val)*(yvec_[i]-val)/(yvec_[i]-param_[0]);
+       //    if (yvec_[i]>1e-5) chi2_ += (yvec_[i]-val)*(yvec_[i]-val)/yvec_[i];
        //}
           
        nParTot_ = param_.size();
@@ -298,6 +298,19 @@ namespace mu2e {
       return ymax*pulseCache_.evaluate(param_[ip+1]-xmax)/param_[ip]; 
    }
 
+   //------------------------------------------------------------
+   void CaloTemplateWFUtil::printResiduals() 
+   {       
+       std::cout<<"Print residuals "<<std::endl;
+       for (unsigned i=x0_;i<x1_;++i)
+       {    
+           double x = xvec_[i];
+           double y = yvec_[i];
+           double val = fitfunction(x,&param_[0]);
+           std::cout<<x<<" "<<y<<" "<<val<<" "<<y-val<<std::endl;
+	}
+       std::cout<<"-----"<<std::endl;
+   }
 
    //---------------------------------------------------------------------------
    void CaloTemplateWFUtil::plotFit(const std::string& pname) const
