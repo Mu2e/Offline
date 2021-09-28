@@ -22,7 +22,7 @@ CaloTrigger : {
     module_type           : CaloTrigger
     caloDigiModuleLabel   : CaloDigiMaker
     digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime   
+    blindTime             : @local::HitMakerDigitizationStart 
     endTimeBuffer         : 80                          
     windowPeak            : 2
     minAmplitude          : 20

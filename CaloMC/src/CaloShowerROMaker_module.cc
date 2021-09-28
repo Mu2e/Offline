@@ -14,8 +14,10 @@
 #include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -90,7 +92,7 @@ namespace mu2e {
              fhicl::Sequence<art::InputTag>  caloShowerStepCollection { Name("caloShowerStepCollection"), Comment("Compressed shower inputs for calo crystals") };
              fhicl::Atom<art::InputTag>      ewMarkerTag              { Name("eventWindowMarker"),        Comment("EventWindowMarker producer") };
              fhicl::Atom<art::InputTag>      pbtmcTag                 { Name("protonBunchTimeMC"),        Comment("ProtonBunchTimeMC producer") };
-             fhicl::Atom<float>              blindTime                { Name("blindTime"),                Comment("Minimum time of hit to be digitized") };
+             fhicl::Atom<float>              digitizationStart        { Name("digitizationStart"),        Comment("Minimum time of hit to be digitized") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
              fhicl::Atom<bool>               PEStatCorrection         { Name("PEStatCorrection"),         Comment("Include PE Poisson fluctuations") };
@@ -102,7 +104,7 @@ namespace mu2e {
             EDProducer{config},
             ewMarkerTag_      (config().ewMarkerTag()),
             pbtmcTag_         (config().pbtmcTag()),
-            blindTime_        (config().blindTime()),
+            digitizationStart_        (config().digitizationStart()),
             LRUCorrection_    (config().LRUCorrection()),
             BirksCorrection_  (config().BirksCorrection()),
             PEStatCorrection_ (config().PEStatCorrection()),
@@ -136,7 +138,7 @@ namespace mu2e {
          std::vector<art::ProductToken<CaloShowerStepCollection>> crystalShowerTokens_;
          art::InputTag           ewMarkerTag_;
          art::InputTag           pbtmcTag_;
-         float                   blindTime_;
+         float                   digitizationStart_;
          float                   mbtime_;
          bool                    LRUCorrection_;
          bool                    BirksCorrection_;
@@ -192,6 +194,11 @@ namespace mu2e {
       event.getByLabel(pbtmcTag_, pbtmcHandle);
       const ProtonBunchTimeMC& pbtmc(*pbtmcHandle);
 
+      ProditionsHandle<EventTiming> eventTimingHandle;
+      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+      // change fcl parameter from time since proton to time since marker
+      digitizationStart_ -= eventTiming.timeFromProtonsToDRMarker();
+
       // Containers to hold the output hits.
       auto CaloShowerROs  = std::make_unique<CaloShowerROCollection>();
       auto caloShowerSims = std::make_unique<CaloShowerSimCollection>();
@@ -239,10 +246,10 @@ namespace mu2e {
 
               // Time folding and filtering, see doc-db 3425 + talks from D. Brown for explanation
               double mbLength        = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill) ? mbtime_ : ewMarker.eventLength();
-              //double hitTime         = fmod(istep->time() + pbtmc.pbtime_ + mbLength, mbLength);
-              double hitTime         = fmod(istep->time() + mbLength, mbLength);
+              // folding is done relative to marker t=0
+              double hitTime         = fmod(istep->time() + pbtmc.pbtime_ + mbLength, mbLength);
               
-              if (hitTime < blindTime_) continue;
+              if (hitTime < digitizationStart_) continue;
 
               size_t idx = std::distance(caloShowerSteps.begin(), istep);
               art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);            
