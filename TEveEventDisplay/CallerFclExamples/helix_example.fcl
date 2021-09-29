@@ -1,4 +1,4 @@
-# author: Sophie Middleton 
+# author : Sophie Middleton 
 # purpose : Basic example fcl for use with the helix instance
 
 #include "Offline/fcl/minimalMessageService.fcl"
