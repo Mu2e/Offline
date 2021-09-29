@@ -21,7 +21,8 @@ namespace mu2e{
         
       //Tracker Stations in XZ
       double p = 0.0;
-      for(int i =0;i<18;i++)
+      unsigned int nStations = trkr->getPlane(0).nplanes()/2;
+      for(unsigned int i =0; i < nStations ;i++)
         {
         Double_t stationpos[3];
         Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
@@ -32,19 +33,20 @@ namespace mu2e{
         stationpos [1] = Pos_station.y();
         stationpos [2] = Pos_station.z();
 
-        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,stationpos));
-        panel->SetMainTransparency(100);
-        orthodetXZ->AddElement(panel);
-        p = p + 15.568; //TODO - remove hard coded numbers
+        station->SetShape(new TGeoBBox("station",rmax+rmin/2,rmax+rmin/2,zpanel,stationpos));
+        station->SetMainTransparency(100); // FIXME - hardcoded number
+        orthodetXZ->AddElement(station);
+        p = p + 15.568; //FIXME - remove hard coded numbers
         }
+
         
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
       tr->SetShape(new TGeoTube(rmin, rmax, dz));
-      tr->SetMainTransparency(100);
+      tr->SetMainTransparency(100); // FIXME - hardcoded number
       orthodetXY->AddElement(tr);
 
-      // ... Create tracker using the composite shape defined above
+     // ... Create tracker using the composite shape defined above
       TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
       TGeoMedium *My = new TGeoMedium("Mylar",2, mat);
       CLHEP::Hep3Vector trackerCentrMu2e = GetTrackerCenter();
@@ -52,7 +54,7 @@ namespace mu2e{
       TGeoVolume *tracker = new TGeoVolume("straw Tracker ",gs, My);
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
-      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1));
+      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1));  // FIXME - hardcoded number
      
       //Stopping Target 
       GeomHandle<StoppingTarget> target;
@@ -60,9 +62,9 @@ namespace mu2e{
       double stoppingtargetlength=target->cylinderLength();
       double stoppingtargetz = target->centerInMu2e().z() - _detSysOrigin.z();
       double startz = stoppingtargetz - stoppingtargetlength*0.5;
-      unsigned int n=target->nFoils(); 
+      unsigned int nFoils=target->nFoils(); 
       double j =0.0;
-      for(unsigned int i=0; i<n; i++)  
+      for(unsigned int i=0; i<nFoils; i++)  
         {
         if(i > 0) j = j+abs(target->foil(i-1).centerInMu2e().z() - target->foil(i).centerInMu2e().z());
         const mu2e::TargetFoil &foil=target->foil(i);
@@ -70,7 +72,7 @@ namespace mu2e{
         double r = foil.rOut() - foil.rIn();
       
         CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
-        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),startz/10+j/10); // Stopping Target Location
+        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),startz/10+j/10); // Stopping Target Location  // FIXME - hardcoded number
       
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
@@ -78,13 +80,13 @@ namespace mu2e{
         foilpos [2] = foilposition.z();
       
         TEveGeoShape *stXZ = new TEveGeoShape();
-        stXZ->SetShape(new TGeoBBox("foil",pointmmTocm(r),pointmmTocm(r),pointmmTocm(halfThickness), foilpos));
-        stXZ->SetMainTransparency(100); 
+        stXZ->SetShape(new TGeoBBox("foil",pointmmTocm(r),pointmmTocm(r),pointmmTocm(halfThickness), foilpos));  // FIXME - improve foil labels i.e .add in label to specific foil
+        stXZ->SetMainTransparency(100);   // FIXME - hardcoded number
         orthodetXZ->AddElement(stXZ);
       
         TEveGeoShape *stXY = new TEveGeoShape();
         stXY->SetShape(new TGeoTube(pointmmTocm(foil.rIn()),pointmmTocm(foil.rOut()),pointmmTocm(halfThickness)));
-        stXY->SetMainTransparency(100);
+        stXY->SetMainTransparency(100); // FIXME - hardcoded number
         orthodetXY->AddElement(stXY);
         }
         
