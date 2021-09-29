@@ -19,45 +19,24 @@ namespace mu2e{
       Double_t rmin{pointmmTocm(envelope.innerRadius())};
       Double_t rmax{pointmmTocm(envelope.outerRadius())};
         
-      //Tracker Planes in XZ
+      //Tracker Stations in XZ
       double p = 0.0;
-      for(int i =0;i<20;i++)
+      for(int i =0;i<18;i++)
         {
-        Double_t panelpos[3];
+        Double_t stationpos[3];
         Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
-        TEveGeoShape *panel = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_panel(0,1000,p-dz+zpanel);
+        TEveGeoShape *station= new TEveGeoShape();
+        CLHEP::Hep3Vector Pos_station(0,1000,p-dz+zpanel);
 
-        panelpos [0] = Pos_panel.x();
-        panelpos [1] = Pos_panel.y();
-        panelpos [2] = Pos_panel.z();
+        stationpos [0] = Pos_station.x();
+        stationpos [1] = Pos_station.y();
+        stationpos [2] = Pos_station.z();
 
-        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,panelpos));
+        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,stationpos));
         panel->SetMainTransparency(100);
         orthodetXZ->AddElement(panel);
-        p = p + 15.568;
+        p = p + 15.568; //TODO - remove hard coded numbers
         }
-
-      /*//Tracker Planes in XZ
-      //int nplane = trkr->getPlane(0).nplanes();
-      unsigned int nplanes = trkr->nPlanes();
-      double p = 0.0;
-       for(int i =0;i<20;i++)
-        {
-        Double_t panelpos[3];
-        Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
-        TEveGeoShape *panel = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_panel(0,1000,p-dz+zpanel);
-        
-        panelpos [0] = Pos_panel.x();
-        panelpos [1] = Pos_panel.y();
-        panelpos [2] = Pos_panel.z();   
-        
-        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,panelpos));
-        panel->SetMainTransparency(100);
-        orthodetXZ->AddElement(panel);
-        p = p + 15.568;
-        }*/
         
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
@@ -65,7 +44,7 @@ namespace mu2e{
       tr->SetMainTransparency(100);
       orthodetXY->AddElement(tr);
 
-     // ... Create tracker using the composite shape defined above
+      // ... Create tracker using the composite shape defined above
       TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
       TGeoMedium *My = new TGeoMedium("Mylar",2, mat);
       CLHEP::Hep3Vector trackerCentrMu2e = GetTrackerCenter();
