@@ -19,11 +19,11 @@ physics :
 
 # edit the below options for different products:
 physics.analyzers.TEveEventDisplayHelix.filler.addHits : true
-physics.analyzers.TEveEventDisplayHelix.filler.addTracks : false
+physics.analyzers.TEveEventDisplayHelix.filler.addTracks : true
 physics.analyzers.TEveEventDisplayHelix.filler.addCrvHits : false
 physics.analyzers.TEveEventDisplayHelix.filler.addCosmicSeedFit : false
-physics.analyzers.TEveEventDisplayHelix.filler.addClusters : false
-physics.analyzers.TEveEventDisplayHelix.filler.addMCTraj : false
+physics.analyzers.TEveEventDisplayHelix.filler.addClusters : true
+physics.analyzers.TEveEventDisplayHelix.filler.addMCTraj : true
 
 physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
 
