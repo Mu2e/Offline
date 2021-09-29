@@ -180,14 +180,16 @@ namespace mu2e {
 
       if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1) return;
  
+	  
+      // change digitization window to relative to event marker
+      digitizationStart_ -= timeFromProtonsToDRMarker_;
+      digitizationEnd_ -= timeFromProtonsToDRMarker_;
+	  
       int waveformSize = (digitizationEnd_ - digitizationStart_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill){
         waveformSize = (ewMarker.eventLength() - digitizationStart_) / digiSampling_;
       }
 
-      // change digitization window to relative to event marker
-      digitizationStart_ -= timeFromProtonsToDRMarker_;
-      digitizationEnd_ -= timeFromProtonsToDRMarker_;
       
       int nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");
   
