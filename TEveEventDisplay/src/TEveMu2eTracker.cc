@@ -26,7 +26,7 @@ namespace mu2e{
         Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
         TEveGeoShape *station= new TEveGeoShape();
         CLHEP::Hep3Vector Pos_station(0, 1000, p - dz + zpanel);
-        if(i==0) dp = abs(Pos_station.z() - stationpos [2])/10;
+        if(i==0) dp = pointmmTocm(abs(Pos_station.z() - stationpos [2]));
         stationpos [0] = Pos_station.x();
         stationpos [1] = Pos_station.y();
         stationpos [2] = Pos_station.z();
@@ -70,7 +70,7 @@ namespace mu2e{
         double r = foil.rOut() - foil.rIn();
       
         CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
-        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),startz/10+j/10); // Stopping Target Location FIXME
+        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),pointmmTocm(startz+j)); // Stopping Target Location FIXME
       
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
