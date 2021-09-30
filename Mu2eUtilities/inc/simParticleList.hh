@@ -32,6 +32,11 @@ namespace mu2e {
     // G4 sets this end code for both decay and capture cases
     return simParticleList(simh, PDGCode::mu_minus, ProcessCode::muMinusCaptureAtRest);
   }
+  
+  inline std::vector<art::Ptr<SimParticle> > stoppedMuPlusList(art::ValidHandle<SimParticleCollection> simh) {
+    // G4 sets this end code for both decay and capture cases
+    return simParticleList(simh, PDGCode::mu_plus, ProcessCode::mu2eMuonCaptureAtRest);
+  }
 
 }
 
