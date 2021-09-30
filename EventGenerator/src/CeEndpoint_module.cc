@@ -3,6 +3,7 @@
 // This module throws an exception if no suitable muon is found.
 //
 // Andrei Gaponenko, 2021
+// CePlus options added by Sophie Middleton,2021
 
 #include <iostream>
 #include <string>
@@ -109,8 +110,10 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    const auto mus = stoppedMuMinusList(simh);
-
+    std::vector<art::Ptr<SimParticle> > mus;
+    if (pid == PDGCode::mu_minus) { mus = stoppedMuMinusList(simh); } 
+    else if (pid == PDGCode::mu_plus) { mus = stoppedMuPlusList(simh); }
+    
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")
         <<"CeEndpoint::produce(): no suitable stopped muon in the input SimParticleCollection\n";
