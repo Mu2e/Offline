@@ -7,6 +7,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include <vector>
 #include <string>
 namespace mu2e {
@@ -27,14 +28,17 @@ namespace mu2e {
     extrasteps_(config().extraSteps())
     {
       produces <PrimaryParticle>();
+      produces <MCTrajectoryCollection>();
       for(auto extrastep : extrasteps_)
         produces <StepPointMCCollection>(extrastep);
     }
 
   void NullMCPrimary::produce(art::Event& event) {
-    // create empty output object
+    // create empty output objects
     PrimaryParticle pp;
+    MCTrajectoryCollection mctc;
     event.put(std::make_unique<PrimaryParticle>(pp));
+    event.put(std::make_unique<MCTrajectoryCollection>(mctc));
     StepPointMCCollection empty;
     for(auto extrastep : extrasteps_)
       event.put(std::make_unique<StepPointMCCollection>(empty),extrastep);
