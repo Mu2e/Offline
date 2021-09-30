@@ -19,13 +19,14 @@ namespace mu2e{
       //Tracker Stations in XZ
       double p = 0.0;
       unsigned int nStations = trkr->nPlanes()/2;
+      unsigned int dp = 0;
       Double_t stationpos[3];
       for(unsigned int i =0; i < nStations ;i++){
         
         Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
         TEveGeoShape *station= new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_station(0,1000,p-dz+zpanel);
-        int dp = Pos_station.z() - stationpos [2];
+        CLHEP::Hep3Vector Pos_station(0, 1000, p - dz + zpanel);
+        if(i==0) dp = abs(Pos_station.z() - stationpos [2])/10;
         stationpos [0] = Pos_station.x();
         stationpos [1] = Pos_station.y();
         stationpos [2] = Pos_station.z();
@@ -33,7 +34,7 @@ namespace mu2e{
         station->SetShape(new TGeoBBox("station",rmax+rmin/2,rmax+rmin/2,zpanel,stationpos));
         station->SetMainTransparency(transpOpt); 
         orthodetXZ->AddElement(station);
-        p = p + abs(dp)/10; 
+        p = p + dp;
       }
 
         
