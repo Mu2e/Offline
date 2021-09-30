@@ -45,7 +45,7 @@ namespace mu2e {
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
-        fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of mother particle")};
+        fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -90,8 +90,8 @@ namespace mu2e {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
     
-    if (pid == PDGCode::mu_minus) { process = ProcessCode::mu2eCeMinusEndpoint; } 
-    else if (pid == PDGCode::mu_plus) { process = ProcessCode::mu2eCePlusEndpoint; }
+    if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eCeMinusEndpoint; } 
+    else if (pid == PDGCode::e_plus) { process = ProcessCode::mu2eCePlusEndpoint; }
     else {
       throw   cet::exception("BADINPUT")
         <<"CeEndpointGenerator::produce(): No process associated with chosen PDG id\n";
@@ -111,8 +111,7 @@ namespace mu2e {
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     std::vector<art::Ptr<SimParticle> > mus;
-    if (pid == PDGCode::mu_minus) { mus = stoppedMuMinusList(simh); } 
-    else if (pid == PDGCode::mu_plus) { mus = stoppedMuPlusList(simh); }
+    mus = stoppedMuMinusList(simh);
     
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")

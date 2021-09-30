@@ -110,9 +110,7 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    std::vector<art::Ptr<SimParticle> > mus;
-    if (pid == PDGCode::mu_minus or pid == PDGCode::gamma) { mus = stoppedMuMinusList(simh); } 
-    else if (pid == PDGCode::mu_plus) { mus = stoppedMuPlusList(simh); }
+    const auto mus = stoppedMuMinusList(simh);
 
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")
