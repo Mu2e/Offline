@@ -116,6 +116,8 @@ namespace mu2e {
        art::InputTag           ewMarkerTag_;
        double                  digitizationStart_;
        double                  digitizationEnd_;
+       double                  correctedDigitizationStart_;
+       double                  correctedDigitizationEnd_;
        double                  digiSampling_;
        unsigned                bufferDigi_;
        double                  startTimeBuffer_;
@@ -182,12 +184,12 @@ namespace mu2e {
  
 	  
       // change digitization window to relative to event marker
-      digitizationStart_ -= timeFromProtonsToDRMarker_;
-      digitizationEnd_ -= timeFromProtonsToDRMarker_;
+      correctedDigitizationStart_ = digitizationStart_ - timeFromProtonsToDRMarker_;
+      correctedDigitizationEnd_ = digitizationEnd_ - timeFromProtonsToDRMarker_;
 	  
-      int waveformSize = (digitizationEnd_ - digitizationStart_) / digiSampling_;
+      int waveformSize = (correctedDigitizationEnd_ - correctedDigitizationStart_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill){
-        waveformSize = (ewMarker.eventLength() - digitizationStart_) / digiSampling_;
+        waveformSize = (ewMarker.eventLength() - correctedDigitizationStart_) / digiSampling_;
       }
 
       
@@ -226,7 +228,7 @@ namespace mu2e {
           if (SiPMID != iRO) continue;
           for (const float PEtime : CaloShowerRO.PETime())
           {        
-              float       time           = PEtime - digitizationStart_ + startTimeBuffer_;         
+              float       time           = PEtime - correctedDigitizationStart_ + startTimeBuffer_;         
               unsigned    startSample    = std::max(0u,unsigned(time/digiSampling_));
               const auto& pulse          = pulseShape_.digitizedPulse(time);
               unsigned    stopSample     = std::min(startSample+pulse.size(), waveform.size());
@@ -308,7 +310,7 @@ namespace mu2e {
        {
 	   size_t sampleStart = hitStarts[ihit];
 	   size_t sampleStop  = hitStops[ihit];
-	   size_t t0          = size_t(sampleStart*digiSampling_ + digitizationStart_ - startTimeBuffer_);
+	   size_t t0          = size_t(sampleStart*digiSampling_ + correctedDigitizationStart_ - startTimeBuffer_);
 
 	   std::vector<int> wfsample{};
            wfsample.reserve(sampleStop-sampleStart);
@@ -317,7 +319,7 @@ namespace mu2e {
 	   // only consider hits above digitizationStart
            size_t peakPosition(0u);
            for (auto i = 0u; i<wfsample.size();++i) {
-              if (t0+i*digiSampling_ >= digitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
+              if (t0+i*digiSampling_ >= correctedDigitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
            }
 	   if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop 
                                        << " peak in position " << peakPosition << std::endl; 
@@ -352,7 +354,7 @@ namespace mu2e {
   //-------------------------------------------------------------------------------------------------------------------
   void CaloDigiMaker::plotWF(const std::vector<int>& waveform, const std::string& pname, int pedestal)
   {      
-      double startTime = digitizationStart_ - startTimeBuffer_;
+      double startTime = correctedDigitizationStart_ - startTimeBuffer_;
       TH1F h("h","Waveform",waveform.size(),startTime,waveform.size()*digiSampling_+startTime);
       for (size_t i=1;i<=waveform.size();++i) h.SetBinContent(i,waveform[i-1]);
       TLine line;
