@@ -33,15 +33,14 @@ namespace mu2e{
         station->SetShape(new TGeoBBox("station",rmax+rmin/2,rmax+rmin/2,zpanel,stationpos));
         station->SetMainTransparency(transpOpt); 
         orthodetXZ->AddElement(station);
-        std::cout<<"dp >>>>>>>> "<<dp<<std::endl;
-        p = p + dp; 
+        p = p + abs(dp)/10; 
       }
 
         
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
       tr->SetShape(new TGeoTube(rmin, rmax, dz));
-      tr->SetMainTransparency(transpOpt); // FIXME - hardcoded number
+      tr->SetMainTransparency(transpOpt); 
       orthodetXY->AddElement(tr);
 
       // ... Create tracker using the composite shape defined above
@@ -70,7 +69,7 @@ namespace mu2e{
         double r = foil.rOut() - foil.rIn();
       
         CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
-        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),startz/10+j/10); // Stopping Target Location 
+        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),startz/10+j/10); // Stopping Target Location FIXME
       
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
@@ -88,7 +87,7 @@ namespace mu2e{
         orthodetXY->AddElement(stXY);
         }
         
-        //Calo disks in the Tracker XZ display window
+        //Calo disk outline in the Tracker XZ display window
         GeomHandle<DiskCalorimeter> calo;   
        
         double diskInnerRingIn = calo->caloInfo().getDouble("diskInnerRingIn");
@@ -109,7 +108,7 @@ namespace mu2e{
           CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
           diskPos += CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick));
           double k = diskOuterRailOut + diskInnerRingIn;
-          for(int ic=0; ic<30; ic++){ // FIXME - what is 30?
+          for(unsigned int ic=0; ic < 30; ic++){ // FIXME - what is 30?
             CLHEP::Hep3Vector crystalposition(diskPos.x(), (diskPos.y() + k), diskPos.z());
             Double_t crystalpos[3];
             crystalpos [0] = pointmmTocm(crystalposition.x());
