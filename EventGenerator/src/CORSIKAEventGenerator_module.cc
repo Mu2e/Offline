@@ -118,8 +118,8 @@ namespace mu2e {
                                                                          _refPointChoice(_conf.refPointChoice()),
                                                                          _intDist(_conf.intDist()),
                                                                          _applyTimeOffset(!_conf.simTimeOffset().empty()),
-                                                                         _timeOffsetTag(conf.simTimeOffset()),
-                                                                         _stoff(0.0))
+                                                                         _timeOffsetTag(_conf.simTimeOffset()),
+                                                                         _stoff(0.0)
   {
     produces<GenParticleCollection>();
     produces<CosmicLivetime,art::InSubRun>();
@@ -142,8 +142,8 @@ namespace mu2e {
 
     if (_applyTimeOffset) {
       // find the time offset in the event, and copy it locally
-      const auto& stoH = e.getValidHandle<SimTimeOffset>(_timeOffsetTag);
-      stoff_ = *stoH;
+      const auto& stoH = evt.getValidHandle<SimTimeOffset>(_timeOffsetTag);
+      _stoff = *stoH;
     }
 
     if (!_geomInfoObtained) {
@@ -259,7 +259,7 @@ namespace mu2e {
 
           genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                                               GenId::cosmicCORSIKA, projectedPos, mom4,
-                                              particle.time() + _stoff));
+                                              particle.time() + _stoff.timeOffset_));
         } else {
           _worldIntersections.clear();
           VectorVolume particleWorld(position, particle.momentum().vect(),
@@ -272,13 +272,13 @@ namespace mu2e {
             const Hep3Vector projectedPos = _worldIntersections.at(0);
             genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                                                 GenId::cosmicCORSIKA, projectedPos, mom4,
-                                                particle.time() + _stoff));
+                                                particle.time() + _stoff.timeOffset_));
           }
         }
       } else {
         genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                   GenId::cosmicCORSIKA, position, mom4,
-                  particle.time() + _stoff));
+                  particle.time() + _stoff.timeOffset_));
       }
     }
 
