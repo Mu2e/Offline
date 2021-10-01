@@ -77,8 +77,8 @@ namespace mu2e {
   CeEndpoint::CeEndpoint(const Parameters& conf)
     : EDProducer{conf}
     , electronMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(electronId_).ref().mass().value())
-    , endPointEnergy_{GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial())}
-    , endPointMomentum_{ endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2)) }
+    , endPointEnergy_()
+    , endPointMomentum_ ()
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
@@ -90,12 +90,20 @@ namespace mu2e {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
     
-    if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eCeMinusEndpoint; } 
-    else if (pid == PDGCode::e_plus) { process = ProcessCode::mu2eCePlusEndpoint; }
+    if (pid == PDGCode::e_minus) { 
+      process = ProcessCode::mu2eCeMinusEndpoint; 
+      endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial());
+    } 
+    else if (pid == PDGCode::e_plus) { 
+      process = ProcessCode::mu2eCePlusEndpoint; 
+      endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
+      std::cout<<"Generating with "<<endPointEnergy_<<std::endl;
+    }
     else {
       throw   cet::exception("BADINPUT")
         <<"CeEndpointGenerator::produce(): No process associated with chosen PDG id\n";
     }
+    endPointMomentum_ = endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2));
     if(verbosity_ > 0) {
       mf::LogInfo log("CeEndpoint");
       log<<"stoppingTargetMaterial = "<<conf().stoppingTargetMaterial()
