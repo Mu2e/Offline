@@ -18,4 +18,3 @@ physics :
 physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
 
 
-
