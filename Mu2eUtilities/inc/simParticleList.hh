@@ -33,7 +33,6 @@ namespace mu2e {
     return simParticleList(simh, PDGCode::mu_minus, ProcessCode::muMinusCaptureAtRest);
   }
 
-
 }
 
 #endif/*Mu2eUtilities_inc_stoppedMuonList_hh*/
