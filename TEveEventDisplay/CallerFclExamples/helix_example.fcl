@@ -1,6 +1,4 @@
-# author : Sophie Middleton 
-# purpose : Basic example fcl for use with the helix instance
-
+# Sophie Middleton 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -17,14 +15,7 @@ physics :
  analyzers : { @table::TEveDis.analyzers}
 }
 
-# edit the below options for different products:
-physics.analyzers.TEveEventDisplayHelix.filler.addHits : true
-physics.analyzers.TEveEventDisplayHelix.filler.addTracks : true
-physics.analyzers.TEveEventDisplayHelix.filler.addCrvHits : false
-physics.analyzers.TEveEventDisplayHelix.filler.addCosmicSeedFit : false
-physics.analyzers.TEveEventDisplayHelix.filler.addClusters : true
-physics.analyzers.TEveEventDisplayHelix.filler.addMCTraj : true
-
 physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
+
 
 
