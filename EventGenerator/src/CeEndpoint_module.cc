@@ -97,7 +97,6 @@ namespace mu2e {
     else if (pid == PDGCode::e_plus) { 
       process = ProcessCode::mu2eCePlusEndpoint; 
       endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
-      std::cout<<"Generating with "<<endPointEnergy_<<std::endl;
     }
     else {
       throw   cet::exception("BADINPUT")
