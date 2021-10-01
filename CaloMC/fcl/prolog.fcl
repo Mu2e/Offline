@@ -30,7 +30,7 @@ CaloShowerROMaker :
     caloShowerStepCollection : ["CaloShowerStepMaker"]
     eventWindowMarker        : EWMProducer
     protonBunchTimeMC        : EWMProducer
-    blindTime                : @local::HitMakerBlindTime
+    digitizationStart        : @local::HitMakerDigitizationStart
     LRUCorrection            : true
     BirksCorrection          : true
     PEStatCorrection         : true
@@ -58,7 +58,8 @@ CaloDigiMaker :
     module_type             : CaloDigiMaker
     caloShowerROCollection  : CaloShowerROMaker
     eventWindowMarker       : EWMProducer
-    blindTime               : @local::HitMakerBlindTime
+    digitizationStart       : @local::HitMakerDigitizationStart
+    digitizationEnd         : @local::HitMakerDigitizationEnd
     addNoise                : true
     generateSpotNoise       : true
     addRandomNoise          : false
@@ -67,7 +68,6 @@ CaloDigiMaker :
     nBits                   : 12
     minPeakADC              : @local::HitMakerMinPeakADC
     nBinsPeak		    : 2 
-    endTimeBuffer           : 80
     bufferDigi              : 16 
     diagLevel               : 0
 }
