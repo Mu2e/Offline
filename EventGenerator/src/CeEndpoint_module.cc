@@ -117,8 +117,7 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    std::vector<art::Ptr<SimParticle> > mus;
-    mus = stoppedMuMinusList(simh);
+    const auto mus = stoppedMuMinusList(simh);
     
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")
