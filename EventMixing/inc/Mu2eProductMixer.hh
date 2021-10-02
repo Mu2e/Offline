@@ -96,7 +96,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
-      fhicl::Atom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)"), art::InputTag() };
+      fhicl::OptionalAtom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
