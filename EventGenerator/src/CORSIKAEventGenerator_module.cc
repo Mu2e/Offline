@@ -14,6 +14,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -65,7 +66,7 @@ namespace mu2e {
         fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
         fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Top coordinate of the target box on the Y axis")};
         fhicl::Atom<float> intDist{Name("intDist"), Comment("Maximum distance of closest approach for backtracked trajectories")};
-        fhicl::Atom<art::InputTag> simTimeOffset{Name("simTimeOffset"), Comment("Simulation time offset to apply (optional)"), art::InputTag()};
+        fhicl::OptionalAtom<art::InputTag> simTimeOffset{Name("simTimeOffset"), Comment("Simulation time offset to apply (optional)")};
       };
       typedef art::EDProducer::Table<Config> Parameters;
 
@@ -80,7 +81,6 @@ namespace mu2e {
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
 
       bool  _geomInfoObtained = false;
-      Config _conf;
       std::string _corsikaModuleLabel =  "FromCorsikaBinary";
 
       float _worldXmin = 0;
@@ -111,18 +111,19 @@ namespace mu2e {
   };
 
   CorsikaEventGenerator::CorsikaEventGenerator(const Parameters &conf) : EDProducer{conf},
-                                                                         _conf(conf()),
-                                                                         _corsikaModuleLabel(_conf.corsikaModuleLabel()),
-                                                                         _targetBoxYmax(_conf.targetBoxYmax()),
-                                                                         _projectToTargetBox(_conf.projectToTargetBox()),
-                                                                         _refPointChoice(_conf.refPointChoice()),
-                                                                         _intDist(_conf.intDist()),
-                                                                         _applyTimeOffset(!_conf.simTimeOffset().empty()),
-                                                                         _timeOffsetTag(_conf.simTimeOffset()),
+                                                                         _corsikaModuleLabel(conf().corsikaModuleLabel()),
+                                                                         _targetBoxYmax(conf().targetBoxYmax()),
+                                                                         _projectToTargetBox(conf().projectToTargetBox()),
+                                                                         _refPointChoice(conf().refPointChoice()),
+                                                                         _intDist(conf().intDist()),
+                                                                         _applyTimeOffset(conf().simTimeOffset.hasValue()),
                                                                          _stoff(0.0)
   {
     produces<GenParticleCollection>();
     produces<CosmicLivetime,art::InSubRun>();
+    if (_applyTimeOffset) {
+      _timeOffsetTag = conf().simTimeOffset().value();
+    }
   }
 
   void CorsikaEventGenerator::beginSubRun(art::SubRun &subrun)
