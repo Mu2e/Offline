@@ -29,7 +29,6 @@ namespace mu2e
     art::InputTag _tcTag;
     bool          _hascc; // Calo Cluster
     unsigned      _minnhits;
-    double        _mintime, _maxtime;
     int           _debug;
     // counters
     unsigned _nevt, _npass;
@@ -40,8 +39,6 @@ namespace mu2e
     _tcTag(pset.get<art::InputTag>("timeClusterCollection","TimeClusterFinder")),
     _hascc(pset.get<bool>("requireCaloCluster",false)),
     _minnhits(pset.get<unsigned>("minNHits",11)),
-    _mintime(pset.get<double>("minTime",500.0)),
-    _maxtime(pset.get<double>("maxTime",1695.0)) ,
     _debug(pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
@@ -63,8 +60,7 @@ namespace mu2e
         std::cout << moduleDescription().moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << std::endl;
       }
       if( (!_hascc || tc.caloCluster().isNonnull()) &&
-          tc.hits().size() >= _minnhits &&
-          tc.t0().t0() > _mintime && tc.t0().t0() < _maxtime) {
+          tc.hits().size() >= _minnhits) {
         retval = true;
         ++_npass;
         // Fill the trigger info object
