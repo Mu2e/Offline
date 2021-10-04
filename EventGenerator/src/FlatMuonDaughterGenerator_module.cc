@@ -47,7 +47,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity")};
-      fhicl::Atom<int> pdgId{Name("pdgId")};
+      fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of mother particle")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
