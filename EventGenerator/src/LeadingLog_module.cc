@@ -16,12 +16,14 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Utilities/make_tool.h"
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -45,6 +47,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
+        fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
@@ -105,9 +108,9 @@ namespace mu2e {
       throw   cet::exception("BADINPUT")
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
     }
-    endPointMomentum_ = endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2));
+    //endPointMomentum_ = endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2));
     
-    const auto capture_psets = conf().decayProducts.get<std::vector<fhicl::ParameterSet>>();
+    const auto capture_psets = conf().captureProducts.get<std::vector<fhicl::ParameterSet>>();
     for (const auto& pset : capture_psets) {
       muonCaptureGenerators_.push_back(art::make_tool<ParticleGeneratorTool>(pset));
       muonCaptureGenerators_.back()->finishInitialization(eng_, conf().stoppingTargetMaterial());
@@ -124,21 +127,22 @@ namespace mu2e {
     for(const auto& mustop: mus) {
 
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-      double rand = randFlat_.fire();
+      //double rand = randFlat_.fire();
+
       
-      else {
-        for (const auto& gen : muonCaptureGenerators_) {
-          addParticles(output.get(), mustop, time, gen.get());
-        }
+      for (const auto& gen : muonCaptureGenerators_) {
+        addParticles(output.get(), mustop, time, gen.get());
       }
-    
-    if(mus.empty()) {
+
+
+      if(mus.empty()) {
       throw   cet::exception("BADINPUT")
-        <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
+      <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
 
-    }
+      }
 
     
+    }
   }
   
   //================================================================
