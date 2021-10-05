@@ -54,6 +54,7 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
 
+    void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
     //----------------------------------------------------------------
   private:
     const PDGCode::type electronId_ = PDGCode::e_minus; // for mass only
@@ -73,7 +74,7 @@ namespace mu2e {
     int pdgId_;
     PDGCode::type pid;
     
-    std::unique_ptr<ParticleGeneratorTool> generator_;
+    std::vector<std::unique_ptr<ParticleGeneratorTool>> muonCaptureGenerators_;
   };
 
   //================================================================
@@ -106,14 +107,30 @@ namespace mu2e {
     }
     endPointMomentum_ = endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2));
     
+    const auto capture_psets = conf().decayProducts.get<std::vector<fhicl::ParameterSet>>();
+    for (const auto& pset : capture_psets) {
+      muonCaptureGenerators_.push_back(art::make_tool<ParticleGeneratorTool>(pset));
+      muonCaptureGenerators_.back()->finishInitialization(eng_, conf().stoppingTargetMaterial());
+    }
   }
 
   //================================================================
   void LeadingLog::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
-
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto mus = stoppedMuMinusList(simh);
+    
+
+    for(const auto& mustop: mus) {
+
+      const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
+      double rand = randFlat_.fire();
+      
+      else {
+        for (const auto& gen : muonCaptureGenerators_) {
+          addParticles(output.get(), mustop, time, gen.get());
+        }
+      }
     
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")
@@ -121,31 +138,7 @@ namespace mu2e {
 
     }
 
-    const auto mustop = mus.at(eng_.operator unsigned int() % mus.size());
-    double randomMom = randFlat_.fire(startMom_, endMom_); //TODO - needs to use conversion spectrum
-    double randomE = sqrt(particleMass_*particleMass_ + randomMom*randomMom);
-    double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
     
-        const auto& stop = stops_.fire();
-
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
-
-    const double energy = generateEnergy();
-    const double p = energy * sqrt(1 - std::pow(mass_/energy,2));
-
-    CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(p);
-    CLHEP::HepLorentzVector fourmom(p3, energy);
-
-    output->emplace_back(mustop,
-                         ProcessCode::mu2eCeMinusLeadingLog,
-                         pid,
-                         mustop->endPosition(),
-                         CLHEP::HepLorentzVector{randomUnitSphere_.fire(endPointMomentum_), endPointEnergy_},
-                         mustop->endGlobalTime() + randExp_.fire(muonLifeTime_)
-                         );
-
-
-    event.put(std::move(output));
   }
   
   //================================================================
@@ -154,7 +147,7 @@ namespace mu2e {
                             double time,
                             ParticleGeneratorTool* gen)
   {
-    auto daughters = gen->generate();
+    auto daughters = gen->generate(); // this is were the energy should be used
     for(const auto& d: daughters) {
 
       output->emplace_back(mustop,
