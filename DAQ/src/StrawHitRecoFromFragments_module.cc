@@ -365,7 +365,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
         mu2e::TrkTypes::TOTValues tot = {trkDataPair.first->TOT0, trkDataPair.first->TOT1};
         mu2e::TrkTypes::ADCValue pmp = trkDataPair.first->PMP;
 
-        shrUtils.createComboHit(chCol, shCol, caloClusters, sid, tdc, tot, pmp, trkDataPair.second,
+        shrUtils.createComboHit(-1,chCol, shCol, caloClusters, sid, tdc, tot, pmp, trkDataPair.second,
 	        trackerStatus,  srep, tt);
 
       }
