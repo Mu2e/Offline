@@ -498,9 +498,7 @@ namespace mu2e {
         if(var > 0.0)tc._t0._t0err = sqrt(var/denom);
         tc._t0._t0 = newt0;
       }
-      tc._pos.SetX((tc._pos.x()*tc._nsh - ch.pos().x()*nsh)/denom);
-      tc._pos.SetY((tc._pos.y()*tc._nsh - ch.pos().x()*nsh)/denom);
-      tc._pos.SetZ((tc._pos.z()*tc._nsh - ch.pos().x()*nsh)/denom);
+      tc._pos = (tc._pos*tc._nsh - ch.pos()*nsh)/denom;
       tc._nsh -= nsh;
     }
     return tc._strawHitIdxs.erase(iworst);
@@ -517,9 +515,7 @@ namespace mu2e {
       tc._t0._t0err = sqrt((tc._t0._t0err*tc._t0._t0err*tc._nsh + (cht-newt0)*(cht-tc._t0._t0)*nsh )/denom);
       tc._t0._t0 = newt0;
     }
-    tc._pos.SetX((tc._pos.x()*tc._nsh + ch.pos().x()*nsh)/denom);
-    tc._pos.SetY((tc._pos.y()*tc._nsh + ch.pos().x()*nsh)/denom);
-    tc._pos.SetZ((tc._pos.z()*tc._nsh + ch.pos().x()*nsh)/denom);
+    tc._pos = (tc._pos*tc._nsh + ch.pos()*nsh)/denom;
     tc._nsh += nsh;
     tc._strawHitIdxs.push_back(iadd);
   }
