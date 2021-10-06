@@ -21,7 +21,8 @@ namespace mu2e {
       _area(0),
       _lowE(0),
       _highE(0),
-      _fluxConstant(0)  {
+      _fluxConstant(0),
+      _livetime(0)  {
     }
 
     CosmicLivetime( unsigned int primaries,
@@ -42,7 +43,12 @@ namespace mu2e {
         _livetime = _primaries / (M_PI * _area * _fluxConstant * (EfToOneMinusGamma - EiToOneMinusGamma) / (1. + eslope));
     }
 
-    CosmicLivetime( float livetime ){
+    CosmicLivetime( float livetime ):
+      _primaries(0),
+      _area(0),
+      _lowE(0),
+      _highE(0),
+      _fluxConstant(0) {
       _livetime = livetime;
     }
 
