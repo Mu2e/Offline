@@ -42,6 +42,10 @@ namespace mu2e {
         _livetime = _primaries / (M_PI * _area * _fluxConstant * (EfToOneMinusGamma - EiToOneMinusGamma) / (1. + eslope));
     }
 
+    CosmicLivetime( float livetime ){
+      _livetime = livetime;
+    }
+
     // Accessors
     unsigned int primaries() const { return _primaries; }
     float area()             const { return _area; }

@@ -4,6 +4,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
+#include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
@@ -16,6 +17,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -37,6 +39,7 @@ namespace mu2e {
       virtual void produce (art::Event& e);
       virtual void beginRun(art::Run&   r);
       virtual void endRun(art::Run&   r);
+      virtual void endSubRun(art::SubRun &sr);
     private:
       std::unique_ptr<CosmicCRY> cryGen;
       std::string inputfile;
@@ -52,6 +55,7 @@ namespace mu2e {
     engine_(createEngine(seed_))
   {
     produces<GenParticleCollection>();
+    produces<CosmicLivetime,art::InSubRun>();
   }
 
   void CryEventGenerator::beginRun( art::Run &run){
@@ -70,6 +74,13 @@ namespace mu2e {
     oss << "Total live time simulated: " << cryGen->getLiveTime() << "\n";
     oss << "Number of events simulated: " << cryGen->getNumEvents() << "\n";
     mf::LogInfo("CRYEventGenerator") << oss.str();
+  }
+
+  void CryEventGenerator::endSubRun(art::SubRun &subrun)
+  {
+    std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(cryGen->getLiveTime()));
+    std::cout << *livetime << std::endl;
+    subrun.put(std::move(livetime));
   }
 
 }
