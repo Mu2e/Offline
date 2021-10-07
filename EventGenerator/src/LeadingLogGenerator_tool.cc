@@ -12,7 +12,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-
 #include "fhiclcpp/types/DelegatedParameter.h"
 
 namespace mu2e {
@@ -37,9 +36,10 @@ namespace mu2e {
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      //_endPointEnergy = GlobalConstantsHandle<PhysicsParams>()->GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(material);
     }
 
   private:
@@ -51,6 +51,7 @@ namespace mu2e {
 
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandGeneral* _randSpectrum;
+    double _endPointEnergy;
     
     PDGCode::type pid;
   };

@@ -29,7 +29,6 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
@@ -60,13 +59,13 @@ namespace mu2e {
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
     //----------------------------------------------------------------
   private:
+    double muonLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
-
+    
     unsigned verbosity_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-    RandomUnitSphere   randomUnitSphere_;
     ProcessCode process;
     int pdgId_;
     PDGCode::type pid;
@@ -77,11 +76,11 @@ namespace mu2e {
   //================================================================
   LeadingLog::LeadingLog(const Parameters& conf)
     : EDProducer{conf}
+    , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
-    , randomUnitSphere_{eng_}
     , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
@@ -89,10 +88,8 @@ namespace mu2e {
     
     if (pid == PDGCode::e_minus) { 
       process = ProcessCode::mu2eCeMinusLeadingLog; 
-      //endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial()); 
     } else if (pid == PDGCode::e_plus) { 
       process = ProcessCode::mu2eCePlusLeadingLog;
-      //endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
     }
     else {
       throw   cet::exception("BADINPUT")
