@@ -77,7 +77,7 @@ namespace mu2e {
     int pdgId_;
     PDGCode::type pid;
     
-    std::vector<std::unique_ptr<ParticleGeneratorTool>> muonCaptureGenerators_;
+    std::vector<std::unique_ptr<ParticleGeneratorTool>> Generator_;
   };
 
   //================================================================
@@ -109,14 +109,11 @@ namespace mu2e {
       throw   cet::exception("BADINPUT")
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
     }
-    //endPointMomentum_ = endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2));
-    
+   
     const auto capture_psets = conf().captureProducts.get<std::vector<fhicl::ParameterSet>>();
-    std::cout<<"beginning..."<<std::endl;
     for (const auto& pset : capture_psets) {
-    std::cout<<"filling lists..."<<std::endl;
-      muonCaptureGenerators_.push_back(art::make_tool<ParticleGeneratorTool>(pset));
-      muonCaptureGenerators_.back()->finishInitialization(eng_, conf().stoppingTargetMaterial());
+      Generator_.push_back(art::make_tool<ParticleGeneratorTool>(pset));
+      Generator_.back()->finishInitialization(eng_, conf().stoppingTargetMaterial());
     }
   }
 
@@ -127,13 +124,9 @@ namespace mu2e {
     const auto mus = stoppedMuMinusList(simh);
     
     for(const auto& mustop: mus) {
-      std::cout<<"in mus..."<<std::endl;
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-      //double rand = randFlat_.fire();
 
-      
-      for (const auto& gen : muonCaptureGenerators_) {
-        std::cout<<"producing..."<<std::endl;
+      for (const auto& gen : Generator_) {
         addParticles(output.get(), mustop, time, gen.get());
       }
 
