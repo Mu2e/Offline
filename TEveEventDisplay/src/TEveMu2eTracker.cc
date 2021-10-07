@@ -14,50 +14,33 @@ namespace mu2e{
       GeomHandle<Tracker> trkr;
 
       TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
+      TubsParams planeEnvelope(trkr->g4Tracker()->getPlaneEnvelopeParams());
 
       Double_t dz{pointmmTocm(envelope.zHalfLength())};
-      Double_t rmin{pointmmTocm(envelope.innerRadius())};
-      Double_t rmax{pointmmTocm(envelope.outerRadius())};
+      Double_t zpanel{pointmmTocm(planeEnvelope.zHalfLength())};
+      Double_t rmin{pointmmTocm(planeEnvelope.innerRadius())};
+      Double_t rmax{pointmmTocm(planeEnvelope.outerRadius())};
         
+      Double_t fullLength = trkr->planes().back().origin().z()- trkr->planes().front().origin().z();
+      Double_t planespace = 2*(pointmmTocm(fullLength) - trkr->nPlanes()*zpanel)/(trkr->nPlanes()-2));
+      double p = -dz;
+
       //Tracker Planes in XZ
-      double p = 0.0;
-      for(int i =0;i<20;i++)
+      for(size_t i =0;i<trkr->nPlanes()/2;i++)
         {
         Double_t panelpos[3];
-        Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
         TEveGeoShape *panel = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_panel(0,1000,p-dz+zpanel);
+        CLHEP::Hep3Vector Pos_panel(0,1000,p);
 
         panelpos [0] = Pos_panel.x();
         panelpos [1] = Pos_panel.y();
         panelpos [2] = Pos_panel.z();
 
-        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,panelpos));
+        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel*2,panelpos));
         panel->SetMainTransparency(100);
         orthodetXZ->AddElement(panel);
-        p = p + 15.568;
+        p = p + fullLength + zpanel;
         }
-
-      /*//Tracker Planes in XZ
-      //int nplane = trkr->getPlane(0).nplanes();
-      unsigned int nplanes = trkr->nPlanes();
-      double p = 0.0;
-       for(int i =0;i<20;i++)
-        {
-        Double_t panelpos[3];
-        Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
-        TEveGeoShape *panel = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_panel(0,1000,p-dz+zpanel);
-        
-        panelpos [0] = Pos_panel.x();
-        panelpos [1] = Pos_panel.y();
-        panelpos [2] = Pos_panel.z();   
-        
-        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel,panelpos));
-        panel->SetMainTransparency(100);
-        orthodetXZ->AddElement(panel);
-        p = p + 15.568;
-        }*/
         
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
