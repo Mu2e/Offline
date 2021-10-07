@@ -22,14 +22,17 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+      fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
     explicit LeadingLogGenerator(Parameters const& conf) :
-      _pdgId(PDGCode::e_minus), //TODO - should this be a parameter
+      _pdgId(conf().pdgId()), 
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-    {}
+    {
+      pid = static_cast<PDGCode::type>(_pdgId);
+    }
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
@@ -40,13 +43,16 @@ namespace mu2e {
     }
 
   private:
-    PDGCode::type _pdgId;
+    int _pdgId;
+    ProcessCode _process;
     double _mass;
 
     BinnedSpectrum    _spectrum;
 
     RandomUnitSphere*   _randomUnitSphere;
     CLHEP::RandGeneral* _randSpectrum;
+    
+    PDGCode::type pid;
   };
 
 
@@ -59,7 +65,9 @@ namespace mu2e {
     CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
-    ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eCeMinusLeadingLog, fourmom};
+    if(pid == PDGCode::e_minus){ _process = ProcessCode::mu2eCeMinusLeadingLog; }
+    if(pid == PDGCode::e_plus){ _process = ProcessCode::mu2eCePlusLeadingLog; }
+    ParticleGeneratorTool::Kinematic k{pid, _process, fourmom};
     res.emplace_back(k);
 
     return res;
