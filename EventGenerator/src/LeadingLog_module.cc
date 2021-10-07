@@ -70,7 +70,7 @@ namespace mu2e {
     int pdgId_;
     PDGCode::type pid;
     
-    std::vector<std::unique_ptr<ParticleGeneratorTool>> Generator_;
+    std::unique_ptr<ParticleGeneratorTool> Generator_;
   };
 
   //================================================================
@@ -96,11 +96,11 @@ namespace mu2e {
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
     }
    
-    const auto capture_psets = conf().captureProducts.get<std::vector<fhicl::ParameterSet>>();
-    for (const auto& pset : capture_psets) {
-      Generator_.push_back(art::make_tool<ParticleGeneratorTool>(pset));
-      Generator_.back()->finishInitialization(eng_, conf().stoppingTargetMaterial());
-    }
+    const auto pset = conf().captureProducts.get<fhicl::ParameterSet>();
+
+    Generator_ = (art::make_tool<ParticleGeneratorTool>(pset));
+    Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
+    
   }
 
   //================================================================
@@ -112,10 +112,7 @@ namespace mu2e {
     for(const auto& mustop: mus) {
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
 
-      for (const auto& gen : Generator_) {
-        addParticles(output.get(), mustop, time, gen.get());
-      }
-
+      addParticles(output.get(), mustop, time, Generator_.get());
       if(mus.empty()) {
         throw   cet::exception("BADINPUT")
         <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
