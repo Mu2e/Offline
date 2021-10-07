@@ -99,7 +99,8 @@ namespace mu2e {
     
     if (pid == PDGCode::e_minus) { 
       process = ProcessCode::mu2eCeMinusLeadingLog; 
-      endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial());
+      endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial()); 
+      //TODO - This is eHi (needs to be passed to generator)
     } else if (pid == PDGCode::e_plus) { 
       process = ProcessCode::mu2eCeMinusLeadingLog; //TODO - new process code?
       endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
@@ -111,7 +112,9 @@ namespace mu2e {
     //endPointMomentum_ = endPointEnergy_*sqrt(1 - std::pow(electronMass_/endPointEnergy_,2));
     
     const auto capture_psets = conf().captureProducts.get<std::vector<fhicl::ParameterSet>>();
+    std::cout<<"beginning..."<<std::endl;
     for (const auto& pset : capture_psets) {
+    std::cout<<"filling lists..."<<std::endl;
       muonCaptureGenerators_.push_back(art::make_tool<ParticleGeneratorTool>(pset));
       muonCaptureGenerators_.back()->finishInitialization(eng_, conf().stoppingTargetMaterial());
     }
@@ -123,26 +126,25 @@ namespace mu2e {
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto mus = stoppedMuMinusList(simh);
     
-
     for(const auto& mustop: mus) {
-
+      std::cout<<"in mus..."<<std::endl;
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       //double rand = randFlat_.fire();
 
       
       for (const auto& gen : muonCaptureGenerators_) {
+        std::cout<<"producing..."<<std::endl;
         addParticles(output.get(), mustop, time, gen.get());
       }
 
-
       if(mus.empty()) {
-      throw   cet::exception("BADINPUT")
-      <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
-
+        throw   cet::exception("BADINPUT")
+        <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
       }
 
     
     }
+    event.put(std::move(output));
   }
   
   //================================================================
@@ -151,7 +153,7 @@ namespace mu2e {
                             double time,
                             ParticleGeneratorTool* gen)
   {
-    auto daughters = gen->generate(); // this is were the energy should be used
+    auto daughters = gen->generate(); 
     for(const auto& d: daughters) {
 
       output->emplace_back(mustop,

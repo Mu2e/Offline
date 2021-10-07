@@ -21,13 +21,12 @@ namespace mu2e {
     struct PhysConfig {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
     explicit LeadingLogGenerator(Parameters const& conf) :
-      _pdgId(PDGCode::e_minus),
+      _pdgId(PDGCode::e_minus), //TODO - should this be a parameter
       _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
     {}
