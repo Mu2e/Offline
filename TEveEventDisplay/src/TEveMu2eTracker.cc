@@ -22,7 +22,7 @@ namespace mu2e{
       Double_t rmax{pointmmTocm(planeEnvelope.outerRadius())};
         
       Double_t fullLength = trkr->planes().back().origin().z()- trkr->planes().front().origin().z();
-      Double_t planespace = 2*(pointmmTocm(fullLength) - trkr->nPlanes()*zpanel)/(trkr->nPlanes()-2));
+      Double_t planespace = 2*((pointmmTocm(fullLength) - trkr->nPlanes()*zpanel)/(trkr->nPlanes()-2));
       double p = -dz;
 
       //Tracker Planes in XZ
@@ -39,7 +39,7 @@ namespace mu2e{
         panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel*2,panelpos));
         panel->SetMainTransparency(100);
         orthodetXZ->AddElement(panel);
-        p = p + fullLength + zpanel;
+        p = p + planespace + zpanel*2;
         }
         
       //XY:
