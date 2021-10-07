@@ -60,12 +60,6 @@ namespace mu2e {
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
     //----------------------------------------------------------------
   private:
-    const PDGCode::type electronId_ = PDGCode::e_minus; // for mass only
-    double electronMass_;
-    double endPointEnergy_;
-    double endPointMomentum_;
-    double muonLifeTime_;
-
     art::ProductToken<SimParticleCollection> const simsToken_;
 
     unsigned verbosity_;
@@ -83,10 +77,6 @@ namespace mu2e {
   //================================================================
   LeadingLog::LeadingLog(const Parameters& conf)
     : EDProducer{conf}
-    , electronMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(electronId_).ref().mass().value())
-    , endPointEnergy_()
-    , endPointMomentum_ ()
-    , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
@@ -99,11 +89,10 @@ namespace mu2e {
     
     if (pid == PDGCode::e_minus) { 
       process = ProcessCode::mu2eCeMinusLeadingLog; 
-      endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial()); 
-      //TODO - This is eHi (needs to be passed to generator)
+      //endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial()); 
     } else if (pid == PDGCode::e_plus) { 
       process = ProcessCode::mu2eCePlusLeadingLog;
-      endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
+      //endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
     }
     else {
       throw   cet::exception("BADINPUT")
