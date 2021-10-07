@@ -39,7 +39,6 @@ namespace mu2e {
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
       _randomUnitSphere = new RandomUnitSphere(eng);
       _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
-      //_endPointEnergy = GlobalConstantsHandle<PhysicsParams>()->GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(material);
     }
 
   private:
