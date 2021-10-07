@@ -102,7 +102,7 @@ namespace mu2e {
       endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial()); 
       //TODO - This is eHi (needs to be passed to generator)
     } else if (pid == PDGCode::e_plus) { 
-      process = ProcessCode::mu2eCeMinusLeadingLog; //TODO - new process code?
+      process = ProcessCode::mu2eCePlusLeadingLog;
       endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
     }
     else {

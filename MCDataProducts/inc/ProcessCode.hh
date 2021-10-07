@@ -142,6 +142,7 @@ namespace mu2e {
     "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
     "mu2eunused1", "mu2eunused2", "mu2eunused3", "mu2eunused4", \
     "mu2eunused5", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
+    "mu2eCePlusLeadingLog",\
     "uninitialized"
 
   public:
