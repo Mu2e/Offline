@@ -23,6 +23,9 @@ namespace mu2e {
       CosmicCRY(art::Run& run, const SimpleConfig& config,
           CLHEP::HepRandomEngine& engine);
       const double getLiveTime();
+      const double getMaxShowerEn();
+      const double getMinShowerEn();
+      const double getSubboxLength();
       const double getShowerSumEnergy();
       const unsigned long long int getNumEvents();
 
