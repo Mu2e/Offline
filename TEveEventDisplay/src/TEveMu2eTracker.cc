@@ -113,7 +113,7 @@ namespace mu2e{
           CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
           diskPos += CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick));
           double k = diskOuterRailOut + diskInnerRingIn;
-          for(int ic=0; ic<30; ic++){
+          for(int ic=0; ic<calo->nCrystal()/45; ic++){
             CLHEP::Hep3Vector crystalposition(diskPos.x(), (diskPos.y() + k), diskPos.z());
             Double_t crystalpos[3];
             crystalpos [0] = pointmmTocm(crystalposition.x());
