@@ -1071,12 +1071,12 @@ namespace mu2e {
 	    if (j==0) printf("[ReadTriggerInfo::analyze]      name      \n");
 	    printf("[ReadTriggerInfo::analyze] %10s\n", moduleLabel.c_str());
 	  }
-	  int          index_all(0);         
-	  int          index(0);         
+	  int          index_all(i);//0);         
+	  int          index(i);//0);         
 	  bool         passed(false);
 	  size_t       nTrigObj(0);
 	  //fill the Global Trigger bits info
-	  findTrigIndex(_trigAll, moduleLabel, index_all);
+	  // findTrigIndex(_trigAll, moduleLabel, index_all);
 	  _trigAll[index_all].label  = moduleLabel;
 
 	  event.getByLabel(moduleLabel, hTrigInfoH);
@@ -1084,7 +1084,7 @@ namespace mu2e {
 	    trigInfo = hTrigInfoH.product();
 	  }
 	  if ( moduleLabel.find(std::string("HSFilter")) != std::string::npos) {
-	    findTrigIndex(_trigHelix, moduleLabel, index);
+	    //	    findTrigIndex(_trigHelix, moduleLabel, index);
 	    _trigHelix[index].label  = moduleLabel;
 	    _trigHelix[index].counts = _trigHelix[index].counts + 1;
 	    passed = true;
@@ -1102,7 +1102,7 @@ namespace mu2e {
 	    _helHist._hHelInfo[i][120]->Fill(nTrigObj);
 
 	  }else if ( moduleLabel.find("TSFilter") != std::string::npos){
-	    findTrigIndex(_trigTrack, moduleLabel, index);
+	    //	    findTrigIndex(_trigTrack, moduleLabel, index);
 	    _trigTrack[index].label  = moduleLabel;
 	    _trigTrack[index].counts = _trigTrack[index].counts + 1;
 	    passed = true;
@@ -1121,11 +1121,11 @@ namespace mu2e {
 	    trigFlag_index.push_back(index_all);
 
 	  }else if ( moduleLabel.find("EventPrescale") != std::string::npos){
-	    findTrigIndex(_trigEvtPS, moduleLabel, index);
+	    //	    findTrigIndex(_trigEvtPS, moduleLabel, index);
 	    _trigEvtPS[index].label  = moduleLabel;
 	    _trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
 	  }else if ( moduleLabel.find("CaloCosmicCalib") != std::string::npos){
-	    findTrigIndex(_trigCaloCalib, moduleLabel, index);
+	    //	    findTrigIndex(_trigCaloCalib, moduleLabel, index);
 	    _trigCaloCalib[index].label  = moduleLabel;
 	    _trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
 	    passed = false;
@@ -1138,7 +1138,7 @@ namespace mu2e {
 	    }//end loop over the cluster-collection
 	    trigFlag_index.push_back(index_all);
 	  }else if ( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
-	    findTrigIndex(_trigCaloOnly, moduleLabel, index);
+	    //	    findTrigIndex(_trigCaloOnly, moduleLabel, index);
 	    _trigCaloOnly[index].label  = moduleLabel;
 	    _trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
 	    passed = true;
@@ -1161,7 +1161,7 @@ namespace mu2e {
 	  if ( (moduleLabel.find("caloMVACEFilter")!= std::string::npos) || 
 	       (moduleLabel.find("TSFilter")       != std::string::npos) ||
 	       isCosmicHelix ){ 
-	    findTrigIndex(_trigFinal, moduleLabel, index);
+	    //	    findTrigIndex(_trigFinal, moduleLabel, index);
 	    _trigFinal[index].label    = moduleLabel;
 	    _trigFinal[index].counts   = _trigFinal[index].counts + 1;
 	    _trigAll[index_all].counts = _trigAll[index_all].counts + 1;
