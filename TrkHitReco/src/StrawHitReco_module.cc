@@ -225,7 +225,7 @@ namespace mu2e {
         if (_fittype != TrkHitReco::FitType::firmwarepmp)
           adcwaveform = sdadccol->at(isd);
 
-        shrUtils.createComboHit(chCol, shCol, caloClusters, digi.strawId(), digi.TDC(), digi.TOT(), digi.PMP(), adcwaveform.samples(),
+        shrUtils.createComboHit(isd, chCol, shCol, caloClusters, digi.strawId(), digi.TDC(), digi.TOT(), digi.PMP(), adcwaveform.samples(),
           trackerStatus,  srep, tt);
       }
       //flag straw and electronic cross-talk
