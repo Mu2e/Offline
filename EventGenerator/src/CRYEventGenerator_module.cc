@@ -81,7 +81,7 @@ namespace mu2e {
     // All inputs (except getLiveTime) in CosmicLivetime are not used in the livetime calculation
     // Livetime is calculated internally by cry: cryGen->getLiveTime()
     std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(1,
-                                                                cryGen->getSubboxLength(),
+                                                                cryGen->getSubboxLength()*cryGen->getSubboxLength(),
                                                                 cryGen->getMinShowerEn()/1000.,
                                                                 cryGen->getMaxShowerEn()/1000.,
                                                                 1.8e4,
