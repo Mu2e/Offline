@@ -53,7 +53,6 @@ namespace mu2e {
                   "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),
           "Al" };
 
-      fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("A sequence of ParticleGenerator tools implementing decay products.")};
 
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
