@@ -39,6 +39,7 @@
 #include "Offline/Validation/inc/ValTimeCluster.hh"
 #include "Offline/Validation/inc/ValComboHit.hh"
 #include "Offline/Validation/inc/ValTriggerResults.hh"
+#include "Offline/Validation/inc/ValTriggerInfo.hh"
 
 namespace mu2e {
 
@@ -101,6 +102,7 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValTimeCluster>>       _tmcl;
     std::vector<std::shared_ptr<ValComboHit>>          _stht;
     std::vector<std::shared_ptr<ValTriggerResults>>    _trrs;
+    std::vector<std::shared_ptr<ValTriggerInfo>>       _tris;
 
     // Loop over the products of type T and 
     // call fill() on validation histogram class V to make histograms.
@@ -134,14 +136,14 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<CaloShowerStepCollection,ValCaloShowerStep>  (_cals,event);
   analyzeProduct<CaloDigiCollection,ValCaloDigi>              (_cald,event);
   analyzeProduct<CaloRecoDigiCollection,ValCaloRecoDigi>      (_calr,event);
-  analyzeProduct<CaloHitCollection,ValCaloHit>                 (_calh,event);
+  analyzeProduct<CaloHitCollection,ValCaloHit>                (_calh,event);
   analyzeProduct<CaloClusterCollection,ValCaloCluster>        (_ccls,event);
   analyzeProduct<CrvStepCollection,ValCrvStep>                (_cvst,event);
   analyzeProduct<CrvDigiCollection,ValCrvDigi>                (_cvdg,event);
   analyzeProduct<CrvDigiMCCollection,ValCrvDigiMC>            (_cmdg,event);
   analyzeProduct<CrvRecoPulseCollection,ValCrvRecoPulse>      (_cvrp,event);
-  analyzeProduct<CrvCoincidenceClusterCollection,ValCrvCoincidenceCluster>      (_cvcc,event);
-  analyzeProduct<StrawGasStepCollection,ValStrawGasStep>            (_stgs,event);
+  analyzeProduct<CrvCoincidenceClusterCollection,ValCrvCoincidenceCluster>  (_cvcc,event);
+  analyzeProduct<StrawGasStepCollection,ValStrawGasStep>      (_stgs,event);
   analyzeProduct<StrawDigiCollection,ValStrawDigi>            (_stdg,event);
   analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);
@@ -155,6 +157,7 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<TrackSummaryCollection,ValTrackSummary>      (_trks,event);
   analyzeProduct<TrackClusterMatchCollection,ValTrackClusterMatch>(_mtch,event);
   analyzeProduct<art::TriggerResults,ValTriggerResults>       (_trrs,event);
+  analyzeProduct<TriggerInfo,ValTriggerInfo>                  (_tris,event);
 
 }
 
