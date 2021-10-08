@@ -11,6 +11,7 @@
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
 #include "Offline/CaloReco/inc/CaloTemplateWFProcessor.hh"
 #include "Offline/CaloReco/inc/CaloRawWFProcessor.hh"
@@ -34,6 +35,7 @@ namespace mu2e {
            fhicl::Table<mu2e::CaloRawWFProcessor::Config>      proc_raw_conf       { Name("RawProcessor"),        Comment("Raw processor config") };
            fhicl::Table<mu2e::CaloTemplateWFProcessor::Config> proc_templ_conf     { Name("TemplateProcessor"),   Comment("Log normal fit processor config") };                    
            fhicl::Atom<art::InputTag>                          caloDigiCollection  { Name("caloDigiCollection"),  Comment("Calo Digi module label") };
+	   fhicl::Atom<art::InputTag>                          pbttoken            { Name("ProtonBunchTimeTag"),  Comment("ProtonBunchTime producer")};
            fhicl::Atom<std::string>                            processorStrategy   { Name("processorStrategy"),   Comment("Digi reco processor name") };
            fhicl::Atom<double>                                 digiSampling        { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
            fhicl::Atom<double>                                 maxChi2Cut          { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
@@ -44,6 +46,7 @@ namespace mu2e {
         explicit CaloRecoDigiMaker(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiCollection())},
+           pbttoken_          {consumes<ProtonBunchTime>(config().pbttoken())},
            processorStrategy_ (config().processorStrategy()),
            digiSampling_      (config().digiSampling()),
            maxChi2Cut_        (config().maxChi2Cut()),
@@ -79,9 +82,10 @@ namespace mu2e {
         void produce(art::Event& e) override;
 
      private:
-        void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>&, CaloRecoDigiCollection& );
+        void extractRecoDigi(const art::ValidHandle<CaloDigiCollection>&, CaloRecoDigiCollection&, double );
 
         const  art::ProductToken<CaloDigiCollection> caloDigisToken_;
+        const  art::ProductToken<ProtonBunchTime>    pbttoken_;
         const  std::string                           processorStrategy_;
         double                                       digiSampling_;
         double                                       maxChi2Cut_;
@@ -98,8 +102,12 @@ namespace mu2e {
 
       const auto& caloDigisH = event.getValidHandle(caloDigisToken_);
       auto recoCaloDigiColl  = std::make_unique<CaloRecoDigiCollection>();
+
+      auto pbtH = event.getValidHandle(pbttoken_);
+      const ProtonBunchTime& pbt(*pbtH);
+      double pbtOffset = pbt.pbtime_;
  
-      extractRecoDigi(caloDigisH, *recoCaloDigiColl);
+      extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset);
 
       event.put(std::move(recoCaloDigiColl));
 
@@ -116,7 +124,7 @@ namespace mu2e {
 
   //------------------------------------------------------------------------------------------------------------
   void CaloRecoDigiMaker::extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigisHandle,
-                                          CaloRecoDigiCollection &recoCaloHits)
+                                          CaloRecoDigiCollection &recoCaloHits, double pbtOffset)
   {
       const auto& caloDigis = *caloDigisHandle;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
@@ -147,7 +155,7 @@ namespace mu2e {
           {
               double eDep      = waveformProcessor_->amplitude(i)*adc2MeV;
               double eDepErr   = waveformProcessor_->amplitudeErr(i)*adc2MeV;
-              double time      = waveformProcessor_->time(i);
+              double time      = waveformProcessor_->time(i) - pbtOffset; // correct to time since protons
               double timeErr   = waveformProcessor_->timeErr(i);
               bool   isPileUp  = waveformProcessor_->isPileUp(i);
               double chi2      = waveformProcessor_->chi2();
