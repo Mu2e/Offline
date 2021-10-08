@@ -78,7 +78,14 @@ namespace mu2e {
 
   void CryEventGenerator::endSubRun(art::SubRun &subrun)
   {
-    std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(cryGen->getLiveTime()));
+    // All inputs (except getLiveTime) in CosmicLivetime are not used in the livetime calculation
+    // Livetime is calculated internally by cry: cryGen->getLiveTime()
+    std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(1,
+                                                                cryGen->getSubboxLength(),
+                                                                cryGen->getMinShowerEn()/1000.,
+                                                                cryGen->getMaxShowerEn()/1000.,
+                                                                1.8e4,
+                                                                cryGen->getLiveTime()  ));
     std::cout << *livetime << std::endl;
     subrun.put(std::move(livetime));
   }
