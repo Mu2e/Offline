@@ -81,12 +81,10 @@ namespace mu2e {
 
     if(!findData(event)) 
       throw cet::exception("RECO")<<"No data in  event"<< endl; 
-
-    GetGenPartInfo(event);
+    else GetGenPartInfo(event);
 }
 
 void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
-	
   cet::map_vector<mu2e::SimParticle>::const_iterator iter;
   for(iter=_gencol->begin(); iter!=_gencol->end(); iter++)
   {
@@ -105,7 +103,7 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
     _gencol=0;
     auto genpart = evt.getValidHandle<SimParticleCollection>(_genTag);
     _gencol = genpart.product();
-    return  _gencol!=0 ;
+    return  _gencol!=0;
   }
 
  void GeneratorPlots::endJob(){}

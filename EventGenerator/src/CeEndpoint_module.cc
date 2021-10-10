@@ -32,7 +32,8 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
-
+#include "art_root_io/TFileService.h"
+#include "TTree.h"
 namespace mu2e {
 
   //================================================================
@@ -71,6 +72,11 @@ namespace mu2e {
     ProcessCode process;
     int pdgId_;
     PDGCode::type pid;
+    
+    TTree* _Ntup;
+
+    Float_t _genmom;
+    Float_t _genStartT;
   };
 
   //================================================================
@@ -110,6 +116,9 @@ namespace mu2e {
          <<", muon lifetime = "<<muonLifeTime_
          <<std::endl;
     }
+    art::ServiceHandle<art::TFileService> tfs;
+    _Ntup  = tfs->make<TTree>("GenAna", "GenAna");
+    _Ntup->Branch("genmom",       &_genmom,       "genmom/F");
   }
 
   //================================================================
@@ -130,16 +139,21 @@ namespace mu2e {
     // Note that Rmue normalization is per muon, not per primary proton.
 
     const auto mustop = mus.at(eng_.operator unsigned int() % mus.size());
-
+    CLHEP::Hep3Vector three_mom = randomUnitSphere_.fire(endPointMomentum_);
+    CLHEP::HepLorentzVector four_mom = CLHEP::HepLorentzVector{three_mom, endPointEnergy_};
+    const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
     output->emplace_back(mustop,
                          process,
                          pid,
                          mustop->endPosition(),
-                         CLHEP::HepLorentzVector{randomUnitSphere_.fire(endPointMomentum_), endPointEnergy_},
-                         mustop->endGlobalTime() + randExp_.fire(muonLifeTime_)
+                         four_mom,
+                         time
                          );
 
-
+     double mag = three_mom.mag();
+    _genmom = mag;
+    _genStartT  = time;
+    _Ntup->Fill();
     event.put(std::move(output));
   }
 
