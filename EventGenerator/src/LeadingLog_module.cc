@@ -34,8 +34,7 @@
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 #include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
-#include "art_root_io/TFileService.h"
-#include "TTree.h"
+
 namespace mu2e {
 
   //================================================================
@@ -70,9 +69,7 @@ namespace mu2e {
     ProcessCode process;
     int pdgId_;
     PDGCode::type pid;
-    TTree* _Ntup;
 
-    Float_t _genmom;
     std::unique_ptr<ParticleGeneratorTool> Generator_;
   };
 
@@ -103,9 +100,7 @@ namespace mu2e {
 
     Generator_ = (art::make_tool<ParticleGeneratorTool>(pset));
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
-    art::ServiceHandle<art::TFileService> tfs;
-    _Ntup  = tfs->make<TTree>("GenAna", "GenAna");
-    _Ntup->Branch("genmom",       &_genmom,       "genmom/F");
+
   }
 
   //================================================================
@@ -145,8 +140,6 @@ namespace mu2e {
                            time
                            );
 
-    _genmom =d.fourmom.e();
-    _Ntup->Fill();
     }
   }
 
