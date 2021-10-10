@@ -37,7 +37,8 @@
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
-
+#include "art_root_io/TFileService.h"
+#include "TTree.h"
 namespace mu2e {
   //================================================================
   class DecayInOrbitGenerator : public art::EDProducer {
@@ -75,7 +76,8 @@ namespace mu2e {
     CLHEP::RandExponential randExp_;
   
     std::unique_ptr<ParticleGeneratorTool> Generator_;
-
+    TTree* _Ntup;
+    Float_t _genmom;
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
   };
 
@@ -95,8 +97,11 @@ namespace mu2e {
       log<<"stoppingTargetMaterial = "<<conf().stoppingTargetMaterial()
          <<", muon lifetime = "<<muonLifeTime_
          <<std::endl;
+    
     }
-
+     art::ServiceHandle<art::TFileService> tfs;
+    _Ntup  = tfs->make<TTree>("GenAna", "GenAna");
+    _Ntup->Branch("genmom",       &_genmom,       "genmom/F");
     const auto pset = conf().decayProducts.get<fhicl::ParameterSet>();
     Generator_ = art::make_tool<ParticleGeneratorTool>(pset);
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
@@ -109,14 +114,12 @@ namespace mu2e {
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto mus = stoppedMuMinusList(simh);
-
+    
     for(const auto& mustop: mus) {
-
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       addParticles(output.get(), mustop, time, Generator_.get());
-
     }
-
+      
     event.put(std::move(output));
   }
 
@@ -126,6 +129,7 @@ namespace mu2e {
                             double time,
                             ParticleGeneratorTool* gen)
   {
+
     auto daughters = gen->generate();
     for(const auto& d: daughters) {
 
@@ -136,10 +140,13 @@ namespace mu2e {
                            d.fourmom,
                            time
                            );
+                          
+    _genmom =d.fourmom.e();
+    _Ntup->Fill();
+  
+    }
 
     }
-  }
-
   //================================================================
 } // namespace mu2e
 
