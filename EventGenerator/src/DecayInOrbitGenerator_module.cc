@@ -83,7 +83,7 @@ namespace mu2e {
   //================================================================
   DecayInOrbitGenerator::DecayInOrbitGenerator(const Parameters& conf)
     : EDProducer{conf}
-    , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial()}
+    , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
