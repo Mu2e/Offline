@@ -146,9 +146,8 @@ namespace mu2e{
       HitList2DXY->AddElement(error);
     } 
     HitList2DXY->AddElement(this);
-    }
   }
-
+  
  void TEveMu2eHit::DrawHit2DXZ(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXZ)
   {
     auto [sposi, sposf, title, colorid] = DrawStraw();
@@ -168,6 +167,6 @@ namespace mu2e{
     this->SetMarkerColor(kSpring + colors[energylevel]);
     this->SetPickable(kTRUE);
     HitList2DXZ->AddElement(this);
-    }
   }
+}
   
