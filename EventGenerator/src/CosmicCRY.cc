@@ -109,6 +109,21 @@ const double CosmicCRY::getShowerSumEnergy()
   return _showerSumEnergy;
 }
 
+const double CosmicCRY::getMaxShowerEn()
+{
+  return _maxShowerEn;
+}
+
+const double CosmicCRY::getMinShowerEn()
+{
+  return _minShowerEn;
+}
+
+const double CosmicCRY::getSubboxLength()
+{
+  return _subboxLength;
+}
+
 const unsigned long long int CosmicCRY::getNumEvents()
 {
   return _numEvents;
