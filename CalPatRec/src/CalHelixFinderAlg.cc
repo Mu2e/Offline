@@ -1441,7 +1441,9 @@ namespace mu2e {
       success = true;
     }
     //----------------------------------------------------------------------//
-   if ((Helix._szphi.dfdz()*_dfdzsign) < 0.) { 
+    if (Helix._szphi.qn() < minNFitHits) {
+      success = false;
+    }else if ((Helix._szphi.dfdz()*_dfdzsign) < 0.) { 
       success = false;
     }
     else if (success) {                               // update helix results
