@@ -249,7 +249,7 @@ void TValCompare::Report(Option_t* Opt) {
 //_____________________________________________________________________________
 void TValCompare::Summary(Option_t* Opt) {
 
-  int n0=0,ns=0,n1=0,n2=0,n3=0,n10=0,n11=0,n100=0;
+  int n0=0,ns=0,ne=0,n1=0,n2=0,n3=0,n11=0,n100=0;
   TIter it(&fList);
   TValHist* hh;
 
@@ -266,9 +266,9 @@ void TValCompare::Summary(Option_t* Opt) {
       else if(hh->GetStatus()==1 ) n1++;
       else if(hh->GetStatus()==2 ) n2++;
       else if(hh->GetStatus()==3 ) n3++;
-      else if(hh->GetStatus()==10) n10++;
       else if(hh->GetStatus()==11) n11++;
       else n100++;
+      if(hh->GetEmpty()) ne++;
     } else {
       ns++;
     }
@@ -279,8 +279,8 @@ void TValCompare::Summary(Option_t* Opt) {
   printf("%5d marked to skip\n",ns);
   printf("%5d had unknown status\n",n100);
   printf("%5d could not be compared\n",n11);
-  printf("%5d had at least one histogram empty\n",n10);
-  printf("%5d failed loose comparison\n",n3);
+  printf("%5d had at least one histogram empty\n",ne);
+  printf("%5d failed loose comparison\n",n3+n11+n100);
   printf("%5d passed loose comparison, failed tight\n",n2);
   printf("%5d passed tight comparison, not perfect match\n",n1);
   printf("%5d had perfect match\n",n0);
@@ -499,7 +499,7 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
 	  float res = (io==0 ? hh->GetKsProb() : hh->GetFrProb());
 	  // if Fraction test and samples are independent
 	  bool frblack = (io==1 && fPar.GetIndependent()!=0);
-	  if(hh->GetStatus()<10 && ! frblack) {
+	  if( !frblack ) {
 	    color="Red";
 	    if(res>fPar.GetLoose()) color="Orange";
 	    if(res>fPar.GetTight()) color="Green";

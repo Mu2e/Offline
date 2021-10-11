@@ -56,54 +56,60 @@ Int_t TValHistP::Analyze(Option_t* Opt) {
     fSum2 += fProf2->GetBinEntries(ii);
   }
 
-  // can't compare if one is zero
-  if(fSum1==0 || fSum2==0) {
-    if(fSum1>0 || fSum2>0) {
-      // prob of observing zero event when expecting N
-      fKsProb = TMath::Exp( -TMath::Max(fSum1,fSum2) );
-      fFrProb = 0.0;
-    }
-    fStatus = 10;
+  // if both zero, they agree
+  if(fSum1==0 && fSum2==0) {
+    fEmpty = true;
+    fKsProb = 1.0;
+    fFrProb = 1.0;
+    fStatus = 0;
     return fStatus;
   }
-  
+
   // no sensible meaning to fractional difference
   fFrProb = 1.0;
 
-  // KsProb is filled from a chi2 comparison
-  int ndof = 0;
-  double chi2 = 0.0;
-  double n1,n2,c1,c2,e1,e2;
-  for(uint ii=llim; ii<=ulim; ii++) {
-    n1 = fProf1->GetBinEntries(ii);
-    n2 = fProf2->GetBinEntries(ii);
-    c1 = fProf1->GetBinContent(ii);
-    c2 = fProf2->GetBinContent(ii);
-    e1 = fProf1->GetBinError(ii);
-    e2 = fProf2->GetBinError(ii);
-    if(n1>0 && n2>0) {
-      // both have entries, add to chi2
-      chi2 += pow(c1-c2,2)/(pow(e1,2)+pow(e2,2));
-      ndof++;
-    } else if(n1>0 || n2>0) {
-      // one has entries, the other doesn't, we need some penalty
-      // the idea is to add the Poisson probability of observing
-      // zero when expecting n to the likelihood, represented by 
-      // adding n to the chi2
-      chi2 += (n1>0 ? n1 : n2);
-      ndof++;
-    }
-    // if both profs have no entries, ignore this bin
-
-  } // loop over bins
-
-  if(ndof>0) {
-    fKsProb = TMath::Prob(chi2,ndof);
+  if(fSum1==0 || fSum2==0) {
+    fEmpty = true;
+    // prob of observing zero event when expecting N
+    fKsProb = TMath::Exp( -TMath::Max(fSum1,fSum2) );
+    fFrProb = 0.0;
   } else {
-    // shouldn't come here since we returned above if no entries
-    // in either plot.  If there were entries then ndof should be >0
-    fKsProb = 0.0;
-  }
+    // KsProb is filled from a chi2 comparison
+    int ndof = 0;
+    double chi2 = 0.0;
+    double n1,n2,c1,c2,e1,e2;
+    for(uint ii=llim; ii<=ulim; ii++) {
+      n1 = fProf1->GetBinEntries(ii);
+      n2 = fProf2->GetBinEntries(ii);
+      c1 = fProf1->GetBinContent(ii);
+      c2 = fProf2->GetBinContent(ii);
+      e1 = fProf1->GetBinError(ii);
+      e2 = fProf2->GetBinError(ii);
+      if(n1>0 && n2>0) {
+	// both have entries, add to chi2
+	chi2 += pow(c1-c2,2)/(pow(e1,2)+pow(e2,2));
+	ndof++;
+      } else if(n1>0 || n2>0) {
+	// one has entries, the other doesn't, we need some penalty
+	// the idea is to add the Poisson probability of observing
+	// zero when expecting n to the likelihood, represented by 
+	// adding n to the chi2
+	chi2 += (n1>0 ? n1 : n2);
+	ndof++;
+      }
+      // if both profs have no entries, ignore this bin
+      
+    } // loop over bins
+
+    if(ndof>0) {
+      fKsProb = TMath::Prob(chi2,ndof);
+    } else {
+      // shouldn't come here since we returned above if no entries
+      // in either plot.  If there were entries then ndof should be >0
+      fKsProb = 0.0;
+    }
+  } // end if a sum is zero
+
 
   fStatus = 3;
   if(fKsProb>fPar.GetLoose()) fStatus = 2;
@@ -214,14 +220,10 @@ void TValHistP::Draw(Option_t* Opt) {
   char tstring[200];
   int color;
 
-  color = kBlack;
-  //printf("ks %f  loose %f\n",GetKsProb(),fPar.GetLoose());
-  if(GetStatus()<10) {
-    color = kRed;
-    if(GetKsProb()>fPar.GetLoose()) color = kOrange;
-    if(GetKsProb()>fPar.GetTight()) color = kGreen;
-    if(GetStatus()==0) color = kGreen+2;
-  }
+  color = kRed;
+  if(GetKsProb()>fPar.GetLoose()) color = kOrange;
+  if(GetKsProb()>fPar.GetTight()) color = kGreen;
+  if(GetStatus()==0) color = kGreen+2;
   sprintf(tstring,"KS=%8.6f",GetKsProb());
   TText* t1 = new TText();
   t1->SetNDC();
@@ -231,14 +233,10 @@ void TValHistP::Draw(Option_t* Opt) {
   t1->SetTextColor(color);
   t1->Draw();
 
-  color=kBlack;
-  // if samples are independant, then don't flag the fraction result
-  if(GetStatus()<10 && fPar.GetIndependent()==0) {
-    color=kRed;
-    if(GetFrProb()>fPar.GetLoose()) color=kOrange;
-    if(GetFrProb()>fPar.GetTight()) color=kGreen;
-    if(GetStatus()==0) color=kGreen+2;
-  }
+  color=kRed;
+  if(GetFrProb()>fPar.GetLoose()) color=kOrange;
+  if(GetFrProb()>fPar.GetTight()) color=kGreen;
+  if(GetStatus()==0) color=kGreen+2;
   sprintf(tstring,"FR=%8.6f",GetFrProb());
   TText* t2 = new TText();
   t2->SetNDC();

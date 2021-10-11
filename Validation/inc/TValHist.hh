@@ -23,6 +23,7 @@ public:
   TValPar&   GetPar()    { return fPar;}
   TString&   GetTag()    { return fTag;}
   Float_t    GetFontScale() { return fFontScale; }
+  Bool_t     GetEmpty()  { return fEmpty; }
 
   virtual const char* GetName() const=0;
   virtual const char* GetTitle() const=0;
@@ -51,6 +52,7 @@ protected:
   TString fTag;
 
   Float_t fFontScale;
+  Bool_t   fEmpty;    // true if eiher hist is empty
 
   ClassDef(TValHist,1)
 

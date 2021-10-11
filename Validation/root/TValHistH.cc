@@ -71,33 +71,41 @@ Int_t TValHistH::Analyze(Option_t* Opt) {
   }
   if(fNorm2>0.0) fHist2->SetNormFactor(fNorm2);
 
-  // can't compare if one is zero
-  if(fSum1==0 || fSum2==0) {
-    if(fSum1>0 || fSum2>0) {
-      // prob of observing zero event when expecting N
-      fKsProb = TMath::Exp( -TMath::Max(fSum1,fSum2) );
-      fFrProb = 0.0;
-    }
-    fStatus = 10;
+  // if both zero, they agree
+  if(fSum1==0 && fSum2==0) {
+    fEmpty = true;
+    fKsProb = 1.0;
+    fFrProb = 1.0;
+    fStatus = 0;
     return fStatus;
   }
-  
+
   // find fractional difference
-
-  Double_t maxDiff = 0.0;
-  Double_t s1 = 0.0, s2 = 0.0;
-  for(uint ii=llim; ii<=ulim; ii++) {
-    s1 += fPar.GetScale1()*fHist1->GetBinContent(ii);
-    s2 += fPar.GetScale2()*fHist2->GetBinContent(ii);
-    if (TMath::Abs(s1-s2) > maxDiff) maxDiff = TMath::Abs(s1-s2);
+  if(fSum1==0 || fSum2==0) {
+    fEmpty = true;
+    fFrProb = 0.0;
+  } else {
+    Double_t maxDiff = 0.0;
+    Double_t s1 = 0.0, s2 = 0.0;
+    for(uint ii=llim; ii<=ulim; ii++) {
+      s1 += fPar.GetScale1()*fHist1->GetBinContent(ii);
+      s2 += fPar.GetScale2()*fHist2->GetBinContent(ii);
+      if (TMath::Abs(s1-s2) > maxDiff) maxDiff = TMath::Abs(s1-s2);
+    }
+    fFrProb = 1.0 - maxDiff/s1; // 1 is the standard
+    if(fFrProb<0.0) fFrProb = 0.0;
   }
-  fFrProb = 1.0 - maxDiff/s1; // 1 is the standard
-  if(fFrProb<0.0) fFrProb = 0.0;
 
-  TString qual;
-  if(fPar.GetUnder()==0) qual.Append("U");
-  if(fPar.GetOver()==0)  qual.Append("O");
-  fKsProb = fHist1->KolmogorovTest(fHist2,qual.Data());
+
+  if(fSum1==0 || fSum2==0) {
+    // prob of observing zero event when expecting N
+    fKsProb = TMath::Exp( -TMath::Max(fSum1,fSum2) );
+  } else {
+    TString qual;
+    if(fPar.GetUnder()==0) qual.Append("U");
+    if(fPar.GetOver()==0)  qual.Append("O");
+    fKsProb = fHist1->KolmogorovTest(fHist2,qual.Data());
+  }
 
   fStatus = 3;
   if(fPar.GetIndependent()==0) {
@@ -203,14 +211,10 @@ void TValHistH::Draw(Option_t* Opt) {
   char tstring[200];
   int color;
 
-  color=kBlack;
-  //printf("ks %f  loose %f\n",GetKsProb(),fPar.GetLoose());
-  if(GetStatus()<10) {
-    color=kRed;
-    if(GetKsProb()>fPar.GetLoose()) color=kOrange;
-    if(GetKsProb()>fPar.GetTight()) color=kGreen;
-    if(GetStatus()==0) color=kGreen+2;
-  }
+  color=kRed;
+  if(GetKsProb()>fPar.GetLoose()) color=kOrange;
+  if(GetKsProb()>fPar.GetTight()) color=kGreen;
+  if(GetStatus()==0) color=kGreen+2;
   sprintf(tstring,"KS=%8.6f",GetKsProb());
   TText* t1 = new TText();
   t1->SetNDC();
@@ -220,14 +224,10 @@ void TValHistH::Draw(Option_t* Opt) {
   t1->SetTextColor(color);
   t1->Draw();
 
-  color=kBlack;
-  // if samples are independant, then don't flag the fraction result
-  if(GetStatus()<10 && fPar.GetIndependent()==0) {
-    color=kRed;
-    if(GetFrProb()>fPar.GetLoose()) color=kOrange;
-    if(GetFrProb()>fPar.GetTight()) color=kGreen;
-    if(GetStatus()==0) color=kGreen+2;
-  }
+  color=kRed;
+  if(GetFrProb()>fPar.GetLoose()) color=kOrange;
+  if(GetFrProb()>fPar.GetTight()) color=kGreen;
+  if(GetStatus()==0) color=kGreen+2;
   sprintf(tstring,"FR=%8.6f",GetFrProb());
   TText* t2 = new TText();
   t2->SetNDC();
