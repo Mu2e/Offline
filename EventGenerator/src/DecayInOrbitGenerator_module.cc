@@ -3,7 +3,7 @@
 // It is the MuStopProductsGun module re-cast to work with MC-history
 // preserving StageParticles instead of GenParticles.
 //
-// Andrei Gaponenko, 2021
+// Sophie Middleton, 2021
 
 #include <iostream>
 #include <string>
