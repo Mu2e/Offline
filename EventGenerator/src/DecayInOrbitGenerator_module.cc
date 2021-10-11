@@ -1,7 +1,4 @@
-// This module implements Andy Edmonds' idea of generating the proper
-// mix of "DecayInOrbitGenerator" particles from muminus target stops in a single module.
-// It is the MuStopProductsGun module re-cast to work with MC-history
-// preserving StageParticles instead of GenParticles.
+// This module will be used to make DIO electrons from mu- stopped in any target material
 //
 // Sophie Middleton, 2021
 
@@ -53,7 +50,6 @@ namespace mu2e {
                   "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),
           "Al" };
 
-      fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("A sequence of ParticleGenerator tools implementing decay products.")};
 
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
