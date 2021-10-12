@@ -27,7 +27,7 @@ void valCompare_usage() {
 "  0 = perfect match\n"
 "  1 = matches > 99.9% in K-S or fractional test\n"
 "  2 = matches > 99% in K-S or fractional test\n"
-"  10 = one or both histograms is empty\n"
+"  3 = matches < 99% in K-S or fractional test\n"
 "  11 = can't compare\n"
 "  \n"
 "  Examples:\n"
