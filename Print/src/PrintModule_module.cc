@@ -46,6 +46,7 @@
 #include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "Offline/Print/inc/PhysicalVolumePrinter.hh"
 #include "Offline/Print/inc/TriggerResultsPrinter.hh"
+#include "Offline/Print/inc/TriggerInfoPrinter.hh"
 #include "Offline/Print/inc/PrimaryParticlePrinter.hh"
 
 using namespace std;
@@ -129,6 +130,8 @@ namespace mu2e {
 	fhicl::Name("physicalVolumePrinter") }; 
       fhicl::Table<ProductPrinter::Config> triggerResultsPrinter { 
 	fhicl::Name("triggerResultsPrinter") }; 
+      fhicl::Table<ProductPrinter::Config> triggerInfoPrinter { 
+	fhicl::Name("triggerInfoPrinter") }; 
       fhicl::Table<ProductPrinter::Config> primaryParticlePrinter { 
 	fhicl::Name("primaryParticlePrinter") }; 
 
@@ -179,7 +182,6 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<StrawDigiMCPrinter>( conf().strawDigiMCPrinter() ) );
   _printers.push_back( make_unique<StrawHitPrinter>( conf().strawHitPrinter() ) );
   _printers.push_back( make_unique<StrawHitFlagPrinter>( conf().strawHitFlagPrinter() ) );
-
   _printers.push_back( make_unique<BkgClusterPrinter>( conf().bkgClusterPrinter() ) );
   _printers.push_back( make_unique<BkgQualPrinter>( conf().bkgQualPrinter() ) );
   _printers.push_back( make_unique<TrackClusterMatchPrinter>( conf().trackClusterMatchPrinter() ) );
@@ -192,6 +194,7 @@ mu2e::PrintModule::PrintModule(const Parameters& conf):
   _printers.push_back( make_unique<KalSeedPrinter>( conf().kalSeedPrinter() ) );
   _printers.push_back( make_unique<PhysicalVolumePrinter>( conf().physicalVolumePrinter() ) );
   _printers.push_back( make_unique<TriggerResultsPrinter>( conf().triggerResultsPrinter() ) );
+  _printers.push_back( make_unique<TriggerInfoPrinter>( conf().triggerInfoPrinter() ) );
   _printers.push_back( make_unique<PrimaryParticlePrinter>( conf().primaryParticlePrinter() ) );
 }
 
