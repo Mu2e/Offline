@@ -109,25 +109,23 @@ namespace mu2e{
         double crystalDZ = calo->caloInfo().getDouble("crystalZLength")/2.0;
         double wrapperDXY = crystalDXY + calo->caloInfo().getDouble("wrapperThickness");
         
+        Double_t crystalpos[3];
         for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++){
-          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
-          diskPos += CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick));
-          double k = diskOuterRailOut + diskInnerRingIn;
-          for(int ic=0; ic<calo->nCrystal()/45; ic++){
-            CLHEP::Hep3Vector crystalposition(diskPos.x(), (diskPos.y() + k), diskPos.z());
-            Double_t crystalpos[3];
-            crystalpos [0] = pointmmTocm(crystalposition.x());
-            crystalpos [1] = pointmmTocm(crystalposition.y());
-            crystalpos [2] = pointmmTocm(crystalposition.z());
-        
+          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() + CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick)) - _detSysOrigin;
+          double diskXZwidth = diskOuterRailOut + diskInnerRingIn;
+          crystalpos [0] = pointmmTocm(diskPos.x());
+          crystalpos [2] = pointmmTocm(diskPos.z());
+          while(diskXZwidth > -(diskOuterRailOut + diskInnerRingIn))
+            {
+            crystalpos [1] = pointmmTocm(diskPos.y() + diskXZwidth);
             TEveGeoShape *crystalXZ = new TEveGeoShape();
             crystalXZ->SetShape(new TGeoBBox("Crystal",pointmmTocm(wrapperDXY),pointmmTocm(wrapperDXY),pointmmTocm(crystalDZ), crystalpos));
             crystalXZ->SetMainTransparency(100);   
             orthodetXZ->AddElement(crystalXZ);
-            k = k - wrapperDXY;
+            diskXZwidth = diskXZwidth - wrapperDXY;
             }
-          }
-  }
+        }
+   }
 }
 
 
