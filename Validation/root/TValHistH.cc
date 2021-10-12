@@ -24,7 +24,7 @@ Int_t TValHistH::Analyze(Option_t* Opt) {
   fKsProb = 0.0;
   fFrProb = 0.0;
   fDiff = true;
-  fStatus = 11;
+  fStatus = fCantCompare;
 
   if (fHist1 == NULL || fHist2 == NULL) {
     return fStatus;
@@ -76,7 +76,7 @@ Int_t TValHistH::Analyze(Option_t* Opt) {
     fEmpty = true;
     fKsProb = 1.0;
     fFrProb = 1.0;
-    fStatus = 0;
+    fStatus = fPerfect;
     return fStatus;
   }
 
@@ -107,15 +107,15 @@ Int_t TValHistH::Analyze(Option_t* Opt) {
     fKsProb = fHist1->KolmogorovTest(fHist2,qual.Data());
   }
 
-  fStatus = 3;
+  fStatus = fFail;
   if(fPar.GetIndependent()==0) {
-    if(fFrProb>fPar.GetLoose() || fKsProb>fPar.GetLoose()) fStatus = 2;
-    if(fFrProb>fPar.GetTight() || fKsProb>fPar.GetTight()) fStatus = 1;
+    if(fFrProb>fPar.GetLoose() || fKsProb>fPar.GetLoose()) fStatus = fLoose;
+    if(fFrProb>fPar.GetTight() || fKsProb>fPar.GetTight()) fStatus = fTight;
   } else {
-    if(fKsProb>fPar.GetLoose()) fStatus = 2;
-    if(fKsProb>fPar.GetTight()) fStatus = 1;
+    if(fKsProb>fPar.GetLoose()) fStatus = fLoose;
+    if(fKsProb>fPar.GetTight()) fStatus = fTight;
   }
-  if(!fDiff) fStatus=0;
+  if(!fDiff) fStatus=fPerfect;
 
   return fStatus;
 
@@ -214,7 +214,7 @@ void TValHistH::Draw(Option_t* Opt) {
   color=kRed;
   if(GetKsProb()>fPar.GetLoose()) color=kOrange;
   if(GetKsProb()>fPar.GetTight()) color=kGreen;
-  if(GetStatus()==0) color=kGreen+2;
+  if(GetStatus()==fPerfect) color=kGreen+2;
   sprintf(tstring,"KS=%8.6f",GetKsProb());
   TText* t1 = new TText();
   t1->SetNDC();
@@ -227,7 +227,7 @@ void TValHistH::Draw(Option_t* Opt) {
   color=kRed;
   if(GetFrProb()>fPar.GetLoose()) color=kOrange;
   if(GetFrProb()>fPar.GetTight()) color=kGreen;
-  if(GetStatus()==0) color=kGreen+2;
+  if(GetStatus()==fPerfect) color=kGreen+2;
   sprintf(tstring,"FR=%8.6f",GetFrProb());
   TText* t2 = new TText();
   t2->SetNDC();

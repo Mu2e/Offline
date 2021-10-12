@@ -10,6 +10,8 @@ class TValHist: public TObject {
 
 public:
 
+  enum comparisonStatus {fPerfect=0,fTight=1,fLoose=2,fFail=3,fCantCompare=11};
+
   TValHist() {
     ClearB();
   }
