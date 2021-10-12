@@ -21,16 +21,17 @@ namespace mu2e{
       Double_t fullLength = trkr->planes().back().origin().z()- trkr->planes().front().origin().z();
       Double_t planespace = 2*((pointmmTocm(fullLength) - trkr->nPlanes()*zpanel)/(trkr->nPlanes()-2));
       double p = -dz;
-
+      Double_t panelpos[3];
+      panelpos [0] = 0.0;
+      panelpos [2] = 1000.0;
       //Tracker Planes in XZ
       for(size_t i =0;i<trkr->nPlanes()/2;i++)
         {
-        Double_t panelpos[3];
+        
         TEveGeoShape *panel = new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_panel(0,1000,p);
-
+        panelpos [1] = p;
         panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel*2,panelpos));
-        panel->SetMainTransparency(100);
+        panel->SetMainTransparency(transpOpt);
         orthodetXZ->AddElement(panel);
         p = p + planespace + zpanel*2;
         }
