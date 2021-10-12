@@ -249,7 +249,8 @@ void TValCompare::Report(Option_t* Opt) {
 //_____________________________________________________________________________
 void TValCompare::Summary(Option_t* Opt) {
 
-  int n0=0,ns=0,ne=0,n1=0,n2=0,n3=0,n11=0,n100=0;
+  int nPerfect=0,nSkip=0,nEmpty=0,nTight=0,nLoose=0,
+    nFail=0,nCantCompare=0,nUnknown=0;
   TIter it(&fList);
   TValHist* hh;
 
@@ -262,30 +263,30 @@ void TValCompare::Summary(Option_t* Opt) {
     if(title.Index("[info]")>=0) useInSummary = false;
 
     if(useInSummary) {
-      if(hh->GetStatus()==TValHist::fPerfect) n0++; 
-      else if(hh->GetStatus()==TValHist::fTight ) n1++;
-      else if(hh->GetStatus()==TValHist::fLoose ) n2++;
-      else if(hh->GetStatus()==TValHist::fFail ) n3++;
-      else if(hh->GetStatus()==TValHist::fCantCompare) n11++;
-      else n100++;
-      if(hh->GetEmpty()) ne++;
+      if(hh->GetStatus()==TValHist::fPerfect) nPerfect++; 
+      else if(hh->GetStatus()==TValHist::fTight ) nTight++;
+      else if(hh->GetStatus()==TValHist::fLoose ) nLoose++;
+      else if(hh->GetStatus()==TValHist::fFail ) nFail++;
+      else if(hh->GetStatus()==TValHist::fCantCompare) nCantCompare++;
+      else nUnknown++;
+      if(hh->GetEmpty()) nEmpty++;
     } else {
-      ns++;
+      nSkip++;
     }
   }
 
   printf("TValCompare Status Summary:\n");
   printf("%5d Compared\n",fList.GetEntries());
-  printf("%5d marked to skip\n",ns);
-  printf("%5d had unknown status\n",n100);
-  printf("%5d could not be compared\n",n11);
-  printf("%5d had at least one histogram empty\n",ne);
-  printf("%5d failed loose comparison\n",n3+n11+n100);
-  printf("%5d passed loose comparison, failed tight\n",n2);
-  printf("%5d passed tight comparison, not perfect match\n",n1);
-  printf("%5d had perfect match\n",n0);
-  printf("%5d passed loose or better\n",n0+n1+n2);
-  printf("%5d passed tight or better\n",n0+n1);
+  printf("%5d marked to skip\n",nSkip);
+  printf("%5d had unknown status\n",nUnknown);
+  printf("%5d could not be compared\n",nCantCompare);
+  printf("%5d had at least one histogram empty\n",nEmpty);
+  printf("%5d failed loose comparison\n",nFail+nCantCompare+nUnknown);
+  printf("%5d passed loose comparison, failed tight\n",nLoose);
+  printf("%5d passed tight comparison, not perfect match\n",nTight);
+  printf("%5d had perfect match\n",nPerfect);
+  printf("%5d passed loose or better\n",nPerfect+nTight+nLoose);
+  printf("%5d passed tight or better\n",nPerfect+nTight);
 
 }
 
