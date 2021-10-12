@@ -23,13 +23,13 @@ namespace mu2e{
       double p = -dz;
       Double_t panelpos[3];
       panelpos [0] = 0.0;
-      panelpos [2] = 1000.0;
+      panelpos [1] = 1000.0;
       //Tracker Planes in XZ
       for(size_t i =0;i<trkr->nPlanes()/2;i++)
         {
         
         TEveGeoShape *panel = new TEveGeoShape();
-        panelpos [1] = p;
+        panelpos [2] = p;
         panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel*2,panelpos));
         panel->SetMainTransparency(transpOpt);
         orthodetXZ->AddElement(panel);
