@@ -262,11 +262,11 @@ void TValCompare::Summary(Option_t* Opt) {
     if(title.Index("[info]")>=0) useInSummary = false;
 
     if(useInSummary) {
-      if(hh->GetStatus()==0) n0++; 
-      else if(hh->GetStatus()==1 ) n1++;
-      else if(hh->GetStatus()==2 ) n2++;
-      else if(hh->GetStatus()==3 ) n3++;
-      else if(hh->GetStatus()==11) n11++;
+      if(hh->GetStatus()==TValHist::fPerfect) n0++; 
+      else if(hh->GetStatus()==TValHist::fTight ) n1++;
+      else if(hh->GetStatus()==TValHist::fLoose ) n2++;
+      else if(hh->GetStatus()==TValHist::fFail ) n3++;
+      else if(hh->GetStatus()==TValHist::fCantCompare) n11++;
       else n100++;
       if(hh->GetEmpty()) ne++;
     } else {
@@ -503,7 +503,7 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
 	    color="Red";
 	    if(res>fPar.GetLoose()) color="Orange";
 	    if(res>fPar.GetTight()) color="Green";
-	    if(hh->GetStatus()==0) color="DarkGreen";
+	    if(hh->GetStatus()==TValHist::fPerfect) color="DarkGreen";
 	  }
 	  inf <<"&nbsp&nbsp<font color="<<color<<"> "
 	      << std::setw(8) << std::setprecision(6)<<res

@@ -23,7 +23,7 @@ Int_t TValHistP::Analyze(Option_t* Opt) {
   fKsProb = 0.0;
   fFrProb = 0.0;
   fDiff = true;
-  fStatus = 11;
+  fStatus = fCantCompare;
 
   if (fProf1 == NULL || fProf2 == NULL) {
     return fStatus;
@@ -61,7 +61,7 @@ Int_t TValHistP::Analyze(Option_t* Opt) {
     fEmpty = true;
     fKsProb = 1.0;
     fFrProb = 1.0;
-    fStatus = 0;
+    fStatus = fPerfect;
     return fStatus;
   }
 
@@ -111,10 +111,10 @@ Int_t TValHistP::Analyze(Option_t* Opt) {
   } // end if a sum is zero
 
 
-  fStatus = 3;
-  if(fKsProb>fPar.GetLoose()) fStatus = 2;
-  if(fKsProb>fPar.GetTight()) fStatus = 1;
-  if(!fDiff) fStatus=0;
+  fStatus = fFail;
+  if(fKsProb>fPar.GetLoose()) fStatus = fLoose;
+  if(fKsProb>fPar.GetTight()) fStatus = fTight;
+  if(!fDiff) fStatus = fPerfect;
 
   return fStatus;
 
@@ -223,7 +223,7 @@ void TValHistP::Draw(Option_t* Opt) {
   color = kRed;
   if(GetKsProb()>fPar.GetLoose()) color = kOrange;
   if(GetKsProb()>fPar.GetTight()) color = kGreen;
-  if(GetStatus()==0) color = kGreen+2;
+  if(GetStatus()==fPerfect) color = kGreen+2;
   sprintf(tstring,"KS=%8.6f",GetKsProb());
   TText* t1 = new TText();
   t1->SetNDC();
@@ -236,7 +236,7 @@ void TValHistP::Draw(Option_t* Opt) {
   color=kRed;
   if(GetFrProb()>fPar.GetLoose()) color=kOrange;
   if(GetFrProb()>fPar.GetTight()) color=kGreen;
-  if(GetStatus()==0) color=kGreen+2;
+  if(GetStatus()==fPerfect) color=kGreen+2;
   sprintf(tstring,"FR=%8.6f",GetFrProb());
   TText* t2 = new TText();
   t2->SetNDC();
