@@ -43,11 +43,11 @@ namespace mu2e {
   //----------------------------------------------------------------
   Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper)
     : mixVolumes_(false)
-      , applyTimeOffset_{! conf.simTimeOffset().empty() }
-      , timeOffsetTag_{ conf.simTimeOffset() }
+      , applyTimeOffset_(conf.simTimeOffset.hasValue())
       , stoff_(0.0)
   {
     if(applyTimeOffset_){
+      timeOffsetTag_ = conf.simTimeOffset().value();
       std::cout << "Mu2eProductMixer: Applying time offsets from " << timeOffsetTag_ << std::endl;
     }
 
@@ -163,8 +163,8 @@ namespace mu2e {
     art::flattenCollections(in, out, genOffsets_);
     if(applyTimeOffset_){
       for(auto& particle : out){
-	particle.time() += stoff_.timeOffset_;
-	// proper times are WRT the particles own internal clock, can't shift them
+        particle.time() += stoff_.timeOffset_;
+        // proper times are WRT the particles own internal clock, can't shift them
       }
     }
 
@@ -237,7 +237,7 @@ namespace mu2e {
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
       if(applyTimeOffset_){
-	step.time() += stoff_.timeOffset_;
+        step.time() += stoff_.timeOffset_;
       }
     }
     return true;
@@ -351,7 +351,7 @@ namespace mu2e {
                                                  art::PtrRemapper const& remap)
   {
     if(in.size() > 1)
-      throw cet::exception("BADINPUT")<<"Mu2eProductMixer/evt: can't mix CosmicLiveTime" << std::endl; 
+      throw cet::exception("BADINPUT")<<"Mu2eProductMixer/evt: can't mix CosmicLiveTime" << std::endl;
     for(const auto& x: in) {
       out = *x;
     }

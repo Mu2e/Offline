@@ -11,6 +11,7 @@ CaloHitMakerFast :
     module_type            : CaloHitMakerFast
     caloDigiCollection     : CaloDigiMaker
     digiSampling           : @local::HitMakerDigiSampling
+    ProtonBunchTimeTag     : "EWMProducer" 
     diagLevel              : 0
     deltaTPulses           : 5
     pulseRatioMin          : 0.9

@@ -92,8 +92,8 @@ namespace mu2e
     _maxdphi=_minzsep/_initFZMinL;
     float minarea(config.minArea());
     _minarea2    = minarea*minarea;
-    _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL);
-    _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL);
+    _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL + 1);
+    _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL + 1);
     if (_use_initFZ_from_dzFrequency){
       _initFZFrequencyNSigma          = config.initFZFrequencyNSigma();
       _initFZFrequencyBinsToIntegrate = config.initFZFrequencyBinsToIntegrate();

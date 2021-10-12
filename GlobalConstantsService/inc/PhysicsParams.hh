@@ -88,6 +88,11 @@ namespace mu2e
       const std::string allowedMaterial = checkMaterial( material );
       return _endpointEnergy.find(allowedMaterial)->second;
     }
+    
+    double   getePlusEndpointEnergy(targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _ePlusEndpointEnergy.find(allowedMaterial)->second;
+    }
 
     targetMat getStoppingTargetMaterial() const {
       return _chosenStoppingTargetMaterial;
@@ -163,6 +168,7 @@ namespace mu2e
     std::map<targetMat,double>   _bindingEnergy;
     std::map<targetMat,double>   _muonEnergy;
     std::map<targetMat,double>   _endpointEnergy;
+    std::map<targetMat,double>   _ePlusEndpointEnergy;
 
     std::map<targetMat,double> _czarneckiCoefficient;
     std::map<targetMat,std::vector<double>> _czarneckiCoefficients;

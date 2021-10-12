@@ -139,7 +139,7 @@ namespace mu2e {
             double ymaxEstimate = fmutil_.peakNorm(xvec, ywork, xmaxEstimate , i-windowPeak_, i+windowPeak_);
 
             if (ymaxEstimate>1e5) continue;
-                        
+
             parInit.push_back(ymaxEstimate); 
             parInit.push_back(xmaxEstimate);
             fmutil_.setPar(parInit);
@@ -255,14 +255,15 @@ namespace mu2e {
     void CaloTemplateWFProcessor::setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec)
     {               
         if (windowPeak_ > xvec.size()) return;
-        
+        if (xvec.size() != yvec.size()) throw cet::exception("CATEGORY")<<"CaloTemplateWFProcessor::setSecondaryPeakPar  xvec and yvec must have the same size";
+
         std::vector<double> ywork(yvec);
         for (unsigned j=0;j<xvec.size();++j) ywork[j] -= fmutil_.eval_fcn(xvec[j]);        
         
         std::vector<double> parInit(fmutil_.par());
-        for (auto i=windowPeak_;i<xvec.size()-windowPeak_;++i)
+        for (auto i=windowPeak_;i<ywork.size()-windowPeak_;++i)
         {
-             if (std::max_element(&ywork[i-windowPeak_],&ywork[i+windowPeak_+1]) != &ywork[i]) continue;
+             if (std::max_element(ywork.begin()+i-windowPeak_,ywork.begin()+i+windowPeak_+1) != ywork.begin()+i) continue;
              if (ywork[i-1] < minPeakAmplitude_ || ywork[i] < minPeakAmplitude_ || ywork[i+1] < minPeakAmplitude_) continue;
              if (checkPeakDist(xvec[i])) continue;             
              if (yvec[i]>0 && ywork[i]/yvec[i] < psdThreshold_) continue;  

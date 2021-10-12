@@ -38,6 +38,7 @@ CaloRecoDigiMaker :
     TemplateProcessor   : { @table::TemplateProcessor }
     processorStrategy   : "TemplateFit"     
     digiSampling        : @local::HitMakerDigiSampling
+    ProtonBunchTimeTag  : "EWMProducer" 
     maxChi2Cut          : 7.0
     maxPlots            : 50
     diagLevel           : 0
