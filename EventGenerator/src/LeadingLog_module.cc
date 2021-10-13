@@ -48,7 +48,6 @@ namespace mu2e {
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
         fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
-        fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -84,13 +83,7 @@ namespace mu2e {
     , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
-    pid = static_cast<PDGCode::type>(pdgId_);
     
-    if (pid == PDGCode::e_minus) { 
-      process = ProcessCode::mu2eCeMinusLeadingLog; 
-    } else if (pid == PDGCode::e_plus) { 
-      process = ProcessCode::mu2eCePlusLeadingLog;
-    }
     else {
       throw   cet::exception("BADINPUT")
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
