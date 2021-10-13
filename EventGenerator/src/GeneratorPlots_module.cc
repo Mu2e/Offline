@@ -79,9 +79,11 @@ namespace mu2e {
 
   void GeneratorPlots::analyze(const art::Event& event) {
 
-    if(!findData(event)) 
-      throw cet::exception("RECO")<<"No data in  event"<< endl; 
-    else GetGenPartInfo(event);
+    if(!findData(event)){
+      throw cet::exception("RECO")<<"No data in  event"<< endl;
+    }else{
+      GetGenPartInfo(event);
+    }
 }
 
 void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
