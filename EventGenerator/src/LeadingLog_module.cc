@@ -65,10 +65,6 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-    ProcessCode process;
-    int pdgId_;
-    PDGCode::type pid;
-
     std::unique_ptr<ParticleGeneratorTool> Generator_;
   };
 
@@ -80,14 +76,8 @@ namespace mu2e {
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
-    , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
-    
-    else {
-      throw   cet::exception("BADINPUT")
-        <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
-    }
    
     const auto pset = conf().captureProducts.get<fhicl::ParameterSet>();
 
