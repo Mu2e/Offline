@@ -61,7 +61,7 @@ namespace mu2e {
 
     double energy = _spectrum.sample(_randSpectrum->fire());
 
-    const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
+    const double p = sqrt((energy + _mass) * (energy - mass));
     CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
