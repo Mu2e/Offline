@@ -121,7 +121,7 @@ namespace mu2e{
             crystalXZ->SetShape(new TGeoBBox("Crystal",pointmmTocm(wrapperDXY),pointmmTocm(wrapperDXY),pointmmTocm(crystalDZ), crystalpos));
             crystalXZ->SetMainTransparency(transpOpt);   
             orthodetXZ->AddElement(crystalXZ);
-            diskXZwidth = diskXZwidth - wrapperDXY;
+            diskXZwidth-=wrapperDXY;
             }
         }
    }
