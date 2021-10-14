@@ -11,6 +11,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/Validation/inc/ValStatusG4.hh"
+#include "Offline/Validation/inc/ValProtonBunchIntensity.hh"
+#include "Offline/Validation/inc/ValProtonBunchTime.hh"
+#include "Offline/Validation/inc/ValProtonBunchTimeMC.hh"
+#include "Offline/Validation/inc/ValEventWindowMarker.hh"
 #include "Offline/Validation/inc/ValGenParticle.hh"
 #include "Offline/Validation/inc/ValSimParticle.hh"
 #include "Offline/Validation/inc/ValStepPointMC.hh"
@@ -74,6 +78,10 @@ namespace mu2e {
     // have several instances of a product and we make histograms 
     // for each instance.
     std::vector<std::shared_ptr<ValStatusG4>>          _stat;
+    std::vector<std::shared_ptr<ValProtonBunchIntensity>>     _pbin;
+    std::vector<std::shared_ptr<ValProtonBunchTime>>    _pbtd;
+    std::vector<std::shared_ptr<ValProtonBunchTimeMC>>  _pbtm;
+    std::vector<std::shared_ptr<ValEventWindowMarker>>  _evwm;
     std::vector<std::shared_ptr<ValGenParticle>>       _genp;
     std::vector<std::shared_ptr<ValSimParticle>>       _simp;
     std::vector<std::shared_ptr<ValStepPointMC>>       _spmc;
@@ -129,6 +137,10 @@ void mu2e::Validation::beginJob(){
 
 void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<StatusG4,ValStatusG4>                        (_stat,event);
+  analyzeProduct<ProtonBunchIntensity,ValProtonBunchIntensity>  (_pbin,event);
+  analyzeProduct<ProtonBunchTime,ValProtonBunchTime>          (_pbtd,event);
+  analyzeProduct<ProtonBunchTimeMC,ValProtonBunchTimeMC>      (_pbtm,event);
+  analyzeProduct<EventWindowMarker,ValEventWindowMarker>      (_evwm,event);
   analyzeProduct<GenParticleCollection,ValGenParticle>        (_genp,event);
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
   analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
