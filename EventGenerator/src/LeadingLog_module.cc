@@ -34,6 +34,9 @@
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 #include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 
 namespace mu2e {
 
@@ -48,6 +51,7 @@ namespace mu2e {
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
         fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
+        fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -60,11 +64,20 @@ namespace mu2e {
   private:
     double muonLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
-    
     unsigned verbosity_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
+    ProcessCode process;
+    int pdgId_;
+    PDGCode::type pid;
+    
+    double _mass;
+    BinnedSpectrum    _spectrum;
+    RandomUnitSphere*   _randomUnitSphere;
+    CLHEP::RandGeneral* _randSpectrum;
+    double _endPointEnergy;
+    
     std::unique_ptr<ParticleGeneratorTool> Generator_;
   };
 
@@ -76,8 +89,20 @@ namespace mu2e {
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
+    , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
+    pid = static_cast<PDGCode::type>(pdgId_);
+    
+    if (pid == PDGCode::e_minus) { 
+      process = ProcessCode::mu2eCeMinusLeadingLog; 
+    } else if (pid == PDGCode::e_plus) { 
+      process = ProcessCode::mu2eCePlusLeadingLog;
+    }
+    else {
+      throw   cet::exception("BADINPUT")
+        <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
+    }
    
     const auto pset = conf().captureProducts.get<fhicl::ParameterSet>();
 
@@ -112,7 +137,18 @@ namespace mu2e {
                             double time,
                             ParticleGeneratorTool* gen)
   {
-    auto daughters = gen->generate(); 
+    //auto daughters = gen->generate(); 
+    std::vector<ParticleGeneratorTool::Kinematic>  res;
+
+    double energy = _spectrum.sample(_randSpectrum->fire());
+
+    const double p = sqrt((energy + _mass) * (energy - _mass));
+    CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
+    CLHEP::HepLorentzVector fourmom(p3, energy);
+
+    ParticleGeneratorTool::Kinematic k{pid, process, fourmom};
+    res.emplace_back(k);
+    auto daughters = res;
     for(const auto& d: daughters) {
 
       output->emplace_back(mustop,
