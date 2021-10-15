@@ -109,7 +109,7 @@ namespace mu2e {
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
     }
    
-    const auto pset = conf().captureProducts.get<fhicl::ParameterSet>();
+    const auto pset = conf().spectrum.get<fhicl::ParameterSet>();
 
     Generator_ = (art::make_tool<ParticleGeneratorTool>(pset)); //TODO - how does this use capture products
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
