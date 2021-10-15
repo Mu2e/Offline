@@ -11,37 +11,35 @@ namespace mu2e{
       GeomHandle<Tracker> trkr;
 
       TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
+      TubsParams planeEnvelope(trkr->g4Tracker()->getPlaneEnvelopeParams());
 
       Double_t dz{pointmmTocm(envelope.zHalfLength())};
-      Double_t rmin{pointmmTocm(envelope.innerRadius())};
-      Double_t rmax{pointmmTocm(envelope.outerRadius())};
+      Double_t zpanel{pointmmTocm(planeEnvelope.zHalfLength())};
+      Double_t rmin{pointmmTocm(planeEnvelope.innerRadius())};
+      Double_t rmax{pointmmTocm(planeEnvelope.outerRadius())};
+  
+      Double_t fullLength = trkr->planes().back().origin().z()- trkr->planes().front().origin().z();
+      Double_t planespace = 2*((pointmmTocm(fullLength) - trkr->nPlanes()*zpanel)/(trkr->nPlanes()-2));
+      double p = -dz;
+      Double_t panelpos[3];
+      panelpos [0] = 0.0;
+      panelpos [1] = 1000.0;
+      //Tracker Planes in XZ
+      for(size_t i =0;i<trkr->nPlanes()/2;i++)
+        {
         
-      //Tracker Stations in XZ
-      double p = 0.0;
-      //unsigned int nStations = trkr->nPlanes()/2;
-      unsigned int dp = 0;
-      Double_t stationpos[3];
-      for(unsigned int i =0; i < 20 ;i++){
-        
-        Double_t zpanel{pointmmTocm(2*trkr->g4Tracker()->getPanelEnvelopeParams().zHalfLength())};
-        TEveGeoShape *station= new TEveGeoShape();
-        CLHEP::Hep3Vector Pos_station(0, 1000, p - dz + zpanel);
-        if(i==0) dp = pointmmTocm(abs(Pos_station.z() - stationpos [2]));
-        stationpos [0] = Pos_station.x();
-        stationpos [1] = Pos_station.y();
-        stationpos [2] = Pos_station.z();
-
-        station->SetShape(new TGeoBBox("station",rmax+rmin/2,rmax+rmin/2,zpanel,stationpos));
-        station->SetMainTransparency(transpOpt); 
-        orthodetXZ->AddElement(station);
-        p = p + dp; 
-      }
-
+        TEveGeoShape *panel = new TEveGeoShape();
+        panelpos [2] = p;
+        panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel*2,panelpos));
+        panel->SetMainTransparency(transpOpt);
+        orthodetXZ->AddElement(panel);
+        p = p + planespace + zpanel*2;
+        }
         
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
       tr->SetShape(new TGeoTube(rmin, rmax, dz));
-      tr->SetMainTransparency(transpOpt); 
+      tr->SetMainTransparency(transpOpt);
       orthodetXY->AddElement(tr);
 
       // ... Create tracker using the composite shape defined above
@@ -70,7 +68,8 @@ namespace mu2e{
         double r = foil.rOut() - foil.rIn();
       
         CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
-        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),pointmmTocm(startz+j)); // Stopping Target Location FIXME
+
+        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),pointmmTocm(startz+j)); // Stopping Target Location
       
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
@@ -78,13 +77,15 @@ namespace mu2e{
         foilpos [2] = foilposition.z();
       
         TEveGeoShape *stXZ = new TEveGeoShape();
-        stXZ->SetShape(new TGeoBBox("foil",pointmmTocm(r),pointmmTocm(r),pointmmTocm(halfThickness), foilpos));  
-        stXZ->SetMainTransparency(transpOpt);   
+
+        stXZ->SetShape(new TGeoBBox("foil",pointmmTocm(r),pointmmTocm(r),pointmmTocm(halfThickness), foilpos));
+        stXZ->SetMainTransparency(transpOpt); 
         orthodetXZ->AddElement(stXZ);
       
         TEveGeoShape *stXY = new TEveGeoShape();
         stXY->SetShape(new TGeoTube(pointmmTocm(foil.rIn()),pointmmTocm(foil.rOut()),pointmmTocm(halfThickness)));
-        stXY->SetMainTransparency(transpOpt); 
+
+        stXY->SetMainTransparency(transpOpt);
         orthodetXY->AddElement(stXY);
         }
         
@@ -105,25 +106,25 @@ namespace mu2e{
         double crystalDZ = calo->caloInfo().getDouble("crystalZLength")/2.0;
         double wrapperDXY = crystalDXY + calo->caloInfo().getDouble("wrapperThickness");
         
+        Double_t crystalpos[3];
         for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++){
-          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
-          diskPos += CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick));
-          double k = diskOuterRailOut + diskInnerRingIn;
-          for(unsigned int ic=0; ic < 30; ic++){ // FIXME - what is 30?
-            CLHEP::Hep3Vector crystalposition(diskPos.x(), (diskPos.y() + k), diskPos.z());
-            Double_t crystalpos[3];
-            crystalpos [0] = pointmmTocm(crystalposition.x());
-            crystalpos [1] = pointmmTocm(crystalposition.y());
-            crystalpos [2] = pointmmTocm(crystalposition.z());
-        
+
+          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() + CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick)) - _detSysOrigin;
+          double diskXZwidth = diskOuterRailOut + diskInnerRingIn;
+          crystalpos [0] = pointmmTocm(diskPos.x());
+          crystalpos [2] = pointmmTocm(diskPos.z());
+          while(diskXZwidth > -(diskOuterRailOut + diskInnerRingIn))
+            {
+            crystalpos [1] = pointmmTocm(diskPos.y() + diskXZwidth);
+
             TEveGeoShape *crystalXZ = new TEveGeoShape();
             crystalXZ->SetShape(new TGeoBBox("Crystal",pointmmTocm(wrapperDXY),pointmmTocm(wrapperDXY),pointmmTocm(crystalDZ), crystalpos));
             crystalXZ->SetMainTransparency(transpOpt);   
             orthodetXZ->AddElement(crystalXZ);
-            k = k - wrapperDXY;
+            diskXZwidth-=wrapperDXY;
             }
-          }
-  }
+        }
+   }
 }
 
 
