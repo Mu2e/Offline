@@ -1,4 +1,4 @@
-// This module will be used to make DIO electrons from mu- stopped in any target material
+// This module will be used to make electrons from any process originating from mu- stopped in any target material
 //
 // Sophie Middleton, 2021
 
@@ -37,7 +37,7 @@
 
 namespace mu2e {
   //================================================================
-  class DecayInOrbitGenerator : public art::EDProducer {
+  class SingleProcessGenerator : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -57,7 +57,7 @@ namespace mu2e {
     };
 
     using Parameters= art::EDProducer::Table<Config>;
-    explicit DecayInOrbitGenerator(const Parameters& conf);
+    explicit SingleProcessGenerator(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
 
@@ -77,7 +77,7 @@ namespace mu2e {
   };
 
   //================================================================
-  DecayInOrbitGenerator::DecayInOrbitGenerator(const Parameters& conf)
+  SingleProcessGenerator::SingleProcessGenerator(const Parameters& conf)
     : EDProducer{conf}
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
@@ -88,7 +88,7 @@ namespace mu2e {
   {
     produces<mu2e::StageParticleCollection>();
     if(verbosity_ > 0) {
-      mf::LogInfo log("DecayInOrbitGenerator");
+      mf::LogInfo log("SingleProcessGenerator");
       log<<"stoppingTargetMaterial = "<<conf().stoppingTargetMaterial()
          <<", muon lifetime = "<<muonLifeTime_
          <<std::endl;
@@ -101,7 +101,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void DecayInOrbitGenerator::produce(art::Event& event) {
+  void SingleProcessGenerator::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
@@ -118,7 +118,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void DecayInOrbitGenerator::addParticles(StageParticleCollection* output,
+  void SingleProcessGenerator::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> mustop,
                             double time,
                             ParticleGeneratorTool* gen)
@@ -140,4 +140,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::DecayInOrbitGenerator);
+DEFINE_ART_MODULE(mu2e::SingleProcessGenerator);
