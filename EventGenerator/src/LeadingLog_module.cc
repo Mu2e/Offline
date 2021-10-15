@@ -63,7 +63,7 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
 
-    void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
+    void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time);
     //----------------------------------------------------------------
   private:
     double muonLifeTime_;
@@ -82,7 +82,7 @@ namespace mu2e {
     CLHEP::RandGeneral* randSpectrum_;
     double endPointEnergy_;
     
-    std::unique_ptr<ParticleGeneratorTool> Generator_;
+    //std::unique_ptr<ParticleGeneratorTool> Generator_;
   };
 
   //================================================================
@@ -95,6 +95,7 @@ namespace mu2e {
     , randExp_{eng_}
     , pdgId_(conf().pdgId())
     , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
+    
   {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
@@ -109,10 +110,10 @@ namespace mu2e {
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
     }
    
-    const auto pset = conf().spectrum.get<fhicl::ParameterSet>();
-
-    Generator_ = (art::make_tool<ParticleGeneratorTool>(pset)); //TODO - how does this use capture products
-    Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
+    //const auto pset = conf().spectrum.get<fhicl::ParameterSet>();
+    //Generator_ = (art::make_tool<ParticleGeneratorTool>(pset)); //TODO - how does this use capture products
+    randomUnitSphere_ = new RandomUnitSphere(eng_);
+    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
   }
 
   //================================================================
@@ -123,8 +124,7 @@ namespace mu2e {
     
     for(const auto& mustop: mus) {
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-
-      addParticles(output.get(), mustop, time, Generator_.get());
+      addParticles(output.get(), mustop, time);
       if(mus.empty()) {
         throw   cet::exception("BADINPUT")
         <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
@@ -136,10 +136,9 @@ namespace mu2e {
   //================================================================
   void LeadingLog::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> mustop,
-                            double time,
-                            ParticleGeneratorTool* gen)
+                            double time)
   {
-    std::vector<ParticleGeneratorTool::Kinematic>  res;
+    //std::vector<ParticleGeneratorTool::Kinematic>  res;
 
     double energy = spectrum_.sample(randSpectrum_->fire());
 
@@ -147,20 +146,20 @@ namespace mu2e {
     CLHEP::Hep3Vector p3 = randomUnitSphere_->fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
-    ParticleGeneratorTool::Kinematic k{pid, process, fourmom};
-    res.emplace_back(k);
-    auto daughters = res;
-    for(const auto& d: daughters) {
+    //ParticleGeneratorTool::Kinematic k{pid, process, fourmom};
+    //res.emplace_back(k);
+    //auto daughters = res;
+    //for(const auto& d: daughters) {
 
       output->emplace_back(mustop,
-                           d.creationCode,
-                           d.pdgId,
+                           process,
+                           pid,
                            mustop->endPosition(),
-                           d.fourmom,
+                           fourmom,
                            time
                            );
 
-    }
+    //}
   }
 
 
