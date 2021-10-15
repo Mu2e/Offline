@@ -52,7 +52,6 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
-        //fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
@@ -82,7 +81,6 @@ namespace mu2e {
     CLHEP::RandGeneral* randSpectrum_;
     double endPointEnergy_;
     
-    //std::unique_ptr<ParticleGeneratorTool> Generator_;
   };
 
   //================================================================
@@ -110,8 +108,6 @@ namespace mu2e {
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
     }
    
-    //const auto pset = conf().spectrum.get<fhicl::ParameterSet>();
-    //Generator_ = (art::make_tool<ParticleGeneratorTool>(pset)); //TODO - how does this use capture products
     randomUnitSphere_ = new RandomUnitSphere(eng_);
     randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
   }
@@ -138,28 +134,22 @@ namespace mu2e {
                             art::Ptr<SimParticle> mustop,
                             double time)
   {
-    //std::vector<ParticleGeneratorTool::Kinematic>  res;
-
+  
     double energy = spectrum_.sample(randSpectrum_->fire());
 
     const double p = sqrt((energy + _mass) * (energy - _mass));
     CLHEP::Hep3Vector p3 = randomUnitSphere_->fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
-    //ParticleGeneratorTool::Kinematic k{pid, process, fourmom};
-    //res.emplace_back(k);
-    //auto daughters = res;
-    //for(const auto& d: daughters) {
 
-      output->emplace_back(mustop,
-                           process,
-                           pid,
-                           mustop->endPosition(),
-                           fourmom,
-                           time
-                           );
+    output->emplace_back(mustop,
+                       process,
+                       pid,
+                       mustop->endPosition(),
+                       fourmom,
+                       time
+                       );
 
-    //}
   }
 
 
