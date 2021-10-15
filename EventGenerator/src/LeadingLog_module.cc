@@ -37,6 +37,9 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "fhiclcpp/types/DelegatedParameter.h"
+#include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandGeneral.h"
 
 namespace mu2e {
 
@@ -49,9 +52,10 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
-        fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
+        //fhicl::DelegatedParameter captureProducts{Name("captureProducts"), Comment("A sequence of ParticleGenerator tools implementing capture products.")};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
+        fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -73,10 +77,10 @@ namespace mu2e {
     PDGCode::type pid;
     
     double _mass;
-    BinnedSpectrum    _spectrum;
-    RandomUnitSphere*   _randomUnitSphere;
-    CLHEP::RandGeneral* _randSpectrum;
-    double _endPointEnergy;
+    BinnedSpectrum    spectrum_;
+    RandomUnitSphere*   randomUnitSphere_;
+    CLHEP::RandGeneral* randSpectrum_;
+    double endPointEnergy_;
     
     std::unique_ptr<ParticleGeneratorTool> Generator_;
   };
@@ -90,6 +94,7 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
     , pdgId_(conf().pdgId())
+    , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
   {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
@@ -106,9 +111,8 @@ namespace mu2e {
    
     const auto pset = conf().captureProducts.get<fhicl::ParameterSet>();
 
-    Generator_ = (art::make_tool<ParticleGeneratorTool>(pset));
+    Generator_ = (art::make_tool<ParticleGeneratorTool>(pset)); //TODO - how does this use capture products
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
-
   }
 
   //================================================================
@@ -125,8 +129,6 @@ namespace mu2e {
         throw   cet::exception("BADINPUT")
         <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
       }
-
-    
     }
     event.put(std::move(output));
   }
@@ -137,13 +139,12 @@ namespace mu2e {
                             double time,
                             ParticleGeneratorTool* gen)
   {
-    //auto daughters = gen->generate(); 
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
-    double energy = _spectrum.sample(_randSpectrum->fire());
+    double energy = spectrum_.sample(randSpectrum_->fire());
 
     const double p = sqrt((energy + _mass) * (energy - _mass));
-    CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
+    CLHEP::Hep3Vector p3 = randomUnitSphere_->fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
 
     ParticleGeneratorTool::Kinematic k{pid, process, fourmom};
