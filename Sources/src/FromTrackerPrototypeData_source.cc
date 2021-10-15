@@ -28,15 +28,15 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "RecoDataProducts/inc/StrawDigi.hh"
-#include "DataProducts/inc/TrkTypes.hh"
-#include "DataProducts/inc/StrawId.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 
 #include "TTree.h"
 #include "TFile.h"
 #include "TBranch.h"
 
-#include "SeedService/inc/SeedService.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
