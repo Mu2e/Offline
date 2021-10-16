@@ -1,6 +1,6 @@
 
-#ifndef ValStrawDigi_HH_
-#define ValStrawDigi_HH_
+#ifndef ValStrawDigiADCWaveform_HH_
+#define ValStrawDigiADCWaveform_HH_
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
@@ -10,12 +10,12 @@
 
 namespace mu2e {
 
-  class ValStrawDigi {
+  class ValStrawDigiADCWaveform {
 
   public:
-    ValStrawDigi(std::string name):_name(name){}
+    ValStrawDigiADCWaveform(std::string name):_name(name){}
     int declare( art::TFileDirectory tfs);
-    int fill(const StrawDigiCollection & coll, art::Event const& event);
+    int fill(const StrawDigiADCWaveformCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
   private:
@@ -24,11 +24,10 @@ namespace mu2e {
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
-    TH1D* _htdc;
-    TH1D* _htdc2;
-    TH1D* _htot;
+    TH1D* _hlen;
+    TH1D* _hadc;
     TH1D* _hpmp;
-    TH1D* _hSI;
+
   };
 }
 

@@ -30,6 +30,7 @@
 #include "Offline/Validation/inc/ValCrvCoincidenceCluster.hh"
 #include "Offline/Validation/inc/ValStrawGasStep.hh"
 #include "Offline/Validation/inc/ValStrawDigi.hh"
+#include "Offline/Validation/inc/ValStrawDigiADCWaveform.hh"
 #include "Offline/Validation/inc/ValStrawDigiMC.hh"
 #include "Offline/Validation/inc/ValStrawHit.hh"
 #include "Offline/Validation/inc/ValBkgCluster.hh"
@@ -97,6 +98,7 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValCrvCoincidenceCluster>> _cvcc;
     std::vector<std::shared_ptr<ValStrawGasStep>>      _stgs;
     std::vector<std::shared_ptr<ValStrawDigi>>         _stdg;
+    std::vector<std::shared_ptr<ValStrawDigiADCWaveform>> _stdw;
     std::vector<std::shared_ptr<ValStrawDigiMC>>       _stdm;
     std::vector<std::shared_ptr<ValStrawHit>>          _stwh;
     std::vector<std::shared_ptr<ValBkgCluster>>        _bgcl;
@@ -157,6 +159,7 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<CrvCoincidenceClusterCollection,ValCrvCoincidenceCluster>  (_cvcc,event);
   analyzeProduct<StrawGasStepCollection,ValStrawGasStep>      (_stgs,event);
   analyzeProduct<StrawDigiCollection,ValStrawDigi>            (_stdg,event);
+  analyzeProduct<StrawDigiADCWaveformCollection,ValStrawDigiADCWaveform> (_stdw,event);
   analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);
   analyzeProduct<StrawHitFlagCollection,ValStrawHitFlag>      (_shfl,event);
