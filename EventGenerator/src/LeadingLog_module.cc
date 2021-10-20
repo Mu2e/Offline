@@ -71,9 +71,9 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-    ProcessCode process;
+    ProcessCode process_;
     int pdgId_;
-    PDGCode::type pid;
+    PDGCode::type pid_;
     
     double _mass;
     BinnedSpectrum    spectrum_;
@@ -96,16 +96,16 @@ namespace mu2e {
     
   {
     produces<mu2e::StageParticleCollection>();
-    pid = static_cast<PDGCode::type>(pdgId_);
+    pid_ = static_cast<PDGCode::type>(pdgId_);
     
-    if (pid == PDGCode::e_minus) { 
-      process = ProcessCode::mu2eCeMinusLeadingLog; 
-    } else if (pid == PDGCode::e_plus) { 
-      process = ProcessCode::mu2eCePlusLeadingLog;
+    if (pid_ == PDGCode::e_minus) { 
+      process_ = ProcessCode::mu2eCeMinusLeadingLog; 
+    } else if (pid_ == PDGCode::e_plus) { 
+      process_ = ProcessCode::mu2eCePlusLeadingLog;
     }
     else {
       throw   cet::exception("BADINPUT")
-        <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id\n";
+        <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id : "<<pid_<<std::endl;
     }
    
     randomUnitSphere_ = new RandomUnitSphere(eng_);
@@ -118,13 +118,14 @@ namespace mu2e {
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto mus = stoppedMuMinusList(simh);
     
+    if(mus.empty()) {
+        throw   cet::exception("BADINPUT")
+        <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
+    }
+    
     for(const auto& mustop: mus) {
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       addParticles(output.get(), mustop, time);
-      if(mus.empty()) {
-        throw   cet::exception("BADINPUT")
-        <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
-      }
     }
     event.put(std::move(output));
   }
@@ -143,8 +144,8 @@ namespace mu2e {
 
 
     output->emplace_back(mustop,
-                       process,
-                       pid,
+                       process_,
+                       pid_,
                        mustop->endPosition(),
                        fourmom,
                        time
