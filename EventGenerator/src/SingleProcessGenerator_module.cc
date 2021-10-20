@@ -8,11 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandExponential.h"
-#include "CLHEP/Units/PhysicalConstants.h"
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
@@ -49,9 +46,7 @@ namespace mu2e {
           Comment("Material determines muon life time, capture fraction, and particle spectra.\n"
                   "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),
           "Al" };
-
-      fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("A sequence of ParticleGenerator tools implementing decay products.")};
-
+      fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("spectrum (and variables) to be generated")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
 
     };
@@ -68,7 +63,6 @@ namespace mu2e {
     unsigned verbosity_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-    CLHEP::RandFlat randFlat_;
     CLHEP::RandExponential randExp_;
   
     std::unique_ptr<ParticleGeneratorTool> Generator_;
@@ -83,7 +77,6 @@ namespace mu2e {
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
-    , randFlat_{eng_}
     , randExp_{eng_}
   {
     produces<mu2e::StageParticleCollection>();
