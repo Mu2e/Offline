@@ -29,7 +29,8 @@ namespace mu2e {
       bool AddErrorBar_ = false;
     
       std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector, std::string, int> DrawStraw();
-      void DrawHit2D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *list, TEveElementList *listz);
+      void DrawHit2DXZ(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *listz);
+      void DrawHit2DXY(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *listz);
       void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, int energylevel, TEveElementList *list); 
       void DrawHitCollection(const std::string &pstr, size_t i, std::vector<CLHEP::Hep3Vector> HitPos, int energylevel, TEveElementList *list); 
       XYZVectorF const GetPosition() { return fComboHit_.pos();}

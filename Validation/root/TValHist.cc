@@ -12,7 +12,8 @@ void TValHist::ClearB(Option_t* Opt) {
   fKsProb = 0.0;
   fFrProb = 0.0;
   fDiff = true;
-  fStatus = 10;
+  fStatus = fCantCompare;
   fFontScale = 1.0;
+  fEmpty = false;
 }
 
