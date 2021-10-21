@@ -139,10 +139,6 @@ mf_coutInfo:
    HITS : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
-mf_coutInfoStats : 
-{ 
- type :     cout
-}
 
 mf_debug:
 {
