@@ -140,7 +140,7 @@ namespace mu2e {
     "truncated", "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest",  "mu2eCeMinusEndpoint", \
     "mu2eCeMinusLeadingLog", "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", "mu2eInternalRMC", \
     "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
-    "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eunused3", "mu2eunused4", \
+    "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "ExternalRPC", "InternalRPC", \
     "mu2eunused5", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
     "uninitialized"
 
