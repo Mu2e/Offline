@@ -17,6 +17,7 @@
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 //Kalman Tracks
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 //Tracker Hits:
@@ -68,7 +69,7 @@ namespace mu2e{
       fhicl::Atom<bool> addHits{Name("addHits"), Comment("set to add the hits"),false};
       fhicl::Atom<bool> addTracks{Name("addTracks"), Comment("set to add tracks"),false};
       fhicl::Atom<bool> addClusters{Name("addClusters"), Comment("set to add calo lusters"),false};
-      fhicl::Atom<bool> addCrvHits{Name("addCrvHits"), Comment("set to add crv hits"),false};	
+      fhicl::Atom<bool> addCrvHits{Name("addCrvHits"), Comment("set to add crv hits"),false};
       fhicl::Atom<bool> addCrystallHits{Name("addCrystalHits"), Comment("for calo cry hits"), false};
       fhicl::Atom<bool> addCosmicSeedFit{Name("addCosmicSeedFit"), Comment("for fitted cosmic track"), false};
       fhicl::Atom<bool> addTrkExtTrajs{Name("addTrkExtTrajs"), Comment("set to add track exit trajectories"), false};
@@ -83,7 +84,7 @@ namespace mu2e{
     Collection_Filler(const Collection_Filler &);
     Collection_Filler& operator=(const Collection_Filler &);
 
-    //RecoDataProducts: 
+    //RecoDataProducts:
     art::InputTag chTag_;
     art::InputTag crvcoinTag_;
     art::InputTag cosmicTag_;
@@ -92,7 +93,7 @@ namespace mu2e{
     art::InputTag hseedTag_;
     std::vector<art::InputTag> kalseedTag_;
     art::InputTag trkexttrajTag_;
-    
+
     //MCDataProdutcs:
     art::InputTag mctrajTag_;
 
@@ -112,4 +113,4 @@ namespace mu2e{
 
 }
 
-#endif 
+#endif
