@@ -9,7 +9,7 @@ int mu2e::ValCrvDigi::declare(art::TFileDirectory tfs) {
   _hI = tfs.make<TH1D>( "BarId", "Bar ID",200, -0.5, 5503.5);
   _hIS= tfs.make<TH1D>( "SiPM", "SiPM",4, -0.5, 3.5);
   _ht = tfs.make<TH1D>( "t", "TDC", 100, 0.0, 250.0);
-  _ht2 = tfs.make<TH1D>( "t2", "TDC", 100, 0.0, 100.0e3);
+  _ht2 = tfs.make<TH1D>( "t2", "TDC", 100, 0.0, 1.5e4);
   _hA = tfs.make<TH1D>( "ADC", "ADC in waveform",100, 0.0, 3000.0);
 
   return 0;
