@@ -91,14 +91,20 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixExtMonSimHits, *this);
     }
 
-    for(const auto& e: conf.cosmicLivetimeMixer().mixingMap()) {
-      helper.declareMixOp
-        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCosmicLivetime, *this);
-    }
-
     for(const auto& e: conf.eventIDMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventIDs, *this);
+    }
+
+    //----------------------------------------------------------------
+    // CosmicLivetime handling
+    CosmicLivetimeMixerConfig clmc;
+    if (conf.cosmicLivetimeMixer(clmc)) {
+      mixCosmicLivetimes_ = true;
+      subrunLivetimeInstanceName_ = clmc.srOutInstance();
+      helper.produces<CosmicLivetime, art::InSubRun>(subrunLivetimeInstanceName_);
+      helper.declareMixOp
+        (clmc.moduleLabel(), "", &Mu2eProductMixer::mixCosmicLivetime, *this);
     }
 
     //----------------------------------------------------------------
@@ -152,6 +158,10 @@ namespace mu2e {
       }
 
       sr.put(std::move(col), subrunVolInstanceName_);
+    }
+    if (mixCosmicLivetimes_) {
+      std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(totalPrimaries_, area_, lowE_, highE_, fluxConstant_));
+      sr.put(std::move(livetime), subrunLivetimeInstanceName_);
     }
   }
 
@@ -350,10 +360,15 @@ namespace mu2e {
                                                  CosmicLivetime& out,
                                                  art::PtrRemapper const& remap)
   {
-    if(in.size() > 1)
-      throw cet::exception("BADINPUT")<<"Mu2eProductMixer/evt: can't mix CosmicLiveTime" << std::endl;
-    for(const auto& x: in) {
-      out = *x;
+
+    if(!in.empty()) {
+      area_ = in[0]->area();
+      lowE_ = in[0]->lowE();
+      highE_ = in[0]->highE();
+      fluxConstant_ = in[0]->fluxConstant();
+      for(const auto& x: in) {
+        totalPrimaries_ += x->primaries();
+      }
     }
 
     return true;

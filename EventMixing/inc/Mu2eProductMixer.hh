@@ -83,6 +83,13 @@ namespace mu2e {
           };
     };
 
+    struct CosmicLivetimeMixerConfig {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag> moduleLabel{ Name("moduleLabel"), Comment("Input module label") };
+      fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"), Comment("Output instance name for SubRun outputs"), "mixed" };
+    };
+
     // Configuration for the Mu2eProductMixing helper
     struct Config {
       fhicl::Table<CollectionMixerConfig> genParticleMixer { fhicl::Name("genParticleMixer") };
@@ -93,8 +100,8 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> strawGasStepMixer { fhicl::Name("strawGasStepMixer") };
       fhicl::Table<CollectionMixerConfig> crvStepMixer { fhicl::Name("crvStepMixer") };
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
-      fhicl::Table<CollectionMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
+      fhicl::OptionalTable<CosmicLivetimeMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
       fhicl::OptionalAtom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)") };
     };
@@ -171,11 +178,19 @@ namespace mu2e {
     typedef std::vector<VolumeMap> MultiStageMap;
     MultiStageMap subrunVolumes_;
     bool mixVolumes_;
+    bool mixCosmicLivetimes_;
     art::InputTag volumesInput_;
     std::string subrunVolInstanceName_;
     std::optional<std::string> evtVolInstanceName_;
     bool applyTimeOffset_;
     art::InputTag timeOffsetTag_;
+
+    std::string subrunLivetimeInstanceName_;
+    unsigned int totalPrimaries_ = 0;
+    float area_ = 0;
+    float lowE_ = 0;
+    float highE_ = 0;
+    float fluxConstant_ = 0;
     SimTimeOffset stoff_; // time offset for SimParticles and StepPointMCs
 
     void addInfo(VolumeMap* map, const PhysicalVolumeInfoSingleStage::value_type& entry);
