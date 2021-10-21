@@ -29,6 +29,8 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
+#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "fhiclcpp/types/DelegatedParameter.h"
 
 namespace mu2e {
 
@@ -42,15 +44,16 @@ namespace mu2e {
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and pion life time.  Material pist be known to the GlobalConstantsService."),"Al" };
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
-        fhicl::Atom<std::string> genId{
-        Name("stoppingTargetMaterial"),Comment("internal or external") };
+        fhicl::Atom<std::string> RPCType{
+        Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
+        fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
     explicit RPCGenGun(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
-
+    void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop, FixedTimeMap time);
     //----------------------------------------------------------------
   private:
     const PDGCode::type electronId_ = PDGCode::e_minus; // for mass only
@@ -64,10 +67,11 @@ namespace mu2e {
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
     RandomUnitSphere   randomUnitSphere_;
-    ProcessCode process;
+    ProcessCode process_;
     int pdgId_;
-    PDGCode::type pid;
-    std::string genId_;
+    PDGCode::type pid_;
+    std::string RPCType_;
+    BinnedSpectrum    spectrum_;
   };
 
   //================================================================
@@ -81,11 +85,13 @@ namespace mu2e {
     , randExp_{eng_}
     , randomUnitSphere_{eng_}
     , pdgId_(conf().pdgId())
-    , genId_(conf().genId())
+    , RPCType_(conf().RPCType())
+    , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
     produces<mu2e::FixedTimeMap>();
+    process_ = static_cast<PDGCode::type>(RPCType_);
   }
 
   //================================================================
@@ -100,7 +106,7 @@ namespace mu2e {
         <<"RPCGenGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
     
-    /*
+    
     std::unique_ptr<FixedTimeMap> timemap(new FixedTimeMap);
 
     ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -144,47 +150,59 @@ namespace mu2e {
         stop = tstop;
       }
     }
+  //** USE the TOOL infrastructure **
+    
 
-    
-*/
     const auto pistop = pis.at(eng_.operator unsigned int() % pis.size());
-    
-    
-     if(genId_ == "external"){
+    for(const auto& pistop: pis) {
+      addParticles(output.get(), mustop, timemap);
+    }
+    event.put(std::move(output));
+    event.put(std::move(timemap));
+   
+  }
+  
+  void RPCGenGun::addParticles(StageParticleCollection* output,
+                            art::Ptr<SimParticle> pistop,
+                            FixedTimeMap time)
+  {
+  
+    if(process_ == ProcessCode::ExternalRPC){
      
      output->emplace_back(PDGCode::gamma,
-                         GenId::ExternalRPC, //TODO - make this a process code
-                         pid,
+                         process_, 
+                         22,//FIXME
                          pistop->endPosition(),
                          CLHEP::HepLorentzVector{randopinitSphere_.fire(endPointMomentum_), endPointEnergy_},
                          pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
                          );
 
-
-      event.put(std::move(output));
-      event.put(std::move(timemap));
-    } else {
+    } else if(process_ == ProcessCode::IntentalRPC) {
       output->emplace_back(PDGCode::e_minus,
-                           GenId::InternalRPC, //TODO - make this a process code
-                           pid,
+                           , 
+                           11,//FIXME
                            pistop->endPosition(),
                            CLHEP::HepLorentzVector{randopinitSphere_.fire(endPointMomentum_), endPointEnergy_},
                            pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
                            );
                            
        output->emplace_back(PDGCode::e_plus,
-                           GenId::InternalRPC, //TODO - make this a process code
-                           pid,
+                           ProcessCode::InternalRPC, 
+                           -11, //FIXME
                            pistop->endPosition(),
                            CLHEP::HepLorentzVector{randopinitSphere_.fire(endPointMomentum_), endPointEnergy_},
                            pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
                            );
                      event.put(std::move(output));
-      event.put(std::move(timemap));
+      
+      } else {
+        throw   cet::exception("BADINPUT")
+        <<"RPCGenGun::produce(): no suitable process id\n";
       }
-
-    event.put(std::move(output));
-  }
+   }
+  /*double RPCGun::generateEnergy() {
+    return spectrum_.sample(randSpectrum_.fire());
+  }*/
 
   //================================================================
 } // namespace mu2e
