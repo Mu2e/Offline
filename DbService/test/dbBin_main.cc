@@ -1,12 +1,10 @@
 //
-// an example of how run-dependent 
+// An example of how run-dependent 
 // conditions sets can be accessed in a stand-alone bin
 // 
-// to build this, copy it to DbService/src
-//   and add this line:
-// helper.make_bin("dbBin",BINLIBS,[])
-// to the SConscript
-// 
+// To build this, copy it to an apropriate repo src dir
+// You can see what you need in your SConstruct by looking at
+// the build for dbTool in DbService/src
 //
 // arguments are 
 // PURPOSE: the conditions set purpose
@@ -19,7 +17,6 @@
 //
 
 #include <string>
-#include <vector>
 #include <iostream>
 #include "Offline/DbService/inc/DbIdList.hh"
 #include "Offline/DbService/inc/DbEngine.hh"
@@ -29,9 +26,14 @@ using namespace std;
 
 int main(int argc, char**argv) {
 
-string purpose(argv[1]);
+  if(argc!=5) { // first arg is exe name
+    cout << "Four required arguments: PURPOSE VERSION RUN TABLE" << endl;
+    return 1;
+  }
+
+  string purpose(argv[1]);
   string version(argv[2]);
-  uint32_t run = uint32_t(atoi(argv[3]));
+  uint32_t run = stoul(string(argv[3]));
   uint32_t subrun = 0;
   string table(argv[4]);
   
