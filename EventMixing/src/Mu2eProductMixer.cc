@@ -43,6 +43,7 @@ namespace mu2e {
   //----------------------------------------------------------------
   Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper)
     : mixVolumes_(false)
+      , mixCosmicLivetimes_(false)
       , applyTimeOffset_(conf.simTimeOffset.hasValue())
       , stoff_(0.0)
   {
