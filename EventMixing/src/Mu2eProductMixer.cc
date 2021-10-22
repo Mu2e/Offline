@@ -361,15 +361,14 @@ namespace mu2e {
                                                  CosmicLivetime& out,
                                                  art::PtrRemapper const& remap)
   {
-
-    if(!in.empty()) {
+    if(in.size() > 1) {
+        throw cet::exception("BADINPUT")<<"Mu2eProductMixer/evt: can't mix CosmicLiveTime" << std::endl;
+    } else if(in.size() == 1) {
       area_ = in[0]->area();
       lowE_ = in[0]->lowE();
       highE_ = in[0]->highE();
       fluxConstant_ = in[0]->fluxConstant();
-      for(const auto& x: in) {
-        totalPrimaries_ += x->primaries();
-      }
+      totalPrimaries_ += in[0]->primaries();
     }
 
     return true;
