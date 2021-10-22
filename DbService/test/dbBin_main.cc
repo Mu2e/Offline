@@ -3,8 +3,8 @@
 // conditions sets can be accessed in a stand-alone bin
 // 
 // To build this, copy it to an apropriate repo src dir
-// You can see what you need in your SConstruct by looking at
-// the build for dbTool in DbService/src
+// You can see what you need in your SConscript by looking at
+// the build for dbTool in Offline/DbService/src
 //
 // arguments are 
 // PURPOSE: the conditions set purpose
