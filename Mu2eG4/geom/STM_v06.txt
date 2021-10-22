@@ -17,7 +17,7 @@ double stm.magnet.holeYOffset          =  0.0; //ignore if the top of the yoke i
 bool   stm.magnet.hasLiner             =  false; //turn off the poly liner
 bool   stm.magnet.usePipeAsOrigin      =  true; //place magnet based on pipe wrt shield wall
 bool   stm.magnet.centerHole           =  true; //place the hole center along viewing axis
-double stm.magnet.field                =  0.051;  // Tesla (510 Gauss) --> set to 0 if assuming no magnetized material
+double stm.magnet.field                =  0.0;// 0.051;  // Tesla (510 Gauss) --> set to 0 if assuming no magnetized material
 bool   stm.magnet.field.visible        =  false;
 
 /////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ string stm.FOVcollimator.plug.material   = "Polyethylene094";
 // CRV shield pipe + mating block
 
 double stm.shield.rIn                  = 139.70;
-double stm.shield.rOut                 = 184.20;
+double stm.shield.rOut                 = 171.45;
 bool   stm.shield.hasLiner             = false; //don't build the poly liner in the CRV shield pipe
 double stm.shield.widthLiner           = 0.0;
 string stm.shield.material             = "Steel";
@@ -85,6 +85,24 @@ double stm.shield.DnStrWall.halfWidth  = 197.485;
 double stm.shield.DnStrWall.gap        = 0.10; //add small gap between the mating block and the magnet
 double stm.shield.UpStrWall.gap        = -223.75; //position is based on CRV, not shielding, so correct by adjusting the gap so the gap is ~50 +-20 um (measured in ROOT viewer)
 string stm.shield.DnStrWall.material   = "StainlessSteel"; //Stainless steel, not steel like the other components
+
+/////////////////////////////////////////////////////////////////////////////////////
+//Adding hole vd in shield pipe for vd 86
+int stm.verbosityLevel = 0;
+bool vd.STMUpStrHole.build = true;
+bool   vd.STMUpStr.build     = true; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
+bool   vd.STMMagDnStr.build  = true; //VD87 Rectangle in x-y plane, same size as the CRV
+bool   vd.STMSSCollUpStr.build = true; //VD101 Disk upstream of Spot-Size collimator
+double vd.STMSSCollUpStr.r     = 200.0;// r=20cm 
+bool   vd.STMCollDnStr.build = true; //VD88 Disk downstream of Spot-Size collimator
+double vd.STMCollDnStr.r     = 200.0;// r=20cm 
+bool   vd.STMDet1UpStr.build = true; //VD89 Disk in x-y plane, same size as the Ge detector 1
+bool   vd.STMDet2UpStr.build = true; //VD90 Disk in x-y plane, same size as the Ge detector 2
+bool   vd.STMFieldOfViewCollDnStr.build = true; //VD100
+// build virtual detector inside DS Neutron Shielding
+bool   vd.DSNeutronShieldExit.build = true; //VD81
+double vd.DSNeutronShieldExit.r     =  110.0;//Must be the same as the following 2 values,
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
