@@ -405,7 +405,7 @@ namespace mu2e{
           KalSeed kseed = (*seedcol)[k];
           const std::vector<mu2e::KalSegment> &segments = kseed.segments();
 	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
-		for(size_t n=0; n <hits->size(); n++){
+		for(size_t n=0; n <hits.size(); n++){
 			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
 			 std::cout<<"hit sid = "<<hit._sid<<std::endl;
 		}
