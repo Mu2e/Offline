@@ -404,6 +404,11 @@ namespace mu2e{
         for(unsigned int k = 0; k < seedcol->size(); k = k + 20){   
           KalSeed kseed = (*seedcol)[k];
           const std::vector<mu2e::KalSegment> &segments = kseed.segments();
+	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
+		for(size_t n=0; n <hits->size(); n++){
+			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
+			 std::cout<<"hit sid = "<<hit._sid<<std::endl;
+		}
           size_t nSegments=segments.size();
           if(nSegments==0) continue;
           const mu2e::KalSegment &segmentFirst = kseed.segments().front();
