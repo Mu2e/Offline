@@ -29,6 +29,7 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 
+#include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -88,6 +89,7 @@ namespace mu2e {
       using Comment = fhicl::Comment;
       fhicl::Atom<art::InputTag> moduleLabel{ Name("moduleLabel"), Comment("Input module label") };
       fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"), Comment("Output instance name for SubRun outputs"), "mixed" };
+      fhicl::Atom<std::string> genCounterLabel{ Name("genCounterLabel"), Comment("Module label for the GenEventCounter"), "genCounter" };
     };
 
     // Configuration for the Mu2eProductMixing helper
@@ -186,6 +188,9 @@ namespace mu2e {
     art::InputTag timeOffsetTag_;
 
     std::string subrunLivetimeInstanceName_;
+    std::string genCounterLabel_;
+    unsigned int generatedEvents_ = 0;
+    unsigned int resampledEvents_ = 0;
     unsigned int totalPrimaries_ = 0;
     float area_ = 0;
     float lowE_ = 0;
