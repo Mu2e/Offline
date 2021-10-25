@@ -252,7 +252,7 @@ namespace mu2e{
     std::vector<std::string> names = std::get<0>(track_tuple);
 	  //char trksid[70][15];
     StrawId trksid[70];   
-	  int trkhitsize;
+	unsigned int trkhitsize=0;
     for(unsigned int j=0; j< track_list.size(); j++){
       const KalSeedCollection* seedcol = track_list[j];
       DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
@@ -260,12 +260,11 @@ namespace mu2e{
         for(unsigned int k = 0; k < seedcol->size(); k++){   
           KalSeed kseed = (*seedcol)[k];
 	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
-	  std::cout<<"hits size = "<<hits.size()<<std::endl;
 		trkhitsize = hits.size();
-		for(unsigned int n=0; n <hits.size(); n++){
+		for(unsigned int n=0; n <trkhitsize; n++){
 			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
 			 //std::cout<<"hit sid = "<<hit._sid<<std::endl;
-			trksid[n] = hit._sid();
+			trksid[n] = hit._sid;
 			//std::cout<<"trk id = "<<trksid[n]<<std::endl;
 		}
 	}
@@ -288,12 +287,12 @@ namespace mu2e{
 
       for(unsigned int i=0; i<chcol->size();i++){
         ComboHit hit = (*chcol)[i];
-	for(int q=0; q<trkhitsize; q++){
+	for(unsigned int q=0; q<trkhitsize; q++){
 	  if(hit._sid == trksid[q]){
         TEveMu2eHit *teve_hit2DXY = new TEveMu2eHit(hit);
 	TEveMu2eHit *teve_hit2DXZ = new TEveMu2eHit(hit);
         TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
-        std::cout<<"hit index = "<<hit.index()<<std::endl;
+        //std::cout<<"hit index = "<<hit.index()<<std::endl;
         CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
         GeomHandle<DetectorSystem> det;
         CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
@@ -310,6 +309,7 @@ namespace mu2e{
           fHitsList3D->AddElement(HitList3D); 
         }
        }
+		else{std::cout<<"hit sid ="<<hit._sid<<" "<<trksid[q]<<" q = "<<q<<std::endl;}
       }
       }
       tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
