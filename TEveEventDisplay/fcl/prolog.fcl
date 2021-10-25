@@ -27,6 +27,7 @@ TEveEventDisplayBase : {
       TrkExtTrajCollection      : NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : true
+      addTrkHits 			            : true
       addTracks 			          : true
       addCrvHits			          : true
       addCosmicSeedFit	        : false
@@ -55,6 +56,7 @@ TEveEventDisplayUpstream : {
       KalSeedCollection           : [NULL]
       TrkExtTrajCollection        : NULL
       addHits 			              : false
+      addTrkHits 			              : false
       addTracks 			            : false
       addCrvHits			            : false
       addCosmicSeedFit	          : false
@@ -83,6 +85,7 @@ TEveEventDisplayHelix : {
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
         addHits 		  : true
+	addTrkHits 		  : true
         addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
@@ -107,6 +110,7 @@ TEveEventDisplayCosmics : {
       TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : true
+      addTrkHits 			            : true
       addTracks 			          : true
       addCrvHits			          : false
       addCosmicSeedFit	        : false
