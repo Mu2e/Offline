@@ -250,21 +250,21 @@ namespace mu2e{
    
     std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
     std::vector<std::string> names = std::get<0>(track_tuple);
-	  int trksid[];
+	  int trksid[70];
 	  
     for(unsigned int j=0; j< track_list.size(); j++){
       const KalSeedCollection* seedcol = track_list[j];
       DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
        if(seedcol!=0){  
-        for(unsigned int k = 0; k < seedcol->size(); k = k++){   
+        for(unsigned int k = 0; k < seedcol->size(); k++){   
           KalSeed kseed = (*seedcol)[k];
 	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
 	  std::cout<<"hits size = "<<hits.size()<<std::endl;
-		for(size_t n=0; n <hits.size(); n++){
+		for(unsigned int n=0; n <hits.size(); n++){
 			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
 			 //std::cout<<"hit sid = "<<hit._sid<<std::endl;
-			trksid[i]=hit.index();
-			std::cout<<"trk id = "<<trksid[i]<<std::endl;
+			trksid[n]=hit.index();
+			std::cout<<"trk id = "<<trksid[n]<<std::endl;
 		}
 	}
        }
@@ -284,12 +284,13 @@ namespace mu2e{
       int *energylevels = new int[chcol->size()];
       energies = Energies<const ComboHitCollection*>(chcol, &energylevels);
 
-      for(size_t i=0; i<chcol->size();i++){
+      for(unsigned int i=0; i<chcol->size();i++){
         ComboHit hit = (*chcol)[i];
+	      if(hit.index == trksid[i]){
         TEveMu2eHit *teve_hit2DXY = new TEveMu2eHit(hit);
 	TEveMu2eHit *teve_hit2DXZ = new TEveMu2eHit(hit);
         TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
-        
+        std::cout<<"hit index = "<<hit.index()<<std::endl;
         CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
         GeomHandle<DetectorSystem> det;
         CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
@@ -305,6 +306,7 @@ namespace mu2e{
           fHitsList2DXZ->AddElement(HitList2DXZ); 
           fHitsList3D->AddElement(HitList3D); 
         }
+      }
       }
       tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
       tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
