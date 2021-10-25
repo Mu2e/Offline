@@ -13,6 +13,7 @@ namespace mu2e{
     trkexttrajTag_(conf.trkexttrajTag()),
     mctrajTag_(conf.mctrajTag()),
     addHits_(conf.addHits()),
+    addTrkHits_(conf.addTrkHits()),
     addTracks_(conf.addTracks()),
     addClusters_(conf.addClusters()),
     addCrvHits_(conf.addCrvHits()),
@@ -38,6 +39,10 @@ namespace mu2e{
   /*------------Function to fill RecoDataProduct lists:-------------*/
   void Collection_Filler::FillRecoCollections(const art::Event& evt, Data_Collections &data, RecoDataProductName CollectionName){
     if(FillAll_ or RecoOnly_ or (addHits_ and CollectionName == ComboHits)){ 
+      auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
+      data.chcol = chH.product();
+    }
+    if(FillAll_ or RecoOnly_ or (addTrkHits_ and CollectionName == ComboHits)){ 
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
       data.chcol = chH.product();
     }
