@@ -254,13 +254,14 @@ namespace mu2e{
       const KalSeedCollection* seedcol = track_list[j];
       DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
        if(seedcol!=0){  
-        for(unsigned int k = 0; k < seedcol->size(); k = k + 20){   
+        for(unsigned int k = 0; k < seedcol->size(); k = k++){   
           KalSeed kseed = (*seedcol)[k];
 	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
-		for(size_t n=0; n <hits.size(); n++){
+		std::cout<<"hits size = "<<hits.size()<<std::endl;
+		/*for(size_t n=0; n <hits.size(); n++){
 			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
 			 std::cout<<"hit sid = "<<hit._sid<<std::endl;
-		}
+		}*/
 	}
        }
     }
