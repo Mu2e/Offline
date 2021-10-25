@@ -250,7 +250,7 @@ namespace mu2e{
    
     std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
     std::vector<std::string> names = std::get<0>(track_tuple);
-	  int trksid[70];
+	  char trksid[70][15];
 	  
     for(unsigned int j=0; j< track_list.size(); j++){
       const KalSeedCollection* seedcol = track_list[j];
@@ -263,8 +263,8 @@ namespace mu2e{
 		for(unsigned int n=0; n <hits.size(); n++){
 			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
 			 //std::cout<<"hit sid = "<<hit._sid<<std::endl;
-			trksid[n]=hit.index();
-			std::cout<<"trk id = "<<trksid[n]<<std::endl;
+			strcpy(trksid[n], hit._sid);
+			//std::cout<<"trk id = "<<trksid[n]<<std::endl;
 		}
 	}
        }
@@ -286,7 +286,7 @@ namespace mu2e{
 
       for(unsigned int i=0; i<chcol->size();i++){
         ComboHit hit = (*chcol)[i];
-	      if(hit.index == trksid[i]){
+	      if(strcmp(hit._sid,trksid[i])==0){
         TEveMu2eHit *teve_hit2DXY = new TEveMu2eHit(hit);
 	TEveMu2eHit *teve_hit2DXZ = new TEveMu2eHit(hit);
         TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
