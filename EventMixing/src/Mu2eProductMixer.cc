@@ -103,8 +103,9 @@ namespace mu2e {
     if (conf.cosmicLivetimeMixer(clmc)) {
       mixCosmicLivetimes_ = true;
       subrunLivetimeInstanceName_ = clmc.srOutInstance();
+      genCounterLabel_ = clmc.genCounterLabel();
       helper.produces<CosmicLivetime, art::InSubRun>(subrunLivetimeInstanceName_);
-      helper.declareMixOp
+      helper.declareMixOp<art::InSubRun>
         (clmc.moduleLabel(), "", &Mu2eProductMixer::mixCosmicLivetime, *this);
     }
 
@@ -140,12 +141,15 @@ namespace mu2e {
       const auto& stoH = e.getValidHandle<SimTimeOffset>(timeOffsetTag_);
       stoff_ = *stoH;
     }
+    resampledEvents_++;
   }
 
 
   //================================================================
-  void Mu2eProductMixer::beginSubRun(const art::SubRun&) {
+  void Mu2eProductMixer::beginSubRun(const art::SubRun& s) {
     subrunVolumes_.clear();
+    resampledEvents_ = 0;
+
   }
 
   //----------------------------------------------------------------
@@ -161,7 +165,10 @@ namespace mu2e {
       sr.put(std::move(col), subrunVolInstanceName_);
     }
     if (mixCosmicLivetimes_) {
-      std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(totalPrimaries_, area_, lowE_, highE_, fluxConstant_));
+      const auto& genEventH = sr.getValidHandle<GenEventCount>(genCounterLabel_);
+      generatedEvents_ = genEventH->count();
+      std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(totalPrimaries_ * resampledEvents_ / generatedEvents_,
+                                                                  area_, lowE_, highE_, fluxConstant_));
       sr.put(std::move(livetime), subrunLivetimeInstanceName_);
     }
   }
@@ -368,7 +375,7 @@ namespace mu2e {
       lowE_ = in[0]->lowE();
       highE_ = in[0]->highE();
       fluxConstant_ = in[0]->fluxConstant();
-      totalPrimaries_ += in[0]->primaries();
+      totalPrimaries_ = in[0]->primaries();
     }
 
     return true;
