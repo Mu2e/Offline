@@ -296,27 +296,33 @@ namespace mu2e{
         CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
         GeomHandle<DetectorSystem> det;
         CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
-        string energy = to_string(teve_hit3D->GetEnergy());
+		  TEvePointSet *trkhit = new TEvePointSet();
+		  trkhit ->SetMarkerStyle(9); //TODO - use name
+                  trkhit ->SetMarkerSize(1);
+                  trkhit ->SetMarkerColor(kRed);
+		  trkhit ->SetNextPoint(HitPos.x(),HitPos.y(),HitPos.z());
+		  trkhit ->SetPickable(kTRUE);
+        /*string energy = to_string(teve_hit3D->GetEnergy());
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)hit.pos().x()) + ", " + to_string((double)hit.pos().y()) + ", " + to_string((double)hit.pos().z()) + ")";
         if (((min_time == -1 && max_time== -1) || (hit.time() > min_time && hit.time() < max_time)) && ((hit.energyDep() >= min_energy && hit.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
           teve_hit3D->DrawHit3D("ComboHits3D, Position = " + pos3D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1,  pointInMu2e, energylevels[i], HitList3D);
           teve_hit2DXY->DrawHit2DXY("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2DXY);
           teve_hit2DXZ->DrawHit2DXZ("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2DXZ);
-
-          fHitsList2DXY->AddElement(HitList2DXY);
-          fHitsList2DXZ->AddElement(HitList2DXZ); 
-          fHitsList3D->AddElement(HitList3D); 
-        }
+*/
+          fHitsList2DXY->AddElement(trkhit);
+          fHitsList2DXZ->AddElement(trkhit; 
+         // fHitsList3D->AddElement(HitList3D); 
+        //}
        }
-		else{std::cout<<"hit sid ="<<hit._sid<<" "<<trksid[q]<<" q = "<<q<<std::endl;}
+		//else{std::cout<<"hit sid ="<<hit._sid<<" "<<trksid[q]<<" q = "<<q<<std::endl;}
       }
       }
       tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
       tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
       /*TXYMgr->ImportElements(fHitsList2D, scene1);
       TRZMgr->ImportElements(fHitsList2D, scene2);*/
-      gEve->AddElement(HitList3D);
+      //gEve->AddElement(HitList3D);
       gEve->Redraw3D(kTRUE); 
     }
     return energies;
