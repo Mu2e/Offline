@@ -244,6 +244,73 @@ namespace mu2e{
     }
     return energies;
   }
+	
+	/*------------Function to add ComboHits to Tracker in 3D and 2D displays:-------------*/
+  std::vector<double> TEveMu2eDataInterface::AddTrkHits(bool firstloop, const ComboHitCollection *chcol,std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+   
+    std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
+    std::vector<std::string> names = std::get<0>(track_tuple);
+    for(unsigned int j=0; j< track_list.size(); j++){
+      const KalSeedCollection* seedcol = track_list[j];
+      DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
+       if(seedcol!=0){  
+        for(unsigned int k = 0; k < seedcol->size(); k = k + 20){   
+          KalSeed kseed = (*seedcol)[k];
+	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
+		for(size_t n=0; n <hits.size(); n++){
+			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
+			 std::cout<<"hit sid = "<<hit._sid<<std::endl;
+		}
+	}
+       }
+    }
+	    
+    std::vector<double> energies = {0,0};
+	  
+    DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
+    /*
+    TXYMgr->ImportElements(fHitsList2D, scene1); 
+    TRZMgr->ImportElements(fHitsList2D, scene2); */
+    if(chcol!=0){
+      TEveElementList *HitList2DXY = new TEveElementList("ComboHits2DXY");
+      TEveElementList *HitList2DXZ = new TEveElementList("ComboHits2DXZ");
+      TEveElementList *HitList3D = new TEveElementList("ComboHits3D");
+
+      int *energylevels = new int[chcol->size()];
+      energies = Energies<const ComboHitCollection*>(chcol, &energylevels);
+
+      for(size_t i=0; i<chcol->size();i++){
+        ComboHit hit = (*chcol)[i];
+        TEveMu2eHit *teve_hit2DXY = new TEveMu2eHit(hit);
+	TEveMu2eHit *teve_hit2DXZ = new TEveMu2eHit(hit);
+        TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
+        
+        CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
+        GeomHandle<DetectorSystem> det;
+        CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
+        string energy = to_string(teve_hit3D->GetEnergy());
+        string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
+        string pos2D = "(" + to_string((double)hit.pos().x()) + ", " + to_string((double)hit.pos().y()) + ", " + to_string((double)hit.pos().z()) + ")";
+        if (((min_time == -1 && max_time== -1) || (hit.time() > min_time && hit.time() < max_time)) && ((hit.energyDep() >= min_energy && hit.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
+          teve_hit3D->DrawHit3D("ComboHits3D, Position = " + pos3D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1,  pointInMu2e, energylevels[i], HitList3D);
+          teve_hit2DXY->DrawHit2DXY("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2DXY);
+          teve_hit2DXZ->DrawHit2DXZ("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2DXZ);
+
+          fHitsList2DXY->AddElement(HitList2DXY);
+          fHitsList2DXZ->AddElement(HitList2DXZ); 
+          fHitsList3D->AddElement(HitList3D); 
+        }
+      }
+      tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
+      tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
+      /*TXYMgr->ImportElements(fHitsList2D, scene1);
+      TRZMgr->ImportElements(fHitsList2D, scene2);*/
+      gEve->AddElement(HitList3D);
+      gEve->Redraw3D(kTRUE); 
+    }
+    return energies;
+  }
+
 
   /*------------Function to add Calo Clusters to 3D and 2D display:-------------*/
   std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2) {
@@ -404,11 +471,6 @@ namespace mu2e{
         for(unsigned int k = 0; k < seedcol->size(); k = k + 20){   
           KalSeed kseed = (*seedcol)[k];
           const std::vector<mu2e::KalSegment> &segments = kseed.segments();
-	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
-		for(size_t n=0; n <hits.size(); n++){
-			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
-			 std::cout<<"hit sid = "<<hit._sid<<std::endl;
-		}
           size_t nSegments=segments.size();
           if(nSegments==0) continue;
           const mu2e::KalSegment &segmentFirst = kseed.segments().front();
