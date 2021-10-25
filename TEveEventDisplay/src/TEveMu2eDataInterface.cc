@@ -252,6 +252,7 @@ namespace mu2e{
     std::vector<std::string> names = std::get<0>(track_tuple);
 	  //char trksid[70][15];
     StrawId trksid[70];   
+	  int trkhitsize;
     for(unsigned int j=0; j< track_list.size(); j++){
       const KalSeedCollection* seedcol = track_list[j];
       DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
@@ -260,6 +261,7 @@ namespace mu2e{
           KalSeed kseed = (*seedcol)[k];
 	  const	std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
 	  std::cout<<"hits size = "<<hits.size()<<std::endl;
+		trkhitsize = hits.size();
 		for(unsigned int n=0; n <hits.size(); n++){
 			 const mu2e::TrkStrawHitSeed &hit = hits.at(n);
 			 //std::cout<<"hit sid = "<<hit._sid<<std::endl;
@@ -286,7 +288,8 @@ namespace mu2e{
 
       for(unsigned int i=0; i<chcol->size();i++){
         ComboHit hit = (*chcol)[i];
-	      if(hit._sid == trksid[i]){
+	for(int q=0; q<trkhitsize; q++){
+	  if(hit._sid == trksid[q]){
         TEveMu2eHit *teve_hit2DXY = new TEveMu2eHit(hit);
 	TEveMu2eHit *teve_hit2DXZ = new TEveMu2eHit(hit);
         TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
@@ -306,6 +309,7 @@ namespace mu2e{
           fHitsList2DXZ->AddElement(HitList2DXZ); 
           fHitsList3D->AddElement(HitList3D); 
         }
+       }
       }
       }
       tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
