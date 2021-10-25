@@ -133,6 +133,7 @@ namespace mu2e
         foundEvent = true;
         Data_Collections data;
         if(_filler.addHits_)_filler.FillRecoCollections(event, data, ComboHits);
+	if(_filler.addTrkHits_)_filler.FillRecoCollections(event, data, ComboHits);
         if(_filler.addCrvHits_)_filler.FillRecoCollections(event, data, CRVRecoPulses);
         if(_filler.addCosmicSeedFit_)_filler.FillRecoCollections(event, data, CosmicTracks);
         if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
