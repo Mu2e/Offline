@@ -106,65 +106,22 @@ namespace mu2e {
         <<"RPCGenGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
     
-    
-    std::unique_ptr<FixedTimeMap> timemap(new FixedTimeMap);
-
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    double _mbtime = accPar->deBuncherPeriod;
-
-    IO::StoppedParticleTauNormF stop;
-    if (tmin_ > 0){
-      while (true){
-        const auto& tstop = stops_.fire();
-        timemap->SetTime(protonPulse_->fire());
-        if (tstop.t+timemap->time() < 0 || tstop.t+timemap->time() > tmin_){
-          if (applySurvivalProbability_){
-            double weight = exp(-tstop.tauNormalized)*survivalProbScaling_;
-            if (weight > 1)
-              std::cout << "WEIGHT TOO HIGH " << weight << " " << fmod(tstop.t,_mbtime) << std::endl;
-            double rand = randomFlat_.fire();
-            if (weight > rand){
-              stop = tstop;
-              break;
-            }
-          }else{
-            stop = tstop;
-            break;
-          }
-        }
-      }
-    }else{
-      timemap->SetTime(protonPulse_->fire());
-      if (applySurvivalProbability_){
-        while (true){
-          const auto& tstop = stops_.fire();
-          double weight = exp(-tstop.tauNormalized)*survivalProbScaling_;
-          double rand = randomFlat_.fire();
-          if (weight > rand){
-            stop = tstop;
-            break;
-          }
-        }
-      }else{
-        const auto& tstop = stops_.fire();
-        stop = tstop;
-      }
-    }
+   
   //** USE the TOOL infrastructure **
     
-
+    double timemap;
     const auto pistop = pis.at(eng_.operator unsigned int() % pis.size());
     for(const auto& pistop: pis) {
       addParticles(output.get(), mustop, timemap);
     }
     event.put(std::move(output));
-    event.put(std::move(timemap));
+    //event.put(std::move(timemap));
    
   }
   
   void RPCGenGun::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> pistop,
-                            FixedTimeMap time)
+                            double time)
   {
   
     if(process_ == ProcessCode::ExternalRPC){
