@@ -43,7 +43,6 @@ namespace mu2e {
     private:
       std::unique_ptr<CosmicCRY> cryGen;
       std::string inputfile;
-      int seed_;
       art::RandomNumberGenerator::base_engine_t&     engine_;
   };
 
@@ -51,8 +50,7 @@ namespace mu2e {
     EDProducer{pSet},
     inputfile(pSet.get<std::string>("inputFile",
           "CRYEventGenerator/config/defaultCRYconfig.txt")),
-    seed_( art::ServiceHandle<SeedService>()->getSeed() ),
-    engine_(createEngine(seed_))
+    engine_( createEngine( art::ServiceHandle<SeedService>()->getSeed()) )
   {
     produces<GenParticleCollection>();
     produces<CosmicLivetime,art::InSubRun>();
