@@ -148,19 +148,22 @@ namespace mu2e {
                           ExtMonFNALSimHitCollection& out,
                           art::PtrRemapper const& remap);
 
-    bool mixCosmicLivetime(std::vector<mu2e::CosmicLivetime const*> const &in,
-                                 mu2e::CosmicLivetime& out,
-                                 art::PtrRemapper const& remap);
-
     bool mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
                      art::EventIDSequence& out,
                      art::PtrRemapper const& remap);
-
 
     //----------------
     bool mixVolumeInfos(std::vector<PhysicalVolumeInfoMultiCollection const*> const& in,
                         PhysicalVolumeInfoMultiCollection& out,
                         art::PtrRemapper const&);
+
+    bool mixGenEventCount(std::vector<GenEventCount const*> const& in,
+                          GenEventCount& out,
+                          art::PtrRemapper const& remap);
+
+    bool mixCosmicLivetime(std::vector<mu2e::CosmicLivetime const*> const &in,
+                           mu2e::CosmicLivetime& out,
+                           art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other
@@ -180,15 +183,17 @@ namespace mu2e {
     typedef std::vector<VolumeMap> MultiStageMap;
     MultiStageMap subrunVolumes_;
     bool mixVolumes_;
-    bool mixCosmicLivetimes_;
     art::InputTag volumesInput_;
     std::string subrunVolInstanceName_;
     std::optional<std::string> evtVolInstanceName_;
     bool applyTimeOffset_;
     art::InputTag timeOffsetTag_;
+    SimTimeOffset stoff_; // time offset for SimParticles and StepPointMCs
+
+    void addInfo(VolumeMap* map, const PhysicalVolumeInfoSingleStage::value_type& entry);
 
     std::string subrunLivetimeInstanceName_;
-    std::string genCounterLabel_;
+    bool mixCosmicLivetimes_;
     unsigned int generatedEvents_ = 0;
     unsigned int resampledEvents_ = 0;
     unsigned int totalPrimaries_ = 0;
@@ -196,9 +201,7 @@ namespace mu2e {
     float lowE_ = 0;
     float highE_ = 0;
     float fluxConstant_ = 0;
-    SimTimeOffset stoff_; // time offset for SimParticles and StepPointMCs
-
-    void addInfo(VolumeMap* map, const PhysicalVolumeInfoSingleStage::value_type& entry);
+    float livetime_ = 0;
 
   };
 
