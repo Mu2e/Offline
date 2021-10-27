@@ -43,9 +43,9 @@ namespace mu2e {
   //----------------------------------------------------------------
   Mu2eProductMixer::Mu2eProductMixer(const Config& conf, art::MixHelper& helper)
     : mixVolumes_(false)
-      , mixCosmicLivetimes_(false)
       , applyTimeOffset_(conf.simTimeOffset.hasValue())
       , stoff_(0.0)
+      , mixCosmicLivetimes_(false)
   {
     if(applyTimeOffset_){
       timeOffsetTag_ = conf.simTimeOffset().value();
@@ -54,7 +54,7 @@ namespace mu2e {
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
       helper.declareMixOp
-	(e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
+	      (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
     }
 
     for(const auto& e: conf.simParticleMixer().mixingMap()) {
@@ -98,18 +98,6 @@ namespace mu2e {
     }
 
     //----------------------------------------------------------------
-    // CosmicLivetime handling
-    CosmicLivetimeMixerConfig clmc;
-    if (conf.cosmicLivetimeMixer(clmc)) {
-      mixCosmicLivetimes_ = true;
-      subrunLivetimeInstanceName_ = clmc.srOutInstance();
-      genCounterLabel_ = clmc.genCounterLabel();
-      helper.produces<CosmicLivetime, art::InSubRun>(subrunLivetimeInstanceName_);
-      helper.declareMixOp<art::InSubRun>
-        (clmc.moduleLabel(), "", &Mu2eProductMixer::mixCosmicLivetime, *this);
-    }
-
-    //----------------------------------------------------------------
     // VolumeInfo handling
 
     VolumeInfoMixerConfig vmc;
@@ -132,7 +120,20 @@ namespace mu2e {
       helper.declareMixOp<art::InSubRun>
         (volumesInput_, evtOutInstance, &Mu2eProductMixer::mixVolumeInfos, *this, putVolsIntoEvent);
     }
+
     //----------------------------------------------------------------
+    // CosmicLivetime handling
+    CosmicLivetimeMixerConfig clmc;
+    if (conf.cosmicLivetimeMixer(clmc)) {
+      mixCosmicLivetimes_ = true;
+      subrunLivetimeInstanceName_ = clmc.srOutInstance();
+      helper.produces<CosmicLivetime, art::InSubRun>(subrunLivetimeInstanceName_);
+      helper.declareMixOp<art::InSubRun>
+        (clmc.genCounterLabel(), "", &Mu2eProductMixer::mixGenEventCount, *this);
+      helper.declareMixOp<art::InSubRun>
+        (clmc.moduleLabel(), "", &Mu2eProductMixer::mixCosmicLivetime, *this);
+    }
+
   }
 
   void Mu2eProductMixer::startEvent(art::Event const& e) {
@@ -165,10 +166,13 @@ namespace mu2e {
       sr.put(std::move(col), subrunVolInstanceName_);
     }
     if (mixCosmicLivetimes_) {
-      const auto& genEventH = sr.getValidHandle<GenEventCount>(genCounterLabel_);
-      generatedEvents_ = genEventH->count();
-      std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(totalPrimaries_ * resampledEvents_ / generatedEvents_,
-                                                                  area_, lowE_, highE_, fluxConstant_));
+      // generatedEvents_ = 1;
+      float scaling = resampledEvents_ / generatedEvents_;
+      auto livetime = std::make_unique<CosmicLivetime>(totalPrimaries_ * scaling,
+                                                       area_, lowE_, highE_, fluxConstant_, livetime_ * scaling);
+
+      std::cout << "resampled livetime" << " " << totalPrimaries_ << " " << livetime_ << " "
+                 << resampledEvents_ << " " << generatedEvents_ << " " << livetime->liveTime() << std::endl;
       sr.put(std::move(livetime), subrunLivetimeInstanceName_);
     }
   }
@@ -364,24 +368,6 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------
-  bool Mu2eProductMixer::mixCosmicLivetime(std::vector<CosmicLivetime const*> const& in,
-                                                 CosmicLivetime& out,
-                                                 art::PtrRemapper const& remap)
-  {
-    if(in.size() > 1) {
-        throw cet::exception("BADINPUT")<<"Mu2eProductMixer/evt: can't mix CosmicLiveTime" << std::endl;
-    } else if(in.size() == 1) {
-      area_ = in[0]->area();
-      lowE_ = in[0]->lowE();
-      highE_ = in[0]->highE();
-      fluxConstant_ = in[0]->fluxConstant();
-      totalPrimaries_ = in[0]->primaries();
-    }
-
-    return true;
-  }
-
-  //----------------------------------------------------------------
   bool Mu2eProductMixer::mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
                                      art::EventIDSequence& out,
                                      art::PtrRemapper const&)
@@ -446,6 +432,40 @@ namespace mu2e {
 
     const bool putVolsIntoEvent{evtVolInstanceName_};
     return putVolsIntoEvent;
+  }
+
+    //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixGenEventCount(std::vector<GenEventCount const*> const& in,
+                                       GenEventCount& out,
+                                       art::PtrRemapper const& remap)
+  {
+    if(in.size() > 1) {
+        throw cet::exception("BADINPUT")<<"Mu2eProductMixer/subrun: can't mix GenEventCount" << std::endl;
+    } else if(in.size() == 1) {
+      generatedEvents_ = in[0]->count();
+    }
+
+    return true;
+  }
+
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixCosmicLivetime(std::vector<CosmicLivetime const*> const& in,
+                                                 CosmicLivetime& out,
+                                                 art::PtrRemapper const& remap)
+  {
+    if(in.size() > 1) {
+        throw cet::exception("BADINPUT")<<"Mu2eProductMixer/subrun: can't mix CosmicLiveTime" << std::endl;
+    } else if(in.size() == 1) {
+      area_ = in[0]->area();
+      lowE_ = in[0]->lowE();
+      highE_ = in[0]->highE();
+      fluxConstant_ = in[0]->fluxConstant();
+      totalPrimaries_ = in[0]->primaries();
+      livetime_ = in[0]->liveTime();
+    }
+
+    return true;
   }
 
   //----------------------------------------------------------------
