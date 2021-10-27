@@ -166,13 +166,9 @@ namespace mu2e {
       sr.put(std::move(col), subrunVolInstanceName_);
     }
     if (mixCosmicLivetimes_) {
-      // generatedEvents_ = 1;
       float scaling = resampledEvents_ / generatedEvents_;
       auto livetime = std::make_unique<CosmicLivetime>(totalPrimaries_ * scaling,
                                                        area_, lowE_, highE_, fluxConstant_, livetime_ * scaling);
-
-      std::cout << "resampled livetime" << " " << totalPrimaries_ << " " << livetime_ << " "
-                 << resampledEvents_ << " " << generatedEvents_ << " " << livetime->liveTime() << std::endl;
       sr.put(std::move(livetime), subrunLivetimeInstanceName_);
     }
   }
