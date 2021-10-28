@@ -27,12 +27,16 @@ namespace mu2e {
   // Our "detail" class for art/Framework/Modules/MixFilter.h
   class ResamplingMixerDetail {
     Mu2eProductMixer spm_;
+    const bool resampleMultipleSubruns_;
     const int debugLevel_;
     const unsigned maxEventsToSkip_;
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
     art::RandomNumberGenerator::base_engine_t& engine_;
     artURBG urbg_;
+
+    art::SubRunNumber_t firstSubrun_;
+    bool initialized_ = false;
 
   public:
 
@@ -60,6 +64,12 @@ namespace mu2e {
           Comment("Write out IDs of events on the secondary input stream."),
           true
           };
+
+      fhicl::Atom<bool> resampleMultipleSubruns { Name("resampleMultipleSubruns"),
+          Comment("Flag for resampling multiple subruns (to be set to false for cosmic resampling)"),
+          true
+          };
+
       fhicl::Atom<int> debugLevel { Name("debugLevel"),
           Comment("control the level of debug output"),
           0u
@@ -73,7 +83,7 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
 
-    size_t eventsToSkip() { 
+    size_t eventsToSkip() {
       static bool first(true);
       size_t result(0);
       if(first) {
@@ -99,6 +109,7 @@ namespace mu2e {
 
   ResamplingMixerDetail::ResamplingMixerDetail(const Parameters& pars, art::MixHelper& helper)
     : spm_{ pars().mu2e().products(), helper }
+    , resampleMultipleSubruns_{ pars().mu2e().resampleMultipleSubruns() }
     , debugLevel_{ pars().mu2e().debugLevel() }
     , maxEventsToSkip_{ pars().mu2e().maxEventsToSkip() }
     , writeEventIDs_{ pars().mu2e().writeEventIDs() }
@@ -111,6 +122,21 @@ namespace mu2e {
     }
 
   void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
+    if (!resampleMultipleSubruns_) {
+      for(const auto& s: seq) {
+        if (!initialized_) {
+          initialized_ = true;
+          firstSubrun_ = s.subRun();
+        } else {
+          if (s.subRun() != firstSubrun_) {
+            throw cet::exception("BADINPUT")
+              << "ResamplingMixer: resampleMultipleSubruns is false, but the EventIDSequence "
+              << "contains " << s.subRun() << " and the first subrun was " << firstSubrun_ << ".\n";
+          }
+        }
+      }
+    }
+
     if(writeEventIDs_) {
       idseq_ = seq;
     }
