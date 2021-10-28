@@ -136,6 +136,7 @@ namespace mu2e {
 
   }
 
+  //================================================================
   void Mu2eProductMixer::startEvent(art::Event const& e) {
     if(applyTimeOffset_){
     // find the time offset in the event, and copy it locally
@@ -145,8 +146,31 @@ namespace mu2e {
     resampledEvents_++;
   }
 
+  //----------------------------------------------------------------
+  void Mu2eProductMixer::processEventIDs(const art::EventIDSequence& seq)  {
+    if(mixCosmicLivetimes_) {
 
-  //================================================================
+      if(seq.size() != 1) {
+        throw cet::exception("BADINPUT")<<"Mu2eProductMixer: can't mix CosmicLiveTime" << std::endl;
+      }
+
+      if(!cosmicSubrunInitialized_) {
+        cosmicSubrunInitialized_ = true;
+        cosmicSubRun_ = seq.at(0).subRunID();
+      }
+      else {
+        if(seq.at(0).subRunID() != cosmicSubRun_) {
+          throw cet::exception("BADINPUT")<<"Mu2eProductMixer: input from multiple subruns is not supported for CosmicLivetime. "
+                                          <<"Got SubRunIDs"<<cosmicSubRun_<<" and "<<seq.at(0).subRunID()
+                                          <<std::endl;
+
+        }
+      }
+
+    }
+  }
+
+  //----------------------------------------------------------------
   void Mu2eProductMixer::beginSubRun(const art::SubRun& s) {
     subrunVolumes_.clear();
     resampledEvents_ = 0;

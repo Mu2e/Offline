@@ -111,6 +111,7 @@ namespace mu2e {
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
 
     void startEvent(art::Event const& e);
+    void processEventIDs(const art::EventIDSequence& seq);
     void beginSubRun(const art::SubRun& sr);
     void endSubRun(art::SubRun& sr);
 
@@ -202,6 +203,10 @@ namespace mu2e {
     float highE_ = 0;
     float fluxConstant_ = 0;
     float livetime_ = 0;
+    // Merging cosmic livetime info from multiple subruns is not
+    // implemented.  Make sure we only see a single subrun in a job.
+    bool cosmicSubrunInitialized_;
+    art::SubRunID cosmicSubRun_;
 
   };
 
