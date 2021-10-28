@@ -441,7 +441,7 @@ namespace mu2e {
       generatedEvents_ = in[0]->count();
     }
 
-    return true;
+    return false;
   }
 
 
