@@ -129,7 +129,7 @@ namespace mu2e {
       subrunLivetimeInstanceName_ = clmc.srOutInstance();
       helper.produces<CosmicLivetime, art::InSubRun>(subrunLivetimeInstanceName_);
       helper.declareMixOp<art::InSubRun>
-        (clmc.genCounterLabel(), "", &Mu2eProductMixer::mixGenEventCount, *this);
+        (clmc.genCounterLabel(), "", &Mu2eProductMixer::mixGenEventCount, *this, false);
       helper.declareMixOp<art::InSubRun>
         (clmc.moduleLabel(), "", &Mu2eProductMixer::mixCosmicLivetime, *this);
     }
