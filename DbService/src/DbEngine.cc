@@ -8,7 +8,7 @@ using namespace std;
 
 int mu2e::DbEngine::beginJob() {
 
-  if(_verbose>5) cout << "DbEngine::beginJob start" << endl;
+  if(_verbose>4) cout << "DbEngine::beginJob start" << endl;
   _initialized = true;  // true no matter when we return
 
   _gids.clear();
@@ -36,7 +36,7 @@ int mu2e::DbEngine::beginJob() {
     // assign nominal tid's to file-based tables
     for(auto& lt: _override) {
       if(_overrideTids.find(lt.table().name()) == _overrideTids.end()) {
-	if(_verbose>5) {
+	if(_verbose>4) {
 	  cout << "DbEngine::beginRun assigning TID "
 	       << fakeTid << " to " << lt.table().name() << endl;
 	}
@@ -44,7 +44,7 @@ int mu2e::DbEngine::beginJob() {
 	fakeTid++;
       }
       int mytid = _overrideTids[lt.table().name()];
-      if(_verbose>5) {
+      if(_verbose>4) {
 	cout << "DbEngine::beginRun assigning override CID "
 	     << fakeCid << " and TID " << mytid << " to " << lt.table().name() << endl;
       }
@@ -53,7 +53,7 @@ int mu2e::DbEngine::beginJob() {
       fakeCid++;
     }
     
-    if(_verbose>1) cout << "DbEngine::beginJob exit early, purpose=EMPTY" 
+    if(_verbose>2) cout << "DbEngine::beginJob exit early, purpose=EMPTY" 
 			<< endl;
     return 0;
   }
@@ -183,7 +183,7 @@ int mu2e::DbEngine::beginJob() {
 
   
   // make the list of tables in this purpose/version
-  if(_verbose>5) cout << "DbEngine::beginJob make table list" << endl;
+  if(_verbose>4) cout << "DbEngine::beginJob make table list" << endl;
   _lookup.clear();
   auto const& tls = vcache.valTableLists();
   for(auto const& r : tls.rows()) {
@@ -193,7 +193,7 @@ int mu2e::DbEngine::beginJob() {
   }
 
   // now fill the rows of _lookup
-  if(_verbose>5) cout << "DbEngine::beginJob make _lookup" << endl;
+  if(_verbose>4) cout << "DbEngine::beginJob make _lookup" << endl;
 
   // take the list of groups and loop over the grouplists
   // which gives IOVs for a group 
@@ -224,7 +224,7 @@ int mu2e::DbEngine::beginJob() {
     }
     if(mytid<0) {
       if(_overrideTids.find(lt.table().name()) == _overrideTids.end()) {
-	if(_verbose>5) {
+	if(_verbose>4) {
 	  cout << "DbEngine::beginRun assigning TID "
 	       << fakeTid << " to " << lt.table().name() << endl;
 	}
@@ -233,7 +233,7 @@ int mu2e::DbEngine::beginJob() {
       }
       mytid = _overrideTids[lt.table().name()];
     }
-    if(_verbose>5) {
+    if(_verbose>4) {
       cout << "DbEngine::beginRun assigning override CID "
 	   << fakeCid << " and TID " << mytid 
 	   << " to " << lt.table().name() << endl;
@@ -243,7 +243,7 @@ int mu2e::DbEngine::beginJob() {
     fakeCid++;
   }
 
-  if( _verbose>9 ) {
+  if( _verbose>4 ) {
     std::cout << "DbEngine::beginRun results of lookup" << std::endl;
     std::cout << "  tid       valid range        cid" << std::endl;
     for(auto const& p : _lookup) {
@@ -259,7 +259,7 @@ int mu2e::DbEngine::beginJob() {
   // this will be the current list of active, filled tables
   _last.clear();
 
-  if( _verbose>0 ) {
+  if( _verbose>1 ) {
     std::cout << "DbEngine confirmed purpose and version " 
 	      << _version.purpose() << " " << _version.major() 
 	      << "/" << _version.minor() 
@@ -275,12 +275,12 @@ int mu2e::DbEngine::beginJob() {
 
   auto end_time = std::chrono::high_resolution_clock::now();
   auto beginJobTime = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-  if(_verbose>0) {
+  if(_verbose>1) {
     std::cout<<"DbEngine inclusive beginJob time was " 
 	     << beginJobTime.count()*1.0e-6<<" s" << std::endl;
   }
 
-  if(_verbose>5) cout << "DbEngine::beginJob end" << endl;
+  if(_verbose>4) cout << "DbEngine::beginJob end" << endl;
 
   return 0;
 }
@@ -291,7 +291,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
   lazyBeginJob(); // initialize if needed
 
-  if(_verbose>9) cout << "DbEngine::update call "
+  if(_verbose>5) cout << "DbEngine::update call "
 		      << tid << " " << run << " " << subrun << endl;
 
   // first look for table in override table list
@@ -303,7 +303,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
     if(oltab.tid()==tid) { // if override table is the right type
       if(oltab.iov().inInterval(run,subrun)) { // and in valid interval
 	auto dblt = oltab;
-	if(_verbose>9) cout << "DbEngine::update table found " 
+	if(_verbose>5) cout << "DbEngine::update table found " 
 			    << dblt.table().name() << " in overrides " << endl;
 	return dblt;
       }
@@ -484,7 +484,7 @@ void mu2e::DbEngine::lazyBeginJob() {
 
 int mu2e::DbEngine::endJob() {
   if(!_vcache) return 0;
-  if(_verbose>0) {
+  if(_verbose>1) {
     std::cout << "DbEngine::endJob" << std::endl;
     std::cout << "    Total time in reading DB: "<< _reader.totalTime() 
 	      <<" s" << std::endl;
