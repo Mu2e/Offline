@@ -23,7 +23,23 @@ namespace mu2e {
       const double zoff = c.getDouble(prefix+"z",0.)*CLHEP::mm;
       const double halfThick = 0.5*c.getDouble(prefix+"thickness")*CLHEP::mm;
 
-      const CLHEP::Hep3Vector windowCenterInMu2e = winRefPoint + CLHEP::Hep3Vector(xoff, yoff, zoff-halfThick);
+      const bool windHasFrame = c.getBool(prefix+"hasFrame",false);
+      res->hasFrames_.push_back(windHasFrame);
+
+      const double fWid = c.getDouble(prefix+"frameRadialWidth")*CLHEP::mm;
+      const double fHalfThick = 0.5*c.getDouble(prefix+"frameThickness")*CLHEP::mm;
+      const double rFin = c.getDouble(prefix+"r")*CLHEP::mm;//Same as rad of window
+      const double rFout = rFin+fWid;
+
+      const CLHEP::Hep3Vector windowCenterInMu2e = winRefPoint + CLHEP::Hep3Vector(xoff, yoff, zoff-fHalfThick);
+
+      res->wFrames_.push_back( Tube(c.getString(prefix+"frameMaterialName"),
+                                    windowCenterInMu2e,
+                                    rFin, // rIn
+                                    rFout,
+                                    fHalfThick
+                                    ));
+
 
       //retrieve the window pipe information
       if(res->version() > 2) {
@@ -32,17 +48,17 @@ namespace mu2e {
         const double thetax = c.getDouble(prefix+"pipe.thetaX")*CLHEP::degree;
         const double thetay = c.getDouble(prefix+"pipe.thetaY")*CLHEP::degree;
         const double zplate = abs(res->endPlatePolycone().zPlanes()[0] - res->endPlatePolycone().zPlanes().back());
-        const CLHEP::Hep3Vector origin = windowCenterInMu2e; //set at the same origin to ensure it intersects it
-        //set the pipe to be long enough to intersect both the plate and the window
+        const CLHEP::Hep3Vector origin = windowCenterInMu2e; //set at the same 
+        //origin to ensure it intersects it.
+        //Set the pipe to be long enough to intersect both the 
+        //plate and the window.
         double zlength = abs(res->endPlatePolycone().originInMu2e().z() - windowCenterInMu2e.z()) + zplate;
         zlength /= abs(std::cos(thetax)*std::cos(thetay));
-        // CLHEP::Hep3Vector origin(0.,0.,1.);
+
         CLHEP::HepRotation matrix = CLHEP::HepRotation();
         matrix.rotateX(thetax);
         matrix.rotateY(thetay);
-        // origin = matrix*origin;
-        // origin *= zlength/2.;
-        // origin = windowCenterInMu2e - origin;
+
         res->windowPipes_.push_back(Tube(rin, rout, zlength, origin, matrix));
       }
       res->windows_.push_back(Tube(c.getString(prefix+"materialName"),
@@ -51,7 +67,8 @@ namespace mu2e {
                                    c.getDouble(prefix+"r")*CLHEP::mm, //rOut
                                    halfThick
                                    ));
-    }
+  }  // end of readWindow helper function
+
 
   std::unique_ptr<PSEnclosure>  PSEnclosureMaker::make(const SimpleConfig& c,
                                                      const CLHEP::Hep3Vector& psEndRefPoint)
@@ -63,6 +80,11 @@ namespace mu2e {
     const double shellThickness = c.getDouble("PSEnclosure.shell.thickness")*CLHEP::mm;
     const double endPlateThickness = c.getDouble("PSEnclosure.endPlate.thickness")*CLHEP::mm;
     const std::string shellMaterialName = c.getString("PSEnclosure.shell.materialName");
+    const double flangeIR = c.getDouble("PSEnclosure.flange.rInner",0.0)*CLHEP::mm;
+    const double flangeOR = c.getDouble("PSEnclosure.flange.rOuter",0.0)*CLHEP::mm;
+    const double flangeThickness = c.getDouble("PSEnclosure.flange.thickness",0.0)*CLHEP::mm;
+    const std::string flangeMaterialName = c.getString("PSEnclosure.flange.materialName","StainlessSteel316L");
+
 
     std::unique_ptr<PSEnclosure> res = 0;
 
@@ -72,6 +94,7 @@ namespace mu2e {
       const double shellLength = totalLength - endPlateThickness;
 
       const CLHEP::Hep3Vector shellOriginInMu2e(psEndRefPoint + CLHEP::Hep3Vector(0,0, -0.5*shellLength));
+
                             // conical frustrum
       Cone shellCone(0.5*(shellODWest - 2*shellThickness),
                      0.5*shellODWest,
@@ -83,18 +106,19 @@ namespace mu2e {
                      CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY),
                      shellMaterialName);
       if(vers == 2) {
-        res = std::unique_ptr<PSEnclosure>(new PSEnclosure(
-                                                           shellCone,
-                                                           // end plate
-                                                           Tube(shellMaterialName,
-                                                                // The vacuum volume is flush to the PS surface
-                                                                psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength - 0.5*endPlateThickness),
-                                                                0.,
-                                                                0.5*shellODWest,
-                                                                0.5*endPlateThickness
-                                                                )
-                                                           )
-                                           );
+        res = std::unique_ptr<PSEnclosure>
+          (new PSEnclosure(
+                           shellCone,
+                           // end plate
+                           Tube(shellMaterialName,
+                                // The vacuum volume is flush to the PS surface
+                                psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength - 0.5*endPlateThickness),
+                                0.,
+                                0.5*shellODWest,
+                                0.5*endPlateThickness
+                                )
+                           )
+           );
       } else {
         std::vector<double> zPlanes; c.getVectorDouble("PSEnclosure.endPlate.zPlanes", zPlanes);
         std::vector<double> rIns   ; c.getVectorDouble("PSEnclosure.endPlate.rIns"   , rIns   );
@@ -103,21 +127,30 @@ namespace mu2e {
         // if(zPlanes.size() > 0 ) {
         //   zlength = abs(zPlanes[0] - zPlanes[zPlanes.size() - 1]); //planes should be ordered
         // }
-        res = std::unique_ptr<PSEnclosure>(new PSEnclosure(shellCone,
-                                                           // end plate
-                                                           Polycone(zPlanes,
-                                                                    rIns,
-                                                                    rOuts,
-                                                                    // The vacuum volume is flush to the PS surface
-                                                                    psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength),
-                                                                    shellMaterialName
-                                                                    )
-                                                           )
-                                           );
+        res = std::unique_ptr<PSEnclosure>
+          (new PSEnclosure(shellCone,
+                           // end plate
+                           Polycone(zPlanes,
+                                    rIns,
+                                    rOuts,
+                                    // The vacuum volume is flush to the PS surface
+                                    psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength),
+                                    shellMaterialName
+                                    )
+                           )
+           );
       }
+
+
       res->setExtraOffset ( c.getDouble("PSEnclosure.v2.extraZOffset",0.0) );
+      if ( vers > 2 ) res->setFlange ( Tube(flangeMaterialName,
+                                       psEndRefPoint + CLHEP::Hep3Vector(0,0,-shellLength - 0.5*flangeThickness),
+                                       flangeIR,
+                                       flangeOR,
+                                       0.5*flangeThickness ) );
 
     } else {
+      // This is version 1
       const double shellOD = c.getDouble("PSEnclosure.shell.outerDiameter")*CLHEP::mm;
       const double shellLength = totalLength - endPlateThickness;
 
@@ -142,6 +175,7 @@ namespace mu2e {
                                                           )
                             );
     }
+
     //----------------------------------------------------------------
     const CLHEP::Hep3Vector winRefPoint = psEndRefPoint + CLHEP::Hep3Vector(0, 0, -totalLength);
 

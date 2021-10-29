@@ -44,6 +44,9 @@ namespace mu2e {
 
     CLHEP::Hep3Vector extraOffset(0.,0.,pse->getExtraOffset());
 
+    // Note to self (DNB):  It would be nice to decouple SimpleConfig
+    // from Mu2eG4 construct functions.  Pipe dream?
+
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "psEnclosure", "psEnclosure");
     geomOptions->loadEntry( config, "psEnclosureVacuum", "psEnclosure.vacuum");
@@ -70,38 +73,37 @@ namespace mu2e {
                                pse->shellCone().phi0(),
                                pse->shellCone().deltaPhi() };
       nestCons( sName,
-                consParams,
-                findMaterialOrThrow(pse->shellCone().materialName()),
-                0,
-                pse->shellCone().originInMu2e() - parent.centerInMu2e()
-                + extraOffset,
-                parent,
-                0,
-               PSIsVisible,
-               G4Colour::Blue(),
-               PSIsSolid,
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck
-               );
+		consParams,
+		findMaterialOrThrow(pse->shellCone().materialName()),
+		0,
+		pse->shellCone().originInMu2e() - parent.centerInMu2e()
+		+ extraOffset,
+		parent,
+		0,
+	       PSIsVisible,
+	       G4Colour::Blue(),
+	       PSIsSolid,
+	       forceAuxEdgeVisible,
+	       placePV,
+	       doSurfaceCheck
+	       );
 
-
-    } else {
+    } else {  // Old cylindrical version (version 1)
       nestTubs(sName,
-               pse->shell().getTubsParams(),
-               findMaterialOrThrow(pse->shell().materialName()),
-               0,
-               pse->shell().originInMu2e() - parent.centerInMu2e(),
-               parent,
-               0,
-               PSIsVisible,
-               G4Colour::Blue(),
-               PSIsSolid,
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck
-               );
-    }
+	       pse->shell().getTubsParams(),
+	       findMaterialOrThrow(pse->shell().materialName()),
+	       0,
+	       pse->shell().originInMu2e() - parent.centerInMu2e(),
+	       parent,
+	       0,
+	       PSIsVisible,
+	       G4Colour::Blue(),
+	       PSIsSolid,
+	       forceAuxEdgeVisible,
+	       placePV,
+	       doSurfaceCheck
+	       );
+    } // end adding shell, either conical or cylindrical
 
     // get the mass of the Shell
     Mu2eG4Helper* _helper = &(*art::ServiceHandle<Mu2eG4Helper>());
@@ -110,6 +112,41 @@ namespace mu2e {
                    << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg
                    << std::endl;
 
+
+    //==========================================================
+    // Append the flange at the end of the shell (versions 3+)
+    //==========================================================
+
+    if ( pse->version() > 2 ) {
+    sName = "PSEnclosureFlange";
+    const VolumeInfo flange =
+      nestTubs(sName,
+	       pse->flange().getTubsParams(),
+	       findMaterialOrThrow(pse->flange().materialName()),
+	       0,
+	       pse->flange().originInMu2e() - parent.centerInMu2e() + extraOffset,
+	       parent,
+	       0,
+	       PSIsVisible,
+	       G4Colour::Blue(),
+	       PSIsSolid,
+	       forceAuxEdgeVisible,
+	       placePV,
+	       doSurfaceCheck
+	       );
+
+
+    verbosityLevel
+      && std::cout << __func__ << " " << sName << " Mass in kg: "
+                   << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg
+                   << std::endl;
+
+    } // end adding flange
+
+
+    //========================================================
+    // Add the old, flat, endplate
+    //========================================================
     if(pse->version() < 3) {
       sName = "PSEnclosureEndPlate";
       const VolumeInfo endPlate = nestTubs(sName,
@@ -128,12 +165,10 @@ namespace mu2e {
                                            );
 
 
-      verbosityLevel
-        && std::cout << __func__ << " " << sName << " Mass in kg: "
-                     << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg
-                     << std::endl;
+
       //----------------------------------------------------------------
       // Install the windows
+      // MM version ====================================================
 
       for(unsigned i=0; i<pse->nWindows(); ++i) {
 
@@ -192,8 +227,17 @@ namespace mu2e {
           && std::cout << __func__ << " " << wname.str() << " center in Mu2e: "
                        <<pse->windows()[i].originInMu2e()
                        << std::endl;
+
+	//      verbosityLevel
+	//        && std::cout << __func__ << " " << sName << " Mass in kg: "
+	//                     << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg
+	//                     << std::endl;
+
+
       } //end window for loop
+
     } //end version < 3 endplate construction
+
     else { //build version >= 3 endcap
       auto polycone = pse->endPlatePolycone();
       verbosityLevel
@@ -261,6 +305,30 @@ namespace mu2e {
                  placePV,
                  doSurfaceCheck
                  );
+
+      // The window FRAME if version 3+
+      if ( pse->version() >  2 && pse->hasWindowFrames()[iwindow] ) {
+        std::ostringstream frname;
+        frname<<"PSEnclosureWindowFrame"<<iwindow;
+
+        nestTubs(frname.str(),
+                 pse->wFrames()[iwindow].getTubsParams(),
+                 findMaterialOrThrow(pse->wFrames()[iwindow].materialName()),
+                 0,
+                 pse->wFrames()[iwindow].originInMu2e() - parent.centerInMu2e() + extraOffset,
+                 parent,
+                 0,
+                 PSIsVisible,
+                 G4Colour::Grey(),
+                 PSIsSolid,
+                 forceAuxEdgeVisible,
+                 placePV,
+                 doSurfaceCheck
+                 );
+
+      } // end adding window FRAMES
+
+
         verbosityLevel
           && std::cout << __func__ << ": PSEndPlate window " << iwindow << ": "
                        << pse->windows()[iwindow]
@@ -299,20 +367,6 @@ namespace mu2e {
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
-      // const VolumeInfo endPlate = nestTubs(sName,
-      //                                      pse->endPlate().getTubsParams(),
-      //                                      findMaterialOrThrow(pse->endPlate().materialName()),
-      //                                      nullptr,
-      //                                      pse->endPlate().originInMu2e() - parent.centerInMu2e() + extraOffset,
-      //                                      parent,
-      //                                      0,
-      //                                      PSIsVisible,
-      //                                      G4Colour::Blue(),
-      //                                      PSIsSolid,
-      //                                      forceAuxEdgeVisible,
-      //                                      placePV,
-      //                                      doSurfaceCheck
-      //                                      );
 
     }
     verbosityLevel
