@@ -5,7 +5,9 @@
 // Original author Andrei Gaponenko
 // Latest updates by Michael MacKenzie and David Norvil Brown (WKU), Sept 2021.
 
-int PSEnclosure.version   = 3;
+int   PSEnclosure.version   = 3;
+int   PSEnclosure.verbosityLevel = 0;
+
 
 double PSEnclosure.length = 955.5; // mm
 double PSEnclosure.shell.outerDiameterEast = 1526.6; // mm
@@ -90,8 +92,6 @@ bool  PSEnclosure.solid = false;
 
 bool  PSEnclosure.vacuum.visible = true;
 bool  PSEnclosure.vacuum.solid = false;
-
-int   PSEnclosure.verbosityLevel = 1;
 
 
 // This tells emacs to view this file in c++ mode.

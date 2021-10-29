@@ -121,19 +121,19 @@ namespace mu2e {
     sName = "PSEnclosureFlange";
     const VolumeInfo flange =
       nestTubs(sName,
-	       pse->flange().getTubsParams(),
-	       findMaterialOrThrow(pse->flange().materialName()),
-	       0,
-	       pse->flange().originInMu2e() - parent.centerInMu2e() + extraOffset,
-	       parent,
-	       0,
-	       PSIsVisible,
-	       G4Colour::Blue(),
-	       PSIsSolid,
-	       forceAuxEdgeVisible,
-	       placePV,
-	       doSurfaceCheck
-	       );
+               pse->flange().getTubsParams(),
+               findMaterialOrThrow(pse->flange().materialName()),
+               0,
+               pse->flange().originInMu2e() - parent.centerInMu2e() + extraOffset,
+               parent,
+               0,
+               PSIsVisible,
+               G4Colour::Blue(),
+               PSIsSolid,
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
 
 
     verbosityLevel

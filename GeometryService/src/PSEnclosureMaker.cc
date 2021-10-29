@@ -22,24 +22,27 @@ namespace mu2e {
       const double yoff = c.getDouble(prefix+"y"   )*CLHEP::mm;
       const double zoff = c.getDouble(prefix+"z",0.)*CLHEP::mm;
       const double halfThick = 0.5*c.getDouble(prefix+"thickness")*CLHEP::mm;
+      const CLHEP::Hep3Vector windowCenterInMu2e = winRefPoint + CLHEP::Hep3Vector(xoff, yoff, zoff-halfThick);
 
       const bool windHasFrame = c.getBool(prefix+"hasFrame",false);
       res->hasFrames_.push_back(windHasFrame);
 
-      const double fWid = c.getDouble(prefix+"frameRadialWidth")*CLHEP::mm;
-      const double fHalfThick = 0.5*c.getDouble(prefix+"frameThickness")*CLHEP::mm;
-      const double rFin = c.getDouble(prefix+"r")*CLHEP::mm;//Same as rad of window
-      const double rFout = rFin+fWid;
+      if(windHasFrame) {
+        const double fWid = c.getDouble(prefix+"frameRadialWidth")*CLHEP::mm;
+        const double fHalfThick = 0.5*c.getDouble(prefix+"frameThickness")*CLHEP::mm;
+        const double rFin = c.getDouble(prefix+"r")*CLHEP::mm;//Same as rad of window
+        const double rFout = rFin+fWid;
 
-      const CLHEP::Hep3Vector windowCenterInMu2e = winRefPoint + CLHEP::Hep3Vector(xoff, yoff, zoff-fHalfThick);
+        //center the frame on the window, but pushed in z to avoid overlaps with the pipe
+        const CLHEP::Hep3Vector frameCenterInMu2e = winRefPoint + CLHEP::Hep3Vector(xoff, yoff, zoff-2.*fHalfThick);
 
-      res->wFrames_.push_back( Tube(c.getString(prefix+"frameMaterialName"),
-                                    windowCenterInMu2e,
-                                    rFin, // rIn
-                                    rFout,
-                                    fHalfThick
-                                    ));
-
+        res->wFrames_.push_back( Tube(c.getString(prefix+"frameMaterialName"),
+                                      frameCenterInMu2e,
+                                      rFin, // rIn
+                                      rFout,
+                                      fHalfThick
+                                      ));
+      }
 
       //retrieve the window pipe information
       if(res->version() > 2) {
@@ -48,9 +51,9 @@ namespace mu2e {
         const double thetax = c.getDouble(prefix+"pipe.thetaX")*CLHEP::degree;
         const double thetay = c.getDouble(prefix+"pipe.thetaY")*CLHEP::degree;
         const double zplate = abs(res->endPlatePolycone().zPlanes()[0] - res->endPlatePolycone().zPlanes().back());
-        const CLHEP::Hep3Vector origin = windowCenterInMu2e; //set at the same 
+        const CLHEP::Hep3Vector origin = windowCenterInMu2e; //set at the same
         //origin to ensure it intersects it.
-        //Set the pipe to be long enough to intersect both the 
+        //Set the pipe to be long enough to intersect both the
         //plate and the window.
         double zlength = abs(res->endPlatePolycone().originInMu2e().z() - windowCenterInMu2e.z()) + zplate;
         zlength /= abs(std::cos(thetax)*std::cos(thetay));
