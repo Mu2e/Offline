@@ -1,25 +1,37 @@
 // The configuration to be used with the as-built design, reflected
+// The configuration to be used with the as-built design, reflected
 // in docdb 8047.  The PSEnclosureShell is part F10031354 in TeamCenter
 
 // Original author Andrei Gaponenko
-// Latest updates by David Norvil Brown (Lou), Dec 2017.
+// Latest updates by Michael MacKenzie and David Norvil Brown (WKU), Sept 2021.
 
 int PSEnclosure.version   = 3;
 
-double PSEnclosure.length = 958.9; // mm
+double PSEnclosure.length = 955.5; // mm
 double PSEnclosure.shell.outerDiameterEast = 1526.6; // mm
 double PSEnclosure.shell.outerDiameterWest = 2217.7; // mm
-double PSEnclosure.shell.thickness = 9.53; // mm
-double PSEnclosure.endPlate.thickness = 6.35; // mm
+double PSEnclosure.shell.thickness = 9.53; // mm  (3/8 inch)
+double PSEnclosure.endPlate.thickness = 6.35; // mm (1/4 inch)
 double PSEnclosure.v2.extraZOffset = -101.4; // mm
+
+double PSEnclosure.endPlate.inset  = 500.0; // mm to East of shell end
+double PSEnclosure.endPlate.radius = 550.0; // mm total approximation
+
+// Flange on the shell
+double PSEnclosure.flange.rInner  = 1035.0; //mm
+double PSEnclosure.flange.rOuter  = 1123.95; //mm
+double PSEnclosure.flange.thickness = 50.8; // mm (2 in) in z-direction
+string PSEnclosure.flange.materialName = "StainlessSteel316L";
 
 vector<double> PSEnclosure.endPlate.zPlanes = {     0.,    6.34,    6.35, 250.00, 400.00, 405.00}; // mm
 vector<double> PSEnclosure.endPlate.rIns    = {1050.00, 1050.00, 1050.00, 550.00,  50.00,   0.00}; // mm
 vector<double> PSEnclosure.endPlate.rOuts   = {1108.84, 1108.84, 1056.35, 556.35,  56.35,   6.35}; // mm
 
+
 string PSEnclosure.shell.materialName  = "StainlessSteel316L";
 
 int  PSEnclosure.nWindows = 3;
+
 //IMPORTANT: Windows must be sorted in increasing z due to plane cuts on pipes at the given z
 
 // ExtMonFNAL window
@@ -29,6 +41,10 @@ double PSEnclosure.window1.r =  87.54;
 double PSEnclosure.window1.x = -602.8; // relative to PS center
 double PSEnclosure.window1.y =  465; // relative to PS center
 double PSEnclosure.window1.z = -248.41; // relative to PS endplate end
+bool   PSEnclosure.window1.hasFrame = true;
+double PSEnclosure.window1.frameThickness = 25.4;//mm
+double PSEnclosure.window1.frameRadialWidth = 50.8;//mm
+string PSEnclosure.window1.frameMaterialName = "StainlessSteel316L";
 // ExtMonFNAL window pipe
 double PSEnclosure.window1.pipe.rin  =   84.14.;
 double PSEnclosure.window1.pipe.rout =   87.54;
@@ -42,6 +58,10 @@ double PSEnclosure.window2.r =  166.50;
 double PSEnclosure.window2.x = -674.4; // relative to PS center
 double PSEnclosure.window2.y =  102.24; // relative to PS center
 double PSEnclosure.window2.z = -350.01; // relative to PS endplate end
+bool   PSEnclosure.window2.hasFrame = true;
+double PSEnclosure.window2.frameThickness = 25.4;//mm
+double PSEnclosure.window2.frameRadialWidth = 50.8;//mm
+string PSEnclosure.window2.frameMaterialName = "StainlessSteel316L";
 // Primary beam window pipe
 double PSEnclosure.window2.pipe.rin  =  161.93;
 double PSEnclosure.window2.pipe.rout =  166.50;
@@ -55,7 +75,10 @@ double PSEnclosure.window3.r =  254;
 double PSEnclosure.window3.x =  0.; // relative to PS center
 double PSEnclosure.window3.y =  0.; // relative to PS center
 double PSEnclosure.window3.z = -350.01; // relative to PS endplate end
-
+bool   PSEnclosure.window3.hasFrame = true;
+double PSEnclosure.window3.frameThickness = 25.4;//mm
+double PSEnclosure.window3.frameRadialWidth = 50.8;//mm
+string PSEnclosure.window3.frameMaterialName = "StainlessSteel316L";
 // Central axis target access window pipe
 double PSEnclosure.window3.pipe.rin  =  249.17.;
 double PSEnclosure.window3.pipe.rout =  254.;
@@ -69,6 +92,7 @@ bool  PSEnclosure.vacuum.visible = true;
 bool  PSEnclosure.vacuum.solid = false;
 
 int   PSEnclosure.verbosityLevel = 1;
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
