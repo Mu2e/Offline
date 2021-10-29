@@ -34,7 +34,7 @@ namespace mu2e {
         const double rFout = rFin+fWid;
 
         //center the frame on the window, but pushed in z to avoid overlaps with the pipe
-        const CLHEP::Hep3Vector frameCenterInMu2e = winRefPoint + CLHEP::Hep3Vector(xoff, yoff, zoff-2.*fHalfThick);
+        const CLHEP::Hep3Vector frameCenterInMu2e = windowCenterInMu2e + CLHEP::Hep3Vector(0., 0., halfThick-fHalfThick);
 
         res->wFrames_.push_back( Tube(c.getString(prefix+"frameMaterialName"),
                                       frameCenterInMu2e,
