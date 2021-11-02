@@ -187,11 +187,11 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
   _lastTime = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   _totalTime += _lastTime;
 
-  if(_timeVerbose>0) {
+  if(_timeVerbose>1) {
     std::cout<<"DbReader::fillValCache took " <<
       std::setprecision(6) << _lastTime.count()*1.0e-6 <<" s" << std::endl;
   }
-  if(_verbose>3) {
+  if(_verbose>2) {
     std::cout<<"DbReader::fillValCache results " << std::endl;
     vcache.print();
   }
@@ -274,7 +274,7 @@ int mu2e::DbReader::queryCore(std::string& csv,
     url.append(order);
   }
 
-  if(_verbose>3) {
+  if(_verbose>5) {
     std::string time = DbUtil::timeString();
     std::cout << "DbReader " << time 
 	      <<"  url="<<url << std::endl;
@@ -352,7 +352,7 @@ int mu2e::DbReader::queryCore(std::string& csv,
   _lastTime = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   _totalTime += _lastTime;
 
-  if(_timeVerbose>3 || _verbose>3) {
+  if(_timeVerbose>5 || _verbose>5) {
     std::string time = DbUtil::timeString();
 
     std::cout<<"DbReader "<< time << " "
