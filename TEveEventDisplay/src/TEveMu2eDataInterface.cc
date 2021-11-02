@@ -245,106 +245,142 @@ namespace mu2e{
     return energies;
   }
 	
-  /*------------Function to add ComboHits to Tracker in 3D and 2D displays:-------------*/
-  void TEveMu2eDataInterface::AddTrkHits(bool firstloop, const ComboHitCollection *chcol,std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, 
-					 TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, 
-					 TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  /*------------Function to color code the Tracker hits in 3D and 2D displays:-------------*/
+  void TEveMu2eDataInterface::AddTrkHits(bool firstloop, const ComboHitCollection *chcol,std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double  min_energy, double max_energy, double min_time, 
+					 double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
     std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
     std::vector<std::string> names = std::get<0>(track_tuple);
+    GeomHandle<DetectorSystem> det;
     StrawId trksid[70];
     unsigned int trkhitsize=0;
     for(unsigned int j=0; j< track_list.size(); j++){
       const KalSeedCollection* seedcol = track_list[j];
       DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
       if(seedcol!=0){
-        for(unsigned int k = 0; k < seedcol->size(); k++){
+        for(unsigned int k = 0; k < seedcol->size(); k++){  
           KalSeed kseed = (*seedcol)[k];
           const std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
           trkhitsize = hits.size();
-          for(unsigned int n=0; n <trkhitsize; n++){  
+          for(unsigned int n=0; n <trkhitsize; n++){
             const mu2e::TrkStrawHitSeed &hit = hits.at(n);
-            trksid[n] = hit._sid; //Save the straw ID of the kalseed hit
-	  }
+            trksid[n] = hit._sid; //straw IDs of the KalSeed hits
+          }
         }
       }
     }
     StrawId usedtrksid[trkhitsize];
-    GeomHandle<DetectorSystem> det;             
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
-    if(chcol!=0){            
+    if(chcol!=0){
       for(unsigned int i=0; i<chcol->size();i++){
         ComboHit hit = (*chcol)[i];
         for(unsigned int q=0; q<trkhitsize; q++){
           if(hit._sid == trksid[q]){
-            //usedtrksid[q]=hit._sid; //Compare the Straw ID of the Combo hit with the KalSeed hit
-            CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
+            usedtrksid[q]=hit._sid;//Saving the Straw IDs after comparing the KalSeed and Combo hits
+            /*CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
             CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
             TEvePointSet *trkhit = new TEvePointSet();
             trkhit ->SetMarkerStyle(9);
             trkhit ->SetMarkerSize(1);
             trkhit ->SetMarkerColor(kRed);
-            trkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
+	    trkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
             trkhit ->SetPickable(kTRUE);
-    
+                 
             TEvePointSet *trkhityz = new TEvePointSet();
             trkhityz ->SetMarkerStyle(9);
             trkhityz ->SetMarkerSize(1);
             trkhityz ->SetMarkerColor(kRed);
             trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
             trkhityz ->SetPickable(kTRUE);
-        
+     
             TEvePointSet *trkhit3d = new TEvePointSet();
             trkhit3d ->SetMarkerStyle(9);
             trkhit3d ->SetMarkerSize(1);
             trkhit3d ->SetMarkerColor(kRed);
             trkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
             trkhit3d ->SetPickable(kTRUE);
-          
             fHitsList2DXY->AddElement(trkhit);
             fHitsList2DXZ->AddElement(trkhityz);
-            fHitsList3D->AddElement(trkhit3d);
+            fHitsList3D->AddElement(trkhit3d);*/
 	  }
-            // else if(hit._sid != usedtrksid[q]){
-              else{
-		//ComboHit chhit = (*chcol)[q];
+	}
+      }
+      for(unsigned int j=0; j< track_list.size(); j++){
+        const KalSeedCollection* seedcol = track_list[j];
+        DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
+        if(seedcol!=0){
+          for(unsigned int k = 0; k < seedcol->size(); k++){
+            KalSeed kseed = (*seedcol)[k];
+            const std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
+            for(unsigned int n=0; n <trkhitsize; n++){
+              const mu2e::TrkStrawHitSeed &hit = hits.at(n);
+              if(n<chcol->size()){
+		ComboHit chhit = (*chcol)[n];
                 CLHEP::Hep3Vector HitPos(chhit.pos().x(), chhit.pos().y(), chhit.pos().z());
-                //GeomHandle<DetectorSystem> det;
                 CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
-                TEvePointSet *notusedtrkhit = new TEvePointSet();
+		TEvePointSet *notusedtrkhit = new TEvePointSet();
                 notusedtrkhit ->SetMarkerStyle(9);
                 notusedtrkhit ->SetMarkerSize(1);
-                notusedtrkhit ->SetMarkerColor(kGreen);
-                notusedtrkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
-                notusedtrkhit ->SetPickable(kTRUE);
+		      
+		       TEvePointSet *notusedtrkhityz = new TEvePointSet();
+                  notusedtrkhityz ->SetMarkerStyle(9); 
+                  notusedtrkhityz ->SetMarkerSize(1);
+		      
+		  TEvePointSet *nottrkhit3d = new TEvePointSet();
+                  nottrkhit3d ->SetMarkerStyle(9);
+                  nottrkhit3d ->SetMarkerSize(1);    
+                if(hit._sid == usedtrksid[n]){
+                  //ComboHit chhit = (*chcol)[n];//Hits which are not part of the heix 
+                  //CLHEP::Hep3Vector HitPos(chhit.pos().x(), chhit.pos().y(), chhit.pos().z());
+                  //CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
+                  //TEvePointSet *notusedtrkhit = new TEvePointSet();
+                  //notusedtrkhit ->SetMarkerStyle(9);
+                  //notusedtrkhit ->SetMarkerSize(1);
+                  notusedtrkhit ->SetMarkerColor(kGreen);
+                  notusedtrkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
+                  notusedtrkhit ->SetPickable(kTRUE);
        
-                TEvePointSet *notusedtrkhityz = new TEvePointSet();
-                notusedtrkhityz ->SetMarkerStyle(9); 
-                notusedtrkhityz ->SetMarkerSize(1);
-                notusedtrkhityz ->SetMarkerColor(kGreen);
-                notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
-                notusedtrkhityz ->SetPickable(kTRUE);
-   
-                TEvePointSet *nottrkhit3d = new TEvePointSet();
-                nottrkhit3d ->SetMarkerStyle(9);
-                nottrkhit3d ->SetMarkerSize(1);
-                nottrkhit3d ->SetMarkerColor(kGreen);
-                nottrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
-                nottrkhit3d ->SetPickable(kTRUE);
-                fHitsList3D->AddElement(nottrkhit3d);
-                fHitsList2DXY->AddElement(notusedtrkhit);
-                fHitsList2DXZ->AddElement(notusedtrkhityz);
+                  //TEvePointSet *notusedtrkhityz = new TEvePointSet();
+                  //notusedtrkhityz ->SetMarkerStyle(9); 
+                  //notusedtrkhityz ->SetMarkerSize(1);
+                  notusedtrkhityz ->SetMarkerColor(kGreen);
+                  notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
+                  notusedtrkhityz ->SetPickable(kTRUE);
+          
+                  //TEvePointSet *nottrkhit3d = new TEvePointSet();
+                  //nottrkhit3d ->SetMarkerStyle(9);
+                  //nottrkhit3d ->SetMarkerSize(1);
+                  nottrkhit3d ->SetMarkerColor(kGreen);
+                  nottrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
+                  nottrkhit3d ->SetPickable(kTRUE);
+                  
+		}
+		      else{
+			      notusedtrkhit ->SetMarkerColor(kRed);
+                  notusedtrkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
+                  notusedtrkhit ->SetPickable(kTRUE);
+			      
+			      notusedtrkhityz ->SetMarkerColor(kRed);
+                  notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
+                  notusedtrkhityz ->SetPickable(kTRUE);
+			      
+			      nottrkhit3d ->SetMarkerColor(kRed);
+                  nottrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
+                  nottrkhit3d ->SetPickable(kTRUE);
+		      }
+		      fHitsList3D->AddElement(nottrkhit3d);
+                  fHitsList2DXY->AddElement(notusedtrkhit);
+                  fHitsList2DXZ->AddElement(notusedtrkhityz);
 	      }
 	    }
 	  }
-	
+	}
+      }
       tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene);
       tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
       gEve->AddElement(fHitsList3D);
       gEve->Redraw3D(kTRUE);
     }
   }
-
-	
 
   /*------------Function to add Calo Clusters to 3D and 2D display:-------------*/
   std::vector<double> TEveMu2eDataInterface::AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol, TEveMu2e2DProjection *calo2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2) {
