@@ -513,15 +513,7 @@ namespace mu2e{
     CRV2Dproj->fEvtXYScene->AddElement(axes_xy);
     gEve->AddToListTree(axes_xy,kTRUE);
     gEve->AddToListTree(CRV2Dproj->fXYMgr,kTRUE);
-    
-    /*CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
-    TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
-    CRV2Dproj->fDetRZScene->AddElement(axes_rz);
-    CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
-    gEve->AddToListTree(axes_rz,kTRUE);
-    gEve->AddToListTree(CRV2Dproj->fRZMgr,kTRUE);
-    */
-	  
+    	  
     // Create side-by-side ortho XY & RZ views in new tab & add det/evt scenes
     TEveWindowSlot *slot = 0;
     TEveWindowPack *pack = 0;
@@ -717,7 +709,7 @@ namespace mu2e{
     }
     if (type == "Hits"){
       if (_data.chcol !=0){*hitenergy = pass_data->AddComboHits(_firstLoop, _emptydata.chcol, tracker2Dproj,  true, fhitmin, fhitmax,ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-      if (_data.chcol !=0){*hitenergy = pass_data->AddTrkHits(_firstLoop, _emptydata.chcol, _emptydata.track_tuple, tracker2Dproj,  true, fhitmin, fhitmax,ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+      if (_data.chcol !=0){pass_data->AddTrkHits(_firstLoop, _emptydata.chcol, _emptydata.track_tuple, tracker2Dproj,  true, fhitmin, fhitmax,ftimemin, ftimemax,_accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
 	    if(_data.cryHitcol !=0){pass_data->AddCrystalHits(_firstLoop, _emptydata.cryHitcol, calo2Dproj, ftimemin, ftimemax, true, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);}
 
     } 
@@ -761,7 +753,7 @@ namespace mu2e{
         fhitmin = atof(_hitminenergy->GetString());
         fhitmax = atof(_hitmaxenergy->GetString());
         //if (fhitmin < fhitmax) {*hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-        if (fhitmin < fhitmax) {*hitenergy = pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+        if (fhitmin < fhitmax) {pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
 	      if (fhitmin > fhitmax){
           std::cout<<"Hit Minimum Energy is greater than Maximum Energy"<<std::endl;
           char msg[300];
@@ -775,7 +767,7 @@ namespace mu2e{
         if (ftimemin < ftimemax) {
            if(_data.chcol!=0) {
             *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-            *hitenergy = pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+            pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
           
 	   }  if(_data.clustercol!=0){
             *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj,  false, fclustmin, fclustmax,ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
@@ -798,8 +790,8 @@ namespace mu2e{
       if(param1==1201){
         if(hitscheck->IsDown()){
         *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-        *hitenergy = pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-		pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
+        pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+	pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
         }
         if(!hitscheck->IsDown()){RedrawDataProducts("Hits");}
       }
@@ -893,7 +885,7 @@ namespace mu2e{
       hitenergy = new vector<double>(2);
  
       if(DrawOpts.addComboHits) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-      if(DrawOpts.addTrkHits) *hitenergy = pass_data->AddTrkHits(firstLoop, data.chcol, data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(DrawOpts.addTrkHits) pass_data->AddTrkHits(firstLoop, data.chcol, data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
       clusterenergy = new std::vector<double>(2);
 
