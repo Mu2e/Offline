@@ -247,8 +247,8 @@ namespace mu2e{
 	
   /*------------Function to add ComboHits to Tracker in 3D and 2D displays:-------------*/
   void TEveMu2eDataInterface::AddTrkHits(bool firstloop, const ComboHitCollection *chcol,std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, 
-							TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, 
-							TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+					 TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, 
+					 TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
     std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
     std::vector<std::string> names = std::get<0>(track_tuple);
     StrawId trksid[70];
@@ -269,20 +269,15 @@ namespace mu2e{
       }
     }
     StrawId usedtrksid[trkhitsize];
-    //std::vector<double> energies = {0,0};
     GeomHandle<DetectorSystem> det;             
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
-    if(chcol!=0){
-      //int *energylevels = new int[chcol->size()];
-      //energies = Energies<const ComboHitCollection*>(chcol, &energylevels);
-                  
+    if(chcol!=0){            
       for(unsigned int i=0; i<chcol->size();i++){
         ComboHit hit = (*chcol)[i];
         for(unsigned int q=0; q<trkhitsize; q++){
           if(hit._sid == trksid[q]){
-            usedtrksid[q]=hit._sid; //Compare the Straw ID of the Combo hit with the KalSeed hit
+            //usedtrksid[q]=hit._sid; //Compare the Straw ID of the Combo hit with the KalSeed hit
             CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
-            
             CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
             TEvePointSet *trkhit = new TEvePointSet();
             trkhit ->SetMarkerStyle(9);
@@ -309,23 +304,11 @@ namespace mu2e{
             fHitsList2DXZ->AddElement(trkhityz);
             fHitsList3D->AddElement(trkhit3d);
 	  }
-	/*}
-      }
-      for(unsigned int j=0; j< track_list.size(); j++){
-      const KalSeedCollection* seedcol = track_list[j];
-      DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
-      if(seedcol!=0){
-        for(unsigned int k = 0; k < seedcol->size(); k++){
-          KalSeed kseed = (*seedcol)[k];
-          const std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
-          for(unsigned int n=0; n <trkhitsize; n++){
-            const mu2e::TrkStrawHitSeed &hit = hits.at(n);
-            
-	    if(n<chcol->size()){*/
-             else if(hit._sid != usedtrksid[n]){
-                ComboHit chhit = (*chcol)[n];
+            // else if(hit._sid != usedtrksid[q]){
+              else{
+		//ComboHit chhit = (*chcol)[q];
                 CLHEP::Hep3Vector HitPos(chhit.pos().x(), chhit.pos().y(), chhit.pos().z());
-                GeomHandle<DetectorSystem> det;
+                //GeomHandle<DetectorSystem> det;
                 CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
                 TEvePointSet *notusedtrkhit = new TEvePointSet();
                 notusedtrkhit ->SetMarkerStyle(9);
@@ -344,7 +327,7 @@ namespace mu2e{
                 TEvePointSet *nottrkhit3d = new TEvePointSet();
                 nottrkhit3d ->SetMarkerStyle(9);
                 nottrkhit3d ->SetMarkerSize(1);
-                nottrkhit3d ->SetMarkerColor(kRed);
+                nottrkhit3d ->SetMarkerColor(kGreen);
                 nottrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
                 nottrkhit3d ->SetPickable(kTRUE);
                 fHitsList3D->AddElement(nottrkhit3d);
@@ -353,15 +336,12 @@ namespace mu2e{
 	      }
 	    }
 	  }
-	//}
-      //}
-      //}
+	
       tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene);
       tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
       gEve->AddElement(fHitsList3D);
       gEve->Redraw3D(kTRUE);
     }
-    //return energies;
   }
 
 	
