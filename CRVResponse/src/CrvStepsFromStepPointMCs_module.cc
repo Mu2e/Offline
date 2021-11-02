@@ -173,7 +173,7 @@ namespace mu2e
     // Informational message on the first event.
     if(_firstEvent)
     {
-      mf::LogInfo log("COSMIC");
+      mf::LogInfo log("COSMIC_STEPPOINTS");
       log << "mu2e::CrvStepsFromStepPointMCs will use StepPointMCs from: \n";
       for(SPMCCHV::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i!=e; ++i)
       {
