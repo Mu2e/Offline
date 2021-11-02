@@ -268,6 +268,7 @@ namespace mu2e{
         }
       }
     }
+	
     StrawId usedtrksid[trkhitsize];
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
     if(chcol!=0){
@@ -278,23 +279,17 @@ namespace mu2e{
             usedtrksid[q]=hit._sid;//Saving the Straw IDs after comparing the KalSeed and Combo hits
             /*CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
             CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
-            TEvePointSet *trkhit = new TEvePointSet();
-            trkhit ->SetMarkerStyle(9);
-            trkhit ->SetMarkerSize(1);
+            
             trkhit ->SetMarkerColor(kRed);
 	    trkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
             trkhit ->SetPickable(kTRUE);
                  
-            TEvePointSet *trkhityz = new TEvePointSet();
-            trkhityz ->SetMarkerStyle(9);
-            trkhityz ->SetMarkerSize(1);
+           
             trkhityz ->SetMarkerColor(kRed);
             trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
             trkhityz ->SetPickable(kTRUE);
      
-            TEvePointSet *trkhit3d = new TEvePointSet();
-            trkhit3d ->SetMarkerStyle(9);
-            trkhit3d ->SetMarkerSize(1);
+           
             trkhit3d ->SetMarkerColor(kRed);
             trkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
             trkhit3d ->SetPickable(kTRUE);
@@ -304,6 +299,15 @@ namespace mu2e{
 	  }
 	}
       }
+	    TEvePointSet *trkhit = new TEvePointSet();
+        trkhit ->SetMarkerStyle(9);
+        trkhit ->SetMarkerSize(1);
+	TEvePointSet *trkhityz = new TEvePointSet();
+        trkhityz ->SetMarkerStyle(9);
+        trkhityz ->SetMarkerSize(1);
+	TEvePointSet *trkhit3d = new TEvePointSet();
+        trkhit3d ->SetMarkerStyle(9);
+        trkhit3d ->SetMarkerSize(1);
       for(unsigned int j=0; j< track_list.size(); j++){
         const KalSeedCollection* seedcol = track_list[j];
         DataLists<const KalSeedCollection*, TEveMu2e2DProjection*>(seedcol, Redraw, accumulate, "HelixTrack", &fTrackList3D, &fTrackList2DXY,&fTrackList2DXZ, tracker2Dproj);
@@ -313,21 +317,24 @@ namespace mu2e{
             const std::vector<mu2e::TrkStrawHitSeed> &hits = kseed.hits();
             for(unsigned int n=0; n <trkhitsize; n++){
               const mu2e::TrkStrawHitSeed &hit = hits.at(n);
-              if(n<chcol->size()){
+              //if(n<chcol->size()){
 		ComboHit chhit = (*chcol)[n];
                 CLHEP::Hep3Vector HitPos(chhit.pos().x(), chhit.pos().y(), chhit.pos().z());
                 CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
-		TEvePointSet *notusedtrkhit = new TEvePointSet();
+		/*TEvePointSet *notusedtrkhit = new TEvePointSet();
                 notusedtrkhit ->SetMarkerStyle(9);
                 notusedtrkhit ->SetMarkerSize(1);
+		      notusedtrkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
 		      
 		       TEvePointSet *notusedtrkhityz = new TEvePointSet();
                   notusedtrkhityz ->SetMarkerStyle(9); 
                   notusedtrkhityz ->SetMarkerSize(1);
+		       notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
 		      
 		  TEvePointSet *nottrkhit3d = new TEvePointSet();
                   nottrkhit3d ->SetMarkerStyle(9);
                   nottrkhit3d ->SetMarkerSize(1);    
+		      nottrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());*/
                 if(hit._sid == usedtrksid[n]){
                   //ComboHit chhit = (*chcol)[n];//Hits which are not part of the heix 
                   //CLHEP::Hep3Vector HitPos(chhit.pos().x(), chhit.pos().y(), chhit.pos().z());
@@ -335,42 +342,33 @@ namespace mu2e{
                   //TEvePointSet *notusedtrkhit = new TEvePointSet();
                   //notusedtrkhit ->SetMarkerStyle(9);
                   //notusedtrkhit ->SetMarkerSize(1);
-                  notusedtrkhit ->SetMarkerColor(kGreen);
-                  notusedtrkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
-                  notusedtrkhit ->SetPickable(kTRUE);
+			
+                  trkhit ->SetMarkerColor(kGreen);
+                  trkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
+                  trkhit ->SetPickable(kTRUE);
        
                   //TEvePointSet *notusedtrkhityz = new TEvePointSet();
                   //notusedtrkhityz ->SetMarkerStyle(9); 
                   //notusedtrkhityz ->SetMarkerSize(1);
-                  notusedtrkhityz ->SetMarkerColor(kGreen);
-                  notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
-                  notusedtrkhityz ->SetPickable(kTRUE);
+                  trkhityz ->SetMarkerColor(kGreen);
+                  trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
+                  trkhityz ->SetPickable(kTRUE);
           
                   //TEvePointSet *nottrkhit3d = new TEvePointSet();
                   //nottrkhit3d ->SetMarkerStyle(9);
                   //nottrkhit3d ->SetMarkerSize(1);
-                  nottrkhit3d ->SetMarkerColor(kGreen);
-                  nottrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
-                  nottrkhit3d ->SetPickable(kTRUE);
+                  trkhit3d ->SetMarkerColor(kGreen);
+                  trkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
+                  trkhit3d ->SetPickable(kTRUE);
+			 fHitsList3D->AddElement(trkhit3d);
+                  fHitsList2DXY->AddElement(trkhit);
+                  fHitsList2DXZ->AddElement(trkhityz);
                   
 		}
-		      else{
-			      notusedtrkhit ->SetMarkerColor(kRed);
-                  notusedtrkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
-                  notusedtrkhit ->SetPickable(kTRUE);
-			      
-			      notusedtrkhityz ->SetMarkerColor(kRed);
-                  notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
-                  notusedtrkhityz ->SetPickable(kTRUE);
-			      
-			      nottrkhit3d ->SetMarkerColor(kRed);
-                  nottrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
-                  nottrkhit3d ->SetPickable(kTRUE);
-		      }
-		      fHitsList3D->AddElement(nottrkhit3d);
-                  fHitsList2DXY->AddElement(notusedtrkhit);
-                  fHitsList2DXZ->AddElement(notusedtrkhityz);
-	      }
+		  //fHitsList3D->AddElement(nottrkhit3d);
+                  //fHitsList2DXY->AddElement(notusedtrkhit);
+                  //fHitsList2DXZ->AddElement(notusedtrkhityz);
+	      //}
 	    }
 	  }
 	}
