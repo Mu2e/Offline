@@ -269,8 +269,9 @@ namespace mu2e{
       }
     }
 	
-    StrawId usedtrksid[trkhitsize];
+    StrawId usedtrksid[trkhitsize]; 
     DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
+    std::cout<<"trk hit size = "<<trkhitsize<<"ch col size = "<<chcol->size()<<std::endl;
     if(chcol!=0){
       for(unsigned int i=0; i<chcol->size();i++){
         ComboHit hit = (*chcol)[i];
@@ -302,6 +303,7 @@ namespace mu2e{
             fHitsList2DXY->AddElement(trkhit);
             fHitsList2DXZ->AddElement(trkhityz);
             fHitsList3D->AddElement(trkhit3d);
+		  std::cout<<"used id = "<<usedtrksid[q]<<" ch id = "<<hit._sid[q]<<" q = "<<q<<std::endl;
 	  }
 	}
       }
@@ -315,9 +317,6 @@ namespace mu2e{
             for(unsigned int n=0; n <trkhitsize; n++){
               const mu2e::TrkStrawHitSeed &hit = hits.at(n);
               if(n<chcol->size()){
-		ComboHit chhit = (*chcol)[n];
-                CLHEP::Hep3Vector HitPos(chhit.pos().x(), chhit.pos().y(), chhit.pos().z());
-                CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
 		if(hit._sid != usedtrksid[n]){
                   ComboHit chhit = (*chcol)[n];//Hits which are not part of the heix 
                   CLHEP::Hep3Vector HitPos(chhit.pos().x(), chhit.pos().y(), chhit.pos().z());
@@ -345,6 +344,7 @@ namespace mu2e{
 	          fHitsList3D->AddElement(notusedtrkhit3d);
                   fHitsList2DXY->AddElement(notusedtrkhit);
                   fHitsList2DXZ->AddElement(notusedtrkhityz);
+			std::cout<<"not used hit = "<<hit._sid<<" trk sid = "<<usedtrksid[n]<<std::endl;
 		}
 	      }
 	    }
