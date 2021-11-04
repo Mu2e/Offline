@@ -205,7 +205,7 @@ namespace mu2e {
     float livetime_ = 0;
     // Merging cosmic livetime info from multiple subruns is not
     // implemented.  Make sure we only see a single subrun in a job.
-    bool cosmicSubrunInitialized_;
+    bool cosmicSubrunInitialized_ = false;
     art::SubRunID cosmicSubRun_;
 
   };
