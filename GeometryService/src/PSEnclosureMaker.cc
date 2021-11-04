@@ -56,7 +56,7 @@ namespace mu2e {
         //Set the pipe to be long enough to intersect both the
         //plate and the window.
         double zlength = abs(res->endPlatePolycone().originInMu2e().z() - windowCenterInMu2e.z()) + zplate;
-        zlength /= abs(std::cos(thetax)*std::cos(thetay));
+        zlength /= 0.9*abs(std::cos(thetax)*std::cos(thetay));
 
         CLHEP::HepRotation matrix = CLHEP::HepRotation();
         matrix.rotateX(thetax);

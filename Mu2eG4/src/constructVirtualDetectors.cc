@@ -1031,7 +1031,7 @@ namespace mu2e {
         if(pse->version() > 2) { //move the detector away from the PS endcap
           auto polycone = pse->endPlatePolycone();
           double pseZOffset = pse->getExtraOffset();
-          double pseMaxZ = polycone.zPlanes().back();
+          double pseMaxZ = polycone.zPlanes().back() + 0.01; //add an extra 10 um gap
           zoffset += std::max(0., (pseMaxZ + (polycone.originInMu2e().z() + pseZOffset) - (psevac.originInMu2e().z() - psevac.halfLength())));
         }
         TubsParams vdParams(0., psevac.outerRadius(), vdg->getHalfLength());
