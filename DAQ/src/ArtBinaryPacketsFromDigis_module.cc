@@ -30,7 +30,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // mu2e-artdaq-core includes
-#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
+//#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
+#include "Offline/DAQ/inc/CRVFragmentTmp.hh"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
@@ -61,8 +62,10 @@ using adc_t = uint16_t;
 using CalorimeterDataPacket = mu2e::CalorimeterFragment::CalorimeterDataPacket;
 using CalorimeterBoardID = mu2e::CalorimeterFragment::CalorimeterBoardID;
 using CalorimeterHitReadoutPacket = mu2e::CalorimeterFragment::CalorimeterHitReadoutPacket;
-using CRVROCStatusPacket = mu2e::CRVFragment::CRVROCStatusPacket;
-using CRVHitReadoutPacket = mu2e::CRVFragment::CRVHitReadoutPacket;
+//using CRVROCStatusPacket = mu2e::CRVFragment::CRVROCStatusPacket;
+//using CRVHitReadoutPacket = mu2e::CRVFragment::CRVHitReadoutPacket;
+using CRVROCStatusPacket = mu2e::CRVFragmentTmp::CRVROCStatusPacket;
+using CRVHitReadoutPacket = mu2e::CRVFragmentTmp::CRVHitReadoutPacket;
 
 // data struct for the calorimeter
 struct CaloDataPacket {
@@ -283,7 +286,8 @@ private:
   //--------------------------------------------------------------------------------
 
   void processCrvData(art::Event& evt, uint64_t& eventNum, crv_data_block_list_t& crvDataBlocks);
-  uint8_t compressCrvDigi(int adc);
+//  uint8_t compressCrvDigi(int adc);
+  int16_t compressCrvDigi(int16_t adc);
   void fillCrvDataPacket(const CrvDigi& digi, CRVHitReadoutPacket& hit, int& globalRocID);
   void fillCrvHeaderPacket(CrvDataPacket& crvData, uint8_t globalRocID, uint64_t eventNum);
   void fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent, const crv_data_block_list_t& crvData);
@@ -1096,6 +1100,7 @@ void ArtBinaryPacketsFromDigis::processCrvData(art::Event& evt, uint64_t& eventN
 //--------------------------------------------------------------------------------
 // crate a crvPacket from the digi
 //--------------------------------------------------------------------------------
+/*
 uint8_t ArtBinaryPacketsFromDigis::compressCrvDigi(int adc) {
   // TODO: Temporary implementation until we have the real compression used at the FEBs
   adc -= 95;
@@ -1114,6 +1119,15 @@ uint8_t ArtBinaryPacketsFromDigis::compressCrvDigi(int adc) {
     toReturn = 255;
   return toReturn;
 }
+*/
+int16_t ArtBinaryPacketsFromDigis::compressCrvDigi(int16_t adc) 
+{
+  // TODO: Temporary implementation until we have the real compression used at the FEBs
+  // FEBs use only 12 bits out of the 16 bits
+  if(adc>2047) adc=2047;
+  if(adc<-2048) adc=-2048;
+  return adc;
+}
 
 void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CrvDigi& digi, CRVHitReadoutPacket& hit,
                                                   int& globalRocID) {
@@ -1131,15 +1145,7 @@ void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CrvDigi& digi, CRVHitRea
   hit.SiPMID = SiPMID;
   hit.HitTime = digi.GetStartTDC();
   hit.NumSamples = 8;
-  hit.WaveformSample0 = compressCrvDigi(
-      digi.GetADCs().at(0)); // TODO: There should be a better way of filling the waveform
-  hit.WaveformSample1 = compressCrvDigi(digi.GetADCs().at(1));
-  hit.WaveformSample2 = compressCrvDigi(digi.GetADCs().at(2));
-  hit.WaveformSample3 = compressCrvDigi(digi.GetADCs().at(3));
-  hit.WaveformSample4 = compressCrvDigi(digi.GetADCs().at(4));
-  hit.WaveformSample5 = compressCrvDigi(digi.GetADCs().at(5));
-  hit.WaveformSample6 = compressCrvDigi(digi.GetADCs().at(6));
-  hit.WaveformSample7 = compressCrvDigi(digi.GetADCs().at(7));
+  for(int i=0; i<8; ++i) hit.WaveformSamples[i].ADC=compressCrvDigi(digi.GetADCs().at(i));  //TODO: needs to be changed
 }
 
 //--------------------------------------------------------------------------------
@@ -1155,21 +1161,18 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
   // Word 0
   adc_t nBytes =
       sizeof(DataBlockHeader) + sizeof(CRVROCStatusPacket) + sizeof(CRVHitReadoutPacket) * nHits;
-  while (nBytes % 16 != 0)
-    nBytes++;
+  while (nBytes % 16 != 0) nBytes++;
   crvData.header.s.TransferByteCount = nBytes;
   // Word 1
-  crvData.header.s.PacketType = 5; // PacketType::Dataheader;
+  crvData.header.s.PacketType = 0x05; // PacketType::Dataheader;
 
   crvData.header.s.LinkID = globalRocID % number_of_crv_rocs_per_dtc; // TODO: Is this correct?
   crvData.header.s.SubsystemID = DTCLib::DTC_Subsystem_CRV;
   crvData.header.s.Valid = 1;
   // Word 2
-  crvData.header.s.PacketCount =
-      (crvData.header.s.TransferByteCount - 16) /
-      16; // TODO: That's how pcie_linux_kernel_module/dtcInterfaceLib/DTC.cpp
-          // interpretes it, but it seems redundant
-
+  // That's how pcie_linux_kernel_module/dtcInterfaceLib/DTC.cpp
+  // interpretes it, but it seems redundant
+  crvData.header.s.PacketCount = (crvData.header.s.TransferByteCount - 16) / 16; 
   // Word 3
   uint64_t timestamp = eventNum; // TODO: Is this correct?
   crvData.header.s.ts10 = static_cast<adc_t>(timestamp & 0xFFFF);
@@ -1195,9 +1198,8 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
       globalRocID % number_of_crv_rocs_per_dtc; // TODO: Is this correct?
   // Word 1
   crvData.rocStatus.ControllerEventWordCount =
-      sizeof(CRVROCStatusPacket) +
-      sizeof(CRVHitReadoutPacket) * nHits; // TODO: ArtFragmentReader::GetCRVHitCount() seems to
-                                           // interpret this as byte counter and not as word count
+      (sizeof(CRVROCStatusPacket) +
+       sizeof(CRVHitReadoutPacket) * nHits)/2;
   // Word 2
   crvData.rocStatus.ActiveFEBFlags2 = 0xFF;
   crvData.rocStatus.unused2 = 0;
@@ -1205,18 +1207,22 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
   crvData.rocStatus.ActiveFEBFlags0 = 0xFF;
   crvData.rocStatus.ActiveFEBFlags1 = 0xFF;
   // Word 3
-  crvData.rocStatus.unused3 = 0;
-  crvData.rocStatus.unused4 = 0;
+  crvData.rocStatus.TriggerCount = nHits; // TODO: Is this is what is meant by TriggerCount? 
+                                          // Why isn't this number used in
+                                          // ArtFragmentReader::GetCRVHitCount()?
   // Word 4
-  crvData.rocStatus.TriggerCount =
-      nHits; // TODO: Is this is what is meant by TriggerCount? Why isn't this number used in
-             // ArtFragmentReader::GetCRVHitCount()?
+  crvData.rocStatus.Status = 0x0;
+  crvData.rocStatus.unused3 = 0;
   // Word 5
+  crvData.rocStatus.unused4 = 0;
   crvData.rocStatus.unused5 = 0;
-  crvData.rocStatus.unused6 = 0;
   // Word 6
   crvData.rocStatus.Errors = 0x0;
   crvData.rocStatus.EventType = 0; // TODO: How is this defined?
+  // Word 7
+  crvData.rocStatus.MicroBunchNumberLow = 0;
+  // Word 8
+  crvData.rocStatus.MicroBunchNumberHigh = 0;
 }
 
 //--------------------------------------------------------------------------------

@@ -11,7 +11,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
+//#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
+#include "Offline/DAQ/inc/CRVFragmentTmp.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -50,7 +51,8 @@ public:
   virtual void produce(Event&);
 
 private:
-  int decompressCrvDigi(uint8_t adc);
+//  int decompressCrvDigi(uint8_t adc);
+  int16_t decompressCrvDigi(int16_t adc);
 
   int diagLevel_;
 
@@ -69,6 +71,7 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
+/*
 int CrvDigisFromFragments::decompressCrvDigi(uint8_t adc) {
   // TODO: Temporary implementation until we have the real compression used at the FEBs
   int toReturn = adc;
@@ -82,6 +85,11 @@ int CrvDigisFromFragments::decompressCrvDigi(uint8_t adc) {
     toReturn = (adc - 125) * 16 + 400;
   toReturn += 95;
   return toReturn;
+}
+*/
+int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc) 
+{
+  return adc;
 }
 
 void CrvDigisFromFragments::produce(Event& event) {
@@ -113,7 +121,8 @@ void CrvDigisFromFragments::produce(Event& event) {
   for (size_t idx = 0; idx < numCrvFrags; ++idx) {
 
     const auto& fragment((*crvFragments)[idx]);
-    mu2e::CRVFragment cc(fragment);
+//    mu2e::CRVFragment cc(fragment);
+    mu2e::CRVFragmentTmp cc(fragment);
 
     if (diagLevel_ > 1) {
       std::cout << std::endl;
@@ -188,9 +197,17 @@ void CrvDigisFromFragments::produce(Event& event) {
           int crvBarIndex = (FEB * 64 + channel) / 4;
           int SiPMNumber = (FEB * 64 + channel) % 4;
 
-          std::array<unsigned int, 8> adc;
+          // TODO: This is a temporary implementation.
+          if(crvHit.NumSamples!=8)
+          {
+            std::cerr<<"Number of samples is not 8!"<<std::endl;
+            continue;
+          }
+
+          // TODO: This is a temporary implementation.
+          std::array<int16_t, 8> adc;
           for (int j = 0; j < 8; j++)
-            adc[j] = decompressCrvDigi(crvHit.Waveform().at(j));
+            adc[j] = decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
           crv_digis->emplace_back(adc, crvHit.HitTime, mu2e::CRSScintillatorBarIndex(crvBarIndex),
                                   SiPMNumber);
         }
@@ -199,6 +216,12 @@ void CrvDigisFromFragments::produce(Event& event) {
 
           for (auto const& crvHit : crvHits) {
 
+            // TODO: This is a temporary implementation.
+            if(crvHit.NumSamples!=8)
+            {
+              std::cerr<<"Number of samples is not 8!"<<std::endl;
+              continue;
+            }
               #if LONG_FORM_CRV
             // TODO: This is a temporary implementation.
             // There will be a major change on the barIndex+SiPMNumber system,
@@ -211,15 +234,6 @@ void CrvDigisFromFragments::produce(Event& event) {
 
             std::cout << "MAKEDIGI: " << SiPMNumber << " " << crvBarIndex << " " << crvHit.HitTime
                       << " " << crvHits.size() << " ";
-
-            auto hits = crvHit.Waveform();
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << decompressCrvDigi(hits[j]);
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
-            }
-            std::cout << std::endl;
 
             std::cout << "timestamp: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
             std::cout << "hdr->SubsystemID: " << hdr->GetSubsystemID() << std::endl;
@@ -244,11 +258,11 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "scintillatorBarIndex: " << crvHit.SiPMID / 4 << std::endl;
             std::cout << "TDC: " << crvHit.HitTime << std::endl;
             std::cout << "Waveform: {";
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << hits[j];
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
+            // TODO: This is a temporary implementation.
+            for (size_t j = 0; j < 8; j++) 
+            {
+              std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
+              if (j+1 < 8) std::cout << " ";
             }
             std::cout << "}" << std::endl;
             #else
@@ -256,12 +270,11 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "GREPMECRV: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
             std::cout << crvHit.SiPMID << " ";
             std::cout << crvHit.HitTime << " ";
-            auto hits = crvHit.Waveform();
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << hits[j];
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
+            // TODO: This is a temporary implementation.
+            for (size_t j = 0; j < 8; j++) 
+            {
+              std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
+              if (j+1 < 8) std::cout << " ";
             }
             std::cout << std::endl;
             #endif
