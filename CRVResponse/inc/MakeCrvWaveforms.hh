@@ -23,11 +23,13 @@ class MakeCrvWaveforms
                       std::vector<double> &waveform,
                       double startTime, double digitizationInterval);
     void AddElectronicNoise(std::vector<double> &waveform, double noise, CLHEP::RandGaussQ &randGaussQ);
+    double GetSinglePEMaxVoltage() {return _singlePEMaxVoltage;}
 
   private:
     std::vector<double> _singlePEWaveform;
     double _singlePEWaveformPrecision;
     double _singlePEReferenceCharge;
+    double _singlePEMaxVoltage;
 };
 
 }

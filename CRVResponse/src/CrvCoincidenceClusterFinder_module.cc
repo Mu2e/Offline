@@ -217,6 +217,7 @@ namespace mu2e
             sumXY+=ht->_x*ht->_y;
           }
           //filled one full position&time cluster
+          if(layerSet.size()<2) continue;
 
           //average counter position (PE weighted), slope, layers
           avgCounterPos/=PEs;

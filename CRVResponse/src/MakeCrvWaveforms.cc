@@ -46,6 +46,8 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
     previousVoltage=currentVoltage;
   }
   f.close();
+
+  _singlePEMaxVoltage = *std::max_element(_singlePEWaveform.begin(), _singlePEWaveform.end());
 }
 
 void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times, 
@@ -56,6 +58,7 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   waveform.clear();
 
   if(times.size()==0) return;
+  waveform.resize(8);
 
   std::vector<double>::const_iterator iterTime=times.begin();
   std::vector<double>::const_iterator iterCharge=charges.begin();
