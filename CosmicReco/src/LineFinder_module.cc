@@ -48,11 +48,11 @@ namespace mu2e{
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
         fhicl::Atom<int> diag{Name("diag"), Comment("Create diag histograms"),0};
-        fhicl::Atom<int> minpeak{Name("minPeak"), Comment("Minimum hits in accumulator peak"),3};
-        fhicl::Atom<float> maxDOCA{Name("maxDOCA"), Comment("Largest DOCA that is considered on the track (mm)"),3};
-        fhicl::Atom<float> t0offset{Name("t0offset"), Comment("T0 offset"), 0};
-        fhicl::Atom<int> nsteps{Name("NSteps"), Comment("Number of steps per straw"), 8};
-        fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res"), 0.5};
+        fhicl::Atom<int> minpeak{Name("minPeak"), Comment("Minimum hits in accumulator peak")};
+        fhicl::Atom<float> maxDOCA{Name("maxDOCA"), Comment("Largest DOCA that is considered on the track (mm)")};
+        fhicl::Atom<float> t0offset{Name("t0offset"), Comment("T0 offset")};
+        fhicl::Atom<int> nsteps{Name("NSteps"), Comment("Number of steps per straw")};
+        fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res")};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
       };
@@ -127,12 +127,17 @@ void LineFinder::produce(art::Event& event ) {
     tseed._track.converged = true;
 
     int seedSize = findLine(tchits, event, tseed);
+    if (_diag > 1)
+      std::cout << "LineFinder: seedSize = " << seedSize << std::endl;
 
     if (seedSize >= _minPeak){
+      if (_diag > 0)
+        std::cout << "LineFinder: found line (" << seedSize << ")" << std::endl;
       tseed._status.merge(TrkFitFlag::Straight);
       tseed._status.merge(TrkFitFlag::hitsOK);
       tseed._status.merge(TrkFitFlag::helixOK);
       tseed._status.merge(TrkFitFlag::helixConverged);
+      tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
 
       CosmicTrackSeedCollection*  tcol  = seed_col.get();
       tcol->push_back(tseed);
@@ -181,7 +186,8 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
             bestll = ll;
             seedDir = newdir.unit();
             if (seedDir.y() > 0) seedDir *= -1;
-            seedInt = ipos - newdir*ipos.y()/newdir.y();
+            if (seedDir.y() != 0)
+              seedInt = ipos - newdir*ipos.y()/newdir.y();
           }
         }
       }
@@ -217,13 +223,15 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
   tseed._track.FitParams.B0 = seedInt.y();
   tseed._track.FitParams.A1 = seedDir.x();
   tseed._track.FitParams.B1 = seedDir.y();
-  XYZVec X(1,0,0);
-  XYZVec Y(0,1,0);
-  XYZVec Z(0,0,1);
+  XYZVectorF X(1,0,0);
+  XYZVectorF Y(0,1,0);
+  XYZVectorF Z(0,0,1);
   TrackAxes XYZ(X,Y,Z);
   tseed._track.InitCoordSystem = XYZ;
   tseed._track.FitCoordSystem = XYZ;
-  TrackEquation XYZTrack(Geom::toXYZVec(seedInt), Geom::toXYZVec(seedDir));
+  XYZVectorF xyzint(seedInt);
+  XYZVectorF xyzdir(seedDir);
+  TrackEquation XYZTrack(xyzint,xyzdir);
   tseed._track.SetFitEquation(XYZTrack);
 
   // For compatibility FIXME

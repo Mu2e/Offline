@@ -33,7 +33,6 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
@@ -47,7 +46,6 @@
 #include "TFile.h"
 #include "TF1.h"
 #include "TF2.h"
-
 
 namespace mu2e {
 
@@ -152,7 +150,6 @@ namespace mu2e {
 
     return value;
   }
-
 
   //================================================================
   double AntiProtonGun::plmax(double theta, double xx) {

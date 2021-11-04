@@ -51,6 +51,7 @@ namespace mu2e
     double                 _earliestHitTime;
     CLHEP::Hep3Vector      _earliestHitPos;
   };
+  typedef std::vector<mu2e::CrvCoincidenceClusterMC> CrvCoincidenceClusterMCCollection;
 }
 
 #endif /* MCDataProducts_CrvCoincidenceClusterMC_hh */

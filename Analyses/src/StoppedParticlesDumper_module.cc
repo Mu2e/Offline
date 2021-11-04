@@ -22,10 +22,8 @@
 #include "canvas/Utilities/InputTag.h"
 #include "art_root_io/TFileService.h"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -189,7 +187,6 @@ namespace mu2e {
       auto spColl = event.getValidHandle<StepPointMCCollection>(iColl);
       spMCColls.push_back( *spColl );
     }
-
 
     if(dumpSimParticleLeaves_) {
       auto ih = event.getValidHandle<SimParticleCollection>(input_);

@@ -30,7 +30,7 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -279,7 +279,7 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
     _shfcol.reserve(_chcol->size());
   // loop over all hits 
     unsigned nch = _chcol->size();
-    XYZVec cpos;
+    XYZVectorF cpos;
     for(unsigned ich=0; ich<nch;++ich){
       ComboHit const& ch = _chcol->at(ich);
       _shfcol.push_back(ch.flag());
@@ -336,7 +336,7 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
       ComboHit const& ch = _chcol->at(ich);
       if(_shfcol[ich].hasAllProperties(_cesel)){
 	_ceclust._nce += ch.nStrawHits();
-	XYZVec cpos = ch.pos();
+	XYZVectorF cpos = ch.pos();
 	
 	float hrho = sqrt(cpos.Perp2());
 	double hphi = cpos.phi();
@@ -363,7 +363,7 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
       tchi._dt = _ttcalc.comboHitTime(ch,_pitch) -tc._t0._t0;
       tchi._wdist = ch.wireDist();
       tchi._werr = ch.wireRes();
-      XYZVec const& pos = ch.pos();
+      XYZVectorF const& pos = ch.pos();
       double phi = ch.phi();
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
       tchi._rho = sqrt(pos.Perp2());
@@ -563,7 +563,7 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
       tcinfo._tcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch);
       tcinfo._dtcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch) - tc._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
-      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskID(),tc._caloCluster->cog3Vector())));
+      XYZVectorF cog = XYZVectorF(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskID(),tc._caloCluster->cog3Vector())));
       tcinfo._cog = cog;
     }
     // mc info

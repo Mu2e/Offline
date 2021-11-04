@@ -23,6 +23,7 @@ namespace mu2e {
          std::vector<float>       timeProp_;
          std::vector<float>       cdf_;
          unsigned                 nTimeDiv_; 
+         unsigned                 nZDiv_;
          float                    dzTime_;
          CLHEP::RandFlat          randFlat_;
          float                    lightSpeed_;

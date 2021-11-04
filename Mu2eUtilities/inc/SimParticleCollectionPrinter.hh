@@ -8,7 +8,6 @@
 #include <string>
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/exception.h"
 #include "fhiclcpp/types/Atom.h"
@@ -37,7 +36,6 @@ namespace mu2e {
 
       fhicl::Atom<bool> enabled {Name("enabled"), true};
     };
-
 
     explicit SimParticleCollectionPrinter(const Config& conf);
 

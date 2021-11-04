@@ -729,8 +729,8 @@ namespace mu2e {
     //    float hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
     float hist[50], minX(0), maxX(0.025), stepX(0.0005), nbinsX(50); // make it 20 bins: gianipez test 2019-09-23
 
-    XYZVec* center = &Helix._center;
-    XYZVec  pos_ref;
+    XYZVectorF* center = &Helix._center;
+    XYZVectorF  pos_ref;
 //-----------------------------------------------------------------------------
 // 2017-09-26 gianipez fixed a bug: in case the Helix phi-z fit didn't converge yet, 
 // Helix._dfdz is set to -1e6, so we need to make a check here!
@@ -1030,12 +1030,12 @@ namespace mu2e {
 
       FaceZ_t*       facez     = &Helix._oTracker[PhiZInfo.faceId];
       float         z         = Helix._zFace[PhiZInfo.faceId];
-      XYZVec         helCenter = Helix._center;
+      XYZVectorF         helCenter = Helix._center;
       float         radius    = Helix._radius;
       float         weight    = PhiZInfo.weight;
 
       if (Helix._sxy.qn() > 0) {
-	helCenter = XYZVec( Helix._sxy.x0(), Helix._sxy.y0(), 0);
+	helCenter = XYZVectorF( Helix._sxy.x0(), Helix._sxy.y0(), 0);
 	radius    = Helix._sxy.radius();
       }
   
@@ -1216,9 +1216,9 @@ namespace mu2e {
   void CalHelixFinderAlg::addCaloClusterToFitPhiZ(CalHelixFinderData& Helix){
     float dfdz      = Helix._dfdz;
     float phi0      = Helix._fz0;
-    XYZVec helCenter = Helix._center;
+    XYZVectorF helCenter = Helix._center;
     if (Helix._sxy.qn() > 0) {
-      helCenter = XYZVec( Helix._sxy.x0(), Helix._sxy.y0(), 0);
+      helCenter = XYZVectorF( Helix._sxy.x0(), Helix._sxy.y0(), 0);
     }
 
     float zCl   = fCaloZ;
@@ -1278,9 +1278,9 @@ namespace mu2e {
 // gianipez: procedure for aligning the phi vector
 //-----------------------------------------------------------------------------
     ::LsqSums4        szphi;
-    int               count(0);
-    float            chi2min, deltaPhi, dphi_max(0);
-
+    int               count(0), minNFitHits(5);
+    float             chi2min, deltaPhi, dphi_max(0);
+    
     HitInfo_t         iworst;//(-1,-1);
 
     const char        banner[200] = "doLinearFitPhiZ";
@@ -1340,7 +1340,7 @@ namespace mu2e {
       }
 	
       //update the dfdz and phi0 if...	
-      if ( (count>=5) &&      //FIXME!
+      if ( (count>=minNFitHits) &&      //FIXME!
 	   (faceHitChi2 < 2.) &&
 	   ( (fabs(phiZInfo.dfdz - Helix._szphi.dfdz()) < 8.e-4) ) &&//  || //require that the new value of dfdz is
 				 //close to the starting one. update dfdz only if:
@@ -1362,7 +1362,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // perform a cleanup in RZ
     //-----------------------------------------------------------------------------
-    if ( DoCleanUp == 1){
+    if ( (DoCleanUp == 1) && (Helix._szphi.qn()>=minNFitHits)){
       if ( Helix._szphi.chi2DofLine() > _chi2zphiMax) {
       NEXT_ITERATION:;
 	//reset the coordinates of the worst hit
@@ -1441,7 +1441,8 @@ namespace mu2e {
       success = true;
     }
     //----------------------------------------------------------------------//
-   if ((Helix._szphi.dfdz()*_dfdzsign) < 0.) { 
+    if ( (Helix._szphi.qn() < minNFitHits) || 
+	 ((Helix._szphi.qn() >= minNFitHits) && (Helix._szphi.dfdz()*_dfdzsign < 0.)) ) { 
       success = false;
     }
     else if (success) {                               // update helix results
@@ -1694,7 +1695,7 @@ namespace mu2e {
     radius      = Helix._radius;
 
     float      dx,dy,phi,max_dist;
-    XYZVec      shPos, hePos, strawDir, helCenter(x0, y0, 0);
+    XYZVectorF      shPos, hePos, strawDir, helCenter(x0, y0, 0);
 
     float      deltaZ(0.); 
     float      distXY(0.);
@@ -1731,7 +1732,7 @@ namespace mu2e {
       deltaZ    = Helix._zFace[f] - lastFacez;
       phi       = phi0 + (deltaZ)*dfdz;     
       //evaluate the helix prediction using the z coordinate of the panel
-      hePos     = XYZVec(x0 + radius*std::cos(phi),
+      hePos     = XYZVectorF(x0 + radius*std::cos(phi),
 			 y0 + radius*std::sin(phi),
 			 Helix._zFace[f]);
       //check the Panel-phi wrt to the DS center
@@ -1904,7 +1905,7 @@ namespace mu2e {
     float         straw_mean_radius(0), chi2_global_helix(0), total_weight(0);
     float         x_center(Helix._center.x()), y_center(Helix._center.y()), radius(Helix._radius);
     float         fz0(Helix._fz0), lambda(1./Helix._dfdz);
-    XYZVec         hel_pred(0., 0., 0.);
+    XYZVectorF         hel_pred(0., 0., 0.);
 
     PanelZ_t*      panelz(0);
     FaceZ_t*       facez(0);
@@ -1963,7 +1964,7 @@ namespace mu2e {
 	  }
 
 	  if (_debug > 10) {
-	    XYZVec*     shPos = &hit->_pos;
+	    XYZVectorF*     shPos = &hit->_pos;
 	    int         is_outlier    = hit->_flag.hasAllProperties(StrawHitFlag::outlier);
 	    string      type;
 	    if      ((f == Helix._seedIndex.face) && (p == Helix._seedIndex.panel) && (i == Helix._seedIndex.panelHitIndex)) type = "seed";
@@ -2182,7 +2183,7 @@ namespace mu2e {
 // along the wire and in the drift direction
 //--------------------------------------------------------------------------------
   float  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit      ,
-					     const XYZVec&         HelCenter,
+					     const XYZVectorF&         HelCenter,
 					     float                Radius   ) {
 
     float    transErr = 5./sqrt(12.);
@@ -2211,7 +2212,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   float  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit      ,
-						const XYZVec&         HelCenter,
+						const XYZVectorF&         HelCenter,
 						float                Radius   ,
 						int                   Print    ,
 						const char*           Banner   ) {
@@ -2249,8 +2250,8 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // calculate the radial distance of a straw hit from the helix prediction
 //--------------------------------------------------------------------------------
-  float  CalHelixFinderAlg::calculateRadialDist (const XYZVec& HitPos   ,
-						  const XYZVec& HelCenter,
+  float  CalHelixFinderAlg::calculateRadialDist (const XYZVectorF& HitPos   ,
+						  const XYZVectorF& HelCenter,
 						  float        Radius   ) {
     float dx = HitPos.x()-HelCenter.x();
     float dy = HitPos.y()-HelCenter.y();
@@ -2263,7 +2264,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void   CalHelixFinderAlg::doWeightedCircleFit (CalHelixFinderData& Helix,
 						 HitInfo_t           SeedIndex,
-						 XYZVec&             HelCenter,
+						 XYZVectorF&             HelCenter,
 						 float&             Radius   ,
 						 int                 Print    ,
 						 const char*         Banner   ) {
@@ -2355,7 +2356,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void    CalHelixFinderAlg::searchWorstHitWeightedCircleFit(CalHelixFinderData& Helix,
 							     HitInfo_t           SeedIndex,
-							     const XYZVec&       HelCenter,
+							     const XYZVectorF&       HelCenter,
 							     float&             Radius,
 							     HitInfo_t&          Iworst,
 							     float&             HitChi2Worst)
@@ -2485,7 +2486,7 @@ namespace mu2e {
     float         wtWorst;
     float         chi2, chi2_min;
 
-    XYZVec          hitPos, strawDir, helCenter, helCenter_start;
+    XYZVectorF          hitPos, strawDir, helCenter, helCenter_start;
     mu2e::ComboHit* hit(0);
     //    FaceZ_t*        facez(0);
     //    PanelZ_t*       panelz(0);
@@ -2668,7 +2669,7 @@ namespace mu2e {
     float      wt, /*e2,*/ x, y, r;
     float      phiwt(-9999.);
 
-    XYZVec      hitPos, strawDir, helCenter, hel_pred(0.,0.,0.);
+    XYZVectorF      hitPos, strawDir, helCenter, hel_pred(0.,0.,0.);
 
     float      dfdz, phi0, dphi, dphiChi2(0.0), phi_pred;
     
@@ -2970,7 +2971,7 @@ namespace mu2e {
 // p3     : postion of the EMC cluster
 //-----------------------------------------------------------------------------
     float         radius, phi0, dx, dy, phi, Chi2;
-    XYZVec         center, shPos, hePos;
+    XYZVectorF         center, shPos, hePos;
 //-----------------------------------------------------------------------------
 // mode0GoodPoints: number of points belonging to a trajectory when dfdz is not
 //                  re-calculated using the function calculateDfDz()
@@ -3024,9 +3025,9 @@ namespace mu2e {
     float          lastFacez    = seedFacez;//Helix._zFace[SeedIndex.face];
     float          faceHitChi2  = 1e10;
 
-    XYZVec p1(0.,0.,0.);	       // target, z(ST) = 5971. - 10200. is not used
-    XYZVec p2(seedHit->_pos);          // seed hit
-    XYZVec p3(fCaloX,fCaloY,fCaloZ);   // cluster
+    XYZVectorF p1(0.,0.,0.);	       // target, z(ST) = 5971. - 10200. is not used
+    XYZVectorF p2(seedHit->_pos);          // seed hit
+    XYZVectorF p3(fCaloX,fCaloY,fCaloZ);   // cluster
     
     if (!calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz))    return;  
     
@@ -3483,10 +3484,10 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // helix parameters are defined at Z=p2.z, Phi0 corresponds to p2
   //-----------------------------------------------------------------------------
-  bool CalHelixFinderAlg::calculateTrackParameters(const XYZVec&   p1       ,
-						   const XYZVec&   p2       ,
-						   const XYZVec&   p3       ,
-						   XYZVec&         Center   ,
+  bool CalHelixFinderAlg::calculateTrackParameters(const XYZVectorF&   p1       ,
+						   const XYZVectorF&   p2       ,
+						   const XYZVectorF&   p3       ,
+						   XYZVectorF&         Center   ,
 						   float&         Radius   ,
 						   float&         Phi0     ,
 						   float&         DfDz32) {
@@ -3644,7 +3645,7 @@ namespace mu2e {
     ComboHit*      hit(0);
     FaceZ_t*       facez(0);
     PanelZ_t*      panelz(0);
-    XYZVec*        pos(0);
+    XYZVectorF*        pos(0);
     
     int            counter(0);
 
@@ -3716,7 +3717,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
   printf("nhits = %10i\n",nhits);
 
   mu2e::ComboHit*    hit;
-  XYZVec* pos;
+  XYZVectorF* pos;
 
   float x[1000], y[1000];//, z[1000];
   int    flag[1000];
@@ -3857,7 +3858,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 
     mu2e::ComboHit* hit;
 
-    XYZVec* pos;
+    XYZVectorF* pos;
 
     float x[1000], y[1000];
     float z[1000], phi[1000], phi1[1000];
@@ -4031,7 +4032,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalHelixFinderAlg::resolve2PiAmbiguity(ComboHit* Hit, XYZVec& Center, float &Phi_ref, float &DPhi){
+  void CalHelixFinderAlg::resolve2PiAmbiguity(ComboHit* Hit, XYZVectorF& Center, float &Phi_ref, float &DPhi){
     float dx      = (Hit->_pos.x() - Center.x());
     float dy      = (Hit->_pos.y() - Center.y());
     float phi     = polyAtan2(dy, dx);
@@ -4050,9 +4051,9 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     Hit->_hphi = phi;
   
   }
-  // void CalHelixFinderAlg::resolve2PiAmbiguity(CalHelixFinderData& Helix,const XYZVec& Center, float DfDz, float Phi0){
+  // void CalHelixFinderAlg::resolve2PiAmbiguity(CalHelixFinderData& Helix,const XYZVectorF& Center, float DfDz, float Phi0){
   
-  //   const XYZVec*  pos;
+  //   const XYZVectorF*  pos;
   //   float         z, phi, phi_ref, dphi, dx, dy;
 
   //   FaceZ_t*        facez(0);

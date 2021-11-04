@@ -14,8 +14,8 @@
 //#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
 #include "Offline/DAQ/inc/CRVFragmentTmp.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>

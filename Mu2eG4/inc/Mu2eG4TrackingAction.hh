@@ -12,7 +12,7 @@
 
 #include "Geant4/G4UserTrackingAction.hh"
 
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include "Offline/Mu2eG4/inc/EventNumberList.hh"
 #include "Offline/Mu2eG4/inc/PhysicsProcessInfo.hh"

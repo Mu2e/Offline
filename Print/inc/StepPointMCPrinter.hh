@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Offline/Print/inc/ProductPrinter.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

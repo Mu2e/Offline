@@ -5,7 +5,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/GeomPrimitives/inc/TubsParams.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
@@ -82,7 +82,7 @@ namespace mu2e {
 	// if (z < z_first_hit )  continue;
 	// if (z > z_last_hit  )  continue;
 
-	XYZVec  pos;
+	XYZVectorF  pos;
 	pos.SetZ(z);
 	robustHel->position(pos);
 

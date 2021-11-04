@@ -28,6 +28,7 @@ namespace mu2e {
   class SimParticleTimeOffset {
   public:
 
+#ifndef __ROOTCLING__
     struct Config {
       fhicl::Sequence<art::InputTag> inputs{
         fhicl::Name("inputs"),
@@ -37,6 +38,7 @@ namespace mu2e {
     };
 
     explicit SimParticleTimeOffset(const Config& conf);
+#endif
     explicit SimParticleTimeOffset(const fhicl::ParameterSet& pset); // legacy
     explicit SimParticleTimeOffset(const std::vector<art::InputTag>& tags);
 

@@ -1,2 +1,2 @@
-physics.filters.tprHelixCalibIPADeMEventPrescale.nPrescale    : 1
+physics.filters.tprHelixCalibIPADeMEventPrescale.nPrescale    : 1000
 physics.filters.tprHelixCalibIPADeMEventPrescale.triggerFlag  : ["PrescaleRandom"]

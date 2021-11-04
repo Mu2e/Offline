@@ -14,7 +14,7 @@
 //Mu2e Data Prods:
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -179,7 +179,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         findData(event);
         
         std::vector<double>  xseed, yseed, zseed, xdrift, ydrift, zdrift, a0seed, a1seed, b0seed, b1seed, a0drift, a1drift, b0drift, b1drift;
-        std::vector<XYZVec> xprimes_seed, yprimes_seed, zprimes_seed, xprimes_drift,  yprimes_drift,  zprimes_drift;
+        std::vector<XYZVectorF> xprimes_seed, yprimes_seed, zprimes_seed, xprimes_drift,  yprimes_drift,  zprimes_drift;
         
         //find time clusters:
     	unsigned  _ncosmics = _coscol->size();
@@ -289,10 +289,10 @@ Below here are a series of macros -  they are not glamorous but they produce use
 					minor_error_line.SetLineColor(ihit);
 					double z0prime{(p.Dot(zprimes_drift[0]))};                      
 					poly.DrawPolyMarker( 1, &z0prime, &x0prime );
-					XYZVec major = (s*w);
-					XYZVec minor = Geom::ZDir().Cross(w) * t;
+					XYZVectorF major = (s*w);
+					XYZVectorF minor = GenVector::ZDir().Cross(w) * t;
 					double major2 = (s*w).Mag2();
-					double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+					double minor2 = (GenVector::ZDir().Cross(w) * t).Mag2();
 			
 					double major_x1 = p.Dot(xprimes_drift[0])+sqrt(major2)*(major.Unit()).Dot(xprimes_drift[0]);
 					double major_x2 = p.Dot(xprimes_drift[0])-sqrt(major2)*(major.Unit()).Dot(xprimes_drift[0]);
@@ -386,10 +386,10 @@ Below here are a series of macros -  they are not glamorous but they produce use
 					minor_error_line.SetLineColor(ihit);
 					double z0prime{(p.Dot(zprimes_seed[0]))};                      
 					poly.DrawPolyMarker( 1, &z0prime, &x0prime );
-					XYZVec major = (s*w);
-					XYZVec minor = Geom::ZDir().Cross(w) * t;
+					XYZVectorF major = (s*w);
+					XYZVectorF minor = GenVector::ZDir().Cross(w) * t;
 					double major2 = (s*w).Mag2();
-					double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+					double minor2 = (GenVector::ZDir().Cross(w) * t).Mag2();
 			
 					double major_x1 = p.Dot(xprimes_seed[0])+sqrt(major2)*(major.Unit()).Dot(xprimes_seed[0]);
 					double major_x2 = p.Dot(xprimes_seed[0])-sqrt(major2)*(major.Unit()).Dot(xprimes_seed[0]);
@@ -485,7 +485,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         
         std::vector<double> initpullsx, initpullsy, pullsx, pullsy, x, y, z, rawx, rawy, rawz, xinit, yinit, zinit, out_x, out_y, out_z, a0, a1, b0, b1,a0init, a1init, b0init, b1init, chi_dof_XDoublePrimeZPrime, chi_dof_YDoublePrimeZPrime, initchi_dof_YDoublePrimeZPrime, initchi_dof_XDoublePrimeZPrime;
         
-        std::vector<XYZVec> xprimes, yprimes, zprimes, xprimesinit,  yprimesinit,  zprimesinit;
+        std::vector<XYZVectorF> xprimes, yprimes, zprimes, xprimesinit,  yprimesinit,  zprimesinit;
       
          //find time clusters:
     	unsigned  _ncosmics = _coscol->size();
@@ -622,10 +622,10 @@ Below here are a series of macros -  they are not glamorous but they produce use
 			minor_error_line.SetLineColor(ihit);
 			double z0prime{(p.Dot(zprimes[0]))};                      
 			poly.DrawPolyMarker( 1, &z0prime, &x0prime );
-			XYZVec major = (s*w);
-			XYZVec minor = Geom::ZDir().Cross(w) * t;
+			XYZVectorF major = (s*w);
+			XYZVectorF minor = GenVector::ZDir().Cross(w) * t;
 			double major2 = (s*w).Mag2();
-			double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+			double minor2 = (GenVector::ZDir().Cross(w) * t).Mag2();
 			
 			double major_x1 = p.Dot(xprimes[0])+sqrt(major2)*(major.Unit()).Dot(xprimes[0]);
 			double major_x2 = p.Dot(xprimes[0])-sqrt(major2)*(major.Unit()).Dot(xprimes[0]);
@@ -969,7 +969,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         unsigned _nch = _chcol->size();
         //loop over tracks:
         std::vector<double> x,y,z;
-        std::vector<XYZVec> xprimes, yprimes, zprimes;
+        std::vector<XYZVectorF> xprimes, yprimes, zprimes;
         for(size_t i =0; i < _ncosmics; i++){
                 
           CosmicTrackSeed track =(*_coscol)[i];
@@ -1081,7 +1081,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 
 	std::vector<double> x, y, z, a0, a1, b0, b1;
-	std::vector<XYZVec> xprimes, yprimes, zprimes, initial_track_direction;
+	std::vector<XYZVectorF> xprimes, yprimes, zprimes, initial_track_direction;
         x.reserve(comboHits->size());
         y.reserve(comboHits->size());
         z.reserve(comboHits->size());
@@ -1226,7 +1226,7 @@ Below here are a series of macros -  they are not glamorous but they produce use
         TubsParams envelope(tracker->g4Tracker()->getInnerTrackerEnvelopeParams());
 
 	std::vector<double> x, y, z, a0, a1, b0, b1;
-	std::vector<XYZVec> xprimes, yprimes, zprimes, initial_track_direction;
+	std::vector<XYZVectorF> xprimes, yprimes, zprimes, initial_track_direction;
         x.reserve(comboHits->size());
         y.reserve(comboHits->size());
         z.reserve(comboHits->size());

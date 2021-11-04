@@ -6,6 +6,7 @@
 #define RecoDataProducts_AvikPIDProduct_HH
 
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -126,6 +127,7 @@ namespace mu2e {
     int    nUsedOsMuoD    () const { return _nUsedOsMuoD; }
   };
 
+   typedef std::vector<mu2e::AvikPIDProduct> AvikPIDProductCollection;
 
 
 } // end namespace mu2e

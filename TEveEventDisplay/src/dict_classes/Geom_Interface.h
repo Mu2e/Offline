@@ -34,9 +34,6 @@
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"*/
-//ART
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Run.h"
 //Geom:
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"

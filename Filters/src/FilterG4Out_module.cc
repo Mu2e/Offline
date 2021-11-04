@@ -21,7 +21,6 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-//
 // Andrei Gaponenko, 2013
 
 #include <iostream>
@@ -42,17 +41,13 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectory.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
-#include "Offline/MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 
 namespace mu2e {
 
@@ -180,8 +175,6 @@ namespace mu2e {
                   )
           };
 
-
-
       // It looks like the GenParticle compression code can write out multiple copies
       // of the same particle.  The setting is not used by any fcl files in the
       // current master branch of Offline.  Comment it out untile the issue is
@@ -195,8 +188,6 @@ namespace mu2e {
       //FIXME:            ),
       //FIXME:    false
       //FIXME:    };
-
-
 
     };
 
@@ -461,7 +452,6 @@ namespace mu2e {
                                       *inputParticles,
                                       psel,
                                       *outparts);
-
 
         if(compressGenParticles_) {
           for(auto& i : *outparts) {

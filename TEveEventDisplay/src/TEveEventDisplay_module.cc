@@ -1,4 +1,4 @@
-// ... libCore
+//... libCore
 #include <TApplication.h>
 #include <TSystem.h>
 #include <TList.h>
@@ -24,44 +24,44 @@
 using namespace std;
 using namespace mu2e;
 
-namespace mu2e 
+namespace mu2e
 {
   class TEveEventDisplay : public art::EDAnalyzer {
-	public:
+        public:
 
       struct Config{
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
         fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
-        fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};   
-        fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};   
-        fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};     
-        fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};  
-        fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};  
-        fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};      
+        fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};
+        fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};
+        fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};
+        fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};
+        fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};
+        fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
         //fhicl::Table<TEveMu2eMCInterface::Config> particles{Name("particles"),Comment("particles to plot")};
         fhicl::Sequence<int>particles{Name("particles"),Comment("PDGcodes to plot")};
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
-      explicit TEveEventDisplay(const Parameters& conf);
+	  explicit TEveEventDisplay(const Parameters& conf);
       virtual ~TEveEventDisplay();
       virtual void beginJob() override;
       virtual void beginRun(const art::Run& run) override;
       virtual void analyze(const art::Event& e);
       virtual void endJob() override;
-    private:
+    private:   
       Config _conf;
-      int _diagLevel;     
+      int _diagLevel;
       bool _showBuilding;
       bool _showDSOnly;
       bool _showCRV;
-      bool _showEvent; 
-      bool _isMCOnly; 
+      bool _showEvent;
+      bool _isMCOnly;
       bool _accumulate;
       TApplication* application_;
-      TDirectory*   directory_ = nullptr;   
+      TDirectory*   directory_ = nullptr;
       Collection_Filler _filler;
       std::vector<int> _particles;
       TEveMu2eMainWindow *_frame;
@@ -74,7 +74,7 @@ namespace mu2e
       int eventn = 0;
       bool eventSelected = false;
   };
-
+      
   TEveEventDisplay::TEveEventDisplay(const Parameters& conf) :
   art::EDAnalyzer(conf),
   _diagLevel(conf().diagLevel()),
@@ -86,44 +86,47 @@ namespace mu2e
   _accumulate(conf().accumulate()),
   _filler(conf().filler()),
   _particles(conf().particles())
-	{}
-
-
+  {}
+      
+      
   TEveEventDisplay::~TEveEventDisplay(){}
-
+      
   void TEveEventDisplay::beginJob(){
-   
+      
     directory_ = gDirectory;
     if ( !gApplication ){
       int    tmp_argc(0);
       char** tmp_argv(0);
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
-    }
+    } 
     //construct GUI:
-    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset);
-    //build 2D geometries:
-    _frame->CreateCaloProjection();
-    _frame->CreateTrackerProjection();//StartProjectionTabs();
+    std::cout<<"CRV coming in "<<_filler.addCrvHits_<<std::endl;
+    DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, false, _filler.addMCTraj_); 
+    std::cout<<"CRV coming in "<<DrawOpts.addCRVInfo<<std::endl;
+    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts);
+    //build 2D geometries (now optional):
+    if(DrawOpts.addCRVInfo)_frame->CreateCRVProjection();
+    if(DrawOpts.addClusters or DrawOpts.addCryHits) _frame->CreateCaloProjection();
+    _frame->CreateTrackerProjection();
     //send list of particles to viewer:
     _frame->SetParticleOpts(_particles);
   
   }
-
+          
   void TEveEventDisplay::beginRun(const art::Run& run){
     //import 3D GDML geom:
     _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     //make 2D tracker and calo:
-    _frame->PrepareCaloProjectionTab(run);
+    if(_filler.addClusters_) _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
-    std::cout<<" end begin Run "<<std::endl;
   }
-
+      
   void TEveEventDisplay::analyze(const art::Event& event){
     std::cout<<"[In TEveEventDisplay::analyze()]"<<std::endl;
     int eventid = event.id().event();
     int runid = event.run();
     int subrunid = event.subRun();
-
+    
     if((eventSelected==false) or ( eventSelected == true and runid == runn and eventid == eventn)){
       std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
       if(_showEvent){
@@ -139,17 +142,18 @@ namespace mu2e
         _firstLoop = false;
       }
     }
-  } 
-
-
+  }
+   
+      
   void TEveEventDisplay::endJob(){
     if(!foundEvent){
       char msg[300];
       sprintf(msg, "Reached end of file but #%i has not been found", true);
       new TGMsgBox(gClient->GetRoot(), gClient->GetRoot(), "Event Not Found", msg, kMBIconExclamation,kMBOk);
     }
-  }  
-
+  }
+      
 }
 using mu2e::TEveEventDisplay;
 DEFINE_ART_MODULE(TEveEventDisplay);
+

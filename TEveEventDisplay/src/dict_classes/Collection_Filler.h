@@ -17,20 +17,23 @@
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 //Kalman Tracks
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 //Tracker Hits:
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 //CRV:
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-//#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
+//#include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 //Art:
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
+#ifndef __ROOTCLING__
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#endif
 
 using namespace CLHEP;
 
@@ -44,6 +47,8 @@ namespace mu2e{
 	class Collection_Filler
 	{
   public:
+#ifndef __ROOTCLING__
+
     struct Config{
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -64,7 +69,7 @@ namespace mu2e{
       fhicl::Atom<bool> addHits{Name("addHits"), Comment("set to add the hits"),false};
       fhicl::Atom<bool> addTracks{Name("addTracks"), Comment("set to add tracks"),false};
       fhicl::Atom<bool> addClusters{Name("addClusters"), Comment("set to add calo lusters"),false};
-      fhicl::Atom<bool> addCrvHits{Name("addCrvHits"), Comment("set to add crv hits"),false};	
+      fhicl::Atom<bool> addCrvHits{Name("addCrvHits"), Comment("set to add crv hits"),false};
       fhicl::Atom<bool> addCrystallHits{Name("addCrystalHits"), Comment("for calo cry hits"), false};
       fhicl::Atom<bool> addCosmicSeedFit{Name("addCosmicSeedFit"), Comment("for fitted cosmic track"), false};
       fhicl::Atom<bool> addTrkExtTrajs{Name("addTrkExtTrajs"), Comment("set to add track exit trajectories"), false};
@@ -74,13 +79,12 @@ namespace mu2e{
       fhicl::Atom<bool> MCOnly{Name("MCOnly"), Comment("set to see only MC Data Products"), false};
     };
 
-    #ifndef __CINT__
-
     explicit Collection_Filler(const Config& conf);
+#endif
     Collection_Filler(const Collection_Filler &);
     Collection_Filler& operator=(const Collection_Filler &);
 
-    //RecoDataProducts: 
+    //RecoDataProducts:
     art::InputTag chTag_;
     art::InputTag crvcoinTag_;
     art::InputTag cosmicTag_;
@@ -89,7 +93,7 @@ namespace mu2e{
     art::InputTag hseedTag_;
     std::vector<art::InputTag> kalseedTag_;
     art::InputTag trkexttrajTag_;
-    
+
     //MCDataProdutcs:
     art::InputTag mctrajTag_;
 
@@ -101,6 +105,7 @@ namespace mu2e{
     virtual ~Collection_Filler(){};
 
   private:
+#ifndef __ROOTCLING__
     Config _conf;
     #endif
   ClassDef(Collection_Filler,0);
@@ -108,4 +113,4 @@ namespace mu2e{
 
 }
 
-#endif 
+#endif

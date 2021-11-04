@@ -63,8 +63,8 @@ namespace mu2e {
 	fhicl::Atom<float>ctE{ Name("crossTalkEnergy"), Comment("Energy to filter cross-talk in adajcent straws (MeV)"),0.007};
 	fhicl::Atom<float>ctMinT{ Name("crossTalkMinimumTime"), Comment("Earliest time for cross-talk filter (nsec)"),-1};
 	fhicl::Atom<float>ctMaxT{ Name("crossTalkMaximumTime"), Comment("Latest time for cross-talk filter (nsec)"),100};
-	fhicl::Atom<float>minT{ Name("minimumTime"), Comment("Earliest StrawDigi time to process (nsec)"),500};
-	fhicl::Atom<float>maxT{ Name("maximumTime"), Comment("Latest StrawDigi time to process (nsec)"),2000};
+	fhicl::Atom<float>minT{ Name("minimumTime"), Comment("Earliest StrawDigi time to process (nsec)")};
+	fhicl::Atom<float>maxT{ Name("maximumTime"), Comment("Latest StrawDigi time to process (nsec)")};
 	fhicl::Atom<bool>filter{ Name("FilterHits"), Comment("Filter hits (alternative is to just flag)") };
 	fhicl::Atom<bool>writesh{ Name("WriteStrawHitCollection"), Comment("Save StrawHitCollection")};
 	fhicl::Atom<bool>flagXT{ Name("FlagCrossTalk"), Comment("Search for cross-talk"),false};
@@ -225,7 +225,7 @@ namespace mu2e {
         if (_fittype != TrkHitReco::FitType::firmwarepmp)
           adcwaveform = sdadccol->at(isd);
 
-        shrUtils.createComboHit(chCol, shCol, caloClusters, digi.strawId(), digi.TDC(), digi.TOT(), digi.PMP(), adcwaveform.samples(),
+        shrUtils.createComboHit(isd, chCol, shCol, caloClusters, digi.strawId(), digi.TDC(), digi.TOT(), digi.PMP(), adcwaveform.samples(),
           trackerStatus,  srep, tt);
       }
       //flag straw and electronic cross-talk

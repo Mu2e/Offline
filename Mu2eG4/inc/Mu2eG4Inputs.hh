@@ -12,7 +12,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4PrimaryType.hh"
 
 #include "art/Framework/Principal/Handle.h"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 namespace art { class Event; }
 

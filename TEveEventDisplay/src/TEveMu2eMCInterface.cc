@@ -101,51 +101,51 @@ namespace mu2e{
       auto t = new TEveText(pid);
       Color_t color;
       double posy = 0;
-      double posz = 3000.0;
-      t->SetFontSize(15);
+      double posz = text_z_pos;
+      t->SetFontSize(fontsize);
       switch(PDGCode) {
-          case 11:
-              color = 2;
+          case PDGCode::e_minus:
+              color = kRed;
               pid = "electron -";
               posy = 1400.0;
               break;
-          case -11:
-              color = 5;
+          case PDGCode::e_plus:
+              color = kYellow;
               pid = "positron +";
               posy = 1500.0;
               break;
-          case 13:
-              color = 3;
+          case PDGCode::mu_minus:
+              color = kGreen;
               pid = "muon - ";
               posy = 1600.0;
               break;
-          case -13:
-              color = 46;
+          case PDGCode::mu_plus:
+              color = kRed-9;
               pid = "muon + ";
               posy = 1700.0;
               break;
-          case -211:
-              color = 6;
+          case PDGCode::pi_minus:
+              color = kMagenta;
               pid = "pion -";
               posy = 1800.0;
               break;
-          case 211:
-              color = 9;
+          case PDGCode::pi_plus:
+              color = kViolet;
               pid = "pion +";
               posy = 1900.0;
               break;
-          case 2212:
-              color = 4;
+          case PDGCode::proton:
+              color = kBlue;
               pid = "proton";
               posy = 2000.0;
               break;
-          case 22:
-              color = 8;
+          case PDGCode::gamma:
+              color = kOrange;
               pid = "gamma";
               posy = 2100.0;
               break;
           default:
-              color = 7;
+              color = kCyan;
               pid = "other";
               posy = 2200.0;
               break;
@@ -205,11 +205,11 @@ namespace mu2e{
               TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ, line_twoDXY);
               line_twoDXZ->SetTitle(Form(title.c_str()));
               line_twoDXY->SetTitle(Form(title.c_str()));
-              line->SetLineWidth(3);
+              line->SetLineWidth(linewidth);
               line->SetPickable(kTRUE);
-              line_twoDXZ->SetLineWidth(3);
+              line_twoDXZ->SetLineWidth(linewidth);
               line_twoDXZ->SetPickable(kTRUE);
-              line_twoDXY->SetLineWidth(3);
+              line_twoDXY->SetLineWidth(linewidth);
               line_twoDXY->SetPickable(kTRUE);
               fTrackList2DXZ->AddElement(line_twoDXZ);
               fTrackList2DXY->AddElement(line_twoDXY);

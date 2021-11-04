@@ -4,7 +4,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "TH1D.h"
 #include <string>
 
@@ -20,13 +20,14 @@ namespace mu2e {
 
   private:
     std::string _name;
-    
+
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
     TH1D* _hI;
     TH1D* _hIS;
     TH1D* _ht;
+    TH1D* _ht2;
     TH1D* _hA;
   };
 }

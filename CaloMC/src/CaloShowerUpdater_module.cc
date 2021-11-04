@@ -7,7 +7,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 
 #include <iostream>
 #include <string>

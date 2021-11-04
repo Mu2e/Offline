@@ -80,12 +80,14 @@ namespace mu2e {
       anti_lambda_bInelastic, anti_lambda_c_PlusInelastic, anti_omega_b_MinusInelastic, anti_omega_c0Inelastic, // 151
       anti_xi_b_MinusInelastic, anti_xi_b0Inelastic,   anti_xi_c_PlusInelastic, anti_xi_c0Inelastic, // 155
       lambda_bInelastic,      lambda_c_PlusInelastic,  omega_b_MinusInelastic, omega_c0Inelastic, // 159
-      xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, truncated, // 164
-      mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest, // 166
-// stopped-muon physics processes, specific to Mu2e
-      mu2eCeMinusEndpoint,    mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, // 170
-      mu2eInternalRMC,        mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, // 174
-      mu2eFlatPhoton, // 175
+      xi_b_MinusInelastic,    xi_b0Inelastic,          xi_c_PlusInelastic,  xi_c0Inelastic, // 163
+      // stopped-muon physics processes, specific to Mu2e
+      truncated,       mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest,       mu2eCeMinusEndpoint, // 167
+      mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, mu2eInternalRMC,  // 171
+      mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, mu2eFlatPhoton, // 175
+      mu2eCePlusLeadingLog, mu2eunused2, mu2eunused3, mu2eunused4, 
+      mu2eunused5, mu2eunused6, mu2eunused7, mu2eunused8, 
+      uninitialized,
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -134,11 +136,13 @@ namespace mu2e {
     "anti_lambda_bInelastic", "anti_lambda_c+Inelastic", "anti_omega_b-Inelastic", "anti_omega_c0Inelastic", \
     "anti_xi_b-Inelastic",    "anti_xi_b0Inelastic",     "anti_xi_c+Inelastic", "anti_xi_c0Inelastic", \
     "lambda_bInelastic",      "lambda_c+Inelastic",      "omega_b-Inelastic",   "omega_c0Inelastic", \
-      "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic", "truncated", \
-      "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest", \
-      "mu2eCeMinusEndpoint",    "mu2eCeMinusLeadingLog",   "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", \
-      "mu2eInternalRMC",        "mu2eExternalRMC",         "mu2eFlateMinus",      "mu2eFlatePlus", \
-      "mu2eFlatPhoton"
+    "xi_b-Inelastic",         "xi_b0Inelastic",          "xi_c+Inelastic",      "xi_c0Inelastic", \
+    "truncated", "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest",  "mu2eCeMinusEndpoint", \
+    "mu2eCeMinusLeadingLog", "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", "mu2eInternalRMC", \
+    "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
+    "mu2eCePlusLeadingLog", "mu2eunused2", "mu2eunused3", "mu2eunused4", \
+    "mu2eunused5", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
+    "uninitialized"
 
   public:
 
@@ -149,8 +153,8 @@ namespace mu2e {
 
     // ROOT requires a default c'tor.
     ProcessCode():
-      _id(unknown){
-    }
+      _id(uninitialized){
+      }
 
     // Accept compiler supplied d'tor, copy c'tor and assignment operator.
 
@@ -200,8 +204,7 @@ namespace mu2e {
 
     // Check validity of an Id. Unknown is defined to be valid.
     static bool isValid( enum_type id){
-      if ( id <  unknown  ) return false;
-      if ( id >= lastEnum ) return false;
+      if ( id <  unknown  || id >= lastEnum ) return false;
       return true;
     }
 
