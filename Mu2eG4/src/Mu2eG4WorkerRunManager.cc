@@ -35,9 +35,12 @@
 #include "Geant4/G4TransportationManager.hh"
 #include "Geant4/G4VUserPhysicsList.hh"
 #include "Geant4/G4ParallelWorldProcessStore.hh"
+#if G4VERSION>4106
+#include "Geant4/G4HadronicParameters.hh"
+#else
 #include "Geant4/G4ParticleHPManager.hh"
 #include "Geant4/G4HadronicProcessStore.hh"
-
+#endif
 //Other includes
 #include <string>
 #include <atomic>
@@ -138,9 +141,12 @@ namespace mu2e {
 
     physicsList->SetVerboseLevel(rmvlevel_);
     SetVerboseLevel(rmvlevel_);
+#if G4VERSION>4106
+    G4HadronicParameters::Instance()->SetVerboseLevel(rmvlevel_);
+#else
     G4ParticleHPManager::GetInstance()->SetVerboseLevel(rmvlevel_);
     G4HadronicProcessStore::Instance()->SetVerbose(rmvlevel_);
-
+#endif
     //these called in G4RunManager::InitializePhysics()
     G4StateManager::GetStateManager()->SetNewState(G4State_Init);
     kernel->InitializePhysics();
