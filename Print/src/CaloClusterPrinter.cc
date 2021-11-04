@@ -89,7 +89,11 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
      os 
        << " CrystalHits:";
        for(auto& ic: obj.caloHitsPtrVector()) {
-	 os << " " << (*ic).crystalID();
+	 if (ic.isAvailable()) {
+	   os << " " << ic->crystalID();
+	 } else {
+	   os << "  missing caloHit   Ptr id " << ic.id() << "  key " << ic.key();
+	 }
        }
       os << "\n";
 

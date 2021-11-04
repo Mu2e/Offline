@@ -23,7 +23,7 @@
 #include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
 
 // straws
-#include "Offline/RecoDataProducts/inc/StrawHitCollection.hh"
+#include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiFlag.hh"
@@ -40,8 +40,10 @@
 #include "Offline/RecoDataProducts/inc/BkgQual.hh"
 
 // tracking output
+#include "Offline/RecoDataProducts/inc/KKLine.hh"
+
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
@@ -53,20 +55,19 @@
 #include "Offline/RecoDataProducts/inc/TrkQual.hh"
 #include "Offline/RecoDataProducts/inc/RecoQual.hh"
 #include "Offline/RecoDataProducts/inc/AlgorithmID.hh"
-#include "Offline/RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "KinKal/General/ParticleState.hh"
 
 // extrapolation and PID
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloMatchCollection.hh"
-#include "Offline/RecoDataProducts/inc/AvikPIDProductCollection.hh"
-#include "Offline/RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
-#include "Offline/RecoDataProducts/inc/PIDProductCollection.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
+#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDProduct.hh"
+#include "Offline/RecoDataProducts/inc/AvikPIDNewProduct.hh"
+#include "Offline/RecoDataProducts/inc/PIDProduct.hh"
 #include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 #include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // CRV
-#include "Offline/RecoDataProducts/inc/CrvDigiCollection.hh"
+#include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
@@ -75,16 +76,13 @@
 
 // ExtMon
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawCluster.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALRawClusterCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 // trigger
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"

@@ -10,12 +10,10 @@
 
 #include <iostream>
 #include <TGFrame.h>
-#ifndef __CINT__
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TVirtualX.h"
-#endif
 
 class TBox;
 class TGCheckButton;
@@ -53,11 +51,9 @@ namespace mu2e_eventdisplay
     EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset);
     virtual          ~EventDisplayFrame();
     void             fillGeometry();
-#ifndef __CINT__     //hide art::Event from ROOTCint
     void             setEvent(const art::Event& event, bool firstLoop=false);
     boost::shared_ptr<RootFileManager> getRootFileManager() {return _rootFileManager;}
     std::vector<boost::shared_ptr<HistDraw> > &getHistDrawVector(){return _histDrawVector;}
-#endif
     bool             isClosed() const;
     bool             getSelectedHitsName(std::string &className,
                                          std::string &moduleLabel,
@@ -94,13 +90,11 @@ namespace mu2e_eventdisplay
                                           //timer times out - knows about
                                           //this via TTimer::SetObject)
 
-#ifndef __CINT__    //hide boost from ROOTCint
     boost::shared_ptr<DataInterface>   _dataInterface;
     boost::shared_ptr<ContentSelector> _contentSelector;
     boost::shared_ptr<RootFileManager> _rootFileManager;
     boost::shared_ptr<RootFileManager> _rootFileManagerAnim;
     std::vector<boost::shared_ptr<HistDraw> > _histDrawVector;
-#endif
     double              _timeCurrent, _timeStart, _timeStop;
     int                 _minHits, _eventToFind;
     int                 _eventNumber, _subrunNumber, _runNumber;

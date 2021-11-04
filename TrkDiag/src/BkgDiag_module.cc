@@ -230,7 +230,7 @@ namespace mu2e
       BkgCluster const& cluster = _bkgccol->at(ibkg);
       BkgQual const& qual = _bkgqcol->at(ibkg);
       // fill cluster info
-      _cpos = Geom::Hep3Vec(cluster.pos()); 
+      _cpos = GenVector::Hep3Vec(cluster.pos()); 
       _ctime = cluster.time();
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
@@ -325,7 +325,7 @@ namespace mu2e
 	bkghinfo._gdist = bhit.distance();
 	bkghinfo._index = ich;
 	// calculate separation to cluster
-	Hep3Vector psep = Geom::Hep3Vec(PerpVector(ch.pos()-cluster.pos(),Geom::ZDir()));
+	Hep3Vector psep = GenVector::Hep3Vec(PerpVector(ch.pos()-cluster.pos(),GenVector::ZDir()));
 	double rho = psep.mag();
 	Hep3Vector pdir = psep.unit();
 	bkghinfo._rpos = psep;

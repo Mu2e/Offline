@@ -34,8 +34,9 @@ namespace mu2e {
     //    auto maxIter = std::max_element(wfstart,adcData.end());
     auto maxIter = wfstart;
     auto nextIter = maxIter; nextIter++;
-    while(nextIter != adcData.end() && *nextIter > *maxIter){
-      ++maxIter;
+    while(nextIter != adcData.end()){
+      if (*nextIter > *maxIter)
+        maxIter = nextIter;
       ++nextIter;
     }
     float peak = *maxIter;
@@ -59,7 +60,7 @@ namespace mu2e {
     return pmp*_invgain[id.getStraw()];
   }
 
-  bool StrawHitRecoUtils::createComboHit(std::unique_ptr<mu2e::ComboHitCollection> const& chCol,
+  bool StrawHitRecoUtils::createComboHit(size_t isd, std::unique_ptr<mu2e::ComboHitCollection> const& chCol,
       std::unique_ptr<mu2e::StrawHitCollection> const& shCol, const mu2e::CaloClusterCollection* caloClusters,
       mu2e::StrawId const& sid, mu2e::TrkTypes::TDCValues const& tdc,
       mu2e::TrkTypes::TOTValues const& tot, mu2e::TrkTypes::ADCValue const& pmp, mu2e::TrkTypes::ADCWaveform const& waveform,
@@ -137,9 +138,9 @@ namespace mu2e {
     float propd = straw.halfLength()+dw;
     if (eend == mu2e::StrawEnd(mu2e::StrawEnd::cal))
       propd = straw.halfLength()-dw;
-    XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
+    XYZVectorF pos = XYZVectorF(straw.getMidPoint()+dw*straw.getDirection());
     // create combo hit
-    static const XYZVec _zdir(0.0,0.0,1.0);
+    static const XYZVectorF _zdir(0.0,0.0,1.0);
     mu2e::ComboHit ch;
     ch._nsh = 1; // 'combo' of 1 hit
     ch._pos = pos;
@@ -153,7 +154,7 @@ namespace mu2e {
     ch._dtime = srep.driftTime(straw,selected_tot,energy);
     ch._ptime = propd/(2*halfpv);
     ch._pathlength = srep.pathLength(straw,selected_tot);
-    ch.addIndex(0); //FIXME // reference the digi; this allows MC truth matching to work
+    ch.addIndex(isd);
     // crude initial estimate of the transverse error
     static const float invsqrt12 = 1.0/sqrt(12.0);
     ch._tres = tt.strawOuterRadius()*invsqrt12;

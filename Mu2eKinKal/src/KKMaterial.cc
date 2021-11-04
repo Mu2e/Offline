@@ -12,18 +12,19 @@ namespace mu2e {
     wallmatname_(matconfig.strawWallMaterialName()),
     gasmatname_(matconfig.strawGasMaterialName()),
     wirematname_(matconfig.strawWireMaterialName()),
+    eloss_((MatEnv::DetMaterial::energylossmode)matconfig.eloss()),
     matdbinfo_(0) {}
 
   StrawMaterial const& KKMaterial::strawMaterial() const {
     if(matdbinfo_ == 0){
-      matdbinfo_ = new MatDBInfo(filefinder_);
+      matdbinfo_ = new MatDBInfo(filefinder_,eloss_);
       Tracker const & tracker = *(GeomHandle<Tracker>());
       auto const& sprop = tracker.strawProperties();
       smat_ = std::make_unique<StrawMaterial>(
-	sprop._strawOuterRadius, sprop._strawWallThickness, sprop._wireRadius,
-	matdbinfo_->findDetMaterial(wallmatname_),
-	matdbinfo_->findDetMaterial(gasmatname_),
-	matdbinfo_->findDetMaterial(wirematname_));
+          sprop._strawOuterRadius, sprop._strawWallThickness, sprop._wireRadius,
+          matdbinfo_->findDetMaterial(wallmatname_),
+          matdbinfo_->findDetMaterial(gasmatname_),
+          matdbinfo_->findDetMaterial(wirematname_));
     }
     return *smat_;
   }

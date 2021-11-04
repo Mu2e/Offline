@@ -15,20 +15,20 @@ namespace mu2e
    {
        //Default hit count chosen for compuational efficiency
        BkgCluster()                              : _pos(),    _time(0.0),  _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}   
-       BkgCluster(XYZVec const& pos, float time) : _pos(pos), _time(time), _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}
+       BkgCluster(XYZVectorF const& pos, float time) : _pos(pos), _time(time), _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}
 
        BkgClusterFlag const&        flag() const {return _flag; }
-       XYZVec const&                pos()  const {return _pos;  }
+       XYZVectorF const&                pos()  const {return _pos;  }
        float                        time() const {return _time; }
        std::vector<unsigned> const& hits() const {return _hits; }
        std::vector<unsigned>&       hits()       {return _hits; }
        
-       void pos(XYZVec const& pos)               {_pos = pos;}
+       void pos(XYZVectorF const& pos)               {_pos = pos;}
        void time(float time)                     {_time = time;}
        void addHit(unsigned val)                 {_hits.emplace_back(val);}
        void clearHits()                          {_hits.clear();}
 
-       XYZVec                _pos;  // ideally should be a 2d vec - FIXME
+       XYZVectorF                _pos;  // ideally should be a 2d vec - FIXME
        float                 _time; 
        std::vector<unsigned> _hits; 
        BkgClusterFlag        _flag; 

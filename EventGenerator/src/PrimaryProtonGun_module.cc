@@ -13,7 +13,7 @@
 
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/GenId.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 // Particular generators that this code knows about.
 #include "Offline/EventGenerator/inc/PrimaryProtonGunImpl.hh"

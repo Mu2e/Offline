@@ -19,7 +19,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
@@ -118,7 +117,6 @@ namespace mu2e {
       std::unique_ptr<StepPointMCCollection> p(new StepPointMCCollection());
       outHits.insert(std::move(std::make_pair(i, std::move(p))));
     }
-
 
     for(const auto& tag : inputs_) {
 

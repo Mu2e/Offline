@@ -9,7 +9,6 @@
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -46,7 +45,6 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
-
 
 #include <iostream>
 //#define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl; } while(0)

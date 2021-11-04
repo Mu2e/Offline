@@ -111,7 +111,10 @@ namespace mu2e
   void CrvCoincidenceClusterFinder::endJob()
   {
     double fractionDeadTime = _totalDeadTime / _totalTime;
-    std::cout << "SUMMARY " << _crvCoincidenceCheckModuleLabel << "    Total dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%   using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
+    if(_verboseLevel>0)
+      {
+	std::cout << "SUMMARY " << _crvCoincidenceCheckModuleLabel << "    Total dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%   using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
+      }
   }
 
   void CrvCoincidenceClusterFinder::beginRun(art::Run &run)

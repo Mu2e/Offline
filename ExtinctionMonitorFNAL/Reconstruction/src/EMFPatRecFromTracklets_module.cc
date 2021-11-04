@@ -6,10 +6,8 @@
 // momentum and extrapolated donwstream where the consistency with the
 // donwstream tracklet is checked.
 //
-//
 // Original author Andrei Gaponenko
 //
-
 
 #include "Offline/ExtinctionMonitorFNAL/Reconstruction/inc/Tracklet.hh"
 #include <string>
@@ -45,7 +43,6 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkClusterResiduals.hh"
 #include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
-#include "Offline/RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -477,7 +474,6 @@ namespace mu2e {
         unsigned backPlane = stack.nplanes() - maxMissedHits_  + seedPlane - 1;
 	const unsigned plane1 = stack.planeNumberOffset() + seedPlane;
         const unsigned plane2 = stack.planeNumberOffset() + backPlane;
-
 
 	// This vector is used to simplify loooping over the non-seed planes
 	std::vector< unsigned > additionalPlanes ( stack.nplanes() -2, 0 );

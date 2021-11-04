@@ -19,10 +19,8 @@
 #include "CLHEP/Matrix/Vector.h"
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -111,7 +109,6 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
 // returns ID of the SimParticle corresponding to straw hit 'Index'
 //-----------------------------------------------------------------------------
   int TrkRecoMcUtils::strawHitSimId(const art::Event* Event, int HitIndex) {
@@ -142,7 +139,7 @@ namespace mu2e {
     HepPoint    p2(v2.x(),v2.y(),v2.z());
 
     TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
-    TrkLineTraj trstep (p2,Geom::Hep3Vec(step->momentum()).unit(),0.,0.);
+    TrkLineTraj trstep (p2,GenVector::Hep3Vec(step->momentum()).unit(),0.,0.);
 
     TrkPoca poca(trstep, 0., trstraw, 0.);
 

@@ -73,7 +73,7 @@ int mu2e::DbReader::multiQuery(std::vector<QueryForm>& qfv) {
 int mu2e::DbReader::fillTableByCid(DbTable::ptr_t ptr, int cid) {
   std::string csv;
   std::string where="cid:eq:"+std::to_string(cid);
-  int rc = query(csv,ptr->query(),ptr->dbname(),where);
+  int rc = query(csv,ptr->query(),ptr->dbname(),where,ptr->orderBy());
   if(rc!=0) return rc;
   ptr->fill(csv,_saveCsv);
   return 0;
@@ -105,26 +105,47 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
   // load up the queries
   qfv[0].select = tables.query();
   qfv[0].table = tables.dbname();
+  qfv[0].order = tables.orderBy();
+
   qfv[1].select = calibrations.query();
   qfv[1].table = calibrations.dbname();
+  qfv[1].order = calibrations.orderBy();
+
   qfv[2].select = iovs.query();
   qfv[2].table = iovs.dbname();
+  qfv[2].order = iovs.orderBy();
+
   qfv[3].select = groups.query();
   qfv[3].table = groups.dbname();
+  qfv[3].order = groups.orderBy();
+
   qfv[4].select = grouplists.query();
   qfv[4].table = grouplists.dbname();
+  qfv[4].order = grouplists.orderBy();
+
   qfv[5].select = purposes.query();
   qfv[5].table = purposes.dbname();
+  qfv[5].order = purposes.orderBy();
+
   qfv[6].select = lists.query();
   qfv[6].table = lists.dbname();
+  qfv[6].order = lists.orderBy();
+
   qfv[7].select = tablelists.query();
   qfv[7].table = tablelists.dbname();
+  qfv[7].order = tablelists.orderBy();
+
   qfv[8].select = versions.query();
   qfv[8].table = versions.dbname();
+  qfv[8].order = versions.orderBy();
+
   qfv[9].select = extensions.query();
   qfv[9].table = extensions.dbname();
+  qfv[9].order = extensions.orderBy();
+
   qfv[10].select = extensionlists.query();
   qfv[10].table = extensionlists.dbname();
+  qfv[10].order = extensionlists.orderBy();
 
   rc = multiQuery(qfv);
   if(rc!=0) return rc;
@@ -166,11 +187,11 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
   _lastTime = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   _totalTime += _lastTime;
 
-  if(_timeVerbose>0) {
+  if(_timeVerbose>1) {
     std::cout<<"DbReader::fillValCache took " <<
       std::setprecision(6) << _lastTime.count()*1.0e-6 <<" s" << std::endl;
   }
-  if(_verbose>3) {
+  if(_verbose>2) {
     std::cout<<"DbReader::fillValCache results " << std::endl;
     vcache.print();
   }
@@ -253,7 +274,7 @@ int mu2e::DbReader::queryCore(std::string& csv,
     url.append(order);
   }
 
-  if(_verbose>3) {
+  if(_verbose>5) {
     std::string time = DbUtil::timeString();
     std::cout << "DbReader " << time 
 	      <<"  url="<<url << std::endl;
@@ -331,7 +352,7 @@ int mu2e::DbReader::queryCore(std::string& csv,
   _lastTime = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   _totalTime += _lastTime;
 
-  if(_timeVerbose>3 || _verbose>3) {
+  if(_timeVerbose>5 || _verbose>5) {
     std::string time = DbUtil::timeString();
 
     std::cout<<"DbReader "<< time << " "

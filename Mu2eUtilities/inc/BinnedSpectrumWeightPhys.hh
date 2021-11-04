@@ -32,7 +32,6 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 
@@ -70,7 +69,6 @@ namespace mu2e {
 
     {
     }
-
 
     double weight(const art::Event& evt) {
       auto genColl = evt.getValidHandle<GenParticleCollection>( input_ );

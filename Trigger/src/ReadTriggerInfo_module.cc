@@ -40,17 +40,13 @@
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
-#include "Offline/RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 //MC dataproducts
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/SimParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -70,9 +66,7 @@
 // #include <map>
 #include <vector>
 
-
 namespace mu2e {
-
 
   class ReadTriggerInfo : public art::EDAnalyzer {
 
@@ -214,7 +208,6 @@ namespace mu2e {
     void     bookCaloCalibInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, caloCalibrationHist_   &Hist);
     void     bookOccupancyInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_         &Hist);
 
-
     void     findTrigIndex            (std::vector<trigInfo_> &Vec, std::string &ModuleLabel, int &Index);
     void     fillTrackTrigInfo        (int TrkTrigIndex  , const KalSeed*   KSeed, trackInfoHist_         &Hist);
     void     fillHelixTrigInfo        (int HelTrigIndex  , const HelixSeed* HSeed, helixInfoHist_         &Hist);
@@ -291,7 +284,6 @@ namespace mu2e {
     float  _minPOT, _maxPOT;
   };
 
-
   ReadTriggerInfo::ReadTriggerInfo(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset), 
     _diagLevel     (pset.get<int>   ("diagLevel", 0)),
@@ -330,7 +322,6 @@ namespace mu2e {
 
   }
   
-  
   void     ReadTriggerInfo::bookHistograms           (){
     art::ServiceHandle<art::TFileService> tfs;
     
@@ -367,14 +358,12 @@ namespace mu2e {
 
     Hist._hTrigInfo[15]  = trigInfoDir.make<TH1F>("hTrigInfo_paths"     , "Rejection of all the Trigger paths"         , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     
-    
     Hist._hTrigInfo[16]  = trigInfoDir.make<TH1F>("hTrksVsPOT","nOfflineTracks vs inst lum; p/pulse; nOfflieTracks",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[17]  = trigInfoDir.make<TH1F>("hTrksTrigVsPOT","nOfflineTracks triggered vs inst lum; p/pulse; nOfflieTracks triggered",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[18]  = trigInfoDir.make<TH1F>("hNormVsPOT","events vs inst lum; p/pulse; Entries",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[19]  = trigInfoDir.make<TH1F>("hNPOT","nPOT; p/pulse; Entries",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[20]  = trigInfoDir.make<TH1F>("hCprNorm","cpr Good Offline tracks;p/pulse; Entries",  1000, _minPOT, _maxPOT);
     Hist._hTrigInfo[21]  = trigInfoDir.make<TH1F>("hTprNorm","tpr Good Offline tracks;p/pulse; Entries",  1000, _minPOT, _maxPOT);
-
 
     Hist._h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map from all filters"   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     Hist._h2DTrigInfo[1] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));   
@@ -551,7 +540,6 @@ namespace mu2e {
       Hist._hHelInfo[i][118] = helInfoDir.make<TH1F>(Form("hEPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
       Hist._hHelInfo[i][119] = helInfoDir.make<TH1F>(Form("hEPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 600);
 
-
       Hist._hHelInfo[i][120] = helInfoDir.make<TH1F>(Form("hNTrigHelixes_%i" , i), "NHelixes trigger matched; NHelixes trigger matched", 11, -0.5, 10);
     }
   }
@@ -573,7 +561,6 @@ namespace mu2e {
     }    
   }
 
-  //--------------------------------------------------------------------------------//
   //--------------------------------------------------------------------------------//
   void     ReadTriggerInfo::bookOccupancyInfoHist         (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_       &Hist){
     
@@ -815,8 +802,6 @@ namespace mu2e {
     }
 
   }
-
-
 
   void   ReadTriggerInfo::findCorrelatedEvents(std::vector<string>& VecLabels, double &NCorrelated){
     
@@ -1086,12 +1071,12 @@ namespace mu2e {
 	    if (j==0) printf("[ReadTriggerInfo::analyze]      name      \n");
 	    printf("[ReadTriggerInfo::analyze] %10s\n", moduleLabel.c_str());
 	  }
-	  int          index_all(0);         
-	  int          index(0);         
+	  int          index_all(i);//0);         
+	  int          index(i);//0);         
 	  bool         passed(false);
 	  size_t       nTrigObj(0);
 	  //fill the Global Trigger bits info
-	  findTrigIndex(_trigAll, moduleLabel, index_all);
+	  // findTrigIndex(_trigAll, moduleLabel, index_all);
 	  _trigAll[index_all].label  = moduleLabel;
 
 	  event.getByLabel(moduleLabel, hTrigInfoH);
@@ -1099,7 +1084,7 @@ namespace mu2e {
 	    trigInfo = hTrigInfoH.product();
 	  }
 	  if ( moduleLabel.find(std::string("HSFilter")) != std::string::npos) {
-	    findTrigIndex(_trigHelix, moduleLabel, index);
+	    //	    findTrigIndex(_trigHelix, moduleLabel, index);
 	    _trigHelix[index].label  = moduleLabel;
 	    _trigHelix[index].counts = _trigHelix[index].counts + 1;
 	    passed = true;
@@ -1117,7 +1102,7 @@ namespace mu2e {
 	    _helHist._hHelInfo[i][120]->Fill(nTrigObj);
 
 	  }else if ( moduleLabel.find("TSFilter") != std::string::npos){
-	    findTrigIndex(_trigTrack, moduleLabel, index);
+	    //	    findTrigIndex(_trigTrack, moduleLabel, index);
 	    _trigTrack[index].label  = moduleLabel;
 	    _trigTrack[index].counts = _trigTrack[index].counts + 1;
 	    passed = true;
@@ -1136,11 +1121,11 @@ namespace mu2e {
 	    trigFlag_index.push_back(index_all);
 
 	  }else if ( moduleLabel.find("EventPrescale") != std::string::npos){
-	    findTrigIndex(_trigEvtPS, moduleLabel, index);
+	    //	    findTrigIndex(_trigEvtPS, moduleLabel, index);
 	    _trigEvtPS[index].label  = moduleLabel;
 	    _trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
 	  }else if ( moduleLabel.find("CaloCosmicCalib") != std::string::npos){
-	    findTrigIndex(_trigCaloCalib, moduleLabel, index);
+	    //	    findTrigIndex(_trigCaloCalib, moduleLabel, index);
 	    _trigCaloCalib[index].label  = moduleLabel;
 	    _trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
 	    passed = false;
@@ -1153,7 +1138,7 @@ namespace mu2e {
 	    }//end loop over the cluster-collection
 	    trigFlag_index.push_back(index_all);
 	  }else if ( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
-	    findTrigIndex(_trigCaloOnly, moduleLabel, index);
+	    //	    findTrigIndex(_trigCaloOnly, moduleLabel, index);
 	    _trigCaloOnly[index].label  = moduleLabel;
 	    _trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
 	    passed = true;
@@ -1176,7 +1161,7 @@ namespace mu2e {
 	  if ( (moduleLabel.find("caloMVACEFilter")!= std::string::npos) || 
 	       (moduleLabel.find("TSFilter")       != std::string::npos) ||
 	       isCosmicHelix ){ 
-	    findTrigIndex(_trigFinal, moduleLabel, index);
+	    //	    findTrigIndex(_trigFinal, moduleLabel, index);
 	    _trigFinal[index].label    = moduleLabel;
 	    _trigFinal[index].counts   = _trigFinal[index].counts + 1;
 	    _trigAll[index_all].counts = _trigAll[index_all].counts + 1;
@@ -1306,11 +1291,11 @@ namespace mu2e {
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
-	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
-	XYZVec origin;
-	origin.SetX(sp->x()+3904);
-	origin.SetY(sp->y());
-	origin.SetZ(sp->z());
+	CLHEP::Hep3Vector sp = simptr->startPosition();
+	XYZVectorF origin;
+	origin.SetX(sp.x()+3904);
+	origin.SetY(sp.y());
+	origin.SetZ(sp.z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
 	double pz     = sqrt(p*p - pt*pt);
 
@@ -1329,7 +1314,6 @@ namespace mu2e {
     }
   }
 
-
   void     ReadTriggerInfo::fillHelixTrigInfoAdd     (int HelTrigIndex  , int MCMotherIndex, const HelixSeed* HSeed, helixInfoHist_         &Hist, MCInfo &TMPMCInfo){
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 0]->Fill(TMPMCInfo.pMC);	   
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 1]->Fill(TMPMCInfo.p);	   
@@ -1342,7 +1326,6 @@ namespace mu2e {
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 8]->Fill(TMPMCInfo.origR);  
     Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 9]->Fill(TMPMCInfo.lambda);      
   }
-
 
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
@@ -1444,7 +1427,7 @@ namespace mu2e {
 	int   indexMother(-1);
 
 	if (pdgM == 13){ //negative muon
-	  XYZVec  mother_origin;
+	  XYZVectorF  mother_origin;
 	  mother_origin.SetX(mother->startPosition().x()+3904);
 	  mother_origin.SetY(mother->startPosition().y());
 	  mother_origin.SetZ(mother->startPosition().z());
@@ -1482,11 +1465,11 @@ namespace mu2e {
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
-	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
-	XYZVec origin;
-	origin.SetX(sp->x()+3904);
-	origin.SetY(sp->y());
-	origin.SetZ(sp->z());
+	CLHEP::Hep3Vector sp = simptr->startPosition();
+	XYZVectorF origin;
+	origin.SetX(sp.x()+3904);
+	origin.SetY(sp.y());
+	origin.SetZ(sp.z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
 	// trackSeed->fOrigin1.SetXYZT(sp->x(),sp->y(),sp->z(),simptr->startGlobalTime());
 	double pz     = sqrt(p*p - pt*pt);
@@ -1558,7 +1541,6 @@ namespace mu2e {
     Hist._h2DOccInfo[Index][1]->Fill(_nPOT, nCD);
   }
 
-  
   
 }  
 

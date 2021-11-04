@@ -78,7 +78,6 @@ mf_interactive :
                                    # INFO severity, but not DEBUG severity                                      # LogPrint).
                                    # (INFO severity is LogInfo or
                                    # LogVerbatim).
-    statistics : { stats : @local::mf_coutInfoStats }
   }
 }
 

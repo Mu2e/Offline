@@ -92,8 +92,8 @@ namespace mu2e
     _maxdphi=_minzsep/_initFZMinL;
     float minarea(config.minArea());
     _minarea2    = minarea*minarea;
-    _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL);
-    _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL);
+    _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL + 1);
+    _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL + 1);
     if (_use_initFZ_from_dzFrequency){
       _initFZFrequencyNSigma          = config.initFZFrequencyNSigma();
       _initFZFrequencyBinsToIntegrate = config.initFZFrequencyBinsToIntegrate();
@@ -172,14 +172,14 @@ namespace mu2e
 
     unsigned niter(0);
     float age;
-    XYZVec center = rhel.center();
+    XYZVectorF center = rhel.center();
     float rmed = rhel.radius();
     // initialize step
     float lambda = _lambda0;
     // find median and AGE for the initial center
     findAGE(HelixData,center,rmed,age);
     // loop while step is large
-    XYZVec descent(1.0,0.0,0.0);
+    XYZVectorF descent(1.0,0.0,0.0);
     while(lambda*sqrtf(descent.mag2()) > _minlambda && niter < _maxniter)
       {
 	// fill the sums for computing the descent vector
@@ -193,10 +193,10 @@ namespace mu2e
 	  dx += (sums._sco < sums._sci) ? -sums._scc : sums._scc;
 	if(fabs(dy) < sums._ssc)
 	  dy += (sums._sso < sums._ssi) ? -sums._ssc : sums._ssc;
-	descent = XYZVec(dx,dy,0.0);
+	descent = XYZVectorF(dx,dy,0.0);
 	// compute error function, decreasing lambda until this is better than the previous
 	float agenew;
-	XYZVec cnew = center + lambda*descent;
+	XYZVectorF cnew = center + lambda*descent;
 	findAGE(HelixData,cnew,rmed,agenew);
 	// if we've improved, increase the step size and iterate
 	if(agenew < age){
@@ -248,7 +248,7 @@ namespace mu2e
   }
 
 
-  void RobustHelixFit::forceTargetInter(XYZVec& center, float& radius) {    
+  void RobustHelixFit::forceTargetInter(XYZVectorF& center, float& radius) {    
     float rperigee = sqrtf(center.perp2())-radius;    
     if (fabs(rperigee) > _targetradius)
       {
@@ -262,7 +262,7 @@ namespace mu2e
 	radius += dr;
 
 	// direction radially outwards from origin to the center, the center moves opposite the radius
-	XYZVec pdir = XYZVec(center.x(),center.y(),0.0).unit();
+	XYZVectorF pdir = XYZVectorF(center.x(),center.y(),0.0).unit();
 	center -= dr*pdir;
       }
   }
@@ -419,8 +419,8 @@ namespace mu2e
     float        hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
 
     RobustHelix& rhel   = HelixData._hseed._helix;
-    XYZVec       center = rhel.center();
-    XYZVec       pos_ref;
+    XYZVectorF       center = rhel.center();
+    XYZVectorF       pos_ref;
 //-----------------------------------------------------------------------------
 // 2017-09-26 gianipez fixed a bug: in case the Helix phi-z fit didn't converge yet, 
 // Helix._dfdz is set to -1e6, so we need to make a check here!
@@ -1249,7 +1249,7 @@ namespace mu2e
     }
   }
   
-  void RobustHelixFit::findAGE(RobustHelixFinderData const& HelixData, XYZVec const& center,float& rmed, float& age)
+  void RobustHelixFit::findAGE(RobustHelixFinderData const& HelixData, XYZVectorF const& center,float& rmed, float& age)
   {     
     const ComboHitCollection& hhits = HelixData._hseed._hhits;
 
@@ -1261,7 +1261,7 @@ namespace mu2e
 	if(use(hhit))
 	  {
 	    // find radial information for this point
-	    float rad = sqrtf(XYZVec(hhit._pos - center).perp2());
+	    float rad = sqrtf(XYZVectorF(hhit._pos - center).perp2());
 	    float wt = hitWeight(hhit);
 	    radii.push_back(make_pair(rad,wt));
 	    wtot += wt;
@@ -1273,8 +1273,8 @@ namespace mu2e
       {
 	// mu2e::GeomHandle<mu2e::Calorimeter> ch;
 	// const Calorimeter* calo = ch.get();
-	XYZVec cog = Geom::toXYZVec(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskID(),HelixData._hseed.caloCluster()->cog3Vector())));
-	float rad = sqrtf(XYZVec(cog - center).perp2());
+	XYZVectorF cog(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskID(),HelixData._hseed.caloCluster()->cog3Vector())));
+	float rad = sqrtf(XYZVectorF(cog - center).perp2());
 	radii.push_back(make_pair(rad,_ccwt));
       }
 
@@ -1298,7 +1298,7 @@ namespace mu2e
   }
 
 
-  void RobustHelixFit::fillSums(RobustHelixFinderData const& HelixData, XYZVec const& center,float rmed, AGESums& sums)
+  void RobustHelixFit::fillSums(RobustHelixFinderData const& HelixData, XYZVectorF const& center,float rmed, AGESums& sums)
   {    
     ComboHitCollection const& hhits = HelixData._hseed._hhits;
     sums.clear();
@@ -1308,7 +1308,7 @@ namespace mu2e
       {
 	if (!use(hhit)) continue;
 	// find radial information for this point
-	float rad = sqrtf(XYZVec(hhit._pos - center).perp2());
+	float rad = sqrtf(XYZVectorF(hhit._pos - center).perp2());
 	float wt = hitWeight(hhit);
 	// now x,y projections
 	float pcos = (hhit._pos.x()-center.x())/rad;
@@ -1359,7 +1359,7 @@ namespace mu2e
     // ray from the circle center to the point
     float dx = hhit._pos.x() - rhel.center().x();
     float dy = hhit._pos.y() - rhel.center().y();
-    hhit._hphi = polyAtan2(dy,dx);//XYZVec(hhit._pos - rhel.center()).phi();
+    hhit._hphi = polyAtan2(dy,dx);//XYZVectorF(hhit._pos - rhel.center()).phi();
   }
 
   bool RobustHelixFit::resolvePhi(ComboHit& hhit, const RobustHelix& rhel) const
@@ -1425,8 +1425,8 @@ namespace mu2e
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     float    transErr2 = transErr*transErr;
 
-    static const XYZVec _zdir(0.0,0.0,1.0);
-    XYZVec _sdir  = _zdir.Cross(Hit._wdir);
+    static const XYZVectorF _zdir(0.0,0.0,1.0);
+    XYZVectorF _sdir  = _zdir.Cross(Hit._wdir);
    
     float x   = Hit.pos().x();
     float y   = Hit.pos().y();
@@ -1455,8 +1455,8 @@ namespace mu2e
     float dx = x-Center.x();
     float dy = y-Center.y();
     
-    static const XYZVec _zdir(0.0,0.0,1.0);
-    XYZVec _sdir  = _zdir.Cross(Hit._wdir);
+    static const XYZVectorF _zdir(0.0,0.0,1.0);
+    XYZVectorF _sdir  = _zdir.Cross(Hit._wdir);
     
     float dxn    = dx*_sdir.x()+dy*_sdir.y();
 

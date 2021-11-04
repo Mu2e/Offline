@@ -25,17 +25,17 @@
 //
 //
 
-#include "Offline/DataProducts/inc/XYZVec.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 
 namespace mu2e {
 
   class TwoLinePCA_XYZ{
 
   public:
-    TwoLinePCA_XYZ( XYZVec const& p1,
-                XYZVec const& t1,
-                XYZVec const& p2,
-                XYZVec const& t2,
+    TwoLinePCA_XYZ( XYZVectorF const& p1,
+                XYZVectorF const& t1,
+                XYZVectorF const& p2,
+                XYZVectorF const& t2,
                 double closeToParallelCut = 1.e-8
                 );
     ~TwoLinePCA_XYZ();
@@ -45,8 +45,8 @@ namespace mu2e {
     double dca2d() const { return _dca2d; }
     int LRambig()   const { return _LRambig; }
     // Accessors for the endpoints on the line-segment of closest approach.
-    XYZVec const& point1() const { return _pca1; }
-    XYZVec const& point2() const { return _pca2; }
+    XYZVectorF const& point1() const { return _pca1; }
+    XYZVectorF const& point2() const { return _pca2; }
 
     // "Local z" of the pca.  ( Length along the straw from mid point to pca ).
     double s1() const { return _s1; }
@@ -58,14 +58,14 @@ namespace mu2e {
   private:
 
     // A point on each track and a unit vector in the direction of each track.
-    XYZVec _p1, _t1;
-    XYZVec _p2, _t2;
+    XYZVectorF _p1, _t1;
+    XYZVectorF _p2, _t2;
 
     // Distances along each track from the points p1 or p2 to the points of closest approach.
     double _s1, _s2;
 
     // Points on each line at that terminate the line-segment of closest approach.
-    XYZVec _pca1, _pca2;
+    XYZVectorF _pca1, _pca2;
 
     // Distance of closest approach in 3d and 2d(projection onto xy plane).
     double _dca;

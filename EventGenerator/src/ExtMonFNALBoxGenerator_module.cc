@@ -3,7 +3,6 @@
 // kinematic of input particles read from a file.
 // The output is in the Mu2e coordinate system.
 //
-//
 // Original author Andrei Gaponenko, 2012
 
 #include <iostream>
@@ -42,9 +41,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-#include "Offline/MCDataProducts/inc/GenParticleCollection.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
-#include "Offline/MCDataProducts/inc/MARSInfoCollection.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 
 #include "Offline/ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
@@ -56,7 +53,6 @@
 
 #define AGDEBUG(stuff) do { std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<", func "<<__func__<<": "<<stuff<<std::endl; } while(0)
 //#define AGDEBUG(stuff)
-
 
 namespace mu2e {
   namespace ExtMonFNAL {

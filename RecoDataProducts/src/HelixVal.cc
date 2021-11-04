@@ -67,23 +67,23 @@ namespace mu2e {
     return phi0() + omega()*fltlen*cosDip();
   }
 
-  void HelixVal::direction(float fltlen, XYZVec& dir) const {
+  void HelixVal::direction(float fltlen, XYZVectorF& dir) const {
     float phival = phi(fltlen);
     float cd = cosDip();
     float sd = sinDip();
-    dir = XYZVec(cd*cos(phival),cd*sin(phival),sd);
+    dir = XYZVectorF(cd*cos(phival),cd*sin(phival),sd);
   }
 
-  void HelixVal::position(float fltlen, XYZVec& pos) const {
+  void HelixVal::position(float fltlen, XYZVectorF& pos) const {
     float phival = phi(fltlen);
     float invomega = 1.0/omega();
     float rval = invomega + d0(); 
-    pos = XYZVec(invomega*sin(phival) - rval*sin(phi0()),
+    pos = XYZVectorF(invomega*sin(phival) - rval*sin(phi0()),
 	-invomega*cos(phival) + rval*cos(phi0()),
 	z0() + fltlen*sinDip());
   }
 
-  void HelixVal::position(const XYZVec& pos, float& fltlen) const {
+  void HelixVal::position(const XYZVectorF& pos, float& fltlen) const {
     float z = pos.z();
     fltlen = (z - z0()) / sinDip();
   }

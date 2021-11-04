@@ -111,6 +111,9 @@ namespace mu2e {
     }
 
   void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
+
+    spm_.processEventIDs(seq);
+
     if(writeEventIDs_) {
       idseq_ = seq;
     }

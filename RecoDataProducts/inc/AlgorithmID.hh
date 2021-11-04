@@ -6,6 +6,7 @@
 #define AlgorithmID_HH
 
 #include <utility>
+#include <vector>
 
 namespace mu2e {
 
@@ -40,7 +41,7 @@ namespace mu2e {
     short   _algMask;			// algorithm mask, for algorithms found this track
   };
 
-
+   typedef std::vector<mu2e::AlgorithmID> AlgorithmIDCollection;
 
 } // end namespace mu2e
 
