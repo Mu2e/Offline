@@ -318,11 +318,22 @@ namespace mu2e {
                                         0., CLHEP::twopi);
       auto polycone = pse->endPlatePolycone();
       std::vector<double> rInners, rOuters(polycone.rOuter()), zPlanes(polycone.zPlanes());
+      if ( verbosityLevel > 1) {
+        cout << __func__ << " printing PS enclosure planes to subtract from PS vacuum:\n";
+      }
       for(unsigned iplane = 0; iplane <= polycone.numZPlanes(); ++iplane) {
         rInners.push_back(0.); //clear from center to outer radius
+        if(iplane < polycone.numZPlanes()) {
+          rOuters[iplane] = rOuters[iplane] + 0.01; //add an extra 10 um gap
+          zPlanes[iplane] = zPlanes[iplane] + 0.01; //add an extra 10 um gap
+          if( verbosityLevel > 1) {
+            cout << " (r1, r2, z) = (" << rInners[iplane] << ", " << rOuters[iplane]
+                 << ", " << zPlanes[iplane] << ")\n";
+          }
+        }
       }
       rOuters.insert(rOuters.begin(), rOuters.front());
-      zPlanes.insert(zPlanes.begin(), zPlanes.front()-2.e3); //clear beyond the endcap as well
+      zPlanes.insert(zPlanes.begin(), zPlanes.front()-1.e3); //clear beyond the endcap as well
       G4Polycone* basecone = new G4Polycone("PSEnclosureEndplateBaseCone_FromPS",
                                             polycone.phi0(),
                                             polycone.phiTotal(),
