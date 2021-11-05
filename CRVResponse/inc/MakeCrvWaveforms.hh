@@ -18,8 +18,7 @@ class MakeCrvWaveforms
 //the digitizaionInterval of the final waveform
     void LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformStrechFactor, 
                               double singlePEWaveformMaxTime, double singlePEReferenceCharge);
-    void MakeWaveform(const std::vector<double> &times, 
-                      const std::vector<double> &charges, 
+    void MakeWaveform(const std::vector<std::pair<double,double> > &timesAndCharges, 
                       std::vector<double> &waveform,
                       double startTime, double digitizationInterval);
     void AddElectronicNoise(std::vector<double> &waveform, double noise, CLHEP::RandGaussQ &randGaussQ);
