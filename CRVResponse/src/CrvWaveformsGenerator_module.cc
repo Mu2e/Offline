@@ -193,6 +193,7 @@ namespace mu2e
 
         //find the TDC time when the first charge occurs (adjusted for this FEB)
         double firstChargeTime=chargeClusters[iCluster].times.front();
+        firstChargeTime-=1.0*_digitizationPeriod;
         double TDCstartTimeAdjusted=ceil((firstChargeTime-TDC0timeAdjusted)/_digitizationPeriod) * _digitizationPeriod + TDC0timeAdjusted;
 
         //first create the full waveform
@@ -276,7 +277,7 @@ namespace mu2e
       if(chargeClusters.empty()) chargeClusters.resize(1);
       else
       {
-        if(timeTmp-chargeClusters.back().times.back()>_singlePEWaveformMaxTime) chargeClusters.resize(chargeClusters.size()+1);
+        if(timeTmp-chargeClusters.back().times.back()>_singlePEWaveformMaxTime+4.0*_digitizationPeriod) chargeClusters.resize(chargeClusters.size()+1);
       }
       chargeClusters.back().times.push_back(timeTmp);
       chargeClusters.back().charges.push_back(timesAndCharges[i]._charge);
