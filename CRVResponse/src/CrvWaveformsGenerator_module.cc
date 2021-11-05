@@ -72,7 +72,7 @@ namespace mu2e
 
     struct ChargeCluster
     {
-      std::vector<double> times, charges;
+      std::vector<std::pair<double,double> > timesAndCharges;
     };
 
     void FindChargeClusters(const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges,
@@ -189,16 +189,16 @@ namespace mu2e
       for(size_t iCluster=0; iCluster<chargeClusters.size(); ++iCluster)
       {
         //if the number of charges in this cluster cannot achieve the minimum voltage, skip this cluster
-        if(chargeClusters[iCluster].times.size()*_makeCrvWaveforms->GetSinglePEMaxVoltage()<_minVoltage) continue;
+        if(chargeClusters[iCluster].timesAndCharges.size()*_makeCrvWaveforms->GetSinglePEMaxVoltage()<_minVoltage) continue;
 
         //find the TDC time when the first charge occurs (adjusted for this FEB)
-        double firstChargeTime=chargeClusters[iCluster].times.front();
+        double firstChargeTime=chargeClusters[iCluster].timesAndCharges.front().first;
         firstChargeTime-=1.0*_digitizationPeriod;
         double TDCstartTimeAdjusted=ceil((firstChargeTime-TDC0timeAdjusted)/_digitizationPeriod) * _digitizationPeriod + TDC0timeAdjusted;
 
         //first create the full waveform
         std::vector<double> fullWaveform;
-        _makeCrvWaveforms->MakeWaveform(chargeClusters[iCluster].times, chargeClusters[iCluster].charges,
+        _makeCrvWaveforms->MakeWaveform(chargeClusters[iCluster].timesAndCharges,
                                         fullWaveform, TDCstartTimeAdjusted, _digitizationPeriod);
         _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
@@ -269,18 +269,26 @@ namespace mu2e
                                                    std::vector<ChargeCluster> &chargeClusters,
                                                    double timeShiftFEB)
   {
+    chargeClusters.reserve(timesAndCharges.size());
     for(size_t i=0; i<timesAndCharges.size(); ++i)
     {
       //No check whether times are within digitizationStart-_digitizationMargin and digitizationEnd
       double timeTmp=timesAndCharges[i]._time+timeShiftFEB;  //apply timeShift to account for inaccuraries in the FEB time calibration
 
-      if(chargeClusters.empty()) chargeClusters.resize(1);
+      if(chargeClusters.empty())
+      {
+        chargeClusters.resize(1);
+        chargeClusters.back().timesAndCharges.reserve(timesAndCharges.size());
+      }
       else
       {
-        if(timeTmp-chargeClusters.back().times.back()>_singlePEWaveformMaxTime+4.0*_digitizationPeriod) chargeClusters.resize(chargeClusters.size()+1);
+        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+4.0*_digitizationPeriod)
+        {
+          chargeClusters.resize(chargeClusters.size()+1);
+          chargeClusters.back().timesAndCharges.reserve(timesAndCharges.size());
+        }
       }
-      chargeClusters.back().times.push_back(timeTmp);
-      chargeClusters.back().charges.push_back(timesAndCharges[i]._charge);
+      chargeClusters.back().timesAndCharges.emplace_back(timeTmp,timesAndCharges[i]._charge);
     }
   }
 
