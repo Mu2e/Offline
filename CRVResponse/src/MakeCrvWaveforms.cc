@@ -14,6 +14,7 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
                                             double singlePEWaveformMaxTime, double singlePEReferenceCharge) 
 {
   _singlePEWaveformPrecision = singlePEWaveformPrecision;
+  _singlePEWaveformMaxTime = singlePEWaveformMaxTime;
   _singlePEReferenceCharge = singlePEReferenceCharge;
   std::ifstream f(filename.c_str());
   if(!f.good()) throw std::logic_error("Could not open single PE waveform file. "+filename);
@@ -58,7 +59,8 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   waveform.clear();
 
   if(times.size()==0) return;
-  waveform.resize(8);
+  size_t estimatedNumberOfSamples=(times.back()-times.front()+_singlePEWaveformMaxTime)/digitizationPrecision;
+  waveform.resize(estimatedNumberOfSamples);
 
   std::vector<double>::const_iterator iterTime=times.begin();
   std::vector<double>::const_iterator iterCharge=charges.begin();
