@@ -183,7 +183,9 @@ namespace mu2e {
       // and that the data member members are used in a thread-safe manner
       async<art::InEvent>();
 
-      G4cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  G4endl;
+      if (num_schedules>1) {
+	cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
+      }
     } // end Mu2eG4MT constructor
 
 
@@ -285,7 +287,7 @@ namespace mu2e {
       access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(conf_, ioconf_, tid);
     }
 
-    if (event.id().event() == 1) {
+    if (event.id().event() == 1 && _mtDebugOutput > 0) {
       G4cout << "Our RMmap has " << myworkerRunManagerMap.size() << " members\n";
     }
 
@@ -399,7 +401,9 @@ namespace mu2e {
       ++it;
     }
 
-    G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    if ( _rmvlevel > 0 ) {
+      G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    }
     myworkerRunManagerMap.clear();
     masterThread->endRun();
   }
