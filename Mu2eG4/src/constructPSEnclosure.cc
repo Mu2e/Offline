@@ -19,6 +19,7 @@
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestCons.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
@@ -269,7 +270,8 @@ namespace mu2e {
         windowname   << "PSEnclosureWindow_" << iwindow+1;
         //make a solid pipe that is the hole in the pipe, to make a hole in the endplate
         G4Tubs* pipetube = new G4Tubs(pipename.str(), 0., pipe.innerRadius(), pipe.halfLength(), 0., CLHEP::twopi);
-        G4RotationMatrix* matrix = new G4RotationMatrix(pipe.rotation());
+        AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+        CLHEP::HepRotation* matrix = reg.add(CLHEP::HepRotation(pipe.rotation()));
         CLHEP::Hep3Vector tubeOrigin = pipe.originInMu2e() - coneOrigin;
         verbosityLevel
           && std::cout << __func__ << ": PSEndPlate tube " << iwindow << ": "
