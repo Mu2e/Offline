@@ -323,10 +323,8 @@ namespace mu2e {
       }
       for(unsigned iplane = 0; iplane <= polycone.numZPlanes(); ++iplane) {
         rInners.push_back(0.); //clear from center to outer radius
-        if(iplane < polycone.numZPlanes()) {
-          rOuters[iplane] = rOuters[iplane] + 0.01; //add an extra 10 um gap
-          zPlanes[iplane] = zPlanes[iplane] + 0.01; //add an extra 10 um gap
-          if( verbosityLevel > 1) {
+        if( verbosityLevel > 1) {
+          if(iplane < polycone.numZPlanes()) {
             cout << " (r1, r2, z) = (" << rInners[iplane] << ", " << rOuters[iplane]
                  << ", " << zPlanes[iplane] << ")\n";
           }

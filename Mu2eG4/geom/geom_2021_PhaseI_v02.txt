@@ -1,5 +1,5 @@
-// Updated to be used in the MDC2020 simulation campaign, based off Mu2eG4/geom/geom_2019_PhaseI_hayman_v2.txt
-// updates the OPA support structures to remove overlaps
+// Updated to be used in the MDC2020 simulation campaign, based off Mu2eG4/geom/geom_2021_PhaseI.txt
+// Updates made to improve the PS endcap implementation
 
 string detector.name  = "g4geom_v00";
 

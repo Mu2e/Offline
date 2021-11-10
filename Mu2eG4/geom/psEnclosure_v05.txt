@@ -1,6 +1,6 @@
 // The configuration to be used with the as-built design, reflected
-// The configuration to be used with the as-built design, reflected
 // in docdb 8047.  The PSEnclosureShell is part F10031354 in TeamCenter
+// Description of version 5 updates are given in docdb-39987
 
 // Original author Andrei Gaponenko
 // Latest updates by Michael MacKenzie and David Norvil Brown (WKU), Sept 2021.
@@ -42,7 +42,7 @@ int  PSEnclosure.nWindows = 3;
 // ExtMonFNAL window
 string PSEnclosure.window1.materialName = "G4_Ti";
 double PSEnclosure.window1.thickness = 2.84;
-double PSEnclosure.window1.r =  87.54;
+double PSEnclosure.window1.r =  84.14;
 double PSEnclosure.window1.x = -683.23; // relative to PS center
 double PSEnclosure.window1.y =  520.37; // relative to PS center
 double PSEnclosure.window1.z = -197.61; // 9.78" past endplate, z is relative to PS endplate end
@@ -59,7 +59,7 @@ double PSEnclosure.window1.pipe.thetaY = -12.26; //degrees
 // Primary beam window
 string PSEnclosure.window2.materialName = "G4_Ti";
 double PSEnclosure.window2.thickness = 2.84;
-double PSEnclosure.window2.r =  166.50;
+double PSEnclosure.window2.r =  161.925;
 double PSEnclosure.window2.x = -786.05; // relative to PS center
 double PSEnclosure.window2.y =  122.76; // relative to PS center
 double PSEnclosure.window2.z = -282.96; // 13.14" past endplate, z is relative to PS endplate end without 2" frame
