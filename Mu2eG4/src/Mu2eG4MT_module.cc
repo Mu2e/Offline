@@ -184,7 +184,7 @@ namespace mu2e {
       async<art::InEvent>();
 
       if (num_schedules>1) {
-	cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
+	G4cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
       }
     } // end Mu2eG4MT constructor
 
@@ -395,7 +395,7 @@ namespace mu2e {
     WorkerRMMap::iterator it = myworkerRunManagerMap.begin();
     while (it != myworkerRunManagerMap.end()) {
       if (_mtDebugOutput > 0){
-        std::cout << "releasing RM for thread ID" << it->first << std::endl;
+        G4cout << "releasing RM for thread ID" << it->first << std::endl;
       }
       it->second.release();
       ++it;

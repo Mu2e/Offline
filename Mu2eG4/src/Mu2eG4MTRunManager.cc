@@ -218,7 +218,7 @@ namespace mu2e {
 
     if ((G4MTRunManager::GetMTMasterRunManagerKernel()!=nullptr) && !m_runTerminated) {
       if(rmvlevel_>0) {
-	std::cerr << "CALLING RunTermination() from MTRunManager\n";
+	G4cerr << "CALLING RunTermination() from MTRunManager\n";
       }
       G4RunManager::TerminateEventLoop();
       G4RunManager::RunTermination();
