@@ -59,7 +59,7 @@ namespace mu2e {
 
   protected:
     void setVersion( const int& aVers ) { version_ = aVers; }
-  private:
+  public:
 
     friend class PSEnclosureMaker;
 
@@ -73,7 +73,7 @@ namespace mu2e {
     PSEnclosure (const Cone& shellCone, const Polycone& ep, int vers=3 )
       : shell_(), shellCone_(shellCone), endPlatePolycone_(ep), version_(vers)
     {};
-
+  private:
     // Or read back from persistent storage
     PSEnclosure();
     template<class T> friend class art::Wrapper;
