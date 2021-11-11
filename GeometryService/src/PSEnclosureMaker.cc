@@ -109,18 +109,17 @@ namespace mu2e {
                      CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY),
                      shellMaterialName);
       if(vers == 2) {
-        res = std::unique_ptr<PSEnclosure>
-          (new PSEnclosure(
-                           shellCone,
-                           // end plate
-                           Tube(shellMaterialName,
-                                // The vacuum volume is flush to the PS surface
-                                psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength - 0.5*endPlateThickness),
-                                0.,
-                                0.5*shellODWest,
-                                0.5*endPlateThickness
-                                )
-                           )
+        res = std::make_unique<PSEnclosure>
+          (
+           shellCone,
+           // end plate
+           Tube(shellMaterialName,
+                // The vacuum volume is flush to the PS surface
+                psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength - 0.5*endPlateThickness),
+                0.,
+                0.5*shellODWest,
+                0.5*endPlateThickness
+                )
            );
       } else {
         std::vector<double> zPlanes; c.getVectorDouble("PSEnclosure.endPlate.zPlanes", zPlanes);
@@ -130,17 +129,16 @@ namespace mu2e {
         // if(zPlanes.size() > 0 ) {
         //   zlength = abs(zPlanes[0] - zPlanes[zPlanes.size() - 1]); //planes should be ordered
         // }
-        res = std::unique_ptr<PSEnclosure>
-          (new PSEnclosure(shellCone,
-                           // end plate
-                           Polycone(zPlanes,
-                                    rIns,
-                                    rOuts,
-                                    // The vacuum volume is flush to the PS surface
-                                    psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength),
-                                    shellMaterialName
-                                    )
-                           )
+        res = std::make_unique<PSEnclosure>
+          (shellCone,
+           // end plate
+           Polycone(zPlanes,
+                    rIns,
+                    rOuts,
+                    // The vacuum volume is flush to the PS surface
+                    psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength),
+                    shellMaterialName
+                    )
            );
       }
 
@@ -159,24 +157,24 @@ namespace mu2e {
 
       const CLHEP::Hep3Vector shellOriginInMu2e(psEndRefPoint + CLHEP::Hep3Vector(0,0, -0.5*shellLength));
 
-      res = std::unique_ptr<PSEnclosure> (new PSEnclosure(
-                            // cylindrical shell
-                            Tube(shellMaterialName,
-                                 shellOriginInMu2e,
-                                 0.5*(shellOD - 2*shellThickness),
-                                 0.5*shellOD,
-                                 0.5*shellLength),
+      res = std::make_unique<PSEnclosure>
+        (
+         // cylindrical shell
+         Tube(shellMaterialName,
+              shellOriginInMu2e,
+              0.5*(shellOD - 2*shellThickness),
+              0.5*shellOD,
+              0.5*shellLength),
 
-                            // end plate
-                            Tube(shellMaterialName,
-                                 // The vacuum volume is flush to the PS surface
-                                 psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength - 0.5*endPlateThickness),
-                                 0.,
-                                 0.5*shellOD,
-                                 0.5*endPlateThickness
-                                 )
-                                                          )
-                            );
+         // end plate
+         Tube(shellMaterialName,
+              // The vacuum volume is flush to the PS surface
+              psEndRefPoint + CLHEP::Hep3Vector(0,0, -shellLength - 0.5*endPlateThickness),
+              0.,
+              0.5*shellOD,
+              0.5*endPlateThickness
+              )
+         );
     }
 
     //----------------------------------------------------------------
