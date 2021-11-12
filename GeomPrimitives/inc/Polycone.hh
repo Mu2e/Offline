@@ -31,6 +31,8 @@ namespace mu2e {
 
   public:
 
+    Polycone();
+
     Polycone(const std::vector<double>& zPlanes,
              const std::vector<double>& rInner,
              const std::vector<double>& rOuter,
