@@ -28,7 +28,7 @@ namespace mu2e {
 
       }
 
-    } else {
+    } else if(pse.version() == 2){
 
       os<<"PSEnclosure("
 	<<"material="<<pse.shellCone().materialName()
@@ -52,6 +52,28 @@ namespace mu2e {
 
       }
 
+    } else {
+
+      os<<"PSEnclosure("
+        <<"material="<<pse.shellCone().materialName()
+        <<", OD1="<<2*pse.shellCone().outerRadius1()
+        <<", OD2="<<2*pse.shellCone().outerRadius2()
+        <<", length="<<2*(pse.shellCone().halfLength() + pse.endPlate().halfLength())
+        <<", flange=" << pse.flange()
+        <<", endplate cone=" << pse.endPlatePolycone()
+        <<", windows = { "
+        ;
+
+      for(unsigned i=0; i<pse.nWindows(); ++i) {
+        const CLHEP::Hep3Vector tmp(pse.windows()[i].originInMu2e() - pse.endPlate().originInMu2e());
+        os<<"Window("
+          <<"materialName="<<pse.windows()[i].materialName()
+          <<", thickness="<<2*pse.windows()[i].halfLength()
+          <<", r="<<pse.windows()[i].outerRadius()
+          <<", xoff="<<tmp.x()
+          <<", yoff="<<tmp.y()
+          <<"), ";
+      }
     }
 
     os<<" } )";
