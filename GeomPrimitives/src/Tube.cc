@@ -53,4 +53,14 @@ namespace mu2e {
     _rotation(rotation)
   {};
 
+  std::ostream& operator<<(std::ostream& os, const Tube& t) {
+    os<<"Tube: " << t.getTubsParams()
+      <<", originInMu2e="<<t.originInMu2e()
+      <<", phi0="<<t.phi0()
+      <<", phiMax="<<t.phiMax()
+      <<", rotation="<<t.rotation()
+      <<", materialName="<<t.materialName();
+    return os;
+  }
+
 }
