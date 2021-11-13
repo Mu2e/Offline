@@ -93,6 +93,7 @@ namespace mu2e {
       mu2eHallAir = mu2eKillerVolume
     };
 
+#ifndef SWIG
     // Keep this list of names in sync with the enum. Used in ProcessCode.cc
     // lastEnum does not appear in this list of names.
 #define PROCESSCODE_NAMES                                                                                   \
@@ -143,6 +144,7 @@ namespace mu2e {
     "mu2eCePlusLeadingLog", "mu2eunused2", "mu2eunused3", "mu2eunused4", \
     "mu2eunused5", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
     "uninitialized"
+#endif
 
   public:
 
@@ -169,6 +171,7 @@ namespace mu2e {
     // Return ProcessCode(unknown) if there is no such string.
     static ProcessCode findByName ( std::string const& name);
 
+#ifndef SWIG
     // This operator implements:
     //   ProcessCode a;
     //   enum_type b;
@@ -177,13 +180,16 @@ namespace mu2e {
       _id = c;
       return *this;
     }
+#endif
 
+#ifndef SWIG
     // This operator implements:
     //   ProcessCode a;
     //   enum_type b = a;
     operator ProcessCode::enum_type ()const{
       return _id;
     }
+#endif
 
     // Tests for equality.
     bool operator==(const ProcessCode g) const{
@@ -224,8 +230,10 @@ namespace mu2e {
       return isValid(_id);
     }
 
+#ifndef SWIG
     // List of names corresponding to the enum.
     const static char* _name[];
+#endif
 
   private:
 
