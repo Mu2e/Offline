@@ -246,7 +246,7 @@ namespace mu2e{
   }
 	
 	 /*------------Function to add TimeCluster Collection in 3D and 2D displays:-------------*/
-  void TEveMu2eDataInterface::AddTimeClusterHits(bool firstloop, const TimeClusterCollection *tccol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  void TEveMu2eDataInterface::AddTimeClusters(bool firstloop, const TimeClusterCollection *tccol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
    
    // std::vector<double> energies = {0,0};
     DataLists<const TimeClusterCollection*, TEveMu2e2DProjection*>(tccol, Redraw, accumulate, "TCHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
