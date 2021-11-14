@@ -14,6 +14,7 @@ namespace mu2e{
     mctrajTag_(conf.mctrajTag()),
     addHits_(conf.addHits()),
     addTrkHits_(conf.addTrkHits()),
+    addTimeClusterHits_(conf.addTimeClusterHits()),
     addTracks_(conf.addTracks()),
     addClusters_(conf.addClusters()),
     addCrvHits_(conf.addCrvHits()),
@@ -44,6 +45,10 @@ namespace mu2e{
     }
     if(FillAll_ or RecoOnly_ or (addTrkHits_ and CollectionName == ComboHits)){ 
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
+      data.chcol = chH.product();
+    }
+    if(FillAll_ or RecoOnly_ or (addTimeClusterHits_ and CollectionName == TimeClusterHits)){ 
+      auto chH = evt.getValidHandle<mu2e::TimeClusterCollection>(chTag_);
       data.chcol = chH.product();
     }
     if(FillAll_ or RecoOnly_ or CollectionName == CaloCrystalHits){
