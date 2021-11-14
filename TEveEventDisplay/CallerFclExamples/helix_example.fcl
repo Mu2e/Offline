@@ -20,6 +20,7 @@ physics :
 # edit the below options for different products:
 physics.analyzers.TEveEventDisplayHelix.filler.addHits : false
 physics.analyzers.TEveEventDisplayHelix.filler.addTrkHits : true
+physics.analyzers.TEveEventDisplayHelix.filler.addTimeClusters : true
 physics.analyzers.TEveEventDisplayHelix.filler.addTracks : true
 physics.analyzers.TEveEventDisplayHelix.filler.addCrvHits : false
 physics.analyzers.TEveEventDisplayHelix.filler.addCosmicSeedFit : false
