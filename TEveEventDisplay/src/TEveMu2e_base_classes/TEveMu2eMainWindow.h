@@ -84,8 +84,8 @@ namespace mu2e{
     bool addCryHits = false;
     bool addMCTraj = false;
     DrawOptions(){};
-    DrawOptions(bool crv, bool cosmictracks, bool tracks, bool clusters, bool combohits, bool trkhits, bool cryhits, bool mctraj) 
-    : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addTrkHits(trkhits), addCryHits(cryhits), addMCTraj(mctraj) {};
+    DrawOptions(bool crv, bool cosmictracks, bool tracks, bool clusters, bool combohits, bool trkhits, bool timeclusters, bool cryhits, bool mctraj) 
+    : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addTrkHits(trkhits), addTimeClusters(timeclusters), addCryHits(cryhits), addMCTraj(mctraj) {};
    };
    
 	class TEveMu2eMainWindow : public TGMainFrame {
