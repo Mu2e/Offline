@@ -5,6 +5,7 @@ namespace mu2e{
 #ifndef __ROOTCLING__
   Collection_Filler::Collection_Filler(const Config& conf) :
     chTag_(conf.chTag()),
+    tcTag_(conf.tcTag()),
     crvcoinTag_(conf.crvdigiTag()),
     cluTag_(conf.cluTag()),
     cryHitTag_(conf.cryHitTag()),
@@ -14,7 +15,7 @@ namespace mu2e{
     mctrajTag_(conf.mctrajTag()),
     addHits_(conf.addHits()),
     addTrkHits_(conf.addTrkHits()),
-    addTimeClusterHits_(conf.addTimeClusterHits()),
+    addTimeClusters_(conf.addTimeClusters()),
     addTracks_(conf.addTracks()),
     addClusters_(conf.addClusters()),
     addCrvHits_(conf.addCrvHits()),
@@ -47,8 +48,8 @@ namespace mu2e{
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
       data.chcol = chH.product();
     }
-    if(FillAll_ or RecoOnly_ or (addTimeClusterHits_ and CollectionName == TimeClusterHits)){ 
-      auto chH = evt.getValidHandle<mu2e::TimeClusterCollection>(chTag_);
+    if(FillAll_ or RecoOnly_ or (addTimeClusters_ and CollectionName == TimeClusters)){ 
+      auto chH = evt.getValidHandle<mu2e::TimeClusterCollection>(tcTag_);
       data.chcol = chH.product();
     }
     if(FillAll_ or RecoOnly_ or CollectionName == CaloCrystalHits){
