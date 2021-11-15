@@ -769,7 +769,7 @@ namespace mu2e{
            if(_data.chcol!=0) {
             *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
             pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-            pass_data->AddTimeClusters(_firstLoop, _data.tccol, _data.track_tuple, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+            pass_data->AddTimeClusters(_firstLoop, _data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
           
 	   }  if(_data.clustercol!=0){
             *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj,  false, fclustmin, fclustmax,ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
@@ -792,7 +792,7 @@ namespace mu2e{
       if(param1==1201){
         if(hitscheck->IsDown()){
         *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-        pass_data->AddTimeClusters(_firstLoop, _data.tccol, _data.track_tuple, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+        pass_data->AddTimeClusters(_firstLoop, _data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 	pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 		pass_data->AddCrystalHits(_firstLoop, _data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
         }
@@ -890,7 +890,7 @@ namespace mu2e{
  
       if(DrawOpts.addComboHits) *hitenergy = pass_data->AddComboHits(firstLoop, data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       if(DrawOpts.addTrkHits) pass_data->AddTrkHits(firstLoop, data.chcol, data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-      if(DrawOpts.addTimeClusters) pass_data->AddTimeClusters(firstLoop, data.tccol, data.track_tuple, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if(DrawOpts.addTimeClusters) pass_data->AddTimeClusters(firstLoop, data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
       
       clusterenergy = new std::vector<double>(2);
 
