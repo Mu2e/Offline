@@ -32,7 +32,7 @@
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
-
+#include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
@@ -79,6 +79,7 @@ namespace mu2e {
     BinnedSpectrum    spectrum_;
     RandomUnitSphere*   randomUnitSphere_;
     CLHEP::RandGeneral* randSpectrum_;
+    PionCaptureSpectrum pionCaptureSpectrum_;
   };
 
   //================================================================
@@ -139,39 +140,45 @@ namespace mu2e {
   void RPCGenGun::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> pistop)
   {
-  
-    /*if(process_ == ProcessCode::ExternalRPC){
+    //Photon energy and four mom:
+    double energy = spectrum_.sample(randSpectrum_->fire());
+    CLHEP::Hep3Vector p3 = randomUnitSphere_->fire(energy);
+    CLHEP::HepLorentzVector fourmom(p3, energy);
+    if(process_ == ProcessCode::ExternalRPC){
      
-     output->emplace_back(PDGCode::gamma,
+     output->emplace_back(pistop,
                          process_, 
-                         22,//FIXME
+                         PDGCode::gamma,
                          pistop->endPosition(),
-                         CLHEP::HepLorentzVector{randomUnitSphere_.fire(100), endPointEnergy_},
+                         fourmom,
                          pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
                          );
 
-    } else if(process_ == ProcessCode::IntentalRPC) {
-      output->emplace_back(PDGCode::e_minus,
-                           , 
-                           11,//FIXME
+    } else if(process_ == ProcessCode::InternalRPC) {
+      //Need to compute e-e+ pair momentum spectrum from the photon (use Kroll-Wada)
+      CLHEP::HepLorentzVector mome, momp;
+      pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp);
+      output->emplace_back(pistop,
+                           process_, 
+                           PDGCode::e_minus,
                            pistop->endPosition(),
-                           CLHEP::HepLorentzVector{randomUnitSphere_.fire(100), endPointEnergy_},
+                           mome,
                            pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
                            );
                            
-       output->emplace_back(PDGCode::e_plus,
-                           ProcessCode::InternalRPC, 
-                           -11, //FIXME
+       output->emplace_back(pistop,
+                           process_, 
+                           PDGCode::e_plus, 
                            pistop->endPosition(),
-                           CLHEP::HepLorentzVector{randomUnitSphere_.fire(endPointMomentum_), endPointEnergy_},
+                           momp,
                            pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
                            );
-                     event.put(std::move(output));
+                     
       
       } else {
         throw   cet::exception("BADINPUT")
         <<"RPCGenGun::produce(): no suitable process id\n";
-      }*/
+      }
    }
 
 
