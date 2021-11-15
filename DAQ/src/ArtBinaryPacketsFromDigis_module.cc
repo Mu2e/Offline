@@ -30,8 +30,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // mu2e-artdaq-core includes
-//#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
-#include "Offline/DAQ/inc/CRVFragmentTmp.hh"
+#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
 #include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
 #include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
 
@@ -62,10 +61,8 @@ using adc_t = uint16_t;
 using CalorimeterDataPacket = mu2e::CalorimeterFragment::CalorimeterDataPacket;
 using CalorimeterBoardID = mu2e::CalorimeterFragment::CalorimeterBoardID;
 using CalorimeterHitReadoutPacket = mu2e::CalorimeterFragment::CalorimeterHitReadoutPacket;
-//using CRVROCStatusPacket = mu2e::CRVFragment::CRVROCStatusPacket;
-//using CRVHitReadoutPacket = mu2e::CRVFragment::CRVHitReadoutPacket;
-using CRVROCStatusPacket = mu2e::CRVFragmentTmp::CRVROCStatusPacket;
-using CRVHitReadoutPacket = mu2e::CRVFragmentTmp::CRVHitReadoutPacket;
+using CRVROCStatusPacket = mu2e::CRVFragment::CRVROCStatusPacket;
+using CRVHitReadoutPacket = mu2e::CRVFragment::CRVHitReadoutPacket;
 
 // data struct for the calorimeter
 struct CaloDataPacket {
