@@ -11,8 +11,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-//#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
-#include "Offline/DAQ/inc/CRVFragmentTmp.hh"
+#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -121,8 +120,7 @@ void CrvDigisFromFragments::produce(Event& event) {
   for (size_t idx = 0; idx < numCrvFrags; ++idx) {
 
     const auto& fragment((*crvFragments)[idx]);
-//    mu2e::CRVFragment cc(fragment);
-    mu2e::CRVFragmentTmp cc(fragment);
+    mu2e::CRVFragment cc(fragment);
 
     if (diagLevel_ > 1) {
       std::cout << std::endl;

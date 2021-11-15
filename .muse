@@ -1,5 +1,5 @@
 # prefer to build with this environment
-ENVSET p014
+ENVSET p015
 # add these to python path
 PYTHONPATH TrackerAlignment/scripts
 PYTHONPATH Trigger/python
