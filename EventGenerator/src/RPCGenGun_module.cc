@@ -33,6 +33,8 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
@@ -52,6 +54,7 @@ namespace mu2e {
         fhicl::Atom<std::string> RPCType{
         Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
+        fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"), Comment("particles with decays off")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -59,6 +62,7 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
     void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop);
+    void MakeEventWeight(art::Event& event, SimParticleCollection *simCollection);
     //----------------------------------------------------------------
   private:
     const PDGCode::type electronId_ = PDGCode::e_minus; // for mass only
@@ -80,6 +84,7 @@ namespace mu2e {
     RandomUnitSphere*   randomUnitSphere_;
     CLHEP::RandGeneral* randSpectrum_;
     PionCaptureSpectrum pionCaptureSpectrum_;
+    std::vector<int> decayOffPDGCodes_;
   };
 
   //================================================================
@@ -93,6 +98,7 @@ namespace mu2e {
     , randExp_{eng_}
     , RPCType_(conf().RPCType())
     , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
+    , decayOffPDGCodes_(conf().decayOffPDGCodes())
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
@@ -107,8 +113,9 @@ namespace mu2e {
     
   }
   
- /* void MakeEventWeight(SimParticleCollection *simCollection){ //TODO - produce a pion weight
-    double TimeSum = 0.;
+  void MakeEventWeight(art::Event& event, const SimParticleCollection *simCollection){ //TODO - produce a pion weight
+    //Code whcih makes TauNorm: SimParticleGetTau::calculate(p,spMCColls,decayOffCodes_) - need StepPointMCCol.
+    /*double TimeSum = 0.;
     for(unsigned int i=0; i < simCollection->size(); i++){
       SimParticle  &simP = (*simCollection)[i]; 
       if(simP.isPrimary() and simP.hasParent()){
@@ -117,8 +124,14 @@ namespace mu2e {
         TimeSum += simTime;
         //if(parP->stoppingCode() == "mu2eKillerVolume") std::cout<<"Parent Killed End Combination"<<std::endl;
       }
-    }
-  }*/
+    }*/
+    std::vector<StepPointMCCollection> spMCColls; // TODO add instance to get StepPointMCCollection
+    const art::Ptr<SimParticle>& p; // TODO - extract from the Simcollection
+    double sumTime = SimParticleGetTau::calculate(p, spMCColls, decayOffPDGCodes_);
+    const double weight = exp(-sumTime);
+    std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+    event.put(std::move(pw));
+  }
 
   //================================================================
   void RPCGenGun::produce(art::Event& event) {
@@ -151,7 +164,7 @@ namespace mu2e {
                          PDGCode::gamma,
                          pistop->endPosition(),
                          fourmom,
-                         pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
+                         pistop->endGlobalTime() + randExp_.fire(pionLifeTime_) //TODO - need to add event weight
                          );
 
     } else if(process_ == ProcessCode::InternalRPC) {
