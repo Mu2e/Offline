@@ -253,23 +253,31 @@ namespace mu2e{
     /*
     TXYMgr->ImportElements(fHitsList2D, scene1); 
     TRZMgr->ImportElements(fHitsList2D, scene2); */
-	  
-	  std::cout<<"tccol size = "<<tccol->size()<<std::endl;
-    /*if(tccol!=0){
-      TEveElementList *HitList2DXY = new TEveElementList("TCHits2DXY");
+    std::cout<<"tccol size = "<<tccol->size()<<std::endl;
+	  StrawId trksid[70];
+    if(tccol!=0){
+     /* TEveElementList *HitList2DXY = new TEveElementList("TCHits2DXY");
       TEveElementList *HitList2DXZ = new TEveElementList("TCHits2DXZ");
       TEveElementList *HitList3D = new TEveElementList("TCHits3D");
-
-      int *energylevels = new int[chcol->size()];
-      energies = Energies<const TimeClusterCollection*>(tccol, &energylevels);
-
-      for(size_t i=0; i<chcol->size();i++){
-        ComboHit hit = (*chcol)[i];
-        TEveMu2eHit *teve_hit2DXY = new TEveMu2eHit(hit);
-	TEveMu2eHit *teve_hit2DXZ = new TEveMu2eHit(hit);
-        TEveMu2eHit *teve_hit3D = new TEveMu2eHit(hit);
-        
-        CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
+     */
+      for(size_t i=0; i<tccol->size();i++){
+       TimeCluster const  &tclust= (*tccol)[i];
+       std::cout<<"No. of straw hits = "<<tclust.nStrawHits()<<" "<<tclust.nhits()<<" "<<tclust.hits().size()<<std::endl;
+	      //int nsh = tclust.nStrawHits();
+	      //const std::vector<StrawHitIndex>& hits       () const { return _strawHitIdxs; }
+	      //size_t                               nhits      () const { return _strawHitIdxs.size(); }
+	      for(size_t j=0; j<tclust.nhits;j++){
+	      
+	      }
+       if(tclust.hasCaloCluster){std::cout<<"calo cluster present"<<std::endl;
+        CaloCluster const  &cluster= *tclust.caloCluster();
+       for(unsigned h =0 ; h < cluster.caloHitsPtrVector().size();h++)     {
+            art::Ptr<CaloHit>  crystalhit = cluster.caloHitsPtrVector()[h];
+            int cryID = crystalhit->crystalID();
+            std::cout<<"cry ID ="<<cryID<<std::endl;
+	  } 
+	  }
+        /*CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
         GeomHandle<DetectorSystem> det;
         CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
         string energy = to_string(teve_hit3D->GetEnergy());
@@ -282,17 +290,16 @@ namespace mu2e{
 
           fHitsList2DXY->AddElement(HitList2DXY);
           fHitsList2DXZ->AddElement(HitList2DXZ); 
-          fHitsList3D->AddElement(HitList3D); 
+          fHitsList3D->AddElement(HitList3D); */
         }
       }
-      tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
+      /*tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
       tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
       TXYMgr->ImportElements(fHitsList2D, scene1);
       TRZMgr->ImportElements(fHitsList2D, scene2);
       gEve->AddElement(HitList3D);
-      gEve->Redraw3D(kTRUE); 
+      gEve->Redraw3D(kTRUE); */
     }
-    return energies;*/
   }
 	
 	
