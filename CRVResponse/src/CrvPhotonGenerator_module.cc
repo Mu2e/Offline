@@ -222,6 +222,7 @@ namespace mu2e
       filedirs.insert( std::filesystem::path(filespec).parent_path() );
       photonMaker->LoadLookupTable(filespec,_debug);
       photonMaker->SetScintillationYield(_scintillationYields[i]);
+      if(_debug>0) std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
     }
 
     std::cout << "CRV light files:";
