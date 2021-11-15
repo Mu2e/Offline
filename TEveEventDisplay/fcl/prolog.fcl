@@ -18,7 +18,7 @@ TEveEventDisplayBase : {
     isMCOnly : false
     filler : {
       ComboHitCollection 		    : "makeSH"
-      TimeClusterCollection                  : ["MHDeM"]
+      TimeClusterCollection                  : "MHDeM"
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection :  NULL
       CaloClusterCollection		  :  "CaloClusterMaker"
@@ -80,7 +80,7 @@ TEveEventDisplayHelix : {
       isMCOnly : false
       filler : {
         ComboHitCollection 	  : "makePH"
-	TimeClusterCollection                  : ["MHDeM"]
+	TimeClusterCollection                  : "MHDeM"
         CrvRecoPulseCollection	  :  "SelectRecoMC"
         CosmicTrackSeedCollection :  NULL
         CaloClusterCollection     :  "CaloClusterMaker"
@@ -107,7 +107,7 @@ TEveEventDisplayCosmics : {
     showCRV : true
     filler : {
       ComboHitCollection 		    : "makeSH"
-      TimeClusterCollection                  : ["MHDeM"]
+      TimeClusterCollection                  : "MHDeM"
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection 	: "CosmicTrackFinderTimeFit"
       CaloClusterCollection		  :  NULL
