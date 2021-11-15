@@ -44,7 +44,7 @@ namespace mu2e{
 
       //RecoDataProducts:
       const ComboHitCollection *chcol = 0;
-      const TimeCLusterCollection *tccol = 0;
+      const TimeClusterCollection *tccol = 0;
       const CrvRecoPulseCollection* crvcoincol = 0;
       const CosmicTrackSeedCollection* cosmiccol = 0;
       const CaloClusterCollection* clustercol = 0;
