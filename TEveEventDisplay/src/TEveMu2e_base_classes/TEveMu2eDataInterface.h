@@ -35,7 +35,9 @@ namespace mu2e{
     class TEveMu2eDataInterface {
     public:
       #ifndef __CINT__
-      TEveMu2eDataInterface() : fHitsList2DXY(0),fHitsList2DXZ(0),fHitsList3D(0),fCrystalHitList(0),fTrackList2DXY(0),fTrackList2DXZ(0),fTrackList3D(0), fClusterList2D_disk0(0), fClusterList2D_disk1(0), fClusterList3D(0), fCrvList2DXY(0), fCrvList2DYZ(0),  fCrvList3D(0), fExtTrackList2D(0), fExtTrackList3D(0){};
+      TEveMu2eDataInterface() : fHitsList2DXY(0),fHitsList2DXZ(0),fHitsList3D(0),fTrkHitsList2DXY(0),fTrkHitsList2DXZ(0),fTrkHitsList3D(0),fTCHitsList2DXY(0),fTCHitsList2DXZ(0),fTCHitsList3D(0),
+                                fCrystalHitList(0),fTrackList2DXY(0),fTrackList2DXZ(0),fTrackList3D(0), fClusterList2D_disk0(0), fClusterList2D_disk1(0), fClusterList3D(0), fCrvList2DXY(0), 
+                                fCrvList2DYZ(0),  fCrvList3D(0), fExtTrackList2D(0), fExtTrackList3D(0){};
       TEveMu2eDataInterface(const TEveMu2eDataInterface &);
       TEveMu2eDataInterface& operator=(const TEveMu2eDataInterface &);
       virtual ~TEveMu2eDataInterface(){};
@@ -44,6 +46,12 @@ namespace mu2e{
       TEveElementList *fHitsList2DXY;
       TEveElementList *fHitsList2DXZ;
       TEveElementList *fHitsList3D;
+      TEveElementList *fTrkHitsList2DXY;
+      TEveElementList *fTrkHitsList2DXZ;
+      TEveElementList *fTrkHitsList3D;
+      TEveElementList *fTCHitsList2DXY;
+      TEveElementList *fTCHitsList2DXZ;
+      TEveElementList *fTCHitsList3D;
       TEveElementList *fCrystalHitList;
       TEveElementList *fTrackList2DXY;
       TEveElementList *fTrackList2DXZ;
