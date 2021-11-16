@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #
 #
-
 Import('env')
 Import('mu2e_helper')
 
@@ -13,6 +12,9 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeneralUtilities',
                                   'cetlib',
                                   'cetlib_except'
                               ] )
+
+# turn pywrap.i into a python interface
+helper.make_pywrap ()
 
 # this tells emacs to view this file in python mode.
 # Local Variables:
