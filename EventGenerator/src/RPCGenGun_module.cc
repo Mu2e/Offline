@@ -51,10 +51,11 @@ namespace mu2e {
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and pion life time.  Material pist be known to the GlobalConstantsService."),"Al" };
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
-        fhicl::Atom<std::string> RPCType{
-        Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
-        fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
-        fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"), Comment("particles with decays off")};
+        fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
+        fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"),Comment("decayOffPDGCodes")};
+        fhicl::Sequence<art::InputTag> hitCollections {Name("hitCollections"), Comment("A list of StepPointMCCollection-s")};
+        fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
+        
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -80,11 +81,12 @@ namespace mu2e {
     int pdgId_;
     PDGCode::type pid_;
     std::string RPCType_;
+    std::vector<int> decayOffPDGCodes_;
     BinnedSpectrum    spectrum_;
     RandomUnitSphere*   randomUnitSphere_;
     CLHEP::RandGeneral* randSpectrum_;
     PionCaptureSpectrum pionCaptureSpectrum_;
-    std::vector<int> decayOffPDGCodes_;
+    std::vector<art::InputTag> hitColls_;
   };
 
   //================================================================
@@ -97,8 +99,9 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
     , RPCType_(conf().RPCType())
-    , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
     , decayOffPDGCodes_(conf().decayOffPDGCodes())
+    , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())) 
+    , hitColls_(conf().hitCollections())
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
@@ -114,23 +117,21 @@ namespace mu2e {
   }
   
   void MakeEventWeight(art::Event& event, const SimParticleCollection *simCollection){ //TODO - produce a pion weight
-    //Code whcih makes TauNorm: SimParticleGetTau::calculate(p,spMCColls,decayOffCodes_) - need StepPointMCCol.
-    /*double TimeSum = 0.;
-    for(unsigned int i=0; i < simCollection->size(); i++){
-      SimParticle  &simP = (*simCollection)[i]; 
-      if(simP.isPrimary() and simP.hasParent()){
-        art::Ptr<SimParticle>  parP = simP.parent();
-        double simTime = simP.endProperTime();
-        TimeSum += simTime;
-        //if(parP->stoppingCode() == "mu2eKillerVolume") std::cout<<"Parent Killed End Combination"<<std::endl;
-      }
-    }*/
-    std::vector<StepPointMCCollection> spMCColls; // TODO add instance to get StepPointMCCollection
-    const art::Ptr<SimParticle>& p; // TODO - extract from the Simcollection
-    double sumTime = SimParticleGetTau::calculate(p, spMCColls, decayOffPDGCodes_);
-    const double weight = exp(-sumTime);
-    std::unique_ptr<EventWeight> pw(new EventWeight(weight));
-    event.put(std::move(pw));
+    std::vector<StepPointMCCollection> spMCColls;
+    for ( const auto& iColl : hitColls_ ){
+      auto spColl = event.getValidHandle<StepPointMCCollection>(iColl);
+      spMCColls.push_back( *spColl );
+    }
+    for(const auto& p : *simCollection) {
+      if(p.second.daughters().empty()) {
+        art::Ptr<SimParticle> pp(simCollection, p.first.asUint());
+        double sumTime = SimParticleGetTau::calculate(p, spMCColls, decayOffPDGCodes_);
+        const double weight = exp(-sumTime);
+        std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+        event.put(std::move(pw));
+    }
+    //const art::Ptr<SimParticle>& p; // TODO - extract from the Simcollection
+    
   }
 
   //================================================================
