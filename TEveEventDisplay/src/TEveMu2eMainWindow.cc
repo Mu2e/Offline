@@ -754,7 +754,7 @@ namespace mu2e{
         fhitmin = atof(_hitminenergy->GetString());
         fhitmax = atof(_hitmaxenergy->GetString());
         //if (fhitmin < fhitmax) {*hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
-        if (fhitmin < fhitmax) {pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
+        //if (fhitmin < fhitmax) {pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax,ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);}
 	      if (fhitmin > fhitmax){
           std::cout<<"Hit Minimum Energy is greater than Maximum Energy"<<std::endl;
           char msg[300];
@@ -769,8 +769,10 @@ namespace mu2e{
            if(_data.chcol!=0) {
             *hitenergy = pass_data->AddComboHits(_firstLoop, _data.chcol, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
             pass_data->AddTrkHits(_firstLoop, _data.chcol, _data.track_tuple, tracker2Dproj, false, fhitmin, fhitmax, ftimemin, ftimemax, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-            pass_data->AddTimeClusters(_firstLoop, _data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-          
+	   }
+	   if(_data.tccol!=0) {
+	     pass_data->AddTimeClusters(_firstLoop, _data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+	   }
 	   }  if(_data.clustercol!=0){
             *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj,  false, fclustmin, fclustmax,ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
             }if(_data.crvcoincol!=0) {
