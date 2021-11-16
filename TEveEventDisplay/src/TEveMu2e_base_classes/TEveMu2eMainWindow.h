@@ -78,10 +78,10 @@ namespace mu2e{
     bool addCRVInfo = false;
     bool addCosmicTracks = false;
     bool addTracks = false;
-    bool addTimeClusters = false;
     bool addClusters = false; 
     bool addComboHits = false;
     bool addTrkHits = false;
+    bool addTimeClusters = false;
     bool addCryHits = false;
     bool addMCTraj = false;
     DrawOptions(){};
