@@ -14,6 +14,9 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/ParameterSetRegistry.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
@@ -28,6 +31,7 @@
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
@@ -63,36 +67,30 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
     void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop);
-    void MakeEventWeight(art::Event& event, SimParticleCollection *simCollection);
+    void MakeEventWeight(art::Event& event);
     //----------------------------------------------------------------
   private:
-    const PDGCode::type electronId_ = PDGCode::e_minus; // for mass only
-    double electronMass_;
     double pionLifeTime_;
-
     art::ProductToken<SimParticleCollection> const simsToken_;
-
     unsigned verbosity_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-    
-    ProcessCode process_;
-    int pdgId_;
-    PDGCode::type pid_;
     std::string RPCType_;
     std::vector<int> decayOffPDGCodes_;
+    std::vector<art::InputTag> hitColls_;
     BinnedSpectrum    spectrum_;
+
+    ProcessCode process_;
     RandomUnitSphere*   randomUnitSphere_;
     CLHEP::RandGeneral* randSpectrum_;
     PionCaptureSpectrum pionCaptureSpectrum_;
-    std::vector<art::InputTag> hitColls_;
+    
   };
 
   //================================================================
   RPCGenGun::RPCGenGun(const Parameters& conf)
     : EDProducer{conf}
-    , electronMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(electronId_).ref().mass().value())
     , pionLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
@@ -100,8 +98,8 @@ namespace mu2e {
     , randExp_{eng_}
     , RPCType_(conf().RPCType())
     , decayOffPDGCodes_(conf().decayOffPDGCodes())
-    , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())) 
     , hitColls_(conf().hitCollections())
+    , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())) 
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
@@ -112,26 +110,26 @@ namespace mu2e {
         <<"RPCGenGun::produce(): no such process, must be InternalRPC or ExternalRPC";
     } //TODO - replace with static_cast<ProcessCode::type>(RPCType_);  - got errors  for some reason so simplified
     randomUnitSphere_ = new RandomUnitSphere(eng_);
-    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
+    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins()); //photon spectrum
     
   }
   
-  void MakeEventWeight(art::Event& event, const SimParticleCollection *simCollection){ //TODO - produce a pion weight
+  void RPCGenGun::MakeEventWeight(art::Event& event){ //TODO - make this a utility
     std::vector<StepPointMCCollection> spMCColls;
+    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     for ( const auto& iColl : hitColls_ ){
-      auto spColl = event.getValidHandle<StepPointMCCollection>(iColl);
+      auto spColl = event.getValidHandle<StepPointMCCollection>(iColl); 
       spMCColls.push_back( *spColl );
     }
-    for(const auto& p : *simCollection) {
+    for(const auto& p : *simh) {
       if(p.second.daughters().empty()) {
-        art::Ptr<SimParticle> pp(simCollection, p.first.asUint());
-        double sumTime = SimParticleGetTau::calculate(p, spMCColls, decayOffPDGCodes_);
-        const double weight = exp(-sumTime);
-        std::unique_ptr<EventWeight> pw(new EventWeight(weight));
-        event.put(std::move(pw));
+          art::Ptr<SimParticle> pp(simh, p.first.asUint());
+          double sumTime = SimParticleGetTau::calculate(pp, spMCColls, decayOffPDGCodes_);
+          const double weight = exp(-sumTime);
+          std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+          event.put(std::move(pw)); //TODO - this in the right place
+        }
     }
-    //const art::Ptr<SimParticle>& p; // TODO - extract from the Simcollection
-    
   }
 
   //================================================================
