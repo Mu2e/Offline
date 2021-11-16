@@ -772,8 +772,7 @@ namespace mu2e{
 	   }
 	   if(_data.tccol!=0) {
 	     pass_data->AddTimeClusters(_firstLoop, _data.tccol, tracker2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-	   }
-	   }  if(_data.clustercol!=0){
+	   }if(_data.clustercol!=0){
             *clusterenergy = pass_data->AddCaloClusters(_firstLoop, _data.clustercol, calo2Dproj,  false, fclustmin, fclustmax,ftimemin, ftimemax, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
             }if(_data.crvcoincol!=0) {
                pass_data->AddCRVInfo(_firstLoop, _data.crvcoincol, ftimemin, ftimemax, CRV2Dproj, false, _accumulate, TfXYMgr, TfRZMgr, proj4, proj5);
