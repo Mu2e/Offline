@@ -329,21 +329,21 @@ namespace mu2e{
             TEvePointSet *trkhit = new TEvePointSet();
             trkhit ->SetMarkerStyle(9);
 	    trkhit ->SetMarkerSize(1);
-            trkhit ->SetMarkerColor(kGreen+4);
+            trkhit ->SetMarkerColor(kGreen-4);
             trkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
             trkhit ->SetPickable(kTRUE);
            
             TEvePointSet *trkhityz = new TEvePointSet();
             trkhityz ->SetMarkerStyle(9);
             trkhityz ->SetMarkerSize(1);
-            trkhityz ->SetMarkerColor(kGreen+4);
+            trkhityz ->SetMarkerColor(kGreen-4);
             trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
             trkhityz ->SetPickable(kTRUE);
     
             TEvePointSet *trkhit3d = new TEvePointSet();
             trkhit3d ->SetMarkerStyle(9);
             trkhit3d ->SetMarkerSize(1);
-            trkhit3d ->SetMarkerColor(kGreen+4);
+            trkhit3d ->SetMarkerColor(kGreen-4);
             trkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
             trkhit3d ->SetPickable(kTRUE);
             fTrkHitsList2DXY->AddElement(trkhit);
@@ -362,20 +362,20 @@ namespace mu2e{
           notusedtrkhit ->SetMarkerStyle(9);
           notusedtrkhit ->SetMarkerSize(1);
           notusedtrkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
-          notusedtrkhit ->SetMarkerColor(kRed-7);
+          notusedtrkhit ->SetMarkerColor(kRed-4);
           notusedtrkhit ->SetPickable(kTRUE);
             
           TEvePointSet *notusedtrkhityz = new TEvePointSet();
           notusedtrkhityz ->SetMarkerStyle(9);
           notusedtrkhityz ->SetMarkerSize(1);
-          notusedtrkhityz ->SetMarkerColor(kRed-7);
+          notusedtrkhityz ->SetMarkerColor(kRed-4);
           notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
           notusedtrkhityz ->SetPickable(kTRUE);
 
 	  TEvePointSet *notusedtrkhit3d = new TEvePointSet();
           notusedtrkhit3d ->SetMarkerStyle(9);
           notusedtrkhit3d ->SetMarkerSize(1);
-          notusedtrkhit3d ->SetMarkerColor(kRed-7);
+          notusedtrkhit3d ->SetMarkerColor(kRed-4);
           notusedtrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
           notusedtrkhit3d ->SetPickable(kTRUE);
           fTrkHitsList3D->AddElement(notusedtrkhit3d);
