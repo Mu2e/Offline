@@ -247,7 +247,7 @@ namespace mu2e{
 	
 	 /*------------Function to add TimeCluster Collection in 3D and 2D displays:-------------*/
   void TEveMu2eDataInterface::AddTimeClusters(bool firstloop, const TimeClusterCollection *tccol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
-    DataLists<const TimeClusterCollection*, TEveMu2e2DProjection*>(tccol, Redraw, accumulate, "TCHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
+    DataLists<const TimeClusterCollection*, TEveMu2e2DProjection*>(tccol, Redraw, accumulate, "TCHit", &fTCHitsList3D, &fTCHitsList2DXY, &fTCHitsList2DXZ, tracker2Dproj);
     std::cout<<"tccol size = "<<tccol->size()<<std::endl;
     GeomHandle<DetectorSystem> det;
     if(tccol!=0){
@@ -277,9 +277,9 @@ namespace mu2e{
             trkhit3d ->SetMarkerColor(kCyan);
             trkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
             trkhit3d ->SetPickable(kTRUE);
-            fHitsList2DXY->AddElement(trkhit);
-            fHitsList2DXZ->AddElement(trkhityz);
-            fHitsList3D->AddElement(trkhit3d);
+            fTCHitsList2DXY->AddElement(trkhit);
+            fTCHitsList2DXZ->AddElement(trkhityz);
+            fTCHitsList3D->AddElement(trkhit3d);
 
       /* if(tclust.hasCaloCluster){std::cout<<"calo cluster present"<<std::endl;
         CaloCluster const  &cluster= *tclust.caloCluster();
@@ -288,8 +288,8 @@ namespace mu2e{
             int cryID = crystalhit->crystalID();
             std::cout<<"cry ID ="<<cryID<<std::endl;*/
       }
-      tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene);
-      tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
+      tracker2Dproj->fXYMgr->ImportElements(fTCHitsList2DXY, tracker2Dproj->fEvtXYScene);
+      tracker2Dproj->fRZMgr->ImportElements(fTCHitsList2DXZ, tracker2Dproj->fEvtRZScene);
       gEve->AddElement(fHitsList3D);
       gEve->Redraw3D(kTRUE);
     }
@@ -323,7 +323,7 @@ namespace mu2e{
     }        
     StrawId usedtrksid[trkhitsize];
     unsigned int usedid[trkhitsize];
-    DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
+    DataLists<const ComboHitCollection*, TEveMu2e2DProjection*>(chcol, Redraw, accumulate, "ComboHit", &fTrkHitsList3D, &fTrkHitsList2DXY, &fTrkHitsList2DXZ, tracker2Dproj);
     //Compare the straw IDs of the Kal seed hits with the hits in the ComboHit Collection
     if(chcol!=0){
       for(unsigned int i=0; i<chcol->size();i++){
@@ -354,9 +354,9 @@ namespace mu2e{
             trkhit3d ->SetMarkerColor(kRed);
             trkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
             trkhit3d ->SetPickable(kTRUE);
-            fHitsList2DXY->AddElement(trkhit);
-            fHitsList2DXZ->AddElement(trkhityz);
-            fHitsList3D->AddElement(trkhit3d);
+            fTrkHitsList2DXY->AddElement(trkhit);
+            fTrkHitsList2DXZ->AddElement(trkhityz);
+            fTrkHitsList3D->AddElement(trkhit3d);
 	  }
         }
       }
@@ -386,13 +386,13 @@ namespace mu2e{
           notusedtrkhit3d ->SetMarkerColor(kGreen);
           notusedtrkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
           notusedtrkhit3d ->SetPickable(kTRUE);
-          fHitsList3D->AddElement(notusedtrkhit3d);
-          fHitsList2DXY->AddElement(notusedtrkhit);
-          fHitsList2DXZ->AddElement(notusedtrkhityz);
+          fTrkHitsList3D->AddElement(notusedtrkhit3d);
+          fTrkHitsList2DXY->AddElement(notusedtrkhit);
+          fTrkHitsList2DXZ->AddElement(notusedtrkhityz);
 	}
       }
-      tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene);
-      tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
+      tracker2Dproj->fXYMgr->ImportElements(fTrkHitsList2DXY, tracker2Dproj->fEvtXYScene);
+      tracker2Dproj->fRZMgr->ImportElements(fTrkHitsList2DXZ, tracker2Dproj->fEvtRZScene);
       gEve->AddElement(fHitsList3D);
       gEve->Redraw3D(kTRUE);
     }
