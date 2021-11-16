@@ -247,58 +247,51 @@ namespace mu2e{
 	
 	 /*------------Function to add TimeCluster Collection in 3D and 2D displays:-------------*/
   void TEveMu2eDataInterface::AddTimeClusters(bool firstloop, const TimeClusterCollection *tccol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
-   
-   // std::vector<double> energies = {0,0};
     DataLists<const TimeClusterCollection*, TEveMu2e2DProjection*>(tccol, Redraw, accumulate, "TCHit", &fHitsList3D, &fHitsList2DXY, &fHitsList2DXZ, tracker2Dproj);
-    /*
-    TXYMgr->ImportElements(fHitsList2D, scene1); 
-    TRZMgr->ImportElements(fHitsList2D, scene2); */
     std::cout<<"tccol size = "<<tccol->size()<<std::endl;
-	  StrawId trksid[70];
+    GeomHandle<DetectorSystem> det;
     if(tccol!=0){
-     /* TEveElementList *HitList2DXY = new TEveElementList("TCHits2DXY");
-      TEveElementList *HitList2DXZ = new TEveElementList("TCHits2DXZ");
-      TEveElementList *HitList3D = new TEveElementList("TCHits3D");
-     */
       for(size_t i=0; i<tccol->size();i++){
        TimeCluster const  &tclust= (*tccol)[i];
-       std::cout<<"No. of straw hits = "<<tclust.nStrawHits()<<" "<<tclust.nhits()<<" "<<tclust.hits().size()<<std::endl;
-	      //int nsh = tclust.nStrawHits();
-	      //const std::vector<StrawHitIndex>& hits       () const { return _strawHitIdxs; }
-	      //size_t                               nhits      () const { return _strawHitIdxs.size(); }
-	      for(size_t j=0; j<tclust.nhits;j++){
-	      
-	      }
-       if(tclust.hasCaloCluster){std::cout<<"calo cluster present"<<std::endl;
+       std::cout<<"No. of straw hits = "<<tclust.nStrawHits()<<" "<<tclust.nhits()<<" "<<tclust.hits().size()<<std::endl;  
+       std::cout<<"tc clust pos = "<<tclust._pos.x()<<" "<<tclust._pos.y()<<" "<<tclust._pos.z()<<std::endl;
+       CLHEP::Hep3Vector HitPos(tclust._pos.x(), tclust._pos.y(), tclust._pos.z());
+            CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
+            TEvePointSet *trkhit = new TEvePointSet();
+            trkhit ->SetMarkerStyle(9);
+            trkhit ->SetMarkerSize(2);
+            trkhit ->SetMarkerColor(kCyan);
+            trkhit ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
+            trkhit ->SetPickable(kTRUE);
+           // fHitsList2DXY->AddElement(trkhit);
+             TEvePointSet *trkhityz = new TEvePointSet();
+            trkhityz ->SetMarkerStyle(9);
+            trkhityz ->SetMarkerSize(2);
+            trkhityz ->SetMarkerColor(kCyan);
+            trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
+            trkhityz ->SetPickable(kTRUE); 
+    
+            TEvePointSet *trkhit3d = new TEvePointSet();
+            trkhit3d ->SetMarkerStyle(9);
+            trkhit3d ->SetMarkerSize(2);
+            trkhit3d ->SetMarkerColor(kCyan);
+            trkhit3d ->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
+            trkhit3d ->SetPickable(kTRUE);
+            fHitsList2DXY->AddElement(trkhit);
+            fHitsList2DXZ->AddElement(trkhityz);
+            fHitsList3D->AddElement(trkhit3d);
+
+      /* if(tclust.hasCaloCluster){std::cout<<"calo cluster present"<<std::endl;
         CaloCluster const  &cluster= *tclust.caloCluster();
        for(unsigned h =0 ; h < cluster.caloHitsPtrVector().size();h++)     {
             art::Ptr<CaloHit>  crystalhit = cluster.caloHitsPtrVector()[h];
             int cryID = crystalhit->crystalID();
-            std::cout<<"cry ID ="<<cryID<<std::endl;
-	  } 
-	  }
-        /*CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
-        GeomHandle<DetectorSystem> det;
-        CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
-        string energy = to_string(teve_hit3D->GetEnergy());
-        string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
-        string pos2D = "(" + to_string((double)hit.pos().x()) + ", " + to_string((double)hit.pos().y()) + ", " + to_string((double)hit.pos().z()) + ")";
-        if (((min_time == -1 && max_time== -1) || (hit.time() > min_time && hit.time() < max_time)) && ((hit.energyDep() >= min_energy && hit.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){
-          teve_hit3D->DrawHit3D("ComboHits3D, Position = " + pos3D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1,  pointInMu2e, energylevels[i], HitList3D);
-          teve_hit2DXY->DrawHit2DXY("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2DXY);
-          teve_hit2DXZ->DrawHit2DXZ("ComboHits2D, Position = " + pos2D + ", Energy = " + energy + ", Time = " + to_string(hit.time()) + ", ", i + 1, HitPos,energylevels[i], HitList2DXZ);
-
-          fHitsList2DXY->AddElement(HitList2DXY);
-          fHitsList2DXZ->AddElement(HitList2DXZ); 
-          fHitsList3D->AddElement(HitList3D); */
-        }
+            std::cout<<"cry ID ="<<cryID<<std::endl;*/
       }
-      /*tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene); 
+      tracker2Dproj->fXYMgr->ImportElements(fHitsList2DXY, tracker2Dproj->fEvtXYScene);
       tracker2Dproj->fRZMgr->ImportElements(fHitsList2DXZ, tracker2Dproj->fEvtRZScene);
-      TXYMgr->ImportElements(fHitsList2D, scene1);
-      TRZMgr->ImportElements(fHitsList2D, scene2);
-      gEve->AddElement(HitList3D);
-      gEve->Redraw3D(kTRUE); */
+      gEve->AddElement(fHitsList3D);
+      gEve->Redraw3D(kTRUE);
     }
   }
 	
