@@ -6,6 +6,7 @@ namespace mu2eCrv
 void MakeCrvDigis::SetWaveform(const std::vector<double> &waveform, double ADCconversionFactor, int pedestal, double startTime, double digitizationPrecision)
 {
   _ADCs.clear();
+  _ADCs.reserve(waveform.size());
   for(size_t i=0; i<waveform.size(); i++)
   {
     _ADCs.push_back(static_cast<int16_t>(waveform[i]*ADCconversionFactor+pedestal+0.5));

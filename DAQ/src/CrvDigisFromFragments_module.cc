@@ -70,22 +70,6 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
-/*
-int CrvDigisFromFragments::decompressCrvDigi(uint8_t adc) {
-  // TODO: Temporary implementation until we have the real compression used at the FEBs
-  int toReturn = adc;
-  if (adc >= 50 && adc < 75)
-    toReturn = (adc - 50) * 2 + 50;
-  if (adc >= 75 && adc < 100)
-    toReturn = (adc - 75) * 4 + 100;
-  if (adc >= 100 && adc < 125)
-    toReturn = (adc - 100) * 8 + 200;
-  if (adc >= 125)
-    toReturn = (adc - 125) * 16 + 400;
-  toReturn += 95;
-  return toReturn;
-}
-*/
 int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc) 
 {
   return adc;
@@ -140,25 +124,6 @@ void CrvDigisFromFragments::produce(Event& event) {
     }
 
     for (size_t curBlockIdx = 0; curBlockIdx < cc.block_count(); curBlockIdx++) {
-
-#if 0 // TODO: Look into restoring some form of this later...
-      if (diagLevel_ > 1) {
-        // Print binary contents the first 3 packets starting at the current position
-        // In the case of the tracker simulation, this will be the whole tracker
-        // DataBlock. In the case of the calorimeter, the number of data packets
-        // following the header packet is variable.
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (0 + 3 * curBlockIdx));
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (1 + 3 * curBlockIdx));
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (2 + 3 * curBlockIdx));
-
-        // Print out decimal values of 16 bit chunks of packet data
-        for (int i = 7; i >= 0; i--) {
-          std::cout << (adc_t) * (pos + i);
-          std::cout << " ";
-        }
-        std::cout << std::endl;
-      }
-#endif
 
       auto block = cc.dataAtBlockIndex(curBlockIdx);
       if (block == nullptr) {
@@ -239,18 +204,6 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "rocID: " << hdr->GetLinkID() << std::endl;
             std::cout << "packetCount: " << hdr->GetPacketCount() << std::endl;
             std::cout << "EVB mode: " << hdr->GetEVBMode() << std::endl;
-
-            //	    for(int i=7; i>=0; i--) {
-            //	      std::cout << (adc_t) *(pos+8+i);
-            //	      std::cout << " ";
-            //	    }
-            //	    std::cout << std::endl;
-            //
-            //	    for(int i=7; i>=0; i--) {
-            //	      std::cout << (adc_t) *(pos+8*2+i);
-            //	      std::cout << " ";
-            //	    }
-            //	    std::cout << std::endl;
 
             std::cout << "SiPMNumber: " << crvHit.SiPMID % 4 << std::endl;
             std::cout << "scintillatorBarIndex: " << crvHit.SiPMID / 4 << std::endl;
