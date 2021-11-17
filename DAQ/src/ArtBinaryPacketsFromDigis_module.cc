@@ -1097,26 +1097,6 @@ void ArtBinaryPacketsFromDigis::processCrvData(art::Event& evt, uint64_t& eventN
 //--------------------------------------------------------------------------------
 // crate a crvPacket from the digi
 //--------------------------------------------------------------------------------
-/*
-uint8_t ArtBinaryPacketsFromDigis::compressCrvDigi(int adc) {
-  // TODO: Temporary implementation until we have the real compression used at the FEBs
-  adc -= 95;
-  if (adc < 0)
-    adc = 0;
-  uint8_t toReturn = adc;
-  if (adc > 50 && adc <= 100)
-    toReturn = 50 + (adc - 50) / 2;
-  if (adc > 100 && adc <= 200)
-    toReturn = 75 + (adc - 100) / 4;
-  if (adc > 200 && adc <= 400)
-    toReturn = 100 + (adc - 200) / 8;
-  if (adc > 400 && adc <= 2480)
-    toReturn = 125 + (adc - 400) / 16;
-  if (adc > 2480)
-    toReturn = 255;
-  return toReturn;
-}
-*/
 int16_t ArtBinaryPacketsFromDigis::compressCrvDigi(int16_t adc) 
 {
   // TODO: Temporary implementation until we have the real compression used at the FEBs
@@ -1161,7 +1141,7 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
   while (nBytes % 16 != 0) nBytes++;
   crvData.header.s.TransferByteCount = nBytes;
   // Word 1
-  crvData.header.s.PacketType = 0x05; // PacketType::Dataheader;
+  crvData.header.s.PacketType = DTCLib::DTC_PacketType_DataHeader;
 
   crvData.header.s.LinkID = globalRocID % number_of_crv_rocs_per_dtc; // TODO: Is this correct?
   crvData.header.s.SubsystemID = DTCLib::DTC_Subsystem_CRV;
