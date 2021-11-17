@@ -292,3 +292,10 @@ CREATE TABLE sim.efficiencies
    CONSTRAINT sim_efficiencies_pk PRIMARY KEY (cid,tag) );
 GRANT SELECT ON sim.efficiencies TO PUBLIC;
 GRANT INSERT ON sim.efficiencies TO sim_role;
+
+CREATE TABLE sim.efficiencies2
+  (cid INTEGER, 
+   tag TEXT, numerator BIGINT, denominator BIGINT, eff NUMERIC,  
+   CONSTRAINT sim_efficiencies2_pk PRIMARY KEY (cid,tag) );
+GRANT SELECT ON sim.efficiencies2 TO PUBLIC;
+GRANT INSERT ON sim.efficiencies2 TO sim_role;

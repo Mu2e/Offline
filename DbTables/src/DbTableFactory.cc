@@ -13,8 +13,8 @@
 #include "Offline/DbTables/inc/AnaTrkQualDb.hh"
 #include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
 #include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
-
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
+#include "Offline/DbTables/inc/SimEfficiencies2.hh"
 
 mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   if (name=="TstCalib1") {
@@ -49,6 +49,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::AnaTrkQualDb());
   } else if (name=="SimEfficiencies") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies());
+  } else if (name=="SimEfficiencies2") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies2());
   } else if (name=="CalRoIDMapDIRACToOffline") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
   } else if (name=="CalRoIDMapOfflineToDIRAC") {
