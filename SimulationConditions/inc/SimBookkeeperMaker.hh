@@ -7,7 +7,7 @@
 
 #include "Offline/SimulationConditions/inc/SimBookkeeper.hh"
 #include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
-#include "Offline/DbTables/inc/SimEfficiencies.hh"
+#include "Offline/DbTables/inc/SimEfficiencies2.hh"
 
 namespace mu2e {
 
@@ -16,7 +16,7 @@ namespace mu2e {
     SimBookkeeperMaker(SimBookkeeperConfig const& config):_config(config) {}
 
     SimBookkeeper::ptr_t fromFcl();
-    SimBookkeeper::ptr_t fromDb(SimEfficiencies::cptr_t effDb);
+    SimBookkeeper::ptr_t fromDb(SimEfficiencies2::cptr_t effDb);
 
   private:
     // this object needs to be thread safe,
