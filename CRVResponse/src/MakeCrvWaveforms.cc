@@ -14,6 +14,7 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
                                             double singlePEWaveformMaxTime, double singlePEReferenceCharge) 
 {
   _singlePEWaveformPrecision = singlePEWaveformPrecision;
+  _singlePEWaveformMaxTime = singlePEWaveformMaxTime;
   _singlePEReferenceCharge = singlePEReferenceCharge;
   std::ifstream f(filename.c_str());
   if(!f.good()) throw std::logic_error("Could not open single PE waveform file. "+filename);
@@ -46,23 +47,25 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
     previousVoltage=currentVoltage;
   }
   f.close();
+
+  _singlePEMaxVoltage = *std::max_element(_singlePEWaveform.begin(), _singlePEWaveform.end());
 }
 
-void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times, 
-                                    const std::vector<double> &charges, 
+void MakeCrvWaveforms::MakeWaveform(const std::vector<std::pair<double,double> > &timesAndCharges, 
                                     std::vector<double> &waveform,
                                     double startTime, double digitizationPrecision) 
 {
   waveform.clear();
 
-  if(times.size()==0) return;
+  if(timesAndCharges.size()==0) return;
+  size_t estimatedNumberOfSamples=(timesAndCharges.back().first-timesAndCharges.front().first+_singlePEWaveformMaxTime)/digitizationPrecision;
+  waveform.resize(estimatedNumberOfSamples);
 
-  std::vector<double>::const_iterator iterTime=times.begin();
-  std::vector<double>::const_iterator iterCharge=charges.begin();
-  for(; iterTime!=times.end() && iterCharge!=charges.end(); iterTime++, iterCharge++)
+  std::vector<std::pair<double,double> >::const_iterator iterTimesAndCharges=timesAndCharges.begin();
+  for(; iterTimesAndCharges!=timesAndCharges.end(); ++iterTimesAndCharges)
   {
-    double timeOfCharge=*iterTime;  //the time when the charge happened
-    double charge=*iterCharge/_singlePEReferenceCharge;  //scale it to the 1PE reference charge used for the single PE waveform
+    double timeOfCharge=iterTimesAndCharges->first;  //the time when the charge happened
+    double charge=iterTimesAndCharges->second/_singlePEReferenceCharge;  //scale it to the 1PE reference charge used for the single PE waveform
     double waveformIndexTmp = ceil((timeOfCharge-startTime)/digitizationPrecision);
     if(waveformIndexTmp<0) waveformIndexTmp=0;
     size_t waveformIndex = static_cast<size_t>(lrint(waveformIndexTmp));  //waveform index of the first digitization point for this particular charge
