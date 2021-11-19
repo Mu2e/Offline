@@ -59,13 +59,7 @@ TNTClusterer : {
     MaxDistance      : 100.0
     MinHitError      : 5.0
     TimeRMS          : 2.0
-    DeltaTimeBinMin  : 10
     MedianCentroid   : false
-    preFilter        : false
-    pfTimeBin        : 20
-    pfPhiBin         : 0.1
-    pfMinHit         : 10
-    pfMinSumHit      : 20
     ComboInit        : true
     TestFlag         : true
     BackgroundMask   : []
