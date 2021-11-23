@@ -10,7 +10,7 @@ namespace mu2e {
     CLHEP::Hep3Vector field = bfmgr_.getBField(vpoint_mu2e);
     return VEC3(field.x(),field.y(),field.z());
   }
-      
+
   Grad KKBField::fieldGrad(VEC3 const& position) const {
     Grad retval;
     auto dBdx = fieldDeriv(position,VEC3(1.0,0.0,0.0));
@@ -24,12 +24,23 @@ namespace mu2e {
     retval.Place_in_row(dBdzv,2,0);
     return retval;
   }
-// numerical derivatives for now: TODO!
+  // numerical derivatives for now: TODO!
   VEC3 KKBField::fieldDeriv(VEC3 const& position, VEC3 const& velocity) const {
     static double dt(0.01); // 10 psec
     VEC3 start = fieldVect(position);
     VEC3 end = fieldVect(position + velocity*dt);
     return (end-start)/dt;
+  }
+  bool KKBField::inRange(VEC3 const& position) const {
+    CLHEP::Hep3Vector vpoint(position.x(),position.y(),position.z());
+    CLHEP::Hep3Vector vpoint_mu2e = det_.toMu2e(vpoint);
+    CLHEP::Hep3Vector field;
+    return bfmgr_.getBFieldWithStatus(vpoint_mu2e,field); // there doesn't seem to be a way to test validity except to ask for the field FIXME
+  }
+
+  void KKBField::print(std::ostream& os) const {
+    os << "KKBField based on ";
+    bfmgr_.print(os);
   }
 
 }
