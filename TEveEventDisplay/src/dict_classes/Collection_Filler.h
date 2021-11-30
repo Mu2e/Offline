@@ -13,10 +13,12 @@
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Calo:
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 //MC Products:
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 //Kalman Tracks
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 //Tracker Hits:
@@ -40,7 +42,7 @@ using namespace CLHEP;
 
 namespace mu2e{
 
-  enum RecoDataProductName {ComboHits, CaloCrystalHits, CaloClusters, CosmicTracks, HelixSeeds, KalSeeds, CRVRecoPulses, TrkExtTrajectories};
+  enum RecoDataProductName {ComboHits, TimeClusters, CaloCrystalHits, CaloClusters, CosmicTracks, HelixSeeds, KalSeeds, CRVRecoPulses, TrkExtTrajectories};
   enum MCDataProductName {MCTrajectories};
 
 	class Collection_Filler
@@ -54,6 +56,7 @@ namespace mu2e{
       //RecoData Products
       fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
       fhicl::Atom<art::InputTag>chTag{Name("ComboHitCollection"),Comment("chTag"), "makePH"};
+      fhicl::Atom<art::InputTag>tcTag{Name("TimeClusterCollection"),Comment("tcTag"), "makePH"};
       fhicl::Atom<art::InputTag>crvdigiTag{Name("CrvRecoPulseCollection"),Comment("crvTag")};
       fhicl::Atom<art::InputTag>cosmicTag{Name("CosmicTrackSeedCollection"),Comment("cosmicTag"), "CosmicTrackFinderTimeFit"};
       fhicl::Atom<art::InputTag>cluTag{Name("CaloClusterCollection"),Comment("cluTag")};
@@ -66,9 +69,11 @@ namespace mu2e{
 
       //To add RecoDataProducts
       fhicl::Atom<bool> addHits{Name("addHits"), Comment("set to add the hits"),false};
+      fhicl::Atom<bool> addTimeClusters{Name("addTimeClusters"), Comment("set to add the TC hits"),false};
+      fhicl::Atom<bool> addTrkHits{Name("addTrkHits"), Comment("set to add the Trk hits"),false};
       fhicl::Atom<bool> addTracks{Name("addTracks"), Comment("set to add tracks"),false};
       fhicl::Atom<bool> addClusters{Name("addClusters"), Comment("set to add calo lusters"),false};
-      fhicl::Atom<bool> addCrvHits{Name("addCrvHits"), Comment("set to add crv hits"),false};	
+      fhicl::Atom<bool> addCrvHits{Name("addCrvHits"), Comment("set to add crv hits"),false};
       fhicl::Atom<bool> addCrystallHits{Name("addCrystalHits"), Comment("for calo cry hits"), false};
       fhicl::Atom<bool> addCosmicSeedFit{Name("addCosmicSeedFit"), Comment("for fitted cosmic track"), false};
       fhicl::Atom<bool> addTrkExtTrajs{Name("addTrkExtTrajs"), Comment("set to add track exit trajectories"), false};
@@ -83,8 +88,9 @@ namespace mu2e{
     Collection_Filler(const Collection_Filler &);
     Collection_Filler& operator=(const Collection_Filler &);
 
-    //RecoDataProducts: 
+    //RecoDataProducts:
     art::InputTag chTag_;
+    art::InputTag tcTag_;
     art::InputTag crvcoinTag_;
     art::InputTag cosmicTag_;
     art::InputTag cluTag_;
@@ -92,13 +98,13 @@ namespace mu2e{
     art::InputTag hseedTag_;
     std::vector<art::InputTag> kalseedTag_;
     art::InputTag trkexttrajTag_;
-    
+
     //MCDataProdutcs:
     art::InputTag mctrajTag_;
 
     art::Event *_event;
     art::Run *_run;
-    bool addHits_, addTracks_, addClusters_, addCrvHits_, addCosmicSeedFit_, isCosmic_, addTrkExtTrajs_, RecoOnly_,  FillAll_, addMCCaloDigis_, addMCTraj_, MCOnly_;
+    bool addHits_, addTimeClusters_, addTrkHits_, addTracks_, addClusters_, addCrvHits_, addCosmicSeedFit_, isCosmic_, addTrkExtTrajs_, RecoOnly_,  FillAll_, addMCCaloDigis_, addMCTraj_, MCOnly_;
     void FillRecoCollections(const art::Event& evt, Data_Collections &data, RecoDataProductName code);
     void FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName code);
     virtual ~Collection_Filler(){};
@@ -112,4 +118,4 @@ namespace mu2e{
 
 }
 
-#endif 
+#endif

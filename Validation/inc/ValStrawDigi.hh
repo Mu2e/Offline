@@ -20,12 +20,14 @@ namespace mu2e {
 
   private:
     std::string _name;
-    
+
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
     TH1D* _htdc;
-    TH1D* _hadc;
+    TH1D* _htdc2;
+    TH1D* _htot;
+    TH1D* _hpmp;
     TH1D* _hSI;
   };
 }

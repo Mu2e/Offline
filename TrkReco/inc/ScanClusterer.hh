@@ -44,14 +44,14 @@ namespace mu2e {
 
           void          init();
           virtual void  findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters, 
-                                     const ComboHitCollection& shcol, float mbtime, int iev);
+                                     const ComboHitCollection& shcol, int iev);
 
           virtual float distance(const BkgCluster& cluster, const ComboHit& hit) const {return 0.0;} 
 
       private:         
           
-          void fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float mbtime);
-          void fastFilter2(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float mbtime);
+          void fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float maxTime);
+          void fastFilter2(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float maxTime);
                 
 
           float            tbin_; 
