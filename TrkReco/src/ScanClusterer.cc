@@ -31,15 +31,20 @@ namespace mu2e
 
    //----------------------------------------------------------------------------------------------------------
    void ScanClusterer::findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters,
-                                      const ComboHitCollection& chcol, float mbtime, int iev)
+                                      const ComboHitCollection& chcol, int iev)
    {             
+       if (chcol.empty()) return;
+        auto maxTime = std::max_element(chcol.begin(),chcol.end(),[](const auto a, const auto b){return a.time() <b.time();})->time()+0.1f;
+
+
+
        switch ( filterAlgo_ )
        {
          case 1:
-            fastFilter1(preFilterClusters,chcol,mbtime);
+            fastFilter1(preFilterClusters,chcol,maxTime);
             break;
          case 2:
-            fastFilter2(preFilterClusters,chcol,mbtime);
+            fastFilter2(preFilterClusters,chcol,maxTime);
             break;
         default:
             throw cet::exception("RECO")<< "[ScanClusterer] Unknown filter option " << filterAlgo_<< std::endl;
@@ -47,9 +52,9 @@ namespace mu2e
    }
    
    //----------------------------------------------------------------------------------------------------------------------
-   void ScanClusterer::fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float mbtime)
+   void ScanClusterer::fastFilter1(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float maxTime)
    {                            
-       const unsigned nTimeBins = unsigned(mbtime/tbin_)+1;
+       const unsigned nTimeBins = unsigned(maxTime/tbin_)+1;
        const unsigned nPhiBins  = unsigned(2*M_PI/pbin_)+1;
        const unsigned nRadBins  = unsigned((rmax_-rmin_)/rbin_)+1;
        const unsigned nRTBins   = nTimeBins*nRadBins;
@@ -107,9 +112,9 @@ namespace mu2e
 
 
    //----------------------------------------------------------------------------------------------------------------------
-   void ScanClusterer::fastFilter2(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float mbtime)
+   void ScanClusterer::fastFilter2(BkgClusterCollection& clusters, const ComboHitCollection& chcol, const float maxTime)
    {                            
-       const unsigned nTimeBins = unsigned(mbtime/tbin_)+1;
+       const unsigned nTimeBins = unsigned(maxTime/tbin_)+1;
        const unsigned nPhiBins  = unsigned(2*M_PI/pbin_)+1;
        const unsigned nRadBins  = unsigned((rmax_-rmin_)/rbin_)+1;
        const unsigned nRTBins   = nTimeBins*nRadBins;

@@ -9,6 +9,8 @@ PBTFSD : {
 
 makeSH : {
   module_type             : StrawHitReco
+  minimumTime             : 0.0 # accept all digis
+  maximumTime             : 100.0e3 # allow offspill events
   FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
@@ -24,7 +26,7 @@ makePH : {
   TestFlag              : true
   TestRadius            : true
   ComboHitCollection    : makeSH
-  StrawHitSelectionBits : ["EnergySelection","TimeSelection"] 
+  StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
   StrawHitMask          : []
   MaxDt                 : 40
   UseTOT                : false
@@ -46,7 +48,7 @@ makeSTH : {
 
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
 # First, configure the clusters
-TNTClusterer : { 
+TNTClusterer : {
     HitDistance      : 5.0
     SeedDistance     : 20.0
     ClusterDiameter  : 5.0
@@ -57,13 +59,7 @@ TNTClusterer : {
     MaxDistance      : 100.0
     MinHitError      : 5.0
     TimeRMS          : 2.0
-    DeltaTimeBinMin  : 10
     MedianCentroid   : false
-    preFilter        : false
-    pfTimeBin        : 20
-    pfPhiBin         : 0.1
-    pfMinHit         : 10
-    pfMinSumHit      : 20
     ComboInit        : true
     TestFlag         : true
     BackgroundMask   : []
@@ -74,13 +70,13 @@ TNTClusterer : {
 ScanClusterer: {
     Pbin             : 0.08
     Tbin             : 20
-    Rbin             : 50 
+    Rbin             : 50
     Rmin             : 350
     Rmax             : 650
     MinPeakHit       : 3
     MinSeedHit       : 2
     MinRadHit        : 50
-    FilterAlgo       : 1   
+    FilterAlgo       : 1
     TestFlag         : true
     BackgroundMask   : []
     SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
@@ -114,7 +110,7 @@ SflagBkgHits : {
 
 # combine together
 TrkHitReco : {
-    producers : { 
+    producers : {
 	# normal reco
 	PBTFSD       : { @table::PBTFSD       }
 	makeSH        : { @table::makeSH       }

@@ -137,7 +137,10 @@ namespace mu2e
 
   void CrvCoincidenceCheck::endJob()
   {
-    std::cout<<"SUMMARY "<<_moduleLabel<<"    "<<_totalEventsCoincidence<<" / "<<_totalEvents<<" events satisfied coincidence requirements"<<std::endl;
+    if(_verboseLevel>0)
+    {
+      std::cout<<"SUMMARY "<<_moduleLabel<<"    "<<_totalEventsCoincidence<<" / "<<_totalEvents<<" events satisfied coincidence requirements"<<std::endl;
+    }
   }
 
   void CrvCoincidenceCheck::beginRun(art::Run &run)
