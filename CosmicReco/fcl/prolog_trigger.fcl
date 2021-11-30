@@ -23,19 +23,24 @@ CstSimpleTimeCluster     : {
     TestFlag               : false
 }
 
+CstLineFinder        : {
+    @table::CosmicTracking.producers.LineFinder
+    ComboHitCollection    : "TTmakePH"
+    TimeClusterCollection : "CstSimpleTimeCluster"
+}
 
 CstTrigger : { 
     
     producers : {
     	CstTimeClusterFinder : @local::CstTimeClusterFinder
 	CstSimpleTimeCluster : @local::CstSimpleTimeCluster
+	CstLineFinder        : @local::CstLineFinder
 
 	CstCosmicTrackFinder :{ @table::CosmicTracking.producers.CosmicTrackFinderTimeFit
 	    ComboHitCollection     : "TTmakePH"
 	    TimeClusterCollection  : "CstSimpleTimeCluster"
-
-	}
-
+	    LineFinderTag          : "CstLineFinder" 
+	}  
     }
 
     filters   : {
@@ -105,6 +110,7 @@ CstTrigger : {
 			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
 			   cstSeedSDCountFilter, 
 			   CstSimpleTimeCluster, cstSeedTCFilter,
+			   CstLineFinder,
 			   CstCosmicTrackFinder,
 			   cstSeedTSFilter ]
 	
