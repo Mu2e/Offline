@@ -125,8 +125,8 @@ CstTrigger : {
 			   cstSeedSDCountFilter, 
 			   CstSimpleTimeCluster ]
 	
-	cstTimeCluster : [ cstTimeClusterEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-			   @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+	cstTimeCluster : [ cstTimeClusterEventPrescale, 
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
 			   cstTimeClusterSDCountFilter, 
 			   CstSimpleTimeCluster, cstTimeClusterTCFilter ]
 	
