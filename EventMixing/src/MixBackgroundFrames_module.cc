@@ -232,6 +232,9 @@ namespace mu2e {
 
   //================================================================
   void MixBackgroundFramesDetail::processEventIDs(art::EventIDSequence const& seq) {
+
+    spm_.processEventIDs(seq);
+
     if(writeEventIDs_) {
       idseq_ = seq;
     }

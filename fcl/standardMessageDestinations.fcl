@@ -137,6 +137,9 @@ mf_coutInfo:
    GEOM_PARTICLECUT : { limit : 0 }
    Configuration : { limit : 0 }
    HITS : { limit : 0 }
+   COSMIC_STEPPOINTS : { limit : 0 }
+   Summary : { limit : 0 }
+   INFO : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
 

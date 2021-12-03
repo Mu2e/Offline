@@ -67,7 +67,6 @@ namespace mu2e {
     explicit Validation(const Parameters& conf);
     void analyze  ( art::Event const&  event  ) override;
     void beginJob () override;
-    void endJob () override;
 
   private:
 
@@ -173,13 +172,6 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<TrackClusterMatchCollection,ValTrackClusterMatch>(_mtch,event);
   analyzeProduct<art::TriggerResults,ValTriggerResults>       (_trrs,event);
   analyzeProduct<TriggerInfo,ValTriggerInfo>                  (_tris,event);
-
-}
-
-
-void mu2e::Validation::endJob () {
-
-  std::cout << "end Validation::endJob summary" << std::endl;
 
 }
 

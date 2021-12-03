@@ -18,27 +18,20 @@ namespace mu2e {
     iRegistry.sPostEndJob.watch (this, &DbService::postEndJob );
 
     if(_verbose>0) {
-      std::cout << "DbService: purpose = " 
-		<< _version.purpose() << std::endl;
-      std::cout << "DbService: version = " 
-		<< config().version() << std::endl;
-      std::cout << "DbService: interpreted version = " 
-		<< _version.major() <<"/"
-		<< _version.minor() <<"/"
-		<< _version.extension() 
-		<< std::endl;
-      std::cout << "DbService: dbName = " 
+      std::cout << "DbService  " 
+		<< config().purpose() << " " 
+		<< config().version() << "   "
 		<< config().dbName() << std::endl;
       std::vector<std::string> files;
       config().textFile(files);
-      std::cout << "DbService: textFile =" ;
+      std::cout << "DbService  textFiles: " ;
       for(auto const& s : files) std::cout << " " << s;
       std::cout << std::endl;
     }
 
 
 
-    if(_verbose>1) std::cout << "DbService::constructor " <<std::endl;
+    if(_verbose>2) std::cout << "DbService::constructor " <<std::endl;
 
     // the engine which will read db, hold calibrations, deliver them
     _engine.setVerbose(_verbose);
@@ -55,11 +48,11 @@ namespace mu2e {
    ConfigFileLookupPolicy configFile;
    std::string fn;
     for(auto ss : files ) {
-      if(_verbose>1) std::cout << "DbService::beginJob reading file "<<
+      if(_verbose>2) std::cout << "DbService::beginJob reading file "<<
 		       ss <<std::endl;
       fn = configFile(ss);
       auto coll = DbUtil::readFile(fn,_config.saveCsv());
-      if(_verbose>1) {
+      if(_verbose>2) {
 	for(auto const& lt : coll) {
 	  std::cout << "  read table " << lt.table().name() <<std::endl;
 	}
@@ -78,7 +71,7 @@ namespace mu2e {
     _config.fastStart(fastStart);
     if (fastStart) {
       // this prepares IOV infrastructure for efficient queries
-      if(_verbose>1) std::cout << "DbService::beginJob initializing engine "
+      if(_verbose>2) std::cout << "DbService::beginJob initializing engine "
 			       <<std::endl;
       _engine.beginJob();
     }
