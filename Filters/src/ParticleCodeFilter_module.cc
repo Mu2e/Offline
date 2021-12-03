@@ -83,6 +83,7 @@ namespace mu2e {
         }
       }
     }
+    std::cout<<"returns : "<<retval<<std::endl;
     return retval;
   }
 
