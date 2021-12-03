@@ -35,7 +35,7 @@ namespace mu2e {
   
   inline std::vector<art::Ptr<SimParticle> > stoppedPiMinusList(art::ValidHandle<SimParticleCollection> simh) {
     // G4 sets this end code for both decay and capture cases
-    return simParticleList(simh, PDGCode::pi_minus, ProcessCode::mu2ePionCaptureAtRest);
+    return simParticleList(simh, PDGCode::pi_minus, ProcessCode::mu2eKillerVolume);
   }
 
 }

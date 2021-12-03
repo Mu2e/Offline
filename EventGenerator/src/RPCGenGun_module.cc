@@ -59,7 +59,6 @@ namespace mu2e {
         fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"),Comment("decayOffPDGCodes")};
         fhicl::Sequence<art::InputTag> hitCollections {Name("hitCollections"), Comment("A list of StepPointMCCollection-s")};
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
-        
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -76,16 +75,24 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
+    CLHEP::RandFlat     randomFlat_;
     std::string RPCType_;
     std::vector<int> decayOffPDGCodes_;
     std::vector<art::InputTag> hitColls_;
     BinnedSpectrum    spectrum_;
-
-    ProcessCode process_;
-    RandomUnitSphere*   randomUnitSphere_;
-    CLHEP::RandGeneral* randSpectrum_;
-    PionCaptureSpectrum pionCaptureSpectrum_;
+    RandomUnitSphere   randomUnitSphere_;
+    CLHEP::RandGeneral randSpectrum_;
     
+
+
+    double            tmin_ = -1;
+    double            czmin_ = -1;
+    double            czmax_ = 1;
+    double            phimin_ = 0;
+    double            phimax_ = CLHEP::twopi;
+    ProcessCode process_;
+    PionCaptureSpectrum pionCaptureSpectrum_;
+
   };
 
   //================================================================
@@ -96,10 +103,14 @@ namespace mu2e {
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
-    , RPCType_(conf().RPCType())
-    , decayOffPDGCodes_(conf().decayOffPDGCodes())
-    , hitColls_(conf().hitCollections())
-    , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())) 
+    , randomFlat_{eng_}
+    , RPCType_{conf().RPCType()}
+    , decayOffPDGCodes_{conf().decayOffPDGCodes()}
+    , hitColls_{conf().hitCollections()}
+    , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())} 
+    //, randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
+    //, randSpectrum_       {eng_, spectrum_.getPDF(),nbins_}
+   // , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
@@ -109,9 +120,11 @@ namespace mu2e {
       throw   cet::exception("BADINPUT")
         <<"RPCGenGun::produce(): no such process, must be InternalRPC or ExternalRPC";
     } //TODO - replace with static_cast<ProcessCode::type>(RPCType_);  - got errors  for some reason so simplified
-    randomUnitSphere_ = new RandomUnitSphere(eng_);
-    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins()); //photon spectrum
-    
+    //randomUnitSphere_ = new RandomUnitSphere(eng_);
+
+    randomUnitSphere_ = new RandomUnitSphere(eng_);//,czmin_,czmax_,phimin_,phimax_);
+    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
+    pionCaptureSpectrum_ = new PionCaptureSpectrum(randomFlat_,randomUnitSphere_); //make pion capture spectrum
   }
   
   void RPCGenGun::MakeEventWeight(art::Event& event){ //TODO - make this a utility
@@ -134,6 +147,7 @@ namespace mu2e {
 
   //================================================================
   void RPCGenGun::produce(art::Event& event) {
+    std::cout<<"[RPCGenGun:: produce] start "<<std::endl;
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
@@ -147,14 +161,16 @@ namespace mu2e {
       addParticles(output.get(), pistop);
     }
     event.put(std::move(output)); //TODO - delete once addParticle function works
+    std::cout<<"[RPCGenGun:: produce] end "<<std::endl;
   }
   
   void RPCGenGun::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> pistop)
   {
+    std::cout<<"[RPCGenGun:: add] start"<<std::endl;
     //Photon energy and four mom:
-    double energy = spectrum_.sample(randSpectrum_->fire());
-    CLHEP::Hep3Vector p3 = randomUnitSphere_->fire(energy);
+    double energy = spectrum_.sample(randSpectrum_.fire());
+    CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(energy);
     CLHEP::HepLorentzVector fourmom(p3, energy);
     if(process_ == ProcessCode::ExternalRPC){
      
@@ -185,12 +201,13 @@ namespace mu2e {
                            momp,
                            pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
                            );
-                     
+                  
       
       } else {
         throw   cet::exception("BADINPUT")
         <<"RPCGenGun::produce(): no suitable process id\n";
       }
+      std::cout<<"[RPCGenGun:: add] end"<<std::endl;
    }
 
 

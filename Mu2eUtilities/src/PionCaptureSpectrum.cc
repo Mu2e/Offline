@@ -47,6 +47,7 @@ namespace mu2e {
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
     _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
+    std::cout<<"Electron mass "<<_me<<std::endl;
     _mpi   = pdt->particle(PDGCode::pi_minus).ref().mass().value();
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
@@ -184,59 +185,65 @@ namespace mu2e {
 // return X and Y with the probability defined by energy
 //-----------------------------------------------------------------------------
   void PionCaptureSpectrum::fire(double energy, double& x, double& y) const {
-
+ std::cout<<"fire 1 "<<std::endl;
     double pdfMax = get2DMax(energy);
     x = 0;
     y = 0;
+    std::cout<<"fire 2 "<<std::endl;
     double prob(0.), threshold(0.);
+    std::cout<<_me<<" "<<energy<<" "<<2*_me + ( energy-2*_me)<<std::endl;
     do {
       x         = 2*_me + ( energy-2*_me)*_rnFlat->fire();
+      std::cout<<"fire 3 "<<std::endl;
       y         = -1.   + 2.*_rnFlat->fire();
+      std::cout<<"fire 4 "<<std::endl;
       threshold = get2DWeight(x,y,energy);
+      std::cout<<"fire 5 "<<std::endl;
       prob      = pdfMax*_rnFlat->fire();
+      std::cout<<"fire 6 "<<std::endl;
     } while (prob > threshold);
   }
 
 //-----------------------------------------------------------------------------
   void PionCaptureSpectrum::getElecPosiVectors(double ePhoton, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const {
-
+      std::cout<<"capture 1 "<<ePhoton<<std::endl;
     double x, y;
 					// generate invariant mass and energy splitting
     fire(ePhoton,x,y);
-
+ std::cout<<"capture 2 "<<std::endl;
     // Get electron/positron energies from x, y values (see Mu2eUtilities/src/PionCaptureSpectrum.cc for details)
     double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
     double ePositron = 0.5*( ePhoton + y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
-
+ std::cout<<"capture 3 "<<std::endl;
     // Get electron/positron momentum magnitudes
     double pElectron = std::sqrt( cet::diff_of_squares(eElectron, _me) );
     double pPositron = std::sqrt( cet::diff_of_squares(ePositron, _me) );
 
     // Produce electron momentum
     CLHEP::Hep3Vector p3electron = _rnUnitSphere->fire( pElectron );
-
+ std::cout<<"capture 4 "<<std::endl;
     // Get positron momentum
     CLHEP::Hep3Vector p3positron( p3electron );
     p3positron.setMag( pPositron );
-
+ std::cout<<"capture 5 "<<std::endl;
     // - theta (opening angle wrt electron) is constrained by virtual mass formula
     // - phi is allowed to vary between 0 and 2pi
 
     double cosTheta = 1/(2*pElectron*pPositron)*( cet::square(ePhoton) - cet::sum_of_squares( x, pElectron, pPositron) );
-
+ std::cout<<"capture 6 "<<std::endl;
     double phi = 2*M_PI*_rnFlat->fire();
-
+ std::cout<<"capture 7 "<<std::endl;
     // - find a vector that is not collinear with the electron direction
     CLHEP::Hep3Vector n1 = (std::abs(p3electron.x()) < std::abs(p3electron.y())) ?
       ((std::abs(p3electron.x()) < std::abs(p3electron.z())) ? CLHEP::Hep3Vector(1,0,0) : CLHEP::Hep3Vector(0,0,1)) :
       ((std::abs(p3electron.x()) < std::abs(p3electron.y())) ? CLHEP::Hep3Vector(1,0,0) : CLHEP::Hep3Vector(0,1,0));
-
+ std::cout<<"capture 8 "<<std::endl;
     // - construct a vector perpendicular to the electron momentum
     CLHEP::Hep3Vector perp = p3electron.cross(n1);
-
+ std::cout<<"capture 9 "<<std::endl;
     p3positron.rotate(perp      , std::acos(cosTheta) );
     p3positron.rotate(p3electron, phi                 );
-
+ std::cout<<"capture 10 "<<std::endl;
     mome.set(p3electron,eElectron);
     momp.set(p3positron,ePositron);
   }
