@@ -148,9 +148,10 @@ namespace mu2e{
     // Muon Spin and Radiative decays plus pion muons with spin
     if ( phys.decayMuonsWithSpin() ) {
 
-      // requires spin tracking: G4ClassicalRK4WSpin
+      // requires spin tracking
       if ( phys.stepper() != "G4ClassicalRK4WSpin" &&
-           phys.stepper() != "G4DormandPrince745WSpin" ) {
+           phys.stepper() != "G4DormandPrince745WSpin" &&
+           phys.stepper() != "G4TDormandPrince45WSpin" ) {
         mf::LogError("Config") << "Inconsistent config";
         G4cout << "Error: Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking" << G4endl;
         throw cet::exception("BADINPUT")<<" Mu2eG4DecayMuonsWithSpinPhysicsConstructor requires enabling spin tracking\n";
