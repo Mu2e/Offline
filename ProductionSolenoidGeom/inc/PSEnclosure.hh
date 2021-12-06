@@ -46,7 +46,10 @@ namespace mu2e {
 
     const std::vector<bool>& hasWindowFrames() const
     { return hasFrames_; }
-    const std::vector<Tube>& wFrames() const { return  wFrames_; }
+    const std::vector<bool>& hasWindowFramesOut() const
+    { return hasFramesOut_; }
+    const std::vector<Tube>& wFramesIn() const { return  wFramesIn_; }
+    const std::vector<Tube>& wFramesOut() const { return  wFramesOut_; }
 
     const Polycone& endPlatePolycone()  const { return endPlatePolycone_; }
     const std::vector<Tube>& windowPipes() const { return windowPipes_; }
@@ -93,7 +96,9 @@ namespace mu2e {
     // For version 3, include flanges (or "frames") for each window
 
     std::vector<bool> hasFrames_;
-    std::vector<Tube> wFrames_;
+    std::vector<bool> hasFramesOut_;
+    std::vector<Tube> wFramesIn_;
+    std::vector<Tube> wFramesOut_;
 
     // The updated version is shown in docdb-4087.  We use a conical frustrum.
     double zOffset_;
