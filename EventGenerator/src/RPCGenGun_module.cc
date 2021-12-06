@@ -66,6 +66,7 @@ namespace mu2e {
         fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"),Comment("decayOffPDGCodes")};
         fhicl::Sequence<art::InputTag> hitCollections {Name("hitCollections"), Comment("A list of StepPointMCCollection-s")};
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
+        fhicl::Atom<bool> doHistograms{Name("doHistograms"),false}; 
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -87,8 +88,8 @@ namespace mu2e {
     std::vector<int> decayOffPDGCodes_;
     std::vector<art::InputTag> hitColls_;
     BinnedSpectrum    spectrum_;
+    bool doHistograms_;
     RandomUnitSphere   randomUnitSphere_;
-    int nbins_;
     CLHEP::RandGeneral randSpectrum_;
     
 
@@ -109,7 +110,7 @@ namespace mu2e {
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
     TH1F* _hy;                          // splitting function
     
-    bool doHistograms_;
+
   };
 
   //================================================================
@@ -125,13 +126,13 @@ namespace mu2e {
     , decayOffPDGCodes_{conf().decayOffPDGCodes()}
     , hitColls_{conf().hitCollections()}
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())} 
+    , doHistograms_{conf().doHistograms()}
     , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
-    , nbins_{static_cast<int>(spectrum_.getNbins())}
-    , randSpectrum_       {eng_, spectrum_.getPDF(),nbins_}
+    , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
     , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
   {
     produces<mu2e::StageParticleCollection>();
-    produces<mu2e::EventWeight>();
+    //produces<mu2e::EventWeight>();
     if(RPCType_ == "ExternalRPC") process_ = ProcessCode::ExternalRPC;
     else if(RPCType_ == "InternalRPC") process_ = ProcessCode::InternalRPC;
     else {
@@ -186,7 +187,7 @@ namespace mu2e {
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     const auto pis = stoppedPiMinusList(simh);
-    MakeEventWeight(event);
+    //MakeEventWeight(event);
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGenGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
