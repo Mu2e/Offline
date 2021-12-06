@@ -37,8 +37,6 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "art_root_io/TFileService.h"
@@ -47,7 +45,6 @@
 #include "CLHEP/Random/RandGeneral.h"
 
 // ROOT includes
-#include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2.h"
@@ -55,7 +52,7 @@
 namespace mu2e {
 
   //================================================================
-  class RPCGenGun : public art::EDProducer {
+  class RPCGun : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -72,7 +69,7 @@ namespace mu2e {
     };
 
     using Parameters= art::EDProducer::Table<Config>;
-    explicit RPCGenGun(const Parameters& conf);
+    explicit RPCGun(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
     void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop);
@@ -111,12 +108,12 @@ namespace mu2e {
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
     TH1F* _hy;                          // splitting function
-    
+    TH1F* _time;
 
   };
 
   //================================================================
-  RPCGenGun::RPCGenGun(const Parameters& conf)
+  RPCGun::RPCGun(const Parameters& conf)
     : EDProducer{conf}
     , pionLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
@@ -139,7 +136,7 @@ namespace mu2e {
     else if(RPCType_ == "InternalRPC") process_ = ProcessCode::InternalRPC;
     else {
       throw   cet::exception("BADINPUT")
-        <<"RPCGenGun::produce(): no such process, must be InternalRPC or ExternalRPC";
+        <<"RPCGun::produce(): no such process, must be InternalRPC or ExternalRPC";
     } //TODO - replace with static_cast<ProcessCode::type>(RPCType_);  - got errors  for some reason so simplified
 
     if ( doHistograms_ ) {
@@ -155,11 +152,12 @@ namespace mu2e {
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
           _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+          _time        = tfdir.make<TH1F>("time"       , "time", 20000,0,1);
         }
       }
   }
   
-  void RPCGenGun::MakeEventWeight(art::Event& event){ 
+  void RPCGun::MakeEventWeight(art::Event& event){ 
    std::vector<StepPointMCCollection> spMCColls;
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     std::cout<<"[MakeEventWeight] start "<<std::endl;
@@ -187,13 +185,14 @@ namespace mu2e {
         weight += exp(-tau);
       }
     }
+    _time->Fill(weight);
     std::unique_ptr<EventWeight> pw(new EventWeight(weight));
     event.put(std::move(pw)); 
     std::cout<<"[MakeEventWeight] end "<<std::endl;
   }
 
   //================================================================
-  void RPCGenGun::produce(art::Event& event) {
+  void RPCGun::produce(art::Event& event) {
    
     auto output{std::make_unique<StageParticleCollection>()};
 
@@ -203,7 +202,7 @@ namespace mu2e {
     MakeEventWeight(event);
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
-        <<"RPCGenGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
+        <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
     for(const auto& pistop: pis) {
       addParticles(output.get(), pistop);
@@ -211,7 +210,7 @@ namespace mu2e {
     event.put(std::move(output)); 
   }
   
-  void RPCGenGun::addParticles(StageParticleCollection* output,
+  void RPCGun::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> pistop)
   {
     //Photon energy and four mom:
@@ -264,7 +263,7 @@ namespace mu2e {
         }
       } else {
         throw   cet::exception("BADINPUT")
-        <<"RPCGenGun::produce(): no suitable process id\n";
+        <<"RPCGun::produce(): no suitable process id\n";
       }
       _hmomentum->Fill(energy);
    }
@@ -273,4 +272,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::RPCGenGun);
+DEFINE_ART_MODULE(mu2e::RPCGun);

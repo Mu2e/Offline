@@ -1,53 +1,50 @@
-// Andrei Gaponenko, 2013
+// Generates outgoing electron/positron pair from RPC
+//
+//  Sophie Middleton,2021
 
-// C++ includes
 #include <iostream>
 #include <string>
 #include <cmath>
 #include <memory>
-#include <algorithm>
 
-// cetlib includes
-#include "cetlib_except/exception.h"
-
-// CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
-#include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandExponential.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-// Framework includes
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/ParameterSetRegistry.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art_root_io/TFileService.h"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "fhiclcpp/types/Sequence.h"
 
-// Mu2e includes
-#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/Mu2eUtilities/inc/simParticleList.hh"
+#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
-#include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
-#include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
-#include "Offline/Mu2eUtilities/inc/Table.hh"
-#include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
-#include "Offline/GeneralUtilities/inc/RSNTIO.hh"
-#include "Offline/MCDataProducts/inc/FixedTimeMap.hh"
-#include "Offline/Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "art_root_io/TFileService.h"
+#include "fhiclcpp/types/DelegatedParameter.h"
+#include "CLHEP/Random/RandPoissonQ.h"
+#include "CLHEP/Random/RandGeneral.h"
 
 // ROOT includes
-#include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2.h"
@@ -56,36 +53,54 @@ namespace mu2e {
 
   //================================================================
   class RPCGun : public art::EDProducer {
-    fhicl::ParameterSet psphys_;
+  public:
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+        fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
+        fhicl::Atom<std::string> stoppingTargetMaterial{
+        Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and pion life time.  Material pist be known to the GlobalConstantsService."),"Al" };
+        fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
+        fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
+        fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"),Comment("decayOffPDGCodes")};
+        fhicl::Sequence<art::InputTag> hitCollections {Name("hitCollections"), Comment("A list of StepPointMCCollection-s")};
+        fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
+        fhicl::Atom<bool> doHistograms{Name("doHistograms"),false}; 
+    };
 
-    BinnedSpectrum spectrum_;
+    using Parameters= art::EDProducer::Table<Config>;
+    explicit RPCGun(const Parameters& conf);
 
-    int                 verbosityLevel_;
-    int                 generateInternalConversion_;
-    bool applySurvivalProbability_;
-    double survivalProbScaling_;
-    double tmin_;
-
-    double              czmin_;
-    double              czmax_;
-    double              phimin_;
-    double              phimax_;
+    virtual void produce(art::Event& event) override;
+    void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop);
+    void MakeEventWeight(art::Event& event);
+    //----------------------------------------------------------------
+  private:
+    double pionLifeTime_;
+    art::ProductToken<SimParticleCollection> const simsToken_;
+    unsigned verbosity_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-
-    CLHEP::RandGeneral  randSpectrum_;
+    CLHEP::RandExponential randExp_;
     CLHEP::RandFlat     randomFlat_;
-    RandomUnitSphere    randomUnitSphere_;
-    PionCaptureSpectrum pionCaptureSpectrum_;
-
-    RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
-    std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
-
+    std::string RPCType_;
+    std::vector<int> decayOffPDGCodes_;
+    std::vector<art::InputTag> hitColls_;
+    BinnedSpectrum    spectrum_;
     bool doHistograms_;
-    fhicl::ParameterSet protonPset_;
+    RandomUnitSphere   randomUnitSphere_;
+    CLHEP::RandGeneral randSpectrum_;
+    
 
-    double generateEnergy();
 
+    double            tmin_ = -1;
+    double            czmin_ = -1;
+    double            czmax_ = 1;
+    double            phimin_ = 0;
+    double            phimax_ = CLHEP::twopi;
+    ProcessCode process_;
+    PionCaptureSpectrum pionCaptureSpectrum_;
+    
     TH1F* _hmomentum;
     TH1F* _hElecMom {nullptr};
     TH1F* _hPosiMom {nullptr};
@@ -93,177 +108,166 @@ namespace mu2e {
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
     TH1F* _hy;                          // splitting function
+    TH1F* _time;
 
-  public:
-    explicit RPCGun(const fhicl::ParameterSet& pset);
-    virtual void beginRun(art::Run&   r) override;
-    virtual void produce(art::Event& event);
   };
 
   //================================================================
-  RPCGun::RPCGun(const fhicl::ParameterSet& pset)
-    : art::EDProducer{pset}
-    , psphys_(pset.get<fhicl::ParameterSet>("physics"))
-    , spectrum_                  (BinnedSpectrum(psphys_))
-    , verbosityLevel_            (pset.get<int>   ("verbosityLevel", 0))
-    , generateInternalConversion_{psphys_.get<int>("generateIntConversion", 0)}
-    , applySurvivalProbability_  (psphys_.get<bool>("ApplySurvivalProb",false))
-    , survivalProbScaling_       (psphys_.get<double>("SurvivalProbScaling",1))
-    , tmin_                      (pset.get<double>("tmin",-1))
-    , czmin_                     (pset.get<double>("czmin" , -1.0))
-    , czmax_                     (pset.get<double>("czmax" ,  1.0))
-    , phimin_                    (pset.get<double>("phimin",  0. ))
-    , phimax_                    (pset.get<double>("phimax", CLHEP::twopi ))
-    , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , randSpectrum_       (eng_, spectrum_.getPDF(), spectrum_.getNbins())
-    , randomFlat_         (eng_)
-    , randomUnitSphere_   (eng_, czmin_,czmax_,phimin_,phimax_)
-    , pionCaptureSpectrum_(&randomFlat_,&randomUnitSphere_)
-    //    , randomUnitSphere_(eng_)
-    , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
-    , doHistograms_( pset.get<bool>("doHistograms",true ) )
-    , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
-    {
-      produces<mu2e::GenParticleCollection>();
-      produces<mu2e::EventWeight>();
-      produces<mu2e::FixedTimeMap>();
+  RPCGun::RPCGun(const Parameters& conf)
+    : EDProducer{conf}
+    , pionLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
+    , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
+    , verbosity_{conf().verbosity()}
+    , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
+    , randExp_{eng_}
+    , randomFlat_{eng_}
+    , RPCType_{conf().RPCType()}
+    , decayOffPDGCodes_{conf().decayOffPDGCodes()}
+    , hitColls_{conf().hitCollections()}
+    , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())} 
+    , doHistograms_{conf().doHistograms()}
+    , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
+    , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
+    , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
+  {
+    produces<mu2e::StageParticleCollection>();
+    produces<mu2e::EventWeight>();
+    if(RPCType_ == "ExternalRPC") process_ = ProcessCode::ExternalRPC;
+    else if(RPCType_ == "InternalRPC") process_ = ProcessCode::InternalRPC;
+    else {
+      throw   cet::exception("BADINPUT")
+        <<"RPCGun::produce(): no such process, must be InternalRPC or ExternalRPC";
+    } //TODO - replace with static_cast<ProcessCode::type>(RPCType_);  - got errors  for some reason so simplified
 
-      if(verbosityLevel_ > 0) {
-        std::cout<<"RPCGun: using = "
-                 <<stops_.numRecords()
-                 <<" stopped particles"
-                 <<std::endl;
-
-        std::cout<<"RPCGun: producing photon " << std::endl;
-      }
-
-      if ( doHistograms_ ) {
+    if ( doHistograms_ ) {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
 
         _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
 
-        if(generateInternalConversion_){
+        if(RPCType_ == "InternalRPC"){
           _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
           _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
           _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
           _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+          _time        = tfdir.make<TH1F>("time"       , "time", 20000,0,1);
         }
       }
+  }
+  
+  void RPCGun::MakeEventWeight(art::Event& event){ 
+   std::vector<StepPointMCCollection> spMCColls;
+    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
+    std::cout<<"[MakeEventWeight] start "<<std::endl;
 
+    double weight = 0.;
+    double tau = 0.;
+    const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
+    for(const auto& p : *simh) {
+      if(p.second.daughters().empty()) {
+          art::Ptr<SimParticle> part(simh, p.first.asUint());
+          tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+          while(part->parent().isNonnull()) {
+            if((part->creationCode() == ProcessCode::mu2ePrimary)) {
+              part = part->parent();
+              tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+            }
+            else {
+              part = part->parent();
+              if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
+                tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+              }
+          }
+        } // loop up to the primary
+          //double sumTime = SimParticleGetTau::calculate(pp, spMCColls, decayOffPDGCodes_);
+        weight += exp(-tau);
+      }
     }
-
-  //================================================================
-
-  void RPCGun::beginRun(art::Run& run) {
-    protonPulse_.reset( new ProtonPulseRandPDF( eng_, protonPset_ ) );
+    _time->Fill(weight);
+    std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+    event.put(std::move(pw)); 
+    std::cout<<"[MakeEventWeight] end "<<std::endl;
   }
 
+  //================================================================
   void RPCGun::produce(art::Event& event) {
+   
+    auto output{std::make_unique<StageParticleCollection>()};
 
-    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
-    std::unique_ptr<FixedTimeMap> timemap(new FixedTimeMap);
-
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    double _mbtime = accPar->deBuncherPeriod;
-
-    IO::StoppedParticleTauNormF stop;
-    if (tmin_ > 0){
-      while (true){
-        const auto& tstop = stops_.fire();
-        timemap->SetTime(protonPulse_->fire());
-        if (tstop.t+timemap->time() < 0 || tstop.t+timemap->time() > tmin_){
-          if (applySurvivalProbability_){
-            double weight = exp(-tstop.tauNormalized)*survivalProbScaling_;
-            if (weight > 1)
-              std::cout << "WEIGHT TOO HIGH " << weight << " " << fmod(tstop.t,_mbtime) << std::endl;
-            double rand = randomFlat_.fire();
-            if (weight > rand){
-              stop = tstop;
-              break;
-            }
-          }else{
-            stop = tstop;
-            break;
-          }
-        }
-      }
-    }else{
-      timemap->SetTime(protonPulse_->fire());
-      if (applySurvivalProbability_){
-        while (true){
-          const auto& tstop = stops_.fire();
-          double weight = exp(-tstop.tauNormalized)*survivalProbScaling_;
-          double rand = randomFlat_.fire();
-          if (weight > rand){
-            stop = tstop;
-            break;
-          }
-        }
-      }else{
-        const auto& tstop = stops_.fire();
-        stop = tstop;
-      }
+    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
+    const auto pis = stoppedPiMinusList(simh);
+    //...store pion lifetime as a weight
+    MakeEventWeight(event);
+    if(pis.empty()) {
+      throw   cet::exception("BADINPUT")
+        <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
+    for(const auto& pistop: pis) {
+      addParticles(output.get(), pistop);
+    }
+    event.put(std::move(output)); 
+  }
+  
+  void RPCGun::addParticles(StageParticleCollection* output,
+                            art::Ptr<SimParticle> pistop)
+  {
+    //Photon energy and four mom:
+    double energy = spectrum_.sample(randSpectrum_.fire());
+    CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(energy);
+    CLHEP::HepLorentzVector fourmom(p3, energy);
+    if(process_ == ProcessCode::ExternalRPC){
+     
+     output->emplace_back(pistop,
+                         process_, 
+                         PDGCode::gamma,
+                         pistop->endPosition(),
+                         fourmom,
+                         pistop->endGlobalTime() + randExp_.fire(pionLifeTime_) 
+                         );
 
-    //std::cout << "Found stop " << exp(-stop.tauNormalized) << " " << stop.t << std::endl;
-
-    const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
-
-    const double energy = generateEnergy();
-
-    if(!generateInternalConversion_){
-      output->emplace_back( PDGCode::gamma,
-                            GenId::ExternalRPC,
-                            pos,
-                            CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
-                            stop.t );
-
-      event.put(std::move(output));
-      event.put(std::move(timemap));
-    } else {
+    } else if(process_ == ProcessCode::InternalRPC) {
+      //Need to compute e-e+ pair momentum spectrum from the photon (use Kroll-Wada)
       CLHEP::HepLorentzVector mome, momp;
       pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp);
-      // Add particles to list
-      auto output = std::make_unique<GenParticleCollection>();
-      output->emplace_back(PDGCode::e_minus, GenId::InternalRPC,pos,mome,stop.t);
-      output->emplace_back(PDGCode::e_plus , GenId::InternalRPC,pos,momp,stop.t);
-      event.put(move(output));
-      event.put(std::move(timemap));
+      output->emplace_back(pistop,
+                           process_, 
+                           PDGCode::e_minus,
+                           pistop->endPosition(),
+                           mome,
+                           pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
+                           );
+                           
+       output->emplace_back(pistop,
+                           process_, 
+                           PDGCode::e_plus, 
+                           pistop->endPosition(),
+                           momp,
+                           pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
+                           );
+                  
+        if(doHistograms_){
+          _hElecMom ->Fill(mome.vect().mag());
+          _hPosiMom ->Fill(momp.vect().mag());
 
-      if(doHistograms_){
-        _hElecMom ->Fill(mome.vect().mag());
-        _hPosiMom ->Fill(momp.vect().mag());
+          double mee = (mome+momp).m();
+          _hMee->Fill(mee);
+          _hMeeVsE->Fill(energy,mee);
+          _hMeeOverE->Fill(mee/energy);
 
-        double mee = (mome+momp).m();
-        _hMee->Fill(mee);
-        _hMeeVsE->Fill(energy,mee);
-        _hMeeOverE->Fill(mee/energy);
+          CLHEP::Hep3Vector p = mome.vect()+momp.vect();
+          double y = (mome.e()-momp.e())/p.mag();
 
-        CLHEP::Hep3Vector p = mome.vect()+momp.vect();
-        double y = (mome.e()-momp.e())/p.mag();
-
-        _hy->Fill(y);
+          _hy->Fill(y);
+        }
+      } else {
+        throw   cet::exception("BADINPUT")
+        <<"RPCGun::produce(): no suitable process id\n";
       }
-    }
+      _hmomentum->Fill(energy);
+   }
 
-    // Calculate survival probability
-    const double weight = exp(-stop.tauNormalized);
-    std::unique_ptr<EventWeight> pw(new EventWeight(weight));
-    event.put(std::move(pw));
-
-    if ( !doHistograms_ ) return;
-
-    _hmomentum->Fill(energy);
-
-  }
-
-  //================================================================
-  double RPCGun::generateEnergy() {
-    return spectrum_.sample(randSpectrum_.fire());
-  }
 
   //================================================================
 } // namespace mu2e
