@@ -39,6 +39,8 @@
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -132,7 +134,7 @@ namespace mu2e {
     , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
   {
     produces<mu2e::StageParticleCollection>();
-    //produces<mu2e::EventWeight>();
+    produces<mu2e::EventWeight>();
     if(RPCType_ == "ExternalRPC") process_ = ProcessCode::ExternalRPC;
     else if(RPCType_ == "InternalRPC") process_ = ProcessCode::InternalRPC;
     else {
@@ -140,9 +142,6 @@ namespace mu2e {
         <<"RPCGenGun::produce(): no such process, must be InternalRPC or ExternalRPC";
     } //TODO - replace with static_cast<ProcessCode::type>(RPCType_);  - got errors  for some reason so simplified
 
-    //randomUnitSphere_ = new RandomUnitSphere(eng_);//,czmin_,czmax_,phimin_,phimax_);
-    //randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
-    //pionCaptureSpectrum_ = new PionCaptureSpectrum(randomFlat_,randomUnitSphere_); //make pion capture spectrum
     if ( doHistograms_ ) {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
@@ -160,34 +159,48 @@ namespace mu2e {
       }
   }
   
-  void RPCGenGun::MakeEventWeight(art::Event& event){ //TODO - make this a utility
-    std::vector<StepPointMCCollection> spMCColls;
+  void RPCGenGun::MakeEventWeight(art::Event& event){ 
+   std::vector<StepPointMCCollection> spMCColls;
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
-    for ( const auto& iColl : hitColls_ ){
-      auto spColl = event.getValidHandle<StepPointMCCollection>(iColl); 
-      spMCColls.push_back( *spColl );
-    }
-    double weight = 0.;
+    std::cout<<"[MakeEventWeight] start "<<std::endl;
 
+    double weight = 0.;
+    double tau = 0.;
+    const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
     for(const auto& p : *simh) {
       if(p.second.daughters().empty()) {
-          art::Ptr<SimParticle> pp(simh, p.first.asUint());
-          double sumTime = SimParticleGetTau::calculate(pp, spMCColls, decayOffPDGCodes_);
-          weight += exp(-sumTime);
-        }
+          art::Ptr<SimParticle> part(simh, p.first.asUint());
+          tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+          while(part->parent().isNonnull()) {
+            if((part->creationCode() == ProcessCode::mu2ePrimary)) {
+              part = part->parent();
+              tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+            }
+            else {
+              part = part->parent();
+              if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
+                tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+              }
+          }
+        } // loop up to the primary
+          //double sumTime = SimParticleGetTau::calculate(pp, spMCColls, decayOffPDGCodes_);
+        weight += exp(-tau);
+      }
     }
     std::unique_ptr<EventWeight> pw(new EventWeight(weight));
     event.put(std::move(pw)); 
+    std::cout<<"[MakeEventWeight] end "<<std::endl;
   }
 
   //================================================================
   void RPCGenGun::produce(art::Event& event) {
-    std::cout<<"[RPCGenGun:: produce] start "<<std::endl;
+   
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     const auto pis = stoppedPiMinusList(simh);
-    //MakeEventWeight(event);
+    //...store pion lifetime as a weight
+    MakeEventWeight(event);
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGenGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
@@ -195,14 +208,12 @@ namespace mu2e {
     for(const auto& pistop: pis) {
       addParticles(output.get(), pistop);
     }
-    event.put(std::move(output)); //TODO - delete once addParticle function works
-    std::cout<<"[RPCGenGun:: produce] end "<<std::endl;
+    event.put(std::move(output)); 
   }
   
   void RPCGenGun::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> pistop)
   {
-    std::cout<<"[RPCGenGun:: add] start"<<std::endl;
     //Photon energy and four mom:
     double energy = spectrum_.sample(randSpectrum_.fire());
     CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(energy);
@@ -214,7 +225,7 @@ namespace mu2e {
                          PDGCode::gamma,
                          pistop->endPosition(),
                          fourmom,
-                         pistop->endGlobalTime() + randExp_.fire(pionLifeTime_) //TODO - need to add event weight
+                         pistop->endGlobalTime() + randExp_.fire(pionLifeTime_) 
                          );
 
     } else if(process_ == ProcessCode::InternalRPC) {
@@ -256,7 +267,6 @@ namespace mu2e {
         <<"RPCGenGun::produce(): no suitable process id\n";
       }
       _hmomentum->Fill(energy);
-      std::cout<<"[RPCGenGun:: add] end"<<std::endl;
    }
 
 
