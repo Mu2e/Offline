@@ -18,6 +18,7 @@ TEveEventDisplayBase : {
     isMCOnly : false
     filler : {
       ComboHitCollection 		    : "makeSH"
+      TimeClusterCollection                  : "MHDeM"
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection :  NULL
       CaloClusterCollection		  :  "CaloClusterMaker"
@@ -27,6 +28,8 @@ TEveEventDisplayBase : {
       TrkExtTrajCollection      : NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : true
+      addTrkHits 			            : true
+      addTimeClusters                             : true
       addTracks 			          : true
       addCrvHits			          : true
       addCosmicSeedFit	        : false
@@ -46,6 +49,7 @@ TEveEventDisplayUpstream : {
     accumulate : false
     filler : {
       ComboHitCollection 		      : NULL
+      TimeClusterCollection                  : NULL
       CosmicTrackSeedCollection 	: NULL
       CrvRecoPulseCollection		  : NULL
       CaloClusterCollection		    : NULL
@@ -55,6 +59,8 @@ TEveEventDisplayUpstream : {
       KalSeedCollection           : [NULL]
       TrkExtTrajCollection        : NULL
       addHits 			              : false
+      addTrkHits 			              : false
+      addTimeClusters                             : false
       addTracks 			            : false
       addCrvHits			            : false
       addCosmicSeedFit	          : false
@@ -74,6 +80,7 @@ TEveEventDisplayHelix : {
       isMCOnly : false
       filler : {
         ComboHitCollection 	  : "makePH"
+	TimeClusterCollection                  : "MHDeM"
         CrvRecoPulseCollection	  :  "SelectRecoMC"
         CosmicTrackSeedCollection :  NULL
         CaloClusterCollection     :  "CaloClusterMaker"
@@ -83,6 +90,8 @@ TEveEventDisplayHelix : {
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
         addHits 		  : true
+	addTrkHits 		  : true
+	addTimeClusters           : true
         addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
@@ -98,6 +107,7 @@ TEveEventDisplayCosmics : {
     showCRV : true
     filler : {
       ComboHitCollection 		    : "makeSH"
+      TimeClusterCollection                  : "MHDeM"
       CrvRecoPulseCollection	  :  "CrvRecoPulses"
       CosmicTrackSeedCollection 	: "CosmicTrackFinderTimeFit"
       CaloClusterCollection		  :  NULL
@@ -107,6 +117,8 @@ TEveEventDisplayCosmics : {
       TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
       addHits 			            : true
+      addTrkHits 			            : true
+      addTimeClusters                             : true
       addTracks 			          : true
       addCrvHits			          : false
       addCosmicSeedFit	        : false
