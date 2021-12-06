@@ -63,7 +63,6 @@ namespace mu2e {
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
         fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"),Comment("decayOffPDGCodes")};
-        fhicl::Sequence<art::InputTag> hitCollections {Name("hitCollections"), Comment("A list of StepPointMCCollection-s")};
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
         fhicl::Atom<bool> doHistograms{Name("doHistograms"),false}; 
     };
