@@ -1,5 +1,5 @@
-// Generates outgoing electron/positron pair from RPC
-//
+// Generates outgoing photon or electron/positron pair  for either external or internal RPC
+// Pions are generated with infinite lifetime, their real lifetime (proper time) is stored as a wait
 //  Sophie Middleton,2021
 
 #include <iostream>
@@ -72,7 +72,7 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
     void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop);
-    void MakeEventWeight(art::Event& event);
+    double MakeEventWeight(art::Event& event);
     //----------------------------------------------------------------
   private:
     double pionLifeTime_;
@@ -84,13 +84,10 @@ namespace mu2e {
     CLHEP::RandFlat     randomFlat_;
     std::string RPCType_;
     std::vector<int> decayOffPDGCodes_;
-    std::vector<art::InputTag> hitColls_;
     BinnedSpectrum    spectrum_;
     bool doHistograms_;
     RandomUnitSphere   randomUnitSphere_;
     CLHEP::RandGeneral randSpectrum_;
-    
-
 
     double            tmin_ = -1;
     double            czmin_ = -1;
@@ -122,7 +119,6 @@ namespace mu2e {
     , randomFlat_{eng_}
     , RPCType_{conf().RPCType()}
     , decayOffPDGCodes_{conf().decayOffPDGCodes()}
-    , hitColls_{conf().hitCollections()}
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())} 
     , doHistograms_{conf().doHistograms()}
     , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
@@ -136,8 +132,7 @@ namespace mu2e {
     else {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no such process, must be InternalRPC or ExternalRPC";
-    } //TODO - replace with static_cast<ProcessCode::type>(RPCType_);  - got errors  for some reason so simplified
-
+    } 
     if ( doHistograms_ ) {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
@@ -156,11 +151,8 @@ namespace mu2e {
       }
   }
   
-  void RPCGun::MakeEventWeight(art::Event& event){ 
-   std::vector<StepPointMCCollection> spMCColls;
+  double RPCGun::MakeEventWeight(art::Event& event){ 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
-    std::cout<<"[MakeEventWeight] start "<<std::endl;
-
     double weight = 0.;
     double tau = 0.;
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
@@ -179,26 +171,21 @@ namespace mu2e {
                 tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
               }
           }
-        } // loop up to the primary
-          //double sumTime = SimParticleGetTau::calculate(pp, spMCColls, decayOffPDGCodes_);
+        } 
         weight += exp(-tau);
       }
     }
-    _time->Fill(weight);
-    std::unique_ptr<EventWeight> pw(new EventWeight(weight));
-    event.put(std::move(pw)); 
-    std::cout<<"[MakeEventWeight] end "<<std::endl;
+    if(doHistograms_) _time->Fill(weight);
+    return weight;
   }
 
   //================================================================
   void RPCGun::produce(art::Event& event) {
-   
+    std::cout<<"[RPCGun::produces ] start "<<std::endl;
     auto output{std::make_unique<StageParticleCollection>()};
-
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     const auto pis = stoppedPiMinusList(simh);
-    //...store pion lifetime as a weight
-    MakeEventWeight(event);
+
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
@@ -207,6 +194,10 @@ namespace mu2e {
       addParticles(output.get(), pistop);
     }
     event.put(std::move(output)); 
+    double time_weight = MakeEventWeight(event);
+    std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
+    event.put(std::move(pw)); 
+    std::cout<<"[RPCGun::produces ] end "<<std::endl;
   }
   
   void RPCGun::addParticles(StageParticleCollection* output,
@@ -217,7 +208,6 @@ namespace mu2e {
     CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(energy);
     CLHEP::HepLorentzVector fourmom(p3, energy);
     if(process_ == ProcessCode::ExternalRPC){
-     
      output->emplace_back(pistop,
                          process_, 
                          PDGCode::gamma,
@@ -264,7 +254,7 @@ namespace mu2e {
         throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable process id\n";
       }
-      _hmomentum->Fill(energy);
+      if(doHistograms_) _hmomentum->Fill(energy);
    }
 
 
