@@ -152,22 +152,30 @@ namespace mu2e {
   }
   
   double RPCGun::MakeEventWeight(art::Event& event){ 
+    std::cout<<"[RPCGun::MakeEventWeight ] start "<<std::endl;
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     double weight = 0.;
     double tau = 0.;
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
+    std::cout<<"[RPCGun::MakeEventWeight ] 1 "<<std::endl;
     for(const auto& p : *simh) {
+    std::cout<<"[RPCGun::MakeEventWeight ] 2 "<<std::endl;
       if(p.second.daughters().empty()) {
           art::Ptr<SimParticle> part(simh, p.first.asUint());
           tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+          std::cout<<"[RPCGun::MakeEventWeight ] 3 "<<std::endl;
           while(part->parent().isNonnull()) {
+          std::cout<<"[RPCGun::MakeEventWeight ] 4 "<<std::endl;
             if((part->creationCode() == ProcessCode::mu2ePrimary)) {
               part = part->parent();
               tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+              std::cout<<"[RPCGun::MakeEventWeight ] 5 "<<std::endl;
             }
             else {
               part = part->parent();
+              std::cout<<"[RPCGun::MakeEventWeight ] 6 "<<std::endl;
               if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
+              std::cout<<"[RPCGun::MakeEventWeight ] 7 "<<std::endl;
                 tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
               }
           }
