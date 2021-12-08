@@ -1,6 +1,7 @@
 // Generates outgoing photon or electron/positron pair  for either external or internal RPC
 // Pions are generated with infinite lifetime, their real lifetime (proper time) is stored as a wait
-//  Sophie Middleton,2021
+// Andrei Gaponenko, 2013
+// Sophie Middleton,2021
 
 #include <iostream>
 #include <string>
