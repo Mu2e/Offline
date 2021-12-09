@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "fhiclcpp/types/OptionalTable.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -32,8 +33,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::OptionalAtom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of cosmic module label"), "generate"};
-      fhicl::Atom<bool> addTimeOffset{ Name("addTimeOffset"), Comment("Add a time offset to the GenParticles"), false };
+      fhicl::OptionalAtom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of cosmic module label")};
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, >1"), 0 };
       fhicl::Atom<float> intervalStart{ Name("intervalStart"), Comment("Start time of the time offset window"), 250 };
       fhicl::Atom<float> intervalEnd{ Name("intervalEnd"), Comment("end time of the time offset window"), 1700 };
@@ -61,8 +61,7 @@ namespace mu2e {
   CosmicTimeOffset::CosmicTimeOffset(const Parameters& conf)
     : EDProducer{conf}
     , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , cosmicModuleLabel_(conf().cosmicModuleLabel())
-    , addTimeOffset_(conf().addTimeOffset())
+    , addTimeOffset_(false)
     , verbosityLevel_(conf().verbosityLevel())
     , intervalStart_(conf().intervalStart())
     , intervalEnd_(conf().intervalEnd())
@@ -70,6 +69,9 @@ namespace mu2e {
   {
     mayConsume<GenParticleCollection>(cosmicModuleLabel_);
     produces<SimTimeOffset>();
+
+    addTimeOffset_ = conf().cosmicModuleLabel(cosmicModuleLabel_);
+
     if (addTimeOffset_) {
       produces<GenParticleCollection>();
     }
