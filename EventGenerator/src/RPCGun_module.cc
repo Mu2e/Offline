@@ -128,11 +128,11 @@ namespace mu2e {
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
-    if(RPCType_ == "ExternalRPC") process_ = ProcessCode::ExternalRPC;
-    else if(RPCType_ == "InternalRPC") process_ = ProcessCode::InternalRPC;
+    if(RPCType_ == "mu2eExternalRPC") process_ = ProcessCode::mu2eExternalRPC;
+    else if(RPCType_ == "mu2eInternalRPC") process_ = ProcessCode::mu2eInternalRPC;
     else {
       throw   cet::exception("BADINPUT")
-        <<"RPCGun::produce(): no such process, must be InternalRPC or ExternalRPC";
+        <<"RPCGun::produce(): no such process, must be mu2eInternalRPC or mu2eExternalRPC";
     } 
     if ( doHistograms_ ) {
         art::ServiceHandle<art::TFileService> tfs;
@@ -140,7 +140,7 @@ namespace mu2e {
 
         _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
         _time        = tfdir.make<TH1F>("time"       , "time", 20000,0,1);
-        if(RPCType_ == "InternalRPC"){
+        if(RPCType_ == "mu2eInternalRPC"){
           _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
           _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
           _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
@@ -159,6 +159,7 @@ namespace mu2e {
     for(const auto& p : *simh) {
       if(p.second.daughters().empty()) {
           art::Ptr<SimParticle> part(simh, p.first.asUint());
+          std::cout<<"part info: "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
           tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           while(part->parent().isNonnull()) {
             if((part->creationCode() == ProcessCode::mu2ePrimary)) {
@@ -205,7 +206,7 @@ namespace mu2e {
     double energy = spectrum_.sample(randSpectrum_.fire());
     CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(energy);
     CLHEP::HepLorentzVector fourmom(p3, energy);
-    if(process_ == ProcessCode::ExternalRPC){
+    if(process_ == ProcessCode::mu2eExternalRPC){
      output->emplace_back(pistop,
                          process_, 
                          PDGCode::gamma,
@@ -214,7 +215,7 @@ namespace mu2e {
                          pistop->endGlobalTime() + randExp_.fire(pionLifeTime_) 
                          );
 
-    } else if(process_ == ProcessCode::InternalRPC) {
+    } else if(process_ == ProcessCode::mu2eInternalRPC) {
       //Need to compute e-e+ pair momentum spectrum from the photon (use Kroll-Wada)
       CLHEP::HepLorentzVector mome, momp;
       pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp);
