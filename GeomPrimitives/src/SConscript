@@ -15,13 +15,6 @@ mainlib = helper.make_mainlib ( [ 'CLHEP',
                                   'cetlib_except'
                                 ] )
 
-helper.make_dict_and_map( [ mainlib,
-                            'art_Persistency_Common',
-                            'art_Utilities',
-                            'canvas',
-                            'Core'
-                          ] )
-
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python
