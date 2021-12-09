@@ -70,9 +70,9 @@ namespace mu2e {
     produces<SimTimeOffset>();
 
     addTimeOffset_ = conf().cosmicModuleLabel(cosmicModuleLabel_);
-    mayConsume<GenParticleCollection>(cosmicModuleLabel_);
 
     if (addTimeOffset_) {
+      consumes<GenParticleCollection>(cosmicModuleLabel_);
       produces<GenParticleCollection>();
     }
   }
