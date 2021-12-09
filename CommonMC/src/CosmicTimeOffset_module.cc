@@ -32,7 +32,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Atom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of CORSIKA module label"), "generate"};
+      fhicl::OptionalAtom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of CORSIKA module label"), "generate"};
       fhicl::Atom<bool> addTimeOffset{ Name("addTimeOffset"), Comment("Add a time offset to the GenParticles"), false };
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, >1"), 0 };
       fhicl::Atom<float> intervalStart{ Name("intervalStart"), Comment("Start time of the time offset window"), 250 };
@@ -68,8 +68,11 @@ namespace mu2e {
     , intervalEnd_(conf().intervalEnd())
     , flatTime_(engine_, intervalStart_, intervalEnd_)
   {
+    mayConsume<GenParticleCollection>(cosmicModuleLabel_);
     produces<SimTimeOffset>();
-    produces<GenParticleCollection>();
+    if (addTimeOffset_) {
+      produces<GenParticleCollection>();
+    }
   }
 
   //================================================================
@@ -97,12 +100,13 @@ namespace mu2e {
       event.getByLabel(cosmicModuleLabel_, cosmicParticles);
       const GenParticleCollection &particles(*cosmicParticles);
       std::unique_ptr<GenParticleCollection> offsetParticles(new GenParticleCollection);
+      const float timeOffset = flatTime_.fire();
 
       for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i) {
         GenParticle const &particle = *i;
         offsetParticles->push_back(GenParticle(particle.pdgId(), particle.generatorId(),
                                                particle.position(), particle.momentum(),
-                                               particle.time() + flatTime_.fire()));
+                                               particle.time() + timeOffset));
       }
 
       event.put(std::move(offsetParticles));
