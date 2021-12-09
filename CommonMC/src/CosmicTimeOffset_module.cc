@@ -17,6 +17,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 #include "CLHEP/Random/RandFlat.h"
@@ -31,6 +32,8 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
+      fhicl::Atom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of CORSIKA module label"), "generate"};
+      fhicl::Atom<bool> addTimeOffset{ Name("addTimeOffset"), Comment("Add a time offset to the GenParticles"), false };
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, >1"), 0 };
       fhicl::Atom<float> intervalStart{ Name("intervalStart"), Comment("Start time of the time offset window"), 250 };
       fhicl::Atom<float> intervalEnd{ Name("intervalEnd"), Comment("end time of the time offset window"), 1700 };
@@ -45,6 +48,8 @@ namespace mu2e {
   private:
     art::RandomNumberGenerator::base_engine_t& engine_;
 
+    std::string cosmicModuleLabel_;
+    bool addTimeOffset_;
     int  verbosityLevel_;
     float intervalStart_;
     float intervalEnd_;
@@ -55,13 +60,16 @@ namespace mu2e {
   //================================================================
   CosmicTimeOffset::CosmicTimeOffset(const Parameters& conf)
     : EDProducer{conf}
-    , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
+    , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , cosmicModuleLabel_(conf().cosmicModuleLabel())
+    , addTimeOffset_(conf().addTimeOffset())
     , verbosityLevel_(conf().verbosityLevel())
     , intervalStart_(conf().intervalStart())
     , intervalEnd_(conf().intervalEnd())
     , flatTime_(engine_, intervalStart_, intervalEnd_)
   {
     produces<SimTimeOffset>();
+    produces<GenParticleCollection>();
   }
 
   //================================================================
@@ -82,6 +90,23 @@ namespace mu2e {
     std::unique_ptr<SimTimeOffset> toff(new SimTimeOffset(flatTime_.fire()));
     if( verbosityLevel_ > 1) std::cout << "CosmicTimeOffset " << toff->timeOffset_ << std::endl;
     event.put(std::move(toff));
+
+    if (addTimeOffset_ ) {
+      // Add offset to all particles
+      art::Handle<mu2e::GenParticleCollection> cosmicParticles;
+      event.getByLabel(cosmicModuleLabel_, cosmicParticles);
+      const GenParticleCollection &particles(*cosmicParticles);
+      std::unique_ptr<GenParticleCollection> offsetParticles(new GenParticleCollection);
+
+      for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i) {
+        GenParticle const &particle = *i;
+        offsetParticles->push_back(GenParticle(particle.pdgId(), particle.generatorId(),
+                                               particle.position(), particle.momentum(),
+                                               particle.time() + flatTime_.fire()));
+      }
+
+      event.put(std::move(offsetParticles));
+    }
   }
 
 } // end namespace mu2e
