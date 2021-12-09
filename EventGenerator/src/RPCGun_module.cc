@@ -139,44 +139,35 @@ namespace mu2e {
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
 
         _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
-
+        _time        = tfdir.make<TH1F>("time"       , "time", 20000,0,1);
         if(RPCType_ == "InternalRPC"){
           _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
           _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
           _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
-          _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
-          _time        = tfdir.make<TH1F>("time"       , "time", 20000,0,1);
+          _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);      
         }
       }
   }
   
   double RPCGun::MakeEventWeight(art::Event& event){ 
-    std::cout<<"[RPCGun::MakeEventWeight ] start "<<std::endl;
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     double weight = 0.;
     double tau = 0.;
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-    std::cout<<"[RPCGun::MakeEventWeight ] 1 "<<std::endl;
     for(const auto& p : *simh) {
-    std::cout<<"[RPCGun::MakeEventWeight ] 2 "<<std::endl;
       if(p.second.daughters().empty()) {
           art::Ptr<SimParticle> part(simh, p.first.asUint());
           tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-          std::cout<<"[RPCGun::MakeEventWeight ] 3 "<<std::endl;
           while(part->parent().isNonnull()) {
-          std::cout<<"[RPCGun::MakeEventWeight ] 4 "<<std::endl;
             if((part->creationCode() == ProcessCode::mu2ePrimary)) {
               part = part->parent();
               tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-              std::cout<<"[RPCGun::MakeEventWeight ] 5 "<<std::endl;
             }
             else {
               part = part->parent();
-              std::cout<<"[RPCGun::MakeEventWeight ] 6 "<<std::endl;
               if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
-              std::cout<<"[RPCGun::MakeEventWeight ] 7 "<<std::endl;
                 tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
               }
           }
@@ -190,11 +181,12 @@ namespace mu2e {
 
   //================================================================
   void RPCGun::produce(art::Event& event) {
-    std::cout<<"[RPCGun::produces ] start "<<std::endl;
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     const auto pis = stoppedPiMinusList(simh);
-
+    double time_weight = MakeEventWeight(event);
+    std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
+    event.put(std::move(pw)); 
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
@@ -203,10 +195,7 @@ namespace mu2e {
       addParticles(output.get(), pistop);
     }
     event.put(std::move(output)); 
-    double time_weight = MakeEventWeight(event);
-    std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
-    event.put(std::move(pw)); 
-    std::cout<<"[RPCGun::produces ] end "<<std::endl;
+   
   }
   
   void RPCGun::addParticles(StageParticleCollection* output,
