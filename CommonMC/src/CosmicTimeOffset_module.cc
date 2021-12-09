@@ -67,10 +67,10 @@ namespace mu2e {
     , intervalEnd_(conf().intervalEnd())
     , flatTime_(engine_, intervalStart_, intervalEnd_)
   {
-    mayConsume<GenParticleCollection>(cosmicModuleLabel_);
     produces<SimTimeOffset>();
 
     addTimeOffset_ = conf().cosmicModuleLabel(cosmicModuleLabel_);
+    mayConsume<GenParticleCollection>(cosmicModuleLabel_);
 
     if (addTimeOffset_) {
       produces<GenParticleCollection>();
