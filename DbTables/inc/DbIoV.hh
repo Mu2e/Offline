@@ -58,9 +58,9 @@ namespace mu2e {
 
     bool inInterval(uint32_t run, uint32_t subrun) const {
       if(run<_startRun) return false;
-      if(run==_startRun and subrun<_startSubrun) return false;
+      if(run==_startRun && subrun<_startSubrun) return false;
       if(run>_endRun) return false;
-      if(run==_endRun and subrun>_endSubrun) return false;
+      if(run==_endRun && subrun>_endSubrun) return false;
       return true;
     }
 
