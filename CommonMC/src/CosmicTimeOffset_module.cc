@@ -90,7 +90,8 @@ namespace mu2e {
   //================================================================
   void CosmicTimeOffset::produce(art::Event& event) {
     // Generate and record offset
-    std::unique_ptr<SimTimeOffset> toff(new SimTimeOffset(flatTime_.fire()));
+    const float timeOffset = flatTime_.fire();
+    std::unique_ptr<SimTimeOffset> toff(new SimTimeOffset(timeOffset));
     if( verbosityLevel_ > 1) std::cout << "CosmicTimeOffset " << toff->timeOffset_ << std::endl;
     event.put(std::move(toff));
 
@@ -100,7 +101,6 @@ namespace mu2e {
       event.getByLabel(cosmicModuleLabel_, cosmicParticles);
       const GenParticleCollection &particles(*cosmicParticles);
       std::unique_ptr<GenParticleCollection> offsetParticles(new GenParticleCollection);
-      const float timeOffset = flatTime_.fire();
 
       for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i) {
         GenParticle const &particle = *i;
