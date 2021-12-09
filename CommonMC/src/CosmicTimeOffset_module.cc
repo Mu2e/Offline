@@ -32,7 +32,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::OptionalAtom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of CORSIKA module label"), "generate"};
+      fhicl::OptionalAtom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of cosmic module label"), "generate"};
       fhicl::Atom<bool> addTimeOffset{ Name("addTimeOffset"), Comment("Add a time offset to the GenParticles"), false };
       fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, >1"), 0 };
       fhicl::Atom<float> intervalStart{ Name("intervalStart"), Comment("Start time of the time offset window"), 250 };
