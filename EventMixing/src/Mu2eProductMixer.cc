@@ -331,6 +331,9 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.setSimParticle( remap(step.simParticle(), simOffsets_[ie]) );
+      if(applyTimeOffset_){
+        step.time() += stoff_.timeOffset_;
+      }
     }
 
     return true;
@@ -348,6 +351,9 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+      if(applyTimeOffset_){
+        step.time() += stoff_.timeOffset_;
+      }
     }
 
     return true;
@@ -364,6 +370,10 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+      if(applyTimeOffset_){
+        step.startTime() += stoff_.timeOffset_;
+        step.endTime() += stoff_.timeOffset_;
+      }
     }
 
     return true;
