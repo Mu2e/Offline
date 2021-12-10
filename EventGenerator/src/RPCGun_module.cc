@@ -155,28 +155,27 @@ namespace mu2e {
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
     
     for(const auto& p : *simh) {
-      if(p.second.daughters().empty()) {
-          art::Ptr<SimParticle> part(simh, p.first.asUint());
-          std::cout<<"part info: "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
-          tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-          while(part->parent().isNonnull()) {
-            //if((part->creationCode() == ProcessCode::mu2ePrimary)) { //TODO - do we need this?
-              
-              part = part->parent();
-              while(part->pdgId() != 2212){
+        if(p.second.daughters().empty()) {
+            art::Ptr<SimParticle> part(simh, p.first.asUint());
+            std::cout<<"part info: "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
+            tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+            while(part->parent().isNonnull() and part->pdgId() != 2212) {
+              if((part->creationCode() == ProcessCode::mu2ePrimary)) { //TODO - do we need this?
+                part = part->parent();
                 std::cout<<" while primary "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
-                tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-              }
-           // else {
-             // part = part->parent();
-            //  if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
-            //    tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
-            //    std::cout<<"in else part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
-            //  }
-          }
-        } 
+                if(part->pdgId() != 2212) tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+              else {
+                part = part->parent();
+                if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
+                  tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+                  std::cout<<"in else part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
+                }
+            }
+          } 
+        }
       }
-      weight = exp(-tau);
+    }
+    weight = exp(-tau);
     if(doHistograms_) _htime->Fill(weight);
     return weight;
   }
