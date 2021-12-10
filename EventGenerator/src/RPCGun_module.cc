@@ -102,7 +102,7 @@ namespace mu2e {
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
     TH1F* _hy;                          // splitting function
-    TH1F* _time;                        //stores time weight
+    TH1F* _htime;                        //stores time weight
 
   };
 
@@ -135,7 +135,7 @@ namespace mu2e {
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
 
         _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
-        _time        = tfdir.make<TH1F>("time"       , "time", 20000,0,1);
+        _htime        = tfdir.make<TH1F>("htime"       , "htime", 20000,0,1);
         if(RPCType_ == "mu2eInternalRPC"){
           _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
           _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
@@ -148,35 +148,36 @@ namespace mu2e {
   }
   
   double RPCGun::MakeEventWeight(art::Event& event){ 
-  std::cout<<"====================================="<<std::endl;
+    std::cout<<"====================================="<<std::endl;
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     double weight = 0.;
     double tau = 0.;
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
+    
     for(const auto& p : *simh) {
       if(p.second.daughters().empty()) {
           art::Ptr<SimParticle> part(simh, p.first.asUint());
           std::cout<<"part info: "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
           tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           while(part->parent().isNonnull()) {
-            std::cout<<" part->parent().isNonnull() "<<std::endl;
-            if((part->creationCode() == ProcessCode::mu2ePrimary)) {
+            //if((part->creationCode() == ProcessCode::mu2ePrimary)) { //TODO - do we need this?
+              
               part = part->parent();
-              std::cout<<" part->parent().isNonnull() part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
-              tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-            }
-            else {
-            std::cout<<"in else part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
-              part = part->parent();
-              if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
-                tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+              while(part->pdgId() != 2212){
+                std::cout<<" while primary "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
+                tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
               }
+           // else {
+             // part = part->parent();
+            //  if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
+            //    tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+            //    std::cout<<"in else part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
+            //  }
           }
         } 
-        weight += exp(-tau);
       }
-    }
-    if(doHistograms_) _time->Fill(weight);
+      weight = exp(-tau);
+    if(doHistograms_) _htime->Fill(weight);
     return weight;
   }
 
@@ -192,12 +193,11 @@ namespace mu2e {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
-    std::cout<<"number of pis "<<pis.size()<<std::endl;
-    for(const auto& pistop: pis) {
-      addParticles(output.get(), pistop);
-    }
+
+    unsigned int randIn = rand() % pis.size(); 
+    addParticles(output.get(), pis[randIn]);
     event.put(std::move(output)); 
-   
+ 
   }
   
   void RPCGun::addParticles(StageParticleCollection* output,
@@ -251,8 +251,8 @@ namespace mu2e {
           _hy->Fill(y);
         }
       } else {
-        throw   cet::exception("BADINPUT")
-        <<"RPCGun::produce(): no suitable process id\n";
+          throw   cet::exception("BADINPUT")
+          <<"RPCGun::produce(): no suitable process id\n";
       }
       if(doHistograms_) _hmomentum->Fill(energy);
    }
