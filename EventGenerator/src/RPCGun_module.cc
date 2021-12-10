@@ -192,6 +192,7 @@ namespace mu2e {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
+    std::cout<<"number of pis "<<pis.size()<<std::endl;
     for(const auto& pistop: pis) {
       addParticles(output.get(), pistop);
     }
