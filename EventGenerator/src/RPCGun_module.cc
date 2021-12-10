@@ -1,5 +1,5 @@
 // Generates outgoing photon or electron/positron pair  for either external or internal RPC
-// Pions are generated with infinite lifetime, their real lifetime (proper time) is stored as a wait
+// Pions are generated with infinite lifetime, their real lifetime (proper time) is stored as a weight
 // Andrei Gaponenko, 2013
 // Sophie Middleton,2021
 
@@ -59,8 +59,6 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
         fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
-        fhicl::Atom<std::string> stoppingTargetMaterial{
-        Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and pion life time.  Material pist be known to the GlobalConstantsService."),"Al" };
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
         fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"),Comment("decayOffPDGCodes")};
@@ -76,7 +74,6 @@ namespace mu2e {
     double MakeEventWeight(art::Event& event);
     //----------------------------------------------------------------
   private:
-    double pionLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
     unsigned verbosity_;
 
@@ -112,7 +109,6 @@ namespace mu2e {
   //================================================================
   RPCGun::RPCGun(const Parameters& conf)
     : EDProducer{conf}
-    , pionLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
@@ -152,6 +148,7 @@ namespace mu2e {
   }
   
   double RPCGun::MakeEventWeight(art::Event& event){ 
+  std::cout<<"====================================="<<std::endl;
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     double weight = 0.;
     double tau = 0.;
@@ -162,13 +159,16 @@ namespace mu2e {
           std::cout<<"part info: "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
           tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           while(part->parent().isNonnull()) {
+            std::cout<<" part->parent().isNonnull() "<<std::endl;
             if((part->creationCode() == ProcessCode::mu2ePrimary)) {
               part = part->parent();
+              std::cout<<" part->parent().isNonnull() part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
               tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
             }
             else {
+            std::cout<<"in else part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
               part = part->parent();
-              if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
+              if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
                 tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
               }
           }
@@ -212,7 +212,7 @@ namespace mu2e {
                          PDGCode::gamma,
                          pistop->endPosition(),
                          fourmom,
-                         pistop->endGlobalTime() + randExp_.fire(pionLifeTime_) 
+                         pistop->endGlobalTime()
                          );
 
     } else if(process_ == ProcessCode::mu2eInternalRPC) {
@@ -224,7 +224,7 @@ namespace mu2e {
                            PDGCode::e_minus,
                            pistop->endPosition(),
                            mome,
-                           pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
+                           pistop->endGlobalTime()
                            );
                            
        output->emplace_back(pistop,
@@ -232,7 +232,7 @@ namespace mu2e {
                            PDGCode::e_plus, 
                            pistop->endPosition(),
                            momp,
-                           pistop->endGlobalTime() + randExp_.fire(pionLifeTime_)
+                           pistop->endGlobalTime()
                            );
                   
         if(doHistograms_){
