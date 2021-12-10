@@ -102,7 +102,7 @@ namespace mu2e {
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
     TH1F* _hy;                          // splitting function
-    TH1F* _time;
+    TH1F* _time;                        //stores time weight
 
   };
 
@@ -204,8 +204,8 @@ namespace mu2e {
   {
     //Photon energy and four mom:
     double energy = spectrum_.sample(randSpectrum_.fire());
-    CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(energy);
-    CLHEP::HepLorentzVector fourmom(p3, energy);
+    const CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(energy);
+    const CLHEP::HepLorentzVector fourmom(p3, energy);
     if(process_ == ProcessCode::mu2eExternalRPC){
      output->emplace_back(pistop,
                          process_, 
