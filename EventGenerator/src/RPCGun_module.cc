@@ -87,11 +87,11 @@ namespace mu2e {
     RandomUnitSphere   randomUnitSphere_;
     CLHEP::RandGeneral randSpectrum_;
 
-    double            tmin_ = -1;
-    double            czmin_ = -1;
-    double            czmax_ = 1;
-    double            phimin_ = 0;
-    double            phimax_ = CLHEP::twopi;
+    const double            tmin_ = -1;
+    const double            czmin_ = -1;
+    const double            czmax_ = 1;
+    const double            phimin_ = 0;
+    const double            phimax_ = CLHEP::twopi;
     ProcessCode process_;
     PionCaptureSpectrum pionCaptureSpectrum_;
     
