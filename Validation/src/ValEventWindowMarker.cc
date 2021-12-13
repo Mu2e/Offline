@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValEventWindowMarker.hh"
 
 
-int mu2e::ValEventWindowMarker::declare(art::TFileDirectory tfs) {
+int mu2e::ValEventWindowMarker::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hst = tfs.make<TH1D>( "st", "Spill type", 6, -0.5, 5.5);
   _hlen = tfs.make<TH1D>( "len", "Event length", 50, 1600.0, 1800.0);

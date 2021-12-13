@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValCrvStep.hh"
 
 
-int mu2e::ValCrvStep::declare(art::TFileDirectory tfs) {
+int mu2e::ValCrvStep::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NStep", "N Steps", 101, -9.5, 1000.5);
   _hb = tfs.make<TH1D>( "bar", "bar number", 100, -0.5, 5503.5);

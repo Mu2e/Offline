@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValCaloRecoDigi.hh"
 
 
-int mu2e::ValCaloRecoDigi::declare(art::TFileDirectory tfs) {
+int mu2e::ValCaloRecoDigi::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NDigis", "N RecoDigis", 101, -0.5, 100.5);
   _hN2= tfs.make<TH1D>( "NDigis2", "N RecoDigis", 100, -0.5,4999.5);
