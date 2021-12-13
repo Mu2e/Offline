@@ -157,6 +157,8 @@ private:
   std::unique_ptr<CrvStepCollection> _newCrvSteps;
   std::map<InstanceLabel, std::unique_ptr<StepPointMCCollection> > _newStepPointMCs;
   std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
+  // temporary storage for MCTrajectories
+  std::vector<MCTrajectory> _newMCTrajs;
 
   // To create art::Ptrs to the new SimParticles and GenParticles,
   // we need their art::ProductIDs and art::EDProductGetters
@@ -231,6 +233,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
 
   _newMCTrajectories = std::unique_ptr<MCTrajectoryCollection>(new MCTrajectoryCollection);
+  _newMCTrajs.clear(); // clear the temporary storage
 
   _simParticlesToKeep.clear();
   _simParticlesToTruncate.clear();
@@ -443,7 +446,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
     if (_keepNGenerations >= 0) {
       // Go through the particles we are keeping and see if any parents are not there
       for (auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
-	
+
 	art::Ptr<mu2e::SimParticle> i_childPtr = i_keptSimPart;
 	art::Ptr<mu2e::SimParticle> i_parentPtr = i_childPtr->parent();
 	while (i_parentPtr) {
@@ -584,15 +587,15 @@ void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
         const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
         for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
           if (mcTrajectory.second.sim() == alreadyKeptSimPart) {
-            MCTrajectory newMCTrajectory(mcTrajectory.second);
-            _newMCTrajectories->insert(std::make_pair(mcTrajectory.second.sim(), newMCTrajectory));
+            _newMCTrajs.emplace_back(mcTrajectory.second);
+            if(_debugLevel>0 ) std::cout << "Inserting new MCTrajectory with key " << mcTrajectory.second.sim() << std::endl;
           }
         }
       }
     }
     else if (_mcTrajectoryCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
-      MCTrajectory newMCTrajectory(mcTrajectory.second);
-      _newMCTrajectories->insert(std::make_pair(mcTrajectory.second.sim(), newMCTrajectory));
+      _newMCTrajs.emplace_back(mcTrajectory.second);
+      if(_debugLevel>0 ) std::cout << "Inserting new MCTrajectory with key " << mcTrajectory.second.sim() << " and recording it " << std::endl;
       recordSimParticle(mcTrajectory.second.sim());
     }
     else {
@@ -615,17 +618,15 @@ void mu2e::CompressDetStepMCs::updateStepPointMCs() {
 }
 
 void mu2e::CompressDetStepMCs::updateMCTrajectories() {
-  for (auto& i_mcTrajectory : *_newMCTrajectories) {
-    const auto& oldSimPtr = i_mcTrajectory.second.sim();
+  for (auto& i_mcTrajectory : _newMCTrajs) {
+    const auto& oldSimPtr = i_mcTrajectory.sim();
     art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
     if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in MCTrajectory from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
-    i_mcTrajectory.second.sim() = newSimPtr;
-    auto mcTrajPair = _newMCTrajectories->extract(i_mcTrajectory.first);
-    mcTrajPair.key() = newSimPtr;
-    _newMCTrajectories->insert(std::move(mcTrajPair));
-    //    i_mcTrajectory.first = newSimPtr;
+    // overwrite the internal ptr and insert with the new key
+    i_mcTrajectory.sim() = newSimPtr;
+    _newMCTrajectories->insert(std::make_pair(i_mcTrajectory.sim(), i_mcTrajectory));
   }
 }
 
