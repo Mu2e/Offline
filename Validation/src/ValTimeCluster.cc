@@ -1,7 +1,7 @@
 
 #include "Offline/Validation/inc/ValTimeCluster.hh"
 
-int mu2e::ValTimeCluster::declare(art::TFileDirectory tfs) {
+int mu2e::ValTimeCluster::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.5);
   _hN = tfs.make<TH1D>( "N", "N Time Clusters", 101, -0.5, 100.5);
   _hNhit = tfs.make<TH1D>( "NHit", "N Hits", 101, -0.5, 100.5);

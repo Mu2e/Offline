@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValCaloShowerStep.hh"
 
 
-int mu2e::ValCaloShowerStep::declare(art::TFileDirectory tfs) {
+int mu2e::ValCaloShowerStep::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NStep", "N Steps", 51, -0.5, 50.5);
   _hN2 = tfs.make<TH1D>( "NStep2", "N Steps", 101, -9.5, 1000.5);

@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValStepPointMC.hh"
 
 
-int mu2e::ValStepPointMC::declare(art::TFileDirectory tfs) {
+int mu2e::ValStepPointMC::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NStep", "N Steps", 100, -0.05, 1000.0);
   _id.declare(tfs);

@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValProtonBunchTime.hh"
 
 
-int mu2e::ValProtonBunchTime::declare(art::TFileDirectory tfs) {
+int mu2e::ValProtonBunchTime::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _htime = tfs.make<TH1D>( "time", "time", 50, -250.0, -150.0);
   _hterr = tfs.make<TH1D>( "terr", "time error", 50, 0.0, 20.0);
