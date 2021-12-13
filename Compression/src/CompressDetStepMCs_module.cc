@@ -233,7 +233,6 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
 
   _newMCTrajectories = std::unique_ptr<MCTrajectoryCollection>(new MCTrajectoryCollection);
-  _newMCTrajs.clear(); // clear the temporary storage
 
   _simParticlesToKeep.clear();
   _simParticlesToTruncate.clear();
@@ -628,6 +627,7 @@ void mu2e::CompressDetStepMCs::updateMCTrajectories() {
     i_mcTrajectory.sim() = newSimPtr;
     _newMCTrajectories->insert(std::make_pair(i_mcTrajectory.sim(), i_mcTrajectory));
   }
+  _newMCTrajs.clear(); // clear the temporary storage
 }
 
 void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticle>& sim_ptr) {
