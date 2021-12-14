@@ -159,22 +159,27 @@ namespace mu2e {
             art::Ptr<SimParticle> part(simh, p.first.asUint());
             std::cout<<"part info: "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
             tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-            while(part->parent().isNonnull() and part->pdgId() != 2212) {
+            std::cout<<"strt time "<<tau<<std::endl;
+            while(part->parent().isNonnull()) {
               if((part->creationCode() == ProcessCode::mu2ePrimary)) { //TODO - do we need this?
                 part = part->parent();
                 std::cout<<" while primary "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
-                if(part->pdgId() != 2212) tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-              else {
+                if(part->pdgId() != 2212){
+                   tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+                   std::cout<<"adding time "<<tau<<std::endl;
+                 }
+              }else {
                 part = part->parent();
                 if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
                   tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
                   std::cout<<"in else part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
+                  std::cout<<"adding time "<<tau<<std::endl;
                 }
             }
           } 
         }
       }
-    }
+   
     weight = exp(-tau);
     if(doHistograms_) _htime->Fill(weight);
     return weight;
