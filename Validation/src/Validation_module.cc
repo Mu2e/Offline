@@ -230,7 +230,7 @@ int mu2e::Validation::analyzeProduct(
     if ( prd == nullptr ) {
       prd = std::make_shared<V>(name);
       // create root file subdirectory
-      art::TFileDirectory tfdir = _tfs->mkdir(name);
+      const art::TFileDirectory& tfdir = _tfs->mkdir(name);
       // create histograms
       prd->declare(tfdir);
       // add it to the list of products being histogrammed

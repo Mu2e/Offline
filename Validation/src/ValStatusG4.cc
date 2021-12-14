@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValStatusG4.hh"
 
 
-int mu2e::ValStatusG4::declare(art::TFileDirectory tfs) {
+int mu2e::ValStatusG4::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hstat = tfs.make<TH1D>( "stat", "Status", 50, -0.5, 50.5);
   _hnTrk = tfs.make<TH1D>( "Ntrk", "N gtrk", 101, -0.5, 100.5);
