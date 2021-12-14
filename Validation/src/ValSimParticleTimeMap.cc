@@ -1,7 +1,7 @@
 
 #include "Offline/Validation/inc/ValSimParticleTimeMap.hh"
 
-int mu2e::ValSimParticleTimeMap::declare(art::TFileDirectory tfs) {
+int mu2e::ValSimParticleTimeMap::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "Nsim", "N particle", 101, -0.5, 100.5);
   _ht = tfs.make<TH1D>( "t", "time", 100, 0.0, 2000.0);

@@ -3,7 +3,7 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
+int mu2e::ValKalSeed::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NSeed", "N KalSeed", 11, -0.5, 10.0);
   _hNStraw = tfs.make<TH1D>( "NHit", "N Hits", 101, -0.5, 100.0);

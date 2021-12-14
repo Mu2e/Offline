@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValSimParticle.hh"
 #include <vector>
 
-int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
+int mu2e::ValSimParticle::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "Nsim", "N particle", 100, -0.05, 1000.0);
   _hN2 = tfs.make<TH1D>( "Nsim2", "log10(N particle)", 100, 0.0, 6.00);

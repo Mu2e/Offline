@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValCrvCoincidenceCluster.hh"
 
 
-int mu2e::ValCrvCoincidenceCluster::declare(art::TFileDirectory tfs) {
+int mu2e::ValCrvCoincidenceCluster::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NClus", "N Clusters", 101, -0.5, 100.5);
   _hSec = tfs.make<TH1D>( "SecType", "Sector type",21, -10.5, 10.5);

@@ -13,7 +13,7 @@ namespace mu2e {
 
   public:
     ValTrackSummary(std::string name):_name(name){}
-    int declare( art::TFileDirectory tfs);
+    int declare( const art::TFileDirectory& tfs);
     int fill(const TrackSummaryCollection & coll, art::Event const& event);
     double mcTrkP(art::Event const& event);
     std::string& name() { return _name; }
