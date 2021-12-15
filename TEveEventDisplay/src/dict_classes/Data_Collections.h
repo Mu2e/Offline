@@ -4,6 +4,7 @@
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Calo:
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 //MC Products:
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 //Kalman Tracks
@@ -43,6 +44,7 @@ namespace mu2e{
 
       //RecoDataProducts:
       const ComboHitCollection *chcol = 0;
+      const TimeClusterCollection *tccol = 0;
       const CrvRecoPulseCollection* crvcoincol = 0;
       const CosmicTrackSeedCollection* cosmiccol = 0;
       const CaloClusterCollection* clustercol = 0;

@@ -4,7 +4,7 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 
-int mu2e::ValHelixSeed::declare(art::TFileDirectory tfs) {
+int mu2e::ValHelixSeed::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.5);
   _hN = tfs.make<TH1D>( "NSeed", "N KalSeed", 11, -0.5, 10.5);
   _hNCombo = tfs.make<TH1D>( "NCombo", "N Combo Hits", 101, -0.5, 100.5);

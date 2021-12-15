@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValBkgCluster.hh"
 
 
-int mu2e::ValBkgCluster::declare(art::TFileDirectory tfs) {
+int mu2e::ValBkgCluster::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NClus", "N Clusters", 100, 0.001, 500.0);
   _hr = tfs.make<TH1D>( "R", "Radius",100, 370.0, 680.0);

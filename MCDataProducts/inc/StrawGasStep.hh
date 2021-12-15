@@ -2,7 +2,7 @@
 #define MCDataProducts_StrawGasStep_hh
 //
 // Class to summarize the passage of a single particle through a single straw's gas volume
-// This consolidates the G4 steps and insulates the downstream straw response ionization simulation 
+// This consolidates the G4 steps and insulates the downstream straw response ionization simulation
 // from details of the G4 model
 //
 #include "canvas/Persistency/Common/Ptr.h"
@@ -33,11 +33,11 @@ namespace mu2e {
 	Shape shape() const { return static_cast<Shape>(_stype & _smsk); }
 	Ionization ionization() const { return static_cast<Ionization>((_stype & _imsk) >> _isft); }
 
-      }; 
+      };
 
       StrawGasStep() : _eIon(0.0), _pathLen(0.), _width(0.0), _time(0.0) {}
       StrawGasStep( StrawId    strawId, StepType stype,
-	Float_t  Edep, Float_t    stepLength, Float_t width, Double_t   time, 
+	Float_t  Edep, Float_t    stepLength, Float_t width, Double_t   time,
 	XYZVectorF const& startPosition, XYZVectorF const& endPosition, XYZVectorF const& mom, art::Ptr<SimParticle> const& simp) :
 	_strawId(strawId), _stype(stype), _eIon(Edep),
 	_pathLen(stepLength), _width(width), _time(time),
@@ -48,8 +48,9 @@ namespace mu2e {
       StepType   stepType()    const { return _stype; }
       Float_t    ionizingEdep()    const { return _eIon; }
       Float_t    stepLength()   const { return _pathLen; }
-      Float_t    width()   const { return _width; } 
+      Float_t    width()   const { return _width; }
       Double_t   time()         const { return _time; } // time the particle entered the gas (without offsets!)
+      Double_t&   time()         { return _time; } // non-const used for resampling
       XYZVectorF const& startPosition() const { return _startpos; }
       XYZVectorF const& endPosition() const { return _endpos; }
       XYZVectorF const& momentum() const { return _mom; }
@@ -79,7 +80,7 @@ namespace mu2e {
   inline std::ostream& operator<<( std::ostream& ost, StrawGasStep const& sgs){
     ost << "StrawGasStep StrawId " << sgs.strawId() << " Type " << sgs.stepType()._stype
     << " Ionization " << sgs.ionizingEdep() << " path length " << sgs.stepLength()
-    << " Width " << sgs.width(); 
+    << " Width " << sgs.width();
     return ost;
   }
 
