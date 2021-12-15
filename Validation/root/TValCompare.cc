@@ -128,7 +128,9 @@ Int_t TValCompare::OneFile(Option_t* Opt) {
       if(hh->ClassName() == TString("TH1F") ||
 	 hh->ClassName() == TString("TH1D") ||
 	 hh->ClassName() == TString("TProfile") ||
-	 hh->ClassName() == TString("TEfficiency") ) {
+	 hh->ClassName() == TString("TEfficiency") ||
+	 hh->ClassName() == TString("TH2F") ||
+	 hh->ClassName() == TString("TH2D") ) {
 	// have to pack path and name together
 	combo=path+"/"+TString(hh->GetName());
 	((TNamed*)hh)->SetName(combo);
@@ -210,6 +212,17 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
 	  hh = new TValHistE((TEfficiency*)o1,(TEfficiency*)o2);
 	  htype = 3;
 	}
+	ok1 = 
+	  o1->ClassName() == TString("TH2F") ||
+	  o1->ClassName() == TString("TH2D");
+	ok2 = 
+	  o2->ClassName() == TString("TH2F") ||
+	  o2->ClassName() == TString("TH2D");
+	if( ok1 && ok2 ) {
+	  hh = new TValHist2((TH2*)o1,(TH2*)o2);
+	  htype = 4;
+	}
+
 
 	if( htype>0 ) {
 	  hh->SetPar(fPar);
