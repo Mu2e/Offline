@@ -71,7 +71,7 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
     void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop);
-    double MakeEventWeight(art::Event& event);
+    double MakeEventWeight(art::Ptr<SimParticle> p);
     //----------------------------------------------------------------
   private:
     art::ProductToken<SimParticleCollection> const simsToken_;
@@ -145,14 +145,14 @@ namespace mu2e {
       }
   }
   
-  double RPCGun::MakeEventWeight(art::Event& event){ 
+  double RPCGun::MakeEventWeight(art::Ptr<SimParticle> p){ 
     
-    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
+    //const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     double weight = 0.;
     double tau = 0.;
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
     
-    for(const auto& p : *simh) {
+    //for(const auto& p : *simh) {
         if(p.second.daughters().empty()) {
             art::Ptr<SimParticle> part(simh, p.first.asUint());
             tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
@@ -170,7 +170,7 @@ namespace mu2e {
             }
           } 
         }
-      }
+     // }
    
     weight = exp(-tau);
     return weight;
@@ -181,15 +181,16 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     const auto pis = stoppedPiMinusList(simh);
-    double time_weight = MakeEventWeight(event);
-    std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
-    event.put(std::move(pw)); 
+    
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
 
     unsigned int randIn = rand() % pis.size(); 
+    double time_weight = MakeEventWeight(pis[randIn]);
+    std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
+    event.put(std::move(pw)); 
     addParticles(output.get(), pis[randIn]);
     event.put(std::move(output)); 
  
