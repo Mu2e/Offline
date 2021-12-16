@@ -146,7 +146,7 @@ namespace mu2e {
   }
   
   double RPCGun::MakeEventWeight(art::Event& event){ 
-    std::cout<<"====================================="<<std::endl;
+    
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
     double weight = 0.;
     double tau = 0.;
@@ -155,23 +155,17 @@ namespace mu2e {
     for(const auto& p : *simh) {
         if(p.second.daughters().empty()) {
             art::Ptr<SimParticle> part(simh, p.first.asUint());
-            std::cout<<"part info: "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
             tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-            std::cout<<"strt time "<<tau<<std::endl;
             while(part->parent().isNonnull()) {
               if((part->creationCode() == ProcessCode::mu2ePrimary)) { //TODO - do we need this?
                 part = part->parent();
-                std::cout<<" while primary "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
                 if(part->pdgId() != 2212){
                    tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-                   std::cout<<"adding time "<<tau<<std::endl;
                  }
               }else {
                 part = part->parent();
                 if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
                   tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
-                  std::cout<<"in else part->parent() code "<<part->creationCode()<<" "<<part->pdgId()<<std::endl;
-                  std::cout<<"adding time "<<tau<<std::endl;
                 }
             }
           } 
