@@ -149,9 +149,9 @@ namespace mu2e {
 
     double weight = 0.;
     // get tau of final particle (the stop)
-    double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-    d::cout<<"start tau "<<tau<<std::endl;
+    double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+    std::cout<<"start tau "<<tau<<std::endl;
     // check if it has a parent particle
     while(part->parent().isNonnull()) {
       std::cout<<"for parent "<<part->creationCode()<<" "<<part->pdgId() <<std::endl;
