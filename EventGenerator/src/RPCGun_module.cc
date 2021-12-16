@@ -146,36 +146,29 @@ namespace mu2e {
   }
   
   double RPCGun::MakeEventWeight(art::Ptr<SimParticle> part){ 
-
-    double weight = 0.;
-    // get tau of final particle (the stop)
-    const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-    double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-    std::cout<<"start tau "<<tau<<std::endl;
-    // check if it has a parent particle
-    while(part->parent().isNonnull()) {
-      std::cout<<"for parent "<<part->creationCode()<<" "<<part->pdgId() <<std::endl;
-      // check if the particle is a mu2ePrimary
-      if((part->creationCode() == ProcessCode::mu2ePrimary)) { 
-        // get parent
-        part = part->parent();
-        // if parent isntr a proton add the lifetime to the tau
-        if(part->pdgId() != 2212){
-           tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-           std::cout<<"adding tau "<<tau<<std::endl;
-         }
-      }else { // if not mu2ePrimary
-        // extract the parent 
-        part = part->parent();
-        // check if parent has decays turned off (these will be the pions)
-        if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
-          // add these decay-off particles too our tau 
-          tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
-          std::cout<<"in decay off "<<tau<<" "<<part->pdgId()<<std::endl;
-        }
+      std::cout<<" +++++++++++++++++++++++++"<<std::endl;
+      const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
+      double weight = 0.;
+      double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+      std::cout<<"incoming "<<part->creationCode()<<" "<<part->pdgId() <<std::endl;
+      std::cout<<"start tau "<<tau<<std::endl;
+      while(part->parent().isNonnull()) {
+        std::cout<<"for parent "<<part->creationCode()<<" "<<part->pdgId() <<std::endl;
+        if((part->creationCode() == ProcessCode::mu2ePrimary)) { //does this work now? I dont think so?
+          part = part->parent();
+          if(abs(part->pdgId()) == 211){
+             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+             std::cout<<"adding tau "<<tau<<std::endl;
+           }
+        }else {
+          part = part->parent();
+          if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
+            tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+            std::cout<<"in decay off "<<tau<<" "<<part->pdgId()<<std::endl;
+          }
       }
     } 
-    // compute weight as exp of - sum of all lifetimes in chain
+   
     weight = exp(-tau);
     return weight;
   }
