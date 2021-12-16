@@ -145,33 +145,37 @@ namespace mu2e {
       }
   }
   
-  double RPCGun::MakeEventWeight(art::Ptr<SimParticle> p){ 
-    
-    //const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
+  double RPCGun::MakeEventWeight(art::Ptr<SimParticle> part){ 
+
     double weight = 0.;
-    double tau = 0.;
+    // get tau of final particle (the stop)
+    double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
     const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
-    
-    //for(const auto& p : *simh) {
-        if(p.second.daughters().empty()) {
-            art::Ptr<SimParticle> part(simh, p.first.asUint());
-            tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-            while(part->parent().isNonnull()) {
-              if((part->creationCode() == ProcessCode::mu2ePrimary)) { //TODO - do we need this?
-                part = part->parent();
-                if(part->pdgId() != 2212){
-                   tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-                 }
-              }else {
-                part = part->parent();
-                if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) { //is part in the list?
-                  tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
-                }
-            }
-          } 
+    d::cout<<"start tau "<<tau<<std::endl;
+    // check if it has a parent particle
+    while(part->parent().isNonnull()) {
+      std::cout<<"for parent "<<part->creationCode()<<" "<<part->pdgId() <<std::endl;
+      // check if the particle is a mu2ePrimary
+      if((part->creationCode() == ProcessCode::mu2ePrimary)) { 
+        // get parent
+        part = part->parent();
+        // if parent isntr a proton add the lifetime to the tau
+        if(part->pdgId() != 2212){
+           tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
+           std::cout<<"adding tau "<<tau<<std::endl;
+         }
+      }else { // if not mu2ePrimary
+        // extract the parent 
+        part = part->parent();
+        // check if parent has decays turned off (these will be the pions)
+        if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
+          // add these decay-off particles too our tau 
+          tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+          std::cout<<"in decay off "<<tau<<" "<<part->pdgId()<<std::endl;
         }
-     // }
-   
+      }
+    } 
+    // compute weight as exp of - sum of all lifetimes in chain
     weight = exp(-tau);
     return weight;
   }
