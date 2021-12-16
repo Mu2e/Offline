@@ -102,7 +102,6 @@ namespace mu2e {
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
     TH1F* _hy;                          // splitting function
-    TH1F* _htime;                        //stores time weight
 
   };
 
@@ -135,7 +134,6 @@ namespace mu2e {
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
 
         _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
-        _htime        = tfdir.make<TH1F>("htime"       , "htime", 20000,0,1);
         if(RPCType_ == "mu2eInternalRPC"){
           _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
           _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
@@ -181,7 +179,6 @@ namespace mu2e {
       }
    
     weight = exp(-tau);
-    if(doHistograms_) _htime->Fill(weight);
     return weight;
   }
 
