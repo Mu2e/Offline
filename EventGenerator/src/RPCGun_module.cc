@@ -146,25 +146,19 @@ namespace mu2e {
   }
   
   double RPCGun::MakeEventWeight(art::Ptr<SimParticle> part){ 
-      std::cout<<" +++++++++++++++++++++++++"<<std::endl;
       const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
       double weight = 0.;
       double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-      std::cout<<"incoming "<<part->creationCode()<<" "<<part->pdgId() <<std::endl;
-      std::cout<<"start tau "<<tau<<std::endl;
       while(part->parent().isNonnull()) {
-        std::cout<<"for parent "<<part->creationCode()<<" "<<part->pdgId() <<std::endl;
         if((part->creationCode() == ProcessCode::mu2ePrimary)) { //does this work now? I dont think so?
           part = part->parent();
           if(abs(part->pdgId()) == 211){
              tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-             std::cout<<"adding tau "<<tau<<std::endl;
            }
         }else {
           part = part->parent();
           if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
-            std::cout<<"in decay off "<<tau<<" "<<part->pdgId()<<std::endl;
           }
       }
     } 
