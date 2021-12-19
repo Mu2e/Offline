@@ -331,15 +331,17 @@ namespace mu2e {
 
       double zpos = 0.0;
       for ( unsigned int iSeg = 0; iSeg < _BSTSZLengths.size(); iSeg++ ) {
-	BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ);
+
+        // Fixme: ensure that zplanes in the BSTS polycone are not coincident.
+        // Be sure to stay inside the MBS mother.
+        const double epsilon = (iSeg>0 )? 0.1 : 0.0;
+
+	BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ + epsilon);
 	BSTSInRads.push_back(_BSTSInnRadii[iSeg]);
 	BSTSOutRads.push_back(_BSTSOutRadii[iSeg]);
 	zpos += _BSTSZLengths[iSeg];
 
-        // Fixme: ensure that zplanes in the BSTS polycone are not coincident.
-        const double epsilon = (iSeg<_BSTSZLengths.size()-1 )? 0.1 : 0.0;
-
-	BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ - epsilon);
+	BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ);
 	BSTSInRads.push_back(_BSTSInnRadii[iSeg]);
 	BSTSOutRads.push_back(_BSTSOutRadii[iSeg]);
       }
@@ -407,15 +409,17 @@ namespace mu2e {
       }
       double tmpBSTCPntZ=/*_BSTCZ*/-0.5*BSTCtotLength;
       for (std::size_t isurf=0; isurf<nBSTCSurfs; ++isurf) {
-	BSTCCornersZ.push_back(tmpBSTCPntZ);
+
+        // Fixme: ensure that zplanes in the BSTC polycone are not coincident.
+        // No overlap issues here.
+        const double epsilon = (isurf>0 )? 0.1 : 0.0;
+
+	BSTCCornersZ.push_back(tmpBSTCPntZ+epsilon);
 	BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
 	BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
 	tmpBSTCPntZ+=_BSTCLengths.at(isurf);
 
-        // Fixme: ensure that zplanes in the BSTC polycone are not coincident.
-        const double epsilon = (isurf<nBSTCSurfs-1 )? 0.1 : 0.0;
-
-	BSTCCornersZ.push_back(tmpBSTCPntZ-epsilon);
+	BSTCCornersZ.push_back(tmpBSTCPntZ);
 	BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
 	BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
       }
