@@ -34,11 +34,13 @@ namespace mu2e {
     }
 
     // input text file words on a row
-    constexpr int nWords = 7;
+    constexpr size_t nWords = 7;
 
     std::string line;
     std::string str;
-    std::vector<std::string> words(nWords);
+    std::vector<std::string> words;
+    words.reserve(nWords);
+
     while ( std::getline(in,line) ) {
       std::istringstream iss(line);
       while (iss >> str) {
