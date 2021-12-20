@@ -95,6 +95,5 @@ bool mu2e::validPolyCones( int printLevel ){
 
   } // end loop over G4SolidStore
 
-  G4cout << "Retval: " << retval << G4endl;
   return retval;
 }
