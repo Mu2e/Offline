@@ -25,7 +25,7 @@ namespace mu2e {
     , hfinal_{nullptr}
   {
     if(!pset.is_empty()) {
-      art::TFileDirectory tfdir = subdir.empty() ? topdir : topdir.mkdir(subdir.c_str());
+      art::TFileDirectory tfdir = topdir.mkdir(subdir.c_str());
       const int nbins = pset.get<unsigned>("hist.nbins", 100);
       const int xmin = pset.get<unsigned>("hist.xmin", 0.);
       const int xmax = pset.get<unsigned>("hist.xmax", 2.);
