@@ -38,12 +38,7 @@ namespace mu2e {
     float mass() const { return _mass; }
     float lifetime() const { return _lifetime; }
 
-    void print( std::ostream& ostr=std::cout) const {
-      ostr << *this;
-    }
-
-    friend std::ostream& operator<<( std::ostream& output, 
-                                     const ParticleData& pd );
+    void print( std::ostream& ostr=std::cout) const;
 
   private:
     int _id;
@@ -54,6 +49,11 @@ namespace mu2e {
     float _lifetime;
 
   };  // ParticleData
+
+
+  std::ostream& operator<<( std::ostream& output, 
+                            const ParticleData& pd );
+
 
 } //end namespace mu2e
 
