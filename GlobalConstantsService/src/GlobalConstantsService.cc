@@ -19,6 +19,7 @@
 
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 namespace mu2e {
 
@@ -50,7 +51,7 @@ namespace mu2e {
 
     makers_[typeid(mu2e::ParticleDataTable).name()] = &makeT<mu2e::ParticleDataTable>;
     makers_[typeid(mu2e::PhysicsParams).name()]     = &makeT<mu2e::PhysicsParams>;
-
+    makers_[typeid(mu2e::ParticleDataList).name()] = &makeT<mu2e::ParticleDataList>;
 
     //preloadAllEntities();
   }
@@ -98,6 +99,7 @@ namespace mu2e {
   // Explicitly instantiate getElement() for all types we handle rather than exposing all the code in the header.
   template const ParticleDataTable* GlobalConstantsService::getElement<ParticleDataTable>(const std::string&, const std::string&) const;
   template const PhysicsParams* GlobalConstantsService::getElement<PhysicsParams>(const std::string&, const std::string&) const;
+  template const ParticleDataList* GlobalConstantsService::getElement<ParticleDataList>(const std::string&, const std::string&) const;
 
   //================================================================
   void GlobalConstantsService::preloadAllEntities() {
