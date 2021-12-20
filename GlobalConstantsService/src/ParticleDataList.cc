@@ -20,8 +20,7 @@ namespace mu2e {
     ConfigFileLookupPolicy findConfig;
     
     std::string tableFilename = findConfig(
-                    config.getString("particleDataList.filename",
-                   "Offline/GlobalConstantsService/data/ParticleList.txt") );
+                    config.getString("particleDataList.filename") );
     if( tableFilename.empty() ) {
       throw cet::exception("PARTICLELIST_NO_FILE") 
         << "ParticleDataList: file name not found\n";
@@ -34,25 +33,28 @@ namespace mu2e {
           << tableFilename << "\n";
     }
 
+    // input text file words on a row
+    constexpr int nWords = 7;
+
     std::string line;
     std::string str;
-    std::vector<std::string> words;
+    std::vector<std::string> words(nWords);
     while ( std::getline(in,line) ) {
       std::istringstream iss(line);
       while (iss >> str) {
         words.emplace_back(str);
       }
-      if ( words.size() != 7 ) {
+      if ( words.size() != nWords ) {
         throw cet::exception("PARTICLELIST_BAD_LINE")
-          << "ParticleList: Not 7 words on line: "
+          << "ParticleList: Not " << nWords << " words on line: "
           << line << "\n";
       }
       int id = std::stoi(words[0]);
       _list.try_emplace(id, id, words[1], words[2], 
          std::stof(words[4]), std::stof(words[5]), std::stof(words[6]) );
       _names.try_emplace(words[1],id);
-      if( words[2] != "none" ) _names.emplace(words[2],id);
-      if( words[3] != "none" ) _names.emplace(words[3],id);
+      if( words[2] != "none" ) _names.try_emplace(words[2],id);
+      if( words[3] != "none" ) _names.try_emplace(words[3],id);
       words.clear();
     }
 

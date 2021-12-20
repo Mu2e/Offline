@@ -8,7 +8,7 @@
 //  - displayname (includes special chars like +-*)
 //  - progamming name (includes only alphanumeric and _)
 //        this should be the same as  DataProducts/inc/PDGCode.hh
-//  - charge (units of electron charge)
+//  - charge (units of proton charge)
 //  - mass (MeV)
 //  - lifetime (ns)
 //
@@ -39,14 +39,11 @@ namespace mu2e {
     float lifetime() const { return _lifetime; }
 
     void print( std::ostream& ostr=std::cout) const {
-      ostr << std::setw(11) << _id;
-      ostr << std::setw(22) << _name;
-      ostr << std::setw(35) << _codeName;
-      ostr << std::setw(10) << _charge;
-      ostr << std::setw(12) << _mass;
-      ostr << std::setw(12) << _lifetime;
-      ostr << std::endl;
+      ostr << *this;
     }
+
+    friend std::ostream& operator<<( std::ostream& output, 
+                                     const ParticleData& pd );
 
   private:
     int _id;

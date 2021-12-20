@@ -10,7 +10,7 @@
 // - aspects of the geant particle list
 // - aspects of DataProducts/inc/PDGCode.hh
 //
-// Units are standard units: electron_charge, MeV, and ns
+// Units are standard units: proton_charge, MeV, and ns
 //
 // the text file columns and accessors are
 //  1) PDG ID
@@ -18,7 +18,7 @@
 //  3) code name (includes only alphanumeric and _)
 //         this should be the same as  DataProducts/inc/PDGCode.hh
 //  4) alias - another common name that can be used to look up the particle
-//  5) charge (units of electron charge)
+//  5) charge (units of proton charge)
 //  6) mass (MeV)
 //  7) lifetime (ns)
 //
