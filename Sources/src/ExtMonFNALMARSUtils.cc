@@ -51,11 +51,7 @@ namespace mu2e {
     GenParticle MARSMu2eConverter::marsToMu2eParticle(const MARSParticle& mp) {
       PDGCode::type pdgId = marsToMu2eParticleCode(mp.pid);
 
-      //try {
-      const double mass = pdt_->particle(pdgId).ref().mass().value();
-      // }
-      //// ParticleDataTable throws a string?!
-      // catch(cet::exception& e) { throw; }
+      const double mass = pdt_->particle(pdgId).mass();
 
       const double energy = mass + marsToMu2eEnergy(mp.kineticEnergy);
       const double p3mag = sqrt((energy-mass)*(energy+mass));

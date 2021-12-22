@@ -31,7 +31,7 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
@@ -142,8 +142,8 @@ namespace mu2e {
       std::cout<<"StoppedMuonRMCGun: producing photon " << std::endl;
     }
 
-    me_  = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus ).ref().mass().value();
-    mmu_ = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::mu_minus).ref().mass().value();
+    me_  = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::e_minus ).mass();
+    mmu_ = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
 
     // initialize binned spectrum - this needs to be done right
     parseSpectrumShape(psphys_);

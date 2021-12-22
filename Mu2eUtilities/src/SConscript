@@ -40,7 +40,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService_ConditionsService_serv
                                   'canvas',
                                   'MF_MessageLogger',
                                   'CLHEP',
-                                  'HepPDT',
                                   XERCESC_LIBS,
                                   'fhiclcpp',
                                   'fhiclcpp_types',

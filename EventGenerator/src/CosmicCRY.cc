@@ -16,7 +16,7 @@
 #include "Offline/ConditionsService/inc/DAQParams.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
@@ -190,9 +190,9 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
       CRYParticle *secondary = (secondaries)[j];
       std::unique_ptr<CRYParticle> secondarySentry(secondary);
 
-      GlobalConstantsHandle<ParticleDataTable> pdt;
-      const HepPDT::ParticleData &p_data = pdt->particle(secondary->PDGid()).ref();
-      double mass = p_data.mass().value(); // in MeV
+      GlobalConstantsHandle<ParticleDataList> pdt;
+      auto p_data = pdt->particle(secondary->PDGid());
+      double mass = p_data.mass(); // in MeV
 
       double ke = secondary->ke(); // MeV by default in CRY
       if (ke < _minShowerEn)

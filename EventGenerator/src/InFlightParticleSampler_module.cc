@@ -28,7 +28,7 @@
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
@@ -40,7 +40,7 @@ namespace mu2e {
     typedef RootTreeSampler<std::vector<IO::InFlightParticleD>, IO::InFlightParticleD > RTS;
     RTS particles_;
 
-    const mu2e::ParticleDataTable *pdt_;
+    const mu2e::ParticleDataList *pdt_;
     int verbosityLevel_;
 
   public:
@@ -72,7 +72,7 @@ namespace mu2e {
     , particles_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),
                  conf().particles())
 
-    , pdt_(&*GlobalConstantsHandle<ParticleDataTable>())
+    , pdt_(&*GlobalConstantsHandle<ParticleDataList>())
 
     , verbosityLevel_(conf().verbosityLevel())
   {
@@ -95,7 +95,7 @@ namespace mu2e {
 
     for(const auto& part: list) {
       const CLHEP::Hep3Vector p3(part.px, part.py, part.pz);
-      const double mass = pdt_->particle(part.pdgId).ref().mass().value();
+      const double mass = pdt_->particle(part.pdgId).mass();
       const double energy = std::sqrt(std::pow(mass,2) + p3.mag2());
       CLHEP::HepLorentzVector fourmom(p3, energy);
 

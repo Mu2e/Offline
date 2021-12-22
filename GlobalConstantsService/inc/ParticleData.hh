@@ -26,7 +26,7 @@ namespace mu2e {
   public:
 
     ParticleData(int id, const std::string& name, const std::string& codeName,
-                 float charge, float mass, float lifetime): 
+                 double charge, double mass, double lifetime): 
       _id(id),_name(name),_codeName(codeName),_charge(charge),
       _mass(mass),_lifetime(lifetime) {}
 
@@ -34,9 +34,9 @@ namespace mu2e {
     const std::string& name() const { return _name; }
     const std::string& displayName() const { return _name; }
     const std::string& codeName() const { return _codeName; }
-    float charge() const { return _charge; }
-    float mass() const { return _mass; }
-    float lifetime() const { return _lifetime; }
+    double charge() const { return _charge; }
+    double mass() const { return _mass; }
+    double lifetime() const { return _lifetime; }
 
     void print( std::ostream& ostr=std::cout) const;
 
@@ -44,9 +44,9 @@ namespace mu2e {
     int _id;
     std::string _name;
     std::string _codeName;
-    float _charge;
-    float _mass;
-    float _lifetime;
+    double _charge;
+    double _mass;
+    double _lifetime;
 
   };  // ParticleData
 

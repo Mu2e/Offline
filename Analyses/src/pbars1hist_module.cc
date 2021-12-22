@@ -24,7 +24,7 @@
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 namespace mu2e {
 
@@ -33,7 +33,7 @@ namespace mu2e {
     art::InputTag particlesTag_;
 
     const ProductionTarget *targetGeom_;
-    const ParticleDataTable *particleTable_;
+    const ParticleDataList *particleTable_;
 
     // This is a workaround for geometry not being available at beginJob()
     bool booked_;
@@ -79,7 +79,7 @@ namespace mu2e {
       GeomHandle<ProductionTarget> gh;
       targetGeom_ = gh.get();
 
-      GlobalConstantsHandle<ParticleDataTable> ph;
+      GlobalConstantsHandle<ParticleDataList> ph;
       particleTable_ = &(*ph);
 
       art::ServiceHandle<art::TFileService> tfs;
@@ -139,7 +139,7 @@ namespace mu2e {
         const SimParticle& parent = *p.parent();
         auto parentId = parent.pdgId();
 
-        std::string parentName = particleTable_->particle(parentId).ref().name();
+        std::string parentName = particleTable_->particle(parentId).name();
         const double parentStartMomentum = parent.startMomentum().vect().mag();
         //const double parentEndMomentum = parent.endMomentum().vect().mag();
         //std::cout<<"parent "<<parentName<<", pstart = "<<parentStartMomentum<<", pend = "<<parentEndMomentum

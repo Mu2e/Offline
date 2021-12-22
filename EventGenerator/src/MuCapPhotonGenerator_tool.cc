@@ -10,7 +10,6 @@
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "fhiclcpp/types/DelegatedParameter.h"

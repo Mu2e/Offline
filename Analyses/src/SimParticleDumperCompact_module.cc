@@ -27,9 +27,6 @@
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-
 using namespace std;
 
 namespace mu2e {
