@@ -61,7 +61,6 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
-        fhicl::Sequence<int> decayOffPDGCodes{Name("decayOffPDGCodes"),Comment("decayOffPDGCodes")};
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
         fhicl::Atom<bool> doHistograms{Name("doHistograms"),false}; 
     };
@@ -81,7 +80,6 @@ namespace mu2e {
     CLHEP::RandExponential randExp_;
     CLHEP::RandFlat     randomFlat_;
     std::string RPCType_;
-    std::vector<int> decayOffPDGCodes_;
     BinnedSpectrum    spectrum_;
     bool doHistograms_;
     RandomUnitSphere   randomUnitSphere_;
@@ -114,7 +112,6 @@ namespace mu2e {
     , randExp_{eng_}
     , randomFlat_{eng_}
     , RPCType_{conf().RPCType()}
-    , decayOffPDGCodes_{conf().decayOffPDGCodes()}
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())} 
     , doHistograms_{conf().doHistograms()}
     , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
@@ -149,19 +146,13 @@ namespace mu2e {
       const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
       double weight = 0.;
       double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-      while(part->parent().isNonnull()) {
-        if((part->creationCode() == ProcessCode::mu2ePrimary)) { //does this work now? I dont think so?
-          part = part->parent();
-          if(abs(part->pdgId()) == 211){
-             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-           }
-        }else {
-          part = part->parent();
-          if ( std::binary_search(decayOffPDGCodes_.begin(), decayOffPDGCodes_.end(), int(part->pdgId()) ) ) {
+     
+      while(part->parent().isNonnull()) { //while particle has a parent which is not null
+        part = part->parent();
+        if ( abs(part->pdgId()) == PDGCode::pi_plus ) { //if pion
             tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
           }
       }
-    } 
    
     weight = exp(-tau);
     return weight;
