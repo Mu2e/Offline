@@ -18,7 +18,7 @@
 namespace mu2e {
 
   EventWeightHelper::EventWeightHelper(const fhicl::ParameterSet& pset,
-                                       art::TFileDirectory topdir,
+                                       art::TFileDirectory& topdir,
                                        const std::string& subdir)
     : inputs_{pset.is_empty() ? InputTags() : pset.get<InputTags>("inputs")}
     , weight_{-1.}
