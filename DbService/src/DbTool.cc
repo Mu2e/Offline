@@ -2258,6 +2258,7 @@ int mu2e::DbTool::testUrl() {
   std::cout << "Read "<<lines.size() <<" lines" << std::endl;
 
   std::string csv;
+  DbReader::StringVec where;
   for(int i=0; i<n; i++) {
     std::cout << "test URL: repeat "<<i << std::endl;
     for(size_t q=0; q<lines.size(); q++) {
@@ -2265,7 +2266,9 @@ int mu2e::DbTool::testUrl() {
       boost::split(words,lines[q], boost::is_any_of(" \t"), 
 		   boost::token_compress_on);
       std::cout <<words[0]<< "X" << words[1] << std::endl;
-      _reader.query(csv,words[1],words[0],words[2]);
+      where.clear();
+      where.emplace_back(words[2]);
+      _reader.query(csv,words[1],words[0],where);
     }
   }
 
