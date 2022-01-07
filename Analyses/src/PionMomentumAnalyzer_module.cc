@@ -17,7 +17,7 @@
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 #include "TH1.h"
@@ -56,7 +56,7 @@ namespace mu2e {
     TH2* h_p_by_parent_;
     TH2* h_p_by_process_;
 
-    const ParticleDataTable *particleTable_;
+    const ParticleDataList *particleTable_;
 
     static bool is_muon_daughter(const SimParticle& p);
   };
@@ -81,7 +81,7 @@ namespace mu2e {
 
   //================================================================
   void PionMomentumAnalyzer::beginJob() {
-    GlobalConstantsHandle<ParticleDataTable> ph;
+    GlobalConstantsHandle<ParticleDataList> ph;
     particleTable_ = &(*ph);
   }
 
@@ -98,7 +98,7 @@ namespace mu2e {
 
         const SimParticle& parent{*p.parent()};
 
-        const auto pref = particleTable_->particle(parent.pdgId()).ref();
+        const auto pref = particleTable_->particle(parent.pdgId());
         std::string parentName = pref.name();
         h_p_by_parent_->Fill(parentName.c_str(), momentum, 1.0);
 

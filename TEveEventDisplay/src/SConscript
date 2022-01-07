@@ -57,8 +57,6 @@ userlibs = [ rootlibs,
 			  'Trajectory',
 			  'General',
 			  'CLHEP',
-			  'HepPDT',
-			  'HepPID',
 			  'Core',
 			  'boost_filesystem',
 			  'boost_system'

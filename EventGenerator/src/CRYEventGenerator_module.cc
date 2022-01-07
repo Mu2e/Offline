@@ -5,8 +5,6 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // Particular generators that this code knows about.
 #include "Offline/SeedService/inc/SeedService.hh"

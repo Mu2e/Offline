@@ -51,7 +51,7 @@ namespace mu2e {
     // the name lookup map with name as key and PDG id as mapped_type
     std::map<std::string,int> const& names() const { return _names;}
 
-    void printTable( std::ostream& ostr=std::cout);
+    void printTable( std::ostream& ostr=std::cout) const;
 
   private:
 

@@ -14,12 +14,12 @@
          7                     b'                                   l       none  -0.333333       400000            0
         -8                anti_t'                              anti_h       none  -0.666667       400000            0
          8                     t'                                   h       none   0.666667       400000            0
-       -11                     e+                              e_plus   positron          1     0.510999            0
-        11                     e-                             e_minus   electron         -1     0.510999            0
+       -11                     e+                              e_plus   positron          1  0.510998910            0
+        11                     e-                             e_minus   electron         -1  0.510998910            0
        -12              anti_nu_e                           anti_nu_e       none          0            0            0
         12                   nu_e                                nu_e       none          0            0            0
-       -13                    mu+                             mu_plus   antimuon          1      105.658  2.18245e-06
-        13                    mu-                            mu_minus       muon         -1      105.658  2.18245e-06
+       -13                    mu+                             mu_plus   antimuon          1   105.658367  2.18245e-06
+        13                    mu-                            mu_minus       muon         -1   105.658367  2.18245e-06
        -14             anti_nu_mu                          anti_nu_mu       none          0            0            0
         14                  nu_mu                               nu_mu       none          0            0            0
        -15                   tau+                            tau_plus       none          1      1776.84  2.88689e-13
@@ -69,12 +69,12 @@
         98  generator-specific+98               generator_specific_98       none          0            0            0
         99  generator-specific+99               generator_specific_99       none          0            0            0
        110                reggeon                             reggeon       none          0            0            0
-       111                    pi0                                 pi0       none          0      134.977   8.3318e-17
+       111                    pi0                                 pi0       none          0     134.9766   8.3318e-17
        113                   rho0                                rho0       none          0       775.49   4.4057e-24
        115              a2(1320)0                                a_20       none          0       1318.3  6.15151e-24
        130                 kaon0L                                K_L0       none          0      497.614  5.08272e-08
-      -211                    pi-                            pi_minus       none         -1       139.57  2.58609e-08
-       211                    pi+                             pi_plus       none          1       139.57  2.58609e-08
+      -211                    pi-                            pi_minus       none         -1    139.57018  2.58609e-08
+       211                    pi+                             pi_plus       none          1    139.57018  2.58609e-08
       -213                   rho-                           rho_minus       none         -1       775.49   4.4057e-24
        213                   rho+                            rho_plus       none          1       775.49   4.4057e-24
       -215              a2(1320)-                           a_2_minus       none         -1       1318.3  6.15151e-24
@@ -155,14 +155,14 @@
       2101            ud0_diquark                                ud_0       none   0.333333       579.33            0
      -2103       anti_ud1_diquark                           anti_ud_1       none  -0.333333       771.33            0
       2103            ud1_diquark                                ud_1       none   0.333333       771.33            0
-     -2112           anti_neutron                             anti_n0       none          0      939.565      879.962
-      2112                neutron                                  n0       none          0      939.565      879.962
+     -2112           anti_neutron                             anti_n0       none          0    939.56536      879.962
+      2112                neutron                                  n0       none          0    939.56536      879.962
      -2114            anti_delta0                         anti_Delta0       none          0         1232  5.57807e-24
       2114                 delta0                              Delta0       none          0         1232  5.57807e-24
      -2203       anti_uu1_diquark                           anti_uu_1       none   -1.33333       771.33            0
       2203            uu1_diquark                                uu_1       none    1.33333       771.33            0
-     -2212            anti_proton                         anti_proton       pbar         -1      938.272            0
-      2212                 proton                              proton          p          1      938.272            0
+     -2212            anti_proton                         anti_proton       pbar         -1    938.27203            0
+      2212                 proton                              proton          p          1    938.27203            0
      -2214            anti_delta+                    anti_Delta_minus       none         -1         1232  5.57807e-24
       2214                 delta+                          Delta_plus       none          1         1232  5.57807e-24
      -2224           anti_delta++              anti_Delta_minus_minus       none         -2         1232  5.57807e-24

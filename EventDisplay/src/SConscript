@@ -49,8 +49,6 @@ userlibs = [ rootlibs,
                           'cetlib',
                           'cetlib_except',
                           'CLHEP',
-                          'HepPDT',
-                          'HepPID',
                           'Core',
                           'boost_filesystem',
            ]
