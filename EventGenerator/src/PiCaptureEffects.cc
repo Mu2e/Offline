@@ -13,8 +13,8 @@
 // Mu2e includes
 #include "Offline/EventGenerator/inc/PiCaptureEffects.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeneralUtilities/inc/safeSqrt.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
@@ -36,10 +36,10 @@ namespace mu2e {
     _spectrum{engine, &(binnedEnergySpectrum()[0]), _nbins},
     _internalFractionalSpectrum{engine, &(internalFractionalBinnedSpectrum()[0]), _nbins}
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
     // pick up particle mass
-    const HepPDT::ParticleData& e_data = pdt->particle(PDGCode::e_minus).ref();
-    _electMass = e_data.mass().value();
+    auto e_data = pdt->particle(PDGCode::e_minus);
+    _electMass = e_data.mass();
   }
 
   void PiCaptureEffects::defineOutput() {

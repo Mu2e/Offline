@@ -9,7 +9,7 @@
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {
@@ -36,7 +36,7 @@ namespace mu2e {
 
     //================================================================
     class MARSMu2eConverter {
-      GlobalConstantsHandle<ParticleDataTable> pdt_;
+      GlobalConstantsHandle<ParticleDataList> pdt_;
     public:
       GenParticle marsToMu2eParticle(const MARSParticle& mp);
 
