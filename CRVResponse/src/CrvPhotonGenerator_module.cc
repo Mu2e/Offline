@@ -9,7 +9,7 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -268,7 +268,7 @@ namespace mu2e
     std::map<std::pair<mu2e::CRSScintillatorBarIndex,int>,std::vector<CrvPhotons::SinglePhoton> > photonMap;
 
     GeomHandle<CosmicRayShield> CRS;
-    GlobalConstantsHandle<ParticleDataTable> particleDataTable;
+    GlobalConstantsHandle<ParticleDataList> particleDataList;
 
     art::Handle<EventWindowMarker> eventWindowMarker;
     event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
@@ -319,15 +319,9 @@ namespace mu2e
           CLHEP::Hep3Vector pos2 = step.endPosition();
 
           int PDGcode = step.simParticle()->pdgId();
-          ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
-          if(!particle)
-          {
-            std::cerr<<"Error in CrvPhotonGenerator: Found a PDG code which is not in the GEANT particle table: ";
-            std::cerr<<PDGcode<<std::endl;
-            continue;
-          }
-          double mass = particle.ref().mass();  //MeV/c^2
-          double charge = particle.ref().charge(); //in units of elementary charges
+          auto const& particle = particleDataList->particle(PDGcode);
+          double mass = particle.mass();  //MeV/c^2
+          double charge = particle.charge(); //in units of elementary charges
 
           double energy1   = sqrt(step.startMom().mag2() + mass*mass); //MeV
           double energy2   = sqrt(step.endMom()*step.endMom() + mass*mass);

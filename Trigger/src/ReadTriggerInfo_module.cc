@@ -50,7 +50,7 @@
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 //Utilities
 #include "Offline/Mu2eUtilities/inc/TriggerResultsNavigator.hh"
@@ -1201,7 +1201,7 @@ namespace mu2e {
   }
 
   void   ReadTriggerInfo::fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*KSeed, trackInfoHist_   &Hist){
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
     //HelixTool helTool(KSeed->helix().get(), _tracker);
 
     int                nsh = (int)KSeed->hits().size();
@@ -1285,7 +1285,7 @@ namespace mu2e {
 	double   pZMC   = simptr->startMomentum().z();
 	double   mass(-1.);//  = part->Mass();
 	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
-	mass   = pdt->particle(pdg).ref().mass();
+	mass   = pdt->particle(pdg).mass();
 	energy = sqrt(pXMC*pXMC+pYMC*pYMC+pZMC*pZMC+mass*mass);
       
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
@@ -1329,7 +1329,7 @@ namespace mu2e {
 
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
     HelixTool helTool(HSeed, _tracker);
 
     int        nch       = (int)HSeed->hits().size();
@@ -1412,7 +1412,7 @@ namespace mu2e {
 	double   pZMC   = spmcp->momentum().z();
 	// double   mass(-1.);//  = part->Mass();
 	// double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
-	// mass   = pdt->particle(pdg).ref().mass();
+	// mass   = pdt->particle(pdg).mass();
 	// energy = sqrt(pXMC*pXMC+pYMC*pYMC+pZMC*pZMC+mass*mass);
       
 	//need to check the mother of the particle

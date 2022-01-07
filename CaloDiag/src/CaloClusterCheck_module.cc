@@ -6,9 +6,6 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"

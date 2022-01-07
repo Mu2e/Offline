@@ -12,7 +12,7 @@
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
@@ -60,21 +60,13 @@ namespace mu2e {
       // unlike generic conditions, MC particle data
       // should not change run-to-run, so static is safe
       // use static for efficiency
-      static GlobalConstantsHandle<ParticleDataTable> pdt;
+      static GlobalConstantsHandle<ParticleDataList> pdt;
 
-      ParticleDataTable::maybe_ref info = pdt->particle(pdgId);
+      ParticleData info = pdt->particle(pdgId);
 
       // Negatives will be rejected by the analysis
       // Use an impossible number which is in the range of the "charge" histogram to signal "uninitialized"
-      double charge(-0.2);
-
-      if(!info.isValid()) {
-        std::cout<<"AG: warning: no valid PDG info for pdgId = "<<pdgId<<" using charge = "<<charge<<std::endl;
-      }
-      else {
-        charge = info.ref().charge();
-      }
-
+      double charge = info.charge();
       return charge;
     }
 

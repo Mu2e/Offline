@@ -22,7 +22,7 @@ namespace mu2e {
 		       _config.isotopes(),_config.materials());
 
     // particle info tells BTrk particle definitions
-    // from our ParticleDataTable
+    // from our ParticleDataList
     ptr->_particleInfo = make_unique<ParticleInfo>();
 
     // this points BTrk static variables to our 

@@ -20,7 +20,7 @@
 #include "Offline/ConditionsService/inc/DAQParams.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/EventGenerator/inc/CosmicDYB.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -97,9 +97,9 @@ namespace mu2e
     mf::LogInfo log("COSMIC");
 
     //pick up particle mass
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
-    _mMu = mu_data.mass().value();
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    auto mu_data = pdt->particle(PDGCode::mu_minus);
+    _mMu = mu_data.mass();
 
 
     bool box=false;
