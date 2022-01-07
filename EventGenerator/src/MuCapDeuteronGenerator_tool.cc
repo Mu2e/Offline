@@ -11,7 +11,7 @@
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/SpectrumVar.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "fhiclcpp/types/DelegatedParameter.h"
@@ -30,7 +30,7 @@ namespace mu2e {
 
     explicit MuCapDeuteronGenerator(Parameters const& conf) :
       _pdgId(PDGCode::deuteron),
-      _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value()),
+      _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
       _spectrumVariable(parseSpectrumVar(conf().spectrumVariable()))
     {}

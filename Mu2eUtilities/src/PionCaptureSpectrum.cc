@@ -18,11 +18,9 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 // Mu2e includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "HepPDT/Measurement.hh"
 
-#include "HepPDT/ParticleData.hh"
 #include "cetlib/pow.h"
 
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
@@ -44,10 +42,10 @@ namespace mu2e {
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
-    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
-    _mpi   = pdt->particle(PDGCode::pi_minus).ref().mass().value();
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
+    _mpi   = pdt->particle(PDGCode::pi_minus).mass();
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
 
@@ -61,10 +59,10 @@ namespace mu2e {
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
-    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
-    _mpi   = pdt->particle(PDGCode::pi_minus).ref().mass().value();
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
+    _mpi   = pdt->particle(PDGCode::pi_minus).mass();
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
 
@@ -133,10 +131,10 @@ namespace mu2e {
   //=======================================================
 
   double PionCaptureSpectrum::get2DMax(double E) const {
-    static const GlobalConstantsHandle<ParticleDataTable> pdt;
-    static const HepPDT::ParticleData& e_data  = pdt->particle(PDGCode::e_minus).ref();
+    static const GlobalConstantsHandle<ParticleDataList> pdt;
+    static ParticleData const& e_data  = pdt->particle(PDGCode::e_minus);
 
-    return getKrollWadaJosephSpectrum( E, 2*e_data.mass().value(), 0. );
+    return getKrollWadaJosephSpectrum( E, 2*e_data.mass(), 0. );
   }
 
 

@@ -9,7 +9,7 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -424,7 +424,7 @@ namespace mu2e {
     }
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;
@@ -524,7 +524,7 @@ namespace mu2e {
 	  	} 
 	    if( _save_all_pdg || pdg_save.size() == 0 || ( pdg_save.size()>0 && pdg_save.find(pdgId) != pdg_save.end()) )
 	      {
-		mass = pdt->particle(pdgId).ref().mass();
+		mass = pdt->particle(pdgId).mass();
 
 		// Fill the ntuple.
 		nt[0]  = event.id().event();
@@ -697,7 +697,7 @@ namespace mu2e {
 	  } else {
 	    SimParticle const& sim = simParticles->at(trackId);
 	    pdgId = sim.pdgId();
-	    mass = pdt->particle(pdgId).ref().mass();
+	    mass = pdt->particle(pdgId).mass();
 	  }
 	}
 
