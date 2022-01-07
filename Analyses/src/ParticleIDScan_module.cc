@@ -45,7 +45,7 @@ namespace mu2e {
     //----------------------------------------------------------------
 
     explicit ParticleIDScan(art::EDAnalyzer::Table<Config> const & config);
-    explicit ParticleIDScan(art::EDAnalyzer::Table<Config> const & config, art::TFileDirectory tfdir);
+    explicit ParticleIDScan(art::EDAnalyzer::Table<Config> const & config, const art::TFileDirectory& tfdir);
 
     virtual void analyze(const art::Event&) override {};
     virtual void beginRun(const art::Run& run) override;
@@ -64,7 +64,7 @@ namespace mu2e {
     : ParticleIDScan(config, *art::ServiceHandle<art::TFileService>())
   {}
 
-  ParticleIDScan::ParticleIDScan(art::EDAnalyzer::Table<Config> const & c, art::TFileDirectory tf)
+  ParticleIDScan::ParticleIDScan(art::EDAnalyzer::Table<Config> const & c, const art::TFileDirectory& tf)
     : art::EDAnalyzer(c)
     , conf_{c}
     , pid_ep_{c().pid_ep_conf()}
