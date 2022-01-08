@@ -49,7 +49,6 @@ helper.make_plugins( [
     'cetlib',
     'cetlib_except',
     'CLHEP',
-    'HepPDT',
     'Trajectory',
     'General',
     rootlibs,

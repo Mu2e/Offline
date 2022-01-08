@@ -11,18 +11,7 @@
 // For correct usage see any of the event generators or
 // Mu2eG4/src/PrimaryGeneratorAction.cc.
 //
-// We will use the HepPDT package for our particle data
-// table; HepPDT does not provide a convenience class
-// like this one.
-//
-// These codes have been stable for along time but we
-// should still periodically check that this class matches
-// HepPDT.
-//
-// The names in this class do not exactly match the
-// particle names in HEPPDT because those names are
-// written in pseudo-TeX, "e^-", for example; this means
-// that some HepPDT names are not legal C++ names.
+// The names in this class match the "code name" in ParticleDataList
 //
 // It should be rare that it is necessary to make a variable
 // of type PDGCode::type by explicitly converting an int.
