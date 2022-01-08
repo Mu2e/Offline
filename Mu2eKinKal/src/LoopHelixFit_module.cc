@@ -98,7 +98,7 @@ namespace mu2e {
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
-  using KKFitConfig = Mu2eKinKal::KKFitConfig;
+  using Mu2eConfig = Mu2eKinKal::Mu2eConfig;
   using KKMaterialConfig = KKMaterial::Config;
 
   class LoopHelixFit : public art::EDProducer {
@@ -122,7 +122,7 @@ namespace mu2e {
 
     struct GlobalConfig {
       fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
-      fhicl::Table<KKFitConfig> mu2eFitSettings { Name("KKFitSettings") };
+      fhicl::Table<Mu2eConfig> mu2eSettings { Name("Mu2eSettings") };
       fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
       fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
@@ -170,7 +170,7 @@ namespace mu2e {
     savefull_(settings().modSettings().saveFull()),
     zsave_(settings().modSettings().zsave()),
     print_(settings().modSettings().printLevel()),
-    kkfit_(settings().mu2eFitSettings()),
+    kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings()))

@@ -1,7 +1,7 @@
 #ifndef Mu2eKinKal_KKFitSettings_hh
 #define Mu2eKinKal_KKFitSettings_hh
 //
-// Struct for configuring the Mu2e KinKal fit
+// Structs for configuring the Mu2e KinKal fit
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -36,8 +36,8 @@ namespace mu2e {
   // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
 
-  // struct for configuring KKFit object
-    struct KKFitConfig {
+  // struct for configuring Mu2e-specific fit settings
+    struct Mu2eConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)") };
       fhicl::Atom<float> tpocaPrec { Name("TPOCAPrecision"), Comment("TPOCA calculation precision (ns)") };
