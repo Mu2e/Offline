@@ -43,7 +43,7 @@ namespace mu2e {
   using KinKal::TimeRange;
   using KinKal::Status;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
-  using Mu2eKinKal::KKFitConfig;
+  using Mu2eKinKal::Mu2eConfig;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
   template <class KTRAJ> class KKFit {
     public:
@@ -72,7 +72,7 @@ namespace mu2e {
       using EXINGPTR = std::shared_ptr<EXING>;
       using EXINGCOL = std::vector<EXINGPTR>;
       // construct from fit configuration objects
-      explicit KKFit(KKFitConfig const& fitconfig);
+      explicit KKFit(Mu2eConfig const& fitconfig);
       // helper functions used to create components of the fit
       void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
           PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
@@ -112,7 +112,7 @@ namespace mu2e {
       mutable bool needstrackerinfo_;
   };
 
-  template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
+  template <class KTRAJ> KKFit<KTRAJ>::KKFit(Mu2eConfig const& fitconfig) :
     tpart_(static_cast<PDGCode::type>(fitconfig.fitParticle())),
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
     nullvscale_(fitconfig.nullHitVarianceScale()),
