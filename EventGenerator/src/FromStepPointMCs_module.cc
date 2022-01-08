@@ -17,7 +17,7 @@
 #include "canvas/Persistency/Common/Assns.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
@@ -57,7 +57,7 @@ namespace mu2e {
   private:
     typedef std::vector<art::InputTag> InputTags;
     InputTags inputs_;
-    GlobalConstantsHandle<ParticleDataTable> pdt_;
+    GlobalConstantsHandle<ParticleDataList> pdt_;
     int logLevel_;
     bool allowDuplicates_;  // easily get a wrong answer by double counting particles
   };
@@ -124,11 +124,10 @@ namespace mu2e {
           std::cout<<"AG: creating new GenParticle from hit "<<*i<<std::endl;
         }
 
-        if(pdt_->particle(particle->pdgId())) {
-          const double mass = pdt_->particle(particle->pdgId()).ref().mass().value();
-          const CLHEP::HepLorentzVector fourMom(i->momentum(), sqrt(mass*mass + i->momentum().mag2()));
+        const double mass = pdt_->particle(particle->pdgId()).mass();
+        const CLHEP::HepLorentzVector fourMom(i->momentum(), sqrt(mass*mass + i->momentum().mag2()));
 
-          output->push_back(GenParticle(particle->pdgId(),
+        output->push_back(GenParticle(particle->pdgId(),
                                         GenId::fromStepPointMCs,
                                         i->position(),
                                         fourMom,
@@ -136,14 +135,9 @@ namespace mu2e {
                                         i->properTime()
                                         ));
 
-          history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
-                             art::Ptr<StepPointMC>(makeMyHandle(ih), std::distance(ih->begin(), i))
-                             );
-        }
-        else {
-          mf::LogWarning warn("FromStepPointMCs");
-          warn<<"WARNING: No particle data for pdgId = "<<particle->pdgId()<<"\n";
-        }
+        history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
+                           art::Ptr<StepPointMC>(makeMyHandle(ih), std::distance(ih->begin(), i))
+                           );
 
       } // for (StepPointMCCollection entries)
     } // for(inputs_)

@@ -3,7 +3,7 @@
 //
 #include "Offline/GlobalConstantsService/inc/MassCache.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 
@@ -46,16 +46,9 @@ namespace mu2e {
   // Get the mass from the particle data table
   double MassCache::getMassFromPDT( id_type id ){
 
-    static ParticleDataTable const& pdt = *GlobalConstantsHandle<ParticleDataTable>();
+    auto pdt = *GlobalConstantsHandle<ParticleDataList>();
 
-    // Look up the answer in the particle data table.
-    ParticleDataTable::maybe_ref particle = pdt.particle(id);
-    if ( !particle ){
-      throw cet::exception("PDT")
-        << "MassCache: Could not find a particle in the PDT; particle id is: " << id << "\n";
-    }
-
-    return particle.ref().mass().value();
+    return pdt.particle(id).mass();
   }
 
 }

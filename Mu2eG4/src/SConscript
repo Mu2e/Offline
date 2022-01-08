@@ -256,7 +256,6 @@ mainlib = helper.make_mainlib ( [
         'MF_MessageLogger',
         'cetlib',
         'cetlib_except',
-        'HepPDT',
         G4LIBS,
         GS_LIBS,
         XERCESC_LIBS,
