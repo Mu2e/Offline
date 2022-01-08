@@ -86,7 +86,6 @@ namespace mu2e {
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position
       bool useCalo() const { return usecalo_; }
-      WireHitState::Dimension nullDimension() const { return nulldim_; }
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
       bool addMaterial() const { return addmat_; }
@@ -94,7 +93,6 @@ namespace mu2e {
       void fillTrackerInfo(Tracker const& tracker) const;
       PDGCode::type tpart_;
       TrkFitDirection tdir_;
-      WireHitState::Dimension nulldim_;
       float nullvscale_;
       bool addmat_, usecalo_;
       double caloDt_; // calo time offset; should come from proditions FIXME!
@@ -117,7 +115,6 @@ namespace mu2e {
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
     tpart_(static_cast<PDGCode::type>(fitconfig.fitParticle())),
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
-    nulldim_(static_cast<WireHitState::Dimension>(fitconfig.nullHitDimension())),
     nullvscale_(fitconfig.nullHitVarianceScale()),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
@@ -145,19 +142,17 @@ namespace mu2e {
     // initialize hits as null (no drift).  Drift is turned on when updating
     auto const& sprop = tracker.strawProperties();
     double rstraw = sprop.strawInnerRadius();
-    double nulldt = 0.5*rstraw/strawresponse.driftConstantSpeed(); // approximate shift in time due to ignoring drift
-    double nullvar = nullvscale_*rstraw*rstraw/3.0; // scaled square RMS (distance is between 0 and r)
-    WireHitState whstate(WireHitState::null, nulldim_, nullvar ,nulldt); // initial wire hit state
+    WireHitState whstate(WireHitState::null); // initial wire hit state
 
-    // loop over the individual straw hits
+    // loop over the individual straw combo hits
     for(auto strawidx : strawHitIdxs) {
-      const ComboHit& strawhit(chcol.at(strawidx));
-      if(strawhit.mask().level() != StrawIdMask::uniquestraw){
+      const ComboHit& combohit(chcol.at(strawidx));
+      if(combohit.mask().level() != StrawIdMask::uniquestraw){
         throw cet::exception("RECO")<<"mu2e::KKFit: ComboHit error"<< endl;
       }
-      const Straw& straw = tracker.getStraw(strawhit.strawId());
-      auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse); // points from the signal to the straw center
-      double htime = strawhit.correctedTime();
+      const Straw& straw = tracker.getStraw(combohit.strawId());
+      auto wline = Mu2eKinKal::hitLine(combohit,straw,strawresponse); // points from the signal to the straw center
+      double htime = combohit.correctedTime();
       // use the hit z position to estimate the particle time.
       auto hpos = wline.position3(htime);
       auto ppos = ptraj.position3(htime);
@@ -169,7 +164,7 @@ namespace mu2e {
       // create the material crossing
       if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
       // create the hit
-      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, strawidx, strawresponse));
+      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, rstraw, combohit, straw, strawidx, strawresponse));
     }
   }
 
@@ -207,10 +202,7 @@ namespace mu2e {
     // initialize hits as null (no drift).  Drift is turned on when updating
     auto const& sprop = tracker.strawProperties();
     double rstraw = sprop.strawInnerRadius();
-    double nulldt = 0.5*rstraw/strawresponse.driftConstantSpeed(); // approximate shift in time due to ignoring drift
-    double nullvar = nullvscale_*rstraw*rstraw/3.0; // scaled square RMS (distance is between 0 and r)
-    WireHitState whstate(WireHitState::null, nulldim_, nullvar ,nulldt); // initial wire hit state
-    //
+    WireHitState whstate(WireHitState::null); // initial wire hit state;
     auto const& ftraj = kktrk.fitTraj();
     // build the set of existing hits
     std::set<StrawHitIndex> oldhits;
@@ -230,7 +222,7 @@ namespace mu2e {
             PTCA ptca(ftraj, wline, hint, tprec_ );
             if(fabs(ptca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
               if(addmat_)exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
-              hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, strawhit, straw, ich, strawresponse));
+              hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, rstraw, strawhit, straw, ich, strawresponse));
             }
           }
         }
@@ -405,8 +397,7 @@ namespace mu2e {
     if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
-    if(kktrk.config().bfcorr_ == KinKal::Config::fixed || kktrk.config().bfcorr_ == KinKal::Config::both )fflag.merge(TrkFitFlag::BFCorr1);
-    if(kktrk.config().bfcorr_ == KinKal::Config::variable )fflag.merge(TrkFitFlag::BFCorr2);
+    if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr2);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
     double tz0 = zTime(fittraj,0.0);
@@ -425,11 +416,15 @@ namespace mu2e {
       StrawHitFlag hflag = chit.flag();
       if(strawhit->active())hflag.merge(StrawHitFlag::active);
       auto const& ca = strawhit->closestApproach();
-      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // drift radius and drift radius error are unfilled TODO
-          HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
+      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
+          HitT0(ca.particleToca(), sqrt(ca.tocaVar())),
           static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
-          static_cast<float>(-1.0), static_cast<float>(strawhit->time()),
-          static_cast<float>(ca.doca()), strawhit->hitState().lrambig_,static_cast<float>(-1.0), hflag, chit);
+          static_cast<float>(strawhit->timeResidual().value()), // drift radius isn't a clear concept in KinKal, use time residual instead
+          static_cast<float>(strawhit->time()),
+          static_cast<float>(ca.doca()),
+          strawhit->hitState().state_,
+          static_cast<float>(sqrt(strawhit->timeResidual().variance())), // substitute for drift radius error
+          hflag, chit);
       fseed._hits.push_back(seedhit);
     }
     if(kktrk.caloHits().size() > 0){
