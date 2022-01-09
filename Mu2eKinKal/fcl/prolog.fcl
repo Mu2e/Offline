@@ -49,8 +49,8 @@ Mu2eKinKal : {
       [ 2.0, 0.5, 10.0 ],
       [ 0.0, 0.2, 20.0]]
     KKStrawHitUpdaterSettings : [
-      [100.0, 3.0, 10.0, 2, 2]
     ]
+    #     [100.0, 3.0, 10.0, 2, 2]
   }
 
   KKSEEDEXT: {
@@ -80,7 +80,8 @@ Mu2eKinKal : {
     ComboHitCollection : "makeSH"
     StrawHitFlagCollection : "FlagBkgHits:StrawHits"
     LineFlags : [ "HelixOK" ]
-    ZSavePositions : [-1522.0,0.0,1522.0]
+    SaveFullFit : true
+    #    ZSavePositions : [-1522.0,0.0,1522.0]
   }
 
 }
