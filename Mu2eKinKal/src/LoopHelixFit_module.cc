@@ -197,7 +197,7 @@ namespace mu2e {
   void LoopHelixFit::beginRun(art::Run& run) {
     // setup things that rely on data related to beginRun
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
-    mass_ = ptable->particle(kkfit_.fitParticle()).mass(); 
+    mass_ = ptable->particle(kkfit_.fitParticle()).mass();
     charge_ = static_cast<int>(ptable->particle(kkfit_.fitParticle()).charge());
     // create KKBField
     GeomHandle<BFieldManager> bfmgr;
@@ -258,7 +258,7 @@ namespace mu2e {
           if(print_ > 1){
             std::cout << "Seed Helix parameters " << hseed.helix() << std::endl;
             seedtraj.print(std::cout,print_);
-            std::cout << "KKTrk fit status " << kktrk->fitStatus() << " fitting "
+            std::cout << "KKTrk " << kktrk->fitStatus() << " fitting "
               << strawhits.size() << " StrawHits and " << calohits.size() << " CaloHits and " << strawxings.size() << " Straw Xings in fit" << std::endl;
             if(print_ > 2){
               for(auto const& strawhit : strawhits) strawhit->print(std::cout,2);
