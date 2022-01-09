@@ -53,13 +53,12 @@ namespace mu2e {
       }
       int id = std::stoi(words[0]);
       _list.try_emplace(id, id, words[1], words[2], 
-         std::stof(words[4]), std::stof(words[5]), std::stof(words[6]) );
+         std::stod(words[4]), std::stod(words[5]), std::stod(words[6]) );
       _names.try_emplace(words[1],id);
       if( words[2] != "none" ) _names.try_emplace(words[2],id);
       if( words[3] != "none" ) _names.try_emplace(words[3],id);
       words.clear();
     }
-
 
   }
 
@@ -85,14 +84,14 @@ namespace mu2e {
 
     // the nuclear excitation level
     int exc = id%10;
-    float protonMass = particle(PDGCode::p_plus).mass();
-    float mass = (pA+exc)*protonMass;
+    double protonMass = particle(PDGCode::p_plus).mass();
+    double mass = (pA+exc)*protonMass;
 
     std::ostringstream pName;
     pName << "Mu2e_" << id;
     std::string name = pName.str();
 
-    _list.try_emplace(id,id, name, name, float(pZ), mass, 0.0);
+    _list.try_emplace(id,id, name, name, double(pZ), mass, 0.0);
 
     return _list.at(id);
     
@@ -114,7 +113,7 @@ namespace mu2e {
 
   // *************************************************************
 
-  void ParticleDataList::printTable( std::ostream& ostr) {
+  void ParticleDataList::printTable( std::ostream& ostr) const {
 
     for(auto const& pp: _list) {
       auto const& p = pp.second;

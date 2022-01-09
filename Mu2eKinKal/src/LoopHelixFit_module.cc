@@ -19,8 +19,7 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "HepPDT/ParticleData.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -198,9 +197,9 @@ namespace mu2e {
 
   void LoopHelixFit::beginRun(art::Run& run) {
     // setup things that rely on data related to beginRun
-    auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
-    mass_ = ptable->particle(kkfit_.fitParticle()).ref().mass().value(); 
-    charge_ = static_cast<int>(ptable->particle(kkfit_.fitParticle()).ref().charge());
+    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
+    mass_ = ptable->particle(kkfit_.fitParticle()).mass(); 
+    charge_ = static_cast<int>(ptable->particle(kkfit_.fitParticle()).charge());
     // create KKBField
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;

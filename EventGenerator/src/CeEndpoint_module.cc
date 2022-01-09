@@ -26,7 +26,7 @@
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
@@ -76,7 +76,7 @@ namespace mu2e {
   //================================================================
   CeEndpoint::CeEndpoint(const Parameters& conf)
     : EDProducer{conf}
-    , electronMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(electronId_).ref().mass().value())
+    , electronMass_(GlobalConstantsHandle<ParticleDataList>()->particle(electronId_).mass())
     , endPointEnergy_()
     , endPointMomentum_ ()
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}

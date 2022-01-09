@@ -21,7 +21,7 @@
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/EventGenerator/inc/CaloCalibGun.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -67,7 +67,7 @@ namespace mu2e {
     // data base key.  There is a second argument that I have let take its
     // default value of "current"; it will be used to specify a version number.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
 
     // Default values for the start and end of the live window.
