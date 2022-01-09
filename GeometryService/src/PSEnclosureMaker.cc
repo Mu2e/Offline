@@ -69,13 +69,13 @@ namespace mu2e {
         const double rout  = c.getDouble(prefix+"pipe.rout")*CLHEP::mm;
         const double thetax = c.getDouble(prefix+"pipe.thetaX")*CLHEP::degree;
         const double thetay = c.getDouble(prefix+"pipe.thetaY")*CLHEP::degree;
-        const double zplate = abs(res->endPlatePolycone().zPlanes()[0] - res->endPlatePolycone().zPlanes().back());
+        const double zplate = std::abs(res->endPlatePolycone().zPlanes()[0] - res->endPlatePolycone().zPlanes().back());
         const CLHEP::Hep3Vector origin = windowCenterInMu2e; //set at the same
         //origin to ensure it intersects it.
         //Set the pipe to be long enough to intersect both the
         //plate and the window.
-        double zlength = abs(res->endPlatePolycone().originInMu2e().z() - windowCenterInMu2e.z()) + zplate;
-        zlength /= 0.9*abs(std::cos(thetax)*std::cos(thetay));
+        double zlength = std::abs(res->endPlatePolycone().originInMu2e().z() - windowCenterInMu2e.z()) + zplate;
+        zlength /= 0.9*std::abs(std::cos(thetax)*std::cos(thetay));
 
         CLHEP::HepRotation matrix = CLHEP::HepRotation();
         matrix.rotateX(thetax);
