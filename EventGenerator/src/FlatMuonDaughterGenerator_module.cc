@@ -26,7 +26,7 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
@@ -79,7 +79,7 @@ namespace mu2e {
   //================================================================
   FlatMuonDaughterGenerator::FlatMuonDaughterGenerator(const Parameters& conf)
     : EDProducer{conf}
-    , particleMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(static_cast<PDGCode::type>(conf().pdgId())).ref().mass().value())
+    , particleMass_(GlobalConstantsHandle<ParticleDataList>()->particle(static_cast<PDGCode::type>(conf().pdgId())).mass())
     , startMom_(conf().startMom())
     , endMom_(conf().endMom())
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}

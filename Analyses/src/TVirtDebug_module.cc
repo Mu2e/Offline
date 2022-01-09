@@ -6,8 +6,6 @@
 //
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/StepInstanceName.hh"
 #include "Offline/GeometryService/inc/VirtualDetector.hh"

@@ -44,7 +44,6 @@ helper.make_plugins( [
     'cetlib',
     'cetlib_except',
     'CLHEP',
-    'HepPDT',
     rootlibs,
     'boost_filesystem',
     'hep_concurrency',
