@@ -169,7 +169,7 @@ namespace mu2e {
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
 
-    unsigned int randIn = rand() % pis.size(); 
+    unsigned int randIn = randomFlat_.fireint(pis.size());
     double time_weight = MakeEventWeight(pis[randIn]);
     std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
     event.put(std::move(pw)); 
