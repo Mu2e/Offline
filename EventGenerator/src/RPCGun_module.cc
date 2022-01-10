@@ -85,7 +85,6 @@ namespace mu2e {
     RandomUnitSphere   randomUnitSphere_;
     CLHEP::RandGeneral randSpectrum_;
 
-    const double            tmin_ = -1;
     const double            czmin_ = -1;
     const double            czmax_ = 1;
     const double            phimin_ = 0;
@@ -169,7 +168,7 @@ namespace mu2e {
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
     }
 
-    unsigned int randIn = randomFlat_.fireint(pis.size());
+    unsigned int randIn = randomFlat_.fireInt(pis.size());
     double time_weight = MakeEventWeight(pis[randIn]);
     std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
     event.put(std::move(pw)); 
