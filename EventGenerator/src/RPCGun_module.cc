@@ -1,7 +1,7 @@
 // Generates outgoing photon or electron/positron pair  for either external or internal RPC
 // Pions are generated with infinite lifetime, their real lifetime (proper time) is stored as a weight
 // Andrei Gaponenko, 2013
-// Sophie Middleton,2021
+// Sophie Middleton, 2021
 
 #include <iostream>
 #include <string>
@@ -62,6 +62,7 @@ namespace mu2e {
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
+        fhicl::Atom<bool> pionDecayOff{Name("pionDecayOff"),true}; 
         fhicl::Atom<bool> doHistograms{Name("doHistograms"),false}; 
     };
 
@@ -81,6 +82,7 @@ namespace mu2e {
     CLHEP::RandFlat     randomFlat_;
     std::string RPCType_;
     BinnedSpectrum    spectrum_;
+    bool pionDecayOff_;
     bool doHistograms_;
     RandomUnitSphere   randomUnitSphere_;
     CLHEP::RandGeneral randSpectrum_;
@@ -112,6 +114,7 @@ namespace mu2e {
     , randomFlat_{eng_}
     , RPCType_{conf().RPCType()}
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())} 
+    , pionDecayOff_{conf().pionDecayOff()}
     , doHistograms_{conf().doHistograms()}
     , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
     , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
@@ -169,7 +172,8 @@ namespace mu2e {
     }
 
     unsigned int randIn = randomFlat_.fireInt(pis.size());
-    double time_weight = MakeEventWeight(pis[randIn]);
+    double time_weight = 1.0;
+    if(pionDecayOff_) time_weight = MakeEventWeight(pis[randIn]);
     std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
     event.put(std::move(pw)); 
     addParticles(output.get(), pis[randIn]);
