@@ -125,8 +125,6 @@ namespace mu2e {
       fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
       fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-      //      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
-      //      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
     };
     using GlobalSettings = art::EDProducer::Table<GlobalConfig>;
 
@@ -189,7 +187,7 @@ namespace mu2e {
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
-      if(print_ > 0) std::cout << config_;
+      if(print_ > 0) std::cout << "Fit " << config_ << "Extension " << exconfig_;
     }
 
   LoopHelixFit::~LoopHelixFit(){}
@@ -281,7 +279,7 @@ namespace mu2e {
               kktrk->extendTrack(exconfig_,addstrawhits,addcalohits,addstrawxings);
               save &= kktrk->fitStatus().usable();
               if(print_ > 1){
-                std::cout << "KKTrk fit extension status " << kktrk->fitStatus() << " from adding "
+                std::cout << "KKTrk extension " << kktrk->fitStatus() << " from adding "
                   << addstrawhits.size() << " StrawHits and "
                   << addcalohits.size() << " CaloHits and "
                   << addstrawxings.size() << " Straw Xings" << std::endl;
