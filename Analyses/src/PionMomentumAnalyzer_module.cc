@@ -44,7 +44,7 @@ namespace mu2e {
     //----------------------------------------------------------------
 
     explicit PionMomentumAnalyzer(const Conf& config);
-    explicit PionMomentumAnalyzer(const Conf& config, art::TFileDirectory tfdir);
+    explicit PionMomentumAnalyzer(const Conf& config, const art::TFileDirectory& tfdir);
 
     virtual void beginJob() override;
     virtual void analyze(const art::Event&) override;
@@ -66,7 +66,7 @@ namespace mu2e {
     : PionMomentumAnalyzer(config, *art::ServiceHandle<art::TFileService>())
   {}
 
-  PionMomentumAnalyzer::PionMomentumAnalyzer(const Conf& c, art::TFileDirectory tf)
+  PionMomentumAnalyzer::PionMomentumAnalyzer(const Conf& c, const art::TFileDirectory& tf)
     : art::EDAnalyzer(c)
     , conf_{c}
 
