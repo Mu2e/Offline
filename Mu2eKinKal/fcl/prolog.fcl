@@ -13,11 +13,11 @@ Mu2eKinKal : {
   }
   KKMU2E: {
     PrintLevel : 0
-    TimeBuffer : 0.1 # ns
+    TimeBuffer : 1.0 # ns
     TPOCAPrecision : 1e-4 # mm
     NullHitDimension : 2 # constrain position or position+time
     NullHitVarianceScale : 1.0
-    TimeBuffer : 0.1 # ns
+    TimeBuffer : 1.0 # ns
     UseCaloCluster : true
     AddMaterial : true
     CaloTrackerTimeOffset : -1.35 #ns
@@ -41,16 +41,15 @@ Mu2eKinKal : {
     MaxNIter : 10
     Deweight : 1.0e6
     DeltaParams : 1e4 # chisquared
-    TimeBuffer : 0.1 # ns
+    TimeBuffer : 1.0 # ns
     BFieldCorrection : false
-    BCorrTolerance : 0.01 # mm
+    BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 10.0, 1.0, 10.0 ],
       [ 2.0, 0.5, 10.0 ],
       [ 0.0, 0.2, 20.0]]
     KKStrawHitUpdaterSettings : [
     ]
-    #     [100.0, 3.0, 10.0, 2, 2]
   }
 
   KKSEEDEXT: {
@@ -59,12 +58,32 @@ Mu2eKinKal : {
     MaxNIter : 10
     Deweight : 1.0e6
     DeltaParams : 1e4 # chisquared
-    TimeBuffer : 0.1 # ns
+    TimeBuffer : 1.0 # ns
     BFieldCorrection : false
-    BCorrTolerance : 0.01 # mm
+    BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 0.0, 0.2, 20.0 ]]
     KKStrawHitUpdaterSettings : [
+    ]
+  }
+
+  KKDRIFTEXT: {
+    PrintLevel : 0
+    MinNDOF : 5
+    MaxNIter : 10
+    Deweight : 1.0e6
+    DeltaParams : 1e4 # chisquared
+    TimeBuffer : 1.0 # ns
+    BFieldCorrection : true
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      [ 1.0, 0.5, 20.0 ],
+      [ 1.0, 0.5, 20.0 ],
+      [ 0.0, 0.2, 20.0 ]]
+    KKStrawHitUpdaterSettings : [
+       [ 10.0, 20.0, 1e-6, 0 ],
+       [ 1.0, 8.0, 1e-5, 1 ],
+       [ 0.5,3.5, 1e-5, 2 ]
     ]
   }
 
@@ -97,6 +116,15 @@ Mu2eKinKal : {
     ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
   }
 
+  KKDriftFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : @local::Mu2eKinKal.KKMAT
+    Mu2eSettings: @local::Mu2eKinKal.KKMU2E
+    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
+    KinKalExtensionSettings : @local::Mu2eKinKal.KKDRIFTEXT
+    ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
+  }
+
   KKLineSeedFit : {
     module_type : KinematicLineFit
     MaterialSettings : @local::Mu2eKinKal.KKMAT
@@ -114,9 +142,14 @@ Mu2eKinKal : {
 Mu2eKinKal : {
   @table::Mu2eKinKal
   producers : {
+    # seed fits: these don't use drift information or BField corrections
     KKDePSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
+    # drift fits, with BField corrections
+    KKDePDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKDeMDriftFit: @local::Mu2eKinKal.KKDriftFit
+
   }
   filters : {
     CosmicFilter: @local::Mu2eKinKal.CosmicFilter
@@ -126,5 +159,10 @@ Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings.FitParticle : 11
 Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings.FitDirection : 0
 Mu2eKinKal.producers.KKDePSeedFit.Mu2eSettings.FitParticle : -11
 Mu2eKinKal.producers.KKDePSeedFit.Mu2eSettings.FitDirection : 0
+
+Mu2eKinKal.producers.KKDeMDriftFit.Mu2eSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMDriftFit.Mu2eSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDePDriftFit.Mu2eSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePDriftFit.Mu2eSettings.FitDirection : 0
 
 END_PROLOG

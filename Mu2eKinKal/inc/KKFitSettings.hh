@@ -29,7 +29,7 @@ namespace mu2e {
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
       " 'Temperature (dimensionless)', 'Delta chisquared/DOF for convergence', 'Delta chisquared/DOF for divergence'") };
-      using KKStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,int,size_t>>;
+      using KKStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,size_t>>;
       KKStrawHitUpdaterSettings shuConfig{ Name("KKStrawHitUpdaterSettings"), Comment("KKStrawHitUpdater settings, format: \n"
       " 'Minimum wire DOCA to assign L/R ambiguity and use drift'', 'Maximum wire DOCA to use hit', 'Minmum probablity to use hit',,'Meta-iteration'") };
     };
