@@ -26,10 +26,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
