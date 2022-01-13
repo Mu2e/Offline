@@ -1,10 +1,10 @@
 //
 // Variant on geom_common.txt for production running of G4 jobs
-// in which the DS is hidden by stopping rules in G4.
-// The DS field map is removed to save space
+// in which the TSu and PS field maps are not needed.  These
+// field maps are removed to save space.
 //
 
-#include "Offline/Mu2eG4/geom/geom_2021_PhaseI.txt"
+#include "Offline/Mu2eG4/geom/geom_common.txt"
 #include "Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"
 
 // This tells emacs to view this file in c++ mode.
