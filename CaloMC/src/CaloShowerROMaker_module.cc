@@ -21,7 +21,7 @@
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerRO.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
@@ -224,7 +224,7 @@ namespace mu2e {
                                           CaloShowerSimCollection& caloShowerSims, const EventWindowMarker& ewMarker, 
                                           const ProtonBunchTimeMC& pbtmc, double correctedDigitizationStart )
   {
-      GlobalConstantsHandle<ParticleDataTable>  pdt;
+      GlobalConstantsHandle<ParticleDataList>  pdt;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
       const Calorimeter& cal       = *(GeomHandle<Calorimeter>());

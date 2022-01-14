@@ -28,7 +28,7 @@ int mu2e::DbSql::connect() {
 		 //sslmode=require  krbsrvname
 
   _conn = PQconnectdb(command.c_str());
-  if(_verbose>1) {
+  if(_verbose>2) {
     std::cout << "DbSql opened connection, status: " 
 	      << PQerrorMessage(_conn) << std::endl;
   }
@@ -48,7 +48,7 @@ int mu2e::DbSql::connect() {
 int mu2e::DbSql::disconnect() {
   if (_conn) {
     PQfinish(_conn);
-    if(_verbose>1) {
+    if(_verbose>2) {
       std::cout << "DbSql closed connection, status: " 
 		<< PQerrorMessage(_conn) << std::endl;
     }
@@ -62,7 +62,7 @@ int mu2e::DbSql::disconnect() {
 int mu2e::DbSql::execute(const std::string& command, std::string& result) {
   result.clear();
   PGresult* res = PQexec(_conn,command.c_str());
-  if(_verbose>1) {
+  if(_verbose>4) {
     std::cout << "\nDbSql execute command:\n" << command << "\n"
 	      << "status message: " << PQerrorMessage(_conn) << "\n";
   }
@@ -78,7 +78,7 @@ int mu2e::DbSql::execute(const std::string& command, std::string& result) {
 
   size_t nrow = PQntuples(res);
   size_t ncol = PQnfields(res);
-  if(_verbose>5) {
+  if(_verbose>4) {
     std::cout << "DbSql execute returned: " << nrow << " rows and "
 	      << ncol << " columns" << std::endl;
   }
@@ -91,7 +91,7 @@ int mu2e::DbSql::execute(const std::string& command, std::string& result) {
     result.append("\n");
   }
 
-  if(_verbose>5) {
+  if(_verbose>4) {
     std::cout << "DbSql execute result ("<< result.size()<<" char):\n" << result << std::endl;
   }
   return 0;

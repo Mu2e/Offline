@@ -16,7 +16,7 @@
 #include "Offline/ConditionsService/inc/DAQParams.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
@@ -109,6 +109,21 @@ const double CosmicCRY::getShowerSumEnergy()
   return _showerSumEnergy;
 }
 
+const double CosmicCRY::getMaxShowerEn()
+{
+  return _maxShowerEn;
+}
+
+const double CosmicCRY::getMinShowerEn()
+{
+  return _minShowerEn;
+}
+
+const double CosmicCRY::getSubboxLength()
+{
+  return _subboxLength;
+}
+
 const unsigned long long int CosmicCRY::getNumEvents()
 {
   return _numEvents;
@@ -162,21 +177,22 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
   // Getting CRY particles. Generate secondaries until you find one that intersects with the projected box
   while (!passed)
   {
-    std::vector<CRYParticle *> *secondaries = new std::vector<CRYParticle *>;
-    _cryGen->genEvent(secondaries);
+    std::vector<CRYParticle *> secondaries;
+    _cryGen->genEvent(&secondaries);
     _numEvents++;
 
     double secondPtot = 0.;
     _showerSumEnergy = 0.;
 
     std::ostringstream oss;
-    for (unsigned j = 0; j < secondaries->size(); j++)
+    for (unsigned j = 0; j < secondaries.size(); j++)
     {
-      CRYParticle *secondary = (*secondaries)[j];
+      CRYParticle *secondary = (secondaries)[j];
+      std::unique_ptr<CRYParticle> secondarySentry(secondary);
 
-      GlobalConstantsHandle<ParticleDataTable> pdt;
-      const HepPDT::ParticleData &p_data = pdt->particle(secondary->PDGid()).ref();
-      double mass = p_data.mass().value(); // in MeV
+      GlobalConstantsHandle<ParticleDataList> pdt;
+      auto p_data = pdt->particle(secondary->PDGid());
+      double mass = p_data.mass(); // in MeV
 
       double ke = secondary->ke(); // MeV by default in CRY
       if (ke < _minShowerEn)
@@ -264,7 +280,6 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
             << ", mom dir.: " << secondary->u() << ", " << secondary->v()
             << ", " << secondary->w() << "\n";
       }
-      delete secondary;
     }
 
     if (_verbose > 1)
@@ -272,7 +287,6 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
       oss << "Total E: " << _showerSumEnergy;
       mf::LogInfo("CosmicCRY") << oss.str();
     }
-    delete secondaries;
 
     if (_showerSumEnergy < _maxShowerEn && genParts.size() > 0)
       passed = true;

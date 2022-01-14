@@ -10,6 +10,8 @@ class TValHist: public TObject {
 
 public:
 
+  enum comparisonStatus {fPerfect=0,fTight=1,fLoose=2,fFail=3,fCantCompare=11};
+
   TValHist() {
     ClearB();
   }
@@ -23,6 +25,7 @@ public:
   TValPar&   GetPar()    { return fPar;}
   TString&   GetTag()    { return fTag;}
   Float_t    GetFontScale() { return fFontScale; }
+  Bool_t     GetEmpty()  { return fEmpty; }
 
   virtual const char* GetName() const=0;
   virtual const char* GetTitle() const=0;
@@ -51,6 +54,7 @@ protected:
   TString fTag;
 
   Float_t fFontScale;
+  Bool_t   fEmpty;    // true if eiher hist is empty
 
   ClassDef(TValHist,1)
 

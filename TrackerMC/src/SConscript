@@ -66,7 +66,6 @@ helper.make_plugins( [ mainlib,
                        'cetlib_except',
 		       'BTrk_BField',
 		       'CLHEP',
-		       'HepPDT',
 		       'boost_filesystem',
 		       rootlibs,
 		       'pthread'

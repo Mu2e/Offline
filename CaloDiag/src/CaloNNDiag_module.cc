@@ -15,9 +15,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"

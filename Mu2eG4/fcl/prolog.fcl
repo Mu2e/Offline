@@ -35,7 +35,10 @@ mu2eg4DefaultPhysics: {
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
     // G4DormandPrince745 Geant4 10.4+
+    // G4TDormandPrince45 Geant4 10.7+
     // G4DormandPrince745WSpin
+    // G4TDormandPrince45WSpin
+    // G4BogackiShampine23 10.4+
     // G4ClassicalRK4
     // G4ClassicalRK4WSpin
     // G4ImplicitEuler

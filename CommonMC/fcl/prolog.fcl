@@ -12,7 +12,11 @@ CommonMC: {
     protonTimeOffset : { module_type: ProtonTimeOffset }
     cosmicTimeOffset : { module_type: CosmicTimeOffset }
 # Event window marker
-    EWMProducer : { module_type : EventWindowMarkerProducer }
+    EWMProducer : { 
+      module_type : EventWindowMarkerProducer
+      RecoFromMCTruth : true
+      RecoFromMCTruthErr : 0.5
+    }
   }
   TimeMaps : [ ]
   FindMCPrimary : {

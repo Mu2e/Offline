@@ -17,7 +17,7 @@
 #include "Offline/EventGenerator/inc/PrimaryProtonGunImpl.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTargetMu2eII.hh"
@@ -37,7 +37,7 @@ namespace mu2e {
     _gunOrigin((_mu2eii) ? GeomHandle<ProductionTargetMu2eII>()->front() : GeomHandle<ProductionTarget>()->targetPositionByVersion()
                + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->targetHalfLengthByVersion())),
 
-    _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
+    _proton_mass(GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::p_plus).mass()),
 
     // Parameters from the run time configuration.
     _config(config),

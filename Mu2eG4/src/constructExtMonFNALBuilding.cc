@@ -100,7 +100,10 @@ namespace mu2e {
                                            std::pow(boxdz * abs(tan(collimator.angleH())) + dr/abs(cos(collimator.angleH())), 2)
                                            );
 
-    double zPlane[] = {-cylHalfLength, -0.5*collimator.radiusTransitiondZ(), +0.5*collimator.radiusTransitiondZ(), +cylHalfLength };
+    // Fixme: protect against two planes at the same value of z.
+    double const epsilon= ( collimator.radiusTransitiondZ() == 0. ) ? 0.1 : 0.;
+
+    double zPlane[] = {-cylHalfLength, -0.5*collimator.radiusTransitiondZ()-epsilon, +0.5*collimator.radiusTransitiondZ()+epsilon, +cylHalfLength };
     double rzero[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     //----------------------------------------------------------------
@@ -205,6 +208,7 @@ namespace mu2e {
     VolumeInfo channel(collimator.name()+"Channel",
                        CLHEP::Hep3Vector(0,0,0),
                        alignmentHole.centerInWorld);
+
 
     channel.solid = new G4IntersectionSolid(channel.name,
                                             parent.solid,

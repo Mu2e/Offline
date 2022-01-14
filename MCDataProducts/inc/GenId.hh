@@ -44,10 +44,12 @@ namespace mu2e {
       cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //42
       MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
       MuCapPhotonGenTool, MuCapGammaRayGenTool, // 50
-      gammaPairProduction, Mu2eX,//52
-      lastEnum //53
+      gammaPairProduction, Mu2eX, CeLeadingLogGenTool,
+      lastEnum
+
     };
 
+#ifndef SWIG
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "CeEndpoint",               \
@@ -63,7 +65,9 @@ namespace mu2e {
       "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", \
       "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", \
       "MuCapPhotonGenTool", "MuCapGammaRayGenTool", \
-      "gammaPairProduction", "Mu2eX"
+      "gammaPairProduction", "Mu2eX", "CeLeadingLogGenTool"
+      #endif
+
 
   public:
 
@@ -138,8 +142,10 @@ namespace mu2e {
       return isValid(_id);
     }
 
+#ifndef SWIG
     // List of names corresponding to the enum.
     const static char* _name[];
+#endif
 
     // Number of valid codes, not including lastEnum, but including "unknown".
     static std::size_t size(){

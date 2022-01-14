@@ -28,8 +28,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 // utiliities
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"

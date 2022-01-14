@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValStrawHitFlag.hh"
 #include <cmath>
 
-int mu2e::ValStrawHitFlag::declare(art::TFileDirectory tfs) {
+int mu2e::ValStrawHitFlag::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NFlag", "N Straw Hit flags", 101, -0.5, 100.5);
   _hN2 = tfs.make<TH1D>( "NFlag2", "N Straw Hit flags", 100, -0.5, 9999.5);

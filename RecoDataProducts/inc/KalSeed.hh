@@ -6,7 +6,6 @@
 #define RecoDataProducts_KalSeed_HH
 // mu2e
 #include "Offline/DataProducts/inc/PDGCode.hh"
-#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
@@ -43,26 +42,26 @@ namespace mu2e {
     std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
 
     // global information about the track
-    PDGCode::type		    _tpart; // particle assumed for this fit
-    TrkFitDirection	      	    _fdir; // direction in which this particle was fit
-    TrkFitFlag			    _status; // status of this fit: includes alglorithm information
-    Float_t			    _chisq; // fit chisquared value
-    Float_t			    _fitcon; // fit consistency
-    UInt_t			    _nseg; // # of fit trajectory segments 
+    PDGCode::type       _tpart; // particle assumed for this fit
+    TrkFitDirection             _fdir; // direction in which this particle was fit
+    TrkFitFlag          _status; // status of this fit: includes alglorithm information
+    Float_t         _chisq; // fit chisquared value
+    Float_t         _fitcon; // fit consistency
+    UInt_t          _nseg; // # of fit trajectory segments
     //
     // contained content substructure.
     //
-    std::vector<KalSegment>	    _segments; // segments of the Kalman filter fit result
+    std::vector<KalSegment>     _segments; // segments of the Kalman filter fit result
     std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
-    std::vector<TrkStraw>	    _straws; // straws interesected by this fit
-    TrkCaloHitSeed		    _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
-    // 
+    std::vector<TrkStraw>     _straws; // straws interesected by this fit
+    TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
+    //
     // deprecated BTrk legacy content, DO NOT write any new code which depends on these functions
     // find the nearest segment to a given GLOBAL flightlength
     std::vector<KalSegment>::const_iterator nearestSegment(float fltlen)  const;
     std::vector<KalSegment>::const_iterator nearestSegment(const XYZVectorF& pos)  const; // find nearest segment to a GLOBAL position
     Float_t flt0() const { return _flt0; }
-    Float_t			    _flt0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
+    Float_t         _flt0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
 }
