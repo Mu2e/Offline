@@ -29,7 +29,7 @@ namespace mu2e {
     _spectrumType (RadCorrected) 
   {
     GlobalConstantsHandle<ParticleDataList> pdt;
-    _par.me    = pdt->particle(PDGCode::e_minus ).mass().value();
+    _par.me    = pdt->particle(PDGCode::e_minus ).mass();
     _par.eMax  = maxEnergy;
     _par.mmu = 105.6584; //mu mass MeV
     _par.Emu = 105.194; //MeV

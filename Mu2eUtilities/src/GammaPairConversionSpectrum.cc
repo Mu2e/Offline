@@ -21,7 +21,7 @@ namespace mu2e {
     _gMaxZet             (120){
 
     GlobalConstantsHandle<ParticleDataList> pdt;
-    _me    = pdt->particle(PDGCode::e_minus ).mass().value();
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
     //initialize some element data
     GammaPairConversionSpectrum::initializeElementData();
   }
