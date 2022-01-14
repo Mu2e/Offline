@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValCrvRecoPulse.hh"
 
 
-int mu2e::ValCrvRecoPulse::declare(art::TFileDirectory tfs) {
+int mu2e::ValCrvRecoPulse::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NPulses", "N Pulses", 101, -0.5, 100.5);
   _hN2= tfs.make<TH1D>( "NPulse2", "N Pulses", 100, -0.5, 2000.0);

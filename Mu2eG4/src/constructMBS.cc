@@ -74,12 +74,6 @@ namespace mu2e {
     Polycone const & pBSTCParams = *mbsgh.getBSTCPtr();
     Polycone const & pBSBSParams = *mbsgh.getBSBSPtr();
     Polycone const & pCLV2Params = *mbsgh.getCLV2Ptr();
-    Tube const & pSPBSSup1Params = *mbsgh.getSPBSSup1Ptr();
-    Tube const & pSPBSSup2Params = *mbsgh.getSPBSSup2Ptr();
-    Tube const & pSPBSLParams    = *mbsgh.getSPBSLPtr();
-    Tube const & pSPBSRParams    = *mbsgh.getSPBSRPtr();
-    Tube const & pCLV2ABSParams  = *mbsgh.getCLV2ABSPtr();
-    Tube const & pCalShieldRingParams  = *mbsgh.getCalRingShieldPtr();
 
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -253,6 +247,11 @@ namespace mu2e {
 
 
     if ( MBSversion == 1 ) {
+
+      Tube const & pSPBSSup1Params = *mbsgh.getSPBSSup1Ptr();
+      Tube const & pSPBSSup2Params = *mbsgh.getSPBSSup2Ptr();
+      Tube const & pSPBSLParams    = *mbsgh.getSPBSLPtr();
+      Tube const & pSPBSRParams    = *mbsgh.getSPBSRPtr();
 
       // SPBSSup1
       // This one is placed directly into DS3Vacuum;
@@ -697,7 +696,8 @@ namespace mu2e {
     
     // CLV2 Absorber :  Variable thickness plug in MBS axial hole
     if (_config.getBool("mbs.CLV2.absorber.build",false)){
-      
+      Tube const & pCLV2ABSParams  = *mbsgh.getCLV2ABSPtr();
+
       CLHEP::Hep3Vector CLV2AbsOffsetInMu2e = pCLV2ABSParams.originInMu2e();
       // now local offset in mother volume
       CLHEP::Hep3Vector CLV2AbsOffset = CLV2AbsOffsetInMu2e - MBSMOffsetInMu2e;
@@ -730,6 +730,8 @@ namespace mu2e {
 
     //Adding a shield at the front of the MBS to protect the calorimeter
     if(MBSversion == 6) {
+      Tube const & pCalShieldRingParams  = *mbsgh.getCalRingShieldPtr();
+
       CLHEP::Hep3Vector RingOffset = pCalShieldRingParams.originInMu2e() - detSolDownstreamVacInfo.centerInMu2e(); // MBSMOffsetInMu2e;
        
       VolumeInfo MBSCalShieldRing  = nestTubs("CalShieldRing",

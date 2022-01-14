@@ -10,7 +10,7 @@ namespace mu2e {
 
   void SimBookkeeperCache::initialize() {
     if(_useDb) {
-      _tqDb_p  = std::make_unique<DbHandle<SimEfficiencies> >();
+      _tqDb_p  = std::make_unique<DbHandle<SimEfficiencies2> >();
     }
   }
 

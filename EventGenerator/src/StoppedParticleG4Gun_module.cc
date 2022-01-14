@@ -32,7 +32,7 @@
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -80,7 +80,7 @@ namespace mu2e {
   StoppedParticleG4Gun::StoppedParticleG4Gun(const Parameters& conf)
     : EDProducer{conf}
     , pdgId_(PDGCode::type(conf().pdgId()))
-    , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
+    , mass_(GlobalConstantsHandle<ParticleDataList>()->particle(pdgId_).mass())
     , verbosityLevel_(conf().verbosityLevel())
     , stops_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),
              conf().muonStops())

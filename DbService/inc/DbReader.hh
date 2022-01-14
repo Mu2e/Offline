@@ -22,11 +22,13 @@ namespace mu2e {
   class DbReader {
   public:
 
+    typedef std::vector<std::string> StringVec;
+
     struct QueryForm {
       std::string csv; // the answer
       std::string select;
       std::string table;
-      std::string where;
+      StringVec where;
       std::string order;
     };
 
@@ -37,7 +39,7 @@ namespace mu2e {
 
     // run query url, answer returned in csv
     int query(std::string& csv, const std::string& select, 
-	      const std::string& table, const std::string& where="",
+	      const std::string& table, const StringVec& where=StringVec(),
 	      const std::string& order="");
     // an alternate form
     int query(QueryForm& qf);
@@ -77,8 +79,8 @@ namespace mu2e {
     int openHandle();
     int closeHandle();
     int queryCore(std::string& csv, const std::string& select, 
-	      const std::string& table, const std::string& where="",
-	      const std::string& order="");
+                  const std::string& table, const StringVec& where=StringVec(),
+                  const std::string& order="");
 
     DbId _id;
     CURL *_curl_handle;

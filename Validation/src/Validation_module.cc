@@ -11,6 +11,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/Validation/inc/ValStatusG4.hh"
+#include "Offline/Validation/inc/ValProtonBunchIntensity.hh"
+#include "Offline/Validation/inc/ValProtonBunchTime.hh"
+#include "Offline/Validation/inc/ValProtonBunchTimeMC.hh"
+#include "Offline/Validation/inc/ValEventWindowMarker.hh"
 #include "Offline/Validation/inc/ValGenParticle.hh"
 #include "Offline/Validation/inc/ValSimParticle.hh"
 #include "Offline/Validation/inc/ValStepPointMC.hh"
@@ -26,6 +30,7 @@
 #include "Offline/Validation/inc/ValCrvCoincidenceCluster.hh"
 #include "Offline/Validation/inc/ValStrawGasStep.hh"
 #include "Offline/Validation/inc/ValStrawDigi.hh"
+#include "Offline/Validation/inc/ValStrawDigiADCWaveform.hh"
 #include "Offline/Validation/inc/ValStrawDigiMC.hh"
 #include "Offline/Validation/inc/ValStrawHit.hh"
 #include "Offline/Validation/inc/ValBkgCluster.hh"
@@ -39,6 +44,7 @@
 #include "Offline/Validation/inc/ValTimeCluster.hh"
 #include "Offline/Validation/inc/ValComboHit.hh"
 #include "Offline/Validation/inc/ValTriggerResults.hh"
+#include "Offline/Validation/inc/ValTriggerInfo.hh"
 
 namespace mu2e {
 
@@ -61,7 +67,6 @@ namespace mu2e {
     explicit Validation(const Parameters& conf);
     void analyze  ( art::Event const&  event  ) override;
     void beginJob () override;
-    void endJob () override;
 
   private:
 
@@ -73,6 +78,10 @@ namespace mu2e {
     // have several instances of a product and we make histograms 
     // for each instance.
     std::vector<std::shared_ptr<ValStatusG4>>          _stat;
+    std::vector<std::shared_ptr<ValProtonBunchIntensity>>     _pbin;
+    std::vector<std::shared_ptr<ValProtonBunchTime>>    _pbtd;
+    std::vector<std::shared_ptr<ValProtonBunchTimeMC>>  _pbtm;
+    std::vector<std::shared_ptr<ValEventWindowMarker>>  _evwm;
     std::vector<std::shared_ptr<ValGenParticle>>       _genp;
     std::vector<std::shared_ptr<ValSimParticle>>       _simp;
     std::vector<std::shared_ptr<ValStepPointMC>>       _spmc;
@@ -88,6 +97,7 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValCrvCoincidenceCluster>> _cvcc;
     std::vector<std::shared_ptr<ValStrawGasStep>>      _stgs;
     std::vector<std::shared_ptr<ValStrawDigi>>         _stdg;
+    std::vector<std::shared_ptr<ValStrawDigiADCWaveform>> _stdw;
     std::vector<std::shared_ptr<ValStrawDigiMC>>       _stdm;
     std::vector<std::shared_ptr<ValStrawHit>>          _stwh;
     std::vector<std::shared_ptr<ValBkgCluster>>        _bgcl;
@@ -101,6 +111,7 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValTimeCluster>>       _tmcl;
     std::vector<std::shared_ptr<ValComboHit>>          _stht;
     std::vector<std::shared_ptr<ValTriggerResults>>    _trrs;
+    std::vector<std::shared_ptr<ValTriggerInfo>>       _tris;
 
     // Loop over the products of type T and 
     // call fill() on validation histogram class V to make histograms.
@@ -127,6 +138,10 @@ void mu2e::Validation::beginJob(){
 
 void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<StatusG4,ValStatusG4>                        (_stat,event);
+  analyzeProduct<ProtonBunchIntensity,ValProtonBunchIntensity>  (_pbin,event);
+  analyzeProduct<ProtonBunchTime,ValProtonBunchTime>          (_pbtd,event);
+  analyzeProduct<ProtonBunchTimeMC,ValProtonBunchTimeMC>      (_pbtm,event);
+  analyzeProduct<EventWindowMarker,ValEventWindowMarker>      (_evwm,event);
   analyzeProduct<GenParticleCollection,ValGenParticle>        (_genp,event);
   analyzeProduct<SimParticleCollection,ValSimParticle>        (_simp,event);
   analyzeProduct<SimParticleTimeMap,ValSimParticleTimeMap>    (_sptm,event);
@@ -134,15 +149,16 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<CaloShowerStepCollection,ValCaloShowerStep>  (_cals,event);
   analyzeProduct<CaloDigiCollection,ValCaloDigi>              (_cald,event);
   analyzeProduct<CaloRecoDigiCollection,ValCaloRecoDigi>      (_calr,event);
-  analyzeProduct<CaloHitCollection,ValCaloHit>                 (_calh,event);
+  analyzeProduct<CaloHitCollection,ValCaloHit>                (_calh,event);
   analyzeProduct<CaloClusterCollection,ValCaloCluster>        (_ccls,event);
   analyzeProduct<CrvStepCollection,ValCrvStep>                (_cvst,event);
   analyzeProduct<CrvDigiCollection,ValCrvDigi>                (_cvdg,event);
   analyzeProduct<CrvDigiMCCollection,ValCrvDigiMC>            (_cmdg,event);
   analyzeProduct<CrvRecoPulseCollection,ValCrvRecoPulse>      (_cvrp,event);
-  analyzeProduct<CrvCoincidenceClusterCollection,ValCrvCoincidenceCluster>      (_cvcc,event);
-  analyzeProduct<StrawGasStepCollection,ValStrawGasStep>            (_stgs,event);
+  analyzeProduct<CrvCoincidenceClusterCollection,ValCrvCoincidenceCluster>  (_cvcc,event);
+  analyzeProduct<StrawGasStepCollection,ValStrawGasStep>      (_stgs,event);
   analyzeProduct<StrawDigiCollection,ValStrawDigi>            (_stdg,event);
+  analyzeProduct<StrawDigiADCWaveformCollection,ValStrawDigiADCWaveform> (_stdw,event);
   analyzeProduct<StrawDigiMCCollection,ValStrawDigiMC>        (_stdm,event);
   analyzeProduct<StrawHitCollection,ValStrawHit>              (_stwh,event);
   analyzeProduct<StrawHitFlagCollection,ValStrawHitFlag>      (_shfl,event);
@@ -155,13 +171,7 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<TrackSummaryCollection,ValTrackSummary>      (_trks,event);
   analyzeProduct<TrackClusterMatchCollection,ValTrackClusterMatch>(_mtch,event);
   analyzeProduct<art::TriggerResults,ValTriggerResults>       (_trrs,event);
-
-}
-
-
-void mu2e::Validation::endJob () {
-
-  std::cout << "end Validation::endJob summary" << std::endl;
+  analyzeProduct<TriggerInfo,ValTriggerInfo>                  (_tris,event);
 
 }
 
@@ -220,7 +230,7 @@ int mu2e::Validation::analyzeProduct(
     if ( prd == nullptr ) {
       prd = std::make_shared<V>(name);
       // create root file subdirectory
-      art::TFileDirectory tfdir = _tfs->mkdir(name);
+      const art::TFileDirectory& tfdir = _tfs->mkdir(name);
       // create histograms
       prd->declare(tfdir);
       // add it to the list of products being histogrammed

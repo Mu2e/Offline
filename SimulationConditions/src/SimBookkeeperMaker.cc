@@ -14,7 +14,7 @@ namespace mu2e {
     return ptr;
   }
 
-  SimBookkeeper::ptr_t SimBookkeeperMaker::fromDb(SimEfficiencies::cptr_t effDb) {
+  SimBookkeeper::ptr_t SimBookkeeperMaker::fromDb(SimEfficiencies2::cptr_t effDb) {
     // fill the SimBookkeeper with initial values
     auto ptr = fromFcl();
     // now overwrite with values from database

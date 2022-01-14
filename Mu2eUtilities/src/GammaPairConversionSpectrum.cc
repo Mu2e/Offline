@@ -2,7 +2,7 @@
 // Mu2e includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 // Framework includes
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
@@ -20,8 +20,8 @@ namespace mu2e {
     _correlateAngleOverKE(correlateAngleOverKE),
     _gMaxZet             (120){
 
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
     //initialize some element data
     GammaPairConversionSpectrum::initializeElementData();
   }

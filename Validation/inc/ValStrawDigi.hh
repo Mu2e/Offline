@@ -14,18 +14,20 @@ namespace mu2e {
 
   public:
     ValStrawDigi(std::string name):_name(name){}
-    int declare( art::TFileDirectory tfs);
+    int declare( const art::TFileDirectory& tfs);
     int fill(const StrawDigiCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
   private:
     std::string _name;
-    
+
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
     TH1D* _htdc;
-    TH1D* _hadc;
+    TH1D* _htdc2;
+    TH1D* _htot;
+    TH1D* _hpmp;
     TH1D* _hSI;
   };
 }

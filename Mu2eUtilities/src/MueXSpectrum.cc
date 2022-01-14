@@ -2,7 +2,7 @@
 // Mu2e includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/Mu2eUtilities/inc/MueXSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 
@@ -28,8 +28,8 @@ namespace mu2e {
     _bin (bin),
     _spectrumType (RadCorrected) 
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    _par.me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    _par.me    = pdt->particle(PDGCode::e_minus ).mass();
     _par.eMax  = maxEnergy;
     _par.mmu = 105.6584; //mu mass MeV
     _par.Emu = 105.194; //MeV

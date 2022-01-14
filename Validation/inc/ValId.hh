@@ -14,7 +14,7 @@ namespace mu2e {
   class ValId {
 
   public:
-    int declare( art::TFileDirectory tfs, 
+    int declare( const art::TFileDirectory& tfs, 
 		 std::string name="id", std::string title="id fold");
     int fill(int id);
     int compress(int id);

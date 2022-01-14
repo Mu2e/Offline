@@ -26,7 +26,7 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
@@ -47,7 +47,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
       fhicl::Atom<std::string> stoppingTargetMaterial{Name("stoppingTargetMaterial"),Comment("material")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity")};
-      fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of mother particle")};
+      fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -79,7 +79,7 @@ namespace mu2e {
   //================================================================
   FlatMuonDaughterGenerator::FlatMuonDaughterGenerator(const Parameters& conf)
     : EDProducer{conf}
-    , particleMass_(GlobalConstantsHandle<ParticleDataTable>()->particle(static_cast<PDGCode::type>(conf().pdgId())).ref().mass().value())
+    , particleMass_(GlobalConstantsHandle<ParticleDataList>()->particle(static_cast<PDGCode::type>(conf().pdgId())).mass())
     , startMom_(conf().startMom())
     , endMom_(conf().endMom())
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
@@ -95,8 +95,8 @@ namespace mu2e {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
     
-    if (pid == PDGCode::mu_minus) { process = ProcessCode::mu2eFlateMinus; } 
-    else if (pid == PDGCode::mu_plus) { process = ProcessCode::mu2eFlatePlus; }
+    if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eFlateMinus; } 
+    else if (pid == PDGCode::e_plus) { process = ProcessCode::mu2eFlatePlus; }
     else if (pid == PDGCode::gamma) { process = ProcessCode::mu2eFlatPhoton; }
     else {
       throw   cet::exception("BADINPUT")

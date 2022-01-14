@@ -14,18 +14,19 @@ namespace mu2e {
 
   public:
     ValCaloDigi(std::string name):_name(name){}
-    int declare( art::TFileDirectory tfs);
+    int declare( const art::TFileDirectory& tfs);
     int fill(const CaloDigiCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
   private:
     std::string _name;
-    
+
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;
     TH1D* _hI;
     TH1D* _ht;
+    TH1D* _ht2;
     TH1D* _hm;
     TH1D* _hE;
   };

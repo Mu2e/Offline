@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValBkgQual.hh"
 
 
-int mu2e::ValBkgQual::declare(art::TFileDirectory tfs) {
+int mu2e::ValBkgQual::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NClus", "N Clusters", 100, 0.001, 500.0);
   _hmva = tfs.make<TH1D>( "mva", "mva", 50, -0.02, 1.02);

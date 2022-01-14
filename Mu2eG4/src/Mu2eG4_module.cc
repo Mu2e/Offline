@@ -446,7 +446,9 @@ namespace mu2e {
   void Mu2eG4::endRun(art::Run & run){
 
     BeamOnEndRun();
-    G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    if ( _rmvlevel > 0 ) {
+      G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    }
   }
 
 
@@ -536,12 +538,13 @@ namespace mu2e {
     _runManager->TerminateEventLoop();
     _runManager->RunTermination();
 
-    G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
-    G4cout << "  User="  << _userElapsed
-           << "s Real="  << _realElapsed
-           << "s Sys="   << _systemElapsed
-           << "s" << G4endl;
-
+    if ( _rmvlevel > 0 ) {
+      G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
+      G4cout << "  User="  << _userElapsed
+	     << "s Real="  << _realElapsed
+	     << "s Sys="   << _systemElapsed
+	     << "s" << G4endl;
+    }
   }//BeamOnEndRun
 
 
