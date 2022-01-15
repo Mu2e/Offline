@@ -171,10 +171,10 @@ TrkFilters : {
 	    triggerPath            : "tprHelixIPADeM"
 	}
 	
-	tprHelixCalibIPADeMTCFilter : {
+	tprHelixIPAPhi0ScaledDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprHelixCalibIPADeM"
+	    triggerPath            : "tprHelixIPAPhi0ScaledDeM"
 	}
 	
 	#--------------------------------------------------------------------------------
@@ -649,7 +649,7 @@ TrkFilters : {
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
-	tprHelixCalibIPADeMHSFilter : {
+	tprHelixIPAPhi0ScaledDeMHSFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1		    
@@ -663,7 +663,7 @@ TrkFilters : {
 	    minD0               : 200.		    
 	    minAbsLambda        : 40. 		    
 	    maxAbsLambda        : 80. 		    
-	    triggerPath         : "tprHelixCalibIPADeM"	    
+	    triggerPath         : "tprHelixIPAPhi0ScaledDeM"	    
 	    prescaleUsingD0Phi  : true
 	    prescalerPar        : { amplitude: 6.2 frequency : 0.9675 phase : 0.1396}
 	}
@@ -1005,7 +1005,7 @@ TrkFilters : {
 	    triggerPath          : "tprHelixIPADeM"	    
 	}
 
-	tprHelixCalibIPADeMSDCountFilter     : {
+	tprHelixIPAPhi0ScaledDeMSDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1016,7 +1016,7 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixCalibIPADeM"	    
+	    triggerPath          : "tprHelixIPAPhi0ScaledDeM"	    
 	}
 
 	tprSeedDeMSDCountFilter     : {
@@ -1392,17 +1392,17 @@ TrkFilters : {
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
-	tprHelixCalibIPADeMEventPrescale : {
+	tprHelixIPAPhi0ScaledDeMEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath   : "tprHelixCalibIPADeM"	    
+	    triggerPath   : "tprHelixIPAPhi0ScaledDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
-	tprHelixCalibIPADeMPrescale : {
+	tprHelixIPAPhi0ScaledDeMPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
-	    triggerPath       : "tprHelixCalibIPADeM"	    
+	    triggerPath       : "tprHelixIPAPhi0ScaledDeM"	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
@@ -1778,9 +1778,9 @@ TrkFilters : {
 				 TTtimeClusterFinderUCC, tprSeedUCCDePTCFilter, TThelixFinderUCC, TTHelixUCCMergerDeP, tprSeedUCCDePHSFilter, TTKSFUCCDeP, tprSeedUCCDePTSFilter, tprSeedUCCDeMTriggerInfoMerger ]
 
 	#   calibration with DIO-Michel form Inner Proton Absorber
-	tprHelixCalibIPADeM  : [ tprHelixCalibIPADeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
+	tprHelixIPAPhi0ScaledDeM  : [ tprHelixIPAPhi0ScaledDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixCalibIPADeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixCalibIPADeMHSFilter, tprHelixCalibIPADeMTriggerInfoMerger  ]
+				 TTtimeClusterFinder, tprHelixIPAPhi0ScaledDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixIPAPhi0ScaledDeMHSFilter, tprHelixIPAPhi0ScaledDeMTriggerInfoMerger  ]
 
 	#    beam monitoring using the e- from the DIO in the IPA
 	tprHelixIPADeM       : [ tprHelixIPADeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 

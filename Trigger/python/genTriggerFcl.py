@@ -221,7 +221,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         mainFclFile = open(mainFclFileName,"a",encoding="utf-8")
 
     path_list = ""
-    trig_list = ""
+    #trig_list = ""
 
     mainEpilogFileName   = projectDir + "/" + "{}.fcl".format(configFileBaseName)
     mainEpilogTimingFileName = projectDir + "/" + "{}_timing.fcl".format(configFileBaseName)
@@ -248,26 +248,27 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         words    = line.split()
         pathName = words[0].split(":")[0]
         pathID   = words[0].split(":")[1]
-        if pathName != "triggerOutput":
+        pathNameNoTags = pathName.split("_")[0]
+        if pathNameNoTags != "triggerOutput":
 
             # check if the name of the path is present in the prolog_trigger files
             pathCheck=False
             for i in range(0, len(trig_prolog_files)):
-                if pathName in open(trig_prolog_files[i]).read():
+                if pathNameNoTags in open(trig_prolog_files[i]).read():
                     pathCheck  = True
             if pathCheck == False: 
-                print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathName))
+                print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathNameNoTags))
                 exit(1)
 
             if path_list != "":
                 path_list += ", "
-                trig_list += ", "
+                #trig_list += ", "
             path_list += pathName+"_trigger"
-            trig_list += "\""+pathName+"\""
+            #trig_list += "\""+pathName+"\""
 
             digi_path = "@sequence::Trigger.PrepareDigis, "
             
-            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
+            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
             timing_paths = []
             if "Seed" in pathName:
                 nFilters = 3
@@ -275,10 +276,10 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
                     nFilters = 2                    
                 for ind in range(nFilters):
                     timing_label = "Timing{:d}".format(ind)
-                    timing_paths.append("\nphysics."+pathName+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+timing_label+" ] \n")
+                    timing_paths.append("\nphysics."+pathName+"_"+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+timing_label+" ] \n")
 
             #now append the epilog files for setting the filters in the path
-            subEpilogInclude = appendEpilog(pathName, relProjectDir, 
+            subEpilogInclude = appendEpilog(pathNameNoTags, relProjectDir, 
                                             outDir, srcDir, verbose, 
                                             doWrite, sourceFiles, targetFiles)
 
@@ -287,7 +288,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
                 mainEpilogFile.write(new_path)
                 #
                 mainEpilogTimingFile.write(subEpilogInclude)
-                mainEpilogTimingFile.write(new_path)
+                #mainEpilogTimingFile.write(new_path)
                 for l in range(len(timing_paths)):
                     mainEpilogTimingFile.write(timing_paths[l])
                 

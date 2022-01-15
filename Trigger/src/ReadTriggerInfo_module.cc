@@ -74,7 +74,7 @@ namespace mu2e {
 
     enum {
       kNTrigInfo     = 40,
-      kNTrackTrig    = 20,
+      kNTrackTrig    = 40,
       kNTrackTrigVar = 50,
       kNHelixTrig    = 40,
       kNHelixTrigVar = 130,
@@ -204,7 +204,7 @@ namespace mu2e {
     void     bookTrigInfoHist         (art::ServiceHandle<art::TFileService> & Tfs, summaryInfoHist_       &Hist);
     void     bookTrackInfoHist        (art::ServiceHandle<art::TFileService> & Tfs, trackInfoHist_         &Hist);
     void     bookHelixInfoHist        (art::ServiceHandle<art::TFileService> & Tfs, helixInfoHist_         &Hist);
-    void     bookCaloTrigSeedInfoHist (art::ServiceHandle<art::TFileService> & Tfs, caloTrigSeedHist_      &Hist);
+    void     bookCaloTrigSeedInfoHist (art::ServiceHandle<art::TFileService> & Tfs, caloCalibrationHist_   &Hist);
     void     bookCaloCalibInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, caloCalibrationHist_   &Hist);
     void     bookOccupancyInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_         &Hist);
 
@@ -212,8 +212,8 @@ namespace mu2e {
     void     fillTrackTrigInfo        (int TrkTrigIndex  , const KalSeed*   KSeed, trackInfoHist_         &Hist);
     void     fillHelixTrigInfo        (int HelTrigIndex  , const HelixSeed* HSeed, helixInfoHist_         &Hist);
     void     fillHelixTrigInfoAdd     (int HelTrigIndex  , int MCMotherIndex, const HelixSeed* HSeed, helixInfoHist_         &Hist, MCInfo &TMPMCInfo);
-    void     fillCaloTrigSeedInfo     (int CTrigSeedIndex, const CaloTrigSeed*HCl, caloTrigSeedHist_      &Hist);
-    void     fillCaloCalibTrigInfo    (int ClCalibIndex  , const CaloCluster* HCl, caloCalibrationHist_   &Hist);
+    //    void     fillCaloTrigSeedInfo     (int ClCalibIndex  , const CaloCluster* HCl, caloCalibrationHist_   &Hist);
+    void     fillCaloCalibTrigInfo    (int Index         , const CaloCluster* HCl, caloCalibrationHist_   &Hist);
     void     fillOccupancyInfo        (int Index         , const StrawDigiCollection*SDCol, const CaloDigiCollection*CDCol, occupancyHist_   &Hist);
 
     void     findCorrelatedEvents (std::vector<string>& VecLabels, double &NCorrelated);
@@ -268,7 +268,8 @@ namespace mu2e {
     trackInfoHist_            _trkHist;
     helixInfoHist_            _helHist;
 
-    caloTrigSeedHist_         _caloTSeedHist;
+    //    caloTrigSeedHist_         _caloTSeedHist;
+    caloCalibrationHist_      _caloTSeedHist;
     caloCalibrationHist_      _caloCalibHist;
     occupancyHist_            _occupancyHist;
 
@@ -420,7 +421,7 @@ namespace mu2e {
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][11] = helInfoDir.make<TH1F>(Form("hPtMC_%i", i), "MC Track Pt @ tracker front; p_{t} [MeV/c]" , 400, 0, 200);
-      Hist._hHelInfo[i][12] = helInfoDir.make<TH1F>(Form("hPzMC_%i", i), "MC Track Pt @ tracker front; p_{z} [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][12] = helInfoDir.make<TH1F>(Form("hPzMC_%i", i), "MC Track Pt @ tracker front; p_{z} [MeV/c]" , 800, -200, 200);
       Hist._hHelInfo[i][13] = helInfoDir.make<TH1F>(Form("hDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
       Hist._hHelInfo[i][14] = helInfoDir.make<TH1F>(Form("hDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
       Hist._hHelInfo[i][15] = helInfoDir.make<TH1F>(Form("hDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
@@ -544,12 +545,14 @@ namespace mu2e {
     }
   }
   //--------------------------------------------------------------------------------//
-  void     ReadTriggerInfo::bookCaloTrigSeedInfoHist (art::ServiceHandle<art::TFileService> & Tfs, caloTrigSeedHist_      &Hist){
+  void     ReadTriggerInfo::bookCaloTrigSeedInfoHist (art::ServiceHandle<art::TFileService> & Tfs, caloCalibrationHist_      &Hist){
     for (int i=0; i<_nCaloTrig; ++i){
       art::TFileDirectory caloInfoDir = Tfs->mkdir(Form("caloOnly_%i",i));
-      Hist._hCaloOnlyInfo[i][0] = caloInfoDir.make<TH1F>(Form("hEPeak_%i"   , i), "peak energy; E[MeV]"        , 400, 0, 200);
-      Hist._hCaloOnlyInfo[i][1] = caloInfoDir.make<TH1F>(Form("hR1Max1_%i"   , i), "ring1 max; ring1max [MeV]" , 400, 0, 200);
-      Hist._hCaloOnlyInfo[i][2] = caloInfoDir.make<TH1F>(Form("hR1Max2_%i"   , i), "ring1 max; ring1max2 [MeV]", 400, 0, 200);    
+      Hist._hCaloCalibInfo[i][0] = caloInfoDir.make<TH1F>(Form("hE_%i"   , i), "Cluster energy; E[MeV]", 800, 0, 800);
+      Hist._hCaloCalibInfo[i][1] = caloInfoDir.make<TH1F>(Form("hN_%i"   , i), "Cluster size; nCrystalHits", 101, -0.5, 100.5);
+      // Hist._hCaloOnlyInfo[i][0] = caloInfoDir.make<TH1F>(Form("hEPeak_%i"   , i), "peak energy; E[MeV]"        , 400, 0, 200);
+      // Hist._hCaloOnlyInfo[i][1] = caloInfoDir.make<TH1F>(Form("hR1Max1_%i"   , i), "ring1 max; ring1max [MeV]" , 400, 0, 200);
+      // Hist._hCaloOnlyInfo[i][2] = caloInfoDir.make<TH1F>(Form("hR1Max2_%i"   , i), "ring1 max; ring1max2 [MeV]", 400, 0, 200);    
     }
   }
   //--------------------------------------------------------------------------------//
@@ -766,8 +769,8 @@ namespace mu2e {
     std::sort(_trigFinal.begin(), _trigFinal.end(), [](const auto a, const auto b) {return a.counts < b.counts; });
     
     ConditionsHandle<AcceleratorParams> accPar("ignored");
-    double    mbtime         = accPar->deBuncherPeriod;
-    double    mean_mb_rate   = 1./(mbtime/CLHEP::s)*_duty_cycle;
+    //double    mbtime         = accPar->deBuncherPeriod;
+    double    mean_mb_rate   = 1.;///(mbtime/CLHEP::s)*_duty_cycle;
 
     bool      isFirst(true);
     int       index(0);
@@ -808,24 +811,26 @@ namespace mu2e {
     NCorrelated = 0;
     
     const char* label_ref = VecLabels.at(VecLabels.size()-1).c_str();
+    if (VecLabels.size()<2) return;
 
     //    char* label(0);
     
-    int        nLabels = VecLabels.size() -1;
+    //    int        nLabels = VecLabels.size() -1;
     int        nbins   = _sumHist._h2DTrigInfo[1]->GetNbinsX();
     for(int i=0; i<nbins; ++i){
       const char* label = _sumHist._h2DTrigInfo[1]->GetXaxis()->GetBinLabel(i+1);
       if (std::strcmp(label_ref, label) != 0)      continue;
       
-      for (int k=0; k<nLabels; ++k){
-       	label_ref = VecLabels.at(k).c_str();
-	for (int j=0; j<nbins; ++j){
-	  //if (j == i)      break;
-	  label =   _sumHist._h2DTrigInfo[1]->GetYaxis()->GetBinLabel(j+1);
-	  if (std::strcmp(label_ref, label) != 0)        continue;
-	  NCorrelated += _sumHist._h2DTrigInfo[1]->GetBinContent(i+1, j+1);
-	}
+      //      for (int k=0; k<nLabels; ++k){
+      //      label_ref = VecLabels.at(k).c_str();
+      const char* label_2 = VecLabels.at(VecLabels.size()-2).c_str();
+      for (int j=0; j<nbins; ++j){
+	//if (j == i)      break;
+	label =   _sumHist._h2DTrigInfo[1]->GetYaxis()->GetBinLabel(j+1);
+	if (std::strcmp(label_2, label) != 0)        continue;
+	NCorrelated += _sumHist._h2DTrigInfo[1]->GetBinContent(i+1, j+1);
       }
+      //}
       break;
     }
 
@@ -966,15 +971,22 @@ namespace mu2e {
     art::InputTag const tag{Form("TriggerResults::%s", _processName.c_str())};  
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
+    TriggerResultsNavigator   trigNavig(trigResults);
 
     //fill the histogram with the trigger bits
-    for (unsigned i=0; i<trigResults->size(); ++i){
-      if (trigResults->accept(i)){
-	_sumHist._hTrigBits->Fill(i);
+    //    for (unsigned i=0; i<trigResults->size(); ++i){
+    for (unsigned int i=0; i< trigNavig.getTrigPaths().size(); ++i){
+      //      if (trigResults->accept(i)){
+      std::string path   = trigNavig.getTrigPathName(i);
+      if(trigNavig.accepted(path)){
+	for (size_t j=0; j<_trigPaths.size(); ++j){
+	  if (_trigPaths[j] == path){
+	    _sumHist._hTrigBits->Fill(j);
+	    break;
+	  }
+	}
       }
     }
-
-    TriggerResultsNavigator   trigNavig(trigResults);
     
     for (unsigned int i=0; i< trigNavig.getTrigPaths().size(); ++i){
       std::string path   = trigNavig.getTrigPathName(i);
@@ -1124,7 +1136,7 @@ namespace mu2e {
 	    //	    findTrigIndex(_trigEvtPS, moduleLabel, index);
 	    _trigEvtPS[index].label  = moduleLabel;
 	    _trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
-	  }else if ( moduleLabel.find("CaloCosmicCalib") != std::string::npos){
+	  }else if ( moduleLabel.find("caloCalibCosmic") != std::string::npos){
 	    //	    findTrigIndex(_trigCaloCalib, moduleLabel, index);
 	    _trigCaloCalib[index].label  = moduleLabel;
 	    _trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
@@ -1137,28 +1149,29 @@ namespace mu2e {
 	      }
 	    }//end loop over the cluster-collection
 	    trigFlag_index.push_back(index_all);
-	  }else if ( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
+	  }else if ( ( moduleLabel.find("caloMVANNCEFilter") != std::string::npos) || ( moduleLabel.find("caloPhotonFilter") != std::string::npos)){ //( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
 	    //	    findTrigIndex(_trigCaloOnly, moduleLabel, index);
 	    _trigCaloOnly[index].label  = moduleLabel;
 	    _trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
 	    passed = true;
 	    nTrigObj=0;
-	    for (auto const clseed: trigInfo->caloTrigSeeds()){
+	    for (auto const clseed: trigInfo->caloClusters()){
 	      ++nTrigObj;
 	      if(clseed) {
-		fillCaloTrigSeedInfo(index, clseed.get(), _caloTSeedHist);
+		fillCaloCalibTrigInfo(index, clseed.get(), _caloTSeedHist);
 		if (passed) {
 		  passed = false;
 		  fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
 		}
 	      }
 	    }//end loop
-	    _caloTSeedHist._hCaloOnlyInfo[i][20]->Fill(nTrigObj);
+	    //_caloTSeedHist._hCaloOnlyInfo[i][20]->Fill(nTrigObj);
 	    trigFlag_index.push_back(index_all);	    
 	  }
 	  
 	  bool isCosmicHelix = (moduleLabel.find("HSFilter")!= std::string::npos) && (moduleLabel.find("CosmicHelix")!= std::string::npos);
-	  if ( (moduleLabel.find("caloMVACEFilter")!= std::string::npos) || 
+	  if ( (moduleLabel.find("caloPhotonFilter")!= std::string::npos) || 
+	       (moduleLabel.find("caloMVANNCEFilter")!= std::string::npos) || 
 	       (moduleLabel.find("TSFilter")       != std::string::npos) ||
 	       isCosmicHelix ){ 
 	    //	    findTrigIndex(_trigFinal, moduleLabel, index);
@@ -1522,11 +1535,16 @@ namespace mu2e {
   }
   //--------------------------------------------------------------------------------
 
-  void   ReadTriggerInfo::fillCaloTrigSeedInfo(int Index, const CaloTrigSeed*HCl, caloTrigSeedHist_      &Hist){
-    Hist._hCaloOnlyInfo[Index][0]->Fill(HCl->epeak());
-    Hist._hCaloOnlyInfo[Index][1]->Fill(HCl->ring1max());
-    Hist._hCaloOnlyInfo[Index][2]->Fill(HCl->ring1max2());
-  }
+  // void   ReadTriggerInfo::fillCaloTrigSeedInfo(int Index, const CaloTrigSeed*HCl, caloCalibrationHist_     &Hist){
+  //   int        clsize    = HCl->size();
+  //   double     energy    = HCl->energyDep();
+
+  //   Hist._hCaloCalibInfo[Index][0]->Fill(energy);
+  //   Hist._hCaloCalibInfo[Index][1]->Fill(clsize);
+  //   // Hist._hCaloOnlyInfo[Index][0]->Fill(HCl->epeak());
+  //   // Hist._hCaloOnlyInfo[Index][1]->Fill(HCl->ring1max());
+  //   // Hist._hCaloOnlyInfo[Index][2]->Fill(HCl->ring1max2());
+  // }
   //--------------------------------------------------------------------------------
   
   void   ReadTriggerInfo::fillOccupancyInfo(int Index         , const StrawDigiCollection*SDCol, const CaloDigiCollection*CDCol, occupancyHist_   &Hist){
