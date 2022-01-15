@@ -68,7 +68,7 @@ CaloFilters : {
     
     
 #skelethon for a cosmic muon calibration
-    caloCalibCosmicFilter : {
+    caloCosmicFilter : {
 	module_type            : CaloCosmicCalib
 	CaloClusterModuleLabel : "CaloClusterFast"
 	debugLevel             : 0	      
@@ -197,7 +197,7 @@ CaloFilters : { @table::CaloFilters
 	    maxCaloEnergy       : -1
 	}
 
-	caloCalibCosmicCDCountFilter     : {
+	caloCosmicCDCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUSed
 	    caloDigiCollection  : CaloDigiMaker
@@ -273,12 +273,12 @@ CaloFilters : { @table::CaloFilters
 	    useFilteredEvents : true
 	}
 	
-	caloCalibCosmicEventPrescale : {
+	caloCosmicEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	}
 	
-	caloCalibCosmicPrescale : {
+	caloCosmicPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
@@ -330,7 +330,7 @@ CaloFilters : { @table::CaloFilters
 	caloMVAMixedFilter     : { @table::CaloFilters.caloMVAMixedFilter    }
 	
 	#dummy filter for cosmic muon calibration
-	caloCalibCosmicFilter  : { @table::CaloFilters.caloCalibCosmicFilter }
+	caloCosmicFilter  : { @table::CaloFilters.caloCosmicFilter }
 	
 	#select events based on a likelihood discriminator
 	caloLHCEFilter         : { @table::CaloFilters.caloLHCEFilter        }
@@ -349,7 +349,7 @@ CaloFilters : { @table::CaloFilters
 	caloMVAMixedCE   : [ caloMVAMixedEventPrescale, caloMVAMixedCDCountFilter, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			     CaloTrigger, caloMVAMixedFilter ] 
 	
-	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloCalibCosmicFilter] 
+	caloCosmic  : [ caloCosmicEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloCosmicFilter] 
 
 	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloLHCEFilter] 
 
