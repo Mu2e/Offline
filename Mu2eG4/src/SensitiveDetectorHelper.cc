@@ -137,9 +137,9 @@ namespace mu2e {
     art::ServiceHandle<Mu2eG4Helper> helper;
 
     for(auto& iter : lvsd_) {
-      iter.second.sensitiveDetector = new Mu2eG4SensitiveDetector(iter.first, config);
-      SDman->AddNewDetector(iter.second.sensitiveDetector);
-      helper->locateVolInfo(iter.first).logical->SetSensitiveDetector(iter.second.sensitiveDetector);
+      auto sd = new Mu2eG4SensitiveDetector(iter.first, config);
+      SDman->AddNewDetector(sd);
+      helper->locateVolInfo(iter.first).logical->SetSensitiveDetector(sd);
     }
   }
 
@@ -149,6 +149,8 @@ namespace mu2e {
   void SensitiveDetectorHelper::registerSensitiveDetectors(){
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
 
+    const bool printWarnings = (verbosityLevel_ > -1) ? true : false;
+
     for ( InstanceMap::iterator i=stepInstances_.begin();
           i != stepInstances_.end(); ++i ) {
       StepInstance& step(i->second);
@@ -156,7 +158,6 @@ namespace mu2e {
         std::cout << __func__ << " looking for sd with name: "
                   << step.stepName << std::endl;
             }
-      bool printWarnings = (verbosityLevel_ > -1) ? true : false;
       step.sensitiveDetector =
         dynamic_cast<Mu2eG4SensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
     }
@@ -165,6 +166,17 @@ namespace mu2e {
       dynamic_cast<ExtMonFNALPixelSD*>(sdManager->
                                        FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
       : nullptr;
+
+    // Logical volume SDs, it any.
+    for ( auto& i : lvsd_ ){
+      StepInstance& step(i.second);
+      if (verbosityLevel_ > 0 ) {
+        std::cout << __func__ << " looking for lvsd with name: "
+                  << step.stepName << "   " << this << std::endl;
+      }
+       step.sensitiveDetector =
+         dynamic_cast<Mu2eG4SensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
+    }
 
   }
 
