@@ -15,8 +15,8 @@ namespace mu2e
   class KKBField : public KinKal::BFieldMap {
     public:
       using Grad = ROOT::Math::SMatrix<double,3>; // field gradient: ie dBi/d(x,y,z)
-    // construct from BField object and system translator.
-    // This should be a single BField map valid in the detector system, to avoid making continuous translations FIXME!
+      // construct from BField object and system translator.
+      // This should be a single BField map valid in the detector system, to avoid making continuous translations FIXME!
       KKBField(BFieldManager const& bfmgr, DetectorSystem const& det) : bfmgr_(bfmgr), det_(det) {}
       virtual ~KKBField() {}
       // KinKal BField interface

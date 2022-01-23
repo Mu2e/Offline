@@ -212,7 +212,7 @@ namespace mu2e {
         ComboHit const& strawhit = chcol[ich];
         if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_))){
           double zt = zTime(kktrk.fitTraj(),strawhit.pos().Z());
-          if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {	    // compare the measured time with the estimate from the fit
+          if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
             const Straw& straw = tracker.getStraw(strawhit.strawId());
             auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
             double psign = wline.direction().Dot(straw.wireDirection());  // wire distance is WRT straw center, in the nominal wire direction
