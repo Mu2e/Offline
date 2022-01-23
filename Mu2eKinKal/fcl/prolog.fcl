@@ -52,6 +52,23 @@ Mu2eKinKal : {
     ]
   }
 
+  KKDRIFTFIT: {
+    PrintLevel : 0
+    MinNDOF : 5
+    MaxNIter : 10
+    Deweight : 1.0e6
+    DeltaParams : 1e4 # chisquared
+    TimeBuffer : 1.0 # ns
+    BFieldCorrection : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      [ 10.0, 1.0, 10.0 ],
+      [ 2.0, 0.5, 10.0 ],
+      [ 0.0, 0.2, 20.0]]
+    KKStrawHitUpdaterSettings : [
+    ]
+  }
+
   KKSEEDEXT: {
     PrintLevel : 0
     MinNDOF : 5
@@ -78,7 +95,7 @@ Mu2eKinKal : {
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 1.0, 0.5, 20.0 ],
-      [ 1.0, 0.5, 20.0 ],
+      [ 0.5, 0.3, 20.0 ],
       [ 0.0, 0.2, 20.0 ]]
     KKStrawHitUpdaterSettings : [
        [ 10.0, 20.0, 1e-6, 0 ],
@@ -120,7 +137,7 @@ Mu2eKinKal : {
     module_type : LoopHelixFit
     MaterialSettings : @local::Mu2eKinKal.KKMAT
     Mu2eSettings: @local::Mu2eKinKal.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
+    KinKalFitSettings : @local::Mu2eKinKal.KKDRIFTFIT
     KinKalExtensionSettings : @local::Mu2eKinKal.KKDRIFTEXT
     ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
   }
