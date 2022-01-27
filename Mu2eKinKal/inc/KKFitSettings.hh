@@ -22,13 +22,15 @@ namespace mu2e {
       fhicl::Atom<int> minndof { Name("MinNDOF"), Comment("Minimum number of Degrees of Freedom to conitnue fitting") };
       fhicl::Atom<int> maxniter { Name("MaxNIter"), Comment("Maximum number of algebraic iteration steps in each fit meta-iteration") };
       fhicl::Atom<float> dwt { Name("Deweight"), Comment("Deweighting factor when initializing the track end parameters") };
+      fhicl::Atom<float> convdchisq { Name("ConvergenceDeltaChisq"), Comment("Maximum Chisq/DOF change between iterations to define convergence") };
+      fhicl::Atom<float> divdchisq { Name("DivergenceDeltaChisq"), Comment("Minimum Chisq/DOF change between iterations to define divergence") };
       fhicl::Atom<float> dparams { Name("DeltaParams"), Comment("Parameter difference threshold (units of chisquared)") };
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)") };
       fhicl::Atom<bool> bfieldCorr { Name("BFieldCorrection"), Comment("Apply correction for BField inhomogeneity") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)") };
-      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
-      " 'Temperature (dimensionless)', 'Delta chisquared/DOF for convergence', 'Delta chisquared/DOF for divergence'") };
+      " 'Temperature (dimensionless)'") };
       using KKStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,size_t>>;
       KKStrawHitUpdaterSettings shuConfig{ Name("KKStrawHitUpdaterSettings"), Comment("KKStrawHitUpdater settings, format: \n"
       " 'Minimum wire DOCA to assign L/R ambiguity and use drift'', 'Maximum wire DOCA to use hit', 'Minmum probablity to use hit',,'Meta-iteration'") };
