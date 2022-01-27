@@ -14,6 +14,8 @@ namespace mu2e {
       config.minndof_ = fitconfig.minndof();
       config.maxniter_ = fitconfig.maxniter();
       config.dwt_ = fitconfig.dwt();
+      config.convdchisq_ = fitconfig.convdchisq();
+      config.divdchisq_ = fitconfig.divdchisq();
       config.pdchi2_ = fitconfig.dparams();
       config.tbuff_ = fitconfig.tBuffer();
       config.bfcorr_ = fitconfig.bfieldCorr();
@@ -24,8 +26,6 @@ namespace mu2e {
         MetaIterConfig mconfig;
         mconfig.miter_ = nmiter++;
         mconfig.temp_ = std::get<0>(misetting);
-        mconfig.convdchisq_ = std::get<1>(misetting);
-        mconfig.divdchisq_ = std::get<2>(misetting);
         config.schedule_.push_back(mconfig);
       }
       // create the updaters requested
