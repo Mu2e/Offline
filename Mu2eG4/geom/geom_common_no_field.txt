@@ -1,0 +1,11 @@
+//
+// Variant on geom_common.txt with all magnetic fields turned off.
+//
+
+#include "Offline/Mu2eG4/geom/geom_common.txt"
+#include "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

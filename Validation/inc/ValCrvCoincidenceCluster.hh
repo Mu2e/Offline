@@ -26,6 +26,7 @@ namespace mu2e {
     TH1D* _hSec;
     TH1D* _hPE;
     TH1D* _ht;
+    TH1D* _ht2;
     TH1D* _hx;
     TH1D* _hy;
     TH1D* _hz;

@@ -24,6 +24,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
+#include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 
 // Data products that will be produced by this module.
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -212,8 +213,12 @@ namespace mu2e {
       }
     }
 
-    if ( ncalls == 1 && _exportPDTStart) {
-      exportG4PDT( "Start:" );//once per job
+    // Some end-of-begin run things that need to be done only once per job.
+    if ( ncalls == 1 ){
+      validGeometryOrThrow( _rmvlevel );
+      if ( _exportPDTStart) {
+        exportG4PDT( "Start:" );
+      }
     }
 
   }//Mu2eG4MT::beginRun
