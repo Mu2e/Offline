@@ -1135,13 +1135,7 @@ namespace mu2e {
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
-
-        //we need names like CRV_R1, but not CRSCMB_CRV_R1 and not CRV_Support_TS
-        if ((LVname.find("CRV_") != std::string::npos)
-            && (LVname.find("CRV_Support") == std::string::npos)
-            && (LVname.find("CRSCMB_CRV") == std::string::npos)) {
-          (*pos)->SetSensitiveDetector(sbSD);
-        }
+        if(LVname.compare(0,11,"CRSscintBar")==0) (*pos)->SetSensitiveDetector(sbSD);
       }//for
     }//if CRV
 
