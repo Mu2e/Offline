@@ -178,7 +178,6 @@ G4GLOBALIBS = [
               'libG4track',
               'libG4tracking',
               'libG4visHepRep',
-              'libG4visXXX',
               'libG4vis_management',
               'libG4zlib'
               ]
