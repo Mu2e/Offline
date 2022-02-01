@@ -93,4 +93,7 @@
 // general reco
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"
 
+// STM
+#include "Offline/RecoDataProducts/inc/STMDigi.hh"
+
 #undef ENABLE_MU2E_GENREFLEX_HACKS

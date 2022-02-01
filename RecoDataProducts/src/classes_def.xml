@@ -370,4 +370,9 @@
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
 
+<!--  ********* STM ********* -->
+ <class name="mu2e::STMDigi"/>
+ <class name="std::vector<mu2e::STMDigi>"/>
+ <class name="art::Wrapper<std::vector<mu2e::STMDigi> >"/>
+
 </lcgdict>
