@@ -61,9 +61,17 @@ namespace mu2e {
     double sum_edep = 0;
     for (const auto& step : *stepsHandle) {
       sum_edep += step.totalEDep();
-      std::cout << "SimID: " << step.simParticle()->id() << " (pdg = " << step.simParticle()->pdgId() << "), Parent SimID: " << step.simParticle()->parent()->id() << " (pdg = " << step.simParticle()->parent()->pdgId() << "), Grandparent SimID: " << step.simParticle()->parent()->parent()->id() << " (pdg = " << step.simParticle()->parent()->parent()->pdgId() << ")" << std::endl;
+      auto simPtr = step.simParticle();
+      std::cout << "Step EDep = " << step.totalEDep() << " MeV" << std::endl;
+      std::cout << "SimID: " << simPtr->id() << " (pdg = " << simPtr->pdgId() << ")" << std::endl;
+      auto parentPtr = simPtr->parent();
+      while (parentPtr.isNonnull()) {
+	std::cout << "Parent SimID: " << parentPtr->id() << " (pdg = " << parentPtr->pdgId() << ")" << std::endl;
+	parentPtr = parentPtr->parent();
+      }
     }
-    std::cout << "AE: " << sum_edep << " MeV" << std::endl;
+    STMStep stm_step(sum_edep);
+    outputSTMSteps->push_back(stm_step);
 
     event.put(std::move(outputSTMSteps));
   }
