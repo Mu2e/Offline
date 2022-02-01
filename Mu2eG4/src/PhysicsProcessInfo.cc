@@ -38,9 +38,9 @@ namespace mu2e{
     _allProcesses(),
     _longestName(0){
   }
-    
+
   void PhysicsProcessInfo::beginRun(){
-      
+
     _allProcesses.clear();
 
     // Number of processes that are not known to the ProcessCode enum.
@@ -73,77 +73,20 @@ namespace mu2e{
       for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
 
         G4VProcess const* proc = (*pVector)[j];
-        G4String const& name  = proc->GetProcessName();
-
-        map_type::iterator jj = _allProcesses.find(name);
-
-        // If not already in the map, then create it.
-        if ( jj == _allProcesses.end() ){
-          _longestName = (name.size() > _longestName) ? name.size() : _longestName;
-
-          ProcessCode code = ProcessCode::findByName(name);
-          if ( code.id() == ProcessCode::unknown ){
-            ++nUnknownProcesses;
-            cout << "Physics process named: " << name
-                 << " is not known to the ProcessCode enum."
-                 << endl;
-          }
-
-          pair<map_type::iterator,bool> result = _allProcesses.insert(
-                 std::make_pair(name,ProcInfo(name,code) ));
-          jj = result.first;
-
+        nUnknownProcesses+=insertIfNotFound(proc->GetProcessName(),particleName);
+        // we will artificially attach "mu2eFieldPropagator" to all charged particles
+        if( (particle->GetPDGCharge())!=0.0 ) {
+          nUnknownProcesses+=insertIfNotFound(G4String("mu2eFieldPropagator"),particleName);
         }
-        // we will artificially attach "mu2eFieldPropagator" to all particles
-        // fixme : do it only for charged particles; factorize the code
-
-        G4String const pname = G4String("mu2eFieldPropagator");
-        jj = _allProcesses.find(pname);
-        // If not already in the map, then create it.
-        if ( jj == _allProcesses.end() ){
-          _longestName = (pname.size() > _longestName) ? pname.size() : _longestName;
-
-          ProcessCode code = ProcessCode::findByName(pname);
-          if ( code.id() == ProcessCode::unknown ){
-            ++nUnknownProcesses;
-            cout << "Physics process named: " << pname
-                 << " is not known to the ProcessCode enum."
-                 << endl;
-          }
-
-          pair<map_type::iterator,bool> result = _allProcesses.insert(
-                 std::make_pair(pname,ProcInfo(pname,code) ));
-          jj = result.first;
-        }
-
-        // Add a particle to the
-        ProcInfo& ojj = jj->second;
-        ojj.particleNames.push_back(particleName);
+        // we will artificially attach "NoProcess" to all particles
+        // it was introduced in Geant4 v11.0 as a process name only and only for accounting purposes
+        nUnknownProcesses+=insertIfNotFound(G4String("NoProcess"),particleName);
 
       } // end loop over processes
     }   // end loop over particle table
 
     // we will artificially attach "NotSpecified" process to Unspecified particle
-    // fixme factorize the code
-
-    G4String pname = G4String("NotSpecified");
-    _longestName = (pname.size() > _longestName) ? pname.size() : _longestName;
-
-    ProcessCode pcode = ProcessCode::findByName(pname);
-    if ( pcode.id() == ProcessCode::unknown ){
-      ++nUnknownProcesses;
-      cout << "Physics process named: " << pname
-           << " is not known to the ProcessCode enum."
-           << endl;
-    }
-
-    pair<map_type::iterator,bool> result =
-      _allProcesses.insert(std::make_pair(pname,ProcInfo(pname,pcode)));
-    map_type::iterator resultFirst = result.first;
-
-    // Add Unspecified to the particleNames vector
-    ProcInfo& pinfo = resultFirst ->second;
-    pinfo.particleNames.push_back(G4String("Unspecified"));
+    nUnknownProcesses+=insertIfNotFound(G4String("NotSpecified"),G4String("Unspecified"));
 
     if (nUnknownProcesses > 0 ){
       throw cet::exception("RANGE")
@@ -163,16 +106,43 @@ namespace mu2e{
   } // PhysicsProcessInfo::beginRun
 
   void PhysicsProcessInfo::endRun(){
-      
+
       //NEED TO PUT IN SOME PRINT SUMMARY FOR SEQUENTIAL MODE OR A SINGLE SUMMARRY IN MT
       //MODE.  RIGHT NOW WE GET ONE SUMMARY FOR EACH TRHEAD.
       //printSummary(cout);
     // printAll(cout);
   }
 
+  // helper function to insert process and add particle name to ProcInfo; return non 0 if unknown
+  int  PhysicsProcessInfo::insertIfNotFound( G4String const& processName,
+                                             G4String const& particleName){
+    int nUnknownProcesses(0);
+    map_type::iterator jj = _allProcesses.find(processName);
+    // If not already in the map, then create it.
+    if ( jj == _allProcesses.end() ){
+      _longestName = (processName.size() > _longestName) ? processName.size() : _longestName;
+
+      ProcessCode code = ProcessCode::findByName(processName);
+      if ( code.id() == ProcessCode::unknown ){
+        ++nUnknownProcesses;
+        cout << "Physics process named: " << processName
+             << " is not known to the ProcessCode enum."
+             << endl;
+      }
+
+      pair<map_type::iterator,bool> result =
+        _allProcesses.insert( std::make_pair(processName,ProcInfo(processName,code) ));
+      jj = result.first;
+    }
+    // add the particle to ProcInfo
+    ProcInfo& ojj = jj->second;
+    ojj.particleNames.push_back(particleName);
+    return nUnknownProcesses;
+  }
+
   // This can possibly be sped up considerably by checking frequently occuring names first.
   ProcessCode PhysicsProcessInfo::findAndCount( G4String const& name ){
-      
+
     map_type::iterator i = _allProcesses.find(name);
     if ( i == _allProcesses.end() ){
       throw cet::exception("RANGE")

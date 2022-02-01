@@ -917,7 +917,7 @@ namespace mu2e {
                        kStateGas, temperature, pressure);
 
       for (size_t i = 0 ; i < StrawLeak->GetNumberOfElements(); ++i) {
-        DSVacuum->AddElement(StrawLeak->GetElementVector()->at(i), StrawLeak->GetFractionVector()[i]);
+        DSVacuum->AddElement(const_cast<G4Element*>(StrawLeak->GetElementVector()->at(i)), StrawLeak->GetFractionVector()[i]);
       }
 
     }
@@ -943,7 +943,7 @@ namespace mu2e {
                        kStateGas, temperature, pressure);
 
       for (size_t i = 0 ; i < gas->GetNumberOfElements(); ++i) {
-        PSVacuum->AddElement(gas->GetElementVector()->at(i), gas->GetFractionVector()[i]);
+        PSVacuum->AddElement(const_cast<G4Element*>(gas->GetElementVector()->at(i)), gas->GetFractionVector()[i]);
       }
 
     }
