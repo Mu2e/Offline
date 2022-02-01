@@ -374,5 +374,8 @@
  <class name="mu2e::STMDigi"/>
  <class name="std::vector<mu2e::STMDigi>"/>
  <class name="art::Wrapper<std::vector<mu2e::STMDigi> >"/>
+ <class name="mu2e::STMHit"/>
+ <class name="std::vector<mu2e::STMHit>"/>
+ <class name="art::Wrapper<std::vector<mu2e::STMHit> >"/>
 
 </lcgdict>

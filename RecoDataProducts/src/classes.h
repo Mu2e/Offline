@@ -95,5 +95,6 @@
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS
