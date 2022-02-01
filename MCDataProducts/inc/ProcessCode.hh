@@ -87,7 +87,7 @@ namespace mu2e {
       mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, mu2eFlatPhoton, // 175
       mu2eCePlusLeadingLog, mu2ePionCaptureAtRest, mu2eExternalRPC, mu2eInternalRPC, 
       mu2eunused5, mu2eunused6, mu2eunused7, mu2eunused8, 
-      uninitialized,
+      uninitialized, NoProcess,
       lastEnum,
       // An alias for backward compatibility
       mu2eHallAir = mu2eKillerVolume
@@ -143,7 +143,7 @@ namespace mu2e {
     "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
     "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eExternalRPC", "mu2eInternalRPC", \
     "mu2eunused5", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
-    "uninitialized"
+    "uninitialized", "NoProcess"
 #endif
 
   public:
