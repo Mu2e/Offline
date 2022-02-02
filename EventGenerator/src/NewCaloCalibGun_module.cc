@@ -30,7 +30,8 @@
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
-
+#include "Offline/MCDataProducts/inc/GenId.hh"
+#include "Offline/MCDataProducts/inc/GenParticle.hh"
 //For primary:
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -119,6 +120,7 @@ namespace mu2e {
     float _genPosX;
     float _genPosY;
     float _genPosZ;
+    void addParticles(GenParticleCollection* output);
  
   };
 
@@ -137,8 +139,9 @@ namespace mu2e {
     , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi},
 
   {
-    produces<mu2e::StageParticleCollection>();
+    produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
+    produces <MCTrajectoryCollection>();
     
     _detSys          = &*GeomHandle<DetectorSystem>();
     _cal             = &*GeomHandle<DiskCalorimeter>();
@@ -169,17 +172,137 @@ namespace mu2e {
 
   //================================================================
   void NewCaloCalibGun::produce(art::Event& event) {
-    auto output{std::make_unique<StageParticleCollection>()};
-    //Call the gun here
-    output->emplace_back(mustop,
-                         ProcessCode::CaloCalib,
-                         PDGCode::gamma,
-                         mustop->endPosition(),
-                         CLHEP::HepLorentzVector{randomUnitSphere_.fire(randomMom), randomE},
-                         time
-                         );
-    
+    auto output{std::make_unique<GenParticleCollection>()};
+    addParticles(output);
     event.put(std::move(output));
+    PrimaryParticle pp;
+    MCTrajectoryCollection mctc;
+    event.put(std::make_unique<PrimaryParticle>(pp));
+    event.put(std::make_unique<MCTrajectoryCollection>(mctc));
+  }
+  
+  void CaloCalibGun::addParticles(GenParticleCollection* output)
+  {
+    int nGen = _mean;
+    // define the parameters of the pipes
+    // angle of large torus in degrees
+    double phi_lbd[5] = {161.34, 149.50, 139.50, 132.07, 125.39};
+    // angle of small torus in degrees
+    double phi_sbd[5] = {84.63, 85.28, 85.79, 86.20, 86.53};
+    // angle of the end point
+    double phi_end[5] = {3.96, 10.53, 15.80, 20.16, 23.84};
+    // center position y of the small torus
+    double ysmall[5] = {432.2, 480.5, 524.3, 564.7, 602.5};
+    // radius of small torus
+    double radSmTor = 41.0;
+    // first center position x of the small torus
+    double xsmall = 71.0;
+    // distance of the small torus center
+    double xdistance = 60.0;
+    // inner radius of the manifold
+    double rInnerManifold = 681.6; // 713.35 mm - 1.25 in (31.75 mm)
+    vector<float> sign{-1.0, 1.0};
+
+    for (int ig=0; ig<nGen; ++ig) 
+    {
+      // only in the front of 2nd disk.
+      int nDisk        = 1;
+      _zPipeCenter     = _cal->disk(nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(nDisk).geomInfo().size().z()/2.0-_pipeRadius);
+
+      double xpipe, ypipe, zpipe;
+      //Pick position
+      int xsn = rint(_randFlat.fire());
+      int ysn = rint(_randFlat.fire());
+
+      double theta = _randFlat.fire() * 2.0 * piconst;
+      double pipeR = _pipeRadius * _randFlat.fire();
+      zpipe = pipeR*sin(theta);
+
+      double rtest = _randFlat.fire();
+      int idx = int( std::lower_bound(_randomRad.begin(), _randomRad.end(), rtest) - _randomRad.begin());
+      double radLgTor = _pipeTorRadius[idx];
+
+      // The phi range from 0 to half phi_lbd for the large torus
+      double phiLgTor = _randFlat.fire() * phi_lbd[idx]  * piconst / 2. / 180.;
+      // x, y, z position of the large torus
+      double xLgTor = sign[xsn]*(radLgTor + pipeR*cos(theta))*cos(phiLgTor);
+      double yLgTor = sign[ysn]*(radLgTor + pipeR*cos(theta))*sin(phiLgTor);
+      // circulus (center) of the large torus
+      double circLgTor = radLgTor * phi_lbd[idx]  * piconst / 2. / 180.;
+
+      // The phi range for the small torus
+      double phiSmTor = piconst * (_randFlat.fire() * phi_sbd[idx] + 180. + phi_lbd[idx]/2. - phi_sbd[idx])/180.;
+      // x, y, z position of the small torus
+      double xSmTor = sign[xsn]*((radSmTor + pipeR*cos(theta))*cos(phiSmTor) + xsmall + xdistance * idx);
+      double ySmTor = sign[ysn]*((radSmTor + pipeR*cos(theta))*sin(phiSmTor) + ysmall[idx]);
+      // circulus (center) of the small torus
+      double circSmTor = radSmTor * piconst * phi_sbd[idx] / 180.;
+
+      // strait pipe
+      //double xmanifold = rInnerManifold * cos(piconst * (90 - phi_end[idx])/180.);
+      double ymanifold = rInnerManifold * sin(piconst * (90 - phi_end[idx])/180.);
+      double xstart = xsmall + xdistance * idx - radSmTor * cos(piconst * phi_end[idx]/180.);
+      double ystart = ysmall[idx] + radSmTor * sin(piconst * phi_end[idx]/180.);
+      // height of the strait pipe
+      double hPipe = (ymanifold - ystart) / sin(piconst * (90 - phi_end[idx]) / 180.);
+      // a cylinder along y-axis
+      double y_center = _randFlat.fire() * hPipe;
+      double xPipe = pipeR * cos(theta);
+      double xStrait = sign[xsn] * (xPipe * cos(-piconst * phi_end[idx] / 180.) - y_center * sin(-piconst * phi_end[idx] / 180.) + xstart);
+      double yStrait = sign[ysn] * (xPipe * sin(-piconst * phi_end[idx] / 180.) + y_center * cos(-piconst * phi_end[idx] / 180.) + ystart);
+      double lenStrait = hPipe;
+
+      double sample = _randFlat.fire();
+      if(sample <= circLgTor / (circLgTor + circSmTor + lenStrait))
+      {
+        xpipe = xLgTor;
+        ypipe = yLgTor;
+      }
+      else if(sample > circLgTor / (circLgTor + circSmTor + lenStrait) && sample <= (circLgTor + circSmTor) / (circLgTor + circSmTor + lenStrait))
+      {
+        xpipe = xSmTor;
+        ypipe = ySmTor;
+      }
+      else
+      {
+        xpipe = xStrait;
+        ypipe = yStrait;
+      }
+      CLHEP::Hep3Vector pos(xpipe, ypipe, zpipe);
+      // shift the pipe to the front of the calorimeter disk 0
+      pos +=_zPipeCenter;
+
+      //pick time
+      double time = _tmin + _randFlat.fire() * ( _tmax - _tmin );
+
+      //Pick energy and momentum vector
+      double energy =_energy;
+      CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_energy);
+
+      //Set Four-momentum
+      CLHEP::HepLorentzVector mom(0,0,0,0);
+      mom.setPx( p3.x() );
+      mom.setPy( p3.y() );
+      mom.setPz( p3.z() );
+      mom.setE( energy );
+
+      // Add the particle to  the list.
+      
+      // Add the particle to  the list.
+      output.push_back( GenParticle(PDGCode::gamma, GenId::CaloCalib, pos, mom, time));
+    
+      // Fill histograms.
+      if ( _doHistograms)
+      {
+        _genErg = energy;
+        _genTime = time;
+        _genCos = p3.cosTheta();
+        _genPosX = pos.x();
+        _genPosY = pos.y();
+        _genPosZ = pos.z();
+      }
+      if(_doHistograms) _Ntupe -> Fill();
+    } 
   }
 
   //================================================================
