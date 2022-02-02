@@ -133,6 +133,17 @@ CaloTBGun : {
     module_type    : CaloTBGun
 }
 
+
+NewCaloCalibGun : {
+  module_type : NewCaloCalibGun
+  cosmin :  -1.0
+  cosmax :  1.0
+  phimin :  0.0
+  phimax : 2.0
+  tmin  :  500.
+  tmax : 1694.
+  doHistograms: true
+}
 # Save state of random numbers at the start of each event
 # the module is defined in art/Framework/Modules
 
