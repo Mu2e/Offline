@@ -3,6 +3,9 @@
 //
 // Generate some number of DIO electrons.
 //
+// $Id: CaloCalibGun.hh,v 1.34 2013/07/22 18:57:42 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2013/07/22 18:57:42 $
 //
 //
 // ====================================================================
@@ -20,18 +23,19 @@
 #include "art/Framework/Principal/Run.h"
 
 // Mu2e includes
-#include "Offline/EventGenerator/inc/GeneratorBase.hh"
-#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "EventGenerator/inc/GeneratorBase.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // CLHEP includes
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
 #include "CLHEP/Random/RandFlat.h"
 
-class TH1D;
-class TH2D;
+// ROOT includes
+#include "TTree.h"
 
+class TTree;
 
 namespace art {
   class Run;
@@ -76,14 +80,15 @@ namespace mu2e {
 
 
     bool _doHistograms;
-    TH1D* _hE;
-    TH1D* _hT;
-    TH1D* _hcos;
-    TH1D* _hphi;
-    TH1D* _hrad;
-    TH1D* _hz;
-    TH2D* _hxy;
-
+    TTree* _Ntupe;
+    float _genErg;
+    float _genTime;
+    float _genCos;
+    //float _genPhi;
+    //float _genRad;
+    float _genPosX;
+    float _genPosY;
+    float _genPosZ;
   };
 
 

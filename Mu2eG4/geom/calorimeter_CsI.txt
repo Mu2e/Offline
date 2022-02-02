@@ -60,7 +60,11 @@ vector<double> calorimeter.pipeTorRadius       = {397,457,517,577,637};
 double calorimeter.pipeRadius                  = 4.75;    
 double calorimeter.pipeThickness               = 0.5; 
 double calorimeter.pipeInitSeparation          = 25.4;
-
+//double calorimeter.FPCoolPipeThickness         = 1.4732;
+vector<double> calorimeter.halfTorPhi          = {80.67, 74.75, 69.98, 66.04, 62.70}; // half angle of large torus
+vector<double> calorimeter.smallTorPhi         = {84.63, 85.28, 85.79, 86.20, 86.53}; // full angle of small torus
+vector<double> calorimeter.straitEndPhi        = {3.96, 10.53, 15.80, 20.16, 23.84};  // angle of the ending poing of the strait pipe
+vector<double> calorimeter.yposition           = {432.2, 480.5, 524.3, 564.7, 602.5}; // start y position of the strait pipe
 
 int calorimeter.crateVersion                   = 2; 
 int calorimeter.numberOfCrates                 = 10;

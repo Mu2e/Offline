@@ -18,7 +18,6 @@ CommonMC: {
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0
-    GenParticles : "compressDigiMCs"
     SimParticles : "compressDigiMCs"
     PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
         "cosmicDYB", "CosmicCRY", "CosmicCORSIKA",
