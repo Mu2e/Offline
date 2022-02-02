@@ -38,7 +38,6 @@
 #include "Offline/EventGenerator/inc/CosmicFromTH2.hh"
 #include "Offline/EventGenerator/inc/FromG4BLFile.hh"
 #include "Offline/EventGenerator/inc/ParticleGun.hh"
-#include "Offline/EventGenerator/inc/CaloCalibGun.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
@@ -169,14 +168,12 @@ namespace mu2e {
     bool doCosmicDYB            = config.getBool( "cosmicDYB.do",        false );
     bool doCosmicFromTH2        = config.getBool( "cosmicFromTH2.do",    false );
     bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
-    bool doCaloCalibGun         = config.getBool( "caloCalibGun.do",     false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(     _engine,  run, config)) );
     if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(       _engine,  run, config)) );
     if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(   _engine,  run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(    _engine,  run, config)) );
-    if ( doCaloCalibGun)         _generators.push_back( GeneratorBasePtr( new CaloCalibGun(    _engine,  run, config)) );
 
     if ( _generators.size() == 0 ){
       mf::LogWarning("CONTROL")

@@ -1,4 +1,7 @@
-// Sophie Middleton, 2022
+// Simulate the photons coming from the pipe calibration source
+// based on CaloCalibGun by Bertrand Echenard (2014), later edited by De Xu Lin (2018)
+// Current module author: Sophie Middleton (2022)
+
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -54,25 +57,24 @@
 //ROOT Includes
 #include <TMath.h>
 #include <TTree.h>
-const double piconst = Pi();
+const double piconst =CLHEP::pi;
 using namespace std;
 using namespace TMath;
 
 namespace mu2e {
 
-  //================================================================
   class NewCaloCalibGun : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<double> mean{Name("Mean"),1.},
+      fhicl::Atom<unsigned> mean{Name("mean"),1};
       fhicl::Atom<double> energy{Name("PhotonEnergy"),6.13};//MeV
-      fhicl::Atom<double> cosmin{Name("cosmin"),-1.},
-      fhicl::Atom<double> cosmin{Name("cosmin"),1.},
-      fhicl::Atom<double> phimin{Name("phimin"),0.},
-      fhicl::Atom<double> phimin{Name("phimax"), CLHEP::twopi },
-      fhicl::Atom<bool> doHistograms{Name("doHistograms"), true },
+      fhicl::Atom<double> cosmin{Name("cosmin"),-1.};
+      fhicl::Atom<double> cosmax{Name("cosmax"),1.};
+      fhicl::Atom<double> phimin{Name("phimin"),0.};
+      fhicl::Atom<double> phimax{Name("phimax"), CLHEP::twopi };
+      fhicl::Atom<bool> doHistograms{Name("doHistograms"), true };
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -82,23 +84,24 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
-
     
-    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
-    // Default values for the start and end of the live window.
+    // Default values for the start and end of the beam pulse
     double _tmin = 0.;
-    double _tmax = accPar->deBuncherPeriod;
+    //ConditionsHandle<AcceleratorParams> accPar("ignored"); --> doesnt compile, why?
+    double _tmax = 1695;//accPar->deBuncherPeriod;
 
-    double _mean;
+
+    unsigned _mean;
     double _energy;
     double _cosmin;
     double _cosmax;
     double _phimin;
     double _phimax;
     
-    art::RandomNumberGenerator::base_engine_t& engine;
+    art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
@@ -111,7 +114,6 @@ namespace mu2e {
     std::vector<double>    _randomRad;
     CLHEP::Hep3Vector      _zPipeCenter;
 
-
     bool _doHistograms;
     TTree* _Ntupe;
     float _genErg;
@@ -120,24 +122,21 @@ namespace mu2e {
     float _genPosX;
     float _genPosY;
     float _genPosZ;
-    void addParticles(GenParticleCollection* output);
- 
   };
 
   //================================================================
   NewCaloCalibGun::NewCaloCalibGun(const Parameters& conf)
     : EDProducer{conf}
-    , _mean(config.getDouble("caloCalibGun.mean",1.)),
+    , _mean{conf().mean()}
     , _energy{conf().energy()}
     , _cosmin{conf().cosmin()}
     , _cosmax{conf().cosmax()}
     , _phimin{conf().phimin()}
     , _phimax{conf().phimax()}
     , _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
-    , _randFlat{_engine},
-    , _randPoissonQ{_engine, std::abs(_mean)},
-    , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi},
-
+    , _randFlat{_engine}
+    , _randPoissonQ{_engine, _mean*1.0}
+    , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi}
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
@@ -172,19 +171,15 @@ namespace mu2e {
 
   //================================================================
   void NewCaloCalibGun::produce(art::Event& event) {
-    auto output{std::make_unique<GenParticleCollection>()};
-    addParticles(output);
-    event.put(std::move(output));
-    PrimaryParticle pp;
+    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
+
+    PrimaryParticle primaryParticles;
     MCTrajectoryCollection mctc;
-    event.put(std::make_unique<PrimaryParticle>(pp));
-    event.put(std::make_unique<MCTrajectoryCollection>(mctc));
-  }
-  
-  void CaloCalibGun::addParticles(GenParticleCollection* output)
-  {
-    int nGen = _mean;
-    // define the parameters of the pipes
+
+    auto output{std::make_unique<GenParticleCollection>()};
+    unsigned int nGen = _mean;
+    //Define the parameters of the pipes:
+    
     // angle of large torus in degrees
     double phi_lbd[5] = {161.34, 149.50, 139.50, 132.07, 125.39};
     // angle of small torus in degrees
@@ -203,7 +198,7 @@ namespace mu2e {
     double rInnerManifold = 681.6; // 713.35 mm - 1.25 in (31.75 mm)
     vector<float> sign{-1.0, 1.0};
 
-    for (int ig=0; ig<nGen; ++ig) 
+    for (unsigned int ig=0; ig<nGen; ++ig) 
     {
       // only in the front of 2nd disk.
       int nDisk        = 1;
@@ -287,10 +282,8 @@ namespace mu2e {
       mom.setE( energy );
 
       // Add the particle to  the list.
-      
-      // Add the particle to  the list.
-      output.push_back( GenParticle(PDGCode::gamma, GenId::CaloCalib, pos, mom, time));
-    
+      output->emplace_back(PDGCode::gamma, GenId::CaloCalib, pos, mom, time);
+      event.put(std::move(output));
       // Fill histograms.
       if ( _doHistograms)
       {
@@ -303,6 +296,10 @@ namespace mu2e {
       }
       if(_doHistograms) _Ntupe -> Fill();
     } 
+    event.put(std::make_unique<PrimaryParticle>(primaryParticles));
+    event.put(std::make_unique<MCTrajectoryCollection>(mctc));
+  }
+      
   }
 
   //================================================================
