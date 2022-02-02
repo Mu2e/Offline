@@ -1,9 +1,7 @@
 #ifndef MCDataProducts_STMStep_hh
 #define MCDataProducts_STMStep_hh
 //
-// Class to summarize the passage of a single particle through a single straw's gas volume
-// This consolidates the G4 steps and insulates the downstream straw response ionization simulation
-// from details of the G4 model
+// Data product to collect information from multiple StepPointMCs
 //
 #include "canvas/Persistency/Common/Ptr.h"
 

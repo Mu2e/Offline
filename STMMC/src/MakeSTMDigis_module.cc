@@ -1,8 +1,5 @@
 //
-//  This module creates the StrawGasStep objects used in downstream digi simulation, using the
-//  G4 StepPointMCs
-//
-//  Original author: David Brown (LBNL), Krzysztof Genser 19 Aug. 2019
+// Create STMDigis from STMSteps
 //
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
