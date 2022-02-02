@@ -215,7 +215,7 @@ namespace mu2e {
   // the big pipe is aligned with the small pipes (centered on the same z). Big cooling pipe needs to be larger than 
   // carbon thickness+small pipe radius and smaller than Carbon thick + foam thick - small pipe radius or the model needs to be updated.
   //  
-  G4LogicalVolume* caloBuildFrontPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
+ G4LogicalVolume* caloBuildFrontPlate(const SimpleConfig& config, MaterialFinder& materialFinder, const DiskCalorimeter& cal, int idisk)
   { 
        Mu2eG4Helper& _helper = *(art::ServiceHandle<Mu2eG4Helper>());
        AntiLeakRegistry& reg = _helper.antiLeakRegistry();
@@ -225,14 +225,9 @@ namespace mu2e {
 
        const bool isPipeVisible          = geomOptions->isVisible("calorimeterPipe"); 
        const bool isPipeSolid            = geomOptions->isSolid("calorimeterPipe"); 
-       const bool forceEdge              = geomOptions->forceAuxEdgeVisible("calorimeterPipe"); 
-       const bool doSurfaceCheck         = geomOptions->doSurfaceCheck("calorimeterPipe");
+       const bool forceEdge              = config.getBool("g4.forceEdge",false);
+       const bool doSurfaceCheck         = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
        const int  verbosityLevel         = config.getInt("calorimeter.verbosityLevel",1);
-
-       if ( verbosityLevel > 0) {
-         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
-       }
-
        G4VPhysicalVolume* pv;
 
        G4Material* vacuumMaterial        = materialFinder.get("calorimeter.vacuumMaterial");
@@ -253,6 +248,10 @@ namespace mu2e {
        G4double pipeThickness            = cal.caloInfo().getDouble("pipeThickness");
        G4double pipeInitSeparation       = cal.caloInfo().getDouble("pipeInitSeparation");    
        std::vector<double> pipeTorRadius = cal.caloInfo().getVDouble("pipeTorRadius");
+       std::vector<double> halfTorPhi    = cal.caloInfo().getVDouble("halfTorPhi");
+       std::vector<double> smallTorPhi   = cal.caloInfo().getVDouble("smallTorPhi");
+       std::vector<double> yposition     = cal.caloInfo().getVDouble("yposition");
+       std::vector<double> straitEndPhi  = cal.caloInfo().getVDouble("straitEndPhi");
               
        G4double frontPanelHalfThick      = (2.0*FPCarbonDZ+2.0*FPFoamDZ-pipeRadius+FPCoolPipeRadius)/2.0;
        G4double ZposCarbon2              = frontPanelHalfThick-FPCarbonDZ;
@@ -264,11 +263,11 @@ namespace mu2e {
 
        //this is the full front panel
        G4Tubs* frontPlate = new G4Tubs("caloFrontPlate",FPInnerRadius,FPCoolPipeTorRadius+FPCoolPipeRadius,frontPanelHalfThick,0,CLHEP::twopi);       
-       G4LogicalVolume* frontPlateLog = caloBuildLogical(frontPlate, vacuumMaterial, "caloFrontPlateLog_"+std::to_string(idisk),0,G4Color::White(),0,0);
+       G4LogicalVolume* frontPlateLog = caloBuildLogical(frontPlate, vacuumMaterial, "caloFrontPlateLog",0,G4Color::White(),0,0);
 
        //carbon fiber panels
        G4Tubs*          frontPanelCarb    = new G4Tubs("caloFPCarb",FPInnerRadius,FPOuterRadius,FPCarbonDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* frontPanelCarbLog = caloBuildLogical(frontPanelCarb, FPCarbonMaterial, "caloFPCarbLog_"+std::to_string(idisk),isPipeVisible,G4Color::Grey(),0,forceEdge);       
+       G4LogicalVolume* frontPanelCarbLog = caloBuildLogical(frontPanelCarb, FPCarbonMaterial, "caloFPCarbLog",isPipeVisible,G4Color::Grey(),0,forceEdge);       
        
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZposCarbon1), frontPanelCarbLog, "caloFPCarbPV1", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
@@ -277,7 +276,7 @@ namespace mu2e {
 
        //Foam panel
        G4Tubs*          frontPanelFoam    = new G4Tubs("caloFPFoam",FPInnerRadius,FPOuterRadius,FPFoamDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* frontPanelFoamLog = caloBuildLogical(frontPanelFoam, FPFoamMaterial, "caloFPFoamLog_"+std::to_string(idisk),isPipeVisible,G4Color::Brown(),0,forceEdge);
+       G4LogicalVolume* frontPanelFoamLog = caloBuildLogical(frontPanelFoam, FPFoamMaterial, "caloFPFoamLog",isPipeVisible,G4Color::Brown(),0,forceEdge);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZposFoam), frontPanelFoamLog, "caloFPFoamPV", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
                     
@@ -289,48 +288,117 @@ namespace mu2e {
        reg.add(rotFPPipe);
        
        G4Torus*         coolFP     = new G4Torus("caloCoolFP",FPCoolPipeRadius-FPCoolPipeThickness, FPCoolPipeRadius, FPCoolPipeTorRadius, angMax, CLHEP::twopi-2.0*angMax);
-       G4LogicalVolume* coolFPLog  = caloBuildLogical(coolFP, pipeMaterial, "caloCoolFPLog_"+std::to_string(idisk),isPipeVisible,G4Color::Red(),isPipeSolid,0);
+       G4LogicalVolume* coolFPLog  = caloBuildLogical(coolFP, pipeMaterial, "caloCoolFPLog",isPipeVisible,G4Color::Red(),isPipeSolid,0);
        pv = new G4PVPlacement(rotFPPipe,G4ThreeVector(0.0,0.0,ZposPipe), coolFPLog, "caloCoolFPPV", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
        
 
        //pipes nside foam
        G4RotationMatrix* rotPipe1 = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
-       rotPipe1->rotateZ(CLHEP::pi/2.0);
+       //rotPipe1->rotateZ(CLHEP::pi/2.0);
+       rotPipe1->rotateZ(0.0 * CLHEP::pi);
        G4RotationMatrix* rotPipe2 = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
-       rotPipe2->rotateZ(1.5*CLHEP::pi);
-       G4RotationMatrix* rotPipeFlat = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
-       rotPipeFlat->rotateX(CLHEP::pi/2.0);
+       rotPipe2->rotateZ(1.0 * CLHEP::pi); 
+       G4RotationMatrix* rotPipe3 = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+       rotPipe3->rotateY(1.0 * CLHEP::pi);
+       G4RotationMatrix* rotPipe4 = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+       rotPipe4->rotateX(1.0 * CLHEP::pi);
+       //G4RotationMatrix* rotPipeFlat = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+       //rotPipeFlat->rotateX(CLHEP::pi/2.0);
        reg.add(rotPipe1);
        reg.add(rotPipe2);
-       reg.add(rotPipeFlat);
+       reg.add(rotPipe3);
+       reg.add(rotPipe4);
+       //reg.add(rotPipeFlat);
 
+       double smallRadius = 41.;
        for (int ipipe=0; ipipe<nPipes; ++ipipe)
+       //for (int ipipe=4; ipipe<5; ++ipipe)
        {
-           double xpipe  = pipeInitSeparation+pipeTorRadius[ipipe]-pipeTorRadius[0];
-           double angle  = std::asin(xpipe/pipeTorRadius[ipipe]); //angle taken w.r.t y axis!
-           double length = sqrt(FPOuterRadius*FPOuterRadius-xpipe*xpipe) - (pipeTorRadius[ipipe]+pipeRadius)*cos(angle) - 2.0*pipeRadius;
-           double y0     = (pipeTorRadius[ipipe]+pipeRadius)*cos(angle)+0.5*length;
-           double y1     = -(pipeTorRadius[ipipe]+pipeRadius)*cos(angle)-0.5*length;
+           //double xpipe  = pipeInitSeparation+pipeTorRadius[ipipe]-pipeTorRadius[0];
+           //double angle  = std::asin(xpipe/pipeTorRadius[ipipe]); //angle taken w.r.t y axis!
+           double angle = halfTorPhi[ipipe] * CLHEP::pi / 180.;
+           double sAngle = smallTorPhi[ipipe] * CLHEP::pi / 180.;
+           double sxPos  = 71. + 60 * ipipe;
+           double syPos  = yposition[ipipe];
+           //double length = sqrt(FPOuterRadius*FPOuterRadius-xpipe*xpipe) - (pipeTorRadius[ipipe]+pipeRadius)*cos(angle) - 2.0*pipeRadius;
+           //double y0     = (pipeTorRadius[ipipe]+pipeRadius)*cos(angle)+0.5*length;
+           //double y1     = -(pipeTorRadius[ipipe]+pipeRadius)*cos(angle)-0.5*length;
            double z      = -FPFoamDZ+pipeRadius;
 
-           G4Torus* pipe1 = new G4Torus("caloPipe",pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe],angle, CLHEP::pi-2*angle);
-           G4Tubs*  pipe2 = new G4Tubs("caloPipe2",pipeRadius-pipeThickness, pipeRadius,0.5*length,0,CLHEP::twopi);       
-           G4LogicalVolume* pipe1Log = caloBuildLogical(pipe1, pipeMaterial, "caloPipe1Log_"+std::to_string(idisk),isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
-           G4LogicalVolume* pipe2Log = caloBuildLogical(pipe2, pipeMaterial, "caloPipe2Log_"+std::to_string(idisk),isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
+           //G4Torus* pipe1 = new G4Torus("caloPipe",pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe],angle, CLHEP::pi-2*angle);
+           // reduce the angle of large bending to 99.0% of the original, small bending 99.5% of the original 
+           G4Torus* pipe1 = new G4Torus("caloPipe1", pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], -angle*0.9975, 2*angle*0.9975);
+           G4Torus* pipe2 = new G4Torus("caloPipe2", pipeRadius-pipeThickness, pipeRadius, smallRadius, angle-sAngle+CLHEP::pi, sAngle);
+           //G4Tubs*  pipe2 = new G4Tubs("caloPipe2",pipeRadius-pipeThickness, pipeRadius,0.5*length,0,CLHEP::twopi);       
+           G4LogicalVolume* pipe1Log = caloBuildLogical(pipe1, pipeMaterial, "caloPipe1Log",isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
+           G4LogicalVolume* pipe2Log = caloBuildLogical(pipe2, pipeMaterial, "caloPipe2Log",isPipeVisible,G4Color::Green(),isPipeSolid,forceEdge);
+           //G4LogicalVolume* pipe2Log = caloBuildLogical(pipe2, pipeMaterial, "caloPipe2Log",isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
 
-           pv = new G4PVPlacement(rotPipe1,G4ThreeVector(0,0,z), pipe1Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           // calculate the parameters of the strait pipes
+           // minus 2.0 mm from the manifold pipe's most inner radius to avoid the overlap.
+           double xEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * sin(straitEndPhi[ipipe] * CLHEP::pi / 180.);
+           double yEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * cos(straitEndPhi[ipipe] * CLHEP::pi / 180.);
+           double xStart = sxPos - smallRadius * cos(straitEndPhi[ipipe] * CLHEP::pi / 180.);
+           double yStart = syPos + smallRadius * sin(straitEndPhi[ipipe] * CLHEP::pi / 180.);
+           double sLength = sqrt((xEnd - xStart)*(xEnd - xStart) + (yEnd - yStart)*(yEnd - yStart));
+           double zRotateAngle = std::atan((yEnd - yStart) / (xEnd - xStart));
+
+           // rotation coordinate
+           //G4RotationMatrix* sPipeRotate = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+           G4RotationMatrix* sPipeRotate1 = new G4RotationMatrix();
+           sPipeRotate1 -> rotateX(0.5 * CLHEP::pi);
+           sPipeRotate1 -> rotateY((-0.5*CLHEP::pi + zRotateAngle) * CLHEP::rad);
+           G4RotationMatrix* sPipeRotate2 = new G4RotationMatrix();
+           sPipeRotate2 -> rotateX(0.5 * CLHEP::pi);
+           sPipeRotate2 -> rotateY((-0.5*CLHEP::pi - zRotateAngle) * CLHEP::rad);
+           G4RotationMatrix* sPipeRotate3 = new G4RotationMatrix();
+           sPipeRotate3 -> rotateX(0.5 * CLHEP::pi);
+           sPipeRotate3 -> rotateY((-1.5*CLHEP::pi + zRotateAngle) * CLHEP::rad);
+           G4RotationMatrix* sPipeRotate4 = new G4RotationMatrix();
+           sPipeRotate4 -> rotateX(0.5 * CLHEP::pi);
+           sPipeRotate4 -> rotateY((-1.5*CLHEP::pi - zRotateAngle) * CLHEP::rad);
+           //reg.add(sPipeRotate);
+           // transform movement
+           double xCenter = 0.5 * (xEnd + xStart);
+           double yCenter = 0.5 * (yEnd + yStart);
+           // the strait tubes at the origin coordinate system
+           //std::cout << "the length of the strait pipes: " << sLength << std::endl; 
+           G4Tubs* pipe3 = new G4Tubs("caloPipe3", pipeRadius-pipeThickness, pipeRadius, 0.5 * (sLength - 4.), 0, CLHEP::twopi);
+           G4LogicalVolume* pipe3Log = caloBuildLogical(pipe3, pipeMaterial, "caloPipe3Log",isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
+   
+           // large bending torus
+           pv = new G4PVPlacement(rotPipe1, G4ThreeVector(0,0,z), pipe1Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
-           pv = new G4PVPlacement(rotPipe2,G4ThreeVector(0,0,z), pipe1Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
-           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                                
-           pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(xpipe, y0,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
-           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
-           pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(xpipe,-y0,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
-           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
-           pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(-xpipe,y1,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
-           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
-           pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(-xpipe,-y1,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
-           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
+           pv = new G4PVPlacement(rotPipe2, G4ThreeVector(0,0,z), pipe1Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           // small bending torus
+           pv = new G4PVPlacement(rotPipe1, G4ThreeVector(sxPos, syPos, z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           pv = new G4PVPlacement(rotPipe3, G4ThreeVector(-sxPos, syPos, z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           pv = new G4PVPlacement(rotPipe2, G4ThreeVector(-sxPos, -syPos, z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           pv = new G4PVPlacement(rotPipe4, G4ThreeVector(sxPos, -syPos, z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+           // strait pipes
+           pv = new G4PVPlacement(sPipeRotate1, G4ThreeVector(xCenter, yCenter, z), pipe3Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           pv = new G4PVPlacement(sPipeRotate2, G4ThreeVector(-xCenter, yCenter, z), pipe3Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           pv = new G4PVPlacement(sPipeRotate3, G4ThreeVector(-xCenter, -yCenter, z), pipe3Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           pv = new G4PVPlacement(sPipeRotate4, G4ThreeVector(xCenter, -yCenter, z), pipe3Log, "caloPipePV", frontPanelFoamLog, false, ipipe, false);
+           doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+           ////pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(xpipe, y0,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
+           //doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
+           //pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(xpipe,-y0,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
+           //doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
+           //pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(-xpipe,y1,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
+           //doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
+           //pv = new G4PVPlacement(rotPipeFlat,G4ThreeVector(-xpipe,-y1,z), pipe2Log, "caloPipePV", frontPanelFoamLog, false, ipipe , false);
+           //doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);           
        }
 
        return frontPlateLog;
