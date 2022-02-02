@@ -1,5 +1,5 @@
 // Simulate the photons coming from the pipe calibration source
-// based on CaloCalibGun by Bertrand Echenard (2014), later edited by De Xu Lin (2018)
+// based on CaloCalibGun orginally written by Bertrand Echenard (2014)
 // Current module author: Sophie Middleton (2022)
 
 // C++ includes.
@@ -18,12 +18,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -31,10 +26,8 @@
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
-
-//For primary:
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
-#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh" //TODO - is this needed?
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -112,7 +105,6 @@ namespace mu2e {
     float _genPosZ;
   };
 
-  //================================================================
   NewCaloCalibGun::NewCaloCalibGun(const Parameters& conf)
     : EDProducer{conf}
     , _mean{conf().mean()}
@@ -128,7 +120,6 @@ namespace mu2e {
     , _randPoissonQ{_engine, _mean*1.0}
     , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi}
   {
-    std::cout<<" Entering NewCaloCalibGun "<<std::endl;
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
     produces <MCTrajectoryCollection>();
@@ -149,7 +140,6 @@ namespace mu2e {
 
   //================================================================
   void NewCaloCalibGun::produce(art::Event& event) {
-    std::cout<<" Entering NewCaloCalibGun produces "<<std::endl;
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
     MCTrajectoryCollection mctc;
@@ -286,7 +276,6 @@ namespace mu2e {
     } 
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
     event.put(std::make_unique<MCTrajectoryCollection>(mctc));
-    std::cout<<" Leaving NewCaloCalibGun produces"<<std::endl;
   }
       
   //================================================================
