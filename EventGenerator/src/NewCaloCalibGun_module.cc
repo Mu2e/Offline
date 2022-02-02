@@ -95,7 +95,7 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
 
-    const DiskCalorimeter *_cal = &*GeomHandle<mu2e::DiskCalorimeter>();
+    const DiskCalorimeter *_cal;
     //int                    _nPipes;
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
@@ -121,25 +121,17 @@ namespace mu2e {
     , _cosmax{conf().cosmax()}
     , _phimin{conf().phimin()}
     , _phimax{conf().phimax()}
+    , _tmin{conf().tmin()}
+    , _tmax{conf().tmax()}
     , _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , _randFlat{_engine}
     , _randPoissonQ{_engine, _mean*1.0}
     , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi}
   {
+    std::cout<<" Entering NewCaloCalibGun "<<std::endl;
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
     produces <MCTrajectoryCollection>();
-    
-    //_nPipes          = _cal->caloInfo().getInt("nPipes");
-    _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
-    _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
-    _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
-    _zPipeCenter     = _cal->disk(1).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(1).geomInfo().size().z()/2.0-_pipeRadius);
-    // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a
-    // random number from which to generate the photons
-    double sumR(0);
-    std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
-    std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
 
     if ( _doHistograms )
     {
@@ -157,10 +149,22 @@ namespace mu2e {
 
   //================================================================
   void NewCaloCalibGun::produce(art::Event& event) {
+    std::cout<<" Entering NewCaloCalibGun produces "<<std::endl;
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
     MCTrajectoryCollection mctc;
 
+    _cal =  &*GeomHandle<mu2e::DiskCalorimeter>();
+    //_nPipes          = _cal->caloInfo().getInt("nPipes");
+    _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
+    _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
+    _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
+    _zPipeCenter     = _cal->disk(1).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(1).geomInfo().size().z()/2.0-_pipeRadius);//disk =1
+    // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons TODO - is this used?
+    double sumR(0);
+    std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
+    std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
+    
     unsigned int nGen = _mean;
     //Define the parameters of the pipes:
     
@@ -282,6 +286,7 @@ namespace mu2e {
     } 
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
     event.put(std::make_unique<MCTrajectoryCollection>(mctc));
+    std::cout<<" Leaving NewCaloCalibGun produces"<<std::endl;
   }
       
   //================================================================
