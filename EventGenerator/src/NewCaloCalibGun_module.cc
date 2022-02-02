@@ -68,6 +68,8 @@ namespace mu2e {
       fhicl::Atom<double> cosmax{Name("cosmax"),1.};
       fhicl::Atom<double> phimin{Name("phimin"),0.};
       fhicl::Atom<double> phimax{Name("phimax"), CLHEP::twopi };
+      fhicl::Atom<double> tmin{Name("tmin"),0.};
+      fhicl::Atom<double> tmax{Name("tmax"),1694.};
       fhicl::Atom<bool> doHistograms{Name("doHistograms"), true };
     };
 
@@ -78,14 +80,6 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
-    
-    
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-
-    // Default values for the start and end of the beam pulse
-    double _tmin = 0.;
-    //ConditionsHandle<AcceleratorParams> accPar("ignored"); --> doesnt compile, why? TODO
-    double _tmax = 1695;//accPar->deBuncherPeriod; TODO
 
     unsigned _mean;
     double _energy;
@@ -93,6 +87,8 @@ namespace mu2e {
     double _cosmax;
     double _phimin;
     double _phimax;
+    double _tmin;
+    double _tmax;
     
     art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandFlat     _randFlat;
@@ -134,7 +130,6 @@ namespace mu2e {
     produces<mu2e::PrimaryParticle>();
     produces <MCTrajectoryCollection>();
     
-
     //_nPipes          = _cal->caloInfo().getInt("nPipes");
     _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
     _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
@@ -145,7 +140,7 @@ namespace mu2e {
     double sumR(0);
     std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
     std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
-    // Book histograms.
+
     if ( _doHistograms )
     {
       art::ServiceHandle<art::TFileService> tfs;
