@@ -6,7 +6,6 @@
 #include <iostream>
 #include <string>
 #include <cmath>
-#include <memory>
 
 // Framework includes
 #include "art/Framework/Principal/Run.h"
@@ -24,32 +23,27 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
+
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
-#include "Offline/MCDataProducts/inc/StageParticle.hh"
-#include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+
 //For primary:
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandExponential.h"
-#include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Random/RandPoissonQ.h"
-#include "CLHEP/Random/RandGeneral.h"
+
 
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -59,7 +53,7 @@
 #include <TTree.h>
 const double piconst =CLHEP::pi;
 using namespace std;
-using namespace TMath;
+using namespace mu2e;
 
 namespace mu2e {
 
@@ -90,9 +84,8 @@ namespace mu2e {
 
     // Default values for the start and end of the beam pulse
     double _tmin = 0.;
-    //ConditionsHandle<AcceleratorParams> accPar("ignored"); --> doesnt compile, why?
-    double _tmax = 1695;//accPar->deBuncherPeriod;
-
+    //ConditionsHandle<AcceleratorParams> accPar("ignored"); --> doesnt compile, why? TODO
+    double _tmax = 1695;//accPar->deBuncherPeriod; TODO
 
     unsigned _mean;
     double _energy;
@@ -106,9 +99,8 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
 
-    const DetectorSystem  *_detSys;
-    const DiskCalorimeter *_cal;
-    int                    _nPipes;
+    const DiskCalorimeter *_cal = &*GeomHandle<mu2e::DiskCalorimeter>();
+    //int                    _nPipes;
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
     std::vector<double>    _randomRad;
@@ -142,13 +134,12 @@ namespace mu2e {
     produces<mu2e::PrimaryParticle>();
     produces <MCTrajectoryCollection>();
     
-    _detSys          = &*GeomHandle<DetectorSystem>();
-    _cal             = &*GeomHandle<DiskCalorimeter>();
-    _nPipes          = _cal->caloInfo().getInt("nPipes");
+
+    //_nPipes          = _cal->caloInfo().getInt("nPipes");
     _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
     _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
     _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
-    //_zPipeCenter     = _cal->disk(0).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(0).geomInfo().size().z()/2.0-_pipeRadius);
+    _zPipeCenter     = _cal->disk(1).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(1).geomInfo().size().z()/2.0-_pipeRadius);
     // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a
     // random number from which to generate the photons
     double sumR(0);
@@ -172,11 +163,9 @@ namespace mu2e {
   //================================================================
   void NewCaloCalibGun::produce(art::Event& event) {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
-
     PrimaryParticle primaryParticles;
     MCTrajectoryCollection mctc;
 
-    auto output{std::make_unique<GenParticleCollection>()};
     unsigned int nGen = _mean;
     //Define the parameters of the pipes:
     
@@ -198,11 +187,11 @@ namespace mu2e {
     double rInnerManifold = 681.6; // 713.35 mm - 1.25 in (31.75 mm)
     vector<float> sign{-1.0, 1.0};
 
-    for (unsigned int ig=0; ig<nGen; ++ig) 
+    for (unsigned int ig = 0; ig < nGen; ++ig) 
     {
       // only in the front of 2nd disk.
-      int nDisk        = 1;
-      _zPipeCenter     = _cal->disk(nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(nDisk).geomInfo().size().z()/2.0-_pipeRadius);
+      //int nDisk        = 1;
+      //_zPipeCenter     = _cal->disk(nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(nDisk).geomInfo().size().z()/2.0-_pipeRadius);
 
       double xpipe, ypipe, zpipe;
       //Pick position
@@ -300,8 +289,6 @@ namespace mu2e {
     event.put(std::make_unique<MCTrajectoryCollection>(mctc));
   }
       
-  }
-
   //================================================================
 } // namespace mu2e
 
