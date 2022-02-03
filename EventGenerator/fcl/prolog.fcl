@@ -134,8 +134,8 @@ CaloTBGun : {
 }
 
 
-NewCaloCalibGun : {
-  module_type : NewCaloCalibGun
+CaloCalibGun : {
+  module_type : CaloCalibGun
   cosmin :  -1.0
   cosmax :  1.0
   phimin :  0.0
