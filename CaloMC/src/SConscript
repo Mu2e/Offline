@@ -75,7 +75,6 @@ helper.make_plugins( [ mainlib,
                        'cetlib',
                        'cetlib_except',
                        'CLHEP',
-                       'HepPDT',
                        'boost_filesystem',
                        rootlibs  #needed for reco hit fitting
                      ],

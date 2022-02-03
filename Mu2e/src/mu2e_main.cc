@@ -1,5 +1,5 @@
 // vim: set sw=2 expandtab :
-#include "art/Framework/Art/mu2eapp.h"
+#include "art/Framework/Art/artapp.h"
 #include "art/Framework/Art/detail/info_success.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -53,7 +53,7 @@ main(int argc, char* argv[])
 
   mu2eBanner();
 
-  int result = mu2eapp(argc, argv);
+  int result = artapp(argc, argv, false);
   mf::EndMessageFacility();
   if (result == art::detail::info_success()) {
     return 0;

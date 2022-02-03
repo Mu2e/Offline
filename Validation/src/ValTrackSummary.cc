@@ -5,7 +5,7 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "TMath.h"
 
-int mu2e::ValTrackSummary::declare(art::TFileDirectory tfs) {
+int mu2e::ValTrackSummary::declare(const art::TFileDirectory& tfs) {
 
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
 

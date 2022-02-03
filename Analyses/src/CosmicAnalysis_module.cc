@@ -16,7 +16,6 @@
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
-#include "HepPID/ParticleName.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"

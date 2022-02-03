@@ -26,7 +26,7 @@ mu2e::DbReader::~DbReader() {
 int mu2e::DbReader::query(std::string& csv, 
 			  const std::string& select, 
 			  const std::string& table, 
-			  const std::string& where,
+			  const StringVec& where,
 			  const std::string& order) {
 
   int rc;
@@ -72,7 +72,8 @@ int mu2e::DbReader::multiQuery(std::vector<QueryForm>& qfv) {
 
 int mu2e::DbReader::fillTableByCid(DbTable::ptr_t ptr, int cid) {
   std::string csv;
-  std::string where="cid:eq:"+std::to_string(cid);
+  StringVec where;
+  where.emplace_back( "cid:eq:"+std::to_string(cid) );
   int rc = query(csv,ptr->query(),ptr->dbname(),where,ptr->orderBy());
   if(rc!=0) return rc;
   ptr->fill(csv,_saveCsv);
@@ -241,7 +242,7 @@ int mu2e::DbReader::openHandle() {
 int mu2e::DbReader::queryCore(std::string& csv, 
 			      const std::string& select, 
 			      const std::string& table, 
-			      const std::string& where,
+			      const StringVec& where,
 			      const std::string& order) {
 
   std::string url;
@@ -261,13 +262,15 @@ int mu2e::DbReader::queryCore(std::string& csv,
     // result will come directly from the db
     url = _id.urlNoCache();
   }
-  url.append("t=");
+  url.append("dbname="+_id.name());
+  url.append("&t=");
   url.append(table);
-  url.append("&c=");
-  url.append(select);
-  if(!where.empty()) {
-    url.append("&w=");
-    url.append(where);
+  if(!select.empty()) {
+    url.append("&c=");
+    url.append(select);
+  }
+  for(auto const& ww : where) {
+    url.append("&w="+ww);
   }
   if(!order.empty()) {
     url.append("&o=");

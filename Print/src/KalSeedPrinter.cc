@@ -2,7 +2,7 @@
 #include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include <string>
 
 void 
@@ -86,13 +86,13 @@ mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os)
       << " " << std::setw(7) << std::setprecision(4) << obj.hits().size()
       << std::endl;
   } else if(verbose()>=2) {
-    auto const& ptable = GlobalConstantsHandle<ParticleDataTable>();
+    auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
 
     os 
       << " fitStatus: " << std::setw(3) << obj.status()
       << "\n";
     os 
-      << " part: " << 	 ptable->particle(obj.particle()).ref().name()
+      << " part: " << 	 ptable->particle(obj.particle()).name()
       << " dir: " << obj.fitDirection().name()
       << "  flt0: " <<  std::setw(7) << std::setprecision(1) << obj.flt0()
       << "  t0: " <<  std::setw(7) << std::setprecision(1) << obj.t0().t0()

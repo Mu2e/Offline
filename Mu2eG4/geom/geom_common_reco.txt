@@ -5,7 +5,7 @@
 // are not needed for reco.
 //
 
-#include "Offline/Mu2eG4/geom/geom_2021_PhaseI.txt"
+#include "Offline/Mu2eG4/geom/geom_common.txt"
 #include "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
 
 // This tells emacs to view this file in c++ mode.

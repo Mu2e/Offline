@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValCaloHit.hh"
 
 
-int mu2e::ValCaloHit::declare(art::TFileDirectory tfs) {
+int mu2e::ValCaloHit::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NDigis", "N Hits", 101, -0.5, 100.5);
   _hN2= tfs.make<TH1D>( "NDigis2", "N Hits", 100, -0.5,4999.5);

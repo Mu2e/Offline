@@ -189,6 +189,7 @@ namespace mu2e {
       sr.put(std::move(col), subrunVolInstanceName_);
     }
     if (mixCosmicLivetimes_) {
+      if(generatedEvents_ == 0)throw cet::exception("BADINPUT")<<"Mu2eProductMixer: generated event count =0; was the mixin file opened correctly?" << std::endl;
       float scaling = resampledEvents_ / generatedEvents_;
       auto livetime = std::make_unique<CosmicLivetime>(totalPrimaries_ * scaling,
                                                        area_, lowE_, highE_, fluxConstant_, livetime_ * scaling);
@@ -331,6 +332,9 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.setSimParticle( remap(step.simParticle(), simOffsets_[ie]) );
+      if(applyTimeOffset_){
+        step.time() += stoff_.timeOffset_;
+      }
     }
 
     return true;
@@ -348,6 +352,9 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+      if(applyTimeOffset_){
+        step.time() += stoff_.timeOffset_;
+      }
     }
 
     return true;
@@ -364,6 +371,10 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+      if(applyTimeOffset_){
+        step.startTime() += stoff_.timeOffset_;
+        step.endTime() += stoff_.timeOffset_;
+      }
     }
 
     return true;

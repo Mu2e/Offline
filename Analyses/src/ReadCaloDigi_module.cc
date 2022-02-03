@@ -31,7 +31,7 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
@@ -448,7 +448,7 @@ namespace mu2e {
       nTraks             = list_of_ele_tracks->size();
     }
 
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
     _evt          = event.id().event();
     _run          = event.run();
@@ -561,7 +561,7 @@ namespace mu2e {
               _vPz   [_vNHits]  = hit.momentum().z();
               _vPt   [_vNHits]  = std::sqrt( std::pow(_vPx[_vNHits],2.)+std::pow(_vPy[_vNHits],2.) );
               _vPdgId[_vNHits]  = hit.simParticle()->pdgId();
-              _vM    [_vNHits]  = pdt->particle(_vPdgId[_vNHits]).ref().mass();
+              _vM    [_vNHits]  = pdt->particle(_vPdgId[_vNHits]).mass();
               _vE    [_vNHits]  = sqrt(_vP[_vNHits]*_vP[_vNHits] + _vM[_vNHits]*_vM[_vNHits]);
               _vEKin [_vNHits]  = _vE[_vNHits] - _vM[_vNHits];
 

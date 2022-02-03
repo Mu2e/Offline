@@ -16,9 +16,6 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
@@ -136,6 +133,7 @@ namespace mu2e {
       Ntup_->Branch("run",          &_run ,         "run/I");
       Ntup_->Branch("cryEtot",      &cryEtot_ ,     "cryEtot/F");
 
+      // Reconstructed carystal hit info (from CaloHitCollection):
       Ntup_->Branch("nCry",         &nHits_ ,       "nCry/I");
       Ntup_->Branch("cryId",        &cryId_ ,       "cryId[nCry]/I");
       Ntup_->Branch("crySectionId", &crySectionId_, "crySectionId[nCry]/I");
@@ -152,6 +150,7 @@ namespace mu2e {
       Ntup_->Branch("cryT2Err",     &cryT2Err_ ,    "cryT2Err[nCry]/F");
       Ntup_->Branch("cryConv",      &cryConv_ ,     "cryConv[nCry]/I");
 
+      // Truth crystal hit info (from CaloHitMCCollection):
       Ntup_->Branch("crySimIdx",    &crySimIdx_ ,   "crySimIdx[nCry]/I");
       Ntup_->Branch("crySimLen",    &crySimLen_ ,   "crySimLen[nCry]/I");
       Ntup_->Branch("nSim",         &nSimHit_ ,     "nSim/I");
@@ -167,6 +166,7 @@ namespace mu2e {
       Ntup_->Branch("simEdep",      &crySimEdep_ ,  "simEdep[nSim]/F");
       Ntup_->Branch("simGenIdx",    &crySimGenIdx_ ,"simGenIdx[nSim]/I");
 
+      // Reconstructed cluster info (from CaloClusterCollection):
       Ntup_->Branch("nCluster",     &nCluster_ ,    "nCluster/I");
       Ntup_->Branch("cluEnergy",    &cluEnergy_ ,   "cluEnergy[nCluster]/F");
       Ntup_->Branch("cluEnergyErr", &cluEnergyErr_ ,"cluEnergyErr[nCluster]/F");
@@ -186,6 +186,7 @@ namespace mu2e {
       Ntup_->Branch("cluSimLen",    &cluSimLen_ ,   "cluSimLen[nCluster]/I");
       Ntup_->Branch("cluList",      &cluList_);
 
+      // Truth CaloCluster info (from CaloClusterMCCollection)
       Ntup_->Branch("nCluSim",      &nCluSim_ ,     "nCluSim/I");
       Ntup_->Branch("cluSimId",     &cluSimId_ ,    "cluSimId[nCluSim]/I");
       Ntup_->Branch("cluSimPdgId",  &cluSimPdgId_ , "cluSimPdgId[nCluSim]/I");
@@ -202,7 +203,11 @@ namespace mu2e {
       Ntup_->Branch("cluSimStartZ", &cluSimStartZ_ ,"cluSimStartZ[nCluSim]/F");
       Ntup_->Branch("cluSimTime",   &cluSimTime_ ,  "cluSimTime[nCluSim]/F");
       Ntup_->Branch("cluSimEdep",   &cluSimEdep_ ,  "cluSimEdep[nCluSim]/F");
+      
+      // Calibration Analysis
+      
 
+      // Virtual Detector info (from StepPointMCCollection)
       Ntup_->Branch("nVd",          &nVd_ ,         "nVd/I");
       Ntup_->Branch("vdId",         &vdId_ ,        "vdId[nVd]/I");
       Ntup_->Branch("vdPdgId",      &vdPdgId_ ,     "vdPdgId[nVd]/I");
@@ -217,7 +222,7 @@ namespace mu2e {
       Ntup_->Branch("vdTime",       &vdTime_ ,      "vdTime[nVd]/F");
       Ntup_->Branch("vdGenIdx",     &vdGenIdx_ ,    "vdGenIdx[nVd]/I");
 
-
+      // TODO - why are these histograms?
       hcryE_     = tfs->make<TH1F>("cryEdep",  "Energy deposited / crystal",   100,    0., 50.   );
       hcryT_     = tfs->make<TH1F>("cryTime",  "Time of crystal hit",          100,    0., 2000. );
       hcryX_     = tfs->make<TH1F>("cryX",     "X coord of crystal hit",       100,  300., 700.  );
@@ -380,7 +385,7 @@ namespace mu2e {
         ClusterUtils cluUtil(cal, cluster);
         auto cog = cluUtil.cog3Vector();
 
-        const auto eDepMCs =  caloClusterTruth[ic].energyDeposits();
+        const auto eDepMCs =  caloClusterTruth[ic].energyDeposits(); //TODO - fills truth information
 
         bool isConversion(false); 
         for (auto& edep : eDepMCs)

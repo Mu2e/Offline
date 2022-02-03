@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValProtonBunchIntensity.hh"
 
 
-int mu2e::ValProtonBunchIntensity::declare(art::TFileDirectory tfs) {
+int mu2e::ValProtonBunchIntensity::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hint = tfs.make<TH1D>( "int", "PBI/1e6", 100, 0.0, 200.0);
 

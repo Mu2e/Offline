@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValTriggerResults.hh"
 
 
-int mu2e::ValTriggerResults::declare(art::TFileDirectory tfs) {
+int mu2e::ValTriggerResults::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hNpath = tfs.make<TH1D>( "Npath", "N path", 50, -0.5, 50.5);
   _hState = tfs.make<TH1D>( "State", "PathNo*4+State(i)", 201, -0.5, 200.5);

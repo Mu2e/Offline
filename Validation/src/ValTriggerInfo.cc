@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValTriggerInfo.hh"
 
 
-int mu2e::ValTriggerInfo::declare(art::TFileDirectory tfs) {
+int mu2e::ValTriggerInfo::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hccs = tfs.make<TH1D>( "Ncss", "N caloClusters", 21, -0.5, 20.5);
   _htrk = tfs.make<TH1D>( "Ntrk", "N tracks", 21, -0.5, 20.5);

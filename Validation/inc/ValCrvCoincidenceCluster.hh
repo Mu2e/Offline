@@ -14,7 +14,7 @@ namespace mu2e {
 
   public:
     ValCrvCoincidenceCluster(std::string name):_name(name){}
-    int declare( art::TFileDirectory tfs);
+    int declare( const art::TFileDirectory& tfs);
     int fill(const CrvCoincidenceClusterCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
@@ -26,6 +26,7 @@ namespace mu2e {
     TH1D* _hSec;
     TH1D* _hPE;
     TH1D* _ht;
+    TH1D* _ht2;
     TH1D* _hx;
     TH1D* _hy;
     TH1D* _hz;
