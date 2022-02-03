@@ -52,7 +52,7 @@ namespace
 
 namespace mu2e {
 
-    class CaloExample : public art::EDAnalyzer {
+    class CaloCalibAna : public art::EDAnalyzer {
 
       public:
       struct Config 
@@ -67,8 +67,8 @@ namespace mu2e {
         fhicl::Atom<int>               diagLevel             { Name("diagLevel"),              Comment("Diag Level"),0 };
       };
 
-      explicit CaloExample(const art::EDAnalyzer::Table<Config>& config);
-      virtual ~CaloExample() {}
+      explicit CaloCalibAna(const art::EDAnalyzer::Table<Config>& config);
+      virtual ~CaloCalibAna() {}
 
       virtual void beginJob();
       virtual void endJob() {};
@@ -114,7 +114,7 @@ namespace mu2e {
       };
 
 
-    CaloExample::CaloExample(const art::EDAnalyzer::Table<Config>& config) :
+    CaloCalibAna::CaloCalibAna(const art::EDAnalyzer::Table<Config>& config) :
       EDAnalyzer{config},
       virtualDetectorTag_ (config().vdCollection()),
       caloHitTag_         (config().caloHitCollection()),
@@ -126,7 +126,7 @@ namespace mu2e {
       Ntup_(0)
       {}
 
-    void CaloExample::beginJob(){
+    void CaloCalibAna::beginJob(){
 
       art::ServiceHandle<art::TFileService> tfs;
 
@@ -240,9 +240,9 @@ namespace mu2e {
 
     }
 
-    void CaloExample::analyze(const art::Event& event){
+    void CaloCalibAna::analyze(const art::Event& event){
       ++nProcess_;
-      if (nProcess_%10==0 && diagLevel_ > 0) std::cout<<"Processing event from CaloExample =  "<<nProcess_ <<std::endl;
+      if (nProcess_%10==0 && diagLevel_ > 0) std::cout<<"Processing event from CaloCalibAna =  "<<nProcess_ <<std::endl;
 
       //Handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
@@ -485,4 +485,4 @@ namespace mu2e {
 
 }  
 
-DEFINE_ART_MODULE(mu2e::CaloExample);
+DEFINE_ART_MODULE(mu2e::CaloCalibAna);

@@ -59,7 +59,7 @@ physics: {
     analyzers: {
         
       CaloExample: {
-        module_type                : CaloExample
+        module_type                : CaloCalibAna
         caloHitCollection     : CaloHitMaker
         caloClusterCollection : CaloClusterMaker
         caloHitTruth    : CaloHitTruthMatch 
