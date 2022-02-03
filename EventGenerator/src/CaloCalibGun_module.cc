@@ -50,7 +50,7 @@ using namespace mu2e;
 
 namespace mu2e {
 
-  class NewCaloCalibGun : public art::EDProducer {
+  class CaloCalibGun : public art::EDProducer {
   public:
     struct Config {
       using Name=fhicl::Name;
@@ -67,7 +67,7 @@ namespace mu2e {
     };
 
     using Parameters= art::EDProducer::Table<Config>;
-    explicit NewCaloCalibGun(const Parameters& conf);
+    explicit CaloCalibGun(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
 
@@ -105,7 +105,7 @@ namespace mu2e {
     float _genPosZ;
   };
 
-  NewCaloCalibGun::NewCaloCalibGun(const Parameters& conf)
+  CaloCalibGun::CaloCalibGun(const Parameters& conf)
     : EDProducer{conf}
     , _mean{conf().mean()}
     , _energy{conf().energy()}
@@ -139,7 +139,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void NewCaloCalibGun::produce(art::Event& event) {
+  void CaloCalibGun::produce(art::Event& event) {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
     MCTrajectoryCollection mctc;
@@ -281,4 +281,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::NewCaloCalibGun);
+DEFINE_ART_MODULE(mu2e::CaloCalibGun);
