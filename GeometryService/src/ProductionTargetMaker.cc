@@ -424,25 +424,34 @@ namespace mu2e {
     target->_protonBeamRotation.rotateX(target->_beamRotX).rotateY(target->_beamRotY).rotateZ(target->_beamRotZ);
     target->_protonBeamInverseRotation = target->_protonBeamRotation.inverse();
     target->_prodTargetPosition = CLHEP::Hep3Vector(solenoidOffset + c.getDouble("productionTarget.xNominal", 0.),
-						    c.getDouble("productionTarget.yNominal", 0.),
-						    c.getDouble("productionTarget.zNominal")
-						    );
+                                                    c.getDouble("productionTarget.yNominal", 0.),
+                                                    c.getDouble("productionTarget.zNominal")
+                                                    );
     //figure out the front ball, and then assign the front position as that ball + translation along beam direction
     if(target->_conveyorNBalls <= 0)
       target->_prodTargetFrontPosition = target->_prodTargetPosition; //if no balls, use as default
     else {
-      double xmax = target->_conveyorBallXs[0];
-      double ymax = target->_conveyorBallYs[0];
-      double zmax = target->_conveyorBallZs[0];
-      for(int ball = 0; ball < target->_conveyorNBalls; ++ball) {
-	if(zmax < target->_conveyorBallZs[ball]) {
-	  xmax = target->_conveyorBallXs[ball];
-	  ymax = target->_conveyorBallYs[ball];
-	  zmax = target->_conveyorBallZs[ball];
-	}
+      int front = c.getInt("targetPS.Mu2eII.conveyor.front", -1);
+      if(front >= target->_conveyorNBalls) {
+        throw cet::exception("GEOM")
+          << "Production Target (Conveyor): Target front ball index (" << front
+          << ") is beyond the target ball list size (" << target->_conveyorNBalls << ")\n";
       }
-      target->_prodTargetFrontPosition = CLHEP::Hep3Vector(xmax, ymax, zmax) + 
-	target->_protonBeamRotation*CLHEP::Hep3Vector(0., 0., target->_conveyorBallRadius);
+
+      double xmax = target->_conveyorBallXs[(front >= 0) ? front : 0];
+      double ymax = target->_conveyorBallYs[(front >= 0) ? front : 0];
+      double zmax = target->_conveyorBallZs[(front >= 0) ? front : 0];
+      if(front < 0) { //take the most forward ball
+        for(int ball = 0; ball < target->_conveyorNBalls; ++ball) {
+          if(zmax < target->_conveyorBallZs[ball]) {
+            xmax = target->_conveyorBallXs[ball];
+            ymax = target->_conveyorBallYs[ball];
+            zmax = target->_conveyorBallZs[ball];
+          }
+        }
+      }
+      target->_prodTargetFrontPosition = CLHEP::Hep3Vector(xmax, ymax, zmax) +
+        target->_protonBeamRotation*CLHEP::Hep3Vector(0., 0., target->_conveyorBallRadius);
     }
     return target;
   }
