@@ -14,7 +14,7 @@ namespace mu2e {
 
   public:
     ValCrvRecoPulse(std::string name):_name(name){}
-    int declare( art::TFileDirectory tfs);
+    int declare( const art::TFileDirectory& tfs);
     int fill(const CrvRecoPulseCollection & coll, art::Event const& event);
     std::string& name() { return _name; }
 
@@ -29,8 +29,11 @@ namespace mu2e {
     TH1D* _hPE;
     TH1D* _hPH;
     TH1D* _ht;
+    TH1D* _ht2;
     TH1D* _hChi2;
+    TH1D* _hLChi2;
     TH1D* _hLE;
+    TH1D* _hLE2;
   };
 }
 

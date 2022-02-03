@@ -293,11 +293,16 @@ namespace mu2e {
         CLHEP::Hep3Vector boxOrigin = windowOrigin - CLHEP::Hep3Vector(0.,0.,boxlength-pse->windows()[iwindow].getTubsParams().zHalfLength());
         solid = new G4SubtractionSolid(solidname.str()+"_3", solid, box, nullptr, boxOrigin);
         //now add the window
+        windowOrigin = pse->windows()[iwindow].originInMu2e() - parent.centerInMu2e() + extraOffset;
+        if(pse->hasWindowFrames()[iwindow]) { //offset the window to be at the outside edge of the window frame if it exists
+          windowOrigin -= CLHEP::Hep3Vector(0., 0., (2.*pse->wFramesIn()[iwindow].getTubsParams().zHalfLength()
+                                                     + pse->windows()[iwindow].getTubsParams().zHalfLength()));
+        }
         nestTubs(windowname.str(),
                  pse->windows()[iwindow].getTubsParams(),
                  findMaterialOrThrow(pse->windows()[iwindow].materialName()),
                  nullptr,
-                 pse->windows()[iwindow].originInMu2e() - parent.centerInMu2e() + extraOffset,
+                 windowOrigin,
                  parent,
                  0,
                  PSIsVisible,
@@ -310,14 +315,14 @@ namespace mu2e {
 
       // The window FRAME if version 3+
       if ( pse->version() >  2 && pse->hasWindowFrames()[iwindow] ) {
-        std::ostringstream frname;
-        frname<<"PSEnclosureWindowFrame"<<iwindow;
+        std::ostringstream frname_in, frname_out;
+        frname_in <<"PSEnclosureWindowFrameInside" <<iwindow;
 
-        nestTubs(frname.str(),
-                 pse->wFrames()[iwindow].getTubsParams(),
-                 findMaterialOrThrow(pse->wFrames()[iwindow].materialName()),
+        nestTubs(frname_in.str(),
+                 pse->wFramesIn()[iwindow].getTubsParams(),
+                 findMaterialOrThrow(pse->wFramesIn()[iwindow].materialName()),
                  0,
-                 pse->wFrames()[iwindow].originInMu2e() - parent.centerInMu2e() + extraOffset,
+                 pse->wFramesIn()[iwindow].originInMu2e() - parent.centerInMu2e() + extraOffset,
                  parent,
                  0,
                  PSIsVisible,
@@ -327,6 +332,24 @@ namespace mu2e {
                  placePV,
                  doSurfaceCheck
                  );
+
+        if(pse->hasWindowFramesOut()[iwindow]) {
+          frname_out<<"PSEnclosureWindowFrameOutside"<<iwindow;
+          nestTubs(frname_out.str(),
+                   pse->wFramesOut()[iwindow].getTubsParams(),
+                   findMaterialOrThrow(pse->wFramesOut()[iwindow].materialName()),
+                   0,
+                   pse->wFramesOut()[iwindow].originInMu2e() - parent.centerInMu2e() + extraOffset,
+                   parent,
+                   0,
+                   PSIsVisible,
+                   G4Colour::Grey(),
+                   PSIsSolid,
+                   forceAuxEdgeVisible,
+                   placePV,
+                   doSurfaceCheck
+                   );
+        }
 
       } // end adding window FRAMES
 

@@ -2,7 +2,7 @@
 #include "Offline/Validation/inc/ValCaloCluster.hh"
 
 
-int mu2e::ValCaloCluster::declare(art::TFileDirectory tfs) {
+int mu2e::ValCaloCluster::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NClus", "N Clusters", 31, -0.05, 30.0);
   _ht = tfs.make<TH1D>( "t", "time", 100, 0.0, 2000.0);

@@ -18,11 +18,9 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 // Mu2e includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "HepPDT/Measurement.hh"
 
-#include "HepPDT/ParticleData.hh"
 #include "cetlib/pow.h"
 
 #include "Offline/Mu2eUtilities/inc/PionCaptureSpectrum.hh"
@@ -44,10 +42,10 @@ namespace mu2e {
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
-    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
-    _mpi   = pdt->particle(PDGCode::pi_minus).ref().mass().value();
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
+    _mpi   = pdt->particle(PDGCode::pi_minus).mass();
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
 
@@ -61,10 +59,10 @@ namespace mu2e {
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
-    _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
-    _mpi   = pdt->particle(PDGCode::pi_minus).ref().mass().value();
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
+    _mpi   = pdt->particle(PDGCode::pi_minus).mass();
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
 
@@ -133,10 +131,10 @@ namespace mu2e {
   //=======================================================
 
   double PionCaptureSpectrum::get2DMax(double E) const {
-    static const GlobalConstantsHandle<ParticleDataTable> pdt;
-    static const HepPDT::ParticleData& e_data  = pdt->particle(PDGCode::e_minus).ref();
+    static const GlobalConstantsHandle<ParticleDataList> pdt;
+    static ParticleData const& e_data  = pdt->particle(PDGCode::e_minus);
 
-    return getKrollWadaJosephSpectrum( E, 2*e_data.mass().value(), 0. );
+    return getKrollWadaJosephSpectrum( E, 2*e_data.mass(), 0. );
   }
 
 
@@ -184,7 +182,6 @@ namespace mu2e {
 // return X and Y with the probability defined by energy
 //-----------------------------------------------------------------------------
   void PionCaptureSpectrum::fire(double energy, double& x, double& y) const {
-
     double pdfMax = get2DMax(energy);
     x = 0;
     y = 0;
@@ -199,15 +196,12 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void PionCaptureSpectrum::getElecPosiVectors(double ePhoton, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const {
-
     double x, y;
 					// generate invariant mass and energy splitting
     fire(ePhoton,x,y);
-
     // Get electron/positron energies from x, y values (see Mu2eUtilities/src/PionCaptureSpectrum.cc for details)
     double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
     double ePositron = 0.5*( ePhoton + y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
-
     // Get electron/positron momentum magnitudes
     double pElectron = std::sqrt( cet::diff_of_squares(eElectron, _me) );
     double pPositron = std::sqrt( cet::diff_of_squares(ePositron, _me) );
@@ -223,9 +217,7 @@ namespace mu2e {
     // - phi is allowed to vary between 0 and 2pi
 
     double cosTheta = 1/(2*pElectron*pPositron)*( cet::square(ePhoton) - cet::sum_of_squares( x, pElectron, pPositron) );
-
     double phi = 2*M_PI*_rnFlat->fire();
-
     // - find a vector that is not collinear with the electron direction
     CLHEP::Hep3Vector n1 = (std::abs(p3electron.x()) < std::abs(p3electron.y())) ?
       ((std::abs(p3electron.x()) < std::abs(p3electron.z())) ? CLHEP::Hep3Vector(1,0,0) : CLHEP::Hep3Vector(0,0,1)) :

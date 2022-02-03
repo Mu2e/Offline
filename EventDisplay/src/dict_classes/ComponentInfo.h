@@ -188,7 +188,7 @@ namespace mu2e_eventdisplay
             if(failedFit) functionSum->SetLineStyle(2);
           }
 
-          const string multigraphName = m->GetName();
+          const std::string multigraphName = m->GetName();
           if(multigraphName.compare(0,8,"Waveform")==0)
           {
             TText *t[3];
@@ -198,9 +198,9 @@ namespace mu2e_eventdisplay
             int sipm=atoi(&multigraphName.back());
             for(size_t itext=0; itext<_text.size(); itext++)
             {
-              const string s = _text[itext]->GetTitle();
+              const std::string s = _text[itext]->GetTitle();
               size_t spos = s.find(Form("SiPM%i",sipm));
-              if(spos!=string::npos && spos+5<s.size())
+              if(spos!=std::string::npos && spos+5<s.size())
               {
                 t[2]->SetTitle(Form("Reco pulse(s) %s",s.substr(spos+5).c_str()));
                 break;

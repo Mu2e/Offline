@@ -28,8 +28,6 @@
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
@@ -41,7 +39,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
@@ -58,15 +56,9 @@ namespace mu2e {
     // unlike generic conditions, MC particle data
     // should not change run-to-run, so static is safe
     // use static for efficiency
-    static GlobalConstantsHandle<ParticleDataTable> pdt;
+    static GlobalConstantsHandle<ParticleDataList> pdt;
 
-    ParticleDataTable::maybe_ref info = pdt->particle(pdgId);
-
-    if(!info.isValid()) {
-      throw cet::exception("MISSINGINFO")<<"No valid PDG info for pdgId = "<<pdgId<<"\n";
-    }
-
-    return info.ref().charge();
+    return pdt->particle(pdgId).charge();
   }
 
   //================================================================
@@ -74,15 +66,9 @@ namespace mu2e {
     // unlike generic conditions, MC particle data
     // should not change run-to-run, so static is safe
     // use static for efficiency
-    static GlobalConstantsHandle<ParticleDataTable> pdt;
+    static GlobalConstantsHandle<ParticleDataList> pdt;
 
-    ParticleDataTable::maybe_ref info = pdt->particle(hit.simParticle()->pdgId());
-
-    if(!info.isValid()) {
-      throw cet::exception("MISSINGINFO")<<"No valid PDG info for hit = "<<hit<<"\n";
-    }
-
-    const double mass = info.ref().mass();
+    const double mass = pdt->particle(hit.simParticle()->pdgId()).mass();
     return sqrt(hit.momentum().mag2() + std::pow(mass, 2)) - mass;
   }
 

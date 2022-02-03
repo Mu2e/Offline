@@ -1,7 +1,7 @@
 
 #include "Offline/Validation/inc/ValStrawDigiMC.hh"
 
-int mu2e::ValStrawDigiMC::declare(art::TFileDirectory tfs) {
+int mu2e::ValStrawDigiMC::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NHit", "N Straw Hits", 101, -0.5, 100.0);
   _hN2 = tfs.make<TH1D>( "NHit2", "N Straw Hits", 100, -0.5, 9999.5);

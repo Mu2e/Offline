@@ -16,7 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 namespace mu2e {
 
@@ -25,15 +25,9 @@ namespace mu2e {
     // unlike generic conditions, MC particle data
     // should not change run-to-run, so static is safe
     // use static for efficiency
-    static GlobalConstantsHandle<ParticleDataTable> pdt;
+    static GlobalConstantsHandle<ParticleDataList> pdt;
 
-    ParticleDataTable::maybe_ref info = pdt->particle(hit.simParticle()->pdgId());
-
-    if(!info.isValid()) {
-      throw cet::exception("MISSINGINFO")<<"No valid PDG info for hit = "<<hit<<"\n";
-    }
-
-    const double mass = info.ref().mass();
+    const double mass = pdt->particle(hit.simParticle()->pdgId()).mass();
     return sqrt(hit.momentum().mag2() + std::pow(mass, 2)) - mass;
   }
 

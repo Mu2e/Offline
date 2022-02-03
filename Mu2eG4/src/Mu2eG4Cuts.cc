@@ -29,7 +29,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 namespace mu2e {
   namespace Mu2eG4Cuts {
@@ -551,7 +551,7 @@ namespace mu2e {
       {}
 
     private:
-      GlobalConstantsHandle<ParticleDataTable> pdt_;
+      GlobalConstantsHandle<ParticleDataList> pdt_;
       typedef std::map<int,bool> PIDCache;
       PIDCache cache_;
       bool cut_impl(const G4Track* trk);
@@ -563,14 +563,8 @@ namespace mu2e {
       const int pdgId(trk->GetDefinition()->GetPDGEncoding());
       const auto citer = cache_.find(pdgId);
       if(citer == cache_.end()) {
-        ParticleDataTable::maybe_ref info = pdt_->particle(pdgId);
-        if(!info.isValid()) {
-          throw cet::exception("RUNTIME")<<"ParticleDataTable does onot have information for pdgId = "
-                                         << pdgId
-                                         << " in file "<<__FILE__<<" line "<<__LINE__
-                                         <<" function "<<__func__<<"()\n";
-        }
-        const double charge = info.ref().charge();
+        auto info = pdt_->particle(pdgId);
+        const double charge = info.charge();
         const bool result = cache_[pdgId] = cut_(charge);
         return result;
       }

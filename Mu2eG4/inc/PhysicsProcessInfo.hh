@@ -35,7 +35,11 @@ namespace mu2e {
     // Locate a process by its name, return the corresponding process code and
     // increment the counter.
     ProcessCode findAndCount( G4String const& name );
-      
+
+    // helper function to insert process and add particle name to ProcInfo;
+    // return non zero if process is unknown
+
+    int insertIfNotFound( G4String const& processName, G4String const& particleName );
     void printAll ( std::ostream& os) const;
     void printSummary ( std::ostream& os) const;
 
@@ -69,4 +73,3 @@ namespace mu2e {
 } // end namespace mu2e
 
 #endif /* Mu2eG4_PhysicsProcessInfo_hh */
-

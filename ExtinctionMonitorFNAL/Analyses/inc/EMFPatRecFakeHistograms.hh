@@ -44,7 +44,7 @@ namespace mu2e {
       void book(const ExtMon& extmon, const std::string& relativePath="");
 
       // Book histograms in the specified TFileDirectory.
-      void book(const ExtMon& extmon, art::TFileDirectory& tfdir);
+      void book(const ExtMon& extmon, const art::TFileDirectory& tfdir);
 
       // A helper class to use per-event FinMany object
       // instead of creating one per fill call.
