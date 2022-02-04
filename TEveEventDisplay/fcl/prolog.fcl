@@ -46,16 +46,17 @@ TEveEventDisplayUpstream : {
     module_type : TEveEventDisplay
     showCRV : false
     showDSOnly : false
+    showInsidePS : true
     isMCOnly : true
     accumulate : false
     filler : {
       ComboHitCollection 		      : NULL
-      TimeClusterCollection                  : NULL
+      TimeClusterCollection       : NULL
       CosmicTrackSeedCollection 	: NULL
       CrvRecoPulseCollection		  : NULL
       CaloClusterCollection		    : NULL
-      CaloHitCollection    : NULL
-      MCTrajectoryCollection      : "BeamFilter" #"g4run"
+      CaloHitCollection           : NULL
+      MCTrajectoryCollection      : "g4run" #"BeamFilter" 
       HelixSeedCollection         : NULL
       KalSeedCollection           : [NULL]
       TrkExtTrajCollection        : NULL
@@ -67,7 +68,7 @@ TEveEventDisplayUpstream : {
       addCosmicSeedFit	          : false
       addMCTraj				            : true
    }
-    gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
+    gdmlname :    "Offline/TEveEventDisplay/src/mu2eII.gdml"
     particles :   [11,13,2212,2112,211,22,212]
     
   }  

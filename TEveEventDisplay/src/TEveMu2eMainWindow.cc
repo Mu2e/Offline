@@ -658,7 +658,7 @@ namespace mu2e{
   }
   
   /*------------Function to import the GDML and make 3D geometry:-------------*/
-  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV){
+  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV, bool _showInsidePS){
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
@@ -688,13 +688,13 @@ namespace mu2e{
     etopnode->GetNode()->GetVolume()->SetVisibility(kFALSE);
       
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
-    
+  
     if(!_showBuilding){
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
     }
     if(_showDSOnly) mu2e_geom->InsideDS(topnode, false );
-    
+    if(_showInsidePS) mu2e_geom->InsidePS(topnode, false );
     if(_showCRV) mu2e_geom->InsideCRV(topnode, true);
     
     //Add static detector geometry to global scene
