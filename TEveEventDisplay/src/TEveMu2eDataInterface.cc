@@ -266,7 +266,7 @@ namespace mu2e{
         trkhityz ->SetMarkerStyle(9);
         trkhityz ->SetMarkerSize(2);
         trkhityz ->SetMarkerColor(kCyan);
-        trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
+        trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
         trkhityz ->SetPickable(kTRUE); 
     
         TEvePointSet *trkhit3d = new TEvePointSet();
@@ -337,7 +337,7 @@ namespace mu2e{
             trkhityz ->SetMarkerStyle(9);
             trkhityz ->SetMarkerSize(1);
             trkhityz ->SetMarkerColor(kGreen-4);
-            trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
+            trkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
             trkhityz ->SetPickable(kTRUE);
     
             TEvePointSet *trkhit3d = new TEvePointSet();
@@ -369,7 +369,7 @@ namespace mu2e{
           notusedtrkhityz ->SetMarkerStyle(9);
           notusedtrkhityz ->SetMarkerSize(1);
           notusedtrkhityz ->SetMarkerColor(kRed-4);
-          notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y())+1000.0,pointmmTocm(HitPos.z()));
+          notusedtrkhityz ->SetNextPoint(pointmmTocm(HitPos.x()),pointmmTocm(HitPos.y()),pointmmTocm(HitPos.z()));
           notusedtrkhityz ->SetPickable(kTRUE);
 
 	  TEvePointSet *notusedtrkhit3d = new TEvePointSet();
@@ -584,7 +584,7 @@ namespace mu2e{
               line->SetPostionAndDirectionFromKalRep((InMu2e.z()));              
               line->SetNextPoint((InMu2e.x()), (InMu2e.y()), (InMu2e.z()));
               line_twoDXY->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
-              line_twoDXZ->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y())+1000, pointmmTocm(p.z()));
+              line_twoDXZ->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
             }
           }
           
@@ -653,7 +653,7 @@ namespace mu2e{
       line2DXY->SetLineWidth(3);
       fTrackList2DXY->AddElement(line2DXY);
       
-      line2DXZ->AddLine(tx1, ty1+1000, tz1, tx2, ty2+1000, tz2);	
+      line2DXZ->AddLine(tx1, ty1, tz1, tx2, ty2, tz2);	
       line2DXZ->SetPickable(kTRUE);
       line2DXZ->SetLineColor(kGreen);
       line2DXZ->SetLineWidth(3);

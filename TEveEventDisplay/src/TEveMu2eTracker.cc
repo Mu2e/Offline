@@ -50,7 +50,7 @@ namespace mu2e{
       TGeoVolume *tracker = new TGeoVolume("Straw Tracker ",gs, My);
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
-      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1));  // FIXME - hardcoded number
+      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,0,1017.1));  // FIXME - hardcoded number
      
       //Stopping Target 
       GeomHandle<StoppingTarget> target;
@@ -69,7 +69,7 @@ namespace mu2e{
       
         CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
 
-        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),pointmmTocm(startz+j)); // Stopping Target Location
+        CLHEP::Hep3Vector foilposition(center.x() ,center.y(),pointmmTocm(startz+j)); // Stopping Target Location
       
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
@@ -109,7 +109,7 @@ namespace mu2e{
         Double_t crystalpos[3];
         for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++){
 
-          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() + CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick)) - _detSysOrigin;
+          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() + CLHEP::Hep3Vector(0.0, 0.0, (-holeDZ+frontPanelHalfThick)) - _detSysOrigin;
           double diskXZwidth = diskOuterRailOut + diskInnerRingIn;
           crystalpos [0] = pointmmTocm(diskPos.x());
           crystalpos [2] = pointmmTocm(diskPos.z());

@@ -40,6 +40,7 @@ namespace mu2e
         fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};
         fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
+        fhicl::Atom<std::string>gdmlname{Name("gdmlname"),Comment("gdmlname")};
         //fhicl::Table<TEveMu2eMCInterface::Config> particles{Name("particles"),Comment("particles to plot")};
         fhicl::Sequence<int>particles{Name("particles"),Comment("PDGcodes to plot")};
       };
@@ -63,6 +64,7 @@ namespace mu2e
       TApplication* application_;
       TDirectory*   directory_ = nullptr;
       Collection_Filler _filler;
+      std::string _gdmlname;
       std::vector<int> _particles;
       TEveMu2eMainWindow *_frame;
       fhicl::ParameterSet _pset;
@@ -85,6 +87,7 @@ namespace mu2e
   _isMCOnly(conf().isMCOnly()),
   _accumulate(conf().accumulate()),
   _filler(conf().filler()),
+  _gdmlname(conf().gdmlname()),
   _particles(conf().particles())
   {}
       
@@ -140,7 +143,7 @@ namespace mu2e
         if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
         if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
         if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
-        if(!_frame->isClosed()) _frame->setEvent(event, _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected, _isMCOnly);
+        if(!_frame->isClosed()) _frame->setEvent(event, _gdmlname, _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected, _isMCOnly);
         _firstLoop = false;
       }
     }
