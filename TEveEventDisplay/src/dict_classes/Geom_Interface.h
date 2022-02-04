@@ -25,15 +25,7 @@
 #include <TEveScene.h>
 #include <TEveProjectionManager.h>
 #include <TEveProjectionAxes.h>
-/*//Mu2e Calo Geom:
-#include "Offline/ConfigTools/inc/SimpleConfig.hh"
-#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-//Mu2e Tracker Geom:
-#include "Offline/TrackerGeom/inc/Tracker.hh"
-#include "Offline/GeometryService/inc/Mu2eCoordTransform.hh"
-#include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "Offline/TrkDiag/inc/TrkMCTools.hh"*/
+
 //Geom:
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -60,6 +52,7 @@ namespace mu2e{
       void CreateGeomManager();
       void RemoveComponents();
       void toForeground();
+      void InsidePS( TGeoNode * node, bool inPSVac );
       void InsideDS( TGeoNode * node, bool inDSVac );
       void hideTop(TGeoNode* node, int _diagLevel);
       void hideNodesByName(TGeoNode* node, const std::string& str, bool onOff, int _diagLevel) ;

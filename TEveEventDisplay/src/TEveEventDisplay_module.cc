@@ -36,6 +36,7 @@ namespace mu2e
         fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};
         fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};
         fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};
+        fhicl::Atom<bool> showInsidePS{Name("showInsidePS"), Comment(""),false};
         fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};
         fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};
         fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};
@@ -57,6 +58,7 @@ namespace mu2e
       int _diagLevel;
       bool _showBuilding;
       bool _showDSOnly;
+      bool _showInsidePS;
       bool _showCRV;
       bool _showEvent;
       bool _isMCOnly;
@@ -82,6 +84,7 @@ namespace mu2e
   _diagLevel(conf().diagLevel()),
   _showBuilding(conf().showBuilding()),
   _showDSOnly(conf().showDSOnly()),
+  _showInsidePS(conf().showInsidePS()),
   _showCRV(conf().showCRV()),
   _showEvent(conf().showEvent()),
   _isMCOnly(conf().isMCOnly()),
@@ -118,7 +121,7 @@ namespace mu2e
           
   void TEveEventDisplay::beginRun(const art::Run& run){
     //import 3D GDML geom:
-    _frame->SetRunGeometry(run, _gdmlname, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
+    _frame->SetRunGeometry(run, _gdmlname, _diagLevel, _showBuilding, _showDSOnly, _showCRV, _showInsidePS );
     //make 2D tracker and calo:
     if(_filler.addClusters_) _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
