@@ -25,9 +25,10 @@ namespace mu2e{
   TEveMu2eMainWindow::TEveMu2eMainWindow() : TGMainFrame(gClient->GetRoot(), 320, 320){}
 
   /*------------Function to construct main frame, add buttons and GUI:-------------*/
-  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, DrawOptions drawOpts) :
+  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, const DrawOptions drawOpts, const GeomOptions geomOpts) :
     TGMainFrame(p, w, h),
     DrawOpts(drawOpts),
+    GeomOpts(geomOpts),
     fTeRun(0),
     fTeEvt(0),
     fTTEvt(0),
@@ -658,7 +659,7 @@ namespace mu2e{
   }
   
   /*------------Function to import the GDML and make 3D geometry:-------------*/
-  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV, bool _showInsidePS){
+  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel){
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
@@ -689,13 +690,13 @@ namespace mu2e{
       
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
   
-    if(!_showBuilding){
+    if(!GeomOpts.showBuilding){
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
     }
-    if(_showDSOnly) mu2e_geom->InsideDS(topnode, false );
-    if(_showInsidePS) mu2e_geom->InsidePS(topnode, false );
-    if(_showCRV) mu2e_geom->InsideCRV(topnode, true);
+    if(GeomOpts.showDSOnly) mu2e_geom->InsideDS(topnode, false );
+    if(GeomOpts.showInsidePS) mu2e_geom->InsidePS(topnode, false );
+    if(GeomOpts.showCRV) mu2e_geom->InsideCRV(topnode, true);
     
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);
