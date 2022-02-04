@@ -87,6 +87,7 @@ namespace mu2e {
       fhicl::Atom<double> rmax {Name("rmax"), Comment("Maximum radius of beam spot for flat distribution"), 100.};
       fhicl::Atom<double> mean {Name("mean"), Comment("Poisson mean; negative for non-random abs(mean)"), -1};
       fhicl::Atom<bool>   mu2eii {Name("mu2eii"), Comment("Uses a Mu2e-II era target"), false};
+      fhicl::Atom<int>    verbose {Name("verbose"), Comment("Print additional information"), 0};
     };
       
     explicit PrimaryProtonGunImpl(CLHEP::HepRandomEngine& engine, const PrimaryProtonGunConfig& config);

@@ -58,6 +58,16 @@ vector<double> PSShield.r1 = {  650. , 250. , 250. , 250. , 250.  };
 vector<double> PSShield.r2 = { 677.13, 275.4, 275.4, 275.4, 275.4 };
 
 
+///////////////////////////////////////
+//     Add a muon beam degrader      //
+///////////////////////////////////////
+// #include "Offline/Mu2eG4/geom/muon_beam_degrader_v01.txt"
+
+///////////////////////////////////////
+//     Adjust stopping target        //
+///////////////////////////////////////
+
+
 //
 //
 // End notes:

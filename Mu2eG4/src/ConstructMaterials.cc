@@ -1589,6 +1589,13 @@ namespace mu2e {
       ProductionTargetCarbon->AddElement(getElementOrThrow("C"), 1.);
     }
 
+    //Tungsten production target with 2.27gcc density (Mu2e-II era conveyor target balls)
+    mat = uniqueMaterialOrThrow("ProductionTargetTungsten");
+    {
+      G4Material* ProductionTargetTungsten = new G4Material(mat.name, 2.27*CLHEP::g/CLHEP::cm3 ,1);
+      ProductionTargetTungsten->AddElement(getElementOrThrow("W"), 1.);
+    }
+
     setBirksConstant(config_);
 
   }
