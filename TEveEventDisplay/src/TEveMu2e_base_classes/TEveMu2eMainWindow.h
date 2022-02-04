@@ -114,7 +114,7 @@ namespace mu2e{
       
       //GUI and geom:
       void CreateGUI();
-      void SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV);
+      void SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV);
       void RedrawDataProducts(std::string type);
      
       // for menu:
