@@ -118,7 +118,7 @@ namespace mu2e
           
   void TEveEventDisplay::beginRun(const art::Run& run){
     //import 3D GDML geom:
-    _frame->SetRunGeometry(run, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
+    _frame->SetRunGeometry(run, _gdmlname, _diagLevel, _showBuilding, _showDSOnly, _showCRV);
     //make 2D tracker and calo:
     if(_filler.addClusters_) _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
@@ -143,7 +143,7 @@ namespace mu2e
         if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
         if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
         if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
-        if(!_frame->isClosed()) _frame->setEvent(event, _gdmlname, _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected, _isMCOnly);
+        if(!_frame->isClosed()) _frame->setEvent(event,  _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected, _isMCOnly);
         _firstLoop = false;
       }
     }

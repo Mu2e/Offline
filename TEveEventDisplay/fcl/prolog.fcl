@@ -38,7 +38,8 @@ TEveEventDisplayBase : {
       addMCTraj				          : true 
 
     }
-  particles :   [11,13,2212,2112,211,22,212]
+    gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
+    particles :   [11,13,2212,2112,211,22,212]
   }  
   
 TEveEventDisplayUpstream : {
@@ -66,6 +67,7 @@ TEveEventDisplayUpstream : {
       addCosmicSeedFit	          : false
       addMCTraj				            : true
    }
+    gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
     particles :   [11,13,2212,2112,211,22,212]
     
   }  
@@ -80,7 +82,7 @@ TEveEventDisplayHelix : {
       isMCOnly : false
       filler : {
         ComboHitCollection 	  : "makePH"
-	TimeClusterCollection                  : "MHDeM"
+	      TimeClusterCollection                  : "MHDeM"
         CrvRecoPulseCollection	  :  "SelectRecoMC"
         CosmicTrackSeedCollection :  NULL
         CaloClusterCollection     :  "CaloClusterMaker"
@@ -90,8 +92,8 @@ TEveEventDisplayHelix : {
         TrkExtTrajCollection      :  NULL
         MCTrajectoryCollection    :  "compressRecoMCs"
         addHits 		  : true
-	addTrkHits 		  : true
-	addTimeClusters           : true
+	      addTrkHits 		  : true
+	      addTimeClusters           : true
         addTracks 		  : true
         addCrvHits		  : false
         addCosmicSeedFit	  : false
@@ -99,6 +101,7 @@ TEveEventDisplayHelix : {
         addTrkExtTrajs		  : false
         addMCTraj		  : true
       }
+      gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
       particles :   [-11,11,13,-13,2212,2112,211,22,212]
   }   
 
@@ -126,7 +129,7 @@ TEveEventDisplayCosmics : {
       addTrkExtTrajs		        : false
       addMCTraj				          : false 
    }
-   gdmlname :         "Offline/TEveEventDisplay/src/mu2e.gdml"
+   gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
    particles :   [11,13,2212,2112,211,22,212]
   }   
 
