@@ -36,7 +36,7 @@ namespace mu2e{
         inPSVac = true;
       }
       }
-      if ( inPSVac && _name.find("ProductionTargetCarbon") != 0 ) {
+      if ( inPSVac && _name.find("ProductionTargetTungstenLa2") != 0 ) {
         node->SetVisibility(kTRUE);
       } else{
         node->SetVisibility(kFALSE);
