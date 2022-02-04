@@ -106,10 +106,10 @@ namespace mu2e
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     } 
     //construct GUI:
-    std::cout<<"CRV coming in "<<_filler.addCrvHits_<<std::endl;
-    DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, _filler.addTrkHits_, _filler.addTimeClusters_, false, _filler.addMCTraj_); 
-    std::cout<<"CRV coming in "<<DrawOpts.addCRVInfo<<std::endl;
-    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts);
+
+    const DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, _filler.addTrkHits_, _filler.addTimeClusters_, false, _filler.addMCTraj_); 
+    const GeomOptions GeomOpts(_showCRV, _showBuilding, _showDSOnly, _showCRV, _showInsidePS);
+    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts, GeomOpts);
     //build 2D geometries (now optional):
     if(DrawOpts.addCRVInfo)_frame->CreateCRVProjection();
     if(DrawOpts.addClusters or DrawOpts.addCryHits) _frame->CreateCaloProjection();
@@ -121,7 +121,7 @@ namespace mu2e
           
   void TEveEventDisplay::beginRun(const art::Run& run){
     //import 3D GDML geom:
-    _frame->SetRunGeometry(run, _gdmlname, _diagLevel, _showBuilding, _showDSOnly, _showCRV, _showInsidePS );
+    _frame->SetRunGeometry(run, _gdmlname, _diagLevel);
     //make 2D tracker and calo:
     if(_filler.addClusters_) _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
