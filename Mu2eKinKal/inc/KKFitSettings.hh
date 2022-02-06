@@ -31,9 +31,9 @@ namespace mu2e {
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
       " 'Temperature (dimensionless)'") };
-      using KKStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,size_t>>;
+      using KKStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       KKStrawHitUpdaterSettings shuConfig{ Name("KKStrawHitUpdaterSettings"), Comment("KKStrawHitUpdater settings, format: \n"
-      " 'Minimum wire DOCA to assign L/R ambiguity and use drift'', 'Maximum wire DOCA to use hit', 'Minmum probablity to use hit',,'Meta-iteration'") };
+      " 'Minimum wire DOCA to assign L/R ambiguity and use drift', 'Maximum wire DOCA to use hit', 'Minmum probablity to use hit'") };
     };
   // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
