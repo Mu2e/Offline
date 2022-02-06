@@ -13,11 +13,11 @@ Mu2eKinKal : {
   }
   KKMU2E: {
     PrintLevel : 0
-    TimeBuffer : 1.0 # ns
+    TimeBuffer : 0.0 # ns
     TPOCAPrecision : 1e-4 # mm
     NullHitDimension : 2 # constrain position or position+time
     NullHitVarianceScale : 1.0
-    TimeBuffer : 1.0 # ns
+    TimeBuffer : 0.0 # ns
     UseCaloCluster : true
     AddMaterial : true
     CaloTrackerTimeOffset : -1.35 #ns
@@ -43,7 +43,7 @@ Mu2eKinKal : {
     ConvergenceDeltaChisq : 0.1
     DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 1.0 # ns
+    TimeBuffer : 0.0 # ns
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
@@ -59,17 +59,22 @@ Mu2eKinKal : {
     MinNDOF : 5
     MaxNIter : 10
     Deweight : 1.0e6
-    ConvergenceDeltaChisq : 0.1
+    ConvergenceDeltaChisq : 1.0
     DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 1.0 # ns
+    TimeBuffer : 0.0 # ns
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 10.0 ],
       [ 2.0 ],
+      [ 1.0 ],
+      [ 0.5 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
+       [ 10.0, 10.0,  1e-10 ],
+       [ 8.0,  8.0,   1e-10 ],
+       [ 5.0,  8.0,   1e-10 ],
+       [ 5.0,  5.0,   1e-10 ]
     ]
   }
 
@@ -78,37 +83,40 @@ Mu2eKinKal : {
     MinNDOF : 5
     MaxNIter : 10
     Deweight : 1.0e6
-    ConvergenceDeltaChisq : 0.1
-    DivergenceDeltaChisq : 10.0
+    ConvergenceDeltaChisq : 1.0
+    DivergenceDeltaChisq : 50.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 1.0 # ns
+    TimeBuffer : 0.0 # ns
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 0.0 ]
+    ]
     KKStrawHitUpdaterSettings : [
     ]
   }
 
   KKDRIFTEXT: {
-    PrintLevel : 0
+    PrintLevel : 1
     MinNDOF : 5
     MaxNIter : 10
     Deweight : 1.0e6
-    ConvergenceDeltaChisq : 0.1
-    DivergenceDeltaChisq : 10.0
+    ConvergenceDeltaChisq : 1.0
+    DivergenceDeltaChisq : 50.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 1.0 # ns
+    TimeBuffer : 0.0 # ns
     BFieldCorrection : true
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      [ 2.0 ],
       [ 1.0 ],
       [ 0.5 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
-       [ 10.0, 20.0, 1e-6, 0 ],
-       [ 1.0, 8.0, 1e-5, 1 ],
-       [ 0.5,3.5, 1e-5, 2 ]
+       [ 5.0, 5.0, 1e-10 ],
+       [ 2.0, 4.0, 1e-10 ],
+       [ 1.0, 3.0, 1e-10 ],
+       [ 0.5, 3.0, 1e-10 ]
     ]
   }
 
