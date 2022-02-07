@@ -9,6 +9,9 @@
 #include "Offline/Mu2eG4/inc/MTMasterThread.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
+//G4 includes
+#include "Geant4/G4PhysicalVolumeStore.hh"
+
 //art includes
 #include "art/Framework/Principal/Run.h"
 
@@ -104,7 +107,7 @@ namespace mu2e {
         }
 
         masterRunManager.reset();
-        //G4PhysicalVolumeStore::Clean();
+        G4PhysicalVolumeStore::Clean();
 
         if (m_mtDebugOutput > 0) {
           G4cout << "Master thread: reset shared_ptr" << G4endl;
