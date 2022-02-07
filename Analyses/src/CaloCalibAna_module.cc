@@ -33,7 +33,7 @@
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "TDirectory.h"
 #include "TNtuple.h"
 #include "TTree.h"
@@ -94,6 +94,7 @@ namespace mu2e {
 
         int   nSimHit_,crySimId_[ntupLen],crySimPdgId_[ntupLen],crySimCrCode_[ntupLen],crySimGenIdx_[ntupLen],cryConv_[ntupLen];
         float crySimMom_[ntupLen],crySimStartX_[ntupLen],crySimStartY_[ntupLen],crySimStartZ_[ntupLen],crySimStartT_[ntupLen];
+        float crySimEndX_[ntupLen],crySimEndY_[ntupLen],crySimEndZ_[ntupLen],crySimEndT_[ntupLen];
         float crySimTime_[ntupLen],crySimEdep_[ntupLen],cryTimeErr_[ntupLen],cryT1_[ntupLen],cryT2_[ntupLen],cryT1Err_[ntupLen],cryT2Err_[ntupLen];
 
         int   nCluster_,nCluSim_,cluNcrys_[ntupLen];
@@ -162,6 +163,10 @@ namespace mu2e {
       Ntup_->Branch("simStartY",    &crySimStartY_ ,"simStartY[nSim]/F");
       Ntup_->Branch("simStartZ",    &crySimStartZ_ ,"simStartZ[nSim]/F");
       Ntup_->Branch("simStartT",    &crySimStartT_ ,"simStartT[nSim]/F");
+      Ntup_->Branch("simEndX",    &crySimEndX_ ,"simEndX[nSim]/F");
+      Ntup_->Branch("simEndY",    &crySimEndY_ ,"simEndY[nSim]/F");
+      Ntup_->Branch("simEndZ",    &crySimEndZ_ ,"simEndZ[nSim]/F");
+      Ntup_->Branch("simEndT",    &crySimEndT_ ,"simEndT[nSim]/F");
       Ntup_->Branch("simTime",      &crySimTime_ ,  "simTime[nSim]/F");
       Ntup_->Branch("simEdep",      &crySimEdep_ ,  "simEdep[nSim]/F");
       Ntup_->Branch("simGenIdx",    &crySimGenIdx_ ,"simGenIdx[nSim]/I");
@@ -325,9 +330,11 @@ namespace mu2e {
         cryT2_[nHits_]        = cryT2;
         cryT1Err_[nHits_]     = cryT1Err;
         cryT2Err_[nHits_]     = cryT2Err;
-        cryPosX_[nHits_]      = crystalPos.x();
-        cryPosY_[nHits_]      = crystalPos.y();
-        cryPosZ_[nHits_]      = crystalPos.z();
+        GeomHandle<DetectorSystem> det;
+        CLHEP::Hep3Vector Mu2ePos = det->toMu2e(crystalPos); // in mu2e coordinates for comparison
+        cryPosX_[nHits_]      = Mu2ePos.x();
+        cryPosY_[nHits_]      = Mu2ePos.y();
+        cryPosZ_[nHits_]      = Mu2ePos.z();
         cryConv_[nHits_]      = isConversion ? 1 : 0;
         cryEtot_             += hit.energyDep();
 
@@ -349,11 +356,18 @@ namespace mu2e {
           crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
           crySimTime_[nSimHit_]    = eDepMC.time();
           crySimEdep_[nSimHit_]    = eDepMC.energyDep();	                      
-          crySimMom_[nSimHit_]     = eDepMC.momentumIn();	       
+          crySimMom_[nSimHit_]     = eDepMC.momentumIn();	   
+          
           crySimStartX_[nSimHit_]  = parent->startPosition().x();
           crySimStartY_[nSimHit_]  = parent->startPosition().y();
           crySimStartZ_[nSimHit_]  = parent->startPosition().z();
           crySimStartT_[nSimHit_]  = parent->startGlobalTime();
+          
+          crySimEndX_[nSimHit_]    = parent->endPosition().x();
+          crySimEndY_[nSimHit_]    = parent->endPosition().y();
+          crySimEndZ_[nSimHit_]    = parent->endPosition().z();  
+          crySimEndT_[nSimHit_]  = parent->endGlobalTime();
+            
           crySimGenIdx_[nSimHit_]  = genId;
           ++nSimHit_;
 
@@ -376,6 +390,7 @@ namespace mu2e {
       //--------------------------  Do clusters --------------------------------
       nCluster_ = nCluSim_ = 0;
       cluList_.clear();
+      std::cout<<"calo cluster size "<<caloClusters.size()<<std::endl;
       for (unsigned int ic=0; ic<caloClusters.size();++ic)
       {
         const CaloCluster& cluster = caloClusters.at(ic);
