@@ -393,7 +393,7 @@ int mu2e::DbTool::printVersion() {
 			   << vids.size() <<" VIDs" <<std::endl;
   
   if(details<=0) 
-    std::cout << "      VID  PID  LID  maj  min  create_user        create_date " <<std::endl;
+    std::cout << "      VID  PID  LID  maj  min  create_user        create_date     comment" <<std::endl;
 
   for(auto vid : vids) {
     rc = printVIDLine(vid,details,0);
@@ -685,6 +685,7 @@ int mu2e::DbTool::printVIDLine(int vid, int details, int indent) {
 	    << std::setw(5) << vr.minor()  
 	    << std::setw(12) << vr.create_user()  
 	    << std::setw(35) << vr.create_time() 
+	    << std::setw(35) << " " << vr.comment() 
 	    << std::endl;
   if(details>0) {
     for(auto er : _valcache.valExtensions().rows()) {
@@ -710,7 +711,7 @@ int mu2e::DbTool::printPIDLine(int pid, int details, int indent) {
 	    << std::setw(20) << pr.name()  
 	    << std::setw(12) << pr.create_user()  
 	    << std::setw(35) << pr.create_time() 
-	    << std::setw(35) << pr.comment() 
+	    << std::setw(35) << " " << pr.comment() 
 	    << std::endl;
   if(details>0) {
     for(auto vr : _valcache.valVersions().rows()) {
@@ -1556,9 +1557,6 @@ int mu2e::DbTool::commitList() {
     if(rc) return rc;
   }
   
-
-  std::cout <<"commit-list: new list "+args["name"]+" has lid "
-	    << lid << " with "<< ntid <<" list entries " << std::endl;
 
   if(_dryrun) {
     std::cout <<"commit-list: new list "+args["name"]+" would have lid "
