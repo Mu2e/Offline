@@ -71,10 +71,10 @@ Mu2eKinKal : {
       [ 0.5 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
-       [ 10.0, 10.0,  1e-10 ],
-       [ 8.0,  8.0,   1e-10 ],
-       [ 5.0,  8.0,   1e-10 ],
-       [ 5.0,  5.0,   1e-10 ]
+       [ 10.0, 1e-10, 5.0, 5.0  ],
+       [ 8.0,  1e-10, 5.0, 5.0  ],
+       [ 8.0,  1e-10, 5.0, 5.0  ],
+       [ 8.0,  1e-10, 5.0, 5.0  ]
     ]
   }
 
@@ -111,17 +111,18 @@ Mu2eKinKal : {
       [ 2.0 ],
       [ 1.0 ],
       [ 0.5 ],
-      [ 0.0 ]]
+      [ 0.0 ]
+    ]
     KKStrawHitUpdaterSettings : [
-       [ 5.0, 5.0, 1e-10 ],
-       [ 2.0, 4.0, 1e-10 ],
-       [ 1.0, 3.0, 1e-10 ],
-       [ 0.5, 3.0, 1e-10 ]
+       [ 5.0, 1e-10, 1.0, 4.0 ],
+       [ 4.0, 1e-10, 1.0, 3.0 ],
+       [ 3.0, 1e-10, 1.0, 2.8 ],
+       [ 2.8, 1e-10, 0.5, 2.8 ]
     ]
   }
 
   KKLOOPHELIX : {
-    SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
+    SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
     SaveFullFit : true
     #    ZSavePositions : [-1522.0,0.0,1522.0]

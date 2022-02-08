@@ -75,15 +75,17 @@ namespace mu2e {
         auto const shupdater = std::any_cast<KKStrawHitUpdater>(&updater);
         if(shupdater != 0){
           if(updated) throw std::invalid_argument("Multiple updaters found");
+          // update the null mindoca
+          this->mindoca_ = std::min(shupdater->minddoca_,2.5);  // FIXME!
           // update the internal hit state (activity, LR ambiguity, intrinsic error, ...)
           auto const& poca = this->closestApproach();
           auto chisq = this->chisq();
           double absdoca = fabs(poca.doca());
           if( absdoca > shupdater->maxdoca_ || chisq.probability() < shupdater->minprob_){ // hit is too far from the wire or has too small a probability: disable it
             this->wstate_.state_ = WireHitState::inactive; // disable the hit
-          } else if(absdoca > shupdater->mindoca_ && absdoca < shupdater->maxdoca_){  // in the sweet spot: use the DOCA to sign the ambiguity
+          } else if(absdoca > shupdater->minddoca_ && absdoca < shupdater->maxddoca_){  // in the sweet spot: use the DOCA to sign the ambiguity
             this->wstate_.state_ = poca.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-          } else { // hit too close to the wire to resolve ambiguity; just use the raw wire position and time to constrain the track
+          } else { // hit too close to the wire to resolve ambiguity, or with a suspiciously large drift: just use the raw wire position and time to constrain the track
             this->wstate_.state_ = WireHitState::null;
           }
 
@@ -91,6 +93,7 @@ namespace mu2e {
           this->update(pktraj);
           WIREHIT::setResiduals(tpoca);
           updated = true;
+       //   print(std::cout,1); // test FIXME
         }
       }
     } else {
@@ -101,10 +104,11 @@ namespace mu2e {
 
   // the purpose of this class is to allow computing the drift using calibrated quantities (StrawResponse)
   template <class KTRAJ> void KKStrawHit<KTRAJ>::distanceToTime(POL2 const& drift, DriftInfo& dinfo) const {
-    dinfo.tdrift_ = sresponse_.driftDistanceToTime(chit_.strawId(),drift.R(),drift.Phi());
-    dinfo.vdrift_ = sresponse_.driftInstantSpeed(chit_.strawId(),drift.R(),drift.Phi());
-    auto derr = sresponse_.driftDistanceError(chit_.strawId(),drift.R(),drift.Phi(), this->closestApproach().doca());
-    dinfo.tdriftvar_ = std::pow(derr/dinfo.vdrift_,(int)2);
+    // for now, use simplified response model.
+    dinfo.vdrift_ = sresponse_.driftConstantSpeed();
+    dinfo.tdrift_ = drift.R()/dinfo.vdrift_;
+    dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
+   // std::cout << "tdrift " << dinfo.tdrift_ << " VDrift = "<< dinfo.vdrift_ << " derr " << derr << " tvar " << dinfo.tdriftvar_ << std::endl;
   }
 
   template<class KTRAJ> void KKStrawHit<KTRAJ>::print(std::ostream& ost, int detail) const {
