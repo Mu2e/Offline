@@ -32,10 +32,11 @@ namespace mu2e {
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: KKStrawHitUpdaters don't match meta-iterations" << std::endl;
       size_t imeta(0);
       for(auto const& shusetting : fitconfig.shuConfig()) {
-        double mindoca = std::get<0>(shusetting);
-        double maxdoca= std::get<1>(shusetting);
-        double minprob = std::get<2>(shusetting);
-        KKStrawHitUpdater shupdater(mindoca,maxdoca,minprob);
+        double maxdoca= std::get<0>(shusetting);
+        double minprob = std::get<1>(shusetting);
+        double minddoca = std::get<2>(shusetting);
+        double maxddoca = std::get<3>(shusetting);
+        KKStrawHitUpdater shupdater(maxdoca,minprob,minddoca,maxddoca);
         config.schedule_[imeta++].updaters_.push_back(shupdater);
       }
       return config;
