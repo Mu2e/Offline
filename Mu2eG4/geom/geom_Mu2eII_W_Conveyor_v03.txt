@@ -1,0 +1,23 @@
+//Use the Mu2e-II geometry using a smaller ball in the tungsten conveyor
+
+#include "Offline/Mu2eG4/geom/geom_Mu2eII_2020.txt"
+
+///////////////////////////////////////
+//     Change production target      //
+///////////////////////////////////////
+//Tungsten conveyor target
+#include "Offline/Mu2eG4/geom/ProductionTarget_Mu2eII_Conveyor_W_v03.txt"
+
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

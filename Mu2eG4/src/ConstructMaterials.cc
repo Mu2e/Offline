@@ -1585,6 +1585,13 @@ namespace mu2e {
     //Carbon production target with 1.86gcc density (Mu2e-II era conveyor target balls)
     mat = uniqueMaterialOrThrow("ProductionTargetCarbon");
     {
+      G4Material* ProductionTargetCarbon = new G4Material(mat.name, 1.86*CLHEP::g/CLHEP::cm3 ,1);
+      ProductionTargetCarbon->AddElement(getElementOrThrow("C"), 1.);
+    }
+
+    //Carbon production target with 2.27 gcc density to match MARS (Mu2e-II era conveyor target balls)
+    mat = uniqueMaterialOrThrow("ProductionTargetCarbon_MARS");
+    {
       G4Material* ProductionTargetCarbon = new G4Material(mat.name, 2.27*CLHEP::g/CLHEP::cm3 ,1);
       ProductionTargetCarbon->AddElement(getElementOrThrow("C"), 1.);
     }

@@ -427,8 +427,13 @@ namespace mu2e {
                                                     c.getDouble("productionTarget.yNominal", 0.),
                                                     c.getDouble("productionTarget.zNominal")
                                                     );
+    if(c.getBool("targetPS.Mu2eII.front.override", false)) {
+      target->_prodTargetFrontPosition = CLHEP::Hep3Vector(c.getDouble("targetPS.Mu2eII.front.x"),
+                                                           c.getDouble("targetPS.Mu2eII.front.y"),
+                                                           c.getDouble("targetPS.Mu2eII.front.z"));
+    }
     //figure out the front ball, and then assign the front position as that ball + translation along beam direction
-    if(target->_conveyorNBalls <= 0)
+    else if(target->_conveyorNBalls <= 0)
       target->_prodTargetFrontPosition = target->_prodTargetPosition; //if no balls, use as default
     else {
       int front = c.getInt("targetPS.Mu2eII.conveyor.front", -1);
