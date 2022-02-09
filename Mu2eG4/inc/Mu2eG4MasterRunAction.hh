@@ -39,7 +39,7 @@ namespace mu2e {
   private:
     //data members
     int diagLevel_;
-    PhysicalVolumeHelper* physVolHelper_;
+    PhysicalVolumeHelper* physVolHelper_ = nullptr;
 
   };
 

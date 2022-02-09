@@ -64,9 +64,9 @@ namespace mu2e {
 
     std::vector<double> timeVDtimes_;
 
-    SensitiveDetectorHelper* sensitiveDetectorHelper_;
-    Mu2eG4PerThreadStorage*  perThreadStorage_;
-    PhysicalVolumeHelper* physVolHelper_;
+    SensitiveDetectorHelper* sensitiveDetectorHelper_ = nullptr;
+    Mu2eG4PerThreadStorage*  perThreadStorage_ = nullptr;
+    PhysicalVolumeHelper* physVolHelper_ = nullptr;
 
     mutable PhysicsProcessInfo physicsProcessInfo_;
 

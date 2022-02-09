@@ -51,12 +51,12 @@ namespace mu2e {
     Mu2eG4Config::Debug debug_;
     CLHEP::Hep3Vector const& originInWorld;
 
-    PhysicalVolumeHelper* _physVolHelper;
-    PhysicsProcessInfo* _processInfo;
-    Mu2eG4TrackingAction* _trackingAction;
-    Mu2eG4SteppingAction* _steppingAction;
+    PhysicalVolumeHelper* _physVolHelper = nullptr;
+    PhysicsProcessInfo* _processInfo = nullptr;
+    Mu2eG4TrackingAction* _trackingAction = nullptr;
+    Mu2eG4SteppingAction* _steppingAction = nullptr;
 
-    SensitiveDetectorHelper* _sensitiveDetectorHelper;
+    SensitiveDetectorHelper* _sensitiveDetectorHelper = nullptr;
 
   };
 
