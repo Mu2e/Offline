@@ -1,5 +1,5 @@
 #include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
-
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 Int_t transpOpt = 100;
 using namespace mu2e;
 namespace mu2e{
@@ -45,12 +45,14 @@ namespace mu2e{
       // ... Create tracker using the composite shape defined above
       TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
       TGeoMedium *My = new TGeoMedium("Mylar",2, mat);
-      CLHEP::Hep3Vector trackerCentrMu2e = GetTrackerCenter();
+      GeomHandle<DetectorSystem> det;
+      CLHEP::Hep3Vector trackerCentrMu2e = det->getOrigin();
+
       TGeoShape *gs = new TGeoTube("Straw Tracker",rmin,rmax,dz);
       TGeoVolume *tracker = new TGeoVolume("Straw Tracker ",gs, My);
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
-      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,0,1017.1));  // FIXME - hardcoded number
+      topvol->AddNode(tracker, 1, new TGeoTranslation(trackerCentrMu2e.x()/10, trackerCentrMu2e.y()/10, trackerCentrMu2e.z()/10));  
      
       //Stopping Target 
       GeomHandle<StoppingTarget> target;
