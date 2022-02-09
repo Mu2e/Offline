@@ -38,7 +38,9 @@ namespace mu2e {
       fhicl::OptionalAtom<bool> fastStart{Name("fastStart"), 
 	  Comment("read the DB immedatiately, not on first use")};
       fhicl::OptionalAtom<int> cacheLifetime{Name("cacheLifetime"), 
-	  Comment("if >0, read IoV from cache, but renew each lifetime s")};
+	  Comment("if >0, read IoV from cache, but renew each lifetime (s)")};
+      fhicl::OptionalAtom<int> retryTimeout{Name("retryTimeout"), 
+	  Comment("how long to keep retrying to read database (3600s)")};
     };
 
     // this line is required by art to allow the command line help print

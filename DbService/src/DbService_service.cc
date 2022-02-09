@@ -61,21 +61,28 @@ namespace mu2e {
     } // end loop over files
 
     int cacheLifetime = 0;
-    _config.cacheLifetime(cacheLifetime);
-    _engine.reader().setCacheLifetime(cacheLifetime);
+    if(_config.cacheLifetime(cacheLifetime)) {
+      _engine.reader().setCacheLifetime(cacheLifetime);
+    }
+
+    int retryTimeout = 0;
+    if(_config.retryTimeout(retryTimeout)) {
+      _engine.reader().setTimeout(retryTimeout);
+    }
+
 
     // service will start calling the database at the first event,
     // so the service can exist without the DB being contacted.  
     // fastStart overrides this and starts reading the DB imediately.
     bool fastStart = false;
-    _config.fastStart(fastStart);
-    if (fastStart) {
-      // this prepares IOV infrastructure for efficient queries
-      if(_verbose>2) std::cout << "DbService::beginJob initializing engine "
-			       <<std::endl;
-      _engine.beginJob();
+    if(_config.fastStart(fastStart)) {
+      if (fastStart) {
+        // this prepares IOV infrastructure for efficient queries
+        if(_verbose>2) std::cout << "DbService::beginJob initializing engine "
+                                 <<std::endl;
+        _engine.beginJob();
+      }
     }
-
 
   }
 
