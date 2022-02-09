@@ -73,14 +73,14 @@ namespace mu2e {
     Mu2eG4TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
 
-    SensitiveDetectorHelper* _sensitiveDetectorHelper;
+    SensitiveDetectorHelper* _sensitiveDetectorHelper = nullptr;
 
     const CLHEP::Hep3Vector& _originInWorld;
 
     // local Mu2e per Geant4 event timer
     std::unique_ptr<G4Timer> _timer;
 
-    PhysicsProcessInfo *_processInfo;
+    PhysicsProcessInfo *_processInfo = nullptr;
 
     bool _g4InternalFiltering;
 
