@@ -171,7 +171,7 @@ namespace mu2e{
         const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
         CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
         CLHEP::Hep3Vector pointInMu2e = crvCounterPos;
-        hep3vectorTocm(crvCounterPos);
+        hep3vectormmTocm(crvCounterPos);
         string pos3D = "(" + to_string((double)crvCounterPos.x()) + ", " + to_string((double)crvCounterPos.y()) + ", " + to_string((double)crvCounterPos.z()) + ")";
         if((min_time == -1 && max_time == -1) or (crvRecoPulse.GetPulseTime() > min_time and crvRecoPulse.GetPulseTime() < max_time)){
           teve_crv3D->DrawHit3D("CRVHits3D, Position = " + pos3D + ", Pulse Time = " + to_string(crvRecoPulse.GetPulseTime()) + ", Pulse Height = "+
@@ -434,7 +434,7 @@ namespace mu2e{
             crystals2D ->SetMarkerSize(1);
             crystals2D ->SetMarkerColor(kRed);
             crystalPos = PointToCalo(crystalPos, diskID);
-            hep3vectorTocm(crystalPos);
+            hep3vectormmTocm(crystalPos);
             origin [0] = crystalPos.x();
             origin [1] = crystalPos.y();
             origin [2] = crystalPos.z();
@@ -462,17 +462,18 @@ namespace mu2e{
             int diskID = cal.crystal(crystalhit->crystalID()).diskID();
             CLHEP::Hep3Vector HitPos(cal.geomUtil().mu2eToDiskFF(diskID, cal.crystal(crystalhit->crystalID()).position()));
             CLHEP::Hep3Vector hit = PointToCalo(HitPos,diskID);
-            hep3vectorTocm(hit);
+            hep3vectormmTocm(hit);
             hits.push_back(hit);
           }
         }
         
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
-        
+        std::cout<<"cluster position "<<COG.x()<<" "<<COG.y()<<" "<<COG.z()<<std::endl;
         CLHEP::Hep3Vector pointInMu2e2D = PointToCalo(COG,cluster.diskID());
-        CLHEP::Hep3Vector pointInMu2e3D = PointToCaloCM(COG,cluster.diskID());
+        CLHEP::Hep3Vector pointInMu2e3D = PointToCalo(COG,cluster.diskID());
+        hep3vectormTocm(pointInMu2e3D);
        
-        string pos3D = "(" + to_string(convertToCentimeters((double)pointInMu2e3D.x())) + ", " + to_string(convertToCentimeters((double)pointInMu2e3D.y())) + ", " + to_string(convertToCentimeters((double)pointInMu2e3D.z())) + ")";
+        string pos3D = "(" + to_string((double)pointInMu2e3D.x()) + ", " + to_string((double)pointInMu2e3D.y()) + ", " + to_string((double)pointInMu2e3D.z()) + ")";
         string pos2D = "(" + to_string((double)COG.x()) + ", " + to_string((double)COG.y()) + ", " + to_string((double)COG.z()) + ")";
 
         if (((min_time == -1 && max_time == -1) || (cluster.time() > min_time &&  cluster.time() < max_time )) && ((cluster.energyDep() >= min_energy && cluster.energyDep() <= max_energy) || (min_energy == -1 && max_energy == -1))){

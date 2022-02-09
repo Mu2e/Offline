@@ -72,7 +72,7 @@ namespace mu2e{
     }
   
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    //hep3vectorTocm(pointInMu2e);
+    //hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
@@ -119,7 +119,7 @@ namespace mu2e{
       
     }
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    hep3vectorTocm(pointInMu2e);
+    hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
@@ -161,7 +161,7 @@ namespace mu2e{
       HitList2DXZ->AddElement(line_twoDstrawXZ);
     }
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    hep3vectorTocm(pointInMu2e);
+    hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y()+1000.0, pointInMu2e.z());
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);

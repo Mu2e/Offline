@@ -13,15 +13,15 @@ using namespace CLHEP;
 
 namespace mu2e{
     inline double pointmmTocm(double mm){ return mm/10; };
-    inline void hep3vectorTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()/10, vector.y()/10, vector.z()/10);}
-    inline void XYZVectorFTocm(XYZVectorF &vector){ vector.SetXYZ(vector.x()/10, vector.y()/10, vector.z()/10);}
-   
+    inline void hep3vectormmTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()/10, vector.y()/10, vector.z()/10);}
+    inline void hep3vectormTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()*10, vector.y()*10, vector.z()*10);}
+
    inline CLHEP::Hep3Vector GetCaloCenter(int nDisk){
       std::string calfilename("Mu2eG4/geom/calorimeter_CsI.txt");
       SimpleConfig CalConfig(calfilename);
       double zCenter = 0;
-      if(nDisk==0) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ0") + 100;
-      if(nDisk==1) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ1") - 600;
+      if(nDisk==0) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ0") ;//+ 100;
+      if(nDisk==1) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ1") ;//- 600;
       std::string geomfilename("Mu2eG4/geom/geom_common_current.txt");
       SimpleConfig GeomConfig(geomfilename);
       double xCenter  = -GeomConfig.getDouble("mu2e.solenoidOffset");
@@ -29,12 +29,6 @@ namespace mu2e{
       return c;
     }
 
-
-    inline CLHEP::Hep3Vector PointToCaloCM( CLHEP::Hep3Vector point, int nDisk){
-      CLHEP::Hep3Vector Mu2eCaloOrigin = GetCaloCenter(nDisk);
-      CLHEP::Hep3Vector PointToCalo(10*(point.x() + Mu2eCaloOrigin.x()), 10*(point.y()+Mu2eCaloOrigin.y()), 10*(point.z() + Mu2eCaloOrigin.z()));
-      return  PointToCalo;
-    }
     
     inline CLHEP::Hep3Vector PointToCalo( CLHEP::Hep3Vector point, int nDisk){
       CLHEP::Hep3Vector Mu2eCaloOrigin = GetCaloCenter(nDisk);
