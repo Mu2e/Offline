@@ -97,14 +97,14 @@ namespace mu2e {
         return new_map;
     }
 
-    void BFieldManager::print(ostream& out) {
+    void BFieldManager::print(ostream& out) const {
         out << "================ BFieldManager: innerMaps ================\n";
-        for (MapContainerType::iterator i = innerMaps_.begin(); i != innerMaps_.end(); ++i) {
+        for (auto i = innerMaps_.begin(); i != innerMaps_.end(); ++i) {
             (*i)->print(out);
         }
 
         out << "================ BFieldManager: outerMaps ================\n";
-        for (MapContainerType::iterator i = outerMaps_.begin(); i != outerMaps_.end(); ++i) {
+        for (auto i = outerMaps_.begin(); i != outerMaps_.end(); ++i) {
             (*i)->print(out);
         }
 

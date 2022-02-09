@@ -8,7 +8,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include <array>
 namespace mu2e {
-  // struct for updating straw hits; 
+  // struct for updating straw hits;
   struct KKPanelHitUpdater {
     double mindoca_; // minimum DOCA value to set an ambiguity
     double maxdoca_; // maximum DOCA to still use a hit
@@ -28,7 +28,7 @@ namespace mu2e {
       Weights weight() const override;
       // hits are active if any component is active
       bool active() const override { return false; } // this hit never contributes to the fit
-      Chisq chisq() const override { return 0.0; } 
+      Chisq chisq() const override { return 0.0; }
       Chisq chisq(Parameters const& params) const override { return 0.0; }
       double time() const override;
       void update(PKTRAJ const& pktraj)override {;} // no POCA update for this class
@@ -49,8 +49,8 @@ namespace mu2e {
     unsigned nactive(0);
     for(auto const& hit : hits_){
       if(hit && hit->active()){
-	++nactive;
-	time += hit->time();
+  ++nactive;
+  time += hit->time();
       }
     }
     if(nactive > 0)
@@ -69,18 +69,18 @@ namespace mu2e {
     unsigned nhits(0), nactive(0);
     for(auto const& hit : hits_){
       if(hit){
-	++nhits;
-	if(hit->active()){
-	  ++nactive;
-	}
+  ++nhits;
+  if(hit->active()){
+    ++nactive;
+  }
       }
     }
     ost << " KKPanelHit with " << nactive << " active hits among " << nhits << " total" << std::endl;
     if(detail > 0){
       for(size_t ihit=0; ihit < MAXNHIT; ++ihit){
-	if(hits_[ihit]){
-	  ost << pstate_[ihit] << std::endl;
-	}
+  if(hits_[ihit]){
+    ost << pstate_[ihit] << std::endl;
+  }
       }
     }
   }

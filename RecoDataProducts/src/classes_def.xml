@@ -18,7 +18,7 @@
  <class name="TrackAxes"/>
  <class name="TrackEquation"/>
  <class name="TrackSeedDiag"/>
- 
+
  <class name="mu2e::CosmicTrack"/>
  <class name="mu2e::CosmicTrackSeed"/>
  <class name="mu2e::CosmicTrackSeedCollection"/>
@@ -44,7 +44,7 @@
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
  <class name="mu2e::CaloHitCollection"/>
  <class name="std::pair<art::Ptr<mu2e::CaloHit>, art::Ptr<mu2e::CaloHit> >"/>
- <class name="std::map<art::Ptr<mu2e::CaloHit>, art::Ptr<mu2e::CaloHit> >"/> 
+ <class name="std::map<art::Ptr<mu2e::CaloHit>, art::Ptr<mu2e::CaloHit> >"/>
  <class name="mu2e::CaloHitRemapping"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitRemapping>"/>
@@ -126,7 +126,7 @@
  <class name="mu2e::HitT0"/>
  <class name="mu2e::RobustHelix"/>
  <class name="mu2e::HelixSeed"/>
- <class name="mu2e::HelixSeedCollection" /> 
+ <class name="mu2e::HelixSeedCollection" />
  <class name="art::Ptr<mu2e::HelixSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::HelixSeed> >"/>
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
@@ -174,8 +174,6 @@
  <class name="art::Wrapper<mu2e::KalRepPtrCollection>"/>
 
  <class name="mu2e::TrkFitDirection"/>
- <class name="KinKal::ParticleState"/> <!--KinKal-->
- <class name="KinKal::ParticleStateEstimate"/> <!--KinKal-->
  <class name="mu2e::TrkStrawHitSeed"/>
  <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
@@ -195,7 +193,7 @@
  <class name="art::Wrapper<mu2e::KalHelixAssns>"/>
  <class name="art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void>"/>
  <class name="art::Wrapper<art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void> >"/>
- 
+
  <class name="mu2e::KalLineAssns" />
  <class name="art::Wrapper<mu2e::KalLineAssns>"/>
  <class name="art::Assns<mu2e::CosmicTrackSeed,mu2e::KalSeed,void>"/>
@@ -210,7 +208,7 @@
  <class name="mu2e::KKLine"/>
  <class name="mu2e::KKLineCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KKLineCollection>"/>
- 
+
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
  <class name="mu2e::TrkQualCollection"/>
@@ -225,14 +223,14 @@
  <class name="mu2e::RecoQual"/>
  <class name="mu2e::RecoQualCollection"/>
  <class name="art::Wrapper<mu2e::RecoQualCollection>"/>
- 
+
  <class name="mu2e::AlgorithmID"/>
  <class name="mu2e::AlgorithmIDCollection"/>
  <class name="art::Ptr<mu2e::AlgorithmID>"/>
  <class name="std::vector<art::Ptr<mu2e::AlgorithmID> >"/>
  <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
 
- 
+
  <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> >" />
  <class name="std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::KalRepPtr> >" />
  <class name="std::vector<std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> > >" />
@@ -353,7 +351,7 @@
 
 <!--  ********* trigger  ********* -->
  <class name="mu2e::TriggerInfo"/>
- <class name="mu2e::TriggerInfoCollection" /> 
+ <class name="mu2e::TriggerInfoCollection" />
  <class name="art::Wrapper<mu2e::TriggerInfo>"/>
  <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
 
