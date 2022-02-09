@@ -23,7 +23,7 @@ namespace mu2e{
         GeomHandle<DetectorSystem> det;
         crystalPos = det->toMu2e(crystalPos);
        
-        hep3vectorTocm(crystalPos);
+        hep3vectormmTocm(crystalPos);
         origin [0] = crystalPos.x();
         origin [1] = crystalPos.y();
         origin [2] = crystalPos.z();
