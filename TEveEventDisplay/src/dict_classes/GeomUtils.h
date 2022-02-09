@@ -20,8 +20,8 @@ namespace mu2e{
       std::string calfilename("Offline/Mu2eG4/geom/calorimeter_CsI.txt");
       SimpleConfig CalConfig(calfilename);
       double zCenter = 0;
-      if(nDisk==0) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ0") ;//+ 100;
-      if(nDisk==1) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ1") ;//- 600;
+      if(nDisk==0) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ0") + 100;
+      if(nDisk==1) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ1") - 600;
       std::string geomfilename("Mu2eG4/geom/geom_common_current.txt");
       SimpleConfig GeomConfig(geomfilename);
       double xCenter  = -GeomConfig.getDouble("mu2e.solenoidOffset");
