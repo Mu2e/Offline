@@ -39,9 +39,8 @@
 
 // G4 includes
 #include "Geant4/G4GeometryManager.hh"
-#include "Geant4/G4PhysicalVolumeStore.hh"
-#include "Geant4/G4LogicalVolumeStore.hh"
-#include "Geant4/G4SolidStore.hh"
+//#include "Geant4/G4PhysicalVolumeStore.hh"
+//#include "Geant4/G4LogicalVolumeStore.hh"
 
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4Box.hh"

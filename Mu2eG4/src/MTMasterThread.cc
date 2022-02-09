@@ -11,6 +11,7 @@
 
 //G4 includes
 #include "Geant4/G4PhysicalVolumeStore.hh"
+#include "Geant4/G4LogicalVolumeStore.hh"
 
 //art includes
 #include "art/Framework/Principal/Run.h"
@@ -107,7 +108,7 @@ namespace mu2e {
         }
 
         masterRunManager.reset();
-        G4PhysicalVolumeStore::Clean();
+        storeCleanUp();
 
         if (m_mtDebugOutput > 0) {
           G4cout << "Master thread: reset shared_ptr" << G4endl;
@@ -182,6 +183,25 @@ namespace mu2e {
   }
 
 
+  void MTMasterThread::storeRunNumber(int art_runnumber) {
+    run_number = art_runnumber;
+  }
+
+
+  void MTMasterThread::readRunData(PhysicalVolumeHelper* phys_vol_help) const {
+
+    m_masterRunManager->setPhysVolumeHelper(phys_vol_help);
+
+  }
+
+  void MTMasterThread::storeCleanUp() {
+
+    G4PhysicalVolumeStore::GetInstance()->Clean();
+    G4LogicalVolumeStore::GetInstance()->Clean();
+
+  }
+
+
   void MTMasterThread::stopThread() {
     if (m_stopped) {
       return;
@@ -217,17 +237,5 @@ namespace mu2e {
     m_stopped = true;
   }
 
-
-  void MTMasterThread::storeRunNumber(int art_runnumber)
-  {
-    run_number = art_runnumber;
-  }
-
-
-  void MTMasterThread::readRunData(PhysicalVolumeHelper* phys_vol_help) const {
-
-    m_masterRunManager->setPhysVolumeHelper(phys_vol_help);
-
-  }
 
 }// end namespace mu2e
