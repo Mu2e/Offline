@@ -16,15 +16,6 @@ namespace mu2e{
     inline void hep3vectorTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()/10, vector.y()/10, vector.z()/10);}
     inline void XYZVectorFTocm(XYZVectorF &vector){ vector.SetXYZ(vector.x()/10, vector.y()/10, vector.z()/10);}
    
-    inline CLHEP::Hep3Vector GetTrackerCenter(){
-      std::string filename("Mu2eG4/geom/geom_common_current.txt");
-      SimpleConfig GeomConfig(filename);
-      double zCenter  =  GeomConfig.getDouble("mu2e.detectorSystemZ0");
-      double xCenter  = -GeomConfig.getDouble("mu2e.solenoidOffset");
-      CLHEP::Hep3Vector c(xCenter, 0, zCenter);
-      return c;
-    }
-
    inline CLHEP::Hep3Vector GetCaloCenter(int nDisk){
       std::string calfilename("Mu2eG4/geom/calorimeter_CsI.txt");
       SimpleConfig CalConfig(calfilename);
