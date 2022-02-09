@@ -17,7 +17,7 @@ namespace mu2e{
     inline void hep3vectormTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()*10, vector.y()*10, vector.z()*10);}
 
    inline CLHEP::Hep3Vector GetCaloCenter(int nDisk){
-      std::string calfilename("Mu2eG4/geom/calorimeter_CsI.txt");
+      std::string calfilename("Offline/Mu2eG4/geom/calorimeter_CsI.txt");
       SimpleConfig CalConfig(calfilename);
       double zCenter = 0;
       if(nDisk==0) zCenter = CalConfig.getDouble("calorimeter.caloMotherZ0") ;//+ 100;
