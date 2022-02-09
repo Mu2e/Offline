@@ -12,7 +12,7 @@
 using namespace CLHEP;
 
 namespace mu2e{
-    inline double pointmmTocm(double mm){ return mm/10; };
+    inline constexpr double pointmmTocm(double mm){ return mm/10; };
     inline void hep3vectormmTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()/10, vector.y()/10, vector.z()/10);}
     inline void hep3vectormTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()*10, vector.y()*10, vector.z()*10);}
 
@@ -36,24 +36,5 @@ namespace mu2e{
       return  PointToCalo;
     }
 
-    inline double TrackerLength(){
-      GeomHandle<Tracker> trkr;
-      TubsParams envelope(trkr->g4Tracker()->getInnerTrackerEnvelopeParams());
-      double dz{(envelope.zHalfLength())};
-      return (dz*2);
-    }
-    
-    inline CLHEP::Hep3Vector NewCenter(){
-      GeomHandle<Tracker> trkr;
-      GeomHandle<DetectorSystem> det;
-      CLHEP::Hep3Vector origin = trkr->origin();
-      CLHEP::Hep3Vector InMu2e = det->toMu2e(origin);
-      return InMu2e;
-    }
-
-    inline double CaloLength(){
-      //Not used anymore....
-      return 320;
-    }
 }
 #endif 
