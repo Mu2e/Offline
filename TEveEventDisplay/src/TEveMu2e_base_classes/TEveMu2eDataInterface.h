@@ -25,6 +25,7 @@
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eCustomHelix.h"
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eStraightTrack.h"
 #include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
+#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
 //C++
 #include <limits>
 #include <vector>

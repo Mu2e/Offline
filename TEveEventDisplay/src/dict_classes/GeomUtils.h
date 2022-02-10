@@ -1,12 +1,6 @@
 #ifndef GeomUtils_h
 #define GeomUtils_h
-// Math
-#include "Offline/DataProducts/inc/GenVector.hh"
-#include "Offline/ConfigTools/inc/SimpleConfig.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
+
 //C++
 #include <vector>
 using namespace CLHEP;
@@ -14,22 +8,5 @@ using namespace CLHEP;
 namespace mu2e{
     inline constexpr double pointmmTocm(double mm){ return mm/10; };
     inline void hep3vectormmTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()/10, vector.y()/10, vector.z()/10);}
-    inline void hep3vectormTocm(CLHEP::Hep3Vector &vector){vector.set(vector.x()*10, vector.y()*10, vector.z()*10);}
-
-   inline CLHEP::Hep3Vector GetCaloCenter(int nDisk){
-      std::string geomfilename("Mu2eG4/geom/geom_common_current.txt");
-      SimpleConfig GeomConfig(geomfilename);
-      double xCenter  = -GeomConfig.getDouble("mu2e.solenoidOffset");
-      CLHEP::Hep3Vector c(xCenter, 0, 0);
-      return c;
-    }
-
-    
-    inline CLHEP::Hep3Vector PointToCalo( CLHEP::Hep3Vector point, int nDisk){
-      CLHEP::Hep3Vector Mu2eCaloOrigin = GetCaloCenter(nDisk);
-      CLHEP::Hep3Vector PointToCalo((point.x() + Mu2eCaloOrigin.x()), (point.y()+Mu2eCaloOrigin.y()), (point.z() + Mu2eCaloOrigin.z()));
-      return  PointToCalo;
-    }
-
 }
 #endif 
