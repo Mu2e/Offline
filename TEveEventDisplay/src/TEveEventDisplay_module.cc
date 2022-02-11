@@ -33,16 +33,16 @@ namespace mu2e
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
         fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
-        fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};
+        fhicl::Table<GeomOptions> show {Name("show")};
+        /*fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};
         fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};
         fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};
         fhicl::Atom<bool> showInsidePS{Name("showInsidePS"), Comment(""),false};
-        fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};
+        fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};*/
         fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};
         fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
         fhicl::Atom<std::string>gdmlname{Name("gdmlname"),Comment("gdmlname")};
-        //fhicl::Table<TEveMu2eMCInterface::Config> particles{Name("particles"),Comment("particles to plot")};
         fhicl::Sequence<int>particles{Name("particles"),Comment("PDGcodes to plot")};
       };
 
@@ -56,11 +56,12 @@ namespace mu2e
     private:   
       Config _conf;
       int _diagLevel;
-      bool _showBuilding;
+     /* bool _showBuilding;
       bool _showDSOnly;
       bool _showInsidePS;
       bool _showCRV;
-      bool _showEvent;
+      bool _showEvent;*/
+      const GeomOptions _show;//(_showCRV, _showBuilding, _showDSOnly, _showCRV, _showInsidePS);
       bool _isMCOnly;
       bool _accumulate;
       TApplication* application_;
@@ -82,11 +83,12 @@ namespace mu2e
   TEveEventDisplay::TEveEventDisplay(const Parameters& conf) :
   art::EDAnalyzer(conf),
   _diagLevel(conf().diagLevel()),
-  _showBuilding(conf().showBuilding()),
-  _showDSOnly(conf().showDSOnly()),
-  _showInsidePS(conf().showInsidePS()),
-  _showCRV(conf().showCRV()),
-  _showEvent(conf().showEvent()),
+  //_showBuilding(conf().showBuilding()),
+  //_showDSOnly(conf().showDSOnly()),
+  //_showInsidePS(conf().showInsidePS()),
+  //_showCRV(conf().showCRV()),
+  //_showEvent(conf().showEvent()),
+  _show(conf().show()),
   _isMCOnly(conf().isMCOnly()),
   _accumulate(conf().accumulate()),
   _filler(conf().filler()),
@@ -108,8 +110,8 @@ namespace mu2e
     //construct GUI:
 
     const DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, _filler.addTrkHits_, _filler.addTimeClusters_, false, _filler.addMCTraj_); 
-    const GeomOptions GeomOpts(_showCRV, _showBuilding, _showDSOnly, _showCRV, _showInsidePS);
-    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts, GeomOpts);
+    
+    _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts, _show);
     //build 2D geometries (now optional):
     if(DrawOpts.addCRVInfo)_frame->CreateCRVProjection();
     if(DrawOpts.addClusters or DrawOpts.addCryHits) _frame->CreateCaloProjection();
@@ -135,20 +137,19 @@ namespace mu2e
     
     if((eventSelected==false) or ( eventSelected == true and runid == runn and eventid == eventn)){
       std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
-      if(_showEvent){
-        foundEvent = true;
-        Data_Collections data;
-        if(_filler.addHits_)_filler.FillRecoCollections(event, data, ComboHits);
-	      if(_filler.addTimeClusters_)_filler.FillRecoCollections(event, data, TimeClusters);
-	      if(_filler.addTrkHits_)_filler.FillRecoCollections(event, data, ComboHits);
-        if(_filler.addCrvHits_)_filler.FillRecoCollections(event, data, CRVRecoPulses);
-        if(_filler.addCosmicSeedFit_)_filler.FillRecoCollections(event, data, CosmicTracks);
-        if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
-        if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
-        if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
-        if(!_frame->isClosed()) _frame->setEvent(event,  _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected, _isMCOnly);
-        _firstLoop = false;
-      }
+      foundEvent = true;
+      Data_Collections data;
+      if(_filler.addHits_)_filler.FillRecoCollections(event, data, ComboHits);
+      if(_filler.addTimeClusters_)_filler.FillRecoCollections(event, data, TimeClusters);
+      if(_filler.addTrkHits_)_filler.FillRecoCollections(event, data, ComboHits);
+      if(_filler.addCrvHits_)_filler.FillRecoCollections(event, data, CRVRecoPulses);
+      if(_filler.addCosmicSeedFit_)_filler.FillRecoCollections(event, data, CosmicTracks);
+      if(_filler.addTracks_)_filler.FillRecoCollections(event, data, KalSeeds);
+      if(_filler.addClusters_)_filler.FillRecoCollections(event, data, CaloClusters);
+      if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
+      if(!_frame->isClosed()) _frame->setEvent(event,  _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected, _isMCOnly);
+      _firstLoop = false;
+      
     }
   }
    

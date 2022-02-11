@@ -90,7 +90,14 @@ namespace mu2e{
    };
    
    struct GeomOptions{
-    // geom options
+    using Name = fhicl::Name;
+    using Comment = fhicl::Comment;
+    fhicl::Atom<bool> showCRV {Name("showCRV"),false};
+    fhicl::Atom<bool> showBuilding {Name("showBuilding"),false};
+    fhicl::Atom<bool> showDSOnly {Name("showDSOnly"),true};
+    fhicl::Atom<bool> showInsidePS {Name("showInsidePS"),false};
+    fhicl::Atom<bool> showEvent {Name("showEvent"),false};
+    /*// geom options
     bool showCRV = false;
     bool showBuilding = false;
     bool showDSOnly = true;
@@ -98,7 +105,7 @@ namespace mu2e{
     bool showEvent = true;
     GeomOptions(){};
     GeomOptions(bool crv, bool building, bool ds, bool ps, bool eventOn) 
-    : showCRV(crv), showBuilding(building), showDSOnly(ds), showInsidePS(ps), showEvent(eventOn) {};
+    : showCRV(crv), showBuilding(building), showDSOnly(ds), showInsidePS(ps), showEvent(eventOn) {};*/
    };
    
 	class TEveMu2eMainWindow : public TGMainFrame {
