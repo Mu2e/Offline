@@ -80,7 +80,7 @@ namespace mu2e {
       void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
           KKTRK& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       void addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const;
-      void makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
+      bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& tsave) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
@@ -168,7 +168,8 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& ptraj, KKCALOHITCOL& hits) const {
+  template <class KTRAJ> bool KKFit<KTRAJ>::makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& ptraj, KKCALOHITCOL& hits) const {
+    bool retval(false);
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
     CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
@@ -192,8 +193,10 @@ namespace mu2e {
         double tvar = cluster->timeErr()*cluster->timeErr();
         double wvar = caloPosRes_*caloPosRes_;
         hits.push_back(std::make_shared<KKCALOHIT>(cluster,ptca,tvar,wvar));
+        retval = true;
       }
     }
+    return retval;
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
@@ -298,45 +301,38 @@ namespace mu2e {
   } // end function
 
   template <class KTRAJ> void KKFit<KTRAJ>::addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const {
-    //extrapolate the track to the calorimeter region
-    //to understand on which disk the track is supposed to impact.  Stop
     double crystalLength = calo.caloInfo().getDouble("crystalZLength");
     auto const& ftraj = kktrk.fitTraj();
-    unsigned idisk;
-    double zt;
-    bool trkextrap(false);
-    for (idisk=0; idisk < calo.nDisk(); ++idisk){
+    bool added(false);
+    auto cccol = cchandle.product();
+    unsigned idisk=0;
+    // loop over disks, or until we find a matching cluster
+    while(!added && idisk < 2){
       auto ffpos = calo.geomUtil().mu2eToTracker(calo.disk(idisk).geomInfo().frontFaceCenter());
       double rmin = calo.disk(idisk).geomInfo().innerEnvelopeR();
       double rmax = calo.disk(idisk).geomInfo().outerEnvelopeR();
-      // first check the front face
-      zt = zTime(ftraj,ffpos.z());
-      auto tpos = ftraj.position3(zt);
-      double rho = tpos.Rho();
-      if ( (rho > rmin && rho < rmax) ) {
-        // track potentially extrapolates to the front face.
-        trkextrap = true;
-        break;
-      } else {
-        zt = zTime(ftraj,ffpos.z()+crystalLength);
-        tpos = ftraj.position3(zt);
-        rho = tpos.Rho();
-        if ( (rho > rmin && rho < rmax) ) {
-          // track potentially extrapolates to the back: this detects inner surface hits
-          trkextrap = true;
+      // test at both faces; if the track is in the right area, test the clusters on this disk
+      bool test(false);
+      for(int iface=0; iface<2; ++iface){
+        double zt = zTime(ftraj,ffpos.z()+iface*crystalLength);
+        auto tpos = ftraj.position3(zt);
+        double rho = tpos.Rho();
+        if ( rho > rmin && rho < rmax ){
+          test=true;
           break;
         }
       }
-    }
-    if (trkextrap){
-      auto cccol = cchandle.product();
-      for(size_t icc=0;icc < cccol->size(); ++icc){
-        auto const& cc = (*cccol)[icc];
-        if (static_cast<unsigned>(cc.diskID()) == idisk && cc.energyDep() > minCaloEnergy_ && fabs(cc.time() + caloDt_ -zt) < maxCaloDt_){
-          auto ccPtr = art::Ptr<CaloCluster>(cchandle,icc);
-          makeCaloHit(ccPtr,calo,ftraj,hits);
+      if(test){
+        for(size_t icc=0;icc < cccol->size(); ++icc){
+          auto const& cc = (*cccol)[icc];
+          if (static_cast<unsigned>(cc.diskID()) == idisk && cc.energyDep() > minCaloEnergy_){
+            auto ccPtr = art::Ptr<CaloCluster>(cchandle,icc);
+            added = makeCaloHit(ccPtr,calo,ftraj,hits);
+            if(added)break;
+          }
         }
       }
+      ++idisk;
     }
   }
 
@@ -362,6 +358,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> double KKFit<KTRAJ>::zTime(PKTRAJ const& ptraj, double zpos) const {
+    if(ptraj.range().null())throw cet::exception("RECO")<<"mu2e::KKFit: PTraj range error in zTime"<< endl;
     auto bpos = ptraj.position3(ptraj.range().begin());
     auto epos = ptraj.position3(ptraj.range().end());
     // assume linear transit to get an initial estimate
