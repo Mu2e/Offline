@@ -248,13 +248,17 @@ namespace mu2e {
           // optionally (and if present) add the CaloCluster hit
           // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it
           KKCALOHITCOL calohits;
-          if (kkfit_.useCalo() && hseed.caloCluster())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
+          if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
           // set the seed range given the hit TPOCA values
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
           // create and fit the track
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),strawhits,calohits,strawxings);
           if(print_ > 1){
-            std::cout << "Seed Helix parameters " << hseed.helix() << std::endl;
+            std::cout << "Seed Helix parameters " << hseed.helix();
+            if(hseed.caloCluster().isNull())
+              std::cout << " without a CaloCluster " << std::endl;
+            else
+              std::cout << " with a CaloCluster " << std::endl;
             seedtraj.print(std::cout,print_);
             std::cout << "KKTrk " << kktrk->fitStatus() << " fitting "
               << strawhits.size() << " StrawHits and " << calohits.size() << " CaloHits and " << strawxings.size() << " Straw Xings in fit" << std::endl;
@@ -274,7 +278,7 @@ namespace mu2e {
               KKCALOHITCOL addcalohits;
               KKSTRAWXINGCOL addstrawxings;
               kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, addstrawhits, addstrawxings );
-              if(kkfit_.useCalo())kkfit_.addCaloHit(*calo_h, *kktrk, cc_H, addcalohits);
+              if(kkfit_.useCalo()&&calohits.size()==0)kkfit_.addCaloHit(*calo_h, *kktrk, cc_H, addcalohits);
               if(kkfit_.addMaterial())kkfit_.addStraws(*tracker, kkmat_.strawMaterial(), *kktrk, addstrawxings);
               kktrk->extendTrack(exconfig_,addstrawhits,addcalohits,addstrawxings);
               save &= kktrk->fitStatus().usable();
@@ -332,11 +336,15 @@ namespace mu2e {
     auto const& shelix = hseed.helix();
     double zmin = std::numeric_limits<float>::max();
     double zmax = std::numeric_limits<float>::min();
+    double tmin = std::numeric_limits<float>::max();
+    double tmax = std::numeric_limits<float>::min();
     auto const& hits = hseed.hits();
     for( auto const& hit : hits) {
       double zpos = hit.pos().z();
       zmin = std::min(zmin,zpos);
       zmax = std::max(zmax,zpos);
+      tmin = std::min(tmin,(double)hit.correctedTime());
+      tmax = std::max(tmax,(double)hit.correctedTime());
     }
     float zcent = 0.5*(zmin+zmax);
     VEC3 center(shelix.centerx(), shelix.centery(),zcent);
@@ -355,7 +363,7 @@ namespace mu2e {
     // create the initial trajectory
     Parameters kkpars(pars,seedcov_);
     //  construct the seed trajectory (infinite initial time range)
-    return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange());
+    return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange(tmin,tmax));
   }
 
 }
