@@ -170,7 +170,7 @@ namespace mu2e
 
       //construct the mother solid for the CRV sector
       //by combining the solids of each layer using G4UnionSolids
-      G4VSolid *motherSolid=NULL;
+      G4VSolid *motherSolid=nullptr;
       for(size_t l=0; l<motherCenterInMu2e.size(); ++l)
       {
         //solid of one l-th layers of the CRV sector
@@ -208,7 +208,7 @@ namespace mu2e
                                                  halfLengths[2]);
           //union of the solid of the l-th layer and the overlap solid
           G4UnionSolid *motherSolidUnion=new G4UnionSolid(Form("%s_%s_%lu","CRSmotherSolidOverlapUnion",CRVsectorName.c_str(),l),
-                                                          motherSolidPart,motherSolidOverlap,NULL,
+                                                          motherSolidPart,motherSolidOverlap,nullptr,
                                                           centerInMu2e-motherCenterInMu2e[l]);
           motherSolidPart = motherSolidUnion;
         }
@@ -219,7 +219,7 @@ namespace mu2e
           //-either the newly created union of the solid of the l-th layer and the overlap solid
           //-or the solid of the last layer
           G4UnionSolid *motherSolidUnion=new G4UnionSolid(Form("%s_%s_%lu","CRSmotherSolidUnion",CRVsectorName.c_str(),l),
-                                                          motherSolid,motherSolidPart,NULL,
+                                                          motherSolid,motherSolidPart,nullptr,
                                                           motherCenterInMu2e[l]-motherCenterInMu2e[0]);
           motherSolidPart = motherSolidUnion;
         }
@@ -233,7 +233,7 @@ namespace mu2e
 
       //place the CRV sector mother volume into the hall air
       CLHEP::Hep3Vector motherAirOffset = motherCenterInMu2e.front() - parentCenterInMu2e;
-      G4VPhysicalVolume* motherPhysical = new G4PVPlacement(NULL,
+      G4VPhysicalVolume* motherPhysical = new G4PVPlacement(nullptr,
                                                             motherAirOffset,
                                                             motherLogical,
                                                             motherSolid->GetName(),
@@ -262,7 +262,7 @@ namespace mu2e
 
         //place the layer-mother volumes into the big CRV-sector-mother volume
         CLHEP::Hep3Vector motherLayerAirOffset = motherCenterInMu2e.at(l) - motherCenterInMu2e.front();
-        G4VPhysicalVolume* motherLayerPhysical = new G4PVPlacement(NULL,
+        G4VPhysicalVolume* motherLayerPhysical = new G4PVPlacement(nullptr,
                                                                    motherLayerAirOffset,
                                                                    motherLayersLogical.back(),
                                                                    motherLayerSolid->GetName(),
@@ -358,7 +358,7 @@ namespace mu2e
           //into one of the layer-mother volumes (that spans the entire sector)
           const CLHEP::Hep3Vector &scintLayerCenterInMu2e=scintLayers.at(l).getPosition();
           CLHEP::Hep3Vector scintLayerMotherOffset = scintLayerCenterInMu2e - motherCenterInMu2e.at(l*2+1);
-          G4VPhysicalVolume* scintLayerPhysical = new G4PVPlacement(NULL,
+          G4VPhysicalVolume* scintLayerPhysical = new G4PVPlacement(nullptr,
                                                                     scintLayerMotherOffset,
                                                                     scintLayerLogical,
                                                                     scintLayerSolid->GetName(),
@@ -382,7 +382,7 @@ namespace mu2e
             CLHEP::Hep3Vector CMB1LayerOffset = bar.getCMBPosition(1) - scintLayerCenterInMu2e; 
 
             //place the scintillator bar into the scintillator-layer-mother volume (of a particular module)
-            G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+            G4VPhysicalVolume* pv = new G4PVPlacement(nullptr,
                                                       barLayerOffset,
                                                       scintillatorBarLogical,
                                                       bar.name("CRSScintillatorBar_"),
@@ -403,7 +403,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
               if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB0_")); 
 
               //place the CMB at the negative bar end into the scintillator-layer-mother volume (of a particular module)
-              G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(NULL,
+              G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(nullptr,
                                                             CMB0LayerOffset,
                                                             CMBLogical,
                                                             bar.name("CRSCMB0_"),
@@ -422,7 +422,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
               if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB1_")); 
 
               //place the CMB at the positive bar end into the scintillator-layer-mother volume (of a particular module)
-              G4VPhysicalVolume* pvCMB1 = new G4PVPlacement(NULL,
+              G4VPhysicalVolume* pvCMB1 = new G4PVPlacement(nullptr,
                                                             CMB1LayerOffset,
                                                             CMBLogical,
                                                             bar.name("CRSCMB1_"),
@@ -474,7 +474,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
           }
 
           //place the absorber sheet into into one of the layer-mother volumes (that spans the entire sector)
-          G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+          G4VPhysicalVolume* pv = new G4PVPlacement(nullptr,
                                                     absorberLayerMotherOffset,
                                                     absorberLogical,
                                                     absorberName,
@@ -532,7 +532,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
           //place the strong back and the thin cover sheet 
           //into into one of the layer-mother volumes (that spans the entire sector)
-          G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+          G4VPhysicalVolume* pv = new G4PVPlacement(nullptr,
                                                     aluminumSheetMotherOffset,
                                                     aluminumSheetLogical,
                                                     aluminumSheetName,
@@ -582,7 +582,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
             FEBLogical->SetVisAttributes(visAtt);
           }
 
-          G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+          G4VPhysicalVolume* pv = new G4PVPlacement(nullptr,
                                                     FEBAirOffset,
                                                     FEBLogical,
                                                     FEBName,
@@ -637,7 +637,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
         supportStructureLogical->SetVisAttributes(visAtt);
       }
 
-      G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+      G4VPhysicalVolume* pv = new G4PVPlacement(nullptr,
                                                 supportStructureAirOffset,
                                                 supportStructureLogical,
                                                 name,
