@@ -185,7 +185,7 @@ namespace mu2e {
     // compute a preliminary PTCA between the seed trajectory and this straw.
     PTCA ptca(ptraj, caxis, hint, tprec_ );
     // check that this is within tolerance
-    if(fabs(ptca.doca()) < maxCaloDoca_){
+    if(ptca.usable() && fabs(ptca.doca()) < maxCaloDoca_){
       // check that the sensor position is within the active position of the crystal
       auto poca = ptca.sensorPoca().Vect();
       if((poca.Z()-ffcog.Z()) > -maxCaloDoca_ &&  (poca.Z()-sipmcog.Z()) < maxCaloDoca_) {
