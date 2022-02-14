@@ -96,7 +96,13 @@ namespace mu2e {
     // map key is tid
     typedef std::map<int,std::list<eIoV>> eiovMap;
 
-    // look up purpose and version IDs, given text or numbers
+    // save time intervals, to avoid parsing strings repeatedly
+    struct timeInterval {
+      std::time_t start;
+      std::time_t end;
+    };
+
+    // look up purpose and version IDs, given text or pid,vid numbers
     int findPidVid(std::string purpose, std::string version, int& pid, int& vid);
 
     int prettyTable(std::string title, std::string csv);
@@ -108,6 +114,10 @@ namespace mu2e {
     int help();
     std::vector<int> intList(std::string const& arg);
     std::vector<mu2e::DbIoV> runList(std::string const& arg);
+    // check if etime is in interval
+    bool inTime(const timeInterval& interval, const std::string& etime);
+    timeInterval parseInterval(const std::string& time);
+    std::time_t parseTime(const std::string& time);
 
     // expand a gid into a vetor of iovs for each tid
     // extend because it does not zero eset
