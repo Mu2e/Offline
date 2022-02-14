@@ -46,6 +46,7 @@
 #include "KinKal/General/Parameters.hh"
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
+#include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
@@ -270,9 +271,9 @@ namespace mu2e {
           }
           bool save(false);
           if(kktrk->fitStatus().usable()){
-            // Check fit for physical consistency; fit can succeed but the result can have the wrong charge
+            // Check fit for physical consistency; fit can succeed but the result can have changed charge or helicity
             auto const& midtraj = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().range().mid());
-            save = midtraj.Q()*midtraj.rad() > 0;
+            save = midtraj.Q()*seedtraj.Q() > 0 && midtraj.helicity()*seedtraj.helicity() > 0;
             if(save && extend_) {
               KKSTRAWHITCOL addstrawhits;
               KKCALOHITCOL addcalohits;
