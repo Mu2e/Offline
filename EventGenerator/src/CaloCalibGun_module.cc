@@ -27,7 +27,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
-#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh" //TODO - is this needed?
+#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh" 
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -43,8 +43,9 @@
 
 //ROOT Includes
 #include <TMath.h>
-#include <TTree.h>
-const double piconst =CLHEP::pi;
+
+const double piconst = CLHEP::pi;
+using CLHEP::degree;
 using namespace std;
 using namespace mu2e;
 
@@ -95,14 +96,6 @@ namespace mu2e {
     std::vector<double>    _randomRad;
     CLHEP::Hep3Vector      _zPipeCenter;
 
-    bool _doHistograms;
-    TTree* _Ntupe;
-    float _genErg;
-    float _genTime;
-    float _genCos;
-    float _genPosX;
-    float _genPosY;
-    float _genPosZ;
   };
 
   CaloCalibGun::CaloCalibGun(const Parameters& conf)
@@ -124,17 +117,6 @@ namespace mu2e {
     produces<mu2e::PrimaryParticle>();
     produces <MCTrajectoryCollection>();
 
-    if ( _doHistograms )
-    {
-      art::ServiceHandle<art::TFileService> tfs;
-      _Ntupe  = tfs->make<TTree>("calibGun", "calibGun");
-      _Ntupe -> Branch("genErg", &_genErg, "genErg/F");
-      _Ntupe -> Branch("genTime", &_genTime, "genTime/F");
-      _Ntupe -> Branch("genCos", &_genCos, "genCos/F");
-      _Ntupe -> Branch("genPosX", &_genPosX, "genPosX/F");
-      _Ntupe -> Branch("genPosY", &_genPosY, "genPosY/F");
-      _Ntupe -> Branch("genPosZ", &_genPosZ, "genPosZ/F");
-    }
     if (_mean < 0) throw cet::exception("RANGE") << "CaloCalibGun.mean must be non-negative "<< '\n';
   }
 
@@ -253,26 +235,11 @@ namespace mu2e {
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_energy);
 
       //Set Four-momentum
-      CLHEP::HepLorentzVector mom(0,0,0,0);
-      mom.setPx( p3.x() );
-      mom.setPy( p3.y() );
-      mom.setPz( p3.z() );
-      mom.setE( energy );
+      CLHEP::HepLorentzVector mom(p3.x(), p3.y(),p3.z(),energy );
 
       // Add the particle to  the list.
       output->emplace_back(PDGCode::gamma, GenId::CaloCalib, pos, mom, time);
       event.put(std::move(output));
-      // Fill histograms.
-      if ( _doHistograms)
-      {
-        _genErg = energy;
-        _genTime = time;
-        _genCos = p3.cosTheta();
-        _genPosX = pos.x();
-        _genPosY = pos.y();
-        _genPosZ = pos.z();
-      }
-      if(_doHistograms) _Ntupe -> Fill();
     } 
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
     event.put(std::make_unique<MCTrajectoryCollection>(mctc));
