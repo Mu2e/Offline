@@ -166,8 +166,8 @@ namespace mu2e {
 
       double xpipe, ypipe, zpipe;
       //Pick position
-      int xsn = rint(_randFlat.fire());
-      int ysn = rint(_randFlat.fire());
+      int xsn = round(_randFlat.fire());
+      int ysn = round(_randFlat.fire());
 
       double theta = _randFlat.fire() * 2.0 * piconst;
       double pipeR = _pipeRadius * _randFlat.fire();
