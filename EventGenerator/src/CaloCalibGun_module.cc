@@ -178,33 +178,33 @@ namespace mu2e {
       double radLgTor = _pipeTorRadius[idx];
 
       // The phi range from 0 to half phi_lbd for the large torus
-      double phiLgTor = _randFlat.fire() * phi_lbd[idx]  * piconst / 2. / 180.;
+      double phiLgTor = _randFlat.fire() * phi_lbd[idx]  * CLHEP::degree / 2.;
       // x, y, z position of the large torus
       double xLgTor = sign[xsn]*(radLgTor + pipeR*cos(theta))*cos(phiLgTor);
       double yLgTor = sign[ysn]*(radLgTor + pipeR*cos(theta))*sin(phiLgTor);
       // circulus (center) of the large torus
-      double circLgTor = radLgTor * phi_lbd[idx]  * piconst / 2. / 180.;
+      double circLgTor = radLgTor * phi_lbd[idx]  * CLHEP::degree / 2.;
 
       // The phi range for the small torus
-      double phiSmTor = piconst * (_randFlat.fire() * phi_sbd[idx] + 180. + phi_lbd[idx]/2. - phi_sbd[idx])/180.;
+      double phiSmTor = CLHEP::degree * (_randFlat.fire() * phi_sbd[idx] + 180. + phi_lbd[idx]/2. - phi_sbd[idx]);
       // x, y, z position of the small torus
       double xSmTor = sign[xsn]*((radSmTor + pipeR*cos(theta))*cos(phiSmTor) + xsmall + xdistance * idx);
       double ySmTor = sign[ysn]*((radSmTor + pipeR*cos(theta))*sin(phiSmTor) + ysmall[idx]);
       // circulus (center) of the small torus
-      double circSmTor = radSmTor * piconst * phi_sbd[idx] / 180.;
+      double circSmTor = CLHEP::degree * radSmTor * phi_sbd[idx];
 
       // strait pipe
       //double xmanifold = rInnerManifold * cos(piconst * (90 - phi_end[idx])/180.);
-      double ymanifold = rInnerManifold * sin(piconst * (90 - phi_end[idx])/180.);
-      double xstart = xsmall + xdistance * idx - radSmTor * cos(piconst * phi_end[idx]/180.);
-      double ystart = ysmall[idx] + radSmTor * sin(piconst * phi_end[idx]/180.);
+      double ymanifold = rInnerManifold * sin(CLHEP::degree * (90 - phi_end[idx]));
+      double xstart = xsmall + xdistance * idx - radSmTor * cos(CLHEP::degree * phi_end[idx]);
+      double ystart = ysmall[idx] + radSmTor * sin(CLHEP::degree * phi_end[idx]);
       // height of the strait pipe
-      double hPipe = (ymanifold - ystart) / sin(piconst * (90 - phi_end[idx]) / 180.);
+      double hPipe = (ymanifold - ystart) / sin(CLHEP::degree * (90 - phi_end[idx]));
       // a cylinder along y-axis
       double y_center = _randFlat.fire() * hPipe;
       double xPipe = pipeR * cos(theta);
-      double xStrait = sign[xsn] * (xPipe * cos(-piconst * phi_end[idx] / 180.) - y_center * sin(-piconst * phi_end[idx] / 180.) + xstart);
-      double yStrait = sign[ysn] * (xPipe * sin(-piconst * phi_end[idx] / 180.) + y_center * cos(-piconst * phi_end[idx] / 180.) + ystart);
+      double xStrait = sign[xsn] * (xPipe * cos(-CLHEP::degree * phi_end[idx]) - y_center * sin(-CLHEP::degree * phi_end[idx] ) + xstart);
+      double yStrait = sign[ysn] * (xPipe * sin(-CLHEP::degree * phi_end[idx]) + y_center * cos(-CLHEP::degree * phi_end[idx]) + ystart);
       double lenStrait = hPipe;
 
       double sample = _randFlat.fire();
