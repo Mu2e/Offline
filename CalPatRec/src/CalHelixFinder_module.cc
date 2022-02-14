@@ -338,6 +338,9 @@ namespace mu2e {
 
 	int loc = _data.nseeds[0];
 	if (loc < _data.maxSeeds()) {
+	  if (index_best == 2){
+	    index_best = 0;
+	  }
 	  int nhits          = helix_seed_vec[index_best]._hhits.size();
 	  _data.ntclhits[loc]= nGoodTClusterHits;
 	  _data.nhits[loc]   = nhits;
@@ -414,7 +417,11 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // fill histograms
 //--------------------------------------------------------------------------------
-    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
+    if (_diagLevel > 0) {
+      _hmanager->fillHistograms(&_data);
+      _data.nhits[0] = 0;
+      _data.nhits[1] = 0;
+    }
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
