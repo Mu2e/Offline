@@ -380,7 +380,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
   // table interval from the database table's interval
   for(auto& oltab : _override) { // loop over override tables
     if(oltab.tid()==tid) { // if override is the right type
-      iov.subtract(oltab.iov());
+      iov.subtract(oltab.iov(),run,subrun);
     }
   }
   
