@@ -141,21 +141,21 @@ namespace mu2e {
     //Define the parameters of the pipes:
     
     // angle of large torus in degrees
-    double phi_lbd[5] = {161.34, 149.50, 139.50, 132.07, 125.39};
+    std::vector<double> phi_lbd = _cal->caloInfo().getVDouble("LargeTorPhi");//{161.34, 149.50, 139.50, 132.07, 125.39}; 
     // angle of small torus in degrees
-    double phi_sbd[5] = {84.63, 85.28, 85.79, 86.20, 86.53};
+    std::vector<double> phi_sbd = _cal->caloInfo().getVDouble("smallTorPhi");//{84.63, 85.28, 85.79, 86.20, 86.53}; 
     // angle of the end point
-    double phi_end[5] = {3.96, 10.53, 15.80, 20.16, 23.84};
+    std::vector<double> phi_end = _cal->caloInfo().getVDouble("straitEndPhi");//{3.96, 10.53, 15.80, 20.16, 23.84};
     // center position y of the small torus
-    double ysmall[5] = {432.2, 480.5, 524.3, 564.7, 602.5};
+    std::vector<double> ysmall = _cal->caloInfo().getVDouble("yposition");//{432.2, 480.5, 524.3, 564.7, 602.5}; 
     // radius of small torus
-    double radSmTor = 41.0;
+    double radSmTor = _cal->caloInfo().getDouble("radSmTor");//41.0;
     // first center position x of the small torus
-    double xsmall = 71.0;
+    double xsmall = _cal->caloInfo().getDouble("radSmTor");//71.0;
     // distance of the small torus center
-    double xdistance = 60.0;
+    double xdistance = _cal->caloInfo().getDouble("xdistance");//60.0;
     // inner radius of the manifold
-    double rInnerManifold = 681.6; // 713.35 mm - 1.25 in (31.75 mm)
+    double rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");//681.6; // 713.35 mm - 1.25 in (31.75 mm)
     vector<float> sign{-1.0, 1.0};
 
     for (unsigned int ig = 0; ig < nGen; ++ig) 
