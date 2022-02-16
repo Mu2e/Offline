@@ -400,7 +400,7 @@ namespace mu2e {
         if (edepTime<1) hCryEEMC2_->Fill(hit.energyDep(), sumEdepMC);
       }
             nCrystals_ = crystalsHit.size();
-            std::cout<<" Analyzer "<<truetotalEnergyDep_<<std::endl;
+
       //--------------------------  Do clusters --------------------------------
       nCluster_ = nCluSim_ = 0;
       cluList_.clear();
