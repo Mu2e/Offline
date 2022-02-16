@@ -225,9 +225,14 @@ namespace mu2e {
 
        const bool isPipeVisible          = geomOptions->isVisible("calorimeterPipe"); 
        const bool isPipeSolid            = geomOptions->isSolid("calorimeterPipe"); 
-       const bool forceEdge              = config.getBool("g4.forceEdge",false);
-       const bool doSurfaceCheck         = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
+       const bool forceEdge              = geomOptions->forceAuxEdgeVisible("calorimeterPipe"); 
+       const bool doSurfaceCheck         = geomOptions->doSurfaceCheck("calorimeterPipe");
        const int  verbosityLevel         = config.getInt("calorimeter.verbosityLevel",1);
+       
+       if ( verbosityLevel > 0) {
+         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
+       }
+       
        G4VPhysicalVolume* pv;
 
        G4Material* vacuumMaterial        = materialFinder.get("calorimeter.vacuumMaterial");
@@ -248,7 +253,7 @@ namespace mu2e {
        G4double pipeThickness            = cal.caloInfo().getDouble("pipeThickness");
        G4double pipeInitSeparation       = cal.caloInfo().getDouble("pipeInitSeparation");    
        std::vector<double> pipeTorRadius = cal.caloInfo().getVDouble("pipeTorRadius");
-       std::vector<double> halfTorPhi    = cal.caloInfo().getVDouble("halfTorPhi");
+       std::vector<double> LargeTorPhi    = cal.caloInfo().getVDouble("LargeTorPhi");
        std::vector<double> smallTorPhi   = cal.caloInfo().getVDouble("smallTorPhi");
        std::vector<double> yposition     = cal.caloInfo().getVDouble("yposition");
        std::vector<double> straitEndPhi  = cal.caloInfo().getVDouble("straitEndPhi");
@@ -317,8 +322,8 @@ namespace mu2e {
        {
            //double xpipe  = pipeInitSeparation+pipeTorRadius[ipipe]-pipeTorRadius[0];
            //double angle  = std::asin(xpipe/pipeTorRadius[ipipe]); //angle taken w.r.t y axis!
-           double angle = halfTorPhi[ipipe] * CLHEP::pi / 180.;
-           double sAngle = smallTorPhi[ipipe] * CLHEP::pi / 180.;
+           double angle = LargeTorPhi[ipipe] * CLHEP::degree / 2;
+           double sAngle = smallTorPhi[ipipe] * CLHEP::degree;
            double sxPos  = 71. + 60 * ipipe;
            double syPos  = yposition[ipipe];
            //double length = sqrt(FPOuterRadius*FPOuterRadius-xpipe*xpipe) - (pipeTorRadius[ipipe]+pipeRadius)*cos(angle) - 2.0*pipeRadius;
@@ -337,10 +342,10 @@ namespace mu2e {
 
            // calculate the parameters of the strait pipes
            // minus 2.0 mm from the manifold pipe's most inner radius to avoid the overlap.
-           double xEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * sin(straitEndPhi[ipipe] * CLHEP::pi / 180.);
-           double yEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * cos(straitEndPhi[ipipe] * CLHEP::pi / 180.);
-           double xStart = sxPos - smallRadius * cos(straitEndPhi[ipipe] * CLHEP::pi / 180.);
-           double yStart = syPos + smallRadius * sin(straitEndPhi[ipipe] * CLHEP::pi / 180.);
+           double xEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * sin(straitEndPhi[ipipe] * CLHEP::degree);
+           double yEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * cos(straitEndPhi[ipipe] * CLHEP::degree);
+           double xStart = sxPos - smallRadius * cos(straitEndPhi[ipipe] * CLHEP::degree);
+           double yStart = syPos + smallRadius * sin(straitEndPhi[ipipe] * CLHEP::degree);
            double sLength = sqrt((xEnd - xStart)*(xEnd - xStart) + (yEnd - yStart)*(yEnd - yStart));
            double zRotateAngle = std::atan((yEnd - yStart) / (xEnd - xStart));
 
