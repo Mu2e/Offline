@@ -129,7 +129,7 @@ namespace mu2e {
     temp.clear();
     //For source calibration system:
     config.getVectorDouble("calorimeter.LargeTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("halfTorPhi", temp );
+    calo_->caloInfo_.set("LargeTorPhi", temp );
     temp.clear();
     config.getVectorDouble("calorimeter.smallTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
     calo_->caloInfo_.set("smallTorPhi", temp );
@@ -139,6 +139,13 @@ namespace mu2e {
     temp.clear();
     config.getVectorDouble("calorimeter.straitEndPhi", temp, calo_->caloInfo_.getInt("nPipes"));
     calo_->caloInfo_.set("straitEndPhi", temp );
+    temp.clear();
+    calo_->caloInfo_.set("radSmTor", config.getDouble("calorimeter.radSmTor") );
+    calo_->caloInfo_.set("xsmall", config.getDouble("calorimeter.xsmall") );
+    calo_->caloInfo_.set("xdistance", config.getDouble("calorimeter.xdistance") );
+    calo_->caloInfo_.set("rInnerManifold", config.getDouble("calorimeter.rInnerManifold") );
+    temp.clear();
+
 
 	  calo_->caloInfo_.set("numberOfCrates",         config.getInt("calorimeter.numberOfCrates") );
 	  calo_->caloInfo_.set("nCrateBeforeSpace",      config.getInt("calorimeter.nCrateBeforeSpace") );
