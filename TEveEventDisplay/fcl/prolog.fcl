@@ -11,10 +11,7 @@ TEveNonGDMLTest : {
 TEveEventDisplayBase : {
     module_type : TEveEventDisplay
     accumulate : false
-    showCRV : false
-    showBuilding : false  
-    showDSOnly : true 
-    showEvent : true
+
     isMCOnly : false
     filler : {
       ComboHitCollection 	  : "makePH"
@@ -39,6 +36,12 @@ TEveEventDisplayBase : {
     }
     gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
     particles :   [11,13,2212,2112,211,22,212]
+    show : {
+      showCRV : false
+      showBuilding : false  
+      showDSOnly : true 
+      showInsidePS : false
+    }
   }  
   
 TEveEventDisplayHelix : {
@@ -47,8 +50,7 @@ TEveEventDisplayHelix : {
   
 TEveEventDisplayUpstream : {
     @table::TEveEventDisplayBase
-    showDSOnly : false
-    showInsidePS : true
+    
     isMCOnly : true
     filler : {
       ComboHitCollection 		      : NULL
@@ -69,13 +71,17 @@ TEveEventDisplayUpstream : {
       addCosmicSeedFit	          : false
       addMCTraj				            : true
    }    
+   show : {
+      showDSOnly : false
+      showInsidePS : true
+    }
   }  
   
  
 
 TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics can use the base)
     @table::TEveEventDisplayBase
-    showCRV : true
+
     filler : {
       ComboHitCollection 		    : "makeSH"
       TimeClusterCollection                  : "MHDeM"
@@ -97,6 +103,9 @@ TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics
       addTrkExtTrajs		        : false
       addMCTraj				          : false 
    }
+    show :{
+      showCRV : true
+    }
   }   
 
 

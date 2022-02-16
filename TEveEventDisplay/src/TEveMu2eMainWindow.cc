@@ -18,9 +18,10 @@ using namespace mu2e;
      setRecursiveColorTransp(vol->GetNode(i)->GetVolume(), color, transp);
     }
   }
-
+  
 namespace mu2e{
 
+  
   /*------ Default Constructor ------ */
   TEveMu2eMainWindow::TEveMu2eMainWindow() : TGMainFrame(gClient->GetRoot(), 320, 320){}
 
@@ -690,7 +691,7 @@ namespace mu2e{
       
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
   
-    if(!GeomOpts.showBuilding){
+    if(!GeomOpts.showbuilding){
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
     }

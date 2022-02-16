@@ -439,7 +439,7 @@ namespace mu2e{
             crystalShape->SetFillColor(kRed);
             crystalShape->SetShape(new TGeoBBox("cryHit", (crystalXLen/2), (crystalYLen/2), pointmmTocm((crystalZLen/2)), origin));
             crystals2D->SetNextPoint(origin [0],origin [1],origin [2]);
-            std::cout<<" Hit pos "<<origin[0]<<" "<<origin[1]<<" "<<origin[2]<<std::endl;
+            
             if(diskID == 0){
               fClusterList2D_disk0->AddElement(crystals2D);
               crystals2D->SetPickable(kTRUE);

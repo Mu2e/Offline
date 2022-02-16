@@ -89,27 +89,26 @@ namespace mu2e{
     : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addTrkHits(trkhits), addTimeClusters(timeclusters), addCryHits(cryhits), addMCTraj(mctraj) {};
    };
    
-   struct GeomOptions{
-    using Name = fhicl::Name;
-    using Comment = fhicl::Comment;
-    fhicl::Atom<bool> showCRV {Name("showCRV"),false};
-    fhicl::Atom<bool> showBuilding {Name("showBuilding"),false};
-    fhicl::Atom<bool> showDSOnly {Name("showDSOnly"),true};
-    fhicl::Atom<bool> showInsidePS {Name("showInsidePS"),false};
-    fhicl::Atom<bool> showEvent {Name("showEvent"),false};
-    /*// geom options
-    bool showCRV = false;
-    bool showBuilding = false;
-    bool showDSOnly = true;
-    bool showInsidePS = false;
-    bool showEvent = true;
-    GeomOptions(){};
-    GeomOptions(bool crv, bool building, bool ds, bool ps, bool eventOn) 
-    : showCRV(crv), showBuilding(building), showDSOnly(ds), showInsidePS(ps), showEvent(eventOn) {};*/
-   };
-   
+  
+    
 	class TEveMu2eMainWindow : public TGMainFrame {
     public:
+    
+      struct GeomOptions{
+        GeomOptions(){}
+        GeomOptions( bool abuilding, bool aCRV, bool aDSOnly, bool aInsidePS )
+          : showbuilding(abuilding)
+          , showCRV(aCRV)
+          , showDSOnly(aDSOnly)
+          , showInsidePS(aInsidePS){
+        }
+
+        bool showbuilding = false;
+        bool showCRV      = false;
+        bool showDSOnly   = false;
+        bool showInsidePS = false;
+      };
+
       
       #ifndef __CINT__
       TEveMu2eMainWindow();
