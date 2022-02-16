@@ -27,38 +27,18 @@ int mu2e::DbEngine::beginJob() {
 
   // this is used to assign nominal tid's and cid's to tables that
   // are read in through a file, and are not declared in the database
-  int fakeTid = 10000;
-  int fakeCid = 1000000;
+  setOverrideId();
 
-  // if special name EMPTY, then everything remains empty
+  // if special name EMPTY, then don't read the database,
+  // only the text file content will be available
   if(_version.purpose()=="EMPTY") {
-    // there won't be any real tid's so
-    // assign nominal tid's to file-based tables
-    for(auto& lt: _override) {
-      if(_overrideTids.find(lt.table().name()) == _overrideTids.end()) {
-	if(_verbose>4) {
-	  cout << "DbEngine::beginRun assigning TID "
-	       << fakeTid << " to " << lt.table().name() << endl;
-	}
-	_overrideTids[lt.table().name()] = fakeTid;
-	fakeTid++;
-      }
-      int mytid = _overrideTids[lt.table().name()];
-      if(_verbose>4) {
-	cout << "DbEngine::beginRun assigning override CID "
-	     << fakeCid << " and TID " << mytid << " to " << lt.table().name() << endl;
-      }
-      lt.setTid(mytid);
-      lt.setCid(fakeCid); // assign fake cid to label this data
-      fakeCid++;
-    }
     
     if(_verbose>2) cout << "DbEngine::beginJob exit early, purpose=EMPTY" 
 			<< endl;
     return 0;
   }
 
-  if(!_vcache) { // if not already provided, create and fil it
+  if(!_vcache) { // if not already provided, create and fill it
     _vcache = std::make_shared<DbValCache>();
     _reader.fillValTables(*_vcache);
   }
@@ -214,34 +194,10 @@ int mu2e::DbEngine::beginJob() {
   }
 
   // if file-based override tables were loaded, 
-  // fill tid now.  If the table is known to the database,
-  // then use that tid, but if it is not, we need to assign
-  // a nominal tid so it can be accessed
-  for(auto& lt: _override) {
-    int mytid = -1;
-    for(auto const& r: _vcache->valTables().rows()) {
-      if(r.name()==lt.table().name()) mytid = r.tid();
-    }
-    if(mytid<0) {
-      if(_overrideTids.find(lt.table().name()) == _overrideTids.end()) {
-	if(_verbose>4) {
-	  cout << "DbEngine::beginRun assigning TID "
-	       << fakeTid << " to " << lt.table().name() << endl;
-	}
-	_overrideTids[lt.table().name()] = fakeTid;
-	fakeTid++;
-      }
-      mytid = _overrideTids[lt.table().name()];
-    }
-    if(_verbose>4) {
-      cout << "DbEngine::beginRun assigning override CID "
-	   << fakeCid << " and TID " << mytid 
-	   << " to " << lt.table().name() << endl;
-    }
-    lt.setTid(mytid);
-    lt.setCid(fakeCid); // assign fake cid to label this data
-    fakeCid++;
-  }
+  // update tid now.  If the table is known to the database,
+  // then use that tid, but if it is not, use previously
+  // assign fake tid
+  updateOverrideTid();
 
   if( _verbose>4 ) {
     std::cout << "DbEngine::beginRun results of lookup" << std::endl;
@@ -449,6 +405,66 @@ void mu2e::DbEngine::addOverride(DbTableCollection const& coll) {
   }
   for(auto const& c : coll) _override.emplace_back(c); 
 }
+
+
+// this is used to assign nominal tid's and cid's to tables that
+// are read in through a file, and are not declared in the database
+// This might be overwritten with real tid's if 
+// we load a real calibration set later
+
+int mu2e::DbEngine::setOverrideId() {
+
+  int fakeTid = 10000;
+  int fakeCid = 1000000;
+
+  for(auto& lt: _override) {
+    if(_overrideTids.find(lt.table().name()) == _overrideTids.end()) {
+      if(_verbose>4) {
+        cout << "DbEngine::setOverrideId assigning TID "
+             << fakeTid << " to " << lt.table().name() << endl;
+      }
+      _overrideTids[lt.table().name()] = fakeTid;
+      fakeTid++;
+    }
+    int mytid = _overrideTids[lt.table().name()];
+    if(_verbose>4) {
+      cout << "DbEngine::setOverrideId assigning override CID "
+           << fakeCid << " and TID " << mytid << " to " 
+           << lt.table().name() << endl;
+    }
+    lt.setTid(mytid);
+    lt.setCid(fakeCid); // assign fake cid to label this data
+    fakeCid++;
+  }
+
+  return 0;
+}
+
+// in setOverrideId, fake TID and CID were set in override table.  If we 
+// loaded  a real calibration set, then update TID in the override tables, 
+// if table is known to the database - it might not be if it is new table
+
+int mu2e::DbEngine::updateOverrideTid() {
+
+  for(auto& lt: _override) {
+    int mytid = -1;
+    for(auto const& r: _vcache->valTables().rows()) {
+      if(r.name()==lt.table().name()) mytid = r.tid();
+    }
+    if(mytid>=0) { // if table is known to database, use database tid
+
+      if(_verbose>4) {
+        cout << "DbEngine::updateOverrideTid updating TID from "
+             << lt.tid() << " to " << mytid 
+             << " for " << lt.table().name() << endl;
+      }
+      lt.setTid(mytid);
+    }
+  }
+
+  return 0;
+}
+
 
 void mu2e::DbEngine::lazyBeginJob() {
 
