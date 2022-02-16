@@ -303,18 +303,14 @@ namespace mu2e {
 
        //pipes nside foam
        G4RotationMatrix* rotPipe1 = nullptr;
-       //rotPipe1->rotateZ(CLHEP::pi/2.0);
-       //rotPipe1->rotateZ(0.0 * CLHEP::pi);
-       reg.add(rotPipe1);
        G4RotationMatrix* rotPipe2 = reg.add(new G4RotationMatrix());
        rotPipe2->rotateZ(1.0 * CLHEP::pi); 
-       //reg.add(rotPipe2);
+
        G4RotationMatrix* rotPipe3 = reg.add(new G4RotationMatrix());
        rotPipe3->rotateY(1.0 * CLHEP::pi);
-       //reg.add(rotPipe3);
+
        G4RotationMatrix* rotPipe4 = reg.add(new G4RotationMatrix());
        rotPipe4->rotateX(1.0 * CLHEP::pi);
-       //reg.add(rotPipe4);
 
        
        for (int ipipe=0; ipipe<nPipes; ++ipipe)
