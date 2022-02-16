@@ -40,8 +40,12 @@ namespace mu2e {
     // these are the only methods that can be called from threads, 
     // such as DbHandle, after the single-threaded configuration
     DbLiveTable update(int tid, uint32_t run, uint32_t subrun);
+    // ruten tid for table name and reverce, for connecting handles
     int tidByName(std::string const& name);
     std::string nameByTid(int tid);
+    // set cid and tid for override text tables
+    int setOverrideId();
+    int updateOverrideTid();
 
   private:
 

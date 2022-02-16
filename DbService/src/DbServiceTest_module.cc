@@ -34,7 +34,7 @@ namespace mu2e {
     void analyze(const art::Event& event) override;
 
   private:
-    mu2e::DbHandle<mu2e::TstCalib1> _testCalib1;
+    mu2e::DbHandle<mu2e::TstCalib1> _testCalib1_h;
   };
 
 //-----------------------------------------------------------------------------
@@ -51,8 +51,10 @@ namespace mu2e {
 
     std::cout << "DbServiceTest::analyze" << std::endl;
 
-    auto const& myTable = _testCalib1.get(event.id());
-    std::cout << myTable.csv();
+    auto const& myTable = _testCalib1_h.get(event.id());
+    std::cout << "got cid=" << _testCalib1_h.cid() 
+              << "  rows=" << myTable.nrow() << "\n";
+    std::cout <<  myTable.csv();
   };
 };
 
