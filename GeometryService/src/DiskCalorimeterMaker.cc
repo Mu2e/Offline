@@ -127,7 +127,8 @@ namespace mu2e {
     config.getVectorDouble("calorimeter.pipeTorRadius", temp, calo_->caloInfo_.getInt("nPipes"));
     calo_->caloInfo_.set("pipeTorRadius",temp );
     temp.clear();
-    config.getVectorDouble("calorimeter.halfTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
+    //For source calibration system:
+    config.getVectorDouble("calorimeter.LargeTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
     calo_->caloInfo_.set("halfTorPhi", temp );
     temp.clear();
     config.getVectorDouble("calorimeter.smallTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));

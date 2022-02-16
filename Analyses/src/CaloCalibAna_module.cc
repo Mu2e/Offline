@@ -46,7 +46,10 @@ namespace
    constexpr int ntupLen = 16384;
 }
 
-
+int Contains(std::vector<int> v, int x)
+{
+  return std::count(v.begin(), v.end(), x);
+}
 namespace mu2e {
 
     class CaloCalibAna : public art::EDAnalyzer {
@@ -88,8 +91,10 @@ namespace mu2e {
 
         TTree* Ntup_;
         int   _evt,_run;
-
-        int   nHits_,cryId_[ntupLen],crySectionId_[ntupLen],crySimIdx_[ntupLen],crySimLen_[ntupLen];
+        
+        int nHits_, nCrystals_;
+        float truetotalEnergyDep_;
+        int cryId_[ntupLen],crySectionId_[ntupLen],crySimIdx_[ntupLen],crySimLen_[ntupLen];
         float cryEtot_,cryTime_[ntupLen],cryEdep_[ntupLen],cryEdepErr_[ntupLen],cryPosX_[ntupLen],cryPosY_[ntupLen],cryPosZ_[ntupLen],_cryLeak[ntupLen];
 
         int   nSimHit_,crySimId_[ntupLen],crySimPdgId_[ntupLen],crySimCrCode_[ntupLen],crySimGenIdx_[ntupLen],cryConv_[ntupLen];
@@ -132,8 +137,11 @@ namespace mu2e {
 
       Ntup_->Branch("evt",          &_evt ,         "evt/I");
       Ntup_->Branch("run",          &_run ,         "run/I");
-      Ntup_->Branch("cryEtot",      &cryEtot_ ,     "cryEtot/F");
+      Ntup_->Branch("cryEtot",      &cryEtot_ ,     "cryEtot/F");      
+      Ntup_->Branch("nCrystals",     &nCrystals_ ,       "nCrystals/I");
+      Ntup_->Branch("trueEtot",      &truetotalEnergyDep_ ,     "trueEtot/F");   
 
+      
       // Reconstructed carystal hit info (from CaloHitCollection):
       Ntup_->Branch("nCry",         &nHits_ ,       "nCry/I");
       Ntup_->Branch("cryId",        &cryId_ ,       "cryId[nCry]/I");
@@ -290,12 +298,14 @@ namespace mu2e {
       if (diagLevel_ == 3){std::cout << "processing event in calo_example " << nProcess_ << " run and event  = " << _run << " " << _evt << std::endl;}
 
       //--------------------------  Do calorimeter hits --------------------------------
-
       nHits_ = nSimHit_ = 0;
       cryEtot_ = 0.0;
+      truetotalEnergyDep_ = 0.0;
 
+      std::vector<int> crystalsHit;
       for (unsigned int ic=0; ic<CaloHits.size();++ic)
       {
+        
         const CaloHit& hit            = CaloHits.at(ic);
         int diskId                    = cal.crystal(hit.crystalID()).diskID();
         CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
@@ -321,6 +331,8 @@ namespace mu2e {
         } 
 
         cryId_[nHits_]        = hit.crystalID();
+        if(ic == 0) crystalsHit.push_back(hit.crystalID());
+        else if(Contains(crystalsHit, hit.crystalID()) == 0) crystalsHit.push_back(hit.crystalID()); 
         crySectionId_[nHits_] = diskId;
         cryEdep_[nHits_]      = hit.energyDep();
         cryEdepErr_[nHits_]   = hit.energyDepErr();
@@ -372,6 +384,7 @@ namespace mu2e {
           ++nSimHit_;
 
           sumEdepMC += eDepMC.energyDep();
+          truetotalEnergyDep_ += sumEdepMC;
           if (edepTime<1) edepTime = eDepMC.time();
         }
         ++nHits_;
@@ -386,11 +399,12 @@ namespace mu2e {
         hCryTTMC_->Fill(hit.time(), edepTime);
         if (edepTime<1) hCryEEMC2_->Fill(hit.energyDep(), sumEdepMC);
       }
-
+            nCrystals_ = crystalsHit.size();
+            std::cout<<" Analyzer "<<truetotalEnergyDep_<<std::endl;
       //--------------------------  Do clusters --------------------------------
       nCluster_ = nCluSim_ = 0;
       cluList_.clear();
-      std::cout<<"calo cluster size "<<caloClusters.size()<<std::endl;
+      
       for (unsigned int ic=0; ic<caloClusters.size();++ic)
       {
         const CaloCluster& cluster = caloClusters.at(ic);
@@ -426,7 +440,7 @@ namespace mu2e {
 
         cluSimIdx_[nCluster_] = nCluSim_;
         cluSimLen_[nCluster_] = eDepMCs.size();
-
+        
         double sumEdepMC(0),edepTime(0);
         for (unsigned i=0;i< eDepMCs.size();++i)
         {	       
@@ -447,6 +461,7 @@ namespace mu2e {
           cluSimGenPdg_[nCluSim_] = genPdg;
           cluSimTime_[nCluSim_]   = eDepMC.time();
           cluSimEdep_[nCluSim_]   = eDepMC.energyDep();
+          
           cluSimMom_[nCluSim_]    = eDepMC.momentumIn();
           cluSimStartX_[nCluSim_] = sim->startPosition().x(); // in disk FF frame
           cluSimStartY_[nCluSim_] = sim->startPosition().y();
