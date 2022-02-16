@@ -27,23 +27,28 @@ using namespace mu2e;
 namespace mu2e
 {
   class TEveEventDisplay : public art::EDAnalyzer {
-        public:
+    public:
 
+      // Configuration of the "show" table within the top level configuration.
+      struct ShowConfig {
+        using Name    = fhicl::Name;
+        using Comment = fhicl::Comment;
+        fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};
+        fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};
+        fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};
+        fhicl::Atom<bool> showInsidePS{Name("showInsidePS"), Comment(""),false};
+      };
+    
       struct Config{
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
         fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
-        fhicl::Table<GeomOptions> show {Name("show")};
-        /*fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};
-        fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};
-        fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};
-        fhicl::Atom<bool> showInsidePS{Name("showInsidePS"), Comment(""),false};
-        fhicl::Atom<bool> showEvent{Name("showEvent"), Comment(""),true};*/
         fhicl::Atom<bool> isMCOnly{Name("isMCOnly"), Comment(""),false};
         fhicl::Atom<bool> accumulate{Name("accumulate"), Comment(""),false};
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
         fhicl::Atom<std::string>gdmlname{Name("gdmlname"),Comment("gdmlname")};
         fhicl::Sequence<int>particles{Name("particles"),Comment("PDGcodes to plot")};
+        fhicl::Table<ShowConfig> show {Name("show"), Comment("Control which view to show")};
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -53,15 +58,10 @@ namespace mu2e
       virtual void beginRun(const art::Run& run) override;
       virtual void analyze(const art::Event& e);
       virtual void endJob() override;
+      
     private:   
       Config _conf;
       int _diagLevel;
-     /* bool _showBuilding;
-      bool _showDSOnly;
-      bool _showInsidePS;
-      bool _showCRV;
-      bool _showEvent;*/
-      const GeomOptions _show;//(_showCRV, _showBuilding, _showDSOnly, _showCRV, _showInsidePS);
       bool _isMCOnly;
       bool _accumulate;
       TApplication* application_;
@@ -69,6 +69,7 @@ namespace mu2e
       Collection_Filler _filler;
       std::string _gdmlname;
       std::vector<int> _particles;
+      const TEveMu2eMainWindow::GeomOptions _show;
       TEveMu2eMainWindow *_frame;
       fhicl::ParameterSet _pset;
       bool foundEvent = false;
@@ -83,17 +84,16 @@ namespace mu2e
   TEveEventDisplay::TEveEventDisplay(const Parameters& conf) :
   art::EDAnalyzer(conf),
   _diagLevel(conf().diagLevel()),
-  //_showBuilding(conf().showBuilding()),
-  //_showDSOnly(conf().showDSOnly()),
-  //_showInsidePS(conf().showInsidePS()),
-  //_showCRV(conf().showCRV()),
-  //_showEvent(conf().showEvent()),
-  _show(conf().show()),
   _isMCOnly(conf().isMCOnly()),
   _accumulate(conf().accumulate()),
   _filler(conf().filler()),
   _gdmlname(conf().gdmlname()),
-  _particles(conf().particles())
+  _particles(conf().particles()),
+  _show( TEveMu2eMainWindow::GeomOptions(conf().show().showBuilding(),
+                                  conf().show().showCRV(),
+                                  conf().show().showDSOnly(),
+                                  conf().show().showInsidePS() )
+                  )
   {}
       
       
