@@ -157,10 +157,8 @@ BEGIN_PROLOG
       verboseLevel                  : 0
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       #cluster settings
-#      maxDistance                   : 1000 //mm
-#      maxTimeDifference             : 100  //ns
-      maxDistance                   : 100 //mm
-      maxTimeDifference             : 40  //ns
+      maxDistance                   : 400 //mm (up to 7 counters w/o offset) //was 1000 mm
+      maxTimeDifference             : 60  //ns (up to 4 ADC samples)         //was 100 ns
       #sector specific coincidence settings
       CRVSectors                       : ["R1","R2","R3","R4","R5","R6","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
       PEthresholds                     : [  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ]
