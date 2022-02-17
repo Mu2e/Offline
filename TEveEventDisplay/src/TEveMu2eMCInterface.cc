@@ -186,12 +186,12 @@ namespace mu2e{
                                       
                 if(i==0) {
                       line->SetPoint(i,(Pos.x()), (Pos.y()),(Pos.z())); 
-                      line_twoDXZ->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y())+1000,pointmmTocm(HitPos2D.z()));
+                      line_twoDXZ->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                       line_twoDXY->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));      
                       
                 } else {
                     line->SetNextPoint((Pos.x()),(Pos.y()),(Pos.z()));
-                    line_twoDXZ->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y())+1000,pointmmTocm(HitPos2D.z()));
+                    line_twoDXZ->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                     line_twoDXY->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                 }
               }
