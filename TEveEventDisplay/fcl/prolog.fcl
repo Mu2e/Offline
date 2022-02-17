@@ -11,100 +11,77 @@ TEveNonGDMLTest : {
 TEveEventDisplayBase : {
     module_type : TEveEventDisplay
     accumulate : false
-    showCRV : false
-    showBuilding : false  
-    showDSOnly : true 
-    showEvent : true
+
     isMCOnly : false
     filler : {
-      ComboHitCollection 		    : "makeSH"
+      ComboHitCollection 	  : "makePH"
       TimeClusterCollection                  : "MHDeM"
-      CrvRecoPulseCollection	  :  "CrvRecoPulses"
+      CrvRecoPulseCollection	  :  "SelectRecoMC"
       CosmicTrackSeedCollection :  NULL
-      CaloClusterCollection		  :  "CaloClusterMaker"
-      CaloHitCollection         :  NULL
+      CaloClusterCollection     :  "CaloClusterMaker"
+      CaloHitCollection  :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
       KalSeedCollection         :  ["KFFDeM"]
-      TrkExtTrajCollection      : NULL
-      MCTrajectoryCollection    :  "compressDigiMCs"
-      addHits 			            : true
-      addTrkHits 			            : true
-      addTimeClusters                             : true
-      addTracks 			          : true
-      addCrvHits			          : true
-      addCosmicSeedFit	        : false
-      addClusters			          : true
-      addTrkExtTrajs		        : false
-      addMCTraj				          : true 
-
+      TrkExtTrajCollection      :  NULL
+      MCTrajectoryCollection    :  "compressRecoMCs"
+      addHits 		  : true
+      addTrkHits 		  : true
+      addTimeClusters           : true
+      addTracks 		  : true
+      addCrvHits		  : false
+      addCosmicSeedFit	  : false
+      addClusters		  : true
+      addTrkExtTrajs		  : false
+      addMCTraj		  : true
     }
-  particles :   [11,13,2212,2112,211,22,212]
+    gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
+    particles :   [11,13,2212,2112,211,22,212]
+    show : {
+      showCRV : false
+      showBuilding : false  
+      showDSOnly : true 
+      showInsidePS : false
+    }
+  }  
+  
+TEveEventDisplayHelix : {
+      @table::TEveEventDisplayBase
   }  
   
 TEveEventDisplayUpstream : {
-    module_type : TEveEventDisplay
-    showCRV : false
-    showDSOnly : false
+    @table::TEveEventDisplayBase
+    
     isMCOnly : true
-    accumulate : false
     filler : {
       ComboHitCollection 		      : NULL
-      TimeClusterCollection                  : NULL
+      TimeClusterCollection       : NULL
       CosmicTrackSeedCollection 	: NULL
       CrvRecoPulseCollection		  : NULL
       CaloClusterCollection		    : NULL
-      CaloHitCollection    : NULL
-      MCTrajectoryCollection      : "BeamFilter" #"g4run"
+      CaloHitCollection           : NULL
+      MCTrajectoryCollection      : "g4run" 
       HelixSeedCollection         : NULL
       KalSeedCollection           : [NULL]
       TrkExtTrajCollection        : NULL
       addHits 			              : false
-      addTrkHits 			              : false
-      addTimeClusters                             : false
+      addTrkHits 			            : false
+      addTimeClusters             : false
       addTracks 			            : false
       addCrvHits			            : false
       addCosmicSeedFit	          : false
       addMCTraj				            : true
-   }
-    particles :   [11,13,2212,2112,211,22,212]
-    
+   }    
+   show : {
+      showDSOnly : false
+      showInsidePS : true
+    }
   }  
   
-TEveEventDisplayHelix : {
-      module_type : TEveEventDisplay
-      accumulate : false
-      showCRV : false
-      showBuilding : false  
-      showDSOnly : true 
-      showEvent : true
-      isMCOnly : false
-      filler : {
-        ComboHitCollection 	  : "makePH"
-	TimeClusterCollection                  : "MHDeM"
-        CrvRecoPulseCollection	  :  "SelectRecoMC"
-        CosmicTrackSeedCollection :  NULL
-        CaloClusterCollection     :  "CaloClusterMaker"
-        CaloHitCollection  :  NULL
-        HelixSeedCollection       :  "HelixFinderDe:Negative"
-        KalSeedCollection         :  ["KFFDeM"]#, "KFFDeMHPar", "KFFDeMHDar" ]
-        TrkExtTrajCollection      :  NULL
-        MCTrajectoryCollection    :  "compressRecoMCs"
-        addHits 		  : true
-	addTrkHits 		  : true
-	addTimeClusters           : true
-        addTracks 		  : true
-        addCrvHits		  : false
-        addCosmicSeedFit	  : false
-        addClusters		  : true
-        addTrkExtTrajs		  : false
-        addMCTraj		  : true
-      }
-      particles :   [-11,11,13,-13,2212,2112,211,22,212]
-  }   
+ 
 
-TEveEventDisplayCosmics : {
+TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics can use the base)
     @table::TEveEventDisplayBase
-    showCRV : true
+
     filler : {
       ComboHitCollection 		    : "makeSH"
       TimeClusterCollection                  : "MHDeM"
@@ -126,7 +103,9 @@ TEveEventDisplayCosmics : {
       addTrkExtTrajs		        : false
       addMCTraj				          : false 
    }
-   particles :   [11,13,2212,2112,211,22,212]
+    show :{
+      showCRV : true
+    }
   }   
 
 
