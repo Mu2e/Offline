@@ -327,7 +327,7 @@ namespace mu2e {
            G4Torus* pipe2 = new G4Torus("caloPipe2", pipeRadius-pipeThickness, pipeRadius, radSmTor, angle-sAngle+CLHEP::pi, sAngle);   
            G4LogicalVolume* pipe1Log = caloBuildLogical(pipe1, pipeMaterial, "caloPipe1Log",isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
            G4LogicalVolume* pipe2Log = caloBuildLogical(pipe2, pipeMaterial, "caloPipe2Log",isPipeVisible,G4Color::Green(),isPipeSolid,forceEdge);
-           /
+           
            // calculate the parameters of the strait pipes
            // minus 2.0 mm from the manifold pipe's most inner radius to avoid the overlap.
            double xEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * sin(straitEndPhi[ipipe] * CLHEP::degree);
