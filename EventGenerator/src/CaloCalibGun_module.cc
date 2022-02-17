@@ -232,6 +232,7 @@ namespace mu2e {
 
       //Pick energy and momentum vector
       double energy =_energy;
+ 
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_energy);
 
       //Set Four-momentum
