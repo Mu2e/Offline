@@ -12,6 +12,7 @@
 #include  "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMainWindow.h"
 #include  "Offline/TEveEventDisplay/src/dict_classes/Collection_Filler.h"
 #include  "Offline/TEveEventDisplay/src/dict_classes/Data_Collections.h"
+#include  "Offline/TEveEventDisplay/src/DisplayUtilsConfig.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -20,6 +21,9 @@
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
+//fcl
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/TableAs.h"
 
 using namespace std;
 using namespace mu2e;
@@ -29,16 +33,6 @@ namespace mu2e
   class TEveEventDisplay : public art::EDAnalyzer {
     public:
 
-      // Configuration of the "show" table within the top level configuration.
-      struct ShowConfig {
-        using Name    = fhicl::Name;
-        using Comment = fhicl::Comment;
-        fhicl::Atom<bool> showCRV{Name("showCRV"), Comment("set false if you just want to see DS"),false};
-        fhicl::Atom<bool> showBuilding{Name("showBuilding"), Comment("set false to remove building"),false};
-        fhicl::Atom<bool> showDSOnly{Name("showDSOnly"), Comment(""),true};
-        fhicl::Atom<bool> showInsidePS{Name("showInsidePS"), Comment(""),false};
-      };
-    
       struct Config{
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
@@ -48,11 +42,11 @@ namespace mu2e
         fhicl::Table<Collection_Filler::Config> filler{Name("filler"),Comment("fill collections")};
         fhicl::Atom<std::string>gdmlname{Name("gdmlname"),Comment("gdmlname")};
         fhicl::Sequence<int>particles{Name("particles"),Comment("PDGcodes to plot")};
-        fhicl::Table<ShowConfig> show {Name("show"), Comment("Control which view to show")};
+        fhicl::TableAs<TEveMu2eMainWindow::GeomOptions,DisplayUtilsConfig::ShowConfig> show {Name("show"), Comment("Control which view to show")};
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
-	  explicit TEveEventDisplay(const Parameters& conf);
+	    explicit TEveEventDisplay(const Parameters& conf);
       virtual ~TEveEventDisplay();
       virtual void beginJob() override;
       virtual void beginRun(const art::Run& run) override;
@@ -89,11 +83,7 @@ namespace mu2e
   _filler(conf().filler()),
   _gdmlname(conf().gdmlname()),
   _particles(conf().particles()),
-  _show( TEveMu2eMainWindow::GeomOptions(conf().show().showBuilding(),
-                                  conf().show().showCRV(),
-                                  conf().show().showDSOnly(),
-                                  conf().show().showInsidePS() )
-                  )
+  _show(conf().show())
   {}
       
       
