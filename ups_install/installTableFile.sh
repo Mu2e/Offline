@@ -62,7 +62,8 @@ Common:
 
     exeActionRequired(GetFQDir)
     envSet (OFFLINE_LIB, \${OFFLINE_DIR}/\${OFFLINE_FQ}/lib )
-    pathAppend( CET_PLUGIN_PATH, \${OFFLINE_LIB} )
+    pathAppend( CET_PLUGIN_PATH, \${OFFLINE_LIB} )    
+    pathPrepend(PATH, "\${OFFLINE_DIR}/\${OFFLINE_FQ}/bin")
 
     if ( test \`uname\` = "Darwin" )
       pathPrepend(DYLD_LIBRARY_PATH, \${\${UPS_PROD_NAME_UC}_LIB})
