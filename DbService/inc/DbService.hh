@@ -36,11 +36,13 @@ namespace mu2e {
       fhicl::Atom<bool> saveCsv{Name("saveCsv"), 
 	  Comment("save csv content in tables, default false"),false};
       fhicl::OptionalAtom<bool> fastStart{Name("fastStart"), 
-	  Comment("read the DB immedatiately, not on first use")};
+	  Comment("read the DB immediately, not on first use")};
       fhicl::OptionalAtom<int> cacheLifetime{Name("cacheLifetime"), 
 	  Comment("if >0, read IoV from cache, but renew each lifetime (s)")};
       fhicl::OptionalAtom<int> retryTimeout{Name("retryTimeout"), 
 	  Comment("how long to keep retrying to read database (3600s)")};
+      fhicl::Atom<bool> nearestMatch{Name("nearestMatch"), 
+	  Comment("if no proper IoV, accept nearby calibrations, default false"),false};
     };
 
     // this line is required by art to allow the command line help print
