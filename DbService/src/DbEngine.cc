@@ -357,7 +357,28 @@ mu2e::DbEngine::Row mu2e::DbEngine::findTable(
 	return r; // return iov and cid in a Row
       }
     } // loop over Rows for table type
-  }  
+
+    // if no return above, then find a nearby entry, if requested
+    if(_nearestMatch) {
+      Row br(DbIoV(),-1);
+      int brr=br.iov().maxRun(), bsr=br.iov().maxSubrun();
+      for(auto const& r : iter->second) { // find closest entry
+        int dr = run - r.iov().endRun();
+        int ds = subrun + r.iov().maxSubrun() - r.iov().endSubrun();
+        if(dr==0) ds = subrun - r.iov().endSubrun();
+        if( dr>0 && ds>0 && (dr<brr || ( dr==brr && ds<bsr) ) ) {
+          brr = dr;
+          bsr = ds;
+          br = r;
+        }
+      } // loop over Rows for table type
+      if(br.cid()>0) { // then something was found
+        return br;
+      }
+    } // try nearest match
+
+  } // tid found in lookup
+
   return DbEngine::Row(DbIoV(),-1); // not found
 }
 
