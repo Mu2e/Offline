@@ -72,7 +72,6 @@ VirtualDetectorDefaults: {
 
 }
 
-
 # Many configurations use "readvd"
 readvd: @local::VirtualDetectorDefaults
 ClusterCompareNew :

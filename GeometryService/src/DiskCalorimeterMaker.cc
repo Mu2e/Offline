@@ -128,8 +128,8 @@ namespace mu2e {
     calo_->caloInfo_.set("pipeTorRadius",temp );
     temp.clear();
     //For source calibration system:
-    config.getVectorDouble("calorimeter.LargeTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("LargeTorPhi", temp );
+    config.getVectorDouble("calorimeter.largeTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
+    calo_->caloInfo_.set("largeTorPhi", temp );
     temp.clear();
     config.getVectorDouble("calorimeter.smallTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
     calo_->caloInfo_.set("smallTorPhi", temp );
@@ -137,8 +137,8 @@ namespace mu2e {
     config.getVectorDouble("calorimeter.yposition", temp, calo_->caloInfo_.getInt("nPipes"));
     calo_->caloInfo_.set("yposition", temp );
     temp.clear();
-    config.getVectorDouble("calorimeter.straitEndPhi", temp, calo_->caloInfo_.getInt("nPipes"));
-    calo_->caloInfo_.set("straitEndPhi", temp );
+    config.getVectorDouble("calorimeter.straightEndPhi", temp, calo_->caloInfo_.getInt("nPipes"));
+    calo_->caloInfo_.set("straightEndPhi", temp );
     temp.clear();
     calo_->caloInfo_.set("radSmTor", config.getDouble("calorimeter.radSmTor") );
     calo_->caloInfo_.set("xsmall", config.getDouble("calorimeter.xsmall") );

@@ -44,7 +44,6 @@
 //ROOT Includes
 #include <TMath.h>
 
-const double piconst = CLHEP::pi;
 using CLHEP::degree;
 using namespace std;
 using namespace mu2e;
@@ -64,6 +63,7 @@ namespace mu2e {
       fhicl::Atom<double> phimax{Name("phimax"), CLHEP::twopi };
       fhicl::Atom<double> tmin{Name("tmin"),0.};
       fhicl::Atom<double> tmax{Name("tmax"),1694.};
+      fhicl::Atom<int> nDisk{Name("nDisk"),1};
       fhicl::Atom<bool> doHistograms{Name("doHistograms"), true };
     };
 
@@ -83,6 +83,7 @@ namespace mu2e {
     double _phimax;
     double _tmin;
     double _tmax;
+    int _nDisk;
     
     art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandFlat     _randFlat;
@@ -108,6 +109,7 @@ namespace mu2e {
     , _phimax{conf().phimax()}
     , _tmin{conf().tmin()}
     , _tmax{conf().tmax()}
+    , _nDisk{conf().nDisk()}
     , _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , _randFlat{_engine}
     , _randPoissonQ{_engine, _mean*1.0}
@@ -131,50 +133,50 @@ namespace mu2e {
     _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
     _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
     _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
-    _zPipeCenter     = _cal->disk(1).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(1).geomInfo().size().z()/2.0-_pipeRadius);//disk =1
+    _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);//disk =1
     // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons TODO - is this used?
     double sumR(0);
     std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
     std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
-    
-    unsigned int nGen = _mean;
+ 
     //Define the parameters of the pipes:
     
     // angle of large torus in degrees
-    std::vector<double> phi_lbd = _cal->caloInfo().getVDouble("LargeTorPhi");//{161.34, 149.50, 139.50, 132.07, 125.39}; 
+    std::vector<double> phi_lbd = _cal->caloInfo().getVDouble("largeTorPhi");
     // angle of small torus in degrees
-    std::vector<double> phi_sbd = _cal->caloInfo().getVDouble("smallTorPhi");//{84.63, 85.28, 85.79, 86.20, 86.53}; 
+    std::vector<double> phi_sbd = _cal->caloInfo().getVDouble("smallTorPhi");
     // angle of the end point
-    std::vector<double> phi_end = _cal->caloInfo().getVDouble("straitEndPhi");//{3.96, 10.53, 15.80, 20.16, 23.84};
+    std::vector<double> phi_end = _cal->caloInfo().getVDouble("straightEndPhi");
     // center position y of the small torus
-    std::vector<double> ysmall = _cal->caloInfo().getVDouble("yposition");//{432.2, 480.5, 524.3, 564.7, 602.5}; 
+    std::vector<double> ysmall = _cal->caloInfo().getVDouble("yposition");
     // radius of small torus
-    double radSmTor = _cal->caloInfo().getDouble("radSmTor");//41.0;
+    double radSmTor = _cal->caloInfo().getDouble("radSmTor");
     // first center position x of the small torus
-    double xsmall = _cal->caloInfo().getDouble("radSmTor");//71.0;
+    double xsmall = _cal->caloInfo().getDouble("radSmTor");
     // distance of the small torus center
-    double xdistance = _cal->caloInfo().getDouble("xdistance");//60.0;
+    double xdistance = _cal->caloInfo().getDouble("xdistance");
     // inner radius of the manifold
-    double rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");//681.6; // 713.35 mm - 1.25 in (31.75 mm)
+    double rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");
     vector<float> sign{-1.0, 1.0};
 
-    for (unsigned int ig = 0; ig < nGen; ++ig) 
+    for (unsigned int ig = 0; ig < _mean; ++ig) 
     {
-      // only in the front of 2nd disk.
-      //int nDisk        = 1;
-      //_zPipeCenter     = _cal->disk(nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(nDisk).geomInfo().size().z()/2.0-_pipeRadius);
-
       double xpipe, ypipe, zpipe;
-      //Pick position
-      int xsn = round(_randFlat.fire());
+      //Pick position - find either 0,1 - these are indices of the sign list (so 0=-1, 1=+1)
+      int xsn = round(_randFlat.fire()); 
       int ysn = round(_randFlat.fire());
 
-      double theta = _randFlat.fire() * 2.0 * piconst;
-      double pipeR = _pipeRadius * _randFlat.fire();
+      // pick a random theta, between 0 and 2*pi:
+      double theta = _randFlat.fire() * 2.0 * CLHEP::pi;
+      // pick a random point on the radius
+      double pipeR = _pipeRadius * sqrt(_randFlat.fire());
+      // find the z position based on above:
       zpipe = pipeR*sin(theta);
 
       double rtest = _randFlat.fire();
+      // select an index from list of pipes:
       int idx = int( std::lower_bound(_randomRad.begin(), _randomRad.end(), rtest) - _randomRad.begin());
+      // select the LgTor from list extracted from geom service above:
       double radLgTor = _pipeTorRadius[idx];
 
       // The phi range from 0 to half phi_lbd for the large torus
@@ -193,8 +195,8 @@ namespace mu2e {
       // circulus (center) of the small torus
       double circSmTor = CLHEP::degree * radSmTor * phi_sbd[idx];
 
-      // strait pipe
-      //double xmanifold = rInnerManifold * cos(piconst * (90 - phi_end[idx])/180.);
+      // straight pipe
+      //double xmanifold = rInnerManifold * cos(CLHEP::pi * (90 - phi_end[idx])/180.);
       double ymanifold = rInnerManifold * sin(CLHEP::degree * (90 - phi_end[idx]));
       double xstart = xsmall + xdistance * idx - radSmTor * cos(CLHEP::degree * phi_end[idx]);
       double ystart = ysmall[idx] + radSmTor * sin(CLHEP::degree * phi_end[idx]);
@@ -231,12 +233,10 @@ namespace mu2e {
       double time = _tmin + _randFlat.fire() * ( _tmax - _tmin );
 
       //Pick energy and momentum vector
-      double energy =_energy;
- 
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_energy);
 
       //Set Four-momentum
-      CLHEP::HepLorentzVector mom(p3.x(), p3.y(),p3.z(),energy );
+      CLHEP::HepLorentzVector mom(p3.x(), p3.y(),p3.z(),_energy );
 
       // Add the particle to  the list.
       output->emplace_back(PDGCode::gamma, GenId::CaloCalib, pos, mom, time);
