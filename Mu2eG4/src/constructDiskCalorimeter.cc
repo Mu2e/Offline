@@ -253,10 +253,10 @@ namespace mu2e {
        G4double pipeThickness            = cal.caloInfo().getDouble("pipeThickness");
        G4double pipeInitSeparation       = cal.caloInfo().getDouble("pipeInitSeparation");    
        std::vector<double> pipeTorRadius = cal.caloInfo().getVDouble("pipeTorRadius");
-       std::vector<double> LargeTorPhi    = cal.caloInfo().getVDouble("LargeTorPhi");
+       std::vector<double> largeTorPhi    = cal.caloInfo().getVDouble("largeTorPhi");
        std::vector<double> smallTorPhi   = cal.caloInfo().getVDouble("smallTorPhi");
        std::vector<double> yposition     = cal.caloInfo().getVDouble("yposition");
-       std::vector<double> straitEndPhi  = cal.caloInfo().getVDouble("straitEndPhi");
+       std::vector<double> straightEndPhi  = cal.caloInfo().getVDouble("straightEndPhi");
        G4double radSmTor               = cal.caloInfo().getDouble("radSmTor");
        G4double xsmall               = cal.caloInfo().getDouble("xsmall");
        G4double xdistance               = cal.caloInfo().getDouble("xdistance");
@@ -284,7 +284,7 @@ namespace mu2e {
 
        //Foam panel
        G4Tubs*          frontPanelFoam    = new G4Tubs("caloFPFoam",FPInnerRadius,FPOuterRadius,FPFoamDZ,0,CLHEP::twopi);       
-       G4LogicalVolume* frontPanelFoamLog = caloBuildLogical(frontPanelFoam, FPFoamMaterial, "caloFPFoamLog"+std::to_string(idisk),isPipeVisible,G4Color::Brown(),0,forceEdge);
+       G4LogicalVolume* frontPanelFoamLog = caloBuildLogical(frontPanelFoam, FPFoamMaterial, "caloFPFoamLog_"+std::to_string(idisk),isPipeVisible,G4Color::Brown(),0,forceEdge);
        pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZposFoam), frontPanelFoamLog, "caloFPFoamPV", frontPlateLog, false, 0, false);
        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);                
                     
@@ -302,7 +302,7 @@ namespace mu2e {
        
 
        //pipes nside foam
-       G4RotationMatrix* rotPipe1 = nullptr;
+       G4RotationMatrix* rotPipe1 = nullptr; //using the identity matrix 
        G4RotationMatrix* rotPipe2 = reg.add(new G4RotationMatrix());
        rotPipe2->rotateZ(1.0 * CLHEP::pi); 
 
@@ -315,7 +315,7 @@ namespace mu2e {
        
        for (int ipipe=0; ipipe<nPipes; ++ipipe)
        {
-           double angle = LargeTorPhi[ipipe] * CLHEP::degree / 2;
+           double angle = largeTorPhi[ipipe] * CLHEP::degree / 2;
            double sAngle = smallTorPhi[ipipe] * CLHEP::degree;
            double sxPos  = xsmall + xdistance * ipipe;
            double syPos  = yposition[ipipe];
@@ -328,12 +328,12 @@ namespace mu2e {
            G4LogicalVolume* pipe1Log = caloBuildLogical(pipe1, pipeMaterial, "caloPipe1Log",isPipeVisible,G4Color::Cyan(),isPipeSolid,forceEdge);
            G4LogicalVolume* pipe2Log = caloBuildLogical(pipe2, pipeMaterial, "caloPipe2Log",isPipeVisible,G4Color::Green(),isPipeSolid,forceEdge);
            
-           // calculate the parameters of the strait pipes
+           // calculate the parameters of the straight pipes
            // minus 2.0 mm from the manifold pipe's most inner radius to avoid the overlap.
-           double xEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * sin(straitEndPhi[ipipe] * CLHEP::degree);
-           double yEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * cos(straitEndPhi[ipipe] * CLHEP::degree);
-           double xStart = sxPos - radSmTor * cos(straitEndPhi[ipipe] * CLHEP::degree);
-           double yStart = syPos + radSmTor * sin(straitEndPhi[ipipe] * CLHEP::degree);
+           double xEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * sin(straightEndPhi[ipipe] * CLHEP::degree);
+           double yEnd = (FPCoolPipeTorRadius -FPCoolPipeRadius) * cos(straightEndPhi[ipipe] * CLHEP::degree);
+           double xStart = sxPos - radSmTor * cos(straightEndPhi[ipipe] * CLHEP::degree);
+           double yStart = syPos + radSmTor * sin(straightEndPhi[ipipe] * CLHEP::degree);
            double sLength = sqrt((xEnd - xStart)*(xEnd - xStart) + (yEnd - yStart)*(yEnd - yStart));
            double zRotateAngle = std::atan((yEnd - yStart) / (xEnd - xStart));
 
@@ -373,7 +373,7 @@ namespace mu2e {
            pv = new G4PVPlacement(rotPipe4, G4ThreeVector(sxPos, -syPos, z), pipe2Log, "caloPipePV6", frontPanelFoamLog, false, ipipe, false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
-           // strait pipes
+           // straight pipes
            pv = new G4PVPlacement(sPipeRotate1, G4ThreeVector(xCenter, yCenter, z), pipe3Log, "caloPipePV7", frontPanelFoamLog, false, ipipe, false);
            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
            pv = new G4PVPlacement(sPipeRotate2, G4ThreeVector(-xCenter, yCenter, z), pipe3Log, "caloPipePV8", frontPanelFoamLog, false, ipipe, false);

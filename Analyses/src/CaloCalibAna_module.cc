@@ -180,7 +180,7 @@ namespace mu2e {
       Ntup_->Branch("simGenIdx",    &crySimGenIdx_ ,"simGenIdx[nSim]/I");
 
       // Reconstructed cluster info (from CaloClusterCollection):
-      Ntup_->Branch("nCluster",     &nCluster_ ,    "nCluster/I");
+      /*Ntup_->Branch("nCluster",     &nCluster_ ,    "nCluster/I");
       Ntup_->Branch("cluEnergy",    &cluEnergy_ ,   "cluEnergy[nCluster]/F");
       Ntup_->Branch("cluEnergyErr", &cluEnergyErr_ ,"cluEnergyErr[nCluster]/F");
       Ntup_->Branch("cluTime",      &cluTime_ ,     "cluTime[nCluster]/F");
@@ -197,10 +197,10 @@ namespace mu2e {
       Ntup_->Branch("cluConv",      &cluConv_ ,     "cluConv[nCluster]/I");
       Ntup_->Branch("cluSimIdx",    &cluSimIdx_ ,   "cluSimIdx[nCluster]/I");
       Ntup_->Branch("cluSimLen",    &cluSimLen_ ,   "cluSimLen[nCluster]/I");
-      Ntup_->Branch("cluList",      &cluList_);
+      Ntup_->Branch("cluList",      &cluList_);*/
 
       // Truth CaloCluster info (from CaloClusterMCCollection)
-      Ntup_->Branch("nCluSim",      &nCluSim_ ,     "nCluSim/I");
+      /*Ntup_->Branch("nCluSim",      &nCluSim_ ,     "nCluSim/I");
       Ntup_->Branch("cluSimId",     &cluSimId_ ,    "cluSimId[nCluSim]/I");
       Ntup_->Branch("cluSimPdgId",  &cluSimPdgId_ , "cluSimPdgId[nCluSim]/I");
       Ntup_->Branch("cluSimGenId",  &cluSimGenId_ , "cluSimGenId[nCluSim]/I");
@@ -215,11 +215,8 @@ namespace mu2e {
       Ntup_->Branch("cluSimStartY", &cluSimStartY_ ,"cluSimStartY[nCluSim]/F");
       Ntup_->Branch("cluSimStartZ", &cluSimStartZ_ ,"cluSimStartZ[nCluSim]/F");
       Ntup_->Branch("cluSimTime",   &cluSimTime_ ,  "cluSimTime[nCluSim]/F");
-      Ntup_->Branch("cluSimEdep",   &cluSimEdep_ ,  "cluSimEdep[nCluSim]/F");
+      Ntup_->Branch("cluSimEdep",   &cluSimEdep_ ,  "cluSimEdep[nCluSim]/F");*/
       
-      // Calibration Analysis
-      
-
       // Virtual Detector info (from StepPointMCCollection)
       Ntup_->Branch("nVd",          &nVd_ ,         "nVd/I");
       Ntup_->Branch("vdId",         &vdId_ ,        "vdId[nVd]/I");
@@ -273,9 +270,9 @@ namespace mu2e {
       const CaloHitCollection& CaloHits(*CaloHitsHandle);
 
       //Calorimeter clusters
-      art::Handle<CaloClusterCollection> caloClustersHandle;
+      /*art::Handle<CaloClusterCollection> caloClustersHandle;
       event.getByLabel(caloClusterTag_, caloClustersHandle);
-      const CaloClusterCollection& caloClusters(*caloClustersHandle);
+      const CaloClusterCollection& caloClusters(*caloClustersHandle);*/
 
       //Virtual detector hits
       art::Handle<StepPointMCCollection> vdhits;
@@ -287,9 +284,9 @@ namespace mu2e {
       const CaloHitMCCollection& caloHitTruth(*caloHitMCHandle);
 
       //Calo cluster truth assignment
-      art::Handle<CaloClusterMCCollection> caloClusterMCHandle;
+      /*art::Handle<CaloClusterMCCollection> caloClusterMCHandle;
       event.getByLabel(caloClusterTruthTag_, caloClusterMCHandle);
-      const CaloClusterMCCollection& caloClusterTruth(*caloClusterMCHandle);
+      const CaloClusterMCCollection& caloClusterTruth(*caloClusterMCHandle);*/
 
 
       _evt = event.id().event();
@@ -405,7 +402,7 @@ namespace mu2e {
       nCluster_ = nCluSim_ = 0;
       cluList_.clear();
       
-      for (unsigned int ic=0; ic<caloClusters.size();++ic)
+     /* for (unsigned int ic=0; ic<caloClusters.size();++ic)
       {
         const CaloCluster& cluster = caloClusters.at(ic);
         std::vector<int> cryList;
@@ -480,7 +477,7 @@ namespace mu2e {
         hcluZ_->Fill(cluster.cog3Vector().z());
         hCluEEMC_->Fill(cluster.energyDep(), sumEdepMC);
         hCluTTMC_->Fill(cluster.time(), edepTime);
-      }
+      }*/
 
 
       //--------------------------  Do virtual detectors --------------------------------
