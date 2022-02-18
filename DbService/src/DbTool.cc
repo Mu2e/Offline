@@ -413,7 +413,7 @@ int mu2e::DbTool::printVersion() {
 			   << vids.size() <<" VIDs" <<std::endl;
   
   if(details<=0) 
-    std::cout << "      VID  PID  LID  maj  min  create_user        create_date     comment" <<std::endl;
+    std::cout << "      VID  PID  LID  maj  min  create_user        create_date                     comment" <<std::endl;
 
   for(auto vid : vids) {
     rc = printVIDLine(vid,details,0);
@@ -463,7 +463,7 @@ int mu2e::DbTool::printPurpose() {
 			   << pids.size() <<" PIDs" <<std::endl;
   
   if(details<=0) 
-    std::cout << "      PID    create_user        create_date              comment" <<std::endl;
+    std::cout << "      PID           name       create_user          create_date                  comment" <<std::endl;
 
   for(auto pid : pids) {
     rc = printPIDLine(pid,details,0);
@@ -701,11 +701,11 @@ int mu2e::DbTool::printVIDLine(int vid, int details, int indent) {
 	    << std::setw(5+4*std::max(indent,0)) << vid 
 	    << std::setw(5) << vr.pid()  
 	    << std::setw(5) << vr.lid()  
-	    << std::setw(5) << vr.major()  
-	    << std::setw(5) << vr.minor()  
-	    << std::setw(12) << vr.create_user()  
-	    << std::setw(35) << vr.create_time() 
-	    << std::setw(35) << " " << vr.comment() 
+	    << std::setw(5) << vr.major()
+	    << std::setw(5) << vr.minor()
+	    << std::setw(12) << vr.create_user()
+	    << std::setw(35) << vr.create_time() << " "
+	    << std::setw(35) << vr.comment()
 	    << std::endl;
   if(details>0) {
     for(auto er : _valcache.valExtensions().rows()) {
@@ -729,9 +729,9 @@ int mu2e::DbTool::printPIDLine(int pid, int details, int indent) {
   std::cout << "PID " 
 	    << std::setw(5+4*std::max(indent,0)) << pid 
 	    << std::setw(20) << pr.name()  
-	    << std::setw(12) << pr.create_user()  
-	    << std::setw(35) << pr.create_time() 
-	    << std::setw(35) << " " << pr.comment() 
+	    << std::setw(12) << pr.create_user()
+	    << std::setw(35) << pr.create_time() << " "
+	    << std::setw(35) << pr.comment()
 	    << std::endl;
   if(details>0) {
     for(auto vr : _valcache.valVersions().rows()) {
@@ -2427,6 +2427,7 @@ int mu2e::DbTool::help() {
       " [OPTIONS]\n"
       "    --name NAME : name of the table\n"
       "    --user USERNAME : only print tables committed by this user \n"
+      "    --ctime TIME/TIME : only print contents created in this interval \n"
       "    --cid INT or INT LIST : only print this cid \n"
       " \n"
       << std::endl;
