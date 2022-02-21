@@ -200,7 +200,7 @@ namespace mu2e {
     static const double twopi(2*pi);
 
     double              mphi(-9999.);
-    double              meanDriftTime = 46.7;//1.25/0.06;// half straw tube radius / drift velocity
+    double              meanDriftTime = 46.7;
 
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
