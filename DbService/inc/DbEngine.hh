@@ -18,7 +18,8 @@ namespace mu2e {
   class DbEngine {
   public:
 
-    DbEngine():_verbose(0),_saveCsv(true),_initialized(false),
+    DbEngine():_verbose(0),_saveCsv(true),_nearestMatch(false),
+               _initialized(false),
 	       _lockWaitTime(0),_lockTime(0) {}
     // the big read of the IOV structure is done in beginJob
     int beginJob();
@@ -33,6 +34,8 @@ namespace mu2e {
     void setVerbose(int verbose = 0) { _verbose = verbose; }
     // whether to save the csv text content when loading a table
     void setSaveCsv(bool saveCsv) { _saveCsv = saveCsv; }
+    // whether, if no perfect match, accept neaby data
+    void setNearestMatch(bool nearestMatch) { _nearestMatch = nearestMatch; }
     // these should only be called in single-threaded startup
     std::shared_ptr<DbValCache>& valCache() {return _vcache;}
     std::vector<int> gids() { return _gids; }
@@ -71,6 +74,7 @@ namespace mu2e {
     DbVersion _version;
     int _verbose;
     bool _saveCsv;
+    bool _nearestMatch; // match to nearby data, without proper IOV
     DbTableCollection _override;
     DbCache _cache;
     std::shared_ptr<DbValCache> _vcache;
