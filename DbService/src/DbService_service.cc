@@ -4,6 +4,7 @@
 #include "Offline/DbTables/inc/DbUtil.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 
 namespace mu2e {
@@ -36,6 +37,12 @@ namespace mu2e {
     // the engine which will read db, hold calibrations, deliver them
     _engine.setVerbose(_verbose);
     _engine.setSaveCsv(_config.saveCsv());
+    if(_config.nearestMatch()) {
+      _engine.setNearestMatch(true);
+      mf::LogWarning warn("DbService");
+      warn<<"WARNING: setting DbService nearestMatch true will probably result "
+          <<"in approximate or unreproducible results\n";
+    }
 
     DbIdList idList; // read file of db connection details
     _engine.setDbId( idList.getDbId(_config.dbName()) );
