@@ -33,7 +33,6 @@ physics: {
         phimax : 2.0
         tmin  :  500.
         tmax : 1694.
-        doHistograms: true
       }
 
       g4run                : @local::g4run
@@ -86,7 +85,7 @@ physics: {
 }
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "generate"
-physics.producers.FindMCPrimary.PrimaryProcess : "CaloCalib"
+physics.producers.FindMCPrimary.PrimaryProcess : "mu2eCaloCalib"
 
 physics.producers.EWMProducer.SpillType : 0
 physics.producers.muonTimeMap.applyToGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC",

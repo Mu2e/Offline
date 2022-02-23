@@ -8,9 +8,6 @@
 #include <cmath>
 
 // Framework includes
-#include "art/Framework/Principal/Run.h"
-#include "art_root_io/TFileDirectory.h"
-#include "art_root_io/TFileService.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -37,16 +34,10 @@
 #include "CLHEP/Random/RandExponential.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 
-
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-//ROOT Includes
-#include <TMath.h>
-
-using CLHEP::degree;
 using namespace std;
-using namespace mu2e;
 
 namespace mu2e {
 
@@ -64,7 +55,6 @@ namespace mu2e {
       fhicl::Atom<double> tmin{Name("tmin"),0.};
       fhicl::Atom<double> tmax{Name("tmax"),1694.};
       fhicl::Atom<int> nDisk{Name("nDisk"),1};
-      fhicl::Atom<bool> doHistograms{Name("doHistograms"), true };
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -90,8 +80,7 @@ namespace mu2e {
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
 
-    const DiskCalorimeter *_cal;
-    //int                    _nPipes;
+     //int                    _nPipes;
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
     std::vector<double>    _randomRad;
@@ -128,7 +117,7 @@ namespace mu2e {
     PrimaryParticle primaryParticles;
     MCTrajectoryCollection mctc;
 
-    _cal =  &*GeomHandle<mu2e::DiskCalorimeter>();
+    const DiskCalorimeter *_cal = GeomHandle<DiskCalorimeter>().get();
     //_nPipes          = _cal->caloInfo().getInt("nPipes");
     _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
     _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
@@ -200,7 +189,7 @@ namespace mu2e {
       double ymanifold = rInnerManifold * sin(CLHEP::degree * (90 - phi_end[idx]));
       double xstart = xsmall + xdistance * idx - radSmTor * cos(CLHEP::degree * phi_end[idx]);
       double ystart = ysmall[idx] + radSmTor * sin(CLHEP::degree * phi_end[idx]);
-      // height of the strait pipe
+      // height of the straight pipe
       double hPipe = (ymanifold - ystart) / sin(CLHEP::degree * (90 - phi_end[idx]));
       // a cylinder along y-axis
       double y_center = _randFlat.fire() * hPipe;
@@ -226,7 +215,7 @@ namespace mu2e {
         ypipe = yStrait;
       }
       CLHEP::Hep3Vector pos(xpipe, ypipe, zpipe);
-      // shift the pipe to the front of the calorimeter disk 0
+      // shift the pipe to the front of the calorimeter disk
       pos +=_zPipeCenter;
 
       //pick time
