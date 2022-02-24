@@ -60,7 +60,7 @@ vector<double> calorimeter.pipeTorRadius       = {397,457,517,577,637};
 double calorimeter.pipeRadius                  = 4.75;    
 double calorimeter.pipeThickness               = 0.5; 
 double calorimeter.pipeInitSeparation          = 25.4;
-
+bool calorimeter.hasUpdatedSourceCalibrationSystem    = false;
 int calorimeter.crateVersion                   = 2; 
 int calorimeter.numberOfCrates                 = 10;
 int calorimeter.numberOfBoards                 = 9;
