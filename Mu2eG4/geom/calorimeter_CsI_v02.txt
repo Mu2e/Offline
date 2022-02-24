@@ -61,7 +61,7 @@ double calorimeter.pipeRadius                  = 4.75;
 double calorimeter.pipeThickness               = 0.5; 
 double calorimeter.pipeInitSeparation          = 25.4;
 
-
+bool calorimeter.hasUpdatedSourceCalibrationSystem    = true;
 vector<double> calorimeter.largeTorPhi         = {161.34, 149.50, 139.50, 132.07, 125.39};//full angle of large torus
 vector<double> calorimeter.smallTorPhi         = {84.63, 85.28, 85.79, 86.20, 86.53}; // full angle of small torus
 vector<double> calorimeter.straightEndPhi        = {3.96, 10.53, 15.80, 20.16, 23.84};  // angle of the ending poing of the straight pipe
