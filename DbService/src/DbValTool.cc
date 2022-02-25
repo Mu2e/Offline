@@ -68,20 +68,28 @@ void DbValTool::findPidVid(std::string purpose, std::string version, int& pid, i
 
   //**************************************************
 
-int DbValTool::tidByName(std::string const& name) const {
+bool DbValTool::tidByName(std::string const& name, int& tid) const {
   for(auto const& r: _valcache.valTables().rows()) {
-    if(r.name()==name) return r.tid();
+    if(r.name()==name) {
+      tid = r.tid();
+      return true;
+    }
   }
-  return -1;
+  tid = -1;
+  return false;
 }
 
   //**************************************************
 
-std::string DbValTool::nameByTid(int tid) const {
+bool DbValTool::nameByTid(int tid, std::string& name) const {
   for(auto const& r: _valcache.valTables().rows()) {
-    if(r.tid() == tid) return r.name();
+    if(r.tid() == tid) {
+      name = r.name();
+      return true;
+    }
   }
-  return std::string();
+  name.clear();
+  return false;
 }
 
   //**************************************************
@@ -89,11 +97,13 @@ std::string DbValTool::nameByTid(int tid) const {
 void DbValTool::printSet(DbSet const& dbset) const {
   auto const& emap = dbset.emap();
   std::cout << "            Table        N IoV" << std::endl;
+  std::string name;
   for (auto const& p : emap) {
-    std::cout << std::setw(20) << nameByTid(p.first)
+    nameByTid(p.first,name);
+    std::cout << std::setw(20) << name
               << std::setw(8) << p.second.size() << std::endl;
-    }
   }
+}
 
   //**************************************************
 

@@ -26,9 +26,9 @@ namespace mu2e {
     int findPid(std::string purpose) const;
     void findPidVid(std::string purpose, std::string version, 
                     int& pid, int& vid) const;
-    // convert between tid and name, can return -1 or empty
-    int tidByName(std::string const& name) const;
-    std::string nameByTid(int tid) const;
+    // convert between tid and name, bool tells if found
+    bool tidByName(std::string const& name, int& tid) const;
+    bool nameByTid(int tid, std::string& name) const;
     void printSet(DbSet const& dbset) const;
 
     // given a purpose/version, which defines and entire calibration set,
