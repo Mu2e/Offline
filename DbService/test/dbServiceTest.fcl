@@ -1,0 +1,30 @@
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+
+process_name : readtest
+
+services :  @local::Services.Core 
+
+physics :{
+   analyzers: {
+      dbTest : {
+         module_type : DbServiceTest
+         verbose : 1
+         tableList : ["TstCalib1","TstCalib2"]
+      }
+   }
+   
+   e1        : [ dbTest ]
+   end_paths : [ e1 ]
+   
+}
+
+services.DbService.purpose: TEST
+services.DbService.version: v2_0
+services.DbService.verbose: 5
+services.DbService.nearestMatch: false
+#services.DbService.textFile : ["readtest.txt"]
+
