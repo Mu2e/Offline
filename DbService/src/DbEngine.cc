@@ -113,7 +113,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
     auto row = _dbset.find(tid, run, subrun);
     cid = row.cid();
     iov = row.iov();
-    if(_cache.hasTable(row.cid())) ptr = _cache.get(row.cid());
+    ptr = _cache.get(row.cid());
   } // read lock goes out of scope
 
   // if no cid now, then table can't be found - have to stop
@@ -313,8 +313,10 @@ int mu2e::DbEngine::endJob() {
 	      <<" s" << std::endl;
     std::cout << "    Total time in locks: "<< _lockTime.count()*1.0e-6
 	      <<" s" << std::endl;
-    std::cout << "    cache memory   : "<<_cache.size()<<" b" << std::endl;
     std::cout << "    valcache memory: "<<_vcache->size()<<" b" << std::endl;
+    std::cout <<"  Database cache stats:\n";
+    _cache.printStats();
+      
   }
   return 0;
 }
