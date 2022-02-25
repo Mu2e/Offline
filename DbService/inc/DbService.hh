@@ -41,6 +41,8 @@ namespace mu2e {
 	  Comment("if >0, read IoV from cache, but renew each lifetime (s)")};
       fhicl::OptionalAtom<int> retryTimeout{Name("retryTimeout"), 
 	  Comment("how long to keep retrying to read database (3600s)")};
+      fhicl::OptionalAtom<int64_t> cacheLimit{Name("cacheLimit"), 
+	  Comment("limit on memory to use in database cache (200 MB)")};
       fhicl::Atom<bool> nearestMatch{Name("nearestMatch"), 
 	  Comment("if no proper IoV, accept nearby calibrations, default false"),false};
     };

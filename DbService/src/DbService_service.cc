@@ -77,6 +77,11 @@ namespace mu2e {
       _engine.reader().setTimeout(retryTimeout);
     }
 
+    int64_t cacheLimit = 0;
+    if(_config.cacheLimit(cacheLimit)) {
+      _engine.cache().setLimitSize(cacheLimit);
+    }
+
 
     // service will start calling the database at the first event,
     // so the service can exist without the DB being contacted.  

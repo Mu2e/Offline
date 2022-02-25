@@ -36,7 +36,7 @@ namespace mu2e {
     void setDbId(DbId const& id) { _id = id; }
     void setVersion(DbVersion const& version) { _version = version; } 
     // copy in the cache - optionally set before beginJob
-    void setCache(std::shared_ptr<DbValCache> vcache) { _vcache = vcache; }
+    void setValCache(std::shared_ptr<DbValCache> vcache) { _vcache = vcache; }
     // add tables directly - optionally set before beginJob
     void addOverride(DbTableCollection const& coll);
     void setVerbose(int verbose = 0) { _verbose = verbose; }
@@ -47,6 +47,7 @@ namespace mu2e {
     // these should only be called in after startup
     std::shared_ptr<DbValCache>& valCache() {return _vcache;}
     DbReader& reader() { return _reader; }
+    DbCache& cache() { return _cache; }
     // these are the only methods that can be called from threads, 
     // such as DbHandle, after the single-threaded configuration
     DbLiveTable update(int tid, uint32_t run, uint32_t subrun);
