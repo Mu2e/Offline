@@ -25,8 +25,6 @@ namespace mu2e {
       EIoV(int cid, DbIoV const& iov):_cid(cid),_iov(iov) {}
       int cid() const {return _cid;}
       DbIoV const& iov() const {return _iov;}
-      void setCid(int cid) {_cid = cid;}
-      void setIov(DbIoV const& iov) {_iov = iov;}
     private:
       int _cid;
       DbIoV _iov;

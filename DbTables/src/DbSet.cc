@@ -53,7 +53,7 @@ DbSet::EIoV DbSet::find(int tid, uint32_t run, uint32_t subrun) const {
   //***********************************************
 
 void DbSet::clear() {
-  for (auto& p : _emap) p.second.clear();
+  _emap.clear();
 }
 
   //***********************************************
