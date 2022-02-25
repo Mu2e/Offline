@@ -2,6 +2,7 @@
 #include <chrono>
 #include "cetlib_except/exception.h"
 #include "Offline/DbService/inc/DbEngine.hh"
+#include "Offline/DbService/inc/DbValTool.hh"
 #include "Offline/DbTables/inc/DbTableFactory.hh"
 
 using namespace std;
@@ -9,9 +10,6 @@ using namespace std;
 int mu2e::DbEngine::beginJob() {
 
   if(_verbose>4) cout << "DbEngine::beginJob start" << endl;
-  _initialized = true;  // true no matter when we return
-
-  _gids.clear();
 
   if(_id.name().empty()) {
       throw cet::exception("DBENGINE_DBID NOT_SET") 
@@ -26,15 +24,14 @@ int mu2e::DbEngine::beginJob() {
   _reader.setSaveCsv(_saveCsv);
 
   // this is used to assign nominal tid's and cid's to tables that
-  // are read in through a file, and are not declared in the database
+  // are read in through a file, and may not be declared in the database
   setOverrideId();
 
   // if special name EMPTY, then don't read the database,
   // only the text file content will be available
   if(_version.purpose()=="EMPTY") {
-    
-    if(_verbose>2) cout << "DbEngine::beginJob exit early, purpose=EMPTY" 
-			<< endl;
+    if(_verbose>2) cout << "DbEngine::beginJob exit early, purpose=EMPTY\n";
+    _initialized = true;
     return 0;
   }
 
@@ -42,156 +39,12 @@ int mu2e::DbEngine::beginJob() {
     _vcache = std::make_shared<DbValCache>();
     _reader.fillValTables(*_vcache);
   }
-  DbValCache const& vcache = * _vcache;
 
-  // confirm purpose string and find its pid
-  auto const& purposes = vcache.valPurposes();
-  int pid = -1;
-  for(auto const& r : purposes.rows()) {
-    if(r.name() ==_version.purpose()) {
-      pid = r.pid();
-      break;
-    }
-  }
-
-  if(pid<0) {
-    throw cet::exception("DBENGINE_BAD_PURPOSE") 
-      << " DbEngine::beginJob calibration purpose string not found in the DB: " 
-      << _version.purpose() << "\n";
-  }
-
-  // confirm version numbers and find version number (vid) 
-  // and table list number (lid)
-  int vid = -1,lid = -1;
-  auto const& versions = vcache.valVersions();
-  int major = _version.major();
-  int minor = _version.minor();
-  int extension = _version.extension();
-
-  // if the major verison is not set, find highest major verison
-  // if it is set, make sure it is in the DB
-  bool qOK = false;
-  if(major<0) {
-    for(auto const& r : versions.rows()) {
-      if(r.pid() == pid) {
-	if(r.major()>major) major = r.major();
-	qOK = true;
-      }
-    }
-  } else {
-    for(auto const& r :versions.rows()) {
-      if(r.pid() == pid) {
-	if(r.major()==major) qOK = true;
-      }
-    }
-  }
-
-  if(major<0 || !qOK) {
-    throw cet::exception("DBENGINE_BAD_MAJOR") 
-      << " DbEngine::beginJob bad calibration major version number" 
-      << major << "\n";
-  }
-
-
-  // if the minor verison is not set, find highest minor version
-  // if it is set, make sure it is in the DB
-  qOK = false;
-  if(minor<0) {
-    for(auto const& r : versions.rows()) {
-      if(r.pid() == pid && r.major()==major) {
-	if(r.minor()>minor) {
-	  minor = r.major();
-	  vid = r.vid();
-	  lid = r.lid();
-	}
-	qOK = true;
-      }
-    }
-  } else {
-    for(auto const& r : versions.rows()) {
-      if(r.pid() == pid && r.major()==major) {
-	if(r.minor()==minor) {
-	  qOK = true;
-	  vid = r.vid();
-	  lid = r.lid();
-	}
-      }
-    }
-  }
-
-  if(minor<0 || !qOK) {
-    throw cet::exception("DBENGINE_BAD_MINOR") 
-      << " DbEngine::beginJob bad calibration minor version number" 
-      << minor << "\n";
-  }
-
-  // loop over the extensions to this version, 
-  // to eventually collect groups consistent with 
-  // with the version number
-
-  auto const& extensions = vcache.valExtensions();
-
-  // first collect the extension id's, which will go into 
-  // relational table extensionlists, to get gid's
-  std::vector<int> eids;
-  int max_extension = -1;
-  for(auto const& r : extensions.rows()) {
-    // keep if we are accepting all extensions,
-    // or up to or equal the requested extension
-    if(r.vid() == vid && (extension < 0 || r.extension()<=extension )) {
-      eids.push_back(r.eid());
-      if(r.extension()>max_extension) max_extension = r.extension();
-    }
-  }
-
-  // now loop over extensionlists and collect groups (gid's) associated
-  // with each extension (eid)
-  auto const& extensionlists = vcache.valExtensionLists();
-
-  for(auto eid : eids) {
-    for(auto const& r : extensionlists.rows()) {
-      if(r.eid() == eid) _gids.push_back(r.gid());
-    }
-  }
-
-
-  if(_gids.size()==0) {
-    throw cet::exception("DBENGINE_NO_EXTENSION") 
-      << " DbEngine::beginJob found no calibration groups for version " 
-      << _version.to_string() << "\n";
-  }
-
-  
-  // make the list of tables in this purpose/version
-  if(_verbose>4) cout << "DbEngine::beginJob make table list" << endl;
-  _lookup.clear();
-  auto const& tls = vcache.valTableLists();
-  for(auto const& r : tls.rows()) {
-    if(r.lid()==lid) {
-      _lookup[r.tid()] = std::vector<Row>();
-    }
-  }
-
-  // now fill the rows of _lookup
-  if(_verbose>4) cout << "DbEngine::beginJob make _lookup" << endl;
-
-  // take the list of groups and loop over the grouplists
-  // which gives IOVs for a group 
-  // these should be sorted so this code could use that
-  auto const& gls = vcache.valGroupLists();
-  auto const& iids = vcache.valIovs();
-  auto const& cids = vcache.valCalibrations();
-  int niov = 0;
-  for(auto g : _gids) {
-    for(auto const& r : gls.rows()) {
-      if(r.gid()==g) {
-	auto const& irow = iids.row(r.iid());
-	auto const& crow = cids.row(irow.cid());
-	_lookup[crow.tid()].emplace_back(irow.iov(),irow.cid());
-	niov++;
-      }
-    }
-  }
+  // use the purpose and version to fill the DbSet, the list of relevant iovs
+  // this will throw if, for ex, the purpose isn't found
+  DbValTool vtool(*_vcache);
+  vtool.fillSetVer(_version,_dbset);
+  _dbset.setNearestMatch(_nearestMatch);
 
   // if file-based override tables were loaded, 
   // update tid now.  If the table is known to the database,
@@ -199,34 +52,16 @@ int mu2e::DbEngine::beginJob() {
   // assign fake tid
   updateOverrideTid();
 
-  if( _verbose>4 ) {
-    std::cout << "DbEngine::beginRun results of lookup" << std::endl;
-    std::cout << "  tid       valid range        cid" << std::endl;
-    for(auto const& p : _lookup) {
-      int tid = p.first;
-      for(auto r : p.second) {
-	std::cout << std::setw(5) << tid
-		  << std::setw(20) << r.iov()
-		  << std::setw(6)  << std::right << r.cid() << std::endl;
-      }
-    }
+  if( _verbose>1 ) {
+    std::cout << "DbEngine confirmed purpose and version:\n" 
+	      << _version.to_string() << "\n";
+    std::cout << "DbEngine IoV summary\n";
+    vtool.printSet(_dbset);
   }
 
-  // this will be the current list of active, filled tables
-  _last.clear();
-
-  if( _verbose>1 ) {
-    std::cout << "DbEngine confirmed purpose and version " 
-	      << _version.purpose() << " " << _version.major() 
-	      << "/" << _version.minor() 
-	      << "/"<<_version.extension() << std::endl;
-    if(extension<0) {
-      std::cout << "DbEngine will use max extension " 
-		<< max_extension << std::endl;
-    }
-    std::cout << "DbEngine found " << _gids.size() << " groups and "
-	      << niov << " IOV" << " for " 
-	      << _lookup.size() << " tables"<<std::endl;
+  if( _verbose>5 ) {
+    std::cout << "DbEngine::beginRun contents of DbSet" << std::endl;
+    _dbset.print();
   }
 
   auto end_time = std::chrono::high_resolution_clock::now();
@@ -238,6 +73,7 @@ int mu2e::DbEngine::beginJob() {
 
   if(_verbose>4) cout << "DbEngine::beginJob end" << endl;
 
+  _initialized = true;
   return 0;
 }
 
@@ -271,10 +107,10 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
   int cid = -1;
   DbIoV iov;
 
-  // try to read the table
+  // try to find the needed cid and the table itself
   {
     std::shared_lock lock(_mutex); // shared read lock
-    auto row = findTable(tid, run, subrun);
+    auto row = _dbset.find(tid, run, subrun);
     cid = row.cid();
     iov = row.iov();
     if(_cache.hasTable(row.cid())) ptr = _cache.get(row.cid());
@@ -346,49 +182,10 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
 }
 
-// find a table by cid in the fast lookup structure
-// can only be called inside a read lock
-mu2e::DbEngine::Row mu2e::DbEngine::findTable(
-			    int tid, uint32_t run, uint32_t subrun) {
-  auto iter = _lookup.find(tid);
-  if(iter!=_lookup.end()) { // if the IOV structure includes this tid
-    for(auto const& r : iter->second) { // find which iov is appropriate
-      if(r.iov().inInterval(run,subrun)) {
-	return r; // return iov and cid in a Row
-      }
-    } // loop over Rows for table type
-
-    // if no return above, then find a nearby entry, if requested
-    if(_nearestMatch) {
-      Row br(DbIoV(),-1);
-      int brr=br.iov().maxRun(), bsr=br.iov().maxSubrun();
-      for(auto const& r : iter->second) { // find closest entry
-        int dr = run - r.iov().endRun();
-        int ds = subrun + r.iov().maxSubrun() - r.iov().endSubrun();
-        if(dr==0) ds = subrun - r.iov().endSubrun();
-        if( dr>0 && ds>0 && (dr<brr || ( dr==brr && ds<bsr) ) ) {
-          brr = dr;
-          bsr = ds;
-          br = r;
-        }
-      } // loop over Rows for table type
-      if(br.cid()>0) { // then something was found
-        return br;
-      }
-    } // try nearest match
-
-  } // tid found in lookup
-
-  return DbEngine::Row(DbIoV(),-1); // not found
-}
-
-
 
 int mu2e::DbEngine::tidByName(std::string const& name) {
 
   lazyBeginJob(); // initialize if needed
-
-  std::shared_lock lock(_mutex); // shared read lock
 
   // tables known to the db
   if(_vcache) {
@@ -403,21 +200,6 @@ int mu2e::DbEngine::tidByName(std::string const& name) {
   return -1;
 }
 
-std::string mu2e::DbEngine::nameByTid(int tid) {
-
-  lazyBeginJob(); // initialize if needed
-
-  std::shared_lock lock(_mutex); // shared read lock
-
-
-  for(auto const& r: _vcache->valTables().rows()) {
-    if(r.tid()==tid) return r.name();
-  }
-  for(auto const& p : _overrideTids) {
-    if(p.second == tid) return p.first;
-  }
-  return std::string("unknown");
-}
 
 void mu2e::DbEngine::addOverride(DbTableCollection const& coll) {
   if(_initialized) {
@@ -426,7 +208,6 @@ void mu2e::DbEngine::addOverride(DbTableCollection const& coll) {
   }
   for(auto const& c : coll) _override.emplace_back(c); 
 }
-
 
 // this is used to assign nominal tid's and cid's to tables that
 // are read in through a file, and are not declared in the database
@@ -487,15 +268,17 @@ int mu2e::DbEngine::updateOverrideTid() {
 }
 
 
+// initialize if not already done - thread safe
+
 void mu2e::DbEngine::lazyBeginJob() {
 
   {
     // check if initialized
-    std::shared_lock lock(_mutex); // shared read lock
+    // don't lock since bool is either set or not
     if(_initialized) return;
   }
 
-  // need to call beginRun, read lock out of scope, destroyed
+  // need to call beginRun, so must write lock
   auto stime = std::chrono::high_resolution_clock::now();
   std::unique_lock lock(_mutex); // write lock
   auto mtime = std::chrono::high_resolution_clock::now();
