@@ -1,6 +1,13 @@
 #ifndef DbService_DbEngine_hh
 #define DbService_DbEngine_hh
 
+// This is the main class used to access the database calibration sets.
+// It is created and held by the DbService art service.
+// Given a purpose and version, it can read through the IoV heirachcy structure
+// and extract a set of IoVs and calibration pointerss.  The DbHandle contacts
+// this class through the service, and asks the update method 
+// for appropriate tables.  Database tables can be overridden by a text file.
+
 #include <shared_mutex>
 #include <chrono>
 
@@ -11,6 +18,7 @@
 #include "Offline/DbTables/inc/DbTableCollection.hh"
 #include "Offline/DbTables/inc/DbCache.hh"
 #include "Offline/DbTables/inc/DbValCache.hh"
+#include "Offline/DbTables/inc/DbSet.hh"
 #include "Offline/DbTables/inc/DbLiveTable.hh"
 
 
@@ -27,7 +35,7 @@ namespace mu2e {
     // these must be set before beginJob is called
     void setDbId(DbId const& id) { _id = id; }
     void setVersion(DbVersion const& version) { _version = version; } 
-    // copy the cache - optionally set before beginJob
+    // copy in the cache - optionally set before beginJob
     void setCache(std::shared_ptr<DbValCache> vcache) { _vcache = vcache; }
     // add tables directly - optionally set before beginJob
     void addOverride(DbTableCollection const& coll);
@@ -36,37 +44,22 @@ namespace mu2e {
     void setSaveCsv(bool saveCsv) { _saveCsv = saveCsv; }
     // whether, if no perfect match, accept neaby data
     void setNearestMatch(bool nearestMatch) { _nearestMatch = nearestMatch; }
-    // these should only be called in single-threaded startup
+    // these should only be called in after startup
     std::shared_ptr<DbValCache>& valCache() {return _vcache;}
-    std::vector<int> gids() { return _gids; }
     DbReader& reader() { return _reader; }
     // these are the only methods that can be called from threads, 
     // such as DbHandle, after the single-threaded configuration
     DbLiveTable update(int tid, uint32_t run, uint32_t subrun);
     // ruten tid for table name and reverce, for connecting handles
     int tidByName(std::string const& name);
-    std::string nameByTid(int tid);
-    // set cid and tid for override text tables
-    int setOverrideId();
-    int updateOverrideTid();
 
   private:
 
-    // this is an efficient format for looking up intervals of validity
-    class Row {
-    public:
-      Row(DbIoV const& iov, int cid):_iov(iov),_cid(cid) {}
-      DbIoV const & iov() const { return _iov; }
-      int cid() const { return _cid; }
-    private:
-      DbIoV _iov;
-      int _cid;
-    };
-
     // call beginRun on first use, if needed
     void lazyBeginJob();
-    // find a table cid in the fast lookup structure
-    Row findTable(int tid, uint32_t run, uint32_t subrun);
+    // set cid and tid for override text tables - called during intialization
+    int setOverrideId();
+    int updateOverrideTid();
 
 
     DbId _id;
@@ -75,15 +68,12 @@ namespace mu2e {
     int _verbose;
     bool _saveCsv;
     bool _nearestMatch; // match to nearby data, without proper IOV
-    DbTableCollection _override;
-    DbCache _cache;
-    std::shared_ptr<DbValCache> _vcache;
+    DbTableCollection _override; // the text tables
+    DbCache _cache; // cache of table contents
+    std::shared_ptr<DbValCache> _vcache; // full db iov heirarchy
     bool _initialized;
-    // a join of relevant tables, int is tid, Row is above
-    std::map<int,std::vector<Row>> _lookup;
-    DbTableCollection _last;
-    std::vector<int> _gids;
-    std::map<std::string,int> _overrideTids;
+    DbSet _dbset; // simple set of relevant iovs
+    std::map<std::string,int> _overrideTids;  // fake tids for text tables
 
     // lock for threaded access
     mutable std::shared_mutex _mutex;
