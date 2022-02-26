@@ -17,8 +17,7 @@ namespace mu2e {
 
 
     DbCache():_limitSize(200000000),  // 200 MB
-              _hwmSize(0),_size(0),_nPurges(0),_nPurged(0),
-              _nAdded(0),_nCall(0),_nHit(0) {}
+              _hwmSize(0),_size(0),_nPurges(0),_nPurged(0),_nAdded(0) {}
 
     void setLimitSize(int64_t limitSize) { _limitSize = limitSize; }
     void add(int cid, mu2e::DbTable::cptr_t const& ptr);
@@ -48,8 +47,6 @@ namespace mu2e {
     int _nPurges;
     int _nPurged;
     int _nAdded;
-    int _nCall;
-    int _nHit;
   };
 
 }

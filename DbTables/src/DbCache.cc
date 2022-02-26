@@ -16,11 +16,9 @@ void mu2e::DbCache::add(int cid, mu2e::DbTable::cptr_t const& ptr) {
 }
 
 mu2e::DbTable::cptr_t mu2e::DbCache::get(int cid) {
-  _nCall++;
   auto it = _tables.find(cid);
   if(it != _tables.end()) {
     return it->second;
-    _nHit++;
   } else {
     return mu2e::DbTable::cptr_t(nullptr);
   }
@@ -55,12 +53,8 @@ void mu2e::DbCache::print() const {
 
 void mu2e::DbCache::printStats() const {
 
-  float frac = (_nCall==0 ? 0.0 : float(_nHit)/_nCall);
   std::cout << "    cache nTable : " << _nAdded << "\n";
   std::cout << "    cache HWM    : " << _hwmSize << " b\n";
-  std::cout << "    cache nCalls : " << _nCall << "\n";
-  std::cout << "    cache hit frac : " 
-            << std::fixed << std::setprecision(3) << frac << "\n";
   std::cout << "    cache nPurges : " << _nPurges << "\n";
   std::cout << "    cache nPurged : " << _nPurged << "\n";
 
