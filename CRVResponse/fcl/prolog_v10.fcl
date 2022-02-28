@@ -159,7 +159,7 @@ BEGIN_PROLOG
       #cluster settings
       clusterMaxDistance               : 400 //mm
       clusterMaxTimeDifference         : 60  //ns //when overlap option is not used
-      clusterMinOverlapTime            : 10  //ns //when overlap option is used
+      clusterMinOverlapTime            : -5  //ns //when overlap option is used //needs to be wider to include hits from opposite counter ends
       #sector-specific coincidence settings
       CRVSectors                       : ["R1","R2","R3","R4","R5","R6","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
       PEthresholds                     : [  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ]
@@ -170,8 +170,8 @@ BEGIN_PROLOG
       coincidenceLayers                : [  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  4 ,  3 ,  3 ,  3 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  3 ,  3 ,  3 ,  3 ]
       #coincidence settings for overlap option
       usePulseOverlaps                 : true
-      minOverlapTimeAdjacentPulses     : 30  //30ns (=at least 2 ADC samples)
-      minOverlapTime                   : 30  //30ns (=at least 2 ADC samples)
+      minOverlapTimeAdjacentPulses     : 30  //30ns (=at least 3 ADC samples)
+      minOverlapTime                   : 30  //30ns (=at least 3 ADC samples)
       #other settings
       useNoFitReco                     : true
       usePEsPulseHeight                : false  //using the PEs that were calculated using the pulse height instead of pulse area
