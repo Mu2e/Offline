@@ -11,7 +11,7 @@ void mu2e::DbCache::add(int cid, mu2e::DbTable::cptr_t const& ptr) {
   _nAdded++;
   _size += ptr->size();
   if(_size>_hwmSize) _hwmSize = _size;
-  if(_nAdded%20==0) purge();
+  if(_nAdded%_purgeInterval==0) purge();
 
 }
 
@@ -29,7 +29,7 @@ void mu2e::DbCache::purge() {
   if(_size < _limitSize) return;
 
   _nPurges++;
-  while(_size>0.9*_limitSize) {
+  while(_size>_purgeEnd*_limitSize) {
     int cid = _cidFifo.front();
     _cidFifo.pop();
     auto it = _tables.find(cid);

@@ -16,10 +16,13 @@ namespace mu2e {
   public:
 
 
-    DbCache():_limitSize(200000000),  // 200 MB
+    DbCache():_limitSize(200000000), // 200 MB
+              _purgeInterval(20),_purgeEnd(0.9),
               _hwmSize(0),_size(0),_nPurges(0),_nPurged(0),_nAdded(0) {}
 
     void setLimitSize(int64_t limitSize) { _limitSize = limitSize; }
+    void setPurgeInterval(int purgeInterval) { _purgeInterval = purgeInterval; }
+    void setPurgeEnd(float purgeEnd) { _purgeEnd = purgeEnd; }
     void add(int cid, mu2e::DbTable::cptr_t const& ptr);
 
     bool hasTable(int cid) { return _tables.find(cid)!=_tables.end(); }
@@ -40,7 +43,9 @@ namespace mu2e {
     table_map _tables;
 
     // items needed for monitoring and purging
-    int64_t _limitSize;
+    int64_t _limitSize; // max size for cache in bytes
+    int _purgeInterval; // check purge after every purgeInterval add()'s
+    float _purgeEnd; // purge down to this fraction of the limit
     int64_t _hwmSize;
     int64_t _size;
     std::queue<int> _cidFifo;
