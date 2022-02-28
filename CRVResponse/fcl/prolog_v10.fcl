@@ -153,27 +153,28 @@ BEGIN_PROLOG
     }
     CrvCoincidenceClusterFinder:
     {
-      module_type                   : CrvCoincidenceFinder
-      verboseLevel                  : 0
-      crvRecoPulsesModuleLabel      : "CrvRecoPulses"
+      module_type                      : CrvCoincidenceFinder
+      verboseLevel                     : 0
+      crvRecoPulsesModuleLabel         : "CrvRecoPulses"
       #cluster settings
-      maxDistance                   : 400 //mm (up to 7 counters w/o offset) //was 1000 mm
-      maxTimeDifference             : 60  //ns (up to 4 ADC samples)         //was 100 ns
-      #sector specific coincidence settings
+      clusterMaxDistance               : 400 //mm
+      clusterMaxTimeDifference         : 60  //ns //when overlap option is not used
+      clusterMinOverlapTime            : 10  //ns //when overlap option is used
+      #sector-specific coincidence settings
       CRVSectors                       : ["R1","R2","R3","R4","R5","R6","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
       PEthresholds                     : [  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ]
       maxTimeDifferencesAdjacentPulses : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       maxTimeDifferences               : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 20 , 20 , 20 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
+      maxSlope                         : [ 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 ] //width direction over thickness direction
+      maxSlopeDifference               : [  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ]
       coincidenceLayers                : [  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  4 ,  3 ,  3 ,  3 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  3 ,  3 ,  3 ,  3 ]
       #coincidence settings for overlap option
-      usePulseOverlaps              : true
-      minOverlapTimeAdjacentPulses  : 30     //30ns (=at least 2 ADC samples)
-      minOverlapTime                : 30     //30ns (=at least 2 ADC samples)
-      #other coincidence settings
-      useNoFitReco                  : true
-      usePEsPulseHeight             : false  //using the PEs which were calculated using the pulse height
-      maxSlope                      : 11.0   //11.0mm over 1mm, which is a little bit more than 6 counters per layer
-      maxSlopeDifference            : 4.0    //slope difference between layers
+      usePulseOverlaps                 : true
+      minOverlapTimeAdjacentPulses     : 30  //30ns (=at least 2 ADC samples)
+      minOverlapTime                   : 30  //30ns (=at least 2 ADC samples)
+      #other settings
+      useNoFitReco                     : true
+      usePEsPulseHeight                : false  //using the PEs that were calculated using the pulse height instead of pulse area
     }
     CrvCoincidenceClusterMatchMC:
     {
