@@ -139,19 +139,34 @@ void mu2e::DbUtil::writeFile(std::string const& fn,
     throw cet::exception("DBFILE_OPEN_FAILED") << 
       "DbUtil::write failed to open "<<fn << "\n";
   }
-  for(auto livet : coll) {
-    DbTable const& tt = livet.table();
-    DbIoV const& iov = livet.iov();
-    myfile << "TABLE " << tt.name() << " " << iov.to_string(true) <<std::endl;
-    if(tt.csv().size()>0) {
+
+  // will need some logic so in the case of one cid 
+  // being used in two iovs, we only write table content once,
+  // and write both iovs on one line with the content
+  std::vector<bool> dv(coll.size(),false);
+
+  for(size_t i=0; i<coll.size(); i++) {
+    if(!dv[i]) {
+      auto const& livet = coll[i];
+      DbTable const& tt = livet.table();
+      myfile << "TABLE " << tt.name();
+      // iov's for all occurances of the i'th cid
+      for(size_t j=i; j<coll.size(); j++) {
+        auto const& livetj = coll[j];
+        if(livetj.cid()==livet.cid()) {
+          myfile << " " << livetj.iov().to_string(true);
+          dv[j] = true;
+        }
+      }
+      myfile << std::endl;
+      // error if table has rows but no content
+      // must allow for variable-length tables with no rows
+      if(tt.nrow()>0 && tt.csv().size()==0) {
+        throw cet::exception("DBWRITEFILE_NO_CONTENT") 
+          << "DbUtil::writeFile no content in table "
+          << tt.name() << " with cid " << livet.cid() << "\n";
+      }
       myfile << tt.csv();
-    } else {
-      std::ostringstream ss;
-      for(std::size_t i=0; i< tt.nrow(); i++) tt.rowToCsv(ss,i);
-      myfile << ss.str();
-  //      DbTable ttnc = tt; // we get this as const..
-  //  ttnc.toCsv();
-  //    myfile << ttnc.csv();
     }
   }
   myfile.close();
