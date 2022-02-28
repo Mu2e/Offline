@@ -216,6 +216,8 @@ void mu2e::DbEngine::addOverride(DbTableCollection const& coll) {
 
 int mu2e::DbEngine::setOverrideId() {
 
+  if(_override.empty()) return 0;
+
   int fakeTid = 10000;
   int fakeCid = 1000000;
 
@@ -237,6 +239,31 @@ int mu2e::DbEngine::setOverrideId() {
     lt.setTid(mytid);
     lt.setCid(fakeCid); // assign fake cid to label this data
     fakeCid++;
+  }
+
+  // scan the override content for internal overlaps
+  
+  bool found = false;
+  for(size_t i=0; i<_override.size()-1; i++) {
+    auto const& oi = _override[i];
+    for(size_t j=i+1; j<_override.size(); j++) {
+      auto const& oj = _override[j];
+      if(oi.tid()==oj.tid()) {
+        if(oi.iov().isOverlapping(oj.iov())!=0) {
+          found = true;
+          std::cout << "Overlap in override tables: "
+                    <<" " << oi.table().name() 
+                    <<" " << oi.iov().to_string(true)
+                    <<" " << oj.iov().to_string(true)
+                    <<"\n";
+        }
+      }
+    }
+  }
+
+  if(found) {
+    throw cet::exception("DBENGINE_OVERLAP_OVERRIDE") << 
+      "DbEngine::setOverrideId overlaps in override tables\n";
   }
 
   return 0;
