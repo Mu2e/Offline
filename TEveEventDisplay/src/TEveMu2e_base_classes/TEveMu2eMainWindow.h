@@ -89,15 +89,33 @@ namespace mu2e{
     : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addTrkHits(trkhits), addTimeClusters(timeclusters), addCryHits(cryhits), addMCTraj(mctraj) {};
    };
    
+  
+    
 	class TEveMu2eMainWindow : public TGMainFrame {
     public:
+    
+      struct GeomOptions{
+        GeomOptions(){}
+        GeomOptions( bool abuilding, bool aCRV, bool aDSOnly, bool aInsidePS )
+          : showbuilding(abuilding)
+          , showCRV(aCRV)
+          , showDSOnly(aDSOnly)
+          , showInsidePS(aInsidePS){
+        }
+
+        bool showbuilding = false;
+        bool showCRV      = false;
+        bool showDSOnly   = false;
+        bool showInsidePS = false;
+      };
+
       
       #ifndef __CINT__
       TEveMu2eMainWindow();
       TEveMu2eMainWindow(const TEveMu2eMainWindow &);
       TEveMu2eMainWindow& operator=(const TEveMu2eMainWindow &);
       
-      TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, DrawOptions drawOpts);
+      TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, const DrawOptions drawOpts, const GeomOptions geomOpts);
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
       
@@ -114,7 +132,7 @@ namespace mu2e{
       
       //GUI and geom:
       void CreateGUI();
-      void SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV);
+      void SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel);
       void RedrawDataProducts(std::string type);
      
       // for menu:
@@ -134,6 +152,7 @@ namespace mu2e{
       
       // data options
       DrawOptions DrawOpts;
+      GeomOptions GeomOpts;
       std::vector<double> *clusterenergy = 0;
       std::vector<double> *hitenergy = 0;
       std::vector<double> times;

@@ -1,5 +1,5 @@
 #include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eTracker.h"
-
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
 Int_t transpOpt = 100;
 using namespace mu2e;
 namespace mu2e{
@@ -23,7 +23,7 @@ namespace mu2e{
       double p = -dz;
       Double_t panelpos[3];
       panelpos [0] = 0.0;
-      panelpos [1] = 1000.0;
+      panelpos [1] = 0.0;
       //Tracker Planes in XZ
       for(size_t i =0;i<trkr->nPlanes()/2;i++)
         {
@@ -45,12 +45,14 @@ namespace mu2e{
       // ... Create tracker using the composite shape defined above
       TGeoMaterial *mat = new TGeoMaterial("Mylar", 12,6,1.4);
       TGeoMedium *My = new TGeoMedium("Mylar",2, mat);
-      CLHEP::Hep3Vector trackerCentrMu2e = GetTrackerCenter();
+      GeomHandle<DetectorSystem> det;
+      CLHEP::Hep3Vector trackerCentrMu2e = det->getOrigin();
+
       TGeoShape *gs = new TGeoTube("Straw Tracker",rmin,rmax,dz);
       TGeoVolume *tracker = new TGeoVolume("Straw Tracker ",gs, My);
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
-      topvol->AddNode(tracker, 1, new TGeoTranslation(-390.4,+1000,1017.1));  // FIXME - hardcoded number
+      topvol->AddNode(tracker, 1, new TGeoTranslation(trackerCentrMu2e.x()/10, trackerCentrMu2e.y()/10, trackerCentrMu2e.z()/10));  
      
       //Stopping Target 
       GeomHandle<StoppingTarget> target;
@@ -69,7 +71,7 @@ namespace mu2e{
       
         CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
 
-        CLHEP::Hep3Vector foilposition(center.x() ,1000+center.y(),pointmmTocm(startz+j)); // Stopping Target Location
+        CLHEP::Hep3Vector foilposition(center.x() ,center.y(),pointmmTocm(startz+j)); // Stopping Target Location
       
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
@@ -109,7 +111,7 @@ namespace mu2e{
         Double_t crystalpos[3];
         for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++){
 
-          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() + CLHEP::Hep3Vector(0.0, 10000.0, (-holeDZ+frontPanelHalfThick)) - _detSysOrigin;
+          CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() + CLHEP::Hep3Vector(0.0, 0.0, (-holeDZ+frontPanelHalfThick)) - _detSysOrigin;
           double diskXZwidth = diskOuterRailOut + diskInnerRingIn;
           crystalpos [0] = pointmmTocm(diskPos.x());
           crystalpos [2] = pointmmTocm(diskPos.z());
