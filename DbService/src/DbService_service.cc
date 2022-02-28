@@ -77,6 +77,19 @@ namespace mu2e {
       _engine.reader().setTimeout(retryTimeout);
     }
 
+    int64_t cacheLimit;
+    if(_config.cacheParameters().cacheLimit(cacheLimit)) {
+      _engine.cache().setLimitSize(cacheLimit);
+    }
+    int purgeInterval;
+    if(_config.cacheParameters().purgeInterval(purgeInterval)) {
+      _engine.cache().setPurgeInterval(purgeInterval);
+    }
+    float purgeEnd;
+    if(_config.cacheParameters().purgeEnd(purgeEnd)) {
+      _engine.cache().setPurgeEnd(purgeEnd);
+    }
+
 
     // service will start calling the database at the first event,
     // so the service can exist without the DB being contacted.  
