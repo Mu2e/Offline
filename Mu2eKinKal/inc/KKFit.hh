@@ -53,7 +53,7 @@ namespace mu2e {
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using TCA = KinKal::ClosestApproach<KTRAJ,Line>;
-      using KKHIT = KinKal::HitConstraint<KTRAJ>;
+      using KKHIT = KinKal::Measurement<KTRAJ>;
       using KKMAT = KinKal::Material<KTRAJ>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
@@ -210,6 +210,9 @@ namespace mu2e {
     // build the set of existing hits
     std::set<StrawHitIndex> oldhits;
     for(auto const& strawhit : kktrk.strawHits())oldhits.insert(strawhit->strawHitIndex());
+    std::set<StrawId> oldstraws;
+    for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
+    for(auto const& strawxing : exings)oldstraws.insert(strawxing->strawId());
     for( size_t ich=0; ich < chcol.size();++ich){
       if(oldhits.find(ich)==oldhits.end()){      // make sure this hit wasn't already found
         ComboHit const& strawhit = chcol[ich];
@@ -224,8 +227,8 @@ namespace mu2e {
             // compute PTCA between the trajectory and this straw
             PTCA ptca(ftraj, wline, hint, tprec_ );
             if(fabs(ptca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
-              if(addmat_)exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
               hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, rstraw, strawhit, straw, ich, strawresponse));
+              if(addmat_ && oldstraws.find(straw.id()) == oldstraws.end())exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
             }
           }
         }
