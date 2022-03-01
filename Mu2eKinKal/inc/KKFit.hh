@@ -453,16 +453,16 @@ namespace mu2e {
       for(auto const& matxing : sxing->matXings()){
         if(matxing.dmat_.name().compare(5,3,"gas",3)==0)gaspath = matxing.plen_;
         radfrac += matxing.dmat_.radiationFraction(matxing.plen_);
-        auto const& tpocad = sxing->closestApproach();
-        fseed._straws.emplace_back(sxing->strawId(),
-            tpocad.doca(),
-            tpocad.particleToca(),
-            tpocad.sensorToca(),
-            gaspath,
-            radfrac,
-            dm.R(),
-            sxing->active() );
       }
+      auto const& tpocad = sxing->closestApproach();
+      fseed._straws.emplace_back(sxing->strawId(),
+          tpocad.doca(),
+          tpocad.particleToca(),
+          tpocad.sensorToca(),
+          gaspath,
+          radfrac,
+          dm.R(),
+          sxing->active() );
     }
     // sample the fit at the requested times and save those segments.  Uniqueness needs to be checked in the calling function
     fseed._segments.reserve(savetimes.size());
