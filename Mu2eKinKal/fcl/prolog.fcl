@@ -47,13 +47,9 @@ Mu2eKinKal : {
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 10.0 ],
-      [ 2.0 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
-       [ 30.0, 1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ]
+      [ 30.0,  1e-6, 10.0, 5.0  ]
     ]
   }
 
@@ -69,14 +65,10 @@ Mu2eKinKal : {
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 0.0 ],
-      [ 2.0 ],
-      [ 1.0 ],
-      [ 0.0 ]]
+      [ 0.0 ]
+    ]
     KKStrawHitUpdaterSettings : [
-       [ 30.0, 1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ]
+      [ 30.0,  1e-6, 10.0, 5.0  ]
     ]
   }
 
@@ -95,7 +87,7 @@ Mu2eKinKal : {
       [ 0.0 ]
     ]
     KKStrawHitUpdaterSettings : [
-       [ 30.0, 1e-5, 10.0, 5.0  ]
+      [ 30.0, 1e-6, 10.0, 5.0  ]
     ]
   }
 
