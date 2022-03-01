@@ -81,8 +81,8 @@ namespace mu2e {
     uint32_t endRun() const {return _endRun;}
     uint32_t endSubrun() const {return _endSubrun;}
 
-    uint32_t maxRun() const { return maxr; }
-    uint32_t maxSubrun() const { return maxsr; }
+    static uint32_t maxRun() { return maxr; }
+    static uint32_t maxSubrun() { return maxsr; }
 
     // in format: run subrun run subrun
     std::string simpleString() const;

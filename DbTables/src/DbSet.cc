@@ -30,10 +30,10 @@ DbSet::EIoV DbSet::find(int tid, uint32_t run, uint32_t subrun) const {
   // if no return above, then find a nearby entry, if requested
   if(_nearestMatch) {
     EIoV br;
-    int brr=br.iov().maxRun(), bsr=br.iov().maxSubrun();
+    int brr = DbIoV::maxRun(), bsr = DbIoV::maxSubrun();
     for(auto const& r : iter->second) { // find closest entry
       int dr = run - r.iov().endRun();
-      int ds = subrun + r.iov().maxSubrun() - r.iov().endSubrun();
+      int ds = subrun + DbIoV::maxSubrun() - r.iov().endSubrun();
       if(dr==0) ds = subrun - r.iov().endSubrun();
       if( dr>0 && ds>0 && (dr<brr || ( dr==brr && ds<bsr) ) ) {
         brr = dr;

@@ -1975,7 +1975,7 @@ int mu2e::DbTool::commitPatch() {
 	    oeiov.iov().subtract(neiov.iov());
 	    oeiov.setIid(-1);  // this iov is modified, early split
 	    // create late split
-	    temp.subtract(neiov.iov(),temp.maxRun(),temp.maxSubrun());
+	    temp.subtract(neiov.iov(),DbIoV::maxRun(),DbIoV::maxSubrun());
 	    // put it on the list to continue being checked
 	    tpr.second.emplace_back(-1,oeiov.cid(),temp);
 	  } else if(over>0) { // partial overlap
@@ -2220,7 +2220,7 @@ int mu2e::DbTool::verifySet() {
 	  if(over==4) { //the iov is split
 	    DbIoV temp = *it;
 	    // find the high-end split part
-	    temp.subtract(jj,jj.maxRun(),jj.maxSubrun());
+	    temp.subtract(jj,DbIoV::maxRun(),DbIoV::maxSubrun());
 	    // add the high-end split part to the list of pieces to be checked
 	    if(!temp.isNull()) list.emplace_back(temp);
 	  } // end over==4
