@@ -161,13 +161,216 @@ BEGIN_PROLOG
       clusterMaxTimeDifference         : 60  //ns //when overlap option is not used
       clusterMinOverlapTime            : -5  //ns //when overlap option is used //needs to be wider to include hits from opposite counter ends
       #sector-specific coincidence settings
-      CRVSectors                       : ["R1","R2","R3","R4","R5","R6","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
-      PEthresholds                     : [  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ,  8 ]
-      maxTimeDifferencesAdjacentPulses : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
-      maxTimeDifferences               : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 20 , 20 , 20 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
-      maxSlope                         : [ 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 , 11 ] //width direction over thickness direction
-      maxSlopeDifference               : [  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ]
-      coincidenceLayers                : [  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  4 ,  3 ,  3 ,  3 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  3 ,  3 ,  3 ,  3 ]
+      sectorConfig :
+      [
+        {
+          CRVSector : "R1"
+          PEthreshold : 8  //PEs
+          maxTimeDifferenceAdjacentPulses : 10  //ns
+          maxTimeDifference : 10  //ns
+          maxSlope : 11  //width direction over thickness direction
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "R2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "R3"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "R4"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "R5"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "R6"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "L1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "L2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "T1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 20  //because of single-ended readout
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "T2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 20  //because of single-ended readout
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "T3"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 20  //to increase veto efficiency
+          maxTimeDifference : 20  //to increase veto efficiency
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "T4"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 20  //to increase veto efficiency
+          maxTimeDifference : 20  //to increase veto efficiency
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "E1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 20  //because of single-ended readout
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "E2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 20  //because of single-ended readout
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "U"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 20  //because of single-ended readout
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "D1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "D2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "D3"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "D4"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 4   //to suppress high rate
+        },
+        {
+          CRVSector : "C1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "C2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "C3"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        },
+        {
+          CRVSector : "C4"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+        }
+      ]
       #coincidence settings for overlap option
       usePulseOverlaps                 : true
       minOverlapTimeAdjacentPulses     : 30  //30ns (=at least 3 ADC samples)
