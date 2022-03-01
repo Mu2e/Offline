@@ -29,6 +29,18 @@ namespace mu2e
   class CrvCoincidenceFinder : public art::EDProducer 
   {
     public:
+    struct SectorConfig
+    {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<std::string> CRVSector{Name("CRVSector"), Comment("CRV sector")};
+      fhicl::Atom<int> PEthreshold{Name("PEthreshold"), Comment("PE threshold required for a coincidence")};
+      fhicl::Atom<double> maxTimeDifferenceAdjacentPulses{Name("maxTimeDifferenceAdjacentPulses"), Comment("maximum time difference of pulses of adjacent channels considered for coincidences")};
+      fhicl::Atom<double> maxTimeDifference{Name("maxTimeDifference"), Comment("maximum time difference of a coincidence hit combination")};
+      fhicl::Atom<double> maxSlope{Name("maxSlope"), Comment("maximum slope allowed for a coincidence")};
+      fhicl::Atom<double> maxSlopeDifference{Name("maxSlopeDifference"), Comment("maximum slope difference between layers allowed for a coincidence")};
+      fhicl::Atom<int> coincidenceLayers{Name("coincidenceLayers"), Comment("number of layers required for a coincidence")};
+    };
     struct Config
     {
       using Name=fhicl::Name;
@@ -40,13 +52,7 @@ namespace mu2e
       fhicl::Atom<double> clusterMaxTimeDifference{Name("clusterMaxTimeDifference"), Comment("maximum time difference between hits to be considered for a hit cluster (when overlap option is not used)")};
       fhicl::Atom<double> clusterMinOverlapTime{Name("clusterMinOverlapTime"), Comment("minimum overlap time between hits to be considered for a hit cluster (when overlap option is used)")};
       //sector-specific coincidence settings
-      fhicl::Sequence<std::string> CRVSectors{Name("CRVSectors"), Comment("CRV sectors")};
-      fhicl::Sequence<int> PEthresholds{Name("PEthresholds"), Comment("PE thresholds required for a coincidence")};
-      fhicl::Sequence<double> maxTimeDifferencesAdjacentPulses{Name("maxTimeDifferencesAdjacentPulses"), Comment("maximum time differences of pulses of adjacent channels considered for coincidences")};
-      fhicl::Sequence<double> maxTimeDifferences{Name("maxTimeDifferences"), Comment("maximum time differences of a coincidence hit combination")};
-      fhicl::Sequence<double> maxSlope{Name("maxSlope"), Comment("maximum slope allowed for a coincidence")};
-      fhicl::Sequence<double> maxSlopeDifference{Name("maxSlopeDifference"), Comment("maximum slope differences between layers allowed for a coincidence")};
-      fhicl::Sequence<int> coincidenceLayers{Name("coincidenceLayers"), Comment("number of layers required for a coincidence")};
+      fhicl::Sequence<fhicl::Table<SectorConfig> > sectorConfig{Name("sectorConfig"), Comment("sector-specific settings")};
       //coincidence settings for overlap option
       fhicl::Atom<bool> usePulseOverlaps{Name("usePulseOverlaps"), Comment("use pulse overlaps instead of peak times to determine coincidences")};
       fhicl::Atom<double> minOverlapTimeAdjacentPulses{Name("minOverlapTimeAdjacentPulses"), Comment("minimum overlap time between pulses of adjacent channels to be considered for coincidences")};
@@ -72,13 +78,7 @@ namespace mu2e
     double                   _clusterMaxTimeDifference;
     double                   _clusterMinOverlapTime;
 
-    std::vector<std::string> _CRVSectors;
-    std::vector<int>         _PEthresholds;
-    std::vector<double>      _maxTimeDifferencesAdjacentPulses;
-    std::vector<double>      _maxTimeDifferences;
-    std::vector<double>      _maxSlope;
-    std::vector<double>      _maxSlopeDifference;
-    std::vector<int>         _coincidenceLayers;
+    std::vector<SectorConfig> _sectorConfig;
 
     bool        _usePulseOverlaps;
     double      _minOverlapTimeAdjacentPulses;
@@ -152,13 +152,7 @@ namespace mu2e
     _clusterMaxDistance(conf().clusterMaxDistance()),
     _clusterMaxTimeDifference(conf().clusterMaxTimeDifference()),
     _clusterMinOverlapTime(conf().clusterMinOverlapTime()),
-    _CRVSectors(conf().CRVSectors()),
-    _PEthresholds(conf().PEthresholds()),
-    _maxTimeDifferencesAdjacentPulses(conf().maxTimeDifferencesAdjacentPulses()),
-    _maxTimeDifferences(conf().maxTimeDifferences()),
-    _maxSlope(conf().maxSlope()),
-    _maxSlopeDifference(conf().maxSlopeDifference()),
-    _coincidenceLayers(conf().coincidenceLayers()),
+    _sectorConfig(conf().sectorConfig()),
     _usePulseOverlaps(conf().usePulseOverlaps()),
     _minOverlapTimeAdjacentPulses(conf().minOverlapTimeAdjacentPulses()),
     _minOverlapTime(conf().minOverlapTime()),
@@ -189,7 +183,7 @@ namespace mu2e
     //-from the fcl parameters
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<CRSScintillatorShield> &sectors = CRS->getCRSScintillatorShields();
-    for(unsigned int i=0; i<sectors.size(); ++i)
+    for(size_t i=0; i<sectors.size(); ++i)
     {
       sectorCoincidenceProperties s;
       s.precedingCounters=0;
@@ -213,17 +207,17 @@ namespace mu2e
       s.thicknessDirection=sectors[i].getCRSScintillatorBarDetail().getThicknessDirection();
 
       std::string sectorName = sectors[i].getName().substr(4); //removes the "CRV_" part
-      std::vector<std::string>::iterator userPropertyIter=std::find(_CRVSectors.begin(), _CRVSectors.end(), sectorName);
-      if(userPropertyIter==_CRVSectors.end())
+      std::vector<SectorConfig>::iterator sectorConfigIter=std::find_if(_sectorConfig.begin(), _sectorConfig.end(),
+                                                                        [sectorName](const SectorConfig &s){return s.CRVSector()==sectorName;});
+      if(sectorConfigIter==_sectorConfig.end())
         throw std::logic_error("CrvCoincidenceFinder: The geometry has a CRV sector for which no coincidence properties were defined in the fcl file.");
-      int userPropertyPosition = std::distance(_CRVSectors.begin(),userPropertyIter);  //that's the position of the vector in the fcl file which sets PE thresholds, time differences, etc.
 
-      s.PEthreshold                     = _PEthresholds[userPropertyPosition];
-      s.maxTimeDifferenceAdjacentPulses = _maxTimeDifferencesAdjacentPulses[userPropertyPosition];
-      s.maxTimeDifference               = _maxTimeDifferences[userPropertyPosition];
-      s.maxSlope                        = _maxSlope[userPropertyPosition];
-      s.maxSlopeDifference              = _maxSlopeDifference[userPropertyPosition];
-      s.coincidenceLayers               = _coincidenceLayers[userPropertyPosition];
+      s.PEthreshold                     = sectorConfigIter->PEthreshold();
+      s.maxTimeDifferenceAdjacentPulses = sectorConfigIter->maxTimeDifferenceAdjacentPulses();
+      s.maxTimeDifference               = sectorConfigIter->maxTimeDifference();
+      s.maxSlope                        = sectorConfigIter->maxSlope();
+      s.maxSlopeDifference              = sectorConfigIter->maxSlopeDifference();
+      s.coincidenceLayers               = sectorConfigIter->coincidenceLayers();
 
       _sectorMap[i]=s;
     }
