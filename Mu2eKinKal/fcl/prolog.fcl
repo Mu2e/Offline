@@ -51,6 +51,9 @@ Mu2eKinKal : {
       [ 2.0 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
+       [ 30.0, 1e-5, 10.0, 5.0  ],
+       [ 30.0,  1e-5, 10.0, 5.0  ],
+       [ 30.0,  1e-5, 10.0, 5.0  ]
     ]
   }
 
@@ -59,22 +62,21 @@ Mu2eKinKal : {
     MinNDOF : 5
     MaxNIter : 10
     Deweight : 1.0e6
-    ConvergenceDeltaChisq : 1.0
+    ConvergenceDeltaChisq : 0.1
     DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
     TimeBuffer : 0.0 # ns
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      [ 0.0 ],
       [ 2.0 ],
       [ 1.0 ],
-      [ 0.5 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
-       [ 10.0, 1e-10, 5.0, 5.0  ],
-       [ 8.0,  1e-10, 5.0, 5.0  ],
-       [ 8.0,  1e-10, 5.0, 5.0  ],
-       [ 8.0,  1e-10, 5.0, 5.0  ]
+       [ 30.0, 1e-5, 10.0, 5.0  ],
+       [ 30.0,  1e-5, 10.0, 5.0  ],
+       [ 30.0,  1e-5, 10.0, 5.0  ]
     ]
   }
 
@@ -93,11 +95,12 @@ Mu2eKinKal : {
       [ 0.0 ]
     ]
     KKStrawHitUpdaterSettings : [
+       [ 30.0, 1e-5, 10.0, 5.0  ]
     ]
   }
 
   KKDRIFTEXT: {
-    PrintLevel : 1
+    PrintLevel : 0
     MinNDOF : 5
     MaxNIter : 10
     Deweight : 1.0e6
@@ -108,16 +111,16 @@ Mu2eKinKal : {
     BFieldCorrection : true
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      [ 0.0 ],
       [ 2.0 ],
       [ 1.0 ],
-      [ 0.5 ],
       [ 0.0 ]
     ]
     KKStrawHitUpdaterSettings : [
-       [ 5.0, 1e-10, 1.0, 4.0 ],
-       [ 4.0, 1e-10, 1.0, 3.0 ],
-       [ 3.0, 1e-10, 1.0, 2.8 ],
-       [ 2.8, 1e-10, 0.5, 2.8 ]
+       [ 30.0,  1e-5, 10.0, 5.0  ],
+       [ 6.0, 1e-5, 0.5, 5.0 ],
+       [ 6.0, 1e-5, 0.5, 5.0 ],
+       [ 6.0, 1e-5, 0.5, 5.0 ]
     ]
   }
 
