@@ -40,7 +40,7 @@ void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
     uint32_t es = iov.startSubrun();
     if(es==0) {
       er--;
-      es = maxsr;
+      es = maxSubrun();
     } else {
       es--;
     }
@@ -49,7 +49,7 @@ void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
   } else if(method==2) { // subtract start to middle
     uint32_t sr = iov.endRun();
     uint32_t ss = iov.endSubrun();
-    if(ss==maxsr) {
+    if(ss==maxSubrun()) {
       sr++;
       ss = 0;
     } else {
@@ -133,11 +133,11 @@ std::string mu2e::DbIoV::to_string(bool compress) const {
     if(startSubrun()!=0 || (oner && onesr)) {
       ss << ":"<< startSubrun();
     }
-    bool wholerun = ( startSubrun()==0 && endSubrun()==maxsr );
+    bool wholerun = ( startSubrun()==0 && endSubrun()==maxSubrun() );
     bool drop = oner && (onesr || wholerun );
     if(!drop) {
       ss << "-" << endRun();
-      if(endSubrun()!=maxsr) {
+      if(endSubrun()!=maxSubrun()) {
 	ss << ":" << endSubrun();
       }
     }
@@ -207,7 +207,7 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
   }
 
   boost::split(words,end, boost::is_any_of(":"),boost::token_compress_on);
-  uint32_t endr = maxr, endsr = maxsr;
+  uint32_t endr = maxRun(), endsr = maxSubrun();
   if(words.size()>=1) {
     if(words[0]!="MAX") {
       endr  = std::stoi(words[0]);

@@ -33,8 +33,8 @@ namespace mu2e {
     void setMax() {
       _startRun = 0;
       _startSubrun = 0;
-      _endRun = maxr;
-      _endSubrun = maxsr;
+      _endRun = maxRun();
+      _endSubrun = maxSubrun();
     }
 
     void setNull() {
@@ -81,8 +81,8 @@ namespace mu2e {
     uint32_t endRun() const {return _endRun;}
     uint32_t endSubrun() const {return _endSubrun;}
 
-    static uint32_t maxRun() { return maxr; }
-    static uint32_t maxSubrun() { return maxsr; }
+    constexpr static uint32_t maxRun()    { return 999999; }
+    constexpr static uint32_t maxSubrun() { return 999999; }
 
     // in format: run subrun run subrun
     std::string simpleString() const;
@@ -90,8 +90,6 @@ namespace mu2e {
     std::string to_string(bool compress = false) const;
 
   private:
-    static const uint32_t maxsr = 999999;
-    static const uint32_t maxr  = 999999;
     
     uint32_t _startRun;
     uint32_t _startSubrun;
