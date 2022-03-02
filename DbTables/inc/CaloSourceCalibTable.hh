@@ -1,5 +1,5 @@
-#ifndef DbTables_CaloSourceCalibeTable_hh
-#define DbTables_CaloSourceCalibeTable_hh
+#ifndef DbTables_CaloSourceCalibTable_hh
+#define DbTables_CaloSourceCalibTable_hh
 
 
 #include <string>
@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-  class CaloSourceCalibeTable : public DbTable {
+  class CaloSourceCalibTable : public DbTable {
   public:
 
     class Row {
@@ -23,15 +23,15 @@ namespace mu2e {
       float     chisq() const { return _chisq; }
 
     private:
-      int   _roid;
+      int   _roid; // assume Offline ID (otherwise needs to be Long_64)
       float _Peak;
       float _Esource;
       float _chisq;
     };
 
-    constexpr static const char* cxname = "CaloSourceCalibeTable";
+    constexpr static const char* cxname = "CaloSourceCalibTable";
 
-    CaloSourceCalibeTable():DbTable(cxname,"calosourcecalib",
+    CaloSourceCalibTable():DbTable(cxname,"calosourcecalib",
 			"roid,Peak,Esource,chisq") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
@@ -70,6 +70,7 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
+    std::map<int,std::size_t> _chanIndex;
   };
   
 };

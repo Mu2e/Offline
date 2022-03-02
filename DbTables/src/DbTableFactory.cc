@@ -15,6 +15,7 @@
 #include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
 #include "Offline/DbTables/inc/SimEfficiencies2.hh"
+#include "Offline/DbTables/inc/CaloSourceCalibTable.hh"
 
 mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   if (name=="TstCalib1") {
@@ -55,7 +56,10 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
   } else if (name=="CalRoIDMapOfflineToDIRAC") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());    
-  } else {
+  } else if (name=="CaloSourceCalibTable") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CaloSourceCalibTable());    
+  }
+  else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
       << "DbTableFactory::newTable call with bad table name: "+name+"\n";
 
