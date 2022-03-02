@@ -312,10 +312,6 @@ namespace mu2e
         //check whether this hit cluster has coincidences
         //(separately for both readout sides)
         //and fill all hits belonging to a coincidence group into a new multiset.
-        //this new multiset may have several entries of the same hit, 
-        //if the hit belongs to multiple coincidence groups.
-        //this gives more weight to such hits when calculating 
-        //cluster average times/positions below.
         std::multiset<CrvHit> coincidenceHits;
         checkCoincidence(cluster0,coincidenceHits);
         checkCoincidence(cluster1,coincidenceHits);
@@ -521,7 +517,7 @@ namespace mu2e
   } //end finder clusters
 
 
-  void CrvCoincidenceFinder::checkCoincidence(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &coincidenceHits)
+  void CrvCoincidenceFinder::checkCoincidence(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &coincidenceHitsPosOrdered)
   {
     std::vector<CrvHit> hitsLayers[nLayers];  //separated by layers 
     std::vector<CrvHit>::const_iterator iterHit;
@@ -530,6 +526,13 @@ namespace mu2e
       int    layer=iterHit->_layer;
       hitsLayers[layer].push_back(*iterHit);
     }
+
+    //we want to collect all hits belonging to coincidence groups,
+    //but avoid collecting hits multiple times, if they belong to different coincidence groups.
+    //can be done by placing them into a set, where the sorting is done w.r.t. to the reco pulse.
+    //need to overwrite the position ordering defined in the CrvHit struct
+    auto recoPulseCompare = [](const CrvHit &a, const CrvHit &b) {return a._crvRecoPulse < b._crvRecoPulse;};
+    std::set<CrvHit,decltype(recoPulseCompare)> coincidenceHits(recoPulseCompare);
 
     //***************************************************
     //find coincidences using 2/4 coincidence requirement
@@ -562,7 +565,6 @@ namespace mu2e
         }
       }
     }  //two layer coincidences
-    if(!coincidenceHits.empty()) return;
 
     //***************************************************
     //find coincidences using 3/4 coincidence requirement
@@ -601,7 +603,6 @@ namespace mu2e
         }
       }
     }  //three layer coincidences
-    if(!coincidenceHits.empty()) return;
 
     //***************************************************
     //find coincidences using 4/4 coincidence requirement
@@ -637,6 +638,10 @@ namespace mu2e
         }
       }
     } // four layer coincidences
+
+    //move the set of coincidence hits to a position ordered multiset
+    coincidenceHitsPosOrdered.insert(coincidenceHits.begin(), coincidenceHits.end());
+
   } //end check coincidence
 
 
