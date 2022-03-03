@@ -157,9 +157,9 @@ BEGIN_PROLOG
       verboseLevel                     : 0
       crvRecoPulsesModuleLabel         : "CrvRecoPulses"
       #cluster settings
-      clusterMaxDistance               : 400 //mm
+      clusterMaxDistance               : 250 //mm
       clusterMaxTimeDifference         : 60  //ns //when overlap option is not used
-      clusterMinOverlapTime            : -5  //ns //when overlap option is used //needs to be wider to include hits from opposite counter ends
+      clusterMinOverlapTime            : 30  //ns //when overlap option is used //needs to be wider to include hits from opposite counter ends
       #sector-specific coincidence settings
       sectorConfig :
       [

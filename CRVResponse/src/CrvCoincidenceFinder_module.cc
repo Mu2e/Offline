@@ -459,60 +459,70 @@ namespace mu2e
     {
       clusters.resize(clusters.size()+1); //add a new cluster
       std::vector<CrvHit> &cluster = clusters.back();
+
+      //need to loop several times to check the unused hits until the cluster size remains stable
       double lastX=0;
-      for(auto hitsIter=hits.begin(); hitsIter!=hits.end(); )
+      size_t lastClusterSize=0;
+      do
       {
-        if(cluster.empty())
-        {
-          //first element of current cluster
-          //gets moved from set of hits to the current cluster
-          lastX=hitsIter->_x;
-          cluster.push_back(*hitsIter);
-          hitsIter=hits.erase(hitsIter);
-        }
-        else
-        {
-          if(hitsIter->_x-lastX>_clusterMaxDistance) break; //cannot expect any other entries to be close enough to current cluster
+        lastClusterSize=cluster.size();
 
-          //check whether current hit satisfies time and distance condition w.r.t. to any hit of current cluster
-          bool erasedHit=false;
-          for(auto clusterIter=cluster.begin(); clusterIter!=cluster.end(); ++clusterIter)
+        for(auto hitsIter=hits.begin(); hitsIter!=hits.end(); )
+        {
+          if(cluster.empty())
           {
-            if(_usePulseOverlaps)
-            {
-              if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
-                 (hitsIter->_timePulseEnd-clusterIter->_timePulseStart>_clusterMinOverlapTime) && 
-                 (clusterIter->_timePulseEnd-hitsIter->_timePulseStart>_clusterMinOverlapTime))
-              {
-                //this hit satisfied the conditions
-                //move it from set of hits to the current cluster
-                if(hitsIter->_x>lastX) lastX=hitsIter->_x;
-                cluster.push_back(*hitsIter);
-                hitsIter=hits.erase(hitsIter);
-                erasedHit=true;
-                break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
-              }
-            }
-            else
-            {
-              if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
-                 (std::fabs(hitsIter->_time-clusterIter->_time)<_clusterMaxTimeDifference))
-              {
-                //this hit satisfied the conditions
-                //move it from set of hits to the current cluster
-                if(hitsIter->_x>lastX) lastX=hitsIter->_x;
-                cluster.push_back(*hitsIter);
-                hitsIter=hits.erase(hitsIter);
-                erasedHit=true;
-                break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
-              }
-            }
-          } //loop over all hits in the cluster (for comparison with current hit)
+            //first element of current cluster
+            //gets moved from set of hits to the current cluster
+            lastX=hitsIter->_x;
+            cluster.push_back(*hitsIter);
+            hitsIter=hits.erase(hitsIter);
+          }
+          else
+          {
+            if(hitsIter->_x-lastX>_clusterMaxDistance) break; //cannot expect any other entries to be close enough to current cluster
 
-          if(!erasedHit) ++hitsIter;
+            //check whether current hit satisfies time and distance condition w.r.t. to any hit of current cluster
+            bool erasedHit=false;
+            for(auto clusterIter=cluster.begin(); clusterIter!=cluster.end(); ++clusterIter)
+            {
+              if(_usePulseOverlaps)
+              {
+                if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
+                   (hitsIter->_timePulseEnd-clusterIter->_timePulseStart>_clusterMinOverlapTime) && 
+                   (clusterIter->_timePulseEnd-hitsIter->_timePulseStart>_clusterMinOverlapTime))
+                {
+                  //this hit satisfied the conditions
+                  //move it from set of hits to the current cluster
+                  if(hitsIter->_x>lastX) lastX=hitsIter->_x;
+                  cluster.push_back(*hitsIter);
+                  hitsIter=hits.erase(hitsIter);
+                  erasedHit=true;
+                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
+                }
+              }
+              else
+              {
+                if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
+                   (std::fabs(hitsIter->_time-clusterIter->_time)<_clusterMaxTimeDifference))
+                {
+                  //this hit satisfied the conditions
+                  //move it from set of hits to the current cluster
+                  if(hitsIter->_x>lastX) lastX=hitsIter->_x;
+                  cluster.push_back(*hitsIter);
+                  hitsIter=hits.erase(hitsIter);
+                  erasedHit=true;
+                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
+                }
+              }
+            } //loop over all hits in the cluster (for comparison with current hit)
 
-        } //cluster not empty 
-      } //loop over all undistributed hits
+            if(!erasedHit) ++hitsIter;
+
+          } //cluster not empty 
+        } //loop over all undistributed hits
+
+      } while(lastClusterSize!=cluster.size()); //loop until cluster does not change anymore
+
     } //loop until all hits in set of hits distributed into clusters
   } //end finder clusters
 
