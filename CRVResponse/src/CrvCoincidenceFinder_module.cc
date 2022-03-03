@@ -312,10 +312,6 @@ namespace mu2e
         //check whether this hit cluster has coincidences
         //(separately for both readout sides)
         //and fill all hits belonging to a coincidence group into a new multiset.
-        //this new multiset may have several entries of the same hit, 
-        //if the hit belongs to multiple coincidence groups.
-        //this gives more weight to such hits when calculating 
-        //cluster average times/positions below.
         std::multiset<CrvHit> coincidenceHits;
         checkCoincidence(cluster0,coincidenceHits);
         checkCoincidence(cluster1,coincidenceHits);
@@ -463,66 +459,78 @@ namespace mu2e
     {
       clusters.resize(clusters.size()+1); //add a new cluster
       std::vector<CrvHit> &cluster = clusters.back();
+
+      //need to loop several times to check the unused hits until the cluster size remains stable
       double lastX=0;
-      for(auto hitsIter=hits.begin(); hitsIter!=hits.end(); )
+      size_t lastClusterSize=0;
+      do
       {
-        if(cluster.empty())
-        {
-          //first element of current cluster
-          //gets moved from set of hits to the current cluster
-          lastX=hitsIter->_x;
-          cluster.push_back(*hitsIter);
-          hitsIter=hits.erase(hitsIter);
-        }
-        else
-        {
-          if(hitsIter->_x-lastX>_clusterMaxDistance) break; //cannot expect any other entries to be close enough to current cluster
+        lastClusterSize=cluster.size();
 
-          //check whether current hit satisfies time and distance condition w.r.t. to any hit of current cluster
-          bool erasedHit=false;
-          for(auto clusterIter=cluster.begin(); clusterIter!=cluster.end(); ++clusterIter)
+        for(auto hitsIter=hits.begin(); hitsIter!=hits.end(); )
+        {
+          if(cluster.empty())
           {
-            if(_usePulseOverlaps)
-            {
-              if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
-                 (hitsIter->_timePulseEnd-clusterIter->_timePulseStart>_clusterMinOverlapTime) && 
-                 (clusterIter->_timePulseEnd-hitsIter->_timePulseStart>_clusterMinOverlapTime))
-              {
-                //this hit satisfied the conditions
-                //move it from set of hits to the current cluster
-                if(hitsIter->_x>lastX) lastX=hitsIter->_x;
-                cluster.push_back(*hitsIter);
-                hitsIter=hits.erase(hitsIter);
-                erasedHit=true;
-                break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
-              }
-            }
-            else
-            {
-              if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
-                 (std::fabs(hitsIter->_time-clusterIter->_time)<_clusterMaxTimeDifference))
-              {
-                //this hit satisfied the conditions
-                //move it from set of hits to the current cluster
-                if(hitsIter->_x>lastX) lastX=hitsIter->_x;
-                cluster.push_back(*hitsIter);
-                hitsIter=hits.erase(hitsIter);
-                erasedHit=true;
-                break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
-              }
-            }
-          } //loop over all hits in the cluster (for comparison with current hit)
+            //first element of current cluster
+            //gets moved from set of hits to the current cluster
+            lastX=hitsIter->_x;
+            cluster.push_back(*hitsIter);
+            hitsIter=hits.erase(hitsIter);
+          }
+          else
+          {
+            if(hitsIter->_x-lastX>_clusterMaxDistance) break; //cannot expect any other entries to be close enough to current cluster
 
-          if(!erasedHit) ++hitsIter;
+            //check whether current hit satisfies time and distance condition w.r.t. to any hit of current cluster
+            bool erasedHit=false;
+            for(auto clusterIter=cluster.begin(); clusterIter!=cluster.end(); ++clusterIter)
+            {
+              if(_usePulseOverlaps)
+              {
+                if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
+                   (hitsIter->_timePulseEnd-clusterIter->_timePulseStart>_clusterMinOverlapTime) && 
+                   (clusterIter->_timePulseEnd-hitsIter->_timePulseStart>_clusterMinOverlapTime))
+                {
+                  //this hit satisfied the conditions
+                  //move it from set of hits to the current cluster
+                  if(hitsIter->_x>lastX) lastX=hitsIter->_x;
+                  cluster.push_back(*hitsIter);
+                  hitsIter=hits.erase(hitsIter);
+                  erasedHit=true;
+                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
+                }
+              }
+              else
+              {
+                if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
+                   (std::fabs(hitsIter->_time-clusterIter->_time)<_clusterMaxTimeDifference))
+                {
+                  //this hit satisfied the conditions
+                  //move it from set of hits to the current cluster
+                  if(hitsIter->_x>lastX) lastX=hitsIter->_x;
+                  cluster.push_back(*hitsIter);
+                  hitsIter=hits.erase(hitsIter);
+                  erasedHit=true;
+                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
+                }
+              }
+            } //loop over all hits in the cluster (for comparison with current hit)
 
-        } //cluster not empty 
-      } //loop over all undistributed hits
+            if(!erasedHit) ++hitsIter;
+
+          } //cluster not empty 
+        } //loop over all undistributed hits
+
+      } while(lastClusterSize!=cluster.size()); //loop until cluster does not change anymore
+
     } //loop until all hits in set of hits distributed into clusters
   } //end finder clusters
 
 
-  void CrvCoincidenceFinder::checkCoincidence(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &coincidenceHits)
+  void CrvCoincidenceFinder::checkCoincidence(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &coincidenceHitsPosOrdered)
   {
+    if(hits.empty()) return;
+
     std::vector<CrvHit> hitsLayers[nLayers];  //separated by layers 
     std::vector<CrvHit>::const_iterator iterHit;
     for(iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit)
@@ -531,8 +539,20 @@ namespace mu2e
       hitsLayers[layer].push_back(*iterHit);
     }
 
+    //we want to collect all hits belonging to coincidence groups,
+    //but avoid collecting hits multiple times, if they belong to different coincidence groups.
+    //can be done by placing them into a set, where the sorting is done w.r.t. to the reco pulse.
+    //need to overwrite the position ordering defined in the CrvHit struct
+    auto recoPulseCompare = [](const CrvHit &a, const CrvHit &b) {return a._crvRecoPulse < b._crvRecoPulse;};
+    std::set<CrvHit,decltype(recoPulseCompare)> coincidenceHits(recoPulseCompare);
+
+    int minCoincidenceLayers = std::min_element(hits.begin(),hits.end(),
+                               [](const CrvHit &a, const CrvHit &b){return a._coincidenceLayers < b._coincidenceLayers;})->_coincidenceLayers;
+    int maxCoincidenceLayers = std::max_element(hits.begin(),hits.end(),
+                               [](const CrvHit &a, const CrvHit &b){return a._coincidenceLayers < b._coincidenceLayers;})->_coincidenceLayers;
     //***************************************************
     //find coincidences using 2/4 coincidence requirement
+    if(minCoincidenceLayers==2)
     {
       std::vector<CrvHit>::const_iterator layerIterators[2];
 
@@ -562,10 +582,10 @@ namespace mu2e
         }
       }
     }  //two layer coincidences
-    if(!coincidenceHits.empty()) return;
 
     //***************************************************
     //find coincidences using 3/4 coincidence requirement
+    if(minCoincidenceLayers<=3 && maxCoincidenceLayers>=3)
     {
       std::vector<CrvHit>::const_iterator layerIterators[3];
 
@@ -601,10 +621,10 @@ namespace mu2e
         }
       }
     }  //three layer coincidences
-    if(!coincidenceHits.empty()) return;
 
     //***************************************************
     //find coincidences using 4/4 coincidence requirement
+    if(maxCoincidenceLayers==4)
     {
       std::vector<CrvHit>::const_iterator layerIterators[4];
 
@@ -637,49 +657,45 @@ namespace mu2e
         }
       }
     } // four layer coincidences
+
+    //move the set of coincidence hits to a position ordered multiset
+    coincidenceHitsPosOrdered.insert(coincidenceHits.begin(), coincidenceHits.end());
+
   } //end check coincidence
 
 
   bool CrvCoincidenceFinder::checkCombination(const std::vector<CrvHit>::const_iterator layerIterators[], int n) 
   {
-    double maxTimeDifferences[n];
-    double times[n];
-    double timesPulseStart[n], timesPulseEnd[n];
-    double x[n], y[n];
-    double maxSlopes[n], maxSlopeDifferences[n];
-    for(int i=0; i<n; ++i)
-    {
-      const std::vector<CrvHit>::const_iterator &iter=layerIterators[i];
-      maxTimeDifferences[i]=iter->_maxTimeDifference;
-      times[i]=iter->_time;
-      timesPulseStart[i]=iter->_timePulseStart;
-      timesPulseEnd[i]=iter->_timePulseEnd;
-      x[i]=iter->_x;
-      y[i]=iter->_y;
-      maxSlopes[i]=iter->_maxSlope;
-      maxSlopeDifferences[i]=iter->_maxSlopeDifference;
-    }
+    typedef const std::vector<CrvHit>::const_iterator L;
 
     if(!_usePulseOverlaps)
     {
-      double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+n);
-      double timeMin = *std::min_element(times,times+n);
-      double timeMax = *std::max_element(times,times+n);
+      double maxTimeDifference = (*std::max_element(layerIterators,layerIterators+n,
+                                 [](L &a, L &b){return a->_maxTimeDifference < b->_maxTimeDifference;}))->_maxTimeDifference;
+      double timeMax = (*std::max_element(layerIterators,layerIterators+n,
+                       [](L &a, L &b){return a->_time < b->_time;}))->_time;
+      double timeMin = (*std::min_element(layerIterators,layerIterators+n,
+                       [](L &a, L &b){return a->_time < b->_time;}))->_time;
       if(timeMax-timeMin>maxTimeDifference) return false;  //hits don't fall within the time window
     }
     else
     {
-      double timeMaxPulseStart = *std::max_element(timesPulseStart,timesPulseStart+n);
-      double timeMinPulseEnd = *std::min_element(timesPulseEnd,timesPulseEnd+n);
+      double timeMaxPulseStart = (*std::max_element(layerIterators,layerIterators+n,
+                                 [](L &a, L &b){return a->_timePulseStart < b->_timePulseStart;}))->_timePulseStart;
+      double timeMinPulseEnd   = (*std::min_element(layerIterators,layerIterators+n,
+                                 [](L &a, L &b){return a->_timePulseEnd < b->_timePulseEnd;}))->_timePulseEnd;
       if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) return false;  //pulses don't overlap, or overlap time too short
     }
 
-    double maxSlope=*std::max_element(maxSlopes,maxSlopes+n);
-    double maxSlopeDifference=*std::max_element(maxSlopeDifferences,maxSlopeDifferences+n);
+    double maxSlope = (*std::max_element(layerIterators,layerIterators+n,
+                      [](L &a, L &b){return a->_maxSlope < b->_maxSlope;}))->_maxSlope;
+    double maxSlopeDifference = (*std::max_element(layerIterators,layerIterators+n,
+                                [](L &a, L &b){return a->_maxSlopeDifference < b->_maxSlopeDifference;}))->_maxSlopeDifference;
     std::vector<float> slopes;
     for(int d=0; d<n-1; ++d)
     {
-      slopes.push_back((x[d+1]-x[d])/(y[d+1]-y[d]));   //width direction / thickness direction
+      //slope = width direction / thickness direction
+      slopes.push_back((layerIterators[d+1]->_x-layerIterators[d]->_x)/(layerIterators[d+1]->_y-layerIterators[d]->_y));
       if(fabs(slopes.back())>maxSlope) return false;  //not more than maxSlope allowed for coincidence;
     }
 
