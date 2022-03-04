@@ -30,6 +30,7 @@ namespace mu2e {
       using EXING = KinKal::ElementXing<KTRAJ>;
       using EXINGPTR = std::shared_ptr<EXING>;
       using EXINGCOL = std::vector<EXINGPTR>;
+      using TRACK = KinKal::Track<KTRAJ>;
       // construct from configuration, fit environment, and hits and materials
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart,
           KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings);
@@ -41,6 +42,7 @@ namespace mu2e {
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
+      void printFit(std::ostream& ost=std::cout,int detail=0) const;
     private:
       // record the particle type
       PDGCode::type tpart_;
@@ -84,6 +86,17 @@ namespace mu2e {
     for(auto const& strawhit : strawhits)strawhits_.emplace_back(strawhit);
     for(auto const& calohit : calohits)calohits_.emplace_back(calohit);
     for(auto const& strawxing : strawxings)strawxings_.emplace_back(strawxing);
+  }
+
+  template <class KTRAJ> void KKTrack<KTRAJ>::printFit(std::ostream& ost,int printlevel) const {
+   if(printlevel > 1) std::cout << "Seed Helix " << this->seedTraj() << std::endl;
+   TRACK::print(ost,0);
+   ost << "Fit with " << strawhits_.size() << " StrawHits and " << calohits_.size() << " CaloHits and " << strawxings_.size() << " Straw Xings" << std::endl;
+   if(printlevel > 2){
+     for(auto const& strawhit : strawhits_) strawhit->print(std::cout,2);
+     for(auto const& calohit : calohits_) calohit->print(std::cout,2);
+     for(auto const& strawxing :strawxings_) strawxing->print(std::cout,2);
+   }
   }
 
 }
