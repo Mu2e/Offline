@@ -1,0 +1,78 @@
+// Mu2eG4/geom/PTM_v02.txt
+// A geometry file for the downstream production target scanning detectors.
+// Includes the stand and brackets
+
+int PTM.version = 2;
+
+int PTM.verbosityLevel = 0;
+//bool PTM.doSurfaceCheck = true;
+bool PTM.placePV = true;
+bool PTM.visible = true;
+bool PTM.solid = true;
+
+//
+// Values related to the PWC's:
+//
+
+double PTM.frameHeight = 196.85; // mm
+double PTM.frameWidth = 196.85;
+double PTM.pwcSeparation = 1000.0; // mm, center-to-center
+
+double PTM.windowWidth = 96;
+double PTM.windowHeight = 96;
+double PTM.outerPlateLength = 6.35; // quarter inch
+double PTM.windowThick = 0.0254; // 0.001 inch
+double PTM.frameThick = 1.5748; // 0.062"
+int PTM.vertWiresPerPlane = 48;
+int PTM.horizWiresPerPlane = 48;
+
+int PTM.framesInDetector = 13;
+int PTM.outerPlatesInDetector = 2;
+
+// Window / conducting plane positions:
+// The following position values are in units of frame thicknesses from the 
+// center of the detector. Each window is epoxied to the downstream side of its
+// frame. The detector is centered on the middle FRAME, not the middle window.
+// This means these window positions are all integer + 0.5 from the center.
+double PTM.ground1Zframes = -5.5;
+double PTM.hv1Zframes = -3.5;
+double PTM.hv2Zframes = 0.5;
+double PTM.hv3Zframes = 4.5;
+double PTM.ground2Zframes = 6.5;
+
+string PTM.innerGas = "StrawGas"; // in ConstructMaterials.cc
+string PTM.windowMaterial = "Kapton"; // TODO: carbon kapton
+string PTM.frameMaterial = "G10";
+
+//
+// Values related to the detachable "head" that contains the PWC's:
+//
+
+double PTM.rotY = 166.274;
+double PTM.rotX = -2.272; // degree, was -2.27
+
+// mother and container volumes slightly larger than the
+// detectors themselves
+double PTM.motherMargin = 0.01;
+double PTM.containerMargin = 0.005;
+
+// positions in Mu2e coordinates
+// position of UPSTREAM END of detectors: (2280, 251.9, -12796) in Mu2e coords
+// detector pair box is 1033 mm in length
+// vector from upstream end to center of pair is:
+//           (-122.7, 19.3, -501.3)
+double PTM.positionX = 2161.762;
+double PTM.positionY = 278.303;
+double PTM.positionZ = -13281.339;
+
+// TODO: head frame, handle, brackets
+
+//
+// Values related to the stand on the floor
+
+// TODO
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
