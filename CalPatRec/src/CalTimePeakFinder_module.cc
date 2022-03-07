@@ -184,8 +184,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalTimePeakFinder::findTimePeaks(TimeClusterCollection& TimeClusterColl) {
 
-    //    const char* oname = "CalTimePeakFinder::findTimePeaks";
-
     int                 ncl, nch;
     double              time, dt, tof, zstraw, cl_time;//, stime;
     double              xcl, ycl, zcl/*, dz_cl*/;
@@ -200,7 +198,6 @@ namespace mu2e {
     static const double twopi(2*pi);
 
     double              mphi(-9999.);
-    double              meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
 
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
@@ -243,14 +240,14 @@ namespace mu2e {
           for(int istr=0; istr<nch;++istr) {
 
             hit    = &_data.chcol->at(istr);
-            time   = hit->time();
+            time   = hit->correctedTime();
             zstraw = hit->pos().z();
 //-----------------------------------------------------------------------------
 // estimate time-of-flight and calculate residual between the predicted and the hit times
 // 2017-03-31 P.M.: this assumes electron (e^- or e^+), not muon
 //-----------------------------------------------------------------------------
             tof = (zcl-zstraw)/_sinPitch/(CLHEP::c_light*_beta);
-            dt  = cl_time-(time+tof-meanDriftTime);
+            dt  = cl_time-(time+tof);
 	    if (_debugLevel > 0) printf("[CalTimePeakFinder::findTimePeaks] %10.3f %10.3f\n",  tof, dt);
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster
