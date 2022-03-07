@@ -1,5 +1,5 @@
-#ifndef PTMGeom_PTM_hh
-#define PTMGeom_PTM_hh
+#ifndef PTMGeom_PTMHead_hh
+#define PTMGeom_PTMHead_hh
 
 #include <memory>
 
@@ -7,30 +7,35 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Offline/PTMGeom/inc/PTMPWC.hh"
-#include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
-// ProductionTarget Monitor (PTM) Object
+// ProductionTarget Monitor Head (PTM) Object
 //
 // Author: Helenka Casler
 //
 
+// TODO: ADD THE FOLLOWING:
+// - aluminum frame holding the PWCs apart
+// - handle on top of the frame
+// - brackets that let it sit on the top of the stand
+
 namespace mu2e {
 
-  class PTM : virtual public Detector {
+  class PTMHead{
 
   public:
-    PTM(CLHEP::Hep3Vector const& originInMu2e,
-          CLHEP::HepRotation const& rotationInMu2e,
-          std::shared_ptr<PTMStand> ptmStand,
-          std::shared_ptr<PTMHead> ptmHead,
+    PTMHead(CLHEP::Hep3Vector const& originInMu2e, 
+          CLHEP::HepRotation const& rotationInMu2e, 
+          std::shared_ptr<PTMPWC> nearPWC, 
+          std::shared_ptr<PTMPWC> farPWC,
+          double pwcSeparation,
           double motherMargin);
-    PTM() {}
+    PTMHead() {}
 
     CLHEP::Hep3Vector const &  originInMu2e()   const { return _originInMu2e; }
     CLHEP::HepRotation const & rotationInMu2e() const { return _rotationInMu2e; }
 
-    const PTMStand* ptmStand() const { return _ptmStand.get(); }
-    const ptmHead* ptmHead()  const { return _ptmHead.get(); }
+    const PTMPWC* nearPWC() const { return _nearPWC.get(); }
+    const PTMPWC* farPWC()  const { return _farPWC.get(); }
 
     double totalHeight() const { return _totalHeight; }
     double totalWidth()  const { return _totalWidth; }
@@ -43,8 +48,8 @@ namespace mu2e {
     CLHEP::Hep3Vector _originInMu2e;
     CLHEP::HepRotation _rotationInMu2e;
 
-    std::shared_ptr<PTMStand> _ptmStand;
-    std::shared_ptr<ptmHead> _ptmHead;
+    std::shared_ptr<PTMPWC> _nearPWC;
+    std::shared_ptr<PTMPWC> _farPWC;
 
     double _totalHeight;
     double _totalWidth;
@@ -52,7 +57,7 @@ namespace mu2e {
 
 
 
-  }; // class PTM
+  }; // class PTMHead
 
 } // namespace mu2e
 
