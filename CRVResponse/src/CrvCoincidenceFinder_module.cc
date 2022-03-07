@@ -122,7 +122,11 @@ namespace mu2e
       double _maxTimeDifference;
       double _maxSlope, _maxSlopeDifference;
       int    _coincidenceLayers;
-      mutable double _maxDistance; //initially set to initialClusterMaxDistance, updated when the coindidences are checked
+      mutable double _maxDistance; //initially set to initialClusterMaxDistance, which is just an estimate 
+                                   //used for the initial clustering process (to keep the number of 
+                                   //hit combinations down that need to be checked for coincidendes).
+                                   //_maxDistance is updated when the coindidences are checked
+                                   //(used for the final clustering process)
 
       CrvHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, const CLHEP::Hep3Vector &pos, 
              double x, double y, double time, double timePulseStart, double timePulseEnd,
@@ -165,7 +169,8 @@ namespace mu2e
     _totalEventsCoincidence(0)
   {
     produces<CrvCoincidenceClusterCollection>();
-    //get cluster time parameters from coincidence parameters
+    //get initial cluster time parameters from coincidence parameters
+    //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
     _initialClusterMaxTimeDifference=std::max_element(_sectorConfig.begin(), _sectorConfig.end(),
                               [](const SectorConfig &a, const SectorConfig &b)
                               {return a.maxTimeDifference() < b.maxTimeDifference();})->maxTimeDifference();
@@ -303,6 +308,7 @@ namespace mu2e
       filterHits(hitsUnfiltered, hitsFiltered);
 
       //distribute the hits into clusters
+      //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
       std::vector<std::vector<CrvHit> > clusters;
       findClusters(hitsFiltered, clusters, _initialClusterMaxTimeDifference, _initialClusterMinOverlapTime);
 
