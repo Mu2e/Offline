@@ -222,11 +222,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool CalHelixFinder::filter(art::Event& event ) {
     const char*             oname = "CalHelixFinder::filter";
-    //    CalHelixFinderData      hf_result;
+
                                         // diagnostic info
     _data.event     = &event;
-    // _data.nseeds[0] = 0;
-    // _data.nseeds[1] = 0;
     _iev            = event.id().event();
     int   nGoodTClusterHits(0);
 
@@ -338,6 +336,9 @@ namespace mu2e {
 
 	int loc = _data.nseeds[0];
 	if (loc < _data.maxSeeds()) {
+	  if (index_best == 2){
+	    index_best = 0;
+	  }
 	  int nhits          = helix_seed_vec[index_best]._hhits.size();
 	  _data.ntclhits[loc]= nGoodTClusterHits;
 	  _data.nhits[loc]   = nhits;
@@ -414,7 +415,9 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // fill histograms
 //--------------------------------------------------------------------------------
-    if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
+    if (_diagLevel > 0) {
+      _hmanager->fillHistograms(&_data);
+    }
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
