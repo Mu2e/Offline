@@ -102,7 +102,7 @@ namespace mu2e {
 
     TH1* hStopMaterials_;
 
-    const PhysicalVolumeInfoMultiCollection *vols_;
+    const PhysicalVolumeInfoMultiCollection *vols_ = nullptr;
 
     bool isStopped(const SimParticle& particle) const;
     bool materialAccepted(const std::string& material) const;
@@ -208,7 +208,7 @@ namespace mu2e {
 
     std::unique_ptr<SimParticlePtrCollection> output(new SimParticlePtrCollection());
 
-    PhysicalVolumeMultiHelper vi(*vols_);
+    PhysicalVolumeMultiHelper vi(vols_);
     auto ih = event.getValidHandle<SimParticleCollection>(particleInput_);
     numTotalParticles_ += ih->size();
     for(const auto& i : *ih) {
