@@ -56,6 +56,7 @@ double PTM.rotX = -2.272; // degree, was -2.27
 double PTM.motherMargin = 0.01;
 double PTM.containerMargin = 0.005;
 
+// TODO: will have to change this to take the new geometry into account
 // positions in Mu2e coordinates
 // position of UPSTREAM END of detectors: (2280, 251.9, -12796) in Mu2e coords
 // detector pair box is 1033 mm in length
@@ -65,10 +66,39 @@ double PTM.positionX = 2161.762;
 double PTM.positionY = 278.303;
 double PTM.positionZ = -13281.339;
 
-// TODO: head frame, handle, brackets
+double PTM.bracketHeight = 33.77;
+double PTM.bracketWidth = 76.14;
+double PTM.bracketThick = 18.67;
+double PTM.bracketCutoutHeight = 13.5;
+double PTM.bracketCutoutWidth = 38.101;
+double PTM.bracketWedgeHeight = 52.7;
+
+// The PTM holder is made of aluminum extrusions
+double PTM.holder.extrusionWidth = 38.1;
+double PTM.holder.extrusionHeight = 38.1;
+// The holder consists of 4 separators that hold the PWC's the correct distance
+// apart, attached to the PWC's at the corners.
+// The separators are supported by 4 short support beams, which form a square
+// around the nominal beam path, between the PWC's.
+double PTM.holder.separatorGapHoriz = 177.8; // center-to-center
+double PTM.holder.separatorGapVert = 177.8;
+double PTM.holder.supportDistFromFront = 652.4;
+
+// the handle is a rectangle with an oval cutout, attached to the top support
+double PTM.handleHeight = 190.515;
+double PTM.handleWidth = 139.7;
+double PTM.handleThick = 6.36;
+double PTM.handleCutoutHeight = 152.185;
+double PTM.handleCutoutWidth = 63.56;
 
 //
 // Values related to the stand on the floor
+
+// the stand is made of 3 aluminum extrusions standing up together
+double PTM.stand.extrusionHeight = 75.3655;
+double PTM.stand.extrusionWidth = 75.3655;
+double PTM.stand.mainColumnHeight = 2209.8;
+double PTM.stand.relativeExtrusionAngle = 120.0; // degrees
 
 // TODO
 
