@@ -99,8 +99,13 @@ double PTM.stand.extrusionHeight = 75.3655;
 double PTM.stand.extrusionWidth = 75.3655;
 double PTM.stand.mainColumnHeight = 2209.8;
 double PTM.stand.relativeExtrusionAngle = 120.0; // degrees
+double PTM.stand.baseExtrusionLength = 609.573;
+double PTM.stand.supportExtrusionAngle = 45.0;
+double PTM.stand.supportExtrusionPosition = 224.9; // mm
+double PTM.stand.supportExtrusionInnerHyp = 242.732; // mm
 
-// TODO
+
+// TODO support blocks,  ground supports
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
