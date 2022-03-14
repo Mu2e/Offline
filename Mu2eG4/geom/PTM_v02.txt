@@ -76,6 +76,7 @@ double PTM.bracketWedgeHeight = 52.7;
 // The PTM holder is made of aluminum extrusions
 double PTM.holder.extrusionWidth = 38.1;
 double PTM.holder.extrusionHeight = 38.1;
+double PTM.holder.extrusionDensityFrac = 0.512; // overall density, considering the spaces in the extrusion
 // The holder consists of 4 separators that hold the PWC's the correct distance
 // apart, attached to the PWC's at the corners.
 // The separators are supported by 4 short support beams, which form a square
@@ -97,6 +98,7 @@ double PTM.handleCutoutWidth = 63.56;
 // the stand is made of 3 aluminum extrusions standing up together
 double PTM.stand.extrusionHeight = 75.3655;
 double PTM.stand.extrusionWidth = 75.3655;
+double PTM.stand.extrusionDensityFrac = 0.39; // overall density, considering the spaces in the extrusion
 double PTM.stand.mainColumnHeight = 2209.8;
 double PTM.stand.relativeExtrusionAngle = 120.0; // degrees
 double PTM.stand.baseExtrusionLength = 609.573;
