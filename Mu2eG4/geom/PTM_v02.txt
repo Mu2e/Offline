@@ -74,23 +74,24 @@ double PTM.bracketCutoutWidth = 38.101;
 double PTM.bracketWedgeHeight = 52.7;
 
 // The PTM holder is made of aluminum extrusions
+string PTM.holder.extrusionMaterial = "A6105SmallExtrusion";
 double PTM.holder.extrusionWidth = 38.1;
-double PTM.holder.extrusionHeight = 38.1;
-double PTM.holder.extrusionDensityFrac = 0.512; // overall density, considering the spaces in the extrusion
+// double PTM.holder.extrusionDensityFrac = 0.51; // overall density, considering the spaces in the extrusion
 // The holder consists of 4 separators that hold the PWC's the correct distance
 // apart, attached to the PWC's at the corners.
 // The separators are supported by 4 short support beams, which form a square
 // around the nominal beam path, between the PWC's.
-double PTM.holder.separatorGapHoriz = 177.8; // center-to-center
-double PTM.holder.separatorGapVert = 177.8;
+double PTM.holder.separatorGap = 177.8; // center-to-center
 double PTM.holder.supportDistFromFront = 652.4;
 
-// the handle is a rectangle with an oval cutout, attached to the top support
-double PTM.handleHeight = 190.515;
+// the handle is a rectangle with an oval cutout, attached to the back of the top support
+double PTM.handleHeight = 228.6;
 double PTM.handleWidth = 139.7;
 double PTM.handleThick = 6.36;
+double PTM.handleCornerCutoffs = 38.1; mm
 double PTM.handleCutoutHeight = 152.185;
 double PTM.handleCutoutWidth = 63.56;
+double PTM.handleCutoutPositionY = 7.0;
 
 //
 // Values related to the stand on the floor
