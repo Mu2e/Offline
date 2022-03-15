@@ -11,11 +11,21 @@ namespace mu2e{
           std::shared_ptr<PTMPWC> nearPWC, 
           std::shared_ptr<PTMPWC> farPWC,
           double pwcSeparation,
+          std::shared_ptr<Box> holderExtrusionLong,
+          std::shared_ptr<Box> holderExtrusionShort,
+          std::string holderExtrusionMaterialName,
+          double holderExtrusionLongSep,
+          double holderExtrusionShortPos,
           double motherMargin)
           : _originInMu2e(originInMu2e),
             _rotationInMu2e(rotationInMu2e),
             _nearPWC(nearPWC),
-            _farPWC(farPWC) {
+            _farPWC(farPWC),
+            _holderExtrusionLong(holderExtrusionLong),
+            _holderExtrusionShort(holderExtrusionShort),
+            _holderExtrusionRelDensity(holderExtrusionMaterialName),
+            _holderExtrusionLongSep(holderExtrusionLongSep),
+            _holderExtrusionShortPos(holderExtrusionShortPos) {
     // set the "overall" dimensions based on the PWC dimensions and positions.
     // Not assuming the two PWCs are the same size.
     if (nearPWC->totalHeight() >= farPWC->totalHeight()) {

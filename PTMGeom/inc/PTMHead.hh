@@ -37,6 +37,12 @@ namespace mu2e {
     const PTMPWC* nearPWC() const { return _nearPWC.get(); }
     const PTMPWC* farPWC()  const { return _farPWC.get(); }
 
+    const Box* holderExtrusionLong()   const { return _holderExtrusionLong.get(); }
+    const Box* holderExtrusionShort()  const { return _holderExtrusionShort.get(); }
+    double holderExtrusionRelDensity() const { return _holderExtrusionRelDensity; }
+    double holderExtrusionLongSep()    const { return _holderExtrusionLongSep; }
+    double holderExtrusionShortPos()   const { return _holderExtrusionShortPos; }
+
     double totalHeight() const { return _totalHeight; }
     double totalWidth()  const { return _totalWidth; }
     double totalLength() const { return _totalLength; }
@@ -50,6 +56,13 @@ namespace mu2e {
 
     std::shared_ptr<PTMPWC> _nearPWC;
     std::shared_ptr<PTMPWC> _farPWC;
+
+    // Al extrusions holding the PWC's in position relative to each other
+    std::shared_ptr<Box> _holderExtrusionLong;
+    std::shared_ptr<Box> _holderExtrusionShort;
+    double _holderExtrusionMaterialName;
+    double _holderExtrusionLongSep;
+    double _holderExtrusionShortPos;
 
     double _totalHeight;
     double _totalWidth;
