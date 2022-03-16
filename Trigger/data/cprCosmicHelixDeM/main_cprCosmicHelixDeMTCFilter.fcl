@@ -1,2 +1,0 @@
-physics.filters.cprCosmicHelixDeMTCFilter.requireCaloCluster : false
-physics.filters.cprCosmicHelixDeMTCFilter.minNHits : 10.0

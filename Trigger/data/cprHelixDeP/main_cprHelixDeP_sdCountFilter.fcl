@@ -1,0 +1,9 @@
+physics.filters.cprHelixDeP_sdCountFilter.caloDigiCollection  : notUsed
+physics.filters.cprHelixDeP_sdCountFilter.useStrawDigi        : true	 
+physics.filters.cprHelixDeP_sdCountFilter.useCaloDigi         : false	 
+physics.filters.cprHelixDeP_sdCountFilter.minNStrawDigi       : 10 	 
+physics.filters.cprHelixDeP_sdCountFilter.maxNStrawDigi       : 10000	 
+physics.filters.cprHelixDeP_sdCountFilter.minNCaloDigi        : -1	 
+physics.filters.cprHelixDeP_sdCountFilter.maxNCaloDigi        : -1	 
+physics.filters.cprHelixDeP_sdCountFilter.maxCaloEnergy       : -1     
+

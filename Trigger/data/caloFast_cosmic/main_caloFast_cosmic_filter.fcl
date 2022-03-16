@@ -1,0 +1,9 @@
+physics.filters.caloFast_cosmic_filter.debugLevel       : 0	         
+physics.filters.caloFast_cosmic_filter.MinNCrystalHits  : 0	         
+physics.filters.caloFast_cosmic_filter.MinEnergy        : 120.0     
+physics.filters.caloFast_cosmic_filter.MaxEnergy        : 600.0       
+physics.filters.caloFast_cosmic_filter.MinNumCelinout   : 6
+physics.filters.caloFast_cosmic_filter.MinNumCeldiagver : 6     
+physics.filters.caloFast_cosmic_filter.MinCelEneCut     : 15.0    
+physics.filters.caloFast_cosmic_filter.OutRadius        : 580.0    
+physics.filters.caloFast_cosmic_filter.InnerRadius      : 460.0     

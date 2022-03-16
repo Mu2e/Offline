@@ -1,0 +1,9 @@
+physics.filters.cstTimeCluster___sdCountFilter.caloDigiCollection  : notUsed
+physics.filters.cstTimeCluster___sdCountFilter.useStrawDigi        : true	 
+physics.filters.cstTimeCluster___sdCountFilter.useCaloDigi         : false	 
+physics.filters.cstTimeCluster___sdCountFilter.minNStrawDigi       : 8 	 
+physics.filters.cstTimeCluster___sdCountFilter.maxNStrawDigi       : 10000	 
+physics.filters.cstTimeCluster___sdCountFilter.minNCaloDigi        : -1	 
+physics.filters.cstTimeCluster___sdCountFilter.maxNCaloDigi        : -1	 
+physics.filters.cstTimeCluster___sdCountFilter.maxCaloEnergy       : -1     
+

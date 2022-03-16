@@ -25,27 +25,26 @@ from codecs import open
 
 def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sourceFiles, targetFiles):
 
-    trk_filters      = ['EventPrescale','TCFilter', 'HSFilter', 'TSFilter']
-    helix_filters    = ['EventPrescale','TCFilter', 'HSFilter']
-    tc_filters       = ['EventPrescale','TCFilter']
-    calo_filters     = ['EventPrescale','Filter'  ]
-    unbiased_filters = ['EventPrescale']
-    minbias_filters  = ['EventPrescale','Filter'       ]
-    cst_filters      = ['EventPrescale','TCFilter', 'TSFilter']
+    trk_filters      = ['eventPrescale','tcFilter', 'hsFilter', 'tsFilter']
+    helix_filters    = ['eventPrescale','tcFilter', 'hsFilter']
+    tc_filters       = ['eventPrescale','tcFilter']
+    calo_filters     = ['eventPrescale','filter'  ]
+    unbiased_filters = ['eventPrescale']
+    minbias_filters  = ['eventPrescale','filter'       ]
+    cst_filters      = ['eventPrescale','tcFilter', 'tsFilter']
     
     filters     = []
 
     #understand which kind of trigger path are we dealing with
-    if "Seed" in trig_path:
-        if "cst" in trig_path:
-            filters = cst_filters
-        else:
-            filters = trk_filters
+    if trig_path == 'cst':
+        filters = cst_filters
+    elif "cprDe" in trig_path or 'tprDe' in trig_path:
+        filters = trk_filters
     elif "Helix" in trig_path:
         filters = helix_filters
     elif "TimeCluster" in trig_path:
         filters = tc_filters
-    elif "calo" in trig_path:
+    elif "caloFast" in trig_path:
         filters = calo_filters
     elif "unbiased" in trig_path:
         filters = unbiased_filters
@@ -75,7 +74,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
     targetFiles.append(subEpilogName)
 
     for filter in filters :
-        filterName       = trig_path+filter
+        filterName       = trig_path+"_"+filter
 
         subSubEpilogInputFileName = srcDir+"Trigger/data/" + trig_path + "/main_"+ filterName + '.fcl' 
         sourceFiles.append(subSubEpilogInputFileName)

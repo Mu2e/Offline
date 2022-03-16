@@ -1,9 +1,0 @@
-physics.filters.caloCosmicFilter.debugLevel       : 0	         
-physics.filters.caloCosmicFilter.MinNCrystalHits  : 0	         
-physics.filters.caloCosmicFilter.MinEnergy        : 120.0     
-physics.filters.caloCosmicFilter.MaxEnergy        : 600.0       
-physics.filters.caloCosmicFilter.MinNumCelinout   : 6
-physics.filters.caloCosmicFilter.MinNumCeldiagver : 6     
-physics.filters.caloCosmicFilter.MinCelEneCut     : 15.0    
-physics.filters.caloCosmicFilter.OutRadius        : 580.0    
-physics.filters.caloCosmicFilter.InnerRadius      : 460.0     

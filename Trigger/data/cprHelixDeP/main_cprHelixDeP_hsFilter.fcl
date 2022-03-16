@@ -1,0 +1,17 @@
+physics.filters.cprHelixDeP_hsFilter.fitparticle   : @local::Particle.eplus 
+physics.filters.cprHelixDeP_hsFilter.fitdirection  : @local::FitDir.downstream
+physics.filters.cprHelixDeP_hsFilter.helicity      : -1
+physics.filters.cprHelixDeP_hsFilter.minNStrawHits : 15.0
+physics.filters.cprHelixDeP_hsFilter.minHitRatio   : 0.4
+physics.filters.cprHelixDeP_hsFilter.minMomentum   : 50.0
+physics.filters.cprHelixDeP_hsFilter.maxMomentum   : 300.0
+physics.filters.cprHelixDeP_hsFilter.minPt         : 0.0
+physics.filters.cprHelixDeP_hsFilter.maxChi2XY     : 5.0
+physics.filters.cprHelixDeP_hsFilter.maxChi2PhiZ   : 5.0
+physics.filters.cprHelixDeP_hsFilter.maxD0         : 800.0
+physics.filters.cprHelixDeP_hsFilter.minD0         : -800.0
+physics.filters.cprHelixDeP_hsFilter.minAbsLambda  : 50.0
+physics.filters.cprHelixDeP_hsFilter.maxAbsLambda  : 1000.0
+physics.filters.cprHelixDeP_hsFilter.minNLoops     : 0
+physics.filters.cprHelixDeP_hsFilter.maxNLoops     : 30
+physics.filters.cprHelixDeP_hsFilter.prescaleUsingD0Phi  : false
