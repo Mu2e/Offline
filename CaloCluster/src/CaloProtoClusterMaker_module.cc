@@ -53,7 +53,6 @@ namespace mu2e {
             fhicl::Atom<double>         EnoiseCut          { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") }; 
             fhicl::Atom<double>         ExpandCut          { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") }; 
             fhicl::Atom<bool>           addSecondRing      { Name("addSecondRing"),     Comment("Add secondary ring around crystal when forming clusters") }; 
-            fhicl::Atom<double>         timeCut            { Name("timeCut"),           Comment("Minimum hit time to form cluster") }; 
             fhicl::Atom<double>         deltaTime          { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") }; 
             fhicl::Atom<int>            diagLevel          { Name("diagLevel"),         Comment("Diag level"),0 }; 
         };
@@ -65,7 +64,6 @@ namespace mu2e {
           EnoiseCut_       (config().EnoiseCut()),
           ExpandCut_       (config().ExpandCut()),
           addSecondRing_   (config().addSecondRing()),
-          timeCut_         (config().timeCut()),
           deltaTime_       (config().deltaTime()),
           diagLevel_       (config().diagLevel())
         {
@@ -81,7 +79,6 @@ namespace mu2e {
         double                               EnoiseCut_;
         double                               ExpandCut_;
 	bool                                 addSecondRing_;
-        double                               timeCut_;
         double                               deltaTime_;
         int                                  diagLevel_;
 
@@ -123,7 +120,7 @@ namespace mu2e {
       //fill data structures
       for (const auto& hit : CaloHits)
       {
-          if (hit.energyDep() < EnoiseCut_ || hit.time() < timeCut_) continue;
+          if (hit.energyDep() < EnoiseCut_) continue;
           caloIdHitMap[hit.crystalID()].push_back(&hit);
           if (hit.energyDep() > EminSeed_ ) seedList.insert(&hit);
       }
