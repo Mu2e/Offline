@@ -1,2 +1,2 @@
-physics.filters.tprHelixDeM_ipa_phiScaled_tcFFilter.requireCaloCluster : false
-physics.filters.tprHelixDeM_ipa_phiScaled_tcFFilter.minNHits           : 10.0
+physics.filters.tprHelixDeMIpaPhiScaledTCFFilter.requireCaloCluster : false
+physics.filters.tprHelixDeMIpaPhiScaledTCFFilter.minNHits           : 10.0

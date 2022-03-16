@@ -29,7 +29,7 @@ CstLineFinder        : {
     TimeClusterCollection : "CstSimpleTimeCluster"
 }
 
-Cst_trigger : { 
+CstTrigger : { 
     
     producers : {
     	CstTimeClusterFinder : @local::CstTimeClusterFinder
@@ -44,19 +44,19 @@ Cst_trigger : {
     }
 
     filters   : {
-	#Pre_event PreScaler:
-	cst_eventPrescale : {
-	    module_type 	: Prescale_event
+	#PreEvent PreScaler:
+	cstEventPrescale : {
+	    module_type 	: PrescaleEvent
 	    nPrescale         	: 1
 	}
 
-	cstTimeCluster_eventPrescale : {
-	    module_type 	: Prescale_event
+	cstTimeClusterEventPrescale : {
+	    module_type 	: PrescaleEvent
 	    nPrescale         	: 1
 	}
 	
-	cst_sdCountFilter     : { 
-	    module_type : DigiFilter #defined in _triggers
+	cstSDCountFilter     : { 
+	    module_type : DigiFilter #defined in Triggers
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
 	    useStrawDigi        : true
@@ -68,8 +68,8 @@ Cst_trigger : {
 	    maxCaloEnergy       : -1
 	}
 
-	cstTimeCluster_sdCountFilter     : { 
-	    module_type : DigiFilter #defined in _triggers
+	cstTimeClusterSDCountFilter     : { 
+	    module_type : DigiFilter #defined in Triggers
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
 	    useStrawDigi        : true
@@ -82,20 +82,20 @@ Cst_trigger : {
 	}
 
 
-	cst_tcFilter       : {
+	cstTCFilter       : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection  : "CstSimpleTimeCluster"
 	    minNHits               : 8
 	}
 
-	cstTimeCluster_tcFilter : {
+	cstTimeClusterTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection  : "CstSimpleTimeCluster"
 	    minNHits               : 8
 	}
 
 	#From Filter, only by hits currently: 
-	cst_tsFilter : {
+	cstTSFilter : {
 	    module_type            : CosmicSeedFilter
 	    CosmicTrackSeedCollection  : "CstCosmicTrackFinder"
 	    cosmicseedFitFlag          : ["HelixOK","HelixConverged"]
@@ -106,29 +106,30 @@ Cst_trigger : {
 
     sequences   : {
 	
-	cst        : [ cst_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
-			   @sequence::TrkHitReco_trigger.sequences.TTmakefastHits,
-			   cst_sdCountFilter, 
-			   CstSimpleTimeCluster, cst_tcFilter,
-			   CstLineFinder,
-			   CstCosmicTrackFinder,
-			   cst_tsFilter ]
+	cst        : [ cstEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
+		       @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+		       cstSDCountFilter, 
+		       CstSimpleTimeCluster, cstTCFilter,
+		       CstLineFinder,
+		       CstCosmicTrackFinder,
+		       cstTSFilter,
+		       csttriggerInfoMerger ]
 	
-	cst_timing0 : [ cst_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
-			   @sequence::TrkHitReco_trigger.sequences.TTmakefastHits,
-			   cst_sdCountFilter, 
-			   CstSimpleTimeCluster, cst_tcFilter,
-			   CstCosmicTrackFinder ]
+	cst_timing0 : [ cstEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
+			@sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			cstSDCountFilter, 
+			CstSimpleTimeCluster, cstTCFilter,
+			CstCosmicTrackFinder ]
 
-	cst_timing1 : [ cst_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
-			   @sequence::TrkHitReco_trigger.sequences.TTmakefastHits,
-			   cst_sdCountFilter, 
-			   CstSimpleTimeCluster ]
+	cst_timing1 : [ cstEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
+			@sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			cstSDCountFilter, 
+			CstSimpleTimeCluster ]
 	
-	cstTimeCluster : [ cstTimeCluster_eventPrescale, 
-			   @sequence::TrkHitReco_trigger.sequences.TTmakefastHits,
-			   cstTimeCluster_sdCountFilter, 
-			   CstSimpleTimeCluster, cstTimeCluster_tcFilter ]
+	cstTimeCluster : [ cstTimeClusterEventPrescale, 
+			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			   cstTimeClusterSDCountFilter, 
+			   CstSimpleTimeCluster, cstTimeClusterTCFilter, cstTimeClusterTriggerInfoMerger ]
 	
 	
     }

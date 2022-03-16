@@ -19,6 +19,16 @@ from argparse import ArgumentParser
 
 from codecs import open
 
+def capitalize(word):
+    if not word:
+        return word
+    nLetters=1
+    nn = word[0].upper()
+    if word[0:2] == 'sd' or word[0:2] == 'cd' or word[0:2] == 'hs' or word[0:2] == 'tc' or word[0:2] == 'ts':
+        nLetters=2
+        nn = word[0].upper() + word[1].upper()
+    return nn + word[nLetters:]
+
 #
 # process one subdirectory (one path)
 #
@@ -101,7 +111,13 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
 
     #now create the instance for the TriggerInfo Merger
     if  doWrite :
-        trigInfoMergerName         = trig_path + "_triggerInfoMerger"
+        trig_path_nu = ""
+        for n in trig_path.split("_"):
+            if n == trig_path.split("_")[0]:
+                trig_path_nu += n
+            else:
+                trig_path_nu += capitalize(n)
+        trigInfoMergerName         = trig_path_nu + "TriggerInfoMerger"
         subSubEpilogMergerFileName = subEpilogDirName + "/main_" + trigInfoMergerName + '.fcl'
         if verbose:
             print("Creating {}".format(subSubEpilogMergerFileName))

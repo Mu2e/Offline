@@ -1,2 +1,2 @@
-physics.filters.cstTimeCluster___tcFilter.requireCaloCluster : false
-physics.filters.cstTimeCluster___tcFilter.minNHits           : 4
+physics.filters.cstTimeCluster__TCFilter.requireCaloCluster : false
+physics.filters.cstTimeCluster__TCFilter.minNHits           : 4

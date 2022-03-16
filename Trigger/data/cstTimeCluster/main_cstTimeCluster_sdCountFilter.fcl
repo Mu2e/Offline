@@ -1,9 +1,9 @@
-physics.filters.cstTimeCluster___sdCountFilter.caloDigiCollection  : notUsed
-physics.filters.cstTimeCluster___sdCountFilter.useStrawDigi        : true	 
-physics.filters.cstTimeCluster___sdCountFilter.useCaloDigi         : false	 
-physics.filters.cstTimeCluster___sdCountFilter.minNStrawDigi       : 8 	 
-physics.filters.cstTimeCluster___sdCountFilter.maxNStrawDigi       : 10000	 
-physics.filters.cstTimeCluster___sdCountFilter.minNCaloDigi        : -1	 
-physics.filters.cstTimeCluster___sdCountFilter.maxNCaloDigi        : -1	 
-physics.filters.cstTimeCluster___sdCountFilter.maxCaloEnergy       : -1     
+physics.filters.cstTimeCluster__SDCountFilter.caloDigiCollection  : notUsed
+physics.filters.cstTimeCluster__SDCountFilter.useStrawDigi        : true	 
+physics.filters.cstTimeCluster__SDCountFilter.useCaloDigi         : false	 
+physics.filters.cstTimeCluster__SDCountFilter.minNStrawDigi       : 8 	 
+physics.filters.cstTimeCluster__SDCountFilter.maxNStrawDigi       : 10000	 
+physics.filters.cstTimeCluster__SDCountFilter.minNCaloDigi        : -1	 
+physics.filters.cstTimeCluster__SDCountFilter.maxNCaloDigi        : -1	 
+physics.filters.cstTimeCluster__SDCountFilter.maxCaloEnergy       : -1     
 

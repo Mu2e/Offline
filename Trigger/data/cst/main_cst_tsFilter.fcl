@@ -1,2 +1,2 @@
-physics.filters.cst_tsFilter.minnsh      : 8	      	    
-physics.filters.cst_tsFilter.debugLevel  : 0	      
+physics.filters.cstTSFilter.minnsh      : 8	      	    
+physics.filters.cstTSFilter.debugLevel  : 0	      
