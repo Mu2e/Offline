@@ -19,42 +19,42 @@ BEGIN_PROLOG
 Trigger : {
     producers : {
 	@table::CaloFilters.producers
-	@table::CaloHitRecoTrigger.producers
-	@table::CaloClusterTrigger.producers
-	@table::TrkHitRecoTrigger.producers
+	@table::CaloHitReco_trigger.producers
+	@table::CaloCluster_trigger.producers
+	@table::TrkHitReco_trigger.producers
 	@table::TrkHitReco.producers
-	@table::TrkRecoTrigger.producers
+	@table::TrkReco_trigger.producers
 	@table::CosmicTracking.producers
-	@table::CstTrigger.producers
-	@table::TprTrigger.producers
-	@table::CprTrigger.producers
+	@table::Cst_trigger.producers
+	@table::Tpr_trigger.producers
+	@table::Cpr_trigger.producers
     }
 
     filters : {
-	@table::CprTrigger.filters
+	@table::Cpr_trigger.filters
 	@table::CaloFilters.filters
 	@table::TrkFilters.filters
-	@table::CstTrigger.filters
+	@table::Cst_trigger.filters
 
 	#used to select 1 event out of N
-	unbiasedEventPrescale : {
-	    module_type : PrescaleEvent
+	unbiased_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 10000 
 	    triggerPath        : "unbiased"
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
 	#prescaler for the standard strawDigi occupancy filter
-	minimumbiasSDCountEventPrescale : {
-	    module_type : PrescaleEvent
+	minBias_sdCount_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 10000
 	    triggerPath        : "minBiasStrawDigiCount"
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	#prescaler for the strawDigi large-occupancy filter
-	largeSDCountEventPrescale : {
-	    module_type : PrescaleEvent
+	large_sdCount_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 10000
 	    triggerPath        : "largeStrawDigiCount"
 	    triggerFlag   : ["PrescaleRandom"]	    
@@ -62,10 +62,10 @@ Trigger : {
 	
 	#filters based on the strawDigi occupancy:
 
-	# LargeSDCountFilter: we need this filter to select strange events 
+	# Large_sdCountFilter: we need this filter to select strange events 
 	#                     where we had lot of hits. That is a good handle
 	#                     for spotting strange behaviour of the tracker
-	largeSDCountFilter     : {
+	large_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -79,9 +79,9 @@ Trigger : {
 	    maxCaloEnergy       : -1
 	}
 
-	# CDCountFilter     : it's a minimum bias filter. It allows to select
+	# _cdCountFilter     : it's a minimum bias filter. It allows to select
 	#                     events based on the number of strawDigi
-	minimumbiasSDCountFilter          : {
+	minBias_sdCountFilter          : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUSed		  
@@ -96,16 +96,16 @@ Trigger : {
 	}
 
 	#prescaler for the standard strawDigi occupancy filter
-	minimumbiasCDCountEventPrescale : {
-	    module_type : PrescaleEvent
+	minimumbias_cdCount_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 10000
 	    triggerPath        : "minBiasCaloDigiCount"	    	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	#prescaler for the strawDigi large-occupancy filter
-	largeCDCountEventPrescale : {
-	    module_type : PrescaleEvent
+	large_cdCount_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 10000
 	    triggerPath        : "largeCaloDigiCount"	    	    
 	    triggerFlag   : ["PrescaleRandom"]	    
@@ -113,10 +113,10 @@ Trigger : {
 	
 	#filters based on the strawDigi occupancy:
 
-	# LargeCDCountFilter: we need this filter to select strange events 
+	# Large_cdCountFilter: we need this filter to select strange events 
 	#                     where we had lot of hits. That is a good handle
 	#                     for spotting strange behaviour of the tracker
-	largeCDCountFilter     : {
+	large_cdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUsed
 	    caloDigiCollection  : CaloDigiMaker
@@ -130,9 +130,9 @@ Trigger : {
 	    maxCaloEnergy       : -1
 	}
 
-	# CDCountFilter     : it's a minimum bias filter. It allows to select
+	# _cdCountFilter     : it's a minimum bias filter. It allows to select
 	#                     events based on the number of strawDigi
-	minimumbiasCDCountFilter          : {
+	minimumbias_cdCountFilter          : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUsed
 	    caloDigiCollection  : CaloDigiMaker
@@ -148,8 +148,8 @@ Trigger : {
       }
     
     analyzers  : { 
-	ReadTriggerInfo : { 
-	    module_type : ReadTriggerInfo
+	Read_triggerInfo : { 
+	    module_type : Read_triggerInfo
 	}
     }
     
@@ -161,40 +161,40 @@ Trigger : {
 	@table::TrkFilters.sequences
 
 	#straight track finder
-	@table::CstTrigger.sequences
+	@table::Cst_trigger.sequences
 
 	#unbiased filter. It selects the events based on their event id
-	unbiased           : [ unbiasedEventPrescale ]
+	unbiased           : [ unbiased_eventPrescale ]
 
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasSDCount : [ minimumbiasSDCountEventPrescale, minimumbiasSDCountFilter]
+	minBias_sdCount : [ minBias_sdCount_eventPrescale, minBias_sdCountFilter]
 
 	#filter to select events with large occupancy in the tracker
-	largeSDCount       : [ largeSDCountEventPrescale, largeSDCountFilter]
+	large_sdCount       : [ large_sdCount_eventPrescale, large_sdCountFilter]
 	
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasCDCount : [ minimumbiasCDCountEventPrescale, minimumbiasCDCountFilter]
+	minimumbias_cdCount : [ minimumbias_cdCount_eventPrescale, minimumbias_cdCountFilter]
 
 	#filter to select events with large occupancy in the tracker
-	largeCDCount       : [ largeCDCountEventPrescale, largeCDCountFilter]
+	large_cdCount       : [ large_cdCount_eventPrescale, large_cdCountFilter]
     }
     
     outputs: {
 	triggerOutput : { 
 	    module_type: RootOutput
 	    fileName: "filteredOutput.root"
-	    SelectEvents : [ unbiased_trigger, 
-			     minimumbiasSDCount_trigger,
-			     largeSDCount_trigger,
+	    Select_events : [ unbiased_trigger, 
+			     minBias_sdCount_trigger,
+			     large_sdCount_trigger,
 			     caloMVACE_trigger,
-			     tprSeedDeM_trigger, tprSeedDeP_trigger, cprSeedDeM_trigger, cprSeedDeP_trigger ]
+			     tprDeM_highP_stopTarg_trigger, tprDeP_highP_stopTarg_trigger, cprDeM_highP_stopTarg_trigger, cprDeP_highP_stopTarg_trigger ]
 #	    Compressionlevel: 0
 	    # fileProperties : {
-	    # 	maxEvents : 1000
+	    # 	max_events : 1000
 		# maxSubRuns : 
 		# maxSize : # in Kib
 		# maxAge : #in s
-		# granularity : [Event | SubRun | Run | InputFile | Job] # default is Event 
+		# granularity : [_event | SubRun | Run | InputFile | Job] # default is _event 
 		# maxInputFiles : 1 
 	    # }
 	    outputCommands: ["drop *_*_*_*",
@@ -204,7 +204,7 @@ Trigger : {
 	rootoutUnbiased : { 
 	    module_type: RootOutput
 	    fileName: "driver_unbiased.root"
-	    SelectEvents : [ unbiased_trigger ]
+	    Select_events : [ unbiased_trigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",
@@ -214,7 +214,7 @@ Trigger : {
 	rootoutCaloOnly : {
 	    module_type: RootOutput
 	    fileName: "driver_calo_only.root"
-	    SelectEvents : [ caloOnly_trigger ]
+	    Select_events : [ caloOnly_trigger ]
 #	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",
@@ -224,7 +224,7 @@ Trigger : {
 	rootoutTrkDem : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dem.root"
-	    SelectEvents : [ tprSeedDeM_trigger, cprSeedDeM_trigger ]
+	    Select_events : [ tprDeM_highP_stopTarg_trigger, cprDeM_highP_stopTarg_trigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",
@@ -234,7 +234,7 @@ Trigger : {
 	rootoutTrkDep : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dep.root"
-	    SelectEvents : [ tprDeP_trigger, cprSeedDeP_trigger ]
+	    Select_events : [ tprDeP_trigger, cprDeP_highP_stopTarg_trigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",

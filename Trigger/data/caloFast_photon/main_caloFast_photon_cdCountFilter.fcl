@@ -1,0 +1,8 @@
+physics.filters.caloFast_photoncdCountFilter.strawDigiCollection : notUSed	    
+physics.filters.caloFast_photoncdCountFilter.useStrawDigi        : false		    
+physics.filters.caloFast_photoncdCountFilter.useCaloDigi         : true		    
+physics.filters.caloFast_photoncdCountFilter.minNStrawDigi       : -1		    
+physics.filters.caloFast_photoncdCountFilter.maxNStrawDigi       : -1		    
+physics.filters.caloFast_photoncdCountFilter.minNCaloDigi        : 2		    
+physics.filters.caloFast_photoncdCountFilter.maxNCaloDigi        : 10000		    
+physics.filters.caloFast_photoncdCountFilter.maxCaloEnergy       : -1		    

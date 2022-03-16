@@ -48,7 +48,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         filters = calo_filters
     elif "unbiased" in trig_path:
         filters = unbiased_filters
-    elif "Count" in trig_path:
+    elif "minBias" in trig_path:
         filters = minbias_filters
 
     if len(filters) == 0 :
@@ -101,7 +101,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
 
     #now create the instance for the TriggerInfo Merger
     if  doWrite :
-        trigInfoMergerName         = trig_path + "TriggerInfoMerger"
+        trigInfoMergerName         = trig_path + "_triggerInfoMerger"
         subSubEpilogMergerFileName = subEpilogDirName + "/main_" + trigInfoMergerName + '.fcl'
         if verbose:
             print("Creating {}".format(subSubEpilogMergerFileName))
@@ -247,7 +247,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         words    = line.split()
         pathName = words[0].split(":")[0]
         pathID   = words[0].split(":")[1]
-        pathNameNoTags = pathName.split("_")[0]
+        pathNameNoTags = pathName#.split("_")[0]
         if pathNameNoTags != "triggerOutput":
 
             # check if the name of the path is present in the prolog_trigger files
