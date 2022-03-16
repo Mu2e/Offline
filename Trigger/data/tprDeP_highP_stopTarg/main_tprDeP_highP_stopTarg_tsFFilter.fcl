@@ -1,0 +1,9 @@
+physics.filters.tprDeP_highP_stopTarg_tsFilter.fitparticle   : @local::Particle.eplus
+physics.filters.tprDeP_highP_stopTarg_tsFilter.fitdirection  : @local::FitDir.downstream 
+physics.filters.tprDeP_highP_stopTarg_tsFilter.minNStrawHits : 15.0
+physics.filters.tprDeP_highP_stopTarg_tsFilter.minMomentum   : 70.0
+physics.filters.tprDeP_highP_stopTarg_tsFilter.maxMomentum   : 110.0
+physics.filters.tprDeP_highP_stopTarg_tsFilter.maxChi2DOF    : 20.0
+physics.filters.tprDeP_highP_stopTarg_tsFilter.maxMomErr     : 10.0
+physics.filters.tprDeP_highP_stopTarg_tsFilter.minD0         : -200.0
+physics.filters.tprDeP_highP_stopTarg_tsFilter.maxD0         : 200.0

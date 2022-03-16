@@ -1,0 +1,2 @@
+physics.filters.tprHelixDeP_tcFilter.requireCaloCluster : false
+physics.filters.tprHelixDeP_tcFilter.minNHits : 10.0

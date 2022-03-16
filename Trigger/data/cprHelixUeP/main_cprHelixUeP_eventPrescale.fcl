@@ -1,0 +1,2 @@
+physics.filters.cprHelixUeP_EventPrescale.nPrescale    : 1
+physics.filters.cprHelixUeP_EventPrescale.triggerFlag  : ["PrescaleRandom"]

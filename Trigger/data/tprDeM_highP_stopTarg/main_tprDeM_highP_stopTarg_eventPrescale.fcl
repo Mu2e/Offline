@@ -1,0 +1,2 @@
+physics.filters.tprDeM_highP_stopTarg_EventPrescale.nPrescale    : 1
+physics.filters.tprDeM_highP_stopTarg_EventPrescale.triggerFlag  : ["PrescaleRandom"]

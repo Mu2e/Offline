@@ -1,9 +1,0 @@
-physics.filters.tprCosmicHelixUePSDCountFilter.caloDigiCollection  : notUsed
-physics.filters.tprCosmicHelixUePSDCountFilter.useStrawDigi        : true	 
-physics.filters.tprCosmicHelixUePSDCountFilter.useCaloDigi         : false	 
-physics.filters.tprCosmicHelixUePSDCountFilter.minNStrawDigi       : 10 	 
-physics.filters.tprCosmicHelixUePSDCountFilter.maxNStrawDigi       : 10000	 
-physics.filters.tprCosmicHelixUePSDCountFilter.minNCaloDigi        : -1	 
-physics.filters.tprCosmicHelixUePSDCountFilter.maxNCaloDigi        : -1	 
-physics.filters.tprCosmicHelixUePSDCountFilter.maxCaloEnergy       : -1     
-
