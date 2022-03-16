@@ -18,6 +18,7 @@
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
@@ -133,7 +134,7 @@ namespace mu2e {
          using StepHandles = std::vector<art::ValidHandle<CaloShowerStepCollection>>;
 
          void  makeReadoutHits   (const StepHandles&, CaloShowerROCollection&, CaloShowerSimCollection&, const EventWindowMarker&,
-                                  const ProtonBunchTimeMC&);
+                                  const ProtonBunchTimeMC&, float timeFromProtonsToDRMarker);
          float LRUCorrection     (int crystalID, float normalizedPosZ, float edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
          void  dumpCaloShowerSim (const CaloShowerSimCollection& caloShowerSims);
 
@@ -189,6 +190,10 @@ namespace mu2e {
       event.getByLabel(pbtmcTag_, pbtmcHandle);
       const ProtonBunchTimeMC& pbtmc(*pbtmcHandle);
 
+      ProditionsHandle<EventTiming> eventTimingHandle;
+      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+      float timeFromProtonsToDRMarker = eventTiming.timeFromProtonsToDRMarker(); //fixed time between CFO first tick and event start
+
       // Containers to hold the output hits.
       auto CaloShowerROs  = std::make_unique<CaloShowerROCollection>();
       auto caloShowerSims = std::make_unique<CaloShowerSimCollection>();
@@ -198,7 +203,7 @@ namespace mu2e {
                      back_inserter(newCrystalShowerTokens), 
                      [&event](const auto& token) {return event.getValidHandle(token);});
       
-      makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims, ewMarker, pbtmc);
+      makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims, ewMarker, pbtmc, timeFromProtonsToDRMarker );
 
       // Add the output hit collection to the event
       event.put(std::move(CaloShowerROs));
@@ -211,7 +216,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------------------------------
   void CaloShowerROMaker::makeReadoutHits(const StepHandles& crystalShowerHandles, CaloShowerROCollection& CaloShowerROs, 
                                           CaloShowerSimCollection& caloShowerSims, const EventWindowMarker& ewMarker, 
-                                          const ProtonBunchTimeMC& pbtmc)
+                                          const ProtonBunchTimeMC& pbtmc, float timeFromProtonsToDRMarker)
   {
       GlobalConstantsHandle<ParticleDataList>  pdt;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
@@ -226,9 +231,9 @@ namespace mu2e {
       std::map<int,std::vector<StepEntry>> simEntriesMap;
       diagSummary diagSum;
 
-      // Digitization start / end  from Event window start time to accelerator DR marker (with PB jitter)
-      float  correctedDigitizeStart = digitizationStart_ - pbtmc.pbtime_; 
-      float  correctedDigitizeEnd   = digitizationEnd_   - pbtmc.pbtime_; 
+      // Digitization start / end  from accelerator DR marker with PB jitter
+      float  correctedDigitizeStart = digitizationStart_ - pbtmc.pbtime_ - timeFromProtonsToDRMarker; 
+      float  correctedDigitizeEnd   = digitizationEnd_   - pbtmc.pbtime_ - timeFromProtonsToDRMarker ; 
 
       //-----------------------------------------------------------------------
       //store corrected energy deposits for each redouts

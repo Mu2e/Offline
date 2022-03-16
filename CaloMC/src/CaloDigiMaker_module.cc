@@ -181,6 +181,7 @@ namespace mu2e {
 
   
   //-----------------------------------------------------------------------------------------------------------------------------
+  // Note: DigitizationStart include the fixed delay from timeFromProtonsToDRMarker, need to subtract it to be in the digitizer frame
   void CaloDigiMaker::makeDigitization(const CaloShowerROCollection& CaloShowerROs, CaloDigiCollection& caloDigiColl, 
                                        const EventWindowMarker& ewMarker, const ProtonBunchTimeMC& pbtmc)
   {
@@ -194,7 +195,7 @@ namespace mu2e {
       int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill)
       {
-        waveformSize = (ewMarker.eventLength()- timeFromProtonsToDRMarker_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
+        waveformSize = (ewMarker.eventLength() - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       }
       
       int nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");  
@@ -222,21 +223,20 @@ namespace mu2e {
   void CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
                                  const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations, const ProtonBunchTimeMC& pbtmc)
   {
-      double scaleFactor = calorimeterCalibrations->MeV2ADC(iRO)/calorimeterCalibrations->peMeV(iRO);
+      float scaleFactor = calorimeterCalibrations->MeV2ADC(iRO)/calorimeterCalibrations->peMeV(iRO);
 
       for (const auto& CaloShowerRO : CaloShowerROs)
       {
           unsigned SiPMID = CaloShowerRO.SiPMID();
           if (SiPMID != iRO) continue;
-
           for (const auto PEtime : CaloShowerRO.PETime())
           {        
               //PE time is given in DR frame, we need to subtract the event window start and the digi Start time
-              float       time           = PEtime + pbtmc.pbtime_- digitizationStart_ + startTimeBuffer_;         
+              float       time           = PEtime + pbtmc.pbtime_- digitizationStart_ + timeFromProtonsToDRMarker_ + startTimeBuffer_;         
               unsigned    startSample    = std::max(0u,unsigned(time/digiSampling_));
               const auto& pulse          = pulseShape_.digitizedPulse(time);
               unsigned    stopSample     = std::min(startSample+pulse.size(), waveform.size());
-              
+
               for (size_t timeSample = startSample; timeSample < stopSample; ++timeSample) 
                  waveform.at(timeSample) += pulse.at(timeSample - startSample)*scaleFactor;              
           }
@@ -314,7 +314,7 @@ namespace mu2e {
        {
 	   size_t sampleStart = hitStarts[ihit];
 	   size_t sampleStop  = hitStops[ihit];
-	   size_t t0          = size_t(sampleStart*digiSampling_ + digitizationStart_ + timeFromProtonsToDRMarker_ - startTimeBuffer_);
+	   size_t t0          = size_t(sampleStart*digiSampling_ + digitizationStart_ - startTimeBuffer_);
            //Note: here we assume that the digi code will correct for the timeFromProtonToDrMarker so that the "real" time is used
            //This is used to maintain backward compatibility with the rest of the code
 
@@ -325,7 +325,7 @@ namespace mu2e {
 	   // only consider hits above digitizationStart
            size_t peakPosition(0u);
            for (auto i = 0u; i<wfsample.size();++i) {
-              if (t0+i*digiSampling_ >= digitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
+              if (t0+i*digiSampling_+timeFromProtonsToDRMarker_ >= digitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
            }
 	   if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop 
                                        << " peak in position " << peakPosition << std::endl; 
