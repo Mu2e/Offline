@@ -12,12 +12,12 @@ TrkFilters : {
 	#--------------------------------------------------------------------------------
 	# filters for the TimeClustering results
 	#--------------------------------------------------------------------------------
-	tprTimeClusterDeMTCFilter : {
+	tprTimeClusterDeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
 	    triggerPath            : "tprTimeClusterDeM"
 	}
-	tprTimeClusterDePTCFilter : {
+	tprTimeClusterDeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
 	    triggerPath            : "tprTimeClusterDeP"
@@ -25,139 +25,139 @@ TrkFilters : {
 
 
 	# CE and CEPlus from the ST
-	tprSeedDeMTCFilter : {
+	tprDeM_highP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprSeedDeM"
+	    triggerPath            : "tprDeM_highP_stopTarg"
 	}
-	tprSeedDePTCFilter : {
+	tprDeP_highP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprSeedDeP"
+	    triggerPath            : "tprDeP_highP_stopTarg"
 	}
-	cprSeedDeMTCFilter : {
+	cprDeM_highP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprSeedDeM"	    
+	    triggerPath            : "cprDeM_highP_stopTarg"	    
 	}
-	cprSeedDePTCFilter : {
+	cprDeP_highP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprSeedDeP"	    
+	    triggerPath            : "cprDeP_highP_stopTarg"	    
 	}
 	
 	#cosmic tracks
-	tprCosmicSeedDeMTCFilter : {
+	tprCosmicSeedDeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
 	    triggerPath            : "tprCosmicSeedDeM"
 	}
-	tprCosmicSeedDePTCFilter : {
+	tprCosmicSeedDeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
 	    triggerPath            : "tprCosmicSeedDeP"
 	}
-	tprCosmicHelixDeMTCFilter : {
+	tprHelixDeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprCosmicHelixDeM"
+	    triggerPath            : "tprHelixDeM"
 	}
-	tprCosmicHelixDePTCFilter : {
+	tprHelixDeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprCosmicHelixDeP"
+	    triggerPath            : "tprHelixDeP"
 	}
-	tprCosmicHelixUeMTCFilter : {
+	tprHelixUeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUe"
-	    triggerPath            : "tprCosmicHelixUeM"
+	    triggerPath            : "tprHelixUeM"
 	}
-	tprCosmicHelixUePTCFilter : {
+	tprHelixUeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUe"
-	    triggerPath            : "tprCosmicHelixUeP"
+	    triggerPath            : "tprHelixUeP"
 	}
-	cprCosmicSeedDeMTCFilter : {
+	cprCosmicSeedDeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
 	    triggerPath            : "cprCosmicSeedDeM"	    
 	}
-	cprCosmicSeedDePTCFilter : {
+	cprCosmicSeedDeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
 	    triggerPath            : "cprCosmicSeedDeP"	    
 	}
-	cprCosmicHelixDeMTCFilter : {
+	cprHelixDeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprCosmicHelixDeM"	    
+	    triggerPath            : "cprHelixDeM"	    
 	}
-	cprCosmicHelixDePTCFilter : {
+	cprHelixDeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprCosmicHelixDeP"	    
+	    triggerPath            : "cprHelixDeP"	    
 	}
-	cprCosmicHelixUeMTCFilter : {
+	cprHelixUeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUe"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprCosmicHelixUeM"	    
+	    triggerPath            : "cprHelixUeM"	    
 	}
-	cprCosmicHelixUePTCFilter : {
+	cprHelixUeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUe"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprCosmicHelixUeP"	    
+	    triggerPath            : "cprHelixUeP"	    
 	}
 
 	#low p particles from the ST
-	tprLowPSeedDeMTCFilter : {
+	tprDeM_lowP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprLowPSeedDeM"
+	    triggerPath            : "tprDeM_lowP_stopTarg"
 	}
-	tprLowPSeedDePTCFilter : {
+	tprDeP_lowP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprLowPSeedDeP"
+	    triggerPath            : "tprDeP_lowP_stopTarg"
 	}
-	cprLowPSeedDeMTCFilter : {
+	cprDeM_lowP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprLowPSeedDeM"	    
+	    triggerPath            : "cprDeM_lowP_stopTarg"	    
 	}
-	cprLowPSeedDePTCFilter : {
+	cprDeP_lowP_stopTarg_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprLowPSeedDeP"	    
+	    triggerPath            : "cprDeP_lowP_stopTarg"	    
 	}
 
 	#fast sequcnes that process only the ComboHits in time with the calo-cluster with E>50MeV
-	tprSeedUCCDeMTCFilter : {
+	tprSeedUCCDeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUCC"
 	    triggerPath            : "tprSeedUCCDeM"
 	}
-	tprSeedUCCDePTCFilter : {
+	tprSeedUCCDeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUCC"
 	    triggerPath            : "tprSeedUCCDeP"
 	}
-	cprSeedUCCDeMTCFilter : {
+	cprSeedUCCDeM_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUCC"
 	    minNHits              : 1  #just check if there are TimeClusters
 	    triggerPath            : "cprSeedUCCDeM"	    
 	}
-	cprSeedUCCDePTCFilter : {
+	cprSeedUCCDeP_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUCC"
 	    minNHits              : 1  #just check if there are TimeClusters
@@ -165,16 +165,16 @@ TrkFilters : {
 	}
 
 	#e- from the IPA
-	tprHelixIPADeMTCFilter : {
+	tprHelixDeM_ipa_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprHelixIPADeM"
+	    triggerPath            : "tprHelixDeM_ipa"
 	}
 	
-	tprHelixIPAPhi0ScaledDeMTCFilter : {
+	tprHelixDeM_ipa_phiScaled_tcFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprHelixIPAPhi0ScaledDeM"
+	    triggerPath            : "tprHelixDeM_ipa_phiScaled"
 	}
 	
 	#--------------------------------------------------------------------------------
@@ -182,7 +182,7 @@ TrkFilters : {
 	#--------------------------------------------------------------------------------
 
 	# filters for either positive or negative helicity tracks near the CE energy
-	tprSeedDeMHSFilter : {
+	tprDeM_highP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1
@@ -196,11 +196,11 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprSeedDeM"	 
+	    triggerPath         : "tprDeM_highP_stopTarg"	 
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	tprSeedDePHSFilter : {
+	tprDeP_highP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeP"
 	    helicity            : -1
@@ -214,12 +214,12 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprSeedDeP"	    
+	    triggerPath         : "tprDeP_highP_stopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
-	cprSeedDeMHSFilter : {
+	cprDeM_highP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeM"
 	    helicity            : 1
@@ -233,11 +233,11 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprSeedDeM"	    
+	    triggerPath         : "cprDeM_highP_stopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	cprSeedDePHSFilter : {
+	cprDeP_highP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeP"
 	    helicity            : -1
@@ -251,13 +251,13 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprSeedDeP"	    
+	    triggerPath         : "cprDeP_highP_stopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
 	# cosmic tracks e-/e+ not from the ST
-	tprCosmicSeedDeMHSFilter : {
+	tprCosmicSeedDeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1
@@ -275,7 +275,7 @@ TrkFilters : {
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	tprCosmicSeedDePHSFilter : {
+	tprCosmicSeedDeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeP"
 	    helicity            : -1
@@ -294,7 +294,7 @@ TrkFilters : {
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
-	cprCosmicSeedDeMHSFilter : {
+	cprCosmicSeedDeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeM"
 	    helicity            : 1
@@ -312,7 +312,7 @@ TrkFilters : {
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	cprCosmicSeedDePHSFilter : {
+	cprCosmicSeedDeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeP"
 	    helicity            : -1
@@ -332,7 +332,7 @@ TrkFilters : {
 	}
 
 	#cosmic helix: HS filters
-	tprCosmicHelixDeMHSFilter : {
+	tprHelixDeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1
@@ -346,11 +346,11 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprCosmicHelixDeM"	    
+	    triggerPath         : "tprHelixDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	tprCosmicHelixDePHSFilter : {
+	tprHelixDeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeP"
 	    helicity            : -1
@@ -364,11 +364,11 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprCosmicHelixDeP"	    
+	    triggerPath         : "tprHelixDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	tprCosmicHelixUeMHSFilter : {
+	tprHelixUeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerUeM"
 	    helicity            : -1
@@ -382,11 +382,11 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprCosmicHelixUeM"	    
+	    triggerPath         : "tprHelixUeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	tprCosmicHelixUePHSFilter : {
+	tprHelixUeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerUeP"
 	    helicity            : 1
@@ -400,12 +400,12 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprCosmicHelixUeP"	    
+	    triggerPath         : "tprHelixUeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
-	cprCosmicHelixDeMHSFilter : {
+	cprHelixDeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeM"
 	    helicity            : 1
@@ -419,11 +419,11 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprCosmicHelixDeM"	    
+	    triggerPath         : "cprHelixDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	cprCosmicHelixDePHSFilter : {
+	cprHelixDeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeP"
 	    helicity            : -1
@@ -437,11 +437,11 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprCosmicHelixDeP"	    
+	    triggerPath         : "cprHelixDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	cprCosmicHelixUeMHSFilter : {
+	cprHelixUeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerUeM"
 	    helicity            : -1
@@ -455,11 +455,11 @@ TrkFilters : {
 	    minD0               : -800.
 	    minAbsLambda        : 50. 
 	    maxAbsLambda        : 1000. 
-	    triggerPath         : "cprCosmicHelixUeM"	    
+	    triggerPath         : "cprHelixUeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	cprCosmicHelixUePHSFilter : {
+	cprHelixUeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerUeP"
 	    helicity            : 1
@@ -473,14 +473,14 @@ TrkFilters : {
 	    minD0               : -800.
 	    minAbsLambda        : 50. 
 	    maxAbsLambda        : 1000. 
-	    triggerPath         : "cprCosmicHelixUeP"	    
+	    triggerPath         : "cprHelixUeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
 
 	# low P e-/e+ from the ST
-	tprLowPSeedDeMHSFilter : {
+	tprDeM_lowP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1
@@ -494,11 +494,11 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprLowPSeedDeM"	    
+	    triggerPath         : "tprDeM_lowP_stopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	tprLowPSeedDePHSFilter : {
+	tprDeP_lowP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeP"
 	    helicity            : -1
@@ -512,12 +512,12 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprLowPSeedDeP"	    
+	    triggerPath         : "tprDeP_lowP_stopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
-	cprLowPSeedDeMHSFilter : {
+	cprDeM_lowP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeM"
 	    helicity            : 1
@@ -531,11 +531,11 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprLowPSeedDeM"	    
+	    triggerPath         : "cprDeM_lowP_stopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	cprLowPSeedDePHSFilter : {
+	cprDeP_lowP_stopTarg_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixMergerDeP"
 	    helicity            : -1
@@ -549,13 +549,13 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprLowPSeedDeP"	    
+	    triggerPath         : "cprDeP_lowP_stopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
 	# filters that uses the combohit collection filtered with the calorimeter info
-	tprSeedUCCDeMHSFilter : {
+	tprSeedUCCDeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixUCCMergerDeM"
 	    helicity            : 1
@@ -573,7 +573,7 @@ TrkFilters : {
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	tprSeedUCCDePHSFilter : {
+	tprSeedUCCDeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixUCCMergerDeP"
 	    helicity            : -1
@@ -592,7 +592,7 @@ TrkFilters : {
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
-	cprSeedUCCDeMHSFilter : {
+	cprSeedUCCDeM_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixUCCMergerDeM"
 	    helicity            : 1
@@ -610,7 +610,7 @@ TrkFilters : {
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
-	cprSeedUCCDePHSFilter : {
+	cprSeedUCCDeP_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTCalHelixUCCMergerDeP"
 	    helicity            : -1
@@ -630,7 +630,7 @@ TrkFilters : {
 	}
 
 
-	tprHelixIPADeMHSFilter : {
+	tprHelixDeM_ipa_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1		    
@@ -644,12 +644,12 @@ TrkFilters : {
 	    minD0               : 200.		    
 	    minAbsLambda        : 40. 		    
 	    maxAbsLambda        : 80. 		    
-	    triggerPath         : "tprHelixIPADeM"	    
+	    triggerPath         : "tprHelixDeM_ipa"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
-	tprHelixIPAPhi0ScaledDeMHSFilter : {
+	tprHelixDeM_ipa_phiScaled_hsFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1		    
@@ -663,14 +663,14 @@ TrkFilters : {
 	    minD0               : 200.		    
 	    minAbsLambda        : 40. 		    
 	    maxAbsLambda        : 80. 		    
-	    triggerPath         : "tprHelixIPAPhi0ScaledDeM"	    
+	    triggerPath         : "tprHelixDeM_ipa_phiScaled"	    
 	    prescaleUsingD0Phi  : true
 	    prescalerPar        : { amplitude: 6.2 frequency : 0.9675 phase : 0.1396}
 	}
 
 
 	# filters for CE candidates (downstream eminus near 100 MeV/c)
-	tprSeedDeMTSFilter : {
+	tprDeM_highP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFDeM"
 	    fitparticle       : @local::Particle.eminus	 
@@ -682,10 +682,10 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "tprSeedDeM"	    
+	    triggerPath        : "tprDeM_highP_stopTarg"	    
 	}
 
-	cprSeedDeMTSFilter : {
+	cprDeM_highP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitDem"    
 	    fitparticle       : @local::Particle.eminus
@@ -697,11 +697,11 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprSeedDeM"	    
+	    triggerPath        : "cprDeM_highP_stopTarg"	    
 	}
 
 	#cosmic tracks e-/e+ 
-	tprCosmicSeedDeMTSFilter : {
+	tprCosmicSeedDeM_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFDeM"
 	    fitparticle       : @local::Particle.eminus	 
@@ -716,7 +716,7 @@ TrkFilters : {
 	    triggerPath        : "tprCosmicSeedDeM"	    
 	}
 
-	cprCosmicSeedDeMTSFilter : {
+	cprCosmicSeedDeM_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitDem"    
 	    fitparticle       : @local::Particle.eminus
@@ -732,7 +732,7 @@ TrkFilters : {
 	}
 
 	#low P e-/e+ from the ST
-	tprLowPSeedDeMTSFilter : {
+	tprDeM_lowP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFDeM"
 	    fitparticle       : @local::Particle.eminus	 
@@ -744,10 +744,10 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "tprLowPSeedDeM"	    
+	    triggerPath        : "tprDeM_lowP_stopTarg"	    
 	}
 
-	cprLowPSeedDeMTSFilter : {
+	cprDeM_lowP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitDem"    
 	    fitparticle       : @local::Particle.eminus
@@ -759,12 +759,12 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprLowPSeedDeM"	    
+	    triggerPath        : "cprDeM_lowP_stopTarg"	    
 	}
 
 
 	# fitlered sequences
-	tprSeedUCCDeMTSFilter : {
+	tprSeedUCCDeM_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFUCCDeM"
 	    fitparticle       : @local::Particle.eminus	 
@@ -779,7 +779,7 @@ TrkFilters : {
 	    triggerPath        : "tprSeedUCCDeM"	    
 	}
 
-	cprSeedUCCDeMTSFilter : {
+	cprSeedUCCDeM_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitUCCDem"    
 	    fitparticle       : @local::Particle.eminus
@@ -793,13 +793,13 @@ TrkFilters : {
 	    maxD0             : 200. 
 	    triggerPath        : "cprSeedUCCDeM"	    
 	}
-	tprSeedDeMKFFilter : {
+	tprDeM_highP_stopTargKFFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKFFDeM"
-	    triggerPath        : "tprSeedDeM"	    
+	    triggerPath        : "tprDeM_highP_stopTarg"	    
 	}
 	# filters for downstream positrons (mu- -> e+ conversion) 
-	tprSeedDePTSFilter : {
+	tprDeP_highP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFDeP"
 	    fitparticle       : @local::Particle.eplus
@@ -811,10 +811,10 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200.
-	    triggerPath        : "tprSeedDeP"	    
+	    triggerPath        : "tprDeP_highP_stopTarg"	    
 	}
 
-	cprSeedDePTSFilter : {
+	cprDeP_highP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitDep"    
 	    fitparticle       : @local::Particle.eplus
@@ -826,12 +826,12 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprSeedDeP"	    
+	    triggerPath        : "cprDeP_highP_stopTarg"	    
 	}
 
 
 	#cosmic tracks e-/e+ from the ST
-	tprCosmicSeedDePTSFilter : {
+	tprCosmicSeedDeP_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFDeP"
 	    fitparticle       : @local::Particle.eplus
@@ -846,7 +846,7 @@ TrkFilters : {
 	    triggerPath        : "tprCosmicSeedDeP"	    
 	}
 
-	cprCosmicSeedDePTSFilter : {
+	cprCosmicSeedDeP_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitDep"    
 	    fitparticle       : @local::Particle.eplus
@@ -862,7 +862,7 @@ TrkFilters : {
 	}
 
 	#low P e-/e+ from the ST
-	tprLowPSeedDePTSFilter : {
+	tprDeP_lowP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFDeP"
 	    fitparticle       : @local::Particle.eplus
@@ -874,10 +874,10 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200.
-	    triggerPath        : "tprLowPSeedDeP"	    
+	    triggerPath        : "tprDeP_lowP_stopTarg"	    
 	}
 
-	cprLowPSeedDePTSFilter : {
+	cprDeP_lowP_stopTarg_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitDep"    
 	    fitparticle       : @local::Particle.eplus
@@ -889,12 +889,12 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprLowPSeedDeP"	    
+	    triggerPath        : "cprDeP_lowP_stopTarg"	    
 	}
 
 
 
-	tprSeedUCCDePTSFilter : {
+	tprSeedUCCDeP_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFUCCDeP"
 	    fitparticle       : @local::Particle.eplus
@@ -909,7 +909,7 @@ TrkFilters : {
 	    triggerPath        : "tprSeedUCCDeP"	    
 	}
 
-	cprSeedUCCDePTSFilter : {
+	cprSeedUCCDeP_tsFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTCalSeedFitUCCDep"    
 	    fitparticle       : @local::Particle.eplus
@@ -924,10 +924,10 @@ TrkFilters : {
 	    triggerPath        : "cprSeedUCCDeP"	    
 	}
 
-	tprSeedDePKFFilter : {
+	tprDeP_highP_stopTargKFFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKFFDeP"
-	    triggerPath        : "tprSeedDeP"	    
+	    triggerPath        : "tprDeP_highP_stopTarg"	    
 	}
 	# Other filters FIXME!!
 	# calibration filters
@@ -935,10 +935,10 @@ TrkFilters : {
 	# low-momentum electron filters
 	# low-field running filters
 
-	# trackSDCountFilter: is used upstream all the tracking sequence.
+	# track_sdCountFilter: is used upstream all the tracking sequence.
 	#                     it requires minimum number of hits; that is
 	#                     particularly useful for the off-spill events
-	tprTimeClusterDeMSDCountFilter     : {
+	tprTimeClusterDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -951,7 +951,7 @@ TrkFilters : {
 	    maxCaloEnergy       : -1
 	    triggerPath          : "tprTimeClusterDeM"	    
 	}
-	tprTimeClusterDePSDCountFilter     : {
+	tprTimeClusterDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -965,7 +965,7 @@ TrkFilters : {
 	    triggerPath          : "tprTimeClusterDeP"	    
 	}
 
-	tprHelixDeMSDCountFilter     : {
+	tprHelixDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -978,7 +978,7 @@ TrkFilters : {
 	    maxCaloEnergy       : -1
 	    triggerPath          : "tprHelixDeM"	    
 	}
-	tprHelixDePSDCountFilter     : {
+	tprHelixDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -991,7 +991,7 @@ TrkFilters : {
 	    maxCaloEnergy       : -1
 	    triggerPath          : "tprHelixDeP"	    
 	}
-	tprHelixIPADeMSDCountFilter     : {
+	tprHelixDeM_ipa_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1002,10 +1002,10 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixIPADeM"	    
+	    triggerPath          : "tprHelixDeM_ipa"	    
 	}
 
-	tprHelixIPAPhi0ScaledDeMSDCountFilter     : {
+	tprHelixDeM_ipa_phiScaled_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1016,10 +1016,10 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixIPAPhi0ScaledDeM"	    
+	    triggerPath          : "tprHelixDeM_ipa_phiScaled"	    
 	}
 
-	tprSeedDeMSDCountFilter     : {
+	tprDeM_highP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1030,9 +1030,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprSeedDeM"	    
+	    triggerPath          : "tprDeM_highP_stopTarg"	    
 	}
-	tprSeedDePSDCountFilter     : {
+	tprDeP_highP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1043,10 +1043,10 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprSeedDeP"	    
+	    triggerPath          : "tprDeP_highP_stopTarg"	    
 	}
 	
-	cprSeedDeMSDCountFilter     : {
+	cprDeM_highP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1057,9 +1057,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprSeedDeM"	    
+	    triggerPath          : "cprDeM_highP_stopTarg"	    
 	}
-	cprSeedDePSDCountFilter     : {
+	cprDeP_highP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1070,12 +1070,12 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprSeedDeP"	    
+	    triggerPath          : "cprDeP_highP_stopTarg"	    
 	}
 	
 	#SD counter filter for comisc track triggers
 
-	tprCosmicSeedDeMSDCountFilter     : {
+	tprCosmicSeedDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1088,7 +1088,7 @@ TrkFilters : {
 	    maxCaloEnergy       : -1
 	    triggerPath          : "tprCosmicSeedDeM"	    
 	}
-	tprCosmicSeedDePSDCountFilter     : {
+	tprCosmicSeedDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1102,7 +1102,7 @@ TrkFilters : {
 	    triggerPath          : "tprCosmicSeedDeP"	    
 	}
 	
-	cprCosmicSeedDeMSDCountFilter     : {
+	cprCosmicSeedDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1115,7 +1115,7 @@ TrkFilters : {
 	    maxCaloEnergy       : -1
 	    triggerPath          : "cprCosmicSeedDeM"	    
 	}
-	cprCosmicSeedDePSDCountFilter     : {
+	cprCosmicSeedDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1130,7 +1130,7 @@ TrkFilters : {
 	}
 	
 	#cosmic cpr helix
-	tprCosmicHelixDeMSDCountFilter     : {
+	tprHelixDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1141,9 +1141,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprCosmicHelixDeM"	    
+	    triggerPath          : "tprHelixDeM"	    
 	}
-	tprCosmicHelixDePSDCountFilter     : {
+	tprHelixDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1154,9 +1154,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprCosmicHelixDeP"	    
+	    triggerPath          : "tprHelixDeP"	    
 	}
-	tprCosmicHelixUeMSDCountFilter     : {
+	tprHelixUeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1167,9 +1167,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprCosmicHelixUeM"	    
+	    triggerPath          : "tprHelixUeM"	    
 	}
-	tprCosmicHelixUePSDCountFilter     : {
+	tprHelixUeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1180,10 +1180,10 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprCosmicHelixUeP"	    
+	    triggerPath          : "tprHelixUeP"	    
 	}
 	
-	cprCosmicHelixDeMSDCountFilter     : {
+	cprHelixDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1194,9 +1194,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprCosmicHelixDeM"	    
+	    triggerPath          : "cprHelixDeM"	    
 	}
-	cprCosmicHelixDePSDCountFilter     : {
+	cprHelixDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1207,12 +1207,12 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprCosmicHelixDeP"	    
+	    triggerPath          : "cprHelixDeP"	    
 	}
 	
 
 	#SD counter filter for lowP trigger lines
-	tprLowPSeedDeMSDCountFilter     : {
+	tprDeM_lowP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1223,9 +1223,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprLowPSeedDeM"	    
+	    triggerPath          : "tprDeM_lowP_stopTarg"	    
 	}
-	tprLowPSeedDePSDCountFilter     : {
+	tprDeP_lowP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1236,10 +1236,10 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprLowPSeedDeP"	    
+	    triggerPath          : "tprDeP_lowP_stopTarg"	    
 	}
 	
-	cprLowPSeedDeMSDCountFilter     : {
+	cprDeM_lowP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1250,9 +1250,9 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprLowPSeedDeM"	    
+	    triggerPath          : "cprDeM_lowP_stopTarg"	    
 	}
-	cprLowPSeedDePSDCountFilter     : {
+	cprDeP_lowP_stopTarg_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1263,11 +1263,11 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprLowPSeedDeP"	    
+	    triggerPath          : "cprDeP_lowP_stopTarg"	    
 	}
 	
 
-	tprSeedUCCDeMSDCountFilter     : {
+	tprSeedUCCDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1280,7 +1280,7 @@ TrkFilters : {
 	    maxCaloEnergy       : -1
 	    triggerPath          : "tprSeedUCCDeM"	    
 	}
-	tprSeedUCCDePSDCountFilter     : {
+	tprSeedUCCDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1294,7 +1294,7 @@ TrkFilters : {
 	    triggerPath          : "tprSeedUCCDeP"	    
 	}
 	
-	cprSeedUCCDeMSDCountFilter     : {
+	cprSeedUCCDeM_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1307,7 +1307,7 @@ TrkFilters : {
 	    maxCaloEnergy       : -1
 	    triggerPath          : "cprSeedUCCDeM"	    
 	}
-	cprSeedUCCDePSDCountFilter     : {
+	cprSeedUCCDeP_sdCountFilter     : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -1324,395 +1324,395 @@ TrkFilters : {
 	#follow the prescaler filters for Tpr Track sequences
 
 	#filters for the paths where decision is made using the TimeCluster
-	tprTimeClusterDeMEventPrescale : {
-	    module_type : PrescaleEvent
+	tprTimeClusterDeM_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale     : 1
 	    triggerPath    : "tprTimeClusterDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprTimeClusterDeMPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale : 1000
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath    : "tprTimeClusterDeM"	    
-	    triggerFlag   : ["PrescaleGoodEvents"]	    	    
+	    triggerFlag   : ["PrescaleGood_events"]	    	    
 	}
-	tprTimeClusterDePEventPrescale : {
-	    module_type : PrescaleEvent
+	tprTimeClusterDeP_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale     : 1
 	    triggerPath    : "tprTimeClusterDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprTimeClusterDePPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale : 1000
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath    : "tprTimeClusterDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
 	#filters for the paths where decision is made using the HelixSeed
-	tprHelixDeMEventPrescale : {
-	    module_type : PrescaleEvent
+	tprHelixDeM_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale     : 1
 	    triggerPath    : "tprHelixDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDeMPrescale : {
-	    module_type : PrescaleEvent
-	    useFilteredEvents : true
+	    module_type : Prescale_event
+	    useFiltered_events : true
 	    nPrescale         : 300
 	    triggerPath        : "tprHelixDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
-	tprHelixDePEventPrescale : {
-	    module_type : PrescaleEvent
+	tprHelixDeP_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale     : 1
 	    triggerPath    : "tprHelixDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDePPrescale : {
-	    module_type : PrescaleEvent
-	    useFilteredEvents : true
+	    module_type : Prescale_event
+	    useFiltered_events : true
 	    nPrescale         : 300
 	    triggerPath        : "tprHelixDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
-	tprHelixIPADeMEventPrescale : {
-	    module_type : PrescaleEvent
+	tprHelixDeM_ipa_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale     : 1
-	    triggerPath    : "tprHelixIPADeM"	    
+	    triggerPath    : "tprHelixDeM_ipa"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
-	tprHelixIPADeMPrescale : {
-	    module_type : PrescaleEvent
-	    useFilteredEvents : true
+	tprHelixDeM_ipaPrescale : {
+	    module_type : Prescale_event
+	    useFiltered_events : true
 	    nPrescale         : 300
-	    triggerPath        : "tprHelixIPADeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerPath        : "tprHelixDeM_ipa"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	tprHelixIPAPhi0ScaledDeMEventPrescale : {
-	    module_type : PrescaleEvent
+	tprHelixDeM_ipa_phiScaled_eventPrescale : {
+	    module_type : Prescale_event
 	    nPrescale     : 1
-	    triggerPath   : "tprHelixIPAPhi0ScaledDeM"	    
+	    triggerPath   : "tprHelixDeM_ipa_phiScaled"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
-	tprHelixIPAPhi0ScaledDeMPrescale : {
-	    module_type : PrescaleEvent
-	    useFilteredEvents : true
+	tprHelixDeM_ipa_phiScaledPrescale : {
+	    module_type : Prescale_event
+	    useFiltered_events : true
 	    nPrescale         : 300
-	    triggerPath       : "tprHelixIPAPhi0ScaledDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerPath       : "tprHelixDeM_ipa_phiScaled"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
 	#filters for the paths where decision is made using the TrackSeed
-	tprSeedDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	tprDeM_highP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "tprSeedDeM"	    
+	    triggerPath        : "tprDeM_highP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	tprSeedDeMPrescale : {
-	    module_type : PrescaleEvent
+	tprDeM_highP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    useFilteredEvents : true
-	    triggerPath        : "tprSeedDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "tprDeM_highP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	tprSeedDePEventPrescale: {
-	    module_type : PrescaleEvent
+	tprDeP_highP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    triggerPath        : "tprSeedDeP"	    
+	    triggerPath        : "tprDeP_highP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
-	tprSeedDePPrescale : {
-	    module_type : PrescaleEvent
+	tprDeP_highP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "tprSeedDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "tprDeP_highP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 	
 	
-	tprCosmicSeedDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	tprCosmicSeedDeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
 	    triggerPath        : "tprCosmicSeedDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprCosmicSeedDeMPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "tprCosmicSeedDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	tprCosmicSeedDePEventPrescale: {
-	    module_type : PrescaleEvent
+	tprCosmicSeedDeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1
 	    triggerPath        : "tprCosmicSeedDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 	tprCosmicSeedDePPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "tprCosmicSeedDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
 	#cosmic tpr helix
-	tprCosmicHelixDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	tprHelixDeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "tprCosmicHelixDeM"	    
+	    triggerPath        : "tprHelixDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
-	tprCosmicHelixDePEventPrescale: {
-	    module_type : PrescaleEvent
+	tprHelixDeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    triggerPath        : "tprCosmicHelixDeP"	    
+	    triggerPath        : "tprHelixDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 
-	tprCosmicHelixUeMEventPrescale: {
-	    module_type : PrescaleEvent
+	tprHelixUeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "tprCosmicHelixUeM"	    
+	    triggerPath        : "tprHelixUeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
-	tprCosmicHelixUePEventPrescale: {
-	    module_type : PrescaleEvent
+	tprHelixUeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    triggerPath        : "tprCosmicHelixUeP"	    
+	    triggerPath        : "tprHelixUeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 
 	# low p particles
-	tprLowPSeedDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	tprDeM_lowP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "tprLowPSeedDeM"	    
+	    triggerPath        : "tprDeM_lowP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	tprLowPSeedDeMPrescale : {
-	    module_type : PrescaleEvent
+	tprDeM_lowP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    useFilteredEvents : true
-	    triggerPath        : "tprLowPSeedDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "tprDeM_lowP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	tprLowPSeedDePEventPrescale: {
-	    module_type : PrescaleEvent
+	tprDeP_lowP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    triggerPath        : "tprLowPSeedDeP"	    
+	    triggerPath        : "tprDeP_lowP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
-	tprLowPSeedDePPrescale : {
-	    module_type : PrescaleEvent
+	tprDeP_lowP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "tprLowPSeedDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "tprDeP_lowP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 	
 
 	#follow the prescaler filters for Tpr Track sequences
-	cprSeedDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	cprDeM_highP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprSeedDeM"	    
+	    triggerPath        : "cprDeM_highP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	cprSeedDeMPrescale : {
-	    module_type : PrescaleEvent
+	cprDeM_highP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "cprSeedDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "cprDeM_highP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprSeedDePEventPrescale: {
-	    module_type : PrescaleEvent
+	cprDeP_highP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprSeedDeP"	    
+	    triggerPath        : "cprDeP_highP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
-	cprSeedDePPrescale : {
-	    module_type : PrescaleEvent
+	cprDeP_highP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "cprSeedDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "cprDeP_highP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprLowPSeedDePPrescale : {
-	    module_type : PrescaleEvent
+	cprDeP_lowP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "cprLowPSeedDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "cprDeP_lowP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprLowPSeedDePEventPrescale: {
-	    module_type : PrescaleEvent
+	cprDeP_lowP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprLowPSeedDeP"	    
+	    triggerPath        : "cprDeP_lowP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
-	cprLowPSeedDeMPrescale : {
-	    module_type : PrescaleEvent
+	cprDeM_lowP_stopTargPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "cprLowPSeedDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "cprDeM_lowP_stopTarg"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprLowPSeedDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	cprDeM_lowP_stopTarg_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprLowPSeedDeM"	    
+	    triggerPath        : "cprDeM_lowP_stopTarg"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	#cosmic tracks
 	cprCosmicSeedDeMPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "cprCosmicSeedDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprCosmicSeedDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	cprCosmicSeedDeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
 	    triggerPath        : "cprCosmicSeedDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	cprCosmicSeedDePPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "cprCosmicSeedDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprCosmicSeedDePEventPrescale: {
-	    module_type : PrescaleEvent
+	cprCosmicSeedDeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
 	    triggerPath        : "cprCosmicSeedDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	#cosmic helixes
-	cprCosmicHelixDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	cprHelixDeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprCosmicHelixDeM"	    
+	    triggerPath        : "cprHelixDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
-	cprCosmicHelixUeMEventPrescale: {
-	    module_type : PrescaleEvent
+	cprHelixUeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprCosmicHelixUeM"	    
+	    triggerPath        : "cprHelixUeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
-	cprCosmicHelixDePPrescale : {
-	    module_type : PrescaleEvent
+	cprHelixDePPrescale : {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
-	    triggerPath        : "cprCosmicHelixDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    useFiltered_events : true
+	    triggerPath        : "cprHelixDeP"	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprCosmicHelixDePEventPrescale: {
-	    module_type : PrescaleEvent
+	cprHelixDeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprCosmicHelixDeP"	    
+	    triggerPath        : "cprHelixDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
-	cprCosmicHelixUePEventPrescale: {
-	    module_type : PrescaleEvent
+	cprHelixUeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    triggerPath        : "cprCosmicHelixUeP"	    
+	    triggerPath        : "cprHelixUeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	#prescaler for the sequences that use the combohit collection filtered with the calorimeter cluster
-	tprSeedUCCDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	tprSeedUCCDeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
 	    triggerPath        : "tprSeedUCCDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprSeedUCCDeMPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "tprSeedUCCDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	tprSeedUCCDePEventPrescale: {
-	    module_type : PrescaleEvent
+	tprSeedUCCDeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1
 	    triggerPath        : "tprSeedUCCDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 	tprSeedUCCDePPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "tprSeedUCCDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 	
 	#follow the prescaler filters for Tpr Track sequences
-	cprSeedUCCDeMEventPrescale: {
-	    module_type : PrescaleEvent
+	cprSeedUCCDeM_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
 	    triggerPath        : "cprSeedUCCDeM"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	cprSeedUCCDeMPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "cprSeedUCCDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 
-	cprSeedUCCDePEventPrescale: {
-	    module_type : PrescaleEvent
+	cprSeedUCCDeP_eventPrescale: {
+	    module_type : Prescale_event
 	    nPrescale         : 1 
 	    triggerPath        : "cprSeedUCCDeP"	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	cprSeedUCCDePPrescale : {
-	    module_type : PrescaleEvent
+	    module_type : Prescale_event
 	    nPrescale         : 1 
-	    useFilteredEvents : true
+	    useFiltered_events : true
 	    triggerPath        : "cprSeedUCCDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	    triggerFlag       : ["PrescaleGood_events"]	    
 	}
 	
     }
@@ -1720,236 +1720,240 @@ TrkFilters : {
     # sequences for different trigger paths.  Early triggers are prescaled
     sequences : {
 	# #trkpatrec tracking
-	tprTimeClusterDeM    : [ tprTimeClusterDeMEventPrescale, 
-				 @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprTimeClusterDeMTCFilter ]
-	tprTimeClusterDeP    : [ tprTimeClusterDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprTimeClusterDePTCFilter ]
+	tprTimeClusterDeM    : [ tprTimeClusterDeM_eventPrescale, 
+				 @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprTimeClusterDeM_tcFilter ]
+	tprTimeClusterDeP    : [ tprTimeClusterDeP_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprTimeClusterDeP_tcFilter ]
 
-	# tprHelixDeM          : [ tprHelixDeMEventPrescale, tprHelixDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-	# 			 TTtimeClusterFinder, tprHelixDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixDeMHSFilter  ]
-	# tprHelixDeP          : [ tprDePHelixEventPrescale, tprDePHelixSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-	# 			 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprHelixDePHSFilter  ]
+	# tprHelixDeM          : [ tprHelixDeM_eventPrescale, tprHelixDeM_sdCountFilter, @sequence::CaloCluster_trigger.Reco, @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+	# 			 TTtimeClusterFinder, tprHelixDeM_tcFilter, TThelixFinder, TTHelixMergerDeM, tprHelixDeM_hsFilter  ]
+	# tprHelixDeP          : [ tprDePHelix_eventPrescale, tprDePHelix_sdCountFilter, @sequence::CaloCluster_trigger.Reco, @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+	# 			 TTtimeClusterFinder, tprHelixDeP_tcFilter, TThelixFinder, TTHelixMergerDeP, tprHelixDeP_hsFilter  ]
 
-	tprSeedDeM           : [ tprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter, tprSeedDeMTriggerInfoMerger ]
-	tprSeedDeP           : [ tprSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter, tprSeedDePTriggerInfoMerger  ]
+	tprDeM_highP_stopTarg           : [ tprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeM_highP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM, tprDeM_highP_stopTarg_hsFilter, TTKSFDeM, tprDeM_highP_stopTarg_tsFilter, tprDeM_highP_stopTarg_triggerInfoMerger ]
+	trpDeM               : [ tprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeM_highP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM, tprDeM_highP_stopTarg_hsFilter, TTKSFDeM, tprDeM_highP_stopTarg_tsFilter, tprDeM_highP_stopTarg_triggerInfoMerger ]
 
-	tprLowPSeedDeM       : [ tprLowPSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprLowPSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprLowPSeedDeMHSFilter, TTKSFDeM, tprLowPSeedDeMTSFilter, tprLowPSeedDeMTriggerInfoMerger ]
-	tprLowPSeedDeP       : [ tprLowPSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprLowPSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprLowPSeedDePHSFilter, TTKSFDeP, tprLowPSeedDePTSFilter, tprLowPSeedDePTriggerInfoMerger ]
+	tprDeP_highP_stopTarg           : [ tprDeP_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeP_highP_stopTarg_tcFilter, TThelixFinder,TTHelixMergerDeP,  tprDeP_highP_stopTarg_hsFilter, TTKSFDeP, tprDeP_highP_stopTarg_tsFilter, tprDeP_highP_stopTarg_triggerInfoMerger  ]
 
-	tprCosmicSeedDeM     : [ tprCosmicSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprCosmicSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprCosmicSeedDeMHSFilter, TTKSFDeM, tprCosmicSeedDeMTSFilter, tprCosmicSeedDeMTriggerInfoMerger ]
-	tprCosmicSeedDeP     : [ tprCosmicSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprCosmicSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprCosmicSeedDePHSFilter, TTKSFDeP, tprCosmicSeedDePTSFilter, tprCosmicSeedDePTriggerInfoMerger ]
+	tprDeM_lowP_stopTarg       : [ tprDeM_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeM_lowP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM, tprDeM_lowP_stopTarg_hsFilter, TTKSFDeM, tprDeM_lowP_stopTarg_tsFilter, tprDeM_lowP_stopTarg_triggerInfoMerger ]
+	tprDeP_lowP_stopTarg       : [ tprDeP_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeP_lowP_stopTarg_tcFilter, TThelixFinder,TTHelixMergerDeP,  tprDeP_lowP_stopTarg_hsFilter, TTKSFDeP, tprDeP_lowP_stopTarg_tsFilter, tprDeP_lowP_stopTarg_triggerInfoMerger ]
 
-	tprCosmicHelixDeM     : [ tprCosmicHelixDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprCosmicHelixDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprCosmicHelixDeMHSFilter, tprCosmicHelixDeMTriggerInfoMerger ]
-	tprCosmicHelixDeP     : [ tprCosmicHelixDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprCosmicHelixDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprCosmicHelixDePHSFilter, tprCosmicHelixDePTriggerInfoMerger ]
+	tprCosmicSeedDeM     : [ tprCosmicSeedDeM_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprCosmicSeedDeM_tcFilter, TThelixFinder, TTHelixMergerDeM, tprCosmicSeedDeM_hsFilter, TTKSFDeM, tprCosmicSeedDeM_tsFilter, tprCosmicSeedDeM_triggerInfoMerger ]
+	tprCosmicSeedDeP     : [ tprCosmicSeedDeP_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprCosmicSeedDeP_tcFilter, TThelixFinder,TTHelixMergerDeP,  tprCosmicSeedDeP_hsFilter, TTKSFDeP, tprCosmicSeedDeP_tsFilter, tprCosmicSeedDeP_triggerInfoMerger ]
 
-	tprCosmicHelixUeM     : [ tprCosmicHelixUeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinderUe, tprCosmicHelixUeMTCFilter, TThelixFinderUe, TTHelixMergerUeM, tprCosmicHelixUeMHSFilter, tprCosmicHelixUeMTriggerInfoMerger ]
-	tprCosmicHelixUeP     : [ tprCosmicHelixUePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinderUe, tprCosmicHelixUePTCFilter, TThelixFinderUe,TTHelixMergerUeP,  tprCosmicHelixUePHSFilter, tprCosmicHelixUePTriggerInfoMerger ]
+	tprHelixDeM     : [ tprHelixDeM_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprHelixDeM_tcFilter, TThelixFinder, TTHelixMergerDeM, tprHelixDeM_hsFilter, tprHelixDeM_triggerInfoMerger ]
+	tprHelixDeP     : [ tprHelixDeP_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprHelixDeP_tcFilter, TThelixFinder,TTHelixMergerDeP,  tprHelixDeP_hsFilter, tprHelixDeP_triggerInfoMerger ]
+
+	tprHelixUeM     : [ tprHelixUeM_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinderUe, tprHelixUeM_tcFilter, TThelixFinderUe, TTHelixMergerUeM, tprHelixUeM_hsFilter, tprHelixUeM_triggerInfoMerger ]
+	tprHelixUeP     : [ tprHelixUeP_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinderUe, tprHelixUeP_tcFilter, TThelixFinderUe,TTHelixMergerUeP,  tprHelixUeP_hsFilter, tprHelixUeP_triggerInfoMerger ]
 
 
 	# sequences that use a collection of combohits filtered using the calorimeter cluster info 
-	tprSeedUCCDeM        : [ tprSeedUCCDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
-				 TTtimeClusterFinderUCC, tprSeedUCCDeMTCFilter, TThelixFinderUCC, TTHelixUCCMergerDeM, tprSeedUCCDeMHSFilter, TTKSFUCCDeM, tprSeedUCCDeMTSFilter, tprSeedUCCDeMTriggerInfoMerger ]
-	tprSeedUCCDeP        : [ tprSeedUCCDePEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
-				 TTtimeClusterFinderUCC, tprSeedUCCDePTCFilter, TThelixFinderUCC, TTHelixUCCMergerDeP, tprSeedUCCDePHSFilter, TTKSFUCCDeP, tprSeedUCCDePTSFilter, tprSeedUCCDeMTriggerInfoMerger ]
+	tprSeedUCCDeM        : [ tprSeedUCCDeM_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHitsUCC, 
+				 TTtimeClusterFinderUCC, tprSeedUCCDeM_tcFilter, TThelixFinderUCC, TTHelixUCCMergerDeM, tprSeedUCCDeM_hsFilter, TTKSFUCCDeM, tprSeedUCCDeM_tsFilter, tprSeedUCCDeM_triggerInfoMerger ]
+	tprSeedUCCDeP        : [ tprSeedUCCDeP_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHitsUCC, 
+				 TTtimeClusterFinderUCC, tprSeedUCCDeP_tcFilter, TThelixFinderUCC, TTHelixUCCMergerDeP, tprSeedUCCDeP_hsFilter, TTKSFUCCDeP, tprSeedUCCDeP_tsFilter, tprSeedUCCDeM_triggerInfoMerger ]
 
 	#   calibration with DIO-Michel form Inner Proton Absorber
-	tprHelixIPAPhi0ScaledDeM  : [ tprHelixIPAPhi0ScaledDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixIPAPhi0ScaledDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixIPAPhi0ScaledDeMHSFilter, tprHelixIPAPhi0ScaledDeMTriggerInfoMerger  ]
+	tprHelixDeM_ipa_phiScaled  : [ tprHelixDeM_ipa_phiScaled_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprHelixDeM_ipa_phiScaled_tcFilter, TThelixFinder, TTHelixMergerDeM, tprHelixDeM_ipa_phiScaled_hsFilter, tprHelixDeM_ipa_phiScaled_triggerInfoMerger  ]
 
 	#    beam monitoring using the e- from the DIO in the IPA
-	tprHelixIPADeM       : [ tprHelixIPADeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixIPADeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixIPADeMHSFilter, tprHelixIPADeMTriggerInfoMerger  ]
+	tprHelixDeM_ipa       : [ tprHelixDeM_ipa_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprHelixDeM_ipa_tcFilter, TThelixFinder, TTHelixMergerDeM, tprHelixDeM_ipa_hsFilter, tprHelixDeM_ipa_triggerInfoMerger  ]
 	
 	#calo-seeded tracking
-	cprSeedDeM           : [ cprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprSeedDeMHSFilter,
-				 TTCalSeedFitDem, cprSeedDeMTSFilter, cprSeedDeMTriggerInfoMerger ]
-	cprSeedDeP           : [ cprSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprSeedDePHSFilter, 
-				 TTCalSeedFitDep, cprSeedDePTSFilter, cprSeedDePTriggerInfoMerger ]
+	cprDeM_highP_stopTarg           : [ cprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				 TTCalTimePeakFinder, cprDeM_highP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprDeM_highP_stopTarg_hsFilter,
+				 TTCalSeedFitDem, cprDeM_highP_stopTarg_tsFilter, cprDeM_highP_stopTarg_triggerInfoMerger ]
+	cprDeP_highP_stopTarg           : [ cprDeP_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTCalTimePeakFinder, cprDeP_highP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprDeP_highP_stopTarg_hsFilter, 
+				 TTCalSeedFitDep, cprDeP_highP_stopTarg_tsFilter, cprDeP_highP_stopTarg_triggerInfoMerger ]
 
-	cprLowPSeedDeM       : [ cprLowPSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinder, cprLowPSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprLowPSeedDeMHSFilter,
-				 TTCalSeedFitDem, cprLowPSeedDeMTSFilter, cprLowPSeedDeMTriggerInfoMerger ]
-	cprLowPSeedDeP       : [ cprLowPSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinder, cprLowPSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprLowPSeedDePHSFilter, 
-				 TTCalSeedFitDep, cprLowPSeedDePTSFilter, cprLowPSeedDePTriggerInfoMerger ]
+	cprDeM_lowP_stopTarg       : [ cprDeM_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				 TTCalTimePeakFinder, cprDeM_lowP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprDeM_lowP_stopTarg_hsFilter,
+				 TTCalSeedFitDem, cprDeM_lowP_stopTarg_tsFilter, cprDeM_lowP_stopTarg_triggerInfoMerger ]
+	cprDeP_lowP_stopTarg       : [ cprDeP_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTCalTimePeakFinder, cprDeP_lowP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprDeP_lowP_stopTarg_hsFilter, 
+				 TTCalSeedFitDep, cprDeP_lowP_stopTarg_tsFilter, cprDeP_lowP_stopTarg_triggerInfoMerger ]
 
-	cprCosmicSeedDeM     : [ cprCosmicSeedDeMEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinder, cprCosmicSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprCosmicSeedDeMHSFilter,
-				 TTCalSeedFitDem, cprCosmicSeedDeMTSFilter, cprCosmicSeedDeMTriggerInfoMerger ]
-	cprCosmicSeedDeP     : [ cprCosmicSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinder, cprCosmicSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicSeedDePHSFilter, 
-				 TTCalSeedFitDep, cprCosmicSeedDePTSFilter, cprCosmicSeedDePTriggerInfoMerger ]
-	cprCosmicHelixDeM     : [ cprCosmicHelixDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinder, cprCosmicHelixDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprCosmicHelixDeMHSFilter, cprCosmicHelixDeMTriggerInfoMerger ]
-	cprCosmicHelixDeP     : [ cprCosmicHelixDePEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinder, cprCosmicHelixDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicHelixDePHSFilter, cprCosmicHelixDePTriggerInfoMerger ]
-	cprCosmicHelixUeM     : [ cprCosmicHelixUeMEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinderUe, cprCosmicHelixUeMTCFilter, TTCalHelixFinderUe, TTCalHelixMergerUeM, cprCosmicHelixUeMHSFilter ]
-	cprCosmicHelixUeP     : [ cprCosmicHelixUePEventPrescale,   @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinderUe, cprCosmicHelixUePTCFilter, TTCalHelixFinderUe, TTCalHelixMergerUeP, cprCosmicHelixUePHSFilter ]
+	cprCosmicSeedDeM     : [ cprCosmicSeedDeM_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				 TTCalTimePeakFinder, cprCosmicSeedDeM_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprCosmicSeedDeM_hsFilter,
+				 TTCalSeedFitDem, cprCosmicSeedDeM_tsFilter, cprCosmicSeedDeM_triggerInfoMerger ]
+	cprCosmicSeedDeP     : [ cprCosmicSeedDeP_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTCalTimePeakFinder, cprCosmicSeedDeP_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprCosmicSeedDeP_hsFilter, 
+				 TTCalSeedFitDep, cprCosmicSeedDeP_tsFilter, cprCosmicSeedDeP_triggerInfoMerger ]
+	cprHelixDeM     : [ cprHelixDeM_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				 TTCalTimePeakFinder, cprHelixDeM_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprHelixDeM_hsFilter, cprHelixDeM_triggerInfoMerger ]
+	cprHelixDeP     : [ cprHelixDeP_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTCalTimePeakFinder, cprHelixDeP_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprHelixDeP_hsFilter, cprHelixDeP_triggerInfoMerger ]
+	cprHelixUeM     : [ cprHelixUeM_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				 TTCalTimePeakFinderUe, cprHelixUeM_tcFilter, TTCalHelixFinderUe, TTCalHelixMergerUeM, cprHelixUeM_hsFilter ]
+	cprHelixUeP     : [ cprHelixUeP_eventPrescale,   @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTCalTimePeakFinderUe, cprHelixUeP_tcFilter, TTCalHelixFinderUe, TTCalHelixMergerUeP, cprHelixUeP_hsFilter ]
 
-	cprSeedUCCDeM        : [ cprSeedUCCDeMEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC,
-				 TTCalTimePeakFinderUCC, cprSeedUCCDeMTCFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeM, cprSeedUCCDeMHSFilter,
-				 TTCalSeedFitUCCDem, cprSeedUCCDeMTSFilter, cprSeedUCCDeMTriggerInfoMerger ]
-	cprSeedUCCDeP        : [ cprSeedUCCDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
-				 TTCalTimePeakFinderUCC, cprSeedUCCDePTCFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeP, cprSeedUCCDePHSFilter, 
-				 TTCalSeedFitUCCDep, cprSeedUCCDePTSFilter, cprSeedUCCDePTriggerInfoMerger ]
+	cprSeedUCCDeM        : [ cprSeedUCCDeM_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHitsUCC,
+				 TTCalTimePeakFinderUCC, cprSeedUCCDeM_tcFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeM, cprSeedUCCDeM_hsFilter,
+				 TTCalSeedFitUCCDem, cprSeedUCCDeM_tsFilter, cprSeedUCCDeM_triggerInfoMerger ]
+	cprSeedUCCDeP        : [ cprSeedUCCDeP_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHitsUCC, 
+				 TTCalTimePeakFinderUCC, cprSeedUCCDeP_tcFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeP, cprSeedUCCDeP_hsFilter, 
+				 TTCalSeedFitUCCDep, cprSeedUCCDeP_tsFilter, cprSeedUCCDeP_triggerInfoMerger ]
 	
 	#fast tracking sequences that uses the calorimeter-time selection to reduce the number of TimeClusters and also the number of hits processed by the Delta-ray 
 	#removal algorithm
-	# fastTprSeedDeM  : [ tprSeedDeMEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits, 
-	# 		    TTfastTimeClusterFinder, tprFTCFilter, TTDeltaFinder, TTfastHelixFinder, FtprDeMHelixFilter, TTFKSFDeM, FtprSeedDeMFilter, tprSeedDeMPrescale ]
-	# fastTprSeedDeP  : [ tprSeedDePEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco,  @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits, 
-	# 		    TTfastTimeClusterFinder, tprFTCFilter, TTDeltaFinder, TTfastHelixFinder, FtprDePHelixFilter, TTFKSFDeP, FtprSeedDePFilter, tprSeedDePPrescale ]
+	# fastTprSeedDeM  : [ tprDeM_highP_stopTarg_eventPrescale, Track_sdCountFilter, @sequence::CaloCluster_trigger.Reco, @sequence::TrkHitReco_trigger.sequences.TTmakefastHits, 
+	# 		    TTfastTimeClusterFinder, tprF_tcFilter, TTDeltaFinder, TTfastHelixFinder, FtprDeMHelixFilter, TTFKSFDeM, FtprDeM_highP_stopTargFilter, tprDeM_highP_stopTargPrescale ]
+	# fastTprSeedDeP  : [ tprDeP_highP_stopTarg_eventPrescale, Track_sdCountFilter, @sequence::CaloCluster_trigger.Reco,  @sequence::TrkHitReco_trigger.sequences.TTmakefastHits, 
+	# 		    TTfastTimeClusterFinder, tprF_tcFilter, TTDeltaFinder, TTfastHelixFinder, FtprDePHelixFilter, TTFKSFDeP, FtprDeP_highP_stopTargFilter, tprDeP_highP_stopTargPrescale ]
 
 
 	# sequences for doing timing tests
-	tprSeedDeMTiming0   : [ tprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTriggerInfoMerger ]
-	tprSeedDeMTiming1   : [ tprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM ]
-	tprSeedDeMTiming2   : [ tprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	tprDeM_highP_stopTarg_timing0   : [ tprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeM_highP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM, tprDeM_highP_stopTarg_hsFilter, TTKSFDeM, tprDeM_highP_stopTarg_triggerInfoMerger ]
+	tprDeM_highP_stopTarg_timing1   : [ tprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeM_highP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM ]
+	tprDeM_highP_stopTarg_timing2   : [ tprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder ]
 
-	tprSeedDePTiming0   : [ tprSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTriggerInfoMerger ]
-	tprSeedDePTiming1   : [ tprSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP ]
-	tprSeedDePTiming2   : [ tprSeedDePEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	tprDeP_highP_stopTarg_timing0   : [ tprDeP_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeP_highP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeP, tprDeP_highP_stopTarg_hsFilter, TTKSFDeP, tprDeP_highP_stopTarg_triggerInfoMerger ]
+	tprDeP_highP_stopTarg_timing1   : [ tprDeP_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				 TTtimeClusterFinder, tprDeP_highP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeP ]
+	tprDeP_highP_stopTarg_timing2   : [ tprDeP_highP_stopTarg_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				 @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
 				 TTtimeClusterFinder ]
 
-	cprSeedDeMTiming0   : [ cprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprSeedDeMHSFilter,
-				TTCalSeedFitDem, cprSeedDeMTriggerInfoMerger ]
-	cprSeedDeMTiming1   : [ cprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM ]
-	cprSeedDeMTiming2   : [ cprSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+	cprDeM_highP_stopTarg_timing0   : [ cprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				@sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				TTCalTimePeakFinder, cprDeM_highP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprDeM_highP_stopTarg_hsFilter,
+				TTCalSeedFitDem, cprDeM_highP_stopTarg_triggerInfoMerger ]
+	cprDeM_highP_stopTarg_timing1   : [ cprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				@sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				TTCalTimePeakFinder, cprDeM_highP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM ]
+	cprDeM_highP_stopTarg_timing2   : [ cprDeM_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				@sequence::TrkHitReco_trigger.sequences.TTprepareHits,
 				TTCalTimePeakFinder ]
 
-	cprSeedDePTiming0   : [ cprSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprSeedDePHSFilter, 
-				TTCalSeedFitDep, cprSeedDePTriggerInfoMerger ]
-	cprSeedDePTiming1   : [ cprSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP ]
-	cprSeedDePTiming2   : [ cprSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	cprDeP_highP_stopTarg_timing0   : [ cprDeP_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				@sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				TTCalTimePeakFinder, cprDeP_highP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprDeP_highP_stopTarg_hsFilter, 
+				TTCalSeedFitDep, cprDeP_highP_stopTarg_triggerInfoMerger ]
+	cprDeP_highP_stopTarg_timing1   : [ cprDeP_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				@sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				TTCalTimePeakFinder, cprDeP_highP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP ]
+	cprDeP_highP_stopTarg_timing2   : [ cprDeP_highP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				@sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
 				TTCalTimePeakFinder ]
 
 
 
-	tprLowPSeedDeMTiming0      : [ tprLowPSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTtimeClusterFinder, tprLowPSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprLowPSeedDeMHSFilter, 
-				       TTKSFDeM, tprLowPSeedDeMPrescale, tprLowPSeedDeMTriggerInfoMerger ]
+	tprDeM_lowP_stopTarg_timing0      : [ tprDeM_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTtimeClusterFinder, tprDeM_lowP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM, tprDeM_lowP_stopTarg_hsFilter, 
+				       TTKSFDeM, tprDeM_lowP_stopTargPrescale, tprDeM_lowP_stopTarg_triggerInfoMerger ]
 
-	tprLowPSeedDeMTiming1      : [ tprLowPSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTtimeClusterFinder, tprLowPSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprLowPSeedDeMPrescale ]
+	tprDeM_lowP_stopTarg_timing1      : [ tprDeM_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTtimeClusterFinder, tprDeM_lowP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM, tprDeM_lowP_stopTargPrescale ]
 	
-	tprLowPSeedDeMTiming2      : [ tprLowPSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTtimeClusterFinder, tprLowPSeedDeMPrescale ]
+	tprDeM_lowP_stopTarg_timing2      : [ tprDeM_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTtimeClusterFinder, tprDeM_lowP_stopTargPrescale ]
 
 
-	tprLowPSeedDePTiming0      : [ tprLowPSeedDePEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTtimeClusterFinder, tprLowPSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprLowPSeedDePHSFilter, 
-				       TTKSFDeP, tprLowPSeedDePTriggerInfoMerger ]
+	tprDeP_lowP_stopTarg_timing0      : [ tprDeP_lowP_stopTarg_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco, 
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTtimeClusterFinder, tprDeP_lowP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeP, tprDeP_lowP_stopTarg_hsFilter, 
+				       TTKSFDeP, tprDeP_lowP_stopTarg_triggerInfoMerger ]
 
-	tprLowPSeedDePTiming1      : [ tprLowPSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTtimeClusterFinder, tprLowPSeedDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprLowPSeedDePPrescale ]
+	tprDeP_lowP_stopTarg_timing1      : [ tprDeP_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTtimeClusterFinder, tprDeP_lowP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeP, tprDeP_lowP_stopTargPrescale ]
 	
-	tprLowPSeedDePTiming2      : [ tprLowPSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco, 
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTtimeClusterFinder, tprLowPSeedDePPrescale ]
+	tprDeP_lowP_stopTarg_timing2      : [ tprDeP_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco, 
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTtimeClusterFinder, tprDeP_lowP_stopTargPrescale ]
 
 
-	cprLowPSeedDeMTiming0      : [ cprLowPSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				       TTCalTimePeakFinder, cprLowPSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprLowPSeedDeMHSFilter,
-				       TTCalSeedFitDem, cprLowPSeedDeMTriggerInfoMerger ]
+	cprDeM_lowP_stopTarg_timing0      : [ cprDeM_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				       TTCalTimePeakFinder, cprDeM_lowP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprDeM_lowP_stopTarg_hsFilter,
+				       TTCalSeedFitDem, cprDeM_lowP_stopTarg_triggerInfoMerger ]
 
-	cprLowPSeedDeMTiming1      : [ cprLowPSeedDeMEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				       TTCalTimePeakFinder, cprLowPSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM]
+	cprDeM_lowP_stopTarg_timing1      : [ cprDeM_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
+				       TTCalTimePeakFinder, cprDeM_lowP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM]
 	
-	cprLowPSeedDeMTiming2      : [ cprLowPSeedDeMEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+	cprDeM_lowP_stopTarg_timing2      : [ cprDeM_lowP_stopTarg_eventPrescale,  @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits,
 				       TTCalTimePeakFinder]
 
 
-	cprLowPSeedDePTiming0      : [ cprLowPSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTCalTimePeakFinder, cprLowPSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprLowPSeedDePHSFilter, 
-				       TTCalSeedFitDep, cprLowPSeedDePTriggerInfoMerger ]
+	cprDeP_lowP_stopTarg_timing0      : [ cprDeP_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTCalTimePeakFinder, cprDeP_lowP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprDeP_lowP_stopTarg_hsFilter, 
+				       TTCalSeedFitDep, cprDeP_lowP_stopTarg_triggerInfoMerger ]
 
-	cprLowPSeedDePTiming1      : [ cprLowPSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				       TTCalTimePeakFinder, cprLowPSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP ]
+	cprDeP_lowP_stopTarg_timing1      : [ cprDeP_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+				       TTCalTimePeakFinder, cprDeP_lowP_stopTarg_tcFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP ]
 	
-	cprLowPSeedDePTiming2      : [ cprLowPSeedDePEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
-				       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	cprDeP_lowP_stopTarg_timing2      : [ cprDeP_lowP_stopTarg_eventPrescale, @sequence::CaloHitReco_trigger.prepareHits,  @sequence::CaloCluster_trigger.Reco,
+				       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
 				       TTCalTimePeakFinder ]
 
 
 	#kalman filter included
-	tprKalDeM  : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
-		       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-		       TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, 
-		       TTKSFDeM, tprSeedDeMTSFilter, TTKFFDeM, tprSeedDeMKFFilter ]
+	tprKalDeM  : [ @sequence::CaloHitReco_trigger.prepareHits, @sequence::CaloCluster_trigger.Reco,
+		       @sequence::TrkHitReco_trigger.sequences.TTprepareHits, 
+		       TTtimeClusterFinder, tprDeM_highP_stopTarg_tcFilter, TThelixFinder, TTHelixMergerDeM, tprDeM_highP_stopTarg_hsFilter, 
+		       TTKSFDeM, tprDeM_highP_stopTarg_tsFilter, TTKFFDeM, tprDeM_highP_stopTargKFFilter ]
 	# add sequences for upstream, calibration, ...  FIXME!
     }
 }
