@@ -375,6 +375,111 @@ namespace mu2e {
     insertHorizontalProfileWires(pwcContainerInfo, pwc, gasMaterial, wireNameSuffix, _config, visible, forceSolid, forceAuxEdgeVisible, placePV, doSurfaceCheck, verbosity);
   } // constructTargetHallPWC
 
+  void constructPWCHolder(VolumeInfo const& motherVolume,
+                          const Box* longExtrusion,
+                          const Box* shortExtrusion,
+                          std::string holderExtrusionMaterialName,
+                          holderExtrusionLongSep,
+                          holderExtrusionShortPos,
+                          SimpleConfig const& _config ) {
+    // collect geomOptions
+    const int verbosity = _config.getInt("PTM.verbosityLevel",1);
+    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "PTM", "PTM" );
+    const bool visible = geomOptions->isVisible("PTM");
+    const bool forceSolid = geomOptions->isSolid("PTM");
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("PTM");
+    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
+    bool placePV = geomOptions->placePV("PTM");
+
+    std::string longBarName = "PTMPWCHolderLong";
+    G4Material *holderMaterial = findMaterialOrThrow(holderExtrusionMaterialName);
+    G4VSolid *longBar = new G4Box("PTMPWCHolderLong", 
+                            longExtrusion->getXhalfLength(), 
+                            longExtrusion->getYhalfLength(), 
+                            longExtrusion->getZhalfLength());
+    G4LogicalVolume *longBarLogical = new G4LogicalVolume(longBar, holderMaterial, longBarName);
+
+    // 4 long bars holding the PWC at the right distance apart
+    double bar1X = 0.5*holderExtrusionLongSep;
+    double bar1Y = 0.5*holderExtrusionLongSep;
+    VolumeInfo longBarInfo1;
+    longBarInfo1.solid = longBar;
+    longBarInfo1.logical = longBarLogical;
+    longBarInfo1.name = longBarName+"01";
+    finishNesting(longBarInfo1 
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(bar1X, bar1Y, 0),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    double bar2X = 0.5*holderExtrusionLongSep;
+    double bar2Y = -0.5*holderExtrusionLongSep;
+    VolumeInfo longBarInfo2;
+    longBarInfo2.solid = longBar;
+    longBarInfo2.logical = longBarLogical;
+    longBarInfo2.name = longBarName+"02";
+    finishNesting(longBarInfo2 
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(bar2X, bar2Y, 0),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    double bar3X = -0.5*holderExtrusionLongSep;
+    double bar3Y = 0.5*holderExtrusionLongSep;
+    VolumeInfo longBarInfo3;
+    longBarInfo3.solid = longBar;
+    longBarInfo3.logical = longBarLogical;
+    longBarInfo3.name = longBarName+"03";
+    finishNesting(longBarInfo3 
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(bar3X, bar3Y, 0),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    double bar4X = -0.5*holderExtrusionLongSep;
+    double bar4Y = -0.5*holderExtrusionLongSep;
+    VolumeInfo longBarInfo4;
+    longBarInfo4.solid = longBar;
+    longBarInfo4.logical = longBarLogical;
+    longBarInfo4.name = longBarName+"04";
+    finishNesting(longBarInfo4 
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  nullptr, // no rotation
+                  G4ThreeVector(bar4X, bar4Y, 0),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+
+  }
+
 
   void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config) {
 
@@ -412,9 +517,9 @@ namespace mu2e {
                 "PTM");
 
     // add the first PWC to the mother volume
-    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), VirtualDetectorId::PTM_1_In, _config);
+    constructTargetHallPWC(pTargetMonContainer, ptmon->ptmHead()->nearPWC(), VirtualDetectorId::PTM_1_In, _config);
     // and the second PWC
-    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC(), VirtualDetectorId::PTM_2_In, _config);
+    constructTargetHallPWC(pTargetMonContainer, ptmon->ptmHead()->farPWC(), VirtualDetectorId::PTM_2_In, _config);
 
   } // constructPTM
 
