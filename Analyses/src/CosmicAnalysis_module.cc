@@ -470,7 +470,7 @@ namespace mu2e
             std::string productionVolumeName="unknown volume";
             if(hasPhysicalVolumes && physicalVolumesMulti.product()!=NULL)
             {
-              mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(*physicalVolumesMulti);
+              mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(physicalVolumesMulti.product());
               productionVolumeName=volumeMultiHelper.startVolume(*matchingSimparticle).name();
             }
             strncpy(_eventinfo.simreco_production_volume, productionVolumeName.c_str(),99);
