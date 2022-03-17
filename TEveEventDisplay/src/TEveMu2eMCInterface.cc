@@ -115,7 +115,7 @@ namespace mu2e{
               posy = 1500.0;
               break;
           case PDGCode::mu_minus:
-              color = kOrange-7;
+              color = kOrange-7; //used to help distinguish from other lines only
               pid = "muon - ";
               posy = 1600.0;
               break;
