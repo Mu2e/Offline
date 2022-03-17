@@ -47,7 +47,7 @@ namespace mu2e {
 
     void UserSteppingAction(const G4Step*);
 
-    void BeginOfEvent(StepPointMCCollection& outputHits, const SimParticleHelper& spHelper);
+    void BeginOfEvent(StepPointMCCollection* outputHits, const SimParticleHelper& spHelper);
 
     void BeginOfTrack();
     void EndOfTrack();

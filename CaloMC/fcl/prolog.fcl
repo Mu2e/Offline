@@ -31,6 +31,7 @@ CaloShowerROMaker :
     eventWindowMarker        : EWMProducer
     protonBunchTimeMC        : EWMProducer
     digitizationStart        : @local::HitMakerDigitizationStart
+    digitizationEnd          : @local::HitMakerDigitizationEnd
     LRUCorrection            : true
     BirksCorrection          : true
     PEStatCorrection         : true
@@ -58,6 +59,7 @@ CaloDigiMaker :
     module_type             : CaloDigiMaker
     caloShowerROCollection  : CaloShowerROMaker
     eventWindowMarker       : EWMProducer
+    protonBunchTimeMC       : EWMProducer
     digitizationStart       : @local::HitMakerDigitizationStart
     digitizationEnd         : @local::HitMakerDigitizationEnd
     addNoise                : true

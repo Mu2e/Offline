@@ -19,7 +19,7 @@ struct PhysicalVolumeInfo;
   public:
     typedef PhysicalVolumeInfoMultiCollection::size_type size_type;
 
-    PhysicalVolumeMultiHelper(const PhysicalVolumeInfoMultiCollection& coll);
+    PhysicalVolumeMultiHelper(const PhysicalVolumeInfoMultiCollection* coll);
 
     // the volumes
     const PhysicalVolumeInfo& startVolume(const SimParticle& p) const;

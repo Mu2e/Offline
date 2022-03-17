@@ -108,7 +108,7 @@ namespace mu2e {
 
     _trackingAction->beginEvent();
 
-    _steppingAction->BeginOfEvent(*perThreadObjects_->tvd_collection, *_spHelper);
+    _steppingAction->BeginOfEvent(perThreadObjects_->tvd_collection.get(), *_spHelper);
 
     _sensitiveDetectorHelper->updateSensitiveDetectors(*_processInfo, *_spHelper);
 
