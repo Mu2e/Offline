@@ -113,7 +113,7 @@ CstTrigger : {
 		       CstLineFinder,
 		       CstCosmicTrackFinder,
 		       cstTSFilter,
-		       csttriggerInfoMerger ]
+		       cstTriggerInfoMerger ]
 	
 	cst_timing0 : [ cstEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
 			@sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,

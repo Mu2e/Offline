@@ -273,12 +273,12 @@ CaloFilters : { @table::CaloFilters
 	    useFilteredEvents : true
 	}
 	
-	caloFastcosmicEventPrescale : {
+	caloFastCosmicEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	}
 	
-	caloFastcosmicPrescale : {
+	caloFastCosmicEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
@@ -354,7 +354,7 @@ CaloFilters : { @table::CaloFilters
 	caloFast_mvaLHCE      : [ caloFastMVALHCEEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloFastMVALHCEFilter] 
 
 	#FIX ME! THIS IS JUST A PLACE HOLDER
-	caloFast_photon       : [ caloFastPhotonEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloFast_photonFilter] 
+	caloFast_photon       : [ caloFastPhotonEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloFastPhotonFilter] 
 
 	# caloFast_photon       : [ caloFastMVANNCEEventPrescale, sequence::CaloHitRecoTrigger.prepareHits, CaloClusterFast,caloFastMVANNCEFilter ] 
 
