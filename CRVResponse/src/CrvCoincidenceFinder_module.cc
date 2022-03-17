@@ -48,7 +48,7 @@ namespace mu2e
       fhicl::Atom<int> verboseLevel{Name("verboseLevel"), Comment("verbose level")};
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("module label of the input CrvRecoPulses")};
       //cluster settings
-      fhicl::Atom<double> clusterMaxDistance{Name("clusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster")};
+      fhicl::Atom<double> initialClusterMaxDistance{Name("initialClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at initial clustering process")};
       fhicl::Atom<double> clusterMaxTimeDifference{Name("clusterMaxTimeDifference"), Comment("maximum time difference between hits to be considered for a hit cluster (when overlap option is not used)")};
       fhicl::Atom<double> clusterMinOverlapTime{Name("clusterMinOverlapTime"), Comment("minimum overlap time between hits to be considered for a hit cluster (when overlap option is used)")};
       //sector-specific coincidence settings
@@ -74,7 +74,9 @@ namespace mu2e
     int                      _verboseLevel;
     std::string              _crvRecoPulsesModuleLabel;
 
-    double                   _clusterMaxDistance;
+    double                   _initialClusterMaxDistance;
+    double                   _initialClusterMaxTimeDifference;
+    double                   _initialClusterMinOverlapTime;
     double                   _clusterMaxTimeDifference;
     double                   _clusterMinOverlapTime;
 
@@ -120,27 +122,32 @@ namespace mu2e
       double _maxTimeDifference;
       double _maxSlope, _maxSlopeDifference;
       int    _coincidenceLayers;
+      mutable double _maxDistance; //initially set to initialClusterMaxDistance, which is just an estimate 
+                                   //used for the initial clustering process (to keep the number of 
+                                   //hit combinations down that need to be checked for coincidendes).
+                                   //_maxDistance is updated when the coindidences are checked
+                                   //(used for the final clustering process)
 
       CrvHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, const CLHEP::Hep3Vector &pos, 
              double x, double y, double time, double timePulseStart, double timePulseEnd,
              double PEs, int layer, int counter, int SiPM, int PEthreshold,
              double maxTimeDifferenceAdjacentPulses, double maxTimeDifference,
-             double maxSlope, double maxSlopeDifference, int coincidenceLayers) :
+             double maxSlope, double maxSlopeDifference, int coincidenceLayers, double maxDistance) :
                _crvRecoPulse(crvRecoPulse), _pos(pos),  
                _x(x), _y(y), _time(time), _timePulseStart(timePulseStart), _timePulseEnd(timePulseEnd), 
                _PEs(PEs), _layer(layer), _counter(counter), _SiPM(SiPM), _PEthreshold(PEthreshold), 
                _maxTimeDifferenceAdjacentPulses(maxTimeDifferenceAdjacentPulses), _maxTimeDifference(maxTimeDifference),
-               _maxSlope(maxSlope), _maxSlopeDifference(maxSlopeDifference), _coincidenceLayers(coincidenceLayers) {}
-
-      bool operator <(const CrvHit &other) const {return _x < other._x;}  //used for ordering in multisets
+               _maxSlope(maxSlope), _maxSlopeDifference(maxSlopeDifference), _coincidenceLayers(coincidenceLayers),
+               _maxDistance(maxDistance) {}
     };
 
     void clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters, 
                            std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection);
-    void filterHits(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &hitsFiltered);
-    void findClusters(std::multiset<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters);
-    void checkCoincidence(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &coincidenceHits);
-    bool checkCombination(const std::vector<CrvHit>::const_iterator layerIterators[], int n);
+    void filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered);
+    void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters,
+                      double clusterMaxTimeDifference, double clusterMinOverlapTime);
+    void checkCoincidence(const std::vector<CrvHit> &hits, std::list<CrvHit> &coincidenceHits);
+    bool checkCombination(std::vector<CrvHit>::const_iterator layerIterators[], int n);
 
     constexpr static const int nLayers = 4;
   };
@@ -149,7 +156,7 @@ namespace mu2e
     art::EDProducer(conf),
     _verboseLevel(conf().verboseLevel()),
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
-    _clusterMaxDistance(conf().clusterMaxDistance()),
+    _initialClusterMaxDistance(conf().initialClusterMaxDistance()),
     _clusterMaxTimeDifference(conf().clusterMaxTimeDifference()),
     _clusterMinOverlapTime(conf().clusterMinOverlapTime()),
     _sectorConfig(conf().sectorConfig()),
@@ -162,6 +169,12 @@ namespace mu2e
     _totalEventsCoincidence(0)
   {
     produces<CrvCoincidenceClusterCollection>();
+    //get initial cluster time parameters from coincidence parameters
+    //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
+    _initialClusterMaxTimeDifference=std::max_element(_sectorConfig.begin(), _sectorConfig.end(),
+                              [](const SectorConfig &a, const SectorConfig &b)
+                              {return a.maxTimeDifference() < b.maxTimeDifference();})->maxTimeDifference();
+    _initialClusterMinOverlapTime=_minOverlapTime;
   }
 
   void CrvCoincidenceFinder::beginJob()
@@ -279,7 +292,8 @@ namespace mu2e
                                                     x, y, time, timePulseStart, timePulseEnd, PEs,
                                                     layerNumber, counterNumber, SiPM, sector.PEthreshold,
                                                     sector.maxTimeDifferenceAdjacentPulses, sector.maxTimeDifference,
-                                                    sector.maxSlope, sector.maxSlopeDifference, sector.coincidenceLayers);
+                                                    sector.maxSlope, sector.maxSlopeDifference, sector.coincidenceLayers,
+                                                    _initialClusterMaxDistance);
     }
 
     //loop through all crv sectors types
@@ -290,13 +304,16 @@ namespace mu2e
       const std::vector<CrvHit> &hitsUnfiltered = sectorTypeMapIter->second; 
 
       //filter hits, i.e. remove all hits below PE threshold
-      //and orders the remaining hits by their x position
-      std::multiset<CrvHit> posOrderedHits; 
-      filterHits(hitsUnfiltered, posOrderedHits);
+      std::list<CrvHit> hitsFiltered; 
+      filterHits(hitsUnfiltered, hitsFiltered);
 
-      //distribute the set of hits into clusters
+      //distribute the hits into clusters
+      //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
       std::vector<std::vector<CrvHit> > clusters;
-      findClusters(posOrderedHits, clusters);
+      findClusters(hitsFiltered, clusters, _initialClusterMaxTimeDifference, _initialClusterMinOverlapTime);
+
+      //all hits belonging to a coincidence group are collected in a new list
+      std::list<CrvHit> coincidenceHits;
 
       //loop through all clusters
       for(size_t iCluster=0; iCluster<clusters.size(); ++iCluster)
@@ -311,21 +328,15 @@ namespace mu2e
 
         //check whether this hit cluster has coincidences
         //(separately for both readout sides)
-        //and fill all hits belonging to a coincidence group into a new multiset.
-        std::multiset<CrvHit> coincidenceHits;
         checkCoincidence(cluster0,coincidenceHits);
         checkCoincidence(cluster1,coincidenceHits);
-        if(coincidenceHits.empty()) continue; //no coincidences found
-
-        //using the set of coincidence hits instead of the original cluster 
-        //removes hits that do not belong to any coincidence
-        //distributing the remaining set of coincidence hits into sub clusters
-        //reduces the lengths of the veto windows
-        std::vector<std::vector<CrvHit> > subClusters;
-        findClusters(coincidenceHits, subClusters);
-
-        clusterProperties(crvSectorType, subClusters, crvCoincidenceClusterCollection);
       }//loop over all cluster in sector type
+
+      //create new clusters based only on coincidence hits
+      std::vector<std::vector<CrvHit> > coincidenceClusters;
+      findClusters(coincidenceHits, coincidenceClusters, _clusterMaxTimeDifference, _clusterMinOverlapTime);
+
+      clusterProperties(crvSectorType, coincidenceClusters, crvCoincidenceClusterCollection);
     }//loop over all sector types
 
     ++_totalEvents;
@@ -387,6 +398,9 @@ namespace mu2e
         }
       }
 
+      assert(PEs>0);
+      assert(layerSet.size()>1);
+
       //average counter position (PE weighted), slope, layers
       avgCounterPos/=PEs;
       double slope=(nHits*sumXY-sumX*sumY)/(nHits*sumYY-sumY*sumY);
@@ -399,7 +413,7 @@ namespace mu2e
 
 
   //remove hits below the threshold
-  void CrvCoincidenceFinder::filterHits(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &hitsFiltered)
+  void CrvCoincidenceFinder::filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered)
   {
     std::vector<CrvHit>::const_iterator iterHit;
     for(iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit)
@@ -448,12 +462,13 @@ namespace mu2e
       //if the number of PEs of this hit (plus the number of PEs of the same or one of the adjacent counter, if their time 
       //difference is small enough) is above the PE threshold, add this hit to vector of filtered hits
       if(PEs_thisCounter+PEs_adjacentCounter1>=PEthreshold || PEs_thisCounter+PEs_adjacentCounter2>=PEthreshold)
-         hitsFiltered.insert(*iterHit);
+         hitsFiltered.push_back(*iterHit);
     }
   } //end filter hits
 
 
-  void CrvCoincidenceFinder::findClusters(std::multiset<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters)
+  void CrvCoincidenceFinder::findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters,
+                                          double clusterMaxTimeDifference, double clusterMinOverlapTime)
   {
     while(!hits.empty()) //run through clustering processes until all hits are distributed into clusters
     {
@@ -461,7 +476,6 @@ namespace mu2e
       std::vector<CrvHit> &cluster = clusters.back();
 
       //need to loop several times to check the unused hits until the cluster size remains stable
-      double lastX=0;
       size_t lastClusterSize=0;
       do
       {
@@ -472,46 +486,42 @@ namespace mu2e
           if(cluster.empty())
           {
             //first element of current cluster
-            //gets moved from set of hits to the current cluster
-            lastX=hitsIter->_x;
+            //gets moved from list of hits to the current cluster
             cluster.push_back(*hitsIter);
             hitsIter=hits.erase(hitsIter);
           }
           else
           {
-            if(hitsIter->_x-lastX>_clusterMaxDistance) break; //cannot expect any other entries to be close enough to current cluster
-
             //check whether current hit satisfies time and distance condition w.r.t. to any hit of current cluster
             bool erasedHit=false;
             for(auto clusterIter=cluster.begin(); clusterIter!=cluster.end(); ++clusterIter)
             {
+              double maxDistance = std::max(hitsIter->_maxDistance,clusterIter->_maxDistance);
               if(_usePulseOverlaps)
               {
-                if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
-                   (hitsIter->_timePulseEnd-clusterIter->_timePulseStart>_clusterMinOverlapTime) && 
-                   (clusterIter->_timePulseEnd-hitsIter->_timePulseStart>_clusterMinOverlapTime))
+                if((std::fabs(hitsIter->_x-clusterIter->_x)<=maxDistance) &&
+                   (hitsIter->_timePulseEnd-clusterIter->_timePulseStart>clusterMinOverlapTime) && 
+                   (clusterIter->_timePulseEnd-hitsIter->_timePulseStart>clusterMinOverlapTime))
                 {
                   //this hit satisfied the conditions
-                  //move it from set of hits to the current cluster
-                  if(hitsIter->_x>lastX) lastX=hitsIter->_x;
+                  //move it from list of hits to the current cluster
                   cluster.push_back(*hitsIter);
                   hitsIter=hits.erase(hitsIter);
                   erasedHit=true;
-                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
+                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in list of hits
                 }
               }
               else
               {
-                if((std::fabs(hitsIter->_x-clusterIter->_x)<_clusterMaxDistance) &&
-                   (std::fabs(hitsIter->_time-clusterIter->_time)<_clusterMaxTimeDifference))
+                if((std::fabs(hitsIter->_x-clusterIter->_x)<=maxDistance) &&
+                   (std::fabs(hitsIter->_time-clusterIter->_time)<clusterMaxTimeDifference))
                 {
                   //this hit satisfied the conditions
-                  //move it from set of hits to the current cluster
-                  if(hitsIter->_x>lastX) lastX=hitsIter->_x;
+                  //move it from list of hits to the current cluster
                   cluster.push_back(*hitsIter);
                   hitsIter=hits.erase(hitsIter);
                   erasedHit=true;
-                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in set of hits
+                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in list of hits
                 }
               }
             } //loop over all hits in the cluster (for comparison with current hit)
@@ -523,11 +533,11 @@ namespace mu2e
 
       } while(lastClusterSize!=cluster.size()); //loop until cluster does not change anymore
 
-    } //loop until all hits in set of hits distributed into clusters
+    } //loop until all hits in list of hits are distributed into clusters
   } //end finder clusters
 
 
-  void CrvCoincidenceFinder::checkCoincidence(const std::vector<CrvHit> &hits, std::multiset<CrvHit> &coincidenceHitsPosOrdered)
+  void CrvCoincidenceFinder::checkCoincidence(const std::vector<CrvHit> &hits, std::list<CrvHit> &coincidenceHits)
   {
     if(hits.empty()) return;
 
@@ -541,15 +551,14 @@ namespace mu2e
 
     //we want to collect all hits belonging to coincidence groups,
     //but avoid collecting hits multiple times, if they belong to different coincidence groups.
-    //can be done by placing them into a set, where the sorting is done w.r.t. to the reco pulse.
-    //need to overwrite the position ordering defined in the CrvHit struct
-    auto recoPulseCompare = [](const CrvHit &a, const CrvHit &b) {return a._crvRecoPulse < b._crvRecoPulse;};
-    std::set<CrvHit,decltype(recoPulseCompare)> coincidenceHits(recoPulseCompare);
+    //can be done by placing the hit interator into a set.
+    std::set<std::vector<CrvHit>::const_iterator> coincidenceHitSet;
 
     int minCoincidenceLayers = std::min_element(hits.begin(),hits.end(),
                                [](const CrvHit &a, const CrvHit &b){return a._coincidenceLayers < b._coincidenceLayers;})->_coincidenceLayers;
     int maxCoincidenceLayers = std::max_element(hits.begin(),hits.end(),
                                [](const CrvHit &a, const CrvHit &b){return a._coincidenceLayers < b._coincidenceLayers;})->_coincidenceLayers;
+
     //***************************************************
     //find coincidences using 2/4 coincidence requirement
     if(minCoincidenceLayers==2)
@@ -576,8 +585,8 @@ namespace mu2e
           layerIterators[1]=layer2Iter;
           if(checkCombination(layerIterators,2))
           {
-            coincidenceHits.insert(*layer1Iter);
-            coincidenceHits.insert(*layer2Iter);
+            coincidenceHitSet.insert(layer1Iter);
+            coincidenceHitSet.insert(layer2Iter);
           }
         }
       }
@@ -614,9 +623,9 @@ namespace mu2e
           layerIterators[2]=layer3Iter;
           if(checkCombination(layerIterators,3))
           {
-            coincidenceHits.insert(*layer1Iter);
-            coincidenceHits.insert(*layer2Iter);
-            coincidenceHits.insert(*layer3Iter);
+            coincidenceHitSet.insert(layer1Iter);
+            coincidenceHitSet.insert(layer2Iter);
+            coincidenceHitSet.insert(layer3Iter);
           }
         }
       }
@@ -650,21 +659,20 @@ namespace mu2e
         layerIterators[3]=layer3Iter;
         if(checkCombination(layerIterators,4))
         {
-          coincidenceHits.insert(*layer0Iter);
-          coincidenceHits.insert(*layer1Iter);
-          coincidenceHits.insert(*layer2Iter);
-          coincidenceHits.insert(*layer3Iter);
+          coincidenceHitSet.insert(layer0Iter);
+          coincidenceHitSet.insert(layer1Iter);
+          coincidenceHitSet.insert(layer2Iter);
+          coincidenceHitSet.insert(layer3Iter);
         }
       }
     } // four layer coincidences
 
-    //move the set of coincidence hits to a position ordered multiset
-    coincidenceHitsPosOrdered.insert(coincidenceHits.begin(), coincidenceHits.end());
+    //move the set of coincidence hit iterators to a list of hits
+    for(auto iterHit=coincidenceHitSet.begin(); iterHit!=coincidenceHitSet.end(); ++iterHit) coincidenceHits.push_back(**iterHit);
 
   } //end check coincidence
 
-
-  bool CrvCoincidenceFinder::checkCombination(const std::vector<CrvHit>::const_iterator layerIterators[], int n) 
+  bool CrvCoincidenceFinder::checkCombination(std::vector<CrvHit>::const_iterator layerIterators[], int n) 
   {
     typedef const std::vector<CrvHit>::const_iterator L;
 
@@ -691,12 +699,12 @@ namespace mu2e
                       [](L &a, L &b){return a->_maxSlope < b->_maxSlope;}))->_maxSlope;
     double maxSlopeDifference = (*std::max_element(layerIterators,layerIterators+n,
                                 [](L &a, L &b){return a->_maxSlopeDifference < b->_maxSlopeDifference;}))->_maxSlopeDifference;
-    std::vector<float> slopes;
+    double slopes[n-1];
     for(int d=0; d<n-1; ++d)
     {
       //slope = width direction / thickness direction
-      slopes.push_back((layerIterators[d+1]->_x-layerIterators[d]->_x)/(layerIterators[d+1]->_y-layerIterators[d]->_y));
-      if(fabs(slopes.back())>maxSlope) return false;  //not more than maxSlope allowed for coincidence;
+      slopes[d]=(layerIterators[d+1]->_x-layerIterators[d]->_x)/(layerIterators[d+1]->_y-layerIterators[d]->_y);
+      if(fabs(slopes[d])>maxSlope) return false;  //not more than maxSlope allowed for coincidence;
     }
 
     if(n>2)
@@ -706,6 +714,27 @@ namespace mu2e
       {
         if(fabs(slopes[0]-slopes[2])>maxSlopeDifference) return false;
         if(fabs(slopes[1]-slopes[2])>maxSlopeDifference) return false;
+      }
+    }
+
+    //need distances between subsequent positions, when ordered by position
+    std::sort(layerIterators,layerIterators+n,[](L &a, L &b){return a->_x < b->_x;});
+    for(int i=0; i<n; ++i)
+    {
+      //find the max distances between hits belonging to a coincidence group.
+      //these max distances are used later when new clusters based on coincidence hits are created,
+      //because the distance between hits belonging to a coincidence group
+      //may be greater than the original clusterMaxDistance (if it was chosen very small).
+      //this is done to avoid breaking coincidence groups apart during the next clustering process
+      if(i>0)
+      {
+        double distance=layerIterators[i]->_x-layerIterators[i-1]->_x;
+        if(distance>layerIterators[i]->_maxDistance) layerIterators[i]->_maxDistance=distance;
+      }
+      if(i+1<n)
+      {
+        double distance=layerIterators[i+1]->_x-layerIterators[i]->_x;
+        if(distance>layerIterators[i]->_maxDistance) layerIterators[i]->_maxDistance=distance;
       }
     }
 
