@@ -89,9 +89,9 @@ namespace mu2e{
   }
   
   /*------------Function to help user select a list of PDG codes to display:-------------*/
-  int TEveMu2eMCInterface::Contains(std::vector<int> v, int x)
+  int TEveMu2eMCInterface::Contains(const std::vector<int>& v, int x)
   {
-    return std::count(v.begin(), v.end(), abs(x));
+    return std::count(v.begin(), v.end(), std::abs(x));
   }
   
 
