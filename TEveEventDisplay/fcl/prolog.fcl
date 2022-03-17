@@ -28,7 +28,7 @@ TEveEventDisplayBase : {
       addTrkHits 		  : true
       addTimeClusters           : true
       addTracks 		  : true
-      addCrvHits		  : false
+      addCrvHits		  : true
       addCosmicSeedFit	  : false
       addClusters		  : true
       addTrkExtTrajs		  : false
