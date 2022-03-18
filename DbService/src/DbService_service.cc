@@ -4,6 +4,7 @@
 #include "Offline/DbTables/inc/DbUtil.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 
 namespace mu2e {
@@ -36,6 +37,12 @@ namespace mu2e {
     // the engine which will read db, hold calibrations, deliver them
     _engine.setVerbose(_verbose);
     _engine.setSaveCsv(_config.saveCsv());
+    if(_config.nearestMatch()) {
+      _engine.setNearestMatch(true);
+      mf::LogWarning warn("DbService");
+      warn<<"WARNING: setting DbService nearestMatch true will probably result "
+          <<"in approximate or unreproducible results\n";
+    }
 
     DbIdList idList; // read file of db connection details
     _engine.setDbId( idList.getDbId(_config.dbName()) );
@@ -61,21 +68,41 @@ namespace mu2e {
     } // end loop over files
 
     int cacheLifetime = 0;
-    _config.cacheLifetime(cacheLifetime);
-    _engine.reader().setCacheLifetime(cacheLifetime);
+    if(_config.cacheLifetime(cacheLifetime)) {
+      _engine.reader().setCacheLifetime(cacheLifetime);
+    }
+
+    int retryTimeout = 0;
+    if(_config.retryTimeout(retryTimeout)) {
+      _engine.reader().setTimeout(retryTimeout);
+    }
+
+    int64_t cacheLimit;
+    if(_config.cacheParameters().cacheLimit(cacheLimit)) {
+      _engine.cache().setLimitSize(cacheLimit);
+    }
+    int purgeInterval;
+    if(_config.cacheParameters().purgeInterval(purgeInterval)) {
+      _engine.cache().setPurgeInterval(purgeInterval);
+    }
+    float purgeEnd;
+    if(_config.cacheParameters().purgeEnd(purgeEnd)) {
+      _engine.cache().setPurgeEnd(purgeEnd);
+    }
+
 
     // service will start calling the database at the first event,
     // so the service can exist without the DB being contacted.  
     // fastStart overrides this and starts reading the DB imediately.
     bool fastStart = false;
-    _config.fastStart(fastStart);
-    if (fastStart) {
-      // this prepares IOV infrastructure for efficient queries
-      if(_verbose>2) std::cout << "DbService::beginJob initializing engine "
-			       <<std::endl;
-      _engine.beginJob();
+    if(_config.fastStart(fastStart)) {
+      if (fastStart) {
+        // this prepares IOV infrastructure for efficient queries
+        if(_verbose>2) std::cout << "DbService::beginJob initializing engine "
+                                 <<std::endl;
+        _engine.beginJob();
+      }
     }
-
 
   }
 

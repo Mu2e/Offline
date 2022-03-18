@@ -1,0 +1,34 @@
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : dbTest
+
+services : @local::Services.Core
+
+source: { module_type: RootInput }
+
+physics :{
+   analyzers: {
+      proditionsModule : {
+	 module_type : ProditionsTest
+      }   
+   }
+  ana       : [ proditionsModule ]
+  end_paths : [ ana ]
+
+}
+
+
+services.DbService.purpose :  "PRODITIONS_TEST"
+services.DbService.version :  "v1_0"
+services.DbService.dbName : "mu2e_conditions_prd"
+#services.DbService.textFile : ["table.txt"]
+services.DbService.verbose : 6
+
+services.ProditionsService.verbose : 5
+services.ProditionsService.strawElectronics.useDb: true
+services.ProditionsService.strawElectronics.verbose: 2
+services.ProditionsService.strawDrift.useDb: true
+services.ProditionsService.strawDrift.verbose: 2
+

@@ -182,7 +182,6 @@ namespace mu2e {
 // return X and Y with the probability defined by energy
 //-----------------------------------------------------------------------------
   void PionCaptureSpectrum::fire(double energy, double& x, double& y) const {
-
     double pdfMax = get2DMax(energy);
     x = 0;
     y = 0;
@@ -197,15 +196,12 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void PionCaptureSpectrum::getElecPosiVectors(double ePhoton, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const {
-
     double x, y;
 					// generate invariant mass and energy splitting
     fire(ePhoton,x,y);
-
     // Get electron/positron energies from x, y values (see Mu2eUtilities/src/PionCaptureSpectrum.cc for details)
     double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
     double ePositron = 0.5*( ePhoton + y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
-
     // Get electron/positron momentum magnitudes
     double pElectron = std::sqrt( cet::diff_of_squares(eElectron, _me) );
     double pPositron = std::sqrt( cet::diff_of_squares(ePositron, _me) );
@@ -221,9 +217,7 @@ namespace mu2e {
     // - phi is allowed to vary between 0 and 2pi
 
     double cosTheta = 1/(2*pElectron*pPositron)*( cet::square(ePhoton) - cet::sum_of_squares( x, pElectron, pPositron) );
-
     double phi = 2*M_PI*_rnFlat->fire();
-
     // - find a vector that is not collinear with the electron direction
     CLHEP::Hep3Vector n1 = (std::abs(p3electron.x()) < std::abs(p3electron.y())) ?
       ((std::abs(p3electron.x()) < std::abs(p3electron.z())) ? CLHEP::Hep3Vector(1,0,0) : CLHEP::Hep3Vector(0,0,1)) :

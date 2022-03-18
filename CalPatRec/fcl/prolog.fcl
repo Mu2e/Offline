@@ -522,8 +522,8 @@ CalPatRec : { @table::CalPatRec
 	    HitSelectionBits                            : []
 	    BackgroundSelectionBits                     : []
 	    MinNHits                                    : @local::CalPatRec.minNStrawHits
-	    DtMin                                       : -30.   # value before 2017-11-17 was -40. ns
-	    DtMax                                       :  30.   # 2018-07-29 P.M.: DtMax=20ns was cutting out a few percent of hits
+	    DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
+	    DtMax                                       :  20.   # value before 2022-02-14 was 30. ns
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
 	    pitchAngle                                  : 0.67   # mean pitch for CE

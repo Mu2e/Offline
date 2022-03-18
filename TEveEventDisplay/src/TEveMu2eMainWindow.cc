@@ -18,16 +18,18 @@ using namespace mu2e;
      setRecursiveColorTransp(vol->GetNode(i)->GetVolume(), color, transp);
     }
   }
-
+  
 namespace mu2e{
 
+  
   /*------ Default Constructor ------ */
   TEveMu2eMainWindow::TEveMu2eMainWindow() : TGMainFrame(gClient->GetRoot(), 320, 320){}
 
   /*------------Function to construct main frame, add buttons and GUI:-------------*/
-  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, DrawOptions drawOpts) :
+  TEveMu2eMainWindow::TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, const DrawOptions drawOpts, const GeomOptions geomOpts) :
     TGMainFrame(p, w, h),
     DrawOpts(drawOpts),
+    GeomOpts(geomOpts),
     fTeRun(0),
     fTeEvt(0),
     fTTEvt(0),
@@ -161,7 +163,7 @@ namespace mu2e{
      gEve->GetViewers()->AddElement(fViewer[3]);
      proj3 = gEve->SpawnNewScene("Tracker RZ Scene");
      //fViewer[1]->AddScene(fdetXY);
-     TfRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+     TfRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);
      proj3->AddElement(TfRZMgr);
      TEveProjectionAxes* axes_xytracker = new TEveProjectionAxes(TfRZMgr);
      proj3->AddElement(axes_xytracker);
@@ -220,7 +222,7 @@ namespace mu2e{
      gEve->GetViewers()->AddElement(fViewer[5]); 
      proj5 = gEve->SpawnNewScene("CRV YZ Scene");
      //fViewer[1]->AddScene(fdetXY);
-     CrfRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+     CrfRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);
      proj5->AddElement(CrfRZMgr);
      TEveProjectionAxes* axes_xytracker = new TEveProjectionAxes(CrfRZMgr);
      proj5->AddElement(axes_xytracker); 
@@ -466,7 +468,7 @@ namespace mu2e{
     gEve->AddToListTree(axes_xy,kTRUE);
     gEve->AddToListTree(tracker2Dproj->fXYMgr,kTRUE);
     
-    tracker2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+    tracker2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);
     TEveProjectionAxes* axes_rz = new TEveProjectionAxes(tracker2Dproj->fRZMgr);
     tracker2Dproj->fDetRZScene->AddElement(axes_rz);
     tracker2Dproj->fEvtRZScene->AddElement(axes_rz);
@@ -532,7 +534,7 @@ namespace mu2e{
     
     gEve->GetBrowser()->GetTabRight()->SetTab(0);
     
-    CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);  
+    CRV2Dproj->fRZMgr = new TEveProjectionManager(TEveProjection::kPT_ZY);  
     TEveProjectionAxes* axes_rz = new TEveProjectionAxes(CRV2Dproj->fRZMgr);
     CRV2Dproj->fDetRZScene->AddElement(axes_rz);  
     CRV2Dproj->fEvtRZScene->AddElement(axes_rz);
@@ -658,7 +660,7 @@ namespace mu2e{
   }
   
   /*------------Function to import the GDML and make 3D geometry:-------------*/
-  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, int _diagLevel, bool _showBuilding, bool _showDSOnly, bool _showCRV){
+  void TEveMu2eMainWindow::SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel){
     if(gGeoManager){
       gGeoManager->GetListOfNodes()->Delete();
       gGeoManager->GetListOfVolumes()->Delete();
@@ -668,7 +670,7 @@ namespace mu2e{
     
     // Import the GDML of entire Mu2e Geometry
     ConfigFileLookupPolicy configFile;
-    std::string fn =  configFile("Offline/TEveEventDisplay/src/fix.gdml");
+    std::string fn =  configFile(gdmlname.c_str());
  
     geom = mu2e_geom->Geom_Interface::getGeom(fn);
   
@@ -688,14 +690,14 @@ namespace mu2e{
     etopnode->GetNode()->GetVolume()->SetVisibility(kFALSE);
       
     setRecursiveColorTransp(etopnode->GetNode()->GetVolume(), kWhite-10,70);
-    
-    if(!_showBuilding){
+  
+    if(!GeomOpts.showbuilding){
       mu2e_geom->SolenoidsOnly(topnode);
       mu2e_geom->hideTop(topnode, _diagLevel);
     }
-    if(_showDSOnly) mu2e_geom->InsideDS(topnode, false );
-    
-    if(_showCRV) mu2e_geom->InsideCRV(topnode, true);
+    if(GeomOpts.showDSOnly) mu2e_geom->InsideDS(topnode, false );
+    if(GeomOpts.showInsidePS) mu2e_geom->InsidePS(topnode, false );
+    if(GeomOpts.showCRV) mu2e_geom->InsideCRV(topnode, true);
     
     //Add static detector geometry to global scene
     gEve->AddGlobalElement(etopnode);

@@ -189,6 +189,7 @@ namespace mu2e {
       sr.put(std::move(col), subrunVolInstanceName_);
     }
     if (mixCosmicLivetimes_) {
+      if(generatedEvents_ == 0)throw cet::exception("BADINPUT")<<"Mu2eProductMixer: generated event count =0; was the mixin file opened correctly?" << std::endl;
       float scaling = resampledEvents_ / generatedEvents_;
       auto livetime = std::make_unique<CosmicLivetime>(totalPrimaries_ * scaling,
                                                        area_, lowE_, highE_, fluxConstant_, livetime_ * scaling);

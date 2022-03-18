@@ -9,12 +9,14 @@
 
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
 #include "Offline/CaloReco/inc/CaloTemplateWFProcessor.hh"
 #include "Offline/CaloReco/inc/CaloRawWFProcessor.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 
 #include <iostream>
 #include <string>
@@ -96,6 +98,8 @@ namespace mu2e {
 
 
   //-------------------------------------------------------
+  // The t0 time in caloDigi has been corrected to the DR time frame for backward compatibility, so we only need to
+  // correct for the jitter between the DR marker and the nearest clock
   void CaloRecoDigiMaker::produce(art::Event& event)
   {
       if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiMaker::produce] begin"<<std::endl;
@@ -106,8 +110,12 @@ namespace mu2e {
       auto pbtH = event.getValidHandle(pbttoken_);
       const ProtonBunchTime& pbt(*pbtH);
       double pbtOffset = pbt.pbtime_;
- 
-      extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset);
+
+      ProditionsHandle<EventTiming> eventTimingHandle;
+      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+      float timeFromProtonsToDRMarker = eventTiming.timeFromProtonsToDRMarker();
+
+      extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset+timeFromProtonsToDRMarker);
 
       event.put(std::move(recoCaloDigiColl));
 
@@ -126,6 +134,7 @@ namespace mu2e {
   void CaloRecoDigiMaker::extractRecoDigi(const art::ValidHandle<CaloDigiCollection>& caloDigisHandle,
                                           CaloRecoDigiCollection &recoCaloHits, double pbtOffset)
   {
+
       const auto& caloDigis = *caloDigisHandle;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
@@ -150,6 +159,7 @@ namespace mu2e {
 
           waveformProcessor_->reset();
           waveformProcessor_->extract(x,y);
+          if (diagLevel_ > 2) std::cout<<"CaloRecoDigiMaker found "<<waveformProcessor_->nPeaks()<<" peaks for SiPMID="<<SiPMID<<std::endl;
 
           for (int i=0;i<waveformProcessor_->nPeaks();++i)
           {
@@ -161,6 +171,7 @@ namespace mu2e {
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
               
+              if (diagLevel_ > 2) std::cout<<"Found reco digi hit with eDep="<<eDep<<"  time="<<time<<" chi2="<<chi2<<"  ndf="<<ndf<<std::endl;
               if (chi2/float(ndf) > maxChi2Cut_) continue;
            
               if (SiPMID%2==0) totEnergyReco += eDep;

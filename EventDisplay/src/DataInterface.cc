@@ -1188,7 +1188,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       std::string endVolumeName="unknown volume";
       if(physicalVolumesMulti!=nullptr)
       {
-        mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(*physicalVolumesMulti);
+        mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(physicalVolumesMulti);
         startVolumeName=volumeMultiHelper.startVolume(particle).name();
         endVolumeName=volumeMultiHelper.endVolume(particle).name();
       }

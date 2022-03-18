@@ -39,9 +39,8 @@
 
 // G4 includes
 #include "Geant4/G4GeometryManager.hh"
-#include "Geant4/G4PhysicalVolumeStore.hh"
-#include "Geant4/G4LogicalVolumeStore.hh"
-#include "Geant4/G4SolidStore.hh"
+//#include "Geant4/G4PhysicalVolumeStore.hh"
+//#include "Geant4/G4LogicalVolumeStore.hh"
 
 #include "Geant4/G4Material.hh"
 #include "Geant4/G4Box.hh"
@@ -917,7 +916,7 @@ namespace mu2e {
                        kStateGas, temperature, pressure);
 
       for (size_t i = 0 ; i < StrawLeak->GetNumberOfElements(); ++i) {
-        DSVacuum->AddElement(StrawLeak->GetElementVector()->at(i), StrawLeak->GetFractionVector()[i]);
+        DSVacuum->AddElement(const_cast<G4Element*>(StrawLeak->GetElementVector()->at(i)), StrawLeak->GetFractionVector()[i]);
       }
 
     }
@@ -943,7 +942,7 @@ namespace mu2e {
                        kStateGas, temperature, pressure);
 
       for (size_t i = 0 ; i < gas->GetNumberOfElements(); ++i) {
-        PSVacuum->AddElement(gas->GetElementVector()->at(i), gas->GetFractionVector()[i]);
+        PSVacuum->AddElement(const_cast<G4Element*>(gas->GetElementVector()->at(i)), gas->GetFractionVector()[i]);
       }
 
     }

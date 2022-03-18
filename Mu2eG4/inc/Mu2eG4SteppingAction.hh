@@ -47,7 +47,7 @@ namespace mu2e {
 
     void UserSteppingAction(const G4Step*);
 
-    void BeginOfEvent(StepPointMCCollection& outputHits, const SimParticleHelper& spHelper);
+    void BeginOfEvent(StepPointMCCollection* outputHits, const SimParticleHelper& spHelper);
 
     void BeginOfTrack();
     void EndOfTrack();
@@ -77,10 +77,10 @@ namespace mu2e {
 
   private:
     // owned by Mu2eG4 module.
-    IMu2eG4Cut* steppingCuts_;
-    IMu2eG4Cut* commonCuts_;
+    IMu2eG4Cut* steppingCuts_ = nullptr;
+    IMu2eG4Cut* commonCuts_ = nullptr;
 
-    const Mu2eG4ResourceLimits *mu2elimits_;
+    const Mu2eG4ResourceLimits *mu2elimits_ = nullptr;
 
     // Protection against "too complicated" events
     unsigned numTrackSteps_;
@@ -88,11 +88,11 @@ namespace mu2e {
 
     // List of times for time virtual detector
     std::vector<double> tvd_time_;
-    StepPointMCCollection* tvd_collection_;
+    StepPointMCCollection* tvd_collection_ = nullptr;
     bool tvd_warning_printed_;
 
     // MCTrajectory point filtering cuts
-    const Mu2eG4TrajectoryControl* trajectoryControl_;
+    const Mu2eG4TrajectoryControl* trajectoryControl_ = nullptr;
     typedef std::map<const G4VPhysicalVolume*, double> VolumeCutMap;
     VolumeCutMap mcTrajectoryVolumePtDistances_;
     // Store trajectory parameters at each G4Step; cleared at beginOfTrack time.
@@ -103,11 +103,11 @@ namespace mu2e {
     EventNumberList _debugTrackList;
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
-    const SimParticleHelper *_spHelper;
+    const SimParticleHelper *_spHelper = nullptr;
 
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.
-    PhysicsProcessInfo *  _processInfo;
+    PhysicsProcessInfo *  _processInfo = nullptr;
 
     // Origin of Mu2e Coordinate system in the G4 world system.
     CLHEP::Hep3Vector _mu2eOrigin;
