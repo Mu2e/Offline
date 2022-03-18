@@ -17,6 +17,7 @@
 // mu2e Includes
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -94,18 +95,22 @@ namespace mu2e {
       PDGCode::type tpart_;
       TrkFitDirection tdir_;
       float nullvscale_;
-      bool addmat_, usecalo_;
+      bool addmat_, usecalo_, strawhitset_; // flags
+      // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions FIXME!
       double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
       double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions FIXME
       double minCaloEnergy_; // minimum CaloCluster energy
       double maxCaloDt_; // maximum track-calo time difference
       double maxCaloDoca_; // maximum track-calo DOCA
-      double tprec_; // TPOCA precision
-      StrawHitFlag addsel_, addrej_;
+      // straw hit creation and processing
+      double tprec_; // TPOCA calculation nominal precision
+      StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
+      StrawIdMask setlevel_; // level to group straw hits into sets in pat-rec
+      // parameters controlling adding hits
       float maxStrawHitDoca_, maxStrawHitDt_, maxStrawHitChi_, maxStrawDoca_;
-      int sbuff_;
-      // cached info computed from the tracker; these should be set on construction, but the tracker doesn't exist
+      int sbuff_; // maximum distance from the track a strawhit can be to consider it for adding.
+      // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
       mutable double ymin_, ymax_, umax_; // panel-level info
       mutable double rmin_, rmax_; // plane-level info
       mutable double spitch_;
