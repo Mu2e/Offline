@@ -36,6 +36,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
+#include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Offline/Mu2eG4/inc/Mu2eG4VisCommands.hh"
@@ -267,7 +268,9 @@ namespace mu2e {
     if ( ncalls == 1 ) {
       if( _checkFieldMap>0 ) generateFieldMap(_originInWorld,_checkFieldMap);
       if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
+      validGeometryOrThrow( _rmvlevel );
     }
+
   }
 
 

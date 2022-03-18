@@ -17,8 +17,8 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
@@ -93,6 +93,7 @@ namespace mu2e {
              fhicl::Atom<art::InputTag>      ewMarkerTag              { Name("eventWindowMarker"),        Comment("EventWindowMarker producer") };
              fhicl::Atom<art::InputTag>      pbtmcTag                 { Name("protonBunchTimeMC"),        Comment("ProtonBunchTimeMC producer") };
              fhicl::Atom<float>              digitizationStart        { Name("digitizationStart"),        Comment("Minimum time of hit to be digitized") };
+             fhicl::Atom<float>              digitizationEnd          { Name("digitizationEnd"),          Comment("Maximum time of hit to be digitized") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
              fhicl::Atom<bool>               PEStatCorrection         { Name("PEStatCorrection"),         Comment("Include PE Poisson fluctuations") };
@@ -104,7 +105,8 @@ namespace mu2e {
             EDProducer{config},
             ewMarkerTag_      (config().ewMarkerTag()),
             pbtmcTag_         (config().pbtmcTag()),
-            digitizationStart_        (config().digitizationStart()),
+            digitizationStart_(config().digitizationStart()),
+            digitizationEnd_  (config().digitizationEnd()),
             LRUCorrection_    (config().LRUCorrection()),
             BirksCorrection_  (config().BirksCorrection()),
             PEStatCorrection_ (config().PEStatCorrection()),
@@ -131,8 +133,8 @@ namespace mu2e {
       private:
          using StepHandles = std::vector<art::ValidHandle<CaloShowerStepCollection>>;
 
-         void  makeReadoutHits   (const StepHandles&, CaloShowerROCollection&, CaloShowerSimCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&,
-             double correctedDigitizationStart);
+         void  makeReadoutHits   (const StepHandles&, CaloShowerROCollection&, CaloShowerSimCollection&, const EventWindowMarker&,
+                                  const ProtonBunchTimeMC&, float timeFromProtonsToDRMarker);
          float LRUCorrection     (int crystalID, float normalizedPosZ, float edepInit, const ConditionsHandle<CalorimeterCalibrations>&);
          void  dumpCaloShowerSim (const CaloShowerSimCollection& caloShowerSims);
 
@@ -140,7 +142,7 @@ namespace mu2e {
          art::InputTag           ewMarkerTag_;
          art::InputTag           pbtmcTag_;
          float                   digitizationStart_;
-         float                   mbtime_;
+         float                   digitizationEnd_;
          bool                    LRUCorrection_;
          bool                    BirksCorrection_;
          bool                    PEStatCorrection_;
@@ -150,10 +152,7 @@ namespace mu2e {
          CLHEP::RandPoissonQ     randPoisson_;
          CaloPhotonPropagation   photonProp_;
          TH2F*                   hTime_;
-         TH1F*                   hEtot_;
-         TH1F*                   hECorrtot_;
-         TH1F*                   hStot_;
-
+         TH1F                    *hEtot_,*hECorrtot_,*hStot_;
   };
 
 
@@ -182,10 +181,6 @@ namespace mu2e {
   {
       if (diagLevel_ > 0) std::cout << "[CaloShowerROMaker::produce] begin" << std::endl;
 
-      //update condition cache
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      mbtime_ = accPar->deBuncherPeriod;
- 
       //get Event window and bunch timing info
       art::Handle<EventWindowMarker> ewMarkerHandle;
       event.getByLabel(ewMarkerTag_, ewMarkerHandle);
@@ -197,8 +192,7 @@ namespace mu2e {
 
       ProditionsHandle<EventTiming> eventTimingHandle;
       const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-      // change fcl parameter from time since proton to time since marker
-      double correctedDigitizationStart = digitizationStart_ - eventTiming.timeFromProtonsToDRMarker();
+      float timeFromProtonsToDRMarker = eventTiming.timeFromProtonsToDRMarker(); //fixed time between CFO first tick and event start
 
       // Containers to hold the output hits.
       auto CaloShowerROs  = std::make_unique<CaloShowerROCollection>();
@@ -209,7 +203,7 @@ namespace mu2e {
                      back_inserter(newCrystalShowerTokens), 
                      [&event](const auto& token) {return event.getValidHandle(token);});
       
-      makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims, ewMarker, pbtmc, correctedDigitizationStart);
+      makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims, ewMarker, pbtmc, timeFromProtonsToDRMarker );
 
       // Add the output hit collection to the event
       event.put(std::move(CaloShowerROs));
@@ -222,22 +216,27 @@ namespace mu2e {
   //-----------------------------------------------------------------------------------------------------
   void CaloShowerROMaker::makeReadoutHits(const StepHandles& crystalShowerHandles, CaloShowerROCollection& CaloShowerROs, 
                                           CaloShowerSimCollection& caloShowerSims, const EventWindowMarker& ewMarker, 
-                                          const ProtonBunchTimeMC& pbtmc, double correctedDigitizationStart )
+                                          const ProtonBunchTimeMC& pbtmc, float timeFromProtonsToDRMarker)
   {
       GlobalConstantsHandle<ParticleDataList>  pdt;
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
+
+      ConditionsHandle<AcceleratorParams> accPar("ignored");
+      float mbtime = accPar->deBuncherPeriod;
 
       const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
       const int   nROs             = cal.caloInfo().getInt("nSiPMPerCrystal");
       const float cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
 
       std::map<int,std::vector<StepEntry>> simEntriesMap;
+      diagSummary diagSum;
+
+      // Digitization start / end  from accelerator DR marker with PB jitter
+      float  correctedDigitizeStart = digitizationStart_ - pbtmc.pbtime_ - timeFromProtonsToDRMarker; 
+      float  correctedDigitizeEnd   = digitizationEnd_   - pbtmc.pbtime_ - timeFromProtonsToDRMarker ; 
 
       //-----------------------------------------------------------------------
       //store corrected energy deposits for each redouts
-      
-      diagSummary diagSum;
-
       for (const auto& showerHandle: crystalShowerHandles)
       {
           const CaloShowerStepCollection& caloShowerSteps(*showerHandle);
@@ -245,12 +244,17 @@ namespace mu2e {
           {
               const CaloShowerStep& step = *istep;
 
-              // Time folding and filtering, see doc-db 3425 + talks from D. Brown for explanation
-              double mbLength        = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill) ? mbtime_ : ewMarker.eventLength();
-              // folding is done relative to marker t=0
-              double hitTime         = fmod(istep->time() + pbtmc.pbtime_ + mbLength, mbLength);
-              
-              if (hitTime < correctedDigitizationStart) continue;
+              // see doc-db for calo folding description, this is non-trivial. Note pbtmc.pbtime_ is NEGATIVE!
+              // fold hits into the DR -> maxHitTime window
+              // then move early hits (in the PB) to the end of the digi window spilling over the next pulse
+              // finally filter hits to match the digitization window
+              double mbLength = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill) ? mbtime : ewMarker.eventLength();
+              double maxHitTime = std::max(mbtime,correctedDigitizeEnd);
+
+              double hitTime = fmod(istep->time()+pbtmc.pbtime_,mbLength) - pbtmc.pbtime_;
+              if (hitTime < maxHitTime-mbLength) hitTime += mbLength;
+
+              if (hitTime < correctedDigitizeStart) continue;
 
               size_t idx = std::distance(caloShowerSteps.begin(), istep);
               art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);            
@@ -281,7 +285,7 @@ namespace mu2e {
                   if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::generatePE] SiPMID:"<<SiPMID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
                   if (diagLevel_ > 2) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
                   if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
-                                    
+
                   diagSum.totNPE     += NPE;
                   diagSum.totEdepNPE += double(NPE)/peMeV/2.0; //average between the two RO
               }

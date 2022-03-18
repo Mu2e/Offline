@@ -62,7 +62,6 @@
 
 #include "Geant4/G4hIonisation.hh"
 #include "Geant4/G4ionIonisation.hh"
-#include "Geant4/G4alphaIonisation.hh"
 
 #include "Geant4/G4Gamma.hh"
 #include "Geant4/G4Electron.hh"

@@ -108,9 +108,9 @@ namespace mu2e {
   }
 
 
-  void Mu2eG4SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
+  void Mu2eG4SteppingAction::BeginOfEvent(StepPointMCCollection* outputHits,
                                           const SimParticleHelper& spHelper) {
-    tvd_collection_  = &outputHits;
+    tvd_collection_  = outputHits;
     tvd_warning_printed_ = false;
     _spHelper    = &spHelper;
   }

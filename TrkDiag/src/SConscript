@@ -82,6 +82,7 @@ helper.make_plugins( [
    'mu2e_CRVAnalysis',
    'mu2e_GeomPrimitives',
    'mu2e_DbService',
+   'mu2e_DbTables',
    babarlibs,
    'art_Framework_Core',
    'art_Framework_Principal',

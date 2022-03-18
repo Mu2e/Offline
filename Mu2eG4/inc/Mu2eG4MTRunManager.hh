@@ -60,10 +60,10 @@ namespace mu2e {
     bool m_managerInitialized;
     bool m_runTerminated;
 
-    PhysicalVolumeHelper* physVolHelper_;
+    PhysicalVolumeHelper* physVolHelper_ = nullptr;
     SensitiveDetectorHelper sensitiveDetectorHelper_;
-    Mu2eG4MasterRunAction* masterRunAction_;
-    G4VUserPhysicsList* physicsList_;
+    Mu2eG4MasterRunAction* masterRunAction_ = nullptr;
+    G4VUserPhysicsList* physicsList_ = nullptr;
 
     int rmvlevel_;
   };

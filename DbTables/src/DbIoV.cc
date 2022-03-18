@@ -40,7 +40,7 @@ void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
     uint32_t es = iov.startSubrun();
     if(es==0) {
       er--;
-      es = maxsr;
+      es = maxSubrun();
     } else {
       es--;
     }
@@ -49,7 +49,7 @@ void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
   } else if(method==2) { // subtract start to middle
     uint32_t sr = iov.endRun();
     uint32_t ss = iov.endSubrun();
-    if(ss==maxsr) {
+    if(ss==maxSubrun()) {
       sr++;
       ss = 0;
     } else {
@@ -128,15 +128,16 @@ std::string mu2e::DbIoV::to_string(bool compress) const {
 
   if(compress) {
     ss << startRun();
-    if(startSubrun()!=0) {
+    bool oner = ( startRun()==endRun() );
+    bool onesr = ( startSubrun()==endSubrun() );
+    if(startSubrun()!=0 || (oner && onesr)) {
       ss << ":"<< startSubrun();
     }
-    bool onesr = ( startSubrun()==endSubrun() );
-    bool wholerun = ( startSubrun()==0 && endSubrun()==maxsr );
-    bool drop = (startRun()==endRun()) && (onesr || wholerun );
+    bool wholerun = ( startSubrun()==0 && endSubrun()==maxSubrun() );
+    bool drop = oner && (onesr || wholerun );
     if(!drop) {
       ss << "-" << endRun();
-      if(endSubrun()!=maxsr) {
+      if(endSubrun()!=maxSubrun()) {
 	ss << ":" << endSubrun();
       }
     }
@@ -162,30 +163,27 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
     return;
   }
   std::vector<std::string> words;
+
+  boost::split(words,iovstr, boost::is_any_of(" \t"), 
+               boost::token_compress_on);
+  if(words.size()!=1) {
+    throw cet::exception("DBIOV_MULTIWORD_INIT_STRING") 
+      << "DbIoV::setByString string has multiple words: " << iovstr << "\n";
+  }
+
+
   std::string start,end;
-  if(iovstr.find('-')!=std::string::npos) { // has a dash
-    boost::split(words,iovstr, boost::is_any_of("-"), 
-		 boost::token_compress_off);
+  boost::split(words,iovstr, boost::is_any_of("-"), 
+               boost::token_compress_off);
+  if(words.size()==1) {
+    start = iovstr;
+    end = iovstr;
+  } else if(words.size()==2) {
     start = words[0];
     end = words[1];
   } else {
-    // this allows strings with spaces like
-    // "1 2 3 4" -> start = 1:2, end=3:4
-    boost::split(words,iovstr, boost::is_any_of(" \t"), 
-		 boost::token_compress_on);
-    if(words.size()==4) {
-      start = words[0]+":"+words[1];
-      end = words[2]+":"+words[3];
-    } else if(words.size()==2) {
-      start = words[0];
-      end = words[1];
-    } else if(words.size()==1) {
-      start = words[0];
-      end = words[0];
-    } else {
-      throw cet::exception("DBIOV_BAD_INIT_STRING") 
-	<< "DbIoV::setByString cannot interpret string: " << iovstr << "\n";
-    }
+    throw cet::exception("DBIOV_DASH_INIT_STRING") 
+      << "DbIoV::setByString wrong number of dashed fields: " << iovstr << "\n";
   }
 
   // require a string for start and end
@@ -196,28 +194,26 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
 
   boost::split(words,start, boost::is_any_of(":"),boost::token_compress_on);
   uint32_t startr = 0, startsr = 0;
+
   if(words.size()>=1) {
-    boost::to_upper(words[0]);
     if(words[0]!="MIN") {
       startr  = std::stoi(words[0]);
     }
   }
   if(words.size()>=2) {
-    boost::to_upper(words[1]);
     if(words[1]!="MIN") {
       startsr = std::stoi(words[1]);
     }
   }
+
   boost::split(words,end, boost::is_any_of(":"),boost::token_compress_on);
-  uint32_t endr = maxr, endsr = maxsr;
+  uint32_t endr = maxRun(), endsr = maxSubrun();
   if(words.size()>=1) {
-    boost::to_upper(words[0]);
     if(words[0]!="MAX") {
       endr  = std::stoi(words[0]);
     }
   }
   if(words.size()>=2) {
-    boost::to_upper(words[1]);
     if(words[1]!="MAX") {
       endsr = std::stoi(words[1]);
     }

@@ -169,10 +169,12 @@ int mu2e::DbTool::printCalibration() {
   args["name"] = "";
   args["user"] = "";
   args["cid"] = "";
+  args["ctime"] = "";
   if( (rc = getArgs(args)) ) return rc;
   if(name.empty()) name = args["name"];
   if(user.empty()) user = args["user"];
   if(cids.empty()) cids = intList(args["cid"]);
+  timeInterval tint = parseInterval(args["ctime"]);
 
   // if this is a val table, just exit - there is no summary line
   if(name.substr(0,3)=="Val") {
@@ -195,7 +197,9 @@ int mu2e::DbTool::printCalibration() {
     for(auto const& cc: _valcache.valCalibrations().rows()) {
       if(tid<0 || cc.tid()==tid) {
 	if(user.empty() || user==cc.create_user()) {
-	  cids.push_back(cc.cid());
+          if(tint.start==0||inTime(tint,cc.create_time())) {
+            cids.push_back(cc.cid());
+          }
 	}
       }
     }
@@ -225,12 +229,14 @@ int mu2e::DbTool::printIov() {
   args["user"] = "";
   args["iid"] = "";
   args["details"] = "";
+  args["ctime"] = "";
   if( (rc = getArgs(args)) ) return rc;
   std::string name = args["name"];
   std::string user = args["user"];
   std::vector<int> iids = intList(args["iid"]);
   int details = 0;
   if(!args["details"].empty()) details = std::stoi(args["details"]);
+  timeInterval tint = parseInterval(args["ctime"]);
 
   // if this is a val table, just exit - there is no summary line
   if(name.substr(0,3)=="Val") {
@@ -252,7 +258,9 @@ int mu2e::DbTool::printIov() {
       auto const& cc = _valcache.valCalibrations().row(ii.cid());
       if(tid<0 || cc.tid()==tid) {
 	if(user.empty() || user==ii.create_user()) {
-	  iids.push_back(ii.iid());
+          if(tint.start==0||inTime(tint,ii.create_time())) {
+            iids.push_back(ii.iid());
+          }
 	}
       }
     }
@@ -283,17 +291,21 @@ int mu2e::DbTool::printGroup() {
   args["user"] = "";
   args["gid"] = "";
   args["details"] = "";
+  args["ctime"] = "";
   if( (rc = getArgs(args)) ) return rc;
   std::string user = args["user"];
   std::vector<int> gids = intList(args["gid"]);
   int details = 0;
   if(!args["details"].empty()) details = std::stoi(args["details"]);
+  timeInterval tint = parseInterval(args["ctime"]);
 
   if(gids.size()==0) {
     for(auto const& gg: _valcache.valGroups().rows()) {
-	if(user.empty() || user==gg.create_user()) {
-	  gids.push_back(gg.gid());
-	}
+      if(user.empty() || user==gg.create_user()) {
+        if(tint.start==0||inTime(tint,gg.create_time())) {
+          gids.push_back(gg.gid());
+        }
+      }
     }
   }
 
@@ -323,12 +335,14 @@ int mu2e::DbTool::printExtension() {
   args["version"] = "";
   args["details"] = "";
   args["eid"] = "";
+  args["ctime"] = "";
   if( (rc = getArgs(args)) ) return rc;
   std::string purpose = args["purpose"];
   std::string version = args["version"];
   std::vector<int> eids = intList(args["eid"]);
   int details = 0;
   if(!args["details"].empty()) details = std::stoi(args["details"]);
+  timeInterval tint = parseInterval(args["ctime"]);
 
   if(eids.size()==0) { // if no list, then try to find them based on p/v
     int pid = -1;
@@ -338,7 +352,9 @@ int mu2e::DbTool::printExtension() {
 
     for(auto const& ee :  _valcache.valExtensions().rows()) {
       if(vid<0 || ee.vid()==vid ) {
-	eids.push_back(ee.eid());
+        if(tint.start==0||inTime(tint,ee.create_time())) {
+          eids.push_back(ee.eid());
+        }
       }
     }
   }
@@ -366,6 +382,7 @@ int mu2e::DbTool::printVersion() {
   args["version"] = "";
   args["vid"] = "";
   args["details"] = "";
+  args["ctime"] = "";
   if( (rc = getArgs(args)) ) return rc;
 
   std::string purpose = args["purpose"];
@@ -373,6 +390,7 @@ int mu2e::DbTool::printVersion() {
   std::vector<int> vids = intList(args["vid"]);
   int details = 0;
   if(!args["details"].empty()) details = std::stoi(args["details"]);
+  timeInterval tint = parseInterval(args["ctime"]);
 
   if(vids.size()==0) { // if no list, then try to find them based on p/v
     int pid = -1;
@@ -383,7 +401,9 @@ int mu2e::DbTool::printVersion() {
     for(auto const& vr :  _valcache.valVersions().rows()) {
       if(pid<0 || vr.pid()==pid ) {
 	if(vid<0 || vr.vid()==vid ) {
-	  vids.push_back(vr.vid());
+          if(tint.start==0||inTime(tint,vr.create_time())) {
+            vids.push_back(vr.vid());
+          }
 	}
       }
     }
@@ -393,7 +413,7 @@ int mu2e::DbTool::printVersion() {
 			   << vids.size() <<" VIDs" <<std::endl;
   
   if(details<=0) 
-    std::cout << "      VID  PID  LID  maj  min  create_user        create_date " <<std::endl;
+    std::cout << "      VID  PID  LID  maj  min  create_user        create_date                     comment" <<std::endl;
 
   for(auto vid : vids) {
     rc = printVIDLine(vid,details,0);
@@ -443,7 +463,7 @@ int mu2e::DbTool::printPurpose() {
 			   << pids.size() <<" PIDs" <<std::endl;
   
   if(details<=0) 
-    std::cout << "      PID    create_user        create_date              comment" <<std::endl;
+    std::cout << "      PID           name       create_user          create_date                  comment" <<std::endl;
 
   for(auto pid : pids) {
     rc = printPIDLine(pid,details,0);
@@ -681,10 +701,11 @@ int mu2e::DbTool::printVIDLine(int vid, int details, int indent) {
 	    << std::setw(5+4*std::max(indent,0)) << vid 
 	    << std::setw(5) << vr.pid()  
 	    << std::setw(5) << vr.lid()  
-	    << std::setw(5) << vr.major()  
-	    << std::setw(5) << vr.minor()  
-	    << std::setw(12) << vr.create_user()  
-	    << std::setw(35) << vr.create_time() 
+	    << std::setw(5) << vr.major()
+	    << std::setw(5) << vr.minor()
+	    << std::setw(12) << vr.create_user()
+	    << std::setw(35) << vr.create_time() << " "
+	    << std::setw(35) << vr.comment()
 	    << std::endl;
   if(details>0) {
     for(auto er : _valcache.valExtensions().rows()) {
@@ -708,9 +729,9 @@ int mu2e::DbTool::printPIDLine(int pid, int details, int indent) {
   std::cout << "PID " 
 	    << std::setw(5+4*std::max(indent,0)) << pid 
 	    << std::setw(20) << pr.name()  
-	    << std::setw(12) << pr.create_user()  
-	    << std::setw(35) << pr.create_time() 
-	    << std::setw(35) << pr.comment() 
+	    << std::setw(12) << pr.create_user()
+	    << std::setw(35) << pr.create_time() << " "
+	    << std::setw(35) << pr.comment()
 	    << std::endl;
   if(details>0) {
     for(auto vr : _valcache.valVersions().rows()) {
@@ -1557,9 +1578,6 @@ int mu2e::DbTool::commitList() {
   }
   
 
-  std::cout <<"commit-list: new list "+args["name"]+" has lid "
-	    << lid << " with "<< ntid <<" list entries " << std::endl;
-
   if(_dryrun) {
     std::cout <<"commit-list: new list "+args["name"]+" would have lid "
 	      << lid << " with "<< ntid <<" list entries " << std::endl;
@@ -1957,7 +1975,7 @@ int mu2e::DbTool::commitPatch() {
 	    oeiov.iov().subtract(neiov.iov());
 	    oeiov.setIid(-1);  // this iov is modified, early split
 	    // create late split
-	    temp.subtract(neiov.iov(),temp.maxRun(),temp.maxSubrun());
+	    temp.subtract(neiov.iov(),DbIoV::maxRun(),DbIoV::maxSubrun());
 	    // put it on the list to continue being checked
 	    tpr.second.emplace_back(-1,oeiov.cid(),temp);
 	  } else if(over>0) { // partial overlap
@@ -2202,7 +2220,7 @@ int mu2e::DbTool::verifySet() {
 	  if(over==4) { //the iov is split
 	    DbIoV temp = *it;
 	    // find the high-end split part
-	    temp.subtract(jj,jj.maxRun(),jj.maxSubrun());
+	    temp.subtract(jj,DbIoV::maxRun(),DbIoV::maxSubrun());
 	    // add the high-end split part to the list of pieces to be checked
 	    if(!temp.isNull()) list.emplace_back(temp);
 	  } // end over==4
@@ -2378,6 +2396,12 @@ int mu2e::DbTool::help() {
       "    int,int,int   example: --cid 234,221,435\n"
       "    filespec for a file, example: --cid myCids.txt\n"
       "         where each word in the file is an integer\n"
+      " arguments for time intervals should be 8601 time spec, \n"
+      " with \"/\" separator \n"
+      "   --ctime 2022-01-01    // anytime after this date\n"
+      "   --ctime 2022-01-01T10:11:12\n"
+      "   --ctime 2022-01-01T10:11:12/2022-02-01\n"
+      "   --ctime 2022-01-01T10:11:12/2022-01-01T10:11:12\n"
       " \n"
       <<std::endl;
   } else if(_action=="print-content") {
@@ -2403,6 +2427,7 @@ int mu2e::DbTool::help() {
       " [OPTIONS]\n"
       "    --name NAME : name of the table\n"
       "    --user USERNAME : only print tables committed by this user \n"
+      "    --ctime TIME/TIME : only print contents created in this interval \n"
       "    --cid INT or INT LIST : only print this cid \n"
       " \n"
       << std::endl;
@@ -2416,6 +2441,7 @@ int mu2e::DbTool::help() {
       " [OPTIONS]\n"
       "    --name NAME : only print IOV for this table\n"
       "    --user USERNAME : only print tables committed by this user \n"
+      "    --ctime TIME/TIME : only print contents created in this interval \n"
       "    --iid INT or INT LIST : only print the IOV with these IID\n"
       "    --details INT: if >0 also print CID summary \n"
       " \n"
@@ -2429,6 +2455,7 @@ int mu2e::DbTool::help() {
       " \n"
       " [OPTIONS]\n"
       "    --user USERNAME : only print tables committed by this user \n"
+      "    --ctime TIME/TIME : only print contents created in this interval \n"
       "    --gid INT or INT LIST : only print contents for this GID \n"
       "    --details INT : if >0, also print IOV, if >1 also CID \n"
       " \n"
@@ -2443,6 +2470,7 @@ int mu2e::DbTool::help() {
       " [OPTIONS]\n"
       "    --purpose PURPOSE : restrict which extensions to print\n"
       "    --version  VERSION : restrict which extensions to print\n"
+      "    --ctime TIME/TIME : only print contents created in this interval \n"
       "    --eid INT or INT LIST : only print contents for this EID \n"
       "    --details INT : if >0, also print groups, >1 print IOV, etc \n"
       " \n"
@@ -2457,6 +2485,7 @@ int mu2e::DbTool::help() {
       " [OPTIONS]\n"
       "    --purpose PURPOSE : restrict which extensions to print\n"
       "    --version  VERSION : restrict which extensions to print\n"
+      "    --ctime TIME/TIME : only print contents created in this interval \n"
       "    --vid INT or INT LIST : only print versions for this VID \n"
       "    --details INT : if >0, also print extensions, >1 print groups, etc \n"
       << std::endl;
@@ -2922,4 +2951,52 @@ std::vector<mu2e::DbIoV> mu2e::DbTool::runList(std::string const& arg) {
 
   }
   return list;
+}
+
+
+// ****************************************  three time routines
+
+bool mu2e::DbTool::inTime(const timeInterval& interval, 
+                          const std::string& etime) {
+
+  std::time_t tee = parseTime(etime);
+  if(difftime(tee,interval.start)>0 && 
+     difftime(interval.end,tee)>0) return true;
+
+  return false;
+
+}
+
+mu2e::DbTool::timeInterval mu2e::DbTool::parseInterval(
+                                        const std::string& time) {
+
+  timeInterval ti;
+  if(time.empty()) {
+    return {std::time_t(0),std::time_t(4e10)};
+  }
+  // "/" splits start and end time
+  size_t jj = time.find("/");
+  if(jj==std::string::npos) {
+    ti.start = parseTime(time);
+    ti.end   = std::time_t(4e10);
+  } else {
+    ti.start = parseTime(time.substr(0,jj));
+    ti.end   = parseTime(time.substr(jj+1));
+  }
+
+  return ti;
+}
+
+std::time_t mu2e::DbTool::parseTime(const std::string& time) {
+
+  std::tm tt{}; // must zero initialize
+  std::istringstream ss(time);
+  if(time[10]=='T') {
+    ss >> std::get_time(&tt, "%Y-%m-%dT%H:%M:%S");
+  } else {
+    ss >> std::get_time(&tt, "%Y-%m-%d %H:%M:%S");
+  }
+  std::time_t tee = mktime(&tt);
+  return tee;
+
 }

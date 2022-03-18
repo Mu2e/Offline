@@ -265,8 +265,10 @@ int mu2e::DbReader::queryCore(std::string& csv,
   url.append("dbname="+_id.name());
   url.append("&t=");
   url.append(table);
-  url.append("&c=");
-  url.append(select);
+  if(!select.empty()) {
+    url.append("&c=");
+    url.append(select);
+  }
   for(auto const& ww : where) {
     url.append("&w="+ww);
   }

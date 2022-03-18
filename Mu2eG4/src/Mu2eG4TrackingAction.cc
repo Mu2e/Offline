@@ -429,8 +429,7 @@ namespace mu2e {
              << ", " << pG4Ion->GetIsomerLevel()
              << ", " << flbi
         //   << ", " << static_cast<G4int>(pG4Ion->GetFloatLevelBase())
-             << ", " << G4String(G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi)))
-        //   << ", " << G4String(G4Ions::FloatLevelBaseChar(pG4Ion->GetFloatLevelBase()))
+             << ", " << std::string(1,G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi)))
              << G4endl;
       Mu2eG4UserHelpers::printTrackInfo( trk, " Ion:          ", _transientMap,
                                          _timer, _mu2eOrigin);
@@ -651,7 +650,7 @@ namespace mu2e {
                << " with excitaion energy: "
                << pG4Ion->GetExcitationEnergy()
                << " with float level base: "
-               << G4String(G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi))) << " " << flbi
+               << std::string(1,G4Ions::FloatLevelBaseChar(G4Ions::FloatLevelBase(flbi))) << " " << flbi
                << G4endl;
       }
       G4cout.precision(prec);
