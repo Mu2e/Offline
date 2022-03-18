@@ -111,11 +111,11 @@ namespace mu2e {
       const ProtonBunchTime& pbt(*pbtH);
       double pbtOffset = pbt.pbtime_;
 
-      ProditionsHandle<EventTiming> eventTimingHandle;
-      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
-      float timeFromProtonsToDRMarker = eventTiming.timeFromProtonsToDRMarker();
+//      ProditionsHandle<EventTiming> eventTimingHandle;
+//      const EventTiming &eventTiming = eventTimingHandle.get(event.id());
+//      float timeFromProtonsToDRMarker = eventTiming.timeFromProtonsToDRMarker();
 
-      extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset+timeFromProtonsToDRMarker);
+      extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset);
 
       event.put(std::move(recoCaloDigiColl));
 
