@@ -316,7 +316,6 @@ namespace mu2e {
 	   size_t sampleStop  = hitStops[ihit];
 	   size_t t0          = size_t(sampleStart*digiSampling_ + digitizationStart_ - timeFromProtonsToDRMarker_ - startTimeBuffer_);
            //t0 is given in the "digitizer time frame"
-std::cout<<"t0 "<<t0<<std::endl;
 
 	   std::vector<int> wfsample{};
            wfsample.reserve(sampleStop-sampleStart);
