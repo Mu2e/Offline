@@ -526,7 +526,6 @@ CalPatRec : { @table::CalPatRec
 	    DtMax                                       :  30.   # 2018-07-29 P.M.: DtMax=20ns was cutting out a few percent of hits
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
-	    minClusterTime                              : 500.   # ns
 	    pitchAngle                                  : 0.67   # mean pitch for CE
 	    beta                                        : 1.0    # for muon reco needs to be changed
 	    dtOffset                                    : @local::TrackCaloMatching.DtOffset
