@@ -9,30 +9,32 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKCombinatoricUpdater.hh"
 #include <vector>
+#include <limits>
 namespace mu2e {
   using KinKal::WireHitState;
-  template <class KTRAJ> class StrawHitSet : public KinKal::Hit<KTRAJ> {
+  template <class KTRAJ> class KKStrawHitSet : public KinKal::Hit<KTRAJ> {
     public:
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = shared_ptr<KKSTRAWHIT>;
+      using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       // sort hits by time
       struct StrawHitSort {
         bool operator ()( const KKSTRAWHITPTR& hit1, const KKSTRAWHITPTR& hit2) {
           return hit1->time() < hit2->time(); }
       };
       using SHCOLL = std::set<KKSTRAWHITPTR>;
-      StrawHitSet() {}
+      KKStrawHitSet() {}
       // create from a collection of panel hits
-      StrawHitSet(SHCOLL const& hits) : hits_(hits) {}
-      bool addHit(KKSTRAWHITPTR hit); { hits_.insert(hit); }
-      Weights weight() const override { return Weights(); }      // Panel hits intrinsically have no weight (null Weight)
+      KKStrawHitSet(SHCOLL const& hits) : hits_(hits) {}
+      bool addHit(KKSTRAWHITPTR hit);
+      KinKal::Weights weight() const override { return KinKal::Weights(); }      // Panel hits intrinsically have no weight (null Weight)
       bool active() const override { return false; } // panel hits are never active
-      Chisq chisq() const override { return 0.0; } // panel hits don't contribut to chisquared
-      Chisq chisq(Parameters const& params) const override { return 0.0; }
+      KinKal::Chisq chisq() const override { return KinKal::Chisq(); } // panel hits don't contribut to chisquared
+      KinKal::Chisq chisq(KinKal::Parameters const& params) const override { return KinKal::Chisq(); }
       double time() const override;
-      void update(PKTRAJ const& pktraj)override {;} // no algebraic update for panel hits
+      void update(PKTRAJ const& pktraj)override {} // no algebraic update for panel hits
       // update the internals of the hit, specific to this meta-iteraion.  This will affect the next fit iteration
-      void update(PKTRAJ const& pktraj, MetaIterConfig const& config) override;
+      void update(PKTRAJ const& pktraj, KinKal::MetaIterConfig const& config) override;
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       ~KKStrawHitSet(){}
     private:
@@ -46,7 +48,7 @@ namespace mu2e {
   }
   template<class KTRAJ> double KKStrawHitSet<KTRAJ>::time() const {
     // return time just past the last hit's time.  This insures they are updated before the panel
-    double maxtime(-std::limits<float>.max());
+    double maxtime(-std::numeric_limits<float>::max());
     unsigned nactive(0);
     for(auto const& hit : hits_){
       if(hit && hit->active())++nactive;
@@ -56,7 +58,7 @@ namespace mu2e {
     return maxtime + epsilon;
   }
 
-  template<class KTRAJ> double KKStrawHitSet<KTRAJ>::updateState(PKTRAJ const& pktraj, MetaIterConfig const& config)override {
+  template<class KTRAJ> void KKStrawHitSet<KTRAJ>::update(PKTRAJ const& pktraj, KinKal::MetaIterConfig const& miconfig) {
     // look for an updater; if it's there, update the state
     auto kkphu = miconfig.findUpdater<KKCombinatoricUpdater>();
     if(kkphu != 0)kkphu->update(*this);
@@ -68,10 +70,10 @@ namespace mu2e {
       if(hit->active()) ++nactive;
       if(hit->hitState().useDrift()) ++ndrift;
     }
-    ost << " KKStrawHitSet with " << nactive << " active hits with " << ndrift " << using drift information among " << hits_size() << " total" << std::endl;
+    ost << " KKStrawHitSet with " << nactive << " active hits with " << ndrift  << " using drift information among " << hits_.size() << " total" << std::endl;
     if(detail > 0){
       for(auto const& hit : hits_) {
-        ost << "hit  << std::endl;
+        ost << hit << std::endl;
       }
     }
   }

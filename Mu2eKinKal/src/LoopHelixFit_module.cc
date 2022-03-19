@@ -81,11 +81,10 @@ namespace mu2e {
   using MEAS = KinKal::Hit<KTRAJ>;
   using MEASPTR = std::shared_ptr<MEAS>;
   using MEASCOL = std::vector<MEASPTR>;
-  using KKFIT = KKFit<KTRAJ>;
   using EXING = KinKal::ElementXing<KTRAJ>;
   using EXINGPTR = std::shared_ptr<EXING>;
   using EXINGCOL = std::vector<EXINGPTR>;
-  using KKFIT = mu2e::KKFit<KTRAJ>;
+  using KKFIT = KKFit<KTRAJ>;
   using KinKal::DVEC;
   using KinKal::Parameters;
   using KinKal::VEC3;
@@ -257,20 +256,8 @@ namespace mu2e {
           // Check the fit
           auto goodfit = goodFit(*kktrk);
           if(goodfit && extend_) {
-            KKSTRAWHITCOL addstrawhits;
-            KKCALOHITCOL addcalohits;
-            KKSTRAWXINGCOL addstrawxings;
-            kkfit_.addStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), *kktrk, chcol, addstrawhits, addstrawxings );
-            if(kkfit_.useCalo()&&calohits.size()==0)kkfit_.addCaloHit(*calo_h, *kktrk, cc_H, addcalohits);
-            if(kkfit_.addMaterial())kkfit_.addStraws(*tracker, kkmat_.strawMaterial(), *kktrk, addstrawxings);
-            kktrk->extendTrack(exconfig_,addstrawhits,addcalohits,addstrawxings);
+            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
             goodfit = goodFit(*kktrk);
-            if(print_ > 1){
-              std::cout << "KKTrk extension adding "
-                << addstrawhits.size() << " StrawHits and "
-                << addcalohits.size() << " CaloHits and "
-                << addstrawxings.size() << " Straw Xings" << std::endl;
-            }
           }
           if(print_>0)kktrk->printFit(std::cout,print_);
           if(goodfit || saveall_){

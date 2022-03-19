@@ -6,6 +6,7 @@
 #include "KinKal/Fit/Track.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitSet.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 namespace mu2e {
@@ -18,6 +19,9 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
+      using KKSTRAWHITSET = KKStrawHitSet<KTRAJ>;
+      using KKSTRAWHITSETPTR = std::shared_ptr<KKSTRAWHITSET>;
+      using KKSTRAWHITSETCOL = std::vector<KKSTRAWHITSETPTR>;
       using KKSTRAWXING = KKStrawXing<KTRAJ>;
       using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
       using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
@@ -40,6 +44,7 @@ namespace mu2e {
       // accessors
       PDGCode::type fitParticle() const { return tpart_;}
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
+      KKSTRAWHITSETCOL const& strawHitSets() const { return strawhitsets_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
       void printFit(std::ostream& ost=std::cout,int detail=0) const;
@@ -47,6 +52,7 @@ namespace mu2e {
       // record the particle type
       PDGCode::type tpart_;
       KKSTRAWHITCOL strawhits_;  // straw hits used in this fit
+      KKSTRAWHITSETCOL strawhitsets_;  // straw hit setss used in this fit
       KKCALOHITCOL calohits_;  // calo hits used in this fit
       KKSTRAWXINGCOL strawxings_;  // straw material crossings used in this fit
       // utility function to convert to generic types
