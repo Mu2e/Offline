@@ -43,6 +43,7 @@
 //#include "Geant4/G4LogicalVolumeStore.hh"
 
 #include "Geant4/G4Material.hh"
+#include "Geant4/G4MaterialTable.hh"
 #include "Geant4/G4Box.hh"
 #include "Geant4/G4Tubs.hh"
 #include "Geant4/G4LogicalVolume.hh"
@@ -71,7 +72,7 @@ namespace mu2e {
   void ConstructMaterials::construct(){
 
     if (!mu2eStandardDetector_) {
-      cout  << "Non standard mu2e configuration, Will NOT construct mu2e materials " << endl;
+      G4cout << __func__ << " Non standard mu2e configuration, Will NOT construct mu2e materials " << G4endl;
       // one could move this down to constructMu2eMaterials before using GeomHandle's
       return;
     }
@@ -79,6 +80,12 @@ namespace mu2e {
     // Construct the requested materials.
     constructMu2eMaterials();
     constructMu2eMaterials2();
+
+    setBirksConstant(config_);
+
+    // Turning on density effect correction in ionization loss calculations
+    // for selected materials deemed conductors
+    useDensityEffectInIonizationLossCorrectionIfRequested();
 
     // Print element table, if requested.
     if (printElements_){
@@ -1153,7 +1160,7 @@ namespace mu2e {
     }
 
     // Completed constructing Mu2e specific materials, first function.
-    // Now second function for Mu2e specific materials.
+    // Add new materials et the end of the  second function for Mu2e specific materials.
 
   }
 
@@ -1581,7 +1588,7 @@ namespace mu2e {
      ProductionTargetTungstenLa2_O3->AddElement(getElementOrThrow("W"),wPercentage*CLHEP::perCent);
     }
 
-    setBirksConstant(config_);
+    // Add new materials before this line
 
   }
 
@@ -1617,6 +1624,54 @@ namespace mu2e {
     }
 
     return answer;
+  }
+
+  // Turning on density effect correction in ionization loss calculations
+  // for selected materials deemed conductors
+  void ConstructMaterials::useDensityEffectInIonizationLossCorrectionIfRequested() {
+
+    if (config_.physics().useDensityEffectInIonizationLossCalc()) {
+
+      std::vector<std::string> conductors = config_.physics().conductingMaterials();
+
+      // conductor is defined as having GetFreeElectronDensity() > 0.0
+      // one can set that density with SetFreeElectronDensity(val)
+
+      if (config_.debug().diagLevel() > 0) {
+        G4cout << "ConstructMaterials::" << __func__
+               << " Using density effect correction in ionization loss calculations"
+               << " for selected materials deemed conductors "
+               << G4endl;
+      }
+      G4MaterialTable* theMaterialTable = G4Material::GetMaterialTable();
+      for(size_t i=0; i!=theMaterialTable->size(); ++i) {
+        G4Material* theMaterial = (*theMaterialTable)[i];
+        if (config_.debug().diagLevel() > 0) {
+          G4String cond( ( theMaterial->GetFreeElectronDensity() > 0. ) ?
+                             " conductor" : " not conductor" );
+          G4cout << "ConstructMaterials::" <<  __func__
+                 << " "
+                 << theMaterial->GetName()
+                 << ", has free electron density of "
+                 << theMaterial->GetFreeElectronDensity()
+                 << cond
+                 << G4endl;
+        }
+        if (std::find(conductors.begin(), conductors.end(), theMaterial->GetName())
+            != conductors.end() ) {
+          G4NistManager::Instance()->SetDensityEffectCalculatorFlag(theMaterial, true);
+          if (config_.debug().diagLevel() > 0) {
+            G4cout << "ConstructMaterials::" <<  __func__
+                   << " Using correction in calculations for "
+                   << theMaterial->GetName()
+                   << ", its free electron density is "
+                   << theMaterial->GetFreeElectronDensity()
+                   << G4endl;
+
+          }
+        }
+      }
+    }
   }
 
 } // end namespace mu2e
