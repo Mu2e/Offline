@@ -23,9 +23,12 @@ namespace mu2e {
   {
     // particleNumberOffset_ is set per event, based on the highest number
     // used by SimParticles in previous simulation stages.
-    const auto sph = inputs.inputSimParticles(*event);
-    if(sph.isValid() && !sph->empty()) {
-      particleNumberOffset_ = sph->back().first.asUint();
+    const auto simsData = inputs.inputSimParticles(*event);
+    if(simsData.isValid()) {
+      auto sp = simsData.sims.ref();
+      if ( !sp.empty() ){
+        particleNumberOffset_ = sp.back().first.asUint();
+      }
     }
   }
 
