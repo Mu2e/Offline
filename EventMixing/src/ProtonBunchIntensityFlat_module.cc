@@ -74,7 +74,7 @@ namespace mu2e {
   }
 
   void ProtonBunchIntensityFlat::beginSubRun(art::SubRun & subrun ) {
-    subrun.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(mean_))),"MeanIntensity");
+    subrun.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(mean_))),"MeanIntensity", art::fullSubRun());
   }
 
 }
