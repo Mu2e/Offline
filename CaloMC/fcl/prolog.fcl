@@ -32,6 +32,7 @@ CaloShowerROMaker :
     protonBunchTimeMC        : EWMProducer
     digitizationStart        : @local::HitMakerDigitizationStart
     digitizationEnd          : @local::HitMakerDigitizationEnd
+    digitizationBuffer       : 10
     LRUCorrection            : true
     BirksCorrection          : true
     PEStatCorrection         : true

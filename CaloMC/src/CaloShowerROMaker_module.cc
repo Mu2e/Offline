@@ -94,6 +94,7 @@ namespace mu2e {
              fhicl::Atom<art::InputTag>      pbtmcTag                 { Name("protonBunchTimeMC"),        Comment("ProtonBunchTimeMC producer") };
              fhicl::Atom<float>              digitizationStart        { Name("digitizationStart"),        Comment("Minimum time of hit to be digitized") };
              fhicl::Atom<float>              digitizationEnd          { Name("digitizationEnd"),          Comment("Maximum time of hit to be digitized") };
+             fhicl::Atom<float>              digitizationBuffer       { Name("digitizationBuffer"),       Comment("Digi time buffer for photon propagation inside crystal") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
              fhicl::Atom<bool>               PEStatCorrection         { Name("PEStatCorrection"),         Comment("Include PE Poisson fluctuations") };
@@ -103,18 +104,19 @@ namespace mu2e {
 
          explicit CaloShowerROMaker(const art::EDProducer::Table<Config>& config) :
             EDProducer{config},
-            ewMarkerTag_      (config().ewMarkerTag()),
-            pbtmcTag_         (config().pbtmcTag()),
-            digitizationStart_(config().digitizationStart()),
-            digitizationEnd_  (config().digitizationEnd()),
-            LRUCorrection_    (config().LRUCorrection()),
-            BirksCorrection_  (config().BirksCorrection()),
-            PEStatCorrection_ (config().PEStatCorrection()),
-            addTravelTime_    (config().addTravelTime()),
-            diagLevel_        (config().diagLevel()),
-            engine_           (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
-            randPoisson_      (engine_),
-            photonProp_       (engine_)
+            ewMarkerTag_        (config().ewMarkerTag()),
+            pbtmcTag_           (config().pbtmcTag()),
+            digitizationStart_  (config().digitizationStart()),
+            digitizationEnd_    (config().digitizationEnd()),
+            digitizationBuffer_ (config().digitizationEnd()),
+            LRUCorrection_      (config().LRUCorrection()),
+            BirksCorrection_    (config().BirksCorrection()),
+            PEStatCorrection_   (config().PEStatCorrection()),
+            addTravelTime_      (config().addTravelTime()),
+            diagLevel_          (config().diagLevel()),
+            engine_             (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+            randPoisson_        (engine_),
+            photonProp_         (engine_)
          {
              // the following consumes statements are necessary because SimParticleTimeOffset::updateMap calls getValidHandle.
              for (auto const& tag : config().caloShowerStepCollection()) crystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
@@ -143,6 +145,7 @@ namespace mu2e {
          art::InputTag           pbtmcTag_;
          float                   digitizationStart_;
          float                   digitizationEnd_;
+         float                   digitizationBuffer_;
          bool                    LRUCorrection_;
          bool                    BirksCorrection_;
          bool                    PEStatCorrection_;
@@ -232,7 +235,7 @@ namespace mu2e {
       diagSummary diagSum;
 
       // Digitization start / end  from accelerator DR marker with PB jitter
-      float  correctedDigitizeStart = digitizationStart_ - pbtmc.pbtime_ - timeFromProtonsToDRMarker; 
+      float  correctedDigitizeStart = digitizationStart_ - pbtmc.pbtime_ - timeFromProtonsToDRMarker - digitizationBuffer_; 
       float  correctedDigitizeEnd   = digitizationEnd_   - pbtmc.pbtime_ - timeFromProtonsToDRMarker ; 
 
       //-----------------------------------------------------------------------
