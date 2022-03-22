@@ -61,6 +61,8 @@ helper.make_plugin( 'FooService_service.cc',
                       'canvas',
                       'fhiclcpp',
                       'boost_filesystem',
+                      'cetlib',
+                      'cetlib_except',
                       'Core'
                       ],
                     )
