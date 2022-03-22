@@ -140,7 +140,7 @@ namespace mu2e {
       }
     }
 
-    sr.put(std::move(out), art::subRunFragment());
+    sr.put(std::move(out), art::fullSubRun());
 
     mf::LogInfo("Summary")
       << "CompressPhysicalVolumes stats: passed "

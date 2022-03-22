@@ -186,14 +186,14 @@ namespace mu2e {
         (*col)[stage].insert(subrunVolumes_[stage].begin(), subrunVolumes_[stage].end());
       }
 
-      sr.put(std::move(col), subrunVolInstanceName_, art::subRunFragment());
+      sr.put(std::move(col), subrunVolInstanceName_, art::fullSubRun());
     }
     if (mixCosmicLivetimes_) {
       if(generatedEvents_ == 0)throw cet::exception("BADINPUT")<<"Mu2eProductMixer: generated event count =0; was the mixin file opened correctly?" << std::endl;
       float scaling = resampledEvents_ / generatedEvents_;
       auto livetime = std::make_unique<CosmicLivetime>(totalPrimaries_ * scaling,
                                                        area_, lowE_, highE_, fluxConstant_, livetime_ * scaling);
-      sr.put(std::move(livetime), subrunLivetimeInstanceName_, art::subRunFragment());
+      sr.put(std::move(livetime), subrunLivetimeInstanceName_, art::fullSubRun());
     }
   }
 

@@ -71,7 +71,7 @@ namespace mu2e {
     mf::LogInfo("Summary")<<"Creating GenEventCount record: "<<seenEvents_
                           <<" events for "<<sr.id()<<"\n";
 
-    sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(seenEvents_)), art::subRunFragment());
+    sr.put(std::unique_ptr<GenEventCount>(new GenEventCount(seenEvents_)), art::fullSubRun());
 
     seenEvents_ = 0; // in case the job has more than one subrun
   }

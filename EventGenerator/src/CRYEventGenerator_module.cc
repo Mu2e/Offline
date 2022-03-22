@@ -83,7 +83,7 @@ namespace mu2e {
                                                                 1.8e4, // http://pdg.lbl.gov/2018/reviews/rpp2018-rev-cosmic-rays.pdf eq. 29.2
                                                                 cryGen->getLiveTime()  ));
     std::cout << *livetime << std::endl;
-    subrun.put(std::move(livetime), art::subRunFragment());
+    subrun.put(std::move(livetime), art::fullSubRun());
   }
 
 }
