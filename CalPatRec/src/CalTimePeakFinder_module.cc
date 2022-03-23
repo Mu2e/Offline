@@ -60,7 +60,6 @@ namespace mu2e {
     _minNHits        (pset.get<int>            ("MinNHits"                       )),
     _minClusterEnergy(pset.get<double>         ("minClusterEnergy"               )),
     _minClusterSize  (pset.get<int>            ("minClusterSize"                 )),
-    _minClusterTime  (pset.get<double>         ("minClusterTime"                 )),
     _pitchAngle      (pset.get<double>         ("pitchAngle"                     )),
     _beta            (pset.get<double>         ("beta"                           )),  
     _dtoffset        (pset.get<double>         ("dtOffset"                       ))

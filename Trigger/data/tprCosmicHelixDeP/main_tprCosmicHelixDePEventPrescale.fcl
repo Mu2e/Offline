@@ -1,2 +1,0 @@
-physics.filters.tprCosmicHelixDePEventPrescale.nPrescale    : 1
-physics.filters.tprCosmicHelixDePEventPrescale.triggerFlag  : ["PrescaleRandom"]

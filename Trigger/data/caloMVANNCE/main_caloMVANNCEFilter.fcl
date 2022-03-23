@@ -1,4 +1,0 @@
-physics.filters.caloMVANNCEFilter.diagLevel         : 0						    
-physics.filters.caloMVANNCEFilter.caloBkgMVA        : { MVAWeights : "Offline/CaloFilters/data/CE_NN_ReLU.weights.xml" }
-physics.filters.caloMVANNCEFilter.minEtoTest        : 40						    
-physics.filters.caloMVANNCEFilter.minMVAScore       : 0.95						    
