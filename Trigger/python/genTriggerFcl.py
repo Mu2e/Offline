@@ -19,37 +19,46 @@ from argparse import ArgumentParser
 
 from codecs import open
 
+def capitalize(word):
+    if not word:
+        return word
+    nLetters=1
+    nn = word[0].upper()
+    if word[0:2] == 'sd' or word[0:2] == 'cd' or word[0:2] == 'hs' or word[0:2] == 'tc' or word[0:2] == 'ts':
+        nLetters=2
+        nn = word[0].upper() + word[1].upper()
+    return nn + word[nLetters:]
+
 #
 # process one subdirectory (one path)
 #
 
 def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sourceFiles, targetFiles):
 
-    trk_filters      = ['EventPrescale','TCFilter', 'HSFilter', 'TSFilter']
-    helix_filters    = ['EventPrescale','TCFilter', 'HSFilter']
-    tc_filters       = ['EventPrescale','TCFilter']
-    calo_filters     = ['EventPrescale','Filter'  ]
-    unbiased_filters = ['EventPrescale']
-    minbias_filters  = ['EventPrescale','Filter'       ]
-    cst_filters      = ['EventPrescale','TCFilter', 'TSFilter']
+    trk_filters      = ['eventPrescale','tcFilter', 'hsFilter', 'tsFilter']
+    helix_filters    = ['eventPrescale','tcFilter', 'hsFilter']
+    tc_filters       = ['eventPrescale','tcFilter']
+    calo_filters     = ['eventPrescale','filter'  ]
+    unbiased_filters = ['eventPrescale']
+    minbias_filters  = ['eventPrescale','filter'       ]
+    cst_filters      = ['eventPrescale','tcFilter', 'tsFilter']
     
     filters     = []
 
     #understand which kind of trigger path are we dealing with
-    if "Seed" in trig_path:
-        if "cst" in trig_path:
-            filters = cst_filters
-        else:
-            filters = trk_filters
+    if trig_path == 'cst':
+        filters = cst_filters
+    elif "cprDe" in trig_path or 'tprDe' in trig_path:
+        filters = trk_filters
     elif "Helix" in trig_path:
         filters = helix_filters
     elif "TimeCluster" in trig_path:
         filters = tc_filters
-    elif "calo" in trig_path:
+    elif "caloFast" in trig_path:
         filters = calo_filters
     elif "unbiased" in trig_path:
         filters = unbiased_filters
-    elif "Count" in trig_path:
+    elif "minBias" in trig_path:
         filters = minbias_filters
 
     if len(filters) == 0 :
@@ -75,7 +84,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
     targetFiles.append(subEpilogName)
 
     for filter in filters :
-        filterName       = trig_path+filter
+        filterName       = trig_path+"_"+filter
 
         subSubEpilogInputFileName = srcDir+"Trigger/data/" + trig_path + "/main_"+ filterName + '.fcl' 
         sourceFiles.append(subSubEpilogInputFileName)
@@ -102,7 +111,13 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
 
     #now create the instance for the TriggerInfo Merger
     if  doWrite :
-        trigInfoMergerName         = trig_path + "TriggerInfoMerger"
+        trig_path_nu = ""
+        for n in trig_path.split("_"):
+            if n == trig_path.split("_")[0]:
+                trig_path_nu += n
+            else:
+                trig_path_nu += capitalize(n)
+        trigInfoMergerName         = trig_path_nu + "TriggerInfoMerger"
         subSubEpilogMergerFileName = subEpilogDirName + "/main_" + trigInfoMergerName + '.fcl'
         if verbose:
             print("Creating {}".format(subSubEpilogMergerFileName))
@@ -221,7 +236,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         mainFclFile = open(mainFclFileName,"a",encoding="utf-8")
 
     path_list = ""
-    trig_list = ""
+    #trig_list = ""
 
     mainEpilogFileName   = projectDir + "/" + "{}.fcl".format(configFileBaseName)
     mainEpilogTimingFileName = projectDir + "/" + "{}_timing.fcl".format(configFileBaseName)
@@ -248,26 +263,27 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         words    = line.split()
         pathName = words[0].split(":")[0]
         pathID   = words[0].split(":")[1]
-        if pathName != "triggerOutput":
+        pathNameNoTags = pathName#.split("_")[0]
+        if pathNameNoTags != "triggerOutput":
 
             # check if the name of the path is present in the prolog_trigger files
             pathCheck=False
             for i in range(0, len(trig_prolog_files)):
-                if pathName in open(trig_prolog_files[i]).read():
+                if pathNameNoTags in open(trig_prolog_files[i]).read():
                     pathCheck  = True
             if pathCheck == False: 
-                print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathName))
+                print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathNameNoTags))
                 exit(1)
 
             if path_list != "":
                 path_list += ", "
-                trig_list += ", "
+                #trig_list += ", "
             path_list += pathName+"_trigger"
-            trig_list += "\""+pathName+"\""
+            #trig_list += "\""+pathName+"\""
 
             digi_path = "@sequence::Trigger.PrepareDigis, "
             
-            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
+            new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
             timing_paths = []
             if "Seed" in pathName:
                 nFilters = 3
@@ -275,10 +291,10 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
                     nFilters = 2                    
                 for ind in range(nFilters):
                     timing_label = "Timing{:d}".format(ind)
-                    timing_paths.append("\nphysics."+pathName+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathName+timing_label+" ] \n")
+                    timing_paths.append("\nphysics."+pathName+"_"+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+timing_label+" ] \n")
 
             #now append the epilog files for setting the filters in the path
-            subEpilogInclude = appendEpilog(pathName, relProjectDir, 
+            subEpilogInclude = appendEpilog(pathNameNoTags, relProjectDir, 
                                             outDir, srcDir, verbose, 
                                             doWrite, sourceFiles, targetFiles)
 
@@ -287,7 +303,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
                 mainEpilogFile.write(new_path)
                 #
                 mainEpilogTimingFile.write(subEpilogInclude)
-                mainEpilogTimingFile.write(new_path)
+                #mainEpilogTimingFile.write(new_path)
                 for l in range(len(timing_paths)):
                     mainEpilogTimingFile.write(timing_paths[l])
                 

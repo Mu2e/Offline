@@ -45,7 +45,7 @@ Trigger : {
 	}
 
 	#prescaler for the standard strawDigi occupancy filter
-	minimumbiasSDCountEventPrescale : {
+	minBiasSDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000
 	    triggerPath        : "minBiasStrawDigiCount"
@@ -81,7 +81,7 @@ Trigger : {
 
 	# CDCountFilter     : it's a minimum bias filter. It allows to select
 	#                     events based on the number of strawDigi
-	minimumbiasSDCountFilter          : {
+	minBiasSDCountFilter          : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUSed		  
@@ -96,7 +96,7 @@ Trigger : {
 	}
 
 	#prescaler for the standard strawDigi occupancy filter
-	minimumbiasCDCountEventPrescale : {
+	minBiasCDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000
 	    triggerPath        : "minBiasCaloDigiCount"	    	    
@@ -132,7 +132,7 @@ Trigger : {
 
 	# CDCountFilter     : it's a minimum bias filter. It allows to select
 	#                     events based on the number of strawDigi
-	minimumbiasCDCountFilter          : {
+	minBiasCDCountFilter          : {
 	    module_type : DigiFilter
 	    strawDigiCollection : notUsed
 	    caloDigiCollection  : CaloDigiMaker
@@ -167,13 +167,13 @@ Trigger : {
 	unbiased           : [ unbiasedEventPrescale ]
 
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasSDCount : [ minimumbiasSDCountEventPrescale, minimumbiasSDCountFilter]
+	minBias_sdCount : [ minBiasSDCountEventPrescale, minBiasSDCountFilter]
 
 	#filter to select events with large occupancy in the tracker
 	largeSDCount       : [ largeSDCountEventPrescale, largeSDCountFilter]
 	
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbiasCDCount : [ minimumbiasCDCountEventPrescale, minimumbiasCDCountFilter]
+	minBias_cdCount : [ minBiasCDCountEventPrescale, minBiasCDCountFilter]
 
 	#filter to select events with large occupancy in the tracker
 	largeCDCount       : [ largeCDCountEventPrescale, largeCDCountFilter]
@@ -183,11 +183,11 @@ Trigger : {
 	triggerOutput : { 
 	    module_type: RootOutput
 	    fileName: "filteredOutput.root"
-	    SelectEvents : [ unbiased_trigger, 
-			     minimumbiasSDCount_trigger,
-			     largeSDCount_trigger,
-			     caloMVACE_trigger,
-			     tprSeedDeM_trigger, tprSeedDeP_trigger, cprSeedDeM_trigger, cprSeedDeP_trigger ]
+	    SelectEvents : [ unbiasedTrigger, 
+			     minBiasSDCountTrigger,
+			     largeSDCountTrigger,
+			     caloMVACETrigger,
+			     tprDeMHighPStopTargTrigger, tprDePHighPStopTargTrigger, cprDeMHighPStopTargTrigger, cprDePHighPStopTargTrigger ]
 #	    Compressionlevel: 0
 	    # fileProperties : {
 	    # 	maxEvents : 1000
@@ -204,7 +204,7 @@ Trigger : {
 	rootoutUnbiased : { 
 	    module_type: RootOutput
 	    fileName: "driver_unbiased.root"
-	    SelectEvents : [ unbiased_trigger ]
+	    SelectEvents : [ unbiasedTrigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",
@@ -214,7 +214,7 @@ Trigger : {
 	rootoutCaloOnly : {
 	    module_type: RootOutput
 	    fileName: "driver_calo_only.root"
-	    SelectEvents : [ caloOnly_trigger ]
+	    SelectEvents : [ caloOnlyTrigger ]
 #	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",
@@ -224,7 +224,7 @@ Trigger : {
 	rootoutTrkDem : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dem.root"
-	    SelectEvents : [ tprSeedDeM_trigger, cprSeedDeM_trigger ]
+	    SelectEvents : [ tprDeMHighPStopTargTrigger, cprDeMHighPStopTargTrigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",
@@ -234,7 +234,7 @@ Trigger : {
 	rootoutTrkDep : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dep.root"
-	    SelectEvents : [ tprDeP_trigger, cprSeedDeP_trigger ]
+	    SelectEvents : [ tprDePTrigger, cprDePHighPStopTargTrigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: ["drop *_*_*_*",

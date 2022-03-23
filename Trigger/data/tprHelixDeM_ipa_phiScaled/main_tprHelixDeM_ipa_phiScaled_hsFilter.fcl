@@ -1,0 +1,17 @@
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.helicity      : 1		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.minNStrawHits : 15   		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.minHitRatio   : 0.5
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.minMomentum   : 30.  		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.maxMomentum   : 70. 		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.minPt         : 0    		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.maxChi2XY     : 8.   		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.maxChi2PhiZ   : 8.   		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.maxD0         : 500. 		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.minD0         : 200.		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.minAbsLambda  : 40. 		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.maxAbsLambda  : 500. 		    
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.minNLoops     : 0
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.maxNLoops     : 30
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.prescaleUsingD0Phi  : true
+physics.filters.tprHelixDeMIpaPhiScaledHSFFilter.prescalerPar        : { amplitude: 6.2 frequency : 0.9675 phase : 0.1396}
+

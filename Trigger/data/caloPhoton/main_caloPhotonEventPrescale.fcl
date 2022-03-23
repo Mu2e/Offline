@@ -1,2 +1,0 @@
-physics.filters.caloPhotonEventPrescale.nPrescale    : 1
-physics.filters.caloPhotonEventPrescale.triggerFlag  : ["PrescaleRandom"]
