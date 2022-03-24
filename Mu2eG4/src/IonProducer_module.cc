@@ -82,7 +82,7 @@ namespace mu2e {
     // content for the ion test use, but we still need a stage count.
     mvi->resize(1);
 
-    sr.put(std::move(mvi));
+    sr.put(std::move(mvi), art::fullSubRun());
   }
 
   //================================================================

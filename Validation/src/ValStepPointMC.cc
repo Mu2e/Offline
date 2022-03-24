@@ -36,7 +36,7 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
   _hVer->Fill(1.0);
 
   _hN->Fill(coll.size()); 
-  art::Handle<mu2e::SimParticleCollection> sph;
+  mu2e::SimParticleCollection const* sph = nullptr;
   art::ProductID oldId(0);
 
   for(auto sp : coll) {
@@ -45,12 +45,11 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
     // can point to missing SimParticles, this code catches that case
     // (none of the art::Ptr checks will tell us this, those only abort)
     if(sp.simParticle().id()!=oldId) {
-      event.get(sp.simParticle().id(),sph);
+      sph = &sp.simParticle().parentAs<cet::map_vector<SimParticle>>();
       oldId = sp.simParticle().id();
     }
-    auto const& coll = *sph;
     auto key = cet::map_vector_key( sp.simParticle().key() );
-    bool hasSim = coll.find(key)!=coll.end();
+    bool hasSim = sph->find(key)!=sph->end();
 
     if(hasSim) _id.fill(sp.simParticle()->pdgId()); 
     _hp->Fill(sp.momentum().mag()); 
