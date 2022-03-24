@@ -82,7 +82,7 @@ namespace mu2e {
 
       const auto  caloClusterHandle = event.getValidHandle(caloClusterToken_);
       const auto& caloClusters(*caloClusterHandle);
-      const auto* caloClusterBase = &caloClusters.front();
+      const auto* caloClusterBase = caloClusters.data();
 
       const auto  CaloHitMCHandle = event.getValidHandle(caloHitMCTruthToken_);
       const auto& caloHitTruth(*CaloHitMCHandle);
