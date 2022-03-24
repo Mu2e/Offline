@@ -8,23 +8,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 
-namespace {
-
-  // Helper functions to work around the problem that, starting in art v3.11,
-  // the signature of put is different for events and subruns.
-  // A better solution would be to use template logic to make the decision.
-  using Collection_t = mu2e::PhysicalVolumeInfoMultiCollection;
-
-  void storeIt  (art::SubRun& sr, std::unique_ptr<Collection_t>& up, const std::string& outInstanceName ){
-    sr.put( std::move(up), outInstanceName, art::fullSubRun());
-  }
-
-  void storeIt  (art::Event& e, std::unique_ptr<Collection_t>& up, const std::string& outInstanceName ){
-    e.put( std::move(up), outInstanceName);
-  }
-
-}
-
 namespace mu2e {
 
   template <class PRINCIPAL>
@@ -49,7 +32,13 @@ namespace mu2e {
     // Append info for the current stage
     mvi->emplace_back(vi);
 
-    storeIt ( store, mvi, outInstanceName);
+    // Signature of put depends on the type PRINCIPAL.
+    if constexpr (std::is_same_v<PRINCIPAL, art::SubRun>) {
+        store.put(std::move(mvi), outInstanceName, art::fullSubRun());
+      }
+    else {
+      store.put(std::move(mvi), outInstanceName);
+    }
 
     return simStage;
   }
