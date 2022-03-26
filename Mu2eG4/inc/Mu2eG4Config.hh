@@ -126,6 +126,10 @@ namespace mu2e {
 
       fhicl::Atom<bool> setMuHadLateralDisplacement {Name("setMuHadLateralDisplacement"), false};
 
+      fhicl::Atom<bool> useDensityEffectInIonizationLossCalc {Name("useDensityEffectInIonizationLossCalc"), false};
+      fhicl::Sequence<std::string> conductingMaterials {Name("conductingMaterials"),
+          Comment("List of materials which are electrical conductors.")};
+
       fhicl::Sequence<int> noDecay {Name("noDecay"), Comment("List of PDG IDs that for which to turn decays off.")};
 
       fhicl::Atom<std::string> captureDModel {Name("captureDModel")};
