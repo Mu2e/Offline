@@ -1,6 +1,8 @@
 
 /*
-  This is a Replicated Module.
+  This was a Replicated Module and was reverted to Legacy on Mar 27, 2002
+  until GitHub issues #744 and #745 can be resolved.
+
   A plug-in for running PrimaryProtonGun-based event generator for running in MT art.
   It produces a GenParticleCollection of primary protons using the PrimaryProtonGun.
  
@@ -20,7 +22,7 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
-#include "art/Framework/Core/ReplicatedProducer.h"
+#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -35,25 +37,22 @@ using namespace std;
 
 namespace mu2e {
 
-  class PrimaryProtonGun : public art::ReplicatedProducer {
+  class PrimaryProtonGun : public art::EDProducer {
 
   public:
       
-      typedef art::ReplicatedProducer::Table<PrimaryProtonGunImpl::PrimaryProtonGunConfig> Parameters;
+      typedef art::EDProducer::Table<PrimaryProtonGunImpl::PrimaryProtonGunConfig> Parameters;
       
-      explicit PrimaryProtonGun(Parameters const& params, art::ProcessingFrame const& pF);
+      explicit PrimaryProtonGun(Parameters const& params );
       // Accept compiler written d'tor.  Modules are never moved or copied.
 
-      virtual void produce(art::Event& e, art::ProcessingFrame const& pF) override;
-      virtual void beginRun(art::Run const& r, art::ProcessingFrame const& pF) override;
+      virtual void produce(art::Event& e ) override;
+      virtual void beginRun(art::Run& r ) override;
 
   private:
 
       const PrimaryProtonGunImpl::PrimaryProtonGunConfig _config;
 
-      //This engine implementation is only necessary for art versions below v3_02_06
-      //the fix in v3_02_06 allows The RandomNumberService to be used in a Replicated Module
-      //CLHEP::HepJamesRandom _engine;
       CLHEP::HepRandomEngine& _engine;
       std::unique_ptr<PrimaryProtonGunImpl> _primaryProtonGunGenerator;
       
@@ -62,20 +61,19 @@ namespace mu2e {
       
   };
 
-    PrimaryProtonGun::PrimaryProtonGun(Parameters const& params, art::ProcessingFrame const& procFrame):
-        art::ReplicatedProducer{params,procFrame},
+    PrimaryProtonGun::PrimaryProtonGun(Parameters const& params ):
+        art::EDProducer{params},
         _config(params()),
         _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     {
         produces<GenParticleCollection>();
     }
     
-    void PrimaryProtonGun::beginRun(art::Run const& run, art::ProcessingFrame const& procFrame){
+    void PrimaryProtonGun::beginRun(art::Run& run ){
         
     // The configuration of the PPG Generator does not change within a job.
     if ( ++ncalls > 1){
       mf::LogInfo("PrimaryProtonGun")
-        << "For Schedule: " << procFrame.scheduleID()
         << ", PrimaryProtonGun Generator does not change state at beginRun.  Hope that's OK.";
       return;
     }
@@ -85,7 +83,7 @@ namespace mu2e {
         
   }//beginRun
 
-    void PrimaryProtonGun::produce(art::Event& evt, art::ProcessingFrame const& procFrame) {
+    void PrimaryProtonGun::produce(art::Event& evt ) {
         
         // Make the collections to hold the output.
         unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
