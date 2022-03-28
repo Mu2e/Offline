@@ -1,5 +1,5 @@
-#ifndef CaloConditions_CaloSourceCalibConfigConfig_hh
-#define CaloConditions_CaloSourceCalibConfig_hh
+#ifndef CaloConditions_CalSourceCalibConfigConfig_hh
+#define CaloConditions_CalSourceCalibConfig_hh
 //
 // Initialize Calibration of calorimeter from fcl
 //
@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-  struct CaloSourceCalibConfig {
+  struct CalSourceCalibConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity: 0 or 1")}; 
