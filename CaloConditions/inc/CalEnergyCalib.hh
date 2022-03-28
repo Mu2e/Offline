@@ -10,7 +10,7 @@
 #include <array>
 #include "Offline/CalorimeterGeom/inc/Crystal.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
-
+#include "Offline/DataProducts/inc/CaloId.hh"
 
 namespace mu2e {
 
@@ -31,8 +31,8 @@ namespace mu2e {
       double value(){ return _value; }
 
       // TODO Function will run calibration routines
-      const CalEnergyCorr&  calibrateEnergy(CalOfflineId& id) const;   
-      double getPed(CalOfflineId& id);
+      const CalEnergyCorr&  calibrateEnergy(CaloId& id) const;   
+      double getPed(CaloIdId& id);
       
       void print(std::ostream& os) const;
       void printVector(std::ostream& os, std::string const& name, 
