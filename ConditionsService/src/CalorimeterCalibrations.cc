@@ -29,7 +29,7 @@ namespace mu2e {
         // Here we should eventually interface to some database
         _BirkCorrHadron = config.getDouble("BirkCorrHadron");
 
-        //RO photo-statistic number
+        // RO photo-statistic number
         _peMeV = config.getDouble("ROphotostatistic");//p.e. / MeV
 
         //value of the sigma used to do the Gaussian smearing due to the electronic noise
