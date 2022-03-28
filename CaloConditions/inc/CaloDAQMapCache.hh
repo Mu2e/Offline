@@ -19,20 +19,20 @@ namespace mu2e {
 
     void initialize() {
       if(_useDb) {
-	_tdtc_p = std::make_unique<DbHandle<CalRoIDMapDIRACToOffline>>();
-	_tctd_p = std::make_unique<DbHandle<CalRoIDMapOfflineToDIRAC>>();
+        _tdtc_p = std::make_unique<DbHandle<CalRoIDMapDIRACToOffline>>();
+        _tctd_p = std::make_unique<DbHandle<CalRoIDMapOfflineToDIRAC>>();
       }
     }
     
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
       if(_useDb) { // use fcl config, overwrite part from DB
-	// get the tables up to date
-	_tdtc_p->get(eid);
-	_tctd_p->get(eid);
-	// save which data goes into this instance of the service
-	cids.insert(_tdtc_p->cid());
-	cids.insert(_tctd_p->cid());
+        // get the tables up to date
+        _tdtc_p->get(eid);
+        _tctd_p->get(eid);
+        // save which data goes into this instance of the service
+        cids.insert(_tdtc_p->cid());
+        cids.insert(_tctd_p->cid());
       }
       return cids;
     }
@@ -41,22 +41,22 @@ namespace mu2e {
       DbIoV iov;
       iov.setMax(); // start with full IOV range
       if(_useDb) { // use fcl config, overwrite part from DB
-	// get the tables up to date
-	_tdtc_p->get(eid);
-	_tctd_p->get(eid);
-	// restrict the valid range ot the overlap
-	iov.overlap(_tdtc_p->iov());
-	iov.overlap(_tctd_p->iov());
+        // get the tables up to date
+        _tdtc_p->get(eid);
+        _tctd_p->get(eid);
+        // restrict the valid range ot the overlap
+        iov.overlap(_tdtc_p->iov());
+        iov.overlap(_tctd_p->iov());
       }
       return iov;
     }
     
     ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
       if(_useDb) {
-	return _maker.fromDb( _tdtc_p->getPtr(eid),
-			      _tctd_p->getPtr(eid) ); 
+        return _maker.fromDb( _tdtc_p->getPtr(eid),
+        _tctd_p->getPtr(eid) ); 
       } else {
-	return _maker.fromFcl();
+	      return _maker.fromFcl();
       }
     }
     
