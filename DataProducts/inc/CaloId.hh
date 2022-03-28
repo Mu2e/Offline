@@ -1,7 +1,7 @@
 #ifndef DataProducts_CaloId_hh
 #define DataProducts_CaloId_hh
 //
-// Identifier of one straw in a tracker.
+// Identifier of one crystal in calorimeter
 // Original author Rob Kutschke
 // Re-implemented as integer bitfields by Dave Brown (LBNL)
 //
