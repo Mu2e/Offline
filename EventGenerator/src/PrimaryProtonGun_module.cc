@@ -1,6 +1,6 @@
 
 /*
-  This was a Replicated Module and was reverted to Legacy on Mar 27, 2002
+  This was a Replicated Module and was reverted to Legacy on Mar 27, 2022
   until GitHub issues #744 and #745 can be resolved.
 
   A plug-in for running PrimaryProtonGun-based event generator for running in MT art.
