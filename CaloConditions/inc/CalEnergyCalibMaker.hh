@@ -4,8 +4,9 @@
 //
 // construct a CalEnergyCalib conditions entity
 // from fcl or database
+// FIXME - currently a place holder
+// author: S. Middleton 2022
 //
-
 #include "Offline/CaloConditions/inc/CalEnergyCalib.hh"
 #include "Offline/CaloConfig/inc/CalEnergyCalibConfig.hh" 
 #include "Offline/DbTables/inc/CalSourceCalibTable.hh"
