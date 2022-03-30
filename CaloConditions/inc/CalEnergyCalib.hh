@@ -3,8 +3,8 @@
 //
 // CalEnergyCalib collects the net response features of crystal
 // used in reconstruction 
-//
-
+// FIXME - this is currently just a place holder
+// author: S. Middleton 2022
 #include <iostream>
 #include <vector>
 #include <array>

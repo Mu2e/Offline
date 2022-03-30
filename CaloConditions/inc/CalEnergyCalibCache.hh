@@ -1,6 +1,10 @@
-#ifndef TrackerConditions_CalEnergyCalibCache_hh
-#define TrackerConditions_CalEnergyCalibCache_hh
+#ifndef CaloConditions_CalEnergyCalibCache_hh
+#define CaloConditions_CalEnergyCalibCache_hh
+/*
 
+This Proditions entitiy cache is for the combined calorimeter calibration output
+author: S. Middleton 2022
+*/
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "Offline/CaloConditions/inc/CalEnergyCalibMaker.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
