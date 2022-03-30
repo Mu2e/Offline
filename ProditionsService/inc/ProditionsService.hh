@@ -32,6 +32,7 @@
 #include "Offline/TrackerConfig/inc/Mu2eMaterialConfig.hh"
 #include "Offline/TrackerConfig/inc/Mu2eDetectorConfig.hh"
 #include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
+#include "Offline/CaloConfig/inc/CalEnergyCalibConfig.hh"
 
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 
@@ -87,6 +88,9 @@ namespace mu2e {
       fhicl::Table<SimBookkeeperConfig> simbookkeeper{
           Name("simbookkeeper"),
           Comment("simulation bookkeeping") };
+      fhicl::Table<CalEnergyCalibConfig> calEnergyCalib{
+          Name("calEnergyCalib"),
+          Comment("calorimeter energy calib") };
     };
 
     // this line is required by art to allow the command line help print
