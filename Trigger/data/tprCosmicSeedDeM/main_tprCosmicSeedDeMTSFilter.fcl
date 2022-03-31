@@ -7,3 +7,8 @@ physics.filters.tprCosmicSeedDeMTSFilter.maxChi2DOF    : 20.0
 physics.filters.tprCosmicSeedDeMTSFilter.maxMomErr     : 10.0
 physics.filters.tprCosmicSeedDeMTSFilter.minD0         : -800.0
 physics.filters.tprCosmicSeedDeMTSFilter.maxD0         : 800.0
+physics.filters.tprCosmicSeedDeMTSFilter.requireCaloCluster             : false
+physics.filters.tprCosmicSeedDeMTSFilter.minT0             : 0.
+physics.filters.tprCosmicSeedDeMTSFilter.minFitCons        : -1.
+physics.filters.tprCosmicSeedDeMTSFilter.minTanDip         : 0.
+physics.filters.tprCosmicSeedDeMTSFilter.maxTanDip         : 100.

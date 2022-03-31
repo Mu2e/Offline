@@ -33,12 +33,12 @@ namespace mu2e
     struct Config{
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>      kalSeedCollection {     Name("kalSeedCollection "),      Comment("kalSeedCollection ") };
+      fhicl::Atom<art::InputTag>      kalSeedCollection {     Name("kalSeedCollection"),       Comment("kalSeedCollection ") };
       fhicl::Atom<bool>               requireCaloCluster{     Name("requireCaloCluster"),      Comment("requireCaloCluster") };
       fhicl::Atom<int>                fitparticle       {     Name("fitparticle"),             Comment("fitparticle       ") };
       fhicl::Atom<int>                fitdirection      {     Name("fitdirection"),            Comment("fitdirection      ") };
       fhicl::Atom<double>             minFitCons        {     Name("minFitCons"),              Comment("minFitCons        ") };
-      fhicl::Atom<double>             minNHits          {     Name("minNHits"),                Comment("minNHits          ") };
+      fhicl::Atom<double>             minNHits          {     Name("minNStrawHits"),           Comment("minNStrawHits     ") };
       fhicl::Atom<double>             minMomentum       {     Name("minMomentum"),             Comment("minMomentum       ") };
       fhicl::Atom<double>             maxMomentum       {     Name("maxMomentum"),             Comment("maxMomentum       ") };
       fhicl::Atom<double>             minTanDip         {     Name("minTanDip"),               Comment("minTanDip         ") };
@@ -49,7 +49,7 @@ namespace mu2e
       fhicl::Atom<double>             maxD0             {     Name("maxD0"),                   Comment("maxD0             ") };
       fhicl::Atom<double>             minT0             {     Name("minT0"),                   Comment("minT0             ") };
       fhicl::Sequence<std::string>    seedFitFlag       {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
-      fhicl::Atom<int>                debugLevel        {     Name("debugLevel "),             Comment("debugLevel        ") };                                        
+      fhicl::Atom<int>                debugLevel        {     Name("debugLevel "),             Comment("debugLevel        ") , 0};                                        
 
 
     };   
