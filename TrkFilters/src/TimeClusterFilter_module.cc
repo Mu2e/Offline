@@ -4,9 +4,12 @@
 //
 // framework
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
@@ -16,35 +19,49 @@
 #include <iostream>
 #include <memory>
 
+
 namespace mu2e
 {
   class TimeClusterFilter : public art::EDFilter
   {
   public:
-    explicit TimeClusterFilter(fhicl::ParameterSet const& pset);
-    virtual bool filter(art::Event& event) override;
-    virtual bool endRun( art::Run& run ) override;
+    struct Config{
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag>      timeClusterCollection{    Name("timeClusterCollection"),      Comment("TimeClusterCollection label") };
+      fhicl::Atom<bool>               requireCaloCluster   {    Name("requireCaloCluster"),         Comment("Require caloCluster") };
+      fhicl::Atom<unsigned>           minNHits             {    Name("minNHits"),                   Comment("minNHits")};
+      fhicl::Atom<int>                debugLevel           {    Name("debugLevel"),                 Comment("Debug"),0 };
+    };   
+    
+    using Parameters = art::EDFilter::Table<Config>;
+    
+    explicit TimeClusterFilter(const Parameters& config);
 
   private:
+    bool filter(art::Event& event) override;
+    bool endRun(art::Run& run ) override;
+    
     art::InputTag _tcTag;
     bool          _hascc; // Calo Cluster
     unsigned      _minnhits;
     int           _debug;
     // counters
-    unsigned _nevt, _npass;
+    unsigned      _nevt, _npass;
   };
 
-  TimeClusterFilter::TimeClusterFilter(fhicl::ParameterSet const& pset) :
-    art::EDFilter{pset},
-    _tcTag(pset.get<art::InputTag>("timeClusterCollection","TimeClusterFinder")),
-    _hascc(pset.get<bool>("requireCaloCluster",false)),
-    _minnhits(pset.get<unsigned>("minNHits",11)),
-    _debug(pset.get<int>("debugLevel",0)),
-    _nevt(0), _npass(0)
-  {
-    produces<TriggerInfo>();
-  }
-
+  TimeClusterFilter::TimeClusterFilter(const Parameters& conf)
+    : art::EDFilter{conf},
+    _tcTag   (conf().timeClusterCollection()),
+    _hascc   (conf().requireCaloCluster()),
+    _minnhits(conf().minNHits()),
+    _debug   (conf().debugLevel()),
+    _nevt    (0),
+    _npass   (0)
+    {
+      produces<TriggerInfo>();
+    }
+  
   bool TimeClusterFilter::filter(art::Event& evt){
     // create output
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
