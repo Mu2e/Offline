@@ -17,7 +17,7 @@ namespace mu2e {
   struct CalEnergyCorr {
     double scale;
     double offset;   
-  }
+  };
   
   class CalEnergyCalib : virtual public ProditionsEntity {
     public:
@@ -25,14 +25,14 @@ namespace mu2e {
       typedef std::shared_ptr<const CalEnergyCalib> cptr_t;
       constexpr static const char* cxname = {"CalEnergyCalib"};
       
-      virtual ~CalEnergyCalib() {}
+      virtual ~CalEnergyCalib(){};
 
-      //TODO here there will be accessors and functions
+      // TODO here there will be accessors and functions
       double value(){ return _value; }
 
       // TODO Function will run calibration routines
       const CalEnergyCorr&  calibrateEnergy(CaloId& id) const;   
-      double getPed(CaloIdId& id);
+      double getPed(CaloId& id);
       
       void print(std::ostream& os) const;
       void printVector(std::ostream& os, std::string const& name, 
