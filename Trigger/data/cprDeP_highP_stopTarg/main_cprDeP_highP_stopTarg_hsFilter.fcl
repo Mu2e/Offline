@@ -1,5 +1,5 @@
-physics.filters.cprDePHighPStopTargHSFilter.fitparticle   : @local::Particle.eplus	 
-physics.filters.cprDePHighPStopTargHSFilter.fitdirection  : @local::FitDir.downstream
+physics.filters.cprDePHighPStopTargHSFilter.requireCaloCluster   : false	 
+physics.filters.cprDePHighPStopTargHSFilter.doHelicityCheck  : true
 physics.filters.cprDePHighPStopTargHSFilter.helicity      : -1
 physics.filters.cprDePHighPStopTargHSFilter.minNStrawHits : 15.0
 physics.filters.cprDePHighPStopTargHSFilter.minHitRatio   : 0.4

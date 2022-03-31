@@ -10,9 +10,9 @@ namespace mu2e {
     float    _phase;
 
     struct Config {
-      fhicl::Atom<int> amplitude{fhicl::Name("amplitude"), fhicl::Comment("amplitude")};
-      fhicl::Atom<int> frequency{fhicl::Name("frequency"), fhicl::Comment("frequency")};
-      fhicl::Atom<int> phase    {fhicl::Name("phase"),     fhicl::Comment("phase")};
+      fhicl::Atom<float> amplitude{fhicl::Name("amplitude"), fhicl::Comment("amplitude")};
+      fhicl::Atom<float> frequency{fhicl::Name("frequency"), fhicl::Comment("frequency")};
+      fhicl::Atom<float> phase    {fhicl::Name("phase"),     fhicl::Comment("phase")};
     };
     
     PhiPrescalingParams():

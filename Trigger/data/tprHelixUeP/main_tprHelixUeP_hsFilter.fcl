@@ -1,5 +1,5 @@
-physics.filters.tprHelixUePHSFilter.fitparticle   : @local::Particle.eplus	 
-physics.filters.tprHelixUePHSFilter.fitdirection  : @local::FitDir.upstream
+physics.filters.tprHelixUePHSFilter.requireCaloCluster   : false	 
+physics.filters.tprHelixUePHSFilter.doHelicityCheck  : true
 physics.filters.tprHelixUePHSFilter.helicity      : 1
 physics.filters.tprHelixUePHSFilter.minNStrawHits : 15.0
 physics.filters.tprHelixUePHSFilter.minHitRatio   : 0.4
