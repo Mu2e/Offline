@@ -3,6 +3,8 @@
 //  Original author: Dave Brown (LBNL) 3/1/2017
 //
 // framework
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -15,7 +17,7 @@
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
-using namespace CLHEP;
+//using namespace CLHEP;
 // c++
 #include <string>
 #include <vector>
@@ -27,7 +29,34 @@ namespace mu2e
   class SeedFilter : public art::EDFilter
   {
   public:
-    explicit SeedFilter(fhicl::ParameterSet const& pset);
+
+    struct Config{
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag>      kalSeedCollection {     Name("kalSeedCollection "),      Comment("kalSeedCollection ") };
+      fhicl::Atom<bool>               requireCaloCluster{     Name("requireCaloCluster"),      Comment("requireCaloCluster") };
+      fhicl::Atom<int>                fitparticle       {     Name("fitparticle"),             Comment("fitparticle       ") };
+      fhicl::Atom<int>                fitdirection      {     Name("fitdirection"),            Comment("fitdirection      ") };
+      fhicl::Atom<double>             minFitCons        {     Name("minFitCons"),              Comment("minFitCons        ") };
+      fhicl::Atom<double>             minNHits          {     Name("minNHits"),                Comment("minNHits          ") };
+      fhicl::Atom<double>             minMomentum       {     Name("minMomentum"),             Comment("minMomentum       ") };
+      fhicl::Atom<double>             maxMomentum       {     Name("maxMomentum"),             Comment("maxMomentum       ") };
+      fhicl::Atom<double>             minTanDip         {     Name("minTanDip"),               Comment("minTanDip         ") };
+      fhicl::Atom<double>             maxTanDip         {     Name("maxTanDip"),               Comment("maxTanDip         ") };
+      fhicl::Atom<double>             maxChi2DOF        {     Name("maxChi2DOF"),              Comment("maxChi2DOF        ") };
+      fhicl::Atom<double>             maxMomErr         {     Name("maxMomErr"),               Comment("maxMomErr         ") };
+      fhicl::Atom<double>             minD0             {     Name("minD0"),                   Comment("minD0             ") };
+      fhicl::Atom<double>             maxD0             {     Name("maxD0"),                   Comment("maxD0             ") };
+      fhicl::Atom<double>             minT0             {     Name("minT0"),                   Comment("minT0             ") };
+      fhicl::Sequence<std::string>    seedFitFlag       {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
+      fhicl::Atom<int>                debugLevel        {     Name("debugLevel "),             Comment("debugLevel        ") };                                        
+
+
+    };   
+    
+    using Parameters = art::EDFilter::Table<Config>;
+    
+    explicit     SeedFilter(const Parameters& config);
     virtual bool filter(art::Event& event) override;
     virtual bool endRun( art::Run& run ) override;
 
@@ -47,25 +76,25 @@ namespace mu2e
     unsigned        _nevt, _npass;
   };
 
-  SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
-    art::EDFilter{pset},
-    _ksTag     (pset.get<art::InputTag>("kalSeedCollection","KSFDeM")),
-    _hascc     (pset.get<bool>("requireCaloCluster",false)),
-    _tpart     ((PDGCode::type)(pset.get<int>("fitparticle"))),
-    _fdir      ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _minfitcons(pset.get<double>("minFitCons",-1.)),   //not used by default
-    _minnhits  (pset.get<unsigned>("minNHits",15)),
-    _minmom    (pset.get<double>("minMomentum",40.0)),
-    _maxmom    (pset.get<double>("maxMomentum",200.0)) ,
-    _mintdip   (pset.get<double>("minTanDip", 0.)),       //not used by default. 0.57735027
-    _maxtdip   (pset.get<double>("maxTanDip", 100.)),     //not used by default. 1.5574077
-    _maxchi2dof(pset.get<double>("maxChi2DOF",20.0)),
-    _maxmomerr (pset.get<double>("maxMomErr",10)),
-    _minD0     (pset.get<double>("minD0",-200.)),
-    _maxD0     (pset.get<double>("maxD0", 200.)),
-    _minT0     (pset.get<double>("minT0", 0.)),
-    _goods     (pset.get<std::vector<std::string> >("seedFitFlag",std::vector<std::string>{"SeedOK"})),
-    _debug     (pset.get<int>   ("debugLevel",0)),
+  SeedFilter::SeedFilter(const Parameters& config):
+    art::EDFilter{config},
+    _ksTag     (config().kalSeedCollection()),				       
+    _hascc     (config().requireCaloCluster()),				       
+    _tpart     ((PDGCode::type)(config().fitparticle())),		       
+    _fdir      ((TrkFitDirection::FitDirection)(config().fitdirection())),     
+    _minfitcons(config().minFitCons()),					       
+    _minnhits  (config().minNHits()),					       
+    _minmom    (config().minMomentum()),				       
+    _maxmom    (config().maxMomentum()),				       
+    _mintdip   (config().minTanDip()),					       
+    _maxtdip   (config().maxTanDip()),					       
+    _maxchi2dof(config().maxChi2DOF()),					       
+    _maxmomerr (config().maxMomErr()),					       
+    _minD0     (config().minD0()),					       
+    _maxD0     (config().maxD0()),					       
+    _minT0     (config().minT0()),					       
+    _goods     (config().seedFitFlag()),
+    _debug     (config().debugLevel()),                                        
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
