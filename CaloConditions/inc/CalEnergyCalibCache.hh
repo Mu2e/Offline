@@ -18,31 +18,42 @@ namespace mu2e {
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
-      _calenergycalib_p = std::make_unique<ProditionsHandle<CalEnergyCalib> >();
+     if(_useDb) {
+        _calenergycalib_p = std::make_unique<DbHandle<CalEnergyCalib>>();
+      }
     }
     
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
-      auto cal = _calenergycalib_p->get(eid);
-      cids.insert(_calenergycalib_p->cid());
+      if(_useDb) {  
+        auto cal = _calenergycalib_p->get(eid);
+        cids.insert(_calenergycalib_p->cid());
+      }
       return cids;
     }
     
     DbIoV makeIov(art::EventID const& eid) {
-      _calenergycalib_p->get(eid);
-      iov.overlap(_calenergycalib_p->iov());
+      DbIoV iov;
+      iov.setMax(); // start with full IOV range
+      if(_useDb) { 
+         _calenergycalib_p->get(eid);
+        iov.overlap(_calenergycalib_p->iov());
+      }
       return iov;
     }
     
     ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
-      auto cal = _calenergycalib_p->getPtr(eid);
-      return _maker.fromFcl(cal);
+       if(_useDb) {
+        return _maker.fromDb( _calenergycalib_p->getPtr(eid)); 
+      } else {
+	      return _maker.fromFcl();
+      }
     }
 
   private:
     bool _useDb;
     CalEnergyCalibMaker _maker;
-    std::unique_ptr<ProditionsHandle<CalEnergyCalib> > _calenergycalib_p;
+    std::unique_ptr<DbHandle<CalEnergyCalib>> _calenergycalib_p;
   };
 };
 
