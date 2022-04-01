@@ -14,16 +14,18 @@
 
 namespace mu2e {
 
-  struct CalEnergyCorr {
-    double scale;
-    double offset;   
-  };
-  
-  class CalEnergyCalib : virtual public ProditionsEntity {
+  class CalEnergyCalib : public ProditionsEntity {
     public:
+      struct CalEnergyCorr { //the info here forms the basis of energy fix for each unique calo id
+        double scale;
+        double offset;   
+      };
       typedef std::shared_ptr<CalEnergyCalib> ptr_t;
       typedef std::shared_ptr<const CalEnergyCalib> cptr_t;
       constexpr static const char* cxname = {"CalEnergyCalib"};
+      
+      // TODO some construction:
+      explicit CalEnergyCalib(double value) : ProditionsEntity(cxname), _value(value){};
       
       virtual ~CalEnergyCalib(){};
 
@@ -31,15 +33,15 @@ namespace mu2e {
       double value(){ return _value; }
 
       // TODO Function will run calibration routines
-      const CalEnergyCorr&  calibrateEnergy(CaloId& id) const;   
-      double getPed(CaloId& id);
+      //const CalEnergyCorr&  calibrateEnergy(CaloId& id) const {};   
+      //double getPed(CaloId& id){};
       
       void print(std::ostream& os) const;
       void printVector(std::ostream& os, std::string const& name, 
 		      std::vector<double> const& a) const;
 
       template<typename T, size_t SIZE>
-        void printArray(std::ostream& os, std::string const& name,
+      void printArray(std::ostream& os, std::string const& name,
           std::array<T,SIZE> const& a) const;
           
   private:
