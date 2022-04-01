@@ -25,12 +25,12 @@ namespace mu2e {
       constexpr static const char* cxname = {"CalEnergyCalib"};
       
       // TODO some construction:
-      explicit CalEnergyCalib(double value) : ProditionsEntity(cxname), _value(value){};
+      explicit CalEnergyCalib(double roid) : ProditionsEntity(cxname), _roid(roid){};
       
       virtual ~CalEnergyCalib(){};
 
       // TODO here there will be accessors and functions
-      double value(){ return _value; }
+      double roid(){ return _roid; }
 
       // TODO Function will run calibration routines
       //const CalEnergyCorr&  calibrateEnergy(CaloId& id) const {};   
@@ -46,7 +46,7 @@ namespace mu2e {
           
   private:
 
-      double _value;
+      double _roid;
       
   };
 }
