@@ -19,7 +19,7 @@
 #include "Offline/TrackerConditions/inc/Mu2eMaterialCache.hh"
 #include "Offline/TrackerConditions/inc/Mu2eDetectorCache.hh"
 #include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
-//#include "Offline/CaloConditions/inc/CalEnergyCalibCache.hh"
+#include "Offline/CaloConditions/inc/CalEnergyCalibCache.hh"
 #include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
 
 #include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
@@ -63,8 +63,8 @@ namespace mu2e {
     _caches[tqc->name()] = tqc;
     auto bkc = std::make_shared<mu2e::SimBookkeeperCache>(_config.simbookkeeper());
     _caches[bkc->name()] = bkc;
-    //auto cec = std::make_shared<mu2e::CalEnergyCalibCache>(_config.calEnergyCalib());
-   // _caches[cec->name()] = cec;
+    auto cec = std::make_shared<mu2e::CalEnergyCalibCache>(_config.calEnergyCalib());
+    _caches[cec->name()] = cec;
 
     if( _config.verbose()>0) {
       cout << "Proditions built caches:" << endl;

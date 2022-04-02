@@ -36,13 +36,13 @@ namespace mu2e {
       //const CalEnergyCorr&  calibrateEnergy(CaloId& id) const {};   
       //double getPed(CaloId& id){};
       
-      void print(std::ostream& os) const;
+      void print(std::ostream& os) const {};
       void printVector(std::ostream& os, std::string const& name, 
-		      std::vector<double> const& a) const;
+		      std::vector<double> const& a) const{};
 
       template<typename T, size_t SIZE>
       void printArray(std::ostream& os, std::string const& name,
-          std::array<T,SIZE> const& a) const;
+          std::array<T,SIZE> const& a) const{};
           
   private:
 
