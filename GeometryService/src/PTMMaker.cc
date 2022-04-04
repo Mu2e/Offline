@@ -90,6 +90,7 @@ namespace mu2e {
     // It is supported partway down by some connecting extrusions of the same type
     double holderLength = pwcSeparation - 0.5*nearPWC->totalThick() - 0.5*farPWC->totalThick(); // separation is measured center-to-center
     std::shared_ptr<Box> holderExtrusionLong(new Box(0.5*holderExtrusionWidth, 0.5*holderExtrusionWidth, 0.5*holderLength));
+    double shortExtrusionLength = 0.5*(holderLongExtrusionSep - holderExtrusionWidth);
     std::shared_ptr<Box> holderExtrusionShort(new Box(0.5*holderExtrusionWidth, 0.5*holderExtrusionWidth, 0.5*holderLongExtrusionSep));
 
     std::unique_ptr<PTMHead> ptmHead(new PTMHead(originInMu2e, 
@@ -103,7 +104,7 @@ namespace mu2e {
                                                  holderLongExtrusionSep,
                                                  holderShortExtrusionPos,
                                                  motherMargin));
-    std::unique_ptr<PTMStand> ptmStand(new PTMStand); // TODO
+    std::unique_ptr<PTMStand> ptmStand(new PTMStand()); // TODO
     std::unique_ptr<PTM> ptmon(new PTM(originInMu2e, rotationInMu2e, ptmStand, ptmHead));
     return ptmon;
   } // PTMMaker::make()

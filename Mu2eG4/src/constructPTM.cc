@@ -407,7 +407,7 @@ namespace mu2e {
     longBarInfo1.solid = longBar;
     longBarInfo1.logical = longBarLogical;
     longBarInfo1.name = longBarName+"01";
-    finishNesting(longBarInfo1 
+    finishNesting(longBarInfo1, 
                   holderMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(bar1X, bar1Y, 0),
@@ -426,7 +426,7 @@ namespace mu2e {
     longBarInfo2.solid = longBar;
     longBarInfo2.logical = longBarLogical;
     longBarInfo2.name = longBarName+"02";
-    finishNesting(longBarInfo2 
+    finishNesting(longBarInfo2, 
                   holderMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(bar2X, bar2Y, 0),
@@ -445,7 +445,7 @@ namespace mu2e {
     longBarInfo3.solid = longBar;
     longBarInfo3.logical = longBarLogical;
     longBarInfo3.name = longBarName+"03";
-    finishNesting(longBarInfo3 
+    finishNesting(longBarInfo3, 
                   holderMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(bar3X, bar3Y, 0),
@@ -464,7 +464,7 @@ namespace mu2e {
     longBarInfo4.solid = longBar;
     longBarInfo4.logical = longBarLogical;
     longBarInfo4.name = longBarName+"04";
-    finishNesting(longBarInfo4 
+    finishNesting(longBarInfo4,
                   holderMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(bar4X, bar4Y, 0),
@@ -478,6 +478,99 @@ namespace mu2e {
                   doSurfaceCheck,
                   verbosity>0);
 
+    // four short bars, holding the long bars in the right positions relative to each other
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+    std::string shortBarName = "PTMPWCHolderShort";
+    G4VSolid *shortBar = new G4Box("PTMPWCHolderShort", 
+                            shortExtrusion->getXhalfLength(), 
+                            shortExtrusion->getYhalfLength(), 
+                            shortExtrusion->getZhalfLength());
+    G4LogicalVolume *shortBarLogical = new G4LogicalVolume(shortBar, holderMaterial, shortBarName);
+    double shortBarZ = holderExtrusionShortPos;
+
+    G4RotationMatrix* vertBarRotation;
+    vertBarRotation = reg.add(new G4RotationMatrix());
+    vertBarRotation->rotateX(90.*CLHEP::deg);
+    double short1X = 0.5*holderExtrusionLongSep;
+    double short1Y = 0.0;
+    VolumeInfo shortBarInfo1;
+    shortBarInfo1.solid = shortBar;
+    shortBarInfo1.logical = shortBarLogical;
+    shortBarInfo1.name = shortBarName+"01";
+    finishNesting(shortBarInfo1,
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  vertBarRotation,
+                  G4ThreeVector(short1X, short1Y, shortBarZ),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    double short2X = -0.5*holderExtrusionLongSep;
+    double short2Y = 0.0;
+    VolumeInfo shortBarInfo2;
+    shortBarInfo2.solid = shortBar;
+    shortBarInfo2.logical = shortBarLogical;
+    shortBarInfo2.name = shortBarName+"02";
+    finishNesting(shortBarInfo2,
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  vertBarRotation,
+                  G4ThreeVector(short2X, short2Y, shortBarZ),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+
+    G4RotationMatrix* horizBarRotation;
+    horizBarRotation = reg.add(new G4RotationMatrix());
+    horizBarRotation->rotateY(90.*CLHEP::deg);
+    double short3X = 0.0;
+    double short3Y = 0.5*holderExtrusionLongSep;
+    VolumeInfo shortBarInfo3;
+    shortBarInfo3.solid = shortBar;
+    shortBarInfo3.logical = shortBarLogical;
+    shortBarInfo3.name = shortBarName+"03";
+    finishNesting(shortBarInfo3,
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  horizBarRotation,
+                  G4ThreeVector(short3X, short3Y, shortBarZ),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+    double short4X = 0.0;
+    double short4Y = -0.5*holderExtrusionLongSep;
+    VolumeInfo shortBarInfo4;
+    shortBarInfo4.solid = shortBar;
+    shortBarInfo4.logical = shortBarLogical;
+    shortBarInfo4.name = shortBarName+"04";
+    finishNesting(shortBarInfo4,
+                  holderMaterial, // probably unnecessary, since we made the logical already
+                  horizBarRotation,
+                  G4ThreeVector(short4X, short4Y, shortBarZ),
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
   }
 
 
@@ -520,6 +613,14 @@ namespace mu2e {
     constructTargetHallPWC(pTargetMonContainer, ptmon->ptmHead()->nearPWC(), VirtualDetectorId::PTM_1_In, _config);
     // and the second PWC
     constructTargetHallPWC(pTargetMonContainer, ptmon->ptmHead()->farPWC(), VirtualDetectorId::PTM_2_In, _config);
+    // the aluminum frame that holds the PWCs
+    constructPWCHolder(pTargetMonContainer, 
+                          ptmon->ptmHead()->holderExtrusionLong(), 
+                          ptmon->ptmHead()->holderExtrusionShort(), 
+                          ptmon->ptmHead()->holderExtrusionMaterialName(),
+                          ptmon->ptmHead()->olderExtrusionLongSep(),
+                          ptmon->ptmHead()->holderExtrusionShortPos(),
+                          _config);
 
   } // constructPTM
 
