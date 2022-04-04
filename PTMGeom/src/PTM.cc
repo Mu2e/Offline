@@ -11,8 +11,7 @@ namespace mu2e{
   PTM::PTM(CLHEP::Hep3Vector const& originInMu2e,
           CLHEP::HepRotation const& rotationInMu2e,
           std::shared_ptr<PTMStand> ptmStand,
-          std::shared_ptr<PTMHead> ptmHead,
-          double motherMargin)
+          std::shared_ptr<PTMHead> ptmHead)
           : _originInMu2e(originInMu2e),
             _rotationInMu2e(rotationInMu2e),
             _ptmStand(ptmStand),

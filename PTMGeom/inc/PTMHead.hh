@@ -44,7 +44,7 @@ namespace mu2e {
 
     const Box* holderExtrusionLong()   const { return _holderExtrusionLong.get(); }
     const Box* holderExtrusionShort()  const { return _holderExtrusionShort.get(); }
-    double holderExtrusionMaterialName() const { return _holderExtrusionMaterialName; }
+    std::string holderExtrusionMaterialName() const { return _holderExtrusionMaterialName; }
     double holderExtrusionLongSep()    const { return _holderExtrusionLongSep; }
     double holderExtrusionShortPos()   const { return _holderExtrusionShortPos; }
 
@@ -65,7 +65,7 @@ namespace mu2e {
     // Al extrusions holding the PWC's in position relative to each other
     std::shared_ptr<Box> _holderExtrusionLong;
     std::shared_ptr<Box> _holderExtrusionShort;
-    double _holderExtrusionMaterialName;
+    std::string _holderExtrusionMaterialName;
     double _holderExtrusionLongSep;
     double _holderExtrusionShortPos;
 
