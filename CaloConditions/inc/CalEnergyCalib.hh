@@ -16,29 +16,43 @@ namespace mu2e {
 
   class CalEnergyCalib : public ProditionsEntity {
     public:
+    
       struct CalEnergyCorr { //the info here forms the basis of energy fix for each unique calo id
-        double scale;
-        double offset;   
+        double _scale;
+        double _offset;
+        CalEnergyCorr();
+        CalEnergyCorr(double scale, double offset) : _scale(scale), _offset(offset) {};
       };
+      
       typedef std::shared_ptr<CalEnergyCalib> ptr_t;
       typedef std::shared_ptr<const CalEnergyCalib> cptr_t;
       constexpr static const char* cxname = {"CalEnergyCalib"};
       
       // TODO some construction:
-      explicit CalEnergyCalib(double roid) : ProditionsEntity(cxname), _roid(roid){};
+      explicit CalEnergyCalib(uint16_t roid) : ProditionsEntity(cxname), _roid(roid){};
       
       virtual ~CalEnergyCalib(){};
 
       // TODO here there will be accessors and functions
-      double roid(){ return _roid; }
-
-      // TODO Function will run calibration routines
-      //const CalEnergyCorr&  calibrateEnergy(CaloId& id) const {};   
-      //double getPed(CaloId& id){};
+      uint16_t roid(){ return _roid; }
+      std::string algName() { return _algName; }
       
-      void print(std::ostream& os) const {};
-      void printVector(std::ostream& os, std::string const& name, 
-		      std::vector<double> const& a) const{};
+      // TODO add more functionality as required
+      /*const CalEnergyCorr&  calibrateEnergy(CaloId& id) const { 
+        // TODO - needs to look up the id
+        CalEnergyCorr corr; 
+        return corr;
+      };   
+      double getPed(CaloId& id){
+        // TODO - needs to look up the id
+        return 0.0; 
+      };*/
+      
+    void print(std::ostream& os) const {
+      os << "CalEnergyCalib parameters: "  << std::endl;
+      os << "  readout ID = " << _roid << " " << std::endl;
+      os << "  algorithm used = " << _algName << " " << std::endl;
+    }
 
       template<typename T, size_t SIZE>
       void printArray(std::ostream& os, std::string const& name,
@@ -46,7 +60,8 @@ namespace mu2e {
           
   private:
 
-      double _roid;
+      uint16_t _roid;
+      std::string _algName;
       
   };
 }
