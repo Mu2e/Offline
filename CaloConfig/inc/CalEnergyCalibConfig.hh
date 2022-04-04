@@ -1,8 +1,8 @@
 #ifndef CaloConditions_CalEnergyCalibConfig_hh
 #define CaloConditions_CalEnergyCalibConfig_hh
 //
-// Initialize Calibration of calorimeter from fcl
-//
+// Initialize energy calibration of calorimeter from fcl
+// author: S. Middleton 2022
 #include <string>
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
@@ -15,7 +15,7 @@ namespace mu2e {
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity: 0 or 1")}; 
     fhicl::Atom<bool> useDb{Name("useDb"), Comment("use database or fcl")}; 
-    fhicl::Atom<double> roid {Name("roid"), Comment("readout ID")};
+    fhicl::Atom<uint16_t> roid {Name("roid"), Comment("unique offline readout ID")};
   };
 
 }
