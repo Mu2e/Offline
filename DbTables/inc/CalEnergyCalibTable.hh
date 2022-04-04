@@ -18,19 +18,20 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(uint16_t roid): _roid(roid) {}
-      uint16_t       roid() const { return _roid;} 
-
+      Row(uint16_t roid, double algName): _roid(roid), _algName(algName) {}
+      uint16_t       roid() const { return _roid; } 
+      double    algName() const { return _algName; } 
 
     private:
       uint16_t   _roid; 
+      double _algName;
     //TODO - decide what goes in the combined class
     };
 
     constexpr static const char* cxname = "CalEnergyCalibTable";
 
     CalEnergyCalibTable():DbTable(cxname,"cal.energycalib",
-			"roid") {}
+			"roid,algName") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int roid) const { 
@@ -47,9 +48,10 @@ namespace mu2e {
 	        << "CalEnergyCalibTable::addRow found index out of order: " 
 	        <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
-       _rows.emplace_back(roid ); 
+       _rows.emplace_back(roid,
+       std::stoi(columns[1]) ); 
        //TODO - add other columns here
-      // add this channel to the map index - optional
+       // add this channel to the map index - optional
       _chanIndex[_rows.back().roid()] = _rows.size()-1;
     }
 
