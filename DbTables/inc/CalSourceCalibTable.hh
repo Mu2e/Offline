@@ -15,15 +15,15 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(int roid, double EPeak, double Esource, double chisq):
+      Row(uint16_t roid, float EPeak, float Esource, float chisq):
 	_roid(roid),_EPeak(EPeak),_Esource(Esource), _chisq(chisq) {}
-      int       roid() const { return _roid;} //this will be Offline ID?
+      uint16_t  roid() const { return _roid;} 
       float     EPeak() const { return _EPeak; }
       float     Esource() const { return _Esource; }
       float     chisq() const { return _chisq; }
 
     private:
-      int   _roid; // assume Offline ID (otherwise needs to be Long_64)
+      uint16_t  _roid; 
       float _EPeak;
       float _Esource;
       float _chisq;
@@ -43,7 +43,7 @@ namespace mu2e {
 
     void addRow(const std::vector<std::string>& columns) override {
       int roid = std::stoi(columns[0]);
-      // TODO - do we need this:
+      // enforce a strict sequential order - optional
       if(roid!=int(_rows.size())) {
 	      throw cet::exception("CALOSOURCECALIB_BAD_INDEX") 
 	        << "CalSourceCalibTable::addRow found index out of order: " 

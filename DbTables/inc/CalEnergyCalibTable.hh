@@ -1,9 +1,9 @@
 #ifndef DbTables_CalEnergyCalibTable_hh
 #define DbTables_CalEnergyCalibTable_hh
-/*
 
-FIXME - placeholder for the energy calib reco table
-*/
+// FIXME - placeholder for the energy calib reco table
+// author : S. Middleton 2022
+
 
 #include <string>
 #include <iomanip>
@@ -18,12 +18,12 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(int roid): _roid(roid) {}
-      int       roid() const { return _roid;} 
+      Row(uint16_t roid): _roid(roid) {}
+      uint16_t       roid() const { return _roid;} 
 
 
     private:
-      int   _roid; 
+      uint16_t   _roid; 
     //TODO - decide what goes in the combined class
     };
 
@@ -41,13 +41,14 @@ namespace mu2e {
 
     void addRow(const std::vector<std::string>& columns) override {
       int roid = std::stoi(columns[0]);
-      // TODO - do we need this:
+      // enforce a strict sequential order - optional
       if(roid!=int(_rows.size())) {
 	      throw cet::exception("CALENERGYCALIB_BAD_INDEX") 
 	        << "CalEnergyCalibTable::addRow found index out of order: " 
 	        <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
-       _rows.emplace_back(roid ); //TODO - add other columns here
+       _rows.emplace_back(roid ); 
+       //TODO - add other columns here
       // add this channel to the map index - optional
       _chanIndex[_rows.back().roid()] = _rows.size()-1;
     }
@@ -55,7 +56,8 @@ namespace mu2e {
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
-      sstream << r.roid(); //TODO add other columns
+      sstream << r.roid(); 
+      //TODO add other columns
     }
 
     virtual void clear() override { baseClear(); _rows.clear();}
