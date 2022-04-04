@@ -7,6 +7,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Offline/PTMGeom/inc/PTMPWC.hh"
+#include "Offline/PTMGeom/inc/PTMStand.hh"
+#include "Offline/PTMGeom/inc/PTMHead.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
 // ProductionTarget Monitor (PTM) Object
@@ -22,15 +24,14 @@ namespace mu2e {
     PTM(CLHEP::Hep3Vector const& originInMu2e,
           CLHEP::HepRotation const& rotationInMu2e,
           std::shared_ptr<PTMStand> ptmStand,
-          std::shared_ptr<PTMHead> ptmHead,
-          double motherMargin);
+          std::shared_ptr<PTMHead> ptmHead);
     PTM() {}
 
     CLHEP::Hep3Vector const &  originInMu2e()   const { return _originInMu2e; }
     CLHEP::HepRotation const & rotationInMu2e() const { return _rotationInMu2e; }
 
     const PTMStand* ptmStand() const { return _ptmStand.get(); }
-    const ptmHead* ptmHead()  const { return _ptmHead.get(); }
+    const PTMHead* ptmHead()  const { return _ptmHead.get(); }
 
     double totalHeight() const { return _totalHeight; }
     double totalWidth()  const { return _totalWidth; }
@@ -44,7 +45,7 @@ namespace mu2e {
     CLHEP::HepRotation _rotationInMu2e;
 
     std::shared_ptr<PTMStand> _ptmStand;
-    std::shared_ptr<ptmHead> _ptmHead;
+    std::shared_ptr<PTMHead> _ptmHead;
 
     double _totalHeight;
     double _totalWidth;

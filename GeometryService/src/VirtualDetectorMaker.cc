@@ -860,13 +860,13 @@ namespace mu2e {
         GeomHandle<PTM> ptMon;
         // Want these vd's to report a hit at position (0,0,0) when a particle hits the plane in the center
         // first wire chamber vd position within production target monitor
-        CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
-        double groundInZ = ptMon->nearPWC()->upstreamWindowSurfaceZ();
+        CLHEP::Hep3Vector pwcPos1 = ptMon->ptmHead()->nearPWC()->originInParent();
+        double groundInZ = ptMon->ptmHead()->nearPWC()->upstreamWindowSurfaceZ();
         pwcPos1.setZ(pwcPos1.z()+groundInZ);
         vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
 
-        CLHEP::Hep3Vector pwcPos2 = ptMon->farPWC()->originInParent();
-        groundInZ = ptMon->farPWC()->upstreamWindowSurfaceZ();
+        CLHEP::Hep3Vector pwcPos2 = ptMon->ptmHead()->farPWC()->originInParent();
+        groundInZ = ptMon->ptmHead()->farPWC()->upstreamWindowSurfaceZ();
         pwcPos2.setZ(pwcPos2.z()+groundInZ);
         vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
       } // if ( c.getBool("hasPTM",false) )

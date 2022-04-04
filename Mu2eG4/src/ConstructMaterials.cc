@@ -558,7 +558,7 @@ namespace mu2e {
     // This has reduced density to make up for the fact that the Al extrusion is not a solid block
     mat = uniqueMaterialOrThrow("A6105SmallExtrusion");
     {
-      G4Material* A6105small = new G4Material(mat.name, 2.69*0.51*CLHEP::g/CLHEP::cm3, 9);
+      G4Material* A6105SmallExtrusion = new G4Material(mat.name, 2.69*0.51*CLHEP::g/CLHEP::cm3, 9);
       A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Al"), 0.973);
       A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.001);
       A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.001);

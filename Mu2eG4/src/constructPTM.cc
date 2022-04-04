@@ -379,8 +379,8 @@ namespace mu2e {
                           const Box* longExtrusion,
                           const Box* shortExtrusion,
                           std::string holderExtrusionMaterialName,
-                          holderExtrusionLongSep,
-                          holderExtrusionShortPos,
+                          double holderExtrusionLongSep,
+                          double holderExtrusionShortPos,
                           SimpleConfig const& _config ) {
     // collect geomOptions
     const int verbosity = _config.getInt("PTM.verbosityLevel",1);
@@ -618,7 +618,7 @@ namespace mu2e {
                           ptmon->ptmHead()->holderExtrusionLong(), 
                           ptmon->ptmHead()->holderExtrusionShort(), 
                           ptmon->ptmHead()->holderExtrusionMaterialName(),
-                          ptmon->ptmHead()->olderExtrusionLongSep(),
+                          ptmon->ptmHead()->holderExtrusionLongSep(),
                           ptmon->ptmHead()->holderExtrusionShortPos(),
                           _config);
 
