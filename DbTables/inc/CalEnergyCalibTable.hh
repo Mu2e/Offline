@@ -18,13 +18,13 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(uint16_t roid, double algName): _roid(roid), _algName(algName) {}
+      Row(uint16_t roid, int algName): _roid(roid), _algName(algName) {}
       uint16_t       roid() const { return _roid; } 
-      double    algName() const { return _algName; } 
+      int    algName() const { return _algName; } 
 
     private:
       uint16_t   _roid; 
-      double _algName;
+      int _algName;
     //TODO - decide what goes in the combined class
     };
 

@@ -16,7 +16,7 @@ namespace mu2e {
     fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity: 0 or 1")}; 
     fhicl::Atom<bool> useDb{Name("useDb"), Comment("use database or fcl")}; 
     fhicl::Atom<uint16_t> roid {Name("roid"), Comment("unique offline readout ID")};
-    fhicl::Atom<std::string> isotopes{Name("algorithm"), Comment("codename of the combination alogrithm used for these results") };
+    fhicl::Atom<int> algName{Name("algorithm"), Comment("codename of the combination alogrithm used for these results") };
   };
 
 }
