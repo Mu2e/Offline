@@ -28,6 +28,11 @@ namespace mu2e {
           std::shared_ptr<PTMPWC> nearPWC, 
           std::shared_ptr<PTMPWC> farPWC,
           double pwcSeparation,
+          std::shared_ptr<Box> holderExtrusionLong,
+          std::shared_ptr<Box> holderExtrusionShort,
+          std::string holderExtrusionMaterialName,
+          double holderExtrusionLongSep,
+          double holderExtrusionShortPos,
           double motherMargin);
     PTMHead() {}
 
@@ -39,7 +44,7 @@ namespace mu2e {
 
     const Box* holderExtrusionLong()   const { return _holderExtrusionLong.get(); }
     const Box* holderExtrusionShort()  const { return _holderExtrusionShort.get(); }
-    double holderExtrusionRelDensity() const { return _holderExtrusionRelDensity; }
+    double holderExtrusionMaterialName() const { return _holderExtrusionMaterialName; }
     double holderExtrusionLongSep()    const { return _holderExtrusionLongSep; }
     double holderExtrusionShortPos()   const { return _holderExtrusionShortPos; }
 

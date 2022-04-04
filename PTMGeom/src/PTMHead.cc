@@ -23,7 +23,7 @@ namespace mu2e{
             _farPWC(farPWC),
             _holderExtrusionLong(holderExtrusionLong),
             _holderExtrusionShort(holderExtrusionShort),
-            _holderExtrusionRelDensity(holderExtrusionMaterialName),
+            _holderExtrusionMaterialName(holderExtrusionMaterialName),
             _holderExtrusionLongSep(holderExtrusionLongSep),
             _holderExtrusionShortPos(holderExtrusionShortPos) {
     // set the "overall" dimensions based on the PWC dimensions and positions.
