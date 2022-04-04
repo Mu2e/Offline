@@ -1,3 +1,5 @@
+physics.filters.tprHelixDeMIpaHSFilter.requireCaloCluster   : false
+physics.filters.tprHelixDeMIpaHSFilter.doHelicityCheck      : true
 physics.filters.tprHelixDeMIpaHSFilter.helicity      : 1		    
 physics.filters.tprHelixDeMIpaHSFilter.minNStrawHits : 15   		    
 physics.filters.tprHelixDeMIpaHSFilter.minHitRatio   : 0.5

@@ -1,5 +1,5 @@
-physics.filters.cprDeMLowPStopTargHSFilter.fitparticle   : @local::Particle.eminus	 
-physics.filters.cprDeMLowPStopTargHSFilter.fitdirection  : @local::FitDir.downstream
+physics.filters.cprDeMLowPStopTargHSFilter.requireCaloCluster   : false	 
+physics.filters.cprDeMLowPStopTargHSFilter.doHelicityCheck  : true
 physics.filters.cprDeMLowPStopTargHSFilter.helicity      : 1
 physics.filters.cprDeMLowPStopTargHSFilter.minNStrawHits : 15.0
 physics.filters.cprDeMLowPStopTargHSFilter.minHitRatio   : 0.4

@@ -15,12 +15,10 @@ TrkFilters : {
 	tprTimeClusterDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprTimeClusterDeM"
 	}
 	tprTimeClusterDePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprTimeClusterDeP"
 	}
 
 
@@ -28,153 +26,127 @@ TrkFilters : {
 	tprDeMHighPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprDeMHighPStopTarg"
 	}
 	tprDePHighPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprDePHighPStopTarg"
 	}
 	cprDeMHighPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprDeMHighPStopTarg"	    
 	}
 	cprDePHighPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprDePHighPStopTarg"	    
 	}
 	
 	#cosmic tracks
 	tprDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprDeM"
 	}
 	tprDePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprDeP"
 	}
 	tprHelixDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprHelixDeM"
 	}
 	tprHelixDePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprHelixDeP"
 	}
 	tprHelixUeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUe"
-	    triggerPath            : "tprHelixUeM"
 	}
 	tprHelixUePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUe"
-	    triggerPath            : "tprHelixUeP"
 	}
 	cprDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprDeM"	    
 	}
 	cprDePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprDeP"	    
 	}
 	cprHelixDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprHelixDeM"	    
 	}
 	cprHelixDePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprHelixDeP"	    
 	}
 	cprHelixUeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUe"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprHelixUeM"	    
 	}
 	cprHelixUePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUe"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprHelixUeP"	    
 	}
 
 	#low p particles from the ST
 	tprDeMLowPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprDeMLowPStopTarg"
 	}
 	tprDePLowPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprDePLowPStopTarg"
 	}
 	cprDeMLowPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprDeMLowPStopTarg"	    
 	}
 	cprDePLowPStopTargTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinder"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprDePLowPStopTarg"	    
 	}
 
 	#fast sequcnes that process only the ComboHits in time with the calo-cluster with E>50MeV
 	tprSeedUCCDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUCC"
-	    triggerPath            : "tprSeedUCCDeM"
 	}
 	tprSeedUCCDePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinderUCC"
-	    triggerPath            : "tprSeedUCCDeP"
 	}
 	cprSeedUCCDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUCC"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprSeedUCCDeM"	    
 	}
 	cprSeedUCCDePTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTCalTimePeakFinderUCC"
 	    minNHits              : 1  #just check if there are TimeClusters
-	    triggerPath            : "cprSeedUCCDeP"	    
 	}
 
 	#e- from the IPA
 	tprHelixDeMIpaTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprHelixDeMIpa"
 	}
 	
 	tprHelixDeMIpaPhiScaledTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
-	    triggerPath            : "tprHelixDeMIpaPhiScaled"
 	}
 	
 	#--------------------------------------------------------------------------------
@@ -196,7 +168,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprDeMHighPStopTarg"	 
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -214,7 +185,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprDePHighPStopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -233,7 +203,6 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprDeMHighPStopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -251,7 +220,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprDePHighPStopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -271,7 +239,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -289,7 +256,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -308,7 +274,6 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -326,7 +291,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -346,7 +310,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprHelixDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -364,7 +327,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprHelixDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -382,7 +344,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprHelixUeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -400,7 +361,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprHelixUeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -419,7 +379,6 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprHelixDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -437,7 +396,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprHelixDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -455,7 +413,6 @@ TrkFilters : {
 	    minD0               : -800.
 	    minAbsLambda        : 50. 
 	    maxAbsLambda        : 1000. 
-	    triggerPath         : "cprHelixUeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -473,7 +430,6 @@ TrkFilters : {
 	    minD0               : -800.
 	    minAbsLambda        : 50. 
 	    maxAbsLambda        : 1000. 
-	    triggerPath         : "cprHelixUeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -494,7 +450,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprDeMLowPStopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -512,7 +467,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprDePLowPStopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -531,7 +485,6 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprDeMLowPStopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -549,7 +502,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprDePLowPStopTarg"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -569,7 +521,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath         : "tprSeedUCCDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -587,7 +538,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "tprSeedUCCDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -606,7 +556,6 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprSeedUCCDeM"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -624,7 +573,6 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath         : "cprSeedUCCDeP"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -644,7 +592,6 @@ TrkFilters : {
 	    minD0               : 200.		    
 	    minAbsLambda        : 40. 		    
 	    maxAbsLambda        : 80. 		    
-	    triggerPath         : "tprHelixDeMIpa"	    
 	    prescaleUsingD0Phi  : false
 	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
@@ -663,7 +610,6 @@ TrkFilters : {
 	    minD0               : 200.		    
 	    minAbsLambda        : 40. 		    
 	    maxAbsLambda        : 80. 		    
-	    triggerPath         : "tprHelixDeMIpaPhiScaled"	    
 	    prescaleUsingD0Phi  : true
 	    prescalerPar        : { amplitude: 6.2 frequency : 0.9675 phase : 0.1396}
 	}
@@ -682,7 +628,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "tprDeMHighPStopTarg"	    
 	}
 
 	cprDeMHighPStopTargTSFilter : {
@@ -697,7 +642,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprDeMHighPStopTarg"	    
 	}
 
 	#cosmic tracks e-/e+ 
@@ -713,7 +657,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "tprDeM"	    
 	}
 
 	cprDeMTSFilter : {
@@ -728,7 +671,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprDeM"	    
 	}
 
 	#low P e-/e+ from the ST
@@ -744,7 +686,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "tprDeMLowPStopTarg"	    
 	}
 
 	cprDeMLowPStopTargTSFilter : {
@@ -759,7 +700,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprDeMLowPStopTarg"	    
 	}
 
 
@@ -776,7 +716,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "tprSeedUCCDeM"	    
 	}
 
 	cprSeedUCCDeMTSFilter : {
@@ -791,12 +730,10 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprSeedUCCDeM"	    
 	}
 	tprDeMHighPStopTargKFFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKFFDeM"
-	    triggerPath        : "tprDeMHighPStopTarg"	    
 	}
 	# filters for downstream positrons (mu- -> e+ conversion) 
 	tprDePHighPStopTargTSFilter : {
@@ -811,7 +748,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200.
-	    triggerPath        : "tprDePHighPStopTarg"	    
 	}
 
 	cprDePHighPStopTargTSFilter : {
@@ -826,7 +762,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprDePHighPStopTarg"	    
 	}
 
 
@@ -843,7 +778,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200.
-	    triggerPath        : "tprDeP"	    
 	}
 
 	cprDePTSFilter : {
@@ -858,7 +792,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprDeP"	    
 	}
 
 	#low P e-/e+ from the ST
@@ -874,7 +807,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200.
-	    triggerPath        : "tprDePLowPStopTarg"	    
 	}
 
 	cprDePLowPStopTargTSFilter : {
@@ -889,7 +821,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprDePLowPStopTarg"	    
 	}
 
 
@@ -906,7 +837,6 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200.
-	    triggerPath        : "tprSeedUCCDeP"	    
 	}
 
 	cprSeedUCCDePTSFilter : {
@@ -921,13 +851,11 @@ TrkFilters : {
 	    maxMomErr         : 10.      #don't apply cut
 	    minD0             : -200.
 	    maxD0             : 200. 
-	    triggerPath        : "cprSeedUCCDeP"	    
 	}
 
 	tprDePHighPStopTargKFFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKFFDeP"
-	    triggerPath        : "tprDePHighPStopTarg"	    
 	}
 	# Other filters FIXME!!
 	# calibration filters
@@ -949,7 +877,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprTimeClusterDeM"	    
 	}
 	tprTimeClusterDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -962,7 +889,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprTimeClusterDeP"	    
 	}
 
 	tprHelixDeMSDCountFilter     : {
@@ -976,7 +902,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixDeM"	    
 	}
 	tprHelixDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -989,7 +914,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixDeP"	    
 	}
 	tprHelixDeMIpaSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1002,7 +926,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixDeMIpa"	    
 	}
 
 	tprHelixDeMIpaPhiScaledSDCountFilter     : {
@@ -1016,7 +939,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixDeMIpaPhiScaled"	    
 	}
 
 	tprDeMHighPStopTargSDCountFilter     : {
@@ -1030,7 +952,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprDeMHighPStopTarg"	    
 	}
 	tprDePHighPStopTargSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1043,7 +964,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprDePHighPStopTarg"	    
 	}
 	
 	cprDeMHighPStopTargSDCountFilter     : {
@@ -1057,7 +977,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprDeMHighPStopTarg"	    
 	}
 	cprDePHighPStopTargSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1070,7 +989,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprDePHighPStopTarg"	    
 	}
 	
 	#SD counter filter for comisc track triggers
@@ -1086,7 +1004,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprDeM"	    
 	}
 	tprDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1099,7 +1016,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprDeP"	    
 	}
 	
 	cprDeMSDCountFilter     : {
@@ -1113,7 +1029,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprDeM"	    
 	}
 	cprDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1126,7 +1041,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprDeP"	    
 	}
 	
 	#cosmic cpr helix
@@ -1141,7 +1055,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixDeM"	    
 	}
 	tprHelixDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1154,7 +1067,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixDeP"	    
 	}
 	tprHelixUeMSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1167,7 +1079,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixUeM"	    
 	}
 	tprHelixUePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1180,7 +1091,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprHelixUeP"	    
 	}
 	
 	cprHelixDeMSDCountFilter     : {
@@ -1194,7 +1104,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprHelixDeM"	    
 	}
 	cprHelixDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1207,7 +1116,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprHelixDeP"	    
 	}
 	
 
@@ -1223,7 +1131,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprDeMLowPStopTarg"	    
 	}
 	tprDePLowPStopTargSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1236,7 +1143,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprDePLowPStopTarg"	    
 	}
 	
 	cprDeMLowPStopTargSDCountFilter     : {
@@ -1250,7 +1156,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprDeMLowPStopTarg"	    
 	}
 	cprDePLowPStopTargSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1263,7 +1168,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprDePLowPStopTarg"	    
 	}
 	
 
@@ -1278,7 +1182,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprSeedUCCDeM"	    
 	}
 	tprSeedUCCDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1291,7 +1194,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "tprSeedUCCDeP"	    
 	}
 	
 	cprSeedUCCDeMSDCountFilter     : {
@@ -1305,7 +1207,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
-	    triggerPath          : "cprSeedUCCDeM"	    
 	}
 	cprSeedUCCDePSDCountFilter     : {
 	    module_type : DigiFilter
@@ -1318,7 +1219,6 @@ TrkFilters : {
 	    minNCaloDigi        : -1	 
 	    maxNCaloDigi        : -1	 
 	    maxCaloEnergy       : -1      
-	    triggerPath          : "cprSeedUCCDeP"	    
 	}
 	#  Prescaling filters
 	#follow the prescaler filters for Tpr Track sequences
@@ -1327,202 +1227,146 @@ TrkFilters : {
 	tprTimeClusterDeMEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath    : "tprTimeClusterDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprTimeClusterDeMPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale : 1000
 	    useFilteredEvents : true
-	    triggerPath    : "tprTimeClusterDeM"	    
-	    triggerFlag   : ["PrescaleGoodEvents"]	    	    
 	}
 	tprTimeClusterDePEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath    : "tprTimeClusterDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprTimeClusterDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale : 1000
 	    useFilteredEvents : true
-	    triggerPath    : "tprTimeClusterDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#filters for the paths where decision is made using the HelixSeed
 	tprHelixDeMEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath    : "tprHelixDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDeMPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
-	    triggerPath        : "tprHelixDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	tprHelixDePEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath    : "tprHelixDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDePPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
-	    triggerPath        : "tprHelixDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	tprHelixDeMIpaEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath    : "tprHelixDeMIpa"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDeMIpaPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
-	    triggerPath        : "tprHelixDeMIpa"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	tprHelixDeMIpaPhiScaledEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
-	    triggerPath   : "tprHelixDeMIpaPhiScaled"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDeMIpaPhiScaledPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
-	    triggerPath       : "tprHelixDeMIpaPhiScaled"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#filters for the paths where decision is made using the TrackSeed
 	tprDeMHighPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "tprDeMHighPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprDeMHighPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 	    useFilteredEvents : true
-	    triggerPath        : "tprDeMHighPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	tprDePHighPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "tprDePHighPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 	tprDePHighPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "tprDePHighPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	
 	tprDeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "tprDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprDeMPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 	    useFilteredEvents : true
-	    triggerPath        : "tprDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	tprDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "tprDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 	tprDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "tprDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#cosmic tpr helix
 	tprHelixDeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "tprHelixDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	tprHelixDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "tprHelixDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 
 	tprHelixUeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "tprHelixUeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	tprHelixUePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "tprHelixUeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 
 	# low p particles
 	tprDeMLowPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "tprDeMLowPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprDeMLowPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 	    useFilteredEvents : true
-	    triggerPath        : "tprDeMLowPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	tprDePLowPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "tprDePLowPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 	tprDePLowPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "tprDePLowPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 
@@ -1530,61 +1374,45 @@ TrkFilters : {
 	cprDeMHighPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprDeMHighPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	cprDeMHighPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprDeMHighPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprDePHighPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprDePHighPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	cprDePHighPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprDePHighPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprDePLowPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprDePLowPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprDePLowPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprDePLowPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	cprDeMLowPStopTargPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprDeMLowPStopTarg"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprDeMLowPStopTargEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprDeMLowPStopTarg"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	#cosmic tracks
@@ -1592,127 +1420,93 @@ TrkFilters : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprDeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	cprDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	#cosmic helixes
 	cprHelixDeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprHelixDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	cprHelixUeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprHelixUeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	cprHelixDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprHelixDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprHelixDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprHelixDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	cprHelixUePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprHelixUeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 
 	#prescaler for the sequences that use the combohit collection filtered with the calorimeter cluster
 	tprSeedUCCDeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "tprSeedUCCDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprSeedUCCDeMPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 	    useFilteredEvents : true
-	    triggerPath        : "tprSeedUCCDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	tprSeedUCCDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "tprSeedUCCDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
-	}	
+	}
 	tprSeedUCCDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "tprSeedUCCDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	#follow the prescaler filters for Tpr Track sequences
 	cprSeedUCCDeMEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprSeedUCCDeM"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	cprSeedUCCDeMPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprSeedUCCDeM"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprSeedUCCDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
-	    triggerPath        : "cprSeedUCCDeP"	    
-	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	cprSeedUCCDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerPath        : "cprSeedUCCDeP"	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
     }
