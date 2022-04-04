@@ -33,9 +33,9 @@ namespace mu2e {
     const PTMStand* ptmStand() const { return _ptmStand.get(); }
     const PTMHead* ptmHead()  const { return _ptmHead.get(); }
 
-    double totalHeight() const { return _totalHeight; }
-    double totalWidth()  const { return _totalWidth; }
-    double totalLength() const { return _totalLength; }
+    double totalHeight() const { return _ptmHead->totalHeight(); }
+    double totalWidth()  const { return _ptmHead->totalWidth(); }
+    double totalLength() const { return _ptmHead->totalLength(); }
 
 
 
@@ -46,10 +46,6 @@ namespace mu2e {
 
     std::shared_ptr<PTMStand> _ptmStand;
     std::shared_ptr<PTMHead> _ptmHead;
-
-    double _totalHeight;
-    double _totalWidth;
-    double _totalLength;
 
 
 
