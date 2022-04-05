@@ -19,7 +19,7 @@ int mu2e::ValCaloShowerStep::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValCaloShowerStep::fill(const mu2e::CaloShowerStepCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
   // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions

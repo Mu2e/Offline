@@ -1,5 +1,5 @@
 //
-// Compare two files of histograms and report if 
+// Compare two files of histograms and report if
 // they are consistent.  For Validation procedures.
 //
 
@@ -15,7 +15,7 @@
 
 void valCompare_usage() {
 
-  std::cout << 
+  std::cout <<
 "  \n"
 "      valCompare [OPTIONS] FILE1 FILE2\n"
 "  \n"
@@ -53,7 +53,7 @@ void valCompare_usage() {
 "  -c FLOAT  scaling for 1st file\n"
 "  -d FLOAT  scaling for 2nd file\n"
 "  -m INT mode: 0= no scaling, 1 = scale 2nd to 1st, 2=scale \n"
-"      to input values for mode 2, switches and b are required. \n" 
+"      to input values for mode 2, switches and b are required. \n"
 "      Only effects fraction comparison.\n"
 "  -b browse the plots\n"
 "  -s print a summary\n"
@@ -65,7 +65,7 @@ void valCompare_usage() {
 "  -p FILE  PDF file output like dir/results.pdf\n"
 "  -w FILE  web page output like dir/dir/result.html\n"
 "          if only one file is given on the command line, make histgram plots\n"
-	 << std::endl;
+         << std::endl;
   return;
 }
 

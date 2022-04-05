@@ -1,8 +1,8 @@
 //
 // This module scans all subruns and events and at the end prints
 // metadata suitable for inserting into a SAM metadata record.
-// It finds the min and max run/subrun for subruns and 
-// min and max run/event for events. It also counts events and keeps 
+// It finds the min and max run/subrun for subruns and
+// min and max run/event for events. It also counts events and keeps
 // a list of runs and subruns.
 //
 // Ray Culbertson
@@ -31,15 +31,15 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      
-      fhicl::Atom<bool> printSam{Name("printSam"), 
-	  Comment("print summary good for SAM"),true};
-      fhicl::Atom<bool> printRun{Name("printRun"), 
-	  Comment("print runs"),false};
-      fhicl::Atom<bool> printSubrun{Name("printSubrun"), 
-	  Comment("print subruns"),false};
-      fhicl::Atom<bool> printEvent{Name("printEvent"), 
-	  Comment("print events"),false};
+
+      fhicl::Atom<bool> printSam{Name("printSam"),
+          Comment("print summary good for SAM"),true};
+      fhicl::Atom<bool> printRun{Name("printRun"),
+          Comment("print runs"),false};
+      fhicl::Atom<bool> printSubrun{Name("printSubrun"),
+          Comment("print subruns"),false};
+      fhicl::Atom<bool> printEvent{Name("printEvent"),
+          Comment("print events"),false};
 
     };
 
@@ -91,7 +91,7 @@ mu2e::RunEventSubRun::RunEventSubRun( const Parameters& conf ):
   _max_sub(0),_min_sub(-1),
   _max_run_e(0),_min_run_e(-1),
   _max_evt(0),_min_evt(-1),
-  _runCount(0),_subrunCount(0),_eventCount(0) {  
+  _runCount(0),_subrunCount(0),_eventCount(0) {
   }
 
 void
@@ -109,7 +109,7 @@ mu2e::RunEventSubRun::beginSubRun( art::SubRun const& subRun ){
   _subrunCount++;
 
   if(_printSubrun) printf("Subrun %10u %10u\n",
-			  subRun.run(),subRun.subRun());
+                          subRun.run(),subRun.subRun());
 
   if(!_printSam) return;
 
@@ -147,7 +147,7 @@ mu2e::RunEventSubRun::analyze(art::Event const& event){
   _eventCount++;
 
   if(_printEvent)  printf("Event  %10u %10u %10u\n",
-			 event.run(),event.subRun(),event.event());
+                         event.run(),event.subRun(),event.event());
 
   if(!_printSam) return;
 
@@ -162,7 +162,7 @@ mu2e::RunEventSubRun::analyze(art::Event const& event){
       _min_evt = event.event();
     } else if (event.subRun() == _min_sub_e) {
       if(event.event() < _min_evt) {
-	_min_evt = event.event();
+        _min_evt = event.event();
       }
     }
   }
@@ -178,11 +178,11 @@ mu2e::RunEventSubRun::analyze(art::Event const& event){
       _max_evt = event.event();
     } else if (event.subRun() == _max_sub_e) {
       if(event.event() > _max_evt) {
-	_max_evt = event.event();
+        _max_evt = event.event();
       }
     }
   }
-  
+
 }
 
 void mu2e::RunEventSubRun::endJob () {

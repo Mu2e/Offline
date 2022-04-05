@@ -1,12 +1,12 @@
 //
-// An example of how run-dependent 
+// An example of how run-dependent
 // conditions sets can be accessed in a stand-alone bin
-// 
+//
 // To build this, copy it to an apropriate repo src dir
 // You can see what you need in your SConscript by looking at
 // the build for dbTool in Offline/DbService/src
 //
-// arguments are 
+// arguments are
 // PURPOSE: the conditions set purpose
 // VERSION: the conditions set version
 // RUN: the run number to lookup
@@ -36,8 +36,8 @@ int main(int argc, char**argv) {
   uint32_t run = stoul(string(argv[3]));
   uint32_t subrun = 0;
   string table(argv[4]);
-  
-cout << "Using "<<purpose << " " << version << " " 
+
+cout << "Using "<<purpose << " " << version << " "
        << run << " " << table<< endl;
 
 DbEngine engine;

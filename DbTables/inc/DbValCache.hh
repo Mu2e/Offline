@@ -42,11 +42,11 @@ namespace mu2e {
 
     void setVerbose(int v) { _verbose = v; }
     void setValTables(ValTables const& tables) { _tables = tables; }
-    void setValCalibrations(ValCalibrations const& calibrations) { 
+    void setValCalibrations(ValCalibrations const& calibrations) {
       _calibrations = calibrations; }
     void setValIovs(ValIovs const& iovs) { _iovs = iovs; }
     void setValGroups(ValGroups const& groups) { _groups = groups; }
-    void setValGroupLists(ValGroupLists const& grouplists) { 
+    void setValGroupLists(ValGroupLists const& grouplists) {
                    _grouplists = grouplists; }
     void setValPurposes(ValPurposes const& purposes) { _purposes = purposes; }
     void setValLists(ValLists const& lists ) {_lists = lists;}

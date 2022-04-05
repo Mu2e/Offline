@@ -34,7 +34,7 @@ int mu2e::ValTrackSummary::declare(const art::TFileDirectory& tfs) {
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Livegate");   // 5
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection"); 
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Momentum window");  // 8
   _hCuts->SetMinimum(0.0);
   _hPRes = tfs.make<TH1D>( "PRes", "Momentum resolution", 200, -5.0, 3.0);
@@ -43,9 +43,9 @@ int mu2e::ValTrackSummary::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValTrackSummary::fill(const mu2e::TrackSummaryCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(2.0);
 
@@ -61,7 +61,7 @@ int mu2e::ValTrackSummary::fill(const mu2e::TrackSummaryCollection & coll,
   for(auto trk : coll) {
     //    TrackSummary const& trk = t;
 
-    const std::vector<mu2e::TrackSummary::TrackStateAtPoint>& statev 
+    const std::vector<mu2e::TrackSummary::TrackStateAtPoint>& statev
                                          = trk.states();
     _hNState->Fill(statev.size());
 
@@ -83,26 +83,26 @@ int mu2e::ValTrackSummary::fill(const mu2e::TrackSummaryCollection & coll,
       bool d0cut = (d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680);
 
       if(p_mc>100.0) {
-	if(trk.fitstatus()>0) {
-	  _hCuts->Fill(3.0);
-	  if(trk.fitcon()>0.002) {
-	    _hCuts->Fill(4.0);
-	    if(trk.t0()>700.0 && trk.t0()<1695.0) {
-	      _hCuts->Fill(5.0);
-	      if(td>0.577&&td<1.0) {
-		_hCuts->Fill(6.0);
-		if(d0cut) {
-		  _hCuts->Fill(7.0);
-		  if(p>103.75 && p< 105.0) {
-		    _hCuts->Fill(8.0);
-		    _hPRes->Fill(p-p_mc);
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      } // if(p_mc>100.0) 
+        if(trk.fitstatus()>0) {
+          _hCuts->Fill(3.0);
+          if(trk.fitcon()>0.002) {
+            _hCuts->Fill(4.0);
+            if(trk.t0()>700.0 && trk.t0()<1695.0) {
+              _hCuts->Fill(5.0);
+              if(td>0.577&&td<1.0) {
+                _hCuts->Fill(6.0);
+                if(d0cut) {
+                  _hCuts->Fill(7.0);
+                  if(p>103.75 && p< 105.0) {
+                    _hCuts->Fill(8.0);
+                    _hPRes->Fill(p-p_mc);
+                  }
+                }
+              }
+            }
+          }
+        }
+      } // if(p_mc>100.0)
 
     }  // statev not empty
 
@@ -136,9 +136,9 @@ double mu2e::ValTrackSummary::mcTrkP(art::Event const& event) {
 
   /*
 
-	if(vids.size() == 0 ||  (imcs->trackId() == trkid && find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
-	  steps.push_back(imcs);
-	}
+        if(vids.size() == 0 ||  (imcs->trackId() == trkid && find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
+          steps.push_back(imcs);
+        }
       }
       // sort these in time
       sort(steps.begin(),steps.end(),timecomp());
@@ -147,9 +147,9 @@ double mu2e::ValTrackSummary::mcTrkP(art::Event const& event) {
   }
 
   for( MCStepItr imcs =mcsteps->begin();imcs!= mcsteps->end();imcs++){
-	if(vids.size() == 0 ||  (imcs->trackId() == trkid && find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
-	  steps.push_back(imcs);
-	}
+        if(vids.size() == 0 ||  (imcs->trackId() == trkid && find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
+          steps.push_back(imcs);
+        }
       }
       // sort these in time
       sort(steps.begin(),steps.end(),timecomp());
@@ -159,10 +159,10 @@ double mu2e::ValTrackSummary::mcTrkP(art::Event const& event) {
 const StepPointMCCollection *_mcsteps, *_mcvdsteps
 
      _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
-    _entvids.push_back(VirtualDetectorId::TT_FrontPA); 
+    _entvids.push_back(VirtualDetectorId::TT_FrontPA);
 
      if(entsteps.size() > 0 && vdg->exist(entsteps[0]->volumeId()))
-	fillTrkInfoMCStep(entsteps.front(),_mcentinfo);
+        fillTrkInfoMCStep(entsteps.front(),_mcentinfo);
 
 
 
@@ -173,9 +173,9 @@ const StepPointMCCollection *_mcsteps, *_mcvdsteps
     if(mcsteps != 0){
       // Loop over the step points, and find the one corresponding to the given detector
       for( MCStepItr imcs =mcsteps->begin();imcs!= mcsteps->end();imcs++){
-	if(vids.size() == 0 ||  (imcs->trackId() == trkid && find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
-	  steps.push_back(imcs);
-	}
+        if(vids.size() == 0 ||  (imcs->trackId() == trkid && find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
+          steps.push_back(imcs);
+        }
       }
       // sort these in time
       sort(steps.begin(),steps.end(),timecomp());
@@ -198,29 +198,29 @@ const StepPointMCCollection *_mcsteps, *_mcvdsteps
       CLHEP::Hep3Vector pv;
 
       for(auto step : spmccoll) {
-	if( step.trackId() == part.id() && 
-	    (step.volumeId()==VirtualDetectorId::TT_FrontHollow ||
-	     step.volumeId()==VirtualDetectorId::TT_FrontPA) ) {
-	  if(step.time()<t0) {
-	    t0 = step.time();
-	    found = true;
-	    pv = step.momentum();
-	  }
-	}
+        if( step.trackId() == part.id() &&
+            (step.volumeId()==VirtualDetectorId::TT_FrontHollow ||
+             step.volumeId()==VirtualDetectorId::TT_FrontPA) ) {
+          if(step.time()<t0) {
+            t0 = step.time();
+            found = true;
+            pv = step.momentum();
+          }
+        }
       }
       if(found) {
-	p0 = pv.mag();
-	double pz = pv.z();
-	double pt = pv.perp();
-	if(pt!=0.0) {
-	  td = pz/pt;
-	} else {
-	  td = 1e14;
-	}
+        p0 = pv.mag();
+        double pz = pv.z();
+        double pt = pv.perp();
+        if(pt!=0.0) {
+          td = pz/pt;
+        } else {
+          td = 1e14;
+        }
 
-	if(p0>p && p0>100.0 && td>0.527 && td<1.2) {
-	  p = p0;
-	}
+        if(p0>p && p0>100.0 && td>0.527 && td<1.2) {
+          p = p0;
+        }
       } // if found
     } // if electron
   }

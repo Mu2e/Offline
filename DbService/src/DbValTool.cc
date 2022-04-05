@@ -112,12 +112,12 @@ void DbValTool::fillSetVer(DbVersion const& dver, DbSet& dbset) const {
   int pid = findPid(dver.purpose());
 
   if(pid<0) {
-    throw cet::exception("DBVALTOOL_BAD_PURPOSE") 
-      << " DbValTool::fillSet calibration purpose string not found in the DB: " 
+    throw cet::exception("DBVALTOOL_BAD_PURPOSE")
+      << " DbValTool::fillSet calibration purpose string not found in the DB: "
       << dver.purpose() << "\n";
   }
 
-  // confirm version numbers and find version number (vid) 
+  // confirm version numbers and find version number (vid)
   // and table list number (lid)
   int vid = -1;
   int major = dver.major();
@@ -133,21 +133,21 @@ void DbValTool::fillSetVer(DbVersion const& dver, DbSet& dbset) const {
   if(major<0) {
     for(auto const& r : versions.rows()) {
       if(r.pid() == pid) {
-	if(r.major() > major) major = r.major();
-	qOK = true;
+        if(r.major() > major) major = r.major();
+        qOK = true;
       }
     }
   } else {
     for(auto const& r :versions.rows()) {
       if(r.pid() == pid) {
-	if(r.major() == major) qOK = true;
+        if(r.major() == major) qOK = true;
       }
     }
   }
 
   if(major<0 || !qOK) {
-    throw cet::exception("DBVALTOOL_BAD_MAJOR") 
-      << " DbValTool::fillSet bad calibration major version number" 
+    throw cet::exception("DBVALTOOL_BAD_MAJOR")
+      << " DbValTool::fillSet bad calibration major version number"
       << major << "\n";
   }
 
@@ -158,37 +158,37 @@ void DbValTool::fillSetVer(DbVersion const& dver, DbSet& dbset) const {
   if(minor<0) {
     for(auto const& r : versions.rows()) {
       if(r.pid() == pid && r.major() == major) {
-	if(r.minor()>minor) {
-	  minor = r.minor();
-	  vid = r.vid();
-	}
-	qOK = true;
+        if(r.minor()>minor) {
+          minor = r.minor();
+          vid = r.vid();
+        }
+        qOK = true;
       }
     }
   } else {
     for(auto const& r : versions.rows()) {
       if(r.pid() == pid && r.major() == major) {
-	if(r.minor() == minor) {
-	  qOK = true;
-	  vid = r.vid();
-	}
+        if(r.minor() == minor) {
+          qOK = true;
+          vid = r.vid();
+        }
       }
     }
   }
 
   if(minor<0 || !qOK) {
-    throw cet::exception("DBVALTOOL_BAD_MINOR") 
-      << " DbValTool::fillSet bad calibration minor version number" 
+    throw cet::exception("DBVALTOOL_BAD_MINOR")
+      << " DbValTool::fillSet bad calibration minor version number"
       << minor << "\n";
   }
 
-  // loop over the extensions to this version, 
-  // to eventually collect groups consistent with 
+  // loop over the extensions to this version,
+  // to eventually collect groups consistent with
   // with the version number
 
   auto const& extensions = _valcache.valExtensions();
 
-  // first collect the extension id's, which will go into 
+  // first collect the extension id's, which will go into
   // relational table extensionlists, to get gid's
   std::vector<int> eids;
   int max_extension = -1;
@@ -214,12 +214,12 @@ void DbValTool::fillSetVer(DbVersion const& dver, DbSet& dbset) const {
 
 
   if(gids.size()==0) {
-    throw cet::exception("DBVALTOOL_NO_EXTENSION") 
-      << " DbValTool::fillSet found no calibration groups for version " 
+    throw cet::exception("DBVALTOOL_NO_EXTENSION")
+      << " DbValTool::fillSet found no calibration groups for version "
       << dver.to_string() << "\n";
   }
 
-  
+
   // make the list of tables in this purpose/version
   dbset.clear();
   fillSetGid(gids,dbset);
@@ -232,7 +232,7 @@ void DbValTool::fillSetVer(DbVersion const& dver, DbSet& dbset) const {
 void DbValTool::fillSetGid(std::vector<int> const& gids, DbSet& dbset) const {
 
   // take the list of groups and loop over the grouplists
-  // which gives IOVs for a group 
+  // which gives IOVs for a group
   // these should be sorted so this code could use that
   auto const& gls = _valcache.valGroupLists();
   auto const& iids = _valcache.valIovs();
@@ -240,9 +240,9 @@ void DbValTool::fillSetGid(std::vector<int> const& gids, DbSet& dbset) const {
   for(auto g : gids) {
     for(auto const& r : gls.rows()) {
       if(r.gid()==g) {
-	auto const& irow = iids.row(r.iid());
-	auto const& crow = cids.row(irow.cid());
-	dbset.add(crow.tid(),irow.cid(),irow.iov());
+        auto const& irow = iids.row(r.iid());
+        auto const& crow = cids.row(irow.cid());
+        dbset.add(crow.tid(),irow.cid(),irow.iov());
       }
     }
   }

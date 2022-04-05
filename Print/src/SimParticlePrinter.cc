@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::SimParticlePrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::SimParticlePrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::SimParticlePrinter::Print(const art::Handle<SimParticleCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::SimParticlePrinter::Print(const art::Handle<SimParticleCollection>& handle
   Print(*handle);
 }
 
-void 
+void
 mu2e::SimParticlePrinter::Print(const art::ValidHandle<SimParticleCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::SimParticlePrinter::Print(const art::ValidHandle<SimParticleCollection>& h
   Print(*handle);
 }
 
-void 
+void
 mu2e::SimParticlePrinter::Print(const SimParticleCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "SimParticleCollection has " << coll.size() << " particles\n";
@@ -52,20 +52,20 @@ mu2e::SimParticlePrinter::Print(const SimParticleCollection& coll, std::ostream&
   for(const auto& obj: coll) Print(obj.second, i++, obj.first.asUint() );
 }
 
-void 
-mu2e::SimParticlePrinter::Print(const art::Ptr<SimParticle>& obj, 
-				int ind, std::ostream& os) {
+void
+mu2e::SimParticlePrinter::Print(const art::Ptr<SimParticle>& obj,
+                                int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind,obj.key());
 }
 
-void 
-mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, 
-				int ind, std::size_t key, std::ostream& os) {
+void
+mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj,
+                                int ind, std::size_t key, std::ostream& os) {
   if(verbose()<1) return;
 
   if( obj.startMomentum().vect().mag() < _pCut ) return;
-  if( (abs(obj.pdgId())==11 || obj.pdgId()==22) && 
+  if( (abs(obj.pdgId())==11 || obj.pdgId()==22) &&
       obj.startMomentum().vect().mag() < _emPCut ) return;
   if( _primaryOnly && (!obj.isPrimary()) ) return;
 
@@ -81,7 +81,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj,
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(7) << key
       << " " << std::setw(7) << pkey
       << " " << std::setw(8) << obj.pdgId()
@@ -96,13 +96,13 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj,
       << " " << std::setw(9) << std::setprecision(1) << obj.endMomentum().vect().mag()
       << " " << std::setw(6) << obj.endVolumeIndex()
       << "  "
-      << " " << std::setiosflags(std::ios::left) << obj.stoppingCode().name() 
+      << " " << std::setiosflags(std::ios::left) << obj.stoppingCode().name()
       << std::endl;
 
   } else if(verbose()==2) {
 
-     os 
-      << "  id: " << std::setw(8) << key 
+     os
+      << "  id: " << std::setw(8) << key
       << " pdgId: " << std::setw(4) << obj.pdgId()
       << " parentKey: " << std::setw(8) << pkey
       << " genId: " << std::setiosflags(std::ios::left) << gid << "\n";
@@ -150,13 +150,13 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj,
 
 }
 
-void 
+void
 mu2e::SimParticlePrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::SimParticlePrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind      key    parent  pdgId       Start  Position            P            End Position               P     vol   process\n";

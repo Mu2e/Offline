@@ -3,9 +3,9 @@
 #include "art/Framework/Principal/Provenance.h"
 #include <string>
 
-void 
+void
 mu2e::TrackSummaryPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -20,9 +20,9 @@ mu2e::TrackSummaryPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::TrackSummaryPrinter::Print(const art::Handle<TrackSummaryCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -31,9 +31,9 @@ mu2e::TrackSummaryPrinter::Print(const art::Handle<TrackSummaryCollection>& hand
   Print(*handle);
 }
 
-void 
+void
 mu2e::TrackSummaryPrinter::Print(const art::ValidHandle<TrackSummaryCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -42,7 +42,7 @@ mu2e::TrackSummaryPrinter::Print(const art::ValidHandle<TrackSummaryCollection>&
   Print(*handle);
 }
 
-void 
+void
 mu2e::TrackSummaryPrinter::Print(const TrackSummaryCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "TrackSummaryCollection has " << coll.size() << " tracks\n";
@@ -51,13 +51,13 @@ mu2e::TrackSummaryPrinter::Print(const TrackSummaryCollection& coll, std::ostrea
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::TrackSummaryPrinter::Print(const art::Ptr<TrackSummary>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::TrackSummaryPrinter::Print(const mu2e::TrackSummary& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -65,7 +65,7 @@ mu2e::TrackSummaryPrinter::Print(const mu2e::TrackSummary& obj, int ind, std::os
   if(ind>=0) os << std::setw(4) << ind;
 
   if( obj.states().size()==0 ) {
-    os 
+    os
       << " a track with fitstatus " << obj.fitstatus()
       << " has no trajectory"
       << std::endl;
@@ -77,7 +77,7 @@ mu2e::TrackSummaryPrinter::Print(const mu2e::TrackSummary& obj, int ind, std::os
   const mu2e::TrackSummary::HelixParams& helix = state.helix();
 
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(5) << obj.fitstatus()
       << " " << std::setw(8) << std::setprecision(3) << obj.fitcon()
       << " " << std::setw(5) << obj.charge()
@@ -91,7 +91,7 @@ mu2e::TrackSummaryPrinter::Print(const mu2e::TrackSummary& obj, int ind, std::os
       << std::endl;
   } else if(verbose()>=2) {
 
-    os 
+    os
       << "  "
       << " fitStatus: " << std::setw(3) << obj.fitstatus()
       << "  charge: " << std::setw(3) << obj.charge()
@@ -99,7 +99,7 @@ mu2e::TrackSummaryPrinter::Print(const mu2e::TrackSummary& obj, int ind, std::os
       << "  chi2: " << std::setw(8) << std::setprecision(2) << obj.chi2()
       << "  ndof: " << std::setw(3) << obj.ndof()
       << "\n";
-    
+
     os
       << "  "
       << "  fitcon: " << std::setw(8) << std::setprecision(3) << obj.fitcon()
@@ -108,76 +108,76 @@ mu2e::TrackSummaryPrinter::Print(const mu2e::TrackSummary& obj, int ind, std::os
       << "  flt0: " << std::setw(8) << std::setprecision(1) << obj.flt0()
       << "\n";
 
-    //const std::vector<TrackStateAtPoint>& 
+    //const std::vector<TrackStateAtPoint>&
     int i=0;
     for(const auto& st: obj.states()) {
       const auto& hh = st.helix();
       os
-	<< "  State " << i++ << "\n"
-	<< "  "
-	<< "  d0: "     << std::setw(7) << std::setprecision(1) << hh.d0()
-	<< "  phi0: "   << std::setw(7) << std::setprecision(3) << hh.phi0()
-	<< "  omega: "  << std::setw(7) << std::setprecision(5) << hh.omega()
-	<< "  z0: "     << std::setw(7) << std::setprecision(1) << hh.z0()
-	<< "  tanDip: " << std::setw(7) << std::setprecision(3) << hh.tanDip()
-	<< "\n";
+        << "  State " << i++ << "\n"
+        << "  "
+        << "  d0: "     << std::setw(7) << std::setprecision(1) << hh.d0()
+        << "  phi0: "   << std::setw(7) << std::setprecision(3) << hh.phi0()
+        << "  omega: "  << std::setw(7) << std::setprecision(5) << hh.omega()
+        << "  z0: "     << std::setw(7) << std::setprecision(1) << hh.z0()
+        << "  tanDip: " << std::setw(7) << std::setprecision(3) << hh.tanDip()
+        << "\n";
       os
-	<< "  "
-	<< "  dOut: "     << std::setw(8) << std::setprecision(1) << hh.dOut()
-	<< "  radius: "   << std::setw(8) << std::setprecision(1) << hh.radius()
-	<< "  wavelength: "  << std::setw(8) << std::setprecision(1) 
-	<< hh.wavelength()
-	<< "\n";
+        << "  "
+        << "  dOut: "     << std::setw(8) << std::setprecision(1) << hh.dOut()
+        << "  radius: "   << std::setw(8) << std::setprecision(1) << hh.radius()
+        << "  wavelength: "  << std::setw(8) << std::setprecision(1)
+        << hh.wavelength()
+        << "\n";
       os
-	<< "  "
-	<< "  pos: " << std::setw(8) << std::setprecision(1) 
-	   << st.position().x()
-	<< " " << std::setw(8) << std::setprecision(1) << st.position().y()
-	<< " " << std::setw(8) << std::setprecision(1) << st.position().z()
-	<< "  mom: " << std::setw(8) << std::setprecision(3) 
-	   << st.momentum().x()
-	<< " " << std::setw(8) << std::setprecision(3) << st.momentum().y()
-	<< " " << std::setw(8) << std::setprecision(3) << st.momentum().z()
-	<< "\n";
+        << "  "
+        << "  pos: " << std::setw(8) << std::setprecision(1)
+           << st.position().x()
+        << " " << std::setw(8) << std::setprecision(1) << st.position().y()
+        << " " << std::setw(8) << std::setprecision(1) << st.position().z()
+        << "  mom: " << std::setw(8) << std::setprecision(3)
+           << st.momentum().x()
+        << " " << std::setw(8) << std::setprecision(3) << st.momentum().y()
+        << " " << std::setw(8) << std::setprecision(3) << st.momentum().z()
+        << "\n";
       os
-	<< "  momErr: "   << std::setw(8) << std::setprecision(3) 
+        << "  momErr: "   << std::setw(8) << std::setprecision(3)
            << st.momentumError()
-	<< "  arrtime: "   << std::setw(8) << std::setprecision(1) 
+        << "  arrtime: "   << std::setw(8) << std::setprecision(1)
            << st.arrivalTime()
-	<< "  fltTime: "   << std::setw(8) << std::setprecision(1) 
+        << "  fltTime: "   << std::setw(8) << std::setprecision(1)
            << st.flightLength()
-	<< "  costh: "  << std::setw(8) << std::setprecision(4) << st.costh()
-	<< "\n";
+        << "  costh: "  << std::setw(8) << std::setprecision(4) << st.costh()
+        << "\n";
       if(verbose()>=3) {
-	os
-	  << "     d0: " << std::setw(8) << std::setprecision(1) << hh.d0() 
-	    << " +/- "  << std::setw(8) << std::setprecision(1)
-	    << sqrt(hh.covariance()(1,1)) << "\n";
-	os
-	  << "   phi0: " << std::setw(8) << std::setprecision(4) << hh.phi0() 
-	    << " +/- "  << std::setw(8) << std::setprecision(4)
-	    << sqrt(hh.covariance()(2,2)) << "\n";
-	os
-	  << "  omega: " << std::setw(8) << std::setprecision(6) << hh.omega() 
-	    << " +/- "  << std::setw(8) << std::setprecision(6)
-	  << sqrt(hh.covariance()(3,3)) << "\n";
-	os
-	  << "     z0: " << std::setw(8) << std::setprecision(1) << hh.z0() 
-	    << " +/- "  << std::setw(8) << std::setprecision(1)
-	    << sqrt(hh.covariance()(4,4)) << "\n";
-	os
-	  << " tanDip: " << std::setw(8) << std::setprecision(4) << hh.tanDip() 
-	    << " +/- "  << std::setw(8) << std::setprecision(4)
-	    << sqrt(hh.covariance()(5,5)) << "\n";
+        os
+          << "     d0: " << std::setw(8) << std::setprecision(1) << hh.d0()
+            << " +/- "  << std::setw(8) << std::setprecision(1)
+            << sqrt(hh.covariance()(1,1)) << "\n";
+        os
+          << "   phi0: " << std::setw(8) << std::setprecision(4) << hh.phi0()
+            << " +/- "  << std::setw(8) << std::setprecision(4)
+            << sqrt(hh.covariance()(2,2)) << "\n";
+        os
+          << "  omega: " << std::setw(8) << std::setprecision(6) << hh.omega()
+            << " +/- "  << std::setw(8) << std::setprecision(6)
+          << sqrt(hh.covariance()(3,3)) << "\n";
+        os
+          << "     z0: " << std::setw(8) << std::setprecision(1) << hh.z0()
+            << " +/- "  << std::setw(8) << std::setprecision(1)
+            << sqrt(hh.covariance()(4,4)) << "\n";
+        os
+          << " tanDip: " << std::setw(8) << std::setprecision(4) << hh.tanDip()
+            << " +/- "  << std::setw(8) << std::setprecision(4)
+            << sqrt(hh.covariance()(5,5)) << "\n";
       }
       if(verbose()>=4) {
-	os << "  Helix covariance:\n";
-	PrintMatrix(hh.covariance(),os,0);
+        os << "  Helix covariance:\n";
+        PrintMatrix(hh.covariance(),os,0);
 
-	os << "  Helix correlations:\n";
-	PrintMatrix(hh.covariance(),os,1);
+        os << "  Helix correlations:\n";
+        PrintMatrix(hh.covariance(),os,1);
       }
-      
+
     } // end loop over states
 
   /*
@@ -220,13 +220,13 @@ mu2e::TrackSummaryPrinter::Print(const mu2e::TrackSummary& obj, int ind, std::os
   }
 }
 
-void 
+void
 mu2e::TrackSummaryPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::TrackSummaryPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind  status   fitcon  chrg     p      pErr   tanDip     d0     dMax     t0    nActive\n";

@@ -17,13 +17,13 @@ namespace mu2e {
 
     DbIoV() { setNull(); } // defaults to no valid range
     DbIoV(uint32_t startRun, uint32_t startSubrun,
-	  uint32_t endRun, uint32_t endSubrun):
+          uint32_t endRun, uint32_t endSubrun):
       _startRun(startRun),_startSubrun(startSubrun),
-      _endRun(endRun),_endSubrun(endSubrun) {} 
+      _endRun(endRun),_endSubrun(endSubrun) {}
     DbIoV(std::string const& text) { setByString(text); } // defaults to no valid range
 
     void set(uint32_t startRun, uint32_t startSubrun,
-	     uint32_t endRun, uint32_t endSubrun) {
+             uint32_t endRun, uint32_t endSubrun) {
       _startRun = startRun;
       _startSubrun = startSubrun;
       _endRun = endRun;
@@ -64,13 +64,13 @@ namespace mu2e {
       return true;
     }
 
-    // 0 not overlapping, 1 complete, 2 non-overlapping includes start only, 
+    // 0 not overlapping, 1 complete, 2 non-overlapping includes start only,
     // 3 non-overlapping include end only, 4 splits the iov
     int isOverlapping(DbIoV const& iov) const;
 
     bool isNull() const {
-      if( _startRun==0 &&  _startSubrun==0 && 
-	  _endRun==0 && _endSubrun==0) return true;
+      if( _startRun==0 &&  _startSubrun==0 &&
+          _endRun==0 && _endSubrun==0) return true;
       if(_startRun>_endRun) return true;
       if(_startRun==_endRun && _startSubrun>_endSubrun) return true;
       return false;
@@ -90,7 +90,7 @@ namespace mu2e {
     std::string to_string(bool compress = false) const;
 
   private:
-    
+
     uint32_t _startRun;
     uint32_t _startSubrun;
     uint32_t _endRun;

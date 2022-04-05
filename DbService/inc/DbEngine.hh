@@ -5,7 +5,7 @@
 // It is created and held by the DbService art service.
 // Given a purpose and version, it can read through the IoV heirachcy structure
 // and extract a set of IoVs and calibration pointerss.  The DbHandle contacts
-// this class through the service, and asks the update method 
+// this class through the service, and asks the update method
 // for appropriate tables.  Database tables can be overridden by a text file.
 
 #include <shared_mutex>
@@ -28,13 +28,13 @@ namespace mu2e {
 
     DbEngine():_verbose(0),_saveCsv(true),_nearestMatch(false),
                _initialized(false),
-	       _lockWaitTime(0),_lockTime(0) {}
+               _lockWaitTime(0),_lockTime(0) {}
     // the big read of the IOV structure is done in beginJob
     int beginJob();
     int endJob();
     // these must be set before beginJob is called
     void setDbId(DbId const& id) { _id = id; }
-    void setVersion(DbVersion const& version) { _version = version; } 
+    void setVersion(DbVersion const& version) { _version = version; }
     // copy in the cache - optionally set before beginJob
     void setValCache(std::shared_ptr<DbValCache> vcache) { _vcache = vcache; }
     // add tables directly - optionally set before beginJob
@@ -48,7 +48,7 @@ namespace mu2e {
     std::shared_ptr<DbValCache>& valCache() {return _vcache;}
     DbReader& reader() { return _reader; }
     DbCache& cache() { return _cache; }
-    // these are the only methods that can be called from threads, 
+    // these are the only methods that can be called from threads,
     // such as DbHandle, after the single-threaded configuration
     DbLiveTable update(int tid, uint32_t run, uint32_t subrun);
     // ruten tid for table name and reverce, for connecting handles
@@ -81,7 +81,7 @@ namespace mu2e {
     // count the time locked
     std::chrono::microseconds _lockWaitTime;
     std::chrono::microseconds _lockTime;
-    
+
   };
 }
 #endif

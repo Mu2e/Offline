@@ -1,6 +1,6 @@
 //
 //  Utility class to print CaloClusterMC
-// 
+//
 #ifndef Print_inc_CaloClusterMCPrinter_hh
 #define Print_inc_CaloClusterMCPrinter_hh
 
@@ -18,7 +18,7 @@ namespace mu2e {
   public:
 
     CaloClusterMCPrinter() { }
-    CaloClusterMCPrinter(const ConfigE& conf):ProductPrinter(conf) { 
+    CaloClusterMCPrinter(const ConfigE& conf):ProductPrinter(conf) {
       _eCut = conf.eCut();
     }
 
@@ -28,20 +28,20 @@ namespace mu2e {
 
     // all the ways to request a printout
     void Print(art::Event const& event,
-	       std::ostream& os = std::cout) override;
-    void Print(const art::Handle<CaloClusterMCCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<CaloClusterMCCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const CaloClusterMCCollection& coll, 
-	       std::ostream& os = std::cout);
-    void Print(const art::Ptr<CaloClusterMC>& ptr, 
-	       int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::CaloClusterMC& obj, 
-	       int ind = -1, std::ostream& os = std::cout);
+               std::ostream& os = std::cout) override;
+    void Print(const art::Handle<CaloClusterMCCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const art::ValidHandle<CaloClusterMCCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const CaloClusterMCCollection& coll,
+               std::ostream& os = std::cout);
+    void Print(const art::Ptr<CaloClusterMC>& ptr,
+               int ind = -1, std::ostream& os = std::cout);
+    void Print(const mu2e::CaloClusterMC& obj,
+               int ind = -1, std::ostream& os = std::cout);
 
-    void PrintHeader(const std::string& tag, 
-		     std::ostream& os = std::cout);
+    void PrintHeader(const std::string& tag,
+                     std::ostream& os = std::cout);
     void PrintListHeader(std::ostream& os = std::cout);
 
   private:

@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::CaloShowerStepPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::CaloShowerStepPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::CaloShowerStepPrinter::Print(const art::Handle<CaloShowerStepCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::CaloShowerStepPrinter::Print(const art::Handle<CaloShowerStepCollection>& 
   Print(*handle);
 }
 
-void 
+void
 mu2e::CaloShowerStepPrinter::Print(const art::ValidHandle<CaloShowerStepCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::CaloShowerStepPrinter::Print(const art::ValidHandle<CaloShowerStepCollecti
   Print(*handle);
 }
 
-void 
+void
 mu2e::CaloShowerStepPrinter::Print(const CaloShowerStepCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "CaloShowerStepCollection has " << coll.size() << " steps\n";
@@ -52,13 +52,13 @@ mu2e::CaloShowerStepPrinter::Print(const CaloShowerStepCollection& coll, std::os
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::CaloShowerStepPrinter::Print(const art::Ptr<CaloShowerStep>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::CaloShowerStepPrinter::Print(const mu2e::CaloShowerStep& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -69,12 +69,12 @@ mu2e::CaloShowerStepPrinter::Print(const mu2e::CaloShowerStep& obj, int ind, std
 
   const CLHEP::Hep3Vector& pos = obj.position();
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(5) << obj.volumeG4ID()
       << " " << std::setw(12) << obj.simParticle().key()
       << " " << std::setw(8) << std::setprecision(2) << obj.energyDepG4()
-      << " " << std::setw(8) << std::setprecision(1) << obj.time() 
-      << "  " 
+      << " " << std::setw(8) << std::setprecision(1) << obj.time()
+      << "  "
       << " " << std::setw(8) << std::setprecision(2) << pos.x()
       << " " << std::setw(8) << std::setprecision(2) << pos.y()
       << " " << std::setw(8) << std::setprecision(2) << pos.z()
@@ -82,13 +82,13 @@ mu2e::CaloShowerStepPrinter::Print(const mu2e::CaloShowerStep& obj, int ind, std
   }
 }
 
-void 
+void
 mu2e::CaloShowerStepPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::CaloShowerStepPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind    vol        SimPart   energy    time            position\n";

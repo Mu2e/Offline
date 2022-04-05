@@ -10,7 +10,7 @@
 namespace mu2e {
 
   DbService::DbService(Parameters const& config,
-		       art::ActivityRegistry& iRegistry):
+                       art::ActivityRegistry& iRegistry):
     _config(config()),_verbose(config().verbose()),
     _version(config().purpose(),config().version()){
 
@@ -19,10 +19,10 @@ namespace mu2e {
     iRegistry.sPostEndJob.watch (this, &DbService::postEndJob );
 
     if(_verbose>0) {
-      std::cout << "DbService  " 
-		<< config().purpose() << " " 
-		<< config().version() << "   "
-		<< config().dbName() << std::endl;
+      std::cout << "DbService  "
+                << config().purpose() << " "
+                << config().version() << "   "
+                << config().dbName() << std::endl;
       std::vector<std::string> files;
       config().textFile(files);
       std::cout << "DbService  textFiles: " ;
@@ -56,13 +56,13 @@ namespace mu2e {
    std::string fn;
     for(auto ss : files ) {
       if(_verbose>2) std::cout << "DbService::beginJob reading file "<<
-		       ss <<std::endl;
+                       ss <<std::endl;
       fn = configFile(ss);
       auto coll = DbUtil::readFile(fn,_config.saveCsv());
       if(_verbose>2) {
-	for(auto const& lt : coll) {
-	  std::cout << "  read table " << lt.table().name() <<std::endl;
-	}
+        for(auto const& lt : coll) {
+          std::cout << "  read table " << lt.table().name() <<std::endl;
+        }
       }
       _engine.addOverride(coll);
     } // end loop over files
@@ -92,7 +92,7 @@ namespace mu2e {
 
 
     // service will start calling the database at the first event,
-    // so the service can exist without the DB being contacted.  
+    // so the service can exist without the DB being contacted.
     // fastStart overrides this and starts reading the DB imediately.
     bool fastStart = false;
     if(_config.fastStart(fastStart)) {

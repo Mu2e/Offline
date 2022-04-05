@@ -58,16 +58,16 @@ namespace mu2e {
     int printPIDLine(int pid, int details=0, int indent=0);
 
     int commitCalibration();
-    int commitCalibrationTable(DbTable::cptr_t const& ptr, 
-			       bool admin=false);
+    int commitCalibrationTable(DbTable::cptr_t const& ptr,
+                               bool admin=false);
     int commitCalibrationList(DbTableCollection& coll,
-			      bool qai=false, bool qag=false,
-			      bool admin=false);
+                              bool qai=false, bool qag=false,
+                              bool admin=false);
     int commitIov(int& iid, int cid=0, std::string iovtext="");
     int commitGroup(int& gid, std::vector<int> iids=std::vector<int>());
-    int commitExtension(int& eid, std::string purpose="", 
-			std::string version="", 
-			std::vector<int> gids=std::vector<int>());
+    int commitExtension(int& eid, std::string purpose="",
+                        std::string version="",
+                        std::vector<int> gids=std::vector<int>());
     int commitTable();
     int commitList();
     int commitPurpose();
@@ -107,7 +107,7 @@ namespace mu2e {
 
     int prettyTable(std::string title, std::string csv);
     int prettyColumns(std::vector<std::string> titles,
-		      std::vector<std::vector<std::string> > entries);
+                      std::vector<std::vector<std::string> > entries);
 
     int parseArgs();
     int getArgs(map_ss& fArgs);

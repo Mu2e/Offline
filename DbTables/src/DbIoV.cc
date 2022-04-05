@@ -7,16 +7,16 @@
 void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
 
   // check for no overlap
-  if(iov.endRun()<startRun() || 
+  if(iov.endRun()<startRun() ||
      (iov.endRun()==startRun() && iov.endSubrun()<startSubrun()) ) return;
-  if(iov.startRun()>endRun() || 
+  if(iov.startRun()>endRun() ||
      (iov.startRun()==endRun() && iov.startSubrun()>endSubrun()) ) return;
 
   //check if piece will be at begining or end
-  bool sin = ( (iov.startRun()>startRun()) || 
-	       ( iov.startRun()==startRun() && iov.startSubrun()>startSubrun() ) );
-  bool ein = ( (iov.endRun()<endRun()) || 
-	       ( iov.endRun()==endRun() && iov.endSubrun()<endSubrun() ) );
+  bool sin = ( (iov.startRun()>startRun()) ||
+               ( iov.startRun()==startRun() && iov.startSubrun()>startSubrun() ) );
+  bool ein = ( (iov.endRun()<endRun()) ||
+               ( iov.endRun()==endRun() && iov.endSubrun()<endSubrun() ) );
 
   int method = 0;
   if(! sin && ! ein) { // subtract all
@@ -25,11 +25,11 @@ void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
     method = 1;
   } else if(ein && ! sin) { // subtract start to middle
     method = 2;
-  } else { 
-    // subtract a piece in the middle, keep the early or 
+  } else {
+    // subtract a piece in the middle, keep the early or
     // late fragment based on the run/subrun
     method = 1;
-    if(run > iov.startRun() || 
+    if(run > iov.startRun() ||
        (run==iov.startRun() && subrun>=iov.startSubrun() ) ) method = 2;
   }
 
@@ -67,9 +67,9 @@ void mu2e::DbIoV::overlap(DbIoV const& iov) {
 
   // check for no overlap
   bool null = false;
-  if(iov.endRun()<startRun() || 
+  if(iov.endRun()<startRun() ||
      (iov.endRun()==startRun() && iov.endSubrun()<startSubrun()) ) null = true;
-  if(iov.startRun()>endRun() || 
+  if(iov.startRun()>endRun() ||
      (iov.startRun()==endRun() && iov.startSubrun()>endSubrun()) ) null = true;
   if(null) {
     set(0,0,0,0);
@@ -95,22 +95,22 @@ void mu2e::DbIoV::overlap(DbIoV const& iov) {
 int mu2e::DbIoV::isOverlapping(DbIoV const& iov) const {
 
   // these check that there is non-zero overlap
-  bool sor = (iov.startRun()<endRun() || 
+  bool sor = (iov.startRun()<endRun() ||
      (iov.startRun()==endRun() && iov.startSubrun()<=endSubrun()) );
-  bool eor = ( iov.endRun()>startRun() || 
+  bool eor = ( iov.endRun()>startRun() ||
      (iov.endRun()==startRun() && iov.endSubrun()>=startSubrun()) );
 
   if( (!eor) ||  (!sor) ) return 0; // no overlap
 
   // these check that the overlap is complete
-  bool scp = (iov.startRun()<startRun() || 
+  bool scp = (iov.startRun()<startRun() ||
      (iov.startRun()==startRun() && iov.startSubrun()<=startSubrun()) );
-  bool ecp = ( iov.endRun()>endRun() || 
+  bool ecp = ( iov.endRun()>endRun() ||
      (iov.endRun()==endRun() && iov.endSubrun()>=endSubrun()) );
 
   if(scp && ecp) return 1; // complete overlap
   if((!scp) && ecp) return 2; // non-ovelapping piece at begining
-  if(scp && (!ecp)) return 3; // non-overlapping piece at end 
+  if(scp && (!ecp)) return 3; // non-overlapping piece at end
 
   return 4;  // non-overlapping piece at begining and end
 }
@@ -138,12 +138,12 @@ std::string mu2e::DbIoV::to_string(bool compress) const {
     if(!drop) {
       ss << "-" << endRun();
       if(endSubrun()!=maxSubrun()) {
-	ss << ":" << endSubrun();
+        ss << ":" << endSubrun();
       }
     }
   } else {
     ss << std::setw(6) << startRun() << ":";
-    ss << std::setw(6) << startSubrun() << "-"; 
+    ss << std::setw(6) << startSubrun() << "-";
     ss << std::setw(6) << endRun() << ":";
     ss << std::setw(6) << endSubrun();
   }
@@ -164,16 +164,16 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
   }
   std::vector<std::string> words;
 
-  boost::split(words,iovstr, boost::is_any_of(" \t"), 
+  boost::split(words,iovstr, boost::is_any_of(" \t"),
                boost::token_compress_on);
   if(words.size()!=1) {
-    throw cet::exception("DBIOV_MULTIWORD_INIT_STRING") 
+    throw cet::exception("DBIOV_MULTIWORD_INIT_STRING")
       << "DbIoV::setByString string has multiple words: " << iovstr << "\n";
   }
 
 
   std::string start,end;
-  boost::split(words,iovstr, boost::is_any_of("-"), 
+  boost::split(words,iovstr, boost::is_any_of("-"),
                boost::token_compress_off);
   if(words.size()==1) {
     start = iovstr;
@@ -182,13 +182,13 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
     start = words[0];
     end = words[1];
   } else {
-    throw cet::exception("DBIOV_DASH_INIT_STRING") 
+    throw cet::exception("DBIOV_DASH_INIT_STRING")
       << "DbIoV::setByString wrong number of dashed fields: " << iovstr << "\n";
   }
 
   // require a string for start and end
   if(start.empty()||end.empty()) {
-    throw cet::exception("DBIOV_EMPTY_INIT_STRING") 
+    throw cet::exception("DBIOV_EMPTY_INIT_STRING")
       << "DbIoV::setByString found start or end point was blank: " << iovstr << "\n";
   }
 
@@ -220,7 +220,7 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
   }
 
   if( endr<startr || (endr==startr && endsr<startsr) ) {
-    throw cet::exception("DBIOV_NEGATIVE_INIT_STRING") 
+    throw cet::exception("DBIOV_NEGATIVE_INIT_STRING")
       << "DbIoV::setByString found end point was before start point: " << iovstr << "\n";
   }
 

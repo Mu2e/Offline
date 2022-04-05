@@ -17,7 +17,7 @@ namespace mu2e {
     typedef std::shared_ptr<CalRoIDMapDIRACToOffline> ptr_t;
     typedef std::shared_ptr<const CalRoIDMapDIRACToOffline> cptr_t;
     constexpr static const char* cxname = {"CalRoIDMapDIRACToOffline"};
-    
+
     class Row {
     public:
       Row(int diracID, uint16_t caloRoID):_diracID(diracID),_caloRoID(caloRoID) {}
@@ -29,23 +29,23 @@ namespace mu2e {
     };
 
     CalRoIDMapDIRACToOffline():DbTable(cxname,"cal.roidmapdiractooffline",
-				       "diracid,caloroid") {}
+                                       "diracid,caloroid") {}
     const Row&              rowAt(const std::size_t diracID) const { return _rows.at(diracID);}
     std::vector<Row> const& rows()    const { return _rows;}
     std::size_t             nrow()    const { return _rows.size(); };
-    virtual std::size_t     nrowFix() const { return CaloId::_nTotChannel; }; 
+    virtual std::size_t     nrowFix() const { return CaloId::_nTotChannel; };
     size_t                  size()    const { return baseSize() + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
       int channel = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(channel!=int(_rows.size())) {
-	throw cet::exception("CalRoIDMapDIRACToOffline_BAD_INDEX") 
-	  << "CalRoIDMapDIRACToOffline::addRow found index out of order: " 
-	  << channel << " != " << _rows.back().caloRoID()+1 <<"\n";
+        throw cet::exception("CalRoIDMapDIRACToOffline_BAD_INDEX")
+          << "CalRoIDMapDIRACToOffline::addRow found index out of order: "
+          << channel << " != " << _rows.back().caloRoID()+1 <<"\n";
       }
       _rows.emplace_back(channel,
-			 std::stoi(columns[1]) );
+                         std::stoi(columns[1]) );
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
@@ -58,6 +58,6 @@ namespace mu2e {
   private:
     std::vector<Row> _rows;
   };
-  
+
 };
 #endif

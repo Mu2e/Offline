@@ -15,8 +15,8 @@ mu2e::DbSql::DbSql():_conn(nullptr),_verbose(0) {
 int mu2e::DbSql::connect() {
 
   if(_id.name().empty()) {
-      throw cet::exception("DBSQL_DBID NOT_SET") 
-	<< "DbSql found the DbId was not set\n";
+      throw cet::exception("DBSQL_DBID NOT_SET")
+        << "DbSql found the DbId was not set\n";
   }
 
   std::string command;
@@ -25,18 +25,18 @@ int mu2e::DbSql::connect() {
   command.append(" dbname="+_id.name());
   //command.append(" user="+_user);
   //command.append(" password="+_pass);
-		 //sslmode=require  krbsrvname
+                 //sslmode=require  krbsrvname
 
   _conn = PQconnectdb(command.c_str());
   if(_verbose>2) {
-    std::cout << "DbSql opened connection, status: " 
-	      << PQerrorMessage(_conn) << std::endl;
+    std::cout << "DbSql opened connection, status: "
+              << PQerrorMessage(_conn) << std::endl;
   }
-  
+
   if (_conn) {
     if (PQstatus(_conn) != CONNECTION_OK) {
-      throw cet::exception("DBSQL_CONNECTION_FAILED") 
-	<< "DbSql connection failed " << PQerrorMessage(_conn) << "\n";
+      throw cet::exception("DBSQL_CONNECTION_FAILED")
+        << "DbSql connection failed " << PQerrorMessage(_conn) << "\n";
       return 1;
     }
   }
@@ -49,11 +49,11 @@ int mu2e::DbSql::disconnect() {
   if (_conn) {
     PQfinish(_conn);
     if(_verbose>2) {
-      std::cout << "DbSql closed connection, status: " 
-		<< PQerrorMessage(_conn) << std::endl;
+      std::cout << "DbSql closed connection, status: "
+                << PQerrorMessage(_conn) << std::endl;
     }
   }
-  
+
   return 0;
 }
 
@@ -64,10 +64,10 @@ int mu2e::DbSql::execute(const std::string& command, std::string& result) {
   PGresult* res = PQexec(_conn,command.c_str());
   if(_verbose>4) {
     std::cout << "\nDbSql execute command:\n" << command << "\n"
-	      << "status message: " << PQerrorMessage(_conn) << "\n";
+              << "status message: " << PQerrorMessage(_conn) << "\n";
   }
 
-  if (PQresultStatus(res) != PGRES_COMMAND_OK &&   
+  if (PQresultStatus(res) != PGRES_COMMAND_OK &&
       PQresultStatus(res) != PGRES_TUPLES_OK) {
     std::string msg(PQerrorMessage(_conn));
     PQclear(res);
@@ -80,7 +80,7 @@ int mu2e::DbSql::execute(const std::string& command, std::string& result) {
   size_t ncol = PQnfields(res);
   if(_verbose>4) {
     std::cout << "DbSql execute returned: " << nrow << " rows and "
-	      << ncol << " columns" << std::endl;
+              << ncol << " columns" << std::endl;
   }
 
   for(size_t r=0; r<nrow; r++) {

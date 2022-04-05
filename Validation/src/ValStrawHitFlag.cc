@@ -12,17 +12,17 @@ int mu2e::ValStrawHitFlag::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValStrawHitFlag::fill(const mu2e::StrawHitFlagCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
 
-  _hN->Fill(coll.size()); 
-  _hN2->Fill(coll.size()); 
+  _hN->Fill(coll.size());
+  _hN2->Fill(coll.size());
   for(auto f : coll) {
-    for(auto sn: f.bitNames()) { 
-      if(f.hasAnyProperty(StrawHitFlag(sn.first))) _hBits->Fill(std::log2(sn.second)); 
+    for(auto sn: f.bitNames()) {
+      if(f.hasAnyProperty(StrawHitFlag(sn.first))) _hBits->Fill(std::log2(sn.second));
     }
   }
   return 0;

@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::SimParticleTimeMapPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::SimParticleTimeMapPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::SimParticleTimeMapPrinter::Print(const art::Handle<SimParticleTimeMap>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::SimParticleTimeMapPrinter::Print(const art::Handle<SimParticleTimeMap>& ha
   Print(*handle);
 }
 
-void 
+void
 mu2e::SimParticleTimeMapPrinter::Print(const art::ValidHandle<SimParticleTimeMap>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::SimParticleTimeMapPrinter::Print(const art::ValidHandle<SimParticleTimeMap
   Print(*handle);
 }
 
-void 
+void
 mu2e::SimParticleTimeMapPrinter::Print(const SimParticleTimeMap& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "SimParticleTimeMap has " << coll.size() << " times\n";
@@ -59,10 +59,10 @@ mu2e::SimParticleTimeMapPrinter::Print(const SimParticleTimeMap& coll, std::ostr
     pkey = 0;
     art::Ptr<SimParticle> const& pptr = obj.first;
     if(pptr) pkey = pptr->id().asUint();
-    os 
+    os
       << " " << std::setw(5) << i
       << " " << std::setw(7) << pkey
-      << " " 
+      << " "
       << " " << std::setw(6) << std::setprecision(1) << obj.second
       << std::endl;
   }
@@ -71,13 +71,13 @@ mu2e::SimParticleTimeMapPrinter::Print(const SimParticleTimeMap& coll, std::ostr
 
 
 
-void 
+void
 mu2e::SimParticleTimeMapPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::SimParticleTimeMapPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "  ind      id     time\n";

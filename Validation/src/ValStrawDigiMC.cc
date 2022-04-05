@@ -17,14 +17,14 @@ int mu2e::ValStrawDigiMC::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(3.0);
 
-  _hN->Fill(coll.size()); 
-  _hN2->Fill(coll.size()); 
+  _hN->Fill(coll.size());
+  _hN2->Fill(coll.size());
 
 
   for(auto sd : coll) {
@@ -33,14 +33,14 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
     bool ptrOK = true;
     auto const& a0 = sd.strawGasStep(StrawEnd::cal);
     auto const& a1 = sd.strawGasStep(StrawEnd::hv);
-    
+
     if(!(a0.isAvailable() && a1.isAvailable()) ) ptrOK = false;
 
     double ns = 0.0;
     if(sd.strawGasStep(StrawEnd::cal).isAvailable()) ns++;
     if(sd.strawGasStep(StrawEnd::hv).isAvailable()) ns++;
     _hgStep->Fill(ns);
-    
+
     if(ptrOK) {
         _htime0->Fill(sd.wireEndTime(StrawEnd::cal));
       _htime1->Fill(sd.wireEndTime(StrawEnd::hv));
@@ -49,7 +49,7 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
       _henerT->Fill(sd.triggerEnergySum(StrawEnd::hv));
       if(sd.isCrossTalk(StrawEnd::cal)) _hcross->Fill(0.0);
       if(sd.isCrossTalk(StrawEnd::hv) ) _hcross->Fill(1.0);
-      _hSI->Fill(sd.strawId().asUint16()); 
+      _hSI->Fill(sd.strawId().asUint16());
     }
   }
   return 0;

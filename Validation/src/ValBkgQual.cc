@@ -12,12 +12,12 @@ int mu2e::ValBkgQual::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValBkgQual::fill(const mu2e::BkgQualCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   for(auto bc : coll) {
     _hmva->Fill(bc.MVAOutput());
     _hstat->Fill((int)bc.status());

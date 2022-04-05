@@ -5,9 +5,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::PrimaryParticlePrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -22,9 +22,9 @@ mu2e::PrimaryParticlePrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::PrimaryParticlePrinter::Print(const art::Handle<PrimaryParticle>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -33,9 +33,9 @@ mu2e::PrimaryParticlePrinter::Print(const art::Handle<PrimaryParticle>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::PrimaryParticlePrinter::Print(const art::ValidHandle<PrimaryParticle>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -45,7 +45,7 @@ mu2e::PrimaryParticlePrinter::Print(const art::ValidHandle<PrimaryParticle>& han
 }
 
 
-void 
+void
 mu2e::PrimaryParticlePrinter::Print(const mu2e::PrimaryParticle& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   os << std::setiosflags(std::ios::fixed | std::ios::right);
@@ -58,7 +58,7 @@ mu2e::PrimaryParticlePrinter::Print(const mu2e::PrimaryParticle& obj, int ind, s
   }
 }
 
-void 
+void
 mu2e::PrimaryParticlePrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";

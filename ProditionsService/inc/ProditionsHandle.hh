@@ -27,42 +27,42 @@ namespace mu2e {
       _cptr = sg->getCache(_name);
 
       if(!_cptr) {
-	throw cet::exception("PRODITIONSHANDLE_NO_CACHE")
-	  << "ProditionsHandle could not get cache " << _name
-	  << " from ProditionsService ";
+        throw cet::exception("PRODITIONSHANDLE_NO_CACHE")
+          << "ProditionsHandle could not get cache " << _name
+          << " from ProditionsService ";
       }
 
     }
     ~ProditionsHandle() { }
 
-    ENTITY const& get(art::RunID const& rid) { 
+    ENTITY const& get(art::RunID const& rid) {
       return get(art::EventID(rid.run(),0,0));
     }
-    ENTITY const& get(art::SubRunID const& sid) { 
+    ENTITY const& get(art::SubRunID const& sid) {
       return get(art::EventID(sid,0));
     }
-    cptr_t getPtr(art::EventID const& eid) { 
+    cptr_t getPtr(art::EventID const& eid) {
       get(eid);
       return ptr;
     }
-    ENTITY const& get(art::EventID const& eid) { 
+    ENTITY const& get(art::EventID const& eid) {
 
       uint32_t r = eid.run();
       uint32_t s = eid.subRun();
       if(!_iov.inInterval(r,s)) {
-	ProditionsEntity::ptr bptr;
-	std::tie(bptr,_iov) = _cptr->update(eid);
-	ptr = std::dynamic_pointer_cast
-	  <const ENTITY,const ProditionsEntity>(bptr);
+        ProditionsEntity::ptr bptr;
+        std::tie(bptr,_iov) = _cptr->update(eid);
+        ptr = std::dynamic_pointer_cast
+          <const ENTITY,const ProditionsEntity>(bptr);
       }
 
       if(!ptr) {
-	throw cet::exception("PRODITIONSHANDLE_NO_ENTITY") 
-	  << "ProditionsHandle could not load entity " << _name
-	  << " for Run "<<eid.run() << " SubRun " << eid.subRun();
+        throw cet::exception("PRODITIONSHANDLE_NO_ENTITY")
+          << "ProditionsHandle could not load entity " << _name
+          << " for Run "<<eid.run() << " SubRun " << eid.subRun();
       }
 
-      return *ptr; 
+      return *ptr;
 
     }
 

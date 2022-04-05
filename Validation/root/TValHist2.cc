@@ -56,8 +56,8 @@ Int_t TValHist2::Analyze(Option_t* Opt) {
   for(uint ix=llimx; ix<=ulimx; ix++) {
     for(uint iy=llimy; iy<=ulimy; iy++) {
       // if not identical, set the flag
-      if(fHist1->GetBinContent(ix,iy) !=  
-	 fHist2->GetBinContent(ix,iy)) fDiff = true;
+      if(fHist1->GetBinContent(ix,iy) !=
+         fHist2->GetBinContent(ix,iy)) fDiff = true;
       fSum1 += fHist1->GetBinContent(ix,iy);
       fSum2 += fHist2->GetBinContent(ix,iy);
     }
@@ -68,10 +68,10 @@ Int_t TValHist2::Analyze(Option_t* Opt) {
     double t2 = fHist2->Integral(); // count ignoring under/over
     // root SetNormFactor applies to non-under/overflow sum
     if (fPar.GetMode()==1) {
-      fNorm2 = (fSum1/fSum2)*t2; 
+      fNorm2 = (fSum1/fSum2)*t2;
     } else if (fPar.GetMode()==2 && fPar.GetScale2()>0.0) {
       // scale set by user
-      fNorm2 = (fPar.GetScale1()/fPar.GetScale2())*t2; 
+      fNorm2 = (fPar.GetScale1()/fPar.GetScale2())*t2;
     }
   }
   if(fNorm2>0.0) fHist2->SetNormFactor(fNorm2);
@@ -94,9 +94,9 @@ Int_t TValHist2::Analyze(Option_t* Opt) {
     Double_t s1 = 0.0, s2 = 0.0;
     for(uint ix=llimx; ix<=ulimx; ix++) {
       for(uint iy=llimy; iy<=ulimy; iy++) {
-	s1 += fPar.GetScale1()*fHist1->GetBinContent(ix,iy);
-	s2 += fPar.GetScale2()*fHist2->GetBinContent(ix,iy);
-	if (TMath::Abs(s1-s2) > maxDiff) maxDiff = TMath::Abs(s1-s2);
+        s1 += fPar.GetScale1()*fHist1->GetBinContent(ix,iy);
+        s2 += fPar.GetScale2()*fHist2->GetBinContent(ix,iy);
+        if (TMath::Abs(s1-s2) > maxDiff) maxDiff = TMath::Abs(s1-s2);
       }
     }
     fFrProb = 1.0 - maxDiff/s1; // 1 is the standard
@@ -132,7 +132,7 @@ Int_t TValHist2::Analyze(Option_t* Opt) {
 void TValHist2::Summary(Option_t* Opt) {
 
   printf("%8.5f %8.5f %2d %10g %10g %s/%s \"%s\"\n",fKsProb,fFrProb,fStatus,
-	 fSum1,fSum2,GetTag().Data(),GetName(),GetTitle());
+         fSum1,fSum2,GetTag().Data(),GetName(),GetTitle());
 }
 
 //_____________________________________________________________________________
@@ -244,8 +244,8 @@ void TValHist2::Draw(Option_t* Opt) {
   TText* tr1 = new TText();
   r = (fHist1->GetMean()!=0.0? fHist2->GetMean()/fHist1->GetMean() : 1.0);
   sprintf(tstring,"M %10g %10g %6f   U %10g %10g",
-	  fHist1->GetMean(),fHist2->GetMean(),r,
-	  fHist1->GetBinContent(0),fHist2->GetBinContent(0));
+          fHist1->GetMean(),fHist2->GetMean(),r,
+          fHist1->GetBinContent(0),fHist2->GetBinContent(0));
   tr1->SetNDC();
   tr1->SetText(0.13,0.87,tstring);
   tr1->SetTextSize(fFontScale*0.030);
@@ -256,8 +256,8 @@ void TValHist2::Draw(Option_t* Opt) {
   r = (fHist1->GetRMS()>0.0? fHist2->GetRMS()/fHist1->GetRMS() : 1.0);
   int iover = fHist1->GetNbinsX()+1;
   sprintf(tstring,"R %10g %10g %6f   O %10g %10g",
-	  fHist1->GetRMS(),fHist2->GetRMS(),r,
-	  fHist1->GetBinContent(iover),fHist2->GetBinContent(iover));
+          fHist1->GetRMS(),fHist2->GetRMS(),r,
+          fHist1->GetBinContent(iover),fHist2->GetBinContent(iover));
   tr2->SetNDC();
   tr2->SetText(0.13,0.84,tstring);
   tr2->SetTextSize(fFontScale*0.030);
@@ -265,10 +265,10 @@ void TValHist2::Draw(Option_t* Opt) {
   tr2->Draw();
 
   TText* tr3 = new TText();
-  r = (fHist1->GetEntries()>0.0? 
+  r = (fHist1->GetEntries()>0.0?
        fHist2->GetEntries()/fHist1->GetEntries() : 1.0);
   sprintf(tstring,"N %10g %10g %6f",
-	  fHist1->GetEntries(),fHist2->GetEntries(),r);
+          fHist1->GetEntries(),fHist2->GetEntries(),r);
   tr3->SetNDC();
   tr3->SetText(0.13,0.81,tstring);
   tr3->SetTextSize(fFontScale*0.030);
@@ -288,12 +288,12 @@ void TValHist2::Dump() const {
   if(fHist1 && fHist2) {
     for(int ix=0; ix<=fHist1->GetNbinsX()+1; ix++) {
       for(int iy=0; iy<=fHist1->GetNbinsY()+1; iy++) {
-	printf("%3d %10.5f %3d %10.5f %10.0f %10.0f %10.0f\n",
-	       ix,fHist1->GetXaxis()->GetBinCenter(ix),
-	       iy,fHist1->GetYaxis()->GetBinCenter(iy),
-	       fHist1->GetBinContent(ix,iy),
-	       fHist2->GetBinContent(ix,iy),
-	       fHist1->GetBinContent(ix,iy)-fHist2->GetBinContent(ix,iy));
+        printf("%3d %10.5f %3d %10.5f %10.0f %10.0f %10.0f\n",
+               ix,fHist1->GetXaxis()->GetBinCenter(ix),
+               iy,fHist1->GetYaxis()->GetBinCenter(iy),
+               fHist1->GetBinContent(ix,iy),
+               fHist2->GetBinContent(ix,iy),
+               fHist1->GetBinContent(ix,iy)-fHist2->GetBinContent(ix,iy));
       }
     }
   }

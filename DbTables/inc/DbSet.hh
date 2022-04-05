@@ -1,10 +1,10 @@
 #ifndef DbTables_DbSet_hh
 #define DbTables_DbSet_hh
 
-// A calibration set as it is stored and maintained in the 
+// A calibration set as it is stored and maintained in the
 // database includes pointers from a purpose, version, extension,
-// and groups down to the list of IoVs.  This container 
-// holds just the list of IoVs which is the result of flattening the 
+// and groups down to the list of IoVs.  This container
+// holds just the list of IoVs which is the result of flattening the
 // heirarchical structure.  For faster and simpler lookup and manipulation
 
 

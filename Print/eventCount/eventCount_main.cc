@@ -24,7 +24,7 @@ int main( int argc, char** argv ){
   infos.reserve( arg.fileNames.size() );
 
   int level = 1;
-  if ( arg.style == mu2e::Arguments::minimal || 
+  if ( arg.style == mu2e::Arguments::minimal ||
        arg.style == mu2e::Arguments::full ) level = 0;
 
   for ( size_t i=0; i<arg.fileNames.size(); ++i ){

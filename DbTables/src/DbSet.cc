@@ -8,8 +8,8 @@ namespace mu2e {
 
   //***********************************************
 
-void DbSet::add(int tid, int cid, DbIoV const& iov) { 
-  _emap[tid].emplace_back(cid, iov); 
+void DbSet::add(int tid, int cid, DbIoV const& iov) {
+  _emap[tid].emplace_back(cid, iov);
 }
 
   //***********************************************
@@ -20,7 +20,7 @@ DbSet::EIoV DbSet::find(int tid, uint32_t run, uint32_t subrun) const {
   if (iter == _emap.end()) {
     return EIoV();
   }
-  
+
   for (auto const& ee : iter->second) {
     if (ee.iov().inInterval(run, subrun)) {
       return ee;
@@ -74,7 +74,7 @@ void DbSet::print() const {
 void DbSet::printShort() const {
   std::cout << "  tid     N IoV" << std::endl;
   for (auto const& p : _emap) {
-    std::cout << std::setw(5) << p.first 
+    std::cout << std::setw(5) << p.first
               << std::setw(8) << p.second.size() << std::endl;
   }
 }

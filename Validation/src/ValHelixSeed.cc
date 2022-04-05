@@ -24,12 +24,12 @@ int mu2e::ValHelixSeed::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValHelixSeed::fill(const mu2e::HelixSeedCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   mu2e::GeomHandle<mu2e::Tracker> th;
   auto myTracker = th.get();
 
@@ -40,8 +40,8 @@ int mu2e::ValHelixSeed::fill(const mu2e::HelixSeedCollection & coll,
     _hNStrHit->Fill(nstrawhits);
     const TrkFitFlag& tff = hs.status();
 
-    for(auto sn: tff.bitNames()) { 
-      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second)); 
+    for(auto sn: tff.bitNames()) {
+      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second));
     }
 
     _ht0->Fill(hs.t0().t0());

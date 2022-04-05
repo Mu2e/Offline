@@ -21,7 +21,7 @@ namespace mu2e {
   struct FileInfo{
 
     FileInfo ( std::string const& name, int level=1 );
- 
+
     std::string   filename;
     unsigned long events     = 0;
     unsigned long runs       = 0;
@@ -49,10 +49,10 @@ namespace mu2e {
     }
 
     void treeInfo ( std::string const& treeName,   // input argument
-		    TFile* file,                   // input argument
-		    bool&              exists,     // output argument
-		    unsigned long&     nEntries    // output argument
-		    );
+                    TFile* file,                   // input argument
+                    bool&              exists,     // output argument
+                    unsigned long&     nEntries    // output argument
+                    );
 
     void makeVectors(TFile* file);
   };

@@ -14,14 +14,14 @@ namespace mu2e {
     DbHandle();
 
     // is the current table contents valid for this event?
-    //   - it does not update the table 
+    //   - it does not update the table
     bool current(art::EventID const& eid);
     // return the table data, after fetching from db if necessary
     T const& get(art::EventID const& eid);
     std::shared_ptr<const T> getPtr(art::EventID const& eid);
     // the unique identifier for the table contents
-    int cid() const { return _liveTable.cid(); } 
-    DbIoV const& iov() const { return _liveTable.iov(); } 
+    int cid() const { return _liveTable.cid(); }
+    DbIoV const& iov() const { return _liveTable.iov(); }
 
   private:
 
@@ -53,13 +53,13 @@ bool mu2e::DbHandle<T>::current(art::EventID const& eid) {
 
     if(_tid<0) { // table not defined in the engine
       throw cet::exception("DBHANDLE_NO_TID")
-	<< "DbHandle could not get TID (Table ID) from DbEngine for "
-	<< _name << " at first use ";
+        << "DbHandle could not get TID (Table ID) from DbEngine for "
+        << _name << " at first use ";
     }
   }
 
   return _liveTable.iov().inInterval(
-		   uint32_t(eid.run()), uint32_t(eid.subRun()) );
+                   uint32_t(eid.run()), uint32_t(eid.subRun()) );
 
 }
 
@@ -70,11 +70,11 @@ T const& mu2e::DbHandle<T>::get(art::EventID const& eid) {
     return *_table;
   }
 
-  _liveTable = _dbh->engine().update(_tid, 
-	     uint32_t(eid.run()), uint32_t(eid.subRun()));
-  
+  _liveTable = _dbh->engine().update(_tid,
+             uint32_t(eid.run()), uint32_t(eid.subRun()));
+
   _table = std::dynamic_pointer_cast<const T,const mu2e::DbTable>(
-						  _liveTable.ptr());
+                                                  _liveTable.ptr());
 
   if(!_table) {
     throw cet::exception("DBHANDLE_NO_DATA")
@@ -87,9 +87,9 @@ T const& mu2e::DbHandle<T>::get(art::EventID const& eid) {
 
 template <class T>
 std::shared_ptr<const T> mu2e::DbHandle<T>::getPtr(
-				art::EventID const& eid) { 
-  get(eid); 
-  return _table; 
+                                art::EventID const& eid) {
+  get(eid);
+  return _table;
 }
 
 

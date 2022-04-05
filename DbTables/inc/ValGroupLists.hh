@@ -16,7 +16,7 @@ namespace mu2e {
     class Row {
     public:
       Row(int gid, int iid):
-	_gid(gid),_iid(iid) {}
+        _gid(gid),_iid(iid) {}
       int  gid() const { return _gid;}
       int  iid() const { return _iid;}
     private:
@@ -49,6 +49,6 @@ namespace mu2e {
   private:
     std::vector<Row> _rows;
   };
-  
+
 };
 #endif

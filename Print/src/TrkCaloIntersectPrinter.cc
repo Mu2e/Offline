@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::TrkCaloIntersectPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::Print(const art::Handle<TrkCaloIntersectCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::TrkCaloIntersectPrinter::Print(const art::Handle<TrkCaloIntersectCollectio
   Print(*handle);
 }
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::Print(const art::ValidHandle<TrkCaloIntersectCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::TrkCaloIntersectPrinter::Print(const art::ValidHandle<TrkCaloIntersectColl
   Print(*handle);
 }
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::Print(const TrkCaloIntersectCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "TrkCaloIntersectCollection has " << coll.size() << " intersections\n";
@@ -52,13 +52,13 @@ mu2e::TrkCaloIntersectPrinter::Print(const TrkCaloIntersectCollection& coll, std
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::Print(const art::Ptr<TrkCaloIntersect>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::Print(const mu2e::TrkCaloIntersect& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -69,26 +69,26 @@ mu2e::TrkCaloIntersectPrinter::Print(const mu2e::TrkCaloIntersect& obj, int ind,
   KalRepPtr::key_type tkey = 0;
   if(tptr) tkey = tptr.key();
 
-  os 
+  os
     << " " << std::setw(5) << obj.diskId()
     << " " << std::setw(6) << tkey
     << " " << std::setw(7) << obj.trkId()
     << "  "
     << " " << std::setw(8) << std::setprecision(1) << obj.pathLengthEntrance()
-    << " " << std::setw(8) << std::setprecision(1) 
+    << " " << std::setw(8) << std::setprecision(1)
           << obj.pathLenghtEntranceErr()
     << "    " << std::setw(8) << std::setprecision(1) << obj.pathLengthExit()
     << std::endl;
 
 }
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::TrkCaloIntersectPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   secId   trkKey  trkId  path_ent path_ent_err path_exit\n";

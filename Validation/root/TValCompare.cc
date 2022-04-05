@@ -73,11 +73,11 @@ Int_t TValCompare::GetDirs() {
 
     // look in this directory for subdirectories
     TIter it(dd->GetListOfKeys());
-    while ( (kk = (TKey*) it.Next()) ) {      
+    while ( (kk = (TKey*) it.Next()) ) {
       oo = dd->Get(kk->GetName());
       if( oo->ClassName() == TString("TDirectoryFile") ||
-	  oo->ClassName() == TString("TDirectory") ) {
-	todo.AddLast(oo);
+          oo->ClassName() == TString("TDirectory") ) {
+        todo.AddLast(oo);
       }
     }
     itodo++;
@@ -89,7 +89,7 @@ Int_t TValCompare::GetDirs() {
     printf("List of %d directories in file 1:\n",fDirs.GetEntries());
     itd = TIter(&fDirs);
     TDirectory* di;
-    while ( (di = (TDirectoryFile*) itd.Next()) ) {      
+    while ( (di = (TDirectoryFile*) itd.Next()) ) {
       printf("%s\n",di->GetPath());
      }
   }
@@ -117,7 +117,7 @@ Int_t TValCompare::OneFile(Option_t* Opt) {
   while ( (di = (TDirectory*) itd.Next()) ) {
     path = di->GetPath();
     int ind = path.Index(":"); // strip leading file name
-    path = path(ind+2,path.Length()); 
+    path = path(ind+2,path.Length());
     if(fVerbose > 1) printf("Processing %s\n",path.Data());
 
     // look in this directory for histograms
@@ -126,19 +126,19 @@ Int_t TValCompare::OneFile(Option_t* Opt) {
       hh = di->Get(kk->GetName());
 
       if(hh->ClassName() == TString("TH1F") ||
-	 hh->ClassName() == TString("TH1D") ||
-	 hh->ClassName() == TString("TProfile") ||
-	 hh->ClassName() == TString("TEfficiency") ||
-	 hh->ClassName() == TString("TH2F") ||
-	 hh->ClassName() == TString("TH2D") ) {
-	// have to pack path and name together
-	combo=path+"/"+TString(hh->GetName());
-	((TNamed*)hh)->SetName(combo);
-	  fList.Add(hh);
+         hh->ClassName() == TString("TH1D") ||
+         hh->ClassName() == TString("TProfile") ||
+         hh->ClassName() == TString("TEfficiency") ||
+         hh->ClassName() == TString("TH2F") ||
+         hh->ClassName() == TString("TH2D") ) {
+        // have to pack path and name together
+        combo=path+"/"+TString(hh->GetName());
+        ((TNamed*)hh)->SetName(combo);
+          fList.Add(hh);
       }
     }
-    
-  
+
+
   } // end loop over list of directories in file 1
 
 
@@ -166,7 +166,7 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
   while ( (di = (TDirectory*) itd.Next()) ) {
     TString path = di->GetPath();
     int ind = path.Index(":"); // strip leading file name
-    path = path(ind+2,path.Length()); 
+    path = path(ind+2,path.Length());
     if(fVerbose > 1) printf("Processing %s\n",path.Data());
 
     if( path.Length() == 0 ) {
@@ -176,8 +176,8 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
     }
 
     if ( ! dj ) {
-      if(fVerbose > 0) 
-	printf("Warning: did not find directory %s in file 2\n",path.Data());
+      if(fVerbose > 0)
+        printf("Warning: did not find directory %s in file 2\n",path.Data());
       continue;
     }
 
@@ -187,54 +187,54 @@ Int_t TValCompare::Analyze(Option_t* Opt) {
       o1 = di->Get(kk->GetName());
       o2 = dj->Get(kk->GetName());
       if( o2 ) {
-	bool ok1,ok2;
-	int htype=0;
-	TValHist* hh = nullptr;
-	ok1 = 
-	  o1->ClassName() == TString("TH1F") ||
-	  o1->ClassName() == TString("TH1D");
-	ok2 = 
-	  o2->ClassName() == TString("TH1F") ||
-	  o2->ClassName() == TString("TH1D");
-	if( ok1 && ok2 ) {
-	  hh = new TValHistH((TH1*)o1,(TH1*)o2);
-	  htype = 1;
-	}
-	ok1 = o1->ClassName() == TString("TProfile");
-	ok2 = o2->ClassName() == TString("TProfile");
-	if( ok1 && ok2 ) {
-	  hh = new TValHistP((TProfile*)o1,(TProfile*)o2);
-	  htype = 2;
-	}
-	ok1 = o1->ClassName() == TString("TEfficiency");
-	ok2 = o2->ClassName() == TString("TEfficiency");
-	if( ok1 && ok2 ) {
-	  hh = new TValHistE((TEfficiency*)o1,(TEfficiency*)o2);
-	  htype = 3;
-	}
-	ok1 = 
-	  o1->ClassName() == TString("TH2F") ||
-	  o1->ClassName() == TString("TH2D");
-	ok2 = 
-	  o2->ClassName() == TString("TH2F") ||
-	  o2->ClassName() == TString("TH2D");
-	if( ok1 && ok2 ) {
-	  hh = new TValHist2((TH2*)o1,(TH2*)o2);
-	  htype = 4;
-	}
+        bool ok1,ok2;
+        int htype=0;
+        TValHist* hh = nullptr;
+        ok1 =
+          o1->ClassName() == TString("TH1F") ||
+          o1->ClassName() == TString("TH1D");
+        ok2 =
+          o2->ClassName() == TString("TH1F") ||
+          o2->ClassName() == TString("TH1D");
+        if( ok1 && ok2 ) {
+          hh = new TValHistH((TH1*)o1,(TH1*)o2);
+          htype = 1;
+        }
+        ok1 = o1->ClassName() == TString("TProfile");
+        ok2 = o2->ClassName() == TString("TProfile");
+        if( ok1 && ok2 ) {
+          hh = new TValHistP((TProfile*)o1,(TProfile*)o2);
+          htype = 2;
+        }
+        ok1 = o1->ClassName() == TString("TEfficiency");
+        ok2 = o2->ClassName() == TString("TEfficiency");
+        if( ok1 && ok2 ) {
+          hh = new TValHistE((TEfficiency*)o1,(TEfficiency*)o2);
+          htype = 3;
+        }
+        ok1 =
+          o1->ClassName() == TString("TH2F") ||
+          o1->ClassName() == TString("TH2D");
+        ok2 =
+          o2->ClassName() == TString("TH2F") ||
+          o2->ClassName() == TString("TH2D");
+        if( ok1 && ok2 ) {
+          hh = new TValHist2((TH2*)o1,(TH2*)o2);
+          htype = 4;
+        }
 
 
-	if( htype>0 ) {
-	  hh->SetPar(fPar);
-	  hh->SetTag(path);
-	  hh->Analyze();
-	  fList.Add(hh);
-	}
+        if( htype>0 ) {
+          hh->SetPar(fPar);
+          hh->SetTag(path);
+          hh->Analyze();
+          fList.Add(hh);
+        }
 
       }
     }
-    
-  
+
+
   } // end loop over list of directories in file 1
 
 
@@ -269,14 +269,14 @@ void TValCompare::Summary(Option_t* Opt) {
 
   while ( (hh = (TValHist*) it.Next()) ) {
 
-    // if the title contains "[info]" then it is for info only, 
-    // not in comparison summary, for example, CPU time is expected to change 
+    // if the title contains "[info]" then it is for info only,
+    // not in comparison summary, for example, CPU time is expected to change
     TString title(hh->GetTitle());
     bool useInSummary = true;
     if(title.Index("[info]")>=0) useInSummary = false;
 
     if(useInSummary) {
-      if(hh->GetStatus()==TValHist::fPerfect) nPerfect++; 
+      if(hh->GetStatus()==TValHist::fPerfect) nPerfect++;
       else if(hh->GetStatus()==TValHist::fTight ) nTight++;
       else if(hh->GetStatus()==TValHist::fLoose ) nLoose++;
       else if(hh->GetStatus()==TValHist::fFail ) nFail++;
@@ -350,35 +350,35 @@ void TValCompare::Display(Option_t* Opt) {
     printf("<CR>,b,q : ");
     std::getline(std::cin,str);
     if(str=="q" || str=="Q") {
-	break;
+        break;
     } else if (str=="b" || str=="B") {
-	ind = (ind<=0? 0 : ind-1);
-	hh = (TValHist*) fList[ind];
-	while(ind>0 && 
-	      (hh->GetStatus()<fMinStat || 
-	       hh->GetStatus()>fMaxStat)  ) 
-	  {
-	    ind--;
-	    hh = (TValHist*) fList[ind];
-	  }
+        ind = (ind<=0? 0 : ind-1);
+        hh = (TValHist*) fList[ind];
+        while(ind>0 &&
+              (hh->GetStatus()<fMinStat ||
+               hh->GetStatus()>fMaxStat)  )
+          {
+            ind--;
+            hh = (TValHist*) fList[ind];
+          }
     } else {
-	ind++;
-	hh = (TValHist*) fList[ind];
-	while(ind<fList.GetEntries() && 
-	      (hh->GetStatus()<fMinStat || 
-	       hh->GetStatus()>fMaxStat)  ) {
-	  ind++; 
-	  hh = (TValHist*) fList[ind];
-	}
-	if(ind>=fList.GetEntries()) break;
+        ind++;
+        hh = (TValHist*) fList[ind];
+        while(ind<fList.GetEntries() &&
+              (hh->GetStatus()<fMinStat ||
+               hh->GetStatus()>fMaxStat)  ) {
+          ind++;
+          hh = (TValHist*) fList[ind];
+        }
+        if(ind>=fList.GetEntries()) break;
     }
     //if(!ccc) {
-    //	ccc = new TCanvas("ccc","TValCompare",cx,cy);
+    //        ccc = new TCanvas("ccc","TValCompare",cx,cy);
     //}
     if(iccc%clim==0) {
-	ccc->Clear();
-	if(q22) ccc->Divide(2,2);
-	if(q12) ccc->Divide(1,2);
+        ccc->Clear();
+        if(q22) ccc->Divide(2,2);
+        if(q12) ccc->Divide(1,2);
     }
     ccc->cd((iccc++)%clim + 1);
     fList[ind]->Draw(Opt);
@@ -439,25 +439,25 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
     TPDF* pdf =new TPDF(file);
     TIter it(&fList);
     int ind = 0;
-    while ( (hh = (TValHist*) it.Next()) ) {      
+    while ( (hh = (TValHist*) it.Next()) ) {
       if(hh->GetStatus()>=fMinStat && hh->GetStatus()<=fMaxStat) {
-	if((ind%clim)==0) {
-	  ccc->Clear();
-	  if(q12) ccc->Divide(1,2);
-	  if(q22) ccc->Divide(2,2);
-	}
-	ccc->cd(ind%clim+1);
-	ccc->Update();
-	hh->Draw();
-	ind++;
-      }    
+        if((ind%clim)==0) {
+          ccc->Clear();
+          if(q12) ccc->Divide(1,2);
+          if(q22) ccc->Divide(2,2);
+        }
+        ccc->cd(ind%clim+1);
+        ccc->Update();
+        hh->Draw();
+        ind++;
+      }
     }
     //ccc->Destructor();
     delete ccc;
     ccc = nullptr;
     pdf->Close();
   }
- 
+
   if(qWeb) {
     std::ofstream inf;
     inf.open(file);
@@ -472,8 +472,8 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
     inf <<"<html>\n<body>\n ";
     inf <<"<title>valCompare</title>\n";
     inf << "<BR><BR>\n";
-    inf <<"<h2>"<< fFileN1 
-	<< " (hist)<BR>&nbsp&nbsp vs &nbsp&nbsp<BR>";
+    inf <<"<h2>"<< fFileN1
+        << " (hist)<BR>&nbsp&nbsp vs &nbsp&nbsp<BR>";
     inf <<fFileN2 <<" (dots)</h2>\n";
     inf << "<BR><BR>\n";
     inf << "<TABLE>\n";
@@ -490,48 +490,48 @@ void TValCompare::SaveAs(const char *filename, Option_t *option) const {
     TString gifFile,gifName;
     TString gifFileLog,gifNameLog;
     while ( (hh = (TValHist*) it.Next()) ) {
-      // TEfficiency does not handle log scale well 
+      // TEfficiency does not handle log scale well
       bool qDoLog = (hh->ClassName()!=TString("TValHistE"));
       if(hh->GetStatus()>=fMinStat && hh->GetStatus()<=fMaxStat) {
-	hh->Draw();
-	gifName = hh->GetTag()+"/"+hh->GetName();
-	gifName.ReplaceAll("/","_");
-	gifNameLog = gifName;
-	gifName.Append(".gif");
-	gifNameLog.Append("_log.gif");
-	gifFile = dir+gifName;
-	gifFileLog = dir+gifNameLog;
-	ccc->SaveAs(gifFile);
-	if(qDoLog) {
-	  hh->Draw("log");
-	  ccc->SaveAs(gifFileLog);
-	}
-	
-	inf << "<TR><TD>";
-	for(int io=0; io<2; io++) {
-	  color="Black";
-	  float res = (io==0 ? hh->GetKsProb() : hh->GetFrProb());
-	  // if Fraction test and samples are independent
-	  bool frblack = (io==1 && fPar.GetIndependent()!=0);
-	  if( !frblack ) {
-	    color="Red";
-	    if(res>fPar.GetLoose()) color="Orange";
-	    if(res>fPar.GetTight()) color="Green";
-	    if(hh->GetStatus()==TValHist::fPerfect) color="DarkGreen";
-	  }
-	  inf <<"&nbsp&nbsp<font color="<<color<<"> "
-	      << std::setw(8) << std::setprecision(6)<<res
-	      <<"</TD><TD>";
-	}
-	inf << hh->GetStatus() << "</TD><TD>";
-	inf<< "<a href=\""<<gifName << "\">" << hh->GetTag() << "/" <<
-	  hh->GetName() <<"</a> ";
-	if(qDoLog) {
-	  inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
-	}
-	inf << "</TD><TD>";
-	inf << hh->GetTitle();
-	inf << "</TD></TR>\n";
+        hh->Draw();
+        gifName = hh->GetTag()+"/"+hh->GetName();
+        gifName.ReplaceAll("/","_");
+        gifNameLog = gifName;
+        gifName.Append(".gif");
+        gifNameLog.Append("_log.gif");
+        gifFile = dir+gifName;
+        gifFileLog = dir+gifNameLog;
+        ccc->SaveAs(gifFile);
+        if(qDoLog) {
+          hh->Draw("log");
+          ccc->SaveAs(gifFileLog);
+        }
+
+        inf << "<TR><TD>";
+        for(int io=0; io<2; io++) {
+          color="Black";
+          float res = (io==0 ? hh->GetKsProb() : hh->GetFrProb());
+          // if Fraction test and samples are independent
+          bool frblack = (io==1 && fPar.GetIndependent()!=0);
+          if( !frblack ) {
+            color="Red";
+            if(res>fPar.GetLoose()) color="Orange";
+            if(res>fPar.GetTight()) color="Green";
+            if(hh->GetStatus()==TValHist::fPerfect) color="DarkGreen";
+          }
+          inf <<"&nbsp&nbsp<font color="<<color<<"> "
+              << std::setw(8) << std::setprecision(6)<<res
+              <<"</TD><TD>";
+        }
+        inf << hh->GetStatus() << "</TD><TD>";
+        inf<< "<a href=\""<<gifName << "\">" << hh->GetTag() << "/" <<
+          hh->GetName() <<"</a> ";
+        if(qDoLog) {
+          inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
+        }
+        inf << "</TD><TD>";
+        inf << hh->GetTitle();
+        inf << "</TD></TR>\n";
       } // if within range
     } // hist loop
     delete ccc;
@@ -583,7 +583,7 @@ void TValCompare::SaveAs1(const char *filename, Option_t *option) const {
     if(qPDF && !q22) q12 = true;
     if(q12) clim = 2;
     if(q22) clim = 4;
-    
+
     if(q12) {
       cy = (11.0/8.5)*cx;
     } else if(q22) {
@@ -597,17 +597,17 @@ void TValCompare::SaveAs1(const char *filename, Option_t *option) const {
     TPDF* pdf =new TPDF(file);
     TIter it(&fList);
     int ind = 0;
-    while ( (hh = (TH1*) it.Next()) ) {      
+    while ( (hh = (TH1*) it.Next()) ) {
       if((ind%clim)==0) {
-	ccc->Clear();
-	if(q12) ccc->Divide(1,2);
-	if(q22) ccc->Divide(2,2);
+        ccc->Clear();
+        if(q12) ccc->Divide(1,2);
+        if(q22) ccc->Divide(2,2);
       }
       ccc->cd(ind%clim+1);
       ccc->Update();
       hh->Draw();
       ind++;
-    }    
+    }
     //ccc->Destructor();
     delete ccc;
     ccc = nullptr;
@@ -643,7 +643,7 @@ void TValCompare::SaveAs1(const char *filename, Option_t *option) const {
     TString gifFileLog,gifNameLog;
     TH1* hh;
     while ( (hh = (TH1*) it.Next()) ) {
-      // TEfficiency does not handle log scale well 
+      // TEfficiency does not handle log scale well
       bool qDoLog = (hh->ClassName()!=TString("TEfficiency"));
       hh->Draw();
       //gifName = hh->GetTag()+"/"+hh->GetName();
@@ -656,26 +656,26 @@ void TValCompare::SaveAs1(const char *filename, Option_t *option) const {
       gifFileLog = dir+gifNameLog;
       ccc->SaveAs(gifFile);
       if(qDoLog) {
-	gPad->SetLogy(1);
-	ccc->SaveAs(gifFileLog);
-	gPad->SetLogy(0);
+        gPad->SetLogy(1);
+        ccc->SaveAs(gifFileLog);
+        gPad->SetLogy(0);
       }
-      
+
       inf << "<TR><TD>";
-      
+
       inf<< "<a href=\""<<gifName << "\">" <<  hh->GetName() <<"</a> ";
       if(qDoLog) {
-	inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
+        inf<< " &nbsp <a href=\""<<gifNameLog << "\">log</a> ";
       }
       inf << "</TD><TD>";
       inf << hh->GetTitle();
       inf << "</TD></TR>\n";
-      
+
     } // hist loop
     delete ccc;
     ccc = nullptr;
   }
-  
+
   gROOT->SetBatch(qBatch);
 
 }
@@ -693,13 +693,13 @@ TValHist* TValCompare::GetHist(TString str) {
     temp = hh->GetTag() + "/" + hh->GetName() + " """ + hh->GetTitle() + """";
     if(temp.Contains(str, TString::kIgnoreCase)) {
       if(!match) {
-	match = true;
-	printf("matches:\n");
+        match = true;
+        printf("matches:\n");
       }
       printf("%s\n",temp.Data());
       ret = hh;
     }
-       
+
   }
   if(!match) {
     printf("no matches\n");

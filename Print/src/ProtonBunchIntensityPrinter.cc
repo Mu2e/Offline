@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::ProtonBunchIntensityPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::ProtonBunchIntensityPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::ProtonBunchIntensityPrinter::Print(const art::Handle<ProtonBunchIntensity>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::ProtonBunchIntensityPrinter::Print(const art::Handle<ProtonBunchIntensity>
   Print(*handle);
 }
 
-void 
+void
 mu2e::ProtonBunchIntensityPrinter::Print(const art::ValidHandle<ProtonBunchIntensity>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -44,18 +44,18 @@ mu2e::ProtonBunchIntensityPrinter::Print(const art::ValidHandle<ProtonBunchInten
 }
 
 
-void 
+void
 mu2e::ProtonBunchIntensityPrinter::Print(const mu2e::ProtonBunchIntensity& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
 
-  os 
+  os
     << "  intensity: " << obj.intensity() << std::endl;
 
 }
 
-void 
+void
 mu2e::ProtonBunchIntensityPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";

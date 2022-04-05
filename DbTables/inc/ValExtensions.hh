@@ -16,9 +16,9 @@ namespace mu2e {
     class Row {
     public:
       Row(int eid, int vid, int extension,
-	  std::string create_time, std::string create_user):
-	_eid(eid),_vid(vid),_extension(extension),
-	_create_time(create_time),_create_user(create_user) {}
+          std::string create_time, std::string create_user):
+        _eid(eid),_vid(vid),_extension(extension),
+        _create_time(create_time),_create_user(create_user) {}
       int  eid() const { return _eid;}
       int  vid() const { return _vid;}
       int  extension() const { return _extension;}
@@ -35,7 +35,7 @@ namespace mu2e {
     constexpr static const char* cxname = "ValExtensions";
 
     ValExtensions():DbTable(cxname,"val.extensions",
-		      "eid,vid,extension,create_time,create_user") {}
+                      "eid,vid,extension,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int eid) const { return _rows.at(_index.at(eid)); }
@@ -46,8 +46,8 @@ namespace mu2e {
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),
-			 std::stoi(columns[2]),
-			 columns[3],columns[4]);
+                         std::stoi(columns[2]),
+                         columns[3],columns[4]);
       _index[_rows.back().eid()] = _rows.size()-1;
     }
 
@@ -66,6 +66,6 @@ namespace mu2e {
     std::vector<Row> _rows;
     std::map<int,std::size_t> _index;
   };
-  
+
 };
 #endif

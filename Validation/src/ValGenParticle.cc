@@ -20,17 +20,17 @@ int mu2e::ValGenParticle::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValGenParticle::fill(const mu2e::GenParticleCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(3.0);
 
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   for(auto const& sp : coll) {
-    _id.fill(sp.pdgId()); 
+    _id.fill(sp.pdgId());
     double p = sp.momentum().vect().mag();
-    _hp->Fill(p); 
+    _hp->Fill(p);
     _hlogp->Fill( (p>0.0? log10(p) : -1.0) );
     _hx->Fill(sp.position().x());
     _hxt->Fill(sp.position().x());

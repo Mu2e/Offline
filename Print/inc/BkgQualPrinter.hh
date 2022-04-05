@@ -1,6 +1,6 @@
 //
 //  Utility class to print BkgQual
-// 
+//
 #ifndef Print_inc_BkgQualPrinter_hh
 #define Print_inc_BkgQualPrinter_hh
 
@@ -18,7 +18,7 @@ namespace mu2e {
   public:
 
     BkgQualPrinter() { }
-    BkgQualPrinter(const ConfigE& conf):ProductPrinter(conf) { 
+    BkgQualPrinter(const ConfigE& conf):ProductPrinter(conf) {
       _eCut = conf.eCut();
     }
 
@@ -28,20 +28,20 @@ namespace mu2e {
 
     // all the ways to request a printout
     void Print(art::Event const& event,
-	       std::ostream& os = std::cout) override;
-    void Print(const art::Handle<BkgQualCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<BkgQualCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const BkgQualCollection& coll, 
-	       std::ostream& os = std::cout);
-    void Print(const art::Ptr<BkgQual>& ptr, 
-	       int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::BkgQual& obj, 
-	       int ind = -1, std::ostream& os = std::cout);
+               std::ostream& os = std::cout) override;
+    void Print(const art::Handle<BkgQualCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const art::ValidHandle<BkgQualCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const BkgQualCollection& coll,
+               std::ostream& os = std::cout);
+    void Print(const art::Ptr<BkgQual>& ptr,
+               int ind = -1, std::ostream& os = std::cout);
+    void Print(const mu2e::BkgQual& obj,
+               int ind = -1, std::ostream& os = std::cout);
 
-    void PrintHeader(const std::string& tag, 
-		     std::ostream& os = std::cout);
+    void PrintHeader(const std::string& tag,
+                     std::ostream& os = std::cout);
     void PrintListHeader(std::ostream& os = std::cout);
 
   private:

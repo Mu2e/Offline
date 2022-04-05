@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::TrackClusterMatchPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::Print(const art::Handle<TrackClusterMatchCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::TrackClusterMatchPrinter::Print(const art::Handle<TrackClusterMatchCollect
   Print(*handle);
 }
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::Print(const art::ValidHandle<TrackClusterMatchCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::TrackClusterMatchPrinter::Print(const art::ValidHandle<TrackClusterMatchCo
   Print(*handle);
 }
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::Print(const TrackClusterMatchCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "TrackClusterMatchCollection has " << coll.size() << " matches\n";
@@ -52,13 +52,13 @@ mu2e::TrackClusterMatchPrinter::Print(const TrackClusterMatchCollection& coll, s
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::Print(const art::Ptr<TrackClusterMatch>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::Print(const mu2e::TrackClusterMatch& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -66,7 +66,7 @@ mu2e::TrackClusterMatchPrinter::Print(const mu2e::TrackClusterMatch& obj, int in
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
-    os       
+    os
       << " " << std::setw(8) << std::setprecision(1) << obj.du()
       << " " << std::setw(8) << std::setprecision(1) << obj.dv()
       << " " << std::setw(8) << std::setprecision(3) << obj.ep()
@@ -83,24 +83,24 @@ mu2e::TrackClusterMatchPrinter::Print(const mu2e::TrackClusterMatch& obj, int in
       << " " << std::setw(8) << std::setprecision(1) << obj.ztrk()
       << " " << std::setw(8) << std::setprecision(1) << obj.ttrk() << "\n";
     os
-      << "  nvec: " 
+      << "  nvec: "
       << " " << std::setw(8) << std::setprecision(1) << obj.nx()
       << " " << std::setw(8) << std::setprecision(1) << obj.ny()
       << " " << std::setw(8) << std::setprecision(1) << obj.nz()
-      << "  dx,y,z: " 
+      << "  dx,y,z: "
       << " " << std::setw(8) << std::setprecision(1) << obj.dx()
       << " " << std::setw(8) << std::setprecision(1) << obj.dy()
       << " " << std::setw(8) << std::setprecision(1) << obj.dz() << "\n";
     os
-      << "  du,v: " 
+      << "  du,v: "
       << " " << std::setw(8) << std::setprecision(1) << obj.du()
       << " " << std::setw(8) << std::setprecision(1) << obj.dv()
-      << "  dt: " 
+      << "  dt: "
       << " " << std::setw(8) << std::setprecision(1) << obj.dt() << "\n";
     os
       << "  e/p: " << std::setw(8) << std::setprecision(3) << obj.ep()
       << "  chi2: " << std::setw(8) << std::setprecision(3) << obj.chi2()
-      << "  chi2_time: " << std::setw(8) << std::setprecision(3) 
+      << "  chi2_time: " << std::setw(8) << std::setprecision(3)
          << obj.chi2_time() << "\n";
     os
       << "  int_depth: " << std::setw(8) << std::setprecision(1) << obj.int_depth()
@@ -114,13 +114,13 @@ mu2e::TrackClusterMatchPrinter::Print(const mu2e::TrackClusterMatch& obj, int in
 
 }
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::TrackClusterMatchPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind       du       dv      e/p      chi2   chi2_time\n";

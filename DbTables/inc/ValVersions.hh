@@ -16,11 +16,11 @@ namespace mu2e {
     class Row {
     public:
       Row(int vid, int pid, int lid, int major, int minor,
-	  std::string comment,
-	  std::string create_time, std::string create_user):
-	_vid(vid),_pid(pid),_lid(lid),_major(major),_minor(minor),
-	_comment(comment),
-	_create_time(create_time),_create_user(create_user) {}
+          std::string comment,
+          std::string create_time, std::string create_user):
+        _vid(vid),_pid(pid),_lid(lid),_major(major),_minor(minor),
+        _comment(comment),
+        _create_time(create_time),_create_user(create_user) {}
       int  vid() const { return _vid;}
       int  pid() const { return _pid;}
       int  lid() const { return _lid;}
@@ -43,7 +43,7 @@ namespace mu2e {
     constexpr static const char* cxname = "ValVersions";
 
     ValVersions():DbTable(cxname,"val.versions",
-      	  "vid,pid,lid,major,minor,comment,create_time,create_user") {}
+                "vid,pid,lid,major,minor,comment,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int vid) const { return _rows.at(_index.at(vid)); }
@@ -58,9 +58,9 @@ namespace mu2e {
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),
-			 std::stoi(columns[2]),std::stoi(columns[3]),
-			 std::stoi(columns[4]),columns[5],
-			 columns[6],columns[7]);
+                         std::stoi(columns[2]),std::stoi(columns[3]),
+                         std::stoi(columns[4]),columns[5],
+                         columns[6],columns[7]);
       _index[_rows.back().vid()] = _rows.size()-1;
     }
 
@@ -82,6 +82,6 @@ namespace mu2e {
     std::vector<Row> _rows;
     std::map<int,std::size_t> _index;
  };
-  
+
 };
 #endif

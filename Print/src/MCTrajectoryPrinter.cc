@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::MCTrajectoryPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::MCTrajectoryPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::MCTrajectoryPrinter::Print(const art::Handle<MCTrajectoryCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::MCTrajectoryPrinter::Print(const art::Handle<MCTrajectoryCollection>& hand
   Print(*handle);
 }
 
-void 
+void
 mu2e::MCTrajectoryPrinter::Print(const art::ValidHandle<MCTrajectoryCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::MCTrajectoryPrinter::Print(const art::ValidHandle<MCTrajectoryCollection>&
   Print(*handle);
 }
 
-void 
+void
 mu2e::MCTrajectoryPrinter::Print(const MCTrajectoryCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "MCTrajectoryCollection has " << coll.size() << " trajectories\n";
@@ -52,13 +52,13 @@ mu2e::MCTrajectoryPrinter::Print(const MCTrajectoryCollection& coll, std::ostrea
   for(const auto& obj: coll) Print(obj.second, i++);
 }
 
-void 
+void
 mu2e::MCTrajectoryPrinter::Print(const art::Ptr<MCTrajectory>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -74,7 +74,7 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
     const auto& v0 = points.front();
     const auto& v1 = points.back();
 
-    os 
+    os
       << " " << std::setw(8) << pkey
       << " " << std::setw(4) << points.size()
       << "  "
@@ -93,7 +93,7 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
 
   } else {
 
-    os 
+    os
       << " parentKey: " << std::setw(8) << pkey
       << "  npoint: " << std::setw(4) << points.size() << "\n";
     if(obj.sim().isAvailable()) {
@@ -105,12 +105,12 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
     int i=0;
     for(auto const& pp : points ) {
       os
-	<< "  " << std::setw(4) << i++ 
-	<< " " << std::setw(8) << std::setprecision(1) << pp.x()
-	<< " " << std::setw(8) << std::setprecision(1) << pp.y()
-	<< " " << std::setw(8) << std::setprecision(1) << pp.z()
-	<< " " << std::setw(9) << std::setprecision(1) << pp.t()
-	<< " " << std::setw(9) << std::setprecision(1) << pp.kineticEnergy()
+        << "  " << std::setw(4) << i++
+        << " " << std::setw(8) << std::setprecision(1) << pp.x()
+        << " " << std::setw(8) << std::setprecision(1) << pp.y()
+        << " " << std::setw(8) << std::setprecision(1) << pp.z()
+        << " " << std::setw(9) << std::setprecision(1) << pp.t()
+        << " " << std::setw(9) << std::setprecision(1) << pp.kineticEnergy()
         << std::endl;
     }
 
@@ -118,13 +118,13 @@ mu2e::MCTrajectoryPrinter::Print(const mu2e::MCTrajectory& obj, int ind, std::os
 
 }
 
-void 
+void
 mu2e::MCTrajectoryPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::MCTrajectoryPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   parent  npoint       first Point            firstT     firstEk            last Point           lastT    lastEk\n";

@@ -17,16 +17,16 @@ int mu2e::ValStrawHit::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValStrawHit::fill(const mu2e::StrawHitCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
 
   const mu2e::Tracker& tracker = *GeomHandle<mu2e::Tracker>();
 
-  _hN->Fill(coll.size()); 
-  _hN2->Fill(coll.size()); 
+  _hN->Fill(coll.size());
+  _hN2->Fill(coll.size());
   for(auto sp : coll) {
     Straw const& straw = tracker.getStraw( sp.strawId() );
     StrawId const& id = straw.id();

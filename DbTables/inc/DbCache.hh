@@ -3,7 +3,7 @@
 
 // A cache of DbTables. As tables are read form the database, they are held
 // here for a while in case they are needed, for example, by different threads.
-// Eventually a tbale may be purged.  If a needed table is purged, 
+// Eventually a tbale may be purged.  If a needed table is purged,
 // it can always be re-read.
 
 #include "Offline/DbTables/inc/DbTable.hh"
@@ -26,7 +26,7 @@ namespace mu2e {
     void add(int cid, mu2e::DbTable::cptr_t const& ptr);
 
     bool hasTable(int cid) { return _tables.find(cid)!=_tables.end(); }
-    
+
     mu2e::DbTable::cptr_t get(int cid);
 
     void clear() { _tables.clear(); }

@@ -80,7 +80,7 @@ namespace mu2e {
           Comment("Mu2e detector model for BTrk") };
       fhicl::Table<CaloDAQMapConfig> caloDAQConditions{
           Name("caloDAQConditions"),
-          Comment("DAQ channel maps for calorimeter") }; 	  
+          Comment("DAQ channel maps for calorimeter") };
       fhicl::Table<MVACatalogConfig> trkQualCatalog{
           Name("trkQualCatalog"),
           Comment("Catalog of TrkQual trainings") };

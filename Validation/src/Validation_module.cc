@@ -4,7 +4,7 @@
 // for instances of products it knows about
 //
 // Ray Culbertson
-// 
+//
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "fhiclcpp/types/Atom.h"
@@ -57,8 +57,8 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       fhicl::Atom<int> validation_level{
-	Name("validation_level"), Comment("validation level, 0 to 2"), 1
-	  };
+        Name("validation_level"), Comment("validation level, 0 to 2"), 1
+          };
     };
 
     // this line is required by art to allow the command line help print
@@ -73,9 +73,9 @@ namespace mu2e {
     int _level;   // level=1 is a small number of histograms, 2 is more
     int _count;   // event count
 
-    // ValXYZ are classes which contain a set of histograms for 
+    // ValXYZ are classes which contain a set of histograms for
     // validation of product XYZ.  They are in vectors, since we usually
-    // have several instances of a product and we make histograms 
+    // have several instances of a product and we make histograms
     // for each instance.
     std::vector<std::shared_ptr<ValStatusG4>>          _stat;
     std::vector<std::shared_ptr<ValProtonBunchIntensity>>     _pbin;
@@ -113,13 +113,13 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValTriggerResults>>    _trrs;
     std::vector<std::shared_ptr<ValTriggerInfo>>       _tris;
 
-    // Loop over the products of type T and 
+    // Loop over the products of type T and
     // call fill() on validation histogram class V to make histograms.
-    // It will create the root file subdirectories and 
+    // It will create the root file subdirectories and
     // histograms on the first event
     template<class T, class V> int analyzeProduct(
-	 std::vector<std::shared_ptr<V>>& list,
-	  art::Event const& event);
+         std::vector<std::shared_ptr<V>>& list,
+          art::Event const& event);
 
     art::ServiceHandle<art::TFileService> _tfs;
 
@@ -175,7 +175,7 @@ void mu2e::Validation::analyze(art::Event const& event){
 
 }
 
-// make histograms for product type T by calling fill() on 
+// make histograms for product type T by calling fill() on
 // histogram class V
 template <class T, class V>
 int mu2e::Validation::analyzeProduct(
@@ -194,15 +194,15 @@ int mu2e::Validation::analyzeProduct(
     // is the className_moduleName_InstanceName for the instance
     std::string fcn = prov->friendlyClassName();
     // clean up some complicated "friendly" names
-    if(fcn=="mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map") 
+    if(fcn=="mu2e::SimParticleart::Ptrmu2e::MCTrajectorystd::map")
       fcn="MCTrajectory";
-    if(fcn=="mu2e::StrawHitFlagDetailmu2e::BitMaps") 
+    if(fcn=="mu2e::StrawHitFlagDetailmu2e::BitMaps")
       fcn="StrawHitFlag";
-    if(fcn=="mu2e::TrkQualDetailmu2e::MVAStructs") 
+    if(fcn=="mu2e::TrkQualDetailmu2e::MVAStructs")
       fcn="TrkQual";
-    if(fcn=="mu2e::SimParticleart::Ptrdoublestd::map") 
+    if(fcn=="mu2e::SimParticleart::Ptrdoublestd::map")
       fcn="SimParticleTimeMap";
-    if(fcn=="mu2e::BkgQualDetailmu2e::MVAStructs") 
+    if(fcn=="mu2e::BkgQualDetailmu2e::MVAStructs")
       fcn="BkgQual";
     if(fcn.find("mu2e::",0)==0) fcn.erase(0,6);
     if(fcn.find("art::",0)==0) fcn.erase(0,5);
@@ -218,14 +218,14 @@ int mu2e::Validation::analyzeProduct(
       name = name + "_" + prov->processName();
     }
 
-    // see if this instance of this product is already in our list 
+    // see if this instance of this product is already in our list
     // of products being histogrammed.  If not, add it to the list
     std::shared_ptr< V > prd = nullptr;
     for (auto ptr : list ) {
       // if this instance of this product found in the list
       if(ptr->name().compare(name)==0)  prd = ptr;
     }
-    // if not in the list, create a new set of histograms 
+    // if not in the list, create a new set of histograms
     // for this product
     if ( prd == nullptr ) {
       prd = std::make_shared<V>(name);

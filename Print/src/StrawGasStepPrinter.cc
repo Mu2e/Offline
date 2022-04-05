@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::StrawGasStepPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::StrawGasStepPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::StrawGasStepPrinter::Print(const art::Handle<StrawGasStepCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::StrawGasStepPrinter::Print(const art::Handle<StrawGasStepCollection>& hand
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawGasStepPrinter::Print(const art::ValidHandle<StrawGasStepCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::StrawGasStepPrinter::Print(const art::ValidHandle<StrawGasStepCollection>&
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawGasStepPrinter::Print(const StrawGasStepCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "StrawGasStepCollection has " << coll.size() << " steps\n";
@@ -52,13 +52,13 @@ mu2e::StrawGasStepPrinter::Print(const StrawGasStepCollection& coll, std::ostrea
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::StrawGasStepPrinter::Print(const art::Ptr<StrawGasStep>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -69,7 +69,7 @@ mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind, std::os
   auto const& pptr = obj.simParticle();
   if(pptr) pkey = pptr->id().asUint();
 
-  os 
+  os
     << " " << std::setw(5) << pkey
     << " " << std::setw(8) << obj.strawId().asUint16()
     << " " << std::setw(10) << std::setprecision(6) << obj.ionizingEdep()
@@ -79,13 +79,13 @@ mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind, std::os
 
 }
 
-void 
+void
 mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::StrawGasStepPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind SimPart StrwInd    eDep     length    time\n";

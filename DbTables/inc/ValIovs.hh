@@ -16,13 +16,13 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(int iid, int cid, 
-	  int start_run, int start_subrun, int end_run, int end_subrun,
-	  std::string create_time, std::string create_user):
-	_iid(iid),_cid(cid),
-	_start_run(start_run),_start_subrun(start_subrun),
-	_end_run(end_run),_end_subrun(end_subrun),
-	_create_time(create_time),_create_user(create_user) {}
+      Row(int iid, int cid,
+          int start_run, int start_subrun, int end_run, int end_subrun,
+          std::string create_time, std::string create_user):
+        _iid(iid),_cid(cid),
+        _start_run(start_run),_start_subrun(start_subrun),
+        _end_run(end_run),_end_subrun(end_subrun),
+        _create_time(create_time),_create_user(create_user) {}
       int  iid() const { return _iid;}
       int  cid() const { return _cid;}
       int start_run() const { return _start_run; }
@@ -30,7 +30,7 @@ namespace mu2e {
       int end_run() const { return _end_run; }
       int end_subrun() const { return _end_subrun; }
       DbIoV iov() const {
-	return DbIoV(start_run(),start_subrun(),end_run(),end_subrun()); }
+        return DbIoV(start_run(),start_subrun(),end_run(),end_subrun()); }
       std::string const& create_time() const { return _create_time; }
       std::string const& create_user() const { return _create_user; }
     private:
@@ -47,21 +47,21 @@ namespace mu2e {
     constexpr static const char* cxname = "ValIovs";
 
     ValIovs():DbTable(cxname,"val.iovs",
-	  "iid,cid,start_run,start_subrun,end_run,end_subrun,create_time,create_user") {}
+          "iid,cid,start_run,start_subrun,end_run,end_subrun,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int iid) const { return _rows.at(_index.at(iid)); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
-    size_t size() const override { return baseSize() + sizeof(this) 
-	+ nrow()*nrow()/2 + nrow()*64; };
+    size_t size() const override { return baseSize() + sizeof(this)
+        + nrow()*nrow()/2 + nrow()*64; };
     const std::string orderBy() const {return std::string("iid");}
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),
-			 std::stoi(columns[2]),std::stoi(columns[3]),
-			 std::stoi(columns[4]),std::stoi(columns[5]),
-			 columns[6],columns[7]);
+                         std::stoi(columns[2]),std::stoi(columns[3]),
+                         std::stoi(columns[4]),std::stoi(columns[5]),
+                         columns[6],columns[7]);
       _index[_rows.back().iid()] = _rows.size()-1;
     }
 
@@ -83,6 +83,6 @@ namespace mu2e {
     std::vector<Row> _rows;
     std::map<int,std::size_t> _index;
   };
-  
+
 };
 #endif

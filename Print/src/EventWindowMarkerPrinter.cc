@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::EventWindowMarkerPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::EventWindowMarkerPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::EventWindowMarkerPrinter::Print(const art::Handle<EventWindowMarker>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::EventWindowMarkerPrinter::Print(const art::Handle<EventWindowMarker>& hand
   Print(*handle);
 }
 
-void 
+void
 mu2e::EventWindowMarkerPrinter::Print(const art::ValidHandle<EventWindowMarker>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -44,20 +44,20 @@ mu2e::EventWindowMarkerPrinter::Print(const art::ValidHandle<EventWindowMarker>&
 }
 
 
-void 
+void
 mu2e::EventWindowMarkerPrinter::Print(const mu2e::EventWindowMarker& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
 
-  os 
+  os
     << " spillType: " << std::setw(3) << obj.spillType()
     << "   length: " << std::setw(8) << std::setprecision(2) <<  obj.eventLength();
   os << std::endl;
 
 }
 
-void 
+void
 mu2e::EventWindowMarkerPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";

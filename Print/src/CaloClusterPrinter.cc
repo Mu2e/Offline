@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::CaloClusterPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::CaloClusterPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::CaloClusterPrinter::Print(const art::Handle<CaloClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::CaloClusterPrinter::Print(const art::Handle<CaloClusterCollection>& handle
   Print(*handle);
 }
 
-void 
+void
 mu2e::CaloClusterPrinter::Print(const art::ValidHandle<CaloClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::CaloClusterPrinter::Print(const art::ValidHandle<CaloClusterCollection>& h
   Print(*handle);
 }
 
-void 
+void
 mu2e::CaloClusterPrinter::Print(const CaloClusterCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "CaloClusterCollection has " << coll.size() << " clusters\n";
@@ -52,26 +52,26 @@ mu2e::CaloClusterPrinter::Print(const CaloClusterCollection& coll, std::ostream&
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::CaloClusterPrinter::Print(const art::Ptr<CaloCluster>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   if( obj.energyDep() < _eCut ) return;
-  
+
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(5) << obj.diskID()
       << " " << std::setw(5) << obj.size()
-      << " " 
+      << " "
       << " " << std::setw(8) << std::setprecision(1) << obj.time()
       << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
       << " " << std::setw(8) << std::setprecision(1) << obj.cog3Vector().x()
@@ -79,34 +79,34 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
       << " " << std::setw(8) << std::setprecision(1) << obj.cog3Vector().z()
       << std::endl;
   } else if(verbose()==2) {
-     os 
+     os
        << "  secId: " << std::setw(8) << obj.diskID()
        << "  size: " << std::setw(4) << obj.size()
        << "  time: " << std::setw(8) << std::setprecision(1) << obj.time()
        << "  eDep: " << std::setw(8) << std::setprecision(1) << obj.energyDep()
        << "  split: " << std::setw(4) << obj.isSplit()
        << "\n";
-     os 
+     os
        << " CrystalHits:";
        for(auto& ic: obj.caloHitsPtrVector()) {
-	 if (ic.isAvailable()) {
-	   os << " " << ic->crystalID();
-	 } else {
-	   os << "  missing caloHit   Ptr id " << ic.id() << "  key " << ic.key();
-	 }
+         if (ic.isAvailable()) {
+           os << " " << ic->crystalID();
+         } else {
+           os << "  missing caloHit   Ptr id " << ic.id() << "  key " << ic.key();
+         }
        }
       os << "\n";
 
   }
 }
 
-void 
+void
 mu2e::CaloClusterPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::CaloClusterPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind  secId   size    time    energy            position\n";
