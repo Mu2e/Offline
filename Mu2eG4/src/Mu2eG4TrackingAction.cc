@@ -191,7 +191,7 @@ namespace mu2e {
 
     // Need to cast away const-ness to do this.
     const_cast<G4Track*>(trk)->SetUserInformation(ti);
-    if (_muonPreAssignedDecayProperTime>0) {
+    if (_muonPreAssignedDecayProperTime>=0.0) {
       const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
       if (dynPart->GetPDGcode() == 13) {
         // if track is a muon and preassigned proper time is set, assing it
