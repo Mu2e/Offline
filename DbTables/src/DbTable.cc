@@ -12,17 +12,17 @@ int mu2e::DbTable::fill(const std::string& csv, bool saveCsv) {
     columns = DbUtil::splitCsv(line);
     if(ncol==0) ncol = columns.size();
     if(columns.size()!=ncol) {
-      throw cet::exception("DBTABLE_BAD_COLUMN_COUNT")  
-	      << "DbTable::fill found "<<columns.size()<<" columns "
-	      <<" when "<<ncol<< " was seen in previous rows. Text:"
-	      << line <<" \n";
+      throw cet::exception("DBTABLE_BAD_COLUMN_COUNT")
+              << "DbTable::fill found "<<columns.size()<<" columns "
+              <<" when "<<ncol<< " was seen in previous rows. Text:"
+              << line <<" \n";
     }
     addRow(columns);
   }
 
   // if this table has a fixed number of rows, check that
   if(nrowFix()>0 && nrow()!=nrowFix()) {
-    throw cet::exception("DBTABLE_BAD_ROW_COUNT") 
+    throw cet::exception("DBTABLE_BAD_ROW_COUNT")
       << "DbTable::fill csv line counts is "
       << std::to_string(nrow()) << " but "
       << std::to_string(nrowFix()) << " is required while filling "
@@ -48,11 +48,11 @@ int mu2e::DbTable::toCsv() {
 }
 
 void mu2e::DbTable::addRow(const std::vector<std::string>& columns) {
-  throw cet::exception("DBTABLE_FUNCTION_NOT_IMPLEMENTED") 
+  throw cet::exception("DBTABLE_FUNCTION_NOT_IMPLEMENTED")
     << "DbTable::addRow must be overridden ";
 }
 
 void mu2e::DbTable::rowToCsv(std::ostringstream& stream, size_t irow) const {
-  throw cet::exception("DBTABLE_FUNCTION_NOT_IMPLEMENTED") 
+  throw cet::exception("DBTABLE_FUNCTION_NOT_IMPLEMENTED")
     << "DbTable::rowToCsv must be overridden ";
 }

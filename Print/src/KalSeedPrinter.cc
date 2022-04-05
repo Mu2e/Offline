@@ -5,9 +5,9 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include <string>
 
-void 
+void
 mu2e::KalSeedPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -22,9 +22,9 @@ mu2e::KalSeedPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::KalSeedPrinter::Print(const art::Handle<KalSeedCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -33,9 +33,9 @@ mu2e::KalSeedPrinter::Print(const art::Handle<KalSeedCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::KalSeedPrinter::Print(const art::ValidHandle<KalSeedCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -44,7 +44,7 @@ mu2e::KalSeedPrinter::Print(const art::ValidHandle<KalSeedCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::KalSeedPrinter::Print(const KalSeedCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "KalSeedCollection has " << coll.size() << " tracks\n";
@@ -53,13 +53,13 @@ mu2e::KalSeedPrinter::Print(const KalSeedCollection& coll, std::ostream& os) {
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::KalSeedPrinter::Print(const art::Ptr<KalSeed>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -74,7 +74,7 @@ mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os)
   const mu2e::HelixVal& hh = seg.helix();
 
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(5) << obj.status().hex()
       << " " << std::setw(8) << std::setprecision(3) << obj.fitConsistency()
       << " " << std::setw(8) << std::setprecision(3) << seg.mom()
@@ -88,11 +88,11 @@ mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os)
   } else if(verbose()>=2) {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
 
-    os 
+    os
       << " fitStatus: " << std::setw(3) << obj.status()
       << "\n";
-    os 
-      << " part: " << 	 ptable->particle(obj.particle()).name()
+    os
+      << " part: " <<          ptable->particle(obj.particle()).name()
       << " dir: " << obj.fitDirection().name()
       << "  flt0: " <<  std::setw(7) << std::setprecision(1) << obj.flt0()
       << "  t0: " <<  std::setw(7) << std::setprecision(1) << obj.t0().t0()
@@ -111,63 +111,63 @@ mu2e::KalSeedPrinter::Print(const mu2e::KalSeed& obj, int ind, std::ostream& os)
       CLHEP::HepSymMatrix c;
       w.symMatrix(c); // fills c withthe cov
 
-      os 
-	<< " p: "     << std::setw(8) << std::setprecision(3) << ss.mom()
-	<< "  +/- " << std::setw(6) << std::setprecision(3) << ss.momerr()
-	<< "    fmin: " << std::setw(8) << std::setprecision(6) << ss.fmin()
-	<< "  fmax: " << std::setw(6) << std::setprecision(1) << ss.fmax()
-	<< "\n";
+      os
+        << " p: "     << std::setw(8) << std::setprecision(3) << ss.mom()
+        << "  +/- " << std::setw(6) << std::setprecision(3) << ss.momerr()
+        << "    fmin: " << std::setw(8) << std::setprecision(6) << ss.fmin()
+        << "  fmax: " << std::setw(6) << std::setprecision(1) << ss.fmax()
+        << "\n";
       if(verbose()==2) {
-	os 
-	  << "   d0: "     << std::setw(5) << std::setprecision(1) << h.d0()
-	  << "  phi0: "   << std::setw(6) << std::setprecision(3) << h.phi0()
-	  << "  omega: "  << std::setw(8) << std::setprecision(6) << h.omega()
-	  << "  z0: "     << std::setw(6) << std::setprecision(1) << h.z0()
-	  << "  tanDip: " << std::setw(7) << std::setprecision(3) << h.tanDip()
-	  << "\n";
+        os
+          << "   d0: "     << std::setw(5) << std::setprecision(1) << h.d0()
+          << "  phi0: "   << std::setw(6) << std::setprecision(3) << h.phi0()
+          << "  omega: "  << std::setw(8) << std::setprecision(6) << h.omega()
+          << "  z0: "     << std::setw(6) << std::setprecision(1) << h.z0()
+          << "  tanDip: " << std::setw(7) << std::setprecision(3) << h.tanDip()
+          << "\n";
       } else {
-	os
-	  << "     d0: " << std::setw(8) << std::setprecision(1) << h.d0() 
-	  << " +/- "  << std::setw(9) << std::setprecision(2)
-	  << sqrt(c(1,1)) << "\n";
-	os
-	  << "   phi0: " << std::setw(8) << std::setprecision(4) << hh.phi0() 
-	    << " +/- "  << std::setw(9) << std::setprecision(5)
-	    << sqrt(c(2,2)) << "\n";
-	os
-	  << "  omega: " << std::setw(8) << std::setprecision(6) << hh.omega() 
-	    << " +/- "  << std::setw(9) << std::setprecision(7)
-	  << sqrt(c(3,3)) << "\n";
-	os
-	  << "     z0: " << std::setw(8) << std::setprecision(1) << hh.z0() 
-	    << " +/- "  << std::setw(9) << std::setprecision(2)
-	    << sqrt(c(4,4)) << "\n";
-	os
-	  << " tanDip: " << std::setw(8) << std::setprecision(4) << hh.tanDip() 
-	    << " +/- "  << std::setw(9) << std::setprecision(5)
-	    << sqrt(c(5,5)) << "\n";
+        os
+          << "     d0: " << std::setw(8) << std::setprecision(1) << h.d0()
+          << " +/- "  << std::setw(9) << std::setprecision(2)
+          << sqrt(c(1,1)) << "\n";
+        os
+          << "   phi0: " << std::setw(8) << std::setprecision(4) << hh.phi0()
+            << " +/- "  << std::setw(9) << std::setprecision(5)
+            << sqrt(c(2,2)) << "\n";
+        os
+          << "  omega: " << std::setw(8) << std::setprecision(6) << hh.omega()
+            << " +/- "  << std::setw(9) << std::setprecision(7)
+          << sqrt(c(3,3)) << "\n";
+        os
+          << "     z0: " << std::setw(8) << std::setprecision(1) << hh.z0()
+            << " +/- "  << std::setw(9) << std::setprecision(2)
+            << sqrt(c(4,4)) << "\n";
+        os
+          << " tanDip: " << std::setw(8) << std::setprecision(4) << hh.tanDip()
+            << " +/- "  << std::setw(9) << std::setprecision(5)
+            << sqrt(c(5,5)) << "\n";
       }
       if(verbose()>=4) {
-	os << "  Helix covariance:\n";
-	PrintMatrix(c,os,0);
-	
-	os << "  Helix correlations:\n";
-	PrintMatrix(c,os,1);
+        os << "  Helix covariance:\n";
+        PrintMatrix(c,os,0);
+
+        os << "  Helix correlations:\n";
+        PrintMatrix(c,os,1);
       }
     }
-    
+
   }
-      
+
 
 }
 
-void 
+void
 mu2e::KalSeedPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::KalSeedPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind  status   fitcon    p      pErr   tanDip     d0     omega    t0    nhits\n";

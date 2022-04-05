@@ -19,7 +19,7 @@ namespace mu2e {
     int execute(const std::string& command, std::string& result);
 
     void setDbId(const DbId& id) { _id = id; }
-    void setUserPass(const std::string& user, const std::string& pass) 
+    void setUserPass(const std::string& user, const std::string& pass)
                                          { _user=user; _pass=pass; }
     void setVerbose(uint v) { _verbose = v; }
 

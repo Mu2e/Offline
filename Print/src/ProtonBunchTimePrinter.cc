@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::ProtonBunchTimePrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::ProtonBunchTimePrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::ProtonBunchTimePrinter::Print(const art::Handle<ProtonBunchTime>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::ProtonBunchTimePrinter::Print(const art::Handle<ProtonBunchTime>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::ProtonBunchTimePrinter::Print(const art::ValidHandle<ProtonBunchTime>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -44,20 +44,20 @@ mu2e::ProtonBunchTimePrinter::Print(const art::ValidHandle<ProtonBunchTime>& han
 }
 
 
-void 
+void
 mu2e::ProtonBunchTimePrinter::Print(const mu2e::ProtonBunchTime& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
 
-  os 
+  os
     << " time: " << std::setw(8) << std::setprecision(2) << obj.pbtime_
     << "   error: " << std::setw(6) << std::setprecision(2) <<  obj.pbterr_;
   os << std::endl;
 
 }
 
-void 
+void
 mu2e::ProtonBunchTimePrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";

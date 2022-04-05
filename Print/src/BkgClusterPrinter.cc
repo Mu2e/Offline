@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::BkgClusterPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::BkgClusterPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::BkgClusterPrinter::Print(const art::Handle<BkgClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::BkgClusterPrinter::Print(const art::Handle<BkgClusterCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::BkgClusterPrinter::Print(const art::ValidHandle<BkgClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::BkgClusterPrinter::Print(const art::ValidHandle<BkgClusterCollection>& han
   Print(*handle);
 }
 
-void 
+void
 mu2e::BkgClusterPrinter::Print(const BkgClusterCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "BkgClusterCollection has " << coll.size() << " clusters\n";
@@ -52,13 +52,13 @@ mu2e::BkgClusterPrinter::Print(const BkgClusterCollection& coll, std::ostream& o
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::BkgClusterPrinter::Print(const art::Ptr<BkgCluster>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::BkgClusterPrinter::Print(const mu2e::BkgCluster& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -66,7 +66,7 @@ mu2e::BkgClusterPrinter::Print(const mu2e::BkgCluster& obj, int ind, std::ostrea
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(8) << std::setprecision(3) << obj.pos().x()
       << " " << std::setw(8) << std::setprecision(3) << obj.pos().y()
       << " " << std::setw(8) << std::setprecision(3) << obj.pos().z()
@@ -74,7 +74,7 @@ mu2e::BkgClusterPrinter::Print(const mu2e::BkgCluster& obj, int ind, std::ostrea
       << " " << std::setw(5) << obj.hits().size()
       << std::endl;
   } else if(verbose()==2) {
-    os 
+    os
       << "   pos: " << std::setw(9) << std::setprecision(3) << obj.pos().x()
       << " " << std::setw(9) << std::setprecision(3) << obj.pos().y()
       << " " << std::setw(8) << std::setprecision(3) << obj.pos().z()
@@ -83,16 +83,16 @@ mu2e::BkgClusterPrinter::Print(const mu2e::BkgCluster& obj, int ind, std::ostrea
       << "  hits: " << std::setw(4) << obj.hits().size()
       << "\n";
 
-    os 
+    os
       << "   flag: " ;
-    for(auto sn: obj.flag().bitNames()) { 
-      if(obj.flag().hasAnyProperty(BkgClusterFlag(sn.first))) 
-	os << " " << sn.first;
+    for(auto sn: obj.flag().bitNames()) {
+      if(obj.flag().hasAnyProperty(BkgClusterFlag(sn.first)))
+        os << " " << sn.first;
     }
-    os 
+    os
       << "\n";
 
-    os 
+    os
       << "   hits: " ;
     for(auto bch : obj.hits()) {
       os << " " << std::setw(5) << bch;
@@ -101,13 +101,13 @@ mu2e::BkgClusterPrinter::Print(const mu2e::BkgCluster& obj, int ind, std::ostrea
   }
 }
 
-void 
+void
 mu2e::BkgClusterPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::BkgClusterPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind           position             time    nhits\n";

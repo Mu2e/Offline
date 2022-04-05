@@ -11,10 +11,10 @@ namespace mu2e {
   struct TrkStrawEndAlign {
     using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
     TrkStrawEndAlign(int index, StrawId const& id,
-	float wire_cal_dV, float wire_cal_dW,
-	float wire_hv_dV, float wire_hv_dW,
-	float straw_cal_dV, float straw_cal_dW,
-	float straw_hv_dV, float straw_hv_dW) :
+        float wire_cal_dV, float wire_cal_dW,
+        float wire_hv_dV, float wire_hv_dW,
+        float straw_cal_dV, float straw_cal_dW,
+        float straw_hv_dV, float straw_hv_dW) :
       _wire_cal_dV(wire_cal_dV), _wire_cal_dW(wire_cal_dW),
       _wire_hv_dV(wire_hv_dV), _wire_hv_dW(wire_hv_dW),
       _straw_cal_dV(straw_cal_dV), _straw_cal_dW(straw_cal_dW),

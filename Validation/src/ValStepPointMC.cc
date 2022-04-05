@@ -29,13 +29,13 @@ int mu2e::ValStepPointMC::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(1.0);
 
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   mu2e::SimParticleCollection const* sph = nullptr;
   art::ProductID oldId(0);
 
@@ -51,8 +51,8 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
     auto key = cet::map_vector_key( sp.simParticle().key() );
     bool hasSim = sph->find(key)!=sph->end();
 
-    if(hasSim) _id.fill(sp.simParticle()->pdgId()); 
-    _hp->Fill(sp.momentum().mag()); 
+    if(hasSim) _id.fill(sp.simParticle()->pdgId());
+    _hp->Fill(sp.momentum().mag());
     _hx->Fill(sp.position().x());
     _hy->Fill(sp.position().y());
     _hz->Fill(sp.position().z());
@@ -67,9 +67,9 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
     _hxCRV->Fill(sp.position().x());
     _hyCRV->Fill(sp.position().y());
     _hzCRV->Fill(sp.position().z());
-    _het1->Fill(sp.totalEDep()); 
-    _het2->Fill(sp.totalEDep()); 
-    _ht->Fill(sp.time()); 
+    _het1->Fill(sp.totalEDep());
+    _het2->Fill(sp.totalEDep());
+    _ht->Fill(sp.time());
   }
   return 0;
 }

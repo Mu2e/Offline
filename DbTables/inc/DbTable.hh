@@ -16,9 +16,9 @@ namespace mu2e {
     typedef std::shared_ptr<mu2e::DbTable> ptr_t;
     typedef std::shared_ptr<const mu2e::DbTable> cptr_t;
 
-    DbTable(const char* name = "DbTable", 
-	    const char* dbname = "dne.dbtable", 
-	    const char* query = "noquery") :
+    DbTable(const char* name = "DbTable",
+            const char* dbname = "dne.dbtable",
+            const char* query = "noquery") :
       _name(name),_dbname(dbname),_query(query) {}
 
     virtual ~DbTable() {}

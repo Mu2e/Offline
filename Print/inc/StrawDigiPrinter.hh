@@ -1,6 +1,6 @@
 //
 //  Utility class to print StrawDigi
-// 
+//
 #ifndef Print_inc_StrawDigiPrinter_hh
 #define Print_inc_StrawDigiPrinter_hh
 
@@ -22,20 +22,20 @@ namespace mu2e {
 
     // all the ways to request a printout
     void Print(art::Event const& event,
-	       std::ostream& os = std::cout) override;
-    void Print(const art::Handle<StrawDigiCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<StrawDigiCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const StrawDigiCollection& coll, 
-	       std::ostream& os = std::cout);
-    void Print(const art::Ptr<StrawDigi>& ptr, 
-	       int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::StrawDigi& obj, 
-	       int ind = -1, std::ostream& os = std::cout);
+               std::ostream& os = std::cout) override;
+    void Print(const art::Handle<StrawDigiCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const art::ValidHandle<StrawDigiCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const StrawDigiCollection& coll,
+               std::ostream& os = std::cout);
+    void Print(const art::Ptr<StrawDigi>& ptr,
+               int ind = -1, std::ostream& os = std::cout);
+    void Print(const mu2e::StrawDigi& obj,
+               int ind = -1, std::ostream& os = std::cout);
 
-    void PrintHeader(const std::string& tag, 
-		     std::ostream& os = std::cout);
+    void PrintHeader(const std::string& tag,
+                     std::ostream& os = std::cout);
     void PrintListHeader(std::ostream& os = std::cout);
 
   };

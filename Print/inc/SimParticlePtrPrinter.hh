@@ -1,6 +1,6 @@
 //
 //  Utility class to print SimParticlePtr
-// 
+//
 #ifndef Print_inc_SimParticlePtrPrinter_hh
 #define Print_inc_SimParticlePtrPrinter_hh
 
@@ -25,18 +25,18 @@ namespace mu2e {
 
     // all the ways to request a printout
     void Print(art::Event const& event,
-	       std::ostream& os = std::cout) override;
-    void Print(const art::Handle<SimParticlePtrCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<SimParticlePtrCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const SimParticlePtrCollection& coll, 
-	       std::ostream& os = std::cout);
-    void Print(const art::Ptr<SimParticle>& ptr, 
-	       int ind = -1, std::ostream& os = std::cout);
+               std::ostream& os = std::cout) override;
+    void Print(const art::Handle<SimParticlePtrCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const art::ValidHandle<SimParticlePtrCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const SimParticlePtrCollection& coll,
+               std::ostream& os = std::cout);
+    void Print(const art::Ptr<SimParticle>& ptr,
+               int ind = -1, std::ostream& os = std::cout);
 
-    void PrintHeader(const std::string& tag, 
-		     std::ostream& os = std::cout);
+    void PrintHeader(const std::string& tag,
+                     std::ostream& os = std::cout);
     void PrintListHeader(std::ostream& os = std::cout);
 
   };

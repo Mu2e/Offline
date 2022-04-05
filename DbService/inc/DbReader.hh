@@ -2,7 +2,7 @@
 #define DbService_DbReader_hh
 //
 // use curl to get data from the condtions database web interface
-// 
+//
 // To use:
 // create with default (production database) or specify another database,
 // then call query method.  Everything goes to the web cache url except
@@ -38,9 +38,9 @@ namespace mu2e {
     const DbId& id() const { return _id; }
 
     // run query url, answer returned in csv
-    int query(std::string& csv, const std::string& select, 
-	      const std::string& table, const StringVec& where=StringVec(),
-	      const std::string& order="");
+    int query(std::string& csv, const std::string& select,
+              const std::string& table, const StringVec& where=StringVec(),
+              const std::string& order="");
     // an alternate form
     int query(QueryForm& qf);
 
@@ -78,7 +78,7 @@ namespace mu2e {
     // these pieces are put together in the query routines
     int openHandle();
     int closeHandle();
-    int queryCore(std::string& csv, const std::string& select, 
+    int queryCore(std::string& csv, const std::string& select,
                   const std::string& table, const StringVec& where=StringVec(),
                   const std::string& order="");
 

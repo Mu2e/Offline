@@ -54,7 +54,7 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   } else if (name=="CalRoIDMapDIRACToOffline") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
   } else if (name=="CalRoIDMapOfflineToDIRAC") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());    
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());
   } else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
       << "DbTableFactory::newTable call with bad table name: "+name+"\n";

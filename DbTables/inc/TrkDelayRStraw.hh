@@ -32,11 +32,11 @@ namespace mu2e {
     constexpr static const char* cxname = "TrkDelayRStraw";
 
     TrkDelayRStraw():DbTable(cxname,"trk.delayrstraw",
-	 "straw,delay_hv,delay_cal") {}
+         "straw,delay_hv,delay_cal") {}
     const Row& rowAt(const std::size_t straw) const { return _rows.at(straw);}
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
-    virtual std::size_t nrowFix() const override { return 96; }; 
+    virtual std::size_t nrowFix() const override { return 96; };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
     const std::string orderBy() const {return std::string("straw");}
 
@@ -44,13 +44,13 @@ namespace mu2e {
       int straw = std::stoi(columns[0]);
       // enforce a strict sequential order
       if(straw!=int(_rows.size())) {
-	throw cet::exception("TRKDELAYRSTRAW_BAD_INDEX") 
-	  << "TrkDelayRStraw::addRow found straw out of order: " 
-	  <<straw << " != " << _rows.back().straw()+1 <<"\n";
+        throw cet::exception("TRKDELAYRSTRAW_BAD_INDEX")
+          << "TrkDelayRStraw::addRow found straw out of order: "
+          <<straw << " != " << _rows.back().straw()+1 <<"\n";
       }
 
       _rows.emplace_back(std::stoi(columns[0]),
-			 std::stof(columns[1]),
+                         std::stof(columns[1]),
                          std::stof(columns[2]));
     }
 
@@ -67,6 +67,6 @@ namespace mu2e {
   private:
     std::vector<Row> _rows;
   };
-  
+
 };
 #endif

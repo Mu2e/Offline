@@ -10,9 +10,9 @@
 using namespace std;
 
 mu2e::DbReader::DbReader():_curl_handle(nullptr),
-		_timeout(3600),_totalTime(0),_removeHeader(true),
-	        _abortOnFail(true),_useCache(true),_cacheLifetime(0),
-					 _verbose(0),_timeVerbose(0),_saveCsv(true) {
+                _timeout(3600),_totalTime(0),_removeHeader(true),
+                _abortOnFail(true),_useCache(true),_cacheLifetime(0),
+                                         _verbose(0),_timeVerbose(0),_saveCsv(true) {
 
   // allocates memory for curl
   curl_global_init(CURL_GLOBAL_ALL);
@@ -23,11 +23,11 @@ mu2e::DbReader::~DbReader() {
   curl_global_cleanup();
 }
 
-int mu2e::DbReader::query(std::string& csv, 
-			  const std::string& select, 
-			  const std::string& table, 
-			  const StringVec& where,
-			  const std::string& order) {
+int mu2e::DbReader::query(std::string& csv,
+                          const std::string& select,
+                          const std::string& table,
+                          const StringVec& where,
+                          const std::string& order) {
 
   int rc;
 
@@ -58,7 +58,7 @@ int mu2e::DbReader::multiQuery(std::vector<QueryForm>& qfv) {
   auto iter = qfv.begin();
   while(rc==0 && iter!=qfv.end()) {
     rc = queryCore(iter->csv,iter->select,iter->table,
-		   iter->where,iter->order);
+                   iter->where,iter->order);
     iter++;
   }
 
@@ -153,7 +153,7 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
 
   tables.fill(qfv[0].csv,_saveCsv);
   vcache.setValTables(tables);
-  
+
   calibrations.fill(qfv[1].csv,_saveCsv);
   vcache.setValCalibrations(calibrations);
 
@@ -205,19 +205,19 @@ int mu2e::DbReader::fillValTables(DbValCache& vcache) {
 int mu2e::DbReader::openHandle() {
 
   if(_id.name().empty()) {
-      throw cet::exception("DBREADER_DBID NOT_SET") 
-	<< "DbReader found the DbId was not set\n";
+      throw cet::exception("DBREADER_DBID NOT_SET")
+        << "DbReader found the DbId was not set\n";
   }
 
   _curl_handle = curl_easy_init();
 
   if (!_curl_handle) {
     if(_abortOnFail) {
-      throw cet::exception("DBREADER_FAILED_CURL_INIT") << 
-	"DbReader failed to initialize curl" <<"\n";
+      throw cet::exception("DBREADER_FAILED_CURL_INIT") <<
+        "DbReader failed to initialize curl" <<"\n";
     } else {
       if(_verbose>0) {
-	std::cout << "DbReader failed to initialize curl" << std::endl;
+        std::cout << "DbReader failed to initialize curl" << std::endl;
       }
       return 1;
     }
@@ -227,7 +227,7 @@ int mu2e::DbReader::openHandle() {
   curl_easy_setopt(_curl_handle, CURLOPT_WRITEFUNCTION, mu2e::curlWriteCallback);
   // we pass our 'response' struct to the callback function
   curl_easy_setopt(_curl_handle, CURLOPT_WRITEDATA, (void *)&_result);
-  // some servers don't like requests that are made without a user-agent 
+  // some servers don't like requests that are made without a user-agent
   // field, so we provide one
   curl_easy_setopt(_curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
   // Enable redirection
@@ -239,11 +239,11 @@ int mu2e::DbReader::openHandle() {
 
 }
 
-int mu2e::DbReader::queryCore(std::string& csv, 
-			      const std::string& select, 
-			      const std::string& table, 
-			      const StringVec& where,
-			      const std::string& order) {
+int mu2e::DbReader::queryCore(std::string& csv,
+                              const std::string& select,
+                              const std::string& table,
+                              const StringVec& where,
+                              const std::string& order) {
 
   std::string url;
   bool qcache = true;
@@ -279,8 +279,8 @@ int mu2e::DbReader::queryCore(std::string& csv,
 
   if(_verbose>5) {
     std::string time = DbUtil::timeString();
-    std::cout << "DbReader " << time 
-	      <<"  url="<<url << std::endl;
+    std::cout << "DbReader " << time
+              <<"  url="<<url << std::endl;
   }
 
   string urlfinal = url;
@@ -316,7 +316,7 @@ int mu2e::DbReader::queryCore(std::string& csv,
     }
     _result.reply.clear();
     if(_verbose>5) std::cout << "DbReader start perform with itry="
-			     <<itry << std::endl;
+                             <<itry << std::endl;
     // the actual GET over the network
     _curl_ret = curl_easy_perform(_curl_handle);
     // save error state
@@ -327,22 +327,22 @@ int mu2e::DbReader::queryCore(std::string& csv,
 
     if (_curl_ret == CURLE_OK && http_code == 200) {
       if(_verbose>5) {
-	std::cout << "DbReader curlOutput=";
-	std::size_t iend = _result.reply.size();
-	if(_verbose>9 || iend<400) {
-	  std::cout << _result.reply << std::endl;
-	} else {
-	  std::cout << _result.reply.substr(0,200) << std::endl;
-	  std::cout << " ... " << std::endl;
-	  std::cout << _result.reply.substr(iend-200,200) << std::endl;
-	}
-	std::cout << "DbReader return code=" << _lastError 
-		  << "   http code: " << http_code << std::endl;
+        std::cout << "DbReader curlOutput=";
+        std::size_t iend = _result.reply.size();
+        if(_verbose>9 || iend<400) {
+          std::cout << _result.reply << std::endl;
+        } else {
+          std::cout << _result.reply.substr(0,200) << std::endl;
+          std::cout << " ... " << std::endl;
+          std::cout << _result.reply.substr(iend-200,200) << std::endl;
+        }
+        std::cout << "DbReader return code=" << _lastError
+                  << "   http code: " << http_code << std::endl;
       }
     } else {
       if(_verbose>0) std::cout << "DbReader try: " << itry
-			       << "   lastError: " << _lastError 
-			       << "   http code: " << http_code << std::endl;
+                               << "   lastError: " << _lastError
+                               << "   http code: " << http_code << std::endl;
     }
 
     auto try_time = std::chrono::high_resolution_clock::now();
@@ -359,18 +359,18 @@ int mu2e::DbReader::queryCore(std::string& csv,
     std::string time = DbUtil::timeString();
 
     std::cout<<"DbReader "<< time << " "
-	     << std::setprecision(6) << _lastTime.count()*1.0e-6 <<" s " 
-	     << "to read " << table 
-	     << " on try " << itry << " with " 
-	     << std::setprecision(6) << sleep_time << " s sleeping"
-	     << std::endl;
+             << std::setprecision(6) << _lastTime.count()*1.0e-6 <<" s "
+             << "to read " << table
+             << " on try " << itry << " with "
+             << std::setprecision(6) << sleep_time << " s sleeping"
+             << std::endl;
   }
 
   if (_curl_ret != CURLE_OK) {
     if (_abortOnFail) {
-      throw cet::exception("DBREADER_FAILED_CURL") << 
-	"DbReader failed to read database " << _id.name() 
-		   << ", last error: "<<_lastError <<"\n";
+      throw cet::exception("DBREADER_FAILED_CURL") <<
+        "DbReader failed to read database " << _id.name()
+                   << ", last error: "<<_lastError <<"\n";
     }
     return 1;
   }

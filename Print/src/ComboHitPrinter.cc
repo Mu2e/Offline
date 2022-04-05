@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::ComboHitPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::ComboHitPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::ComboHitPrinter::Print(const art::Handle<ComboHitCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::ComboHitPrinter::Print(const art::Handle<ComboHitCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::ComboHitPrinter::Print(const art::ValidHandle<ComboHitCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::ComboHitPrinter::Print(const art::ValidHandle<ComboHitCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::ComboHitPrinter::Print(const ComboHitCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "ComboHitCollection has " << coll.size() << " hits\n";
@@ -52,13 +52,13 @@ mu2e::ComboHitPrinter::Print(const ComboHitCollection& coll, std::ostream& os) {
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::ComboHitPrinter::Print(const art::Ptr<ComboHit>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -66,10 +66,10 @@ mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind, std::ostream& o
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(5) << obj.nCombo()
       << " " << std::setw(5) << obj.nStrawHits()
-      << " " 
+      << " "
       << " " << std::setw(8) << std::setprecision(3) << obj.pos().x()
       << " " << std::setw(8) << std::setprecision(3) << obj.pos().y()
       << " " << std::setw(9) << std::setprecision(3) << obj.pos().z()
@@ -82,9 +82,9 @@ mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind, std::ostream& o
     os
       << "  StrawId: " << std::setw(5) << obj.strawId().asUint16()
       << "   StrawHitFlag: ";
-    for(auto sn: obj.flag().bitNames()) { 
-      if(obj.flag().hasAnyProperty(StrawHitFlag(sn.first))) 
-	os << " " << sn.first;
+    for(auto sn: obj.flag().bitNames()) {
+      if(obj.flag().hasAnyProperty(StrawHitFlag(sn.first)))
+        os << " " << sn.first;
     }
     os << "\n";
     os
@@ -107,7 +107,7 @@ mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind, std::ostream& o
       << " " << std::setw(8) << std::setprecision(3) << obj.wdir().y()
       << " " << std::setw(9) << std::setprecision(3) << obj.wdir().z()
       << "\n";
-    os 
+    os
       << "   indexArray:";
     for(auto ii: obj.indexArray()) os << " " << ii;
     os << std::endl;
@@ -115,13 +115,13 @@ mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind, std::ostream& o
 
 }
 
-void 
+void
 mu2e::ComboHitPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::ComboHitPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os <<  "ind  nCombo nStraw   x        y         z        t        E       qual\n";

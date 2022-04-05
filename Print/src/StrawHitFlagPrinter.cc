@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::StrawHitFlagPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::StrawHitFlagPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::StrawHitFlagPrinter::Print(const art::Handle<StrawHitFlagCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::StrawHitFlagPrinter::Print(const art::Handle<StrawHitFlagCollection>& hand
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawHitFlagPrinter::Print(const art::ValidHandle<StrawHitFlagCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::StrawHitFlagPrinter::Print(const art::ValidHandle<StrawHitFlagCollection>&
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawHitFlagPrinter::Print(const StrawHitFlagCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "StrawHitFlagCollection has " << coll.size() << " hits\n";
@@ -52,28 +52,28 @@ mu2e::StrawHitFlagPrinter::Print(const StrawHitFlagCollection& coll, std::ostrea
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::StrawHitFlagPrinter::Print(const mu2e::StrawHitFlag& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
-  for(auto sn: obj.bitNames()) { 
-    if(obj.hasAnyProperty(StrawHitFlag(sn.first))) 
+  for(auto sn: obj.bitNames()) {
+    if(obj.hasAnyProperty(StrawHitFlag(sn.first)))
       os << " " << sn.first;
   }
   os << std::endl;
 
 }
 
-void 
+void
 mu2e::StrawHitFlagPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::StrawHitFlagPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind    flags\n";

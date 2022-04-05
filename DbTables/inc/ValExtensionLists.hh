@@ -16,7 +16,7 @@ namespace mu2e {
     class Row {
     public:
       Row(int eid, int gid):
-	_eid(eid),_gid(gid) {}
+        _eid(eid),_gid(gid) {}
       int  eid() const { return _eid;}
       int  gid() const { return _gid;}
     private:
@@ -27,7 +27,7 @@ namespace mu2e {
     constexpr static const char* cxname = "ValExtensionLists";
 
     ValExtensionLists():DbTable(cxname,"val.extensionlists",
-			    "eid,gid") {}
+                            "eid,gid") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     std::vector<Row> const& rows() const {return _rows;}
@@ -51,6 +51,6 @@ namespace mu2e {
   private:
     std::vector<Row> _rows;
   };
-  
+
 };
 #endif

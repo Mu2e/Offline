@@ -5,9 +5,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::TriggerInfoPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -22,9 +22,9 @@ mu2e::TriggerInfoPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::TriggerInfoPrinter::Print(const art::Handle<mu2e::TriggerInfo>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -33,9 +33,9 @@ mu2e::TriggerInfoPrinter::Print(const art::Handle<mu2e::TriggerInfo>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::TriggerInfoPrinter::Print(const art::ValidHandle<mu2e::TriggerInfo>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -45,7 +45,7 @@ mu2e::TriggerInfoPrinter::Print(const art::ValidHandle<mu2e::TriggerInfo>& handl
 }
 
 
-void 
+void
 mu2e::TriggerInfoPrinter::Print(const mu2e::TriggerInfo& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -72,7 +72,7 @@ mu2e::TriggerInfoPrinter::Print(const mu2e::TriggerInfo& obj, int ind, std::ostr
 
 }
 
-void 
+void
 mu2e::TriggerInfoPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";

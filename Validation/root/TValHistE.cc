@@ -38,14 +38,14 @@ Int_t TValHistE::Analyze(Option_t* Opt) {
     return fStatus;
   }
 
-  if (fEff1->GetTotalHistogram()->GetNbinsX() <= 0 || 
-      fEff1->GetTotalHistogram()->GetNbinsX() != 
+  if (fEff1->GetTotalHistogram()->GetNbinsX() <= 0 ||
+      fEff1->GetTotalHistogram()->GetNbinsX() !=
       fEff2->GetTotalHistogram()->GetNbinsX()) {
     return fStatus;
   }
 
   uint llim = (fPar.GetUnder()==0 ? 0 : 1);
-  uint ulim = fEff1->GetTotalHistogram()->GetNbinsX() 
+  uint ulim = fEff1->GetTotalHistogram()->GetNbinsX()
     + (fPar.GetOver()==0 ? 1 : 0);
 
   // do sums
@@ -68,7 +68,7 @@ Int_t TValHistE::Analyze(Option_t* Opt) {
     fStatus = fPerfect;
     return fStatus;
   }
-  
+
   // no sensible meaning to fractional difference
   fFrProb = 1.0;
 
@@ -87,21 +87,21 @@ Int_t TValHistE::Analyze(Option_t* Opt) {
       n2 = fEff2->GetTotalHistogram()->GetBinContent(ii);
       c1 = fEff1->GetEfficiency(ii);
       c2 = fEff2->GetEfficiency(ii);
-      e1 = (fEff1->GetEfficiencyErrorLow(ii) 
-	    + fEff1->GetEfficiencyErrorUp(ii))/2.0;
-      e2 = (fEff2->GetEfficiencyErrorLow(ii) 
-	    + fEff2->GetEfficiencyErrorUp(ii))/2.0;
+      e1 = (fEff1->GetEfficiencyErrorLow(ii)
+            + fEff1->GetEfficiencyErrorUp(ii))/2.0;
+      e2 = (fEff2->GetEfficiencyErrorLow(ii)
+            + fEff2->GetEfficiencyErrorUp(ii))/2.0;
       if(n1>0 && n2>0) {
-	// both have entries, add to chi2
-	chi2 += pow(c1-c2,2)/(pow(e1,2)+pow(e2,2));
-	ndof++;
+        // both have entries, add to chi2
+        chi2 += pow(c1-c2,2)/(pow(e1,2)+pow(e2,2));
+        ndof++;
       } else if(n1>0 || n2>0) {
-	// one has entries, the other doesn't, we need some penalty
-	// the idea is to add the Poisson probability of observing
-	// zero when expecting n to the likelihood, represented by 
-	// adding n to the chi2
-	chi2 += (n1>0 ? n1 : n2);
-	ndof++;
+        // one has entries, the other doesn't, we need some penalty
+        // the idea is to add the Poisson probability of observing
+        // zero when expecting n to the likelihood, represented by
+        // adding n to the chi2
+        chi2 += (n1>0 ? n1 : n2);
+        ndof++;
       }
       // if both effs have no entries, ignore this bin
 
@@ -129,7 +129,7 @@ Int_t TValHistE::Analyze(Option_t* Opt) {
 void TValHistE::Summary(Option_t* Opt) {
 
   printf("%8.5f %8.5f %2d %10g %10g %s/%s \"%s\"\n",fKsProb,fFrProb,fStatus,
-	 fSum1,fSum2,GetTag().Data(),GetName(),GetTitle());
+         fSum1,fSum2,GetTag().Data(),GetName(),GetTitle());
 }
 
 //_____________________________________________________________________________
@@ -174,7 +174,7 @@ void TValHistE::Draw(Option_t* Opt) {
   }
 
   uint llim = (fPar.GetUnder()==0 ? 0 : 1);
-  uint ulim = fEff1->GetTotalHistogram()->GetNbinsX() + 
+  uint ulim = fEff1->GetTotalHistogram()->GetNbinsX() +
     (fPar.GetOver()==0 ? 1 : 0);
   double ymean1 = 0.0;
   double ymean2 = 0.0;
@@ -255,9 +255,9 @@ void TValHistE::Draw(Option_t* Opt) {
   TText* tr1 = new TText();
   r = ( fSum1!=0 ? fSum2/fSum1 : 0.0);
   sprintf(tstring,"N %10d %10d %6f   U %10g %10g",
-	  int(fSum1),int(fSum2),r,
-	  fEff1->GetTotalHistogram()->GetBinContent(0),
-	  fEff2->GetTotalHistogram()->GetBinContent(0));
+          int(fSum1),int(fSum2),r,
+          fEff1->GetTotalHistogram()->GetBinContent(0),
+          fEff2->GetTotalHistogram()->GetBinContent(0));
   tr1->SetNDC();
   tr1->SetText(0.13,0.87,tstring);
   tr1->SetTextSize(fFontScale*0.030);
@@ -268,9 +268,9 @@ void TValHistE::Draw(Option_t* Opt) {
   r = ( ymean1!=0.0 ? ymean2/ymean1 : 0.0 );
   int iover = fEff1->GetTotalHistogram()->GetNbinsX()+1;
   sprintf(tstring,"Y %10g %10g %6f   O %10g %10g",
-	  ymean1,ymean2,r,
-	  fEff1->GetTotalHistogram()->GetBinContent(iover),
-	  fEff2->GetTotalHistogram()->GetBinContent(iover));
+          ymean1,ymean2,r,
+          fEff1->GetTotalHistogram()->GetBinContent(iover),
+          fEff2->GetTotalHistogram()->GetBinContent(iover));
   tr2->SetNDC();
   tr2->SetText(0.13,0.84,tstring);
   tr2->SetTextSize(fFontScale*0.030);
@@ -281,10 +281,10 @@ void TValHistE::Draw(Option_t* Opt) {
   /*
 
   TText* tr3 = new TText();
-  r = (fEff1->GetEntries()>0.0? 
+  r = (fEff1->GetEntries()>0.0?
        fEff2->GetEntries()/fEff1->GetEntries() : 1.0);
   sprintf(tstring,"N %10g %10g %6f",
-	  fEff1->GetEntries(),fEff2->GetEntries(),r);
+          fEff1->GetEntries(),fEff2->GetEntries(),r);
   tr3->SetNDC();
   tr3->SetText(0.13,0.81,tstring);
   tr3->SetTextSize(fFontScale*0.030);
@@ -305,10 +305,10 @@ void TValHistE::Dump() const {
   if(fEff1 && fEff2) {
     for(int i=0; i<=fEff1->GetTotalHistogram()->GetNbinsX()+1; i++) {
       printf("%3d %10.5f %10.0f %10.0f %10.0f\n",i,
-	     fEff1->GetTotalHistogram()->GetBinCenter(i),
-	     fEff1->GetEfficiency(i),
-	     fEff2->GetEfficiency(i),
-	     fEff1->GetEfficiency(i)-fEff2->GetEfficiency(i));
+             fEff1->GetTotalHistogram()->GetBinCenter(i),
+             fEff1->GetEfficiency(i),
+             fEff2->GetEfficiency(i),
+             fEff1->GetEfficiency(i)-fEff2->GetEfficiency(i));
     }
   }
 

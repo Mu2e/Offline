@@ -16,7 +16,7 @@ namespace mu2e {
     class Row {
     public:
       Row(int channel, std::string status):
-	 _channel(channel),_status(status) {}
+         _channel(channel),_status(status) {}
       int  channel() const { return _channel;}
       std::string const&  status() const { return _status; }
     private:
@@ -29,20 +29,20 @@ namespace mu2e {
     TstCalib2():DbTable(cxname,"tst.calib2","channel,status") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    const Row& row(const int channel) const { 
+    const Row& row(const int channel) const {
                 return _rows.at(_chanIndex.at(channel)); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     // this is not quite right with strings...
-    size_t size() const override { 
-      size_t b = baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); 
-      for(auto const& r : _rows) b += r.status().capacity(); 
+    size_t size() const override {
+      size_t b = baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row);
+      for(auto const& r : _rows) b += r.status().capacity();
       return b;
     };
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoul(columns[0]),
-			 columns[1] );
+                         columns[1] );
       _chanIndex[_rows.back().channel()] = _rows.size()-1;
     }
 
@@ -58,6 +58,6 @@ namespace mu2e {
     std::vector<Row> _rows;
     std::map<int,std::size_t> _chanIndex;
   };
-  
+
 };
 #endif

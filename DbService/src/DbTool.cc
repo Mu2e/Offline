@@ -39,7 +39,7 @@ int mu2e::DbTool::run() {
   if(_action=="verify-set") return verifySet();
 
   if(_action=="test-url") return testUrl();
-  
+
   std::cout << "error: could not parse action : "<< _args[0]<< std::endl;
   return 1;
 }
@@ -89,7 +89,7 @@ int mu2e::DbTool::printContent() {
 
   std::string name;
   std::string user;
-  std::vector<int> cids; 
+  std::vector<int> cids;
 
   map_ss args;
   args["name"] = "";
@@ -120,26 +120,26 @@ int mu2e::DbTool::printContent() {
     if(!name.empty()) {
       // get TID for this table name
       for(auto const& tt: _valcache.valTables().rows()) {
-	if(tt.name()==name) tid = tt.tid(); 
+        if(tt.name()==name) tid = tt.tid();
       }
     }
     for(auto const& cc: _valcache.valCalibrations().rows()) {
       if(tid<0 || cc.tid()==tid) {
-	if(user.empty() || user==cc.create_user()) {
-	  cids.push_back(cc.cid());
-	}
+        if(user.empty() || user==cc.create_user()) {
+          cids.push_back(cc.cid());
+        }
       }
     }
   }
 
   if(_verbose>1) std::cout << "print-content: printing tables for "
-			   << cids.size() <<" cids" <<std::endl;
-  
+                           << cids.size() <<" cids" <<std::endl;
+
   for(auto cid : cids) {
     auto const& cidRow = _valcache.valCalibrations().row(cid);
     int tid = cidRow.tid();
     auto name = _valcache.valTables().row(tid).name();
-    
+
     auto ptr = mu2e::DbTableFactory::newTable(name);
     _reader.fillTableByCid(ptr, cid);
     std::cout << "TABLE "<< name << std::endl;
@@ -163,7 +163,7 @@ int mu2e::DbTool::printCalibration() {
 
   std::string name;
   std::string user;
-  std::vector<int> cids; 
+  std::vector<int> cids;
 
   map_ss args;
   args["name"] = "";
@@ -179,7 +179,7 @@ int mu2e::DbTool::printCalibration() {
   // if this is a val table, just exit - there is no summary line
   if(name.substr(0,3)=="Val") {
     std::cout << "print-calibration: Val* tables have no summary line"
-	      <<std::endl;
+              <<std::endl;
     return 0;
   }
 
@@ -191,23 +191,23 @@ int mu2e::DbTool::printCalibration() {
     if(!name.empty()) {
       // get TID for this table name
       for(auto const& tt: _valcache.valTables().rows()) {
-	if(tt.name()==name) tid = tt.tid(); 
+        if(tt.name()==name) tid = tt.tid();
       }
     }
     for(auto const& cc: _valcache.valCalibrations().rows()) {
       if(tid<0 || cc.tid()==tid) {
-	if(user.empty() || user==cc.create_user()) {
+        if(user.empty() || user==cc.create_user()) {
           if(tint.start==0||inTime(tint,cc.create_time())) {
             cids.push_back(cc.cid());
           }
-	}
+        }
       }
     }
   }
 
   if(_verbose>1) std::cout << "print-calibration: printing tables for "
-			   << cids.size() <<" cids" <<std::endl;
-  
+                           << cids.size() <<" cids" <<std::endl;
+
   std::cout << "       CID          Table      create_user        create_date " <<std::endl;
 
   for(auto cid : cids) {
@@ -241,7 +241,7 @@ int mu2e::DbTool::printIov() {
   // if this is a val table, just exit - there is no summary line
   if(name.substr(0,3)=="Val") {
     std::cout << "print-iov: Val* tables have no IOV"
-	      <<std::endl;
+              <<std::endl;
     return 1;
   }
 
@@ -251,27 +251,27 @@ int mu2e::DbTool::printIov() {
     if(!name.empty()) {
       // get TID for this table name
       for(auto const& tt: _valcache.valTables().rows()) {
-	if(tt.name()==name) tid = tt.tid(); 
+        if(tt.name()==name) tid = tt.tid();
       }
     }
     for(auto const& ii: _valcache.valIovs().rows()) {
       auto const& cc = _valcache.valCalibrations().row(ii.cid());
       if(tid<0 || cc.tid()==tid) {
-	if(user.empty() || user==ii.create_user()) {
+        if(user.empty() || user==ii.create_user()) {
           if(tint.start==0||inTime(tint,ii.create_time())) {
             iids.push_back(ii.iid());
           }
-	}
+        }
       }
     }
   }
 
   if(_verbose>1) std::cout << "print-iovs: printing tables for "
-			   << iids.size() <<" IIDs" <<std::endl;
-  
-  if(details<=0) 
-    std::cout << "       IID   CID        run_range             create_user        create_date " 
-	      <<std::endl;
+                           << iids.size() <<" IIDs" <<std::endl;
+
+  if(details<=0)
+    std::cout << "       IID   CID        run_range             create_user        create_date "
+              <<std::endl;
 
   for(auto iid : iids) {
     rc = printIOVLine(iid,details,0);
@@ -310,9 +310,9 @@ int mu2e::DbTool::printGroup() {
   }
 
   if(_verbose>1) std::cout << "print-group: printing groups for "
-			   << gids.size() <<" GIDs" <<std::endl;
-  
-  if(details<=0) 
+                           << gids.size() <<" GIDs" <<std::endl;
+
+  if(details<=0)
     std::cout << "       GID     create_user        create_date " <<std::endl;
 
   for(auto gid : gids) {
@@ -360,9 +360,9 @@ int mu2e::DbTool::printExtension() {
   }
 
   if(_verbose>1) std::cout << "print-extension: printing extension for "
-			   << eids.size() <<" EIDs" <<std::endl;
-  
-  if(details<=0) 
+                           << eids.size() <<" EIDs" <<std::endl;
+
+  if(details<=0)
     std::cout << "       EID  VID  extend  create_user        create_date " <<std::endl;
 
   for(auto eid : eids) {
@@ -400,19 +400,19 @@ int mu2e::DbTool::printVersion() {
 
     for(auto const& vr :  _valcache.valVersions().rows()) {
       if(pid<0 || vr.pid()==pid ) {
-	if(vid<0 || vr.vid()==vid ) {
+        if(vid<0 || vr.vid()==vid ) {
           if(tint.start==0||inTime(tint,vr.create_time())) {
             vids.push_back(vr.vid());
           }
-	}
+        }
       }
     }
   }
 
   if(_verbose>1) std::cout << "print-group: printing versions for "
-			   << vids.size() <<" VIDs" <<std::endl;
-  
-  if(details<=0) 
+                           << vids.size() <<" VIDs" <<std::endl;
+
+  if(details<=0)
     std::cout << "      VID  PID  LID  maj  min  create_user        create_date                     comment" <<std::endl;
 
   for(auto vid : vids) {
@@ -454,15 +454,15 @@ int mu2e::DbTool::printPurpose() {
       pids.push_back(pid);
     } else {
       for(auto const& pr : _valcache.valPurposes().rows()) {
-	pids.push_back(pr.pid());
+        pids.push_back(pr.pid());
       }
     }
   }
 
   if(_verbose>1) std::cout << "print-group: printing purposes for "
-			   << pids.size() <<" PIDs" <<std::endl;
-  
-  if(details<=0) 
+                           << pids.size() <<" PIDs" <<std::endl;
+
+  if(details<=0)
     std::cout << "      PID           name       create_user          create_date                  comment" <<std::endl;
 
   for(auto pid : pids) {
@@ -479,15 +479,15 @@ int mu2e::DbTool::printTable() {
 
   ValTables const& tt = _valcache.valTables();
 
-  std::cout << "TID            name               dbname              user              time" 
-	    << std::endl;
+  std::cout << "TID            name               dbname              user              time"
+            << std::endl;
   for(auto const& r : tt.rows()) {
-    std::cout << std::setw(3) << r.tid() 
-	      << std::setw(20) << r.name()
-	      << std::setw(20) << r.dbname()
-	      << "  " << std::setw(15) << r.create_user()
-	      << "  " << r.create_time()
-	      << std::endl;
+    std::cout << std::setw(3) << r.tid()
+              << std::setw(20) << r.name()
+              << std::setw(20) << r.dbname()
+              << "  " << std::setw(15) << r.create_user()
+              << "  " << r.create_time()
+              << std::endl;
   }
 
   return rc;
@@ -511,22 +511,22 @@ int mu2e::DbTool::printList() {
   ValTables const& tt = _valcache.valTables();
   ValTableLists const& tl = _valcache.valTableLists();
 
-  std::cout << "  LID          name                   user              time                      comment" 
-	    << std::endl;
+  std::cout << "  LID          name                   user              time                      comment"
+            << std::endl;
   for(auto const& r : ll.rows()) {
     if(lid<0 || lid==r.lid()) {
-      std::cout << std::setw(5) << r.lid() 
-		<< std::setw(20) << r.name()
-		<< "  " << std::setw(15) << r.create_user()
-		<< "  " << r.create_time()
-		<< "  " << r.comment() 
-		<< std::endl;
+      std::cout << std::setw(5) << r.lid()
+                << std::setw(20) << r.name()
+                << "  " << std::setw(15) << r.create_user()
+                << "  " << r.create_time()
+                << "  " << r.comment()
+                << std::endl;
       for(auto const& rtl : tl.rows()) {
-	if(rtl.lid()==r.lid()) {
-	  auto const& rtt = tt.row(rtl.tid()); 
-	  std::cout << std::setw(10)<< rtl.tid() << "   "
-		    << rtt.name() << std::endl;
-	}
+        if(rtl.lid()==r.lid()) {
+          auto const& rtt = tt.row(rtl.tid());
+          std::cout << std::setw(10)<< rtl.tid() << "   "
+                    << rtt.name() << std::endl;
+        }
       }
     }
   }
@@ -565,32 +565,32 @@ int mu2e::DbTool::printSet() {
   for(auto const& er :  _valcache.valExtensions().rows()) {
     if(er.vid()==vid ) {
       for(auto const& elr :  _valcache.valExtensionLists().rows()) {
-	if(elr.eid()==er.eid() ) {
-	  auto const& gr =  _valcache.valGroups().row(elr.gid());
-	  for(auto const& glr :  _valcache.valGroupLists().rows()) {
-	    if(glr.gid()==gr.gid() ) {
-	      auto const& ir =  _valcache.valIovs().row(glr.iid());
-	      auto const& cr = _valcache.valCalibrations().row(ir.cid());
-	      int tid = cr.tid();
-	      int cid = cr.cid();
-	      auto name = _valcache.valTables().row(tid).name();
-	      auto ptr = mu2e::DbTableFactory::newTable(name);
-	      _reader.fillTableByCid(ptr, cid );
-	      coll.emplace_back(
-				DbIoV(ir.start_run(),ir.start_subrun(),ir.end_run(),ir.end_subrun()),
-				ptr, tid, cid  );
-	    }
-	  } // group lists
-	}
+        if(elr.eid()==er.eid() ) {
+          auto const& gr =  _valcache.valGroups().row(elr.gid());
+          for(auto const& glr :  _valcache.valGroupLists().rows()) {
+            if(glr.gid()==gr.gid() ) {
+              auto const& ir =  _valcache.valIovs().row(glr.iid());
+              auto const& cr = _valcache.valCalibrations().row(ir.cid());
+              int tid = cr.tid();
+              int cid = cr.cid();
+              auto name = _valcache.valTables().row(tid).name();
+              auto ptr = mu2e::DbTableFactory::newTable(name);
+              _reader.fillTableByCid(ptr, cid );
+              coll.emplace_back(
+                                DbIoV(ir.start_run(),ir.start_subrun(),ir.end_run(),ir.end_subrun()),
+                                ptr, tid, cid  );
+            }
+          } // group lists
+        }
       } // extension lists
     }
   } // extensions
 
   if(_verbose>1) std::cout << "print-set: printing data "
-			   << coll.size() <<" CIDs" <<std::endl;
+                           << coll.size() <<" CIDs" <<std::endl;
 
   DbUtil::writeFile(fn,coll);
-  
+
   return 0;
 }
 
@@ -604,13 +604,13 @@ int mu2e::DbTool::printCIDLine(int cid, int indent) {
   auto const& cr = cids.row(cid);
   auto name = tids.row(cr.tid()).name();
 
-    std::cout << "CID " 
-	      << std::setw(5+4*std::max(indent,0)) << cid 
-	      << std::setw(20) << name
-	      << std::setw(12) << cr.create_user() 
-	      << std::setw(35) << cr.create_time() 
-	      << std::endl;
-  
+    std::cout << "CID "
+              << std::setw(5+4*std::max(indent,0)) << cid
+              << std::setw(20) << name
+              << std::setw(12) << cr.create_user()
+              << std::setw(35) << cr.create_time()
+              << std::endl;
+
     return 0;
 }
 
@@ -625,12 +625,12 @@ int mu2e::DbTool::printIOVLine(int iov, int details, int indent) {
 
   auto const& idr = iids.row(iov);
   std::cout << "IOV "
-	    << std::setw(5+4*std::max(indent,0)) << idr.iid() 
-	    << std::setw(5) << idr.cid() 
-	    << std::setw(25) << idr.iov().to_string(true) 
-	    << std::setw(12) << idr.create_user() 
-	    << std::setw(35)  << idr.create_time() 
-	    << std::endl;
+            << std::setw(5+4*std::max(indent,0)) << idr.iid()
+            << std::setw(5) << idr.cid()
+            << std::setw(25) << idr.iov().to_string(true)
+            << std::setw(12) << idr.create_user()
+            << std::setw(35)  << idr.create_time()
+            << std::endl;
   if(details>0) {
     rc = printCIDLine(idr.cid(),indent+1);
   }
@@ -649,15 +649,15 @@ int mu2e::DbTool::printGIDLine(int gid, int details, int indent) {
   auto const& gls = _valcache.valGroupLists();
 
   auto const& gr = gs.row(gid);
-  std::cout << "GID " 
-	    << std::setw(5+4*std::max(indent,0)) << gid 
-	    << std::setw(12) << gr.create_user()  
-	    << std::setw(35) << gr.create_time() 
-	    << std::endl;
+  std::cout << "GID "
+            << std::setw(5+4*std::max(indent,0)) << gid
+            << std::setw(12) << gr.create_user()
+            << std::setw(35) << gr.create_time()
+            << std::endl;
   if(details>0) {
     for(auto glr : gls.rows()) {
       if(glr.gid()==gid) {
-	rc = printIOVLine(glr.iid(), details-1,indent+1);
+        rc = printIOVLine(glr.iid(), details-1,indent+1);
       }
     }
   }
@@ -672,18 +672,18 @@ int mu2e::DbTool::printEIDLine(int eid, int details, int indent) {
 
   auto const& er =  _valcache.valExtensions().row(eid);
 
-  std::cout << "EID " 
-	    << std::setw(5+4*std::max(indent,0)) << eid 
-	    << std::setw(5) << er.vid()  
-	    << std::setw(5) << er.extension()  
-	    << std::setw(12) << er.create_user()  
-	    << std::setw(35) << er.create_time() 
-	    << std::endl;
+  std::cout << "EID "
+            << std::setw(5+4*std::max(indent,0)) << eid
+            << std::setw(5) << er.vid()
+            << std::setw(5) << er.extension()
+            << std::setw(12) << er.create_user()
+            << std::setw(35) << er.create_time()
+            << std::endl;
   if(details>0) {
     for(auto glr : _valcache.valExtensionLists().rows()) {
       if(glr.eid()==eid) {
-	rc = printGIDLine(glr.gid(), details-1,indent+1);
-	if(rc!=0) return rc;
+        rc = printGIDLine(glr.gid(), details-1,indent+1);
+        if(rc!=0) return rc;
       }
     }
   }
@@ -697,21 +697,21 @@ int mu2e::DbTool::printVIDLine(int vid, int details, int indent) {
 
   auto const& vr =  _valcache.valVersions().row(vid);
 
-  std::cout << "VID " 
-	    << std::setw(5+4*std::max(indent,0)) << vid 
-	    << std::setw(5) << vr.pid()  
-	    << std::setw(5) << vr.lid()  
-	    << std::setw(5) << vr.major()
-	    << std::setw(5) << vr.minor()
-	    << std::setw(12) << vr.create_user()
-	    << std::setw(35) << vr.create_time() << " "
-	    << std::setw(35) << vr.comment()
-	    << std::endl;
+  std::cout << "VID "
+            << std::setw(5+4*std::max(indent,0)) << vid
+            << std::setw(5) << vr.pid()
+            << std::setw(5) << vr.lid()
+            << std::setw(5) << vr.major()
+            << std::setw(5) << vr.minor()
+            << std::setw(12) << vr.create_user()
+            << std::setw(35) << vr.create_time() << " "
+            << std::setw(35) << vr.comment()
+            << std::endl;
   if(details>0) {
     for(auto er : _valcache.valExtensions().rows()) {
       if(er.vid()==vid) {
-	rc = printEIDLine(er.eid(), details-1,indent+1);
-	if(rc!=0) return rc;
+        rc = printEIDLine(er.eid(), details-1,indent+1);
+        if(rc!=0) return rc;
       }
     }
   }
@@ -726,18 +726,18 @@ int mu2e::DbTool::printPIDLine(int pid, int details, int indent) {
 
   auto const& pr =  _valcache.valPurposes().row(pid);
 
-  std::cout << "PID " 
-	    << std::setw(5+4*std::max(indent,0)) << pid 
-	    << std::setw(20) << pr.name()  
-	    << std::setw(12) << pr.create_user()
-	    << std::setw(35) << pr.create_time() << " "
-	    << std::setw(35) << pr.comment()
-	    << std::endl;
+  std::cout << "PID "
+            << std::setw(5+4*std::max(indent,0)) << pid
+            << std::setw(20) << pr.name()
+            << std::setw(12) << pr.create_user()
+            << std::setw(35) << pr.create_time() << " "
+            << std::setw(35) << pr.comment()
+            << std::endl;
   if(details>0) {
     for(auto vr : _valcache.valVersions().rows()) {
       if(vr.pid()==pid) {
-	rc = printVIDLine(vr.vid(), details-1,indent+1);
-	if(rc!=0) return rc;
+        rc = printVIDLine(vr.vid(), details-1,indent+1);
+        if(rc!=0) return rc;
       }
     }
   }
@@ -754,14 +754,14 @@ int mu2e::DbTool::findPidVid(std::string purpose, std::string version, int& pid,
 
   if( purpose.empty() && !version.empty() )  {
     std::cout << "Error - version must be used with a purpose" << std::endl;
-    return 1;  
+    return 1;
   }
 
   // both are empty
   if( purpose.empty() )  return 0;
 
   for(auto const& pp : _valcache.valPurposes().rows()) {
-    if(pp.name()==purpose) pid = pp.pid(); 
+    if(pp.name()==purpose) pid = pp.pid();
   }
 
   if(pid<0) {
@@ -819,19 +819,19 @@ int mu2e::DbTool::commitCalibration() {
 
   DbTableCollection coll = DbUtil::readFile(args["file"]);
   if(_verbose>0) std::cout << "commit-calibration: read "
-			   << coll.size() <<" tables "
-			   << " from " << args["file"] <<std::endl;
+                           << coll.size() <<" tables "
+                           << " from " << args["file"] <<std::endl;
   if(_verbose>2) {
     for(auto lt: coll) {
-      std::cout << "commit-calibration: read contents for table " 
-		<< lt.table().name() << "  with IOV " << lt.iov().to_string(true) <<std::endl;
+      std::cout << "commit-calibration: read contents for table "
+                << lt.table().name() << "  with IOV " << lt.iov().to_string(true) <<std::endl;
       if(_verbose>5) std::cout << lt.table().csv();
     }
   }
 
   if(coll.size()<=0) {
     std::cout << "commit-calibration: no table found in file "
-	      << args["file"]<<std::endl;
+              << args["file"]<<std::endl;
     return 2;
   }
 
@@ -844,8 +844,8 @@ int mu2e::DbTool::commitCalibration() {
 // the list insert has the core function, so if a single table,
 // put it in a list
 
-int mu2e::DbTool::commitCalibrationTable(DbTable::cptr_t const& ptr, 
-					 bool admin) {
+int mu2e::DbTool::commitCalibrationTable(DbTable::cptr_t const& ptr,
+                                         bool admin) {
   DbTableCollection coll;
   coll.emplace_back(DbLiveTable(mu2e::DbIoV(),ptr));
   return commitCalibrationList(coll,false,false,admin);
@@ -854,7 +854,7 @@ int mu2e::DbTool::commitCalibrationTable(DbTable::cptr_t const& ptr,
 // ****************************************  commitCalibrationList
 
 int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
-					bool qai, bool qag, bool admin) {
+                                        bool qai, bool qag, bool admin) {
 
   int rc = 0;
   rc = _sql.connect();
@@ -877,7 +877,7 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
     }
     if(tid<=0) {
       std::cout << "DbTool::commitCalibrationList could not find tid for "
-		<< "table named "<< ptr->name()<<std::endl;
+                << "table named "<< ptr->name()<<std::endl;
       return 1;
     }
 
@@ -893,9 +893,9 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
 
     cid = std::stoi(result);
     if(cid<=0 || cid>1000000) {
-      std::cout 
-	<< "DbTool::commitCalibrationList could not get cid, result is " 
-	<<result << std::endl;
+      std::cout
+        << "DbTool::commitCalibrationList could not get cid, result is "
+        <<result << std::endl;
     }
 
     liveTable.setCid(cid);
@@ -905,11 +905,11 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
     size_t dpos = dbname.find(".");
     if(dpos==std::string::npos) {
       std::cout << "DbTool::commitCalibrationList could not decode schema from "
-		<< dbname << std::endl;
+                << dbname << std::endl;
       return 1;
     }
     std::string schema = dbname.substr(0,dpos);
-  
+
     // inserting into a detector schema is done by the detector role
     // or overridden by admin
     if(admin) {
@@ -918,9 +918,9 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
       // the tst schema is written by val role, just to remove one more role
       // with a duplicate membership
       if(schema=="tst") {
-	command = "SET ROLE val_role;";
+        command = "SET ROLE val_role;";
       } else {
-	command = "SET ROLE "+schema+"_role;";
+        command = "SET ROLE "+schema+"_role;";
       }
     }
     rc = _sql.execute(command,result);
@@ -932,23 +932,23 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
     for(auto line: lines) {
       std::string cline = DbUtil::sqlLine(line);
       command = "INSERT INTO "+ptr->dbname()+"(cid,"+ptr->query()
-	+") VALUES ("+std::to_string(cid)+","+cline+");";
+        +") VALUES ("+std::to_string(cid)+","+cline+");";
       rc = _sql.execute(command,result);
       if(_verbose>9) {
-	std::cout << command << std::endl;
-	std::cout << result << std::endl;
+        std::cout << command << std::endl;
+        std::cout << result << std::endl;
       }
       if(rc!=0) return rc;
     }
 
     if(_dryrun) {
-      std::cout << "would create calibration "<< ptr->name() 
-		<< " with " << ptr->nrow() 
-		<< " rows, new cid would be " << cid << std::endl;
+      std::cout << "would create calibration "<< ptr->name()
+                << " with " << ptr->nrow()
+                << " rows, new cid would be " << cid << std::endl;
     } else {
-      std::cout << "created calibration for "<< ptr->name() 
-		<< " with " << ptr->nrow() 
-		<< " rows, new cid is " << cid << std::endl;
+      std::cout << "created calibration for "<< ptr->name()
+                << " with " << ptr->nrow()
+                << " rows, new cid is " << cid << std::endl;
     }
 
   }
@@ -969,12 +969,12 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
 
   std::vector<int> iids;
 
-  // if dryrun, only print, since we can't make 
+  // if dryrun, only print, since we can't make
   // fake dryrun IoVs from fake dryrun CIDs
   if (_dryrun) {
     for(auto const& liveTable: coll) {
-      std::cout << "would make Iov with CID " << liveTable.cid() << " and IoV " 
-		<< liveTable.iov().to_string(true) << std::endl;
+      std::cout << "would make Iov with CID " << liveTable.cid() << " and IoV "
+                << liveTable.iov().to_string(true) << std::endl;
     }
   } else {
     int iid;
@@ -991,7 +991,7 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll,
   if(_dryrun) {
     std::cout << "would make a group from the new IoVs" << std::endl;
   } else {
-    // refill the val structure so it includes the calibrations and iovs 
+    // refill the val structure so it includes the calibrations and iovs
     // we just made so commitGroup can find them
     refresh();
 
@@ -1019,7 +1019,7 @@ int mu2e::DbTool::commitIov(int& iid, int cid, std::string iovtext) {
     if( (rc = getArgs(args)) ) return rc;
     if(!args["cid"].empty()) cid = stoi(args["cid"]);
     if(iovtext.empty() && !args["iov"].empty()) iovtext = args["iov"];
-    
+
     if(cid<=0) {
       std::cout << "commit-iov: --cid is required "<<std::endl;
       return 1;
@@ -1085,7 +1085,7 @@ int mu2e::DbTool::commitGroup(int& gid, std::vector<int> iids) {
     args["iid"] = "";
     if( (rc = getArgs(args)) ) return rc;
     if(!args["iid"].empty()) iids = intList(args["iid"]);
-    
+
     if(iids.empty()) {
       std::cout << "commit-group: --iid is required "<<std::endl;
       return 1;
@@ -1099,13 +1099,13 @@ int mu2e::DbTool::commitGroup(int& gid, std::vector<int> iids) {
     bool found = false;
     for(auto const& ir: _valcache.valIovs().rows()) {
       if(ir.iid()==i) {
-	found = true;
-	break;
+        found = true;
+        break;
       }
     }
     if(!found) {
       std::cout << "commit-group: could not verify that iid "
-		<< i <<" exists"<<std::endl;
+                << i <<" exists"<<std::endl;
       return 1;
     }
   }
@@ -1124,21 +1124,21 @@ int mu2e::DbTool::commitGroup(int& gid, std::vector<int> iids) {
   // use reduced IOV lists to do detailed overlap check
   for(auto tv : iovs) {
     auto const& vec = tv.second;
-    for(size_t i=0; i<vec.size()-1; i++) { 
-      for(size_t j=i+1; j<vec.size(); j++) { 
-	if(vec[j].isOverlapping(vec[i])>0) {
-	  std::cout <<"DEBUG " << vec[j].isOverlapping(vec[i]) << std::endl;
-	  std::cout << "commit-group: found overlapping IOV in table TID "
-		    << tv.first <<std::endl;
-	  std::cout << "    with IOVs " <<vec[i].to_string(true) << "  " 
-		    << vec[j].to_string(true) << std::endl;
-	  return 1;
-	}
+    for(size_t i=0; i<vec.size()-1; i++) {
+      for(size_t j=i+1; j<vec.size(); j++) {
+        if(vec[j].isOverlapping(vec[i])>0) {
+          std::cout <<"DEBUG " << vec[j].isOverlapping(vec[i]) << std::endl;
+          std::cout << "commit-group: found overlapping IOV in table TID "
+                    << tv.first <<std::endl;
+          std::cout << "    with IOVs " <<vec[i].to_string(true) << "  "
+                    << vec[j].to_string(true) << std::endl;
+          return 1;
+        }
       }
     }
   }
 
-  // done checks  
+  // done checks
 
   rc = _sql.connect();
   if(rc) return rc;
@@ -1196,8 +1196,8 @@ int mu2e::DbTool::commitGroup(int& gid, std::vector<int> iids) {
 }
 
 // ****************************************  commmitExtension
-int mu2e::DbTool::commitExtension(int& eid, std::string purpose, 
-		     std::string version, std::vector<int> gids) {
+int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
+                     std::string version, std::vector<int> gids) {
   int rc = 0;
   eid = -1;
 
@@ -1255,24 +1255,24 @@ int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
     bool found = false;
     for(auto const& gr: _valcache.valGroups().rows()) {
       if(gr.gid()==g) {
-	found = true;
-	break;
+        found = true;
+        break;
       }
     }
     if(!found) {
       std::cout << "commit-extension: could not verify that gid "
-		<< g <<" exists"<<std::endl;
+                << g <<" exists"<<std::endl;
       return 1;
     }
   }
 
   // check that the tables in the gids are in the allowed table list
 
-  // we will also need to check IOV overlap, 
+  // we will also need to check IOV overlap,
   // so collect IOVs while we are looping
   // for each table, collect the proposed IOVs
   std::map<int,std::vector<DbIoV>> newiovs;
-  // save run range of the proposed IOVs so we can filter the existing 
+  // save run range of the proposed IOVs so we can filter the existing
   // IOVs to just the basic potential overlapping range
   int startlim= 999999;
   int endlim = 0;
@@ -1280,24 +1280,24 @@ int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
   for(auto g : gids) {
     for(auto const& glr: _valcache.valGroupLists().rows()) {
       if(glr.gid()==g) {
-	auto const& ir = _valcache.valIovs().row(glr.iid());
-	auto const& cr = _valcache.valCalibrations().row(ir.cid());
-	int tid = cr.tid();
-	bool found = false;
-	for (auto t : allowedtids ) {
-	  if (t==tid) found=true;
-	}
-	if( ! found ) {
-	  std::cout << "commit-extension: GID " << g <<", IID " <<
-	    ir.iid() << ", CID="<<cr.cid()<<" has  TID "<<tid<<std::endl;
-	  std::cout << "    which is not in the table list TIDs:";
-	  for (auto t : allowedtids ) std::cout << " " << t;
-	  std::cout << std::endl;
-	  return 1;
-	}
-	newiovs[tid].emplace_back(ir.iov());
-	if(ir.start_run()<startlim) startlim = ir.start_run();
-	if(ir.end_run() >endlim) endlim = ir.end_run();
+        auto const& ir = _valcache.valIovs().row(glr.iid());
+        auto const& cr = _valcache.valCalibrations().row(ir.cid());
+        int tid = cr.tid();
+        bool found = false;
+        for (auto t : allowedtids ) {
+          if (t==tid) found=true;
+        }
+        if( ! found ) {
+          std::cout << "commit-extension: GID " << g <<", IID " <<
+            ir.iid() << ", CID="<<cr.cid()<<" has  TID "<<tid<<std::endl;
+          std::cout << "    which is not in the table list TIDs:";
+          for (auto t : allowedtids ) std::cout << " " << t;
+          std::cout << std::endl;
+          return 1;
+        }
+        newiovs[tid].emplace_back(ir.iov());
+        if(ir.start_run()<startlim) startlim = ir.start_run();
+        if(ir.end_run() >endlim) endlim = ir.end_run();
       }
     }
   }
@@ -1310,20 +1310,20 @@ int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
     if(er.vid()==vid) { // if this extension applies to our version
       int eid = er.eid();
       for(auto const& elr: _valcache.valExtensionLists().rows()) {
-	if(elr.eid()==eid) { // if this group is in our extension
-	  int gid = elr.gid(); 
-	  // find the IOVs in this group
-	  for(auto const& glr: _valcache.valGroupLists().rows()) {
-	    if(glr.gid()==gid) { // if this iov is in the group
-	      auto const& ir = _valcache.valIovs().row(glr.iid());
-	      auto const& cr = _valcache.valCalibrations().row(ir.cid());
-	      if( ir.start_run()<=endlim && ir.end_run()>=startlim ) {
-		int tid = cr.tid();
-		oldiovs[tid].emplace_back(ir.iov());
-	      }
-	    }
-	  }
-	}
+        if(elr.eid()==eid) { // if this group is in our extension
+          int gid = elr.gid();
+          // find the IOVs in this group
+          for(auto const& glr: _valcache.valGroupLists().rows()) {
+            if(glr.gid()==gid) { // if this iov is in the group
+              auto const& ir = _valcache.valIovs().row(glr.iid());
+              auto const& cr = _valcache.valCalibrations().row(ir.cid());
+              if( ir.start_run()<=endlim && ir.end_run()>=startlim ) {
+                int tid = cr.tid();
+                oldiovs[tid].emplace_back(ir.iov());
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -1332,19 +1332,19 @@ int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
   for(auto t : allowedtids ) {
     auto const& vec1 = oldiovs[t];
     auto const& vec2 = newiovs[t];
-    for(auto const& iov1 : vec1 ) { 
-      for(auto const& iov2 : vec2 ) { 
-	if(iov1.isOverlapping(iov2)>0) {
-	  std::cout << "commit-extension: found overlapping IOV in table TID "
-		    <<t<<std::endl;
-	  std::cout << "    with new IOV" << iov2.to_string(true) << std::endl;
-	  return 1;
-	}
+    for(auto const& iov1 : vec1 ) {
+      for(auto const& iov2 : vec2 ) {
+        if(iov1.isOverlapping(iov2)>0) {
+          std::cout << "commit-extension: found overlapping IOV in table TID "
+                    <<t<<std::endl;
+          std::cout << "    with new IOV" << iov2.to_string(true) << std::endl;
+          return 1;
+        }
       }
     }
   }
 
-  // finally done checks  
+  // finally done checks
 
   // find the max extension for this version
   int emax = 0;
@@ -1398,7 +1398,7 @@ int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
     rc = _sql.execute(command, result);
     if(rc) {
       std::cout <<"commit-extension : error committing extensionlist "
-		<< " with gid "<< g <<", and eid "<< eid  << std::endl;
+                << " with gid "<< g <<", and eid "<< eid  << std::endl;
       return rc;
     }
   }
@@ -1412,11 +1412,11 @@ int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
   DbVersion newversion(ver.purpose(),ver.major(),ver.minor(),emax);
 
   if(_dryrun) {
-    std::cout << "new largest verison would be " 
-	      << newversion.to_string("_") << std::endl;
+    std::cout << "new largest verison would be "
+              << newversion.to_string("_") << std::endl;
   } else {
-    std::cout << "new largest verison is " 
-	      << newversion.to_string("_") << std::endl;
+    std::cout << "new largest verison is "
+              << newversion.to_string("_") << std::endl;
   }
 
   if(_dryrun) {
@@ -1523,7 +1523,7 @@ int mu2e::DbTool::commitList() {
     std::cout << "commit-list: --tids produced no list of TID's "<<std::endl;
     return 1;
   }
-  
+
   std::string command,result;
   rc = _sql.connect();
   if(rc) return rc;
@@ -1537,21 +1537,21 @@ int mu2e::DbTool::commitList() {
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  command = 
+  command =
     "INSERT INTO val.lists (name,comment,create_time,create_user) VALUES ('"
     +args["name"]+"','"
     +args["comment"]
     +"',CURRENT_TIMESTAMP,SESSION_USER) RETURNING lid;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
-  
+
   int lid = std::stoi(result);
   if(lid<=0 || lid>1000) {
     std::cout << "commit-list: found new lid out of range lid="
-	      << lid << std::endl;
+              << lid << std::endl;
     return 1;
   }
-  
+
   //verify the lid is not already used
   command = "SELECT count(*) FROM val.tablelists WHERE lid='"
     +std::to_string(lid)+"';";
@@ -1559,10 +1559,10 @@ int mu2e::DbTool::commitList() {
   if (rc) return rc;
   int ntid = std::stoi(result);
   if (ntid>0) {
-    std::cout << "commit-list: found lid " 
-	      << lid << " already has " << ntid 
-	      << " tids, but there should be zero right after it is created" 
-	      << std::endl;
+    std::cout << "commit-list: found lid "
+              << lid << " already has " << ntid
+              << " tids, but there should be zero right after it is created"
+              << std::endl;
     return 1;
   }
 
@@ -1576,15 +1576,15 @@ int mu2e::DbTool::commitList() {
     ntid++;
     if(rc) return rc;
   }
-  
+
 
   if(_dryrun) {
     std::cout <<"commit-list: new list "+args["name"]+" would have lid "
-	      << lid << " with "<< ntid <<" list entries " << std::endl;
+              << lid << " with "<< ntid <<" list entries " << std::endl;
     command = "ROLLBACK;";
   } else {
     std::cout <<"commit-list: new list "+args["name"]+" has lid "
-	      << lid << " with "<< ntid <<" list entries " << std::endl;
+              << lid << " with "<< ntid <<" list entries " << std::endl;
     command = "COMMIT;";
   }
   rc = _sql.execute(command, result);
@@ -1692,7 +1692,7 @@ int mu2e::DbTool::commitVersion() {
 
   // verify the purpose exists
   // true if numeric
-  bool qpp = args["purpose"].find_first_not_of("0123456789") 
+  bool qpp = args["purpose"].find_first_not_of("0123456789")
                       == std::string::npos;
   int pid = -1;
   int pidTest = -1;
@@ -1700,19 +1700,19 @@ int mu2e::DbTool::commitVersion() {
   for(auto const& pr : _valcache.valPurposes().rows()) {
     if(qpp) {
       if(pr.pid()==pidTest) {
-	pid = pr.pid();
-	break;
+        pid = pr.pid();
+        break;
       }
     } else {
       if(pr.name()==args["purpose"]) {
-	pid = pr.pid();
-	break;
+        pid = pr.pid();
+        break;
       }
     }
   }
   if(pid<=0) {
-    std::cout << "commit-version: failed to verify purpose " 
-	      << args["purpose"] << std::endl;
+    std::cout << "commit-version: failed to verify purpose "
+              << args["purpose"] << std::endl;
     return 1;
   }
 
@@ -1726,19 +1726,19 @@ int mu2e::DbTool::commitVersion() {
   for(auto const& lr : _valcache.valLists().rows()) {
     if(qll) {
       if(lr.lid()==lidTest) {
-	lid = lr.lid();
-	break;
+        lid = lr.lid();
+        break;
       }
     } else {
       if(lr.name()==args["list"]) {
-	lid = lr.lid();
-	break;
+        lid = lr.lid();
+        break;
       }
     }
   }
   if(lid<=0) {
-    std::cout << "commit-version: failed to verify list " 
-	      << args["list"] << std::endl;
+    std::cout << "commit-version: failed to verify list "
+              << args["list"] << std::endl;
     return 1;
   }
 
@@ -1852,9 +1852,9 @@ int mu2e::DbTool::commitPatch() {
   for(auto const& er :  _valcache.valExtensions().rows()) {
     if(er.vid()==oldvid ) {
       for(auto const& elr :  _valcache.valExtensionLists().rows()) {
-	if(elr.eid()==er.eid() ) {
-	  oldgids.push_back(elr.gid());
-	}
+        if(elr.eid()==er.eid() ) {
+          oldgids.push_back(elr.gid());
+        }
       } // extension lists
     }
   } // extensions
@@ -1877,16 +1877,16 @@ int mu2e::DbTool::commitPatch() {
   for(int t : oldtids) {
     if(std::find(newtids.begin(),newtids.end(),t)==newtids.end()) {
       if(_verbose>1) {
-	std::cout << "commitPatch will drop table TID " << t << std::endl;
+        std::cout << "commitPatch will drop table TID " << t << std::endl;
       }
       droptids.push_back(t);
     }
   }
 
   if( _verbose>1) {
-    std::cout << "TIDs size, old " << oldtids.size() 
-	      << " new " << newtids.size() 
-	      << " drop " << droptids.size() << std::endl;
+    std::cout << "TIDs size, old " << oldtids.size()
+              << " new " << newtids.size()
+              << " drop " << droptids.size() << std::endl;
   }
 
   // unpack the new gids into a list of iovs
@@ -1899,15 +1899,15 @@ int mu2e::DbTool::commitPatch() {
 
   if( _verbose>1) {
     for(auto const& npr : nmap) {
-      std::cout << "New maps TID " << npr.first 
-		<< "  nIoVs " << npr.second.size() 
-		<< std::endl;
+      std::cout << "New maps TID " << npr.first
+                << "  nIoVs " << npr.second.size()
+                << std::endl;
     }
   }
 
 
-  // big loop over old groups. Analyze each to determine if the 
-  // group can be copied over as-is, or needs to be modified 
+  // big loop over old groups. Analyze each to determine if the
+  // group can be copied over as-is, or needs to be modified
   // to drops tables, or to accomodate overlap with the patch
 
 
@@ -1921,36 +1921,36 @@ int mu2e::DbTool::commitPatch() {
     if( _verbose>1) {
       std::cout << "Processing GID " << oldg << std::endl;
       for(auto const& opr : omap) {
-	std::cout << "Old maps TID " << opr.first 
-		  << "  nIoVs " << opr.second.size() 
-		  << std::endl;
-      }
-    }
-    
-    // check that this group does not include any tables to be dropped
-    for(int t : droptids ) {
-      if(omap.find(t)==omap.end()) {
-	omap.erase(t);
-	remakegroup = true;
-	if(_verbose>1) {
-	  std::cout << "Group GID "<< oldg << " will be remade to drop table TID " << t << std::endl;
-	}
+        std::cout << "Old maps TID " << opr.first
+                  << "  nIoVs " << opr.second.size()
+                  << std::endl;
       }
     }
 
-    // jump out of oldgid loop if there was no table to drop 
-    // and the run rangess don't overlap with the patch, 
+    // check that this group does not include any tables to be dropped
+    for(int t : droptids ) {
+      if(omap.find(t)==omap.end()) {
+        omap.erase(t);
+        remakegroup = true;
+        if(_verbose>1) {
+          std::cout << "Group GID "<< oldg << " will be remade to drop table TID " << t << std::endl;
+        }
+      }
+    }
+
+    // jump out of oldgid loop if there was no table to drop
+    // and the run rangess don't overlap with the patch,
     // so no need to check detailed overlaps
     if(!remakegroup && (omin>nmax || omax<nmin) ) {
       copygids.push_back(oldg);
       if(_verbose>1) {
-	std::cout << "Group GID "<< oldg << " will be copied" << std::endl;
+        std::cout << "Group GID "<< oldg << " will be copied" << std::endl;
       }
       continue;  // continue loop on old gids
     }
 
     // at this point we need to look at detailed overlaps of this
-    // group and the patch groups.  If there are overlaps, remove 
+    // group and the patch groups.  If there are overlaps, remove
     // the IOV from the old group.  This might mean just dropping an IOV,
     // or it might mean making one or two new partial IOVs
 
@@ -1958,32 +1958,32 @@ int mu2e::DbTool::commitPatch() {
     for(auto& tpr : omap) {
       int tid = tpr.first;
       auto nit = nmap.find(tid);
-      // if the new group does not have any iov for table tid, then 
+      // if the new group does not have any iov for table tid, then
       // leave this table's list of iov intact, go to next table
       if(nit==nmap.end()) continue;
 
       // loop over the list of old iovs for this group, this table
       for(auto& oeiov : tpr.second) {
-	// the list of new iovs for the patch groups, this table
-	for(auto& neiov : nit->second) {
-	  int over = oeiov.iov().isOverlapping(neiov.iov());
-	  // over==0 means no overlap, leave the iov alone
-	  if(over==1) {  // complete overlap
-	    oeiov.setIid(-2);  // this iov is removed
-	  } else if(over==4) { // this old iov is split in two
-	    DbIoV temp = oeiov.iov();
-	    oeiov.iov().subtract(neiov.iov());
-	    oeiov.setIid(-1);  // this iov is modified, early split
-	    // create late split
-	    temp.subtract(neiov.iov(),DbIoV::maxRun(),DbIoV::maxSubrun());
-	    // put it on the list to continue being checked
-	    tpr.second.emplace_back(-1,oeiov.cid(),temp);
-	  } else if(over>0) { // partial overlap
-	    oeiov.iov().subtract(neiov.iov());
-	    oeiov.setIid(-1);  // this iov is modified
-	  }
-	  if(over>0) remakegroup = true;
-	} // loop over new iovs
+        // the list of new iovs for the patch groups, this table
+        for(auto& neiov : nit->second) {
+          int over = oeiov.iov().isOverlapping(neiov.iov());
+          // over==0 means no overlap, leave the iov alone
+          if(over==1) {  // complete overlap
+            oeiov.setIid(-2);  // this iov is removed
+          } else if(over==4) { // this old iov is split in two
+            DbIoV temp = oeiov.iov();
+            oeiov.iov().subtract(neiov.iov());
+            oeiov.setIid(-1);  // this iov is modified, early split
+            // create late split
+            temp.subtract(neiov.iov(),DbIoV::maxRun(),DbIoV::maxSubrun());
+            // put it on the list to continue being checked
+            tpr.second.emplace_back(-1,oeiov.cid(),temp);
+          } else if(over>0) { // partial overlap
+            oeiov.iov().subtract(neiov.iov());
+            oeiov.setIid(-1);  // this iov is modified
+          }
+          if(over>0) remakegroup = true;
+        } // loop over new iovs
       } // loop ove rold iovs
     } // loop over old tables in this group
 
@@ -2002,66 +2002,66 @@ int mu2e::DbTool::commitPatch() {
     for(auto& tpr : omap) {
       // the list of old iovs for this group, this table
       for(auto& oeiov : tpr.second) {
-	if(oeiov.iid()==-1) { // it is modified or new
-	  if(_dryrun) {
-	    std::cout << "Would make new iov for TID " << tpr.first 
-		      << "  CID " << oeiov.cid() 
-		      << "  iov " << oeiov.iov().to_string(true) << std::endl;
-	  } else {
-	    if(_verbose>1) {
-	      std::cout << "Making new iov for TID " << tpr.first 
-			<< "  CID " << oeiov.cid() 
-			<< "  iov " << oeiov.iov().to_string(true) << std::endl;
-	    }
-	    int iid;
-	    rc = commitIov(iid,oeiov.cid(),oeiov.iov().to_string(true));
-	    if(rc!=0) return rc;
-	    oeiov.setIid(iid); // store new iid
-	  }
-	  iids.push_back(oeiov.iid());
-	} else if(oeiov.iid()==-2) { // this iov was removed
-	  if(_dryrun || _verbose>1) {
-	    std::cout << "Would remove iov for TID " << tpr.first 
-		      << "  CID " << oeiov.cid() 
-		      << "  iov " << oeiov.iov().to_string(true) << std::endl;
-	  } else if(_verbose>1) {
-	    std::cout << "Removing iov for TID " << tpr.first 
-		      << "  CID " << oeiov.cid() 
-		      << "  iov " << oeiov.iov().to_string(true) << std::endl;
-	  }
-	} else if(oeiov.iid()>0) {
-	  // just continue this iov in the new group
-	  if(_dryrun || _verbose>1) {
-	    std::cout << "Keeping iov for TID " << tpr.first 
-		      << "  CID " << oeiov.cid() 
-		      << "  iov " << oeiov.iov().to_string(true) << std::endl;
-	  }
-	  iids.push_back(oeiov.iid());
-	}
+        if(oeiov.iid()==-1) { // it is modified or new
+          if(_dryrun) {
+            std::cout << "Would make new iov for TID " << tpr.first
+                      << "  CID " << oeiov.cid()
+                      << "  iov " << oeiov.iov().to_string(true) << std::endl;
+          } else {
+            if(_verbose>1) {
+              std::cout << "Making new iov for TID " << tpr.first
+                        << "  CID " << oeiov.cid()
+                        << "  iov " << oeiov.iov().to_string(true) << std::endl;
+            }
+            int iid;
+            rc = commitIov(iid,oeiov.cid(),oeiov.iov().to_string(true));
+            if(rc!=0) return rc;
+            oeiov.setIid(iid); // store new iid
+          }
+          iids.push_back(oeiov.iid());
+        } else if(oeiov.iid()==-2) { // this iov was removed
+          if(_dryrun || _verbose>1) {
+            std::cout << "Would remove iov for TID " << tpr.first
+                      << "  CID " << oeiov.cid()
+                      << "  iov " << oeiov.iov().to_string(true) << std::endl;
+          } else if(_verbose>1) {
+            std::cout << "Removing iov for TID " << tpr.first
+                      << "  CID " << oeiov.cid()
+                      << "  iov " << oeiov.iov().to_string(true) << std::endl;
+          }
+        } else if(oeiov.iid()>0) {
+          // just continue this iov in the new group
+          if(_dryrun || _verbose>1) {
+            std::cout << "Keeping iov for TID " << tpr.first
+                      << "  CID " << oeiov.cid()
+                      << "  iov " << oeiov.iov().to_string(true) << std::endl;
+          }
+          iids.push_back(oeiov.iid());
+        }
       } // loop over old eiovs
     } // loop over old tables
 
     if(iids.size()>0) {
       if(_dryrun) {
-	  std::cout << "Group " << oldg << " with "<< iids.size() 
-		    << " iovs would get a new group"  << std::endl; 
+          std::cout << "Group " << oldg << " with "<< iids.size()
+                    << " iovs would get a new group"  << std::endl;
       } else {
-	// reload the val database structure so that it includes
-	// the new IoVs and commitGroup can run normally, including checks
-	refresh();
+        // reload the val database structure so that it includes
+        // the new IoVs and commitGroup can run normally, including checks
+        refresh();
 
-	int gid;
-	int rc = commitGroup(gid,iids);
-	if(rc!=0) return 1;
-	newgids.push_back(gid);
-	if(_verbose>1) {
-	  std::cout << "Group " << oldg << " with "<< iids.size() 
-		    << " iovs created a new group GID " << gid  << std::endl; 
-	}
+        int gid;
+        int rc = commitGroup(gid,iids);
+        if(rc!=0) return 1;
+        newgids.push_back(gid);
+        if(_verbose>1) {
+          std::cout << "Group " << oldg << " with "<< iids.size()
+                    << " iovs created a new group GID " << gid  << std::endl;
+        }
       }
     } else {
       if(_dryrun || _verbose>1) {
-	std::cout << "Group " << oldg << " has no iovs left " << std::endl; 
+        std::cout << "Group " << oldg << " has no iovs left " << std::endl;
       }
     }
   } // big loop over old groups
@@ -2096,10 +2096,10 @@ int mu2e::DbTool::commitPatch() {
 
 // ****************************************  extendEiovMap
 // given a gid, expand it into a vector of iovs
-// min/maxrun is the run range covered by the gid, good for 
+// min/maxrun is the run range covered by the gid, good for
 // prefiltering for overlaps
-int mu2e::DbTool::extendEiovMap(int gid, eiovMap& emap, 
-				int& minrun, int& maxrun) {
+int mu2e::DbTool::extendEiovMap(int gid, eiovMap& emap,
+                                int& minrun, int& maxrun) {
 
   for(auto const& glr :  _valcache.valGroupLists().rows()) {
     if(glr.gid()==gid ) {
@@ -2156,7 +2156,7 @@ int mu2e::DbTool::verifySet() {
   int vid = -1;
   rc = findPidVid(args["purpose"], args["version"], pid, vid);
   if(rc!=0) return 1;
-  
+
   // the table list for this version
   auto const & vr = _valcache.valVersions().row(vid);
   int lid = vr.lid();
@@ -2175,21 +2175,21 @@ int mu2e::DbTool::verifySet() {
     if(er.vid()==vid) { // if this ext is for this version
       int eid = er.eid();
       for(auto const& elr:_valcache.valExtensionLists().rows()) {
-	if(elr.eid()==eid) { // if this entry is part of this ext
-	  int gid = elr.gid();
-	  for(auto const& glr:_valcache.valGroupLists().rows()) {
-	    if(glr.gid()==gid) { // this entry is part of this group
-	      int iid = glr.iid();
-	      auto const& ir = _valcache.valIovs().row(iid);
-	      if(ir.start_run()<=endLim && ir.end_run()>=startLim) {
-		int cid = ir.cid();
-		auto const& cr = _valcache.valCalibrations().row(cid);
-		int tid = cr.tid();
-		iovv[tid].emplace_back(ir.iov());
-	      }
-	    }
-	  } // group list
-	}
+        if(elr.eid()==eid) { // if this entry is part of this ext
+          int gid = elr.gid();
+          for(auto const& glr:_valcache.valGroupLists().rows()) {
+            if(glr.gid()==gid) { // this entry is part of this group
+              int iid = glr.iid();
+              auto const& ir = _valcache.valIovs().row(iid);
+              if(ir.start_run()<=endLim && ir.end_run()>=startLim) {
+                int cid = ir.cid();
+                auto const& cr = _valcache.valCalibrations().row(cid);
+                int tid = cr.tid();
+                iovv[tid].emplace_back(ir.iov());
+              }
+            }
+          } // group list
+        }
       } // extension list
     }
   } // extensions
@@ -2215,28 +2215,28 @@ int mu2e::DbTool::verifySet() {
     auto it = list.begin();
     while(it!=list.end()) { // loop over requested run ranges
       for(auto const& jj: vec) { // loop over set iovs
-	int over = it->isOverlapping(jj);
-	if(over!=0) {
-	  if(over==4) { //the iov is split
-	    DbIoV temp = *it;
-	    // find the high-end split part
-	    temp.subtract(jj,DbIoV::maxRun(),DbIoV::maxSubrun());
-	    // add the high-end split part to the list of pieces to be checked
-	    if(!temp.isNull()) list.emplace_back(temp);
-	  } // end over==4
-	  // in all cases remove the overlapping part 
-	  // if split, this leaves the low-end split
-	  it->subtract(jj,0,0); 
-	} // if overlapping 
-      } // iov vector loop 
+        int over = it->isOverlapping(jj);
+        if(over!=0) {
+          if(over==4) { //the iov is split
+            DbIoV temp = *it;
+            // find the high-end split part
+            temp.subtract(jj,DbIoV::maxRun(),DbIoV::maxSubrun());
+            // add the high-end split part to the list of pieces to be checked
+            if(!temp.isNull()) list.emplace_back(temp);
+          } // end over==4
+          // in all cases remove the overlapping part
+          // if split, this leaves the low-end split
+          it->subtract(jj,0,0);
+        } // if overlapping
+      } // iov vector loop
       it++;
     } // while run ranges
 
     for(auto const& ii: list) {
       if(!ii.isNull()) {
-	std::cout << "Missing coverage - TID "<< tid 
-		  << "  range "<<ii.to_string(true)  <<std::endl;
-	nbad++;
+        std::cout << "Missing coverage - TID "<< tid
+                  << "  range "<<ii.to_string(true)  <<std::endl;
+        nbad++;
       }
     }
 
@@ -2244,7 +2244,7 @@ int mu2e::DbTool::verifySet() {
 
   std::cout << "checked "<< iovs.size() << " run ranges and found "<< nmiss << " missing tables and " << nbad << " missing IoVs "  << std::endl;
 
-  if(nmiss > 0 || nbad>0) rc = 1; 
+  if(nmiss > 0 || nbad>0) rc = 1;
   return rc;
 
 }
@@ -2281,8 +2281,8 @@ int mu2e::DbTool::testUrl() {
     std::cout << "test URL: repeat "<<i << std::endl;
     for(size_t q=0; q<lines.size(); q++) {
       std::vector<std::string> words;
-      boost::split(words,lines[q], boost::is_any_of(" \t"), 
-		   boost::token_compress_on);
+      boost::split(words,lines[q], boost::is_any_of(" \t"),
+                   boost::token_compress_on);
       std::cout <<words[0]<< "X" << words[1] << std::endl;
       where.clear();
       where.emplace_back(words[2]);
@@ -2299,8 +2299,8 @@ int mu2e::DbTool::testUrl() {
 
 int mu2e::DbTool::prettyTable(std::string title, std::string csv) {
   std::vector<std::string> titles;
-  boost::split(titles, title, boost::is_any_of(","), 
-	       boost::token_compress_off);
+  boost::split(titles, title, boost::is_any_of(","),
+               boost::token_compress_off);
   auto lines = DbUtil::splitCsvLines(csv);
   std::vector<std::vector<std::string> > entries;
   for(auto const& line : lines) {
@@ -2313,7 +2313,7 @@ int mu2e::DbTool::prettyTable(std::string title, std::string csv) {
 }
 
 int mu2e::DbTool::prettyColumns(std::vector<std::string> titles,
-	 std::vector<std::vector<std::string> > entries) {
+         std::vector<std::vector<std::string> > entries) {
   size_t nc = titles.size(); // columns
   //size_t nr = entries.size(); // rows
 
@@ -2351,7 +2351,7 @@ int mu2e::DbTool::prettyColumns(std::vector<std::string> titles,
 int mu2e::DbTool::help() {
 
   if(_action=="" || _action=="help") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool ACTION [OPTIONS]\n"
       " \n"
@@ -2405,7 +2405,7 @@ int mu2e::DbTool::help() {
       " \n"
       <<std::endl;
   } else if(_action=="print-content") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-content [OPTIONS]\n"
       " \n"
@@ -2418,7 +2418,7 @@ int mu2e::DbTool::help() {
       " \n"
       << std::endl;
   } else if(_action=="print-calibration") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-calibration [OPTIONS]\n"
       " \n"
@@ -2432,7 +2432,7 @@ int mu2e::DbTool::help() {
       " \n"
       << std::endl;
   } else if(_action=="print-iov") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-iov [OPTIONS]\n"
       " \n"
@@ -2447,7 +2447,7 @@ int mu2e::DbTool::help() {
       " \n"
       << std::endl;
   } else if(_action=="print-group") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-group [OPTIONS]\n"
       " \n"
@@ -2461,7 +2461,7 @@ int mu2e::DbTool::help() {
       " \n"
       << std::endl;
   } else if(_action=="print-extension") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-extension [OPTIONS]\n"
       " \n"
@@ -2476,7 +2476,7 @@ int mu2e::DbTool::help() {
       " \n"
       << std::endl;
   } else if(_action=="print-version") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-version \n"
       " \n"
@@ -2490,7 +2490,7 @@ int mu2e::DbTool::help() {
       "    --details INT : if >0, also print extensions, >1 print groups, etc \n"
       << std::endl;
   } else if(_action=="print-purpose") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-purpose\n"
       " \n"
@@ -2500,7 +2500,7 @@ int mu2e::DbTool::help() {
       "    --details INT : if >0, also print versions, >1 print extensions, etc \n"
       << std::endl;
   } else if(_action=="print-table") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-table [OPTIONS]\n"
       " \n"
@@ -2508,7 +2508,7 @@ int mu2e::DbTool::help() {
       " \n"
       << std::endl;
   } else if(_action=="print-list") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-list [OPTIONS]\n"
       " \n"
@@ -2520,7 +2520,7 @@ int mu2e::DbTool::help() {
       "    --lid INT : only print for lid\n"
       << std::endl;
   } else if(_action=="print-set") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool print-set [OPTIONS]\n"
       " \n"
@@ -2534,7 +2534,7 @@ int mu2e::DbTool::help() {
       "    --file FILENAME : the output file (required)\n"
       << std::endl;
   } else if(_action=="commit-calibration") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-calibration --file FILE\n"
       " \n"
@@ -2548,7 +2548,7 @@ int mu2e::DbTool::help() {
       "    --dry-run : do everything except final database commit\n"
       << std::endl;
   } else if(_action=="commit-iov") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-iov --cid CID --iov IOV\n"
       " \n"
@@ -2563,7 +2563,7 @@ int mu2e::DbTool::help() {
       "    --dry-run : don't do final commit\n"
       << std::endl;
   } else if(_action=="commit-group") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-group --iid IID\n"
       " \n"
@@ -2576,7 +2576,7 @@ int mu2e::DbTool::help() {
       "    --dry-run : don't do final commit\n"
       << std::endl;
   } else if(_action=="commit-table") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-table [OPTIONS]\n"
       " \n"
@@ -2595,7 +2595,7 @@ int mu2e::DbTool::help() {
       " dbTool commit-table --name TstCalib1 --dbname tst.calib1\n"
       << std::endl;
   } else if(_action=="commit-list") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-list [OPTIONS]\n"
       " \n"
@@ -2616,7 +2616,7 @@ int mu2e::DbTool::help() {
       " \n"
       << std::endl;
   } else if(_action=="commit-purpose") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-purpose [OPTIONS]\n"
       " \n"
@@ -2634,7 +2634,7 @@ int mu2e::DbTool::help() {
       " dbTool commit-purpose --name PRODUCTION --comment \"for official production\"\n"
       << std::endl;
   } else if(_action=="commit-version") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-version [OPTIONS]\n"
       " \n"
@@ -2657,7 +2657,7 @@ int mu2e::DbTool::help() {
       "     --major 2 --minor 0 --comment \"to add alignment tables\"\n"
       << std::endl;
   } else if(_action=="commit-extension") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-extension [OPTIONS]\n"
       " \n"
@@ -2677,7 +2677,7 @@ int mu2e::DbTool::help() {
       "     --gid 4,5,6\n"
       << std::endl;
   } else if(_action=="commit-patch") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool commit-patch [OPTIONS]\n"
       " \n"
@@ -2685,7 +2685,7 @@ int mu2e::DbTool::help() {
       " and a new, but empty set (purpose/version), then copy the old set into\n"
       " the new set and add the new GID.  If the GID simply extend the old set, \n"
       " such as adding a table, then the process is straightforward.  If the old set\n"
-      " need some IOV's to be replaced by the new set, then proceed to make new\n" 
+      " need some IOV's to be replaced by the new set, then proceed to make new\n"
       " IOV's as needed, group them, and extend the new set.\n"
       " [OPTIONS]\n"
       "    --old_purpose TEXT : purpose PID or name (required)\n"
@@ -2700,7 +2700,7 @@ int mu2e::DbTool::help() {
       "                      --gid 123,456 \\\n"
       << std::endl;
   } else if(_action=="verify-set") {
-    std::cout << 
+    std::cout <<
       " \n"
       " dbTool verify-set [OPTIONS]\n"
       " \n"
@@ -2738,8 +2738,8 @@ int mu2e::DbTool::parseArgs() {
   if(!env.empty()) {
     std::istringstream iss(env);
     std::copy(std::istream_iterator<std::string>(iss),
-	      std::istream_iterator<std::string>(),
-	      std::back_inserter(_args));
+              std::istream_iterator<std::string>(),
+              std::back_inserter(_args));
   }
 
   // the first argument should always be an action
@@ -2749,13 +2749,13 @@ int mu2e::DbTool::parseArgs() {
     return 1;
   }
   _action = _args[0];
-  if(_action=="-h" || _action=="-?" || _action=="?" 
+  if(_action=="-h" || _action=="-?" || _action=="?"
      || _action=="--help" || _action=="help" ){
     _action = "help";
     help();
     return 1;
   }
-  
+
   // start at 1, skip the action argument
   for(size_t i=1; i<_args.size(); ++i) {
     auto a = _args[i];
@@ -2767,22 +2767,22 @@ int mu2e::DbTool::parseArgs() {
 
     if(par.empty()) {
       if(a.substr(0,2)!="--") {
-	std::cout << "Could not parse args at "<<a <<std::endl;
-	return 1;
+        std::cout << "Could not parse args at "<<a <<std::endl;
+        return 1;
       }
       par = a.substr(2,par.size()-2);
       //std::cout << "par1  = "<< par<< std::endl;
     } else {
       if(a.substr(0,2)=="--") {
-	// then par did not have an argument, treat as a binary arg
-	_argMap[par] = "y";
-	//std::cout << "set " << par << " to y " <<std::endl;
-	par = a.substr(2,a.size()-2); // current word is the next par
-	//std::cout << "par2  = "<< par<< std::endl;
+        // then par did not have an argument, treat as a binary arg
+        _argMap[par] = "y";
+        //std::cout << "set " << par << " to y " <<std::endl;
+        par = a.substr(2,a.size()-2); // current word is the next par
+        //std::cout << "par2  = "<< par<< std::endl;
       } else {
-	_argMap[par] = a;
-	par.clear();
-	//std::cout << "set " << par << " to " << a <<std::endl;
+        _argMap[par] = a;
+        par.clear();
+        //std::cout << "set " << par << " to " << a <<std::endl;
       }
     }
   }
@@ -2812,7 +2812,7 @@ int mu2e::DbTool::parseArgs() {
     _dryrun = true;
     _argMap.erase("dry-run");
   }
-  
+
   if(_verbose>0) {
     std::cout << "Global settings: "<<std::endl;
     std::cout << "  database = "<<_id.name()<<std::endl;
@@ -2832,17 +2832,17 @@ int mu2e::DbTool::getArgs(std::map<std::string,std::string>& fArgs) {
   // loop over given arg
   for(auto a:_argMap) {
     if(_verbose>=10) std::cout << "getArgs a="
-	     << a.first << "," << a.second <<std::endl;
+             << a.first << "," << a.second <<std::endl;
     bool found = false;
     // loop over args expected for given action
     for(auto& b: fArgs) {
       if(_verbose>=10) std::cout << "getArgs b="
-				 << b.first << "," << b.second <<std::endl;
+                                 << b.first << "," << b.second <<std::endl;
       if(a.first==b.first) {
-	b.second = a.second;
-	if(_verbose>=10) std::cout << "match found" << std::endl;
-	found = true;
-	break;
+        b.second = a.second;
+        if(_verbose>=10) std::cout << "match found" << std::endl;
+        found = true;
+        break;
       }
     } // end loop b
     if(!found) {
@@ -2869,13 +2869,13 @@ std::vector<int> mu2e::DbTool::intList(std::string const& arg) {
     std::string inp;
     std::vector<std::string> words;
     while ( std::getline(myfile,inp) ) {
-      boost::split(words,inp, boost::is_any_of(" \t,"), 
-		   boost::token_compress_on);
+      boost::split(words,inp, boost::is_any_of(" \t,"),
+                   boost::token_compress_on);
       for(auto x : words) {
-	boost::trim(x);
-	if(!x.empty()) {
-	  list.push_back(std::stoi(x));
-	}
+        boost::trim(x);
+        if(!x.empty()) {
+          list.push_back(std::stoi(x));
+        }
       }
     }
   } else if(arg.find(',')!=std::string::npos) {
@@ -2922,13 +2922,13 @@ std::vector<mu2e::DbIoV> mu2e::DbTool::runList(std::string const& arg) {
     std::string inp;
     std::vector<std::string> words;
     while ( std::getline(myfile,inp) ) {
-      boost::split(words,inp, boost::is_any_of(" \t,"), 
-		   boost::token_compress_on);
+      boost::split(words,inp, boost::is_any_of(" \t,"),
+                   boost::token_compress_on);
       for(auto x : words) {
-	boost::trim(x);
-	if(!x.empty()) {
-	  list.push_back(DbIoV(x));
-	}
+        boost::trim(x);
+        if(!x.empty()) {
+          list.push_back(DbIoV(x));
+        }
       }
     }
   } else if(arg.find(',')!=std::string::npos) {
@@ -2956,11 +2956,11 @@ std::vector<mu2e::DbIoV> mu2e::DbTool::runList(std::string const& arg) {
 
 // ****************************************  three time routines
 
-bool mu2e::DbTool::inTime(const timeInterval& interval, 
+bool mu2e::DbTool::inTime(const timeInterval& interval,
                           const std::string& etime) {
 
   std::time_t tee = parseTime(etime);
-  if(difftime(tee,interval.start)>0 && 
+  if(difftime(tee,interval.start)>0 &&
      difftime(interval.end,tee)>0) return true;
 
   return false;

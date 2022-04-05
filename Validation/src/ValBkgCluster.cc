@@ -14,18 +14,18 @@ int mu2e::ValBkgCluster::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValBkgCluster::fill(const mu2e::BkgClusterCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   for(auto bc : coll) {
     _hr->Fill(bc.pos().R());
     _ht->Fill(bc.time());
-    //for(auto const& h : bc.hits()) _hd->Fill(h.distance());    
-    for(auto sn: bc.flag().bitNames()) { 
-      if(bc.flag().hasAnyProperty(BkgClusterFlag(sn.first))) _hBits->Fill(std::log2(sn.second)); 
+    //for(auto const& h : bc.hits()) _hd->Fill(h.distance());
+    for(auto sn: bc.flag().bitNames()) {
+      if(bc.flag().hasAnyProperty(BkgClusterFlag(sn.first))) _hBits->Fill(std::log2(sn.second));
     }
 
   }

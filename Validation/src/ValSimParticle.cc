@@ -64,13 +64,13 @@ int mu2e::ValSimParticle::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(6.0);
 
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   double x = (coll.size()<=0 ? 0 : log10(coll.size()) );
   _hN2->Fill(x);
 
@@ -135,7 +135,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
     _hND2->Fill(part.daughters().size());
 
     if(pstart>10.0) {
-      _idh.fill(part.pdgId()); 
+      _idh.fill(part.pdgId());
       _hscodeh->Fill(part.originParticle().creationCode().id());
       _hecodeh->Fill(part.stoppingCode().id());
     }
@@ -151,20 +151,20 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
     }
 
     // stopped muons
-    if ( part.endMomentum().v().mag2() <= 
-	      std::numeric_limits<double>::epsilon() &&
-	      part.pdgId() == 13 ) {  // mu-
+    if ( part.endMomentum().v().mag2() <=
+              std::numeric_limits<double>::epsilon() &&
+              part.pdgId() == 13 ) {  // mu-
       _htx->Fill(part.endPosition().x());
       _hty->Fill(part.endPosition().y());
       _htz->Fill(part.endPosition().z());
 
-      if (abs(part.endPosition().x()+3904)<120 && 
-	  abs(part.endPosition().y())<120 &&
-	  abs(part.endPosition().z()-5875)<450) {
-	_tgtmux->Fill( part.endPosition().x() );
-	_tgtmuy->Fill( part.endPosition().y() );
-	_tgtmuz->Fill( part.endPosition().z() );
-	_tgtmut->Fill( part.endGlobalTime() );
+      if (abs(part.endPosition().x()+3904)<120 &&
+          abs(part.endPosition().y())<120 &&
+          abs(part.endPosition().z()-5875)<450) {
+        _tgtmux->Fill( part.endPosition().x() );
+        _tgtmuy->Fill( part.endPosition().y() );
+        _tgtmuz->Fill( part.endPosition().z() );
+        _tgtmut->Fill( part.endGlobalTime() );
       }
     }
 

@@ -16,8 +16,8 @@ namespace mu2e {
     class Row {
     public:
       Row(int cid, int tid, std::string create_time, std::string create_user):
-	_cid(cid),_tid(tid),_create_time(create_time),
-	_create_user(create_user) {}
+        _cid(cid),_tid(tid),_create_time(create_time),
+        _create_user(create_user) {}
       int  tid() const { return _tid;}
       int  cid() const { return _cid;}
       std::string const& create_time() const { return _create_time; }
@@ -32,19 +32,19 @@ namespace mu2e {
     constexpr static const char* cxname = "ValCalibrations";
 
     ValCalibrations():DbTable(cxname,"val.calibrations",
-			      "cid,tid,create_time,create_user") {}
+                              "cid,tid,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int cid) const { return _rows.at(_index.at(cid)); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
-    size_t size() const override { return baseSize() + sizeof(this)  
-	+ nrow()*nrow()/2 + nrow()*48; };
+    size_t size() const override { return baseSize() + sizeof(this)
+        + nrow()*nrow()/2 + nrow()*48; };
     const std::string orderBy() const {return std::string("cid");}
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),
-			 columns[2],columns[3]);
+                         columns[2],columns[3]);
       _index[_rows.back().cid()] = _rows.size()-1;
     }
 
@@ -62,6 +62,6 @@ namespace mu2e {
     std::vector<Row> _rows;
     std::map<int,std::size_t> _index;
   };
-  
+
 };
 #endif

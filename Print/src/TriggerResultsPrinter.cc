@@ -6,9 +6,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::TriggerResultsPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -23,9 +23,9 @@ mu2e::TriggerResultsPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::TriggerResultsPrinter::Print(const art::Handle<art::TriggerResults>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -34,9 +34,9 @@ mu2e::TriggerResultsPrinter::Print(const art::Handle<art::TriggerResults>& handl
   Print(*handle);
 }
 
-void 
+void
 mu2e::TriggerResultsPrinter::Print(const art::ValidHandle<art::TriggerResults>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -46,7 +46,7 @@ mu2e::TriggerResultsPrinter::Print(const art::ValidHandle<art::TriggerResults>& 
 }
 
 
-void 
+void
 mu2e::TriggerResultsPrinter::Print(const art::TriggerResults& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -57,7 +57,7 @@ mu2e::TriggerResultsPrinter::Print(const art::TriggerResults& obj, int ind, std:
   for (unsigned int i=0; i< trigNavig.getTrigPaths().size(); ++i) {
     std::string path   = trigNavig.getTrigPathName(i);
     size_t      pathID = trigNavig.findTrigPathID(path);
-    os << "  " 
+    os << "  "
        << (trigNavig.accepted(path) ? "pass" : "fail" )
        << "  " << pathID
        << "  " << path << std::endl;
@@ -65,7 +65,7 @@ mu2e::TriggerResultsPrinter::Print(const art::TriggerResults& obj, int ind, std:
 
 }
 
-void 
+void
 mu2e::TriggerResultsPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";

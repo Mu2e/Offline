@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::StrawDigiADCWaveformPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::Print(const art::Handle<StrawDigiADCWaveformCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::StrawDigiADCWaveformPrinter::Print(const art::Handle<StrawDigiADCWaveformC
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::Print(const art::ValidHandle<StrawDigiADCWaveformCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::StrawDigiADCWaveformPrinter::Print(const art::ValidHandle<StrawDigiADCWave
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::Print(const StrawDigiADCWaveformCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "StrawDigiADCWaveformCollection has " << coll.size() << " hits\n";
@@ -52,13 +52,13 @@ mu2e::StrawDigiADCWaveformPrinter::Print(const StrawDigiADCWaveformCollection& c
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::Print(const art::Ptr<StrawDigiADCWaveform>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::Print(const mu2e::StrawDigiADCWaveform& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -72,13 +72,13 @@ mu2e::StrawDigiADCWaveformPrinter::Print(const mu2e::StrawDigiADCWaveform& obj, 
 
 }
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::StrawDigiADCWaveformPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind Waveform\n";

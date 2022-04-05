@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::StrawDigiMCPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,10 +21,10 @@ mu2e::StrawDigiMCPrinter::Print(art::Event const& event,
   }
 }
 
-void 
-mu2e::StrawDigiMCPrinter::Print(const 
-				art::Handle<StrawDigiMCCollection>& handle,
-				std::ostream& os) {
+void
+mu2e::StrawDigiMCPrinter::Print(const
+                                art::Handle<StrawDigiMCCollection>& handle,
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -33,9 +33,9 @@ mu2e::StrawDigiMCPrinter::Print(const
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawDigiMCPrinter::Print(const art::ValidHandle<StrawDigiMCCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -44,7 +44,7 @@ mu2e::StrawDigiMCPrinter::Print(const art::ValidHandle<StrawDigiMCCollection>& h
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawDigiMCPrinter::Print(const StrawDigiMCCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "StrawDigiMCCollection has " << coll.size() << " hits\n";
@@ -53,13 +53,13 @@ mu2e::StrawDigiMCPrinter::Print(const StrawDigiMCCollection& coll, std::ostream&
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::StrawDigiMCPrinter::Print(const art::Ptr<StrawDigiMC>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -91,10 +91,10 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
 
   if (verbose()==1) {
     os << " " << std::setw(5) << obj.strawId().asUint16()
-       << " " 
-       << " " << std::setw(8) << std::setprecision(2) 
+       << " "
+       << " " << std::setw(8) << std::setprecision(2)
            << obj.wireEndTime(StrawEnd::cal)
-       << " " << std::setw(8) << std::setprecision(2) 
+       << " " << std::setw(8) << std::setprecision(2)
            << obj.wireEndTime(StrawEnd::hv)
        << " " << std::setw(8) << std::setprecision(4) << energy
        << " " << std::setw(6) << obj.isCrossTalk(StrawEnd::cal)
@@ -104,23 +104,23 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
   } else if (verbose()==2) {
 
     os << " index :" << std::setw(5) << obj.strawId().asUint16()
-       << " " 
-       << " time0: " << std::setw(8) << std::setprecision(2) 
+       << " "
+       << " time0: " << std::setw(8) << std::setprecision(2)
                   << obj.wireEndTime(StrawEnd::cal)
-       << " time1: " << std::setw(8) << std::setprecision(2) 
+       << " time1: " << std::setw(8) << std::setprecision(2)
                   << obj.wireEndTime(StrawEnd::hv)
        << " " ;
     os << std::endl;
-    os << " trigEnergy0: " << std::setw(8) << std::setprecision(4) 
+    os << " trigEnergy0: " << std::setw(8) << std::setprecision(4)
               << tenergy0
-       << " trigEnergy1: " << std::setw(8) << std::setprecision(4) 
+       << " trigEnergy1: " << std::setw(8) << std::setprecision(4)
               << tenergy1
        << " cross0: " << std::setw(2) << obj.isCrossTalk(StrawEnd::cal)
        << " cross1: " << std::setw(2) << obj.isCrossTalk(StrawEnd::hv)
        << " " ;
     os << std::endl;
     CLHEP::HepLorentzVector const& v0 = obj.clusterPosition(StrawEnd::cal);
-    os << " position0: " 
+    os << " position0: "
        << std::setw(10) << std::setprecision(4) << v0.x()
        << std::setw(10) << std::setprecision(4) << v0.y()
        << std::setw(10) << std::setprecision(4) << v0.z()
@@ -128,7 +128,7 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
        << " " ;
     os << std::endl;
     CLHEP::HepLorentzVector const& v1 = obj.clusterPosition(StrawEnd::hv);
-    os << " position1: " 
+    os << " position1: "
        << std::setw(10) << std::setprecision(4) << v1.x()
        << std::setw(10) << std::setprecision(4) << v1.y()
        << std::setw(10) << std::setprecision(4) << v1.z()
@@ -141,11 +141,11 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
     } else {
       int isim = -1;
       if(a0->simParticle()) isim = int(a0->simParticle().key());
-      os << " StepPointMC_0: " 
-	 << "   key: " << std::setw(5) << a0.key()
-	 << "   energy: " << std::setw(8) << std::setprecision(6)  
-	       << a0->eDep()
-	 << "   Simparticle: " << std::setw(5) << isim;
+      os << " StepPointMC_0: "
+         << "   key: " << std::setw(5) << a0.key()
+         << "   energy: " << std::setw(8) << std::setprecision(6)
+               << a0->eDep()
+         << "   Simparticle: " << std::setw(5) << isim;
       os << std::endl;
     }
 
@@ -154,24 +154,24 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
     } else {
       int isim = -1;
       if(a1->simParticle()) isim = int(a1->simParticle().key());
-      os << " StepPointMC_1: " 
-	 << "   key: " << std::setw(5) << a1.key()
-	 << "   energy: " << std::setw(8) << std::setprecision(4)  
-	       << a1->eDep()
-	 << "   SimParticle: " << std::setw(5) << isim;
+      os << " StepPointMC_1: "
+         << "   key: " << std::setw(5) << a1.key()
+         << "   energy: " << std::setw(8) << std::setprecision(4)
+               << a1->eDep()
+         << "   SimParticle: " << std::setw(5) << isim;
       os << std::endl;
     }
   } // verbose=2
 
 }
 
-void 
+void
 mu2e::StrawDigiMCPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::StrawDigiMCPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind StrwInd   time0   time1    drift0   drift1   energy    crossTalk\n";

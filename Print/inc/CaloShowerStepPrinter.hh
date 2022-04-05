@@ -1,6 +1,6 @@
 //
 //  Utility class to print CaloShowerStep
-// 
+//
 #ifndef Print_inc_CaloShowerStepPrinter_hh
 #define Print_inc_CaloShowerStepPrinter_hh
 
@@ -20,7 +20,7 @@ namespace mu2e {
     typedef std::vector<std::string> vecstr;
 
     CaloShowerStepPrinter():_eCut(-1) { }
-    CaloShowerStepPrinter(const ConfigE& conf):ProductPrinter(conf) { 
+    CaloShowerStepPrinter(const ConfigE& conf):ProductPrinter(conf) {
       _eCut = conf.eCut();
     }
 
@@ -30,20 +30,20 @@ namespace mu2e {
 
     // all the ways to request a printout
     void Print(art::Event const& event,
-	       std::ostream& os = std::cout) override;
-    void Print(const art::Handle<CaloShowerStepCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<CaloShowerStepCollection>& handle, 
-	       std::ostream& os = std::cout);
-    void Print(const CaloShowerStepCollection& coll, 
-	       std::ostream& os = std::cout);
-    void Print(const art::Ptr<CaloShowerStep>& ptr, 
-	       int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::CaloShowerStep& obj, 
-	       int ind = -1, std::ostream& os = std::cout);
+               std::ostream& os = std::cout) override;
+    void Print(const art::Handle<CaloShowerStepCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const art::ValidHandle<CaloShowerStepCollection>& handle,
+               std::ostream& os = std::cout);
+    void Print(const CaloShowerStepCollection& coll,
+               std::ostream& os = std::cout);
+    void Print(const art::Ptr<CaloShowerStep>& ptr,
+               int ind = -1, std::ostream& os = std::cout);
+    void Print(const mu2e::CaloShowerStep& obj,
+               int ind = -1, std::ostream& os = std::cout);
 
-    void PrintHeader(const std::string& tag, 
-		     std::ostream& os = std::cout);
+    void PrintHeader(const std::string& tag,
+                     std::ostream& os = std::cout);
     void PrintListHeader(std::ostream& os = std::cout);
 
   private:

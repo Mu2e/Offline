@@ -23,7 +23,7 @@ namespace mu2e {
   private:
 
     std::string _name;
-    
+
     TH1D* _hVer;
     TH1D* _hN;
     TH1D* _hN2;

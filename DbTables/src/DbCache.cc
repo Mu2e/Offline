@@ -3,7 +3,7 @@
 #include <iostream>
 #include <iomanip>
 
-void mu2e::DbCache::add(int cid, mu2e::DbTable::cptr_t const& ptr) { 
+void mu2e::DbCache::add(int cid, mu2e::DbTable::cptr_t const& ptr) {
 
   _tables[cid] = ptr;
 
@@ -46,8 +46,8 @@ void mu2e::DbCache::purge() {
 
 void mu2e::DbCache::print() const {
   for(auto t: _tables) {
-    std::cout << std::setw(6) << t.first << " " 
-	      << std::setw(15) << t.second->name() << std::endl;
+    std::cout << std::setw(6) << t.first << " "
+              << std::setw(15) << t.second->name() << std::endl;
   }
 }
 

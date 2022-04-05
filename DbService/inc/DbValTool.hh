@@ -3,7 +3,7 @@
 
 // This class takes a DbValCache, the container of the purpose, version, etc
 // database heriarchy, performs some basic tasks, including flattening
-// it into a DbSet, a list of IoVs.  These tasks are also used in 
+// it into a DbSet, a list of IoVs.  These tasks are also used in
 // DbTool, so the code should be here, in one place
 // its only member is a ref to the cache, so it can be easily created/destroyed
 
@@ -24,7 +24,7 @@ namespace mu2e {
     // convert input strings to their database indexes
     // allow empty strings and return -1
     int findPid(std::string purpose) const;
-    void findPidVid(std::string purpose, std::string version, 
+    void findPidVid(std::string purpose, std::string version,
                     int& pid, int& vid) const;
     // convert between tid and name, bool tells if found
     bool tidByName(std::string const& name, int& tid) const;

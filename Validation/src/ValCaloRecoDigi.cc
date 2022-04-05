@@ -16,14 +16,14 @@ int mu2e::ValCaloRecoDigi::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValCaloRecoDigi::fill(const mu2e::CaloRecoDigiCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
 
-  _hN->Fill(coll.size()); 
-  _hN2->Fill(coll.size()); 
+  _hN->Fill(coll.size());
+  _hN2->Fill(coll.size());
   for(auto rd : coll) {
     _hI->Fill(rd.SiPMID());
     _ht->Fill(rd.time());

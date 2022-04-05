@@ -12,8 +12,8 @@ int mu2e::DbEngine::beginJob() {
   if(_verbose>4) cout << "DbEngine::beginJob start" << endl;
 
   if(_id.name().empty()) {
-      throw cet::exception("DBENGINE_DBID NOT_SET") 
-	<< "DbEngine::beginJob found the DbId was not set\n";
+      throw cet::exception("DBENGINE_DBID NOT_SET")
+        << "DbEngine::beginJob found the DbId was not set\n";
    }
 
   auto start_time = std::chrono::high_resolution_clock::now();
@@ -46,15 +46,15 @@ int mu2e::DbEngine::beginJob() {
   vtool.fillSetVer(_version,_dbset);
   _dbset.setNearestMatch(_nearestMatch);
 
-  // if file-based override tables were loaded, 
+  // if file-based override tables were loaded,
   // update tid now.  If the table is known to the database,
   // then use that tid, but if it is not, use previously
   // assign fake tid
   updateOverrideTid();
 
   if( _verbose>1 ) {
-    std::cout << "DbEngine confirmed purpose and version:\n" 
-	      << _version.to_string() << "\n";
+    std::cout << "DbEngine confirmed purpose and version:\n"
+              << _version.to_string() << "\n";
     std::cout << "DbEngine IoV summary\n";
     vtool.printSet(_dbset);
   }
@@ -67,8 +67,8 @@ int mu2e::DbEngine::beginJob() {
   auto end_time = std::chrono::high_resolution_clock::now();
   auto beginJobTime = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   if(_verbose>1) {
-    std::cout<<"DbEngine inclusive beginJob time was " 
-	     << beginJobTime.count()*1.0e-6<<" s" << std::endl;
+    std::cout<<"DbEngine inclusive beginJob time was "
+             << beginJobTime.count()*1.0e-6<<" s" << std::endl;
   }
 
   if(_verbose>4) cout << "DbEngine::beginJob end" << endl;
@@ -78,13 +78,13 @@ int mu2e::DbEngine::beginJob() {
 }
 
 
-mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run, 
-					 uint32_t subrun) {
+mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
+                                         uint32_t subrun) {
 
   lazyBeginJob(); // initialize if needed
 
   if(_verbose>5) cout << "DbEngine::update call "
-		      << tid << " " << run << " " << subrun << endl;
+                      << tid << " " << run << " " << subrun << endl;
 
   // first look for table in override table list
   // this data never changes, so no need to lock
@@ -94,10 +94,10 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
     auto& oltab = _override[iover];
     if(oltab.tid()==tid) { // if override table is the right type
       if(oltab.iov().inInterval(run,subrun)) { // and in valid interval
-	auto dblt = oltab;
-	if(_verbose>5) cout << "DbEngine::update table found " 
-			    << dblt.table().name() << " in overrides " << endl;
-	return dblt;
+        auto dblt = oltab;
+        if(_verbose>5) cout << "DbEngine::update table found "
+                            << dblt.table().name() << " in overrides " << endl;
+        return dblt;
       }
     }
   }
@@ -118,7 +118,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
   // if no cid now, then table can't be found - have to stop
   if(cid<0) {
-    throw cet::exception("DBENGINE_UPDATE_FAILED") 
+    throw cet::exception("DBENGINE_UPDATE_FAILED")
       << " DbEngine::update failed to find tid " << tid
       << " for run:subrun "<<run<<":"<<subrun<<"\n";
   }
@@ -131,8 +131,8 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
     auto dt = std::chrono::duration_cast<std::chrono::microseconds>
                                                ( mtime - stime );
     _lockWaitTime += dt;
-    
-    // have to check if some other thread loaded it 
+
+    // have to check if some other thread loaded it
     // since the above read attempt
     if(_cache.hasTable(cid)) {
       ptr = _cache.get(cid);
@@ -145,12 +145,12 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
       // reader does not abort, so do it here
       if(rc!=0) {
-	auto const& tabledef = _vcache->valTables().row(tid);
-	throw cet::exception("DBENGINE_UPDATE_FAILED") 
-	  << " DbEngine::update failed to find table " << tabledef.name() 
-	  << " for run:subrun "<<run<<":"<<subrun
-	  <<", cid ="<< cid 
-	  <<", rc ="<< rc << "\n";
+        auto const& tabledef = _vcache->valTables().row(tid);
+        throw cet::exception("DBENGINE_UPDATE_FAILED")
+          << " DbEngine::update failed to find table " << tabledef.name()
+          << " for run:subrun "<<run<<":"<<subrun
+          <<", cid ="<< cid
+          <<", rc ="<< rc << "\n";
       }
 
       // make it const
@@ -175,7 +175,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
       iov.subtract(oltab.iov(),run,subrun);
     }
   }
-  
+
   auto dblt = DbLiveTable( iov, ptr, tid, cid );
 
   return dblt;
@@ -203,15 +203,15 @@ int mu2e::DbEngine::tidByName(std::string const& name) {
 
 void mu2e::DbEngine::addOverride(DbTableCollection const& coll) {
   if(_initialized) {
-    throw cet::exception("DBENGINE_LATE_OVERRIDE") << 
+    throw cet::exception("DBENGINE_LATE_OVERRIDE") <<
       "DbEngine::addOverride engine already initialized\n";
   }
-  for(auto const& c : coll) _override.emplace_back(c); 
+  for(auto const& c : coll) _override.emplace_back(c);
 }
 
 // this is used to assign nominal tid's and cid's to tables that
 // are read in through a file, and are not declared in the database
-// This might be overwritten with real tid's if 
+// This might be overwritten with real tid's if
 // we load a real calibration set later
 
 int mu2e::DbEngine::setOverrideId() {
@@ -233,7 +233,7 @@ int mu2e::DbEngine::setOverrideId() {
     int mytid = _overrideTids[lt.table().name()];
     if(_verbose>4) {
       cout << "DbEngine::setOverrideId assigning override CID "
-           << fakeCid << " and TID " << mytid << " to " 
+           << fakeCid << " and TID " << mytid << " to "
            << lt.table().name() << endl;
     }
     lt.setTid(mytid);
@@ -242,7 +242,7 @@ int mu2e::DbEngine::setOverrideId() {
   }
 
   // scan the override content for internal overlaps
-  
+
   bool found = false;
   for(size_t i=0; i<_override.size()-1; i++) {
     auto const& oi = _override[i];
@@ -252,7 +252,7 @@ int mu2e::DbEngine::setOverrideId() {
         if(oi.iov().isOverlapping(oj.iov())!=0) {
           found = true;
           std::cout << "Overlap in override tables: "
-                    <<" " << oi.table().name() 
+                    <<" " << oi.table().name()
                     <<" " << oi.iov().to_string(true)
                     <<" " << oj.iov().to_string(true)
                     <<"\n";
@@ -262,15 +262,15 @@ int mu2e::DbEngine::setOverrideId() {
   }
 
   if(found) {
-    throw cet::exception("DBENGINE_OVERLAP_OVERRIDE") << 
+    throw cet::exception("DBENGINE_OVERLAP_OVERRIDE") <<
       "DbEngine::setOverrideId overlaps in override tables\n";
   }
 
   return 0;
 }
 
-// in setOverrideId, fake TID and CID were set in override table.  If we 
-// loaded  a real calibration set, then update TID in the override tables, 
+// in setOverrideId, fake TID and CID were set in override table.  If we
+// loaded  a real calibration set, then update TID in the override tables,
 // if table is known to the database - it might not be if it is new table
 
 int mu2e::DbEngine::updateOverrideTid() {
@@ -284,7 +284,7 @@ int mu2e::DbEngine::updateOverrideTid() {
 
       if(_verbose>4) {
         cout << "DbEngine::updateOverrideTid updating TID from "
-             << lt.tid() << " to " << mytid 
+             << lt.tid() << " to " << mytid
              << " for " << lt.table().name() << endl;
       }
       lt.setTid(mytid);
@@ -315,7 +315,7 @@ void mu2e::DbEngine::lazyBeginJob() {
 
   // if another thread initialized since the above check
   if(_initialized) return;
-  
+
   beginJob();
 
   auto etime = std::chrono::high_resolution_clock::now();
@@ -333,17 +333,17 @@ int mu2e::DbEngine::endJob() {
   if(!_vcache) return 0;
   if(_verbose>1) {
     std::cout << "DbEngine::endJob" << std::endl;
-    std::cout << "    Total time in reading DB: "<< _reader.totalTime() 
-	      <<" s" << std::endl;
+    std::cout << "    Total time in reading DB: "<< _reader.totalTime()
+              <<" s" << std::endl;
     std::cout << "    Total time waiting for locks: "
-	      << _lockWaitTime.count()*1.0e-6
-	      <<" s" << std::endl;
+              << _lockWaitTime.count()*1.0e-6
+              <<" s" << std::endl;
     std::cout << "    Total time in locks: "<< _lockTime.count()*1.0e-6
-	      <<" s" << std::endl;
+              <<" s" << std::endl;
     std::cout << "    valcache memory: "<<_vcache->size()<<" b" << std::endl;
     std::cout <<"  Database cache stats:\n";
     _cache.printStats();
-      
+
   }
   return 0;
 }

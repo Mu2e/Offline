@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::StrawHitPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::StrawHitPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::StrawHitPrinter::Print(const art::Handle<StrawHitCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::StrawHitPrinter::Print(const art::Handle<StrawHitCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawHitPrinter::Print(const art::ValidHandle<StrawHitCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::StrawHitPrinter::Print(const art::ValidHandle<StrawHitCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawHitPrinter::Print(const StrawHitCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "StrawHitCollection has " << coll.size() << " hits\n";
@@ -52,13 +52,13 @@ mu2e::StrawHitPrinter::Print(const StrawHitCollection& coll, std::ostream& os) {
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::StrawHitPrinter::Print(const art::Ptr<StrawHit>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::StrawHitPrinter::Print(const mu2e::StrawHit& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -67,9 +67,9 @@ mu2e::StrawHitPrinter::Print(const mu2e::StrawHit& obj, int ind, std::ostream& o
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
-  os 
+  os
     << " " << std::setw(5) << obj.strawId().asUint16()
-    << " " 
+    << " "
     << " " << std::setw(8) << std::setprecision(1) << obj.time()
     << " " << std::setw(8) << std::setprecision(3) << obj.dt()
     << " " << std::setw(10) << std::setprecision(6) << obj.energyDep()
@@ -77,13 +77,13 @@ mu2e::StrawHitPrinter::Print(const mu2e::StrawHit& obj, int ind, std::ostream& o
 
 }
 
-void 
+void
 mu2e::StrawHitPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::StrawHitPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind StrwInd   time       dt      eDep\n";

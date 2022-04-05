@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::StrawDigiPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::StrawDigiPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::StrawDigiPrinter::Print(const art::Handle<StrawDigiCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::StrawDigiPrinter::Print(const art::Handle<StrawDigiCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawDigiPrinter::Print(const art::ValidHandle<StrawDigiCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::StrawDigiPrinter::Print(const art::ValidHandle<StrawDigiCollection>& handl
   Print(*handle);
 }
 
-void 
+void
 mu2e::StrawDigiPrinter::Print(const StrawDigiCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "StrawDigiCollection has " << coll.size() << " hits\n";
@@ -52,22 +52,22 @@ mu2e::StrawDigiPrinter::Print(const StrawDigiCollection& coll, std::ostream& os)
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::StrawDigiPrinter::Print(const art::Ptr<StrawDigi>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::StrawDigiPrinter::Print(const mu2e::StrawDigi& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
-  os 
+  os
     << " " << std::setw(5) << obj.strawId().asUint16()
-    << " " 
+    << " "
     << " " << std::setw(6) << obj.TDC()[0]
     << " " << std::setw(6) << obj.TDC()[1]
     << " " << std::setw(6) << (int) obj.TOT()[0]
@@ -78,13 +78,13 @@ mu2e::StrawDigiPrinter::Print(const mu2e::StrawDigi& obj, int ind, std::ostream&
 
 }
 
-void 
+void
 mu2e::StrawDigiPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::StrawDigiPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind StrwInd TDC0  TDC1  TOT0  TOT1   PMP\n";

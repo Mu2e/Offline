@@ -14,7 +14,7 @@ namespace mu2e {
   class MVAToolDb : public DbTable {
 
   public:
-  
+
     typedef std::shared_ptr<MVAToolDb> ptr_t;
     typedef std::shared_ptr<const MVAToolDb> cptr_t;
 
@@ -22,9 +22,9 @@ namespace mu2e {
     class Row {
     public:
       Row(int idx, std::string mvaname, std::string xmlfilename, int calibrated):
-	_idx(idx),_mvaname(mvaname),_xmlfilename(xmlfilename),_calibrated(calibrated) {}
+        _idx(idx),_mvaname(mvaname),_xmlfilename(xmlfilename),_calibrated(calibrated) {}
       int    idx() const { return _idx; }
-      
+
       std::string  mvaname() const { return _mvaname;}
       std::string  xmlfilename() const { return _xmlfilename; }
       int calibrated() const { return _calibrated; }
@@ -48,27 +48,27 @@ namespace mu2e {
     const Row& row(const int idx) const { return _rows.at(idx); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
-    size_t size() const override { return baseSize() + 
-	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
+    size_t size() const override { return baseSize() +
+        + nrow()*nrow()/2 + nrow()*sizeof(Row); };
     const std::string orderBy() const {return std::string("idx");}
 
     void addRow(const std::vector<std::string>& columns) override {
       int idx = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(idx!=int(_rows.size())) {
-	throw cet::exception("MVATOOLDB_BAD_INDEX") 
-	  << "MVAToolDb::addRow found index out of order: " 
-	  <<idx << " != " << _rows.back().idx()+1 <<"\n";
+        throw cet::exception("MVATOOLDB_BAD_INDEX")
+          << "MVAToolDb::addRow found index out of order: "
+          <<idx << " != " << _rows.back().idx()+1 <<"\n";
       }
       int calibrated = std::stoi(columns[3]);
       if (calibrated < 0 || calibrated > 1) {
-	throw cet::exception("MVATOOLDB_BAD_CALIBRATED_INT") << "MVAToolDb::addRow found calibrated wasn't 0 or 1 but " << calibrated << std::endl;
+        throw cet::exception("MVATOOLDB_BAD_CALIBRATED_INT") << "MVAToolDb::addRow found calibrated wasn't 0 or 1 but " << calibrated << std::endl;
       }
 
       _rows.emplace_back(idx,
-			 columns[1],
-			 columns[2],
-			 calibrated);
+                         columns[1],
+                         columns[2],
+                         calibrated);
      }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {

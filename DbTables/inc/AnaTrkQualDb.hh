@@ -10,7 +10,7 @@
 #include "Offline/DbTables/inc/MVAToolDb.hh"
 
 namespace mu2e {
-  
+
   class AnaTrkQualDb : public MVAToolDb {
   public:
     typedef std::shared_ptr<AnaTrkQualDb> ptr_t;

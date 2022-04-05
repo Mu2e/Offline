@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::CaloRecoDigiPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::Print(const art::Handle<CaloRecoDigiCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::CaloRecoDigiPrinter::Print(const art::Handle<CaloRecoDigiCollection>& hand
   Print(*handle);
 }
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::Print(const art::ValidHandle<CaloRecoDigiCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::CaloRecoDigiPrinter::Print(const art::ValidHandle<CaloRecoDigiCollection>&
   Print(*handle);
 }
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::Print(const CaloRecoDigiCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "CaloRecoDigiCollection has " << coll.size() << " hits\n";
@@ -52,22 +52,22 @@ mu2e::CaloRecoDigiPrinter::Print(const CaloRecoDigiCollection& coll, std::ostrea
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::Print(const art::Ptr<CaloRecoDigi>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::Print(const mu2e::CaloRecoDigi& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
-  os 
+  os
     << " " << std::setw(5) << obj.SiPMID()
-    << " " 
+    << " "
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDep()
     << " " << std::setw(8) << std::setprecision(1) << obj.energyDepErr()
     << " " << std::setw(8) << std::setprecision(2) << obj.time()
@@ -76,16 +76,16 @@ mu2e::CaloRecoDigiPrinter::Print(const mu2e::CaloRecoDigi& obj, int ind, std::os
     << " " << std::setw(5) << obj.ndf()
     << " " << std::setw(3) << obj.pileUp()
     << std::endl;
- 
+
 }
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::CaloRecoDigiPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   SiPMID     energy   e_err    time     t_err     chi2   ndf  pileup\n";

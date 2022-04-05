@@ -18,10 +18,10 @@ namespace mu2e {
   public:
 
     DbLiveTable(mu2e::DbIoV const& iov = mu2e::DbIoV(),
-		mu2e::DbTable::cptr_t const& table 
-		= mu2e::DbTable::cptr_t(),
-		int tid = -1, int cid = -1
-		):_iov(iov),_table(table),_tid(tid),_cid(cid) { }
+                mu2e::DbTable::cptr_t const& table
+                = mu2e::DbTable::cptr_t(),
+                int tid = -1, int cid = -1
+                ):_iov(iov),_table(table),_tid(tid),_cid(cid) { }
 
     mu2e::DbIoV const& iov() const {return _iov;}
     mu2e::DbTable const& table() const { return *_table; }

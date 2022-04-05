@@ -33,19 +33,19 @@ namespace mu2e {
       int index = std::stoi(columns[0]);
       // enforce a strict sequential order
       if(index!=int(_rows.size())) {
-	throw cet::exception("TRKALIGNELEMENT_BAD_INDEX") 
-	  << "TrkAlignElement::addRow found index out of order: " 
-	  <<index << " != " << _rows.size() <<"\n";
+        throw cet::exception("TRKALIGNELEMENT_BAD_INDEX")
+          << "TrkAlignElement::addRow found index out of order: "
+          <<index << " != " << _rows.size() <<"\n";
       }
 
       _rows.emplace_back(index,
-			 StrawId(columns[1]),
-			 std::stof(columns[2]),
-			 std::stof(columns[3]),
-			 std::stof(columns[4]),
-			 std::stof(columns[5]),
-			 std::stof(columns[6]),
-			 std::stof(columns[7]));
+                         StrawId(columns[1]),
+                         std::stof(columns[2]),
+                         std::stof(columns[3]),
+                         std::stof(columns[4]),
+                         std::stof(columns[5]),
+                         std::stof(columns[6]),
+                         std::stof(columns[7]));
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
@@ -81,12 +81,12 @@ namespace mu2e {
       constexpr static const char* cxname = "TrkAlignPlane";
       TrkAlignPlane() : TrkAlignElement(cxname,"trk.alignplane",StrawId::_nplanes) {}
   };
-  
+
   class TrkAlignTracker : public TrkAlignElement {
     public:
       constexpr static const char* cxname = "TrkAlignTracker";
       TrkAlignTracker() : TrkAlignElement(cxname,"trk.aligntracker",size_t(1)) {}
   };
-  
+
 };
 #endif

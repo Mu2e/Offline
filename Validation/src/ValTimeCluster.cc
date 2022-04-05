@@ -16,13 +16,13 @@ int mu2e::ValTimeCluster::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValTimeCluster::fill(const mu2e::TimeClusterCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(1.0);
 
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   for(auto tp : coll) {
     _hNhit->Fill(tp.nStrawHits());
     CLHEP::Hep3Vector pos = GenVector::Hep3Vec(tp.position());

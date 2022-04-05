@@ -78,9 +78,9 @@ void mu2e::FileInfo::minimalPrint( ostream& os) const{
 
 void mu2e::FileInfo::eventPrint( ostream& os) const{
   for ( auto e : eventList ) {
-    os 
-      << setw(9) << e.run() 
-      << setw(9) << e.subRun() 
+    os
+      << setw(9) << e.run()
+      << setw(9) << e.subRun()
       << setw(9) << e.event()
       << endl;
   }
@@ -88,9 +88,9 @@ void mu2e::FileInfo::eventPrint( ostream& os) const{
 
 void mu2e::FileInfo::subrunPrint( ostream& os) const{
   for ( auto s : subrunList ) {
-    os 
+    os
       << setw(9) << s.run()
-      << setw(9) << s.subRun() 
+      << setw(9) << s.subRun()
       << endl;
   }
 }
@@ -137,16 +137,16 @@ void mu2e::FileInfo::samPrint( ostream& os) const{
 
 
 void mu2e::FileInfo::treeInfo ( std::string const& treeName,
-				TFile* file,
-				bool&              exists,
-				unsigned long&     nEntries
-				){
+                                TFile* file,
+                                bool&              exists,
+                                unsigned long&     nEntries
+                                ){
   exists = false;
   nEntries = 0;
   TTree * tree;
   file->GetObject( treeName.c_str(), tree);
   if ( !tree ) return;
-  
+
   exists   = true;
   nEntries = tree->GetEntries();
 }
@@ -173,5 +173,5 @@ void mu2e::FileInfo::makeVectors(TFile* file) {
     tr->GetEntry(i);
     subrunList.emplace_back(sa->id());
   }
-  
+
 }

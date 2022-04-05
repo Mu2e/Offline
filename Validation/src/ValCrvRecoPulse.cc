@@ -21,9 +21,9 @@ int mu2e::ValCrvRecoPulse::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValCrvRecoPulse::fill(const mu2e::CrvRecoPulseCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(1.0);
 
@@ -37,7 +37,7 @@ int mu2e::ValCrvRecoPulse::fill(const mu2e::CrvRecoPulseCollection & coll,
     _ht->Fill(rp.GetPulseTime());
     _ht2->Fill(rp.GetPulseTime());
     _hChi2->Fill(rp.GetPulseFitChi2());
-    if(rp.GetPulseFitChi2()>0.0) 
+    if(rp.GetPulseFitChi2()>0.0)
       _hLChi2->Fill(std::log10(rp.GetPulseFitChi2()));
     _hLE->Fill(rp.GetLEtime());
     _hLE2->Fill(rp.GetLEtime());

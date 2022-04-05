@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::TimeClusterPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::TimeClusterPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::TimeClusterPrinter::Print(const art::Handle<TimeClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::TimeClusterPrinter::Print(const art::Handle<TimeClusterCollection>& handle
   Print(*handle);
 }
 
-void 
+void
 mu2e::TimeClusterPrinter::Print(const art::ValidHandle<TimeClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::TimeClusterPrinter::Print(const art::ValidHandle<TimeClusterCollection>& h
   Print(*handle);
 }
 
-void 
+void
 mu2e::TimeClusterPrinter::Print(const TimeClusterCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "TimeClusterCollection has " << coll.size() << " hits\n";
@@ -52,22 +52,22 @@ mu2e::TimeClusterPrinter::Print(const TimeClusterCollection& coll, std::ostream&
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::TimeClusterPrinter::Print(const art::Ptr<TimeCluster>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::TimeClusterPrinter::Print(const mu2e::TimeCluster& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
-  os 
+  os
     << " " << std::setw(5) << obj.nhits()
-    << " " 
+    << " "
     << " " << std::setw(8) << std::setprecision(3) << obj.position().x()
     << " " << std::setw(8) << std::setprecision(3) << obj.position().y()
     << " " << std::setw(9) << std::setprecision(3) << obj.position().z()
@@ -76,13 +76,13 @@ mu2e::TimeClusterPrinter::Print(const mu2e::TimeCluster& obj, int ind, std::ostr
 
 }
 
-void 
+void
 mu2e::TimeClusterPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::TimeClusterPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind   nhits      x       y       z       time\n";

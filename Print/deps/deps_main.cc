@@ -1,17 +1,17 @@
 //
 // A utility program that does two things:
-// 1) reads the scons dependency dump and summarizes  
+// 1) reads the scons dependency dump and summarizes
 //    dependcies between directories (a.k.a packages), write out the summary
 //    The output looks like:
-// HDR BFieldGeom BFieldGeom GeneralUtilities Mu2eInterfaces 
-// LIB BFieldGeom 
-// PRD BFieldGeom boost cetlib cetlib_except clhep gsl messagefacility 
+// HDR BFieldGeom BFieldGeom GeneralUtilities Mu2eInterfaces
+// LIB BFieldGeom
+// PRD BFieldGeom boost cetlib cetlib_except clhep gsl messagefacility
 // ...
 //     where HDR means Mu2e headers, LIB is Mu2e libraries, and
 //     PRD means products dependencies (header or lib).
-//     
+//
 // 2) read in the above summary file and make a list of packages
-//    that depend on a given packge.  This is a what you need to 
+//    that depend on a given packge.  This is a what you need to
 //    warn the developer about in the partial checkout
 //
 // deps -h  shows help
@@ -36,9 +36,9 @@ public:
   gnode(string x):name(x) {}
   string name;
   // things pointing in, parents, these depend on this node
-  set<string> in; 
+  set<string> in;
   // things pointing out, children, node depends on these
-  set<string> out; 
+  set<string> out;
 };
 vector<gnode> gnodes;
 
@@ -72,7 +72,7 @@ public:
 vector<package> packages;
 
 void usage() {
-  cout << 
+  cout <<
     "\n"
     "    deps [OPTIONS]\n"
     "    -i  make tree summary, reading from cin, print to cout\n"
@@ -125,10 +125,10 @@ int maketree(istream& inp) {
     } else if (i==0) { // skip the root of the tree
     } else if (i==2) { // top level dir
       string pkgName = line.substr(4,line.size()-4);
-      bool skip = currPkg=="bin" || currPkg=="tmp" || currPkg=="gen" || 
-	currPkg=="lib" || currPkg=="SConstruct";
+      bool skip = currPkg=="bin" || currPkg=="tmp" || currPkg=="gen" ||
+        currPkg=="lib" || currPkg=="SConstruct";
       if(!pkg.name.empty() && !skip) {
-	packages.push_back(pkg);
+        packages.push_back(pkg);
       }
       pkg.clear();
       pkg.name = pkgName;
@@ -138,54 +138,54 @@ int maketree(istream& inp) {
     } else if (currPkg=="tmp") { // skipping
     } else if (currPkg=="lib") { // note library level dependecies of a dir
       if(i==4) { // start new library
-	boost::split(strs,line,boost::is_any_of("_."));
-	string libPkg = strs[1];
-	bool found = false;
-	for(size_t i = 0; i< packages.size(); i++) {
-	  if(packages[i].name==libPkg) {
-	    ilib = i;
-	    found = true;
-	  }
-	}
-	if(!found) {
-	  cout << "*************  failed to find lib "<< libPkg<< endl;
-	  return 1;
-	}
+        boost::split(strs,line,boost::is_any_of("_."));
+        string libPkg = strs[1];
+        bool found = false;
+        for(size_t i = 0; i< packages.size(); i++) {
+          if(packages[i].name==libPkg) {
+            ilib = i;
+            found = true;
+          }
+        }
+        if(!found) {
+          cout << "*************  failed to find lib "<< libPkg<< endl;
+          return 1;
+        }
       } else { // amongst the dependencies for a library
-	// if a package dependence
-	if(line.find("/cvmfs")!=string::npos) {
-	  boost::split(strs,line,boost::is_any_of("/"));
-	  //cout << "insert " << strs[4] << " " << pkg << endl;
-	  if(strs[4]!="gcc") {
-	    packages[ilib].libs.insert(strs[4]);
-	  }
-	}
-	// if a library dependence
-	if(line.find("lib/libmu2e")!=string::npos) {
-	  size_t i = line.find("_");
-	  size_t j = line.find(".");
-	  string libn = line.substr(i+1,j-i-1);
-	  packages[ilib].libs.insert(libn);
-	}
+        // if a package dependence
+        if(line.find("/cvmfs")!=string::npos) {
+          boost::split(strs,line,boost::is_any_of("/"));
+          //cout << "insert " << strs[4] << " " << pkg << endl;
+          if(strs[4]!="gcc") {
+            packages[ilib].libs.insert(strs[4]);
+          }
+        }
+        // if a library dependence
+        if(line.find("lib/libmu2e")!=string::npos) {
+          size_t i = line.find("_");
+          size_t j = line.find(".");
+          string libn = line.substr(i+1,j-i-1);
+          packages[ilib].libs.insert(libn);
+        }
       }
     } else if (i>2) { // depth is below the main directory level
       auto ss = line.substr(i+2,line.size()-i-2);
       if(ss.find("/cvmfs")==0) { // must be product
-	ss = ss.substr(45,ss.size()-45);
-	size_t j = ss.find("/");
-	if(j==string::npos) j = ss.size();
-	ss = ss.substr(0,j);
-	if(ss!="gcc") pkg.products.insert(ss);
+        ss = ss.substr(45,ss.size()-45);
+        size_t j = ss.find("/");
+        if(j==string::npos) j = ss.size();
+        ss = ss.substr(0,j);
+        if(ss!="gcc") pkg.products.insert(ss);
       } else if(ss.find("lib")==0) { // alibrary dependence
-	ss = ss.substr(4,ss.size()-4);
-	pkg.libs.insert(ss);
+        ss = ss.substr(4,ss.size()-4);
+        pkg.libs.insert(ss);
       } else if(ss.find("tmp")==0) {  // a temp dependence - ignore
       } else if(ss.find("/usr")==0) { // system dep - ignore
       } else { // a subdirectory - a mu2e package dep
-	size_t j = ss.find("/");
-	if(j==string::npos) j = ss.size();
-	ss = ss.substr(0,j);
-	pkg.headers.insert(ss);
+        size_t j = ss.find("/");
+        if(j==string::npos) j = ss.size();
+        ss = ss.substr(0,j);
+        pkg.headers.insert(ss);
       }
     } else {
       cout << "bad line" << line << endl;
@@ -249,7 +249,7 @@ int printNodes() {
 
 /**********************************************************/
 // read deps.txt, the format written by "maketree"
-// only saves the header dependencies, but could 
+// only saves the header dependencies, but could
 // also save library and product deps
 
 int readGraph( string fn ) {
@@ -263,12 +263,12 @@ int readGraph( string fn ) {
     if(strs[0]=="HDR") { // if this line lists header dependecies
       size_t np = insertNode(strs[1]); // np = the main directory
       for(size_t i=2; i<strs.size(); i++) { // the dirs main dir depends on
-	size_t mp = insertNode(strs[i]); // insert if neeed
-	// add it to this node's dep
-	if (mp!=np) { // don't put in a self-reference
-	  gnodes[np].out.insert(strs[i]); // out means np depends on it
-	  gnodes[mp].in.insert(strs[1]);
-	} // not the same
+        size_t mp = insertNode(strs[i]); // insert if neeed
+        // add it to this node's dep
+        if (mp!=np) { // don't put in a self-reference
+          gnodes[np].out.insert(strs[i]); // out means np depends on it
+          gnodes[mp].in.insert(strs[1]);
+        } // not the same
       } // loop over dependencies in a line
     } // if HDR
   } // input lines
@@ -279,7 +279,7 @@ int readGraph( string fn ) {
 /**********************************************************/
 // print what depends on pkgName in type tt
 // note that the tree is not reduced,
-// every node has a full list of its direct dependencies, 
+// every node has a full list of its direct dependencies,
 // both in and out, but nodes do not have links
 // to their transitive dependencies
 
@@ -308,7 +308,7 @@ int printDep(type tt, string pkgName) {
 /**********************************************************/
 
 int main( int argc, char** argv ) {
-  
+
    int opt;
    string fn;
    string pkgName;

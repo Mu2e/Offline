@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::CrvCoincidenceClusterPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::Print(const art::Handle<CrvCoincidenceClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::CrvCoincidenceClusterPrinter::Print(const art::Handle<CrvCoincidenceCluste
   Print(*handle);
 }
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::Print(const art::ValidHandle<CrvCoincidenceClusterCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::CrvCoincidenceClusterPrinter::Print(const art::ValidHandle<CrvCoincidenceC
   Print(*handle);
 }
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::Print(const CrvCoincidenceClusterCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "CrvCoincidenceClusterCollection has " << coll.size() << " clusters\n";
@@ -52,25 +52,25 @@ mu2e::CrvCoincidenceClusterPrinter::Print(const CrvCoincidenceClusterCollection&
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::Print(const art::Ptr<CrvCoincidenceCluster>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::Print(const mu2e::CrvCoincidenceCluster& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
-  os 
+  os
     << " " << std::setw(5) << obj.GetCrvSectorType()
     << " " << std::setw(8) << std::setprecision(1) << obj.GetPEs()
     << " " << std::setw(8) << std::setprecision(1) << obj.GetStartTime()
     << " " << std::setw(8) << std::setprecision(1) << obj.GetEndTime()
-    << "   " 
+    << "   "
     << " " << std::setw(8) << std::setprecision(1) << obj.GetAvgCounterPos().x()
     << " " << std::setw(8) << std::setprecision(1) << obj.GetAvgCounterPos().y()
     << " " << std::setw(8) << std::setprecision(1) << obj.GetAvgCounterPos().z()
@@ -86,13 +86,13 @@ mu2e::CrvCoincidenceClusterPrinter::Print(const mu2e::CrvCoincidenceCluster& obj
 
 }
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::CrvCoincidenceClusterPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   SecType   PEs   t_start   t_end          avg position\n";

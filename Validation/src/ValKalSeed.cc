@@ -48,7 +48,7 @@ int mu2e::ValKalSeed::declare(const art::TFileDirectory& tfs) {
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Livegate");   // 5
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection"); 
+  _hCuts->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"Momentum window");  // 8
   _hCuts->SetMinimum(0.0);
   _hPRes = tfs.make<TH1D>( "PRes", "Momentum resolution", 200, -5.0, 3.0);
@@ -57,9 +57,9 @@ int mu2e::ValKalSeed::declare(const art::TFileDirectory& tfs) {
 }
 
 int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
-				art::Event const& event) {
+                                art::Event const& event) {
 
-  // increment this by 1 any time the defnitions of the histograms or the 
+  // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
   _hVer->Fill(5.0);
 
@@ -70,7 +70,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
   // MC CE found
   if(p_mc>100.0) _hCuts->Fill(2.0);
 
-  _hN->Fill(coll.size()); 
+  _hN->Fill(coll.size());
   for(auto const& ks : coll) {
     _hNStraw->Fill(ks.hits().size());
     _hNSeg->Fill(ks.segments().size());
@@ -78,11 +78,11 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     bool isCPR = tff.hasAllProperties(TrkFitFlag::CPRHelix);
     bool isTPR = tff.hasAllProperties(TrkFitFlag::TPRHelix);
 
-    //    for(mu2e::TrkFitFlagDetail::bit_type i=0; i<f.size(); i++) 
-    //  if(f.hasAnyProperty(i)) _hStatus->Fill(i); 
+    //    for(mu2e::TrkFitFlagDetail::bit_type i=0; i<f.size(); i++)
+    //  if(f.hasAnyProperty(i)) _hStatus->Fill(i);
 
-    for(auto sn: tff.bitNames()) { 
-      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second)); 
+    for(auto sn: tff.bitNames()) {
+      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second));
     }
 
     _hflt0->Fill(ks.flt0());
@@ -122,26 +122,26 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
       bool d0cut = (d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680);
 
       if(p_mc>100.0) {
-	if(tff.hasAllProperties(TrkFitFlag("KalmanOK"))) {
-	  _hCuts->Fill(3.0);
-	  if(ks.fitConsistency()>0.002) {
-	    _hCuts->Fill(4.0);
-	    if(t0>700.0 && t0<1695.0) {
-	      _hCuts->Fill(5.0);
-	      if(td>0.577&&td<1.0) {
-		_hCuts->Fill(6.0);
-		if(d0cut) {
-		  _hCuts->Fill(7.0);
-		  if(p>103.75 && p< 105.0) {
-		    _hCuts->Fill(8.0);
-		    _hPRes->Fill(p-p_mc);
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      } // if(p_mc>100.0) 
+        if(tff.hasAllProperties(TrkFitFlag("KalmanOK"))) {
+          _hCuts->Fill(3.0);
+          if(ks.fitConsistency()>0.002) {
+            _hCuts->Fill(4.0);
+            if(t0>700.0 && t0<1695.0) {
+              _hCuts->Fill(5.0);
+              if(td>0.577&&td<1.0) {
+                _hCuts->Fill(6.0);
+                if(d0cut) {
+                  _hCuts->Fill(7.0);
+                  if(p>103.75 && p< 105.0) {
+                    _hCuts->Fill(8.0);
+                    _hPRes->Fill(p-p_mc);
+                  }
+                }
+              }
+            }
+          }
+        }
+      } // if(p_mc>100.0)
 
 
     }
@@ -162,22 +162,22 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
   // Assocated TrkStrawHit info
     for(auto const& tshs : ks.hits()){
       if(tshs.flag().hasAllProperties(StrawHitFlag::active)){
-	_hHDrift->Fill(tshs.driftRadius());
-	_hHDOCA->Fill(tshs.wireDOCA());
-	_hHEDep->Fill(1000*tshs.energyDep());
-	_hHPanel->Fill(tshs.strawId().uniquePanel());
+        _hHDrift->Fill(tshs.driftRadius());
+        _hHDOCA->Fill(tshs.wireDOCA());
+        _hHEDep->Fill(1000*tshs.energyDep());
+        _hHPanel->Fill(tshs.strawId().uniquePanel());
       }
     }
     // Assocated Material info
     float radlensum(0.0);
     for(auto const& ts : ks.straws()){
       if(ts.active()){
-	_hSRadLen->Fill(ts.radLen());
-	radlensum += ts.radLen();
+        _hSRadLen->Fill(ts.radLen());
+        radlensum += ts.radLen();
       }
     }
     _hSRadLenSum->Fill(radlensum);
-    
+
   }
   return 0;
 }
@@ -197,8 +197,8 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
     for(auto sp : simpcoll) { // loop over SimParticles
       auto const& part = sp.second; // mu2e::SimParticle
       if(part.pdgId()==11 && part.creationCode() == ProcessCode::mu2eCeMinusEndpoint) {
-	cea.push_back(sp.first);
-	break;
+        cea.push_back(sp.first);
+        break;
       }
     }
   }
@@ -211,34 +211,34 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
   for (auto const & ah : vah2) { // loop over SPMC colls
     if(ah.provenance()->productInstanceName()=="virtualdetector") {
       auto const& spmccoll = *ah; //StepPointMCCollection
-      
+
       double t0 = 1e10;
       for(auto step : spmccoll) {
-	// this step points to the conversion electron
-	bool goodp = std::find(std::begin(cea), std::end(cea), 
-			       step.trackId()) != std::end(cea);
-	// is at the front of the tracker
-	bool goodv = (step.volumeId()==VirtualDetectorId::TT_FrontHollow ||
-		      step.volumeId()==VirtualDetectorId::TT_FrontPA);
-	// middle of tracker
-	//(step.volumeId()==VirtualDetectorId::TT_Mid ||
-	// step.volumeId()==VirtualDetectorId::TT_MidInner) ) {
-	// t0 check here finds earliest crossing
-	if( goodp && goodv && step.time()<t0) {
-	  pv = step.momentum();
-	  double p0 = pv.mag();
-	  double pz = pv.z();
-	  double pt = pv.perp();
-	  double td = ( pt!=0.0 ? pz/pt : 1e14 );
-	  if(p0>p && p0>100.0 && td>0.527 && td<1.2) {
-	    p = p0;
-	  }
-	} // if good
+        // this step points to the conversion electron
+        bool goodp = std::find(std::begin(cea), std::end(cea),
+                               step.trackId()) != std::end(cea);
+        // is at the front of the tracker
+        bool goodv = (step.volumeId()==VirtualDetectorId::TT_FrontHollow ||
+                      step.volumeId()==VirtualDetectorId::TT_FrontPA);
+        // middle of tracker
+        //(step.volumeId()==VirtualDetectorId::TT_Mid ||
+        // step.volumeId()==VirtualDetectorId::TT_MidInner) ) {
+        // t0 check here finds earliest crossing
+        if( goodp && goodv && step.time()<t0) {
+          pv = step.momentum();
+          double p0 = pv.mag();
+          double pz = pv.z();
+          double pt = pv.perp();
+          double td = ( pt!=0.0 ? pz/pt : 1e14 );
+          if(p0>p && p0>100.0 && td>0.527 && td<1.2) {
+            p = p0;
+          }
+        } // if good
       } // loop over steppoints
     } // if virtualdetector
   } // loop over SPMC collections
-  
+
   return p;
-  
+
 }
 

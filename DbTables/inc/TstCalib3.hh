@@ -16,8 +16,8 @@ namespace mu2e {
     class Row {
     public:
       Row(int channel, float v0, float v1, float v2, float v3, float v4,
-	  float v5, float v6, float v7, float v8, float v9):
-	_channel(channel),_v0(v0),_v1(v1),_v2(v2),_v3(v3),_v4(v4),
+          float v5, float v6, float v7, float v8, float v9):
+        _channel(channel),_v0(v0),_v1(v1),_v2(v2),_v3(v3),_v4(v4),
       _v5(v5),_v6(v6),_v7(v7),_v8(v8),_v9(v9){}
       int  channel() const { return _channel;}
       float     v0() const { return _v0; }
@@ -47,10 +47,10 @@ namespace mu2e {
     constexpr static const char* cxname = "TstCalib3";
 
     TstCalib3():DbTable(cxname,"tst.calib3",
-			"channel,v0,v1,v2,v3,v4,v5,v6,v7,v8,v9") {}
+                        "channel,v0,v1,v2,v3,v4,v5,v6,v7,v8,v9") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    const Row& row(const int channel) const { 
+    const Row& row(const int channel) const {
                 return _rows.at(_chanIndex.at(channel)); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
@@ -58,16 +58,16 @@ namespace mu2e {
 
     void addRow(const std::vector<std::string>& columns) override {
       _rows.emplace_back(std::stoul(columns[0]),
-			 std::stof(columns[1]),
-			 std::stof(columns[2]),
-			 std::stof(columns[3]),
-			 std::stof(columns[4]),
-			 std::stof(columns[5]),
-			 std::stof(columns[6]),
-			 std::stof(columns[7]),
-			 std::stof(columns[8]),
-			 std::stof(columns[9]),
-			 std::stof(columns[10]) );
+                         std::stof(columns[1]),
+                         std::stof(columns[2]),
+                         std::stof(columns[3]),
+                         std::stof(columns[4]),
+                         std::stof(columns[5]),
+                         std::stof(columns[6]),
+                         std::stof(columns[7]),
+                         std::stof(columns[8]),
+                         std::stof(columns[9]),
+                         std::stof(columns[10]) );
       _chanIndex[_rows.back().channel()] = _rows.size()-1;
     }
 
@@ -93,6 +93,6 @@ namespace mu2e {
     std::vector<Row> _rows;
     std::map<int,std::size_t> _chanIndex;
   };
-  
+
 };
 #endif

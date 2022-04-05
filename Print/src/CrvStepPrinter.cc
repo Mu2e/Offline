@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::CrvStepPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::CrvStepPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::CrvStepPrinter::Print(const art::Handle<CrvStepCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::CrvStepPrinter::Print(const art::Handle<CrvStepCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::CrvStepPrinter::Print(const art::ValidHandle<CrvStepCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::CrvStepPrinter::Print(const art::ValidHandle<CrvStepCollection>& handle,
   Print(*handle);
 }
 
-void 
+void
 mu2e::CrvStepPrinter::Print(const CrvStepCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "CrvStepCollection has " << coll.size() << " steps\n";
@@ -52,13 +52,13 @@ mu2e::CrvStepPrinter::Print(const CrvStepCollection& coll, std::ostream& os) {
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::CrvStepPrinter::Print(const art::Ptr<CrvStep>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::CrvStepPrinter::Print(const mu2e::CrvStep& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -73,7 +73,7 @@ mu2e::CrvStepPrinter::Print(const mu2e::CrvStep& obj, int ind, std::ostream& os)
 
   auto const & pos = obj.startPosition();
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(5) << obj.barIndex()
       << " " << std::setw(9) << pkey
       << " " << std::setw(6) << std::setprecision(1) << obj.visibleEDep()
@@ -81,19 +81,19 @@ mu2e::CrvStepPrinter::Print(const mu2e::CrvStep& obj, int ind, std::ostream& os)
       << " " << std::setw(9) << std::setprecision(2) << pos.x()
       << " " << std::setw(9) << std::setprecision(2) << pos.y()
       << " " << std::setw(9) << std::setprecision(2) << pos.z()
-      << " " << std::setw(8) << std::setprecision(1) << obj.startMomentum().mag() 
-      << "  " 
+      << " " << std::setw(8) << std::setprecision(1) << obj.startMomentum().mag()
+      << "  "
       << std::endl;
   }
 }
 
-void 
+void
 mu2e::CrvStepPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::CrvStepPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind    bar    simP     EDep   startT           startPos              startP\n";

@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::GenParticlePrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::GenParticlePrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::GenParticlePrinter::Print(const art::Handle<GenParticleCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::GenParticlePrinter::Print(const art::Handle<GenParticleCollection>& handle
   Print(*handle);
 }
 
-void 
+void
 mu2e::GenParticlePrinter::Print(const art::ValidHandle<GenParticleCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::GenParticlePrinter::Print(const art::ValidHandle<GenParticleCollection>& h
   Print(*handle);
 }
 
-void 
+void
 mu2e::GenParticlePrinter::Print(const GenParticleCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "GenParticleCollection has " << coll.size() << " particles\n";
@@ -52,20 +52,20 @@ mu2e::GenParticlePrinter::Print(const GenParticleCollection& coll, std::ostream&
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::GenParticlePrinter::Print(const art::Ptr<GenParticle>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
   Print(*obj,ind);
 }
 
-void 
+void
 mu2e::GenParticlePrinter::Print(const mu2e::GenParticle& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
-  os 
+  os
     << " " << std::setw(5) << obj.pdgId()
     << "  "
     << " " << std::setw(8) << std::setprecision(1) << obj.position().x()
@@ -83,13 +83,13 @@ mu2e::GenParticlePrinter::Print(const mu2e::GenParticle& obj, int ind, std::ostr
 
 }
 
-void 
+void
 mu2e::GenParticlePrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::GenParticlePrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   pdgId            Position                     Momentum            time   ptime        genId_name\n";

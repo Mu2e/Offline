@@ -1,8 +1,8 @@
 
 #include "Offline/Validation/inc/ValId.hh"
 
-int mu2e::ValId::declare(const art::TFileDirectory& tfs, 
-			 std::string name, std::string title) {
+int mu2e::ValId::declare(const art::TFileDirectory& tfs,
+                         std::string name, std::string title) {
   _hid = tfs.make<TH1D>( name.c_str(), title.c_str(), 121, -60.5, 60.5);
   return 0;
 }
@@ -10,7 +10,7 @@ int mu2e::ValId::declare(const art::TFileDirectory& tfs,
 int mu2e::ValId::fill(int id) {
 
   int idc = compress(id);
-  _hid->Fill(idc); 
+  _hid->Fill(idc);
 
   return idc;
 }

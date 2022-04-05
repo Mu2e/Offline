@@ -51,13 +51,13 @@ namespace mu2e {
       StrawStatus status(columns[1]);
       // verify the status is allowed
       if(!_statusmask.hasAllProperties(status))
-	throw cet::exception(name()) << "Illegal status specified " << status << std::endl;
+        throw cet::exception(name()) << "Illegal status specified " << status << std::endl;
       _rows.emplace_back(TrkElementStatusRow(sid,status));
     }
     // printout, used to fill db content (?)
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       TrkElementStatusRow const& r = _rows.at(irow);
-      sstream << r.id().plane() << "_" << r.id().panel() << "_" << r.id().straw() << ","; 
+      sstream << r.id().plane() << "_" << r.id().panel() << "_" << r.id().straw() << ",";
       sstream << r.status().hex(); // should this be the text string??
     }
 
@@ -81,7 +81,7 @@ namespace mu2e {
       constexpr static const char* cxname = "TrkPlaneStatus";
       TrkPlaneStatus() : TrkElementStatus(cxname,"trk.planestatus", StrawIdMask("plane"), StrawStatus("Absent")) {}
   };
- // split individual straw status tables in 2: one for short-term, one for long-term 
+ // split individual straw status tables in 2: one for short-term, one for long-term
   class TrkStrawStatusShort : public TrkElementStatus {
     public:
       constexpr static const char* cxname = "TrkStrawStatusShort";
@@ -92,6 +92,6 @@ namespace mu2e {
       constexpr static const char* cxname = "TrkStrawStatusLong";
       TrkStrawStatusLong() : TrkElementStatus(cxname,"trk.strawstatuslong", StrawIdMask("uniquestraw"), StrawStatus("Absent:NoWire:NoHV:NoHVPreamp:NoCalPreamp:NoADC:NoTDC")) {}
   };
-  
+
 };
 #endif

@@ -29,8 +29,8 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Atom<int> verbose{Name("verbose"), 
-	  Comment("verbose flag, 0 to 10"),1};
+      fhicl::Atom<int> verbose{Name("verbose"),
+          Comment("verbose flag, 0 to 10"),1};
 
     };
 

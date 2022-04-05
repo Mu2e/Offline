@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::SimParticlePtrPrinter::Print(art::Event const& event,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,9 +21,9 @@ mu2e::SimParticlePtrPrinter::Print(art::Event const& event,
   }
 }
 
-void 
+void
 mu2e::SimParticlePtrPrinter::Print(const art::Handle<SimParticlePtrCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -32,9 +32,9 @@ mu2e::SimParticlePtrPrinter::Print(const art::Handle<SimParticlePtrCollection>& 
   Print(*handle);
 }
 
-void 
+void
 mu2e::SimParticlePtrPrinter::Print(const art::ValidHandle<SimParticlePtrCollection>& handle,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -43,7 +43,7 @@ mu2e::SimParticlePtrPrinter::Print(const art::ValidHandle<SimParticlePtrCollecti
   Print(*handle);
 }
 
-void 
+void
 mu2e::SimParticlePtrPrinter::Print(const SimParticlePtrCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
   os << "SimParticlePtrCollection has " << coll.size() << " pointers\n";
@@ -52,7 +52,7 @@ mu2e::SimParticlePtrPrinter::Print(const SimParticlePtrCollection& coll, std::os
   for(const auto& obj: coll) Print(obj, i++);
 }
 
-void 
+void
 mu2e::SimParticlePtrPrinter::Print(const art::Ptr<SimParticle>& obj, int ind, std::ostream& os) {
   if(verbose()<1) return;
 
@@ -60,7 +60,7 @@ mu2e::SimParticlePtrPrinter::Print(const art::Ptr<SimParticle>& obj, int ind, st
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
-    os 
+    os
       << " " << std::setw(12) << obj.id()
       << " " << std::setw(12) << obj.key()
       << std::endl;
@@ -69,13 +69,13 @@ mu2e::SimParticlePtrPrinter::Print(const art::Ptr<SimParticle>& obj, int ind, st
 
 }
 
-void 
+void
 mu2e::SimParticlePtrPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::SimParticlePtrPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind     ProductID        key\n";

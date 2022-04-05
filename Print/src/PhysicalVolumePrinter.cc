@@ -4,9 +4,9 @@
 #include <string>
 #include <iomanip>
 
-void 
+void
 mu2e::PhysicalVolumePrinter::PrintSubRun(art::SubRun const& subrun,
-				std::ostream& os) {
+                                std::ostream& os) {
   if(verbose()<1) return;
   if(tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -21,10 +21,10 @@ mu2e::PhysicalVolumePrinter::PrintSubRun(art::SubRun const& subrun,
   }
 }
 
-void 
+void
 mu2e::PhysicalVolumePrinter::Print(
-	     const art::Handle<PhysicalVolumeInfoMultiCollection>& handle,
-	     std::ostream& os) {
+             const art::Handle<PhysicalVolumeInfoMultiCollection>& handle,
+             std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -33,10 +33,10 @@ mu2e::PhysicalVolumePrinter::Print(
   Print(*handle);
 }
 
-void 
+void
 mu2e::PhysicalVolumePrinter::Print(
              const art::ValidHandle<PhysicalVolumeInfoMultiCollection>& handle,
-	     std::ostream& os) {
+             std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
@@ -45,7 +45,7 @@ mu2e::PhysicalVolumePrinter::Print(
   Print(*handle,os);
 }
 
-void 
+void
 mu2e::PhysicalVolumePrinter::Print(
   const PhysicalVolumeInfoMultiCollection& coll, std::ostream& os) {
   if(verbose()<1) return;
@@ -55,10 +55,10 @@ mu2e::PhysicalVolumePrinter::Print(
   for(const auto& obj: coll) Print(obj, i++, os);
 }
 
-void 
+void
 mu2e::PhysicalVolumePrinter::Print(
-	     const PhysicalVolumeInfoSingleStage& obj, 
-	     int ind, std::ostream& os) {
+             const PhysicalVolumeInfoSingleStage& obj,
+             int ind, std::ostream& os) {
   if(verbose()<1) return;
   const PhysicalVolumeInfoSingleStage& ss = obj;
   int n = ss.size();
@@ -77,10 +77,10 @@ mu2e::PhysicalVolumePrinter::Print(
 }
 
 
-void 
-mu2e::PhysicalVolumePrinter::Print(const 
-	   std::pair<cet::map_vector_key, mu2e::PhysicalVolumeInfo>& obj, 
-	   int ind, std::ostream& os) {
+void
+mu2e::PhysicalVolumePrinter::Print(const
+           std::pair<cet::map_vector_key, mu2e::PhysicalVolumeInfo>& obj,
+           int ind, std::ostream& os) {
   if(verbose()<1) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
@@ -88,29 +88,29 @@ mu2e::PhysicalVolumePrinter::Print(const
 
   int i = obj.first.asInt();
   const PhysicalVolumeInfo& pv = obj.second;
-  os 
-    << " " << std::setw(5) << i << std::setw(5) << pv.copyNo() 
+  os
+    << " " << std::setw(5) << i << std::setw(5) << pv.copyNo()
     << "  "
-    << " " << std::setw(43) << pv.name() 
-    << " " << std::setw(23) << pv.materialName() 
+    << " " << std::setw(43) << pv.name()
+    << " " << std::setw(23) << pv.materialName()
     << std::endl;
 
 }
 
-void 
+void
 mu2e::PhysicalVolumePrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
+void
 mu2e::PhysicalVolumePrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind    count\n";
 
 }
 
-void 
+void
 mu2e::PhysicalVolumePrinter::PrintPVListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind    id copyNo                                     name                    material\n";
