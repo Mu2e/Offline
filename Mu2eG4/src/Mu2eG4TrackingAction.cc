@@ -83,7 +83,8 @@ namespace mu2e {
     _steppingAction(steppingAction),
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
-    _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose())
+    _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose()),
+    _muonPreAssignedDecayProperTime(-1.0)
   {
 
     if ( _stepLimitKillerVerbose && (G4Threading::G4GetThreadId() <= 0) ) {
@@ -94,7 +95,13 @@ namespace mu2e {
              << " mm"
              << G4endl;
     }
-
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonPreAssignedDecayProperTime to "
+               << _muonPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
   }
 
   // Receive information that has a lifetime of a run.
@@ -184,6 +191,19 @@ namespace mu2e {
 
     // Need to cast away const-ness to do this.
     const_cast<G4Track*>(trk)->SetUserInformation(ti);
+    if (_muonPreAssignedDecayProperTime>0) {
+      const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
+      if (dynPart->GetPDGcode() == 13) {
+        // if track is a muon and preassigned proper time is set, assing it
+        if (trackingVerbosityLevel>0) {
+          G4cout << __func__
+                 << " Setting muonPreAssignedDecayProperTime to track "
+                 << trk->GetTrackID() << G4endl;
+        }
+        const_cast<G4DynamicParticle*>(dynPart)
+          ->SetPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime*CLHEP::ns);
+      }
+    }
 
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
@@ -568,6 +588,7 @@ namespace mu2e {
              << G4endl;
       G4cout << __func__ << " KE            " << theKEnergy
              << " Momentum direction            " << theMomentumDirection
+             << " Proper time " << pParticle->GetProperTime()
              << G4endl;
       G4cout.precision(prec);
     }
