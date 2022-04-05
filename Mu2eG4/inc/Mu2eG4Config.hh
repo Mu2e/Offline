@@ -142,6 +142,7 @@ namespace mu2e {
           };
 
       fhicl::OptionalAtom<double> mscModelTransitionEnergy {Name("mscModelTransitionEnergy")};
+      fhicl::OptionalAtom<double> muonPreAssignedDecayProperTime {Name("muonPreAssignedDecayProperTime")};
 
       OptionalDelegatedParameter BirksConsts {Name("BirksConsts")};
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};

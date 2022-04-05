@@ -47,6 +47,9 @@ mu2eg4DefaultPhysics: {
 
     // mscModelTransitionEnergy: 115. // MeV uncomment to change the Geant4 deafult
 
+    // muonPreAssignedDecayProperTime: 200.0 // ns uncomment and set specific time,
+                                             // to activate seting muon fixed decay proper time
+
     useEmOption4InTracker: false // to use that option in the tracker only if not using _EMZ;
                                  // does not seem to work all that well in geant4 10.4
     addProcesses: []
