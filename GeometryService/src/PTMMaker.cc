@@ -57,7 +57,7 @@ namespace mu2e {
 
     std::string holderMaterialName = _config.getString("PTM.holder.extrusionMaterial");
     double holderExtrusionWidth = _config.getDouble("PTM.holder.extrusionWidth");
-    double holderShortExtrusionPos = _config.getDouble("PTM.holder.supportDistFromFront");
+    double holderShortExtrusionPos = _config.getDouble("PTM.holder.supportDistFromCenter");
     double holderLongExtrusionSep = _config.getDouble("PTM.holder.separatorGap");
 
 

@@ -82,7 +82,7 @@ double PTM.holder.extrusionWidth = 38.1;
 // The separators are supported by 4 short support beams, which form a square
 // around the nominal beam path, between the PWC's.
 double PTM.holder.separatorGap = 177.8; // center-to-center
-double PTM.holder.supportDistFromFront = 652.4;
+double PTM.holder.supportDistFromCenter = 152.4; // 652.4 - 500.0;
 
 // the handle is a rectangle with an oval cutout, attached to the back of the top support
 double PTM.handleHeight = 228.6;
