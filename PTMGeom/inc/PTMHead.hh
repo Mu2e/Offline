@@ -33,11 +33,15 @@ namespace mu2e {
           std::string holderExtrusionMaterialName,
           double holderExtrusionLongSep,
           double holderExtrusionShortPos,
-          double motherMargin);
+          double motherMargin,
+          CLHEP::Hep3Vector const& parentOriginInMu2e, 
+          CLHEP::HepRotation const& parentRotationInMu2e);
     PTMHead() {}
 
     CLHEP::Hep3Vector const &  originInMu2e()   const { return _originInMu2e; }
     CLHEP::HepRotation const & rotationInMu2e() const { return _rotationInMu2e; }
+    CLHEP::Hep3Vector const &  originInParent()   const { return _originInParent; }
+    CLHEP::HepRotation const & rotationInParent() const { return _rotationInParent; }
 
     const PTMPWC* nearPWC() const { return _nearPWC.get(); }
     const PTMPWC* farPWC()  const { return _farPWC.get(); }
@@ -58,6 +62,8 @@ namespace mu2e {
   private:
     CLHEP::Hep3Vector _originInMu2e;
     CLHEP::HepRotation _rotationInMu2e;
+    CLHEP::Hep3Vector _originInParent;
+    CLHEP::HepRotation _rotationInParent;
 
     std::shared_ptr<PTMPWC> _nearPWC;
     std::shared_ptr<PTMPWC> _farPWC;

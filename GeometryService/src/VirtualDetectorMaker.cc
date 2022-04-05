@@ -863,12 +863,12 @@ namespace mu2e {
         CLHEP::Hep3Vector pwcPos1 = ptMon->ptmHead()->nearPWC()->originInParent();
         double groundInZ = ptMon->ptmHead()->nearPWC()->upstreamWindowSurfaceZ();
         pwcPos1.setZ(pwcPos1.z()+groundInZ);
-        vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
+        vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->ptmHead()->originInMu2e(), &(ptMon->ptmHead()->rotationInMu2e()), pwcPos1);
 
         CLHEP::Hep3Vector pwcPos2 = ptMon->ptmHead()->farPWC()->originInParent();
         groundInZ = ptMon->ptmHead()->farPWC()->upstreamWindowSurfaceZ();
         pwcPos2.setZ(pwcPos2.z()+groundInZ);
-        vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
+        vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->ptmHead()->originInMu2e(), &(ptMon->ptmHead()->rotationInMu2e()), pwcPos2);
       } // if ( c.getBool("hasPTM",false) )
 
     } // if(hasVirtualDetector)

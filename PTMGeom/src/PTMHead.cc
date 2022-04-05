@@ -16,7 +16,9 @@ namespace mu2e{
           std::string holderExtrusionMaterialName,
           double holderExtrusionLongSep,
           double holderExtrusionShortPos,
-          double motherMargin)
+          double motherMargin,
+          CLHEP::Hep3Vector const& parentOriginInMu2e, 
+          CLHEP::HepRotation const& parentRotationInMu2e)
           : _originInMu2e(originInMu2e),
             _rotationInMu2e(rotationInMu2e),
             _nearPWC(nearPWC),
@@ -39,6 +41,9 @@ namespace mu2e{
       _totalWidth = farPWC->totalWidth()+motherMargin;
     }
     _totalLength = pwcSeparation + 0.5*nearPWC->totalThick() + 0.5*farPWC->totalThick() + motherMargin;
+
+    _originInParent = originInMu2e - parentOriginInMu2e;
+    _rotationInParent = rotationInMu2e * parentRotationInMu2e.inverse();
 
   }
 

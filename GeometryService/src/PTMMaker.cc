@@ -27,6 +27,17 @@ namespace mu2e {
     rotationInMu2e.rotateX(xRotInMu2e*CLHEP::deg);
     rotationInMu2e.rotateY(yRotInMu2e*CLHEP::deg);
 
+    double xPosInMu2eHead = _config.getDouble("PTM.head.positionX");
+    double yPosInMu2eHead = _config.getDouble("PTM.head.positionY");
+    double zPosInMu2eHead = _config.getDouble("PTM.head.positionZ");
+    CLHEP::Hep3Vector originInMu2eHead = CLHEP::Hep3Vector(xPosInMu2eHead, yPosInMu2eHead, zPosInMu2eHead);
+
+    double yRotInMu2eHead = _config.getDouble("PTM.head.rotY");
+    double xRotInMu2eHead = _config.getDouble("PTM.head.rotX");
+    CLHEP::HepRotation rotationInMu2eHead = CLHEP::HepRotation();
+    rotationInMu2eHead.rotateX(xRotInMu2eHead*CLHEP::deg);
+    rotationInMu2eHead.rotateY(yRotInMu2eHead*CLHEP::deg);
+
     // the PWCs:
 
     double pwcSeparation = _config.getDouble("PTM.pwcSeparation");
@@ -93,8 +104,8 @@ namespace mu2e {
     double shortExtrusionLength = 0.5*(holderLongExtrusionSep - holderExtrusionWidth);
     std::shared_ptr<Box> holderExtrusionShort(new Box(0.5*holderExtrusionWidth, 0.5*holderExtrusionWidth, shortExtrusionLength));
 
-    std::shared_ptr<PTMHead> ptmHead(new PTMHead(originInMu2e, 
-                                                 rotationInMu2e, 
+    std::shared_ptr<PTMHead> ptmHead(new PTMHead(originInMu2eHead, 
+                                                 rotationInMu2eHead, 
                                                  nearPWC, 
                                                  farPWC, 
                                                  pwcSeparation, 
@@ -103,7 +114,9 @@ namespace mu2e {
                                                  holderMaterialName,
                                                  holderLongExtrusionSep,
                                                  holderShortExtrusionPos,
-                                                 motherMargin));
+                                                 motherMargin,
+                                                 originInMu2e,
+                                                 rotationInMu2e));
     std::shared_ptr<PTMStand> ptmStand(new PTMStand()); // TODO
     std::unique_ptr<PTM> ptmon(new PTM(originInMu2e, rotationInMu2e, ptmStand, ptmHead));
     return ptmon;
