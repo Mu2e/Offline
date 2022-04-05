@@ -412,7 +412,7 @@ namespace mu2e {
                   nullptr, // no rotation
                   G4ThreeVector(bar1X, bar1Y, 0),
                   motherVolume.logical,
-                  0,
+                  1,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
@@ -431,7 +431,7 @@ namespace mu2e {
                   nullptr, // no rotation
                   G4ThreeVector(bar2X, bar2Y, 0),
                   motherVolume.logical,
-                  0,
+                  2,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
@@ -450,7 +450,7 @@ namespace mu2e {
                   nullptr, // no rotation
                   G4ThreeVector(bar3X, bar3Y, 0),
                   motherVolume.logical,
-                  0,
+                  3,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
@@ -469,7 +469,7 @@ namespace mu2e {
                   nullptr, // no rotation
                   G4ThreeVector(bar4X, bar4Y, 0),
                   motherVolume.logical,
-                  0,
+                  4,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
@@ -502,7 +502,7 @@ namespace mu2e {
                   vertBarRotation,
                   G4ThreeVector(short1X, short1Y, shortBarZ),
                   motherVolume.logical,
-                  0,
+                  1,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
@@ -521,7 +521,7 @@ namespace mu2e {
                   vertBarRotation,
                   G4ThreeVector(short2X, short2Y, shortBarZ),
                   motherVolume.logical,
-                  0,
+                  2,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
@@ -544,7 +544,7 @@ namespace mu2e {
                   horizBarRotation,
                   G4ThreeVector(short3X, short3Y, shortBarZ),
                   motherVolume.logical,
-                  0,
+                  3,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
@@ -563,7 +563,7 @@ namespace mu2e {
                   horizBarRotation,
                   G4ThreeVector(short4X, short4Y, shortBarZ),
                   motherVolume.logical,
-                  0,
+                  4,
                   visible, // visible
                   G4Colour::Blue(),
                   forceSolid, // forceSolid
