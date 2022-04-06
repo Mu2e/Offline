@@ -15,31 +15,26 @@
 
 namespace mu2e {
 
-  class BkgClusterPrinter : public ProductPrinter {
-  public:
+class BkgClusterPrinter : public ProductPrinter {
+ public:
+  BkgClusterPrinter() {}
+  BkgClusterPrinter(const Config& conf) : ProductPrinter(conf) {}
 
-    BkgClusterPrinter() { }
-    BkgClusterPrinter(const Config& conf):ProductPrinter(conf) { }
+  // all the ways to request a printout
+  void Print(art::Event const& event, std::ostream& os = std::cout) override;
+  void Print(const art::Handle<BkgClusterCollection>& handle,
+             std::ostream& os = std::cout);
+  void Print(const art::ValidHandle<BkgClusterCollection>& handle,
+             std::ostream& os = std::cout);
+  void Print(const BkgClusterCollection& coll, std::ostream& os = std::cout);
+  void Print(const art::Ptr<BkgCluster>& ptr, int ind = -1,
+             std::ostream& os = std::cout);
+  void Print(const mu2e::BkgCluster& obj, int ind = -1,
+             std::ostream& os = std::cout);
 
-    // all the ways to request a printout
-    void Print(art::Event const& event,
-               std::ostream& os = std::cout) override;
-    void Print(const art::Handle<BkgClusterCollection>& handle,
-               std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<BkgClusterCollection>& handle,
-               std::ostream& os = std::cout);
-    void Print(const BkgClusterCollection& coll,
-               std::ostream& os = std::cout);
-    void Print(const art::Ptr<BkgCluster>& ptr,
-               int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::BkgCluster& obj,
-               int ind = -1, std::ostream& os = std::cout);
+  void PrintHeader(const std::string& tag, std::ostream& os = std::cout);
+  void PrintListHeader(std::ostream& os = std::cout);
+};
 
-    void PrintHeader(const std::string& tag,
-                     std::ostream& os = std::cout);
-    void PrintListHeader(std::ostream& os = std::cout);
-
-  };
-
-}
+}  // namespace mu2e
 #endif

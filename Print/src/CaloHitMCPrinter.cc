@@ -1,109 +1,97 @@
 
 #include "Offline/Print/inc/CaloHitMCPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
-#include <string>
 #include <iomanip>
+#include <string>
 
-void
-mu2e::CaloHitMCPrinter::Print(art::Event const& event,
-                                std::ostream& os) {
-  if(verbose()<1) return;
-  if(tags().empty()) {
+void mu2e::CaloHitMCPrinter::Print(art::Event const& event, std::ostream& os) {
+  if (verbose() < 1) return;
+  if (tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector< art::Handle<CaloHitMCCollection> > vah = event.getMany<CaloHitMCCollection>();
-    for (auto const & ah : vah) Print(ah);
+    std::vector<art::Handle<CaloHitMCCollection> > vah =
+        event.getMany<CaloHitMCCollection>();
+    for (auto const& ah : vah) Print(ah);
   } else {
     // print requested instances
-    for(const auto& tag : tags() ) {
+    for (const auto& tag : tags()) {
       auto ih = event.getValidHandle<CaloHitMCCollection>(tag);
       Print(ih);
     }
   }
 }
 
-void
-mu2e::CaloHitMCPrinter::Print(const art::Handle<CaloHitMCCollection>& handle,
-                                std::ostream& os) {
-  if(verbose()<1) return;
+void mu2e::CaloHitMCPrinter::Print(
+    const art::Handle<CaloHitMCCollection>& handle, std::ostream& os) {
+  if (verbose() < 1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
-  tag.pop_back(); // remove trailing dot
-  PrintHeader(tag,os);
+  tag.pop_back();  // remove trailing dot
+  PrintHeader(tag, os);
   Print(*handle);
 }
 
-void
-mu2e::CaloHitMCPrinter::Print(const art::ValidHandle<CaloHitMCCollection>& handle,
-                                std::ostream& os) {
-  if(verbose()<1) return;
+void mu2e::CaloHitMCPrinter::Print(
+    const art::ValidHandle<CaloHitMCCollection>& handle, std::ostream& os) {
+  if (verbose() < 1) return;
   // the product tags with all four fields, with underscores
   std::string tag = handle.provenance()->productDescription().branchName();
-  tag.pop_back(); // remove trailing dot
-  PrintHeader(tag,os);
+  tag.pop_back();  // remove trailing dot
+  PrintHeader(tag, os);
   Print(*handle);
 }
 
-void
-mu2e::CaloHitMCPrinter::Print(const CaloHitMCCollection& coll, std::ostream& os) {
-  if(verbose()<1) return;
+void mu2e::CaloHitMCPrinter::Print(const CaloHitMCCollection& coll,
+                                   std::ostream& os) {
+  if (verbose() < 1) return;
   os << "CaloHitMCCollection has " << coll.size() << " hits\n";
-  if(verbose()==1 || verbose()==2) PrintListHeader();
+  if (verbose() == 1 || verbose() == 2) PrintListHeader();
   int i = 0;
-  for(const auto& obj: coll) Print(obj, i++);
+  for (const auto& obj : coll) Print(obj, i++);
 }
 
-void
-mu2e::CaloHitMCPrinter::Print(const art::Ptr<CaloHitMC>& obj, int ind, std::ostream& os) {
-  if(verbose()<1) return;
-  Print(*obj,ind);
+void mu2e::CaloHitMCPrinter::Print(const art::Ptr<CaloHitMC>& obj, int ind,
+                                   std::ostream& os) {
+  if (verbose() < 1) return;
+  Print(*obj, ind);
 }
 
-void
-mu2e::CaloHitMCPrinter::Print(const mu2e::CaloHitMC& obj, int ind, std::ostream& os) {
-  if(verbose()<1) return;
+void mu2e::CaloHitMCPrinter::Print(const mu2e::CaloHitMC& obj, int ind,
+                                   std::ostream& os) {
+  if (verbose() < 1) return;
 
-  if( obj.totalEnergyDep() < _eCut ) return;
+  if (obj.totalEnergyDep() < _eCut) return;
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
-  if(ind>=0) os << std::setw(4) << ind;
+  if (ind >= 0) os << std::setw(4) << ind;
 
-  float t = ( obj.nParticles()<=0 ? 0.0 : obj.time() );
+  float t = (obj.nParticles() <= 0 ? 0.0 : obj.time());
 
-  os
-    << " " << std::setw(5) << obj.nParticles()
-    << " "
-    << " " << std::setw(8) << std::setprecision(1) << t
-    << " " << std::setw(8) << std::setprecision(1) << obj.totalEnergyDep()
-    << " " << std::setw(8) << std::setprecision(1) << obj.totalEnergyDepG4()
-    << std::endl;
+  os << " " << std::setw(5) << obj.nParticles() << " "
+     << " " << std::setw(8) << std::setprecision(1) << t << " " << std::setw(8)
+     << std::setprecision(1) << obj.totalEnergyDep() << " " << std::setw(8)
+     << std::setprecision(1) << obj.totalEnergyDepG4() << std::endl;
 
-  if(verbose()<2) return;
+  if (verbose() < 2) return;
 
   os << "     SimPart  rel   time      eDep    eDepG4    mom" << std::endl;
-  for(auto const& cemc: obj.energyDeposits()) {
-    os
-      << "     " << std::setw(5) << cemc.sim().key()
-      << " " << std::setw(5) << cemc.rel().relationship()
-      << " " << std::setw(8) << std::setprecision(1) << cemc.time()
-      << " " << std::setw(8) << std::setprecision(1) << cemc.energyDep()
-      << " " << std::setw(8) << std::setprecision(1) << cemc.energyDepG4()
-      << " " << std::setw(8) << std::setprecision(1) << cemc.momentumIn()
-      << std::endl;
+  for (auto const& cemc : obj.energyDeposits()) {
+    os << "     " << std::setw(5) << cemc.sim().key() << " " << std::setw(5)
+       << cemc.rel().relationship() << " " << std::setw(8)
+       << std::setprecision(1) << cemc.time() << " " << std::setw(8)
+       << std::setprecision(1) << cemc.energyDep() << " " << std::setw(8)
+       << std::setprecision(1) << cemc.energyDepG4() << " " << std::setw(8)
+       << std::setprecision(1) << cemc.momentumIn() << std::endl;
 
-  } // loop on caloEDepMC
-
+  }  // loop on caloEDepMC
 }
 
-void
-mu2e::CaloHitMCPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
-  if(verbose()<1) return;
+void mu2e::CaloHitMCPrinter::PrintHeader(const std::string& tag,
+                                         std::ostream& os) {
+  if (verbose() < 1) return;
   os << "\nProductPrint " << tag << "\n";
 }
 
-void
-mu2e::CaloHitMCPrinter::PrintListHeader(std::ostream& os) {
-  if(verbose()<1) return;
+void mu2e::CaloHitMCPrinter::PrintListHeader(std::ostream& os) {
+  if (verbose() < 1) return;
   os << "ind     nPart    time     eDep    eDepG4  \n";
-
 }
-

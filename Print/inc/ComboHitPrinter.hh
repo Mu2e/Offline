@@ -14,31 +14,26 @@
 
 namespace mu2e {
 
-  class ComboHitPrinter : public ProductPrinter {
-  public:
+class ComboHitPrinter : public ProductPrinter {
+ public:
+  ComboHitPrinter() {}
+  ComboHitPrinter(const Config& conf) : ProductPrinter(conf) {}
 
-    ComboHitPrinter() { }
-    ComboHitPrinter(const Config& conf):ProductPrinter(conf) { }
+  // all the ways to request a printout
+  void Print(art::Event const& event, std::ostream& os = std::cout) override;
+  void Print(const art::Handle<ComboHitCollection>& handle,
+             std::ostream& os = std::cout);
+  void Print(const art::ValidHandle<ComboHitCollection>& handle,
+             std::ostream& os = std::cout);
+  void Print(const ComboHitCollection& coll, std::ostream& os = std::cout);
+  void Print(const art::Ptr<ComboHit>& ptr, int ind = -1,
+             std::ostream& os = std::cout);
+  void Print(const mu2e::ComboHit& obj, int ind = -1,
+             std::ostream& os = std::cout);
 
-    // all the ways to request a printout
-    void Print(art::Event const& event,
-               std::ostream& os = std::cout) override;
-    void Print(const art::Handle<ComboHitCollection>& handle,
-               std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<ComboHitCollection>& handle,
-               std::ostream& os = std::cout);
-    void Print(const ComboHitCollection& coll,
-               std::ostream& os = std::cout);
-    void Print(const art::Ptr<ComboHit>& ptr,
-               int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::ComboHit& obj,
-               int ind = -1, std::ostream& os = std::cout);
+  void PrintHeader(const std::string& tag, std::ostream& os = std::cout);
+  void PrintListHeader(std::ostream& os = std::cout);
+};
 
-    void PrintHeader(const std::string& tag,
-                     std::ostream& os = std::cout);
-    void PrintListHeader(std::ostream& os = std::cout);
-
-  };
-
-}
+}  // namespace mu2e
 #endif

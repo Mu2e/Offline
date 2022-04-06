@@ -12,48 +12,46 @@
 
 namespace mu2e {
 
-  class DbCache {
-  public:
+class DbCache {
+ public:
+  DbCache() :
+      _limitSize(200000000),  // 200 MB
+      _purgeInterval(20), _purgeEnd(0.9), _hwmSize(0), _size(0), _nPurges(0),
+      _nPurged(0), _nAdded(0) {}
 
+  void setLimitSize(int64_t limitSize) { _limitSize = limitSize; }
+  void setPurgeInterval(int purgeInterval) { _purgeInterval = purgeInterval; }
+  void setPurgeEnd(float purgeEnd) { _purgeEnd = purgeEnd; }
+  void add(int cid, mu2e::DbTable::cptr_t const& ptr);
 
-    DbCache():_limitSize(200000000), // 200 MB
-              _purgeInterval(20),_purgeEnd(0.9),
-              _hwmSize(0),_size(0),_nPurges(0),_nPurged(0),_nAdded(0) {}
+  bool hasTable(int cid) { return _tables.find(cid) != _tables.end(); }
 
-    void setLimitSize(int64_t limitSize) { _limitSize = limitSize; }
-    void setPurgeInterval(int purgeInterval) { _purgeInterval = purgeInterval; }
-    void setPurgeEnd(float purgeEnd) { _purgeEnd = purgeEnd; }
-    void add(int cid, mu2e::DbTable::cptr_t const& ptr);
+  mu2e::DbTable::cptr_t get(int cid);
 
-    bool hasTable(int cid) { return _tables.find(cid)!=_tables.end(); }
+  void clear() { _tables.clear(); }
+  int64_t size() const { return _size; }
+  void print() const;
+  void printStats() const;
 
-    mu2e::DbTable::cptr_t get(int cid);
+ private:
+  typedef std::map<int, mu2e::DbTable::cptr_t> table_map;
 
-    void clear() { _tables.clear(); }
-    int64_t size() const { return _size;}
-    void print() const;
-    void printStats() const;
+  void purge();
 
-  private:
+  table_map _tables;
 
-    typedef std::map<int,mu2e::DbTable::cptr_t> table_map;
+  // items needed for monitoring and purging
+  int64_t _limitSize;  // max size for cache in bytes
+  int _purgeInterval;  // check purge after every purgeInterval add()'s
+  float _purgeEnd;     // purge down to this fraction of the limit
+  int64_t _hwmSize;
+  int64_t _size;
+  std::queue<int> _cidFifo;
+  int _nPurges;
+  int _nPurged;
+  int _nAdded;
+};
 
-    void purge();
-
-    table_map _tables;
-
-    // items needed for monitoring and purging
-    int64_t _limitSize; // max size for cache in bytes
-    int _purgeInterval; // check purge after every purgeInterval add()'s
-    float _purgeEnd; // purge down to this fraction of the limit
-    int64_t _hwmSize;
-    int64_t _size;
-    std::queue<int> _cidFifo;
-    int _nPurges;
-    int _nPurged;
-    int _nAdded;
-  };
-
-}
+}  // namespace mu2e
 
 #endif
