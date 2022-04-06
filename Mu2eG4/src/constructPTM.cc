@@ -36,6 +36,7 @@
 #include "G4SubtractionSolid.hh"
 #include "G4PVPlacement.hh"
 #include "G4VSolid.hh"
+#include "G4EllipticalTube.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -571,6 +572,37 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
+
+    // the handle at the top of the holder -- rectangle with top corners cut off, and an elliptical cutout
+    G4Box *handleOuter = new G4Box("ptmHandleOuter", 
+                TODO, 
+                TODO, 
+                TODO);
+    G4EllipticalTube *handleHole = new G4EllipticalTube("ptmHandleHole",
+                holeWidthTODO,
+                holeHeightTODO,
+                thicknessTODO);
+    G4SubtractionSolid *handleLarge = new G4SubtractionSolid("ptmHandleLarge", handleOuter, handleHole, 0, holePositionTODO);
+    G4Box *cornerCutoff = new G4Box("ptmHandleCorner",
+                TODO,
+                TODO,
+                TODO);
+    G4SubtractionSolid *oneCorner = new G4SubtractionSolid("ptmHandleOneCorner", handleLarge, cornerCutoff, angleTODO, positionTODO);
+    // will cut off the other corner in a second
+    std::string handleName = "PTMHandle";
+    G4Material *handleMaterial = findMaterialOrThrow(MATERIAL_TODO);
+
+    VolumeInfo handleInfo;
+    handleInfo.name = handleName;
+    handleInfo.solid = new G4SubtractionSolid("ptmHandle", oneCorner, cornerCutoff, angleTODO, positionTODO);
+    finishNesting(handleInfo, 
+          handleMaterial, 
+          nullptr, 
+          POSITION_TODO, 
+          container.logical, 
+          0, 
+          G4Colour::Blue(), 
+          "PTM");
   }
 
 
