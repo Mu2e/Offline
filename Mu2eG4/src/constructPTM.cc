@@ -377,11 +377,7 @@ namespace mu2e {
   } // constructTargetHallPWC
 
   void constructPWCHolder(VolumeInfo const& motherVolume,
-                          const Box* longExtrusion,
-                          const Box* shortExtrusion,
-                          std::string holderExtrusionMaterialName,
-                          double holderExtrusionLongSep,
-                          double holderExtrusionShortPos,
+                          const PTMHead* ptmHead,
                           SimpleConfig const& _config ) {
     // collect geomOptions
     const int verbosity = _config.getInt("PTM.verbosityLevel",1);
@@ -392,6 +388,13 @@ namespace mu2e {
     const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("PTM");
     const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
     bool placePV = geomOptions->placePV("PTM");
+
+    // pull out the pieces you need for the aluminum frame
+    const Box* longExtrusion = ptmHead->holderExtrusionLong();
+    const Box* shortExtrusion = ptmHead->holderExtrusionShort();
+    std::string holderExtrusionMaterialName = ptmHead->holderExtrusionMaterialName();
+    double holderExtrusionLongSep = ptmHead->holderExtrusionLongSep();
+    double holderExtrusionShortPos = ptmHead->holderExtrusionShortPos();
 
     std::string longBarName = "PTMPWCHolderLong";
     G4Material *holderMaterial = findMaterialOrThrow(holderExtrusionMaterialName);
@@ -574,35 +577,54 @@ namespace mu2e {
                   verbosity>0);
 
     // the handle at the top of the holder -- rectangle with top corners cut off, and an elliptical cutout
+    double subtractionThickness = 1.1 * ptmHead->handleBase()->getZhalfLength();
+    G4RotationMatrix* rotation45;
+    rotation45 = reg.add(new G4RotationMatrix());
+    rotation45->rotateZ(45.*CLHEP::deg);
     G4Box *handleOuter = new G4Box("ptmHandleOuter", 
-                TODO, 
-                TODO, 
-                TODO);
+                ptmHead->handleBase()->getXhalfLength(), 
+                ptmHead->handleBase()->getYhalfLength(), 
+                ptmHead->handleBase()->getZhalfLength());
     G4EllipticalTube *handleHole = new G4EllipticalTube("ptmHandleHole",
-                holeWidthTODO,
-                holeHeightTODO,
-                thicknessTODO);
-    G4SubtractionSolid *handleLarge = new G4SubtractionSolid("ptmHandleLarge", handleOuter, handleHole, 0, holePositionTODO);
+                ptmHead->handleHoleSemiMinor(),
+                ptmHead->handleHoleSemiMajor(),
+                subtractionThickness);
+    G4SubtractionSolid *handleLarge = new G4SubtractionSolid("ptmHandleLarge", handleOuter, handleHole, 0, ptmHead->handleHoleCenter());
     G4Box *cornerCutoff = new G4Box("ptmHandleCorner",
-                TODO,
-                TODO,
-                TODO);
-    G4SubtractionSolid *oneCorner = new G4SubtractionSolid("ptmHandleOneCorner", handleLarge, cornerCutoff, angleTODO, positionTODO);
-    // will cut off the other corner in a second
+                0.5*ptmHead->handleCornerCutSide(),
+                0.5*ptmHead->handleCornerCutSide(),
+                subtractionThickness);
+    G4SubtractionSolid *oneCorner = new G4SubtractionSolid("ptmHandleOneCorner", 
+                                           handleLarge, 
+                                           cornerCutoff, 
+                                           rotation45, 
+                                           G4ThreeVector(ptmHead->handleBase()->getXhalfLength(), ptmHead->handleBase()->getYhalfLength(), 0.0));
+    G4SubtractionSolid *handleFinal = new G4SubtractionSolid("PTMHandle", 
+                                           oneCorner, 
+                                           cornerCutoff, 
+                                           rotation45, 
+                                           G4ThreeVector(-1*ptmHead->handleBase()->getXhalfLength(), ptmHead->handleBase()->getYhalfLength(), 0.0));
     std::string handleName = "PTMHandle";
-    G4Material *handleMaterial = findMaterialOrThrow(MATERIAL_TODO);
+    G4Material *handleMaterial = findMaterialOrThrow(ptmHead->handleMaterialName());
+    G4ThreeVector handlePosition = G4ThreeVector(0.0, short3Y+shortExtrusion->getYhalfLength()+ptmHead->handleBase()->getYhalfLength(), shortBarZ+shortExtrusion->getXhalfLength());
+
 
     VolumeInfo handleInfo;
     handleInfo.name = handleName;
-    handleInfo.solid = new G4SubtractionSolid("ptmHandle", oneCorner, cornerCutoff, angleTODO, positionTODO);
-    finishNesting(handleInfo, 
-          handleMaterial, 
-          nullptr, 
-          POSITION_TODO, 
-          container.logical, 
-          0, 
-          G4Colour::Blue(), 
-          "PTM");
+    handleInfo.solid = handleFinal;
+    finishNesting(handleInfo,
+                  handleMaterial, // probably unnecessary, since we made the logical already
+                  0,
+                  handlePosition,
+                  motherVolume.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
   }
 
 
@@ -647,11 +669,7 @@ namespace mu2e {
     constructTargetHallPWC(pTargetMonContainer, ptmon->ptmHead()->farPWC(), VirtualDetectorId::PTM_2_In, _config);
     // the aluminum frame that holds the PWCs
     constructPWCHolder(pTargetMonContainer, 
-                          ptmon->ptmHead()->holderExtrusionLong(), 
-                          ptmon->ptmHead()->holderExtrusionShort(), 
-                          ptmon->ptmHead()->holderExtrusionMaterialName(),
-                          ptmon->ptmHead()->holderExtrusionLongSep(),
-                          ptmon->ptmHead()->holderExtrusionShortPos(),
+                          ptmon->ptmHead(),
                           _config);
 
   } // constructPTM

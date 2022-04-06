@@ -93,10 +93,12 @@ double PTM.holder.supportDistFromCenter = 152.4; // 652.4 - 500.0;
 double PTM.handleHeight = 228.6;
 double PTM.handleWidth = 139.7;
 double PTM.handleThick = 6.36;
-double PTM.handleCornerCutoffs = 38.1; // mm
+// The below is one side of a square, rotated 90 degrees and subtracted from the corner of a handle.
+double PTM.handleCornerCutoffs = 53.9; // the subtraction reduces the width at the top of the handle by 38.1 mm.
 double PTM.handleCutoutHeight = 152.185;
 double PTM.handleCutoutWidth = 63.56;
 double PTM.handleCutoutPositionY = 7.0;
+string PTM.handleMaterial = "A1100";
 
 //
 // Values related to the stand on the floor
