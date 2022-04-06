@@ -36,6 +36,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -193,7 +194,7 @@ namespace mu2e {
     const_cast<G4Track*>(trk)->SetUserInformation(ti);
     if (_muonPreAssignedDecayProperTime>=0.0) {
       const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
-      if (dynPart->GetPDGcode() == 13) {
+      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
         // if track is a muon and preassigned proper time is set, assing it
         if (trackingVerbosityLevel>0) {
           G4cout << __func__
@@ -546,8 +547,8 @@ namespace mu2e {
     if (pname == "Transportation" &&
         Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trVerbosity)) {
       pname = G4String("mu2eFieldPropagator");
-      if ( !(trk->GetDefinition()->GetPDGEncoding() == 11 || // electron & proton codes hardcoded for now
-             trk->GetDefinition()->GetPDGEncoding() == 2212 ) ||
+      if ( !(trk->GetDefinition()->GetPDGEncoding() == PDGCode::e_minus ||
+             trk->GetDefinition()->GetPDGEncoding() == PDGCode::proton ) ||
            G4LossTableManager::Instance()->
            GetRange(trk->GetDefinition(),
                     trk->GetKineticEnergy(),
