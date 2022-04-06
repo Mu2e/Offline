@@ -16,17 +16,16 @@
 // dbBin TRACKER_VST v1_2 100000 TrkStrawStatusLong
 //
 
-#include <string>
-#include <iostream>
-#include "Offline/DbService/inc/DbIdList.hh"
 #include "Offline/DbService/inc/DbEngine.hh"
+#include "Offline/DbService/inc/DbIdList.hh"
+#include <iostream>
+#include <string>
 
 using namespace mu2e;
 using namespace std;
 
-int main(int argc, char**argv) {
-
-  if(argc!=5) { // first arg is exe name
+int main(int argc, char** argv) {
+  if (argc != 5) {  // first arg is exe name
     cout << "Four required arguments: PURPOSE VERSION RUN TABLE" << endl;
     return 1;
   }
@@ -37,27 +36,27 @@ int main(int argc, char**argv) {
   uint32_t subrun = 0;
   string table(argv[4]);
 
-cout << "Using "<<purpose << " " << version << " "
-       << run << " " << table<< endl;
+  cout << "Using " << purpose << " " << version << " " << run << " " << table
+       << endl;
 
-DbEngine engine;
+  DbEngine engine;
 
-engine.setVerbose(2);
+  engine.setVerbose(2);
 
-DbIdList idList; // read file of db connection details
-engine.setDbId( idList.getDbId("mu2e_conditions_prd") );
+  DbIdList idList;  // read file of db connection details
+  engine.setDbId(idList.getDbId("mu2e_conditions_prd"));
 
-engine.setVersion( DbVersion(purpose,version) );
+  engine.setVersion(DbVersion(purpose, version));
 
-// add overriding text file
-//auto coll = DbUtil::readFile("myfile.txt");
-//_engine.addOverride(coll);
+  // add overriding text file
+  // auto coll = DbUtil::readFile("myfile.txt");
+  //_engine.addOverride(coll);
 
-int tid =  engine.tidByName(table);
+  int tid = engine.tidByName(table);
 
-DbLiveTable liveTable = engine.update(tid, run, subrun);
+  DbLiveTable liveTable = engine.update(tid, run, subrun);
 
-cout <<liveTable.table().csv() << endl;
+  cout << liveTable.table().csv() << endl;
 
   return 0;
 }

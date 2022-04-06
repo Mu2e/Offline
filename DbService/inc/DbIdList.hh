@@ -10,19 +10,20 @@
 // connections info, for a given database name.
 //
 
+#include "Offline/DbTables/inc/DbId.hh"
 #include <string>
 #include <vector>
-#include "Offline/DbTables/inc/DbId.hh"
 
 namespace mu2e {
 
-  class DbIdList {
-  public:
-    DbIdList();
-    // return the appropriate DbId given a database name
-    DbId getDbId(const std::string& name="mu2e_conditions_prd");
-  private:
-    std::vector<DbId> _ids;
-  };
-}
+class DbIdList {
+ public:
+  DbIdList();
+  // return the appropriate DbId given a database name
+  DbId getDbId(const std::string& name = "mu2e_conditions_prd");
+
+ private:
+  std::vector<DbId> _ids;
+};
+}  // namespace mu2e
 #endif

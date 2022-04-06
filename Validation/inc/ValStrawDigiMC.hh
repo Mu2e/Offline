@@ -2,37 +2,35 @@
 #ifndef ValStrawDigiMC_HH_
 #define ValStrawDigiMC_HH_
 
+#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
-#include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "TH1D.h"
 #include <string>
 
 namespace mu2e {
 
-  class ValStrawDigiMC {
+class ValStrawDigiMC {
+ public:
+  ValStrawDigiMC(std::string name) : _name(name) {}
+  int declare(const art::TFileDirectory& tfs);
+  int fill(const StrawDigiMCCollection& coll, art::Event const& event);
+  std::string& name() { return _name; }
 
-  public:
-    ValStrawDigiMC(std::string name):_name(name){}
-    int declare( const art::TFileDirectory& tfs);
-    int fill(const StrawDigiMCCollection & coll, art::Event const& event);
-    std::string& name() { return _name; }
+ private:
+  std::string _name;
 
-  private:
-    std::string _name;
-
-    TH1D* _hVer;
-    TH1D* _hN;
-    TH1D* _hN2;
-    TH1D* _htime0;
-    TH1D* _htime1;
-    TH1D* _hener;
-    TH1D* _henerT;
-    TH1D* _hcross;
-    TH1D* _hgStep;
-    TH1D* _hSI;
-  };
-}
-
+  TH1D* _hVer;
+  TH1D* _hN;
+  TH1D* _hN2;
+  TH1D* _htime0;
+  TH1D* _htime1;
+  TH1D* _hener;
+  TH1D* _henerT;
+  TH1D* _hcross;
+  TH1D* _hgStep;
+  TH1D* _hSI;
+};
+}  // namespace mu2e
 
 #endif

@@ -18,45 +18,40 @@
 
 namespace mu2e {
 
-  struct FileInfo{
+struct FileInfo {
+  FileInfo(std::string const& name, int level = 1);
 
-    FileInfo ( std::string const& name, int level=1 );
+  std::string filename;
+  unsigned long events = 0;
+  unsigned long runs = 0;
+  unsigned long subRuns = 0;
+  bool openable = false;
+  bool hasEvents = false;
+  bool hasRuns = false;
+  bool hasSubRuns = false;
 
-    std::string   filename;
-    unsigned long events     = 0;
-    unsigned long runs       = 0;
-    unsigned long subRuns    = 0;
-    bool          openable   = false;
-    bool          hasEvents  = false;
-    bool          hasRuns    = false;
-    bool          hasSubRuns = false;
+  std::vector<art::EventID> eventList;
+  std::vector<art::SubRunID> subrunList;
 
-    std::vector<art::EventID>  eventList;
-    std::vector<art::SubRunID> subrunList;
+  void fullPrint(std::ostream&) const;
+  void minimalPrint(std::ostream&) const;
+  void eventPrint(std::ostream&) const;
+  void subrunPrint(std::ostream&) const;
+  void samPrint(std::ostream&) const;
 
-    void fullPrint    ( std::ostream& ) const;
-    void minimalPrint ( std::ostream& ) const;
-    void eventPrint   ( std::ostream& ) const;
-    void subrunPrint  ( std::ostream& ) const;
-    void samPrint     ( std::ostream& ) const;
+  bool allOK() const { return openable && hasEvents && hasRuns && hasSubRuns; }
 
-    bool allOK () const {
-      return openable && hasEvents && hasRuns && hasSubRuns;
-    }
+  std::string status() const { return (allOK()) ? "OK " : "BAD"; }
 
-    std::string status() const{
-      return (allOK()) ? "OK " : "BAD";
-    }
+  void treeInfo(std::string const& treeName,  // input argument
+                TFile* file,                  // input argument
+                bool& exists,                 // output argument
+                unsigned long& nEntries       // output argument
+  );
 
-    void treeInfo ( std::string const& treeName,   // input argument
-                    TFile* file,                   // input argument
-                    bool&              exists,     // output argument
-                    unsigned long&     nEntries    // output argument
-                    );
+  void makeVectors(TFile* file);
+};
 
-    void makeVectors(TFile* file);
-  };
-
-}
+}  // namespace mu2e
 
 #endif /* ROOTtools_eventCount_FileInfo_hh */

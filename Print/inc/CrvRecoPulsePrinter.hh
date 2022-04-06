@@ -14,32 +14,26 @@
 
 namespace mu2e {
 
-  class CrvRecoPulsePrinter : public ProductPrinter {
-  public:
+class CrvRecoPulsePrinter : public ProductPrinter {
+ public:
+  CrvRecoPulsePrinter() {}
+  CrvRecoPulsePrinter(const Config& conf) : ProductPrinter(conf) {}
 
+  // all the ways to request a printout
+  void Print(art::Event const& event, std::ostream& os = std::cout) override;
+  void Print(const art::Handle<CrvRecoPulseCollection>& handle,
+             std::ostream& os = std::cout);
+  void Print(const art::ValidHandle<CrvRecoPulseCollection>& handle,
+             std::ostream& os = std::cout);
+  void Print(const CrvRecoPulseCollection& coll, std::ostream& os = std::cout);
+  void Print(const art::Ptr<CrvRecoPulse>& ptr, int ind = -1,
+             std::ostream& os = std::cout);
+  void Print(const mu2e::CrvRecoPulse& obj, int ind = -1,
+             std::ostream& os = std::cout);
 
-    CrvRecoPulsePrinter() { }
-    CrvRecoPulsePrinter(const Config& conf):ProductPrinter(conf) { }
+  void PrintHeader(const std::string& tag, std::ostream& os = std::cout);
+  void PrintListHeader(std::ostream& os = std::cout);
+};
 
-    // all the ways to request a printout
-    void Print(art::Event const& event,
-               std::ostream& os = std::cout) override;
-    void Print(const art::Handle<CrvRecoPulseCollection>& handle,
-               std::ostream& os = std::cout);
-    void Print(const art::ValidHandle<CrvRecoPulseCollection>& handle,
-               std::ostream& os = std::cout);
-    void Print(const CrvRecoPulseCollection& coll,
-               std::ostream& os = std::cout);
-    void Print(const art::Ptr<CrvRecoPulse>& ptr,
-               int ind = -1, std::ostream& os = std::cout);
-    void Print(const mu2e::CrvRecoPulse& obj,
-               int ind = -1, std::ostream& os = std::cout);
-
-    void PrintHeader(const std::string& tag,
-                     std::ostream& os = std::cout);
-    void PrintListHeader(std::ostream& os = std::cout);
-
-  };
-
-}
+}  // namespace mu2e
 #endif
