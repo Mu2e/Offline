@@ -16,6 +16,12 @@ namespace mu2e{
           std::string holderExtrusionMaterialName,
           double holderExtrusionLongSep,
           double holderExtrusionShortPos,
+          std::shared_ptr<Box> handleBase,
+          std::string handleMaterialName,
+          double handleHoleSemiMajor, 
+          double handleHoleSemiMinor,
+          CLHEP::Hep3Vector handleHoleCenter,
+          double handleCornerCutSide,
           double motherMargin,
           CLHEP::Hep3Vector const& parentOriginInMu2e, 
           CLHEP::HepRotation const& parentRotationInMu2e)
@@ -27,13 +33,19 @@ namespace mu2e{
             _holderExtrusionShort(holderExtrusionShort),
             _holderExtrusionMaterialName(holderExtrusionMaterialName),
             _holderExtrusionLongSep(holderExtrusionLongSep),
-            _holderExtrusionShortPos(holderExtrusionShortPos) {
+            _holderExtrusionShortPos(holderExtrusionShortPos),
+            _handleBase(handleBase),
+            _handleMaterialName(handleMaterialName),
+            _handleHoleSemiMajor(handleHoleSemiMajor), 
+            _handleHoleSemiMinor(handleHoleSemiMinor),
+            _handleHoleCenter(handleHoleCenter),
+            _handleCornerCutSide(handleCornerCutSide) {
     // set the "overall" dimensions based on the PWC dimensions and positions.
     // Not assuming the two PWCs are the same size.
     if (nearPWC->totalHeight() >= farPWC->totalHeight()) {
-      _totalHeight = nearPWC->totalHeight()+motherMargin;
+      _totalHeight = nearPWC->totalHeight()+(2*handleBase->getYhalfLength())+motherMargin;
     } else {
-      _totalHeight = farPWC->totalHeight()+motherMargin;
+      _totalHeight = farPWC->totalHeight()+(2*handleBase->getYhalfLength())+motherMargin;
     }
     if (nearPWC->totalWidth() >= farPWC->totalWidth()) {
       _totalWidth = nearPWC->totalWidth()+motherMargin;

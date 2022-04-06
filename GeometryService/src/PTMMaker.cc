@@ -71,6 +71,16 @@ namespace mu2e {
     double holderShortExtrusionPos = _config.getDouble("PTM.holder.supportDistFromCenter");
     double holderLongExtrusionSep = _config.getDouble("PTM.holder.separatorGap");
 
+    // handle for RHS on top of the holder
+    double handleHeight = _config.getDouble("PTM.handleHeight");
+    double handleWidth = _config.getDouble("PTM.handleWidth");
+    double handleThick = _config.getDouble("PTM.handleThick");
+    double handleCornerCutoffs = _config.getDouble("PTM.handleCornerCutoffs");
+    double handleCutoutHeight = _config.getDouble("PTM.handleCutoutHeight");
+    double handleCutoutWidth = _config.getDouble("PTM.handleCutoutWidth");
+    double handleCutoutCenterY = _config.getDouble("PTM.handleCutoutPositionY");
+    std::string handleMaterial = _config.getString("PTM.handleMaterial");
+
 
     // mother volume contains both detectors, container contains one detector
     // each is slightly larger than all its contents
@@ -104,6 +114,12 @@ namespace mu2e {
     double shortExtrusionLength = 0.5*(holderLongExtrusionSep - holderExtrusionWidth);
     std::shared_ptr<Box> holderExtrusionShort(new Box(0.5*holderExtrusionWidth, 0.5*holderExtrusionWidth, shortExtrusionLength));
 
+    // The handle is a rectagle with the top corners cut off, and an oval-shaped cutout
+    std::shared_ptr<Box> handleBase(new Box(0.5*handleWidth, 0.5*handleHeight, 0.5*handleThick));
+    double handleHoleSemiMajor = 0.5*handleCutoutHeight;
+    double handleHoleSemiMinor = 0.5*handleCutoutWidth;
+    CLHEP::Hep3Vector handleCutoutCenter = CLHEP::Hep3Vector(0.0, handleCutoutCenterY, 0.0);
+
     std::shared_ptr<PTMHead> ptmHead(new PTMHead(originInMu2eHead, 
                                                  rotationInMu2eHead, 
                                                  nearPWC, 
@@ -114,6 +130,12 @@ namespace mu2e {
                                                  holderMaterialName,
                                                  holderLongExtrusionSep,
                                                  holderShortExtrusionPos,
+                                                 handleBase,
+                                                 handleMaterial,
+                                                 handleHoleSemiMajor,
+                                                 handleHoleSemiMinor,
+                                                 handleCutoutCenter,
+                                                 handleCornerCutoffs,
                                                  motherMargin,
                                                  originInMu2e,
                                                  rotationInMu2e));

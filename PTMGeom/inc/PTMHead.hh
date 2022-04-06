@@ -33,6 +33,12 @@ namespace mu2e {
           std::string holderExtrusionMaterialName,
           double holderExtrusionLongSep,
           double holderExtrusionShortPos,
+          std::shared_ptr<Box> handleBase,
+          std::string handleMaterialName,
+          double handleHoleSemiMajor, 
+          double handleHoleSemiMinor,
+          CLHEP::Hep3Vector handleHoleCenter,
+          double handleCornerCutSide,
           double motherMargin,
           CLHEP::Hep3Vector const& parentOriginInMu2e, 
           CLHEP::HepRotation const& parentRotationInMu2e);
@@ -51,6 +57,14 @@ namespace mu2e {
     std::string holderExtrusionMaterialName() const { return _holderExtrusionMaterialName; }
     double holderExtrusionLongSep()    const { return _holderExtrusionLongSep; }
     double holderExtrusionShortPos()   const { return _holderExtrusionShortPos; }
+
+    const Box* handleBase()          const { return _handleBase.get(); }
+    std::string handleMaterialName() const { return _handleMaterialName; }
+    double handleHoleSemiMajor()     const { return _handleHoleSemiMajor; }
+    double handleHoleSemiMinor()     const { return _handleHoleSemiMinor; }
+    double handleCornerCutSide()     const { return _handleCornerCutSide; }
+    CLHEP::Hep3Vector const & handleHoleCenter() const { return _handleHoleCenter; }
+
 
     double totalHeight() const { return _totalHeight; }
     double totalWidth()  const { return _totalWidth; }
@@ -74,6 +88,14 @@ namespace mu2e {
     std::string _holderExtrusionMaterialName;
     double _holderExtrusionLongSep;
     double _holderExtrusionShortPos;
+
+    // Handle for the RHS
+    std::shared_ptr<Box> _handleBase;
+    std::string _handleMaterialName;
+    double _handleHoleSemiMajor; // hole is an oval
+    double _handleHoleSemiMinor;
+    CLHEP::Hep3Vector _handleHoleCenter;
+    double _handleCornerCutSide; // square rotated 45 degrees to cut off the corners of the handle
 
     double _totalHeight;
     double _totalWidth;
