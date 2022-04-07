@@ -2,11 +2,6 @@
 // based on CaloCalibGun orginally written by Bertrand Echenard (2014)
 // Current module author: Sophie Middleton (2022)
 
-// C++ includes.
-#include <iostream>
-#include <string>
-#include <cmath>
-
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -24,7 +19,6 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
-#include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh" 
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -36,6 +30,12 @@
 
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+
+// C++ includes.
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <array>
 
 using namespace std;
 
@@ -61,8 +61,8 @@ namespace mu2e {
     explicit CaloCalibGun(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void beginRun(art::Run& run) override;
 
-    //----------------------------------------------------------------
   private:
 
     unsigned _mean;
@@ -75,12 +75,28 @@ namespace mu2e {
     double _tmax;
     int _nDisk;
     
+    std::vector<double> phi_lbd;
+    // angle of small torus in degrees
+    std::vector<double> phi_sbd;
+    // angle of the end point
+    std::vector<double> phi_end;
+    // center position y of the small torus
+    std::vector<double> ysmall;
+    // radius of small torus
+    double radSmTor;
+    // first center position x of the small torus
+    double xsmall;
+    // distance of the small torus center
+    double xdistance;
+    // inner radius of the manifold
+    double rInnerManifold;
+    std::array<double, 2> sign{-1.0, 1.0};
+    
     art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
 
-     //int                    _nPipes;
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
     std::vector<double>    _randomRad;
@@ -106,47 +122,38 @@ namespace mu2e {
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
-    produces <MCTrajectoryCollection>();
 
     if (_mean < 0) throw cet::exception("RANGE") << "CaloCalibGun.mean must be non-negative "<< '\n';
   }
 
+  void CaloCalibGun::beginRun(art::Run&){
+      const DiskCalorimeter *_cal = GeomHandle<DiskCalorimeter>().get();
+
+      _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
+      _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
+      _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
+      _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);//disk =1
+      // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons TODO - is this used?
+      double sumR(0);
+      std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
+      std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
+   
+      //Define the parameters of the pipes:
+      phi_lbd = _cal->caloInfo().getVDouble("largeTorPhi");
+      phi_sbd = _cal->caloInfo().getVDouble("smallTorPhi");
+      phi_end = _cal->caloInfo().getVDouble("straightEndPhi");
+      ysmall = _cal->caloInfo().getVDouble("yposition");
+      radSmTor = _cal->caloInfo().getDouble("radSmTor");
+      xsmall = _cal->caloInfo().getDouble("radSmTor");
+      xdistance = _cal->caloInfo().getDouble("xdistance");
+      rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");
+
+  }
   //================================================================
+  
   void CaloCalibGun::produce(art::Event& event) {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
-    MCTrajectoryCollection mctc;
-
-    const DiskCalorimeter *_cal = GeomHandle<DiskCalorimeter>().get();
-    //_nPipes          = _cal->caloInfo().getInt("nPipes");
-    _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
-    _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
-    _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
-    _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);//disk =1
-    // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons TODO - is this used?
-    double sumR(0);
-    std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
-    std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
- 
-    //Define the parameters of the pipes:
-    
-    // angle of large torus in degrees
-    std::vector<double> phi_lbd = _cal->caloInfo().getVDouble("largeTorPhi");
-    // angle of small torus in degrees
-    std::vector<double> phi_sbd = _cal->caloInfo().getVDouble("smallTorPhi");
-    // angle of the end point
-    std::vector<double> phi_end = _cal->caloInfo().getVDouble("straightEndPhi");
-    // center position y of the small torus
-    std::vector<double> ysmall = _cal->caloInfo().getVDouble("yposition");
-    // radius of small torus
-    double radSmTor = _cal->caloInfo().getDouble("radSmTor");
-    // first center position x of the small torus
-    double xsmall = _cal->caloInfo().getDouble("radSmTor");
-    // distance of the small torus center
-    double xdistance = _cal->caloInfo().getDouble("xdistance");
-    // inner radius of the manifold
-    double rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");
-    vector<float> sign{-1.0, 1.0};
 
     for (unsigned int ig = 0; ig < _mean; ++ig) 
     {
@@ -232,7 +239,7 @@ namespace mu2e {
       event.put(std::move(output));
     } 
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
-    event.put(std::make_unique<MCTrajectoryCollection>(mctc));
+
   }
       
   //================================================================
