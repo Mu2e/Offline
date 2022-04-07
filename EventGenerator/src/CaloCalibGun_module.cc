@@ -46,7 +46,7 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<unsigned> mean{Name("mean"),1};
+      //fhicl::Atom<unsigned> mean{Name("mean"),1};
       fhicl::Atom<double> energy{Name("PhotonEnergy"),6.13};//MeV
       fhicl::Atom<double> cosmin{Name("cosmin"),-1.};
       fhicl::Atom<double> cosmax{Name("cosmax"),1.};
@@ -65,7 +65,7 @@ namespace mu2e {
 
   private:
 
-    unsigned _mean;
+    ///unsigned _mean;
     double _energy;
     double _cosmin;
     double _cosmax;
@@ -94,7 +94,7 @@ namespace mu2e {
     
     art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandFlat     _randFlat;
-    CLHEP::RandPoissonQ _randPoissonQ;
+    //CLHEP::RandPoissonQ _randPoissonQ;
     RandomUnitSphere    _randomUnitSphere;
 
     double                 _pipeRadius;
@@ -106,7 +106,7 @@ namespace mu2e {
 
   CaloCalibGun::CaloCalibGun(const Parameters& conf)
     : EDProducer{conf}
-    , _mean{conf().mean()}
+    //, _mean{conf().mean()}
     , _energy{conf().energy()}
     , _cosmin{conf().cosmin()}
     , _cosmax{conf().cosmax()}
@@ -117,13 +117,13 @@ namespace mu2e {
     , _nDisk{conf().nDisk()}
     , _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , _randFlat{_engine}
-    , _randPoissonQ{_engine, _mean*1.0}
+    //, _randPoissonQ{_engine, _mean*1.0}
     , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi}
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
 
-    if (_mean < 0) throw cet::exception("RANGE") << "CaloCalibGun.mean must be non-negative "<< '\n';
+    //if (_mean < 0) throw cet::exception("RANGE") << "CaloCalibGun.mean must be non-negative "<< '\n';
   }
 
   void CaloCalibGun::beginRun(art::Run&){
@@ -133,7 +133,7 @@ namespace mu2e {
       _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
       _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
       _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);//disk =1
-      // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons TODO - is this used?
+      // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons
       double sumR(0);
       std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
       std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
@@ -155,9 +155,9 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
 
-    double _nPhotons = _randPoissonQ.fire();
-    for (unsigned int ig = 0; ig < _nPhotons; ++ig) 
-    {
+    //double _nPhotons = _randPoissonQ.fire();
+    //for (unsigned int ig = 0; ig < _mean; ++ig) 
+    //{
       double xpipe, ypipe, zpipe;
       //Pick position - find either 0,1 - these are indices of the sign list (so 0=-1, 1=+1)
       int xsn = round(_randFlat.fire()); 
@@ -238,7 +238,7 @@ namespace mu2e {
       // Add the particle to  the list.
       output->emplace_back(PDGCode::gamma, GenId::CaloCalib, pos, mom, time);
       event.put(std::move(output));
-    } 
+    //} 
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
 
   }
