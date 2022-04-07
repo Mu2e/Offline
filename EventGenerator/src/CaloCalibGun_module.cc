@@ -155,7 +155,7 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
 
-    double nPhotons = randPoissonQ.fire();
+    double _nPhotons = _randPoissonQ.fire();
     for (unsigned int ig = 0; ig < _nPhotons; ++ig) 
     {
       double xpipe, ypipe, zpipe;
