@@ -155,7 +155,8 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
 
-    for (unsigned int ig = 0; ig < _mean; ++ig) 
+    double nPhotons = randPoissonQ.fire();
+    for (unsigned int ig = 0; ig < _nPhotons; ++ig) 
     {
       double xpipe, ypipe, zpipe;
       //Pick position - find either 0,1 - these are indices of the sign list (so 0=-1, 1=+1)
