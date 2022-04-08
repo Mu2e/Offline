@@ -98,6 +98,7 @@ namespace mu2e {
     std::vector<double>    _pipeTorRadius;
     std::vector<double>    _randomRad;
     CLHEP::Hep3Vector      _zPipeCenter;
+    unsigned int _nPipes;
 
   };
 
@@ -141,6 +142,7 @@ namespace mu2e {
       xsmall = _cal->caloInfo().getDouble("radSmTor");
       xdistance = _cal->caloInfo().getDouble("xdistance");
       rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");
+      _nPipes = _cal->caloInfo().getInt("nPipes");
 
   }
   //================================================================
@@ -161,9 +163,9 @@ namespace mu2e {
     // find the z position based on above:
     zpipe = pipeR*sin(theta);
 
-    double rtest = _randFlat.fire();
     // select an index from list of pipes:
-    int idx = int( std::lower_bound(_randomRad.begin(), _randomRad.end(), rtest) - _randomRad.begin());
+    int idx = rand() % ( _nPipes ) + 1 ;
+
     // select the LgTor from list extracted from geom service above:
     double radLgTor = _pipeTorRadius[idx];
 
