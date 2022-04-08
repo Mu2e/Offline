@@ -127,7 +127,8 @@ namespace mu2e {
       _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
       _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
       _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
-      _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);//disk =1
+      _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);
+      _nPipes = _cal->caloInfo().getInt("nPipes");
       // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons
       double sumR(0);
       std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
@@ -142,7 +143,7 @@ namespace mu2e {
       xsmall = _cal->caloInfo().getDouble("radSmTor");
       xdistance = _cal->caloInfo().getDouble("xdistance");
       rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");
-      _nPipes = _cal->caloInfo().getInt("nPipes");
+      
 
   }
   //================================================================
@@ -164,7 +165,7 @@ namespace mu2e {
     zpipe = pipeR*sin(theta);
 
     // select an index from list of pipes:
-    int idx = rand() % ( _nPipes ) + 1 ;
+    unsigned int idx = rand() % ( _nPipes ) + 1 ;
 
     // select the LgTor from list extracted from geom service above:
     double radLgTor = _pipeTorRadius[idx];
