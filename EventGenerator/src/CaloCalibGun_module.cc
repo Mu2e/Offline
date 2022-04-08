@@ -169,6 +169,7 @@ namespace mu2e {
 
     // The phi range from 0 to half phi_lbd for the large torus
     double phiLgTor = _randFlat.fire() * phi_lbd[idx]  * CLHEP::degree / 2.;
+    
     // x, y, z position of the large torus
     double xLgTor = sign[xsn]*(radLgTor + pipeR*cos(theta))*cos(phiLgTor);
     double yLgTor = sign[ysn]*(radLgTor + pipeR*cos(theta))*sin(phiLgTor);
@@ -190,6 +191,7 @@ namespace mu2e {
     double ystart = ysmall[idx] + radSmTor * sin(CLHEP::degree * phi_end[idx]);
     // height of the straight pipe
     double hPipe = (ymanifold - ystart) / sin(CLHEP::degree * (90 - phi_end[idx]));
+    
     // a cylinder along y-axis
     double y_center = _randFlat.fire() * hPipe;
     double xPipe = pipeR * cos(theta);
@@ -202,7 +204,7 @@ namespace mu2e {
       xpipe = xLgTor;
       ypipe = yLgTor;
     }
-    else if(sample > circLgTor / (circLgTor + circSmTor + lenStrait) && sample <= (circLgTor + circSmTor) / (circLgTor + circSmTor + lenStrait)){
+    else if(sample > circLgTor / (circLgTor + circSmTor + lenStrait) and sample <= (circLgTor + circSmTor) / (circLgTor + circSmTor + lenStrait)){
       xpipe = xSmTor;
       ypipe = ySmTor;
     }
