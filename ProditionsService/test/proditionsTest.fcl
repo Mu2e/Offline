@@ -11,8 +11,8 @@ source: { module_type: RootInput }
 physics :{
    analyzers: {
       proditionsModule : {
-	 module_type : ProditionsTest
-      }   
+         module_type : ProditionsTest
+      }
    }
   ana       : [ proditionsModule ]
   end_paths : [ ana ]

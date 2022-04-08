@@ -11,18 +11,16 @@
 
 namespace mu2e {
 
-  class ValId {
+class ValId {
+ public:
+  int declare(const art::TFileDirectory& tfs, std::string name = "id",
+              std::string title = "id fold");
+  int fill(int id);
+  int compress(int id);
 
-  public:
-    int declare( const art::TFileDirectory& tfs, 
-		 std::string name="id", std::string title="id fold");
-    int fill(int id);
-    int compress(int id);
-  private:
-    
-    TH1D* _hid;
-  };
-}
-
+ private:
+  TH1D* _hid;
+};
+}  // namespace mu2e
 
 #endif

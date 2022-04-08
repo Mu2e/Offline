@@ -6,7 +6,7 @@
 
 process_name : readtest
 
-services :  @local::Services.Core 
+services :  @local::Services.Core
 
 physics :{
    analyzers: {
@@ -16,10 +16,10 @@ physics :{
          tableList : ["TstCalib1","TstCalib2"]
       }
    }
-   
+
    e1        : [ dbTest ]
    end_paths : [ e1 ]
-   
+
 }
 
 services.DbService.purpose: TEST

@@ -1,12 +1,12 @@
 //
-// An example of how run-dependent 
+// An example of how run-dependent
 // conditions sets can be accessed in a stand-alone bin
-// 
+//
 // To build this, copy it to an apropriate repo src dir
 // You can see what you need in your SConscript by looking at
 // the build for dbTool in Offline/DbService/src
 //
-// arguments are 
+// arguments are
 // PURPOSE: the conditions set purpose
 // VERSION: the conditions set version
 // RUN: the run number to lookup
@@ -16,17 +16,16 @@
 // dbBin TRACKER_VST v1_2 100000 TrkStrawStatusLong
 //
 
-#include <string>
-#include <iostream>
-#include "Offline/DbService/inc/DbIdList.hh"
 #include "Offline/DbService/inc/DbEngine.hh"
+#include "Offline/DbService/inc/DbIdList.hh"
+#include <iostream>
+#include <string>
 
 using namespace mu2e;
 using namespace std;
 
-int main(int argc, char**argv) {
-
-  if(argc!=5) { // first arg is exe name
+int main(int argc, char** argv) {
+  if (argc != 5) {  // first arg is exe name
     cout << "Four required arguments: PURPOSE VERSION RUN TABLE" << endl;
     return 1;
   }
@@ -36,28 +35,28 @@ int main(int argc, char**argv) {
   uint32_t run = stoul(string(argv[3]));
   uint32_t subrun = 0;
   string table(argv[4]);
-  
-cout << "Using "<<purpose << " " << version << " " 
-       << run << " " << table<< endl;
 
-DbEngine engine;
+  cout << "Using " << purpose << " " << version << " " << run << " " << table
+       << endl;
 
-engine.setVerbose(2);
+  DbEngine engine;
 
-DbIdList idList; // read file of db connection details
-engine.setDbId( idList.getDbId("mu2e_conditions_prd") );
+  engine.setVerbose(2);
 
-engine.setVersion( DbVersion(purpose,version) );
+  DbIdList idList;  // read file of db connection details
+  engine.setDbId(idList.getDbId("mu2e_conditions_prd"));
 
-// add overriding text file
-//auto coll = DbUtil::readFile("myfile.txt");
-//_engine.addOverride(coll);
+  engine.setVersion(DbVersion(purpose, version));
 
-int tid =  engine.tidByName(table);
+  // add overriding text file
+  // auto coll = DbUtil::readFile("myfile.txt");
+  //_engine.addOverride(coll);
 
-DbLiveTable liveTable = engine.update(tid, run, subrun);
+  int tid = engine.tidByName(table);
 
-cout <<liveTable.table().csv() << endl;
+  DbLiveTable liveTable = engine.update(tid, run, subrun);
+
+  cout << liveTable.table().csv() << endl;
 
   return 0;
 }
