@@ -1,12 +1,12 @@
 // Driver FCL for the calocalibration (Reconstruct and truth)
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
-#include "fcl/standardServices.fcl"
-#include "CaloMC/fcl/prolog.fcl"
-#include "CaloReco/fcl/prolog.fcl"
-#include "CaloCluster/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CaloMC/fcl/prolog.fcl"
+#include "Offline/CaloReco/fcl/prolog.fcl"
+#include "Offline/CaloCluster/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/EventGenerator/fcl/prolog.fcl"
 #include "Production/JobConfig/digitize/prolog.fcl"
 process_name: CaloCalibExample
 
