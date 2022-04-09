@@ -55,7 +55,7 @@ double PTM.rotX = -2.272; // TODO: replace with full-system position
 
 // mother and container volumes slightly larger than the
 // detectors themselves
-double PTM.motherMargin = 0.01;
+double PTM.motherMargin = 2.0;
 double PTM.containerMargin = 0.005;
 
 // TODO: will have to change this to take the new geometry into account

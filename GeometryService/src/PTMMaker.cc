@@ -27,16 +27,19 @@ namespace mu2e {
     rotationInMu2e.rotateX(xRotInMu2e*CLHEP::deg);
     rotationInMu2e.rotateY(yRotInMu2e*CLHEP::deg);
 
+    // These values represent the center between the two detectors, not the
+    // center of the head volume (which includes the handle). We will add the
+    // handle's contribution later.
     double xPosInMu2eHead = _config.getDouble("PTM.head.positionX");
     double yPosInMu2eHead = _config.getDouble("PTM.head.positionY");
     double zPosInMu2eHead = _config.getDouble("PTM.head.positionZ");
-    CLHEP::Hep3Vector originInMu2eHead = CLHEP::Hep3Vector(xPosInMu2eHead, yPosInMu2eHead, zPosInMu2eHead);
+    CLHEP::Hep3Vector headVolumeOriginInMu2e = CLHEP::Hep3Vector(xPosInMu2eHead, yPosInMu2eHead, zPosInMu2eHead);
 
     double yRotInMu2eHead = _config.getDouble("PTM.head.rotY");
     double xRotInMu2eHead = _config.getDouble("PTM.head.rotX");
-    CLHEP::HepRotation rotationInMu2eHead = CLHEP::HepRotation();
-    rotationInMu2eHead.rotateX(xRotInMu2eHead*CLHEP::deg);
-    rotationInMu2eHead.rotateY(yRotInMu2eHead*CLHEP::deg);
+    CLHEP::HepRotation headRotationInMu2e = CLHEP::HepRotation();
+    headRotationInMu2e.rotateX(xRotInMu2eHead*CLHEP::deg);
+    headRotationInMu2e.rotateY(yRotInMu2eHead*CLHEP::deg);
 
     // the PWCs:
 
@@ -87,19 +90,32 @@ namespace mu2e {
     double motherMargin = _config.getDouble("PTM.motherMargin");
     double containerMargin = _config.getDouble("PTM.containerMargin");
 
+    // shift the position of the volume center to include the handle
+    double heightIncrease = handleHeight + (0.5*motherMargin) + (0.5*containerMargin);
+    CLHEP::Hep3Vector positionShift = CLHEP::Hep3Vector(0, 0.5*heightIncrease, 0);
+    positionShift.rotateX(xRotInMu2eHead*CLHEP::deg);
+    positionShift.rotateY(-1*yRotInMu2eHead*CLHEP::deg);
+    std::cout << "POSITION STUFF FOR PTM:" << std::endl;
+    std::cout << "Origin of center of detector system: (" << headVolumeOriginInMu2e.x() << ", " << headVolumeOriginInMu2e.y() << ", " << headVolumeOriginInMu2e.z() << ")" << std::endl;
+    std::cout << "Adding (" << positionShift.x() << ", " << positionShift.y() << ", " << positionShift.z() << ")" << std::endl;
+    headVolumeOriginInMu2e += positionShift;
+    std::cout << "Origin of PTM head mother volume: (" << headVolumeOriginInMu2e.x() << ", " << headVolumeOriginInMu2e.y() << ", " << headVolumeOriginInMu2e.z() << ")" << std::endl;
+
+
     // the PTM is made of two identical PWC's, placed such that their center
     // lines match up.
 
     // First, the "head" portion: the PWC's and their holder
     // "Near" PWC -- the more upstream of the two.
-    CLHEP::Hep3Vector nearPWCPos = CLHEP::Hep3Vector(0.0, 0.0, -0.5*pwcSeparation);
+    double pwcY = -0.5*heightIncrease;
+    CLHEP::Hep3Vector nearPWCPos = CLHEP::Hep3Vector(0.0, pwcY, -0.5*pwcSeparation);
     std::shared_ptr<PTMPWC> nearPWC( new PTMPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName,
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
                                      gasMaterialName, numVertWires, numHorizWires, nearPWCPos, 0, containerMargin,
                                      framesInDetector, outerPlatesInDetector,
                                      ground1Zframes, hv1Zframes, hv2Zframes, hv3Zframes, ground2Zframes) );
     // "Far" PWC
-    CLHEP::Hep3Vector farPWCPos = CLHEP::Hep3Vector(0.0, 0.0, 0.5*pwcSeparation);
+    CLHEP::Hep3Vector farPWCPos = CLHEP::Hep3Vector(0.0, pwcY, 0.5*pwcSeparation);
     int farWireNumStart = numHorizWires + numVertWires;
     std::shared_ptr<PTMPWC> farPWC( new PTMPWC("_2", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName,
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
@@ -120,11 +136,11 @@ namespace mu2e {
     double handleHoleSemiMinor = 0.5*handleCutoutWidth;
     CLHEP::Hep3Vector handleCutoutCenter = CLHEP::Hep3Vector(0.0, handleCutoutCenterY, 0.0);
 
-    std::shared_ptr<PTMHead> ptmHead(new PTMHead(originInMu2eHead, 
-                                                 rotationInMu2eHead, 
-                                                 nearPWC, 
-                                                 farPWC, 
-                                                 pwcSeparation, 
+    std::shared_ptr<PTMHead> ptmHead(new PTMHead(headVolumeOriginInMu2e,
+                                                 headRotationInMu2e,
+                                                 nearPWC,
+                                                 farPWC,
+                                                 pwcSeparation,
                                                  holderExtrusionLong,
                                                  holderExtrusionShort,
                                                  holderMaterialName,
