@@ -389,6 +389,8 @@ namespace mu2e {
     const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
     bool placePV = geomOptions->placePV("PTM");
 
+    double centerY = ptmHead->nearPWC()->originInParent().y();
+
     // pull out the pieces you need for the aluminum frame
     const Box* longExtrusion = ptmHead->holderExtrusionLong();
     const Box* shortExtrusion = ptmHead->holderExtrusionShort();
@@ -406,7 +408,7 @@ namespace mu2e {
 
     // 4 long bars holding the PWC at the right distance apart
     double bar1X = 0.5*holderExtrusionLongSep;
-    double bar1Y = 0.5*holderExtrusionLongSep;
+    double bar1Y = 0.5*holderExtrusionLongSep + centerY;
     VolumeInfo longBarInfo1;
     longBarInfo1.solid = longBar;
     longBarInfo1.logical = longBarLogical;
@@ -425,7 +427,7 @@ namespace mu2e {
                   doSurfaceCheck,
                   verbosity>0);
     double bar2X = 0.5*holderExtrusionLongSep;
-    double bar2Y = -0.5*holderExtrusionLongSep;
+    double bar2Y = -0.5*holderExtrusionLongSep + centerY;
     VolumeInfo longBarInfo2;
     longBarInfo2.solid = longBar;
     longBarInfo2.logical = longBarLogical;
@@ -444,7 +446,7 @@ namespace mu2e {
                   doSurfaceCheck,
                   verbosity>0);
     double bar3X = -0.5*holderExtrusionLongSep;
-    double bar3Y = 0.5*holderExtrusionLongSep;
+    double bar3Y = 0.5*holderExtrusionLongSep + centerY;
     VolumeInfo longBarInfo3;
     longBarInfo3.solid = longBar;
     longBarInfo3.logical = longBarLogical;
@@ -463,7 +465,7 @@ namespace mu2e {
                   doSurfaceCheck,
                   verbosity>0);
     double bar4X = -0.5*holderExtrusionLongSep;
-    double bar4Y = -0.5*holderExtrusionLongSep;
+    double bar4Y = -0.5*holderExtrusionLongSep + centerY;
     VolumeInfo longBarInfo4;
     longBarInfo4.solid = longBar;
     longBarInfo4.logical = longBarLogical;
@@ -496,7 +498,7 @@ namespace mu2e {
     vertBarRotation = reg.add(new G4RotationMatrix());
     vertBarRotation->rotateX(90.*CLHEP::deg);
     double short1X = 0.5*holderExtrusionLongSep;
-    double short1Y = 0.0;
+    double short1Y = 0.0 + centerY;
     VolumeInfo shortBarInfo1;
     shortBarInfo1.solid = shortBar;
     shortBarInfo1.logical = shortBarLogical;
@@ -515,7 +517,7 @@ namespace mu2e {
                   doSurfaceCheck,
                   verbosity>0);
     double short2X = -0.5*holderExtrusionLongSep;
-    double short2Y = 0.0;
+    double short2Y = 0.0 + centerY;
     VolumeInfo shortBarInfo2;
     shortBarInfo2.solid = shortBar;
     shortBarInfo2.logical = shortBarLogical;
@@ -538,7 +540,7 @@ namespace mu2e {
     horizBarRotation = reg.add(new G4RotationMatrix());
     horizBarRotation->rotateY(90.*CLHEP::deg);
     double short3X = 0.0;
-    double short3Y = 0.5*holderExtrusionLongSep;
+    double short3Y = 0.5*holderExtrusionLongSep + centerY;
     VolumeInfo shortBarInfo3;
     shortBarInfo3.solid = shortBar;
     shortBarInfo3.logical = shortBarLogical;
@@ -557,7 +559,7 @@ namespace mu2e {
                   doSurfaceCheck,
                   verbosity>0);
     double short4X = 0.0;
-    double short4Y = -0.5*holderExtrusionLongSep;
+    double short4Y = -0.5*holderExtrusionLongSep + centerY;
     VolumeInfo shortBarInfo4;
     shortBarInfo4.solid = shortBar;
     shortBarInfo4.logical = shortBarLogical;
