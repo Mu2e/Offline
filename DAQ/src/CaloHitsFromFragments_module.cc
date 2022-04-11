@@ -58,14 +58,15 @@ public:
         fhicl::Name("deltaTPulses"),
         fhicl::Comment(
             "time-gate between two signal from different SiPMs coupled with the same crystal")};
-    fhicl::Atom<float> pulseRatioMax{
-        fhicl::Name("pulseRatioMax"),
-        fhicl::Comment("Max of the ratio between two SiPM pulses coupled to the same crystal "
-                       "within the time-gate")};
-    fhicl::Atom<float> pulseRatioMin{
-        fhicl::Name("pulseRatioMin"),
-        fhicl::Comment("Min of the ratio between two SiPM pulses coupled to the same crystal "
-                       "within the time-gate")};
+    fhicl::Atom<float> nPEperMeV{ 
+        fhicl::Name("nPEperMeV"),
+        fhicl::Comment("number of photo-electrons per MeV") }; 
+    fhicl::Atom<float> noiseLevelMeV{ 
+        fhicl::Name("noiseLevelMeV"),
+        fhicl::Comment("Noise level in MeV") }; 
+    fhicl::Atom<float> nSigmaNoise{ 
+        fhicl::Name("nSigmaNoise"),
+        fhicl::Comment("Maxnumber of sigma Noise to combine digi") }; 
     fhicl::Atom<float> hitEDepMax{
         fhicl::Name("hitEDepMax"),
         fhicl::Comment("Maximum hit energy in MeV (to reject saturated pulses)")};
@@ -93,7 +94,7 @@ private:
 
   art::InputTag caloFragmentsTag_;
   float digiSampling_;
-  float deltaTPulses_, pulseRatioMax_, pulseRatioMin_, hitEDepMax_;
+  float deltaTPulses_, hitEDepMax_,nPEperMeV_,noise2_,nSigmaNoise_;
 
   const int hexShiftPrint = 7;
 
@@ -138,8 +139,12 @@ void art::CaloHitsFromFragments::addPulse(
   for (auto& pulse : pulseMap_[crystalID]) {
     ++counter;
     if (std::fabs(pulse.time() - time) < deltaTPulses_) {
-      if ((eDep / pulse.energyDep() <= pulseRatioMax_) &&
-          (eDep / pulse.energyDep() >= pulseRatioMin_)) {
+      
+      float ratio  = (eDep-pulse.energyDep())/(eDep+pulse.energyDep());
+      float eMean  = (eDep+pulse.energyDep())/2.0;
+      float sigmaR = 0.707*sqrt(1.0/eMean/nPEperMeV_ + noise2_/eMean/eMean);
+
+      if (abs(ratio) > nSigmaNoise_*sigmaR) {
         // combine the pulses
         pulse.setTime((pulse.time() + time) / 2.); // probably not necessary
         pulse.setEDep((pulse.energyDep() + eDep) / 2.);
@@ -168,9 +173,9 @@ void art::CaloHitsFromFragments::addPulse(
 art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, diagLevel_(config().diagLevel()),
     caloFragmentsTag_(config().caloTag()), digiSampling_(config().digiSampling()),
-    deltaTPulses_(config().deltaTPulses()), pulseRatioMax_(config().pulseRatioMax()),
-    pulseRatioMin_(config().pulseRatioMin()), hitEDepMax_(config().hitEDepMax()),
-    caloDAQUtil_("CaloHitsFromFragments") {
+    deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
+    nPEperMeV_(config().nPEperMeV()), noise2_(config().noiseLevelMeV()*config().noiseLevelMeV()),
+    nSigmaNoise_(config().nSigmaNoise()), caloDAQUtil_("CaloHitsFromFragments") {
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
   produces<mu2e::CaloHitCollection>("caphri");
