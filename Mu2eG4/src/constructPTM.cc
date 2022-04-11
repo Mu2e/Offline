@@ -400,9 +400,9 @@ namespace mu2e {
 
     std::string longBarName = "PTMPWCHolderLong";
     G4Material *holderMaterial = findMaterialOrThrow(holderExtrusionMaterialName);
-    G4VSolid *longBar = new G4Box("PTMPWCHolderLong", 
-                            longExtrusion->getXhalfLength(), 
-                            longExtrusion->getYhalfLength(), 
+    G4VSolid *longBar = new G4Box("PTMPWCHolderLong",
+                            longExtrusion->getXhalfLength(),
+                            longExtrusion->getYhalfLength(),
                             longExtrusion->getZhalfLength());
     G4LogicalVolume *longBarLogical = new G4LogicalVolume(longBar, holderMaterial, longBarName);
 
@@ -413,7 +413,7 @@ namespace mu2e {
     longBarInfo1.solid = longBar;
     longBarInfo1.logical = longBarLogical;
     longBarInfo1.name = longBarName+"01";
-    finishNesting(longBarInfo1, 
+    finishNesting(longBarInfo1,
                   holderMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(bar1X, bar1Y, 0),
@@ -432,7 +432,7 @@ namespace mu2e {
     longBarInfo2.solid = longBar;
     longBarInfo2.logical = longBarLogical;
     longBarInfo2.name = longBarName+"02";
-    finishNesting(longBarInfo2, 
+    finishNesting(longBarInfo2,
                   holderMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(bar2X, bar2Y, 0),
@@ -451,7 +451,7 @@ namespace mu2e {
     longBarInfo3.solid = longBar;
     longBarInfo3.logical = longBarLogical;
     longBarInfo3.name = longBarName+"03";
-    finishNesting(longBarInfo3, 
+    finishNesting(longBarInfo3,
                   holderMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(bar3X, bar3Y, 0),
@@ -487,9 +487,9 @@ namespace mu2e {
     // four short bars, holding the long bars in the right positions relative to each other
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     std::string shortBarName = "PTMPWCHolderShort";
-    G4VSolid *shortBar = new G4Box("PTMPWCHolderShort", 
-                            shortExtrusion->getXhalfLength(), 
-                            shortExtrusion->getYhalfLength(), 
+    G4VSolid *shortBar = new G4Box("PTMPWCHolderShort",
+                            shortExtrusion->getXhalfLength(),
+                            shortExtrusion->getYhalfLength(),
                             shortExtrusion->getZhalfLength());
     G4LogicalVolume *shortBarLogical = new G4LogicalVolume(shortBar, holderMaterial, shortBarName);
     double shortBarZ = holderExtrusionShortPos;
@@ -583,9 +583,9 @@ namespace mu2e {
     G4RotationMatrix* rotation45;
     rotation45 = reg.add(new G4RotationMatrix());
     rotation45->rotateZ(45.*CLHEP::deg);
-    G4Box *handleOuter = new G4Box("ptmHandleOuter", 
-                ptmHead->handleBase()->getXhalfLength(), 
-                ptmHead->handleBase()->getYhalfLength(), 
+    G4Box *handleOuter = new G4Box("ptmHandleOuter",
+                ptmHead->handleBase()->getXhalfLength(),
+                ptmHead->handleBase()->getYhalfLength(),
                 ptmHead->handleBase()->getZhalfLength());
     G4EllipticalTube *handleHole = new G4EllipticalTube("ptmHandleHole",
                 ptmHead->handleHoleSemiMinor(),
@@ -596,15 +596,15 @@ namespace mu2e {
                 0.5*ptmHead->handleCornerCutSide(),
                 0.5*ptmHead->handleCornerCutSide(),
                 subtractionThickness);
-    G4SubtractionSolid *oneCorner = new G4SubtractionSolid("ptmHandleOneCorner", 
-                                           handleLarge, 
-                                           cornerCutoff, 
-                                           rotation45, 
+    G4SubtractionSolid *oneCorner = new G4SubtractionSolid("ptmHandleOneCorner",
+                                           handleLarge,
+                                           cornerCutoff,
+                                           rotation45,
                                            G4ThreeVector(ptmHead->handleBase()->getXhalfLength(), ptmHead->handleBase()->getYhalfLength(), 0.0));
-    G4SubtractionSolid *handleFinal = new G4SubtractionSolid("PTMHandle", 
-                                           oneCorner, 
-                                           cornerCutoff, 
-                                           rotation45, 
+    G4SubtractionSolid *handleFinal = new G4SubtractionSolid("PTMHandle",
+                                           oneCorner,
+                                           cornerCutoff,
+                                           rotation45,
                                            G4ThreeVector(-1*ptmHead->handleBase()->getXhalfLength(), ptmHead->handleBase()->getYhalfLength(), 0.0));
     std::string handleName = "PTMHandle";
     G4Material *handleMaterial = findMaterialOrThrow(ptmHead->handleMaterialName());
@@ -638,7 +638,7 @@ namespace mu2e {
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
     G4ThreeVector parentPosition = parent.centerInMu2e();
     G4RotationMatrix* parentRotation = parent.physical->GetObjectRotation();
-    G4ThreeVector motherPosition = ptmon->originInMu2e() - parentPosition;
+    G4ThreeVector motherPosition = ptmon->ptmHead()->originInMu2e() - parentPosition;
     // try making the rotation matrix object first, then doing the
     // main rotation, then un-rotating by whatever the parent's rotation is
     G4RotationMatrix* motherRotation;
@@ -670,7 +670,7 @@ namespace mu2e {
     // and the second PWC
     constructTargetHallPWC(pTargetMonContainer, ptmon->ptmHead()->farPWC(), VirtualDetectorId::PTM_2_In, _config);
     // the aluminum frame that holds the PWCs
-    constructPWCHolder(pTargetMonContainer, 
+    constructPWCHolder(pTargetMonContainer,
                           ptmon->ptmHead(),
                           _config);
 

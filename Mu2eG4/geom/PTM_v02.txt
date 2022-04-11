@@ -58,15 +58,14 @@ double PTM.rotX = -2.272; // TODO: replace with full-system position
 double PTM.motherMargin = 2.0;
 double PTM.containerMargin = 0.005;
 
-// TODO: will have to change this to take the new geometry into account
-// positions in Mu2e coordinates
 // position of UPSTREAM END of detectors: (2280, 251.9, -12796) in Mu2e coords
 // detector pair box is 1033 mm in length
 // vector from upstream end to center of pair is:
 //           (-122.7, 19.3, -501.3)
-double PTM.head.positionX = 2161.762;
-double PTM.head.positionY = 278.303;
-double PTM.head.positionZ = -13281.339;
+// Need to also take height of handle, holder into account
+double PTM.head.positionX = 2161.74;
+double PTM.head.positionY = 393.034;
+double PTM.head.positionZ = -13276.9;
 double PTM.positionX = 2161.762; // TODO: replace with full-system position
 double PTM.positionY = 278.303; // TODO: replace with full-system position
 double PTM.positionZ = -13281.339; // TODO: replace with full-system position
