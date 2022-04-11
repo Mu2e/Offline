@@ -91,23 +91,16 @@ namespace mu2e {
     double containerMargin = _config.getDouble("PTM.containerMargin");
 
     // shift the position of the volume center to include the handle
-    double heightIncrease = handleHeight + (0.5*motherMargin) + (0.5*containerMargin);
-    CLHEP::Hep3Vector positionShift = CLHEP::Hep3Vector(0, 0.5*heightIncrease, 0);
-    positionShift.rotateX(xRotInMu2eHead*CLHEP::deg);
-    positionShift.rotateY(-1*yRotInMu2eHead*CLHEP::deg);
-    std::cout << "POSITION STUFF FOR PTM:" << std::endl;
-    std::cout << "Origin of center of detector system: (" << headVolumeOriginInMu2e.x() << ", " << headVolumeOriginInMu2e.y() << ", " << headVolumeOriginInMu2e.z() << ")" << std::endl;
-    std::cout << "Adding (" << positionShift.x() << ", " << positionShift.y() << ", " << positionShift.z() << ")" << std::endl;
-    headVolumeOriginInMu2e += positionShift;
-    std::cout << "Origin of PTM head mother volume: (" << headVolumeOriginInMu2e.x() << ", " << headVolumeOriginInMu2e.y() << ", " << headVolumeOriginInMu2e.z() << ")" << std::endl;
+    
+    
 
+    // First, the "head" portion: the PWC's and their holder
 
     // the PTM is made of two identical PWC's, placed such that their center
     // lines match up.
-
-    // First, the "head" portion: the PWC's and their holder
+    // Y-position of the PWC's inside the mother volume, which also includes the holder and handle
+    double pwcY = -0.5*(handleHeight + (0.5*motherMargin) + (0.5*containerMargin));
     // "Near" PWC -- the more upstream of the two.
-    double pwcY = -0.5*heightIncrease;
     CLHEP::Hep3Vector nearPWCPos = CLHEP::Hep3Vector(0.0, pwcY, -0.5*pwcSeparation);
     std::shared_ptr<PTMPWC> nearPWC( new PTMPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName,
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
