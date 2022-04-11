@@ -33,6 +33,7 @@ namespace mu2e {
             fhicl::Atom<double>         EnoiseCut         { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") }; 
             fhicl::Atom<double>         ExpandCut         { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") }; 
             fhicl::Atom<double>         deltaTime         { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") }; 
+            fhicl::Atom<int>            minSiPMPerHit     { Name("minSiPMPerHit"),     Comment("Minimum number of SiPM contributing to the hit") }; 
             fhicl::Atom<bool>           extendSearch      { Name("extendSearch"),      Comment("Search next-next neighbors for clustering") }; 
             fhicl::Atom<int>            diagLevel         { Name("diagLevel"),         Comment("Diag level"),0 }; 
         };
@@ -44,6 +45,7 @@ namespace mu2e {
           EnoiseCut_     (config().EnoiseCut()),
           ExpandCut_     (config().ExpandCut()),
           deltaTime_     (config().deltaTime()),
+          minSiPMPerHit_ (config().minSiPMPerHit()),
           extendSearch_  (config().extendSearch()),
           diagLevel_     (config().diagLevel())
         {
@@ -59,6 +61,7 @@ namespace mu2e {
         double            EnoiseCut_;
         double            ExpandCut_;
         double            deltaTime_;
+        int               minSiPMPerHit_;
         bool              extendSearch_;
         int               diagLevel_;
 
@@ -89,7 +92,7 @@ namespace mu2e {
 
       std::vector<int> hits;
       hits.reserve(caloHits.size());
-      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_) hits.emplace_back(i);      
+      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minSiPMPerHit_) hits.emplace_back(i);      
       auto functorTime = [&caloHits](int a, int b) {return caloHits[a].time() < caloHits[b].time();};
       std::sort(hits.begin(),hits.end(),functorTime);
 
