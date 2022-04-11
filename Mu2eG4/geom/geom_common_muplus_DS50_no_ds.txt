@@ -5,7 +5,7 @@
 //
 
 #include "Offline/Mu2eG4/geom/geom_common_muplus.txt"
-#include "Offline/Mu2eG4/geom/bfgeom_DS50_no_ds_v01.txt
+#include "Offline/Mu2eG4/geom/bfgeom_DS50_no_ds_v01.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
