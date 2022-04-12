@@ -105,13 +105,32 @@ string PTM.handleMaterial = "A1100";
 // the stand is made of 3 aluminum extrusions standing up together
 double PTM.stand.extrusionHeight = 75.3655;
 double PTM.stand.extrusionWidth = 75.3655;
-double PTM.stand.extrusionDensityFrac = 0.39; // overall density, considering the spaces in the extrusion
+// double PTM.stand.extrusionDensityFrac = 0.39; // overall density, considering the spaces in the extrusion
 double PTM.stand.mainColumnHeight = 2209.8;
+int PTM.stand.numColumnExtrusions = 3;
 double PTM.stand.relativeExtrusionAngle = 120.0; // degrees
 double PTM.stand.baseExtrusionLength = 609.573;
 double PTM.stand.supportExtrusionAngle = 45.0;
 double PTM.stand.supportExtrusionPosition = 224.9; // mm
 double PTM.stand.supportExtrusionInnerHyp = 242.732; // mm
+string PTM.stand.extrusionMaterial = "A6105LargeExtrusion";
+
+//
+// The wedge that holds the PWC's at the correct angle
+//
+double PTM.wedge.length = 1016.0;
+double PTM.wedge.width = 355.6;
+double PTM.wedge.minHeight = 10.0;
+double PTM.wedge.maxHeight = 50.782;
+double PTM.wedge.materialName = "A1100";
+// cutout for cables
+double PTM.wedge.cutoutLength = 197.5;
+double PTM.wedge.cutoutWidth = 146.051;
+double PTM.wedge.cutoutPositionZ = 244.48; // from z=0 at middle of wedge
+double PTM.wedge.cutoutPositionX = -79.05; // from x=0 at middle of wedge
+double PTM.wedge.cutoutRelRotY = 90.0; //degrees
+
+
 
 
 // TODO support blocks,  ground supports
