@@ -634,33 +634,61 @@ namespace mu2e {
 
     GeomHandle<PTM> ptmon;
 
-    // create and place the mother volume first
+    // create and place the main volume first
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
-    G4ThreeVector parentPosition = parent.centerInMu2e();
+    G4ThreeVector parentPosition = parent.centerInMu2e(); // HallAir
     G4RotationMatrix* parentRotation = parent.physical->GetObjectRotation();
-    G4ThreeVector motherPosition = ptmon->ptmHead()->originInMu2e() - parentPosition;
+    // The "main" volume that contains the stand, detectors, everything
+    G4ThreeVector mainPTMPositionMu2e = ptmon->originInMu2e();
+    G4ThreeVector mainPTMPositionInParent = mainPTMPositionMu2e - parentPosition;
+    G4RotationMatrix* mainRotation;
+    if (parentRotation->isIdentity()) {
+      mainRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
+    } else {
+      mainRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
+      mainRotation->transform(parentRotation->inverse());
+    }
+    G4Material* mainMaterial = parent.logical->GetMaterial();
+    std::vector<double> mainHalfDims;
+    mainHalfDims.push_back(ptmon->totalWidth()/2.);
+    mainHalfDims.push_back(ptmon->totalHeight()/2.);
+    mainHalfDims.push_back(ptmon->totalLength()/2.);
+    VolumeInfo pTargetMonMain = nestBox("PTMMain",
+                mainHalfDims,
+                mainMaterial,
+                mainRotation,
+                mainPTMPositionInParent,
+                parent,
+                0,
+                G4Colour::Green(),
+                "PTM");
+
+
+    // the "mother" volume contains the PWCs, the PWC holder, and the handle for the RHS
+    G4ThreeVector motherPosition = ptmon->ptmHead()->originInMu2e() - mainPTMPositionMu2e;
     // try making the rotation matrix object first, then doing the
     // main rotation, then un-rotating by whatever the parent's rotation is
     G4RotationMatrix* motherRotation;
-    if (parentRotation->isIdentity()) {
-      motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
+    if (mainRotation->isIdentity()) {
+      motherRotation = reg.add(new G4RotationMatrix(ptmon->ptmHead()->rotationInMu2e()));
     } else {
-      motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
-      motherRotation->transform(parentRotation->inverse());
+      motherRotation = reg.add(new G4RotationMatrix(ptmon->ptmHead()->rotationInMu2e()));
+      //motherRotation->transform(ptmon->rotationInMu2e().inverse());
+      *motherRotation = *motherRotation * ptmon->rotationInMu2e().inverse();
     }
 
-    G4Material* motherMaterial = parent.logical->GetMaterial();
+    //G4Material* motherMaterial = parent.logical->GetMaterial();
     std::vector<double> motherHalfDims;
-    motherHalfDims.push_back(ptmon->totalWidth()/2.);
-    motherHalfDims.push_back(ptmon->totalHeight()/2.);
-    motherHalfDims.push_back(ptmon->totalLength()/2.);
+    motherHalfDims.push_back(ptmon->ptmHead()->totalWidth()/2.);
+    motherHalfDims.push_back(ptmon->ptmHead()->totalHeight()/2.);
+    motherHalfDims.push_back(ptmon->ptmHead()->totalLength()/2.);
 
     VolumeInfo pTargetMonContainer = nestBox("PTMMother",
                 motherHalfDims,
-                motherMaterial,
+                mainMaterial, // same material as main volume
                 motherRotation,
                 motherPosition,
-                parent,
+                pTargetMonMain,
                 0,
                 G4Colour::Green(),
                 "PTM");
