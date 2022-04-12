@@ -51,7 +51,7 @@ string PTM.frameMaterial = "G10";
 double PTM.head.rotY = 166.274;
 double PTM.head.rotX = -2.272; // degree, was -2.27
 double PTM.rotY = 166.274; // TODO: replace with full-system position
-double PTM.rotX = -2.272; // TODO: replace with full-system position
+double PTM.rotX = 0; // TODO: replace with full-system position
 
 // mother and container volumes slightly larger than the
 // detectors themselves
@@ -67,7 +67,7 @@ double PTM.head.positionX = 2161.74;
 double PTM.head.positionY = 393.034;
 double PTM.head.positionZ = -13276.9;
 double PTM.positionX = 2161.762; // TODO: replace with full-system position
-double PTM.positionY = 278.303; // TODO: replace with full-system position
+double PTM.positionY = 0.25; // TODO: replace with full-system position
 double PTM.positionZ = -13281.339; // TODO: replace with full-system position
 
 double PTM.bracketHeight = 33.77;
