@@ -1,5 +1,6 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 #include "Offline/PTMGeom/inc/PTMPWC.hh"
 #include "Offline/PTMGeom/inc/PTM.hh"
@@ -97,7 +98,7 @@ namespace mu2e {
     double wedgeWidth = _config.getDouble("PTM.wedge.width");
     double wedgeMinHeight = _config.getDouble("PTM.wedge.minHeight");
     double wedgeMaxHeight = _config.getDouble("PTM.wedge.maxHeight");
-    double wedgeMaterialName = _config.getString("PTM.wedge.materialName");
+    std::string wedgeMaterialName = _config.getString("PTM.wedge.materialName");
     // cutout for cables
     double wedgeCutoutLength = _config.getDouble("PTM.wedge.cutoutLength");
     double wedgeCutoutWidth = _config.getDouble("PTM.wedge.cutoutWidth");
@@ -171,15 +172,15 @@ namespace mu2e {
     // build the top wedge in the stand
     // G4ExtrudedSolid assumes the vertices are given in (x, y) with the Z distance between given as dz
     // but our GeomPrimitives class returns it via getYhalfThickness()
-    std::vector<Hep2Vector> wedgeVertices;
+    std::vector<CLHEP::Hep2Vector> wedgeVertices;
     // "bottom left" vertex
-    wedgeVertices.push_back(Hep2Vector(-0.5*wedgeLength, -0.5*wedgeMaxHeight));
+    wedgeVertices.push_back(CLHEP::Hep2Vector(-0.5*wedgeLength, -0.5*wedgeMaxHeight));
     // bottom right
-    wedgeVertices.push_back(Hep2Vector(0.5*wedgeLength, -0.5*wedgeMaxHeight));
+    wedgeVertices.push_back(CLHEP::Hep2Vector(0.5*wedgeLength, -0.5*wedgeMaxHeight));
     // top left
-    wedgeVertices.push_back(Hep2Vector(-0.5*wedgeLength, 0.5*wedgeMaxHeight));
+    wedgeVertices.push_back(CLHEP::Hep2Vector(-0.5*wedgeLength, 0.5*wedgeMaxHeight));
     // top right
-    wedgeVertices.push_back(Hep2Vector(0.5*wedgeLength, wedgeMinHeight-(0.5*wedgeMaxHeight)));
+    wedgeVertices.push_back(CLHEP::Hep2Vector(0.5*wedgeLength, wedgeMinHeight-(0.5*wedgeMaxHeight)));
     // position of wedge is right under the "head"
     // TODO: once you have the right position for this, put it in the config file and have it be independent of the other things
     double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (0.5 * ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg));
@@ -202,7 +203,7 @@ namespace mu2e {
     CLHEP::Hep3Vector columnExtrusionPos3 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter);
     columnExtrusionPos3.rotateY(240.*CLHEP::deg);
     columnExtrusionPos3 += columnLocalCenter;
-    std::vector<Hep3Vector> columnPositions;
+    std::vector<CLHEP::Hep3Vector> columnPositions;
     columnPositions.push_back(columnExtrusionPos1);
     columnPositions.push_back(columnExtrusionPos2);
     columnPositions.push_back(columnExtrusionPos3);

@@ -630,7 +630,7 @@ namespace mu2e {
                   verbosity>0);
   }
 
-  void constructStand(VolumeInfo const& parent, PTMStand* ptmStand, SimpleConfig const& _config) {
+  void constructStand(VolumeInfo const& parent, const PTMStand* ptmStand, SimpleConfig const& _config) {
     // collect geomOptions
     const int verbosity = _config.getInt("PTM.verbosityLevel",1);
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -644,7 +644,7 @@ namespace mu2e {
 
     // top wedge
     G4Material *wedgeMaterial = findMaterialOrThrow(ptmStand->wedgeMaterialName());
-    G4ThreeVector wedgePositionInParent = ptmStand->topWedge()->getOffsetFromMu2eOrigin() - parent->centerInMu2e();
+    G4ThreeVector wedgePositionInParent = ptmStand->topWedge()->getOffsetFromMu2eOrigin() - parent.centerInMu2e();
     G4ExtrudedSolid *outerWedge = new G4ExtrudedSolid("PTMWedgeOuter",
                                                       ptmStand->topWedge()->getVertices(),
                                                       ptmStand->topWedge()->getYhalfThickness(),
@@ -655,12 +655,12 @@ namespace mu2e {
     G4Box *cutout = new G4Box("PTMWedgeCutout", ptmStand->wedgeCutout()->getXhalfLength(), ptmStand->wedgeCutout()->getYhalfLength(), ptmStand->wedgeCutout()->getZhalfLength());
     G4RotationMatrix* wedgeRotation;
     wedgeRotation = reg.add(new G4RotationMatrix());
-    wedgeRotation.rotateY(90*CLHEP::deg); // so the long side points along z
+    wedgeRotation->rotateY(90*CLHEP::deg); // so the long side points along z
     VolumeInfo wedgeInfo;
     wedgeInfo.name = "PTMStandTopWedge";
     wedgeInfo.solid = new G4SubtractionSolid("PTMStandTopWedge", outerWedge, cutout, 0, G4ThreeVector(ptmStand->wedgeCutoutRelPosition()));
     finishNesting(wedgeInfo,
-                  handleMaterial,
+                  wedgeMaterial,
                   wedgeRotation,
                   wedgePositionInParent,
                   parent.logical,
