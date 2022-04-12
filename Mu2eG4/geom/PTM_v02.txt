@@ -126,8 +126,10 @@ double PTM.wedge.materialName = "A1100";
 // cutout for cables
 double PTM.wedge.cutoutLength = 197.5;
 double PTM.wedge.cutoutWidth = 146.051;
-double PTM.wedge.cutoutPositionZ = 244.48; // from z=0 at middle of wedge
-double PTM.wedge.cutoutPositionX = -79.05; // from x=0 at middle of wedge
+//double PTM.wedge.cutoutPositionZ = 244.48; // from z=0 at middle of wedge
+//double PTM.wedge.cutoutPositionX = -79.05; // from x=0 at middle of wedge
+double PTM.wedge.cutoutPositionX = 244.48; // from x=0 at middle of wedge; G4ExtrudedSolid has the "parallel" sides go in the z direction
+double PTM.wedge.cutoutPositionZ = 79.05; // from z=0 at middle of wedge
 double PTM.wedge.cutoutRelRotY = 90.0; //degrees
 
 

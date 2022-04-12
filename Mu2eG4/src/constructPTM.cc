@@ -37,6 +37,7 @@
 #include "G4PVPlacement.hh"
 #include "G4VSolid.hh"
 #include "G4EllipticalTube.hh"
+#include "G4ExtrudedSolid.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -615,7 +616,7 @@ namespace mu2e {
     handleInfo.name = handleName;
     handleInfo.solid = handleFinal;
     finishNesting(handleInfo,
-                  handleMaterial, // probably unnecessary, since we made the logical already
+                  handleMaterial,
                   0,
                   handlePosition,
                   motherVolume.logical,
@@ -627,6 +628,51 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
+  }
+
+  void constructStand(VolumeInfo const& parent, PTMStand* ptmStand, SimpleConfig const& _config) {
+    // collect geomOptions
+    const int verbosity = _config.getInt("PTM.verbosityLevel",1);
+    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "PTM", "PTM" );
+    const bool visible = geomOptions->isVisible("PTM");
+    const bool forceSolid = geomOptions->isSolid("PTM");
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("PTM");
+    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
+    bool placePV = geomOptions->placePV("PTM");
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+
+    // top wedge
+    G4Material *wedgeMaterial = findMaterialOrThrow(ptmStand->wedgeMaterialName());
+    G4ThreeVector wedgePositionInParent = ptmStand->topWedge()->getOffsetFromMu2eOrigin() - parent->centerInMu2e();
+    G4ExtrudedSolid *outerWedge = new G4ExtrudedSolid("PTMWedgeOuter",
+                                                      ptmStand->topWedge()->getVertices(),
+                                                      ptmStand->topWedge()->getYhalfThickness(),
+                                                      G4TwoVector(0.0, 0.0),
+                                                      1,
+                                                      G4TwoVector(0.0, 0.0),
+                                                      1);
+    G4Box *cutout = new G4Box("PTMWedgeCutout", ptmStand->wedgeCutout()->getXhalfLength(), ptmStand->wedgeCutout()->getYhalfLength(), ptmStand->wedgeCutout()->getZhalfLength());
+    G4RotationMatrix* wedgeRotation;
+    wedgeRotation = reg.add(new G4RotationMatrix());
+    wedgeRotation.rotateY(90*CLHEP::deg); // so the long side points along z
+    VolumeInfo wedgeInfo;
+    wedgeInfo.name = "PTMStandTopWedge";
+    wedgeInfo.solid = new G4SubtractionSolid("PTMStandTopWedge", outerWedge, cutout, 0, G4ThreeVector(ptmStand->wedgeCutoutRelPosition()));
+    finishNesting(wedgeInfo,
+                  handleMaterial,
+                  wedgeRotation,
+                  wedgePositionInParent,
+                  parent.logical,
+                  0,
+                  visible, // visible
+                  G4Colour::Blue(),
+                  forceSolid, // forceSolid
+                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  placePV,
+                  doSurfaceCheck,
+                  verbosity>0);
+
   }
 
 
@@ -673,11 +719,9 @@ namespace mu2e {
       motherRotation = reg.add(new G4RotationMatrix(ptmon->ptmHead()->rotationInMu2e()));
     } else {
       motherRotation = reg.add(new G4RotationMatrix(ptmon->ptmHead()->rotationInMu2e()));
-      //motherRotation->transform(ptmon->rotationInMu2e().inverse());
-      *motherRotation = *motherRotation * ptmon->rotationInMu2e().inverse();
+      *motherRotation = *motherRotation * ptmon->rotationInMu2e().inverse(); // transform() reverses the order of multiplication, gives the wrong result
     }
 
-    //G4Material* motherMaterial = parent.logical->GetMaterial();
     std::vector<double> motherHalfDims;
     motherHalfDims.push_back(ptmon->ptmHead()->totalWidth()/2.);
     motherHalfDims.push_back(ptmon->ptmHead()->totalHeight()/2.);
@@ -701,6 +745,8 @@ namespace mu2e {
     constructPWCHolder(pTargetMonContainer,
                           ptmon->ptmHead(),
                           _config);
+
+    constructStand(pTargetMonMain, ptmon->ptmStand(), _config);
 
   } // constructPTM
 
