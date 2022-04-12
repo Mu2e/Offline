@@ -31,17 +31,17 @@ namespace mu2e {
           CLHEP::HepRotation wedgeCutoutRelRotation,
           std::shared_ptr<Box> columnExtrusion,
           std::vector<CLHEP::Hep3Vector> columnOriginsInMu2e,
-          std::string columnMateriaName,
+          std::string columnMaterialName,
           std::string wedgeMaterialName);
     PTMStand() {}
 
-    const GenericTrap* topWedge() const { return _topWedge.get(); }
+    const ExtrudedSolid* topWedge() const { return _topWedge.get(); }
     const Box* wedgeCutout() const { return _wedgeCutout.get(); }
     CLHEP::Hep3Vector const & wedgeCutoutRelPosition() const { return _wedgeCutoutRelPosition; }
     CLHEP::HepRotation const & wedgeCutoutRelRotation() const { return _wedgeCutoutRelRotation; }
     const Box* columnExtrusion() const {return _columnExtrusion.get(); }
     const std::vector<CLHEP::Hep3Vector> columnOriginsInMu2e()   const { return _columnOriginsInMu2e; }
-    const std::string columnMateriaName() const { return _columnMaterialName; }
+    const std::string columnMaterialName() const { return _columnMaterialName; }
     const std::string wedgeMaterialName() const { return _wedgeMaterialName; }
 
 
