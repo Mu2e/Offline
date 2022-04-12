@@ -11,8 +11,7 @@ namespace mu2e{
           CLHEP::Hep3Vector wedgeCutoutRelPosition,
           CLHEP::HepRotation wedgeCutoutRelRotation,
           std::shared_ptr<Box> columnExtrusion,
-          std::vector<CLHEP::Hep3Vector> columnOriginsInMu2e, 
-          std::vector<CLHEP::HepRotation> columnRotationsInMu2e,
+          std::vector<CLHEP::Hep3Vector> columnOriginsInMu2e,
           std::string columnMateriaName,
           std::string wedgeMaterialName)
           : _topWedge(topWedge),
@@ -20,8 +19,7 @@ namespace mu2e{
             _wedgeCutoutRelPosition(wedgeCutoutRelPosition),
             _wedgeCutoutRelRotation(wedgeCutoutRelRotation),
             _columnExtrusion(columnExtrusion),
-            _columnOriginsInMu2e(columnOriginsInMu2e), 
-            _columnRotationsInMu2e(columnRotationsInMu2e),
+            _columnOriginsInMu2e(columnOriginsInMu2e),
             _columnMateriaName(columnMateriaName),
             _wedgeMaterialName(wedgeMaterialName) {
 
