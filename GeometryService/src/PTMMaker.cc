@@ -7,6 +7,7 @@
 #include "Offline/PTMGeom/inc/PTMStand.hh"
 #include "Offline/GeometryService/inc/PTMMaker.hh"
 #include "Offline/GeomPrimitives/inc/Box.hh"
+#include "Offline/GeomPrimitives/inc/ExtrudedSolid.hh"
 //
 // construct and return a PTM
 //
@@ -84,15 +85,33 @@ namespace mu2e {
     double handleCutoutCenterY = _config.getDouble("PTM.handleCutoutPositionY");
     std::string handleMaterial = _config.getString("PTM.handleMaterial");
 
-
     // mother volume contains both detectors, container contains one detector
     // each is slightly larger than all its contents
     double motherMargin = _config.getDouble("PTM.motherMargin");
     double containerMargin = _config.getDouble("PTM.containerMargin");
 
-    // shift the position of the volume center to include the handle
-    
-    
+    // The stand for the PTM
+
+    // top wedge that the PWCs are placed on
+    double wedgeLength = _config.getDouble("PTM.wedge.length");
+    double wedgeWidth = _config.getDouble("PTM.wedge.width");
+    double wedgeMinHeight = _config.getDouble("PTM.wedge.minHeight");
+    double wedgeMaxHeight = _config.getDouble("PTM.wedge.maxHeight");
+    double wedgeMaterialName = _config.getString("PTM.wedge.materialName");
+    // cutout for cables
+    double wedgeCutoutLength = _config.getDouble("PTM.wedge.cutoutLength");
+    double wedgeCutoutWidth = _config.getDouble("PTM.wedge.cutoutWidth");
+    double wedgeCutoutRelX = _config.getDouble("PTM.wedge.cutoutPositionX");
+    double wedgeCutoutRelZ = _config.getDouble("PTM.wedge.cutoutPositionZ");
+    double wedgeCutoutRelRotY = _config.getDouble("PTM.wedge.cutoutRelRotY");
+    CLHEP::Hep3Vector wedgeCutoutRelPosition = CLHEP::Hep3Vector(wedgeCutoutRelX, 0.0, wedgeCutoutRelZ);
+    CLHEP::HepRotation wedgeCutoutRelRotation = CLHEP::HepRotation();
+    wedgeCutoutRelRotation.rotateY(wedgeCutoutRelRotY*CLHEP::deg);
+    // aluminum extrusions that form a column, on which rests the top wedge
+    double columnHeight = _config.getDouble("PTM.stand.mainColumnHeight");
+    double columnExtrusionWidth = _config.getDouble("PTM.stand.extrusionWidth");
+    std::string columnMaterialName = _config.getString("PTM.stand.extrusionMaterial");
+
 
     // First, the "head" portion: the PWC's and their holder
 
@@ -148,7 +167,56 @@ namespace mu2e {
                                                  motherMargin,
                                                  originInMu2e,
                                                  rotationInMu2e));
-    std::shared_ptr<PTMStand> ptmStand(new PTMStand()); // TODO
+
+    // build the top wedge in the stand
+    // G4ExtrudedSolid assumes the vertices are given in (x, y) with the Z distance between given as dz
+    // but our GeomPrimitives class returns it via getYhalfThickness()
+    std::vector<Hep2Vector> wedgeVertices;
+    // "bottom left" vertex
+    wedgeVertices.push_back(Hep2Vector(-0.5*wedgeLength, -0.5*wedgeMaxHeight));
+    // bottom right
+    wedgeVertices.push_back(Hep2Vector(0.5*wedgeLength, -0.5*wedgeMaxHeight));
+    // top left
+    wedgeVertices.push_back(Hep2Vector(-0.5*wedgeLength, 0.5*wedgeMaxHeight));
+    // top right
+    wedgeVertices.push_back(Hep2Vector(0.5*wedgeLength, wedgeMinHeight-(0.5*wedgeMaxHeight)));
+    // position of wedge is right under the "head"
+    // TODO: once you have the right position for this, put it in the config file and have it be independent of the other things
+    double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (0.5 * ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg));
+    CLHEP::Hep3Vector wedgeOriginInMu2e = CLHEP::Hep3Vector(headVolumeOriginInMu2e.x(), wedgeY, headVolumeOriginInMu2e.z());
+    std::cout << "PTM WEDGE POSITION: " << std::endl;
+    std::cout << "wedge (" << wedgeOriginInMu2e.x() << ", " << wedgeOriginInMu2e.y() << ", " << wedgeOriginInMu2e.z() << ")" << std::endl;
+    std::shared_ptr<ExtrudedSolid> topWedge(new ExtrudedSolid("PTMStandWedge", wedgeMaterialName, wedgeOriginInMu2e, 0.5*wedgeWidth, wedgeVertices));
+    std::shared_ptr<Box> wedgeCutout(new Box(0.5*wedgeCutoutWidth, 0.5*wedgeMaxHeight, 0.5*wedgeCutoutLength));
+
+    // build the support column that holds the wedge at the right height
+    std::shared_ptr<Box> supportColExtrusion(new Box(0.5*columnExtrusionWidth, 0.5*columnExtrusionWidth, 0.5*columnHeight));
+    // the three extrusions are arranged around a triangular central space
+    double columnY = wedgeOriginInMu2e.y() - 0.5*wedgeMaxHeight - 0.5*columnHeight;
+    CLHEP::Hep3Vector columnLocalCenter = CLHEP::Hep3Vector(wedgeOriginInMu2e.x(), columnY, wedgeOriginInMu2e.z());
+    double distFromLocalCenter = 0.5*columnExtrusionWidth*tan(30*CLHEP::deg);
+    CLHEP::Hep3Vector columnExtrusionPos1 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter) + columnLocalCenter;
+    CLHEP::Hep3Vector columnExtrusionPos2 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter);
+    columnExtrusionPos2.rotateY(120.*CLHEP::deg);
+    columnExtrusionPos2 += columnLocalCenter;
+    CLHEP::Hep3Vector columnExtrusionPos3 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter);
+    columnExtrusionPos3.rotateY(240.*CLHEP::deg);
+    columnExtrusionPos3 += columnLocalCenter;
+    std::vector<Hep3Vector> columnPositions;
+    columnPositions.push_back(columnExtrusionPos1);
+    columnPositions.push_back(columnExtrusionPos2);
+    columnPositions.push_back(columnExtrusionPos3);
+
+
+
+    std::shared_ptr<PTMStand> ptmStand(new PTMStand(topWedge,
+          wedgeCutout,
+          wedgeCutoutRelPosition,
+          wedgeCutoutRelRotation,
+          supportColExtrusion,
+          columnPositions,
+          columnMaterialName,
+          wedgeMaterialName));
     std::unique_ptr<PTM> ptmon(new PTM(originInMu2e, rotationInMu2e, ptmStand, ptmHead));
     return ptmon;
   } // PTMMaker::make()
