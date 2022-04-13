@@ -22,7 +22,7 @@
 
 #include "Offline/MCDataProducts/inc/STMStep.hh"
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
-#include "Offline/RecoDataProducts/inc/STMTestBeamBinaryPacket.hh"
+#include "Offline/RecoDataProducts/inc/STMTestBeamPacketDefns.hh"
 
 #include <bitset>
 

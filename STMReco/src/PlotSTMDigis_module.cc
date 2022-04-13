@@ -68,6 +68,10 @@ namespace mu2e {
       //      float time = hit.time();
       float baselineMean = digi.baselineMean();
       _energySpectrum->Fill(baselineMean);
+
+      // TODO: Create a histogram here (i.e. with tfs->make<TH1D>...)
+      // TODO: loop through the adcs (i.e. with for (const aurto& sample : digi.adcs()) { } )
+      // TODO: fill each sample into a separate bin of the histogram
     }
   }
   void PlotSTMDigis::endJob() {

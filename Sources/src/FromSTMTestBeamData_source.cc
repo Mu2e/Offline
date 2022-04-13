@@ -4,6 +4,7 @@
 #include <cassert>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "fhiclcpp/types/Name.h"
 #include "art/Framework/IO/Sources/Source.h"
@@ -24,7 +25,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "Offline/RecoDataProducts/inc/STMTestBeamBinaryPacket.hh"
+#include "Offline/RecoDataProducts/inc/STMTestBeamPacketDefns.hh"
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
 
 
@@ -37,7 +38,10 @@ namespace mu2e {
     using Comment = fhicl::Comment;
     fhicl::Sequence<std::string> inputFiles{Name("fileNames"),Comment("Input binary file")};
     fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("Run number")};
-    fhicl::Atom<unsigned int> maxEvents{Name("maxEvents"), Comment("Max number of events"), 0};
+    fhicl::Atom<unsigned int> maxEvents{Name("maxEvents"), Comment("Max number of events")};
+    fhicl::Atom<unsigned int> nTriggersPerMacropulse{Name("nTriggersPerMacropulse"), Comment("Number of triggers per macropulse")};
+    fhicl::Atom<unsigned int> nSlicesPerExtTrigger{Name("nSlicesPerExtTrigger"), Comment("Number of slices per external trigger")};
+    fhicl::Atom<unsigned int> nSlicesPerIntTrigger{Name("nSlicesPerIntTrigger"), Comment("Number of slices per internal trigger")};
 
     // These are used by art and are required.
     fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
@@ -63,6 +67,9 @@ namespace mu2e {
     unsigned currentSubRunNumber_; // from file
     unsigned currentEventNumber_;
     unsigned maxEvents_;
+    unsigned nTriggersPerMacropulse_;
+    unsigned nSlicesPerExtTrigger_;
+    unsigned nSlicesPerIntTrigger_;
 
     int printAtEvent;
 
@@ -102,6 +109,9 @@ namespace mu2e {
       , currentSubRunNumber_(-1U)
       , currentEventNumber_(0)
       , maxEvents_(conf().maxEvents())
+      , nTriggersPerMacropulse_(conf().nTriggersPerMacropulse())
+      , nSlicesPerExtTrigger_(conf().nSlicesPerExtTrigger())
+      , nSlicesPerIntTrigger_(conf().nSlicesPerIntTrigger())
   {
     if(!art::RunID(runNumber_).isValid()) {
       throw cet::exception("BADCONFIG", " FromSTMTestBeamData: ")
@@ -152,16 +162,46 @@ namespace mu2e {
     }
     managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
     std::unique_ptr<mu2e::STMDigiCollection> outputSTMDigis(new mu2e::STMDigiCollection);
-    STMTestBeamBinaryPacket stmTestBeamPacket[1];
-    while (currentFile_->read((char *) &stmTestBeamPacket[0], sizeof(STMTestBeamBinaryPacket))) {
-      std::cout << stmTestBeamPacket[0] << std::endl;
-      //      if (!currentFile_) {
-      //	throw cet::exception("MakeSTMDigisFromBin") << "A problem reading binary file " << currentFileName_ << std::endl;
-      //      }
-      STMDigi stm_digi(stmTestBeamPacket[0].trigTimeOffset, stmTestBeamPacket[0].ADC0);
+
+    int n_triggers = nTriggersPerMacropulse_;
+    for (int i_trigger = 0; i_trigger < n_triggers; ++i_trigger) {
+      STMTestBeamTriggerHeader triggerHeader[1];
+      currentFile_->read((char *) &triggerHeader[0], sizeof(STMTestBeamTriggerHeader));
+      std::cout << triggerHeader[0] << std::endl;
+
+      auto trigger_mode = triggerHeader[0].getTriggerMode();
+      int n_slices = 0;
+      if (trigger_mode == STMTestBeamTriggerMode::kExternal) {
+	n_slices = nSlicesPerExtTrigger_;
+      }
+      else if (trigger_mode == STMTestBeamTriggerMode::kInternal) {
+	n_slices = nSlicesPerIntTrigger_;
+      }
+      else {
+	throw cet::exception("FromSTMTestBeamData") << "Unknown trigger mode: " << trigger_mode << std::endl;
+      }
+      
+      std::vector<int16_t> adcs;
+      for (int i_slice = 0; i_slice < n_slices; ++i_slice) {
+	STMTestBeamSliceHeader sliceHeader[1];
+	currentFile_->read((char *) &sliceHeader[0], sizeof(STMTestBeamSliceHeader));
+	//	std::cout << sliceHeader[0] << std::endl;
+	
+	uint16_t n_samples = sliceHeader[0].getNSamples();
+	int16_t data[n_samples];
+	currentFile_->read((char *) &data[0], sizeof(data));
+	for (int i_sample = 0; i_sample < n_samples; ++i_sample) {
+	  adcs.push_back(data[i_sample]);
+	}
+      }
+
+      STMDigi stm_digi(0, triggerHeader[0].getMacropulseTime(), 0, 0, 0, 0, adcs);
       outputSTMDigis->push_back(stm_digi);
     }
+
     art::put_product_in_principal(std::move(outputSTMDigis), *outE, myModuleLabel_);
+
+    ++currentEventNumber_;
 
     return true;
   } // readNext()
@@ -178,16 +218,15 @@ namespace mu2e {
 
     art::Timestamp ts;
 
-    if (eventNumber == printAtEvent){
-      std::cout << "Event " << eventNumber << std::endl;
-      printAtEvent = (printAtEvent+1)*2-1;
-    }
+    //    if (eventNumber == printAtEvent){
+    //      printAtEvent = (printAtEvent+1)*2-1;
+    //    }
+    std::cout << "AE: run, subrun, event = " << runNumber << ", " << subRunNumber << ", " << eventNumber << std::endl;
 
     art::SubRunID newID(runNumber, subRunNumber);
 
     if(newID != lastSubRunID_) {
       outR = pm_.makeRunPrincipal(runNumber, ts);
-      std::cout << "Subrun " << subRunNumber << std::endl;
       // art takes ownership of the object pointed to by outSR and will delete it at the appropriate time.
       outSR = pm_.makeSubRunPrincipal(runNumber,
           subRunNumber,
