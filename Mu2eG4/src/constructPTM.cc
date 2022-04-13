@@ -655,7 +655,7 @@ namespace mu2e {
     G4Box *cutout = new G4Box("PTMWedgeCutout", ptmStand->wedgeCutout()->getXhalfLength(), ptmStand->wedgeCutout()->getYhalfLength(), ptmStand->wedgeCutout()->getZhalfLength());
     G4RotationMatrix* wedgeRotation;
     wedgeRotation = reg.add(new G4RotationMatrix());
-    wedgeRotation->rotateY(90*CLHEP::deg); // so the long side points along z
+    wedgeRotation->rotateY(-90*CLHEP::deg); // so the long side points along z
     VolumeInfo wedgeInfo;
     wedgeInfo.name = "PTMStandTopWedge";
     wedgeInfo.solid = new G4SubtractionSolid("PTMStandTopWedge", outerWedge, cutout, 0, G4ThreeVector(ptmStand->wedgeCutoutRelPosition()));
@@ -679,6 +679,15 @@ namespace mu2e {
   void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config) {
 
     GeomHandle<PTM> ptmon;
+    // collect geomOptions
+    //const int verbosity = _config.getInt("PTM.verbosityLevel",1);
+    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "PTM", "PTM" );
+    const bool visible = geomOptions->isVisible("PTM");
+    const bool forceSolid = geomOptions->isSolid("PTM");
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("PTM");
+    const bool doSurfaceCheck = geomOptions->doSurfaceCheck("PTM");
+    bool placePV = geomOptions->placePV("PTM");
 
     // create and place the main volume first
     AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
@@ -700,15 +709,19 @@ namespace mu2e {
     mainHalfDims.push_back(ptmon->totalHeight()/2.);
     mainHalfDims.push_back(ptmon->totalLength()/2.);
     VolumeInfo pTargetMonMain = nestBox("PTMMain",
-                mainHalfDims,
-                mainMaterial,
-                mainRotation,
-                mainPTMPositionInParent,
-                parent,
-                0,
-                G4Colour::Green(),
-                "PTM");
-
+               mainHalfDims,
+               mainMaterial,
+               mainRotation,
+               mainPTMPositionInParent,
+               parent,
+               0,
+               visible,
+               G4Colour::Green(),
+               forceSolid,
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
 
     // the "mother" volume contains the PWCs, the PWC holder, and the handle for the RHS
     G4ThreeVector motherPosition = ptmon->ptmHead()->originInMu2e() - mainPTMPositionMu2e;
