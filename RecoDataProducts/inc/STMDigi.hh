@@ -11,18 +11,35 @@
 #include <Rtypes.h>
 
 namespace mu2e {
+/*
+  struct Test {
+    uint_16t trigNum;
+ 
+  }
+*/
   
   class STMDigi {
   public:
     STMDigi() {};
-    STMDigi(int tdc, int adc) : _tdc(tdc), _adc(adc) {};
+    STMDigi(uint16_t trigNum, uint32_t trigTime, uint16_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, int adc0) : _trigNum(trigNum), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop), _adc0(adc0) {};
+    STMDigi(uint32_t trigTime, int adc0): _trigTime(trigTime), _adc0(adc0) {};
 
-    int tdc() const { return _tdc; }
-    int adc() const { return _adc; }
+    uint16_t trigNum() const { return _trigNum; }
+    uint32_t trigTime() const { return _trigTime; }
+    uint16_t trigTimeOffset() const { return _trigTimeOffset; }
+    uint16_t baselineMean() const { return _baselineMean; }
+    uint16_t baselineRMS() const { return _baselineRMS; }
+    uint16_t nDrop() const { return _nDrop; }
+    int adc0() const { return _adc0; }
 
   private:
-    int _tdc;
-    int _adc;
+    uint16_t _trigNum;
+    uint32_t _trigTime;
+    uint16_t _trigTimeOffset;
+    uint16_t _baselineMean;
+    uint16_t _baselineRMS;
+    uint16_t _nDrop;
+    int _adc0; 
   };
   typedef std::vector<mu2e::STMDigi> STMDigiCollection;
 }

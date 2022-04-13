@@ -19,6 +19,7 @@
 // root
 #include "TH1F.h"
 #include "TTree.h"
+#include "TF1.h"
 
 #include "Offline/MCDataProducts/inc/STMStep.hh"
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
@@ -55,10 +56,14 @@ namespace mu2e {
     // create output
     unique_ptr<STMDigiCollection> outputSTMDigis(new STMDigiCollection);
     auto stepsHandle = event.getValidHandle<STMStepCollection>(_stmStepsTag);
+    
+    // Create Gaussian jitter
+    TF1* res_fnc = new TF1("res_fnc", "TMath::Gaus(x, [0], [1])", -0.002, 0.002);
+    res_fnc->SetParameters(0,0.001);
 
     for (const auto& step : *stepsHandle) {
       int tdc = 0;
-      int adc = step.edep();
+      int adc = step.edep()*10000.0 + 10000.0*res_fnc->GetRandom();
       STMDigi stm_digi(tdc, adc);
       outputSTMDigis->push_back(stm_digi);
     }

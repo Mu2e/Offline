@@ -57,10 +57,10 @@ namespace mu2e {
     auto digisHandle = event.getValidHandle<STMDigiCollection>(_stmDigisTag);
 
     for (const auto& digi : *digisHandle) {
-      int tdc = digi.tdc();
-      int adc = digi.adc();
+      int tdc = digi.trigTime();
+      int adc = digi.adc0();
       float time = tdc;
-      float energy = adc;
+      float energy = adc/10000.0;
       STMHit stm_hit(time,energy);
       outputSTMHits->push_back(stm_hit);
     }

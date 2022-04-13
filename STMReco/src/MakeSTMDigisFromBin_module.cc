@@ -93,7 +93,7 @@ namespace mu2e {
 	if (!binfile) {
 	  throw cet::exception("MakeSTMDigisFromBin") << "A problem reading binary file " << _binFileName << std::endl;
 	}
-	STMDigi stm_digi(test[0].trigTimeOffset, test[0].ADC0);
+	STMDigi stm_digi(test[0].trigNum, test[0].trigTime, test[0].trigTimeOffset, test[0].baselineMean, test[0].baselineRMS, test[0].nDrop, test[0].ADC0);
 	outputSTMDigis->push_back(stm_digi);
       }
       binfile.close();
