@@ -124,12 +124,12 @@ double PTM.wedge.minHeight = 10.0;
 double PTM.wedge.maxHeight = 50.782;
 double PTM.wedge.materialName = "A1100";
 // cutout for cables
-double PTM.wedge.cutoutLength = 197.5;
+double PTM.wedge.cutoutLength = 197.6; // actual length 197.5; added 0.1 so the subtraction includes the edge instead of stopping there
 double PTM.wedge.cutoutWidth = 146.051;
 //double PTM.wedge.cutoutPositionZ = 244.48; // from z=0 at middle of wedge
 //double PTM.wedge.cutoutPositionX = -79.05; // from x=0 at middle of wedge
-double PTM.wedge.cutoutPositionX = 244.48; // from x=0 at middle of wedge; G4ExtrudedSolid has the "parallel" sides go in the z direction
-double PTM.wedge.cutoutPositionZ = 79.05; // from z=0 at middle of wedge
+double PTM.wedge.cutoutPositionX = -244.48; // from x=0 at middle of wedge; G4ExtrudedSolid has the "parallel" sides go in the z direction
+double PTM.wedge.cutoutPositionZ = -79.1; // from z=0 at middle of wedge, actual position -79.05; added the 0.05 to compensate for added length
 double PTM.wedge.cutoutRelRotY = 90.0; //degrees
 
 
