@@ -1,6 +1,6 @@
 //
-// Variant of the B field maps used for reconstruction.  All B field maps
-// not needed for reconstruction have been removed.
+// Variant of the bfield maps with the DS field scaled down to 50% of nominal
+// and with only the field maps needed for the reconstruction
 //
 // Warning:
 //  There are multiple points of maintenance when you change any bfield maps.
@@ -15,13 +15,11 @@
 //
 //  If more variants are added, update the comments in all relevant files.
 
-#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+#include "Mu2eG4/geom/bfgeom_reco_v01.txt"
 
 vector<string> bfield.innerMaps = {
-  "BFieldMaps/Mau13/DSMap.header"
+  "BFieldMaps/Mau13/DSMap50.header"
 };
-
-vector<string> bfield.outerMaps = {};
 
 
 //
