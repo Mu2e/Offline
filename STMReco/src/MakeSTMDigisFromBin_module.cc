@@ -22,38 +22,13 @@
 
 #include "Offline/MCDataProducts/inc/STMStep.hh"
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMTestBeamBinaryPacket.hh"
 
 #include <bitset>
 
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
-
-  struct Test {
-    uint16_t trigNum;
-    uint16_t trigType;
-    uint32_t trigTime;
-    uint16_t trigTimeOffset;
-    uint16_t baselineMean;
-    uint16_t baselineRMS;
-    uint16_t nDrop;
-    uint16_t ADC0;
-    uint16_t ADC1;
-    uint16_t ADC2;
-    uint16_t ADC3;
-
-    friend std::ostream& operator<<(ostream& os, const Test& test) {
-      os << "Trigger #" << test.trigNum << std::endl;
-      os << "\tTrigger Type: " << test.trigType << std::endl;
-      os << "\tTrigger Time: " << test.trigTime << std::endl;
-      os << "\tTrigger Time Offset: " << test.trigTimeOffset << std::endl;
-      os << "\tBaseline Mean: " << test.baselineMean << std::endl;
-      os << "\tBaseline RMS: " << test.baselineRMS << std::endl;
-      os << "\tNo. of Dropped Packets: " << test.nDrop << std::endl;
-      os << "\tADCs: " << test.ADC0 << " " << test.ADC1 << " " << test.ADC2 << " " << test.ADC3 << std::endl;
-      return os;
-    }
-  };
 
   class MakeSTMDigisFromBin : public art::EDProducer {
     public:
@@ -87,13 +62,13 @@ namespace mu2e {
       if (!binfile.is_open()) {
 	throw cet::exception("MakeSTMDigisFromBin") << "A problem opening binary file " << _binFileName << std::endl;
       }
-      Test test[1];
-      while (binfile.read((char *) &test[0], sizeof(Test))) {
-	std::cout << test[0] << std::endl;
+      STMTestBeamBinaryPacket packet[1];
+      while (binfile.read((char *) &packet[0], sizeof(STMTestBeamBinaryPacket))) {
+	std::cout << packet[0] << std::endl;
 	if (!binfile) {
 	  throw cet::exception("MakeSTMDigisFromBin") << "A problem reading binary file " << _binFileName << std::endl;
 	}
-	STMDigi stm_digi(test[0].trigNum, test[0].trigTime, test[0].trigTimeOffset, test[0].baselineMean, test[0].baselineRMS, test[0].nDrop, test[0].ADC0);
+	STMDigi stm_digi(packet[0].trigNum, packet[0].trigTime, packet[0].trigTimeOffset, packet[0].baselineMean, packet[0].baselineRMS, packet[0].nDrop, packet[0].ADC0);
 	outputSTMDigis->push_back(stm_digi);
       }
       binfile.close();
