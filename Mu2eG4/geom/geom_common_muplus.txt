@@ -1,0 +1,11 @@
+//
+// Variant on geom_common.txt for positive muon running
+//
+
+#include "Offline/Mu2eG4/geom/geom_common.txt"
+#include "Offline/Mu2eG4/geom/RotatedColl3.txt"
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
