@@ -646,12 +646,12 @@ namespace mu2e {
     G4Material *wedgeMaterial = findMaterialOrThrow(ptmStand->wedgeMaterialName());
     G4ThreeVector wedgePositionInParent = ptmStand->topWedge()->getOffsetFromMu2eOrigin() - parent.centerInMu2e();
     G4ExtrudedSolid *outerWedge = new G4ExtrudedSolid("PTMWedgeOuter",
-                                                      ptmStand->topWedge()->getVertices(),
-                                                      ptmStand->topWedge()->getYhalfThickness(),
-                                                      G4TwoVector(0.0, 0.0),
-                                                      1,
-                                                      G4TwoVector(0.0, 0.0),
-                                                      1);
+                     ptmStand->topWedge()->getVertices(),
+                     ptmStand->topWedge()->getYhalfThickness(),
+                     G4TwoVector(0.0, 0.0),
+                     1,
+                     G4TwoVector(0.0, 0.0),
+                     1);
     G4Box *cutout = new G4Box("PTMWedgeCutout", ptmStand->wedgeCutout()->getXhalfLength(), ptmStand->wedgeCutout()->getYhalfLength(), ptmStand->wedgeCutout()->getZhalfLength());
     G4RotationMatrix* wedgeRotation;
     wedgeRotation = reg.add(new G4RotationMatrix());
@@ -673,6 +673,38 @@ namespace mu2e {
                   doSurfaceCheck,
                   verbosity>0);
 
+    // support column
+    std::string columnExtrusionName = "PTMBaseColumn";
+    G4Material* columnMaterial = findMaterialOrThrow(ptmStand->columnMaterialName());
+    G4Box* columnSolid = new G4Box(columnExtrusionName,
+                                  ptmStand->columnExtrusion()->getXhalfLength(),
+                                  ptmStand->columnExtrusion()->getYhalfLength(),
+                                  ptmStand->columnExtrusion()->getZhalfLength());
+    G4LogicalVolume* columnLogical = new G4LogicalVolume(columnSolid, columnMaterial, columnExtrusionName);
+    int columnCopyNum = 0;
+    for (auto columnPosition : ptmStand->columnOriginsInMu2e()) {
+      G4RotationMatrix* columnRotation;
+      columnRotation = reg.add(new G4RotationMatrix(ptmStand->columnRotations().at(columnCopyNum))); // TODO do this differently
+      VolumeInfo columnInfo;
+      columnInfo.name = columnExtrusionName + std::to_string(columnCopyNum);
+      columnInfo.logical = columnLogical;
+      columnInfo.solid = columnSolid;
+      finishNesting(columnInfo,
+                    columnMaterial,
+                    columnRotation,
+                    columnPosition - parent.centerInMu2e(),
+                    parent.logical,
+                    columnCopyNum,
+                    visible, // visible
+                    G4Colour::Blue(),
+                    forceSolid, // forceSolid
+                    forceAuxEdgeVisible, // forceAuxEdgeVisible
+                    placePV,
+                    doSurfaceCheck,
+                    verbosity>0);
+      columnCopyNum++;
+
+    }
   }
 
 

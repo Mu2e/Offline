@@ -186,17 +186,15 @@ namespace mu2e {
     // TODO: once you have the right position for this, put it in the config file and have it be independent of the other things
     double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (0.5 * ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg));
     CLHEP::Hep3Vector wedgeOriginInMu2e = CLHEP::Hep3Vector(headVolumeOriginInMu2e.x(), wedgeY, headVolumeOriginInMu2e.z());
-    std::cout << "PTM WEDGE POSITION: " << std::endl;
-    std::cout << "wedge (" << wedgeOriginInMu2e.x() << ", " << wedgeOriginInMu2e.y() << ", " << wedgeOriginInMu2e.z() << ")" << std::endl;
     std::shared_ptr<ExtrudedSolid> topWedge(new ExtrudedSolid("PTMStandWedge", wedgeMaterialName, wedgeOriginInMu2e, 0.5*wedgeWidth, wedgeVertices));
     std::shared_ptr<Box> wedgeCutout(new Box(0.5*wedgeCutoutWidth, 0.5*wedgeMaxHeight, 0.5*wedgeCutoutLength));
 
     // build the support column that holds the wedge at the right height
-    std::shared_ptr<Box> supportColExtrusion(new Box(0.5*columnExtrusionWidth, 0.5*columnExtrusionWidth, 0.5*columnHeight));
+    std::shared_ptr<Box> supportColExtrusion(new Box(0.5*columnExtrusionWidth, 0.5*columnHeight, 0.5*columnExtrusionWidth));
     // the three extrusions are arranged around a triangular central space
     double columnY = wedgeOriginInMu2e.y() - 0.5*wedgeMaxHeight - 0.5*columnHeight;
     CLHEP::Hep3Vector columnLocalCenter = CLHEP::Hep3Vector(wedgeOriginInMu2e.x(), columnY, wedgeOriginInMu2e.z());
-    double distFromLocalCenter = 0.5*columnExtrusionWidth*tan(30*CLHEP::deg);
+    double distFromLocalCenter = columnExtrusionWidth*tan(30*CLHEP::deg); // was 0.5*this
     CLHEP::Hep3Vector columnExtrusionPos1 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter) + columnLocalCenter;
     CLHEP::Hep3Vector columnExtrusionPos2 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter);
     columnExtrusionPos2.rotateY(120.*CLHEP::deg);
@@ -208,6 +206,16 @@ namespace mu2e {
     columnPositions.push_back(columnExtrusionPos1);
     columnPositions.push_back(columnExtrusionPos2);
     columnPositions.push_back(columnExtrusionPos3);
+    // rotations of the columns, so they're all "facing" the center
+    CLHEP::HepRotation columnRotation1 = CLHEP::HepRotation();
+    CLHEP::HepRotation columnRotation2 = CLHEP::HepRotation();
+    columnRotation2.rotateY(120*CLHEP::deg);
+    CLHEP::HepRotation columnRotation3 = CLHEP::HepRotation();
+    columnRotation3.rotateY(240*CLHEP::deg);
+    std::vector<CLHEP::HepRotation> columnRotations;
+    columnRotations.push_back(columnRotation1);
+    columnRotations.push_back(columnRotation2);
+    columnRotations.push_back(columnRotation3);
 
 
 
@@ -217,6 +225,7 @@ namespace mu2e {
           wedgeCutoutRelRotation,
           supportColExtrusion,
           columnPositions,
+          columnRotations,
           columnMaterialName,
           wedgeMaterialName));
     std::unique_ptr<PTM> ptmon(new PTM(originInMu2e, rotationInMu2e, ptmStand, ptmHead));
