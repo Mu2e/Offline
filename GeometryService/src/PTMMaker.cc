@@ -177,10 +177,11 @@ namespace mu2e {
     wedgeVertices.push_back(CLHEP::Hep2Vector(-0.5*wedgeLength, -0.5*wedgeMaxHeight));
     // bottom right
     wedgeVertices.push_back(CLHEP::Hep2Vector(0.5*wedgeLength, -0.5*wedgeMaxHeight));
-    // top left
-    wedgeVertices.push_back(CLHEP::Hep2Vector(-0.5*wedgeLength, 0.5*wedgeMaxHeight));
     // top right
     wedgeVertices.push_back(CLHEP::Hep2Vector(0.5*wedgeLength, wedgeMinHeight-(0.5*wedgeMaxHeight)));
+    // top left
+    wedgeVertices.push_back(CLHEP::Hep2Vector(-0.5*wedgeLength, 0.5*wedgeMaxHeight));
+    
     // position of wedge is right under the "head"
     // TODO: once you have the right position for this, put it in the config file and have it be independent of the other things
     double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (0.5 * ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg));
