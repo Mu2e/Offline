@@ -55,7 +55,7 @@ int
 main(int argc, char* argv[])
 {
   mu2eBanner();
-  p = artapp(argc, argv);
+  p = artapp(argc, argv, false);
   mf::EndMessageFacility();
   return p.exitcode();
 }
