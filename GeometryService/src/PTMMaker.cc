@@ -194,7 +194,7 @@ namespace mu2e {
     // the three extrusions are arranged around a triangular central space
     double columnY = wedgeOriginInMu2e.y() - 0.5*wedgeMaxHeight - 0.5*columnHeight;
     CLHEP::Hep3Vector columnLocalCenter = CLHEP::Hep3Vector(wedgeOriginInMu2e.x(), columnY, wedgeOriginInMu2e.z());
-    double distFromLocalCenter = columnExtrusionWidth*tan(30*CLHEP::deg); // was 0.5*this
+    double distFromLocalCenter = 0.5*columnExtrusionWidth*tan(30*CLHEP::deg) + 0.5*columnExtrusionWidth;
     CLHEP::Hep3Vector columnExtrusionPos1 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter) + columnLocalCenter;
     CLHEP::Hep3Vector columnExtrusionPos2 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter);
     columnExtrusionPos2.rotateY(120.*CLHEP::deg);
@@ -209,9 +209,9 @@ namespace mu2e {
     // rotations of the columns, so they're all "facing" the center
     CLHEP::HepRotation columnRotation1 = CLHEP::HepRotation();
     CLHEP::HepRotation columnRotation2 = CLHEP::HepRotation();
-    columnRotation2.rotateY(120*CLHEP::deg);
+    columnRotation2.rotateY(60*CLHEP::deg); // was 120
     CLHEP::HepRotation columnRotation3 = CLHEP::HepRotation();
-    columnRotation3.rotateY(240*CLHEP::deg);
+    columnRotation3.rotateY(-60*CLHEP::deg); // was 240
     std::vector<CLHEP::HepRotation> columnRotations;
     columnRotations.push_back(columnRotation1);
     columnRotations.push_back(columnRotation2);
