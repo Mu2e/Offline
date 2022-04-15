@@ -14,6 +14,8 @@
 //    - bfgeam_DS50_reco_v01.txt ( DS field reduced to 50% and only maps needed for reconstrucion ) 
 //
 
+bool hasBFieldManager   = true;
+
 // Form of DS field: 0 is full field;
 //                   1 is full upstream, const downstream;
 //                   2 is const throughout
