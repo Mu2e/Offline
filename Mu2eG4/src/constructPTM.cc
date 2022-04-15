@@ -609,7 +609,7 @@ namespace mu2e {
                                            G4ThreeVector(-1*ptmHead->handleBase()->getXhalfLength(), ptmHead->handleBase()->getYhalfLength(), 0.0));
     std::string handleName = "PTMHandle";
     G4Material *handleMaterial = findMaterialOrThrow(ptmHead->handleMaterialName());
-    G4ThreeVector handlePosition = G4ThreeVector(0.0, short3Y+shortExtrusion->getYhalfLength()+ptmHead->handleBase()->getYhalfLength(), shortBarZ+shortExtrusion->getXhalfLength());
+    G4ThreeVector handlePosition = G4ThreeVector(0.0, short3Y-shortExtrusion->getYhalfLength()+ptmHead->handleBase()->getYhalfLength(), shortBarZ+shortExtrusion->getXhalfLength());
 
 
     VolumeInfo handleInfo;
@@ -652,13 +652,20 @@ namespace mu2e {
                      1,
                      G4TwoVector(0.0, 0.0),
                      1);
-    G4Box *cutout = new G4Box("PTMWedgeCutout", ptmStand->wedgeCutout()->getXhalfLength(), ptmStand->wedgeCutout()->getYhalfLength(), ptmStand->wedgeCutout()->getZhalfLength());
+    //G4Box *cutout = new G4Box("PTMWedgeCutout", ptmStand->wedgeCutout()->getXhalfLength(), ptmStand->wedgeCutout()->getYhalfLength(), ptmStand->wedgeCutout()->getZhalfLength());
+    G4EllipticalTube *cutout = new G4EllipticalTube("PTMWedgeCutout",
+                ptmStand->wedgeCutoutSemiMinor(),
+                ptmStand->wedgeCutoutSemiMajor(),
+                ptmStand->topWedge()->getYhalfThickness()); // overkill, but will do the job
     G4RotationMatrix* wedgeRotation;
     wedgeRotation = reg.add(new G4RotationMatrix());
     wedgeRotation->rotateY(-90*CLHEP::deg); // so the long side points along z
+    G4RotationMatrix* cutoutRotation;
+    cutoutRotation = reg.add(new G4RotationMatrix());
+    cutoutRotation->rotateX(90*CLHEP::deg); // so the long side points along z
     VolumeInfo wedgeInfo;
     wedgeInfo.name = "PTMStandTopWedge";
-    wedgeInfo.solid = new G4SubtractionSolid("PTMStandTopWedge", outerWedge, cutout, 0, G4ThreeVector(ptmStand->wedgeCutoutRelPosition()));
+    wedgeInfo.solid = new G4SubtractionSolid("PTMStandTopWedge", outerWedge, cutout, cutoutRotation, G4ThreeVector(ptmStand->wedgeCutoutRelPosition()));
     finishNesting(wedgeInfo,
                   wedgeMaterial,
                   wedgeRotation,

@@ -7,7 +7,8 @@
 
 namespace mu2e{
   PTMStand::PTMStand(std::shared_ptr<ExtrudedSolid> topWedge,
-          std::shared_ptr<Box> wedgeCutout,
+          double wedgeCutoutSemiMajor,
+          double wedgeCutoutSemiMinor,
           CLHEP::Hep3Vector wedgeCutoutRelPosition,
           CLHEP::HepRotation wedgeCutoutRelRotation,
           std::shared_ptr<Box> columnExtrusion,
@@ -16,7 +17,8 @@ namespace mu2e{
           std::string columnMaterialName,
           std::string wedgeMaterialName)
           : _topWedge(topWedge),
-            _wedgeCutout(wedgeCutout),
+            _wedgeCutoutSemiMajor(wedgeCutoutSemiMajor),
+            _wedgeCutoutSemiMinor(wedgeCutoutSemiMinor),
             _wedgeCutoutRelPosition(wedgeCutoutRelPosition),
             _wedgeCutoutRelRotation(wedgeCutoutRelRotation),
             _columnExtrusion(columnExtrusion),

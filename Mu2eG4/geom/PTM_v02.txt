@@ -11,6 +11,15 @@ bool PTM.visible = true;
 bool PTM.solid = true;
 
 //
+// values related to the main overall volume in G4
+//
+double PTM.rotY = 166.274;
+double PTM.rotX = 0;
+double PTM.positionX = 2161.762; // TODO: replace with full-system position
+double PTM.positionY = 0.25; // TODO: replace with full-system position
+double PTM.positionZ = -13281.339; // TODO: replace with full-system position
+
+//
 // Values related to the PWC's:
 //
 
@@ -50,12 +59,11 @@ string PTM.frameMaterial = "G10";
 
 double PTM.head.rotY = 166.274;
 double PTM.head.rotX = -2.272; // degree, was -2.27
-double PTM.rotY = 166.274; // TODO: replace with full-system position
-double PTM.rotX = 0; // TODO: replace with full-system position
+
 
 // mother and container volumes slightly larger than the
 // detectors themselves
-double PTM.motherMargin = 2.0;
+double PTM.motherMargin = 0.5;
 double PTM.containerMargin = 0.005;
 
 // position of UPSTREAM END of detectors: (2280, 251.9, -12796) in Mu2e coords
@@ -66,9 +74,7 @@ double PTM.containerMargin = 0.005;
 double PTM.head.positionX = 2161.74;
 double PTM.head.positionY = 393.034;
 double PTM.head.positionZ = -13276.9;
-double PTM.positionX = 2161.762; // TODO: replace with full-system position
-double PTM.positionY = 0.25; // TODO: replace with full-system position
-double PTM.positionZ = -13281.339; // TODO: replace with full-system position
+
 
 double PTM.bracketHeight = 33.77;
 double PTM.bracketWidth = 76.14;
@@ -129,7 +135,8 @@ double PTM.wedge.cutoutWidth = 146.051;
 //double PTM.wedge.cutoutPositionZ = 244.48; // from z=0 at middle of wedge
 //double PTM.wedge.cutoutPositionX = -79.05; // from x=0 at middle of wedge
 double PTM.wedge.cutoutPositionX = -244.48; // from x=0 at middle of wedge; G4ExtrudedSolid has the "parallel" sides go in the z direction
-double PTM.wedge.cutoutPositionZ = -79.1; // from z=0 at middle of wedge, actual position -79.05; added the 0.05 to compensate for added length
+//double PTM.wedge.cutoutPositionZ = -79.1; // from z=0 at middle of wedge, actual position -79.05; added the 0.05 to compensate for added length
+double PTM.wedge.cutoutPositionZ = -177.8;
 double PTM.wedge.cutoutRelRotY = 90.0; //degrees
 
 
