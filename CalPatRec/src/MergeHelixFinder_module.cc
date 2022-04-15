@@ -12,7 +12,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"

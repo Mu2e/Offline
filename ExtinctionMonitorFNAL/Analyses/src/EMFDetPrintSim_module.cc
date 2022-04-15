@@ -4,7 +4,6 @@
 
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
 

@@ -9,7 +9,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include <iostream>
 

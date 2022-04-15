@@ -2,7 +2,6 @@
 // An EDAnalyzer module that reads back the hits created by the calorimeter and produces an ntuple
 //
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
