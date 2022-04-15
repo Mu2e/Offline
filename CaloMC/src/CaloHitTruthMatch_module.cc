@@ -2,7 +2,6 @@
 // An EDProducer Module to match caloHits to MC info
 //
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"

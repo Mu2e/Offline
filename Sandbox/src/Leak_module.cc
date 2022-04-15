@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "cetlib_except/exception.h"
 
