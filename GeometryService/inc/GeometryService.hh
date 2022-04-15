@@ -51,8 +51,8 @@ public:
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<std::string> inputFile{Name("inputFile"),""};
-      fhicl::Atom<std::string> bFieldFile{Name("bFieldFile"),""};
+      fhicl::Atom<std::string> inputFile{Name("inputFile")};
+      fhicl::Atom<std::string> bFieldFile{Name("bFieldFile")};
       fhicl::Atom<bool>   allowReplacement{Name("allowReplacement"),true};
       fhicl::Atom<bool>   messageOnReplacement{Name("messageOnReplacement"),false};
       fhicl::Atom<bool>   messageOnDefault{Name("messageOnDefault"),false};
