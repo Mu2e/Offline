@@ -17,7 +17,7 @@
 
 namespace mu2e {
 
-    class TrackerStatus : public ProditionsEntity {
+  class TrackerStatus : public ProditionsEntity {
     public:
 
       typedef std::shared_ptr<TrackerStatus> ptr_t;
@@ -36,6 +36,7 @@ namespace mu2e {
       void print( std::ostream& ) const override;
       // convenience operators for some common situations
       bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no signal from this straw
+      bool noisy(StrawId const& sid) const;  // This straw sometimes produces a valid signal, but not always
       bool suppress(StrawId const& sid) const;  // This straw may produce a signal, but it should be suppressed as it is inaccurate
       bool noMaterial(StrawId const& sid) const;  // straw doesn't contribute to scattering or energy loss
 

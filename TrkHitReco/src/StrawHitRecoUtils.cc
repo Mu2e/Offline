@@ -69,7 +69,9 @@ namespace mu2e {
     // flag digis that shouldn't be here or we don't want
     mu2e::StrawHitFlag flag;
     if (trackerStatus.noSignal(sid) || trackerStatus.suppress(sid)) {
-      flag.merge(mu2e::StrawHitFlag::dead);
+      flag.merge(mu2e::StrawHitFlag::dead); // hits from these straws will not be used in track reconstruction
+    } else if ( trackerStatus.suppress(sid)) {
+      flag.merge(mu2e::StrawHitFlag::noisy); // these hits may be used in track reconstruction but not pattern recognition
     }
 
     // start by reconstructing the times
