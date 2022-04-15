@@ -94,18 +94,18 @@ using namespace std;
 
 namespace mu2e {
 
-  GeometryService::GeometryService(fhicl::ParameterSet const& pset,
-                                   art::ActivityRegistry&iRegistry) :
-    _inputfile(            pset.get<std::string> ("inputFile",            "geom000.txt")),
-    _allowReplacement(     pset.get<bool>        ("allowReplacement",     true)),
-    _messageOnReplacement( pset.get<bool>        ("messageOnReplacement", false)),
-    _messageOnDefault(     pset.get<bool>        ("messageOnDefault",     false)),
-    _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
-    _printConfig(          pset.get<bool>        ("printConfig",          false)),
-    _printTopLevel(        pset.get<bool>        ("printConfigTopLevel",  false)),
+  GeometryService::GeometryService( const Parameters& pars,
+                                    art::ActivityRegistry&iRegistry) :
+    _inputfile(            pars().inputFile()),
+    _allowReplacement(     pars().allowReplacement()),
+    _messageOnReplacement( pars().messageOnReplacement()),
+    _messageOnDefault(     pars().messageOnDefault()),
+    _configStatsVerbosity( pars().configStatsVerbosity()),
+    _printConfig(          pars().printConfig()),
+    _printTopLevel(        pars().printConfigTopLevel()),
     _config(nullptr),
-    _pset   (pset),
-    standardMu2eDetector_( _pset.get<std::string>("simulatedDetector.tool_type") == "Mu2e"),
+    _simulatedDetector(    pars.get_PSet().get<fhicl::ParameterSet>("simulatedDetector")),
+    _standardMu2eDetector( _simulatedDetector.get<std::string>("tool_type") == "Mu2e"),
     _detectors(),
     _run_count()
   {
