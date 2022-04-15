@@ -16,9 +16,7 @@
 
 // TODO: ADD THE FOLLOWING:
 // - aluminum base that splays out from the center column
-// - center column that keeps it at the right height
 // - support blocks on the center column
-// - top wedge that keeps the detectors at the right angle
 
 namespace mu2e {
 
@@ -26,7 +24,8 @@ namespace mu2e {
 
   public:
     PTMStand(std::shared_ptr<ExtrudedSolid> topWedge,
-          std::shared_ptr<Box> wedgeCutout,
+          double wedgeCutoutSemiMajor,
+          double wedgeCutoutSemiMinor,
           CLHEP::Hep3Vector wedgeCutoutRelPosition,
           CLHEP::HepRotation wedgeCutoutRelRotation,
           std::shared_ptr<Box> columnExtrusion,
@@ -37,7 +36,8 @@ namespace mu2e {
     PTMStand() {}
 
     const ExtrudedSolid* topWedge() const { return _topWedge.get(); }
-    const Box* wedgeCutout() const { return _wedgeCutout.get(); }
+    double wedgeCutoutSemiMajor() const { return _wedgeCutoutSemiMajor; }
+    double wedgeCutoutSemiMinor() const { return _wedgeCutoutSemiMinor; }
     CLHEP::Hep3Vector const & wedgeCutoutRelPosition() const { return _wedgeCutoutRelPosition; }
     CLHEP::HepRotation const & wedgeCutoutRelRotation() const { return _wedgeCutoutRelRotation; }
     const Box* columnExtrusion() const {return _columnExtrusion.get(); }
@@ -51,7 +51,8 @@ namespace mu2e {
 
   private:
     std::shared_ptr<ExtrudedSolid> _topWedge; // contains its own origin in Mu2e and material name
-    std::shared_ptr<Box> _wedgeCutout;
+    double _wedgeCutoutSemiMajor;
+    double _wedgeCutoutSemiMinor;
     CLHEP::Hep3Vector _wedgeCutoutRelPosition;
     CLHEP::HepRotation _wedgeCutoutRelRotation;
     std::shared_ptr<Box> _columnExtrusion;

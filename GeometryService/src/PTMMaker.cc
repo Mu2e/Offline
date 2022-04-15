@@ -187,7 +187,6 @@ namespace mu2e {
     double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (0.5 * ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg));
     CLHEP::Hep3Vector wedgeOriginInMu2e = CLHEP::Hep3Vector(headVolumeOriginInMu2e.x(), wedgeY, headVolumeOriginInMu2e.z());
     std::shared_ptr<ExtrudedSolid> topWedge(new ExtrudedSolid("PTMStandWedge", wedgeMaterialName, wedgeOriginInMu2e, 0.5*wedgeWidth, wedgeVertices));
-    std::shared_ptr<Box> wedgeCutout(new Box(0.5*wedgeCutoutWidth, 0.5*wedgeMaxHeight, 0.5*wedgeCutoutLength));
 
     // build the support column that holds the wedge at the right height
     std::shared_ptr<Box> supportColExtrusion(new Box(0.5*columnExtrusionWidth, 0.5*columnHeight, 0.5*columnExtrusionWidth));
@@ -220,7 +219,8 @@ namespace mu2e {
 
 
     std::shared_ptr<PTMStand> ptmStand(new PTMStand(topWedge,
-          wedgeCutout,
+          wedgeCutoutLength,
+          0.5*wedgeCutoutWidth,
           wedgeCutoutRelPosition,
           wedgeCutoutRelRotation,
           supportColExtrusion,
