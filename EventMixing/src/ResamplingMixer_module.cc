@@ -4,7 +4,6 @@
 // Andrei Gaponenko, 2018
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Modules/MixFilter.h"
 #include "art_root_io/RootIOPolicy.h"

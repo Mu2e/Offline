@@ -10,7 +10,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileDirectory.h"
 
 // From the art tool-chain

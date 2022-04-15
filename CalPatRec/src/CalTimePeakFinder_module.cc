@@ -13,7 +13,6 @@
 
 // framework
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 

@@ -9,7 +9,6 @@
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"

@@ -13,7 +13,6 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Sequence.h"
