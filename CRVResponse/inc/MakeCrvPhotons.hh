@@ -100,7 +100,7 @@ class MakeCrvPhotons
 
     const std::string         &GetFileName() const {return _fileName;}
 
-    void                      LoadLookupTable(const std::string &filename);
+  void                      LoadLookupTable(const std::string &filename, int debug);
     void                      MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
                                       const CLHEP::Hep3Vector &stepEnd,         //local to the CRV bar
                                       double timeStart, double timeEnd,

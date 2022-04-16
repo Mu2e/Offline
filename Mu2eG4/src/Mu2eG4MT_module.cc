@@ -24,6 +24,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4MTRunManager.hh"
+#include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 
 // Data products that will be produced by this module.
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -38,7 +39,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/SharedProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Utilities/Globals.h"
@@ -183,7 +183,9 @@ namespace mu2e {
       // and that the data member members are used in a thread-safe manner
       async<art::InEvent>();
 
-      G4cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  G4endl;
+      if (num_schedules>1) {
+	G4cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
+      }
     } // end Mu2eG4MT constructor
 
 
@@ -210,8 +212,12 @@ namespace mu2e {
       }
     }
 
-    if ( ncalls == 1 && _exportPDTStart) {
-      exportG4PDT( "Start:" );//once per job
+    // Some end-of-begin run things that need to be done only once per job.
+    if ( ncalls == 1 ){
+      validGeometryOrThrow( _rmvlevel );
+      if ( _exportPDTStart) {
+        exportG4PDT( "Start:" );
+      }
     }
 
   }//Mu2eG4MT::beginRun
@@ -285,7 +291,7 @@ namespace mu2e {
       access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(conf_, ioconf_, tid);
     }
 
-    if (event.id().event() == 1) {
+    if (event.id().event() == 1 && _mtDebugOutput > 0) {
       G4cout << "Our RMmap has " << myworkerRunManagerMap.size() << " members\n";
     }
 
@@ -393,13 +399,15 @@ namespace mu2e {
     WorkerRMMap::iterator it = myworkerRunManagerMap.begin();
     while (it != myworkerRunManagerMap.end()) {
       if (_mtDebugOutput > 0){
-        std::cout << "releasing RM for thread ID" << it->first << std::endl;
+        G4cout << "releasing RM for thread ID" << it->first << std::endl;
       }
       it->second.release();
       ++it;
     }
 
-    G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    if ( _rmvlevel > 0 ) {
+      G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    }
     myworkerRunManagerMap.clear();
     masterThread->endRun();
   }

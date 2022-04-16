@@ -12,7 +12,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "cetlib_except/exception.h"
@@ -28,8 +27,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 // utiliities
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -104,12 +101,12 @@ namespace mu2e {
 	  fhicl::Atom<float> ctMinCharge{ Name("xtalkMinimumCharge"), Comment("minimum charge to add cross talk (for performance issues)") ,0};
 	  fhicl::Atom<bool> addNoise{ Name("addNoise"), Comment("should we add noise hits? NOT CURRENTLY IMPLEMENTED FIXME!"),false };
 	  fhicl::Atom<float> preampxtalk{ Name("preAmplificationCrossTalk"), Comment("Pre-amplification (straw) X-talk coupling"), 0.0 };
-	  fhicl::Atom<float> postampxtalk{ Name("postAmplificationCrossTalk"), Comment("Post-amplification (board) X-talk coupling") ,0.02}; 
-	  fhicl::Atom<float> minstepE{ Name("minstepE"), Comment(" minimum step energy depostion to turn into a straw signal (MeV)"),2.0e-6 }; 
+	  fhicl::Atom<float> postampxtalk{ Name("postAmplificationCrossTalk"), Comment("Post-amplification (board) X-talk coupling") ,0.02};
+	  fhicl::Atom<float> minstepE{ Name("minstepE"), Comment(" minimum step energy depostion to turn into a straw signal (MeV)"),2.0e-6 };
 	  fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
           fhicl::Atom<art::InputTag> pbtmcTag{ Name("ProtonBunchTimeMC"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
-	  fhicl::Atom<float> steptimebuf{ Name("StrawGasStepTimeBuffer"), Comment("buffer for MC step point times (nsec) ") ,100.0 }; 
-	  fhicl::Atom<float> flashBuffer{ Name("FlashTimeBuffer"), Comment("buffer for flash blanking times (nsec) ") ,10.0 }; 
+	  fhicl::Atom<float> steptimebuf{ Name("StrawGasStepTimeBuffer"), Comment("buffer for MC step point times (nsec) ") ,100.0 };
+	  fhicl::Atom<float> flashBuffer{ Name("FlashTimeBuffer"), Comment("buffer for flash blanking times (nsec) ") ,10.0 };
 	  fhicl::Atom<float> tdcbuf{ Name("TDCTimeBuffer"), Comment("buffer for TDC jitter (nsec) ") ,2.0 };
 	  fhicl::Atom<uint16_t> allStraw{ Name("AllHitsStraw"), Comment("minimum straw # to read all hits") ,90};
 	  fhicl::Sequence<uint16_t> allPlanes{ Name("AllHitsPlanes"), Comment("planes to read all hits"), std::vector<uint16_t>{} };
@@ -150,19 +147,19 @@ namespace mu2e {
 	double _ctMinCharge;
 	bool   _addNoise;
 	double _preampxtalk, _postampxtalk;// these should come from conditions, FIXME!!
-	double _minstepE; 
-	art::InputTag _ewMarkerTag; 
-	art::InputTag _pbtmcTag; 
-	double _mbtime; 
-	double _mbbuffer; 
+	double _minstepE;
+	art::InputTag _ewMarkerTag;
+	art::InputTag _pbtmcTag;
+	double _mbtime;
+	double _mbbuffer;
 	double _flashbuffer;
-	double _adcbuffer; 
-	double _steptimebuf; 
-	double _tdcbuf; 
-	uint16_t _allStraw; 
+	double _adcbuffer;
+	double _steptimebuf;
+	double _tdcbuf;
+	uint16_t _allStraw;
 	std::vector<uint16_t> _allPlanes;
 	unsigned _maxnclu;
-	StrawElectronics::Path _diagpath; 
+	StrawElectronics::Path _diagpath;
 	// Random number distributions
 	art::RandomNumberGenerator::base_engine_t& _engine;
 	CLHEP::RandGaussQ _randgauss;
@@ -230,7 +227,7 @@ namespace mu2e {
 	void divideStep(StrawPhysics const& strawphys,
 	    StrawElectronics const& strawele,
 	    Straw const& straw,
-	    StrawGasStep const& step, 
+	    StrawGasStep const& step,
 	    vector<IonCluster>& clusters);
 	void driftCluster(StrawPhysics const& strawphys, Straw const& straw,
 	    IonCluster const& cluster, WireCharge& wireq);
@@ -615,66 +612,68 @@ namespace mu2e {
     }
 
     void StrawDigisFromStrawGasSteps::divideStep(StrawPhysics const& strawphys,
-	StrawElectronics const& strawele,
-	Straw const& straw,
-	StrawGasStep const& sgs,
-	vector<IonCluster>& clusters) {
+        StrawElectronics const& strawele,
+        Straw const& straw,
+        StrawGasStep const& sgs,
+        vector<IonCluster>& clusters) {
       // single cluster
       if (sgs.stepType().shape() == StrawGasStep::StepType::point || sgs.stepLength() < strawphys.meanFreePath()){
-	float cen = sgs.ionizingEdep();
-	float fne = cen/strawphys.meanElectronEnergy();
-	unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
-	auto spos = strawPosition(sgs.startPosition(),straw);
-	if(_drift1e){
-	  for (size_t i=0;i<ne;i++){
-	    IonCluster cluster(spos,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1);
-	    clusters.push_back(cluster);
-	  }
-	} else {
-	  IonCluster cluster(spos,strawphys.ionizationCharge(ne),cen,ne);
-	  clusters.push_back(cluster);
-	}
+        float cen = sgs.ionizingEdep();
+        float fne = cen/strawphys.meanElectronEnergy();
+        unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
+        auto spos = strawPosition(sgs.startPosition(),straw);
+        if(_drift1e){
+          for (size_t i=0;i<ne;i++){
+            IonCluster cluster(spos,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1);
+            clusters.push_back(cluster);
+          }
+        } else {
+          IonCluster cluster(spos,strawphys.ionizationCharge(ne),cen,ne);
+          clusters.push_back(cluster);
+        }
       } else {
-	// compute the number of clusters for this step from the mean free path
-	double fnc = sgs.stepLength()/strawphys.meanFreePath();
-	// use a truncated Poisson distribution; this keeps both the mean and variance physical
-	unsigned nc = std::max(static_cast<unsigned>(_randP.fire(fnc)),(unsigned)1);
-	// if not minion, limit the number of steps geometrically
-	bool minion = (sgs.stepType().ionization()==StrawGasStep::StepType::minion);
-	if(!minion )nc = std::min(nc,_maxnclu);
-	// require clusters not exceed the energy sum required for single-electron clusters
-	nc = std::min(nc,static_cast<unsigned>(floor(sgs.ionizingEdep()/strawphys.ionizationEnergy((unsigned)1))));
-	// generate random positions for the clusters
-	std::vector<StrawPosition> cposv(nc);
-	fillClusterPositions(sgs,straw,cposv);
-	// generate electron counts and energies for these clusters: minion model is more detailed
-	std::vector<unsigned> ne(nc);
-	std::vector<float> cen(nc);
-	if(minion){
-	  fillClusterMinion(strawphys,sgs,ne,cen);
-	} else {
-	  // get Poisson distribution of # of electrons for the average energy
-	  double fne = sgs.ionizingEdep()/(nc*strawphys.meanElectronEnergy()); // average # of electrons/cluster for non-minion clusters
-	  for(unsigned ic=0;ic<nc;++ic){
-	    ne[ic] = static_cast<unsigned>(std::max(_randP.fire(fne),(long)1));
-	    cen[ic] = ne[ic]*strawphys.meanElectronEnergy(); // average energy per electron, works for large numbers of electrons
-	  }
-	}
-	// create the cluster objects
-	for(unsigned ic=0;ic<nc;++ic){
-	  // compute phi for this cluster
-	  float ee = cen[ic]/(float)ne[ic];
-	  // let each electron drift separately (RBonvtre)
-	  if(_drift1e || minion){
-	    for (size_t ie=0;ie<ne[ic];ie++){
-	      IonCluster cluster(cposv[ic],strawphys.ionizationCharge((unsigned)1),ee,1);
-	      clusters.push_back(cluster);
-	    }
-	  } else {
-	    IonCluster cluster(cposv[ic],strawphys.ionizationCharge(ne[ic]),cen[ic],ne[ic]);
-	    clusters.push_back(cluster);
-	  }
-	}
+        // compute the number of clusters for this step from the mean free path
+        double fnc = sgs.stepLength()/strawphys.meanFreePath();
+        // use a truncated Poisson distribution; this keeps both the mean and variance physical
+        unsigned nc = std::max(static_cast<unsigned>(_randP.fire(fnc)),(unsigned)1);
+        // if not minion, limit the number of steps geometrically
+        bool minion = (sgs.stepType().ionization()==StrawGasStep::StepType::minion);
+        if(!minion )nc = std::min(nc,_maxnclu);
+        // require clusters not exceed the energy sum required for single-electron clusters
+        nc = std::min(nc,static_cast<unsigned>(floor(sgs.ionizingEdep()/strawphys.ionizationEnergy((unsigned)1))));
+        if(nc>0){
+          // generate random positions for the clusters
+          std::vector<StrawPosition> cposv(nc);
+          fillClusterPositions(sgs,straw,cposv);
+          // generate electron counts and energies for these clusters: minion model is more detailed
+          std::vector<unsigned> ne(nc);
+          std::vector<float> cen(nc);
+          if(minion){
+            fillClusterMinion(strawphys,sgs,ne,cen);
+          } else {
+            // get Poisson distribution of # of electrons for the average energy
+            double fne = sgs.ionizingEdep()/(nc*strawphys.meanElectronEnergy()); // average # of electrons/cluster for non-minion clusters
+            for(unsigned ic=0;ic<nc;++ic){
+              ne[ic] = static_cast<unsigned>(std::max(_randP.fire(fne),(long)1));
+              cen[ic] = ne[ic]*strawphys.meanElectronEnergy(); // average energy per electron, works for large numbers of electrons
+            }
+          }
+          // create the cluster objects
+          for(unsigned ic=0;ic<nc;++ic){
+            // compute phi for this cluster
+            float ee = cen[ic]/(float)ne[ic];
+            // let each electron drift separately (RBonvtre)
+            if(_drift1e || minion){
+              for (size_t ie=0;ie<ne[ic];ie++){
+                IonCluster cluster(cposv[ic],strawphys.ionizationCharge((unsigned)1),ee,1);
+                clusters.push_back(cluster);
+              }
+            } else {
+              IonCluster cluster(cposv[ic],strawphys.ionizationCharge(ne[ic]),cen[ic],ne[ic]);
+              clusters.push_back(cluster);
+            }
+          }
+        }
       }
     }
 
@@ -736,7 +735,7 @@ namespace mu2e {
       double thresh[2] = {_randgauss.fire(strawele.threshold(swfp[0].straw().id(),static_cast<StrawEnd::End>(0))+strawnoise,strawele.analogNoise(StrawElectronics::thresh)),
 	_randgauss.fire(strawele.threshold(swfp[0].straw().id(),static_cast<StrawEnd::End>(1))+strawnoise,strawele.analogNoise(StrawElectronics::thresh))};
       // Initialize search when the electronics becomes enabled:
-      double tstart =strawele.digitizationStartFromMarker() - _flashbuffer; 
+      double tstart =strawele.digitizationStartFromMarker() - _flashbuffer;
       // for reading all hits, make sure we start looking for clusters at the minimum possible cluster time
       // this accounts for deadtime effects from previous microbunches
       if(readAll(swfp[0].straw().id()))tstart = -strawele.deadTimeAnalog();
@@ -856,7 +855,7 @@ namespace mu2e {
       double digitize_time = std::max(xtimes[0],xtimes[1]);
       if (digitize_time < digitization_ready_time)
         return false;
-      
+
       // uncalibrate
       strawele.uncalibrateTimes(xtimes,sid);
       // add ends and add noise
@@ -940,7 +939,7 @@ namespace mu2e {
       unsigned nc = ne.size();
       while(mc < nc){
 	std::vector<unsigned> me(nc);
-	// fill an array of random# of electrons according to the measured distribution. 
+	// fill an array of random# of electrons according to the measured distribution.
 	fillClusterNe(strawphys,me);
 	// loop through these as long as there's enough energy to have at least 1 electron in each cluster.  If not, re-throw the # of electrons/cluster for the remainder
 	for(auto ie : me) {
@@ -1129,7 +1128,7 @@ namespace mu2e {
 	_ddist[iend] = xpair[iend]._iclust->driftDistance();
 	_dtime[iend] = xpair[iend]._iclust->driftTime();
 	_ptime[iend] = xpair[iend]._iclust->propTime();
-	_phi[iend] = xpair[iend]._iclust->driftPhi(); 
+	_phi[iend] = xpair[iend]._iclust->driftPhi();
 	_wdist[iend] = xpair[iend]._iclust->wireDistance();
 	_vstart[iend] = xpair[iend]._vstart;
 	_vcross[iend] = xpair[iend]._vcross;
@@ -1180,14 +1179,14 @@ namespace mu2e {
       _mcthreshpdg = _mcthreshproc = _mcnstep = 0;
       auto const& sgsptr = mcdigi.earlyStrawGasStep();
       auto const& sgs = *sgsptr;
-      _mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle()) + _pbtimemc; 
+      _mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle()) + _pbtimemc;
       // compute the doca for this step
       TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
 	  GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
       _mcdca = pca.dca();
       auto spos = strawPosition(XYZVectorF(pca.point2()),straw);
-      _mcdcaphi = spos.Phi(); 
-      _mcdcadtime = strawphys.driftDistanceToTime(_mcdca,_mcdcaphi); 
+      _mcdcaphi = spos.Phi();
+      _mcdcadtime = strawphys.driftDistanceToTime(_mcdca,_mcdcaphi);
       _dmcmom = sqrt(sgs.momentum().mag2());
       auto const& sp = *sgs.simParticle();
       _dmcpdg = sp.pdgId();
@@ -1202,8 +1201,8 @@ namespace mu2e {
       _mcenergy = mcdigi.energySum();
       _mctrigenergy = mcdigi.triggerEnergySum(StrawEnd::cal);
       // sum the energy from the explicit trigger particle, and find it's releationship
-      _mcthreshenergy = 0.0; // FIXME! 
-      _mcnstep = 2;// FIXME! 
+      _mcthreshenergy = 0.0; // FIXME!
+      _mcnstep = 2;// FIXME!
       _xtalk = digi.strawId() != mcdigi.strawId();
       // fill the tree entry
       _sddiag->Fill();
@@ -1253,7 +1252,7 @@ namespace mu2e {
       if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
       XYZVectorF cdir = cos(cpos.Phi())*zdir + sin(cpos.Phi())*pdir; // cluster direction perp to wire
       XYZVectorF retval = smid + cpos.Z()*sdir + cpos.Rho()*cdir;
-      return retval; 
+      return retval;
     }
 
   } // end namespace trackermc

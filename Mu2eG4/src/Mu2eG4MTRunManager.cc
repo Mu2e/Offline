@@ -89,7 +89,9 @@ namespace mu2e {
 
     G4StateManager* stateManager = G4StateManager::GetStateManager();
     G4String currentState = stateManager->GetStateString(stateManager->GetCurrentState());
-    G4cout << "Current G4State is : " << currentState << G4endl;
+    if(rmvlevel_>0) {
+      G4cout << "Current G4State is : " << currentState << G4endl;
+    }
 
     if (GetCurrentRun()) {
       delete currentRun;
@@ -99,8 +101,10 @@ namespace mu2e {
       currentRun->SetRunID(art_runnumber);
     }
 
-    G4cout << "Art Run Number is: " << art_runnumber << G4endl;
-    G4cout << "Current Run is " << GetCurrentRun()->GetRunID() << G4endl;
+    if(rmvlevel_>0) {
+      G4cout << "Art Run Number is: " << art_runnumber << G4endl;
+      G4cout << "Current Run is " << GetCurrentRun()->GetRunID() << G4endl;
+    }
 
     currentRun->SetDCtable(DCtable);
     G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
@@ -213,7 +217,9 @@ namespace mu2e {
     masterRunAction_->MasterEndRunAction();
 
     if ((G4MTRunManager::GetMTMasterRunManagerKernel()!=nullptr) && !m_runTerminated) {
-      std::cerr << "CALLING RunTermination() from MTRunManager\n";
+      if(rmvlevel_>0) {
+	G4cerr << "CALLING RunTermination() from MTRunManager\n";
+      }
       G4RunManager::TerminateEventLoop();
       G4RunManager::RunTermination();
     }

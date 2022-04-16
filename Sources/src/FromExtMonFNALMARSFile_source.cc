@@ -27,7 +27,7 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 #include "Offline/SeedService/inc/SeedService.hh"
 //#include "CLHEP/Random/RandFlat.h"
@@ -174,7 +174,7 @@ namespace mu2e {
     art::SubRunID currentSubRunID_;
     std::set<art::SubRunID> seenSRIDs_;
 
-    GlobalConstantsHandle<ParticleDataTable> pdt_;
+    GlobalConstantsHandle<ParticleDataList> pdt_;
 
     std::string currentFileName_;
     std::ifstream currentFile_;
@@ -376,11 +376,7 @@ namespace mu2e {
   HelperEventEntry ExtMonFNALMARSDetail::marsToMu2eParticle(const MARSParticle& mp) {
     const int pdgId = marsToMu2eParticleCode(mp.pid);
 
-    //try {
-    const double mass = pdt_->particle(pdgId).ref().mass().value();
-    // }
-    //// ParticleDataTable throws a string?!
-    // catch(cet::exception& e) { throw; }
+    const double mass = pdt_->particle(pdgId).mass();
 
     const double energy = mass + marsToMu2eEnergy(mp.kineticEnergy);
     const double p3mag = sqrt((energy-mass)*(energy+mass));

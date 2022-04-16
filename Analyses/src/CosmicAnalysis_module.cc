@@ -16,7 +16,6 @@
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
-#include "HepPID/ParticleName.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
@@ -31,7 +30,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -471,7 +469,7 @@ namespace mu2e
             std::string productionVolumeName="unknown volume";
             if(hasPhysicalVolumes && physicalVolumesMulti.product()!=NULL)
             {
-              mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(*physicalVolumesMulti);
+              mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(physicalVolumesMulti.product());
               productionVolumeName=volumeMultiHelper.startVolume(*matchingSimparticle).name();
             }
             strncpy(_eventinfo.simreco_production_volume, productionVolumeName.c_str(),99);

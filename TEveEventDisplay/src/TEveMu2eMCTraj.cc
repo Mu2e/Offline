@@ -17,7 +17,7 @@ namespace mu2e{
   void TEveMu2eMCTraj::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *HitList)
   {
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    hep3vectorTocm(pointInMu2e);
+    hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z()); 
     this->SetMarkerColor(kBlue);
     this->SetMarkerSize(2);
@@ -31,8 +31,8 @@ namespace mu2e{
     
     this->SetTitle((DataTitle(pstr, -1)).c_str());
    
-    hep3vectorTocm(Start);
-    hep3vectorTocm(End);
+    hep3vectormmTocm(Start);
+    hep3vectormmTocm(End);
     TEveLine *line = new TEveLine();
  
     line->SetPoint(0, Start.x(), Start.y(), Start.z()); 
@@ -52,8 +52,8 @@ namespace mu2e{
     std::cout<<"Drawing Line"<<std::endl;
     this->SetTitle((DataTitle(pstr, -1)).c_str());
    
-    hep3vectorTocm(Start);
-    hep3vectorTocm(End);
+    hep3vectormmTocm(Start);
+    hep3vectormmTocm(End);
     TEveLine *line = new TEveLine();
  
     line->SetPoint(0, Start.x(), Start.y(), Start.z()); 

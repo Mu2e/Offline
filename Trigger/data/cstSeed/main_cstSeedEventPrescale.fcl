@@ -1,2 +1,0 @@
-physics.filters.cstSeedEventPrescale.nPrescale    : 1
-physics.filters.cstSeedEventPrescale.triggerFlag  : ["PrescaleRandom"]

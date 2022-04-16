@@ -24,8 +24,10 @@ namespace mu2e {
 
                                             // The center of the downstream surface of the PS
                                             const CLHEP::Hep3Vector& psEndRefPoint);
-  };
+  private:
+    static void readWindow(int i, const SimpleConfig& c, const CLHEP::Hep3Vector& winRefPoint, std::unique_ptr<PSEnclosure>& res);
 
+  };
 }  //namespace mu2e
 
 #endif /* ProductionSolenoidGeom_PSEnclosureMaker_hh */

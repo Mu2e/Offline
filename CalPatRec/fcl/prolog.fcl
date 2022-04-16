@@ -11,25 +11,25 @@
 #include "Offline/fcl/TrkCaloDt.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
-# there seems to be a circular dependence between MakeStrawHitPositions and 
+# there seems to be a circular dependence between MakeStrawHitPositions and
 # FlagStrawHits ... FlagBkgHits ?
 # MakeStrawHitPositions stores the hit flag in StrawHitPosition object
 # for that, an existing StrawHitFlagCollection is required
 #
-# in its turn, the FlagStrawHits module flags if the corresponding hit 
+# in its turn, the FlagStrawHits module flags if the corresponding hit
 # position 'stereo' and also sets radial selection flag
 # it also sets 'timesel' and 'energysel' flags
-# if, however, the StrawHitPosition doesnt exist, the 'stereo' and 'radsel' 
+# if, however, the StrawHitPosition doesnt exist, the 'stereo' and 'radsel'
 # flags are not set
 #
-# FlagBkgHits produces yet another hit flag collection, copying flags set by 
-# the OR of FlagStrawHits and flags stored in StrawHitPositions, and potentially adding 
+# FlagBkgHits produces yet another hit flag collection, copying flags set by
+# the OR of FlagStrawHits and flags stored in StrawHitPositions, and potentially adding
 # a 'delta' and 'isolated' flags
 # in principle, FlagBkgHits also uses StereoHitCollection, but that is not a must
 #
 # yes, there is a circular dependence between the data products.
 # Dave runs several instances of the hit flagging modules for a reason
-#------------------------------------------------------------------------------ 
+#------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 # new format
 #------------------------------------------------------------------------------
@@ -48,11 +48,9 @@ CalPatRec : { @table::CalPatRec
 	debugLevel2                             : 0
 	smartTag                                : 1
 	diagLevel                               : 0
-	HelixFitSelectionBits                   : [] 
+	HelixFitSelectionBits                   : []
 	BackgroundSelectionBits                 : ["Background"]
 	maxElectronHitEnergy                    : 0.005           # 5 KeV, in MeV
-	minimumTime                             : 500.    #ns
-	maximumTime                             : 2000.   #ns
 	minNHit                                 : @local::CalPatRec.minNStrawHits       # minimal number of hits on found helix
 	hitChi2Max                              : @local::CalPatRec.chi2HitCut
 	mostProbableDfDz                        : 0.00475
@@ -60,19 +58,19 @@ CalPatRec : { @table::CalPatRec
 #	minNActiveStationPairs                  : 10
 	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
-	minDfDz                                 : 0.002    
+	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
 	targetconsistent                        : 0
 	weightXY                                : 1.11      #0.4527
-	weightZPhi                              : 0.75      #0.15      #0.29      #0.4423    
+	weightZPhi                              : 0.75      #0.15      #0.29      #0.4423
 	weight3D                                : 0.12      #1
 	maxXDPhi                                : 5         #
 	maxPanelToHelixDPhi                     : 1.309     # 75 degrees
 	distPatRec                              : 100.      # mm
 	minDeltaNShPatRec                       : 2
 	mindist                                 : 500.      # mm
-	minP                                    :  50.      # 
-	maxP                                    : 150.      # 
+	minP                                    :  50.      #
+	maxP                                    : 150.      #
 	minAbsTanDip                            : 0.3
 	maxAbsTanDip                            : 2.0
 	xyWeights                               : false
@@ -82,14 +80,14 @@ CalPatRec : { @table::CalPatRec
 	usetarget                               : true
 	maxZTripletSearch                       : 2000.    # mm
 	nHitsMaxPerPanel                        : 1
-	chi2xyMax                               : 5.0    
-	chi2zphiMax                             : 5.0    
+	chi2xyMax                               : 5.0
+	chi2zphiMax                             : 5.0
 	chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
 	dfdzErr                                 : 0.1
 	minArea                                 : 5000.
     }
 #------------------------------------------------------------------------------
-# KalFitHack configuration for the KFF fits 
+# KalFitHack configuration for the KFF fits
 # I don't think it is used, CalTrkFit is using CPRKFFinal
 # first comment out, one month later - remove
 #------------------------------------------------------------------------------
@@ -101,7 +99,7 @@ CalPatRec : { @table::CalPatRec
 # 	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
 # 	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
 # 	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
-# 	# did Dave mean that? 
+# 	# did Dave mean that?
 # 	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
 # 	initT0					: true
 # 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
@@ -146,7 +144,7 @@ CalPatRec : { @table::CalPatRec
 	minnstraws                        : 10
 	maxhitchi                         : 5.0
 	maxDriftPull                      : 10.
-	minT0DOCA                         : -0.2               # 
+	minT0DOCA                         : -0.2               #
 	t0window                          : 2.5
 	MaxIterations                     : 3
 	fieldCorrection	      	          : false
@@ -163,18 +161,18 @@ CalPatRec : { @table::CalPatRec
 	ResolveAfterWeeding		  : false
 	AddMaterial			  : [ false, false ]
 	#  initT0			  : true
-	initT0   			  : false 
+	initT0   			  : false
 	useTrkCaloHit                     : false
 	updateT0			  : [ false, false, false, false, false, false, false, false, false ]
 	dtOffset                          : @local::TrackCaloMatching.DtOffset
 	strawHitT0Weight                  : 1
 	caloHitT0Weight                   : 10
-        caloHitError                    : 15.0 # mm 
-		
+        caloHitError                    : 15.0 # mm
+
 	DivergeFlt                        : 1000.            #  default: 1000.
         T0Calculator : @local::TimeCalculator
 #------------------------------------------------------------------------------
-#  parameters of KalContext 
+#  parameters of KalContext
 #------------------------------------------------------------------------------
 	MinNDOF                                 : 10
 #------------------------------------------------------------------------------
@@ -209,14 +207,14 @@ CalPatRec : { @table::CalPatRec
 	hiterr 		                        : [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
 	t0Tolerance			        : [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
 	# not used t0ErrorFactor                           : 1.2                # scale ?
-	minT0DOCA                               : -0.2               # 
+	minT0DOCA                               : -0.2               #
 	t0window                                : 2.5
 	dtOffset                                : @local::TrackCaloMatching.DtOffset
-	# did Dave mean that? 
+	# did Dave mean that?
 	useTrkCaloHit                           : true
 	strawHitT0Weight                        : 1
 	caloHitT0Weight                         : 10
-	caloHitError				: 15.0 # mm 
+	caloHitError				: 15.0 # mm
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
@@ -263,10 +261,10 @@ CalPatRec : { @table::CalPatRec
 	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
 	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
 	# not used t0ErrorFactor                           : 1.2                # scale ?
-	minT0DOCA                               : -0.2               # 
+	minT0DOCA                               : -0.2               #
 	t0window                                : 2.5
 	dtOffset                                : @local::TrackCaloMatching.DtOffset
-	# did Dave mean that? 
+	# did Dave mean that?
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	HitAmbigPenalty 			: false
@@ -297,17 +295,17 @@ CalPatRec : { @table::CalPatRec
 	deltaDriftDoublet                       : 0.3
 	maxDoubletChi2                          : 9
 	sigmaSlope                              : 0.025
-	caloHitError                            : 15.0 # mm 
+	caloHitError                            : 15.0 # mm
 	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 }
 #------------------------------------------------------------------------------
 #  module
 #------------------------------------------------------------------------------
-CalPatRec : { @table::CalPatRec 
+CalPatRec : { @table::CalPatRec
 
-    producers : { 
-	
+    producers : {
+
 	CalTrkFit          : {   module_type : KalFinalFit
 	    diagLevel                                   : 0
 	    debugLevel                                  : 0
@@ -328,13 +326,13 @@ CalPatRec : { @table::CalPatRec
 	    fitdirection                                : @local::FitDir.downstream
 	    KalFit                                      : { @table::CalPatRec.CprKFFinal }
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    diagPlugin : { tool_type  : "KalFinalFitDiag" 
+	    diagPlugin : { tool_type  : "KalFinalFitDiag"
 		mcTruth       : 0
 		mcUtils       : { @table::TrkReco.McUtils }
 	    }
 	}
-	
-	MergeHelixFinder : { module_type:MergeHelixFinder	
+
+	MergeHelixFinder : { module_type:MergeHelixFinder
 	    diagLevel                    : 0
 	    debugLevel                   : 0
 	    tprHelixCollTag    : "HelixFinderDe:Positive"
@@ -349,14 +347,14 @@ CalPatRec : { @table::CalPatRec
 	    # strawHitPositionCollectionTag : makePH                # input coll
 	    timePeakCollectionTag         : CalTimePeakFinder
 	    useTimePeaks                  : 1
-	                                                          # +/-70 to provide 100% efficiency for delta tagging + +/- 5 
+	                                                          # +/-70 to provide 100% efficiency for delta tagging + +/- 5
                                                                   # accounting for the drift time of a delta electron
 	    minCaloDt                     : -75.
 	    maxCaloDt                     :  75.
 	    particleMeanPitchAngle        : 0.67                  # mean pitch for CE
 	    strawDigiMCCollectionTag      : makeSD                # input coll
 	    minHitTime                    : 450.                  # ns
-	    minNFacesWithHits             : 2                     # 
+	    minNFacesWithHits             : 2                     #
 	    minNSeeds                     : 2                     #
 	    maxElectronHitEnergy          : 0.0200                # means: use all hits
 	    minimumTime                   : 500.                  # ns
@@ -377,11 +375,11 @@ CalPatRec : { @table::CalPatRec
 	    testOrder                     : 0
 	    debugLevel                    : 0
 	    diagLevel                     : 0
-	    diagPlugin : { tool_type : "DeltaFinderDiag" 
+	    diagPlugin : { tool_type : "DeltaFinderDiag"
 		stepPointMcCollTag        : makeSD
 		debugLevel                : 0
 		mcDiag                    : false
-		mcTruth                   : 0 
+		mcTruth                   : 0
 		printElectrons            : 0
 		printElectronsHits        : 0
 		printElectronsMinNHits    : 0
@@ -393,7 +391,7 @@ CalPatRec : { @table::CalPatRec
 		printOTracker             : 0                     #
 		printShcol                : 0                     #
 		testOrder                 : 0                     #
-		mcUtils                   : { tool_type : "TrkPatRecMcUtils" 
+		mcUtils                   : { tool_type : "TrkPatRecMcUtils"
 		    strawDigiMCCollTag : "compressDigiMCs"
 		}
 	    }
@@ -415,7 +413,7 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 # producers
 #------------------------------------------------------------------------------
-CalPatRec : { @table::CalPatRec 
+CalPatRec : { @table::CalPatRec
 
     producers : { @table::CalPatRec.producers
 
@@ -440,12 +438,12 @@ CalPatRec : { @table::CalPatRec
 
 #------------------------------------------------------------------------------
 # default configuration: DEM
-# CalPatRec, so far, has been validated only for e- 
+# CalPatRec, so far, has been validated only for e-
 #------------------------------------------------------------------------------
-	CalSeedFit : { module_type:KalSeedFit   
+	CalSeedFit : { module_type:KalSeedFit
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
-	    ComboHitCollection                          : makeSH			 
+	    ComboHitCollection                          : makeSH
 	    SeedCollection                              : "CalHelixFinder:Positive"
 	    MinNHits                                    : 10
 	    MaxDoca                                     : 40.
@@ -460,10 +458,10 @@ CalPatRec : { @table::CalPatRec
 	    KalFit                                      : { @table::CalPatRec.KalSeedFitter }
 	}
 
-	MHSeedFit : { module_type:KalSeedFit   
+	MHSeedFit : { module_type:KalSeedFit
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
-	    ComboHitCollection                          : makeSH			 
+	    ComboHitCollection                          : makeSH
 	    SeedCollection                              : MergeHelixFinder
 	    MinNHits                                    : 10
 	    MaxDoca                                     : 40.
@@ -478,38 +476,38 @@ CalPatRec : { @table::CalPatRec
 	    KalFit                                      : { @table::CalPatRec.KalSeedFitter }
 	}
 
-	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder 
+	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder
 	    tprHelixCollTag : "HelixFinderDe:Positive"
 	    cprHelixCollTag : "HelixFinderDe:Negative"
 	}
 
-	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 
+	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder
 	    tprHelixCollTag : "CalHelixFinderDe:Positive"
 	    cprHelixCollTag : "CalHelixFinderDe:Negative"
 	}
 
-	MHFinderDe   : { @table::CalPatRec.producers.MergeHelixFinder 
+	MHFinderDe   : { @table::CalPatRec.producers.MergeHelixFinder
 	    tprHelixCollTag : MHFinderTprDe
 	    cprHelixCollTag : MHFinderCprDe
 	}
 
-	MHFinderTprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
+	MHFinderTprDmu : { @table::CalPatRec.producers.MergeHelixFinder
 	    tprHelixCollTag : "HelixFinderMu:Positive"
 	    cprHelixCollTag : "HelixFinderMu:Negative"
 	}
 
-	MHFinderCprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
+	MHFinderCprDmu : { @table::CalPatRec.producers.MergeHelixFinder
 	    tprHelixCollTag : "CalHelixFinderDmu:Positive"
 	    cprHelixCollTag : "CalHelixFinderDmu:Negative"
 	}
 
-	MHFinderDmu   : { @table::CalPatRec.producers.MergeHelixFinder 
+	MHFinderDmu   : { @table::CalPatRec.producers.MergeHelixFinder
 	    tprHelixCollTag : MHFinderTprDmu
 	    cprHelixCollTag : MHFinderCprDmu
 	}
     }
 
-    filters : { 
+    filters : {
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
@@ -521,20 +519,19 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitCollectionLabel                     : makePH            # CalTimePeakFinder uses ComboHits
 	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
 	    caloClusterModuleLabel                      : CaloClusterMaker
-	    HitSelectionBits                            : [] 
-	    BackgroundSelectionBits                     : [] 
-	    MinNHits                                    : @local::CalPatRec.minNStrawHits  
-	    DtMin                                       : -30.   # value before 2017-11-17 was -40. ns
-	    DtMax                                       :  30.   # 2018-07-29 P.M.: DtMax=20ns was cutting out a few percent of hits
+	    HitSelectionBits                            : []
+	    BackgroundSelectionBits                     : []
+	    MinNHits                                    : @local::CalPatRec.minNStrawHits
+	    DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
+	    DtMax                                       :  20.   # value before 2022-02-14 was 30. ns
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
-	    minClusterTime                              : 500.   # ns
 	    pitchAngle                                  : 0.67   # mean pitch for CE
 	    beta                                        : 1.0    # for muon reco needs to be changed
 	    dtOffset                                    : @local::TrackCaloMatching.DtOffset
-	    diagPlugin : { tool_type                    : "CalTimePeakFinderDiag" 
-		mcTruth                                 : 0 
-		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+	    diagPlugin : { tool_type                    : "CalTimePeakFinderDiag"
+		mcTruth                                 : 0
+		mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
 		    strawDigiMCCollTag : "compressDigiMCs"
 		}
 	    }
@@ -548,7 +545,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitCollectionLabel                     : makePH
 	    StrawHitFlagCollectionLabel                 : "DeltaFinder:ComboHits"
 	    TimeClusterCollectionLabel                  : CalTimePeakFinder
-	    minNHitsTimeCluster                         : @local::CalPatRec.minNStrawHits  
+	    minNHitsTimeCluster                         : @local::CalPatRec.minNStrawHits
 	    fitparticle                                 : @local::Particle.eminus
 	    fitdirection                                : @local::FitDir.downstream
 
@@ -556,7 +553,7 @@ CalPatRec : { @table::CalPatRec
 	    HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
 	    diagPlugin : { tool_type                    : "CalHelixFinderDiag"
 		mcTruth                                 : 0
-		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+		mcUtils                                 : { tool_type : "TrkPatRecMcUtils"
 		    strawDigiMCCollTag : "compressDigiMCs"
 		}
 	    }
@@ -567,10 +564,10 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 # calorimeter-seeded tracking makes sense only for downstream particles
 #------------------------------------------------------------------------------
-CalPatRec: { @table::CalPatRec 
+CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
 
-	DeltaFinderUe : { @table::CalPatRec.producers.DeltaFinder 
+	DeltaFinderUe : { @table::CalPatRec.producers.DeltaFinder
 	    timePeakCollectionTag         : CalTimePeakFinderUe
 
 	}
@@ -578,94 +575,94 @@ CalPatRec: { @table::CalPatRec
 	DeltaFinderMu                  : { @table::CalPatRec.producers.DeltaFinder
 	    timePeakCollectionTag      : CalTimePeakFinderMu
 	}
-	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
+	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit
 	    SeedCollection             : "CalHelixFinderDe:Positive"
 	}
-	CalSeedFitUem                  : { @table::CalPatRec.producers.CalSeedFit        
+	CalSeedFitUem                  : { @table::CalPatRec.producers.CalSeedFit
 	    SeedCollection             : "CalHelixFinderUe:Positive"
 	}
-	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
+	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit
 	    fitparticle                : @local::Particle.muminus
 	    SeedCollection             : "CalHelixFinderDmu:Positive"
 	}
-	CalSeedFitUmm                  : { @table::CalPatRec.producers.CalSeedFit 
+	CalSeedFitUmm                  : { @table::CalPatRec.producers.CalSeedFit
 	    fitparticle                : @local::Particle.muminus
 	    SeedCollection             : "CalHelixFinderUmu:Positive"
 	}
-	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
-	    fitparticle                : @local::Particle.eplus  
+	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit
+	    fitparticle                : @local::Particle.eplus
 	    SeedCollection             : "CalHelixFinderDe:Negative"
 	}
-	CalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit 
+	CalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit
 	    fitparticle                : @local::Particle.muplus
 	    SeedCollection             : "CalHelixFinderDmu:Negative"
 	}
-	
-	MHSeedFitDem                  : { @table::CalPatRec.producers.MHSeedFit        
+
+	MHSeedFitDem                  : { @table::CalPatRec.producers.MHSeedFit
 	    SeedCollection             : MergeHelixFinderDem
 	}
-	MHSeedFitDmm                  : { @table::CalPatRec.producers.MHSeedFit 
+	MHSeedFitDmm                  : { @table::CalPatRec.producers.MHSeedFit
 	    fitparticle                : @local::Particle.muminus
 	    SeedCollection             : MergeHelixFinderDmm
 	}
-	MHSeedFitDep                  : { @table::CalPatRec.producers.MHSeedFit 
-	    fitparticle                : @local::Particle.eplus  
+	MHSeedFitDep                  : { @table::CalPatRec.producers.MHSeedFit
+	    fitparticle                : @local::Particle.eplus
 	    SeedCollection             : MergeHelixFinderDep
 	}
-	MHSeedFitDmp                  : { @table::CalPatRec.producers.MHSeedFit 
+	MHSeedFitDmp                  : { @table::CalPatRec.producers.MHSeedFit
 	    fitparticle                : @local::Particle.muplus
 	    SeedCollection             : MergeHelixFinderDmp
 	}
-	
-	CalTrkFitDem                   : { @table::CalPatRec.producers.CalTrkFit         
+
+	CalTrkFitDem                   : { @table::CalPatRec.producers.CalTrkFit
 	    SeedCollection             : CalSeedFitDem
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
-	CalTrkFitUem                   : { @table::CalPatRec.producers.CalTrkFit         
+	CalTrkFitUem                   : { @table::CalPatRec.producers.CalTrkFit
 	    SeedCollection             : CalSeedFitUem
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
-	CalTrkFitDmm                   : { @table::CalPatRec.producers.CalTrkFit 
-	    fitparticle                : @local::Particle.muminus 
+	CalTrkFitDmm                   : { @table::CalPatRec.producers.CalTrkFit
+	    fitparticle                : @local::Particle.muminus
 	    SeedCollection             : CalSeedFitDmm
 	    CalTimePeakModuleLabel     : CalTimePeakFinderMu
 	    StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
 	}
-	CalTrkFitUmm                   : { @table::CalPatRec.producers.CalTrkFit         
+	CalTrkFitUmm                   : { @table::CalPatRec.producers.CalTrkFit
 	    SeedCollection             : CalSeedFitUmm
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
-	CalTrkFitDep                   : { @table::CalPatRec.producers.CalTrkFit 
-	    fitparticle                : @local::Particle.eplus  
+	CalTrkFitDep                   : { @table::CalPatRec.producers.CalTrkFit
+	    fitparticle                : @local::Particle.eplus
 	    SeedCollection             : CalSeedFitDep
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
-	CalTrkFitDmp                   : { @table::CalPatRec.producers.CalTrkFit 
-	    fitparticle                : @local::Particle.muplus 
+	CalTrkFitDmp                   : { @table::CalPatRec.producers.CalTrkFit
+	    fitparticle                : @local::Particle.muplus
 	    SeedCollection             : CalSeedFitDmp
 	    CalTimePeakModuleLabel     : CalTimePeakFinderMu
 	    StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
 	}
     }
-    
+
     filters : { @table::CalPatRec.filters
 	CalTimePeakFinderUe            : { @table::CalPatRec.filters.CalTimePeakFinder   pitchAngle: -0.67                }
-	CalTimePeakFinderMu            : { @table::CalPatRec.filters.CalTimePeakFinder   beta: 0.7                        } 
+	CalTimePeakFinderMu            : { @table::CalPatRec.filters.CalTimePeakFinder   beta: 0.7                        }
 	CalHelixFinderDe               : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eminus  }
 	CalHelixFinderUe               : { @table::CalPatRec.filters.CalHelixFinder
-	    fitparticle                : @local::Particle.eminus  
+	    fitparticle                : @local::Particle.eminus
 	    StrawHitFlagCollectionLabel: "DeltaFinderUe:ComboHits"
 	    TimeClusterCollectionLabel : CalTimePeakFinderUe
 	}
-	CalHelixFinderDmu              : { @table::CalPatRec.filters.CalHelixFinder 
-	    fitparticle                   : @local::Particle.muminus 
+	CalHelixFinderDmu              : { @table::CalPatRec.filters.CalHelixFinder
+	    fitparticle                   : @local::Particle.muminus
 	    StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits"
 	    TimeClusterCollectionLabel    : CalTimePeakFinderMu
 	}
 	# CalHelixFinderDeP              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eplus   }
-	# CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder 
-	#     fitparticle                   : @local::Particle.muplus 
-	#     StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits" 
+	# CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder
+	#     fitparticle                   : @local::Particle.muplus
+	#     StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits"
 	#     TimeClusterCollectionLabel    : CalTimePeakFinderMu
 	# }
     }

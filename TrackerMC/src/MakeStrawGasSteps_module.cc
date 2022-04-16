@@ -7,7 +7,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "canvas/Utilities/InputTag.h"
@@ -18,8 +17,7 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art_root_io/TFileService.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "HepPDT/ParticleData.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
@@ -38,7 +36,6 @@
 
 using namespace std;
 using CLHEP::Hep3Vector;
-using HepPDT::ParticleData;
 namespace mu2e {
 
   class MakeStrawGasSteps : public art::EDProducer {
@@ -89,9 +86,9 @@ namespace mu2e {
       void fillMap(Tracker const& tracker,TrackerStatus const& trackerStatus, 
 	  SPMCCH const& spmcch, SPSMap& spsmap);
       void compressDeltas(SPSMap& spsmap);
-      void setStepType(SPMCP const& spmcptr, ParticleData const* pdata, StrawGasStep::StepType& stype);
+      void setStepType(SPMCP const& spmcptr, ParticleData const& pdata, StrawGasStep::StepType& stype);
       void fillStep(SPMCPV const& spmcptrs, Straw const& straw,
-	  ParticleData const* pdata, cet::map_vector_key pid, StrawGasStep& sgs);
+	  ParticleData const& pdata, cet::map_vector_key pid, StrawGasStep& sgs);
       void fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs);
       int _debug, _diag;
       bool _combineDeltas, _allAssns;
@@ -192,7 +189,7 @@ namespace mu2e {
   void MakeStrawGasSteps::produce(art::Event& event) {
   // setup conditions, etc
     const Tracker& tracker = *GeomHandle<Tracker>();
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
     TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
     // create output
     unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
@@ -247,9 +244,7 @@ namespace mu2e {
 	auto const& spmcptrs = ispsmap->second;
 	auto const& straw = tracker.getStraw(ispsmap->first.first);
 	auto const& simptr = spmcptrs.front()->simParticle();
-	auto pref = pdt->particle(simptr->pdgId());
-	ParticleData const* pdata(0);
-	if(pref.isValid())pdata = &pref.ref();
+	auto pdata = pdt->particle(simptr->pdgId());
 	StrawGasStep sgs;
 	fillStep(spmcptrs,straw,pdata,pid,sgs);
 	sgsc->push_back(sgs);
@@ -283,7 +278,7 @@ namespace mu2e {
   } // end of produce
 
   void MakeStrawGasSteps::fillStep(SPMCPV const& spmcptrs, Straw const& straw,
-      ParticleData const* pdata, cet::map_vector_key pid, StrawGasStep& sgs){
+      ParticleData const& pdata, cet::map_vector_key pid, StrawGasStep& sgs){
     // variables we accumulate for all the StepPoints in this pair
     double eion(0.0), pathlen(0.0);
     if(_diag>1){
@@ -479,10 +474,10 @@ namespace mu2e {
     }
   }
 
-  void MakeStrawGasSteps::setStepType(SPMCP const& spmcptr, ParticleData const* pdata, StrawGasStep::StepType& stype) {
+  void MakeStrawGasSteps::setStepType(SPMCP const& spmcptr, ParticleData const& pdata, StrawGasStep::StepType& stype) {
   // now determine ioniztion and shape
     int itype, shape;
-    if(pdata->charge() == 0.0){
+    if(pdata.charge() == 0.0){
       itype = StrawGasStep::StepType::neutral;
       shape = StrawGasStep::StepType::point;
     } else {
@@ -493,7 +488,7 @@ namespace mu2e {
 	shape = StrawGasStep::StepType::arc;
       else
 	shape = StrawGasStep::StepType::line;
-      double mass = pdata->mass();
+      double mass = pdata.mass();
       double bg = mom/mass; // betagamma
       double ke = sqrt(mom*mom + mass*mass)-mass; // kinetic energy
       if(bg > _minionBG && ke > _minionKE)

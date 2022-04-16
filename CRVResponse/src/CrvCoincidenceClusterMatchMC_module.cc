@@ -22,11 +22,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
@@ -124,7 +122,8 @@ namespace mu2e
         }
 
         //add the MC information (sim particle, dep. energy) of this reco pulse to the collection of pulses
-        pulses.emplace_back(simParticleThisPulse,visibleEnergyDepositedThisPulse);
+        //unless the reco pulse was caused by a noise hit (and doesn't have an associated simParticle)
+        if(simParticleThisPulse.isAvailable()) pulses.emplace_back(simParticleThisPulse,visibleEnergyDepositedThisPulse);
       }//loop over reco pulses
 
       //based on all step points, get the most likely sim particle, total energy, etc.
@@ -132,7 +131,9 @@ namespace mu2e
                                        visibleEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
-      crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, visibleEnergyDeposited, earliestHitTime, earliestHitPos);
+      //unless the reco pulse was caused by a noise hit (and doesn't have an associated simParticle)
+      if(simParticle.isAvailable()) crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle,
+                                                                                    visibleEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 
     event.put(std::move(crvCoincidenceClusterMCCollection));

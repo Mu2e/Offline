@@ -7,7 +7,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -19,8 +18,7 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art_root_io/TFileService.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "HepPDT/ParticleData.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
@@ -35,7 +33,7 @@
 #include "TTree.h"
 
 using namespace std;
-using HepPDT::ParticleData;
+
 namespace mu2e 
 {
 
@@ -79,9 +77,9 @@ namespace mu2e
       typedef map<BarIndexTrackPair, SPMCPtrV> StepPointMap; // steps by Crv barIndex and SimParticle
       typedef art::Handle<StepPointMCCollection> SPMCCH;
       typedef vector< SPMCCH > SPMCCHV;
-      void fillMap(SPMCCH const& spmcch, StepPointMap& stepPointMap, GlobalConstantsHandle<ParticleDataTable> &pdt);
+      void fillMap(SPMCCH const& spmcch, StepPointMap& stepPointMap, GlobalConstantsHandle<ParticleDataList> &pdt);
       void fillSteps(SPMCPtrV const& spmcptrv, CRSScintillatorBarIndex const& barIndex,
-	             ParticleData const* pdata, cet::map_vector_key trackId,
+	             ParticleData const& pdata, cet::map_vector_key trackId,
                      unique_ptr<CrvStepCollection> &crvSteps, vector<pair<size_t,size_t> > &spmcIndices);
       void fillStepDiag(CrvStep const& crvStep, SPMCPtrV const& spmcptrv, size_t firstIndex, size_t lastIndex);
       static bool compareStepTimes(SPMCPtr a, SPMCPtr b) {return(a->time()<b->time());}
@@ -160,7 +158,7 @@ namespace mu2e
 
   void CrvStepsFromStepPointMCs::produce(art::Event& event) 
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
     //CrvSteps
     unique_ptr<CrvStepCollection> crvSteps(new CrvStepCollection);
@@ -173,7 +171,7 @@ namespace mu2e
     // Informational message on the first event.
     if(_firstEvent)
     {
-      mf::LogInfo log("COSMIC");
+      mf::LogInfo log("COSMIC_STEPPOINTS");
       log << "mu2e::CrvStepsFromStepPointMCs will use StepPointMCs from: \n";
       for(SPMCCHV::const_iterator i=stepsHandles.begin(), e=stepsHandles.end(); i!=e; ++i)
       {
@@ -209,9 +207,7 @@ namespace mu2e
 	auto const& trackId  = istepPointMap->first.second; // track id
 	auto const& barIndex = istepPointMap->first.first; //bar index
 	auto const& simptr = spmcptrv.front()->simParticle(); //sim particle
-	auto pref = pdt->particle(simptr->pdgId());
-	if(!pref.isValid()) continue;
-	ParticleData const* pdata = &pref.ref();
+	auto pdata = pdt->particle(simptr->pdgId());
 
         // indices in the StepPointMC vector where a new CrvStep starts and ends
         vector<pair<size_t,size_t> > spmcIndices;
@@ -245,7 +241,7 @@ namespace mu2e
   }
 
   void CrvStepsFromStepPointMCs::fillSteps(SPMCPtrV const& spmcptrv, CRSScintillatorBarIndex const& barIndex,
-                                           ParticleData const* pdata, cet::map_vector_key trackId, 
+                                           ParticleData const& pdata, cet::map_vector_key trackId, 
                                            unique_ptr<CrvStepCollection> &crvSteps, vector<pair<size_t,size_t> > &spmcIndices)
   {
     //the sequence of steps needs to be devided into two (or more) CrvSteps, if the particle leaves the scintillator and returns later
@@ -300,7 +296,7 @@ namespace mu2e
 
         //endMomV is the start momentum of the last StepPointMC
         //need to calculate the end momentum based on the energy loss
-        double mass            = pdata->mass();
+        double mass            = pdata.mass();
         double endMom2         = endMomV.mag2();
         double endEnergyBefore = sqrt(endMom2 + mass*mass);
         double endEnergyAfter  = endEnergyBefore - last->totalEDep(); //TODO: does not take the energy of daughter particles into account
@@ -325,7 +321,7 @@ namespace mu2e
     }
   }
 
-  void CrvStepsFromStepPointMCs::fillMap(SPMCCH const& spmcch, StepPointMap& stepPointMap, GlobalConstantsHandle<ParticleDataTable> &pdt)
+  void CrvStepsFromStepPointMCs::fillMap(SPMCCH const& spmcch, StepPointMap& stepPointMap, GlobalConstantsHandle<ParticleDataList> &pdt)
   {
     StepPointMCCollection const& steps(*spmcch);
     for(size_t ispmc=0; ispmc<steps.size(); ++ispmc) 
@@ -335,8 +331,7 @@ namespace mu2e
       if(_removeNeutralParticles)
       {
         auto pref = pdt->particle(step.simParticle()->pdgId());
-        bool charged=true;
-        if(pref.isValid()) charged=(pref.ref().charge()!=0.0);
+        bool charged = (pref.charge()!=0.0);
         if(!charged) continue;  //skip neutral particles
       }
 

@@ -22,6 +22,7 @@ libs =  [
     'mu2e_RecoDataProducts',
     'mu2e_DataProducts',
     'mu2e_ConfigTools',
+    'mu2e_DbTables',
     'mu2e_GeneralUtilities',
     'mu2e_Mu2eInterfaces',
     babarlibs,

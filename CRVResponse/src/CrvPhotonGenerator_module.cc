@@ -9,7 +9,7 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -29,11 +29,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -41,6 +39,9 @@
 #include "CLHEP/Random/Randomize.h"
 
 #include <string>
+#include <filesystem>
+#include <set>
+#include <boost/functional/hash.hpp>
 
 #include <TDirectory.h>
 #include <TFile.h>
@@ -58,6 +59,7 @@ namespace mu2e
     using Comment=fhicl::Comment;
     struct Config 
     {
+      fhicl::Atom<int> debug{ Name("debugLevel"),Comment("Debug Level"), 0};
       fhicl::Sequence<std::string> moduleLabels{ Name("crvStepModuleLabels"), Comment("CrvStepModule labels")};
       fhicl::Sequence<std::string> processNames{ Name("crvStepProcessNames"), Comment("process names of CrvSteps")};
       fhicl::Sequence<std::string> CRVSectors{ Name("CRVSectors"), Comment("Crv sectors")};
@@ -86,6 +88,8 @@ namespace mu2e
     void beginRun(art::Run& r);
 
     private:
+
+    int _debug;
     std::vector<std::string> _moduleLabels;
     std::vector<std::string> _processNames;
     std::vector<std::unique_ptr<art::Selector> > _selectors;
@@ -153,6 +157,7 @@ namespace mu2e
 
   CrvPhotonGenerator::CrvPhotonGenerator(const Parameters& conf) :
     art::EDProducer{conf},
+    _debug(conf().debug()),
     _moduleLabels(conf().moduleLabels()),
     _processNames(conf().processNames()),
     _CRVSectors(conf().CRVSectors()),
@@ -191,6 +196,7 @@ namespace mu2e
     if(_reflectors.size()!=_CRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified CRV sector names and reflector list");
     if(_scintillationYields.size()!=_CRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified CRV sector names and scintillation yield list");
 
+    std::set<std::string> filedirs;
     for(size_t i=0; i<_lookupTableFileNames.size(); ++i)
     {
       _scintillationYields[i]*=_scintillationYieldScaleFactor;
@@ -202,7 +208,7 @@ namespace mu2e
         {
            tableLoaded=true;
            _makeCrvPhotons.emplace_back(_makeCrvPhotons[j]);
-           std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<std::endl;
+	   if(_debug>0) std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
            break;
         }
       }
@@ -210,10 +216,23 @@ namespace mu2e
 
       _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ)));
       boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.back();
-      photonMaker->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
+      std::string filespec = _resolveFullPath(_lookupTableFileNames[i]);
+      filedirs.insert( std::filesystem::path(filespec).parent_path() );
+      photonMaker->LoadLookupTable(filespec,_debug);
       photonMaker->SetScintillationYield(_scintillationYields[i]);
-      std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
+      if(_debug>0) std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
     }
+
+    std::cout << "CRV light files:";
+    for(auto const& dir : filedirs ){
+      std::cout << " " << dir;
+    }
+    std::cout << std::endl;
+    size_t hash = 0;
+    for(auto const& mcp: _makeCrvPhotons) {
+      boost::hash_combine<std::string>(hash,mcp->GetFileName());
+    }
+    std::cout << "CRV light sectors: " << _makeCrvPhotons.size() << " hash:" << hash <<std::endl;
 
     produces<CrvPhotonsCollection>();
   }
@@ -247,7 +266,7 @@ namespace mu2e
     std::map<std::pair<mu2e::CRSScintillatorBarIndex,int>,std::vector<CrvPhotons::SinglePhoton> > photonMap;
 
     GeomHandle<CosmicRayShield> CRS;
-    GlobalConstantsHandle<ParticleDataTable> particleDataTable;
+    GlobalConstantsHandle<ParticleDataList> particleDataList;
 
     art::Handle<EventWindowMarker> eventWindowMarker;
     event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
@@ -298,15 +317,9 @@ namespace mu2e
           CLHEP::Hep3Vector pos2 = step.endPosition();
 
           int PDGcode = step.simParticle()->pdgId();
-          ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
-          if(!particle)
-          {
-            std::cerr<<"Error in CrvPhotonGenerator: Found a PDG code which is not in the GEANT particle table: ";
-            std::cerr<<PDGcode<<std::endl;
-            continue;
-          }
-          double mass = particle.ref().mass();  //MeV/c^2
-          double charge = particle.ref().charge(); //in units of elementary charges
+          auto const& particle = particleDataList->particle(PDGcode);
+          double mass = particle.mass();  //MeV/c^2
+          double charge = particle.charge(); //in units of elementary charges
 
           double energy1   = sqrt(step.startMom().mag2() + mass*mass); //MeV
           double energy2   = sqrt(step.endMom()*step.endMom() + mass*mass);

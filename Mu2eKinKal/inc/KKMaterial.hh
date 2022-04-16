@@ -20,13 +20,14 @@ namespace mu2e {
       using StrawMaterial = KinKal::StrawMaterial;
       using MatDBInfo = MatEnv::MatDBInfo;
       struct Config {
-	fhicl::Atom<std::string> isotopes { Name("isotopes"), Comment("Filename for istotopes information")};
-	fhicl::Atom<std::string> elements { Name("elements"), Comment("Filename for elements information") };
-	fhicl::Atom<std::string> materials { Name("materials"), Comment("Filename for materials information") };
-	fhicl::Atom<std::string> strawGasMaterialName{ Name("strawGasMaterialName"), Comment("strawGasMaterialName") };
-	fhicl::Atom<std::string> strawWallMaterialName{ Name("strawWallMaterialName"), Comment("strawWallMaterialName") };
-	fhicl::Atom<std::string> strawWireMaterialName{ Name("strawWireMaterialName"), Comment("strawWireMaterialName") };
-	fhicl::Atom<double> dahlLynchScatteringFraction{ Name("dahlLynchScatteringFraction"), Comment("dahlLynchScatteringFraction") };
+        fhicl::Atom<std::string> isotopes { Name("isotopes"), Comment("Filename for istotopes information")};
+        fhicl::Atom<std::string> elements { Name("elements"), Comment("Filename for elements information") };
+        fhicl::Atom<std::string> materials { Name("materials"), Comment("Filename for materials information") };
+        fhicl::Atom<int> eloss { Name("ELossMode"), Comment("Energy Loss model (0=MPV, 1=Moyal"),MatEnv::DetMaterial::moyalmean };
+        fhicl::Atom<std::string> strawGasMaterialName{ Name("strawGasMaterialName"), Comment("strawGasMaterialName") };
+        fhicl::Atom<std::string> strawWallMaterialName{ Name("strawWallMaterialName"), Comment("strawWallMaterialName") };
+        fhicl::Atom<std::string> strawWireMaterialName{ Name("strawWireMaterialName"), Comment("strawWireMaterialName") };
+        fhicl::Atom<double> dahlLynchScatteringFraction{ Name("dahlLynchScatteringFraction"), Comment("dahlLynchScatteringFraction") };
       };
 
       explicit KKMaterial( Config const& config);
@@ -35,6 +36,7 @@ namespace mu2e {
     private:
       KKFileFinder filefinder_; // used to find material info
       std::string wallmatname_, gasmatname_, wirematname_;
+      MatEnv::DetMaterial::energylossmode eloss_;
       mutable MatDBInfo* matdbinfo_; // material database
       mutable std::unique_ptr<StrawMaterial> smat_; // straw material
   };

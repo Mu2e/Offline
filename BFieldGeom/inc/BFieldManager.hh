@@ -79,7 +79,7 @@ namespace mu2e {
         const MapContainerType& getOuterMaps() const { return outerMaps_; }
         MapContainerType& getOuterMaps() { return outerMaps_; }
 
-        void print(std::ostream& out);
+        void print(std::ostream& out) const;
 
        private:
         // Private ctr.  An instance of BFieldManager should be obtained

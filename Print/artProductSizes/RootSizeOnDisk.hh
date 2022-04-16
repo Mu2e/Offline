@@ -10,11 +10,13 @@
 // The available information is:
 //
 //    filename  - The name of the root file
-//    size      - The size on disk according to the file system; equivalent to ls -l
-//    sum       - The sum of the sizes of all top tier TTree objects.
-//                Some day this may include the sizes of top tier objects that are not TTrees.
+//    size      - The size on disk according to the file system; equivalent to
+//    ls -l sum       - The sum of the sizes of all top tier TTree objects.
+//                Some day this may include the sizes of top tier objects that
+//                are not TTrees.
 //    fraction  - The ratio of sum()/size()
-//    contents  - Detailed information about each TTree, including the size of each branch.
+//    contents  - Detailed information about each TTree, including the size of
+//    each branch.
 //
 
 #include <ostream>
@@ -26,85 +28,76 @@
 
 namespace mu2e {
 
-  class RootSizeOnDisk {
+class RootSizeOnDisk {
+ public:
+  RootSizeOnDisk(std::string const& aFileName, TFile* aFile);
 
-  public:
-    RootSizeOnDisk ( std::string const& aFileName, TFile* aFile );
+  // Information about a top tier or second tier object in an art format root
+  // event-data file.
+  class Record {
+   public:
+    Record(std::string const& aname, std::string const& aclassName,
+           Long64_t asize = 0, Long64_t acount = 1, double afraction = 0.);
+    bool operator<(Record const& rhs) const { return (name() < rhs.name()); }
 
-    // Information about a top tier or second tier object in an art format root event-data file.
-    class Record {
+    bool isTree() const { return (className_ == "TTree"); }
 
-    public:
+    bool isTKey() const { return (className_ == "TKey"); }
 
-      Record ( std::string const& aname,
-               std::string const& aclassName,
-               Long64_t           asize=0,
-               Long64_t           acount=1,
-               double             afraction=0. );
-      bool operator< ( Record const& rhs) const{
-        return (name() < rhs.name());
-      }
+    std::string const& name() const { return name_; }
+    std::string const& className() const { return className_; }
+    Long64_t size() const { return size_; }
+    Long64_t count() const { return count_; }
+    double fraction() const { return fraction_; }
+    std::vector<Record> const& contents() const { return contents_; }
 
-      bool isTree() const{
-        return (className_ == "TTree");
-      }
+    double sizePerEvent() const;
 
-      bool isTKey() const{
-        return (className_ == "TKey");
-      }
+    // Modifiers
+    void size(Long64_t s) { size_ = s; }
+    void count(Long64_t c) { count_ = c; }
+    void fraction(double f) { fraction_ = f; }
+    void contents(std::vector<Record>& c) { contents_.swap(c); }
 
-      std::string const&         name()      const { return name_; }
-      std::string const&         className() const { return className_; }
-      Long64_t                   size()      const { return size_; }
-      Long64_t                   count()     const { return count_; }
-      double                     fraction()  const { return fraction_; }
-      std::vector<Record> const& contents()  const { return contents_; }
+   private:
+    std::string name_;       // Name of the object
+    std::string className_;  // Classname, either TTree or TKey
+    Long64_t size_;          // Total space on disk occupied by this object
+    Long64_t count_;   // If a TTree, the number of events in the TTree; if a
+                       // TKey then it is 1
+    double fraction_;  // Fraction of the space occupied by objects at this
+                       // level that is occupied by this object
 
-      double sizePerEvent() const;
+    std::vector<Record> contents_;
 
-      // Modifiers
-      void size ( Long64_t s ) { size_     = s;}
-      void count( Long64_t c ) { count_    = c;}
-      void fraction( double f) { fraction_ = f;}
-      void contents( std::vector<Record>& c ) { contents_.swap(c); }
+  };  // end RootSizeOnDisk::Record
 
-    private:
-      std::string name_;       // Name of the object
-      std::string className_;  // Classname, either TTree or TKey
-      Long64_t    size_;       // Total space on disk occupied by this object
-      Long64_t    count_;      // If a TTree, the number of events in the TTree; if a TKey then it is 1
-      double      fraction_;   // Fraction of the space occupied by objects at this level that is occupied by this object
+  // typedef std::vector<RootSizeOnDisk::Record> Records_t;
+  typedef std::vector<Record> Records_t;
 
-      std::vector<Record> contents_;
+  std::string const& filename() const { return fileName_; }
+  Long64_t size() const { return size_; }
+  Long64_t sum() const { return sum_; }
+  double fraction() const { return fraction_; }
+  Records_t const& contents() const { return contents_; }
 
-    }; // end RootSizeOnDisk::Record
+  void print(std::ostream& os, double minimumFraction) const;
 
-    //typedef std::vector<RootSizeOnDisk::Record> Records_t;
-    typedef std::vector<Record> Records_t;
+ private:
+  std::string fileName_;
+  Long64_t size_;
+  Long64_t sum_;
+  double fraction_;
+  Records_t contents_;
 
-    std::string const& filename()  const { return fileName_; }
-    Long64_t           size()      const { return size_;     }
-    Long64_t           sum()       const { return sum_;      }
-    double             fraction()  const { return fraction_; }
-    Records_t const&   contents()  const { return contents_; }
+  void fillLevel2(Record&, TTree*);
+};
 
-    void print ( std::ostream& os, double minimumFraction ) const;
+// Compare two RootSizeOnDisk::Record objects to select the one with the larger
+// size.
+bool greaterBySize(RootSizeOnDisk::Record const& lhs,
+                   RootSizeOnDisk::Record const& rhs);
 
-  private:
-
-    std::string fileName_;
-    Long64_t    size_;
-    Long64_t    sum_;
-    double      fraction_;
-    Records_t   contents_;
-
-    void fillLevel2( Record&, TTree* );
-
-  };
-
-  // Compare two RootSizeOnDisk::Record objects to select the one with the larger size.
-  bool greaterBySize( RootSizeOnDisk::Record const& lhs, RootSizeOnDisk::Record const& rhs );
-
-} // namespace mu2e
+}  // namespace mu2e
 
 #endif /* ROOTtools_artProductSizes_RootSizeOnDisk_hh */

@@ -46,7 +46,7 @@ namespace mu2e {
     // a flag used to enable the above testing
     const bool testPDGIdToGenerate_;
 
-    Mu2eG4PerThreadStorage* perThreadObjects_;
+    Mu2eG4PerThreadStorage* perThreadObjects_ = nullptr;
 
   };
 

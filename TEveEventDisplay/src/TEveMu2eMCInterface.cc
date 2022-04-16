@@ -89,9 +89,9 @@ namespace mu2e{
   }
   
   /*------------Function to help user select a list of PDG codes to display:-------------*/
-  int TEveMu2eMCInterface::Contains(std::vector<int> v, int x)
+  int TEveMu2eMCInterface::Contains(const std::vector<int>& v, int x)
   {
-    return std::count(v.begin(), v.end(), x);
+    return std::count(v.begin(), v.end(), std::abs(x));
   }
   
 
@@ -101,51 +101,51 @@ namespace mu2e{
       auto t = new TEveText(pid);
       Color_t color;
       double posy = 0;
-      double posz = 3000.0;
-      t->SetFontSize(15);
+      double posz = text_z_pos;
+      t->SetFontSize(fontsize);
       switch(PDGCode) {
           case PDGCode::e_minus:
-              color = 2;
+              color = kRed;
               pid = "electron -";
               posy = 1400.0;
               break;
           case PDGCode::e_plus:
-              color = 5;
+              color = kYellow;
               pid = "positron +";
               posy = 1500.0;
               break;
           case PDGCode::mu_minus:
-              color = 3;
+              color = kOrange-7; //used to help distinguish from other lines only
               pid = "muon - ";
               posy = 1600.0;
               break;
           case PDGCode::mu_plus:
-              color = 46;
+              color = kRed-9;
               pid = "muon + ";
               posy = 1700.0;
               break;
           case PDGCode::pi_minus:
-              color = 6;
+              color = kMagenta;
               pid = "pion -";
               posy = 1800.0;
               break;
           case PDGCode::pi_plus:
-              color = 9;
+              color = kViolet;
               pid = "pion +";
               posy = 1900.0;
               break;
           case PDGCode::proton:
-              color = 4;
+              color = kBlue;
               pid = "proton";
               posy = 2000.0;
               break;
           case PDGCode::gamma:
-              color = 8;
+              color = kOrange;
               pid = "gamma";
               posy = 2100.0;
               break;
           default:
-              color = 7;
+              color = kCyan;
               pid = "other";
               posy = 2200.0;
               break;
@@ -175,6 +175,7 @@ namespace mu2e{
             TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
             //check user defined list of particles to plot:
             int x = Contains(particleIds,trajectoryIter->first->pdgId()); 
+
             if(x == 1){
               
               const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();
@@ -186,12 +187,12 @@ namespace mu2e{
                                       
                 if(i==0) {
                       line->SetPoint(i,(Pos.x()), (Pos.y()),(Pos.z())); 
-                      line_twoDXZ->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y())+1000,pointmmTocm(HitPos2D.z()));
+                      line_twoDXZ->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                       line_twoDXY->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));      
                       
                 } else {
                     line->SetNextPoint((Pos.x()),(Pos.y()),(Pos.z()));
-                    line_twoDXZ->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y())+1000,pointmmTocm(HitPos2D.z()));
+                    line_twoDXZ->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                     line_twoDXY->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                 }
               }
@@ -205,11 +206,11 @@ namespace mu2e{
               TEveText *t = GetLabel(trajectoryIter->first->pdgId(), line, line_twoDXZ, line_twoDXY);
               line_twoDXZ->SetTitle(Form(title.c_str()));
               line_twoDXY->SetTitle(Form(title.c_str()));
-              line->SetLineWidth(3);
+              line->SetLineWidth(linewidth);
               line->SetPickable(kTRUE);
-              line_twoDXZ->SetLineWidth(3);
+              line_twoDXZ->SetLineWidth(linewidth);
               line_twoDXZ->SetPickable(kTRUE);
-              line_twoDXY->SetLineWidth(3);
+              line_twoDXY->SetLineWidth(linewidth);
               line_twoDXY->SetPickable(kTRUE);
               fTrackList2DXZ->AddElement(line_twoDXZ);
               fTrackList2DXY->AddElement(line_twoDXY);

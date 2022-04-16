@@ -1278,9 +1278,9 @@ namespace mu2e {
 // gianipez: procedure for aligning the phi vector
 //-----------------------------------------------------------------------------
     ::LsqSums4        szphi;
-    int               count(0);
-    float            chi2min, deltaPhi, dphi_max(0);
-
+    int               count(0), minNFitHits(5);
+    float             chi2min, deltaPhi, dphi_max(0);
+    
     HitInfo_t         iworst;//(-1,-1);
 
     const char        banner[200] = "doLinearFitPhiZ";
@@ -1340,7 +1340,7 @@ namespace mu2e {
       }
 	
       //update the dfdz and phi0 if...	
-      if ( (count>=5) &&      //FIXME!
+      if ( (count>=minNFitHits) &&      //FIXME!
 	   (faceHitChi2 < 2.) &&
 	   ( (fabs(phiZInfo.dfdz - Helix._szphi.dfdz()) < 8.e-4) ) &&//  || //require that the new value of dfdz is
 				 //close to the starting one. update dfdz only if:
@@ -1362,7 +1362,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     // perform a cleanup in RZ
     //-----------------------------------------------------------------------------
-    if ( DoCleanUp == 1){
+    if ( (DoCleanUp == 1) && (Helix._szphi.qn()>=minNFitHits)){
       if ( Helix._szphi.chi2DofLine() > _chi2zphiMax) {
       NEXT_ITERATION:;
 	//reset the coordinates of the worst hit
@@ -1441,7 +1441,8 @@ namespace mu2e {
       success = true;
     }
     //----------------------------------------------------------------------//
-   if ((Helix._szphi.dfdz()*_dfdzsign) < 0.) { 
+    if ( (Helix._szphi.qn() < minNFitHits) || 
+	 ((Helix._szphi.qn() >= minNFitHits) && (Helix._szphi.dfdz()*_dfdzsign < 0.)) ) { 
       success = false;
     }
     else if (success) {                               // update helix results

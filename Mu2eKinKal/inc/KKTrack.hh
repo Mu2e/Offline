@@ -1,7 +1,7 @@
 #ifndef Mu2eKinKal_KKTrack_hh
 #define Mu2eKinKal_KKTrack_hh
 //
-// subclass of KinKal Track specialized for Mu2e 
+// subclass of KinKal Track specialized for Mu2e
 //
 #include "KinKal/Fit/Track.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
@@ -32,24 +32,24 @@ namespace mu2e {
       using EXINGCOL = std::vector<EXINGPTR>;
       // construct from configuration, fit environment, and hits and materials
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart,
-	KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings);
+          KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings);
       // extend the track according to new configuration, hits, and/or exings
-      void extendTrack(Config const& config, 
-	KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings);
-// accessors
+      void extendTrack(Config const& config,
+          KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings);
+      // accessors
       PDGCode::type fitParticle() const { return tpart_;}
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
     private:
-    // record the particle type
-      PDGCode::type tpart_; 
+      // record the particle type
+      PDGCode::type tpart_;
       KKSTRAWHITCOL strawhits_;  // straw hits used in this fit
       KKCALOHITCOL calohits_;  // calo hits used in this fit
       KKSTRAWXINGCOL strawxings_;  // straw material crossings used in this fit
       // utility function to convert to generic types
       void convertTypes( KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings,
-	  MEASCOL& hits, EXINGCOL& exings);
+          MEASCOL& hits, EXINGCOL& exings);
   };
   template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart,
       KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) :
@@ -70,9 +70,9 @@ namespace mu2e {
     for(auto const& strawxing : strawxings)exings.emplace_back(static_pointer_cast<EXING>(strawxing));
   }
 
-  template <class KTRAJ> void KKTrack<KTRAJ>::extendTrack(Config const& config, 
-	KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) {
-// convert the hits and Xings to generic types and extend the track
+  template <class KTRAJ> void KKTrack<KTRAJ>::extendTrack(Config const& config,
+      KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) {
+    // convert the hits and Xings to generic types and extend the track
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings
     convertTypes(strawhits, calohits, strawxings,hits,exings);

@@ -12,7 +12,6 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -20,7 +19,7 @@
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
@@ -31,7 +30,7 @@
 
 namespace mu2e {
   class CryResampler : public art::EDProducer {
-    const mu2e::ParticleDataTable *pdt_;
+    const mu2e::ParticleDataList *pdt_;
     int verbosityLevel_;
     std::string inputFile_;
     std::string treeName_;
@@ -68,7 +67,7 @@ namespace mu2e {
     art::EDProducer{pset}
     {
     verbosityLevel_ = pset.get<int>("verbosityLevel", 0);
-    pdt_ = (&*GlobalConstantsHandle<ParticleDataTable>());
+    pdt_ = (&*GlobalConstantsHandle<ParticleDataList>());
     inputFile_ = pset.get<std::string>("inputFile");
     treeName_ = pset.get<std::string>("treeName", "crvDump/nt");
     branchName_ = pset.get<std::string>("branchName", "hits");
@@ -98,7 +97,7 @@ namespace mu2e {
     particles_->GetEntry(event.id().event());
 
     const CLHEP::Hep3Vector p3(particle_.px, particle_.py, particle_.pz);
-    const double mass = pdt_->particle(particle_.pdgId).ref().mass().value();
+    const double mass = pdt_->particle(particle_.pdgId).mass();
     const double energy = std::sqrt(std::pow(mass,2) + p3.mag2());
     CLHEP::HepLorentzVector fourmom(p3, energy);
     const CLHEP::Hep3Vector pos(particle_.x, particle_.y, particle_.z);

@@ -59,6 +59,10 @@ namespace mu2e {
     // Check that a material name is not already in use.
     CheckedG4String uniqueMaterialOrThrow( G4String const& name);
 
+    // Turning on density effect correction in ionization loss calculations
+    // for selected materials deemed conductors
+    void useDensityEffectInIonizationLossCorrectionIfRequested();
+
   };
 
 } // end namespace mu2e

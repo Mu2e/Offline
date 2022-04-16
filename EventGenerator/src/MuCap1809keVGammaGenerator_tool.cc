@@ -9,7 +9,7 @@
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 namespace mu2e {
@@ -23,7 +23,7 @@ namespace mu2e {
 
     explicit MuCap1809keVGammaGenerator(Parameters const& conf) :
       _pdgId(PDGCode::gamma),
-      _mass(GlobalConstantsHandle<ParticleDataTable>()->particle(_pdgId).ref().mass().value())
+      _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass())
     {}
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;

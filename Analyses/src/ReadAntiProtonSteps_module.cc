@@ -18,7 +18,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
@@ -30,7 +29,7 @@
 #include <string>
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 using namespace std;
 
@@ -69,7 +68,7 @@ namespace mu2e {
       }
 
       nt = new float[1000];
-      pbarMass = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::anti_proton).ref().mass().value();
+      pbarMass = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::anti_proton).mass();
       pbarMass2 = pbarMass*pbarMass;
     }
 

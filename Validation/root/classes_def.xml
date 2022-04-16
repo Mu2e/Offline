@@ -16,5 +16,6 @@
  <class name="TValHistH"/>
  <class name="TValHistP"/>
  <class name="TValHistE"/>
+ <class name="TValHist2"/>
  <class name="TValCompare"/>
 </lcgdict>

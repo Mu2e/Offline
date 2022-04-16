@@ -20,7 +20,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -48,7 +47,7 @@
 #include "Offline/ConditionsService/inc/ExtMonFNALConditions.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 namespace mu2e {
@@ -286,9 +285,9 @@ namespace mu2e {
       { // Got geometry. Compute per-plane time of flight correction to T0.
         const double p = extMon_->spectrometerMagnet().nominalMomentum();
 
-        GlobalConstantsHandle<ParticleDataTable> pdt;
-        ParticleDataTable::maybe_ref protonInfo = pdt->particle(2212);
-        const double m = protonInfo.ref().mass();
+        GlobalConstantsHandle<ParticleDataList> pdt;
+        auto protonInfo = pdt->particle(2212);
+        const double m = protonInfo.mass();
         const double pm2 = std::pow(p/m, 2);
         const double beta = sqrt(pm2/(1.+pm2));
         const double v = beta * CLHEP::c_light;

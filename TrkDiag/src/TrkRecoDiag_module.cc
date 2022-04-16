@@ -9,7 +9,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // mu2e
 #include "Offline/GeneralUtilities/inc/Angles.hh"
@@ -19,7 +18,7 @@
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
@@ -627,7 +626,7 @@ namespace mu2e {
     bool retval(false);
     if(pspp.isNonnull() && _vdmcsteps != 0){
       GeomHandle<DetectorSystem> det;
-      GlobalConstantsHandle<ParticleDataTable> pdt;
+      GlobalConstantsHandle<ParticleDataList> pdt;
       // find the earliest step associated with this particle passing the tracker midplane
       cet::map_vector_key trkid = pspp->id();
       auto jmc = _vdmcsteps->end();
@@ -646,7 +645,7 @@ namespace mu2e {
 	_mcmidpz = jmc->momentum().z();
 	_mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
 	Hep3Vector pos = det->toDetector(jmc->position());
-	double charge = pdt->particle(pspp->pdgId()).ref().charge();
+	double charge = pdt->particle(pspp->pdgId()).charge();
 	TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
 	retval = true;
       }

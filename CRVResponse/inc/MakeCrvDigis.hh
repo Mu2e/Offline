@@ -16,14 +16,14 @@ class MakeCrvDigis
    
     void SetWaveform(const std::vector<double> &waveform, double ADCconversionFactor, int pedestal, double startTime, double digitizationPrecision);
 
-    std::vector<unsigned int> GetADCs() {return _ADCs;}
-    const std::vector<unsigned int> &GetADCs() const {return _ADCs;}
+    std::vector<int16_t> GetADCs() {return _ADCs;}
+    const std::vector<int16_t> &GetADCs() const {return _ADCs;}
 
-    unsigned int GetTDC() {return _TDC;}
+    uint16_t GetTDC() {return _TDC;}
 
   private:
-    std::vector<unsigned int> _ADCs;
-    unsigned int _TDC;
+    std::vector<int16_t> _ADCs;
+    uint16_t _TDC;
 };
 
 }

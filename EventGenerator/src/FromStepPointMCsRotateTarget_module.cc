@@ -12,7 +12,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -25,7 +24,7 @@
 #include "CLHEP/Vector/Rotation.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
@@ -72,7 +71,7 @@ namespace mu2e {
     typedef std::vector<art::InputTag> InputTags;
     InputTags inputs_;
     Vpdg inPdgId_;
-    GlobalConstantsHandle<ParticleDataTable> pdt_;
+    GlobalConstantsHandle<ParticleDataList> pdt_;
     int logLevel_;
     bool allowDuplicates_;  // easily get a wrong answer by double counting particles
 
@@ -179,47 +178,41 @@ namespace mu2e {
           std::cout<<"creating new GenParticle from hit "<<*i<<std::endl;
         }
 
-        if(pdt_->particle(particle->pdgId())) {
-          const CLHEP::Hep3Vector pos = i->position();
-          const CLHEP::Hep3Vector mom = i->momentum();
-          if(logLevel_ > 1) std::cout << "pos " << pos << " mom " << mom << std::endl;
+        const CLHEP::Hep3Vector pos = i->position();
+        const CLHEP::Hep3Vector mom = i->momentum();
+        if(logLevel_ > 1) std::cout << "pos " << pos << " mom " << mom << std::endl;
 
-          CLHEP::Hep3Vector mom_tgt = targetRotation_.inverse()*mom;
-          CLHEP::Hep3Vector pos_tgt = targetRotation_.inverse()*(pos-targetCenter_);
-          if(logLevel_ > 1) std::cout << "pos_tgt " << pos_tgt << " mom_tgt " << mom_tgt << std::endl;
+        CLHEP::Hep3Vector mom_tgt = targetRotation_.inverse()*mom;
+        CLHEP::Hep3Vector pos_tgt = targetRotation_.inverse()*(pos-targetCenter_);
+        if(logLevel_ > 1) std::cout << "pos_tgt " << pos_tgt << " mom_tgt " << mom_tgt << std::endl;
 
-          // rotate by an random angle around phi and get new p direction in target frame
-          double rotatePhi = randFlat_.fire()*(phiMax_-phiMin_);
-          if(logLevel_ > 1) std::cout << "rotatePhi " << rotatePhi << std::endl;
+        // rotate by an random angle around phi and get new p direction in target frame
+        double rotatePhi = randFlat_.fire()*(phiMax_-phiMin_);
+        if(logLevel_ > 1) std::cout << "rotatePhi " << rotatePhi << std::endl;
 
-          mom_tgt.rotateZ(rotatePhi);
-          pos_tgt.rotateZ(rotatePhi);
-          if(logLevel_ > 1) std::cout << "pos_tgt_rot " << pos_tgt << " mom_tgt_rot " << mom_tgt << std::endl;
+        mom_tgt.rotateZ(rotatePhi);
+        pos_tgt.rotateZ(rotatePhi);
+        if(logLevel_ > 1) std::cout << "pos_tgt_rot " << pos_tgt << " mom_tgt_rot " << mom_tgt << std::endl;
 
-          // rotate around y back to mu2e frame
-          CLHEP::Hep3Vector mom_new = targetRotation_*mom_tgt;
-          CLHEP::Hep3Vector pos_new = targetRotation_*pos_tgt+targetCenter_;
-          if(logLevel_ > 1) std::cout << "pos_rot " << pos_new << " mom_rot " << mom_new << std::endl;
+        // rotate around y back to mu2e frame
+        CLHEP::Hep3Vector mom_new = targetRotation_*mom_tgt;
+        CLHEP::Hep3Vector pos_new = targetRotation_*pos_tgt+targetCenter_;
+        if(logLevel_ > 1) std::cout << "pos_rot " << pos_new << " mom_rot " << mom_new << std::endl;
 
-          const double mass = pdt_->particle(particle->pdgId()).ref().mass().value();
-          const CLHEP::HepLorentzVector fourMom(mom_new, sqrt(mass*mass + mom_new.mag2()));
+        const double mass = pdt_->particle(particle->pdgId()).mass();
+        const CLHEP::HepLorentzVector fourMom(mom_new, sqrt(mass*mass + mom_new.mag2()));
 
-          output->push_back(GenParticle(particle->pdgId(),
-                                        GenId::fromStepPointMCs,
-                                        pos_new,
-                                        fourMom,
-                                        i->time(),
-                                        i->properTime()
-                                        ));
+        output->push_back(GenParticle(particle->pdgId(),
+                                      GenId::fromStepPointMCs,
+                                      pos_new,
+                                      fourMom,
+                                      i->time(),
+                                      i->properTime()
+                                      ));
 
-          history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
-                             art::Ptr<StepPointMC>(makeMyHandle(ih), std::distance(ih->begin(), i))
-                            );
-        }
-        else {
-          mf::LogWarning warn("FromStepPointMCsRotateTarget");
-          warn<<"WARNING: No particle data for pdgId = "<<particle->pdgId()<<"\n";
-        }
+        history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
+                           art::Ptr<StepPointMC>(makeMyHandle(ih), std::distance(ih->begin(), i))
+                          );
 
       } // for (StepPointMCCollection entries)
     } // for(inputs_)

@@ -25,12 +25,12 @@ namespace mu2e {
   void EMFSimHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
   {
     art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+    art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
     book (extmon, tfdir);
   }
 
   // Book the histograms.
-  void EMFSimHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+  void EMFSimHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, const art::TFileDirectory& tfdir) {
     hitTimes_ = tfdir.make<TH2D>("hitTimes", "Module plane vs hit time",
                                  400, -0.5, 399.5, /* ns resolution */
                                  3, -0.5, 3-0.5

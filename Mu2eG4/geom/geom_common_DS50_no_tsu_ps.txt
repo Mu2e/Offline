@@ -1,0 +1,12 @@
+//
+// Variant on geom_common.txt for DS field scaled to 50%
+// and TSu and PS field maps removed
+//
+
+#include "Offline/Mu2eG4/geom/geom_common_no_tsu_ps.txt"
+#include "Offline/Mu2eG4/geom/bfgeom_DS50_no_tsu_ps_v01.txt"
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

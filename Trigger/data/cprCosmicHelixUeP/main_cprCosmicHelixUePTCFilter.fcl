@@ -1,4 +1,0 @@
-physics.filters.cprCosmicHelixUePTCFilter.requireCaloCluster : false
-physics.filters.cprCosmicHelixUePTCFilter.minNHits : 10.0
-physics.filters.cprCosmicHelixUePTCFilter.minTime : 0.0
-physics.filters.cprCosmicHelixUePTCFilter.maxTime : 1695.0

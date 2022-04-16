@@ -108,6 +108,9 @@ namespace mu2e {
     // Load capture gamma rays
     _1809keVGammaEnergy[material] = config.getDouble("physicsParams."+material+".capture.photon.1809keV.energy", 0);
     _1809keVGammaIntensity[material] = config.getDouble("physicsParams."+material+".capture.photon.1809keV.intensity", 0);
+    
+    //Ce+ endpoint
+    _ePlusEndpointEnergy[material] = config.getDouble("physicsParams."+material+".ePlusEndpointEnergy", 0);
     }
 
     // Load Shanker constants

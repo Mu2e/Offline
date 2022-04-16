@@ -1,4 +1,2 @@
 physics.filters.tprCosmicSeedDeMTCFilter.requireCaloCluster : false
 physics.filters.tprCosmicSeedDeMTCFilter.minNHits : 10.0
-physics.filters.tprCosmicSeedDeMTCFilter.minTime : 0.0
-physics.filters.tprCosmicSeedDeMTCFilter.maxTime : 1695.0

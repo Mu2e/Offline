@@ -2,9 +2,8 @@
 
 int    physicsParams.verbosityLevel = 0;
 
-// Primary particle data table and the auxillary table.
-string particleDataTable.filename          = "Offline/GlobalConstantsService/data/particle.tbl";
-string particleDataTable.auxillaryFilename = "Offline/GlobalConstantsService/data/mass_width_2008.mc";
+// Primary particle data table
+string particleDataList.filename          = "Offline/GlobalConstantsService/data/ParticleList.txt";
 
 // Physical constants
 double physicsParams.invFineStructureConstant = 137.0359991; // PDG value (2010 CODATA)
@@ -118,6 +117,9 @@ double physicsParams.Al.capture.neutronRate = 1.2;
 double physicsParams.Al.capture.photonRate = 2.0;
 double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
 double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
+
+//Ce+ endpoint energy
+double physicsParams.Al.ePlusEndpointEnergy = 92.32;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

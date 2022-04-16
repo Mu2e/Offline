@@ -19,7 +19,6 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -29,7 +28,7 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
@@ -229,7 +228,7 @@ namespace mu2e {
     }
 
     PDGCode::type pdgId = static_cast<PDGCode::type>(hit.pdgId);
-    const double mass = GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value();
+    const double mass = GlobalConstantsHandle<ParticleDataList>()->particle(pdgId).mass();
     const double energy = sqrt(mom_new.mag2() + mass*mass);
     CLHEP::HepLorentzVector fourmom(mom_new, energy);
     const double time = hit.time;

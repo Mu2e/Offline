@@ -30,6 +30,13 @@ namespace mu2e {
     typedef std::tuple<ProditionsEntity::ptr,DbIoV> ret_t;
     typedef ProditionsEntity::set_t set_t;
 
+    // what is actually held in the cache
+    // new iovs are added if the data is the same
+    struct cacheItem {
+      ProditionsEntity::ptr _p;;
+      std::vector<DbIoV> _iovs;
+    };
+
     ProditionsCache(std::string name, int verbose=0):
       _name(name),_verbose(verbose),_initialized(false) {}
     virtual ~ProditionsCache() {}
@@ -78,18 +85,13 @@ namespace mu2e {
       // gain shared read lock to find what 
       // set of tables are needed
       bool made = false;
-      set_t cids;
+      bool found = false;
       ProditionsEntity::ptr p;
+      set_t cids;
       DbIoV iov;
       { // start read lock scope
 	std::shared_lock lock(_mutex);
-	// get the set of nubers that identifies the data
-	cids = makeSet(eid);
-	// look for it in the cache
-	p = find(cids);
-	if(p) { // also grab the iov while under this read lock
-	  iov = makeIov(eid);
-	}
+        p = findByRun(eid,iov);  // if found, iov is valid
       } // end read lock lifetime
       
       // if it was not found in cache, make it
@@ -103,15 +105,34 @@ namespace mu2e {
 	 _lockWaitTime += dt;
 	 // need to check again in case another thread made it
 	 // between read lock and write lock
-	 p = find(cids);
+         p = findByRun(eid,iov);
 	 if(!p) {
-	   p = makeEntity(eid); // make the data entity
-	   p->addCids(cids); // label it
-	   push(p); // put in the cache
-	   made = true;
-	   if(_verbose>2) p->print(std::cout);
-	 }
-	 iov = makeIov(eid); // new or old, iov is now valid
+
+	   p = makeEntity(eid);
+           cids = makeSet(eid);
+	   p->addCids(cids);
+           iov = makeIov(eid);
+
+           // at this point, we might have existing cache items with 
+           // the same cids, but not the relevant iov, 
+           // in this case just add the iov
+           for(auto& ci : _cache) {
+             if(ci._p->getCids()==cids) {
+               ci._iovs.emplace_back(iov);
+               found = true;
+               break;
+             }
+           }
+           if(!found) {
+             cacheItem ci;
+             ci._p = p;
+             ci._iovs.emplace_back(iov);
+             _cache.emplace_back(ci);
+             made = true;
+             if(_verbose>7) p->print(std::cout);
+           }
+	 } // p not found
+
 	 auto etime = std::chrono::high_resolution_clock::now();
 	 dt = std::chrono::duration_cast<std::chrono::microseconds>
                                                ( etime - mtime );
@@ -121,26 +142,38 @@ namespace mu2e {
       
       if(_verbose>1) {
 	if(made) {
-	  std::cout<< "ProditionsCache::update made new "<< name() << std::endl;
+          if(found) {
+            std::cout<< "ProditionsCache::update made new iov for "
+                     << name() << std::endl;
+          } else {
+            std::cout<< "ProditionsCache::update made new "
+                     << name() << std::endl;
+          }
 	} else {
 	  std::cout<< "ProditionsCache::update return cached "<< name() << std::endl;
 	}
+        std::cout << "     iov " << iov.to_string(true);
+        std::cout << "     cids ";
+        for(auto cid : cids) std::cout << cid << " " ;
+        std::cout << std::endl;
       }
 
       return std::make_tuple(p,iov);
 
     } // end update
-
-    // put this object, with dependent set of CID's, in the cache
-    void push(ProditionsEntity::ptr const& p) {
-      _cache.emplace_back(p);
-    }
-
-    // is the object, with this set of CID's, 
-    // which uniquely identifies it, in the cache?
-    ProditionsEntity::ptr  find(set_t const& s) {
-      for(auto const& ii : _cache) {
-	if(ii->getCids()==s) return ii;
+    
+    // is there a cache entry covering this run/subrun?
+    // return good pointer or null, and fill iov
+    ProditionsEntity::ptr  findByRun(art::EventID eid, DbIoV& iov) {
+      uint32_t run = eid.run();
+      uint32_t subrun = eid.subRun();
+      for(auto const& ci : _cache) {
+        for(auto const& ii : ci._iovs) {
+          if(ii.inInterval(run,subrun)) {
+            iov = ii;
+            return ci._p;
+          }
+        }
       }
       return ProditionsEntity::ptr();
     }
@@ -149,7 +182,7 @@ namespace mu2e {
     std::string _name;
     int _verbose;
     bool _initialized;
-    std::vector<ProditionsEntity::ptr> _cache;
+    std::vector<cacheItem> _cache;
 
   };
 

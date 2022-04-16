@@ -64,31 +64,14 @@ museDeps() {
 COMMAND=$1
 RC=0
 
-# if running in muse, the default dir will be above Offline
-if [ -n "$MUSE_WORK_DIR"  ]; then
-    OUT=${MUSE_BUILD_BASE}/Offline/
-    IN=Offline/
-    SC=" -f $MUSE_DIR/python/SConstruct "
-else
-    OUT=""
-    IN=""
-    SC=""
-fi
-
 echo [$(date)] procs.sh starting $COMMAND
 
 if [ "$COMMAND" == "DEPS"  ]; then
     # make a text file of the package dependencies
-    if [ -n "$MUSE_WORK_DIR"  ]; then
-	museDeps
-	RC=$?
-    else
-	mkdir -p ${OUT}gen/txt
-	scons $SC  -Q --tree=prune | deps -i > ${OUT}gen/txt/deps.txt
-	[ $? -ne 0 ] && RC=1
-    fi
+    museDeps
+    RC=$?
 elif [ "$COMMAND" == "GDML"  ]; then
-    mkdir -p ${OUT}gen/gdml
+    mkdir -p ${MUSE_BUILD_BASE}/Offline/gen/gdml
     # if mu2e.gdml exists, save it
     if [ -f mu2e.gdml ]; then
 	STR=$(date +%s)
@@ -96,47 +79,23 @@ elif [ "$COMMAND" == "GDML"  ]; then
 	/bin/mv mu2e.gdml mu2e.gdml.$STR
     fi
     # make the standard gdml file
-    mu2e -c ${IN}Mu2eG4/fcl/gdmldump.fcl; 
+    mu2e -c Offline/Mu2eG4/fcl/gdmldump.fcl; 
     [ $? -ne 0 ] && RC=1
-    /bin/mv mu2e.gdml ${OUT}gen/gdml/mu2e.gdml
+    /bin/mv mu2e.gdml ${MUSE_BUILD_BASE}/Offline/gen/gdml/mu2e.gdml
     [ $? -ne 0 ] && RC=1
 elif [ "$COMMAND" == "TEST03"  ]; then
     # see if this fcl runs
-    mu2e -c ${IN}Mu2eG4/fcl/g4test_03.fcl -o /dev/null -T /dev/null
+    mu2e -c Offline/Mu2eG4/fcl/g4test_03.fcl -o /dev/null -T /dev/null
     [ $? -ne 0 ] && RC=1
 elif [ "$COMMAND" == "ROVERLAPS"  ]; then
     # fast root overlap check 
-    TMP=$(mktemp)
-    root -l -b -q ${IN}bin/overlapCheck.C\(\"${OUT}gen/gdml/mu2e.gdml\"\) >& $TMP
-    [ $? -ne 0 ] && RC=1
-    # a message on how many volumes checked
-    grep "in Geometry imported from GDML" $TMP
-    # check number of failures
-    NI=$( grep "illegal" $TMP | awk '{print $NF}' )
-    [ $NI -ne 0 ] && RC=1
-    # also print them
-    grep "illegal" $TMP
-    cat $TMP | awk 'BEGIN{flag=0;}{if(flag==1) print $0; if($1=="===") flag=1; }'
-    rm -f $TMP
-
+    Offline/bin/overlapCheck.sh -r -q -b
 elif [ "$COMMAND" == "GITPACK"  ]; then
-    if [ -n "$MUSE_WORK_DIR"  ]; then
-	cd Offline
-    fi
-    git repack -d -l
+    git -C Offline repack -d -l
     [ $? -ne 0 ] && RC=1
-    if [ -n "$MUSE_WORK_DIR"  ]; then
-	cd ..
-    fi
 elif [ "$COMMAND" == "RMSO" ]; then
-    if [ -n "$MUSE_WORK_DIR"  ]; then
-	find ${MUSE_BUILD_BASE}/Offline -name "*.os" -delete
-	find ${MUSE_BUILD_BASE}/Offline -name "*.o"  -delete
-    else
-	rm -rf tmp
-	find . -name "*.os" -delete
-	find . -name "*.o"  -delete
-    fi
+    find ${MUSE_BUILD_BASE}/Offline -name "*.os" -delete
+    find ${MUSE_BUILD_BASE}/Offline -name "*.o"  -delete
     rm -f .sconsign.dblite
 fi
 

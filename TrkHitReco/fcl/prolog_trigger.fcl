@@ -11,6 +11,8 @@ TTPBTFSD : {
 
 TTmakeSH : {
     module_type             : StrawHitReco
+    minimumTime             : 0.0 # accept all digis
+    maximumTime             : 100.0e3 # allow offspill events
     FitType                 : 5
     FilterHits              : true
     WriteStrawHitCollection : false
@@ -25,7 +27,7 @@ TTmakePH : {
     TestFlag                : false
     TestRadius              : true
     ComboHitCollection      : "TTmakeSH"
-    StrawHitSelectionBits : ["EnergySelection","TimeSelection"] 
+    StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
     StrawHitMask          : []
     MaxDt                 : 40
     UseTOT                : false
@@ -53,7 +55,7 @@ TTmakePHUCC : {
     TestFlag                : false
     TestRadius              : true
     ComboHitCollection      : "TTmakeSHUCC"
-    StrawHitSelectionBits : ["EnergySelection","TimeSelection"] 
+    StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
     StrawHitMask          : []
     MaxDt                 : 40
     UseTOT                : false
@@ -91,8 +93,8 @@ TTSflagBkgHits : {
 }
 
 # combine together
-TrkHitRecoTrigger : { 
-    producers : { 
+TrkHitRecoTrigger : {
+    producers : {
 	TTPBTFSD            : { @table::TTPBTFSD             }
 	TTmakeSH            : { @table::TTmakeSH             }
 	TTmakePH            : { @table::TTmakePH             }
@@ -101,10 +103,10 @@ TrkHitRecoTrigger : {
 	TTmakeSTH           : { @table::TTmakeSTH            }
 	TTflagBkgHits	    : { @table::TTflagBkgHits        }
 	TTflagBkgHitsUCC    : { @table::TTflagBkgHits
-	        ComboHitCollection : TTmakePHUCC		
+	        ComboHitCollection : TTmakePHUCC
 	}
     }
-    
+
     # SEQUENCES
     # production sequence to prepare hits for tracking
     sequences: {

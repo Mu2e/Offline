@@ -11,8 +11,6 @@
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"

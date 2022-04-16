@@ -116,6 +116,7 @@ double MakeCrvRecoPulses::Chi2(TF1 &f, const TGraph &g)
     g.GetPoint(i,x,y);
     if(x<xmin || x>xmax) continue;
     float fy=f.Eval(x);
+    if(fy==0) continue;
     chi2+=(y-fy)*(y-fy)/fy;
   }
   return chi2;

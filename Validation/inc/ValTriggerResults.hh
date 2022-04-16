@@ -10,24 +10,21 @@
 
 namespace mu2e {
 
-  class ValTriggerResults {
+class ValTriggerResults {
+ public:
+  ValTriggerResults(std::string name) : _name(name) {}
+  int declare(const art::TFileDirectory& tfs);
+  int fill(const art::TriggerResults& obj, art::Event const& event);
+  std::string& name() { return _name; }
 
-  public:
-    ValTriggerResults(std::string name):_name(name){}
-    int declare( art::TFileDirectory tfs);
-    int fill(const art::TriggerResults & obj, art::Event const& event);
-    std::string& name() { return _name; }
+ private:
+  std::string _name;
 
-  private:
-    std::string _name;
-    
-    TH1D* _hVer;
-    TH1D* _hNpath;
-    TH1D* _hState;
-    TH1D* _hIndex;
-
-  };
-}
-
+  TH1D* _hVer;
+  TH1D* _hNpath;
+  TH1D* _hState;
+  TH1D* _hIndex;
+};
+}  // namespace mu2e
 
 #endif

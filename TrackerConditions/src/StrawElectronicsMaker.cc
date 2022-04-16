@@ -263,6 +263,12 @@ namespace mu2e {
 
     ptr->setvthresh(vthresh);
 
+    std::array<uint16_t, StrawId::_nustraws> ADCped;
+    for (size_t i=0;i<ADCped.size();i++){
+      double avgThresh = ( vthresh[i*2+0] +  vthresh[i*2+1])/2.;
+      ADCped[i] = (ADCValue) ((_config.maxADC()+1)/2. - avgThresh/_config.ADCLSB() * 20);
+    }
+    ptr->setADCPed(ADCped);
 
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV;

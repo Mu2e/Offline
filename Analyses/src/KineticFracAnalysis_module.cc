@@ -8,7 +8,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 
@@ -62,7 +62,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -733,8 +732,8 @@ namespace mu2e {
 
     //
     // handle to PDG
-    //    GlobalConstantsHandle<ParticleDataTable> pdt;
-    //ParticleDataTable const & pdt_ = *pdt;
+    //    GlobalConstantsHandle<ParticleDataList> pdt;
+    //ParticleDataList const & pdt_ = *pdt;
     
 
     //      const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
