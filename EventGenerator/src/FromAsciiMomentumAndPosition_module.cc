@@ -25,7 +25,6 @@
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -36,7 +35,7 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
@@ -119,12 +118,12 @@ namespace mu2e {
   {
 
     //pick up particle mass and other constants
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    const HepPDT::ParticleData& p_data = pdt->particle(particlePdgId_).ref();
-    mass_ = p_data.mass().value();
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    auto p_data = pdt->particle(particlePdgId_);
+    mass_ = p_data.mass();
 
-    const HepPDT::ParticleData& proton_data = pdt->particle(PDGCode::proton).ref();
-    protonMass_ = proton_data.mass().value();
+    auto proton_data = pdt->particle(PDGCode::proton);
+    protonMass_ = proton_data.mass();
 
     ConfigFileLookupPolicy findConfig;
     std::string vertexFileString_ = findConfig(vertexFileName_);

@@ -33,6 +33,7 @@
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestBox.hh"
 #include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "Offline/ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "Offline/ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -1025,11 +1026,23 @@ namespace mu2e {
         const VolumeInfo& parent = _helper->locateVolInfo("PSVacuum");
 
         const Tube& psevac = GeomHandle<PSVacuum>()->vacuum();
-
+        GeomHandle<PSEnclosure> pse;
+        double zoffset = -psevac.halfLength();
+        if(pse->version() > 2) { //move the detector away from the PS endcap
+          auto polycone = pse->endPlatePolycone();
+          double pseZOffset = pse->getExtraOffset();
+          double pseMaxZ = polycone.zPlanes().back() + 0.01; //add an extra 10 um gap
+          zoffset += std::max(0., (pseMaxZ + (polycone.originInMu2e().z() + pseZOffset) - (psevac.originInMu2e().z() - psevac.halfLength())));
+        }
         TubsParams vdParams(0., psevac.outerRadius(), vdg->getHalfLength());
 
-        G4ThreeVector vdCenterInParent(0., 0., -psevac.halfLength() + vdg->getHalfLength());
+        G4ThreeVector vdCenterInParent(0., 0., zoffset + vdg->getHalfLength());
 
+        if ( verbosityLevel > 0) {
+          cout << __func__ << ": Constructing " << VirtualDetector::volumeName(vdId)
+               << " VD center in PS vacuum = " << vdCenterInParent
+               << " (zoffset = " << zoffset << ")\n";
+        }
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParams,
                                      upstreamVacuumMaterial,

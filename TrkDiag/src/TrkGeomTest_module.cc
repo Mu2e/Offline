@@ -7,7 +7,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatus.hh"
@@ -24,8 +23,8 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       struct Config {
-	fhicl::Atom<int> printLevel{ Name("printLevel"), Comment("Print level" ),0 };
-	fhicl::Atom<int> diagLevel{ Name("diagLevel"), Comment("Diagnostic level" ),0 };
+        fhicl::Atom<int> printLevel{ Name("printLevel"), Comment("Print level" ),0 };
+        fhicl::Atom<int> diagLevel{ Name("diagLevel"), Comment("Diagnostic level" ),0 };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit TrkGeomTest(Parameters const& config);
@@ -55,7 +54,7 @@ namespace mu2e {
 
   TrkGeomTest::~TrkGeomTest() {}
 
-  void TrkGeomTest::beginJob(){ 
+  void TrkGeomTest::beginJob(){
     if(diag_ > 0){
       art::ServiceHandle<art::TFileService> tfs;
       strawtest_=tfs->make<TTree>("strawtest","strawtest");
@@ -87,9 +86,9 @@ namespace mu2e {
   }
 
   void TrkGeomTest::analyze(art::Event const& event) {
-  // this is a test module, so only a single event is processed.
+    // this is a test module, so only a single event is processed.
     if(first_){
-    // fetch tracker status
+      // fetch tracker status
       ProditionsHandle<TrackerStatus> trackerstatus_h;
       auto const& trkstatus = trackerstatus_h.get(event.id());
       std::cout << "TrackerStatus ";
@@ -98,49 +97,53 @@ namespace mu2e {
       GeomHandle<Tracker> nominalTracker_h;
       auto const& ntracker = *nominalTracker_h;
       auto const& atracker = _alignedTracker_h.get(event.id());
+      double totallength(0.0);
       if(ntracker.straws().size() != atracker.straws().size()){
-	std::cout << "Trackers don't match" << std::endl;
+        std::cout << "Trackers don't match" << std::endl;
       } else {
-	for(size_t istr = 0; istr < ntracker.straws().size(); istr++){
-	  auto const& nstraw = ntracker.straws()[istr];
-	  auto const& astraw = atracker.straws()[istr];
-	  if(nstraw.id() != astraw.id())
-	    std::cout << "StrawIds don't match: nominal " << nstraw.id() << " aligned " << astraw.id() << std::endl;
-	  splane_ = nstraw.id().plane();
-	  spanel_ = nstraw.id().panel();
-	  straw_ = nstraw.id().straw();
-	  auto npos = nstraw.origin();
-	  auto ndir = nstraw.wireDirection();
-	  auto adir = astraw.wireDirection();
-	  // test
-	  if(ndir.dot(adir)<0.0)std::cout << "Straw directions don't match: nominal " << ndir << " aligned " << adir << std::endl;
-	  auto apos = astraw.origin();
-	  auto delta = apos-npos;
-	  nomx_ = npos.x(); nomy_ = npos.y(); nomz_ = npos.z();
-	  nomdx_ = ndir.x(); nomdy_ = ndir.y(); nomdz_ = ndir.z();
-	  rnom_ = npos.rho();
-	  phinom_ = npos.phi();
-	  dphinom_ = ndir.phi();
-	  deltax_ = delta.x(); deltay_ = delta.y(); deltaz_ = delta.z();
-	  strawtest_->Fill();
-	}
-//
-// panel test
-//
-	for(auto const& panel : ntracker.panels()){
-	  pplane_ = panel.id().plane();
-	  panel_ = panel.id().panel();
-	  uphi_ = panel.uDirection().phi();
-	  vphi_ = panel.vDirection().phi();
-	  wcost_ = cos(panel.wDirection().theta());
-	  oz_ = panel.origin().z();
-	  or_ = panel.origin().rho();
-	  ophi_ = panel.origin().phi();
-	  paneltest_->Fill();
-	}
+        for(size_t istr = 0; istr < ntracker.straws().size(); istr++){
+          auto const& nstraw = ntracker.straws()[istr];
+          auto const& astraw = atracker.straws()[istr];
+          if(nstraw.id() != astraw.id())
+            std::cout << "StrawIds don't match: nominal " << nstraw.id() << " aligned " << astraw.id() << std::endl;
+          totallength += 2.0*nstraw.halfLength();
+          splane_ = nstraw.id().plane();
+          spanel_ = nstraw.id().panel();
+          straw_ = nstraw.id().straw();
+          auto npos = nstraw.origin();
+          auto ndir = nstraw.wireDirection();
+          auto adir = astraw.wireDirection();
+          // test
+          if(ndir.dot(adir)<0.0)std::cout << "Straw directions don't match: nominal " << ndir << " aligned " << adir << std::endl;
+          auto apos = astraw.origin();
+          auto delta = apos-npos;
+          nomx_ = npos.x(); nomy_ = npos.y(); nomz_ = npos.z();
+          nomdx_ = ndir.x(); nomdy_ = ndir.y(); nomdz_ = ndir.z();
+          rnom_ = npos.rho();
+          phinom_ = npos.phi();
+          dphinom_ = ndir.phi();
+          deltax_ = delta.x(); deltay_ = delta.y(); deltaz_ = delta.z();
+          strawtest_->Fill();
+        }
+        //
+        // panel test
+        //
+        for(auto const& panel : ntracker.panels()){
+          pplane_ = panel.id().plane();
+          panel_ = panel.id().panel();
+          uphi_ = panel.uDirection().phi();
+          vphi_ = panel.vDirection().phi();
+          wcost_ = cos(panel.wDirection().theta());
+          oz_ = panel.origin().z();
+          or_ = panel.origin().rho();
+          ophi_ = panel.origin().phi();
+          paneltest_->Fill();
+        }
       }
+      first_ = false;
+      std::cout << "Total # Straws " << ntracker.straws().size() << " Sum length = " << totallength
+        << " volume = " << totallength*M_PI*ntracker.strawProperties().strawInnerRadius() << std::endl;
     }
-    first_ = false;
   }
 }
 

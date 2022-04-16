@@ -11,7 +11,6 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"

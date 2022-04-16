@@ -7,9 +7,6 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "Offline/GlobalConstantsService/inc/unknownPDGIdName.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
@@ -31,7 +28,6 @@
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"

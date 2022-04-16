@@ -5,14 +5,14 @@
 //
 // NOTE: The muon and proton masses should come directly from the PDT;
 // but I do not think those can be loaded when calculating the
-// constants returned below as PhysicsParams and ParticleDataTable are
+// constants returned below as PhysicsParams and ParticleDataList are
 // independent template arguments to GlobalConstantsService.  Because
 // of this, the muon and proton masses must be specified in the
 // SimpleConfig file which is passed as an argument to the
 // constructor.  To discourage further use of these hard-coded mass
 // values, no getProtonMass/getMuonMass accessors are provided.
 // Thoses masses can be directly accessed later on through the
-// GlobalConstantsHandle<ParticleDataTable> construct.
+// GlobalConstantsHandle<ParticleDataList> construct.
 //
 // Author: Kyle Knoepfel
 //
@@ -44,8 +44,7 @@ namespace mu2e
     double   getProtonMomentum() const { return _protonMomentum; }
 
     // Lifetimes of free (not stopped) particles.  We provide them
-    // here because values coming from HepPDT are not accurate, and
-    // are in wrong units.
+    // here because values coming from other sources are not accurate
     double getParticleLifetime(PDGCode::type pdgId) const;
 
     // Muon parameters
@@ -87,6 +86,11 @@ namespace mu2e
     double   getEndpointEnergy(targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
       return _endpointEnergy.find(allowedMaterial)->second;
+    }
+    
+    double   getePlusEndpointEnergy(targetMat material = "") const {
+      const std::string allowedMaterial = checkMaterial( material );
+      return _ePlusEndpointEnergy.find(allowedMaterial)->second;
     }
 
     targetMat getStoppingTargetMaterial() const {
@@ -163,6 +167,7 @@ namespace mu2e
     std::map<targetMat,double>   _bindingEnergy;
     std::map<targetMat,double>   _muonEnergy;
     std::map<targetMat,double>   _endpointEnergy;
+    std::map<targetMat,double>   _ePlusEndpointEnergy;
 
     std::map<targetMat,double> _czarneckiCoefficient;
     std::map<targetMat,std::vector<double>> _czarneckiCoefficients;

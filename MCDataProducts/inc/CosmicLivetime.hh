@@ -21,7 +21,8 @@ namespace mu2e {
       _area(0),
       _lowE(0),
       _highE(0),
-      _fluxConstant(0)  {
+      _fluxConstant(0),
+      _livetime(0)  {
     }
 
     CosmicLivetime( unsigned int primaries,
@@ -40,6 +41,20 @@ namespace mu2e {
         const float EfToOneMinusGamma = pow(_highE, 1 + eslope);
         // http://pdg.lbl.gov/2018/reviews/rpp2018-rev-cosmic-rays.pdf eq. 29.2
         _livetime = _primaries / (M_PI * _area * _fluxConstant * (EfToOneMinusGamma - EiToOneMinusGamma) / (1. + eslope));
+    }
+
+    CosmicLivetime( unsigned int primaries,
+                    float area,
+                    float lowE,
+                    float highE,
+                    float fluxConstant,
+                    float livetime ):
+      _primaries(primaries),
+      _area(area),
+      _lowE(lowE),
+      _highE(highE),
+      _fluxConstant(fluxConstant),
+      _livetime(livetime) {
     }
 
     // Accessors

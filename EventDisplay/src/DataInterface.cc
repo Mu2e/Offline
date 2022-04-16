@@ -21,9 +21,9 @@ using namespace std;
 #include "Offline/EventDisplay/src/dict_classes/ComponentInfo.h"
 #include "Offline/EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "HepPID/ParticleName.hh"
-#include "HepPDT/ParticleData.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"
@@ -779,7 +779,7 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
 
 void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets)
 {
-  auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataTable>();
+  auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataList>();
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
   resetBoundaryT(_hitsTimeMinmax);
@@ -1183,12 +1183,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclass=trackInfos[i].classID;
       int trackclassindex=trackInfos[i].index;
       std::string particlecollection=trackInfos[i].entryText;
-      std::string particlename=HepPID::particleName(particle.pdgId());
+      std::string particlename=ptable->particle(particle.pdgId()).name();
       std::string startVolumeName="unknown volume";
       std::string endVolumeName="unknown volume";
       if(physicalVolumesMulti!=nullptr)
       {
-        mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(*physicalVolumesMulti);
+        mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(physicalVolumesMulti);
         startVolumeName=volumeMultiHelper.startVolume(particle).name();
         endVolumeName=volumeMultiHelper.endVolume(particle).name();
       }
@@ -1243,7 +1243,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         int trackclassindex=trackInfos[i].index;
         std::string trackcollection=trackInfos[i].entryText;
         int particleid=kalrep->particleType().particleType();
-        std::string particlename=HepPID::particleName(particleid);
+        std::string particlename=ptable->particle(particleid).name();
         std::string c=Form("Kalman Track %i  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         info->setName(c.c_str());
@@ -1346,7 +1346,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string trackcollection=trackInfos[i].entryText;
       int particleid=kalseed.particle();
-      std::string particlename=HepPID::particleName(particleid);
+      std::string particlename=ptable->particle(particleid).name();
 
       const std::vector<mu2e::KalSegment> &segments = kalseed.segments();
       size_t nSegments=segments.size();
@@ -1363,7 +1363,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
       double t0   = kalseed.t0().t0();
       double flt0 = kalseed.flt0();
-      double mass = ptable->particle(kalseed.particle()).ref().mass().value(); 
+      double mass = ptable->particle(kalseed.particle()).mass(); 
       double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
@@ -1439,7 +1439,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string trackcollection=trackInfos[i].entryText;
 
-      std::string particlename=HepPID::particleName(particleid);
+      std::string particlename=ptable->particle(particleid).name();
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("TrkExt Trajectory %i  %s  (%s)", trkExtTraj.id(), particlename.c_str(),trackcollection.c_str());
       info->setName(c.c_str());

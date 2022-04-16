@@ -14,6 +14,7 @@
 
 namespace mu2e {
 
+  Polycone::Polycone() : Polycone(std::vector<double>(), std::vector<double>(), std::vector<double>(), CLHEP::Hep3Vector(), "", 0., CLHEP::twopi) {};
   Polycone::Polycone(const std::vector<double>& zPlanes,
                      const std::vector<double>& rInner,
                      const std::vector<double>& rOuter,

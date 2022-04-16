@@ -32,7 +32,13 @@ namespace mu2e {
     // Append info for the current stage
     mvi->emplace_back(vi);
 
-    store.put(std::move(mvi), outInstanceName);
+    // Signature of put depends on the type PRINCIPAL.
+    if constexpr (std::is_same_v<PRINCIPAL, art::SubRun>) {
+        store.put(std::move(mvi), outInstanceName, art::fullSubRun());
+      }
+    else {
+      store.put(std::move(mvi), outInstanceName);
+    }
 
     return simStage;
   }

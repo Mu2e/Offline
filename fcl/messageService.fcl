@@ -5,7 +5,7 @@
 # Usage - in a fcl configuration file:
 #
 # 1 - Place the following near the start, among the PROLOGs:
-#     #include "fcl/messageService.fcl"
+#     #include "Offline/fcl/messageService.fcl"
 #
 # 2 - Choose the appropriate style of logging, and in the services section of
 #     your fcl file, place one of these four lines:
@@ -78,7 +78,6 @@ mf_interactive :
                                    # INFO severity, but not DEBUG severity                                      # LogPrint).
                                    # (INFO severity is LogInfo or
                                    # LogVerbatim).
-    statistics : { stats : @local::mf_coutInfoStats }
   }
 }
 

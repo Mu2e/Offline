@@ -11,8 +11,8 @@
 
 namespace mu2e {
 
-  HistTrackSum::HistTrackSum(art::TFileDirectory topdir, const std::string& subdir) {
-    art::TFileDirectory tfdir = subdir.empty() ? topdir : topdir.mkdir(subdir.c_str());
+  HistTrackSum::HistTrackSum(art::TFileDirectory& topdir, const std::string& subdir) {
+    art::TFileDirectory tfdir = topdir.mkdir(subdir.c_str());
     TH1::SetDefaultSumw2();
     nactive_ = tfdir.make<TH1D>("nactive", "nactive", 150, -0.5, 149.5);
     fitcon_ = tfdir.make<TH1D>("fitcon", "fitcon", 1000, 0., 1.);

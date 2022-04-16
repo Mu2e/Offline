@@ -3,38 +3,45 @@
 
 #include "KinKal/Detector/WireHitStructs.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
-#include <limits>
-using KinKal::ClosestApproachData;
-using KinKal::WireHitState;
 
 namespace mu2e {
-  // interface for updating straw hits
+  // interface for updating individual straw hits
+  template <class KTRAJ> class KKStrawHit;
   class KKStrawHitUpdater {
     public:
-      KKStrawHitUpdater() : mindoca_(std::numeric_limits<float>::max()), maxdoca_(-1.0), nulldim_(WireHitState::both) {}
-      KKStrawHitUpdater(double mindoca, double maxdoca, double maxchi, WireHitState::Dimension nulldim) : mindoca_(mindoca), maxdoca_(maxdoca), maxchi_(maxchi), nulldim_(nulldim) {}
-      template <class KKSTRAWHIT> void update(KKSTRAWHIT& hit) const;
+      KKStrawHitUpdater() : maxdoca_(-1.0), minprob_(-1.0), mindoca_(0), maxddoca_(-1) {}
+      KKStrawHitUpdater(double maxdoca, double minprob, double minddoca, double maxddoca) :
+        maxdoca_(maxdoca), minprob_(minprob),
+        mindoca_(minddoca), maxddoca_(maxddoca) {}
+      template <class KTRAJ> void update(KKStrawHit<KTRAJ>& swh) const;
     private:
-      double mindoca_; // minimum DOCA value to use drift information
       double maxdoca_; // maximum DOCA to still use a hit
-      double maxchi_; // maximum chi to use a hit
-      WireHitState::Dimension nulldim_; // constrain dimension for null hits
+      double minprob_; // minimum chisqquared probability to use a hit
+      double mindoca_; // minimum DOCA to use drift information
+      double maxddoca_; // maximum DOCA to use drift information
   };
-// update a particular hit
-  template <class KKSTRAWHIT> void KKStrawHitUpdater::update(KKSTRAWHIT& hit) const {
-    auto& hitstate = hit.hitState();
-    auto& poca = hit.closestApproach();
 
-    double absdoca = fabs(poca.doca()); 
-    if( absdoca > maxdoca_){ // hit is too far from the wire: disable it
-      hitstate.dimension_ = WireHitState::none; // disable the hit
-      } else if(absdoca > mindoca_ && absdoca < maxdoca_){  // in the sweet spot: use the DOCA to sign the ambiguity
-	hitstate.lrambig_ = poca.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-	hitstate.dimension_ = WireHitState::time;
-      } else { // hit very close to the wire: ambiguity information is unusable
-	hitstate.lrambig_ = WireHitState::null;
-	hitstate.dimension_ = nulldim_;
+  template <class KTRAJ> void KKStrawHitUpdater::update(KKStrawHit<KTRAJ>& kksh) const {
+    using KinKal::ClosestApproachData;
+    using KinKal::WireHitState;
+    kksh.mindoca_ = std::min(mindoca_,kksh.strawRadius());
+    WireHitState::State state;
+    if(kksh.closestApproach().usable()){
+      auto doca = kksh.closestApproach().doca();
+      auto absdoca = fabs(doca);
+      auto chisq = kksh.chisq();
+      if( absdoca > maxdoca_ || chisq.probability() < minprob_){ // hit is too far from the wire or has too small a probability: disable it
+        state = WireHitState::inactive;
+      } else if(absdoca > mindoca_ && absdoca < maxddoca_){  // in the sweet spot: use the DOCA to sign the ambiguity
+        state = doca > 0.0 ? WireHitState::right : WireHitState::left;
+      } else { // hit too close to the wire to resolve ambiguity, or with a suspiciously large drift: just use the raw wire position and time to constrain the track
+        state = WireHitState::null;
       }
+    } else {
+      state = WireHitState::inactive; // disable the hit
     }
+    // update the hit
+    kksh.setState(state);
   }
+}
 #endif

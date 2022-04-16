@@ -1,6 +1,5 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -11,6 +10,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 
    
 namespace
@@ -37,6 +37,7 @@ namespace mu2e {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
             fhicl::Atom<art::InputTag> caloDigiCollection { Name("caloDigiCollection"), Comment("CaloDigi collection name") }; 
+	    fhicl::Atom<art::InputTag> pbttoken           { Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer")};
             fhicl::Atom<double>        digiSampling       { Name("digiSampling"),       Comment("Digitization time sampling") }; 
             fhicl::Atom<double>        deltaTPulses       { Name("deltaTPulses"),       Comment("Maximum time difference between two signals ") }; 
             fhicl::Atom<double>        pulseRatioMin      { Name("pulseRatioMin"),      Comment("Min value of energy ratio between pulses ") }; 
@@ -48,6 +49,7 @@ namespace mu2e {
         explicit CaloHitMakerFast(const art::EDProducer::Table<Config>& config) :
            EDProducer{config},
            caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiCollection())},
+           pbttoken_          {consumes<ProtonBunchTime>(config().pbttoken())},
            digiSampling_      (config().digiSampling()),
            deltaTPulses_      (config().deltaTPulses()),
            pulseRatioMin_     (config().pulseRatioMin()),
@@ -65,10 +67,11 @@ namespace mu2e {
     private:
         using pulseMapType = std::unordered_map<unsigned, std::vector<HitInfo>>;
 
-        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl);
+        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, double pbtOffset);
         void addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep);
 
         art::ProductToken<CaloDigiCollection> caloDigisToken_;
+        const  art::ProductToken<ProtonBunchTime>    pbttoken_;
         double              digiSampling_;
         double              deltaTPulses_;
         double              pulseRatioMin_;
@@ -84,12 +87,16 @@ namespace mu2e {
     {
         if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi] begin"<<std::endl;
 
+        auto pbtH = event.getValidHandle(pbttoken_);
+        const ProtonBunchTime& pbt(*pbtH);
+        double pbtOffset = pbt.pbtime_;
+
         const auto& caloDigisHandle = event.getValidHandle(caloDigisToken_);
         const auto& caloDigis(*caloDigisHandle);
 
         auto caloHitsColl   = std::make_unique<CaloHitCollection>();
         auto caphriHitsColl = std::make_unique<CaloHitCollection>();
-        extractHits(caloDigis,*caloHitsColl,*caphriHitsColl);
+        extractHits(caloDigis,*caloHitsColl,*caphriHitsColl,pbtOffset);
 
         event.put(std::move(caloHitsColl),  "calo");
         event.put(std::move(caphriHitsColl),"caphri");
@@ -100,7 +107,7 @@ namespace mu2e {
 
 
    //--------------------------------------------------------------------------------------------------------------
-   void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl)
+   void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, double pbtOffset)
    {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
@@ -114,7 +121,7 @@ namespace mu2e {
 	   for (size_t i=0; i<nSamPed; ++i){ baseline += caloDigi.waveform().at(i);}
 	   baseline /= nSamPed;
            double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*calorimeterCalibrations->ADC2MeV(caloDigi.SiPMID());//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez 
-           double time     = caloDigi.t0() + caloDigi.peakpos()*digiSampling_;                      //Giani's definition
+           double time     = caloDigi.t0() + caloDigi.peakpos()*digiSampling_ - pbtOffset;                      //Giani's definition
            //double time     = caloDigi.t0() + (caloDigi.peakpos()+0.5)*digiSampling_ - shiftTime_; //Bertrand's definition
 
            addPulse(pulseMap, crystalID, time, eDep);

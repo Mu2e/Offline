@@ -47,6 +47,10 @@ helper.make_dict_and_map( [ mainlib,
                           ],
                           [ '-fvar-tracking-assignments-toggle'] )
 
+
+# turn pywrap.i into a python interface
+helper.make_pywrap ()
+
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python

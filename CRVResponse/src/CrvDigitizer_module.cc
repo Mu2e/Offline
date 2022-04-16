@@ -24,11 +24,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
@@ -107,11 +105,11 @@ namespace mu2e
       for(size_t i=0; i<voltages.size(); i++) voltageVector.push_back(voltages[i]); 
 
       _makeCrvDigis->SetWaveform(voltageVector,_ADCconversionFactor,_pedestal, startTime, _digitizationPeriod);
-      const std::vector<unsigned int> &ADCs = _makeCrvDigis->GetADCs();
-      unsigned int startTDC = _makeCrvDigis->GetTDC();
+      const std::vector<int16_t> &ADCs = _makeCrvDigis->GetADCs();
+      uint16_t startTDC = _makeCrvDigis->GetTDC();
 
-      std::array<unsigned int, CrvDigi::NSamples> ADCArray;
-      for(size_t i=0; i<ADCs.size(); i++) ADCArray[i]=ADCs[i]; 
+      std::array<int16_t, CrvDigi::NSamples> ADCArray={};
+      for(size_t i=0; i<ADCs.size() && i<CrvDigi::NSamples; i++) ADCArray[i]=ADCs[i]; 
 
       crvDigiCollection->emplace_back(ADCArray, startTDC, barIndex, SiPM);
     }

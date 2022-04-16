@@ -26,6 +26,27 @@ namespace mu2e{
         InsideDS( dau, inDSVac );
       }
   }
+  
+    // Function to descend and remove nodes above the PS - run after HideBuilding
+  void Geom_Interface::InsidePS( TGeoNode * node, bool inPSVac ){
+    std::string _name = (node->GetVolume()->GetName());
+    if ( node->GetMotherVolume() ) {
+      std::string motherName(node->GetMotherVolume()->GetName());
+      if ( motherName == "PSVacuum" ){
+        inPSVac = true;
+      }
+      }
+      if ( inPSVac && _name.find("ProductionTargetTungstenLa2") != 0 ) {
+        node->SetVisibility(kTRUE);
+      } else{
+        node->SetVisibility(kFALSE);
+      }
+      int ndau = node->GetNdaughters();
+      for ( int i=0; i<ndau; ++i ){
+        TGeoNode * dau = node->GetDaughter(i);
+        InsidePS( dau, inPSVac );
+      }
+  }
 
   //Function allows user to specifically hide a node by its GDML mateiral name. See Fix.gdml for the name.
   void Geom_Interface::hideNodesByMaterial(TGeoNode* node, const std::string& mat, bool onOff) {

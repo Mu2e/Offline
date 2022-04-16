@@ -5,45 +5,53 @@
 #include "TH1.h"
 #include "TString.h"
 
+class TValHist : public TObject {
+ public:
+  enum comparisonStatus {
+    fPerfect = 0,
+    fTight = 1,
+    fLoose = 2,
+    fFail = 3,
+    fCantCompare = 11
+  };
 
-class TValHist: public TObject {
-
-public:
-
-  TValHist() {
-    ClearB();
-  }
+  TValHist() { ClearB(); }
 
   virtual ~TValHist() {}
 
-  Double_t   GetKsProb() { return fKsProb; }
-  Double_t   GetFrProb() { return fFrProb; }
-  Bool_t     GetDiff()   { return fDiff; }
-  Int_t      GetStatus() { return fStatus; }
-  TValPar&   GetPar()    { return fPar;}
-  TString&   GetTag()    { return fTag;}
-  Float_t    GetFontScale() { return fFontScale; }
+  Double_t GetKsProb() { return fKsProb; }
+  Double_t GetFrProb() { return fFrProb; }
+  Bool_t GetDiff() { return fDiff; }
+  Int_t GetStatus() { return fStatus; }
+  TValPar& GetPar() { return fPar; }
+  TString& GetTag() { return fTag; }
+  Float_t GetFontScale() { return fFontScale; }
+  Bool_t GetEmpty() { return fEmpty; }
 
-  virtual const char* GetName() const=0;
-  virtual const char* GetTitle() const=0;
+  virtual const char* GetName() const = 0;
+  virtual const char* GetTitle() const = 0;
 
-  void SetPar(TValPar& x){ fPar = x; }
-  void SetTag(TString& x){ fTag = x; }
-  void SetFontScale(Float_t x){ fFontScale = x; }
+  void SetPar(TValPar& x) { fPar = x; }
+  void SetTag(TString& x) { fTag = x; }
+  void SetFontScale(Float_t x) { fFontScale = x; }
 
-  virtual Int_t Analyze(Option_t* Opt="")=0;
-  virtual void  Summary(Option_t* Opt="")=0;
-  virtual void  Draw(Option_t* Opt="")=0;
-  virtual void  Dump() const=0;
+  virtual Int_t Analyze(Option_t* Opt = "") = 0;
+  virtual void Summary(Option_t* Opt = "") = 0;
+  virtual void Draw(Option_t* Opt = "") = 0;
+  virtual void Dump() const = 0;
 
-  virtual void  ClearB(Option_t* Opt="");
-  virtual void  ClearProb() { fKsProb=0.0; fFrProb=0.0; fDiff=true; }
-  virtual void  Clear(Option_t* Opt="")=0;
+  virtual void ClearB(Option_t* Opt = "");
+  virtual void ClearProb() {
+    fKsProb = 0.0;
+    fFrProb = 0.0;
+    fDiff = true;
+  }
+  virtual void Clear(Option_t* Opt = "") = 0;
 
-protected:
+ protected:
   Double_t fKsProb;  // KS test, ~1 is good
   Double_t fFrProb;  // fraction difference test, ~1 is good
-  Bool_t   fDiff;    // true if any difference at all
+  Bool_t fDiff;      // true if any difference at all
 
   Int_t fStatus;
 
@@ -51,9 +59,9 @@ protected:
   TString fTag;
 
   Float_t fFontScale;
+  Bool_t fEmpty;  // true if eiher hist is empty
 
-  ClassDef(TValHist,1)
-
+  ClassDef(TValHist, 1)
 };
 
-#endif  /* Tools_TValHist_hh*/
+#endif /* Tools_TValHist_hh*/

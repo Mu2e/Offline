@@ -9,7 +9,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -25,6 +24,7 @@
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -77,7 +77,7 @@ namespace mu2e {
    using Parameters = art::EDProducer::Table<Config>;
    explicit SelectRecoMC(const Parameters& conf);
    void produce(art::Event& evt) override;
-        
+
   private:
    typedef std::vector<TrkMCTools::spcount>SPCC;
    typedef std::set<StrawHitIndex> SHIS;
@@ -102,7 +102,7 @@ namespace mu2e {
 
   };
 
-  SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
+  SelectRecoMC::SelectRecoMC(const Parameters& config )  :
     art::EDProducer{config},
     _debug(config().debug()),
     _saveallenergy(config().saveEnergySteps()),
@@ -136,11 +136,11 @@ namespace mu2e {
     consumes<PrimaryParticle>(_pp);
     consumes<StrawDigiMCCollection>(_sdmcc);
     consumes<CrvDigiMCCollection>(_crvdmcc);
-    produces <IndexMap>("StrawDigiMap"); 
-    produces <IndexMap>("CrvDigiMap"); 
-    produces <KalSeedMCCollection>(); 
-    produces <KalSeedMCAssns>();    
-    produces <CaloDigiCollection>();    
+    produces <IndexMap>("StrawDigiMap");
+    produces <IndexMap>("CrvDigiMap");
+    produces <KalSeedMCCollection>();
+    produces <KalSeedMCAssns>();
+    produces <CaloDigiCollection>();
     produces <StrawDigiCollection>();
     produces <StrawDigiADCWaveformCollection>();
     produces <StrawHitFlagCollection>();
@@ -148,12 +148,12 @@ namespace mu2e {
     produces <CrvRecoPulseCollection>();
     produces <CrvCoincidenceClusterCollection>();
     produces <RecoCount>();
-    
+
     if (_debug > 0)
     {
        std::cout << "Using KalSeed collections from ";
        for (auto const& kff : _kscs) std::cout << kff << " " << std::endl;
-      
+
        std::cout << "Using HelixSeed collections from ";
        for (auto const& hsc : _hscs) std::cout << hsc << " " << std::endl;
     }
@@ -203,7 +203,7 @@ namespace mu2e {
       }
     }
   }
-  
+
   void SelectRecoMC::fillTSHMC(KalSeed const& seed, SPCC const& spcc,
       StrawDigiMCCollection const& sdmcc, KalSeedMC& mcseed) {
     for(auto const& hit : seed.hits() ) {
@@ -282,8 +282,8 @@ namespace mu2e {
     // for the primary particle
     for(auto const& vdsp : vdspc ) {
       if(vdsp.simParticle() == psp){
-	if(_debug > 1) std::cout << "Found matching VD StepPoint position" 
-	  << vdsp.position() << " momentum " << vdsp.momentum() 
+	if(_debug > 1) std::cout << "Found matching VD StepPoint position"
+	  << vdsp.position() << " momentum " << vdsp.momentum()
 	    << " time " << vdsp.time() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
 	VDStep vds(det->toDetector(vdsp.position()),
 	    vdsp.momentum() ,
@@ -297,7 +297,7 @@ namespace mu2e {
   void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec) {
 // test
     if(chc.size() != shfc.size())
-      throw cet::exception("Reco")<<"mu2e::SelectRecoMC: inconsistent collections"<< std::endl; 
+      throw cet::exception("Reco")<<"mu2e::SelectRecoMC: inconsistent collections"<< std::endl;
     for(const auto& shf : shfc) {
       if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
       if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
@@ -382,9 +382,9 @@ namespace mu2e {
 	  ksmca->addSingle(seedp,mcseedp);
 	  // record the CaloCluster associated with this seed (if any)
 	  if(seed.hasCaloCluster())ccptrs.insert(seed.caloCluster());
-	  if(_debug > 2) std::cout << "KalSeedMC has " << mcseed._tshmcs.size() 
+	  if(_debug > 2) std::cout << "KalSeedMC has " << mcseed._tshmcs.size()
 	    << " MCHits , KalSeed has " << seed.hits().size() << " TrkStrawHits" << std::endl;
-	} 
+	}
       }
     }
     // get straw indices from all helices too
@@ -432,7 +432,7 @@ namespace mu2e {
     event.put(std::move(ksmca));
   }
 
-  void SelectRecoMC::fillCrv(art::Event& event, 
+  void SelectRecoMC::fillCrv(art::Event& event,
       PrimaryParticle const& pp, RecoCount& nrec) {
 // find Crv data in event
     auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(_crvccc);
@@ -499,7 +499,7 @@ namespace mu2e {
     event.put(std::move(crvdmcim),"CrvDigiMap");
   }
 
-  void SelectRecoMC::fillCalo(art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, 
+  void SelectRecoMC::fillCalo(art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,
                               PrimaryParticle const& pp, RecoCount& nrec)
   {
 
@@ -507,7 +507,7 @@ namespace mu2e {
     auto const& cdc = *cdch;
     auto ccch = event.getValidHandle<CaloClusterCollection>(_ccc);
     auto const& ccc = *ccch;
-    
+
     std::unique_ptr<CaloDigiCollection> scdc(new CaloDigiCollection);
     // reco count
     nrec._ncalodigi = cdc.size();

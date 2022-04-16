@@ -5,7 +5,6 @@
 // ======================================================================
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -50,7 +49,8 @@ public:
   virtual void produce(Event&);
 
 private:
-  int decompressCrvDigi(uint8_t adc);
+//  int decompressCrvDigi(uint8_t adc);
+  int16_t decompressCrvDigi(int16_t adc);
 
   int diagLevel_;
 
@@ -69,19 +69,9 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
-int CrvDigisFromFragments::decompressCrvDigi(uint8_t adc) {
-  // TODO: Temporary implementation until we have the real compression used at the FEBs
-  int toReturn = adc;
-  if (adc >= 50 && adc < 75)
-    toReturn = (adc - 50) * 2 + 50;
-  if (adc >= 75 && adc < 100)
-    toReturn = (adc - 75) * 4 + 100;
-  if (adc >= 100 && adc < 125)
-    toReturn = (adc - 100) * 8 + 200;
-  if (adc >= 125)
-    toReturn = (adc - 125) * 16 + 400;
-  toReturn += 95;
-  return toReturn;
+int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc) 
+{
+  return adc;
 }
 
 void CrvDigisFromFragments::produce(Event& event) {
@@ -134,25 +124,6 @@ void CrvDigisFromFragments::produce(Event& event) {
 
     for (size_t curBlockIdx = 0; curBlockIdx < cc.block_count(); curBlockIdx++) {
 
-#if 0 // TODO: Look into restoring some form of this later...
-      if (diagLevel_ > 1) {
-        // Print binary contents the first 3 packets starting at the current position
-        // In the case of the tracker simulation, this will be the whole tracker
-        // DataBlock. In the case of the calorimeter, the number of data packets
-        // following the header packet is variable.
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (0 + 3 * curBlockIdx));
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (1 + 3 * curBlockIdx));
-        cc.printPacketAtByte(cc.blockIndexBytes(0) + 16 * (2 + 3 * curBlockIdx));
-
-        // Print out decimal values of 16 bit chunks of packet data
-        for (int i = 7; i >= 0; i--) {
-          std::cout << (adc_t) * (pos + i);
-          std::cout << " ";
-        }
-        std::cout << std::endl;
-      }
-#endif
-
       auto block = cc.dataAtBlockIndex(curBlockIdx);
       if (block == nullptr) {
         std::cerr << "Unable to retrieve block " << curBlockIdx << "!" << std::endl;
@@ -188,9 +159,17 @@ void CrvDigisFromFragments::produce(Event& event) {
           int crvBarIndex = (FEB * 64 + channel) / 4;
           int SiPMNumber = (FEB * 64 + channel) % 4;
 
-          std::array<unsigned int, 8> adc;
+          // TODO: This is a temporary implementation.
+          if(crvHit.NumSamples!=8)
+          {
+            std::cerr<<"Number of samples is not 8!"<<std::endl;
+            continue;
+          }
+
+          // TODO: This is a temporary implementation.
+          std::array<int16_t, 8> adc;
           for (int j = 0; j < 8; j++)
-            adc[j] = decompressCrvDigi(crvHit.Waveform().at(j));
+            adc[j] = decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
           crv_digis->emplace_back(adc, crvHit.HitTime, mu2e::CRSScintillatorBarIndex(crvBarIndex),
                                   SiPMNumber);
         }
@@ -199,6 +178,12 @@ void CrvDigisFromFragments::produce(Event& event) {
 
           for (auto const& crvHit : crvHits) {
 
+            // TODO: This is a temporary implementation.
+            if(crvHit.NumSamples!=8)
+            {
+              std::cerr<<"Number of samples is not 8!"<<std::endl;
+              continue;
+            }
               #if LONG_FORM_CRV
             // TODO: This is a temporary implementation.
             // There will be a major change on the barIndex+SiPMNumber system,
@@ -212,15 +197,6 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "MAKEDIGI: " << SiPMNumber << " " << crvBarIndex << " " << crvHit.HitTime
                       << " " << crvHits.size() << " ";
 
-            auto hits = crvHit.Waveform();
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << decompressCrvDigi(hits[j]);
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
-            }
-            std::cout << std::endl;
-
             std::cout << "timestamp: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
             std::cout << "hdr->SubsystemID: " << hdr->GetSubsystemID() << std::endl;
             std::cout << "hdr->DTCID: " << hdr->GetID() << std::endl;
@@ -228,27 +204,15 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "packetCount: " << hdr->GetPacketCount() << std::endl;
             std::cout << "EVB mode: " << hdr->GetEVBMode() << std::endl;
 
-            //	    for(int i=7; i>=0; i--) {
-            //	      std::cout << (adc_t) *(pos+8+i);
-            //	      std::cout << " ";
-            //	    }
-            //	    std::cout << std::endl;
-            //
-            //	    for(int i=7; i>=0; i--) {
-            //	      std::cout << (adc_t) *(pos+8*2+i);
-            //	      std::cout << " ";
-            //	    }
-            //	    std::cout << std::endl;
-
             std::cout << "SiPMNumber: " << crvHit.SiPMID % 4 << std::endl;
             std::cout << "scintillatorBarIndex: " << crvHit.SiPMID / 4 << std::endl;
             std::cout << "TDC: " << crvHit.HitTime << std::endl;
             std::cout << "Waveform: {";
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << hits[j];
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
+            // TODO: This is a temporary implementation.
+            for (size_t j = 0; j < 8; j++) 
+            {
+              std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
+              if (j+1 < 8) std::cout << " ";
             }
             std::cout << "}" << std::endl;
             #else
@@ -256,12 +220,11 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "GREPMECRV: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
             std::cout << crvHit.SiPMID << " ";
             std::cout << crvHit.HitTime << " ";
-            auto hits = crvHit.Waveform();
-            for (size_t j = 0; j < hits.size(); j++) {
-              std::cout << hits[j];
-              if (j < hits.size() - 1) {
-                std::cout << " ";
-              }
+            // TODO: This is a temporary implementation.
+            for (size_t j = 0; j < 8; j++) 
+            {
+              std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
+              if (j+1 < 8) std::cout << " ";
             }
             std::cout << std::endl;
             #endif

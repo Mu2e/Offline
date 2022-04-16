@@ -12,7 +12,6 @@
 #include "fhiclcpp/types/Table.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -29,20 +28,20 @@ namespace mu2e {
        {
 	   using Name    = fhicl::Name;
 	   using Comment = fhicl::Comment;
-	   fhicl::Atom<int>              debug   { Name("debugLevel"),            Comment("Diagnosis level"),0 }; 
-	   fhicl::Atom<art::InputTag>    chTag   { Name("ComboHitCollection"),    Comment(" ") }; 
-	   fhicl::Atom<bool>             testflag{ Name("TestFlag"),              Comment("test flag or not") }; 
-	   fhicl::Atom<bool>             testrad { Name("TestRadius"),            Comment("test position radius") }; 
-	   fhicl::Sequence<std::string>  shsel   { Name("StrawHitSelectionBits"), Comment("flag selection") }; 
-	   fhicl::Sequence<std::string>  shmask  { Name("StrawHitMask"),          Comment("flag anti-selection") }; 
-	   fhicl::Atom<float>            maxdt   { Name("MaxDt"),                 Comment("maximum time separation between hits in ns") }; 
-	   fhicl::Atom<bool>             useTOT  { Name("UseTOT"),                Comment("use tot to estimate drift time") }; 
-	   fhicl::Atom<float>            maxwdchi{ Name("MaxWireDistDiffPull"),   Comment("maximum wire distance separation chi") }; 
-	   fhicl::Atom<float>            werr    { Name("WireError"),             Comment("intrinsic error on wire distance squared") }; 
-	   fhicl::Atom<float>            terr    { Name("TransError"),            Comment("intrinsic error transverse to wire (per straw)") }; 
-	   fhicl::Atom<float>            minR    { Name("MinimumRadius"),         Comment("Minimum transverse radius squared") }; 
-	   fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverseradius squared") }; 
-	   fhicl::Atom<int>              maxds   { Name("MaxDS"),                 Comment("maximum straw number difference") }; 
+	   fhicl::Atom<int>              debug   { Name("debugLevel"),            Comment("Diagnosis level"),0 };
+	   fhicl::Atom<art::InputTag>    chTag   { Name("ComboHitCollection"),    Comment(" ") };
+	   fhicl::Atom<bool>             testflag{ Name("TestFlag"),              Comment("test flag or not") };
+	   fhicl::Atom<bool>             testrad { Name("TestRadius"),            Comment("test position radius") };
+	   fhicl::Sequence<std::string>  shsel   { Name("StrawHitSelectionBits"), Comment("flag selection") };
+	   fhicl::Sequence<std::string>  shmask  { Name("StrawHitMask"),          Comment("flag anti-selection") };
+	   fhicl::Atom<float>            maxdt   { Name("MaxDt"),                 Comment("maximum time separation between hits in ns") };
+	   fhicl::Atom<bool>             useTOT  { Name("UseTOT"),                Comment("use tot to estimate drift time") };
+	   fhicl::Atom<float>            maxwdchi{ Name("MaxWireDistDiffPull"),   Comment("maximum wire distance separation chi") };
+	   fhicl::Atom<float>            werr    { Name("WireError"),             Comment("intrinsic error on wire distance squared") };
+	   fhicl::Atom<float>            terr    { Name("TransError"),            Comment("intrinsic error transverse to wire (per straw)") };
+	   fhicl::Atom<float>            minR    { Name("MinimumRadius"),         Comment("Minimum transverse radius squared") };
+	   fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverseradius squared") };
+	   fhicl::Atom<int>              maxds   { Name("MaxDS"),                 Comment("maximum straw number difference") };
            fhicl::Atom<bool>             isVSTdata{ Name("IsVSTData"),            Comment("Data from VST and needs sorting"), false };
        };
 
@@ -55,18 +54,18 @@ namespace mu2e {
 
        int           _debug;
        art::InputTag _chTag;
-       bool          _testflag;      
-       bool          _testrad;       
-       StrawHitFlag  _shsel;         
-       StrawHitFlag  _shmask;        
-       float         _maxdt;         
-       bool          _useTOT;        
-       float         _maxwdchi;      
-       float         _werr2;         
-       float         _terr;          
-       float         _minR2; 
-       float         _maxR2; 
-       int           _maxds;         
+       bool          _testflag;
+       bool          _testrad;
+       StrawHitFlag  _shsel;
+       StrawHitFlag  _shmask;
+       float         _maxdt;
+       bool          _useTOT;
+       float         _maxwdchi;
+       float         _werr2;
+       float         _terr;
+       float         _minR2;
+       float         _maxR2;
+       int           _maxds;
        bool          _isVSTdata;
        StrawIdMask   _mask;
   };
@@ -177,7 +176,7 @@ namespace mu2e {
   }
 
 
-  void CombineStrawHits::combineHits(const ComboHitCollection* chcolOrig, ComboHit& combohit) 
+  void CombineStrawHits::combineHits(const ComboHitCollection* chcolOrig, ComboHit& combohit)
   {
       combohit._mask = _mask;
       combohit._flag.merge(StrawHitFlag::panelcombo);
@@ -202,8 +201,8 @@ namespace mu2e {
          dtacc += ch.driftTime();
          ptacc += ch.propTime();
          placc += ch.pathLength();
-         werracc += ch.wireRes(); 
-         weights += wt;     
+         werracc += ch.wireRes();
+         weights += wt;
          wacc  += ch.wireDist()*wt;
          wacc2 += ch.wireDist()*ch.wireDist()*wt;
          midpos += ch.centerPos(); // simple average for position
@@ -225,9 +224,9 @@ namespace mu2e {
       combohit._pos        = midpos + combohit._wdist*combohit._wdir;
       combohit._wres       = sqrt(1.0/weights + _werr2);
       combohit._tres       = _terr/sqrt(combohit._nsh); // error proportional to # of straws (roughly)
-      float wvar           = sqrtf((wacc2/weights-wacc/weights*wacc/weights));//define quality as variance/average ratio
-      combohit._qual       = wvar/(werracc/float(combohit.nCombo()));
+//      float wvar           = sqrtf((wacc2/weights-wacc/weights*wacc/weights));//define quality as variance/average ratio
+      combohit._qual       = 1.0; // quality isn't used and should be removed FIXME
   }
-} 
+}
 
 DEFINE_ART_MODULE(mu2e::CombineStrawHits)

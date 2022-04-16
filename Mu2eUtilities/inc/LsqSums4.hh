@@ -10,8 +10,6 @@ class LsqSums4 {
 
 protected:
   double _qn, sw, sx, sy, sx2, sxy, sy2, sx3, sx2y, sxy2, sy3, sx4, sx3y, sx2y2, sxy3, sy4;
-  double xmean, ymean, x2mean, xymean, y2mean, x3mean, x2ymean, xy2mean, y3mean;
-  double x4mean, x3ymean, x2y2mean,  xy3mean, y4mean;
 
   double fX0, fY0; // offsets, need to be defined in the very beginning, by default - 0
   

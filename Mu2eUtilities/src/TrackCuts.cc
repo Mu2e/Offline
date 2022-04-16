@@ -14,10 +14,6 @@
 
 namespace mu2e {
 
-  art::TFileDirectory TrackCuts::makeMyTopDir(art::TFileDirectory& parent, const std::string& subdir) {
-    return subdir.empty() ? parent : parent.mkdir(subdir.c_str());
-  }
-
   TrackCuts::TrackCuts(const fhicl::ParameterSet& pset,
                        art::TFileDirectory& topdir,
                        const std::string& subdir)
@@ -36,7 +32,7 @@ namespace mu2e {
     , cutmommin_(pset.get<double>("mommin"))
     , cutmommax_(pset.get<double>("mommax"))
 
-    , mytopdir_(makeMyTopDir(topdir,subdir))
+    , mytopdir_(topdir.mkdir(subdir.c_str()))
     , hall_(mytopdir_, "all")
     , hfinal_(mytopdir_, "final")
   {

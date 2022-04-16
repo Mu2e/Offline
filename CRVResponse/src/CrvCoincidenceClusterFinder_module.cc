@@ -18,11 +18,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
@@ -111,7 +109,10 @@ namespace mu2e
   void CrvCoincidenceClusterFinder::endJob()
   {
     double fractionDeadTime = _totalDeadTime / _totalTime;
-    std::cout << "SUMMARY " << _crvCoincidenceCheckModuleLabel << "    Total dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%   using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
+    if(_verboseLevel>0)
+      {
+	std::cout << "SUMMARY " << _crvCoincidenceCheckModuleLabel << "    Total dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%   using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
+      }
   }
 
   void CrvCoincidenceClusterFinder::beginRun(art::Run &run)
@@ -217,6 +218,7 @@ namespace mu2e
             sumXY+=ht->_x*ht->_y;
           }
           //filled one full position&time cluster
+          if(layerSet.size()<2) continue;
 
           //average counter position (PE weighted), slope, layers
           avgCounterPos/=PEs;

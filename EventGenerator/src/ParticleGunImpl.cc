@@ -13,7 +13,7 @@
 
 // Mu2e includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 
@@ -167,8 +167,8 @@ namespace mu2e {
       const std::string& momentumModeString,
       const std::string& sourceShapeString)
   {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    _mass = pdt->particle(_pdgId).ref().mass().value();
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    _mass = pdt->particle(_pdgId).mass();
 
     _dp  = ( _pmax - _pmin);
     _dt  = ( _tmax - _tmin);

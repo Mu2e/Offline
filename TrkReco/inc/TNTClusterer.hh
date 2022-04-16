@@ -40,7 +40,6 @@ namespace mu2e {
               fhicl::Atom<float>            seedDistance{     Name("SeedDistance"),     Comment("Minimum distance for cluster seed")  };
               fhicl::Atom<float>            clusterDiameter{  Name("ClusterDiameter"),  Comment("Average cluster diameter")  };
               fhicl::Atom<float>            clusterTime{      Name("ClusterTime"),      Comment("Average cluster time spread")  };
-              fhicl::Atom<float>            deltaTimeBinMin{  Name("DeltaTimeBinMin"),  Comment("Delta time for cluster lookup")  };
               fhicl::Atom<float>            maxHitTimeDiff{   Name("MaxHitTimeDiff"),   Comment("Maximum hit cluster tme difference")  };
               fhicl::Atom<float>            maxSumDistance{   Name("MaxSumDistance"),   Comment("Maximum sum pf hit-cluster distance for convergence") };        
               fhicl::Atom<float>            minHitError{      Name("MinHitError"),      Comment("Min value of hit error")  };
@@ -48,11 +47,6 @@ namespace mu2e {
               fhicl::Atom<float>            timeRMS{          Name("TimeRMS"),          Comment("Cluster time RMS")  };
               fhicl::Atom<unsigned>         maxCluIterations{ Name("MaxCluIterations"), Comment("Maximum number of cluster algo iterations") };
               fhicl::Atom<bool>             medianCentroid {  Name("MedianCentroid"),   Comment("Use median to calculate cluster centroid") };
-              fhicl::Atom<bool>             preFilter{        Name("preFilter"),        Comment("Fast preFiltering algorithm") };
-              fhicl::Atom<float>            pfTimeBin{        Name("pfTimeBin"),        Comment("Time bin size for preFiltering algorithm") };
-              fhicl::Atom<float>            pfPhiBin{         Name("pfPhiBin"),         Comment("Phi bin size for preFiltering algorithm") };
-              fhicl::Atom<unsigned>         pfMinHit{         Name("pfMinHit"),         Comment("Minimum number of hits inside bin for preFitlering algorithm") };
-              fhicl::Atom<unsigned>         pfMinSumHit{      Name("pfMinSumHit"),      Comment("Minimum number of hits for sum of bins for preFitlering algorithm") };
               fhicl::Atom<bool>             comboInit{        Name("ComboInit"),        Comment("Start with combo hits") };
               fhicl::Sequence<std::string>  bkgmsk{           Name("BackgroundMask"),   Comment("Bkg hit selection mask") };
               fhicl::Sequence<std::string>  sigmsk{           Name("SignalMask"),       Comment("Signal hit selection mask") };
@@ -64,29 +58,25 @@ namespace mu2e {
           explicit TNTClusterer(const Config& config);
           virtual ~TNTClusterer() {};
 
-          void          init();
+          void          init        ();
           virtual void  findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters, 
-                                     const ComboHitCollection& shcol, float mbtime, int iev);
-          virtual float distance(const BkgCluster& cluster, const ComboHit& hit) const; 
+                                     const ComboHitCollection& shcol, int iev);
+          virtual float distance    (const BkgCluster& cluster, const ComboHit& hit) const; 
 
 
       private:                   
           static const int numBuckets = 256; //number of buckets to store the clusters vs time - optimized for speed
           using arrayVecBkg = std::array<std::vector<int>,numBuckets>;
 
-          void     initClu(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo, const std::vector<unsigned>& hitSel ); 
-          void     preFilter(BkgClusterCollection& clusters, const ComboHitCollection& chcol, std::vector<unsigned>& hitSel, const float mbtime);
-
-          void     clusterAlgo(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, 
-                               std::vector<BkgHit>& hinfo, float tbin);
-          unsigned formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, float tbin, 
-                                std::vector<BkgHit>& hinfo, arrayVecBkg& hitIndex);
+          void     initClu      (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo); 
+          void     clusterAlgo  (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo, float tbin);
+          unsigned formClusters (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, float tbin, 
+                                 std::vector<BkgHit>& hinfo, arrayVecBkg& hitIndex);
           void     mergeClusters(std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol, 
                                  std::vector<BkgHit>& hinfo, float dt, float dd2);
-          void     mergeTwoClu(BkgCluster& clu1, BkgCluster& clu2 );
+          void     mergeTwoClu  (BkgCluster& clu1, BkgCluster& clu2 );
           void     updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
-
-          void     dump(const std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
+          void     dump         (const std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
 
           std::vector<int> hitDtIdx_;
           float            dhit_;      
@@ -97,16 +87,10 @@ namespace mu2e {
           float            maxwt_; 
           float            md2_;
           float            trms2inv_; 
-          float            tbinMin_;        
           float            maxHitdt_;   
           float            maxDistSum_; 
           unsigned         maxNiter_;    
           bool             useMedian_;  
-          bool             preFilter_;  
-          float            pfTimeBin_;
-          float            pfPhiBin_;
-          unsigned         pfMinHit_;
-          unsigned         pfMinSumHit_;
           bool             comboInit_;  
           StrawHitFlag     bkgmask_;    
           StrawHitFlag     sigmask_;    

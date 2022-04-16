@@ -10,7 +10,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"

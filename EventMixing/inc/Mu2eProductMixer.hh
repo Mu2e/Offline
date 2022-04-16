@@ -29,6 +29,7 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 
+#include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -83,6 +84,14 @@ namespace mu2e {
           };
     };
 
+    struct CosmicLivetimeMixerConfig {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag> moduleLabel{ Name("moduleLabel"), Comment("Input module label") };
+      fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"), Comment("Output instance name for SubRun outputs"), "mixed" };
+      fhicl::Atom<std::string> genCounterLabel{ Name("genCounterLabel"), Comment("Module label for the GenEventCounter"), "genCounter" };
+    };
+
     // Configuration for the Mu2eProductMixing helper
     struct Config {
       fhicl::Table<CollectionMixerConfig> genParticleMixer { fhicl::Name("genParticleMixer") };
@@ -93,15 +102,16 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> strawGasStepMixer { fhicl::Name("strawGasStepMixer") };
       fhicl::Table<CollectionMixerConfig> crvStepMixer { fhicl::Name("crvStepMixer") };
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
-      fhicl::Table<CollectionMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
+      fhicl::OptionalTable<CosmicLivetimeMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
-      fhicl::Atom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)"), art::InputTag() };
+      fhicl::OptionalAtom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
 
     void startEvent(art::Event const& e);
+    void processEventIDs(const art::EventIDSequence& seq);
     void beginSubRun(const art::SubRun& sr);
     void endSubRun(art::SubRun& sr);
 
@@ -139,19 +149,22 @@ namespace mu2e {
                           ExtMonFNALSimHitCollection& out,
                           art::PtrRemapper const& remap);
 
-    bool mixCosmicLivetime(std::vector<mu2e::CosmicLivetime const*> const &in,
-                                 mu2e::CosmicLivetime& out,
-                                 art::PtrRemapper const& remap);
-
     bool mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
                      art::EventIDSequence& out,
                      art::PtrRemapper const& remap);
-
 
     //----------------
     bool mixVolumeInfos(std::vector<PhysicalVolumeInfoMultiCollection const*> const& in,
                         PhysicalVolumeInfoMultiCollection& out,
                         art::PtrRemapper const&);
+
+    bool mixGenEventCount(std::vector<GenEventCount const*> const& in,
+                          GenEventCount& out,
+                          art::PtrRemapper const& remap);
+
+    bool mixCosmicLivetime(std::vector<mu2e::CosmicLivetime const*> const &in,
+                           mu2e::CosmicLivetime& out,
+                           art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other
@@ -179,6 +192,21 @@ namespace mu2e {
     SimTimeOffset stoff_; // time offset for SimParticles and StepPointMCs
 
     void addInfo(VolumeMap* map, const PhysicalVolumeInfoSingleStage::value_type& entry);
+
+    std::string subrunLivetimeInstanceName_;
+    bool mixCosmicLivetimes_;
+    unsigned int generatedEvents_ = 0;
+    unsigned int resampledEvents_ = 0;
+    unsigned int totalPrimaries_ = 0;
+    float area_ = 0;
+    float lowE_ = 0;
+    float highE_ = 0;
+    float fluxConstant_ = 0;
+    float livetime_ = 0;
+    // Merging cosmic livetime info from multiple subruns is not
+    // implemented.  Make sure we only see a single subrun in a job.
+    bool cosmicSubrunInitialized_ = false;
+    art::SubRunID cosmicSubRun_;
 
   };
 

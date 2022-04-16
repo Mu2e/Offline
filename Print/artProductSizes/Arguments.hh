@@ -12,20 +12,18 @@
 
 namespace mu2e {
 
-  struct Arguments{
+struct Arguments {
+  Arguments(int argc, char** argv);
 
-    Arguments ( int argc, char**argv );
+  double minimumFractionDefault;
+  double minimumFraction;
+  std::vector<std::string> fileNames;
 
-    double minimumFractionDefault;
-    double minimumFraction;
-    std::vector<std::string> fileNames;
+ private:
+  double toDouble(char const*, double low, double high);
+  void usage() const;
+};
 
-  private:
-    double toDouble( char const*, double low, double high);
-    void usage() const;
-
-  };
-
-}
+}  // namespace mu2e
 
 #endif /* ROOTtools_artProductSizes_Arguments_hh */

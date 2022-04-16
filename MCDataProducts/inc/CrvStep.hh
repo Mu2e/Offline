@@ -2,7 +2,7 @@
 #define MCDataProducts_CrvStep_hh
 //
 // Class to summarize the passage of a single particle through a single CRV counter
-// This consolidates the G4 steps and insulates the downstream CRV response simulation 
+// This consolidates the G4 steps and insulates the downstream CRV response simulation
 // from details of the G4 model
 //
 #include "canvas/Persistency/Common/Ptr.h"
@@ -14,17 +14,17 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include <Rtypes.h>
 
-namespace mu2e 
+namespace mu2e
 {
-  class CrvStep 
+  class CrvStep
   {
     public:
 
       CrvStep() : _visibleEDep(0.0), _startTime(0.0), _endTime(0.0), _pathLength(0.0) {}
       CrvStep(CRSScintillatorBarIndex barIndex, float visibleEDep, double startTime, double endTime,
-              const XYZVectorF &startPos, const XYZVectorF &endPos, const XYZVectorF &startMom, float endMom, 
+              const XYZVectorF &startPos, const XYZVectorF &endPos, const XYZVectorF &startMom, float endMom,
               float pathLength, art::Ptr<SimParticle> const& simParticle) :
-              _barIndex(barIndex), _visibleEDep(visibleEDep), 
+              _barIndex(barIndex), _visibleEDep(visibleEDep),
               _startTime(startTime), _endTime(endTime), _startPos(startPos), _endPos(endPos),
               _startMom(startMom), _endMom(endMom),
               _pathLength(pathLength), _simParticle(simParticle) {}
@@ -33,6 +33,8 @@ namespace mu2e
       float                        visibleEDep() const {return _visibleEDep;}
       double                       startTime() const   {return _startTime;}
       double                       endTime() const     {return _endTime;}
+      double&                       startTime() {return _startTime;}; // non-const used for resampling
+      double&                       endTime() {return _endTime;}
 
       XYZVectorF const&                startPos() const    {return _startPos;}
       XYZVectorF const&                endPos() const      {return _endPos;}
@@ -50,12 +52,12 @@ namespace mu2e
 
     private:
       CRSScintillatorBarIndex _barIndex;
-      float                   _visibleEDep; 
+      float                   _visibleEDep;
       double                  _startTime, _endTime; //must be double to allow for long-lived particles
       XYZVectorF                  _startPos,  _endPos;
       XYZVectorF                  _startMom;
       float                   _endMom;              //direction of end momentum is not known
-      float                   _pathLength;          //the actual step length, which may be longer 
+      float                   _pathLength;          //the actual step length, which may be longer
                                                     //than the differences between endPos and startPos
       art::Ptr<SimParticle>   _simParticle;
   };
@@ -64,7 +66,7 @@ namespace mu2e
 
   inline std::ostream& operator<<( std::ostream& ost, CrvStep const& cs){
     ost << "CrvStep BarIndex " << cs.barIndex()
-    << " visible energy deposit " << cs.visibleEDep() 
+    << " visible energy deposit " << cs.visibleEDep()
     << " path length " << cs.pathLength();
     return ost;
   }

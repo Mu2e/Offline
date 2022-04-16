@@ -6,7 +6,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -35,7 +35,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
@@ -704,7 +703,7 @@ namespace mu2e {
     // Additional printout and histograms about the simulated particles.
     if ( haveSimPart && (_nAnalyzed < _maxFullPrint) ){
 
-      GlobalConstantsHandle<ParticleDataTable> pdt;
+      GlobalConstantsHandle<ParticleDataList> pdt;
 
       for ( SimParticleCollection::const_iterator i=simParticles->begin();
             i!=simParticles->end(); ++i ){
@@ -721,8 +720,7 @@ namespace mu2e {
           int pdgId = sim.pdgId();
 
           // Name of this particle type.
-          ParticleDataTable::maybe_ref particle = pdt->particle(pdgId);
-          string pname = particle.ref().name();
+          string pname = pdt->particle(pdgId).name();
 
           // Information about generated particle.
           GenParticle const& gen = *sim.genParticle();

@@ -42,7 +42,7 @@ physics : {
 outputs:  {
   outfile :  {
     module_type   :   RootOutput
-    fileName      :   "digis_from_frags_crv.root"
+    fileName      :   "digis_from_frags_crv.art"
 
 #    outputCommands: [ "drop *",
 #		       "keep mu2e::StrawDigis_makeSD_*_*",

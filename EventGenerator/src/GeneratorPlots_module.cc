@@ -5,7 +5,6 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -79,14 +78,14 @@ namespace mu2e {
 
   void GeneratorPlots::analyze(const art::Event& event) {
 
-    if(!findData(event)) 
-      throw cet::exception("RECO")<<"No data in  event"<< endl; 
-
-    GetGenPartInfo(event);
+    if(!findData(event)){
+      throw cet::exception("RECO")<<"No data in  event"<< endl;
+    }else{
+      GetGenPartInfo(event);
+    }
 }
 
 void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
-	
   cet::map_vector<mu2e::SimParticle>::const_iterator iter;
   for(iter=_gencol->begin(); iter!=_gencol->end(); iter++)
   {
@@ -105,7 +104,7 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
     _gencol=0;
     auto genpart = evt.getValidHandle<SimParticleCollection>(_genTag);
     _gencol = genpart.product();
-    return  _gencol!=0 ;
+    return  _gencol!=0;
   }
 
  void GeneratorPlots::endJob(){}

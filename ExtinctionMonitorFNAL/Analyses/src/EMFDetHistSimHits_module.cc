@@ -12,7 +12,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/ExtinctionMonitorFNAL/Analyses/inc/EMFSimHitHistograms.hh"

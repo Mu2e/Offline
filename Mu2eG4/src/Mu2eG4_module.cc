@@ -36,6 +36,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4IOConfigHelper.hh"
+#include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Offline/Mu2eG4/inc/Mu2eG4VisCommands.hh"
@@ -56,7 +57,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
@@ -267,7 +267,9 @@ namespace mu2e {
     if ( ncalls == 1 ) {
       if( _checkFieldMap>0 ) generateFieldMap(_originInWorld,_checkFieldMap);
       if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
+      validGeometryOrThrow( _rmvlevel );
     }
+
   }
 
 
@@ -446,7 +448,9 @@ namespace mu2e {
   void Mu2eG4::endRun(art::Run & run){
 
     BeamOnEndRun();
-    G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    if ( _rmvlevel > 0 ) {
+      G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+    }
   }
 
 
@@ -536,12 +540,13 @@ namespace mu2e {
     _runManager->TerminateEventLoop();
     _runManager->RunTermination();
 
-    G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
-    G4cout << "  User="  << _userElapsed
-           << "s Real="  << _realElapsed
-           << "s Sys="   << _systemElapsed
-           << "s" << G4endl;
-
+    if ( _rmvlevel > 0 ) {
+      G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
+      G4cout << "  User="  << _userElapsed
+	     << "s Real="  << _realElapsed
+	     << "s Sys="   << _systemElapsed
+	     << "s" << G4endl;
+    }
   }//BeamOnEndRun
 
 

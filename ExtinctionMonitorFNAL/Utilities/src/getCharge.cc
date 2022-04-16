@@ -1,28 +1,16 @@
 #include "Offline/ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {
 
     //================================================================
     double getCharge(PDGCode::type pdgId) {
-      static GlobalConstantsHandle<ParticleDataTable> pdt_;
-      ParticleDataTable::maybe_ref info = pdt_->particle(pdgId);
+      static GlobalConstantsHandle<ParticleDataList> pdt_;
 
-      // Particles unknown to PDT are ions
-      // Default ion charge:
-      int charge(1); // deuterium
-
-      if(!info.isValid()) {
-        std::cout<<"getCharge(): no valid PDG info for pdgId = "<<pdgId<<", using charge = "<<charge<<std::endl;
-      }
-      else {
-        charge = info.ref().charge();
-      }
-
-      return charge;
+      return pdt_->particle(pdgId).charge();
     }
     //================================================================
 

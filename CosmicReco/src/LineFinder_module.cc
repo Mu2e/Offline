@@ -8,7 +8,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
@@ -137,6 +136,7 @@ void LineFinder::produce(art::Event& event ) {
       tseed._status.merge(TrkFitFlag::hitsOK);
       tseed._status.merge(TrkFitFlag::helixOK);
       tseed._status.merge(TrkFitFlag::helixConverged);
+      tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
 
       CosmicTrackSeedCollection*  tcol  = seed_col.get();
       tcol->push_back(tseed);

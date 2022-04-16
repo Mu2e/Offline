@@ -24,14 +24,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"

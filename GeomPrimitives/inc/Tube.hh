@@ -70,6 +70,7 @@ namespace mu2e {
 
   };
 
+  std::ostream& operator<<(std::ostream& os, const Tube& t);
 }
 
 #endif/*GeomPrimitives_Tube_hh*/

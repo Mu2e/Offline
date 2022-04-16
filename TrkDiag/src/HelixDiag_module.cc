@@ -9,7 +9,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // mu2e
 #include "Offline/GeneralUtilities/inc/Angles.hh"
@@ -19,7 +18,7 @@
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
@@ -760,8 +759,8 @@ namespace mu2e {
   bool HelixDiag::fillMCHelix(art::Ptr<SimParticle> const& pspp) {
     bool retval(false);
     GeomHandle<DetectorSystem> det;
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    double charge = pdt->particle(pspp->pdgId()).ref().charge();
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    double charge = pdt->particle(pspp->pdgId()).charge();
     Hep3Vector pos;
     Hep3Vector mom;
   // find the earliest step associated with this particle passing the tracker midplane

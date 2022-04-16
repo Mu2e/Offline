@@ -8,10 +8,7 @@ Import('env')
 exe_env = env.Clone()
 exe_env.Append(ENV=os.environ)
 
-# if building in Muse, default dir will be above Offline
-command="scripts/build/bin/procs.sh "
-if 'MUSE_WORK_DIR' in env:
-    command = "Offline/"+command
+command="Offline/scripts/build/bin/procs.sh "
 
 # each of these generates a useful file or runs a test
 targets = ["DEPS","GDML","ROVERLAPS","TEST03","GITPACK","RMSO"]

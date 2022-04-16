@@ -30,12 +30,12 @@ namespace mu2e {
   void EMFRawHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
   {
     art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+    art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
     book (extmon, tfdir);
   }
 
   // Book the histograms.
-  void EMFRawHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+  void EMFRawHitHistograms::book(const ExtMonFNAL::ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
     ConditionsHandle<ExtMonFNALConditions> cond("ignored");
 

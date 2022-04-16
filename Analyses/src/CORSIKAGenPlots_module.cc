@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -23,7 +22,7 @@
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
@@ -93,7 +92,7 @@ class mu2e::CORSIKAGenPlots : public art::EDAnalyzer {
     PDGCode::type _pdgId;
 
     void bookHists(art::ServiceHandle<art::TFileService> &);
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 };
 
 mu2e::CORSIKAGenPlots::CORSIKAGenPlots(fhicl::ParameterSet const &p)
@@ -176,8 +175,8 @@ void mu2e::CORSIKAGenPlots::analyze(art::Event const & e)
     _hXZ->Fill(p.position().x(), p.position().z());
     _hY->Fill(p.position().y());
 
-    const HepPDT::ParticleData& p_data = pdt->particle(p.pdgId()).ref();
-    double mass = p_data.mass().value(); // in MeV
+    const ParticleData& p_data = pdt->particle(p.pdgId());
+    double mass = p_data.mass(); // in MeV
 
     HepLorentzVector mom4 = p.momentum();
     Hep3Vector mom3(mom4.px(), mom4.py(), mom4.pz());

@@ -249,7 +249,7 @@ void LookupBin::Read(std::ifstream &lookupfile, const unsigned int &i)
   if(i!=binNumber) throw std::logic_error("Corrupt lookup table.");
 }
 
-void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
+  void MakeCrvPhotons::LoadLookupTable(const std::string &filename, int debug)
 {
   _fileName = filename;
   std::ifstream lookupfile(filename,std::ios::binary);
@@ -271,11 +271,11 @@ void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
   _bins[1].resize(nScintillatorCerenkovBins);
   _bins[2].resize(nFiberCerenkovBins);
 
-  std::cout<<"Reading CRV lookup tables "<<filename<<" ... "<<std::flush;
+  if(debug>0) std::cout<<"Reading CRV lookup tables "<<filename<<" ... "<<std::flush;
   for(unsigned int i=0; i<nScintillatorScintillationBins; i++) _bins[0][i].Read(lookupfile,i);
   for(unsigned int i=0; i<nScintillatorCerenkovBins; i++)      _bins[1][i].Read(lookupfile,i);
   for(unsigned int i=0; i<nFiberCerenkovBins; i++)             _bins[2][i].Read(lookupfile,i);
-  std::cout<<"Done."<<std::endl;
+  if(debug>0) std::cout<<"Done."<<std::endl;
 
   lookupfile.close();
 }

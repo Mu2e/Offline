@@ -4,8 +4,6 @@
 
 // Mu2e includes.
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
@@ -50,7 +48,6 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"

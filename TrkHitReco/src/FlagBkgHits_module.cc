@@ -1,7 +1,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
@@ -9,9 +8,7 @@
 
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 
-#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -41,7 +38,6 @@ namespace mu2e
              using Comment = fhicl::Comment;
              fhicl::Atom<art::InputTag>            comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
              fhicl::Atom<art::InputTag>            strawHitCollection{   Name("StrawHitCollection"),   Comment("StrawHit collection name") };
-	     fhicl::Atom<art::InputTag>            ewMarkerTag{          Name("EventWindowMarker"),    Comment("EventWindowMarker producer"),"EWMProducer" };
              fhicl::Atom<unsigned>                 minActiveHits{        Name("MinActiveHits"),        Comment("Minumim number of active hits in a cluster") };
              fhicl::Atom<unsigned>                 minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
              fhicl::Atom<float>                    clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
@@ -68,7 +64,6 @@ namespace mu2e
       private:
          const art::ProductToken<ComboHitCollection> chtoken_;
          const art::ProductToken<StrawHitCollection> shtoken_;
-         const art::ProductToken<EventWindowMarker>  ewmtoken_;
          unsigned                                    minnhits_;
          unsigned                                    minnp_;
          bool                                        filter_, flagch_, flagsh_;
@@ -96,7 +91,6 @@ namespace mu2e
      art::EDProducer{config},
      chtoken_{     consumes<ComboHitCollection>(config().comboHitCollection()) },
      shtoken_{     consumes<StrawHitCollection>(config().strawHitCollection()) },
-     ewmtoken_{    consumes<EventWindowMarker>(config().ewMarkerTag()) },
      minnhits_(    config().minActiveHits() ),
      minnp_(       config().minNPlanes()),
      filter_(      config().filterOutput()),
@@ -155,16 +149,6 @@ namespace mu2e
      //unsigned iev=event.event();
       if (debug_ > 0 && iev_%printfreq_==0) std::cout<<"FlagBkgHits: event="<<iev_<<std::endl;
 
-      ConditionsHandle<AcceleratorParams> accPar("ignored");
-      float mbtime = accPar->deBuncherPeriod;
-
-      auto ewmH = event.getValidHandle(ewmtoken_);
-      const EventWindowMarker& ewMarker = *ewmH.product();
-      float eventWindowLength = ewMarker.eventLength();
-      bool onSpill = (ewMarker.spillType() == EventWindowMarker::SpillType::onspill);
-      if (!onSpill)
-        mbtime = eventWindowLength;
-
       auto chH = event.getValidHandle(chtoken_);
       const ComboHitCollection& chcol = *chH.product();
       unsigned nch = chcol.size();
@@ -181,7 +165,7 @@ namespace mu2e
 
 
       // find clusters, sort is needed for recovery algorithm. bkgccolFast has hits that are autmoatically marked as bkg.
-      clusterer_->findClusters(bkgccolFast,bkgccol,chcol, mbtime, iev_);
+      clusterer_->findClusters(bkgccolFast,bkgccol,chcol, iev_);
       sort(bkgccol.begin(),bkgccol.end(),[](const BkgCluster& c1,const BkgCluster& c2) {return c1.time() < c2.time();});
 
 

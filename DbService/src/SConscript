@@ -46,6 +46,8 @@ helper.make_plugins( [ mainlib,
 BINLIBS   = [ mainlib, 'mu2e_DbTables' , 'cetlib', 'cetlib_except', "pq" ]
 helper.make_bin("dbTool",BINLIBS,[])
 
+# turn pywrap.i into a python interface
+helper.make_pywrap (['mu2e_DbTables'])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

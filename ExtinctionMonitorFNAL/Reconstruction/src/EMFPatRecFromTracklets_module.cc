@@ -31,7 +31,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -72,7 +71,7 @@ namespace mu2e {
       void book(const ExtMon& extmon, const std::string& relativePath="");
 
       // Book histograms in the specified TFileDirectory.
-      void book(const ExtMon& extmon, art::TFileDirectory& tfdir);
+      void book(const ExtMon& extmon, const art::TFileDirectory& tfdir);
 
       void fill(const Tracklet& tl);
       void fill(const Tracklets& tls);
@@ -89,12 +88,12 @@ namespace mu2e {
     void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
     {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
       book (extmon, tfdir);
     }
 
     // Book the histograms.
-    void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+    void HistTracklet::book(const ExtMonFNAL::ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
       hclock_ = tfdir.make<TH1D>("clock", "Tracklet clock", 100, -20.5, 79.5);
 
@@ -140,7 +139,7 @@ namespace mu2e {
       void book(const ExtMon& extmon, const std::string& relativePath="");
 
       // Book histograms in the specified TFileDirectory.
-      void book(const ExtMon& extmon, art::TFileDirectory& tfdir);
+      void book(const ExtMon& extmon, const art::TFileDirectory& tfdir);
 
       void fill(const Tracklet& up, const Tracklet& dn);
       void fill(const Tracklets& ups, const Tracklets& dns);
@@ -155,12 +154,12 @@ namespace mu2e {
     void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, const std::string& relativePath)
     {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = relativePath.empty() ? *tfs : tfs->mkdir(relativePath.c_str());
+      art::TFileDirectory tfdir = tfs->mkdir(relativePath.c_str());
       book (extmon, tfdir);
     }
 
     // Book the histograms.
-    void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir) {
+    void HistTrkMatch::book(const ExtMonFNAL::ExtMon& extmon, const art::TFileDirectory& tfdir) {
 
       hclockMatch_ = tfdir.make<TH2D>("clockMatch", "Tracklet clock dn vs up",
                                       100, -20.5, 79.5, 100, -20.5, 79.5);

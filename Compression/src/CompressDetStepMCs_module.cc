@@ -20,7 +20,6 @@
 // Dec 2020, Andy Edmonds
 //
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -104,8 +103,8 @@ public:
     fhicl::Atom<art::InputTag> caloShowerStepTag{Name("caloShowerStepTag"), Comment("InputTag for CaloShowerSteps")};
     fhicl::Atom<art::InputTag> crvStepTag{Name("crvStepTag"), Comment("InputTag for CrvSteps")};
     fhicl::Sequence<art::InputTag> stepPointMCTags{Name("stepPointMCTags"), Comment("Sequence of InputTags for StepPointMCCollections (e.g. virtualdetector)")};
-    fhicl::Atom<art::InputTag> simParticleTag{Name("simParticleTag"), Comment("InputTag for the SimParticleCollection")};
-    fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the SimParticleCollection")};
+    fhicl::Sequence<art::InputTag> simParticleTags{Name("simParticleTags"), Comment("InputTags for the SimParticleCollections")};
+    fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the MCTrajectory")};
     fhicl::Atom<int> debugLevel{Name("debugLevel"), Comment("Debug level (0 = no debug output)")};
     fhicl::Table<OptionsConfig> compressionOptions{Name("compressionOptions"), Comment("Compression options for this module")};
   };
@@ -149,7 +148,6 @@ private:
   art::ProductToken<mu2e::StrawGasStepCollection> _strawGasStepToken;
   art::ProductToken<mu2e::CaloShowerStepCollection> _caloShowerStepToken;
   art::ProductToken<mu2e::CrvStepCollection> _crvStepToken;
-  art::ProductToken<mu2e::SimParticleCollection> _simParticleToken;
   art::ProductToken<mu2e::MCTrajectoryCollection> _mcTrajectoryToken;
 
   // unique_ptrs to the new output collections
@@ -158,6 +156,8 @@ private:
   std::unique_ptr<CrvStepCollection> _newCrvSteps;
   std::map<InstanceLabel, std::unique_ptr<StepPointMCCollection> > _newStepPointMCs;
   std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
+  // temporary storage for MCTrajectories
+  std::vector<MCTrajectory> _newMCTrajs;
 
   // To create art::Ptrs to the new SimParticles and GenParticles,
   // we need their art::ProductIDs and art::EDProductGetters
@@ -190,7 +190,6 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   _strawGasStepToken{mayConsume<mu2e::StrawGasStepCollection>(_conf.strawGasStepTag())},
   _caloShowerStepToken{mayConsume<mu2e::CaloShowerStepCollection>(_conf.caloShowerStepTag())},
   _crvStepToken{mayConsume<mu2e::CrvStepCollection>(_conf.crvStepTag())},
-  _simParticleToken{consumes<mu2e::SimParticleCollection>(_conf.simParticleTag())},
   _mcTrajectoryToken{mayConsume<mu2e::MCTrajectoryCollection>(_conf.mcTrajectoryTag())}
 {
   // Check that we have valid compression levels for this module
@@ -199,6 +198,9 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   // Call appropriate produces<>() functions here.
   produces<GenParticleCollection>();
   produces<SimParticleCollection>();
+  for (const auto& i_tag : _conf.simParticleTags()) {
+    consumes<SimParticleCollection>(i_tag);
+  }
 
   produces<StrawGasStepCollection>();
   produces<CaloShowerStepCollection>();
@@ -388,98 +390,116 @@ void mu2e::CompressDetStepMCs::updateCrvSteps() {
 
 void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
   // Now compress the SimParticleCollections into their new collections
+  KeyRemap* keyRemap = new KeyRemap; // if we have multiple SimParticleCollections, we will need to rekey the SimParticles
+  bool rekeySimParticleCollection = false;
+  if (_conf.simParticleTags().size() > 1) {
+    rekeySimParticleCollection = true;
+  }
   unsigned int keep_size = 0;
-  const auto& oldSimParticles = event.getValidHandle(_simParticleToken);
-  art::ProductID i_product_id = oldSimParticles.id();
-  const art::EDProductGetter* i_prod_getter = event.productGetter(i_product_id);
-  if (_simParticleCompressionLevel == CompressionLevel::kNoCompression) {
-    // add all the SimParticles
-    for (const auto& i_simParticle : *oldSimParticles) {
-      art::Ptr<SimParticle> oldSimPtr(i_product_id, i_simParticle.first.asUint(), i_prod_getter);
-      recordSimParticle(oldSimPtr);
-    }
-  }
-
-  SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
-  keep_size += _simParticlesToKeep[i_product_id].size();
-  compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, simPartSelector, *_newSimParticles);
-
-  // Fill out the SimParticleRemapping
-  for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
-    cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
-    _simPtrRemap[i_keptSimPart] = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, oldKey.asUint(), _newSimParticleGetter);
-    if (_debugLevel>0) {
-      std::cout << "Compressing SimParticle " << i_keptSimPart << " --> " << _simPtrRemap.at(i_keptSimPart) << std::endl;
-    }
-  }
-  if (keep_size != _newSimParticles->size()) {
-    throw cet::exception("CompressDetStepMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles we wanted to keep (" << keep_size << ")" << std::endl;
-  }
-  if (_simParticleCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
-    if (_newSimParticles->size() != oldSimParticles->size()) {
-      throw cet::exception("CompressDetStepMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles in the input collection (" << oldSimParticles->size() << ") even though no compression has been requested (simParticleCompressionLevel = \"" << _simParticleCompressionLevel.name() << "\")" << std::endl;
-    }
-  }
-
-  // If we asked for the genealogy to be compressed, we will now end up with some missing links which we need to fix
-  if (_keepNGenerations >= 0) {
-    // Go through the particles we are keeping and see if any parents are not there
-    for (auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
-
-      art::Ptr<mu2e::SimParticle> i_childPtr = i_keptSimPart;
-      art::Ptr<mu2e::SimParticle> i_parentPtr = i_childPtr->parent();
-      while (i_parentPtr) {
-        // if the parent will not be in the output collection
-        if (_simPtrRemap.find(i_parentPtr) == _simPtrRemap.end()) {
-          if (_debugLevel>0) {
-            std::cout << "SimParticle " << i_parentPtr << " will not be in output collection because it has been compressed away by genealogy compression" << std::endl;
-          }
-
-          _simParticlesToTruncate[i_childPtr.id()].insert(i_childPtr);
-          break; // don't go further up the genealogy tree otherwise we will be adding particles
-        }
-        else {
-          // this parent is in the output collection so
-          if (_debugLevel>0) {
-            std::cout << "SimParticle " << i_parentPtr << " is in the output collection as " << _simPtrRemap.at(i_parentPtr) << std::endl;
-          }
-        }
-        i_childPtr = i_parentPtr;
-        i_parentPtr = i_parentPtr->parent();
+  for (const auto& i_tag : _conf.simParticleTags()) {
+    keyRemap->clear();
+    const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(i_tag);
+    art::ProductID i_product_id = oldSimParticles.id();
+    const art::EDProductGetter* i_prod_getter = event.productGetter(i_product_id);
+    if (_simParticleCompressionLevel == CompressionLevel::kNoCompression) {
+      // add all the SimParticles
+      for (const auto& i_simParticle : *oldSimParticles) {
+	art::Ptr<SimParticle> oldSimPtr(i_product_id, i_simParticle.first.asUint(), i_prod_getter);
+	recordSimParticle(oldSimPtr);
       }
     }
 
-    // Go through the truncated SimParticles and fix the parent/child links
-    for (const auto& i_truncatedSimPart : _simParticlesToTruncate[i_product_id]) {
-      //    for (auto& i_simParticle : *_newSimParticles) {
-      mu2e::SimParticle& newsim = (*_newSimParticles)[i_truncatedSimPart->id()];//_newSimParticles->at(i_truncatedSimPart.second);//i_simParticle.second;
-      // go up genealogy to get the next ancestor that is in the output
-      art::Ptr<mu2e::SimParticle> i_ancestorPtr = newsim.parent();
+    SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
+    keep_size += _simParticlesToKeep[i_product_id].size();
+    if (rekeySimParticleCollection) {
+      compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, simPartSelector, *_newSimParticles, keyRemap);
+    }
+    else {
+      compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, simPartSelector, *_newSimParticles);
+    }
+
+    // Fill out the SimParticleRemapping
+    for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
+      cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
+      cet::map_vector_key newKey = oldKey;
+      if (rekeySimParticleCollection) {
+        newKey = keyRemap->at(oldKey);
+      }
+      _simPtrRemap[i_keptSimPart] = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newKey.asUint(), _newSimParticleGetter);
       if (_debugLevel>0) {
-        std::cout << "Look for a new parent for particle id " << newsim.id() << " (current parent = " << i_ancestorPtr << ")" << std::endl;
+	std::cout << "Compressing SimParticle " << i_keptSimPart << " --> " << _simPtrRemap.at(i_keptSimPart) << std::endl;
       }
-      while (i_ancestorPtr) {
-        const auto& findIter = _simPtrRemap.find(i_ancestorPtr);
-        if (findIter != _simPtrRemap.end()) {
-          newsim.parent() = findIter->second;
-          art::Ptr<mu2e::SimParticle> newChildPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
-          (*_newSimParticles)[i_ancestorPtr->id()].addDaughter(newChildPtr);
-          if (_debugLevel > 0) {
-            std::cout << "Because of truncation setting SimParticle (" << newsim.id() << ")'s parent to " << findIter->second << " and adding daughter " << newChildPtr << std::endl;
-          }
-          break; // don't need to go any further
-        }
-        else {
-          // If we have got to the very first SimParticle (i.e. the one that points to the GenParticle)
-          if (i_ancestorPtr->isPrimary()) {
-            newsim.genParticle() = i_ancestorPtr->genParticle();// set this particle's GenParticlePtr
-            newsim.parent() = art::Ptr<SimParticle>(); // remove the parent
-            break; // don't need to go any further
-          }
-          else { // this is just another step in the genealogy
-            i_ancestorPtr = i_ancestorPtr->parent();
-          }
-        }
+    }
+    if (keep_size != _newSimParticles->size()) {
+      throw cet::exception("CompressDetStepMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles we wanted to keep (" << keep_size << ")" << std::endl;
+    }
+    if (_simParticleCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
+      if (_newSimParticles->size() != oldSimParticles->size()) {
+	throw cet::exception("CompressDetStepMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles in the input collection (" << oldSimParticles->size() << ") even though no compression has been requested (simParticleCompressionLevel = \"" << _simParticleCompressionLevel.name() << "\")" << std::endl;
+      }
+    }
+
+    // If we asked for the genealogy to be compressed, we will now end up with some missing links which we need to fix
+    // (these should all be within a single input SimParticleCollection)
+    if (_keepNGenerations >= 0) {
+      // Go through the particles we are keeping and see if any parents are not there
+      for (auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
+
+	art::Ptr<mu2e::SimParticle> i_childPtr = i_keptSimPart;
+	art::Ptr<mu2e::SimParticle> i_parentPtr = i_childPtr->parent();
+	while (i_parentPtr) {
+	  // if the parent will not be in the output collection
+	  if (_simPtrRemap.find(i_parentPtr) == _simPtrRemap.end()) {
+	    if (_debugLevel>0) {
+	      std::cout << "SimParticle " << i_parentPtr << " will not be in output collection because it has been compressed away by genealogy compression" << std::endl;
+	    }
+
+	    _simParticlesToTruncate[i_childPtr.id()].insert(i_childPtr);
+	    break; // don't go further up the genealogy tree otherwise we will be adding particles
+	  }
+	  else {
+	    // this parent is in the output collection so
+	    if (_debugLevel>0) {
+	      std::cout << "SimParticle " << i_parentPtr << " is in the output collection as " << _simPtrRemap.at(i_parentPtr) << std::endl;
+	    }
+	  }
+	  i_childPtr = i_parentPtr;
+	  i_parentPtr = i_parentPtr->parent();
+	}
+      }
+
+      // Go through the truncated SimParticles and fix the parent/child links
+      for (const auto& i_truncatedSimPart : _simParticlesToTruncate[i_product_id]) {
+	//    for (auto& i_simParticle : *_newSimParticles) {
+	mu2e::SimParticle& newsim = (*_newSimParticles)[i_truncatedSimPart->id()];//_newSimParticles->at(i_truncatedSimPart.second);//i_simParticle.second;
+	// go up genealogy to get the next ancestor that is in the output
+	art::Ptr<mu2e::SimParticle> i_ancestorPtr = newsim.parent();
+	if (_debugLevel>0) {
+	  std::cout << "Look for a new parent for particle id " << newsim.id() << " (current parent = " << i_ancestorPtr << ")" << std::endl;
+	}
+	while (i_ancestorPtr) {
+	  const auto& findIter = _simPtrRemap.find(i_ancestorPtr);
+	  if (findIter != _simPtrRemap.end()) {
+	    newsim.parent() = findIter->second;
+	    art::Ptr<mu2e::SimParticle> newChildPtr = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
+	    (*_newSimParticles)[i_ancestorPtr->id()].addDaughter(newChildPtr);
+	    if (_debugLevel > 0) {
+	      std::cout << "Because of truncation setting SimParticle (" << newsim.id() << ")'s parent to " << findIter->second << " and adding daughter " << newChildPtr << std::endl;
+	    }
+	    break; // don't need to go any further
+	  }
+	  else {
+	    // If we have got to the very first SimParticle (i.e. the one that points to the GenParticle)
+	    if (i_ancestorPtr->isPrimary()) {
+	      newsim.genParticle() = i_ancestorPtr->genParticle();// set this particle's GenParticlePtr
+	      newsim.parent() = art::Ptr<SimParticle>(); // remove the parent
+	      break; // don't need to go any further
+	    }
+	    else { // this is just another step in the genealogy
+	      i_ancestorPtr = i_ancestorPtr->parent();
+	    }
+	  }
+	}
       }
     }
   }
@@ -565,15 +585,15 @@ void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
         const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
         for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
           if (mcTrajectory.second.sim() == alreadyKeptSimPart) {
-            MCTrajectory newMCTrajectory(mcTrajectory.second);
-            _newMCTrajectories->insert(std::make_pair(mcTrajectory.second.sim(), newMCTrajectory));
+            _newMCTrajs.emplace_back(mcTrajectory.second);
+            if(_debugLevel>0 ) std::cout << "Inserting new MCTrajectory with key " << mcTrajectory.second.sim() << std::endl;
           }
         }
       }
     }
     else if (_mcTrajectoryCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
-      MCTrajectory newMCTrajectory(mcTrajectory.second);
-      _newMCTrajectories->insert(std::make_pair(mcTrajectory.second.sim(), newMCTrajectory));
+      _newMCTrajs.emplace_back(mcTrajectory.second);
+      if(_debugLevel>0 ) std::cout << "Inserting new MCTrajectory with key " << mcTrajectory.second.sim() << " and recording it " << std::endl;
       recordSimParticle(mcTrajectory.second.sim());
     }
     else {
@@ -596,18 +616,17 @@ void mu2e::CompressDetStepMCs::updateStepPointMCs() {
 }
 
 void mu2e::CompressDetStepMCs::updateMCTrajectories() {
-  for (auto& i_mcTrajectory : *_newMCTrajectories) {
-    const auto& oldSimPtr = i_mcTrajectory.second.sim();
+  for (auto& i_mcTrajectory : _newMCTrajs) {
+    const auto& oldSimPtr = i_mcTrajectory.sim();
     art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
     if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in MCTrajectory from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
-    i_mcTrajectory.second.sim() = newSimPtr;
-    auto mcTrajPair = _newMCTrajectories->extract(i_mcTrajectory.first);
-    mcTrajPair.key() = newSimPtr;
-    _newMCTrajectories->insert(std::move(mcTrajPair));
-    //    i_mcTrajectory.first = newSimPtr;
+    // overwrite the internal ptr and insert with the new key
+    i_mcTrajectory.sim() = newSimPtr;
+    _newMCTrajectories->insert(std::make_pair(i_mcTrajectory.sim(), i_mcTrajectory));
   }
+  _newMCTrajs.clear(); // clear the temporary storage
 }
 
 void mu2e::CompressDetStepMCs::recordSimParticle(const art::Ptr<mu2e::SimParticle>& sim_ptr) {

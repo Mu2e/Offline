@@ -6,7 +6,6 @@
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 
 
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
 

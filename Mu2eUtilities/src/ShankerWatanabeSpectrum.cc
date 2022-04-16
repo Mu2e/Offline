@@ -15,11 +15,9 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 // Mu2e includes
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
-#include "HepPDT/Measurement.hh"
 
-#include "HepPDT/ParticleData.hh"
 // Framework includes
 #include "cetlib/pow.h"
 
@@ -56,13 +54,13 @@ namespace mu2e {
   double ShankerWatanabeSpectrum::evaluateShanker(double E) const {
 
     GlobalConstantsHandle<PhysicsParams>     phy;
-    GlobalConstantsHandle<ParticleDataTable> pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
 
     // Shanker uses approx. binding energy
     const double bindEnergy = phy->getApproxEb();
 
     // pick up particle mass
-    const double mumass = pdt->particle(PDGCode::mu_minus).ref().mass().value();
+    const double mumass = pdt->particle(PDGCode::mu_minus).mass();
 
     const double deltaPrimeMax = mumass - bindEnergy;
     const double muEndPoint    = deltaPrimeMax - cet::square(deltaPrimeMax)/(2*phy->getAtomicMass());

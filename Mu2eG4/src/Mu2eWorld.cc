@@ -129,6 +129,9 @@
 #include "Geant4/G4DormandPrince745.hh"
 #include "Geant4/G4BogackiShampine23.hh"
 #endif
+#if G4VERSION>4106
+#include "Geant4/G4TDormandPrince45.hh"
+#endif
 #include "Geant4/G4GDMLParser.hh"
 #include "Geant4/G4ProductionCuts.hh"
 #include "Geant4/G4Region.hh"
@@ -457,6 +460,16 @@ namespace mu2e {
                << "and used G4DormandPrince745 with Spin" << G4endl;
       }
 #endif
+#if G4VERSION>4106
+    } else if ( g4stepperName_  == "G4TDormandPrince45WSpin" ) {
+      delete _rhs; // consider avoiding the delete once we really start tracking with spin
+      _rhs  = new G4Mag_SpinEqRhs(_field);
+      _stepper = new G4TDormandPrince45(_rhs, 12);
+      if ( _g4VerbosityLevel > 0) {
+        G4cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4TDormandPrince45WSpin "
+               << "and used G4TDormandPrince45 with Spin" << G4endl;
+      }
+#endif
     } else if ( g4stepperName_  == "G4ImplicitEuler" ) {
       _stepper = new G4ImplicitEuler(_rhs);
     } else if ( g4stepperName_  == "G4ExplicitEuler" ) {
@@ -472,6 +485,10 @@ namespace mu2e {
       _stepper = new G4DormandPrince745(_rhs);
     } else if ( g4stepperName_  == "G4BogackiShampine23" ) {
       _stepper = new G4BogackiShampine23(_rhs);
+#endif
+#if G4VERSION>4106
+    } else if ( g4stepperName_  == "G4TDormandPrince45" ) {
+      _stepper = new G4TDormandPrince45(_rhs);
 #endif
     } else if ( g4stepperName_  == "G4SimpleRunge" ) {
       _stepper = new G4SimpleRunge(_rhs);
@@ -1118,13 +1135,7 @@ namespace mu2e {
 
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
         G4String LVname = (*pos)->GetName();
-
-        //we need names like CRV_R1, but not CRSCMB_CRV_R1 and not CRV_Support_TS
-        if ((LVname.find("CRV_") != std::string::npos)
-            && (LVname.find("CRV_Support") == std::string::npos)
-            && (LVname.find("CRSCMB_CRV") == std::string::npos)) {
-          (*pos)->SetSensitiveDetector(sbSD);
-        }
+        if(LVname.compare(0,11,"CRSscintBar")==0) (*pos)->SetSensitiveDetector(sbSD);
       }//for
     }//if CRV
 

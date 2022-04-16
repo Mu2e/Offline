@@ -10,7 +10,7 @@
 # Usage - in a fcl configuration file
 #
 # 1 - Place the following near the start, among the PROLOGs:
-#     #include "fcl/standardMessageDestinations.fcl"
+#     #include "Offline/fcl/standardMessageDestinations.fcl"
 #
 # 2 - In a destinations entry in a block that will be part of the message
 #     service block, choose the selected standard destination configuration
@@ -137,12 +137,11 @@ mf_coutInfo:
    GEOM_PARTICLECUT : { limit : 0 }
    Configuration : { limit : 0 }
    HITS : { limit : 0 }
+   COSMIC_STEPPOINTS : { limit : 0 }
+   Summary : { limit : 0 }
+   INFO : { limit : 0 }
  } # end categories
 } # end mf_coutInfo
-mf_coutInfoStats : 
-{ 
- type :     cout
-}
 
 mf_debug:
 {

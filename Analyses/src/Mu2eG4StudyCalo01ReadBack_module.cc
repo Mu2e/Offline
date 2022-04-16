@@ -9,7 +9,7 @@
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -19,7 +19,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
@@ -271,8 +270,8 @@ namespace mu2e {
 
     ++_nAnalyzed;
 
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    ParticleDataTable const & pdt_ = *pdt;
+    GlobalConstantsHandle<ParticleDataList> pdt;
+    ParticleDataList const & pdt_ = *pdt;
 
     // print the pdt content
 
@@ -285,32 +284,7 @@ namespace mu2e {
       art::ServiceHandle<GeometryService> geom;
       SimpleConfig const& config  = geom->config();
       if (config.getBool("mu2e.printParticleDataTable",false)) {
-
-        cout << __func__ 
-             << " pdt size : "
-             << pdt_.size() 
-             << endl;
-      
-        for ( ParticleDataTable::const_iterator pdti=pdt_.begin(), e=pdt_.end(); 
-              pdti!=e; ++pdti ) {
-      
-          cout << __func__ 
-               << " pdt particle : "
-               << pdti->first.pid()  
-               << ", name: "          
-               << pdt_.particle(pdti->first.pid()).ref().name()
-               << ", PDTname: "          
-               << pdt_.particle(pdti->first.pid()).ref().PDTname()
-               << ", "
-               << pdt_.particle(pdti->first.pid()).ref().mass()
-               << ", "
-               << pdt_.particle(pdti->first.pid()).ref().totalWidth()
-               << ", "
-               << pdt_.particle(pdti->first.pid()).ref().lifetime()
-               << endl;
-
-        }
-
+        pdt_.printTable();
       }
 
     } // end of oneTime
@@ -348,7 +322,7 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-      	  mass = pdt_.particle(pdgId).ref().mass();
+      	  mass = pdt_.particle(pdgId).mass();
 	}
       }
 
@@ -380,8 +354,7 @@ namespace mu2e {
              << point.volumeId()   << " | "
              << point.trackId().asInt() << " | "
              << pdgId              << " , name: "  
-             << pdt_.particle(pdgId).ref().name() << " , PDTname: "
-             << pdt_.particle(pdgId).ref().PDTname() << " | "
+             << pdt_.particle(pdgId).name() << " | "
              << point.time()       << " "
              << pos                << " "
              << mom.mag()          << " | "
@@ -444,7 +417,7 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-	  mass = pdt_.particle(pdgId).ref().mass();
+	  mass = pdt_.particle(pdgId).mass();
         }
       }
 
@@ -476,8 +449,7 @@ namespace mu2e {
              << hit.volumeId()     << " | "
              << hit.trackId().asInt() << " | "
              << pdgId              << " , name: "  
-             << pdt_.particle(pdgId).ref().name() << " , PDTname: "
-             << pdt_.particle(pdgId).ref().PDTname() << " | "
+             << pdt_.particle(pdgId).name() << " | "
              << hit.time()         << " "
              << pos                << " "
              << mom.mag()          << " | "
