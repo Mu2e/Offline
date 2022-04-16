@@ -14,7 +14,7 @@
 #include <string>
 
 using namespace std;
-void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpanels, unsigned ndeadstraws, unsigned nnoisystraws, const char* outfile) {
+void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpanels, unsigned ndeadstraws, unsigned nnoisystraws, const char* outfile="RandomTrackerStatus.txt") {
   unsigned NStraws(96); // straws/plane
   unsigned NPanels(6); // panels/plane
   unsigned NPlanes(36);  // planes
@@ -37,13 +37,13 @@ void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpane
   os << "#" << endl;
 
   if(ndeadplanes > 0){
-    os  << "Table TrkPlaneStatus" << endl;
+    os  << "TABLE TrkPlaneStatus" << endl;
     unsigned ndplane(0);
     while(ndplane < ndeadplanes){
       int plane = myrand.Integer(NPlanes);
       if(find(deadplanes.begin(), deadplanes.end(), plane) == deadplanes.end()){
         ++ndplane;
-        os  << std::setw(2) << plane << "_0_0, noHV" << std::endl;
+        os  << std::setw(2) << plane << "_0_0, Absent" << std::endl;
         deadplanes.push_back(plane);
       }
     }
@@ -61,7 +61,7 @@ void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpane
         if(find(deadpanels.begin(),deadpanels.end(),upanel) == deadpanels.end()){
           ++ndpanel;
           char panelid[80];
-          snprintf(panelid,80,"%u_%u_0, noHV",plane,panel);
+          snprintf(panelid,80,"%u_%u_0, NoHV",plane,panel);
           os  << panelid << std::endl;
           deadpanels.push_back(upanel);
         }
