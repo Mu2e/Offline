@@ -36,6 +36,6 @@ services.SeedService.maxUniqueEngines :  20
 physics.producers.generate.inputfile : "Offline/EventGenerator/defaultConfigs/surfaceCheck.txt"
 
 services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_SurfaceCheck.txt"
-services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
+services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
 services.TFileService.fileName     : "surfaceCheck.root"
 
