@@ -11,6 +11,21 @@
 #include <string>
 
 using namespace std;
+
+  // panel azimuth
+double PanelPhi(int plane, int panel){
+  double pphi0[6] { 106, 195, 225,315, 345,75};
+  double pphi1[6] { 255, 165, 135, 45, 15,285};
+  int mplane = plane%4;
+  double radfac =M_PI/180;
+  if(mplane==0 || mplane ==3) {
+    return radfac*pphi0[panel];
+  } else {
+    return radfac*pphi1[panel];
+  }
+}
+
+
 void MisalignTracker(int seed, double weakfactor, double trackerangle, double trackerpos,
     double planeangle, double planepos,
     double panelangle, double panelpos,
@@ -31,7 +46,7 @@ void MisalignTracker(int seed, double weakfactor, double trackerangle, double tr
   double yskew = myrand.Uniform(-weakangle,weakangle);
   double twist = myrand.Uniform(-weakangle,weakangle);
   double zsqueeze = myrand.Uniform(-weakpos,weakpos);
-//  double rsqueeze = myrand.Uniform(-weakpos,weakpos);
+  double rsqueeze = myrand.Uniform(-weakpos,weakpos);
 
   filebuf fb;
   fb.open (outfile,ios::out);
@@ -51,7 +66,7 @@ void MisalignTracker(int seed, double weakfactor, double trackerangle, double tr
     << "# xskew = "<< xskew << " rad" << endl
     << "# yskew = "<< yskew << " rad" << endl
     << "# zsqueeze = "<< zsqueeze << " mm" << endl
-    // << " rsqueeze = "<< rsqueeze << " mm"  << endl// FIXME
+    << "# rsqueeze = "<< rsqueeze << " mm"  << endl
     << endl;
   for(unsigned ibuf=0;ibuf<3;ibuf++)
     os << "#" << endl;
@@ -104,18 +119,17 @@ void MisalignTracker(int seed, double weakfactor, double trackerangle, double tr
   int index(0);
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
     for(unsigned ipanel=0;ipanel < NPanels; ++ipanel){
-      double dalphax = myrand.Gaus(0,panelangle);
-      double dalphay = myrand.Gaus(0,panelangle);
-      double dalphaz = myrand.Gaus(0,panelangle);
-      // radial squeeze needs to know the panel phi, which i don't FIXME
-      double dx = myrand.Gaus(0.0,panelpos);
-      double dy = myrand.Gaus(0.0,panelpos);
-      double dz = myrand.Gaus(0.0,panelpos);
+      double dalphaU = myrand.Gaus(0,panelangle);
+      double dalphaV = myrand.Gaus(0,panelangle);
+      double dalphaW = myrand.Gaus(0,panelangle);
+      double dU = myrand.Gaus(0.0,panelpos);
+      double dV = myrand.Gaus(rsqueeze,panelpos);
+      double dW = myrand.Gaus(0.0,panelpos);
 
       os << index << ", " << iplane << "_" << ipanel << "_0, "
-        << dx << ", "
-        << dy << ", "
-        << dz << ", "
+        << dU << ", "
+        << dV << ", "
+        << dW << ", "
         << dalphax << ", "
         << dalphay << ", "
         << dalphaz << endl;
