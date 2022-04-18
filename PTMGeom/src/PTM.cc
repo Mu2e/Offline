@@ -18,8 +18,9 @@ namespace mu2e{
             _ptmHead(ptmHead) {
     // set the "overall" dimensions based on the dimenions and positions of the
     // head and stand
-    _totalHeight = ptmHead->totalHeight() + 2600.; // TODO: make this depend on the stand
-    _totalLength = 1220;
-    _totalWidth = 1220;
+    _totalHeight = ptmHead->totalHeight() + 4000.; // TODO: make this depend on the stand
+    _totalLength = 1220+100;
+    _totalWidth = 1220+100;
+
   }
 }

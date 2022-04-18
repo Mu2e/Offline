@@ -609,7 +609,7 @@ namespace mu2e {
                                            G4ThreeVector(-1*ptmHead->handleBase()->getXhalfLength(), ptmHead->handleBase()->getYhalfLength(), 0.0));
     std::string handleName = "PTMHandle";
     G4Material *handleMaterial = findMaterialOrThrow(ptmHead->handleMaterialName());
-    G4ThreeVector handlePosition = G4ThreeVector(0.0, short3Y-shortExtrusion->getYhalfLength()+ptmHead->handleBase()->getYhalfLength(), shortBarZ+shortExtrusion->getXhalfLength());
+    G4ThreeVector handlePosition = G4ThreeVector(0.0, short3Y-shortExtrusion->getYhalfLength()+ptmHead->handleBase()->getYhalfLength(), shortBarZ+shortExtrusion->getXhalfLength()+ptmHead->handleBase()->getZhalfLength());
 
 
     VolumeInfo handleInfo;
