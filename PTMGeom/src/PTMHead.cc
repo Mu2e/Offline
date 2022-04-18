@@ -47,7 +47,8 @@ namespace mu2e{
     //} else {
     //  _totalHeight = farPWC->totalHeight()+(2*handleBase->getYhalfLength())+motherMargin;
     //}
-    _totalHeight = holderExtrusionLongSep + (2*holderExtrusionLong->getYhalfLength()) + (2*handleBase->getYhalfLength()) + motherMargin;
+    //_totalHeight = holderExtrusionLongSep + (2*holderExtrusionLong->getYhalfLength()) + (2*handleBase->getYhalfLength()) + motherMargin;
+    _totalHeight = holderExtrusionLongSep + (2*handleBase->getYhalfLength()) + motherMargin;// + containerMargin;
     _totalWidth = holderExtrusionLongSep + (2*holderExtrusionLong->getYhalfLength()) + motherMargin;
     //if (nearPWC->totalWidth() >= farPWC->totalWidth()) {
     //  _totalWidth = nearPWC->totalWidth()+motherMargin;

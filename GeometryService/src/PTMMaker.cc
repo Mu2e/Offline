@@ -108,6 +108,7 @@ namespace mu2e {
     CLHEP::Hep3Vector wedgeCutoutRelPosition = CLHEP::Hep3Vector(wedgeCutoutRelX, 0.0, wedgeCutoutRelZ);
     CLHEP::HepRotation wedgeCutoutRelRotation = CLHEP::HepRotation();
     wedgeCutoutRelRotation.rotateY(wedgeCutoutRelRotY*CLHEP::deg);
+    double wedgeShiftDown = _config.getDouble("PTM.wedge.shiftDown");
     // aluminum extrusions that form a column, on which rests the top wedge
     double columnHeight = _config.getDouble("PTM.stand.mainColumnHeight");
     double columnExtrusionWidth = _config.getDouble("PTM.stand.extrusionWidth");
@@ -119,7 +120,13 @@ namespace mu2e {
     // the PTM is made of two identical PWC's, placed such that their center
     // lines match up.
     // Y-position of the PWC's inside the mother volume, which also includes the holder and handle
-    double pwcY = -0.5*(handleHeight + (0.5*motherMargin) + (0.5*containerMargin));
+    //double pwcY = -0.5*(handleHeight + (0.5*motherMargin) + (0.5*containerMargin));
+    double headTotalHeight = holderLongExtrusionSep + handleHeight + motherMargin;// + containerMargin;
+    double bottomOfHeadVolume = -0.5*headTotalHeight;
+    double holderHeight = holderLongExtrusionSep + holderExtrusionWidth;
+    //double pwcHeight = frameHeight + containerMargin;
+    double pwcY = bottomOfHeadVolume + (0.5*holderHeight);
+
     // "Near" PWC -- the more upstream of the two.
     CLHEP::Hep3Vector nearPWCPos = CLHEP::Hep3Vector(0.0, pwcY, -0.5*pwcSeparation);
     std::shared_ptr<PTMPWC> nearPWC( new PTMPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName,
@@ -184,7 +191,7 @@ namespace mu2e {
     
     // position of wedge is right under the "head"
     // TODO: once you have the right position for this, put it in the config file and have it be independent of the other things
-    double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (0.5 * ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg));
+    double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg)) - wedgeShiftDown;
     CLHEP::Hep3Vector wedgeOriginInMu2e = CLHEP::Hep3Vector(headVolumeOriginInMu2e.x(), wedgeY, headVolumeOriginInMu2e.z());
     std::shared_ptr<ExtrudedSolid> topWedge(new ExtrudedSolid("PTMStandWedge", wedgeMaterialName, wedgeOriginInMu2e, 0.5*wedgeWidth, wedgeVertices));
 
