@@ -52,11 +52,11 @@ void MisalignTracker(int seed,
   fb.open (outfile,ios::out);
   ostream os(&fb);
   // write header
-  os << "# Tracker Misalignments from MisalignTracker.C, parameters: " << endl
+  os << "# Tracker Misalignments from MisalignTracker.C, parameters:" << endl
     << "# twist " << twist << " rad" << endl
     << "# parallelogram angle " << parallel << " rad" << endl
     << "# zsqueeze " << zsqueeze << " mm" << endl
-    << "# rsqueeze " << rsqueeze << " mm " << endl
+    << "# rsqueeze " << rsqueeze << " mm" << endl
     << "# trackerangle " << trackerangle << " rad" << endl
     << "# trackerpos " << trackerpos <<" mm" << endl
     << "# planeangle = "<< planeangle << " rad" << endl
