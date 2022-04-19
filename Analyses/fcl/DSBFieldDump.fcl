@@ -6,6 +6,7 @@
 process_name : DSField
 
 #services : @local::Services.Reco
+# comment
 services : {
   message : @local::default_message
   GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
