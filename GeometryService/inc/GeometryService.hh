@@ -51,7 +51,8 @@ public:
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<std::string> inputFile{Name("inputFile"),""};
+      fhicl::Atom<std::string> inputFile{Name("inputFile")};
+      fhicl::Atom<std::string> bFieldFile{Name("bFieldFile")};
       fhicl::Atom<bool>   allowReplacement{Name("allowReplacement"),true};
       fhicl::Atom<bool>   messageOnReplacement{Name("messageOnReplacement"),false};
       fhicl::Atom<bool>   messageOnDefault{Name("messageOnDefault"),false};
@@ -103,19 +104,23 @@ private:
     // Some day this will become a database key or similar.
     std::string _inputfile;
 
+    // The name of the file that contains the configuration of the B fields.
+    std::string _bFieldFile;
+
     // Control the behaviour of messages from the SimpleConfig object holding
-    // the geometry parameters.
+    // the geometry parameters. These affect both SimpleConfig objects.
     bool _allowReplacement;
     bool _messageOnReplacement;
     bool _messageOnDefault;
     int  _configStatsVerbosity;
 
-    // Print final config file after all replacements.
+    // Print final config file after all replacements.  These affect both SimpleConfig objects.
     bool _printConfig;
     bool _printTopLevel;
 
-    // The object that parses run-time configuration file.
+    // The objects that parse the run-time configuration files.
     std::unique_ptr<SimpleConfig> _config;
+    std::unique_ptr<SimpleConfig> _bfConfig;
 
     const fhicl::ParameterSet       _simulatedDetector;
 
@@ -166,7 +171,7 @@ private:
     DetMap _detectors;
 
     // Keep a count of how many runs we have seen.
-    int _run_count;
+    int _run_count = 0;
 
     // This is not copyable or assignable - private and unimplemented.
     GeometryService const& operator=(GeometryService const& rhs);
