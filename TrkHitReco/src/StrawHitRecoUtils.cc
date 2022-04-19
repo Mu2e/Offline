@@ -70,7 +70,7 @@ namespace mu2e {
     mu2e::StrawHitFlag flag;
     if (trackerStatus.noSignal(sid) || trackerStatus.suppress(sid)) {
       flag.merge(mu2e::StrawHitFlag::dead); // hits from these straws will not be used in track reconstruction
-    } else if ( trackerStatus.suppress(sid)) {
+    } else if ( trackerStatus.noisy(sid)) {
       flag.merge(mu2e::StrawHitFlag::noisy); // these hits may be used in track reconstruction but not pattern recognition
     }
 
