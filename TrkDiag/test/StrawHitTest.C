@@ -70,8 +70,8 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
   TString spage(page);
 //  gStyle->SetOptStat(0);
 //  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
-  TCut conv("mcpdg==11&&mcgen==2");
-  TCut oele("abs(mcpdg)==11&&mcgen!=2");
+  TCut conv("mcpdg==11&&mcproc==167");
+  TCut oele("abs(mcpdg)==11&&mcproc!=167");
 //  TCut dio("mcpdg==11&&mcgen==6"); MC truth bug
   TCut dio("mcpdg==11&&(mcproc==14||mcproc==56&&mcoe<90)");
   TCut bkg("mcpdg==11&&mcgen<0&&mcproc==17");
@@ -147,7 +147,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     leg->AddEntry(gide,"Electrons","l");
     leg->AddEntry(gidp,"Protons","l");
 
-    TLegend* leg3 = new TLegend(0.5,0.5,0.8,0.8);    
+    TLegend* leg3 = new TLegend(0.5,0.5,0.8,0.8);
     leg3->AddEntry(nuconv,"Conv. Electrons","l");
     leg3->AddEntry(nudio,"DIO Electrons","l");
     leg3->AddEntry(nudel,"Delta Electrons","l");
@@ -175,7 +175,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Draw("edep:mcedep>>eve","","",10000);
 
 
-    
+
   } else if(spage =="tcan"){
     THStack* tstack = new THStack("tc","Reco Hit Time by Particle;Hit Time (ns);Hits/event/ns");
     TH1F* ctime = new TH1F("ctime","Conversion Reco Hit Time",150,250,1750);
@@ -188,22 +188,22 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     otime->SetFillColor(kGreen);
 
     double scale = 0.1/nevents;
-    hits->Project("otime","time",opart);
+    hits->Project("otime","ctime",opart);
     otime->Scale(scale);
     tstack->Add(otime);
-    hits->Project("ctime","time",conv);
+    hits->Project("ctime","ctime",conv);
     ctime->Scale(scale);
     tstack->Add(ctime);
-    hits->Project("ptime","time",proton);
+    hits->Project("ptime","ctime",proton);
     ptime->Scale(scale);
     tstack->Add(ptime);
-    hits->Project("etime","time",oele);
+    hits->Project("etime","ctime",oele);
     etime->Scale(scale);
     tstack->Add(etime);
 
     double total = otime->Integral() + ctime->Integral() + ptime->Integral() + etime->Integral();
- 
-    cout << "All other integral = " << otime->Integral() 
+
+    cout << "All other integral = " << otime->Integral()
     << "CE inegral = " << ctime->Integral()
     << "P inegral = " << ptime->Integral()
     << "e inegral = " << etime->Integral() << " total = " << total << endl;
@@ -251,8 +251,8 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("etimes","time",hitsel+oele);
     etimes->Scale(scale);
     tstacks->Add(etimes);
-    
-    cout << "Selected other integral = " << otimes->Integral() 
+
+    cout << "Selected other integral = " << otimes->Integral()
     << "CE inegral = " << ctimes->Integral()
     << "P inegral = " << ptimes->Integral()
     << "e inegral = " << etimes->Integral() << endl;
@@ -317,7 +317,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("rmu","sqrt(shpos.dy^2+shpos.dx^2)",dio+direct);
     hits->Project("rgam","sqrt(shpos.dy^2+shpos.dx^2)",bkge+direct);
     hits->Project("rhad","sqrt(shpos.dy^2+shpos.dx^2)",hadron+direct);
-    
+
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
     bcan->cd(1);
@@ -338,14 +338,14 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
     TCut clean = goodpeak+TCut("tight>0&&bkg==0");
-        
+
 	  TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
 	  TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
 
 	  TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
-   
+
     TH1F* pres = new TH1F("pres","StrawHit #phi resolution;rad",100,-0.5,0.5);
-        
+
 
 	  gid->SetLineColor(kBlue);
 	  gidc->SetLineColor(kRed);
@@ -353,7 +353,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
 	  hits->Project("gidc","mcgen",conv);
 
 	  hits->Project("rres","sqrt(shpos.dy^2+shpos.dx^2)-sqrt(mcshpos.dy^2+mcshpos.dx^2)");
-    
+
     hits->Project("pres","atan2(shpos.dy,shpos.dx)-atan2(mcshpos.dy,mcshpos.dx)");
 
     /*
@@ -473,9 +473,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("ntime","time",norigin+timecut);
     ntime->Scale(scale);
     origin->Add(ntime);
- 
+
     double total = dtime->Integral() + pptime->Integral() + stptime->Integral() + gtime->Integral() + ntime->Integral() + mtime->Integral() + cetime->Integral() ;
- 
+
     cout << "DIO integral = " << dtime->Integral()
       << " Primary Proton inegral = " << pptime->Integral()
       << " ST Proton inegral = " << stptime->Integral()
@@ -652,7 +652,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     myhp->Draw("histtext0");
     myhpg->Draw("histtext90same");
     leg->Draw();
-  
+
   } else if(spage == "tot") {
 
     TH2F* ptot = new TH2F("ptot","Proton TOT vs MC Transverse Drift Distance;True Drift Distance (mm);TOT (ns)",50,0,2.5,16,0,64);
