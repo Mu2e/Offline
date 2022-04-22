@@ -1,6 +1,11 @@
-// Simulate the photons coming from the pipe calibration source
-// based on CaloCalibGun orginally written by Bertrand Echenard (2014)
-// Current module author: Sophie Middleton (2022)
+/* Simulate the photons coming from the pipe calibration source
+ based on CaloCalibGun orginally written by Bertrand Echenard (2014)
+ Current module author: Sophie Middleton (2022)
+ 
+ Assumptions: 
+ * We treat all 5 pipes as equal volume when we pick a pipe. 
+ * We treat each torus is if it were a right circular cylinder with a length equal to the arc length of the centerline of the torus
+*/
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -96,7 +101,6 @@ namespace mu2e {
 
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
-    std::vector<double>    _randomRad;
     CLHEP::Hep3Vector      _zPipeCenter;
     unsigned int _nPipes;
 
@@ -126,13 +130,8 @@ namespace mu2e {
 
       _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
       _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
-      _randomRad       = _cal->caloInfo().getVDouble("pipeTorRadius");
       _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);
       _nPipes = _cal->caloInfo().getInt("nPipes");
-      // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a random number from which to generate the photons
-      double sumR(0);
-      std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
-      std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
    
       //Define the parameters of the pipes:
       phi_lbd = _cal->caloInfo().getVDouble("largeTorPhi");
