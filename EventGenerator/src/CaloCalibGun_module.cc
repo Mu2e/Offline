@@ -164,7 +164,7 @@ namespace mu2e {
     zpipe = pipeR*sin(theta);
 
     // select an index from list of pipes:
-    unsigned int idx = rand() % ( _nPipes ) + 1 ;
+    unsigned int idx = int(5*_randFlat.fire())+1;
 
     // select the LgTor from list extracted from geom service above:
     double radLgTor = _pipeTorRadius[idx];
