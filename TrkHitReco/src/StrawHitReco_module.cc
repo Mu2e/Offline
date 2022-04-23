@@ -36,6 +36,7 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfo.hh"
 
 
 #include "TH1F.h"
@@ -140,7 +141,9 @@ StrawHitReco::StrawHitReco(Parameters const& config) :
   _pbttoken{consumes<ProtonBunchTime>(config().pbttoken())}
 {
   produces<ComboHitCollection>();
-  if(_writesh)produces<StrawHitCollection>();
+  produces<IntensityInfo>();
+
+  if (_writesh) produces<StrawHitCollection>();
   if (_printLevel > 0) std::cout << "In StrawHitReco constructor " << std::endl;
 }
 
@@ -208,6 +211,7 @@ void StrawHitReco::produce(art::Event& event)
     shCol->reserve(sdcol.size());
   }
   std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection());
+  std::unique_ptr<IntensityInfo>      intInfo(new IntensityInfo());
   chCol->reserve(sdcol.size());
 
 
@@ -233,6 +237,10 @@ void StrawHitReco::produce(art::Event& event)
   }
 
   if(_writesh)event.put(std::move(shCol));
+
+  intInfo->setNTrackerHits(chCol->size());
+
+  event.put(std::move(intInfo));
   event.put(std::move(chCol));
 }
 
