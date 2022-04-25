@@ -34,24 +34,21 @@
 
 namespace mu2e {
 
-  template <class Phys> 
-
-  class WeightModule : public art::EDProducer {
+  template <class Phys> class WeightModule : public art::EDProducer {
     Phys _myPhys;
     public:
     explicit WeightModule(const fhicl::ParameterSet& pset):
       art::EDProducer{pset},
       _myPhys(pset)
-    {
-      produces<mu2e::EventWeight>();
-    } ;
+      {
+        produces<mu2e::EventWeight>();
+      } ;
     virtual void produce(art::Event& event) {
       double weight (-1.);
       weight = _myPhys.weight(event);
       std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(weight) );
       event.put(std::move(evtwt));
     };
-
   };
 
 } //namespace mu2e

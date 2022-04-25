@@ -30,15 +30,15 @@ namespace mu2e {
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction accuracy (mm)") };
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
-      " 'Temperature (dimensionless)'") };
+          " 'Temperature (dimensionless)'") };
       using KKStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,float>>;
       KKStrawHitUpdaterSettings shuConfig{ Name("KKStrawHitUpdaterSettings"), Comment("KKStrawHitUpdater settings, format: \n"
-      " 'Maximum wire DOCA to use hit', 'Minmum probablity to use hit','Minimum DOCA to use L/R ambiguity', 'Maximum DOCA to use L/R ambiguity'") };
+          " 'Maximum wire DOCA to use hit', 'Minmum probablity to use hit','Minimum DOCA to use L/R ambiguity', 'Maximum DOCA to use L/R ambiguity'") };
     };
-  // function to convert fhicl configuration to KinKal Config object
+    // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
 
-  // struct for configuring Mu2e-specific fit settings
+    // struct for configuring Mu2e-specific fit settings
     struct Mu2eConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
       fhicl::Atom<float> tBuffer { Name("TimeBuffer"), Comment("Time buffer for final fit (ns)") };

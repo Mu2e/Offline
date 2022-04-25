@@ -26,14 +26,14 @@ namespace mu2e {
 
 
 
- 
+
   TrkExtMaterial::TrkExtMaterial( ) :
     _name("undefined")
   {
     _matid = Undefined;
   }
-    
-    
+
+
   TrkExtMaterial::TrkExtMaterial( string n) :
     _name(n)
   {
@@ -129,7 +129,7 @@ namespace mu2e {
   double TrkExtMaterial::scatteringAngle (const CLHEP::Hep3Vector& p, double ds) {
     double fabsds = fabs(ds);
     if (fabsds <=0) return 0;
-    return _thpar[0] * safeSqrt(fabsds) / p.mag() * (_thpar[1] + _thpar[2] * log10(fabsds)) ; 
+    return _thpar[0] * safeSqrt(fabsds) / p.mag() * (_thpar[1] + _thpar[2] * log10(fabsds)) ;
   }
 
 

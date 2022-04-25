@@ -37,7 +37,7 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
     return;
   }
 
-// setup cuts
+  // setup cuts
 
   double tdlow(0.57735027);
   double tdhigh(1.0);
@@ -152,11 +152,11 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   trks->Project("ompull","(om-mcent.om)/omerr",goodmc+goodfit);
   trks->Project("z0pull","(z0-mcent.z0)/z0err",goodmc+goodfit);
   trks->Project("tdpull","(td-mcent.td)/tderr",goodmc+goodfit);
-//  d0pull->Fit("gaus","Q0");
-//  p0pull->Fit("gaus","Q0");
-//  ompull->Fit("gaus","Q0");
-//  z0pull->Fit("gaus","Q0");
-//  tdpull->Fit("gaus","Q0");
+  //  d0pull->Fit("gaus","Q0");
+  //  p0pull->Fit("gaus","Q0");
+  //  ompull->Fit("gaus","Q0");
+  //  z0pull->Fit("gaus","Q0");
+  //  tdpull->Fit("gaus","Q0");
 
   TH1F* fitmom = new TH1F("fitmom","Track fit momentum at tracker entrance;fit momentum (MeV)",100,90,107);
   TH1F* mcmom = new TH1F("mcmom","True CE momentum at tracker entrance;CE momentum (MeV)",100,90,107);
@@ -173,7 +173,7 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   trks->Project("momerr","fit.momerr",goodmc+goodfit);
   trks->Project("mres","fit.mom-mcent.mom",goodmc+goodfit);
   trks->Project("mpull","(fit.mom-mcent.mom)/fit.momerr",goodmc+goodfit);
-//  mpull->Fit("gaus","Q0");
+  //  mpull->Fit("gaus","Q0");
 
   unsigned nbins(10);
   double bmax = nbins-0.5;
@@ -204,7 +204,7 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   racc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
   racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
-  
+
   ibin = 0;
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
   trks->Project("acc",binnames[ibin++]);

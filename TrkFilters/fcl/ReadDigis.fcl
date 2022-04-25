@@ -1,5 +1,5 @@
-#
-# Read Tracker digis and run the track trigger prototype 
+e
+# Read Tracker digis and run the track trigger prototype
 #
 #  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
 #
@@ -37,7 +37,7 @@ process_name : ReadDigis
 
 source :
 {
-    module_type : RootInput
+  module_type : RootInput
 }
 # we don't need any simulation services for this job
 #services : @local::Services.Reco
@@ -46,33 +46,33 @@ services : @local::Services.SimAndReco
 
 # timing information
 services.TimeTracker : {
-    dbOutput : {
-	filename : "ReadDigis.db"
-	overwrite : true
-    }
+  dbOutput : {
+    filename : "ReadDigis.db"
+    overwrite : true
+  }
 }
 # setup modules needed to filter tracks
 physics :
 {
-    producers : {
-	@table::TrkHitRecoTrigger.producers
-	@table::Tracking.producers
-	@table::TprTrigger.producers
-	@table::CaloClusterTrigger.producers
+  producers : {
+    @table::TrkHitRecoTrigger.producers
+    @table::Tracking.producers
+    @table::TprTrigger.producers
+    @table::CaloClusterTrigger.producers
 
-	RSD : {
-	    module_type : ReadStrawDigi
-	}
-	
+    RSD : {
+      module_type : ReadStrawDigi
     }
-    filters : {
-	@table::TrkFilters.filters
-    }
-    # analyzers : {
-    #   TrkTriggerDiag : {
-    #     module_type : TrkTriggerDiag
-    #   }
-    # }
+
+  }
+  filters : {
+    @table::TrkFilters.filters
+  }
+  # analyzers : {
+  #   TrkTriggerDiag : {
+  #     module_type : TrkTriggerDiag
+  #   }
+  # }
 }
 
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
@@ -85,7 +85,7 @@ physics.PHTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.tprPosHeli
 physics.DeMSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.tprDeMSeed ]
 
 #physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKal           ]
-physics.DePSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.tprDePSeed ] 
+physics.DePSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.tprDePSeed ]
 
 # analysis path: this is for monitoring only
 # physics.ReadDigisEndPath : [ TrkTriggerDiag ]

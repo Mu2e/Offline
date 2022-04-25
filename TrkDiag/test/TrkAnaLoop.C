@@ -22,7 +22,7 @@ struct EventInfoTree {
 struct FitTree {
   Int_t status, pdg, nhits, ndof, nactive, ndouble, ndactive, nnullambig, nmat, nmatactive, nbend;
   Float_t t0, t0err, chisq, con, radlen, firstflt, lastflt, startvalid, endvalid,
-    trkqual, mom, momerr, fltlen, d0, p0, om, z0, td, d0err, p0err, omerr, z0err, tderr;
+          trkqual, mom, momerr, fltlen, d0, p0, om, z0, td, d0err, p0err, omerr, z0err, tderr;
 };
 
 struct MCEntTree {
@@ -128,7 +128,7 @@ void TrkAnaLoop(std::string filename, std::string treename) {
     double original_trk_qual = detrkqual.trkqual;
     double new_trk_qual = reader->EvaluateMVA("MLP method");
 
-    
+
     effPlot->AddBinContent(1);
     if (de.td > 0.577350 && de.td < 1.000) {
       effPlot->AddBinContent(2);
@@ -149,20 +149,20 @@ void TrkAnaLoop(std::string filename, std::string treename) {
       }
     }
     //    std::cout << nactive << ", " << frac_active << ", " << log_con << ", " << momerr << ", " << t0err << ", " << d0 << ", " << max_radius << ", " << frac_dactive << ", " << frac_nullambig << ", " << frac_matactive << ", " << nominal_event_weight << ", " << new_trk_qual << ", " << original_trk_qual << std::endl;
-    
+
     // The standard cuts
     if (de.t0>700 && de.t0<1695 && de.td > 0.577350 && de.td < 1.000 && d0>-80 && d0<105 && max_radius>450 && max_radius<680) {
       if (new_trk_qual > 0.4) {
-	hRecoCE->Fill(de.mom, nominal_event_weight);
-	hResCE->Fill(de.mom - demcent.mom, nominal_event_weight);
+        hRecoCE->Fill(de.mom, nominal_event_weight);
+        hResCE->Fill(de.mom - demcent.mom, nominal_event_weight);
       }
     }
   }
- 
+
   // Draw the histogram
   //hRecoCE->Draw("HIST E");
   effPlot->Scale(1/num_entries);
   effPlot->SetMaximum(1);
   effPlot->SetMinimum(0);
-  //  effPlot->Draw("TEXT90"); 
+  //  effPlot->Draw("TEXT90");
 }

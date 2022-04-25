@@ -27,23 +27,23 @@ namespace mu2e {
 
   //================================================================
   class InFlightStepDumper : public art::EDAnalyzer {
-  public:
-    explicit InFlightStepDumper(fhicl::ParameterSet const& pset);
-    void beginJob() override;
-    void analyze(const art::Event& evt) override;
-  private:
-    art::InputTag input_;
-    TTree *nt_;
-    int pie_; // particle number in the current event
-    IO::InFlightParticleD data_;
+    public:
+      explicit InFlightStepDumper(fhicl::ParameterSet const& pset);
+      void beginJob() override;
+      void analyze(const art::Event& evt) override;
+    private:
+      art::InputTag input_;
+      TTree *nt_;
+      int pie_; // particle number in the current event
+      IO::InFlightParticleD data_;
   };
 
   //================================================================
   InFlightStepDumper::InFlightStepDumper(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
-    , input_(pset.get<std::string>("inputCollection"))
-    , nt_()
-    , pie_()
+      , input_(pset.get<std::string>("inputCollection"))
+      , nt_()
+      , pie_()
   {}
 
   //================================================================

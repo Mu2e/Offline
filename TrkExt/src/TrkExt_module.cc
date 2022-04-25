@@ -1,9 +1,9 @@
 //
 //  Track Extrapolation module.
-//  All in Detector coordinate. Points other than tracker coordinates are properly transformed. 
+//  All in Detector coordinate. Points other than tracker coordinates are properly transformed.
 //  B field basically requires mu2e coordinate
 //  G4 uses G4World coordinate
-//  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing. 
+//  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing.
 //
 //  Original author MyeongJae Lee
 //
@@ -59,10 +59,10 @@ using namespace std;
 namespace mu2e {
 
   // Other constants
-  const double VELOCITY_OF_LIGHT = 2.99792458e8; 
+  const double VELOCITY_OF_LIGHT = 2.99792458e8;
   const int MAXSIM = 5000;
   const int MAXNBACK = 10000;
-  const double RUNGE_KUTTA_KQ = 1.e-9*VELOCITY_OF_LIGHT; //k = 2.99e-1, q = 1. Actual charge is multiplied in runtime. 
+  const double RUNGE_KUTTA_KQ = 1.e-9*VELOCITY_OF_LIGHT; //k = 2.99e-1, q = 1. Actual charge is multiplied in runtime.
 
   namespace TrkExtExitCode {
     enum Enum {
@@ -78,96 +78,96 @@ namespace mu2e {
 
   class TrkExt : public art::EDProducer {
 
-  public:
-    explicit TrkExt(fhicl::ParameterSet const& pset);
-    virtual ~TrkExt() { }
-    void beginJob();
-    void beginRun(art::Run &run) override;
-    void beginSubRun(art::SubRun & lblock ) override;
-    virtual void produce(art::Event& event);
-    void endJob();
+    public:
+      explicit TrkExt(fhicl::ParameterSet const& pset);
+      virtual ~TrkExt() { }
+      void beginJob();
+      void beginRun(art::Run &run) override;
+      void beginSubRun(art::SubRun & lblock ) override;
+      virtual void produce(art::Event& event);
+      void endJob();
 
-  private:
+    private:
 
-    int _processed_events;
+      int _processed_events;
 
-    std::string _g4ModuleLabel;
-    std::string _makerModuleLabel;
-    std::vector<std::string> _fitterModuleLabelArray;
-    std::vector<int> _fitparticleArray;
-    std::vector<int> _fitdirectionArray;
-    
-    double _maxMomentum;
-    bool _turnOnMaterialEffect;
-    bool _useStoppingPower;
-    int _maxNBack;
-    double _extrapolationStep; //in mm
-    double _recordingStep;
-    bool _mcFlag;
-    bool _useVirtualDetector;
-    int _bFieldGradientMode;
-    bool _turnOnMultipleScattering;
-    int _debugLevel;
-    int _verbosity;
+      std::string _g4ModuleLabel;
+      std::string _makerModuleLabel;
+      std::vector<std::string> _fitterModuleLabelArray;
+      std::vector<int> _fitparticleArray;
+      std::vector<int> _fitdirectionArray;
 
-    bool _flagEloss;
-    bool _flagDiagnostics;
+      double _maxMomentum;
+      bool _turnOnMaterialEffect;
+      bool _useStoppingPower;
+      int _maxNBack;
+      double _extrapolationStep; //in mm
+      double _recordingStep;
+      bool _mcFlag;
+      bool _useVirtualDetector;
+      int _bFieldGradientMode;
+      bool _turnOnMultipleScattering;
+      int _debugLevel;
+      int _verbosity;
 
-    TTree * _hEloss;
-    std::vector<TH1F *> _hExitCode;
-    std::vector<TH1F *> _hNSteps;
-    std::vector<TH1F *> _hNData;
-    std::vector<TH1F *> _hFL;
-    std::vector<TH1F *> _hNPAClust;
-    std::vector<TH1F *> _hNSTClust;
-    std::vector<TH1F *> _hPinit;
-    std::vector<TH1F *> _hPfin;
-    std::vector<TH1F *> _hDeltapPA;
-    std::vector<TH1F *> _hDeltapST;
-    TNtuple * _hNtracks;
-    
+      bool _flagEloss;
+      bool _flagDiagnostics;
 
-    float _vdx[5], _vdy[5], _vdz[5], _vdpx[5], _vdpy[5], _vdpz[5], _vdp[5];
-    int _evtid, _trkid;
-    float _eloss_mean, _eloss_mp, _eloss_p;
-    int _eloss_vid;
+      TTree * _hEloss;
+      std::vector<TH1F *> _hExitCode;
+      std::vector<TH1F *> _hNSteps;
+      std::vector<TH1F *> _hNData;
+      std::vector<TH1F *> _hFL;
+      std::vector<TH1F *> _hNPAClust;
+      std::vector<TH1F *> _hNSTClust;
+      std::vector<TH1F *> _hPinit;
+      std::vector<TH1F *> _hPfin;
+      std::vector<TH1F *> _hDeltapPA;
+      std::vector<TH1F *> _hDeltapST;
+      TNtuple * _hNtracks;
 
-    TrkExtTraj _traj;
 
-    Hep3Vector _origin;
-    Hep3Vector _mu2eOriginInWorld;
+      float _vdx[5], _vdy[5], _vdz[5], _vdpx[5], _vdpy[5], _vdpz[5], _vdp[5];
+      int _evtid, _trkid;
+      float _eloss_mean, _eloss_mp, _eloss_p;
+      int _eloss_vid;
 
-    BFieldManager const * _bfMgr;
-    TrkExtDetectors _mydet;
-    TrkExtInstanceName _trkPatRecInstanceName;
+      TrkExtTraj _traj;
 
-    double _dummyStoppingTarget_halfLength;
-    double _dummyStoppingTarget_z0;
-    double _pa_HalfLength;
+      Hep3Vector _origin;
+      Hep3Vector _mu2eOriginInWorld;
 
-    void readTrkPatRec(KalRep const & trk, 
-                      Hep3Vector * xstart, Hep3Vector * pstart, 
-                      Hep3Vector * xstop, Hep3Vector * pstop, 
-                      HepMatrix * covstart, HepMatrix * covstop,
-                      double * timestart, double * timestop) ;
-    bool readVD (const art::Event& event, TrkHitVector const& hits) ;
-    int doExtrapolation (Hep3Vector x, Hep3Vector p, double t, HepMatrix cov, bool direction, TrkExtInstanceNameEntry & instance) ;
+      BFieldManager const * _bfMgr;
+      TrkExtDetectors _mydet;
+      TrkExtInstanceName _trkPatRecInstanceName;
 
-    HepVector _runge_kutta_newpar_5th (HepVector r0, double ds, bool mode, int charge) ;
-    HepVector _runge_kutta_newpar_f (HepVector r, Hep3Vector B, int charge) ;
+      double _dummyStoppingTarget_halfLength;
+      double _dummyStoppingTarget_z0;
+      double _pa_HalfLength;
 
-    TrkExtTrajPoint calculateNextPosition(TrkExtTrajPoint r00, double ds, double mass2, int charge);
+      void readTrkPatRec(KalRep const & trk,
+          Hep3Vector * xstart, Hep3Vector * pstart,
+          Hep3Vector * xstop, Hep3Vector * pstop,
+          HepMatrix * covstart, HepMatrix * covstop,
+          double * timestart, double * timestop) ;
+      bool readVD (const art::Event& event, TrkHitVector const& hits) ;
+      int doExtrapolation (Hep3Vector x, Hep3Vector p, double t, HepMatrix cov, bool direction, TrkExtInstanceNameEntry & instance) ;
 
-    Hep3Vector getBField (Hep3Vector& x) ; // in Detector coordinate
-    Hep3Vector getBField (const Hep3Vector& x) ; // in Detector coordinate
-    Hep3Vector getBField (HepVector& r) ; // in Detector coordinate
-    Hep3Vector getBFieldWithGradient( const Hep3Vector & x, 
-                                      double & bxx, double & bxy, double & bxz, 
-                                      double & byx, double & byy, double & byz, 
-                                      double & bzx, double & bzy, double & bzz);
-    bool checkOutofReflectionLimit (bool updown, const Hep3Vector & x, const Hep3Vector & p); // in Detector coordinate
-    HepMatrix getCovarianceTransport(TrkExtTrajPoint & r0, double ds, double deltapp, int charge);
-    HepMatrix getCovarianceMultipleScattering(TrkExtTrajPoint & r0, double ds);
+      HepVector _runge_kutta_newpar_5th (HepVector r0, double ds, bool mode, int charge) ;
+      HepVector _runge_kutta_newpar_f (HepVector r, Hep3Vector B, int charge) ;
+
+      TrkExtTrajPoint calculateNextPosition(TrkExtTrajPoint r00, double ds, double mass2, int charge);
+
+      Hep3Vector getBField (Hep3Vector& x) ; // in Detector coordinate
+      Hep3Vector getBField (const Hep3Vector& x) ; // in Detector coordinate
+      Hep3Vector getBField (HepVector& r) ; // in Detector coordinate
+      Hep3Vector getBFieldWithGradient( const Hep3Vector & x,
+          double & bxx, double & bxy, double & bxz,
+          double & byx, double & byy, double & byz,
+          double & bzx, double & bzy, double & bzz);
+      bool checkOutofReflectionLimit (bool updown, const Hep3Vector & x, const Hep3Vector & p); // in Detector coordinate
+      HepMatrix getCovarianceTransport(TrkExtTrajPoint & r0, double ds, double deltapp, int charge);
+      HepMatrix getCovarianceMultipleScattering(TrkExtTrajPoint & r0, double ds);
 
   };
 
@@ -191,61 +191,61 @@ namespace mu2e {
     _debugLevel(pset.get<int>("debugLevel", 1)),
     _verbosity(pset.get<int>("verbosity", 1)),
     _hEloss(0)
-  {
-    _processed_events = -1;
+    {
+      _processed_events = -1;
 
-    if (_g4ModuleLabel != "") {
-      _mcFlag = true;
+      if (_g4ModuleLabel != "") {
+        _mcFlag = true;
+      }
+
+      _dummyStoppingTarget_halfLength = pset.get<double>("dummyStoppingTarget.halfLength", 400.);
+      _dummyStoppingTarget_z0 = pset.get<double>("dummyStoppingTarget.z0", 5900.);
+      _pa_HalfLength = pset.get<double>("protonabsorber.halfLength", 1250.);
+
+      if (   _fitterModuleLabelArray.size() <=0
+          || _fitparticleArray.size() <= 0
+          || _fitdirectionArray.size() <=0
+          || _fitterModuleLabelArray.size() != _fitparticleArray.size()
+          || _fitterModuleLabelArray.size() != _fitdirectionArray.size()
+          || _fitdirectionArray.size() != _fitparticleArray.size() ) {
+        throw cet::exception("RANGE")
+          << "TrkExt error: fitterModuleNameArray, fitparticleArray, or fitdirectionArray are not given properly or never given.";
+      }
+
+      for (unsigned int i = 0 ; i <_fitterModuleLabelArray.size() ; ++i) {
+        _trkPatRecInstanceName.construct(
+            (TrkParticle::type)(_fitparticleArray[i]),
+            _fitdirectionArray[i],
+            _fitterModuleLabelArray[i]);
+      }
+
+      for (unsigned int i = 0 ; i <_trkPatRecInstanceName.size() ; ++i) {
+        produces<TrkExtTrajCollection>(_trkPatRecInstanceName.name(i).c_str());
+        if (_verbosity>=1) cout << "TrkExt : module=" << _trkPatRecInstanceName.fitterName(i) << ", instance=" << _trkPatRecInstanceName.name(i) << " created" << endl;
+        int ihepid = abs(_trkPatRecInstanceName.hepid(i));
+        if (ihepid != 11 && ihepid != 13 && ihepid != 211 && ihepid != 321 && ihepid != 2212)
+          throw cet::exception("CONFIGURATION")
+            << "TrkExt error : Unknown incomming particle type " << ihepid << ". Check your configuration, and report to the original author if it's really wanted." << endl;
+        //TODO
+      }
+
+      switch (_debugLevel) {
+        case 1:
+          _flagEloss = false;
+          _flagDiagnostics = true;
+          break;
+        case 2:
+          _flagEloss = true;
+          _flagDiagnostics = true;
+          break;
+        case 0:
+        default:
+          _flagEloss = false;
+          _flagDiagnostics = false;
+          break;
+      }
+
     }
-
-    _dummyStoppingTarget_halfLength = pset.get<double>("dummyStoppingTarget.halfLength", 400.);
-    _dummyStoppingTarget_z0 = pset.get<double>("dummyStoppingTarget.z0", 5900.);
-    _pa_HalfLength = pset.get<double>("protonabsorber.halfLength", 1250.);
-
-    if (   _fitterModuleLabelArray.size() <=0 
-        || _fitparticleArray.size() <= 0 
-        || _fitdirectionArray.size() <=0
-        || _fitterModuleLabelArray.size() != _fitparticleArray.size()
-        || _fitterModuleLabelArray.size() != _fitdirectionArray.size()
-        || _fitdirectionArray.size() != _fitparticleArray.size() ) {
-      throw cet::exception("RANGE")
-        << "TrkExt error: fitterModuleNameArray, fitparticleArray, or fitdirectionArray are not given properly or never given.";
-    }
-
-    for (unsigned int i = 0 ; i <_fitterModuleLabelArray.size() ; ++i) {
-      _trkPatRecInstanceName.construct(
-          (TrkParticle::type)(_fitparticleArray[i]),
-          _fitdirectionArray[i],
-          _fitterModuleLabelArray[i]);
-    }
-
-    for (unsigned int i = 0 ; i <_trkPatRecInstanceName.size() ; ++i) {
-      produces<TrkExtTrajCollection>(_trkPatRecInstanceName.name(i).c_str());
-      if (_verbosity>=1) cout << "TrkExt : module=" << _trkPatRecInstanceName.fitterName(i) << ", instance=" << _trkPatRecInstanceName.name(i) << " created" << endl;
-      int ihepid = abs(_trkPatRecInstanceName.hepid(i));
-      if (ihepid != 11 && ihepid != 13 && ihepid != 211 && ihepid != 321 && ihepid != 2212) 
-       throw cet::exception("CONFIGURATION")  
-         << "TrkExt error : Unknown incomming particle type " << ihepid << ". Check your configuration, and report to the original author if it's really wanted." << endl;
-      //TODO
-    }
-
-    switch (_debugLevel) {
-      case 1:
-        _flagEloss = false;
-        _flagDiagnostics = true;
-        break;
-      case 2:
-        _flagEloss = true;
-        _flagDiagnostics = true;
-        break;
-      case 0:
-      default:
-        _flagEloss = false;
-        _flagDiagnostics = false;
-        break;
-    }
-
-  }
 
   void TrkExt::beginJob(){
 
@@ -261,7 +261,7 @@ namespace mu2e {
       }
     }
 
-    if (_bFieldGradientMode != 0 
+    if (_bFieldGradientMode != 0
         && _bFieldGradientMode != 1) {
       if (_verbosity>=0) cout << "TrkExt: bFieldGradientMode forced to 1" << endl;
       _bFieldGradientMode = 1;
@@ -331,7 +331,7 @@ namespace mu2e {
     }
     _hNtracks = tfs->make<TNtuple>("hNtracks", "Extrapolation statistics", "hepid:dir:ntrk");
 
-    //TODO : warn if uniform B-field. 
+    //TODO : warn if uniform B-field.
 
   }
 
@@ -340,7 +340,7 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     _origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );   // add this to transfer detector coord. to mu2e coord.
     GeomHandle<WorldG4> g4world;
-    _mu2eOriginInWorld = g4world->mu2eOriginInWorld(); // add this to transfer mu2e coord. to g4 coord. 
+    _mu2eOriginInWorld = g4world->mu2eOriginInWorld(); // add this to transfer mu2e coord. to g4 coord.
     if (_verbosity>=2) cout << "TrkExt: Detector coord origin in mu2e coord = " << _origin << endl;
     if (_verbosity>=2) cout << "TrkExt: Mu2e coord origin in G4 coord = " << _mu2eOriginInWorld << endl;
 
@@ -360,7 +360,7 @@ namespace mu2e {
 
   }
 
-////////// Produce ///////////
+  ////////// Produce ///////////
 
   void TrkExt::produce(art::Event& event) {
     _evtid = event.id().event();
@@ -371,7 +371,7 @@ namespace mu2e {
     if (_verbosity>=2) cout << "TrkExt: processing " << _processed_events << "-th events at evtid=" << _evtid << endl;
 
     art::Handle<KalRepCollection> trksHandle;
-   
+
     for ( unsigned int instanceIter = 0 ; instanceIter < _trkPatRecInstanceName.size() ; ++instanceIter) {
       unique_ptr<TrkExtTrajCollection> trajcol(new TrkExtTrajCollection);
 
@@ -387,7 +387,7 @@ namespace mu2e {
       if (trks.size() >0) {
         if (_verbosity>=1) cout << "TrkExt : " << trks.size() << " obj for " << instance.name << " of event " << _evtid << endl;
       }
-  
+
       for ( size_t i=0; i< trks.size(); ++i ){
         _trkPatRecInstanceName.addTrack(instanceIter);
         _trkid = i;
@@ -397,9 +397,9 @@ namespace mu2e {
         HepMatrix covstop(6,6,0);
         double tstart, tstop;
         readTrkPatRec (trk, &xstart, &pstart, &xstop, &pstop, &covstart, &covstop, &tstart, &tstop);
-  
+
         if (_verbosity>=2) cout << "Track extrapolation at " << _evtid << ", track " << _trkid << endl;
-  
+
         _traj.clear();
         if (_useVirtualDetector) {
           TrkHitVector const& hits  = trk.hitVector();
@@ -416,12 +416,12 @@ namespace mu2e {
           xstart.set (_vdx[2], _vdy[2], _vdz[2]);
           pstart.set (_vdpx[2], _vdpy[2], _vdpz[2]);
         }
-  
+
         int nsteps;
         //upstream ptl extrapolates  time-forward to stopping target
-        if (instance.updown) nsteps = doExtrapolation (xstop, pstop, tstop, covstop, true, instance); 
+        if (instance.updown) nsteps = doExtrapolation (xstop, pstop, tstop, covstop, true, instance);
         //downstream ptl extrapolates  time-backward to stopping target
-        else                 nsteps = doExtrapolation (xstart, pstart, tstart, covstart, false, instance); 
+        else                 nsteps = doExtrapolation (xstart, pstart, tstart, covstart, false, instance);
         if (_flagDiagnostics) {
           _hExitCode[instanceIter]->Fill(_traj.exitCode());
           _hNSteps[instanceIter]->Fill(nsteps);
@@ -434,16 +434,16 @@ namespace mu2e {
           _hDeltapPA[instanceIter]->Fill(_traj.getDeltapPA());
           _hDeltapST[instanceIter]->Fill(_traj.getDeltapST());
         }
-  
+
         trajcol->push_back(_traj);
-  
+
       }  // end of trks loop
       event.put(std::move(trajcol), instance.name.c_str());
     } // end of instance loop
 
   }
 
-////////// Utility functions ///////////
+  ////////// Utility functions ///////////
 
   bool TrkExt::checkOutofReflectionLimit(bool updown, const Hep3Vector & x, const Hep3Vector & p) {
     if (!updown) { // downstream particle
@@ -461,7 +461,7 @@ namespace mu2e {
     return false;
   }
 
-////////// BField functions ///////////
+  ////////// BField functions ///////////
 
   Hep3Vector TrkExt::getBField (Hep3Vector& x) {
     // x in Detector coordinate
@@ -473,8 +473,8 @@ namespace mu2e {
     }
     return b;
   }
-  
-  Hep3Vector TrkExt::getBField (const Hep3Vector& x) { 
+
+  Hep3Vector TrkExt::getBField (const Hep3Vector& x) {
     Hep3Vector xx = x + _origin;
     Hep3Vector b = _bfMgr->getBField(xx);
     if (b.mag() >10) {
@@ -487,12 +487,12 @@ namespace mu2e {
     Hep3Vector x(r[0], r[1], r[2]);
     return getBField(x);
   }
-  
 
-  Hep3Vector TrkExt::getBFieldWithGradient( const Hep3Vector & x, 
-                                      double & bxx, double & bxy, double & bxz, 
-                                      double & byx, double & byy, double & byz, 
-                                      double & bzx, double & bzy, double & bzz) {
+
+  Hep3Vector TrkExt::getBFieldWithGradient( const Hep3Vector & x,
+      double & bxx, double & bxy, double & bxz,
+      double & byx, double & byy, double & byz,
+      double & bzx, double & bzy, double & bzz) {
 
     Hep3Vector B0 = getBField(x);
 
@@ -539,7 +539,7 @@ namespace mu2e {
     return B0;
   }
 
-/////////// Read VD //////////////
+  /////////// Read VD //////////////
 
   bool TrkExt::readVD (const art::Event& event, TrkHitVector const& hits) {
     unsigned int i = 0, j, k = -1;
@@ -591,7 +591,7 @@ namespace mu2e {
       // read SimParticle from StepPointMC
       SimParticle const &sim = *step.simParticle();
 
-      // now simid is found    
+      // now simid is found
       cet::map_vector_key simid =  sim.id();
 
       // read VD
@@ -606,7 +606,7 @@ namespace mu2e {
       for ( i=0; i<hits->size(); ++i ){
         const StepPointMC& hit = (*hits)[i];
         if (hit.trackId() != simid) continue;
-  
+
         switch (hit.volumeId()) {
           case VirtualDetectorId::ST_In :
             j = 0;
@@ -641,7 +641,7 @@ namespace mu2e {
             psum += (vdp[i])[k];
             xsum += (vdx[i])[k];
           }
-  
+
           psum /=  double(vdp[i].size());
           xsum /=  double(vdx[i].size());
           _vdx[i] = xsum.x();
@@ -671,7 +671,7 @@ namespace mu2e {
     return false;
   }
 
-/////////// Read TrkPatRec //////////////
+  /////////// Read TrkPatRec //////////////
 
   void TrkExt::readTrkPatRec(KalRep const & krep, Hep3Vector * xstart, Hep3Vector * pstart, Hep3Vector * xstop, Hep3Vector * pstop, HepMatrix * covstart, HepMatrix * covstop, double * timestart, double * timestop) {
 
@@ -744,20 +744,20 @@ namespace mu2e {
       }
     }
 
-    xstart->set(xstart_.x(), xstart_.y(), xstart_.z()); 
-    pstart->set(pstart_.x(), pstart_.y(), pstart_.z()); 
-    xstop->set(xstop_.x(), xstop_.y(), xstop_.z()); 
-    pstop->set(pstop_.x(), pstop_.y(), pstop_.z()); 
+    xstart->set(xstart_.x(), xstart_.y(), xstart_.z());
+    pstart->set(pstart_.x(), pstart_.y(), pstart_.z());
+    xstop->set(xstop_.x(), xstop_.y(), xstop_.z());
+    pstop->set(pstop_.x(), pstop_.y(), pstop_.z());
     *covstart = covstart_;
     *covstop  = covstop_;
     *timestart = tstart_;
     *timestop = tstop_;
-    //see TrkMomCalculator::calcCurvAllCovs at BTrk/BaBar/BTrk/TrkBase/src/TrkMomCalculator.cc 
+    //see TrkMomCalculator::calcCurvAllCovs at BTrk/BaBar/BTrk/TrkBase/src/TrkMomCalculator.cc
     return;
   }
 
-//
-///////// Track extrapolation ////////////
+  //
+  ///////// Track extrapolation ////////////
 
   int TrkExt::doExtrapolation (Hep3Vector xx, Hep3Vector pp, double tt, HepMatrix ccov, bool direction, TrkExtInstanceNameEntry & instance) {
     if (ccov.num_row() != 6 || ccov.num_col() != 6) {
@@ -787,7 +787,7 @@ namespace mu2e {
 
     // Initialize TrajPoints
     //HepMatrix cov_init(6,6, 0);
-    TrkExtTrajPoint r0 (0, xx, pp, ccov, TrkExtDetectorList::Enum(prevolumeid), 0, tt); 
+    TrkExtTrajPoint r0 (0, xx, pp, ccov, TrkExtDetectorList::Enum(prevolumeid), 0, tt);
     TrkExtTrajPoint r1; // end data
 
     // Extrapolation stepping start
@@ -798,7 +798,7 @@ namespace mu2e {
       ds = extrapolationStep;
 
       // Estimate next position
-      r1 = calculateNextPosition(r0, ds, mass2, charge); 
+      r1 = calculateNextPosition(r0, ds, mass2, charge);
 
       // check the volume info
       if (r1.volumeId() != TrkExtDetectorList::Undefined) {
@@ -808,19 +808,19 @@ namespace mu2e {
 
           // find intersection along the line of r0 and r1. The volume of intersection is always equal to that of r1
           Hep3Vector intersection = _mydet.intersection(r0.position(), r1.position());
-      
-          // new step size: to the intersection 
+
+          // new step size: to the intersection
           ds = stepSign * ((intersection-r0.position()).mag());
 
           // estimate next position again
-          r1 = calculateNextPosition(r0, ds, mass2, charge); 
+          r1 = calculateNextPosition(r0, ds, mass2, charge);
           /*if (r1.volumeId() == r0.volumeId()) {
             do {
-              ds += (stepSign * _mydet.limit());
-              if (_verbosity>=2) cout << "  small increment in ds " << endl;
-              r1 = calculateNextPosition(r0, ds, mass2, charge); 
+            ds += (stepSign * _mydet.limit());
+            if (_verbosity>=2) cout << "  small increment in ds " << endl;
+            r1 = calculateNextPosition(r0, ds, mass2, charge);
             } while (r1.volumeId() == r0.volumeId());
-          }*/
+            }*/
           //if (_verbosity>=2) cout << "  final ds = " << ds << endl;
         }
       } //end of volume check
@@ -829,7 +829,7 @@ namespace mu2e {
       s += ds;
       dds += ds;
 
-      // momentum loss term 
+      // momentum loss term
       deltapp = 0;
 
       // material effect check
@@ -906,48 +906,48 @@ namespace mu2e {
         else {;}
       }
 
-      // loop exit conditions : record and exit loop 
-      if      ( r1.volumeId() == TrkExtDetectorList::Undefined )          
+      // loop exit conditions : record and exit loop
+      if      ( r1.volumeId() == TrkExtDetectorList::Undefined )
         exitcode = TrkExtExitCode::UndefinedVolume;
-      else if ( r1.momentum().mag() > _maxMomentum )                      
+      else if ( r1.momentum().mag() > _maxMomentum )
         exitcode = TrkExtExitCode::MaximumMomentum;
-      else if ( checkOutofReflectionLimit(direction, r1.position(), r1.momentum()) ) 
+      else if ( checkOutofReflectionLimit(direction, r1.position(), r1.momentum()) )
         exitcode = TrkExtExitCode::ReflectionLimit;
-      else if ( int(_traj.size()) >= _maxNBack-1)                         
+      else if ( int(_traj.size()) >= _maxNBack-1)
         exitcode = TrkExtExitCode::MaximumPoints;
-      else if (   fabs(dds) > _recordingStep 
-               || r0.volumeId() != r1.volumeId()
-               || r0.volumeId() == TrkExtDetectorList::ProtonAbsorber
-               || r0.volumeId() == TrkExtDetectorList::StoppingTarget   
-               || r0.pz() * r1.pz() <=0 ) 
+      else if (   fabs(dds) > _recordingStep
+          || r0.volumeId() != r1.volumeId()
+          || r0.volumeId() == TrkExtDetectorList::ProtonAbsorber
+          || r0.volumeId() == TrkExtDetectorList::StoppingTarget
+          || r0.pz() * r1.pz() <=0 )
         exitcode = TrkExtExitCode::WriteData;
-      else                                                                
+      else
         exitcode = TrkExtExitCode::DoNotExit;
 
       if      (exitcode == TrkExtExitCode::DoNotExit) { ; }
       else if (exitcode == TrkExtExitCode::Undefined) { ; }
       else if (exitcode == TrkExtExitCode::WriteData) {
-          _traj.push_back(r1);
-          dds = 0;
+        _traj.push_back(r1);
+        dds = 0;
       }
       else {
         _traj.push_back(r1);
         break;
       }
-       
+
       // update start point
       r0 = r1;
 
     } // end of stepping
 
-    // book track-wide variable 
+    // book track-wide variable
     _traj.setExitCode(exitcode);
     _traj.setHepid(instance.hepid);
     _traj.makePASTHitTable();
     return nsteps;
   }
 
-///////// Covariance ////////////
+  ///////// Covariance ////////////
 
   HepMatrix TrkExt::getCovarianceTransport(TrkExtTrajPoint & r0, double ds, double deltapp, int charge) {
     const HepMatrix & E = r0.covariance();
@@ -1062,7 +1062,7 @@ namespace mu2e {
     double m11 = 0.3333*th*th*ds*ds;
     double m12 = 0.5*th*th*ds*p;
     double m22 = th*th*p*p;
-    
+
     HepMatrix Em(6,6,0);
 
     for (int i = 0 ; i < 3 ; ++i) {
@@ -1076,9 +1076,9 @@ namespace mu2e {
     return Em;
   }
 
-///////// Functions for Runge-Kutta method ////////////
+  ///////// Functions for Runge-Kutta method ////////////
 
-  TrkExtTrajPoint TrkExt::calculateNextPosition (TrkExtTrajPoint r00, double ds, double mass2, int charge) { 
+  TrkExtTrajPoint TrkExt::calculateNextPosition (TrkExtTrajPoint r00, double ds, double mass2, int charge) {
     HepVector r0(6), re(6);
     r0 = r00.vector();
     HepVector dr1_ds = _runge_kutta_newpar_f(r0, getBField(r0), charge);   HepVector r1 = r0+0.5*ds*dr1_ds;
@@ -1092,19 +1092,19 @@ namespace mu2e {
     int volid = _mydet.volumeId(x);
 
     double p = r00.momentum().mag();
-    double v = p/safeSqrt(p*p+mass2)*VELOCITY_OF_LIGHT; 
-    double ft = ds / v * 1.e6; 
+    double v = p/safeSqrt(p*p+mass2)*VELOCITY_OF_LIGHT;
+    double ft = ds / v * 1.e6;
 
     return TrkExtTrajPoint(r00.trajPointId()+1, re, volid, r00.flightLength()+ds, r00.flightTime()+ft);
   }
 
   HepVector TrkExt::_runge_kutta_newpar_5th (HepVector r0, double ds, bool mode, int charge) {
 
-//    static double a2 = 0.2;
-//    static double a3 = 0.3;
-//    static double a4 = 0.6;
-//    static double a5 = 1.;
-//    static double a6 = 0.825;
+    //    static double a2 = 0.2;
+    //    static double a3 = 0.3;
+    //    static double a4 = 0.6;
+    //    static double a5 = 1.;
+    //    static double a6 = 0.825;
     static double b21 = 0.2;
     static double b31 = 0.075;
     static double b32 = 0.225;
@@ -1138,7 +1138,7 @@ namespace mu2e {
     HepVector k3 = ds*_runge_kutta_newpar_f(r2, getBField(r2), charge); HepVector r3 = r0 + b41*k1 + b42*k2 + b43*k3;
     HepVector k4 = ds*_runge_kutta_newpar_f(r3, getBField(r3), charge); HepVector r4 = r0 + b51*k1 + b52*k2 + b53*k3 + b54*k4;
     HepVector k5 = ds*_runge_kutta_newpar_f(r4, getBField(r4), charge); HepVector r5 = r0 + b61*k1 + b62*k2 + b63*k3 + b64*k4 + b65*k5;
-    HepVector k6 = ds*_runge_kutta_newpar_f(r5, getBField(r5), charge); 
+    HepVector k6 = ds*_runge_kutta_newpar_f(r5, getBField(r5), charge);
 
     if (mode) {
       return r0 + c1*k1 + c2*k2 + c3*k3 + c4*k4 + c5*k5 + c6*k6;

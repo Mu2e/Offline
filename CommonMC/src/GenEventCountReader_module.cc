@@ -28,14 +28,14 @@ namespace mu2e {
     GenEventCount::count_t numEvents_;
     unsigned numSubRuns_;
     bool makeHistograms_;
-  public:
+    public:
 
     struct Config {
       fhicl::Atom<bool> makeHistograms{
         fhicl::Name("makeHistograms"),
           fhicl::Comment("Write out number of events and subruns as histograms, in addition to printing them out. "),
           true
-          };
+      };
     };
 
     using Parameters = art::EDAnalyzer::Table<Config>;
@@ -49,9 +49,9 @@ namespace mu2e {
   //================================================================
   GenEventCountReader::GenEventCountReader(const Parameters& conf)
     : art::EDAnalyzer(conf)
-    , numEvents_(0)
-    , numSubRuns_(0)
-    , makeHistograms_(conf().makeHistograms())
+      , numEvents_(0)
+      , numSubRuns_(0)
+      , makeHistograms_(conf().makeHistograms())
   {}
 
   //================================================================
@@ -78,8 +78,8 @@ namespace mu2e {
     }
 
     mf::LogInfo("INFO")<<"GenEventCount: "
-                       <<hh.front()->count()<<" events in "<<sr.id()
-                       <<"\n";
+      <<hh.front()->count()<<" events in "<<sr.id()
+      <<"\n";
 
     ++numSubRuns_;
     numEvents_ += hh.front()->count();
@@ -88,9 +88,9 @@ namespace mu2e {
   //================================================================
   void GenEventCountReader::endJob() {
     mf::LogInfo("Summary")<<"GenEventCount total: "
-                <<numEvents_<<" events in "
-                <<numSubRuns_<<" SubRuns"
-                <<"\n";
+      <<numEvents_<<" events in "
+      <<numSubRuns_<<" SubRuns"
+      <<"\n";
 
     if(makeHistograms_) {
       art::ServiceHandle<art::TFileService> tfs;

@@ -33,55 +33,55 @@
 namespace mu2e {
 
   class GenerateMuonLife : public art::EDProducer {
-  public:
+    public:
 
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+      struct Config {
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
 
-      fhicl::Atom<double> meanLife{
-        Name("meanLife"),
-          Comment("A negative value (default) means use the muon life time in the stopping target material\n"
-                  "as given by the GlobalConstantsService. The particle life time can be overridden\n"
-                  "by providing a positive number here, e.g. for simulating stopped pion daughters."
-                  ),
-          -1.
-          };
+        fhicl::Atom<double> meanLife{
+          Name("meanLife"),
+            Comment("A negative value (default) means use the muon life time in the stopping target material\n"
+                "as given by the GlobalConstantsService. The particle life time can be overridden\n"
+                "by providing a positive number here, e.g. for simulating stopped pion daughters."
+                ),
+            -1.
+        };
 
-      fhicl::Sequence<art::InputTag> InputTimeMaps {
-        Name("InputTimeMaps"),
-          Comment("Pre-exising time offsets that should be transferred to the output."),
-          std::vector<art::InputTag>()
-          };
+        fhicl::Sequence<art::InputTag> InputTimeMaps {
+          Name("InputTimeMaps"),
+            Comment("Pre-exising time offsets that should be transferred to the output."),
+            std::vector<art::InputTag>()
+        };
 
-      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, and 11 increase the number of printouts.."), 0 };
+        fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, and 11 increase the number of printouts.."), 0 };
 
-      fhicl::Sequence<std::string> applyToGenIds {
-        Name("applyToGenIds"),
-          Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
-                  "listed generators.\n")
-          };
-    };
+        fhicl::Sequence<std::string> applyToGenIds {
+          Name("applyToGenIds"),
+            Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
+                "listed generators.\n")
+        };
+      };
 
-    using Parameters = art::EDProducer::Table<Config>;
-    explicit GenerateMuonLife(const Parameters& conf);
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit GenerateMuonLife(const Parameters& conf);
 
-    virtual void produce(art::Event& e) override;
+      virtual void produce(art::Event& e) override;
 
-  private:
-    CLHEP::RandExponential  rexp_;
-    double mean_;
-    int  verbosityLevel_;
-    std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
+    private:
+      CLHEP::RandExponential  rexp_;
+      double mean_;
+      int  verbosityLevel_;
+      std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
 
-    typedef std::set<GenId::enum_type> GenIdSet;
-    GenIdSet applyToGenIds_;
+      typedef std::set<GenId::enum_type> GenIdSet;
+      GenIdSet applyToGenIds_;
   };
 
   //================================================================
   GenerateMuonLife::GenerateMuonLife(const Parameters& conf)
     : EDProducer{conf}
-    , rexp_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
+  , rexp_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , mean_(conf().meanLife())
     , verbosityLevel_(conf().verbosityLevel())
     {
@@ -131,13 +131,13 @@ namespace mu2e {
               apply = true;
             }
             if (apply)
-              {
-                (*res)[part] = rexp_.fire(mean_);
-              }
+            {
+              (*res)[part] = rexp_.fire(mean_);
+            }
             else
-              {
-                (*res)[part] = 0;
-              }
+            {
+              (*res)[part] = 0;
+            }
           }
         }
       }

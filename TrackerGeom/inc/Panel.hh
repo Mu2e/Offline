@@ -44,12 +44,12 @@ namespace mu2e {
     // this getStraw checks if this is the right panel
     const Straw& getStraw ( const StrawId& strid ) const{
       if ( _sidmask.equal(_id,strid) ) {
-	return *(_straws.at(strid.straw()));
+        return *(_straws.at(strid.straw()));
       } else {
-	std::ostringstream msg;
-	msg << __func__ << " Inconsistent straw/panel request "
-	  << strid << " / " << _id << std::endl;
-	throw cet::exception("RANGE") << msg.str();
+        std::ostringstream msg;
+        msg << __func__ << " Inconsistent straw/panel request "
+          << strid << " / " << _id << std::endl;
+        throw cet::exception("RANGE") << msg.str();
       }
     }
     xyzVec origin()  const { return _UVWtoDS.displacement(); }
@@ -57,14 +57,14 @@ namespace mu2e {
     xyzVec uDirection() const { return _udir; }
     xyzVec vDirection() const { return _vdir; }
     xyzVec wDirection() const { return _wdir; }
-  
+
     // transform from local to DS coordinates
     auto const& panelToDS() const { return _UVWtoDS; }
     auto dsToPanel() const { return _UVWtoDS.inverse(); }
 
     // deprecated interface: either use the above local coordinates, or get the straw direction directly
     xyzVec straw0Direction() const { return _straws[0]->wireDirection(); }
-   // (The primary straw of each layer is the straw used to establish position.
+    // (The primary straw of each layer is the straw used to establish position.
     //  In the Tracker the primary straw is the innermost straw.)
     // *** In a multi-layer geometry, the straw0MidPoint ***
     // ***        need not lie on any actaul straw       ***
@@ -78,7 +78,7 @@ namespace mu2e {
 
     private:
     StrawId _id; // only the plane and panel fields are used to define a panel
-    xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame 
+    xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame
     HepTransform  _UVWtoDS; // transform from this panel's frame to the DS frame
     // indirection to straws
     StrawCollection _straws;

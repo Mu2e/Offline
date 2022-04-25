@@ -27,22 +27,22 @@
 namespace mu2e {
   using namespace TrkTypes;
 
-  class ProtonBunchTimeFromStrawDigis : public art::EDProducer 
+  class ProtonBunchTimeFromStrawDigis : public art::EDProducer
   {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
       struct Config {
-	fhicl::Atom<int> debug{ Name("DebugLevel"), Comment("Debug level"), 0};
-	fhicl::Atom<int> diag{ Name("DiagLevel"), Comment("Diag level"), 0};
-	fhicl::Atom<int> print{ Name("PrintLevel"), Comment("Print level"), 0};
-	fhicl::Atom<unsigned> nbins{ Name("NBins"), Comment("Number of bins in time histogram"), 30};
-	fhicl::Atom<unsigned> minnhits{ Name("MinNHits"), Comment("Minimum number of hits needed to use result"), 100};
-	fhicl::Atom<float> maxtime { Name("MaxDigiTime"), Comment("Maximum time to accept the digi as 'early' (nsec)"),200.0 };
-	fhicl::Atom<float> meantime { Name("MeanTimeOffset"), Comment("Mean time offset of 'early' hits (nsec)"),99.5}; // this should come from a database FIXME!
-	fhicl::Atom<float> phasewindow { Name("PhaseWindow"), Comment("Width of Event Marker Phase Window (nsec)"),25.0}; 
-	fhicl::Atom<art::InputTag> strawDigiTag{ Name("StrawDigiTag"), Comment("StrawDigi producer"),"makeSD" };
+        fhicl::Atom<int> debug{ Name("DebugLevel"), Comment("Debug level"), 0};
+        fhicl::Atom<int> diag{ Name("DiagLevel"), Comment("Diag level"), 0};
+        fhicl::Atom<int> print{ Name("PrintLevel"), Comment("Print level"), 0};
+        fhicl::Atom<unsigned> nbins{ Name("NBins"), Comment("Number of bins in time histogram"), 30};
+        fhicl::Atom<unsigned> minnhits{ Name("MinNHits"), Comment("Minimum number of hits needed to use result"), 100};
+        fhicl::Atom<float> maxtime { Name("MaxDigiTime"), Comment("Maximum time to accept the digi as 'early' (nsec)"),200.0 };
+        fhicl::Atom<float> meantime { Name("MeanTimeOffset"), Comment("Mean time offset of 'early' hits (nsec)"),99.5}; // this should come from a database FIXME!
+        fhicl::Atom<float> phasewindow { Name("PhaseWindow"), Comment("Width of Event Marker Phase Window (nsec)"),25.0};
+        fhicl::Atom<art::InputTag> strawDigiTag{ Name("StrawDigiTag"), Comment("StrawDigi producer"),"makeSD" };
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit ProtonBunchTimeFromStrawDigis(Parameters const& config);
@@ -78,17 +78,17 @@ namespace mu2e {
 
   ProtonBunchTimeFromStrawDigis::~ProtonBunchTimeFromStrawDigis() {}
 
-  void ProtonBunchTimeFromStrawDigis::beginJob(){ 
- }
+  void ProtonBunchTimeFromStrawDigis::beginJob(){
+  }
 
-  void ProtonBunchTimeFromStrawDigis::produce(art::Event& event) {        
+  void ProtonBunchTimeFromStrawDigis::produce(art::Event& event) {
     using namespace boost::accumulators;
     auto const& srep = _strawResponse_h.get(event.id());
     auto sdH = event.getValidHandle<StrawDigiCollection>(sdtag_);
     auto const& sdcol(*sdH);
     std::unique_ptr<ProtonBunchTime> pbto(new ProtonBunchTime());
-// statistics accumulators
-//
+    // statistics accumulators
+    //
     accumulator_set<float, stats<tag::mean, tag::error_of<tag::mean> >> meanacc;
 
     TH1F* timeplot(0);
@@ -101,18 +101,18 @@ namespace mu2e {
 
     for (size_t isd=0;isd<sdcol.size();++isd) {
       const StrawDigi& digi = sdcol[isd];
-    // correct to physical time
+      // correct to physical time
       TDCTimes times;
       srep.calibrateTimes(digi.TDC(),times,digi.strawId());
       // take the early time
       float mintime = std::min(times[StrawEnd::hv],times[StrawEnd::cal]);
       if(mintime < maxtime_){
-      // This can be improved by using TOT to approximately correct for the propagation time, and maybe peak/ped to correct
-      // for time slewing TODO!
-	meanacc(mintime);
-// early hit: accumulate the histogram
-	if(print_ > 1) std::cout << "Early hit time " << mintime << " SID " << digi.strawId() << std::endl;
-	if(timeplot)timeplot->Fill(mintime);
+        // This can be improved by using TOT to approximately correct for the propagation time, and maybe peak/ped to correct
+        // for time slewing TODO!
+        meanacc(mintime);
+        // early hit: accumulate the histogram
+        if(print_ > 1) std::cout << "Early hit time " << mintime << " SID " << digi.strawId() << std::endl;
+        if(timeplot)timeplot->Fill(mintime);
       }
     }
     // if there aren't enought hits, set to 0
