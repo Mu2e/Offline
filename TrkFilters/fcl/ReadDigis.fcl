@@ -1,4 +1,4 @@
-e
+#
 # Read Tracker digis and run the track trigger prototype
 #
 #  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
