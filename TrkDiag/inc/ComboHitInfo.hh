@@ -5,7 +5,7 @@
 namespace mu2e {
   // info about each hit in the combo hit
   struct ComboHitInfo {
-    
+
     XYZVectorF _pos; // position of this hit
     XYZVectorF _wdir; // direction of this hit
     Float_t _wdist; // distance from wire center along this direction

@@ -94,7 +94,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::update(PKTRAJ const& pktraj, MetaIterConfig const& miconfig) {
     WIREHIT::update(pktraj,miconfig);
-  // look for an updater; if it's there, update the state
+    // look for an updater; if it's there, update the state
     auto kkshu = miconfig.findUpdater<KKStrawHitUpdater>();
     if(kkshu != 0){
       kkshu->update(*this);
@@ -108,7 +108,7 @@ namespace mu2e {
     dinfo.vdrift_ = sresponse_.driftConstantSpeed();
     dinfo.tdrift_ = drift.R()/dinfo.vdrift_;
     dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
-   // std::cout << "tdrift " << dinfo.tdrift_ << " VDrift = "<< dinfo.vdrift_ << " derr " << derr << " tvar " << dinfo.tdriftvar_ << std::endl;
+    // std::cout << "tdrift " << dinfo.tdrift_ << " VDrift = "<< dinfo.vdrift_ << " derr " << derr << " tvar " << dinfo.tdriftvar_ << std::endl;
   }
 
   template<class KTRAJ> void KKStrawHit<KTRAJ>::print(std::ostream& ost, int detail) const {

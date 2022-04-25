@@ -20,8 +20,8 @@ namespace mu2e {
     return yval;
   }
 
-  double StrawResponse::driftDistanceToTime(StrawId strawId, 
-				double ddist, double phi) const {
+  double StrawResponse::driftDistanceToTime(StrawId strawId,
+      double ddist, double phi) const {
     if(_usenonlindrift){
       return _strawDrift->D2T(ddist,phi);
     }
@@ -30,8 +30,8 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftTimeToDistance(StrawId strawId, 
-				 double dtime, double phi) const {
+  double StrawResponse::driftTimeToDistance(StrawId strawId,
+      double dtime, double phi) const {
     if(_usenonlindrift){
       return _strawDrift->T2D(dtime,phi);
     }
@@ -40,8 +40,8 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftInstantSpeed(StrawId strawId, 
-				 double doca, double phi) const {
+  double StrawResponse::driftInstantSpeed(StrawId strawId,
+      double doca, double phi) const {
     if(_usenonlindrift){
       return _strawDrift->GetInstantSpeedFromD(doca);
     }else{
@@ -49,8 +49,8 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftDistanceError(StrawId strawId, 
-		      double ddist, double phi, double DOCA) const {
+  double StrawResponse::driftDistanceError(StrawId strawId,
+      double ddist, double phi, double DOCA) const {
     if(useDriftError()){
       // maximum drift is the straw radius.  should come from conditions FIXME!
       static double rstraw(2.5);
@@ -70,8 +70,8 @@ namespace mu2e {
     return 0;
   }
 
-  double StrawResponse::driftTimeError(StrawId strawId, 
-		      double ddist, double phi, double DOCA) const {
+  double StrawResponse::driftTimeError(StrawId strawId,
+      double ddist, double phi, double DOCA) const {
     if (useParameterizedDriftError()){
       if (DOCA > 2.5)
         DOCA = 2.5;
@@ -87,8 +87,8 @@ namespace mu2e {
 
 
 
-  bool StrawResponse::wireDistance(Straw const& straw, double edep, 
-	   double dt, double& wdist, double& wderr, double &halfpv) const {
+  bool StrawResponse::wireDistance(Straw const& straw, double edep,
+      double dt, double& wdist, double& wderr, double &halfpv) const {
     bool retval(true);
     double slen = straw.halfLength();
     // convert edep from Mev to KeV (should be standardized, FIXME!)
@@ -98,7 +98,7 @@ namespace mu2e {
     wderr = wpRes(kedep,fabs(wdist));
     // truncate positions that exceed the length of the straw (with a buffer): these come from missing a cluster on one end
     if(fabs(wdist) > slen+_wbuf*wderr){
-    // move the position to the correct half of the straw
+      // move the position to the correct half of the straw
       wdist = copysign(slen*_slfac,wdist);
       // inflat the error
       wderr *= _errfac;
@@ -123,17 +123,17 @@ namespace mu2e {
     return tdres;
   }
 
-  void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, 
-	       TrkTypes::TDCTimes &times, const StrawId &id) const {
+  void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc,
+      TrkTypes::TDCTimes &times, const StrawId &id) const {
     double electronicsTimeDelay = _strawElectronics->electronicsTimeDelay();
-    times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawElectronics->tdcLSB() 
-      - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] 
+    times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawElectronics->tdcLSB()
+      - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()]
       + _timeOffsetStrawHV[id.uniqueStraw()];
-    times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawElectronics->tdcLSB() 
-      - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] 
+    times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawElectronics->tdcLSB()
+      - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()]
       + _timeOffsetStrawCal[id.uniqueStraw()];
   }
- 
+
 
   double StrawResponse::saturatedResponse(double vlin) const {
     if (vlin < _vsat)
@@ -142,8 +142,8 @@ namespace mu2e {
       return _vsat;
   }
 
-  double StrawResponse::driftTime(Straw const& straw, 
-			      double tot, double edep) const {
+  double StrawResponse::driftTime(Straw const& straw,
+      double tot, double edep) const {
     // straw is present in case of eventual calibration
     size_t totbin = min(_totTBins-1,static_cast<size_t>(tot/_totTBinWidth));
     size_t ebin = min(_totEBins-1,static_cast<size_t>(edep/_totEBinWidth));
@@ -151,10 +151,10 @@ namespace mu2e {
   }
 
   double StrawResponse::pathLength(Straw const& straw, double tot) const {
-  // needs to be implemented, FIXME!!
+    // needs to be implemented, FIXME!!
     return 5.0;
   }
-  
+
   void StrawResponse::print(std::ostream& os) const {
     os << endl << "StrawResponse parameters: "  << std::endl;
 
@@ -196,17 +196,17 @@ namespace mu2e {
 
   }
 
-  void StrawResponse::printVector(std::ostream& os, std::string const& name, 
-				  std::vector<double> const& a) const {
+  void StrawResponse::printVector(std::ostream& os, std::string const& name,
+      std::vector<double> const& a) const {
     size_t n = a.size();
     if(n<=4) {
       os << name << " ("<<n<<") = ";
       for(auto x : a) os << x << " ";
       os << endl;
     } else {
-      os << name <<" ("<<n<<") = " 
-	 << a[0] << " " << a[1] << " ... " 
-	 << a[n-2] << " " << a[n-1] << endl;
+      os << name <<" ("<<n<<") = "
+        << a[0] << " " << a[1] << " ... "
+        << a[n-2] << " " << a[n-1] << endl;
     }
   }
   template<typename T, size_t SIZE>
@@ -218,8 +218,8 @@ namespace mu2e {
         for(auto x : a) os << x << " ";
         os << endl;
       } else {
-        os << name <<" ("<<n<<") = " 
-          << a[0] << " " << a[1] << " ... " 
+        os << name <<" ("<<n<<") = "
+          << a[0] << " " << a[1] << " ... "
           << a[n-2] << " " << a[n-1] << endl;
       }
 

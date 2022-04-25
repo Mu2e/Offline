@@ -23,30 +23,30 @@ namespace mu2e
 {
   class TimeClusterFilter : public art::EDFilter
   {
-  public:
-    struct Config{
-      using Name    = fhicl::Name;
-      using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>      timeClusterCollection{    Name("timeClusterCollection"),      Comment("TimeClusterCollection label") };
-      fhicl::Atom<bool>               requireCaloCluster   {    Name("requireCaloCluster"),         Comment("Require caloCluster") };
-      fhicl::Atom<unsigned>           minNHits             {    Name("minNHits"),                   Comment("minNHits")};
-      fhicl::Atom<int>                debugLevel           {    Name("debugLevel"),                 Comment("Debug"),0 };
-    };   
-    
-    using Parameters = art::EDFilter::Table<Config>;
-    
-    explicit TimeClusterFilter(const Parameters& config);
+    public:
+      struct Config{
+        using Name    = fhicl::Name;
+        using Comment = fhicl::Comment;
+        fhicl::Atom<art::InputTag>      timeClusterCollection{    Name("timeClusterCollection"),      Comment("TimeClusterCollection label") };
+        fhicl::Atom<bool>               requireCaloCluster   {    Name("requireCaloCluster"),         Comment("Require caloCluster") };
+        fhicl::Atom<unsigned>           minNHits             {    Name("minNHits"),                   Comment("minNHits")};
+        fhicl::Atom<int>                debugLevel           {    Name("debugLevel"),                 Comment("Debug"),0 };
+      };
 
-  private:
-    bool filter(art::Event& event) override;
-    bool endRun(art::Run& run ) override;
-    
-    art::InputTag _tcTag;
-    bool          _hascc; // Calo Cluster
-    unsigned      _minnhits;
-    int           _debug;
-    // counters
-    unsigned      _nevt, _npass;
+      using Parameters = art::EDFilter::Table<Config>;
+
+      explicit TimeClusterFilter(const Parameters& config);
+
+    private:
+      bool filter(art::Event& event) override;
+      bool endRun(art::Run& run ) override;
+
+      art::InputTag _tcTag;
+      bool          _hascc; // Calo Cluster
+      unsigned      _minnhits;
+      int           _debug;
+      // counters
+      unsigned      _nevt, _npass;
   };
 
   TimeClusterFilter::TimeClusterFilter(const Parameters& conf)
@@ -60,7 +60,7 @@ namespace mu2e
     {
       produces<TriggerInfo>();
     }
-  
+
   bool TimeClusterFilter::filter(art::Event& evt){
     // create output
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
@@ -83,7 +83,7 @@ namespace mu2e
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);
-	triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
+        triginfo->_hitClusters.push_back(art::Ptr<TimeCluster>(tcH,index));
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

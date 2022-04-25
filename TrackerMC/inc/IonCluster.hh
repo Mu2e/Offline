@@ -12,7 +12,7 @@ namespace mu2e {
       Float_t _eion; // ionization energy of this cluster, in MeV
       UInt_t _ne; // number of electrons in this cluster
       IonCluster(StrawPosition const& pos, double charge, double eion, unsigned ne):
-	_pos(pos), _charge(charge),_eion(eion),_ne(ne) {} 
+        _pos(pos), _charge(charge),_eion(eion),_ne(ne) {}
       IonCluster() : _charge(0.0), _eion(0.0), _ne(0) {}
     };
   }

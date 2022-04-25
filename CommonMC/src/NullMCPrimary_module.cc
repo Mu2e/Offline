@@ -27,7 +27,7 @@ namespace mu2e {
       explicit NullMCPrimary(const Parameters& conf);
       void produce(art::Event& evt) override;
     private:
-    std::vector<std::string> extrasteps_;
+      std::vector<std::string> extrasteps_;
   };
 
   NullMCPrimary::NullMCPrimary(const Parameters& config )  :

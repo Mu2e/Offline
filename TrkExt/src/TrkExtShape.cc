@@ -20,9 +20,6 @@ using namespace std;
 namespace mu2e {
 
 
-
-
- 
   TrkExtShape::TrkExtShape( double boundaryLimit ) :
     _limit(boundaryLimit)
   {  }
@@ -56,10 +53,6 @@ namespace mu2e {
     } while ((xstart-xstop).mag() > _limit);
     return xstop;
   }
-
-
-
-
 
 } // end namespace mu2e
 

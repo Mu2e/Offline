@@ -7,20 +7,20 @@ namespace mu2e {
 
   namespace TrkHitReco {
 
-    PeakFitFunction::PeakFitFunction(const StrawResponse& srep) : 
+    PeakFitFunction::PeakFitFunction(const StrawResponse& srep) :
       _srep(srep), _fitConfig(), _tf1(0)
     {}
     PeakFitFunction::~PeakFitFunction() { delete _tf1; }
-    
-    
-    //initialize the fit object after complete config, 
+
+
+    //initialize the fit object after complete config,
     //NB that the default values of this TF1 must be initialized before fitting!!!!!
-    void PeakFitFunction::init(const FitConfig& fitConfig)      
+    void PeakFitFunction::init(const FitConfig& fitConfig)
     {
-        _fitConfig=fitConfig;
-        createTF1();
+      _fitConfig=fitConfig;
+      createTF1();
     }
-    
+
     // the actual fit function, taking the explicit parameters as input
     Double_t PeakFitFunction::fitModel(Double_t time, PeakFitParams const& params) const {
       // start with the pedestal value
@@ -29,16 +29,16 @@ namespace mu2e {
       returnValue += params._charge*convolvedSinglePeak(time-params._time,params._width);
       // if requested, add the early and late peaks
       if(_fitConfig.hasOption(FitConfig::earlyPeak)){
-	// note this is WRT absolute time, not shift time (???)
-	returnValue += earlyPeak(time,params._earlyCharge);
+        // note this is WRT absolute time, not shift time (???)
+        returnValue += earlyPeak(time,params._earlyCharge);
       }
       if(_fitConfig.hasOption(FitConfig::latePeak)){
-	// note this is WRT absolute time, not shift time (???)
-	returnValue += params._lateCharge*convolvedSinglePeak(time-params._time-params._lateShift,params._width);
+        // note this is WRT absolute time, not shift time (???)
+        returnValue += params._lateCharge*convolvedSinglePeak(time-params._time-params._lateShift,params._width);
       }
       // optionally truncate the final result
       if(_fitConfig.hasOption(FitConfig::truncateADC)){
-	truncateResponse(returnValue);
+        truncateResponse(returnValue);
       }
 
       return returnValue;
@@ -47,27 +47,27 @@ namespace mu2e {
     void PeakFitFunction::resetTF1(TF1& tf1) { (*_tf1) = tf1; }
 
     void PeakFitFunction::resetTF1(PeakFitParamsLimits const& params) {
-      
+
       Double_t array[PeakFitParams::nParams];
       params.fillArray(array);
       _tf1->SetParameters(array);
 
       for (unsigned ipar=0;ipar< PeakFitParams::nParams;++ipar)
       {
-	 PeakFitParams::paramIndex ip = static_cast<PeakFitParams::paramIndex>(ipar);
-	 if(params.isFree(ip)){
-	   _tf1->ReleaseParameter(ipar);
-	 } else {
-	   _tf1->FixParameter(ipar,_tf1->GetParameter(ipar));
-         }
-	 
-	 _tf1->SetParLimits(ipar,params._parmin[ipar], params._parmax[ipar]);
+        PeakFitParams::paramIndex ip = static_cast<PeakFitParams::paramIndex>(ipar);
+        if(params.isFree(ip)){
+          _tf1->ReleaseParameter(ipar);
+        } else {
+          _tf1->FixParameter(ipar,_tf1->GetParameter(ipar));
+        }
+
+        _tf1->SetParLimits(ipar,params._parmin[ipar], params._parmax[ipar]);
       }
     }
 
 
     Double_t PeakFitFunction::operator()(Double_t* x, Double_t* p) {
-      return fitModelRoot(x,p); 
+      return fitModelRoot(x,p);
     }
 
     // the root version of same.  This calls down to the above
@@ -75,10 +75,10 @@ namespace mu2e {
       Double_t time = x[0];
       PeakFitParams params(p);
       Float_t result = fitModel(time,params);
-//      std::cout << "PeakFitFunction time = " << time 
-//	<< " peak time = " << params._time 
-//	<< " peak charge = " << params._charge 
-//	<< " model = " << result << std::endl;
+      //      std::cout << "PeakFitFunction time = " << time
+      //  << " peak time = " << params._time
+      //  << " peak charge = " << params._charge
+      //  << " model = " << result << std::endl;
       return result;
     }
 
@@ -89,26 +89,26 @@ namespace mu2e {
       FitFunctionRoot rootfun = std::bind(&PeakFitFunction::fitModelRoot,this,std::placeholders::_1,std::placeholders::_2);
       // create the TF1
       // NB: the min and max times should come from a global config object, FIXME!!!!
-//      _tf1 = new TF1("TrkHitReco::PeakFitFunction",rootfun,0.0,1695.0,PeakFitParams::nParams);
-       _tf1 = new TF1("TrkHitReco::PeakFitFunction",*this,0.0,1695.0,PeakFitParams::nParams);
+      //      _tf1 = new TF1("TrkHitReco::PeakFitFunction",rootfun,0.0,1695.0,PeakFitParams::nParams);
+      _tf1 = new TF1("TrkHitReco::PeakFitFunction",*this,0.0,1695.0,PeakFitParams::nParams);
       // Set the parameter names
       for(size_t iparam=0;iparam< PeakFitParams::nParams; ++ iparam)
-	_tf1->SetParName(iparam,PeakFitParams::parameterName((PeakFitParams::paramIndex) iparam).c_str());
-     // decide which parameters are fixed and which are free, and initialize the dormant parameters
+        _tf1->SetParName(iparam,PeakFitParams::parameterName((PeakFitParams::paramIndex) iparam).c_str());
+      // decide which parameters are fixed and which are free, and initialize the dormant parameters
       //
       //  No early peak: fix the early charge to 0
       if(!_fitConfig.hasOption(FitConfig::earlyPeak))
-	_tf1->FixParameter(PeakFitParams::earlyCharge,0.0);
+        _tf1->FixParameter(PeakFitParams::earlyCharge,0.0);
       //no floating pedestal: fix the value to what strawelectronics says
       if(!_fitConfig.hasOption(FitConfig::floatPedestal))
-	_tf1->FixParameter(PeakFitParams::pedestal,_srep.ADCPedestal());
+        _tf1->FixParameter(PeakFitParams::pedestal,_srep.ADCPedestal());
       // no floating width: fix the value to what strawelectronics says
       if(!_fitConfig.hasOption(FitConfig::floatWidth))
-	_tf1->FixParameter(PeakFitParams::width,_srep.fallTime(StrawElectronics::adc));
+        _tf1->FixParameter(PeakFitParams::width,_srep.fallTime(StrawElectronics::adc));
       // no late peak: fix the charge and shift and disable those parameters
       if(!_fitConfig.hasOption(FitConfig::latePeak)){
-	_tf1->FixParameter(PeakFitParams::lateShift,0.0);
-	_tf1->FixParameter(PeakFitParams::lateCharge,0.0);
+        _tf1->FixParameter(PeakFitParams::lateShift,0.0);
+        _tf1->FixParameter(PeakFitParams::lateCharge,0.0);
       }
       // time and charge (of the main peak) are ALWAYS left as free parameters
       // set parameter errors and limits
@@ -139,45 +139,45 @@ namespace mu2e {
     // Normalized CR-RC network response to a current delta function
     Float_t PeakFitFunction::unConvolvedSinglePeak(const Double_t time) const
     {
-       Float_t returnValue = 0.0;
-       if (time > 0.0)
-       {
-	 const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
-	 static const double norm = _srep.currentToVoltage(StrawElectronics::adc)*
-	 pow(_srep.fallTime(StrawElectronics::adc),-2)/pC_per_uA_ns;
-	 returnValue = time*norm*exp(-time/_srep.fallTime(StrawElectronics::adc));
-       }
-       return returnValue;
+      Float_t returnValue = 0.0;
+      if (time > 0.0)
+      {
+        const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
+        static const double norm = _srep.currentToVoltage(StrawElectronics::adc)*
+          pow(_srep.fallTime(StrawElectronics::adc),-2)/pC_per_uA_ns;
+        returnValue = time*norm*exp(-time/_srep.fallTime(StrawElectronics::adc));
+      }
+      return returnValue;
     }
 
-    
+
     // Same as above, but convoluted with a uniform distribution
     // need to fix the normalization FIXME!!!
     Float_t PeakFitFunction::convolvedSinglePeak(const Double_t time, const Double_t sigma) const
     {
-	const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
-        static const double norm = _srep.currentToVoltage(StrawElectronics::adc)/pC_per_uA_ns;
-        Float_t returnValue = 0.0;
+      const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
+      static const double norm = _srep.currentToVoltage(StrawElectronics::adc)/pC_per_uA_ns;
+      Float_t returnValue = 0.0;
 
-        if (sigma <= 0.0)
-        {
-	  returnValue = unConvolvedSinglePeak(time);
-        }
-        else
-        {
-	  const Float_t a = std::max((time + sigma) / _srep.fallTime(StrawElectronics::adc),0.0);
-	  // Assuming that shaping time is pggositive and thus b is negative (if t - sigma is)
-	  const Float_t b = std::max((time - sigma) / _srep.fallTime(StrawElectronics::adc),0.0);
-	  returnValue =  norm*(-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * sigma);
-	  // this value doesn't have the correct absolute normalization, FIXME!!!!
-        }
-        return returnValue;
+      if (sigma <= 0.0)
+      {
+        returnValue = unConvolvedSinglePeak(time);
+      }
+      else
+      {
+        const Float_t a = std::max((time + sigma) / _srep.fallTime(StrawElectronics::adc),0.0);
+        // Assuming that shaping time is pggositive and thus b is negative (if t - sigma is)
+        const Float_t b = std::max((time - sigma) / _srep.fallTime(StrawElectronics::adc),0.0);
+        returnValue =  norm*(-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * sigma);
+        // this value doesn't have the correct absolute normalization, FIXME!!!!
+      }
+      return returnValue;
     }
-    
-    
-    
+
+
+
     //  model the truncation.  We first have to translate from ADC units to voltage, then back (!)
-    void PeakFitFunction::truncateResponse(Float_t& rval) const 
+    void PeakFitFunction::truncateResponse(Float_t& rval) const
     {
       double mv = _srep.adcLSB()*(rval-_srep.ADCPedestal());
       double saturatedmv = _srep.saturatedResponse(mv);

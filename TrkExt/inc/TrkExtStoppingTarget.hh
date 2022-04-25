@@ -18,37 +18,33 @@ namespace mu2e {
 
 
   class foil_data_type {
-  public:
-    foil_data_type (double x1, double x2, double x3, double x4) :
-      rout(x1),
-      z0(x2),
-      zc(x3),
-      z1(x4) 
+    public:
+      foil_data_type (double x1, double x2, double x3, double x4) :
+        rout(x1),
+        z0(x2),
+        zc(x3),
+        z1(x4)
     {}
-    double rout, z0, zc, z1;
+      double rout, z0, zc, z1;
   };
 
-
-
-  class TrkExtStoppingTarget : public TrkExtShape, public TrkExtMaterial 
+  class TrkExtStoppingTarget : public TrkExtShape, public TrkExtMaterial
   {
 
-  public:
-    TrkExtStoppingTarget() ;
-    ~TrkExtStoppingTarget() { }
+    public:
+      TrkExtStoppingTarget() ;
+      ~TrkExtStoppingTarget() { }
 
-    void initialize () ;
-    bool contains (CLHEP::Hep3Vector& p) ;
+      void initialize () ;
+      bool contains (CLHEP::Hep3Vector& p) ;
 
-  private:
-    std::vector<foil_data_type> foil;
-    int nfoil;
-    std::string name;
-    double rmax, zmin, zmax;
+    private:
+      std::vector<foil_data_type> foil;
+      int nfoil;
+      std::string name;
+      double rmax, zmin, zmax;
 
   };
-
-
 
 } // end namespace mu2e
 
