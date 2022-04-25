@@ -10,24 +10,24 @@ TrackerMC : {
     }
   }
   DigiProducers : {
-#    StrawDigiMaker  : {
+    #    StrawDigiMaker  : {
     makeSD  : {
       module_type : StrawDigisFromStrawGasSteps
       TimeOffsets   : [  @sequence::CommonMC.TimeMaps ]
       StrawGasStepModule : "StrawGasStepMaker"
-# set to digitize all hits in outer straws of the first 2 planes
+      # set to digitize all hits in outer straws of the first 2 planes
       AllHitsPlanes : [0,1]
       AllHitsStraw : 91 # this straw and higher are always digitized
     }
   }
   StepSim : [ StrawGasStepMaker ]
-#  DigiSim : [ StrawDigiMaker ]
+  #  DigiSim : [ StrawDigiMaker ]
   DigiSim : [ makeSD ]
 }
 # legacy
 TrackerMC.producers : {
-    @table::TrackerMC.StepProducers
-    @table::TrackerMC.DigiProducers
+  @table::TrackerMC.StepProducers
+  @table::TrackerMC.DigiProducers
 }
 TrackerMC.StepAndDigiSim : [ @sequence::TrackerMC.StepSim,  @sequence::TrackerMC.DigiSim ]
 

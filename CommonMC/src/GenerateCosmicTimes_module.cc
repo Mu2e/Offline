@@ -39,38 +39,38 @@ namespace mu2e {
 
   class GenerateCosmicTimes : public art::EDProducer {
 
-  public:
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+    public:
+      struct Config {
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
 
-      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity Level"),0 };
-      fhicl::Atom<double> tBuff{ Name("TimeBuffer"), Comment("Time Offset buffer, to account for propagation and digitization delays (ns)"),150.0 };
-      fhicl::Atom<double> genTmin{ Name("TimeMin"), Comment("TEST: Minimum generation time  (ns)"), -1};
-      fhicl::Atom<double> genTmax{ Name("TimeMax"), Comment("TEST: Maximum generation time  (ns)"), -1};
-      fhicl::Sequence<art::InputTag> trkSteps { Name("StrawGasSteps"), Comment("StrawGasStep collections") };
-      fhicl::Sequence<art::InputTag> caloSteps { Name("CaloShowerSteps"), Comment("CaloShowerStep collections") };
-      fhicl::Sequence<art::InputTag> crvSteps { Name("CrvSteps"), Comment("CrvStep collections") };
-      fhicl::Sequence<art::InputTag> inMaps { Name("InputTimeMaps"), Comment("Input time maps to append to"), std::vector<art::InputTag>{} };
-      fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
-    };
+        fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity Level"),0 };
+        fhicl::Atom<double> tBuff{ Name("TimeBuffer"), Comment("Time Offset buffer, to account for propagation and digitization delays (ns)"),150.0 };
+        fhicl::Atom<double> genTmin{ Name("TimeMin"), Comment("TEST: Minimum generation time  (ns)"), -1};
+        fhicl::Atom<double> genTmax{ Name("TimeMax"), Comment("TEST: Maximum generation time  (ns)"), -1};
+        fhicl::Sequence<art::InputTag> trkSteps { Name("StrawGasSteps"), Comment("StrawGasStep collections") };
+        fhicl::Sequence<art::InputTag> caloSteps { Name("CaloShowerSteps"), Comment("CaloShowerStep collections") };
+        fhicl::Sequence<art::InputTag> crvSteps { Name("CrvSteps"), Comment("CrvStep collections") };
+        fhicl::Sequence<art::InputTag> inMaps { Name("InputTimeMaps"), Comment("Input time maps to append to"), std::vector<art::InputTag>{} };
+        fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
+      };
 
-    using Parameters = art::EDProducer::Table<Config>;
+      using Parameters = art::EDProducer::Table<Config>;
 
-    explicit GenerateCosmicTimes(const Parameters& conf);
+      explicit GenerateCosmicTimes(const Parameters& conf);
 
-    virtual void produce(art::Event& e) override;
+      virtual void produce(art::Event& e) override;
 
-  private:
-    CLHEP::RandFlat _randflat;
-    int verbosityLevel_;
-    double tbuff_; // time buffer to use when defining the event window
-    double genTmin_; // TEST: Minimum generation time
-    double genTmax_; // TEST: Maximum generation time
-    std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
-    art::InputTag ewMarkerTag_; 
-    std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
-    ProditionsHandle<StrawElectronics> strawele_h_;
+    private:
+      CLHEP::RandFlat _randflat;
+      int verbosityLevel_;
+      double tbuff_; // time buffer to use when defining the event window
+      double genTmin_; // TEST: Minimum generation time
+      double genTmax_; // TEST: Maximum generation time
+      std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
+      art::InputTag ewMarkerTag_;
+      std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
+      ProditionsHandle<StrawElectronics> strawele_h_;
   };
 
   //================================================================
@@ -81,21 +81,21 @@ namespace mu2e {
     , genTmin_(conf().genTmin())
     , genTmax_(conf().genTmax())
     , ewMarkerTag_(conf().ewMarkerTag())
-  {
-    for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
-    for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); consumes<CaloShowerStepCollection>(calotag); }
-    for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag);  consumes<CrvStepCollection>(crvtag); }
+    {
+      for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
+      for(const auto& calotag : conf().caloSteps()) { caloStepCols_.emplace_back(calotag); consumes<CaloShowerStepCollection>(calotag); }
+      for(const auto& crvtag : conf().crvSteps()) { crvStepCols_.emplace_back(crvtag);  consumes<CrvStepCollection>(crvtag); }
 
-    for(auto const& tag : conf().inMaps() ){ inmaps_.push_back(consumes<SimParticleTimeMap>(tag)); consumes<SimParticleTimeMap>(tag); }
-    consumesMany<SimParticleCollection>();
-    consumes<EventWindowMarker>(ewMarkerTag_);
-    produces<SimParticleTimeMap>();
+      for(auto const& tag : conf().inMaps() ){ inmaps_.push_back(consumes<SimParticleTimeMap>(tag)); consumes<SimParticleTimeMap>(tag); }
+      consumesMany<SimParticleCollection>();
+      consumes<EventWindowMarker>(ewMarkerTag_);
+      produces<SimParticleTimeMap>();
 
-  }
+    }
 
   //================================================================
   void GenerateCosmicTimes::produce(art::Event& event) {
-  // create output
+    // create output
     std::unique_ptr<SimParticleTimeMap> res(new SimParticleTimeMap);
     // copy over input maps (if any)
     for(auto const& token : inmaps_) {
@@ -106,40 +106,40 @@ namespace mu2e {
     art::Handle<EventWindowMarker> ewMarkerHandle;
     event.getByLabel(ewMarkerTag_, ewMarkerHandle);
     const EventWindowMarker& ewMarker(*ewMarkerHandle);
-      
+
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     auto mbtime = accPar->deBuncherPeriod;
 
-// find the earliest step.
-// Use this to define the earliest time, to improves the generation efficiency
+    // find the earliest step.
+    // Use this to define the earliest time, to improves the generation efficiency
     double tearly(FLT_MAX);
     for(const auto& trkcoltag : trkStepCols_) {
       auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkcoltag);
       for(const auto& sgs : *sgscolH ) {
-	tearly = std::min(tearly,sgs.time());
+        tearly = std::min(tearly,sgs.time());
       }
     }
- 
+
     for(const auto& calocoltag : caloStepCols_) {
       auto csscolH = event.getValidHandle<CaloShowerStepCollection>(calocoltag);
       for(const auto& css : *csscolH ) {
-	tearly = std::min(tearly,css.time());
+        tearly = std::min(tearly,css.time());
       }
     }
 
     for(const auto& crvcoltag : crvStepCols_) {
       auto crvscolH = event.getValidHandle<CrvStepCollection>(crvcoltag);
       for(const auto& crvs : *crvscolH ) {
-	tearly = std::min(tearly,crvs.startTime());	
+        tearly = std::min(tearly,crvs.startTime());
       }
     }
     if(tearly >= FLT_MAX)tearly = 0.0;
 
-// use a buffer to set the earliest time offset
+    // use a buffer to set the earliest time offset
     double tmin = -tearly - tbuff_;
 
-// adjust start time according to digitization window start.
-// this assumes the delayed digitization start WILL be applied also for offspill in the digitizers FIXME!
+    // adjust start time according to digitization window start.
+    // this assumes the delayed digitization start WILL be applied also for offspill in the digitizers FIXME!
     StrawElectronics const& strawele = strawele_h_.get(event.id());
     tmin += strawele.digitizationStart(); // flash end should be a Mu2e global quantity FIXME!
     double tmax = ewMarker.eventLength() - tearly;
@@ -165,23 +165,23 @@ namespace mu2e {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
-	  // don't re-simulate if particle is already present.  This can happen if there is an input map
-	  if(res->find(part) == res->end()){
-	    if(part->genParticle()->generatorId() == GenId::cosmicCRY   ||
-	       part->genParticle()->generatorId() == GenId::cosmicDYB   ||
-	       part->genParticle()->generatorId() == GenId::cosmic      ||
-               part->genParticle()->generatorId() == GenId::cosmicCORSIKA)
-	      {
-		(*res)[part] = _randflat.fire(tmin, tmax);
-		if(verbosityLevel_ > 1)
-		  std::cout << "Cosmic particle " << part->genParticle()->generatorId() << " given time " << (*res)[part] << std::endl;
-	      }
-	    else
-	      {
-		(*res)[part] = 0;
-	      }
-	  }
-	}
+          // don't re-simulate if particle is already present.  This can happen if there is an input map
+          if(res->find(part) == res->end()){
+            if(part->genParticle()->generatorId() == GenId::cosmicCRY   ||
+                part->genParticle()->generatorId() == GenId::cosmicDYB   ||
+                part->genParticle()->generatorId() == GenId::cosmic      ||
+                part->genParticle()->generatorId() == GenId::cosmicCORSIKA)
+            {
+              (*res)[part] = _randflat.fire(tmin, tmax);
+              if(verbosityLevel_ > 1)
+                std::cout << "Cosmic particle " << part->genParticle()->generatorId() << " given time " << (*res)[part] << std::endl;
+            }
+            else
+            {
+              (*res)[part] = 0;
+            }
+          }
+        }
       }
     }
 

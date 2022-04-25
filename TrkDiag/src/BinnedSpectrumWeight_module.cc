@@ -35,6 +35,6 @@
 #include "Offline/TrkDiag/inc/WeightModule.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrumWeightPhys.hh"
 namespace mu2e {
-  typedef WeightModule<BinnedSpectrumWeightPhys> BinnedSpectrumWeight; 
+  typedef WeightModule<BinnedSpectrumWeightPhys> BinnedSpectrumWeight;
 }
 DEFINE_ART_MODULE(mu2e::BinnedSpectrumWeight);

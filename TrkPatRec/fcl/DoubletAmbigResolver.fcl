@@ -1,6 +1,6 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
-# Configurations needed for doublet-based L-R tracker hit ambiguity resolution 
+# Configurations needed for doublet-based L-R tracker hit ambiguity resolution
 #------------------------------------------------------------------------------
 #include "Offline/TrkPatRec/fcl/AmbigResolver.fcl"
 BEGIN_PROLOG
@@ -8,21 +8,21 @@ BEGIN_PROLOG
 # parameter configuration for the panel-based resolver
 DoubletAmbig  : {
   Resolver : {
-# Additional resolution added to null ambiguity hits (mm)
+    # Additional resolution added to null ambiguity hits (mm)
     debugLevel                      : 0
     HitAmbigPenalty                 : false
     HitMinDrift                     : 0.2
     ZeroDriftPenalty                : 0.05
     scaleErrDoublet                 : 5.    # external error scale factor
-    maxDoubletChi2                  : 9.    # 3 times 3 degrees of freedom, not quite rigorous mathematically 
+    maxDoubletChi2                  : 9.    # 3 times 3 degrees of freedom, not quite rigorous mathematically
     sigmaSlope                      : 0.025 # sigma(delta dx/dz)
     minDriftDoublet                 : 0.3   # 300 um
     deltaDriftDoublet               : 0.3   # 300 um
     excludeBothHits                 : 1
   }
-# KalFit resolver sequence using the panel resolver
+  # KalFit resolver sequence using the panel resolver
 
-  Strategy : [ 
+  Strategy : [
     @local::AmbigResolver.fixed,
     @local::AmbigResolver.fixed,
     @local::AmbigResolver.doublet,
@@ -34,7 +34,7 @@ DoubletAmbig  : {
     @local::AmbigResolver.doublet
   ]
 
-  Weed : [ true, true, true, true, true, true, true, true, true] 
+  Weed : [ true, true, true, true, true, true, true, true, true]
 }
 
 END_PROLOG

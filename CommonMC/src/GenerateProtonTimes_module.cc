@@ -30,101 +30,101 @@ namespace mu2e {
 
   class GenerateProtonTimes : public art::EDProducer {
 
-  public:
+    public:
 
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+      struct Config {
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
 
-      fhicl::OptionalTable<ProtonPulseRandPDF::Config> randPDFparameters { Name("randPDFparameters") };
+        fhicl::OptionalTable<ProtonPulseRandPDF::Config> randPDFparameters { Name("randPDFparameters") };
 
-      fhicl::Sequence<std::string> ignoredGenIds {
-        Name("ignoredGenIds"),
-          Comment("A non-empty list means: generate time offsets for all particles\n"
-                  "except those produced by the listed generators.   If this list is emtpy,\n"
-                  "the applyToGenIds parameter below is enabled."
-                  ) };
+        fhicl::Sequence<std::string> ignoredGenIds {
+          Name("ignoredGenIds"),
+            Comment("A non-empty list means: generate time offsets for all particles\n"
+                "except those produced by the listed generators.   If this list is emtpy,\n"
+                "the applyToGenIds parameter below is enabled."
+                ) };
 
-      fhicl::Sequence<std::string> applyToGenIds {
-        Name("applyToGenIds"),
-          Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
-                  "listed generators. This setting is only active in the case ignoredGenIds is emtpy.\n"
-                  ),
-       [this](){ return ignoredGenIds().empty();}
+        fhicl::Sequence<std::string> applyToGenIds {
+          Name("applyToGenIds"),
+            Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
+                "listed generators. This setting is only active in the case ignoredGenIds is emtpy.\n"
+                ),
+            [this](){ return ignoredGenIds().empty();}
+        };
+
+        fhicl::Sequence<art::InputTag> InputTimeMaps {
+          Name("InputTimeMaps"),
+            Comment("Pre-exising time offsets that should be transferred to the output."),
+            std::vector<art::InputTag>()
+        };
+
+        fhicl::Atom<art::InputTag> FixedModule {
+          Name("FixedModule"),
+            Comment("Input tag of a FixedTimeMap from RPC generation, if any."),
+            art::InputTag()
+        };
+
+        fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, 3, and 11 increase the number of printouts.."), 0 };
       };
 
-      fhicl::Sequence<art::InputTag> InputTimeMaps {
-        Name("InputTimeMaps"),
-          Comment("Pre-exising time offsets that should be transferred to the output."),
-          std::vector<art::InputTag>()
-          };
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit GenerateProtonTimes(const Parameters& conf);
 
-      fhicl::Atom<art::InputTag> FixedModule {
-        Name("FixedModule"),
-          Comment("Input tag of a FixedTimeMap from RPC generation, if any."),
-          art::InputTag()
-          };
+      virtual void beginRun(art::Run&   r) override;
+      virtual void produce (art::Event& e) override;
 
-      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, 3, and 11 increase the number of printouts.."), 0 };
-    };
+    private:
+      art::RandomNumberGenerator::base_engine_t& engine_;
+      ProtonPulseRandPDF::Config protonPulseConf_;
+      int  verbosityLevel_;
+      art::InputTag fixedTime_;
 
-    using Parameters = art::EDProducer::Table<Config>;
-    explicit GenerateProtonTimes(const Parameters& conf);
+      typedef std::set<GenId::enum_type> GenIdSet;
+      GenIdSet ignoredGenIds_;
+      GenIdSet applyToGenIds_;
 
-    virtual void beginRun(art::Run&   r) override;
-    virtual void produce (art::Event& e) override;
+      std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
 
-  private:
-    art::RandomNumberGenerator::base_engine_t& engine_;
-    ProtonPulseRandPDF::Config protonPulseConf_;
-    int  verbosityLevel_;
-    art::InputTag fixedTime_;
-
-    typedef std::set<GenId::enum_type> GenIdSet;
-    GenIdSet ignoredGenIds_;
-    GenIdSet applyToGenIds_;
-
-    std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
-
-    std::string listStream( const GenIdSet& vsList );
-    std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
+      std::string listStream( const GenIdSet& vsList );
+      std::vector<art::ProductToken<SimParticleTimeMap> > inmaps_; // optional input maps
 
   };
 
   //================================================================
   GenerateProtonTimes::GenerateProtonTimes(const Parameters& conf)
     : EDProducer{conf}
-    , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
+  , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
     , verbosityLevel_(conf().verbosityLevel())
     , fixedTime_(conf().FixedModule())
-  {
+    {
       // require either ignore or applyto be non-null
 
-    if(conf().ignoredGenIds().empty() && conf().applyToGenIds().empty() )
-      throw cet::exception("Simulation")<<"No inclusion or exclusion GenIds specified" << std::endl;
+      if(conf().ignoredGenIds().empty() && conf().applyToGenIds().empty() )
+        throw cet::exception("Simulation")<<"No inclusion or exclusion GenIds specified" << std::endl;
 
-    std::vector<art::InputTag> inmaps = conf().InputTimeMaps();
-    for(auto const& tag : inmaps ){
-      inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
-    }
-    consumesMany<SimParticleCollection>();
-    consumesMany<FixedTimeMap>();
-    produces<SimParticleTimeMap>();
-
-    typedef std::vector<std::string> VS;
-
-    for(const auto i: conf().ignoredGenIds()) {
-      ignoredGenIds_.insert(GenId::findByName(i).id());
-    }
-
-    if(ignoredGenIds_.empty()) {
-      for(const auto i: conf().applyToGenIds()) {
-        applyToGenIds_.insert(GenId::findByName(i).id());
+      std::vector<art::InputTag> inmaps = conf().InputTimeMaps();
+      for(auto const& tag : inmaps ){
+        inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
       }
-    }
+      consumesMany<SimParticleCollection>();
+      consumesMany<FixedTimeMap>();
+      produces<SimParticleTimeMap>();
 
-    conf().randPDFparameters(protonPulseConf_);
-  }
+      typedef std::vector<std::string> VS;
+
+      for(const auto i: conf().ignoredGenIds()) {
+        ignoredGenIds_.insert(GenId::findByName(i).id());
+      }
+
+      if(ignoredGenIds_.empty()) {
+        for(const auto i: conf().applyToGenIds()) {
+          applyToGenIds_.insert(GenId::findByName(i).id());
+        }
+      }
+
+      conf().randPDFparameters(protonPulseConf_);
+    }
 
   //================================================================
   void GenerateProtonTimes::beginRun(art::Run& run) {
@@ -144,9 +144,9 @@ namespace mu2e {
       std::cout << " Size of proton pulse: " << protonPulse_->getTimes().size() << std::endl;
       for ( std::size_t i(0) ; i < protonPulse_->getTimes().size(); i++ ) {
         timeSpectrum << "   POT time: "
-                     << protonPulse_->getTimes().at(i)
-                     << "     "
-                     << protonPulse_->getSpectrum().at(i) << "\n";
+          << protonPulse_->getTimes().at(i)
+          << "     "
+          << protonPulse_->getSpectrum().at(i) << "\n";
       }
       mf::LogInfo("Info") << "Longitudinal POT time distribution\n" << timeSpectrum.str();
     }
@@ -180,13 +180,13 @@ namespace mu2e {
               (ignoredGenIds_.find(genId.id()) == ignoredGenIds_.end())
               // do just explicitly listed GenIds
               : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
-	    if(verbosityLevel_ > 2){
-	      if(apply)
-		std::cout << "Applying proton time to genId " << genId << std::endl;
-	      else
-		std::cout << "Proton time NOT applied to genId " << genId << std::endl;
-	    }
-	      
+            if(verbosityLevel_ > 2){
+              if(apply)
+                std::cout << "Applying proton time to genId " << genId << std::endl;
+              else
+                std::cout << "Proton time NOT applied to genId " << genId << std::endl;
+            }
+
             (*res)[part] = apply ? protonPulse_->fire() : 0.;
             if (!fixedTime_.empty()){
               (*res)[part] = apply ? ftmHandle->time() : 0;

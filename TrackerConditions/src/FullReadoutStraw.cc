@@ -17,5 +17,5 @@ namespace mu2e {
       out << "Straw " << is << " has full readout" << endl;
     }
   }
-  
+
 } // namespace mu2e

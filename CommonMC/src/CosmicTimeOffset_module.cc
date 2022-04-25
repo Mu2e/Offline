@@ -26,64 +26,64 @@ namespace mu2e {
 
   class CosmicTimeOffset : public art::EDProducer {
 
-  public:
+    public:
 
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+      struct Config {
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
 
-      fhicl::OptionalAtom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of cosmic module label")};
-      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, >1"), 0 };
-      fhicl::Atom<float> intervalStart{ Name("intervalStart"), Comment("Start time of the time offset window"), 250 };
-      fhicl::Atom<float> intervalEnd{ Name("intervalEnd"), Comment("end time of the time offset window"), 1700 };
-    };
+        fhicl::OptionalAtom<std::string> cosmicModuleLabel{Name("cosmicModuleLabel"), Comment("Name of cosmic module label")};
+        fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, >1"), 0 };
+        fhicl::Atom<float> intervalStart{ Name("intervalStart"), Comment("Start time of the time offset window"), 250 };
+        fhicl::Atom<float> intervalEnd{ Name("intervalEnd"), Comment("end time of the time offset window"), 1700 };
+      };
 
-    using Parameters = art::EDProducer::Table<Config>;
-    explicit CosmicTimeOffset(const Parameters& conf);
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit CosmicTimeOffset(const Parameters& conf);
 
-    virtual void beginRun(art::Run&   r) override;
-    virtual void produce (art::Event& e) override;
+      virtual void beginRun(art::Run&   r) override;
+      virtual void produce (art::Event& e) override;
 
-  private:
-    art::RandomNumberGenerator::base_engine_t& engine_;
+    private:
+      art::RandomNumberGenerator::base_engine_t& engine_;
 
-    std::string cosmicModuleLabel_;
-    bool addTimeOffset_;
-    int  verbosityLevel_;
-    float intervalStart_;
-    float intervalEnd_;
+      std::string cosmicModuleLabel_;
+      bool addTimeOffset_;
+      int  verbosityLevel_;
+      float intervalStart_;
+      float intervalEnd_;
 
-    CLHEP::RandFlat flatTime_;
+      CLHEP::RandFlat flatTime_;
   };
 
   //================================================================
   CosmicTimeOffset::CosmicTimeOffset(const Parameters& conf)
     : EDProducer{conf}
-    , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+  , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , addTimeOffset_(false)
     , verbosityLevel_(conf().verbosityLevel())
     , intervalStart_(conf().intervalStart())
     , intervalEnd_(conf().intervalEnd())
     , flatTime_(engine_, intervalStart_, intervalEnd_)
-  {
-    produces<SimTimeOffset>();
+    {
+      produces<SimTimeOffset>();
 
-    addTimeOffset_ = conf().cosmicModuleLabel(cosmicModuleLabel_);
+      addTimeOffset_ = conf().cosmicModuleLabel(cosmicModuleLabel_);
 
-    if (addTimeOffset_) {
-      consumes<GenParticleCollection>(cosmicModuleLabel_);
-      produces<GenParticleCollection>();
+      if (addTimeOffset_) {
+        consumes<GenParticleCollection>(cosmicModuleLabel_);
+        produces<GenParticleCollection>();
+      }
     }
-  }
 
   //================================================================
   void CosmicTimeOffset::beginRun(art::Run& run) {
     if ( verbosityLevel_ > 0 ) {
       std::ostringstream timeSpectrum;
       timeSpectrum << "Genarating random time offset between "
-                    << intervalStart_
-                    << " ns and "
-                    << intervalEnd_ << " ns\n";
+        << intervalStart_
+        << " ns and "
+        << intervalEnd_ << " ns\n";
       mf::LogInfo("Info") << "Cosmic time distribution\n" << timeSpectrum.str();
     }
   }
@@ -106,8 +106,8 @@ namespace mu2e {
       for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i) {
         GenParticle const &particle = *i;
         offsetParticles->push_back(GenParticle(particle.pdgId(), particle.generatorId(),
-                                               particle.position(), particle.momentum(),
-                                               particle.time() + timeOffset));
+              particle.position(), particle.momentum(),
+              particle.time() + timeOffset));
       }
 
       event.put(std::move(offsetParticles));

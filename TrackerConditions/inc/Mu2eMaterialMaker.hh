@@ -13,14 +13,14 @@ namespace mu2e {
 
   class Mu2eMaterialMaker {
 
-  public:
-    Mu2eMaterialMaker(Mu2eMaterialConfig const& config):_config(config) {}
-    Mu2eMaterial::ptr_t fromFcl();
+    public:
+      Mu2eMaterialMaker(Mu2eMaterialConfig const& config):_config(config) {}
+      Mu2eMaterial::ptr_t fromFcl();
 
-  private:
+    private:
 
-    // _config should only be initialized once
-    const Mu2eMaterialConfig _config;
+      // _config should only be initialized once
+      const Mu2eMaterialConfig _config;
   };
 
 

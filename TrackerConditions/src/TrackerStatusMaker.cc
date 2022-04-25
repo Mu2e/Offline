@@ -20,13 +20,13 @@ namespace mu2e {
 
     for(auto const& estat : config_.status()) {
       trkstatptr->addStatus(StrawId(std::get<0>(estat)),
-	  StrawIdMask(std::get<1>(estat)),
-	  StrawStatus(std::get<2>(estat)));
+          StrawIdMask(std::get<1>(estat)),
+          StrawStatus(std::get<2>(estat)));
     }
     auto const& settings = config_.settings();
     if ( settings.verbose() > 0 ) {
       cout << "TrackerStatus create from fcl with " << config_.status().size()
-	<< " elements " << endl;
+        << " elements " << endl;
     }
     if(settings.verbose() > 1){
       trkstatptr->print(cout);
@@ -39,7 +39,7 @@ namespace mu2e {
       TrkPanelStatus::cptr_t   tpas_p,
       TrkStrawStatusLong::cptr_t   tssl_p,
       TrkStrawStatusShort::cptr_t   tsss_p ) {
-      // create return object
+    // create return object
     auto trkstatptr = std::make_shared<TrackerStatus>();
     auto const& settings = config_.settings();
     if ( settings.verbose() > 1 ) {

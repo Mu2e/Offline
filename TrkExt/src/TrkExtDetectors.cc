@@ -22,9 +22,9 @@ namespace mu2e {
 
 
 
- 
+
   TrkExtDetectors::TrkExtDetectors() : TrkExtShape()
-  { 
+  {
   }
 
   void TrkExtDetectors::initialize() {
@@ -45,7 +45,7 @@ namespace mu2e {
   }
 
 
-    
+
   Hep3Vector  TrkExtDetectors::intersection (const Hep3Vector & x1, const Hep3Vector & x2) {
     TrkExtDetectorList::Enum f1, f2;
     Hep3Vector xstart = x1;
@@ -59,7 +59,7 @@ namespace mu2e {
       return ret;
     }
     int i = 0;
-    
+
     do {
 
       Hep3Vector xhalf = (xstart+xstop)*0.5;

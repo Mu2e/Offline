@@ -39,24 +39,24 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
     TH1F* ph = (TH1F*)tdir->Get(pname);
     TH1F* ca = (TH1F*)tdir->Get(caname);
     if(rh != 0 && th != 0 &&lh != 0 && ch != 0 && ph != 0){
-//if(ch->GetEntries() < 15)break;
+      //if(ch->GetEntries() < 15)break;
       div_t divide = div(iplot,nps*nps);
       //      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
       if(divide.rem == 0){
-	++ican;
-	snprintf(canname,20,"tcan_%i",ican);
-	cans[ican] = new TCanvas(canname,canname,750,750);
-	cans[ican]->Clear();
-	cans[ican]->Divide(nps,nps);
+        ++ican;
+        snprintf(canname,20,"tcan_%i",ican);
+        cans[ican] = new TCanvas(canname,canname,750,750);
+        cans[ican]->Clear();
+        cans[ican]->Divide(nps,nps);
       }
       unsigned ipave = divide.rem+1;
       cans[ican]->cd(ipave);
       rh->SetStats(0);
       th->SetStats(0);
-//      lh->SetStats(0);
+      //      lh->SetStats(0);
       ch->SetStats(0);
       ph->SetStats(0);
-//
+      //
       char title[100];
       snprintf(title,100,"Time Spectrum event %lu",ievt);
       lh->SetTitle(title);
@@ -78,25 +78,25 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       th->GetYaxis()->SetTitle("# hits/20 nsec");
       th->SetFillColor(kGreen);
       th->Draw("hsame");
-//      th->Draw();
+      //      th->Draw();
       ph->Draw("hsame");
       if(ca != 0){
-	ca->SetFillStyle(3001);
-	ca->SetFillColor(kMagenta);
-	ca->Draw("hsame");
+        ca->SetFillStyle(3001);
+        ca->SetFillColor(kMagenta);
+        ca->Draw("hsame");
       }
       TLegend* leg(0);
       if(ipave==1){
-	leg = new TLegend(0.1,0.7,0.4,0.9);
-//	leg->AddEntry(rh,"All hits","l");
-	leg->AddEntry(lh,"Selected e^{-} hits","F");
-	leg->AddEntry(th,"Clustered hits","F");
-	leg->AddEntry(ch,"All CE hits","LF");
-	leg->AddEntry(ph,"Clustered CE hits","LF");
-	if(ca)leg->AddEntry(ca,"CaloCluster","LF");
-	//leg->AddEntry(tchits,"Hits only Cluster Time","P");
-	//leg->AddEntry(tccalo,"Hits+Calo Cluster Time","P");
-	leg->Draw("h");
+        leg = new TLegend(0.1,0.7,0.4,0.9);
+        //  leg->AddEntry(rh,"All hits","l");
+        leg->AddEntry(lh,"Selected e^{-} hits","F");
+        leg->AddEntry(th,"Clustered hits","F");
+        leg->AddEntry(ch,"All CE hits","LF");
+        leg->AddEntry(ph,"Clustered CE hits","LF");
+        if(ca)leg->AddEntry(ca,"CaloCluster","LF");
+        //leg->AddEntry(tchits,"Hits only Cluster Time","P");
+        //leg->AddEntry(tccalo,"Hits+Calo Cluster Time","P");
+        leg->Draw("h");
       }
       ++iplot;
       if(iplot > nmax)break;

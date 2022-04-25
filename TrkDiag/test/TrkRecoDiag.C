@@ -7,144 +7,144 @@
 using namespace std;
 
 TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
-  _eff(0), _acc(0), _effcan(0), _tcseln(6), 
+  _eff(0), _acc(0), _effcan(0), _tcseln(6),
   _hseln(6), _hselminm(280.0),_hselmaxm(380.0),
-  _sselminm(95.0), _sselmaxm(110.0), _sselmerr(1.2), _sselchi2(9.0), 
+  _sselminm(95.0), _sselmaxm(110.0), _sselmerr(1.2), _sselchi2(9.0),
   _pseltq(0.4), _pselminm(95.0), _pselmaxm(110.0),
   _mincost(0.45), _maxcost(0.7571),
   _mint0(700.0),
   _tdlow(0.57735027), _tdhigh(1.0)
- 
- {
-// build branches 
-   Init(tree);
-   // setup flag value vector: this should come from TrkFitFlag FIXME!!
-   _tffval[hitsOK] = 1<<hitsOK;
-   _tffval[circleOK] = 1<<circleOK;
-   _tffval[phizOK] = 1<<phizOK;
-   _tffval[helixOK] = 1<<helixOK;
-   _tffval[seedOK] = 1<<seedOK;
-   _tffval[kalmanOK] = 1<<kalmanOK;
-   createHistos();
+
+{
+  // build branches
+  Init(tree);
+  // setup flag value vector: this should come from TrkFitFlag FIXME!!
+  _tffval[hitsOK] = 1<<hitsOK;
+  _tffval[circleOK] = 1<<circleOK;
+  _tffval[phizOK] = 1<<phizOK;
+  _tffval[helixOK] = 1<<helixOK;
+  _tffval[seedOK] = 1<<seedOK;
+  _tffval[kalmanOK] = 1<<kalmanOK;
+  createHistos();
 }
 
 
 void TrkRecoDiag::Loop()
 {
-   if (fChain == 0) return;
+  if (fChain == 0) return;
 
-   Long64_t nentries = fChain->GetEntries();
+  Long64_t nentries = fChain->GetEntries();
 
-   Long64_t nbytes = 0, nb = 0;
-   
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      std::vector<bool> effcuts, acccuts;
-      effcuts.push_back(true); acccuts.push_back(effcuts.back());// 0 bin counts number of events
-      effcuts.push_back(ndigi >= 15); // events with at least 15 digis from the primary particle
-      // take time modulo MB period
-      float mctime = fmod(mcmidt0,1695.0);
-      effcuts.push_back(mctime > 500.0 ); // primary track passed the tracker during 
-      float  mccost = mcmidpz/mcmidmom;
-      float hd0 = hsh__rcent - hsh__radius;
-      float hrmax  = hsh__rcent + hsh__radius;
-      float hmom = sqrt(hsh__radius*hsh__radius + hsh__lambda*hsh__lambda);
-      effcuts.push_back(mccost > _mincost && mccost < _maxcost ); // track direction (with buffer)
-      effcuts.push_back(tcn>_tcseln); acccuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
-      effcuts.push_back((hsf__value&_tffval[circleOK])>0);
-      effcuts.push_back((hsf__value&_tffval[helixOK])>0);acccuts.push_back(effcuts.back());
-      effcuts.push_back(hsna>_hseln && hmom < _hselmaxm && hmom > _hselminm);acccuts.push_back(effcuts.back());
-      effcuts.push_back((ksf__value&_tffval[seedOK])>0);acccuts.push_back(effcuts.back());
-      effcuts.push_back(ksm > _sselminm && ksm < _sselmaxm && kschisq/(ksna-5)<_sselchi2 && ksmerr < _sselmerr);acccuts.push_back(effcuts.back());
-      effcuts.push_back((kff__value&_tffval[kalmanOK])>0);acccuts.push_back(effcuts.back());
-      // physics cuts
-      bool ptqual = kftq > _pseltq;
-      bool ppitch = kfh__pars[3] > _tdlow && kfh__pars[3] < _tdhigh;
-      bool ptime = kft0> _mint0;
-      bool pmom = kfm > _pselminm && kfm < _pselmaxm;
-      bool pd0 = kfh__pars[0]<105&&kfh__pars[0]>-80;
-      bool prmax =  (kfh__pars[0]+2/kfh__pars[2])>450 && (kfh__pars[0]+2/kfh__pars[2])<680;
-      effcuts.push_back(ptqual && ppitch && ptime && pmom && pd0 && prmax );acccuts.push_back(effcuts.back());
-      // efficiency 
-      if((int)effcuts.size() != _eff->GetNbinsX())
-	cout << "Error: Efficiency cuts size " << effcuts.size() << " != " << _eff->GetNbinsX() << endl;
-      for(unsigned icut=0;icut< effcuts.size(); ++icut){
-	if(effcuts[icut])
-	  _eff->Fill((Float_t)icut);
-	else
-	  break;
-      }
-      // acceptance
-      if((int)acccuts.size() != _acc->GetNbinsX())
-	cout << "Error: Acceptance cuts size " << acccuts.size() << " != " << _acc->GetNbinsX() << endl;
-      for(unsigned icut=0;icut< acccuts.size(); ++icut){
-	if(acccuts[icut])
-	  _acc->Fill((Float_t)icut);
-	else
-	  break;
-      }
+  Long64_t nbytes = 0, nb = 0;
 
-      // histogram values that pass final Kalman fit
-      bool helixfit = (hsf__value&_tffval[helixOK])>0;
-      bool seedfit = (ksf__value&_tffval[seedOK])>0;
-      bool kalfit = (kff__value&_tffval[kalmanOK])>0;
-      double kndf = kschisq/(ksna-5);
-      bool psel = kfm > _pselminm && kfm < _pselmaxm && kftq > _pseltq;
-      if(helixfit){
-	_hn->Fill(hsn);
-	_hna->Fill(hsna);
-	_hd0->Fill(hd0);
-	_hrmax->Fill(hrmax);
-	_hmom->Fill(hmom);
-	_hrad->Fill(hsh__radius);
-	_hlam->Fill(hsh__lambda);
-	if(seedfit){
-	  _shn->Fill(hsn);
-	  _shna->Fill(hsna);
-	  _shd0->Fill(hd0);
-	  _shrmax->Fill(hrmax);
-	  _shmom->Fill(hmom);
-	  _shrad->Fill(hsh__radius);
-	  _shlam->Fill(hsh__lambda);
-	  _ssna->Fill(ksna);
-	  _ssmom->Fill(ksm);
-	  _ssmerr->Fill(ksmerr);
-	  _sschisq->Fill(kndf);
-	  if(kalfit){
-	    _fhn->Fill(hsn);
-	    _fhna->Fill(hsna);
-	    _fhd0->Fill(hd0);
-	    _fhrmax->Fill(hrmax);
-	    _fhmom->Fill(hmom);
-	    _fhrad->Fill(hsh__radius);
-	    _fhlam->Fill(hsh__lambda);
-	    _fsna->Fill(ksna);
-	    _fsmom->Fill(ksm);
-	    _fsmerr->Fill(ksmerr);
-	    _fschisq->Fill(kndf);
-	    if(psel){
-	      _phn->Fill(hsn);
-	      _phna->Fill(hsna);
-	      _phd0->Fill(hd0);
-	      _phrmax->Fill(hrmax);
-	      _phmom->Fill(hmom);
-	      _phrad->Fill(hsh__radius);
-	      _phlam->Fill(hsh__lambda);
-	      _psna->Fill(ksna);
-	      _psmom->Fill(ksm);
-	      _psmerr->Fill(ksmerr);
-	      _pschisq->Fill(kndf);
-	    }
-	  }
-	}
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    nb = fChain->GetEntry(jentry);   nbytes += nb;
+    std::vector<bool> effcuts, acccuts;
+    effcuts.push_back(true); acccuts.push_back(effcuts.back());// 0 bin counts number of events
+    effcuts.push_back(ndigi >= 15); // events with at least 15 digis from the primary particle
+    // take time modulo MB period
+    float mctime = fmod(mcmidt0,1695.0);
+    effcuts.push_back(mctime > 500.0 ); // primary track passed the tracker during
+    float  mccost = mcmidpz/mcmidmom;
+    float hd0 = hsh__rcent - hsh__radius;
+    float hrmax  = hsh__rcent + hsh__radius;
+    float hmom = sqrt(hsh__radius*hsh__radius + hsh__lambda*hsh__lambda);
+    effcuts.push_back(mccost > _mincost && mccost < _maxcost ); // track direction (with buffer)
+    effcuts.push_back(tcn>_tcseln); acccuts.push_back(effcuts.back());// reconstructed time cluster associated with primary track
+    effcuts.push_back((hsf__value&_tffval[circleOK])>0);
+    effcuts.push_back((hsf__value&_tffval[helixOK])>0);acccuts.push_back(effcuts.back());
+    effcuts.push_back(hsna>_hseln && hmom < _hselmaxm && hmom > _hselminm);acccuts.push_back(effcuts.back());
+    effcuts.push_back((ksf__value&_tffval[seedOK])>0);acccuts.push_back(effcuts.back());
+    effcuts.push_back(ksm > _sselminm && ksm < _sselmaxm && kschisq/(ksna-5)<_sselchi2 && ksmerr < _sselmerr);acccuts.push_back(effcuts.back());
+    effcuts.push_back((kff__value&_tffval[kalmanOK])>0);acccuts.push_back(effcuts.back());
+    // physics cuts
+    bool ptqual = kftq > _pseltq;
+    bool ppitch = kfh__pars[3] > _tdlow && kfh__pars[3] < _tdhigh;
+    bool ptime = kft0> _mint0;
+    bool pmom = kfm > _pselminm && kfm < _pselmaxm;
+    bool pd0 = kfh__pars[0]<105&&kfh__pars[0]>-80;
+    bool prmax =  (kfh__pars[0]+2/kfh__pars[2])>450 && (kfh__pars[0]+2/kfh__pars[2])<680;
+    effcuts.push_back(ptqual && ppitch && ptime && pmom && pd0 && prmax );acccuts.push_back(effcuts.back());
+    // efficiency
+    if((int)effcuts.size() != _eff->GetNbinsX())
+      cout << "Error: Efficiency cuts size " << effcuts.size() << " != " << _eff->GetNbinsX() << endl;
+    for(unsigned icut=0;icut< effcuts.size(); ++icut){
+      if(effcuts[icut])
+        _eff->Fill((Float_t)icut);
+      else
+        break;
+    }
+    // acceptance
+    if((int)acccuts.size() != _acc->GetNbinsX())
+      cout << "Error: Acceptance cuts size " << acccuts.size() << " != " << _acc->GetNbinsX() << endl;
+    for(unsigned icut=0;icut< acccuts.size(); ++icut){
+      if(acccuts[icut])
+        _acc->Fill((Float_t)icut);
+      else
+        break;
+    }
+
+    // histogram values that pass final Kalman fit
+    bool helixfit = (hsf__value&_tffval[helixOK])>0;
+    bool seedfit = (ksf__value&_tffval[seedOK])>0;
+    bool kalfit = (kff__value&_tffval[kalmanOK])>0;
+    double kndf = kschisq/(ksna-5);
+    bool psel = kfm > _pselminm && kfm < _pselmaxm && kftq > _pseltq;
+    if(helixfit){
+      _hn->Fill(hsn);
+      _hna->Fill(hsna);
+      _hd0->Fill(hd0);
+      _hrmax->Fill(hrmax);
+      _hmom->Fill(hmom);
+      _hrad->Fill(hsh__radius);
+      _hlam->Fill(hsh__lambda);
+      if(seedfit){
+        _shn->Fill(hsn);
+        _shna->Fill(hsna);
+        _shd0->Fill(hd0);
+        _shrmax->Fill(hrmax);
+        _shmom->Fill(hmom);
+        _shrad->Fill(hsh__radius);
+        _shlam->Fill(hsh__lambda);
+        _ssna->Fill(ksna);
+        _ssmom->Fill(ksm);
+        _ssmerr->Fill(ksmerr);
+        _sschisq->Fill(kndf);
+        if(kalfit){
+          _fhn->Fill(hsn);
+          _fhna->Fill(hsna);
+          _fhd0->Fill(hd0);
+          _fhrmax->Fill(hrmax);
+          _fhmom->Fill(hmom);
+          _fhrad->Fill(hsh__radius);
+          _fhlam->Fill(hsh__lambda);
+          _fsna->Fill(ksna);
+          _fsmom->Fill(ksm);
+          _fsmerr->Fill(ksmerr);
+          _fschisq->Fill(kndf);
+          if(psel){
+            _phn->Fill(hsn);
+            _phna->Fill(hsna);
+            _phd0->Fill(hd0);
+            _phrmax->Fill(hrmax);
+            _phmom->Fill(hmom);
+            _phrad->Fill(hsh__radius);
+            _phlam->Fill(hsh__lambda);
+            _psna->Fill(ksna);
+            _psmom->Fill(ksm);
+            _psmerr->Fill(ksmerr);
+            _pschisq->Fill(kndf);
+          }
+        }
       }
-   }
-   // normalize
-   cout << "Normalizing efficiency to " << _norm << endl;
-   _eff->Scale(1.0/_norm);
-   _acc->Scale(1.0/_norm);
+    }
+  }
+  // normalize
+  cout << "Normalizing efficiency to " << _norm << endl;
+  _eff->Scale(1.0/_norm);
+  _acc->Scale(1.0/_norm);
 }
 
 void TrkRecoDiag::createHistos() {
@@ -267,7 +267,7 @@ void TrkRecoDiag::createHistos() {
   _sschisq = new TH1F("sschisq",title("Seed chisq/dof"),101,0.0,15.0);
   _fschisq = new TH1F("fschisq",title("Seed chisq/dof"),101,0.0,15.0);
   _pschisq = new TH1F("pschisq",title("Seed chisq/dop"),101,0.0,15.0);
-  
+
   _ssna->SetLineColor(kBlue);
   _ssmom->SetLineColor(kBlue);
   _ssmerr->SetLineColor(kBlue);
