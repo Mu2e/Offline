@@ -9,7 +9,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // mu2e
 #include "Offline/GeneralUtilities/inc/Angles.hh"
@@ -48,7 +47,7 @@
 #include <functional>
 #include <algorithm>
 #include <iostream>
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
@@ -69,11 +68,11 @@ namespace mu2e {
       // This is called for each event.
       virtual void analyze(art::Event const& e) override;
     private:
-// config parameters
+      // config parameters
       int _diag;
       bool _mcdiag;
       TrkFitFlag _goodkf, _goodks, _goodhs; // define a good track
-     // event object tags
+      // event object tags
       art::InputTag _hsTag;
       art::InputTag _ksTag;
       art::InputTag _kfTag;
@@ -126,7 +125,7 @@ namespace mu2e {
       UInt_t _ndigi, _nkfprimary, _nksprimary, _nhsprimary, _ntcprimary;
       RobustHelix _mch;
 
-      // helper functions 
+      // helper functions
       unsigned findMCParticle(SPP& spp);
       KSI findMCMatch(SPP const& spp,KalSeedCollection const& ksc,unsigned& nprimary);
       HSI findMCMatch(art::Event const& evt, SPP const& spp,HelixSeedCollection const& hsc,unsigned& nprimary);
@@ -138,7 +137,7 @@ namespace mu2e {
       void fillKalSeed(SPP const& spp,KalSeed const& ks);
       void fillHelixSeed(SPP const& spp,HelixSeed const& hs);
       void fillTimeCluster(SPP const& spp,TimeCluster const& tc);
-      bool fillMCInfo(SPP const& pspp); 
+      bool fillMCInfo(SPP const& pspp);
       void resetTTree();
   };
 
@@ -163,79 +162,79 @@ namespace mu2e {
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
     _beamWtModule( pset.get<art::InputTag>("beamWeightModule","PBIWeight" )),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
-  {
-    if(_diag > 0){
-      art::ServiceHandle<art::TFileService> tfs;
-      _trdiag=tfs->make<TTree>("trdiag","Track Reconstruction Diagnostics");
-      _trdiag->Branch("iev",&_iev,"iev/I");
-      _trdiag->Branch("tct0",&_tct0,"tct0/F");
-      _trdiag->Branch("tct0err",&_tct0err,"tct0err/F");
-      _trdiag->Branch("tcn",&_tcn,"tcn/I");
-      _trdiag->Branch("hsf.",&_hsf);
-      _trdiag->Branch("hsh.",&_hsh);
-      _trdiag->Branch("hst0",&_hst0,"hst0/F");
-      _trdiag->Branch("hst0err",&_hst0err,"hst0err/F");
-      _trdiag->Branch("hsn",&_hsn,"hsn/I");
-      _trdiag->Branch("hsna",&_hsna,"hsna/I");
-      _trdiag->Branch("ksf.",&_ksf);
-      _trdiag->Branch("ksh.",&_ksh);
-      _trdiag->Branch("kst0",&_kst0,"kst0/F");
-      _trdiag->Branch("kst0err",&_kst0err,"kst0err/F");
-      _trdiag->Branch("ksm",&_ksm,"ksm/F");
-      _trdiag->Branch("ksmerr",&_ksmerr,"ksmerr/F");
-      _trdiag->Branch("kschisq",&_kschisq,"kschisq/F");
-      _trdiag->Branch("kscon",&_kscon,"kscon/F");
-      _trdiag->Branch("ksn",&_ksn,"ksn/I");
-      _trdiag->Branch("ksna",&_ksna,"ksna/I");
-      _trdiag->Branch("kff.",&_kff);
-      _trdiag->Branch("kfh.",&_kfh);
-      _trdiag->Branch("kft0",&_kft0,"kft0/F");
-      _trdiag->Branch("kft0err",&_kft0err,"kft0err/F");
-      _trdiag->Branch("kfm",&_kfm,"kfm/F");
-      _trdiag->Branch("kfmerr",&_kfmerr,"kfmerr/F");
-      _trdiag->Branch("kfchisq",&_kfchisq,"kfchisq/F");
-      _trdiag->Branch("kfcon",&_kfcon,"kfcon/F");
-      _trdiag->Branch("kftq",&_kftq,"kftq/F");
-      _trdiag->Branch("kfn",&_kfn,"kfn/I");
-      _trdiag->Branch("kfna",&_kfna,"kfna/I");
-      _trdiag->Branch("kfns",&_kfns,"kfns/I");
-      if(_mcdiag){
-	_trdiag->Branch("beamwt",&_beamwt,"beamwt/F");
-	_trdiag->Branch("ndigitot",&_ndigitot,"ndigitot/i");
-	_trdiag->Branch("mcgenmom",&_mcgenmom,"mcgenmom/F");
-	_trdiag->Branch("mcentmom",&_mcentmom,"mcentmom/F");
-	_trdiag->Branch("mcentpz",&_mcentpz,"mcentpz/F");
-	_trdiag->Branch("mcentt0",&_mcentt0,"mcentt0/F");
-	_trdiag->Branch("mcmidmom",&_mcmidmom,"mcmidmom/F");
-	_trdiag->Branch("mcmidpz",&_mcmidpz,"mcmidpz/F");
-	_trdiag->Branch("mcmidt0",&_mcmidt0,"mcmidt0/F");
-	_trdiag->Branch("mcxitmom",&_mcxitmom,"mcxitmom/F");
-	_trdiag->Branch("mcxitpz",&_mcxitpz,"mcxitpz/F");
-	_trdiag->Branch("mcxitt0",&_mcxitt0,"mcxitt0/F");
-	_trdiag->Branch("mch.",&_mch);
-	_trdiag->Branch("nprimary",&_nprimary,"nprimary/i");
-	_trdiag->Branch("pdg",&_pdg,"pdg/I");
-	_trdiag->Branch("gen",&_gen,"gen/I");
-	_trdiag->Branch("proc",&_proc,"proc/I");
-	_trdiag->Branch("ndigi",&_ndigi,"ndigi/i");
-	_trdiag->Branch("nkfprimary",&_nkfprimary,"nkfprimary/i");
-	_trdiag->Branch("nksprimary",&_nksprimary,"nksprimary/i");
-	_trdiag->Branch("nhsprimary",&_nhsprimary,"nhsprimary/i");
-	_trdiag->Branch("ntcprimary",&_ntcprimary,"ntcprimary/i");
-	_trdiag->Branch("kfnp",&_kfnp,"kfnp/I");
-	_trdiag->Branch("kfnap",&_kfnap,"kfnap/I");
-	_trdiag->Branch("ksnp",&_ksnp,"ksnp/I");
-	_trdiag->Branch("ksnap",&_ksnap,"ksnap/I");
-	_trdiag->Branch("hsnp",&_hsnp,"hsnp/I");
-	_trdiag->Branch("hsnap",&_hsnap,"hsnap/I");
-	_trdiag->Branch("tcnp",&_tcnp,"tcnp/I");
-      }
-      if(_diag > 1){
-	if(_mcdiag){
-	}
+    {
+      if(_diag > 0){
+        art::ServiceHandle<art::TFileService> tfs;
+        _trdiag=tfs->make<TTree>("trdiag","Track Reconstruction Diagnostics");
+        _trdiag->Branch("iev",&_iev,"iev/I");
+        _trdiag->Branch("tct0",&_tct0,"tct0/F");
+        _trdiag->Branch("tct0err",&_tct0err,"tct0err/F");
+        _trdiag->Branch("tcn",&_tcn,"tcn/I");
+        _trdiag->Branch("hsf.",&_hsf);
+        _trdiag->Branch("hsh.",&_hsh);
+        _trdiag->Branch("hst0",&_hst0,"hst0/F");
+        _trdiag->Branch("hst0err",&_hst0err,"hst0err/F");
+        _trdiag->Branch("hsn",&_hsn,"hsn/I");
+        _trdiag->Branch("hsna",&_hsna,"hsna/I");
+        _trdiag->Branch("ksf.",&_ksf);
+        _trdiag->Branch("ksh.",&_ksh);
+        _trdiag->Branch("kst0",&_kst0,"kst0/F");
+        _trdiag->Branch("kst0err",&_kst0err,"kst0err/F");
+        _trdiag->Branch("ksm",&_ksm,"ksm/F");
+        _trdiag->Branch("ksmerr",&_ksmerr,"ksmerr/F");
+        _trdiag->Branch("kschisq",&_kschisq,"kschisq/F");
+        _trdiag->Branch("kscon",&_kscon,"kscon/F");
+        _trdiag->Branch("ksn",&_ksn,"ksn/I");
+        _trdiag->Branch("ksna",&_ksna,"ksna/I");
+        _trdiag->Branch("kff.",&_kff);
+        _trdiag->Branch("kfh.",&_kfh);
+        _trdiag->Branch("kft0",&_kft0,"kft0/F");
+        _trdiag->Branch("kft0err",&_kft0err,"kft0err/F");
+        _trdiag->Branch("kfm",&_kfm,"kfm/F");
+        _trdiag->Branch("kfmerr",&_kfmerr,"kfmerr/F");
+        _trdiag->Branch("kfchisq",&_kfchisq,"kfchisq/F");
+        _trdiag->Branch("kfcon",&_kfcon,"kfcon/F");
+        _trdiag->Branch("kftq",&_kftq,"kftq/F");
+        _trdiag->Branch("kfn",&_kfn,"kfn/I");
+        _trdiag->Branch("kfna",&_kfna,"kfna/I");
+        _trdiag->Branch("kfns",&_kfns,"kfns/I");
+        if(_mcdiag){
+          _trdiag->Branch("beamwt",&_beamwt,"beamwt/F");
+          _trdiag->Branch("ndigitot",&_ndigitot,"ndigitot/i");
+          _trdiag->Branch("mcgenmom",&_mcgenmom,"mcgenmom/F");
+          _trdiag->Branch("mcentmom",&_mcentmom,"mcentmom/F");
+          _trdiag->Branch("mcentpz",&_mcentpz,"mcentpz/F");
+          _trdiag->Branch("mcentt0",&_mcentt0,"mcentt0/F");
+          _trdiag->Branch("mcmidmom",&_mcmidmom,"mcmidmom/F");
+          _trdiag->Branch("mcmidpz",&_mcmidpz,"mcmidpz/F");
+          _trdiag->Branch("mcmidt0",&_mcmidt0,"mcmidt0/F");
+          _trdiag->Branch("mcxitmom",&_mcxitmom,"mcxitmom/F");
+          _trdiag->Branch("mcxitpz",&_mcxitpz,"mcxitpz/F");
+          _trdiag->Branch("mcxitt0",&_mcxitt0,"mcxitt0/F");
+          _trdiag->Branch("mch.",&_mch);
+          _trdiag->Branch("nprimary",&_nprimary,"nprimary/i");
+          _trdiag->Branch("pdg",&_pdg,"pdg/I");
+          _trdiag->Branch("gen",&_gen,"gen/I");
+          _trdiag->Branch("proc",&_proc,"proc/I");
+          _trdiag->Branch("ndigi",&_ndigi,"ndigi/i");
+          _trdiag->Branch("nkfprimary",&_nkfprimary,"nkfprimary/i");
+          _trdiag->Branch("nksprimary",&_nksprimary,"nksprimary/i");
+          _trdiag->Branch("nhsprimary",&_nhsprimary,"nhsprimary/i");
+          _trdiag->Branch("ntcprimary",&_ntcprimary,"ntcprimary/i");
+          _trdiag->Branch("kfnp",&_kfnp,"kfnp/I");
+          _trdiag->Branch("kfnap",&_kfnap,"kfnap/I");
+          _trdiag->Branch("ksnp",&_ksnp,"ksnp/I");
+          _trdiag->Branch("ksnap",&_ksnap,"ksnap/I");
+          _trdiag->Branch("hsnp",&_hsnp,"hsnp/I");
+          _trdiag->Branch("hsnap",&_hsnap,"hsnap/I");
+          _trdiag->Branch("tcnp",&_tcnp,"tcnp/I");
+        }
+        if(_diag > 1){
+          if(_mcdiag){
+          }
+        }
       }
     }
-  }
 
   void TrkRecoDiag::beginRun(art::Run const& run){
     // get bfield
@@ -247,7 +246,7 @@ namespace mu2e {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
     _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
-    _entvids.push_back(VirtualDetectorId::TT_FrontPA); 
+    _entvids.push_back(VirtualDetectorId::TT_FrontPA);
     _xitvids.push_back(VirtualDetectorId::TT_Back);
   }
 
@@ -259,65 +258,65 @@ namespace mu2e {
       // find the MC particle
       SPP bestpart;
       if(_mcdiag){
-	// basic event information
-	_ndigitot = _mcdigis->size();
-	art::Handle<EventWeight> beamWtHandle;
-	evt.getByLabel(_beamWtModule, beamWtHandle);
-	if(beamWtHandle.isValid())
-	  _beamwt = beamWtHandle->weight();
-	// find the MC true particle that best meets the specified requirements
-	_nprimary = findMCParticle(bestpart);
-	if(bestpart.isNonnull()){
-	  _mcgenmom = bestpart->startMomentum().mag(); // momentum at production
-	  _pdg = bestpart->pdgId();
-	  _proc = bestpart->originParticle().creationCode();
-	  if(bestpart->genParticle().isNonnull() )
-	    _gen = bestpart->genParticle()->generatorId().id();
-	  _ndigi = TrkMCTools::countDigis(bestpart,_mcdigis);
-	  fillMCInfo(bestpart);
-	  // find the best reco matches to this particle.
-	  auto bestkf = findMCMatch(bestpart,*_kfcol, _nkfprimary);
-	  if(bestkf != _kfcol->end()){
-	    fillKalFinal(bestpart,bestkf);
-	  } else {
-	    auto bestks = findMCMatch(bestpart,*_kscol, _nksprimary);
-	    if(bestks != _kscol->end()){
-	      fillKalSeed(bestpart,*bestks);
-	    } else {
-	      auto besths = findMCMatch(evt, bestpart,*_hscol, _nhsprimary);
-	      if(besths != _hscol->end()){
-		fillHelixSeed(bestpart,*besths);
-	      } else {
-		auto besttc = findMCMatch(evt, bestpart,*_tccol, _ntcprimary);
-		if(besttc != _tccol->end()){
-		  fillTimeCluster(bestpart,*besttc);
-		}
-	      }
-	    }
-	  }
-	}
+        // basic event information
+        _ndigitot = _mcdigis->size();
+        art::Handle<EventWeight> beamWtHandle;
+        evt.getByLabel(_beamWtModule, beamWtHandle);
+        if(beamWtHandle.isValid())
+          _beamwt = beamWtHandle->weight();
+        // find the MC true particle that best meets the specified requirements
+        _nprimary = findMCParticle(bestpart);
+        if(bestpart.isNonnull()){
+          _mcgenmom = bestpart->startMomentum().mag(); // momentum at production
+          _pdg = bestpart->pdgId();
+          _proc = bestpart->originParticle().creationCode();
+          if(bestpart->genParticle().isNonnull() )
+            _gen = bestpart->genParticle()->generatorId().id();
+          _ndigi = TrkMCTools::countDigis(bestpart,_mcdigis);
+          fillMCInfo(bestpart);
+          // find the best reco matches to this particle.
+          auto bestkf = findMCMatch(bestpart,*_kfcol, _nkfprimary);
+          if(bestkf != _kfcol->end()){
+            fillKalFinal(bestpart,bestkf);
+          } else {
+            auto bestks = findMCMatch(bestpart,*_kscol, _nksprimary);
+            if(bestks != _kscol->end()){
+              fillKalSeed(bestpart,*bestks);
+            } else {
+              auto besths = findMCMatch(evt, bestpart,*_hscol, _nhsprimary);
+              if(besths != _hscol->end()){
+                fillHelixSeed(bestpart,*besths);
+              } else {
+                auto besttc = findMCMatch(evt, bestpart,*_tccol, _ntcprimary);
+                if(besttc != _tccol->end()){
+                  fillTimeCluster(bestpart,*besttc);
+                }
+              }
+            }
+          }
+        }
       }
       // if there's no MC match: see if a bkg fit is found
       if(bestpart.isNull()){
-	auto ikf = findBestReco(*_kfcol,_goodkf);
-	if(ikf != _kfcol->end()){
-	  fillKalFinal(bestpart,ikf);
-	} else {
-	  auto iks = findBestReco(*_kscol,_goodks);
-	  if(iks != _kscol->end()){
-	    fillKalSeed(bestpart,*iks);
-	  } else {
-	    auto ihs = findBestReco(*_hscol,_goodhs);
-	    if(ihs != _hscol->end()){
-	      fillHelixSeed(bestpart,*ihs);
-	    } else {
-	      auto itc = findBestReco(*_tccol);
-	      if(itc != _tccol->end()){
-		fillTimeCluster(bestpart,*itc);
-	      }
-	    }
-	  }
-	}
+        auto ikf = findBestReco(*_kfcol,_goodkf);
+        if(ikf != _kfcol->end()){
+          fillKalFinal(bestpart,ikf);
+        } else {
+          auto iks = findBestReco(*_kscol,_goodks);
+          if(iks != _kscol->end()){
+            fillKalSeed(bestpart,*iks);
+          } else {
+            auto ihs = findBestReco(*_hscol,_goodhs);
+            if(ihs != _hscol->end()){
+              fillHelixSeed(bestpart,*ihs);
+            } else {
+              auto itc = findBestReco(*_tccol);
+              if(itc != _tccol->end()){
+                fillTimeCluster(bestpart,*itc);
+              }
+            }
+          }
+        }
       }
       // fill the tree
       _trdiag->Fill();
@@ -364,15 +363,15 @@ namespace mu2e {
   KSI TrkRecoDiag::findMCMatch(SPP const& bestspp,KalSeedCollection const& ksc,unsigned& nprimary) {
     auto retval = ksc.end();
     nprimary = 0;
-    SPP spp; 
+    SPP spp;
     for(auto iks = ksc.begin(); iks != ksc.end(); ++iks) {
       vector<StrawHitIndex> hits;
       for(auto const& hhit : iks->hits())
-	hits.push_back(hhit.index());
+        hits.push_back(hhit.index());
       unsigned nmc = TrkMCTools::primaryParticle(spp,hits,_mcdigis);
       if(spp == bestspp && nmc > nprimary){
-	retval = iks;
-	nprimary = nmc;
+        retval = iks;
+        nprimary = nmc;
       }
     }
     return retval;
@@ -381,15 +380,15 @@ namespace mu2e {
   HSI TrkRecoDiag::findMCMatch(art::Event const&  evt, SPP const& bestspp,HelixSeedCollection const& hsc,unsigned& nprimary) {
     auto retval = hsc.end();
     nprimary = 0;
-    SPP spp; 
+    SPP spp;
     for(auto ihs = hsc.begin(); ihs != hsc.end(); ++ihs) {
       std::vector<StrawDigiIndex> sdis;
       for(size_t ihit=0;ihit < ihs->hits().size();ihit++)
-	ihs->hits().fillStrawDigiIndices(evt,ihit,sdis);
+        ihs->hits().fillStrawDigiIndices(evt,ihit,sdis);
       unsigned nmc = TrkMCTools::primaryParticle(spp,sdis,_mcdigis);
       if(spp == bestspp && nmc > nprimary){
-	retval = ihs;
-	nprimary = nmc;
+        retval = ihs;
+        nprimary = nmc;
       }
     }
     return retval;
@@ -398,16 +397,16 @@ namespace mu2e {
   TCI TrkRecoDiag::findMCMatch(art::Event const&  evt, SPP const& bestspp,TimeClusterCollection const& tcc,unsigned& nprimary) {
     auto retval = tcc.end();
     nprimary = 0;
-    SPP spp; 
+    SPP spp;
     for(auto itc = tcc.begin(); itc != tcc.end(); ++itc) {
-    // translate from ComboHit to StrawDigi indices
+      // translate from ComboHit to StrawDigi indices
       std::vector<StrawDigiIndex> sdis;
       for(auto ihit : itc->hits())
-	_chcol->fillStrawDigiIndices(evt,ihit,sdis);
+        _chcol->fillStrawDigiIndices(evt,ihit,sdis);
       unsigned nmc = TrkMCTools::primaryParticle(spp,sdis,_mcdigis);
       if(spp == bestspp && nmc > nprimary){
-	retval = itc;
-	nprimary = nmc;
+        retval = itc;
+        nprimary = nmc;
       }
     }
     return retval;
@@ -421,8 +420,8 @@ namespace mu2e {
     for(auto iks = ksc.begin(); iks != ksc.end(); ++iks) {
       double mom = iks->segments().front().mom();
       if(iks->status().hasAllProperties(goodreco) && mom > maxmom){
-	maxmom = mom; 
-	retval = iks;
+        maxmom = mom;
+        retval = iks;
       }
     }
     return retval;
@@ -435,8 +434,8 @@ namespace mu2e {
     for(auto ihs = hsc.begin(); ihs != hsc.end(); ++ihs) {
       double qual = ihs->hits().nStrawHits()*abs(ihs->helix().lambda()*ihs->helix().radius());
       if(ihs->status().hasAllProperties(goodreco) && qual > maxqual){
-	maxqual = qual;
-	retval = ihs;
+        maxqual = qual;
+        retval = ihs;
       }
     }
     return retval;
@@ -448,8 +447,8 @@ namespace mu2e {
     unsigned maxnhits(0);
     for(auto itc = tcc.begin(); itc != tcc.end(); ++itc) {
       if(itc->nStrawHits() > maxnhits){
-	maxnhits = itc->nStrawHits();
-	retval = itc;
+        maxnhits = itc->nStrawHits();
+        retval = itc;
       }
     }
     return retval;
@@ -509,12 +508,12 @@ namespace mu2e {
     for(auto tsh : kf.hits()){
       if(tsh.flag().hasAllProperties(StrawHitFlag::active))++_kfna;
       if(spp.isNonnull()){
-	StrawDigiMC const& mcdigi = _mcdigis->at(tsh.index());
-	auto const& spmcp = mcdigi.earlyStrawGasStep();
-	if ( spmcp->simParticle() == spp){
-	  ++_kfnp;
-	  if(!tsh.flag().hasAnyProperty(StrawHitFlag::outlier))++_kfnap;
-	}
+        StrawDigiMC const& mcdigi = _mcdigis->at(tsh.index());
+        auto const& spmcp = mcdigi.earlyStrawGasStep();
+        if ( spmcp->simParticle() == spp){
+          ++_kfnp;
+          if(!tsh.flag().hasAnyProperty(StrawHitFlag::outlier))++_kfnap;
+        }
       }
     }
     // count straws
@@ -537,20 +536,20 @@ namespace mu2e {
     for(auto tsh : ks.hits()){
       if(tsh.flag().hasAllProperties(StrawHitFlag::active))++_ksna;
       if(spp.isNonnull()){
-	StrawDigiMC const& mcdigi = _mcdigis->at(tsh.index());
-	auto spmcp = mcdigi.earlyStrawGasStep();
-	if ( spmcp->simParticle() == spp){
-	  ++_ksnp;
-	  if(!tsh.flag().hasAnyProperty(StrawHitFlag::outlier))++_ksnap;
-	}
+        StrawDigiMC const& mcdigi = _mcdigis->at(tsh.index());
+        auto spmcp = mcdigi.earlyStrawGasStep();
+        if ( spmcp->simParticle() == spp){
+          ++_ksnp;
+          if(!tsh.flag().hasAnyProperty(StrawHitFlag::outlier))++_ksnap;
+        }
       }
     }
     // folllow down the reco chain
-//    auto hsP = ks.helix();
-//    if(hsP.isNonnull()){
-//      fillHelixSeed(spp,*hsP);
-//    } else
-//      std::cout << "No helix seed found in kal seed!" << std::endl;
+    //    auto hsP = ks.helix();
+    //    if(hsP.isNonnull()){
+    //      fillHelixSeed(spp,*hsP);
+    //    } else
+    //      std::cout << "No helix seed found in kal seed!" << std::endl;
   }
 
   void TrkRecoDiag::fillHelixSeed(SPP const& spp,HelixSeed const& hs) {
@@ -561,15 +560,15 @@ namespace mu2e {
     _hst0err = hs.t0().t0Err();
     // count the active hits
     for(auto hhit : hs.hits()){
-      _hsn += hhit.nStrawHits(); 
+      _hsn += hhit.nStrawHits();
       if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsna += hhit.nStrawHits();
       if(spp.isNonnull()){
-	StrawDigiMC const& mcdigi = _mcdigis->at(hhit.index());
-	auto spmcp = mcdigi.earlyStrawGasStep();
-	if ( spmcp->simParticle() == spp){
-	  _hsnp += hhit.nStrawHits(); 
-	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsnap += hhit.nStrawHits(); 
-	}
+        StrawDigiMC const& mcdigi = _mcdigis->at(hhit.index());
+        auto spmcp = mcdigi.earlyStrawGasStep();
+        if ( spmcp->simParticle() == spp){
+          _hsnp += hhit.nStrawHits();
+          if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsnap += hhit.nStrawHits();
+        }
       }
     }
     // go down the reco chain
@@ -590,34 +589,34 @@ namespace mu2e {
       StrawDigiMC const& mcdigi = _mcdigis->at(tchit);
       auto spmcp = mcdigi.earlyStrawGasStep();
       if ( spmcp->simParticle() == spp){
-	++_tcnp;
+        ++_tcnp;
       }
     }
   }
 
   unsigned TrkRecoDiag::findMCParticle(SPP& spp){
     // reset
-    spp = SPP(); 
+    spp = SPP();
     // pick the most related particle with the most hits
     unsigned nprimary(0);
     for(auto psp : _primary->primarySimParticles()){
-    // loop over the digis and find the ones that match
+      // loop over the digis and find the ones that match
       unsigned count(0);
       MCRelationship mcrel;
       SPP sp;
       for(auto mcd : *_mcdigis) {
-	MCRelationship prel(psp,mcd.earlyStrawGasStep()->simParticle());
-	if(prel == mcrel)
-	  count++;
-	else if(prel > mcrel){
-	  mcrel = prel;
-	  count = 1;
-	  sp = mcd.earlyStrawGasStep()->simParticle();
-	}
+        MCRelationship prel(psp,mcd.earlyStrawGasStep()->simParticle());
+        if(prel == mcrel)
+          count++;
+        else if(prel > mcrel){
+          mcrel = prel;
+          count = 1;
+          sp = mcd.earlyStrawGasStep()->simParticle();
+        }
       }
       if(count > nprimary){
-	nprimary = count;
-	spp = sp;
+        nprimary = count;
+        spp = sp;
       }
     }
     return nprimary;
@@ -632,56 +631,56 @@ namespace mu2e {
       cet::map_vector_key trkid = pspp->id();
       auto jmc = _vdmcsteps->end();
       for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-	// find matching steps
-	if(  imc->trackId() == trkid &&
-	    (find(_midvids.begin(),_midvids.end(),imc->volumeId()) != _midvids.end()) ) {
-	  //	  cout << "Found matching step " << *imc << endl;
-	  if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
-	    jmc = imc;
-	}
+        // find matching steps
+        if(  imc->trackId() == trkid &&
+            (find(_midvids.begin(),_midvids.end(),imc->volumeId()) != _midvids.end()) ) {
+          //    cout << "Found matching step " << *imc << endl;
+          if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
+            jmc = imc;
+        }
       }
       if(jmc != _vdmcsteps->end()){
-	// get momentum and position from this point
-	_mcmidmom = jmc->momentum().mag();
-	_mcmidpz = jmc->momentum().z();
-	_mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
-	Hep3Vector pos = det->toDetector(jmc->position());
-	double charge = pdt->particle(pspp->pdgId()).charge();
-	TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
-	retval = true;
+        // get momentum and position from this point
+        _mcmidmom = jmc->momentum().mag();
+        _mcmidpz = jmc->momentum().z();
+        _mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
+        Hep3Vector pos = det->toDetector(jmc->position());
+        double charge = pdt->particle(pspp->pdgId()).charge();
+        TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
+        retval = true;
       }
       // look for entrance and exit as well
       jmc = _vdmcsteps->end();
       for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-	// find matching steps
-	if(  imc->trackId() == trkid &&
-	    (find(_entvids.begin(),_entvids.end(),imc->volumeId()) != _entvids.end()) ) {
-	  //	  cout << "Found matching step " << *imc << endl;
-	  if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
-	    jmc = imc;
-	}
+        // find matching steps
+        if(  imc->trackId() == trkid &&
+            (find(_entvids.begin(),_entvids.end(),imc->volumeId()) != _entvids.end()) ) {
+          //    cout << "Found matching step " << *imc << endl;
+          if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
+            jmc = imc;
+        }
       }
       if(jmc != _vdmcsteps->end()){
-	// get momentum and position from this point
-	_mcentmom = jmc->momentum().mag();
-	_mcentpz = jmc->momentum().z();
-	_mcentt0 = _toff.timeWithOffsetsApplied(*jmc);
+        // get momentum and position from this point
+        _mcentmom = jmc->momentum().mag();
+        _mcentpz = jmc->momentum().z();
+        _mcentt0 = _toff.timeWithOffsetsApplied(*jmc);
       }
       jmc = _vdmcsteps->end();
       for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-	// find matching steps
-	if(  imc->trackId() == trkid &&
-	    (find(_xitvids.begin(),_xitvids.end(),imc->volumeId()) != _xitvids.end()) ) {
-	  //	  cout << "Found matching step " << *imc << endl;
-	  if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
-	    jmc = imc;
-	}
+        // find matching steps
+        if(  imc->trackId() == trkid &&
+            (find(_xitvids.begin(),_xitvids.end(),imc->volumeId()) != _xitvids.end()) ) {
+          //    cout << "Found matching step " << *imc << endl;
+          if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
+            jmc = imc;
+        }
       }
       if(jmc != _vdmcsteps->end()){
-	// get momentum and position from this point
-	_mcxitmom = jmc->momentum().mag();
-	_mcxitpz = jmc->momentum().z();
-	_mcxitt0 = _toff.timeWithOffsetsApplied(*jmc);
+        // get momentum and position from this point
+        _mcxitmom = jmc->momentum().mag();
+        _mcxitpz = jmc->momentum().z();
+        _mcxitt0 = _toff.timeWithOffsetsApplied(*jmc);
       }
     }
     return retval;

@@ -39,7 +39,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SelectorBase.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectory.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectoryCollection.hh"

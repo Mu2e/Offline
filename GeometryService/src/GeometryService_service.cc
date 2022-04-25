@@ -94,20 +94,20 @@ using namespace std;
 
 namespace mu2e {
 
-  GeometryService::GeometryService(fhicl::ParameterSet const& pset,
-                                   art::ActivityRegistry&iRegistry) :
-    _inputfile(            pset.get<std::string> ("inputFile",            "geom000.txt")),
-    _allowReplacement(     pset.get<bool>        ("allowReplacement",     true)),
-    _messageOnReplacement( pset.get<bool>        ("messageOnReplacement", false)),
-    _messageOnDefault(     pset.get<bool>        ("messageOnDefault",     false)),
-    _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
-    _printConfig(          pset.get<bool>        ("printConfig",          false)),
-    _printTopLevel(        pset.get<bool>        ("printConfigTopLevel",  false)),
+  GeometryService::GeometryService( const Parameters& pars,
+                                    art::ActivityRegistry&iRegistry) :
+    _inputfile(            pars().inputFile()),
+    _bFieldFile(           pars().bFieldFile()),
+    _allowReplacement(     pars().allowReplacement()),
+    _messageOnReplacement( pars().messageOnReplacement()),
+    _messageOnDefault(     pars().messageOnDefault()),
+    _configStatsVerbosity( pars().configStatsVerbosity()),
+    _printConfig(          pars().printConfig()),
+    _printTopLevel(        pars().printConfigTopLevel()),
     _config(nullptr),
-    _pset   (pset),
-    standardMu2eDetector_( _pset.get<std::string>("simulatedDetector.tool_type") == "Mu2e"),
-    _detectors(),
-    _run_count()
+    _simulatedDetector(    pars.get_PSet().get<fhicl::ParameterSet>("simulatedDetector")),
+    _standardMu2eDetector( _simulatedDetector.get<std::string>("tool_type") == "Mu2e"),
+    _detectors()
   {
     iRegistry.sPreBeginRun.watch(this, &GeometryService::preBeginRun);
     iRegistry.sPostEndJob.watch (this, &GeometryService::postEndJob );
@@ -149,7 +149,9 @@ namespace mu2e {
   GeometryService::preBeginRun(art::Run const &) {
 
     if(++_run_count > 1) {
-      mf::LogWarning("GEOM") << "This test version does not change geometry on run boundaries.";
+      if( _run_count == 2 ){
+        mf::LogWarning("GEOM") << "This test version does not change geometry on run boundaries.";
+      }
       return;
     }
 
@@ -157,8 +159,14 @@ namespace mu2e {
                                                       _allowReplacement,
                                                       _messageOnReplacement,
                                                       _messageOnDefault ));
-
     _config->printOpen(cout,"Geometry");
+
+    _bfConfig = unique_ptr<SimpleConfig>(new SimpleConfig(_bFieldFile,
+                                                          _allowReplacement,
+                                                          _messageOnReplacement,
+                                                          _messageOnDefault ));
+    _bfConfig->printOpen(cout,"BField");
+
 
     if(_printTopLevel) {
       //print the top level geometry file contents
@@ -337,8 +345,8 @@ namespace mu2e {
     }
     
 
-    if(_config->getBool("hasBFieldManager",false)){
-      std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_config, beamline).getBFieldConfig() );
+    if(_bfConfig->getBool("hasBFieldManager",false)){
+      std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_bfConfig, beamline).getBFieldConfig() );
       BFieldManagerMaker bfmgr(*bfc);
       addDetector(std::move(bfc));
       addDetector(bfmgr.getBFieldManager());
@@ -390,9 +398,12 @@ namespace mu2e {
 
   // Called after all modules have completed their end of job.
   void   GeometryService::postEndJob(){
-    _config->printAllSummaries( cout, _configStatsVerbosity, "Geom: " );
+    if ( _configStatsVerbosity <= 0 ) return;
+    ofstream gStats("geomStats.log");
+    _config  ->printAllSummaries( gStats, _configStatsVerbosity, "" );
+    ofstream bStats("bFieldStats.log");
+    _bfConfig->printAllSummaries( bStats, _configStatsVerbosity, "" );
   }
-
 
 
 } // end namespace mu2e

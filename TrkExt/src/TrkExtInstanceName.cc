@@ -2,14 +2,14 @@
 //
 //  Original author MyeongJae Lee
 //
-// Note : See the included file for particle/direction definitions. 
+// Note : See the included file for particle/direction definitions.
 //
 // In TrkParticle :
 // eMinus, ePlus, muMinus, muPlus, piMunis, piPlus, KMilus, KPlus
 // are defined.
-// In TrkFitDirection: 
+// In TrkFitDirection:
 // Upstream=1, Downstream=0
-// are assigned. 
+// are assigned.
 // instance = fdir.name() + tpart.name()
 //
 
@@ -30,7 +30,7 @@ using namespace std;
 namespace mu2e {
 
   TrkExtInstanceNameEntry::TrkExtInstanceNameEntry (TrkParticle::type _hepid, bool _up_down, std::string _fitterName) :
-    fitterName(_fitterName) 
+    fitterName(_fitterName)
   {
     switch (_hepid) {
       case TrkParticle::e_minus:
@@ -69,25 +69,25 @@ namespace mu2e {
         cerr << "TrkExtInstanceNameEntry Error: not implemented mode" << endl;
         charge = 0;
         mass2 = 0;
-     }
-     updown = _up_down;
-     hepid = (int)_hepid;
-     string fitDirName;
-     if (updown) fitDirName = TrkFitDirection(TrkFitDirection::upstream).name();
-     else         fitDirName = TrkFitDirection(TrkFitDirection::downstream).name();
-     string fitPtlName = TrkParticle(_hepid).name();
- 
-     name = fitDirName + fitPtlName;
-     ntrk = 0;
-  } 
+    }
+    updown = _up_down;
+    hepid = (int)_hepid;
+    string fitDirName;
+    if (updown) fitDirName = TrkFitDirection(TrkFitDirection::upstream).name();
+    else         fitDirName = TrkFitDirection(TrkFitDirection::downstream).name();
+    string fitPtlName = TrkParticle(_hepid).name();
+
+    name = fitDirName + fitPtlName;
+    ntrk = 0;
+  }
 
 
 
   TrkExtInstanceName::TrkExtInstanceName () {
     _entries.clear();
   }
-  
-  void TrkExtInstanceName::construct (TrkParticle::type _hepid, bool _up_down, string _fitterName) 
+
+  void TrkExtInstanceName::construct (TrkParticle::type _hepid, bool _up_down, string _fitterName)
   {
     TrkExtInstanceNameEntry tmp1 (_hepid, _up_down, _fitterName);
     _entries.push_back(tmp1);

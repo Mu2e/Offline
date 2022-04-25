@@ -1,3 +1,7 @@
+//
+// This script produces a random deadstraw list as used in the simulation.  This method is
+// deprecated: dead straws should be extracted from the TrackerStatus object in the proditions DB
+//
 #include "TRandom3.h"
 #include <iostream>
 #include <fstream>
@@ -14,7 +18,7 @@ void RandomDeadStraws(unsigned ndeadplane, unsigned ndeadpanel, unsigned ndeadst
   vector<unsigned> inactiveplanes;
   vector<string> inactivepanels;
   vector<string> inactivestraws;
-  
+
   TRandom3 myrand(3499803);
 
   filebuf fb;
@@ -25,14 +29,14 @@ void RandomDeadStraws(unsigned ndeadplane, unsigned ndeadpanel, unsigned ndeadst
 
   if(ndeadplane > 0){
     os  << "deadPlane : [ " << endl;
-    unsigned ndplane(0); 
+    unsigned ndplane(0);
     while(ndplane < ndeadplane){
       int plane = myrand.Integer(NPlanes);
       if(find(inactiveplanes.begin(), inactiveplanes.end(), plane) == inactiveplanes.end()){
-	++ndplane;
-	os  << "\"" << plane << "\"";
-	if(ndplane < ndeadplane) os << "," << endl;
-	inactiveplanes.push_back(plane);
+        ++ndplane;
+        os  << "\"" << plane << "\"";
+        if(ndplane < ndeadplane) os << "," << endl;
+        inactiveplanes.push_back(plane);
       }
     }
     os  << "]" << endl;
@@ -40,19 +44,19 @@ void RandomDeadStraws(unsigned ndeadplane, unsigned ndeadpanel, unsigned ndeadst
 
   if(ndeadpanel > 0){
     os  << "deadPanels : [ " << endl;
-    unsigned ndpanel(0); 
+    unsigned ndpanel(0);
     while(ndpanel < ndeadpanel){
       int plane = myrand.Integer(NPlanes);
       if(find(inactiveplanes.begin(), inactiveplanes.end(), plane) == inactiveplanes.end()){
-	unsigned panel = myrand.Integer(NPanels);
-	char panelid[80];
-	snprintf(panelid,80,"\"%u_%u\"",plane,panel);
-	if(find(inactivepanels.begin(),inactivepanels.end(),panelid) == inactivepanels.end()){
-	  ++ndpanel;
-	  os  << panelid;
-	  if(ndpanel < ndeadpanel) os << "," << endl;
-	  inactivepanels.push_back(panelid);
-	}
+        unsigned panel = myrand.Integer(NPanels);
+        char panelid[80];
+        snprintf(panelid,80,"\"%u_%u\"",plane,panel);
+        if(find(inactivepanels.begin(),inactivepanels.end(),panelid) == inactivepanels.end()){
+          ++ndpanel;
+          os  << panelid;
+          if(ndpanel < ndeadpanel) os << "," << endl;
+          inactivepanels.push_back(panelid);
+        }
       }
     }
     os  << "]" << endl;
@@ -61,23 +65,23 @@ void RandomDeadStraws(unsigned ndeadplane, unsigned ndeadpanel, unsigned ndeadst
   if(ndeadstraw > 0) {
     os  << "deadStraws : [ " << endl;
     unsigned ndstraw(0);
-    while (ndstraw < ndeadstraw){ 
+    while (ndstraw < ndeadstraw){
       int plane = myrand.Integer(NPlanes);
       if(find(inactiveplanes.begin(), inactiveplanes.end(), plane) == inactiveplanes.end()){
-     	unsigned panel = myrand.Integer(NPanels);
-	char panelid[80];
-	snprintf(panelid,80,"\"%u_%u\"",plane,panel);
-	if(find(inactivepanels.begin(),inactivepanels.end(),panelid) == inactivepanels.end()){
-	  unsigned straw = myrand.Integer(NStraws);
-	  char strawid[80];
-	  snprintf(strawid,80,"\"%u_%u_%u\"",plane,panel,straw);
-	  if(find(deadstraws.begin(), deadstraws.end(), strawid) == deadstraws.end()){
-	    ++ndstraw;
-	    os << strawid;
-	    if(ndstraw < ndeadstraw) os << "," << endl;
-	    deadstraws.push_back(strawid);
-	  }
-	}
+        unsigned panel = myrand.Integer(NPanels);
+        char panelid[80];
+        snprintf(panelid,80,"\"%u_%u\"",plane,panel);
+        if(find(inactivepanels.begin(),inactivepanels.end(),panelid) == inactivepanels.end()){
+          unsigned straw = myrand.Integer(NStraws);
+          char strawid[80];
+          snprintf(strawid,80,"\"%u_%u_%u\"",plane,panel,straw);
+          if(find(deadstraws.begin(), deadstraws.end(), strawid) == deadstraws.end()){
+            ++ndstraw;
+            os << strawid;
+            if(ndstraw < ndeadstraw) os << "," << endl;
+            deadstraws.push_back(strawid);
+          }
+        }
       }
     }
     os  << "]" << endl;;

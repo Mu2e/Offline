@@ -21,11 +21,11 @@ namespace mu2e {
 
   AmbigResolver::~AmbigResolver() {}
 
-//-----------------------------------------------------------------------------
-// in the beginning of iteration set external hit errors to a constant
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // in the beginning of iteration set external hit errors to a constant
+  //-----------------------------------------------------------------------------
   void AmbigResolver::initHitErrors(KalRep* krep) const {
-// get hits and cast to TrkStrawHits
+    // get hits and cast to TrkStrawHits
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
@@ -34,38 +34,38 @@ namespace mu2e {
   }
 
   const TrkSimpTraj*
-  AmbigResolver::findTraj(std::vector<TrkStrawHit*> const& phits, const KalRep* krep) const {
-    const TrkSimpTraj* retval(0);
-// if the fit is valid, use the full fit result.
-    if(krep->fitValid()){
-// find the range of these hits in the KalRep site vector
-      std::vector<KalSite*> const& sites = krep->siteList();
-      KSI first = sites.begin();
-      while(first != sites.end() && (*first)->globalLength() < phits.front()->fltLen() ) {
-	++first;
+    AmbigResolver::findTraj(std::vector<TrkStrawHit*> const& phits, const KalRep* krep) const {
+      const TrkSimpTraj* retval(0);
+      // if the fit is valid, use the full fit result.
+      if(krep->fitValid()){
+        // find the range of these hits in the KalRep site vector
+        std::vector<KalSite*> const& sites = krep->siteList();
+        KSI first = sites.begin();
+        while(first != sites.end() && (*first)->globalLength() < phits.front()->fltLen() ) {
+          ++first;
+        }
+        KSI last = first;
+        while(last != sites.end() && (*last)->globalLength() < phits.back()->fltLen() ){
+          ++last;
+        }
+        // back off one
+        if(first != sites.begin())--first;
+        if(last == sites.end())--last;
+        // create a trajectory from the fit which excludes this set of hits
+        // Use of static is memory-efficient but not threadsafe FIXME!!!
+        static TrkSimpTraj* straj = krep->seed()->clone();
+        if(krep->smoothedTraj(first,last,straj)){
+          retval = straj;
+        }
       }
-      KSI last = first;
-      while(last != sites.end() && (*last)->globalLength() < phits.back()->fltLen() ){
-	++last;
+      //  Otherwise, use the reference traj at the center of these hits
+      if(retval == 0){
+        double locdist;
+        double gdist = 0.5*(phits.front()->fltLen()+phits.back()->fltLen());
+        retval = krep->referenceTraj()->localTrajectory(gdist,locdist);
       }
-      // back off one
-      if(first != sites.begin())--first;
-      if(last == sites.end())--last;
-// create a trajectory from the fit which excludes this set of hits
-// Use of static is memory-efficient but not threadsafe FIXME!!!
-      static TrkSimpTraj* straj = krep->seed()->clone();
-      if(krep->smoothedTraj(first,last,straj)){
-	retval = straj;
-      } 
+      return retval;
     }
-//  Otherwise, use the reference traj at the center of these hits
-    if(retval == 0){
-      double locdist;
-      double gdist = 0.5*(phits.front()->fltLen()+phits.back()->fltLen());
-      retval = krep->referenceTraj()->localTrajectory(gdist,locdist);
-    }
-    return retval;
-  }
 
 
 }

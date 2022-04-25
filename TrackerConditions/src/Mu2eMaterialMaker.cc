@@ -19,13 +19,13 @@ namespace mu2e {
 
     // file finder tells BTrk where to get data files
     ptr->_fileFinder = make_unique<FileFinder>(_config.elements(),
-		       _config.isotopes(),_config.materials());
+        _config.isotopes(),_config.materials());
 
     // particle info tells BTrk particle definitions
     // from our ParticleDataList
     ptr->_particleInfo = make_unique<ParticleInfo>();
 
-    // this points BTrk static variables to our 
+    // this points BTrk static variables to our
     // implementations of file list and particle definitions
     ExternalInfo::set( ptr->_fileFinder.get() );
     ExternalInfo::set( ptr->_particleInfo.get() );
@@ -37,7 +37,7 @@ namespace mu2e {
     string wallmatname = _config.strawWallMaterialName();
     string wirematname = _config.strawWireMaterialName();
 
-    // MatDBInfo holds pointers to material in BTrk, 
+    // MatDBInfo holds pointers to material in BTrk,
     // so needs to be long-lived
     MatDBInfo& mat = ptr->_mat;
 
@@ -46,15 +46,15 @@ namespace mu2e {
     const DetMaterial* gasmat = mat.findDetMaterial(gasmatname.c_str());
     if(gasmat == 0) {
       throw cet::exception("RECO_NO_GAS_MATERIAL")
-	<< "mu2e::Mu2eDetector: no material with name " 
-	<< gasmatname << std::endl;
+        << "mu2e::Mu2eDetector: no material with name "
+        << gasmatname << std::endl;
     }
 
     const DetMaterial* wallmat = mat.findDetMaterial(wallmatname.c_str());
     if(wallmat == 0) {
       throw cet::exception("RECO_NO_WALL_MATERIAL")
-	<<"mu2e::Mu2eDetector: no material with name " 
-	<< wallmatname << std::endl;
+        <<"mu2e::Mu2eDetector: no material with name "
+        << wallmatname << std::endl;
     }
 
     // for now the wire type isn't set or used: FIXME!!!
@@ -65,21 +65,21 @@ namespace mu2e {
     const_cast<DetMaterial*>(gasmat)->setScatterFraction(scatfrac);
     const_cast<DetMaterial*>(wallmat)->setScatterFraction(scatfrac);
 
-    // the offset displaces the element from the wire, which avoids 
+    // the offset displaces the element from the wire, which avoids
     // problems when computing POCA on the fit trajectory.
     double offset = _config.strawElementOffset();
 
     // parameters for elements
     double tol = _config.intersectionTolerance();
 
-    // maximum (fractional) radius to allow an intersection.  This avoids 
+    // maximum (fractional) radius to allow an intersection.  This avoids
     // creating intersections with crazy long paths through the straw wall
     double rfrac = _config.maximumIntersectionRadiusFraction();
 
     // construct the type.  This is reused by all straws
     // memory owned by Mu2eMaterial
     ptr->_strawtype = std::make_unique<DetStrawType>(
-			     gasmat,wallmat,wiremat,offset,tol,rfrac);
+        gasmat,wallmat,wiremat,offset,tol,rfrac);
 
     return ptr;
   }
