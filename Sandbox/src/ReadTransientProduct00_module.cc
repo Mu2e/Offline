@@ -11,7 +11,6 @@
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // Mu2e includes.
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"

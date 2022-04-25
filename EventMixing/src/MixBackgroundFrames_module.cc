@@ -12,7 +12,6 @@
 #include <random>
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Modules/MixFilter.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"

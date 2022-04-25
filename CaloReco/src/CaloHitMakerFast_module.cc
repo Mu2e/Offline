@@ -1,6 +1,5 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Sequence.h"

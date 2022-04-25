@@ -11,16 +11,16 @@
 
 
 <lcgdict>
-    <class name="mu2e::KalRepCollection" persistent="false"/>
-    <class name="art::Wrapper<mu2e::KalRepCollection>"/>
+  <class name="mu2e::KalRepCollection" persistent="false"/>
+  <class name="art::Wrapper<mu2e::KalRepCollection>"/>
 <!-- declare classes used in root tuples in templates -->
-    <class name="mu2e::PanelAmbig::PanelResult" />
-    <class name="mu2e::PanelAmbig::PanelState" />
-    <class name="mu2e::PanelAmbig::HitState" />
-    <class name="std::vector<mu2e::PanelAmbig::PanelResult>" />
-    <class name="mu2e::PanelAmbig::TSHUInfo" />
-    <class name="std::vector<mu2e::PanelAmbig::TSHUInfo>" />
-    <class name="mu2e::PanelAmbig::TSHMCUInfo" />
-    <class name="std::vector<mu2e::PanelAmbig::TSHMCUInfo>" />
+  <class name="mu2e::PanelAmbig::PanelResult" />
+  <class name="mu2e::PanelAmbig::PanelState" />
+  <class name="mu2e::PanelAmbig::HitState" />
+  <class name="std::vector<mu2e::PanelAmbig::PanelResult>" />
+  <class name="mu2e::PanelAmbig::TSHUInfo" />
+  <class name="std::vector<mu2e::PanelAmbig::TSHUInfo>" />
+  <class name="mu2e::PanelAmbig::TSHMCUInfo" />
+  <class name="std::vector<mu2e::PanelAmbig::TSHMCUInfo>" />
 
 </lcgdict>

@@ -46,6 +46,7 @@ namespace mu2e {
        nBinShape_      = int(nbins/nSteps_);
        digitizedPulse_ = std::vector<double>(nBinShape_,0);
 
+       deltaT_ = 0.0;
        // find difference between peak time and t0 for digitized waveform. 
        for (int i=1;i<nBinShape_;++i) {if (pulseVec_[(i+1)*nSteps_] < pulseVec_[i*nSteps_]) break; deltaT_ +=nSteps_*digiStep_;}
      

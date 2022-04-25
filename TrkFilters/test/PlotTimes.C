@@ -32,8 +32,8 @@ void PlotAllTimes(const char* dirname, double maxtime) {
       string fname(dent);
       // compare the suffix
       if(fname.size() >= csv.size() && 0 == fname.compare (fname.length() - csv.length(), csv.length(), csv)){
-	cout << "found entry " << fname << endl;
-	fnames.push_back(fname);
+        cout << "found entry " << fname << endl;
+        fnames.push_back(fname);
       }
     }
     bool first(true);
@@ -47,8 +47,8 @@ void PlotAllTimes(const char* dirname, double maxtime) {
       PlotTime(dirname,fname.c_str(),plot);
       plots.push_back(plot);
       if(first){
-	first = false;
-	norm = plot->GetEntries();
+        first = false;
+        norm = plot->GetEntries();
       }
       float mtime = plot->GetMean()*plot->GetEntries()/norm;
       cout << "module " << name << " time = " << mtime << endl;

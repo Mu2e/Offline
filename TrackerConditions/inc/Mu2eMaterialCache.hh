@@ -12,31 +12,31 @@
 
 namespace mu2e {
   class Mu2eMaterialCache : public ProditionsCache {
-  public: 
-    Mu2eMaterialCache(Mu2eMaterialConfig const& config):
-      ProditionsCache(Mu2eMaterial::cxname,config.verbose()),
-      _maker(config) {
-      // force a fake update so BTrk TrkParticle 
-      // is working when modules are created
-      update(art::EventID(1,0,0));
-    }
-    
-    void initialize() {
-    }
-    set_t makeSet(art::EventID const& eid) {
-      return ProditionsEntity::set_t();
-    }
-    DbIoV makeIov(art::EventID const& eid) {
-      DbIoV iov;
-      iov.setMax(); // all runs
-      return iov;
-    }
-    ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
-      return _maker.fromFcl();
-    }
+    public:
+      Mu2eMaterialCache(Mu2eMaterialConfig const& config):
+        ProditionsCache(Mu2eMaterial::cxname,config.verbose()),
+        _maker(config) {
+          // force a fake update so BTrk TrkParticle
+          // is working when modules are created
+          update(art::EventID(1,0,0));
+        }
 
-  private:
-    Mu2eMaterialMaker _maker;
+      void initialize() {
+      }
+      set_t makeSet(art::EventID const& eid) {
+        return ProditionsEntity::set_t();
+      }
+      DbIoV makeIov(art::EventID const& eid) {
+        DbIoV iov;
+        iov.setMax(); // all runs
+        return iov;
+      }
+      ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
+        return _maker.fromFcl();
+      }
+
+    private:
+      Mu2eMaterialMaker _maker;
 
   };
 };
