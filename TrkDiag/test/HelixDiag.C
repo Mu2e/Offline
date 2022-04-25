@@ -27,7 +27,7 @@ class HelixDiag  {
     _thit("hhmc._rel==0"),_bkghit("hhmc._rel!=0"),
     _crcan(0), _cpcan(0), _rcan(0), _fzcan(0), _corrcan(0), _hpcan1(0), _hpcan2(0), _hdcan(0), _t0can(0),
     _rsum(0), _hmva(0), _hres(0), _circ(0)
-    { }
+  { }
 
     void CenterRes();
     void CenterPos();
@@ -55,8 +55,8 @@ class HelixDiag  {
     TCut _thit;
     TCut _bkghit;
 
-    TCanvas *_crcan, *_cpcan, *_rcan, *_fzcan, *_corrcan, *_hpcan1, *_hpcan2, *_hdcan, *_t0can, 
-	    *_rsum, *_hmva, *_hres, *_circ;
+    TCanvas *_crcan, *_cpcan, *_rcan, *_fzcan, *_corrcan, *_hpcan1, *_hpcan2, *_hdcan, *_t0can,
+            *_rsum, *_hmva, *_hres, *_circ;
 };
 
 void HelixDiag::CenterRes() {
@@ -107,7 +107,7 @@ void HelixDiag::CenterRes() {
   _crcan->cd(1);
   crcomp->Draw();
   if(me != 0)me->Draw("LP");
-//  TF1* rf = new TF1("rf","[0]+(x>[0]?[1]:[2])*(x-[0])");
+  //  TF1* rf = new TF1("rf","[0]+(x>[0]?[1]:[2])*(x-[0])");
   _crcan->cd(2);
   crres->Draw();
   ccrres->Draw("same");
@@ -147,7 +147,7 @@ void HelixDiag::Radius() {
   rresc->SetLineColor(kRed);
   _hdiag->Project("rcomp","mch._radius:rhel._radius",_helixOK&&_mchelixOK);
   _hdiag->Project("rres","rhel._radius-mch._radius",_helixOK&&_mchelixOK);
-  
+
   rcomp->FitSlicesY(0,0,-1,20);
   TH1D *rcomp_1 = (TH1D*)gDirectory->Get("rcomp_1");
   TH1D *rcomp_2 = (TH1D*)gDirectory->Get("rcomp_2");
@@ -244,7 +244,7 @@ void HelixDiag::Correlations() {
   rrc->SetMarkerStyle(22);
   rrc->SetMarkerColor(kGreen);
 
- _corrcan = new TCanvas("corrcan","Corrrclations",800,800);
+  _corrcan = new TCanvas("corrcan","Corrrclations",800,800);
   _corrcan->Divide(2,2);
   _corrcan->cd(1);
   lrcorr->Draw();
@@ -469,7 +469,7 @@ void HelixDiag::HitPos() {
   _hdiag->Project("hercomp","sqrt(hh._hpos.dy^2+hh._hpos.dx^2):sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_hhout);
   _hdiag->Project("hefcomp","atan2(hh._hpos.dy,hh._hpos.dx):atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_hhout);
 
- _hpcan1 = new TCanvas("hpcan1","Hit Positions",800,800);
+  _hpcan1 = new TCanvas("hpcan1","Hit Positions",800,800);
   _hpcan1->Divide(2,2);
   _hpcan1->cd(1);
   hrcomp->Draw("colorz");
@@ -489,7 +489,7 @@ void HelixDiag::HitPos() {
   _hdiag->Project("herres","sqrt(hh._hpos.dy^2+hh._hpos.dx^2)-sqrt(hhmc._hpos.dy^2+hhmc._hpos.dx^2)",_helixOK&&_mchelixOK&&!_hhout);
   _hdiag->Project("hefres","atan2(hh._hpos.dy,hh._hpos.dx)-atan2(hhmc._hpos.dy,hhmc._hpos.dx)",_helixOK&&_mchelixOK&&!_hhout);
 
- _hpcan2 = new TCanvas("hpcan2","Hit Position Resolution",800,800);
+  _hpcan2 = new TCanvas("hpcan2","Hit Position Resolution",800,800);
   _hpcan2->Divide(2,2);
   _hpcan2->cd(1);
   hrres->Draw();

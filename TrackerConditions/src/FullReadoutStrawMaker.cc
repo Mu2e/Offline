@@ -25,10 +25,10 @@ namespace mu2e {
     FullReadoutStraw::ptr_t ptr = std::make_shared<FullReadoutStraw>(straws);
 
     if ( _config.verbose() > 0 ) {
-      cout << "FullReadoutStrawMaker created a list of " << straws.size() 
-	   << " straws" << endl;
+      cout << "FullReadoutStrawMaker created a list of " << straws.size()
+        << " straws" << endl;
     }
-    
+
     return ptr;
   }
 

@@ -68,11 +68,11 @@ Int_t myhpart(Int_t mcpdg,Int_t mcgen, Int_t mcproc){
 void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
-//  gStyle->SetOptStat(0);
-//  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
+  //  gStyle->SetOptStat(0);
+  //  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
   TCut conv("mcpdg==11&&mcproc==167");
   TCut oele("abs(mcpdg)==11&&mcproc!=167");
-//  TCut dio("mcpdg==11&&mcgen==6"); MC truth bug
+  //  TCut dio("mcpdg==11&&mcgen==6"); MC truth bug
   TCut dio("mcpdg==11&&(mcproc==14||mcproc==56&&mcoe<90)");
   TCut bkg("mcpdg==11&&mcgen<0&&mcproc==17");
   TCut pconv("mcpdg==11&&mcgen<0&&mcproc==11");
@@ -204,9 +204,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     double total = otime->Integral() + ctime->Integral() + ptime->Integral() + etime->Integral();
 
     cout << "All other integral = " << otime->Integral()
-    << "CE inegral = " << ctime->Integral()
-    << "P inegral = " << ptime->Integral()
-    << "e inegral = " << etime->Integral() << " total = " << total << endl;
+      << "CE inegral = " << ctime->Integral()
+      << "P inegral = " << ptime->Integral()
+      << "e inegral = " << etime->Integral() << " total = " << total << endl;
 
     TLegend* tleg = new TLegend(.6,.7,.9,.9);
     char title[50];
@@ -253,9 +253,9 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tstacks->Add(etimes);
 
     cout << "Selected other integral = " << otimes->Integral()
-    << "CE inegral = " << ctimes->Integral()
-    << "P inegral = " << ptimes->Integral()
-    << "e inegral = " << etimes->Integral() << endl;
+      << "CE inegral = " << ctimes->Integral()
+      << "P inegral = " << ptimes->Integral()
+      << "e inegral = " << etimes->Integral() << endl;
 
     TLegend* tlegs = new TLegend(.6,.7,.9,.9);
     char title[50];
@@ -275,7 +275,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     tlegs->Draw();
 
   } else if(spage=="particle"){
-//    gStyle->SetOptStat(111111);
+    //    gStyle->SetOptStat(111111);
     THStack* estack = new THStack("edep","Reco Hit Energy by Particle;Deposited Energy (KeV)");
     TH1F* econv = new TH1F("econv","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,12.0);
     estack->Add(econv);
@@ -289,7 +289,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     emu->SetFillColor(kCyan);
     egam->SetFillColor(kGreen);
     ehad->SetFillColor(kMagenta);
-//    econv->SetStats(0);
+    //    econv->SetStats(0);
     emu->SetStats(0);
     egam->SetStats(0);
     ehad->SetStats(0);
@@ -303,7 +303,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     rstack->Add(rgam);
     TH1F* rhad = new TH1F("rhad","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
     rstack->Add(rhad);
-//    TH1F* rx = new TH1F("rx","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
+    //    TH1F* rx = new TH1F("rx","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
     rconv->SetFillColor(kRed);
     rmu->SetFillColor(kCyan);
     rgam->SetFillColor(kGreen);
@@ -321,7 +321,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
     bcan->cd(1);
-//    gPad->SetLogy();
+    //    gPad->SetLogy();
     estack->Draw();
     econv->Draw("same");
     TLegend* leg2 = new TLegend(0.55,0.7,0.9,0.9);
@@ -332,27 +332,27 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     leg2->Draw();
 
     bcan->cd(2);
- //   gPad->SetLogy();
+    //   gPad->SetLogy();
     rstack->Draw();
   } else if (spage == "ccan") {
 
     TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
     TCut clean = goodpeak+TCut("tight>0&&bkg==0");
 
-	  TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
-	  TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
+    TH1F* gid = new TH1F("gid","Generator code",21,-1.5,19.5);
+    TH1F* gidc = new TH1F("gidc","Generator code",21,-1.5,19.5);
 
-	  TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
+    TH1F* rres = new TH1F("rres","StrawHit Radius resolution;mm",100,-200,200);
 
     TH1F* pres = new TH1F("pres","StrawHit #phi resolution;rad",100,-0.5,0.5);
 
 
-	  gid->SetLineColor(kBlue);
-	  gidc->SetLineColor(kRed);
-	  hits->Project("gid","mcgen",clean);
-	  hits->Project("gidc","mcgen",conv);
+    gid->SetLineColor(kBlue);
+    gidc->SetLineColor(kRed);
+    hits->Project("gid","mcgen",clean);
+    hits->Project("gidc","mcgen",conv);
 
-	  hits->Project("rres","sqrt(shpos.dy^2+shpos.dx^2)-sqrt(mcshpos.dy^2+mcshpos.dx^2)");
+    hits->Project("rres","sqrt(shpos.dy^2+shpos.dx^2)-sqrt(mcshpos.dy^2+mcshpos.dx^2)");
 
     hits->Project("pres","atan2(shpos.dy,shpos.dx)-atan2(mcshpos.dy,mcshpos.dx)");
 
@@ -361,16 +361,16 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
        leg3->AddEntry(gidc,"Conv. Electron hits","l");
        leg3->AddEntry(gid,"Selected hits","l");
        leg3->Draw();
-     */
-//    gStyle->SetOptStat(0);
+       */
+    //    gStyle->SetOptStat(0);
     ccan->Clear();
     ccan->Divide(1,2);
     /*    ccan->cd(2);
-	  gidc->Draw();
-	  gid->Draw("same");
-	  ccan->cd(3);
-	  rres->Fit("gaus");
-     */
+          gidc->Draw();
+          gid->Draw("same");
+          ccan->cd(3);
+          rres->Fit("gaus");
+          */
     ccan->cd(2);
     pres->Fit("gaus");
 
@@ -534,7 +534,7 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
     hits->Project("cetime","time",conv+hitsel);
     cetime->Scale(scale);
     sorigin->Add(cetime);
-     hits->Project("dtime","time",dioorigin+hitsel);
+    hits->Project("dtime","time",dioorigin+hitsel);
     dtime->Scale(scale);
     sorigin->Add(dtime);
     hits->Project("stdtime","time",stpdeuteronorigin+hitsel);
@@ -631,14 +631,14 @@ void StrawHitTest (TTree* hits, const char* page="bcan",unsigned nevents=1000 ) 
       snprintf(val,100,"%lu:myhpart(mcpdg,mcgen,mcproc)",icut);
       hits->Project("+hsel",val,selcuts[icut]);
     }
-// normalize by row
+    // normalize by row
     for(int ibin=1;ibin <= myhp->GetXaxis()->GetNbins();++ibin){
       double norm = 100.0/hsel->GetBinContent(ibin,1);
       cout << "Normalization for " << hsel->GetYaxis()->GetBinLabel(ibin)  << " = " << norm << endl;
       for(int jbin=1;jbin <= hsel->GetYaxis()->GetNbins(); ++jbin) {
-	double val =hsel->GetBinContent(ibin,jbin);
-	cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
-	hsel->SetBinContent(ibin,jbin,val*norm);
+        double val =hsel->GetBinContent(ibin,jbin);
+        cout << "value for ibin " << ibin <<" jbin " << jbin << " val " << val << endl;
+        hsel->SetBinContent(ibin,jbin,val*norm);
       }
     }
     TCanvas* hscan = new TCanvas("hscan","hscan",750,750);

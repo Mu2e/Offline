@@ -11,30 +11,30 @@ namespace mu2e {
 
     class PanelStateIterator {
       public:
-	PanelStateIterator() = default;
-	// construct from a vector of TrkStrawHits and the list of allowed hit states.
-	PanelStateIterator(TSHUIV const& uinfo, HSV const& allowed);
-	// copy constructor
-	PanelStateIterator(PanelStateIterator const& other) = default;
-	PanelStateIterator& operator =(PanelStateIterator const& other) = default;
-	// current state
-	PanelState current() { return *_current; }
-	// total # of states
-	size_t nStates() const { return _allowedPS.size(); }
-	// operate on the current state
-	bool increment() { ++_current; return _current != _allowedPS.end(); }
-	void reset() { _current = _allowedPS.begin(); }
+        PanelStateIterator() = default;
+        // construct from a vector of TrkStrawHits and the list of allowed hit states.
+        PanelStateIterator(TSHUIV const& uinfo, HSV const& allowed);
+        // copy constructor
+        PanelStateIterator(PanelStateIterator const& other) = default;
+        PanelStateIterator& operator =(PanelStateIterator const& other) = default;
+        // current state
+        PanelState current() { return *_current; }
+        // total # of states
+        size_t nStates() const { return _allowedPS.size(); }
+        // operate on the current state
+        bool increment() { ++_current; return _current != _allowedPS.end(); }
+        void reset() { _current = _allowedPS.begin(); }
       private:
-	// helper functions;
-	bool increment(HSV& hsv);
-	bool increment(HitState& hs);
-	void reset(HitState& hs);
-	PSV::iterator _current; // current panel state
-	TSHUIV _uinfo; // information about the panel hits
-	PSV _allowedPS; // all allowed states for this panel
-	HSV _allowedHS; // allowed hit states
+        // helper functions;
+        bool increment(HSV& hsv);
+        bool increment(HitState& hs);
+        void reset(HitState& hs);
+        PSV::iterator _current; // current panel state
+        TSHUIV _uinfo; // information about the panel hits
+        PSV _allowedPS; // all allowed states for this panel
+        HSV _allowedHS; // allowed hit states
     };
- 
+
   } // PanelAmbig namespace
 } // mu2e namespace
 #endif

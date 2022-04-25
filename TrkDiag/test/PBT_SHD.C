@@ -32,8 +32,8 @@ void PBTO(TTree* tree) {
   mcres->Fit("gaus");
   can->cd(4);
   mcewmres->Fit("gaus");
-//  median2d->Draw();
-//  medianprof->Fit("pol1","","sames");
+  //  median2d->Draw();
+  //  medianprof->Fit("pol1","","sames");
 
 }
 

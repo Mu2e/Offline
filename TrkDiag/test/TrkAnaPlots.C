@@ -24,7 +24,7 @@
 // The following is from Alexx Perloff, JetMetaAnalysis
 double fnc_dscb(double*xx,double*pp) {
   double x   = xx[0];
-// gaussian core
+  // gaussian core
   double N   = pp[0];//norm
   double mu  = pp[1];//mean
   double sig = pp[2];//variance
@@ -49,53 +49,53 @@ double fnc_dscb(double*xx,double*pp) {
 
 class TrkAnaPlots {
   public:
-  enum TrackerRegion {entrance=0,middle, exit};
-  TrkAnaPlots(TFile* file,float momwin=1.5) {
-    _tn = (TTree*)( ((TDirectory*)file->Get("TrkAnaNeg"))->Get("trkana"));
-    _tp = (TTree*)( ((TDirectory*)file->Get("TrkAnaPos"))->Get("trkana"));
-    BuildCuts(momwin);
-    _rname.push_back("Entrance");
-    _rname.push_back("Middle");
-    _rname.push_back("Exit");
-  }
-  
-  void BuildCuts(float momwin);
-  void PID();
-  void FitMomResp(TH1F* momresp);
-  void FitMomRes(TH1F* momres);
-  void MomResp(TrackerRegion region=entrance);
-  void MomRes(TrackerRegion region=entrance);
-  void SelPlots(int charge=-1);
-  void Acc(int ngen,int charge=-1);
-  void hitres();
-  void wpull();
-  void Ambig();
-  void Resid();
-  void Con();
-  void TrkQual(const char* extra="");
-  void TrkQualRes(float tqcut);
-  void StrawMat();
-  void TrkCaloHit(float tqcut,int pdg=11);
-  void TrkCaloHitMC();
-  void dEdx();
-  void t0();
-  void Eff(unsigned norm, double plo, double phi, int q=-1);
-  void PlotIPA();
-  void Upstream();
-  void PBI(unsigned ngen, int charge=-1);
-  void Trigger();
-  void Alg();
-// cuts
-  TCut _reco, _goodfit, _rpitch, _livegate, _opa, _upstream, _physics, _final, _pbi;
-  TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
-  TCut _CRV, _eminustrig, _eplustrig, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
-  TCut _TPR, _CPR;
- // Trees 
-  TTree* _tn;
-  TTree* _tp; 
-  // canvases
-  TCanvas *_pidcan, *_pidqcan, *_pidmomcan, *_radcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan, *_spcan;
-  vector<string> _rname;
+    enum TrackerRegion {entrance=0,middle, exit};
+    TrkAnaPlots(TFile* file,float momwin=1.5) {
+      _tn = (TTree*)( ((TDirectory*)file->Get("TrkAnaNeg"))->Get("trkana"));
+      _tp = (TTree*)( ((TDirectory*)file->Get("TrkAnaPos"))->Get("trkana"));
+      BuildCuts(momwin);
+      _rname.push_back("Entrance");
+      _rname.push_back("Middle");
+      _rname.push_back("Exit");
+    }
+
+    void BuildCuts(float momwin);
+    void PID();
+    void FitMomResp(TH1F* momresp);
+    void FitMomRes(TH1F* momres);
+    void MomResp(TrackerRegion region=entrance);
+    void MomRes(TrackerRegion region=entrance);
+    void SelPlots(int charge=-1);
+    void Acc(int ngen,int charge=-1);
+    void hitres();
+    void wpull();
+    void Ambig();
+    void Resid();
+    void Con();
+    void TrkQual(const char* extra="");
+    void TrkQualRes(float tqcut);
+    void StrawMat();
+    void TrkCaloHit(float tqcut,int pdg=11);
+    void TrkCaloHitMC();
+    void dEdx();
+    void t0();
+    void Eff(unsigned norm, double plo, double phi, int q=-1);
+    void PlotIPA();
+    void Upstream();
+    void PBI(unsigned ngen, int charge=-1);
+    void Trigger();
+    void Alg();
+    // cuts
+    TCut _reco, _goodfit, _rpitch, _livegate, _opa, _upstream, _physics, _final, _pbi;
+    TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
+    TCut _CRV, _eminustrig, _eplustrig, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
+    TCut _TPR, _CPR;
+    // Trees
+    TTree* _tn;
+    TTree* _tp;
+    // canvases
+    TCanvas *_pidcan, *_pidqcan, *_pidmomcan, *_radcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan, *_spcan;
+    vector<string> _rname;
 };
 
 void TrkAnaPlots::BuildCuts(float momwin){
@@ -200,10 +200,10 @@ void TrkAnaPlots::PID() {
   dmevsp->SetLineColor(kBlue);
   deevspp->SetLineColor(kRed);
   dmevspp->SetLineColor(kBlue);
-  
+
   demompide->SetStats(0);
   dmmompide->SetStats(0);
-  
+
   _tn->Project("dempid","detrkpid.mvaout",_downstream&&_eminus);
   _tn->Project("dmumpid","detrkpid.mvaout",_downstream&&_muminus);
   _tp->Project("deppid","detrkpid.mvaout",_downstream&&_eplus);
@@ -244,7 +244,7 @@ void TrkAnaPlots::PID() {
   }
   dmumpid->Draw("same");
   dmuppid->Draw("same");
-  
+
   TLegend* leg = new TLegend(0.1,0.6,0.5,0.9);
   leg->AddEntry(dempid,"True e^{-}","L");
   leg->AddEntry(dmumpid,"True #mu^{-}","L");
@@ -282,7 +282,7 @@ void TrkAnaPlots::PID() {
   gPad->SetLogz();
   qvqmu->Draw("colorz");
 
-  
+
   _tn->Project("dmmom","deent.mom",_downstream&&_muminus&&_eminustq);
   _tp->Project("+dmmom","deent.mom",_downstream&&_muplus&&_eplustq);
   _tn->Project("demom","deent.mom",_downstream&&_eminus&&_eminustq);
@@ -406,24 +406,24 @@ void TrkAnaPlots::FitMomRes(TH1F* momres) {
   zero->SetLineStyle(2);
   zero->Draw();
 
-//  TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
-//  rtext->AddText("Reco Cuts");
-//  char line[80];
-//  snprintf(line,80,"%s",cut.GetTitle());
-//  rtext->AddText(line);
-//  sprintf(line,"%5.0f Tracks",momres->GetEntries());
-//  rtext->AddText(line);
-//  rtext->Draw();
+  //  TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
+  //  rtext->AddText("Reco Cuts");
+  //  char line[80];
+  //  snprintf(line,80,"%s",cut.GetTitle());
+  //  rtext->AddText(line);
+  //  sprintf(line,"%5.0f Tracks",momres->GetEntries());
+  //  rtext->AddText(line);
+  //  rtext->Draw();
 }
 
 void TrkAnaPlots::MomRes(TrackerRegion region) {
-// cuts
+  // cuts
   char title[80];
   snprintf(title,80,"momentum resolution at tracker %s;MeV/c",_rname[region].c_str());
   TH1F* momres = new TH1F("momres",title,251,-4,4);
   momres->Sumw2();
   _tn->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_final*_pbi);
-//  momres->SetMinimum(0.5);
+  //  momres->SetMinimum(0.5);
   _rcan = new TCanvas("rcan","Momentum Resolution",800,800);
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
@@ -438,7 +438,7 @@ void TrkAnaPlots::SelPlots(int charge) {
   vector<string> vars={"log2(trigbits)", "dequal.TrkQual", "de.t0", "deent.td", "deent.d0", "abs(de.ent.d0+2.0/deent.om)", "dequal.TrkPID", "de.t0-crvinfo._timeWindowStart[bestcrv]", "deent.mom"};
   vector<double> low={0,-0.01, 400.0, 0.2, -150.0, 450.0, -0.01, -150.0, 95.0 };
   vector<double> hi={32, 1.1, 1700.0, 1.8, 150.0, 650.0, 1.1, 250.0, 110.0 };
-  
+
   TCut trigger,goodfit,pid,rmom;
   TTree* ta;
   if(charge<0){
@@ -476,7 +476,7 @@ void TrkAnaPlots::SelPlots(int charge) {
   for(size_t iplot=0;iplot<names.size();iplot++){
     _spcan->cd(iplot+1);
     plots[iplot]->Draw();
-  }  
+  }
 }
 
 void TrkAnaPlots::Acc(int ngen,int charge) {
@@ -597,7 +597,7 @@ void TrkAnaPlots::Acc(int ngen,int charge) {
   double allval = eff->GetBinContent(1);
   cout << "Found " << normval << "Entries, " << allval << " survive all cuts." << endl;
   for(ibin=1;ibin<=nbins;ibin++){
-//    cout << "bin " << ibin << eff->GetXaxis()->GetBinLabel(ibin) <<  " contents = " << eff->GetBinContent(ibin) << endl;
+    //    cout << "bin " << ibin << eff->GetXaxis()->GetBinLabel(ibin) <<  " contents = " << eff->GetBinContent(ibin) << endl;
     rej->SetBinContent(ibin,eff->GetBinContent(ibin)/normval);
     if(eff->GetBinContent(ibin)>0.0)
       eff->SetBinContent(ibin,allval/eff->GetBinContent(ibin));
@@ -631,7 +631,7 @@ void TrkAnaPlots::hitres() {
   _tn->Project("hresida","(detsh._doca-detsh._rdrift*detsh._ambig)",_reco+_reco+"detsh._active&&detsh._ambig!=0");
   _tn->Project("hresidna","(detsh._doca-detsh._rdrift*detsh._ambig)",_reco+"detsh._active&&detsh._ambig==0");
   _tn->Project("hresidall","(detsh._doca-detsh._rdrift*detsh._ambig)",_reco+"detsh._active");
-  
+
   TH1F* hresa = new TH1F("hresa","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
   TH1F* hresna = new TH1F("hresna","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
   TH1F* hresall = new TH1F("hresall","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
@@ -698,7 +698,7 @@ void TrkAnaPlots::Ambig() {
   TCut bambig("detshmc._ambig!=detsh._ambig&&detsh._ambig!=0");
   TCut nambig("detsh._ambig==0");
   TCut active("detsh._active>0");
-// apply requested cuts
+  // apply requested cuts
 
   TCut goodtrk(_reco+"de.nactive>20");
 
@@ -721,7 +721,7 @@ void TrkAnaPlots::Ambig() {
   rdg->SetMaximum(1.1);
   rdg->SetMinimum(-0.1);
   rdn->SetStats(0);
-//  rdb->SetStats(0);
+  //  rdb->SetStats(0);
   rdi->SetStats(0);
   rda->SetStats(0);
   rdd->SetStats(0);
@@ -1026,7 +1026,7 @@ void TrkAnaPlots::TrkQualRes(float tqcut) {
   dscb->SetParLimits(5,0.0,50.0);
   dscb->SetParLimits(6,1.0,50.0);
 
-   TH1F* goodf = new TH1F("goodf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
+  TH1F* goodf = new TH1F("goodf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
   TH1F* badf = new TH1F("badf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
   goodf->SetLineColor(kBlue);
   goodf->SetMarkerColor(kBlue);
@@ -1052,7 +1052,7 @@ void TrkAnaPlots::TrkQualRes(float tqcut) {
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
   _tn->Project("goodf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel+tqcutg)*"_pbi.PBIWeight");
   _tn->Project("badf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"_pbi.PBIWeight");
-  
+
   _tqrcan = new TCanvas("tqrcan","TrkQualRes",1000,800);
   TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
   char ltitle[40];
@@ -1192,19 +1192,19 @@ void TrkAnaPlots::TrkCaloHit(float tqcut,int pdg) {
   pr0->SetLineColor(kRed);
   pr1->SetLineColor(kBlue);
 
-//  clen0->SetStats(0);
+  //  clen0->SetStats(0);
   clen1->SetStats(0);
-//  cdoca0->SetStats(0);
+  //  cdoca0->SetStats(0);
   cdoca1->SetStats(0);
-//  cdt0->SetStats(0);
+  //  cdt0->SetStats(0);
   cdt1->SetStats(0);
-//  ep0->SetStats(0);
+  //  ep0->SetStats(0);
   ep1->SetStats(0);
-//  tdir0->SetStats(0);
+  //  tdir0->SetStats(0);
   tdir1->SetStats(0);
-//  pr0->SetStats(0);
+  //  pr0->SetStats(0);
   pr1->SetStats(0);
- 
+
   _tn->Project("clen0","detch.clen",goodtrkcalo&&disk0);
   _tn->Project("clen1","detch.clen",goodtrkcalo&&disk1);
   _tn->Project("cdoca0","detch.doca",goodtrkcalo&&disk0);
@@ -1218,7 +1218,7 @@ void TrkAnaPlots::TrkCaloHit(float tqcut,int pdg) {
   _tn->Project("pr0","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
   _tn->Project("pr1","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
 
-  
+
   TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
   tchleg->AddEntry(clen0,"Disk 0","L");
   tchleg->AddEntry(clen1,"Disk 1","L");
@@ -1244,7 +1244,7 @@ void TrkAnaPlots::TrkCaloHit(float tqcut,int pdg) {
   _tchcan->cd(6);
   pr0->Draw();
   pr1->Draw("same");
-  
+
 
   TCut goodclen("detch.clen>0&&detch.clen<150.0");
   TCut badclen("detch.clen>150.0&&detch.clen<250.0");
@@ -1265,7 +1265,7 @@ void TrkAnaPlots::TrkCaloHit(float tqcut,int pdg) {
 
   TProfile* peopd0 = new TProfile("peopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,0.0,1.25);
   TProfile* peopd1 = new TProfile("peopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,0.0,1.25);
- 
+
   rad0->SetStats(0);
   rad1->SetStats(0);
   dot0->SetStats(0);
@@ -1397,7 +1397,7 @@ void TrkAnaPlots::TrkCaloHitMC() {
   cdoca0n->SetLineColor(kCyan);
   cdoca1m->SetLineColor(kBlack);
   cdoca1n->SetLineColor(kCyan);
-//
+  //
   clen0m->SetStats(0);
   clen0n->SetStats(0);
   clen1m->SetStats(0);
@@ -1451,10 +1451,10 @@ void TrkAnaPlots::t0() {
   TCut disk1("detch.disk==1");
   TH1F* t00 = new TH1F("t00","Track Fit t_{0} Resolution, TrkCaloHit;t_{0} reco - t_{0} MC (ns)",100,-5,5);
   TH1F* t01 = new TH1F("t01","Track Fit t_{0} Resolution, NoTrkCaloHit;t_{0} reco - t_{0} MC (ns)",100,-5,5);
-//  t00->SetStats(0);
-//  t01->SetStats(0);
-//  t00->SetLineColor(kRed);
-//  t01->SetLineColor(kBlue);
+  //  t00->SetStats(0);
+  //  t01->SetStats(0);
+  //  t00->SetLineColor(kRed);
+  //  t01->SetLineColor(kBlue);
   _tn->Project("t00","de.t0-fmod(demcmid.t0,1695)",goodtrkcalo);
   _tn->Project("t01","de.t0-fmod(demcmid.t0,1695)",goodtrknocalo);
   TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
@@ -1659,7 +1659,7 @@ void TrkAnaPlots::Upstream() {
   tchleg->AddEntry(muutcha,"True muon track","l");
   tchleg->Draw();
   _ucan->cd(3);
-  tchmcrel->Draw(); 
+  tchmcrel->Draw();
   _ucan->cd(4);
   muutime->Fit("gaus");
   eutime->Fit("gaus","","sames");
@@ -1680,10 +1680,10 @@ void TrkAnaPlots::Upstream() {
 
 void TrkAnaPlots::PBI(unsigned ngen, int charge) {
   TCut truece("demc.gen==2");
-    TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
-    TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
-//  TCut emall = _eminustrig+_CRV+truece;
-//  TCut epall = _eplustrig+_CRV+truece;
+  TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
+  TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
+  //  TCut emall = _eminustrig+_CRV+truece;
+  //  TCut epall = _eplustrig+_CRV+truece;
   TH1F* emeff = new TH1F("emeff","Selection Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
   TH1F* epeff = new TH1F("epeff","Selection Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
   TH1F* emeffw = new TH1F("emeffw","Signal Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
@@ -1713,16 +1713,16 @@ void TrkAnaPlots::PBI(unsigned ngen, int charge) {
     effcan->cd(2);
     emeffw->Scale(1.0/ngen);
     emeffw->Draw();
-// compute the convolution efficiency
-//    TF1* line = emeff->GetFunction("pol1");
-//    line->SetName("line");
-//    TF1* prod = new TF1("prod","[&](double *x, double *p){return ln(x)*line(x); }",0,3.0,0);
+    // compute the convolution efficiency
+    //    TF1* line = emeff->GetFunction("pol1");
+    //    line->SetName("line");
+    //    TF1* prod = new TF1("prod","[&](double *x, double *p){return ln(x)*line(x); }",0,3.0,0);
 
   } else {
     _tp->Project("epeff","evtwt.PBIWeight",epall);
     _tp->Project("epeffw","evtwt.PBIWeight",epall*_pbi);
     cout << "tracks passing cuts = " << epeff->GetEntries() << " naive efficiency " << epeff->GetEntries()/ngen
-    << " net efficiency = " << epeffw->Integral()/ngen << endl;
+      << " net efficiency = " << epeffw->Integral()/ngen << endl;
     epeff->Divide(ln);
     epeff->SetMaximum(0.2);
     epeff->SetMinimum(0.0);
@@ -1760,7 +1760,7 @@ void TrkAnaPlots::Trigger() {
   TH1F* ntd0 = new TH1F("ntd0","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
   TH1F* pd0 = new TH1F("pd0","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
   TH1F* ptd0 = new TH1F("ptd0","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
-  
+
   TH1F* nd0mu = new TH1F("nd0mu","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
   TH1F* ntd0mu = new TH1F("ntd0mu","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
   TH1F* pd0mu = new TH1F("pd0mu","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
@@ -1914,7 +1914,7 @@ void TrkAnaPlots::Alg() {
   TLegend* aleg = new TLegend(0.6,0.7,0.9,0.9);
   aleg->AddEntry(tprnmom,"TrkPatRec","F");
   aleg->AddEntry(cprnmom,"CalPatRec","F");
-  
+
   TCanvas* acane = new TCanvas("acane","acane",800,800);
   acane->Divide(2,2);
   acane->cd(1);

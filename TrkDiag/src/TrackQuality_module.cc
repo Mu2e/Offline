@@ -37,28 +37,28 @@ namespace mu2e
 
   class TrackQuality : public art::EDProducer
   {
-  public:
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+    public:
+      struct Config {
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
 
-      fhicl::Atom<art::InputTag> kalSeedTag{Name("KalSeedCollection"), Comment("Input tag for KalSeedCollection")};
-      fhicl::Atom<std::string> trainName{Name("TrainingName"), Comment("Name of the training (e.g. TrkQual)")};
-      fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
-    };
+        fhicl::Atom<art::InputTag> kalSeedTag{Name("KalSeedCollection"), Comment("Input tag for KalSeedCollection")};
+        fhicl::Atom<std::string> trainName{Name("TrainingName"), Comment("Name of the training (e.g. TrkQual)")};
+        fhicl::Atom<bool> printMVA{Name("PrintMVA"), Comment("Print the MVA used"), false};
+      };
 
-    using Parameters = art::EDProducer::Table<Config>;
-    TrackQuality(const Parameters& conf);
+      using Parameters = art::EDProducer::Table<Config>;
+      TrackQuality(const Parameters& conf);
 
-  private:
-    void produce(art::Event& event) override;
-    void initializeMVA(std::string xmlfilename);
+    private:
+      void produce(art::Event& event) override;
+      void initializeMVA(std::string xmlfilename);
 
-    art::InputTag _kalSeedTag;
-    std::string _trainName;
-    bool _printMVA;
+      art::InputTag _kalSeedTag;
+      std::string _trainName;
+      bool _printMVA;
 
-    mu2e::ProditionsHandle<mu2e::TrkQualCatalog> _trkQualCatalogH;
+      mu2e::ProditionsHandle<mu2e::TrkQualCatalog> _trkQualCatalogH;
 
   };
 
@@ -67,10 +67,10 @@ namespace mu2e
     _kalSeedTag(conf().kalSeedTag()),
     _trainName(conf().trainName()),
     _printMVA(conf().printMVA())
-  {
-    produces<TrkQualCollection>();
-    produces<RecoQualCollection>();
-  }
+    {
+      produces<TrkQualCollection>();
+      produces<RecoQualCollection>();
+    }
 
   void TrackQuality::produce(art::Event& event ) {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
@@ -110,7 +110,7 @@ namespace mu2e
           }
           auto jhit = ihit; jhit++;
           if(jhit != i_kalSeed.hits().end() && ihit->strawId().uniquePanel() ==
-             jhit->strawId().uniquePanel()){
+              jhit->strawId().uniquePanel()){
             ++ndouble;
             if(ihit->flag().hasAllProperties(active)) { ++ndactive; }
           }

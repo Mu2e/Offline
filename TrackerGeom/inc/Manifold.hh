@@ -12,38 +12,38 @@ namespace mu2e {
 
   class Manifold{
 
-  public:
+    public:
 
-    // Default constructor
-    Manifold();
+      // Default constructor
+      Manifold();
 
-    // Main constructor
-    Manifold( const CLHEP::Hep3Vector& origin,
-              const std::vector<double>& halfLengths
-              );
+      // Main constructor
+      Manifold( const CLHEP::Hep3Vector& origin,
+          const std::vector<double>& halfLengths
+          );
 
-    // Use compiler-generated copy c'tor, copy assignment, and d'tor
+      // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    // Return origin in tracker coordinates
-    const CLHEP::Hep3Vector& getOrigin() const {return _origin;}
+      // Return origin in tracker coordinates
+      const CLHEP::Hep3Vector& getOrigin() const {return _origin;}
 
-    //Return origin in coordinates local to the plane
-    //const CLHEP::Hep3Vector& getPlaneLocalOrigin() const {
-    //return _origin;
-    //}
+      //Return origin in coordinates local to the plane
+      //const CLHEP::Hep3Vector& getPlaneLocalOrigin() const {
+      //return _origin;
+      //}
 
-    // Return halfLengths
-    const std::vector<double>& getHalfLengths() const {return _halfLengths;}
+      // Return halfLengths
+      const std::vector<double>& getHalfLengths() const {return _halfLengths;}
 
-    // Construct a string containing the plane Id.
-    //std::string name( std::string const& base ) const;
+      // Construct a string containing the plane Id.
+      //std::string name( std::string const& base ) const;
 
-  protected:
+    protected:
 
-    // Member Variables
+      // Member Variables
 
-    CLHEP::Hep3Vector   _origin;
-    std::vector<double> _halfLengths;
+      CLHEP::Hep3Vector   _origin;
+      std::vector<double> _halfLengths;
 
   };
 
