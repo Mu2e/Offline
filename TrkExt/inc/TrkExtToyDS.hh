@@ -17,23 +17,21 @@
 namespace mu2e {
 
 
-  class TrkExtToyDS : public TrkExtShape, public TrkExtMaterial 
+  class TrkExtToyDS : public TrkExtShape, public TrkExtMaterial
   {
 
-  public:
-    TrkExtToyDS() ;
-    ~TrkExtToyDS() { }
+    public:
+      TrkExtToyDS() ;
+      ~TrkExtToyDS() { }
 
-    void initialize () ;
-    bool contains (CLHEP::Hep3Vector& p) ;
+      void initialize () ;
+      bool contains (CLHEP::Hep3Vector& p) ;
 
-  private:
-    std::string name;
-    double rin, rout, zmin, zmax;
+    private:
+      std::string name;
+      double rin, rout, zmin, zmax;
 
   };
-
-
 
 } // end namespace mu2e
 

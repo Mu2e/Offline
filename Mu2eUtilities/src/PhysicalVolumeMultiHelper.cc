@@ -10,8 +10,8 @@
 namespace mu2e {
 struct PhysicalVolumeInfo;
 
-  PhysicalVolumeMultiHelper::PhysicalVolumeMultiHelper(const PhysicalVolumeInfoMultiCollection& coll)
-    : pi_(&coll)
+  PhysicalVolumeMultiHelper::PhysicalVolumeMultiHelper(const PhysicalVolumeInfoMultiCollection* coll)
+    : pi_(coll)
   {}
 
   const PhysicalVolumeInfo&

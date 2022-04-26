@@ -25,7 +25,7 @@ Double_t ALine(Double_t *x, Double_t *par) {
   else
     return par[1]+(x[0]-par[0])*par[2];
 }
- 
+
 void TDTest(TTree* sh,const char* page="edep") {
   std::string spage(page);
   TCut conv("mcproc==56&&mcgen==2");

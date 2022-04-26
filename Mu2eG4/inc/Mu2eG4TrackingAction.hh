@@ -127,6 +127,9 @@ namespace mu2e {
     // trajectory information to the output data product.
     void swapTrajectory( const G4Track* trk );
 
+    // the muon specific decay proper time; it is ignored if set to a negative value
+    double _muonPreAssignedDecayProperTime;
+
   };
 
 } // end namespace mu2e

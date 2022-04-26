@@ -1,11 +1,11 @@
 
 #include "Offline/Validation/inc/TValHist.hh"
 #include "TLatex.h"
-#include "TStyle.h"
 #include "TMath.h"
 #include "TPad.h"
+#include "TStyle.h"
 
-//ClassImp(TValHist)
+// ClassImp(TValHist)
 
 //_____________________________________________________________________________
 void TValHist::ClearB(Option_t* Opt) {
@@ -16,4 +16,3 @@ void TValHist::ClearB(Option_t* Opt) {
   fFontScale = 1.0;
   fEmpty = false;
 }
-

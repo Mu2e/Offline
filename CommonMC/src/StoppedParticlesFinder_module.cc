@@ -19,7 +19,6 @@
 #include "fhiclcpp/types/Sequence.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
@@ -37,88 +36,88 @@
 namespace mu2e {
 
   class StoppedParticlesFinder : public art::EDProducer {
-  public:
+    public:
 
-    struct Config {
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+      struct Config {
+        using Name=fhicl::Name;
+        using Comment=fhicl::Comment;
 
-      fhicl::Atom<art::InputTag> particleInput{ Name("particleInput"), Comment("The particle input collection.") };
+        fhicl::Atom<art::InputTag> particleInput{ Name("particleInput"), Comment("The particle input collection.") };
 
-      fhicl::Atom<art::InputTag> physVolInfoInput{ Name("physVolInfoInput"), Comment("The PhysicalVolumeInfoMultiCollection input.") };
-      fhicl::Atom<bool> useEventLevelVolumeInfo{ Name("useEventLevelVolumeInfo"), Comment("Get PhysicalVolumeInfoMultiCollection from Event instead of SubRun"), false};
+        fhicl::Atom<art::InputTag> physVolInfoInput{ Name("physVolInfoInput"), Comment("The PhysicalVolumeInfoMultiCollection input.") };
+        fhicl::Atom<bool> useEventLevelVolumeInfo{ Name("useEventLevelVolumeInfo"), Comment("Get PhysicalVolumeInfoMultiCollection from Event instead of SubRun"), false};
 
-      fhicl::Sequence<int> particleTypes{
-        Name("particleTypes"),
-          Comment("A list of PDG IDs of particles to include in the stopped particle search.")
-          };
+        fhicl::Sequence<int> particleTypes{
+          Name("particleTypes"),
+            Comment("A list of PDG IDs of particles to include in the stopped particle search.")
+        };
 
-      fhicl::Atom<std::string> stoppingMaterial{
-        Name("stoppingMaterial"),
-          Comment("A non-emtpy string here will select particles that stopped in the given material. Otherwise see vetoedMaterials below."),
-          ""
-          };
+        fhicl::Atom<std::string> stoppingMaterial{
+          Name("stoppingMaterial"),
+            Comment("A non-emtpy string here will select particles that stopped in the given material. Otherwise see vetoedMaterials below."),
+            ""
+        };
 
-      fhicl::Sequence<std::string> vetoedMaterials{ Name("vetoedMaterials"),
+        fhicl::Sequence<std::string> vetoedMaterials{ Name("vetoedMaterials"),
           Comment("Used only if stoppingMaterial is set to an emtpy string.\n"
-                  "Particles stopping in materials that DO NOT match any on this list will be selected."),
+              "Particles stopping in materials that DO NOT match any on this list will be selected."),
           [this](){ return stoppingMaterial().empty(); }
-          };
+        };
 
-      fhicl::OptionalAtom<unsigned> simStageThreshold{ Name("simStageThreshold"),
+        fhicl::OptionalAtom<unsigned> simStageThreshold{ Name("simStageThreshold"),
           Comment("By default only particles from the current simulation stage are considered.\n"
-                  "This setting allows to override that behavior and include into the search\n"
-                  "all particles with simStage()>=simStageThreshold."
-                  )
-          };
+              "This setting allows to override that behavior and include into the search\n"
+              "all particles with simStage()>=simStageThreshold."
+              )
+        };
 
-      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"),
+        fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"),
           Comment("Controls the printouts.  Levels 0 through 3 are used.\nHigher levels are more verbose."),
           0
-          };
+        };
 
-    };
+      };
 
-    using Parameters = art::EDProducer::Table<Config>;
-    explicit StoppedParticlesFinder(const Parameters& conf);
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit StoppedParticlesFinder(const Parameters& conf);
 
-    void beginSubRun(art::SubRun& sr) override;
-    void produce(art::Event& evt) override;
-    void endJob() override;
-  private:
-    art::InputTag particleInput_;
-    art::InputTag physVolInfoInput_;
-    bool useEventLevelVolumeInfo_;
-    std::string stoppingMaterial_;
-    std::vector<std::string> vetoedMaterials_;
+      void beginSubRun(art::SubRun& sr) override;
+      void produce(art::Event& evt) override;
+      void endJob() override;
+    private:
+      art::InputTag particleInput_;
+      art::InputTag physVolInfoInput_;
+      bool useEventLevelVolumeInfo_;
+      std::string stoppingMaterial_;
+      std::vector<std::string> vetoedMaterials_;
 
-    bool simStageThresholdConfigured_;
-    unsigned simStageThreshold_; // to select particles from the current simulation stage
+      bool simStageThresholdConfigured_;
+      unsigned simStageThreshold_; // to select particles from the current simulation stage
 
-    int verbosityLevel_;
+      int verbosityLevel_;
 
-    typedef std::set<PDGCode::type> PDGCodeSet;
-    PDGCodeSet particleTypes_;
+      typedef std::set<PDGCode::type> PDGCodeSet;
+      PDGCodeSet particleTypes_;
 
-    TH1* hStopMaterials_;
+      TH1* hStopMaterials_;
 
-    const PhysicalVolumeInfoMultiCollection *vols_;
+      const PhysicalVolumeInfoMultiCollection *vols_ = nullptr;
 
-    bool isStopped(const SimParticle& particle) const;
-    bool materialAccepted(const std::string& material) const;
+      bool isStopped(const SimParticle& particle) const;
+      bool materialAccepted(const std::string& material) const;
 
-    unsigned numTotalParticles_;
-    unsigned numStageParticles_;
-    unsigned numRequestedTypeStops_;
-    unsigned numRequestedMateralStops_;
+      unsigned numTotalParticles_;
+      unsigned numStageParticles_;
+      unsigned numRequestedTypeStops_;
+      unsigned numRequestedMateralStops_;
 
-    template<class PRINCIPAL> void initVols(const PRINCIPAL& p);
+      template<class PRINCIPAL> void initVols(const PRINCIPAL& p);
   };
 
   //================================================================
   StoppedParticlesFinder::StoppedParticlesFinder(const Parameters& conf)
     : EDProducer{conf}
-    , particleInput_(conf().particleInput())
+  , particleInput_(conf().particleInput())
     , physVolInfoInput_(conf().physVolInfoInput())
     , useEventLevelVolumeInfo_(conf().useEventLevelVolumeInfo())
     , stoppingMaterial_(conf().stoppingMaterial())
@@ -131,67 +130,67 @@ namespace mu2e {
     , numStageParticles_()
     , numRequestedTypeStops_()
     , numRequestedMateralStops_()
-  {
-    produces<SimParticlePtrCollection>();
+    {
+      produces<SimParticlePtrCollection>();
 
-    if(stoppingMaterial_.empty()) {
-      vetoedMaterials_ = conf().vetoedMaterials();
-    }
-
-    simStageThresholdConfigured_ = conf().simStageThreshold(simStageThreshold_);
-
-    auto pt(conf().particleTypes());
-    for(const auto& pid : pt) {
-      particleTypes_.insert(PDGCode::type(pid));
-    }
-
-    //----------------
-    if(verbosityLevel_ > 0) {
-      std::ostringstream os;
-      os<<"Particle types: [ ";
-      std::copy(particleTypes_.begin(), particleTypes_.end(), std::ostream_iterator<int>(os, ", "));
-      os<<" ]"<<std::endl;
-
-      if(simStageThresholdConfigured_) {
-        os<<"simStageThreshold  = "<<simStageThreshold_<<std::endl;
+      if(stoppingMaterial_.empty()) {
+        vetoedMaterials_ = conf().vetoedMaterials();
       }
 
-      os<<"stoppingMaterial = "<<stoppingMaterial_<<std::endl;
+      simStageThresholdConfigured_ = conf().simStageThreshold(simStageThreshold_);
 
-      os<<"vetoedMaterials = [ ";
-      std::copy(vetoedMaterials_.begin(), vetoedMaterials_.end(), std::ostream_iterator<std::string>(os, ", "));
-      os<<" ]"<<std::endl;
+      auto pt(conf().particleTypes());
+      for(const auto& pid : pt) {
+        particleTypes_.insert(PDGCode::type(pid));
+      }
 
-      mf::LogInfo("Info")<<os.str();
+      //----------------
+      if(verbosityLevel_ > 0) {
+        std::ostringstream os;
+        os<<"Particle types: [ ";
+        std::copy(particleTypes_.begin(), particleTypes_.end(), std::ostream_iterator<int>(os, ", "));
+        os<<" ]"<<std::endl;
+
+        if(simStageThresholdConfigured_) {
+          os<<"simStageThreshold  = "<<simStageThreshold_<<std::endl;
+        }
+
+        os<<"stoppingMaterial = "<<stoppingMaterial_<<std::endl;
+
+        os<<"vetoedMaterials = [ ";
+        std::copy(vetoedMaterials_.begin(), vetoedMaterials_.end(), std::ostream_iterator<std::string>(os, ", "));
+        os<<" ]"<<std::endl;
+
+        mf::LogInfo("Info")<<os.str();
+      }
     }
-  }
 
   //================================================================
   template<class PRINCIPAL>
-  void StoppedParticlesFinder::initVols(const PRINCIPAL& p) {
-    const auto& ih = p.template getValidHandle<PhysicalVolumeInfoMultiCollection>(physVolInfoInput_);
-    vols_ = &*ih;
+    void StoppedParticlesFinder::initVols(const PRINCIPAL& p) {
+      const auto& ih = p.template getValidHandle<PhysicalVolumeInfoMultiCollection>(physVolInfoInput_);
+      vols_ = &*ih;
 
-    if(verbosityLevel_ > 1) {
-      std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
-      for(const auto& i : *vols_) {
-        std::cout<<"*********************************************************"<<std::endl;
-        std::cout<<"Ccollection size = "<<i.size()<<std::endl;
-        for(const auto& entry : i) {
-          std::cout<<entry.second<<std::endl;
+      if(verbosityLevel_ > 1) {
+        std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
+        for(const auto& i : *vols_) {
+          std::cout<<"*********************************************************"<<std::endl;
+          std::cout<<"Ccollection size = "<<i.size()<<std::endl;
+          for(const auto& entry : i) {
+            std::cout<<entry.second<<std::endl;
+          }
         }
+        std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
       }
-      std::cout<<"StoppedParticlesFinder: PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
-    }
 
-    if(!simStageThresholdConfigured_) {
-      if(vols_->empty()) {
-        throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
-          " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
+      if(!simStageThresholdConfigured_) {
+        if(vols_->empty()) {
+          throw cet::exception("BADINPUT")<<"StoppedParticlesFinder: something is wrong,"
+            " got empty PhysicalVolumeInfoMultiCollection "<<physVolInfoInput_<<std::endl;
+        }
+        simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
       }
-      simStageThreshold_ = vols_->size() - 1;  // the current simStage points to the last entry in vols_
     }
-  }
 
   //================================================================
   void StoppedParticlesFinder::beginSubRun(art::SubRun& sr) {
@@ -208,7 +207,7 @@ namespace mu2e {
 
     std::unique_ptr<SimParticlePtrCollection> output(new SimParticlePtrCollection());
 
-    PhysicalVolumeMultiHelper vi(*vols_);
+    PhysicalVolumeMultiHelper vi(vols_);
     auto ih = event.getValidHandle<SimParticleCollection>(particleInput_);
     numTotalParticles_ += ih->size();
     for(const auto& i : *ih) {
@@ -217,27 +216,27 @@ namespace mu2e {
         ++numStageParticles_;
 
         if((particleTypes_.find(particle.pdgId()) != particleTypes_.end())
-           && isStopped(particle))
-          {
-            ++numRequestedTypeStops_;
+            && isStopped(particle))
+        {
+          ++numRequestedTypeStops_;
 
-            if(verbosityLevel_ > 2) {
-              std::cout<<"stopped particle "<<particle.pdgId()
-                       <<" at pos="<<particle.endPosition()
-                       <<" time="<<particle.endGlobalTime()
-                       <<" reason="<<particle.stoppingCode()
-                       <<" in volume "<<vi.endVolume(particle)
-                       <<std::endl;
-            }
-
-            const std::string material = vi.endVolume(particle).materialName();
-            hStopMaterials_->Fill(material.c_str(), 1.);
-
-            if(materialAccepted(material)) {
-              ++numRequestedMateralStops_;
-              output->emplace_back(ih, particle.id().asUint());
-            }
+          if(verbosityLevel_ > 2) {
+            std::cout<<"stopped particle "<<particle.pdgId()
+              <<" at pos="<<particle.endPosition()
+              <<" time="<<particle.endGlobalTime()
+              <<" reason="<<particle.stoppingCode()
+              <<" in volume "<<vi.endVolume(particle)
+              <<std::endl;
           }
+
+          const std::string material = vi.endVolume(particle).materialName();
+          hStopMaterials_->Fill(material.c_str(), 1.);
+
+          if(materialAccepted(material)) {
+            ++numRequestedMateralStops_;
+            output->emplace_back(ih, particle.id().asUint());
+          }
+        }
       }
     }
 

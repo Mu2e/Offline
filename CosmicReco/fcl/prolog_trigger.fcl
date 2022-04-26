@@ -45,7 +45,7 @@ CstTrigger : {
 
     filters   : {
 	#PreEvent PreScaler:
-	cstSeedEventPrescale : {
+	cstEventPrescale : {
 	    module_type 	: PrescaleEvent
 	    nPrescale         	: 1
 	}
@@ -55,7 +55,7 @@ CstTrigger : {
 	    nPrescale         	: 1
 	}
 	
-	cstSeedSDCountFilter     : { 
+	cstSDCountFilter     : { 
 	    module_type : DigiFilter #defined in Triggers
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
@@ -82,7 +82,7 @@ CstTrigger : {
 	}
 
 
-	cstSeedTCFilter       : {
+	cstTCFilter       : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection  : "CstSimpleTimeCluster"
 	    minNHits               : 8
@@ -95,7 +95,7 @@ CstTrigger : {
 	}
 
 	#From Filter, only by hits currently: 
-	cstSeedTSFilter : {
+	cstTSFilter : {
 	    module_type            : CosmicSeedFilter
 	    CosmicTrackSeedCollection  : "CstCosmicTrackFinder"
 	    cosmicseedFitFlag          : ["HelixOK","HelixConverged"]
@@ -106,29 +106,30 @@ CstTrigger : {
 
     sequences   : {
 	
-	cstSeed        : [ cstSeedEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
-			   cstSeedSDCountFilter, 
-			   CstSimpleTimeCluster, cstSeedTCFilter,
-			   CstLineFinder,
-			   CstCosmicTrackFinder,
-			   cstSeedTSFilter ]
+	cst        : [ cstEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
+		       @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+		       cstSDCountFilter, 
+		       CstSimpleTimeCluster, cstTCFilter,
+		       CstLineFinder,
+		       CstCosmicTrackFinder,
+		       cstTSFilter,
+		       cstTriggerInfoMerger ]
 	
-	cstSeedTiming0 : [ cstSeedEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
-			   cstSeedSDCountFilter, 
-			   CstSimpleTimeCluster, cstSeedTCFilter,
-			   CstCosmicTrackFinder ]
+	cst_timing0 : [ cstEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
+			@sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			cstSDCountFilter, 
+			CstSimpleTimeCluster, cstTCFilter,
+			CstCosmicTrackFinder ]
 
-	cstSeedTiming1 : [ cstSeedEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
-			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
-			   cstSeedSDCountFilter, 
-			   CstSimpleTimeCluster ]
+	cst_timing1 : [ cstEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, 
+			@sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
+			cstSDCountFilter, 
+			CstSimpleTimeCluster ]
 	
 	cstTimeCluster : [ cstTimeClusterEventPrescale, 
 			   @sequence::TrkHitRecoTrigger.sequences.TTmakefastHits,
 			   cstTimeClusterSDCountFilter, 
-			   CstSimpleTimeCluster, cstTimeClusterTCFilter ]
+			   CstSimpleTimeCluster, cstTimeClusterTCFilter, cstTimeClusterTriggerInfoMerger ]
 	
 	
     }

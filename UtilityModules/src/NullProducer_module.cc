@@ -13,7 +13,6 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Utilities/InputTag.h"
 

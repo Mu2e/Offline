@@ -7,6 +7,7 @@
 #include <vector>
 #include <optional>
 
+#include "cetlib/maybe_ref.h"
 #include "canvas/Utilities/InputTag.h"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4PrimaryType.hh"
@@ -25,6 +26,33 @@ namespace mu2e {
 
   class Mu2eG4Inputs {
   public:
+
+    // The two elements of the return value of the function inputSimParticles.
+    // The maybe_ref is not valid if there are no input sim particles, either for
+    // initial stage jobs, or for non-filtered multistage input when the
+    // input event has no primaries for the current stage.
+    struct InputSimsInfo{
+      cet::maybe_ref<cet::map_vector<mu2e::SimParticle> const > sims;
+      art::ProductID                                            id;
+
+      InputSimsInfo ():
+        sims(), id(){
+      }
+
+      InputSimsInfo ( cet::map_vector<mu2e::SimParticle> const&  asims
+                      , art::ProductID const& aid):
+        sims(asims), id(aid){
+      }
+
+      void reseat( cet::map_vector<mu2e::SimParticle> const&  asims
+                   , art::ProductID const& aid){
+        sims.reseat(asims);
+        id   = aid;
+      }
+
+      bool isValid() const { return sims.isValid(); };
+    };
+
     explicit Mu2eG4Inputs(const Mu2eG4Config::Inputs_& conf);
 
     bool multiStage() const { return multiStage_; }
@@ -41,10 +69,7 @@ namespace mu2e {
 
     const std::optional<EventLevelVolInfos>& updateEventLevelVolumeInfos() const { return elvi_; }
 
-    // The handle is not valid if there are no input sim particles, either for
-    // initial stage jobs, or for non-filtered multistage input when the
-    // input event has no primaries for the current stage.
-    art::Handle<SimParticleCollection> inputSimParticles(const art::Event& evt) const;
+    InputSimsInfo inputSimParticles(const art::Event& evt) const;
 
   private:
     Mu2eG4PrimaryType primaryType_;
