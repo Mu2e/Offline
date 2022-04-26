@@ -1,7 +1,13 @@
 // vim: set sw=2 expandtab :
-#include "art/Framework/Art/artapp.h"
-#include "art/Framework/Art/detail/info_success.h"
 
+// Initialize ExitCodePrinter as early as possible, before other
+// include files, to have its destructor called as late as possible.
+#include "art/Framework/Art/detail/ExitCodePrinter.h"
+namespace {
+  art::detail::ExitCodePrinter p;
+}
+
+#include "art/Framework/Art/artapp.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <iostream>
@@ -45,21 +51,13 @@ void mu2eBanner() {
 
 }
 
-
-
 int
 main(int argc, char* argv[])
 {
-
   mu2eBanner();
-
-  int result = artapp(argc, argv, false);
+  p = artapp(argc, argv, false);
   mf::EndMessageFacility();
-  if (result == art::detail::info_success()) {
-    return 0;
-  }
-  cout << "Art has completed and will exit with status " << result << "." << endl;
-  return result;
+  return p.exitcode();
 }
 
 // Local Variables:

@@ -89,9 +89,9 @@ namespace mu2e{
   }
   
   /*------------Function to help user select a list of PDG codes to display:-------------*/
-  int TEveMu2eMCInterface::Contains(std::vector<int> v, int x)
+  int TEveMu2eMCInterface::Contains(const std::vector<int>& v, int x)
   {
-    return std::count(v.begin(), v.end(), x);
+    return std::count(v.begin(), v.end(), std::abs(x));
   }
   
 
@@ -115,7 +115,7 @@ namespace mu2e{
               posy = 1500.0;
               break;
           case PDGCode::mu_minus:
-              color = kGreen;
+              color = kOrange-7; //used to help distinguish from other lines only
               pid = "muon - ";
               posy = 1600.0;
               break;
@@ -175,6 +175,7 @@ namespace mu2e{
             TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
             //check user defined list of particles to plot:
             int x = Contains(particleIds,trajectoryIter->first->pdgId()); 
+
             if(x == 1){
               
               const std::vector<MCTrajectoryPoint> &points = trajectoryIter->second.points();

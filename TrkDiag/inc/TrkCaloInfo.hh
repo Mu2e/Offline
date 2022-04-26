@@ -3,9 +3,9 @@
 // All energies are in units of MeV,  momenta are in units of MeV/c,
 // time in nsec WRT when the proton bunch pulse peak hits the production target,
 // positions are in mm WRT the center of the tracker.
- 
+
 // Dave Brown (LBNL)
-// 
+//
 #ifndef TrkCaloInfo_HH
 #define TrkCaloInfo_HH
 #include "Offline/DataProducts/inc/GenVector.hh"
@@ -25,11 +25,11 @@ namespace mu2e
   using std::string;
   // struct for Calorimeter information associated with a track
   struct TrkCaloInfo {
-  // construct from a track-calo match
+    // construct from a track-calo match
     Float_t _dt; // extrapolated track - cluster time
     Float_t _du; // track-cluster match separation in 'u' direction
     Float_t _dv; // track-cluster match separation in 'v' direction
-    Float_t _ds; // path through crystal (?) 
+    Float_t _ds; // path through crystal (?)
     Float_t _ep; // track-cluster match E/p
     Float_t _uvChisq; // chisquared from UV match
     Float_t _tChisq; // chisquared from time match
@@ -42,15 +42,15 @@ namespace mu2e
     XYZVectorF _tpos; // extrapolated track position near calorimeter cluster
     XYZVectorF _tdir; // extrapolated track position near calorimeter cluster
     Float_t _ttrk; // track time at intersection point
-    static string leafnames() { 
+    static string leafnames() {
       static string leaves;
-      leaves = 
-      string("dt/F:du/F:dv/F:ds/F:ep/F:uvchisq/F:tchisq/F:dtllr/F:epllr/F:") + // matching info
-      string("eclust/F:tclust/F:section/I:") + // cluster information
-      XYZnames("cpos").c_str() + string(":") +
-      XYZnames("tpos").c_str() + string(":") +
-      XYZnames("tdir").c_str() + string(":") +
-      string("ttrk/F");
+      leaves =
+        string("dt/F:du/F:dv/F:ds/F:ep/F:uvchisq/F:tchisq/F:dtllr/F:epllr/F:") + // matching info
+        string("eclust/F:tclust/F:section/I:") + // cluster information
+        XYZnames("cpos").c_str() + string(":") +
+        XYZnames("tpos").c_str() + string(":") +
+        XYZnames("tdir").c_str() + string(":") +
+        string("ttrk/F");
       return leaves;
     }
 

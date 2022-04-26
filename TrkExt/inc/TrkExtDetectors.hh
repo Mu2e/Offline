@@ -22,32 +22,32 @@ namespace mu2e {
       Undefined = -1,
       ToyDS = 0,
       ProtonAbsorber = 1,
-      StoppingTarget = 2 
+      StoppingTarget = 2
     };
   };
 
   class TrkExtDetectors : public TrkExtShape
   {
 
-  public:
-    TrkExtDetectors() ;
-    ~TrkExtDetectors() { }
+    public:
+      TrkExtDetectors() ;
+      ~TrkExtDetectors() { }
 
-    void initialize () ;
-    bool contains (CLHEP::Hep3Vector& p) ;
-    TrkExtDetectorList::Enum volumeId(CLHEP::Hep3Vector &xx) ;
-    double limit() { return _limit; }
-    double mostProbableEnergyLoss (const CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid = TrkExtDetectorList::Undefined) ;
-    double meanEnergyLoss (const CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid = TrkExtDetectorList::Undefined) ;
-    double scatteringAngle (const CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) ;
-    CLHEP::Hep3Vector intersection (const CLHEP::Hep3Vector & x1, const CLHEP::Hep3Vector & x2) ;
+      void initialize () ;
+      bool contains (CLHEP::Hep3Vector& p) ;
+      TrkExtDetectorList::Enum volumeId(CLHEP::Hep3Vector &xx) ;
+      double limit() { return _limit; }
+      double mostProbableEnergyLoss (const CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid = TrkExtDetectorList::Undefined) ;
+      double meanEnergyLoss (const CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid = TrkExtDetectorList::Undefined) ;
+      double scatteringAngle (const CLHEP::Hep3Vector& p, double ds, TrkExtDetectorList::Enum volid) ;
+      CLHEP::Hep3Vector intersection (const CLHEP::Hep3Vector & x1, const CLHEP::Hep3Vector & x2) ;
 
 
-  private:
+    private:
 
-    TrkExtToyDS _ds;
-    TrkExtProtonAbsorber _pa;
-    TrkExtStoppingTarget _st;
+      TrkExtToyDS _ds;
+      TrkExtProtonAbsorber _pa;
+      TrkExtStoppingTarget _st;
 
   };
 

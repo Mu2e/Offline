@@ -19,7 +19,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 //fcl
 #include "fhiclcpp/types/Atom.h"
@@ -98,10 +97,10 @@ namespace mu2e
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
     } 
     //construct GUI:
-
     const DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, _filler.addTrkHits_, _filler.addTimeClusters_, false, _filler.addMCTraj_); 
     
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts, _show);
+
     //build 2D geometries (now optional):
     if(DrawOpts.addCRVInfo)_frame->CreateCRVProjection();
     if(DrawOpts.addClusters or DrawOpts.addCryHits) _frame->CreateCaloProjection();

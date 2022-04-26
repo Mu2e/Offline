@@ -18,22 +18,22 @@ namespace mu2e {
     typedef std::list<StrawCluster> StrawClusterList;
     class StrawClusterSequence {
       public:
-	// constructors
-	StrawClusterSequence();
-	StrawClusterSequence(StrawCluster const& clust);
-	StrawClusterSequence(StrawId const& sid, StrawEnd end);
-	StrawClusterSequence(StrawClusterSequence const& other);
-	StrawClusterSequence& operator =(StrawClusterSequence const& other);
-	// accessors: just hand over the list!
-	StrawClusterList const& clustList() const { return _clist; }
-	// insert a new clust, in time order.
-	StrawClusterList::iterator insert(StrawCluster const& clust);
-	StrawId const& strawId() const { return _strawId; }
-	StrawEnd const& strawEnd() const { return _end; }
+        // constructors
+        StrawClusterSequence();
+        StrawClusterSequence(StrawCluster const& clust);
+        StrawClusterSequence(StrawId const& sid, StrawEnd end);
+        StrawClusterSequence(StrawClusterSequence const& other);
+        StrawClusterSequence& operator =(StrawClusterSequence const& other);
+        // accessors: just hand over the list!
+        StrawClusterList const& clustList() const { return _clist; }
+        // insert a new clust, in time order.
+        StrawClusterList::iterator insert(StrawCluster const& clust);
+        StrawId const& strawId() const { return _strawId; }
+        StrawEnd const& strawEnd() const { return _end; }
       private:
-	StrawId _strawId;
-	StrawEnd _end;
-	StrawClusterList _clist; // time-ordered sequence of clusts
+        StrawId _strawId;
+        StrawEnd _end;
+        StrawClusterList _clist; // time-ordered sequence of clusts
     };
   }
 }

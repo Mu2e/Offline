@@ -1,2 +1,0 @@
-physics.filters.tprHelixCalibIPADeMTCFilter.requireCaloCluster : false
-physics.filters.tprHelixCalibIPADeMTCFilter.minNHits           : 10.0

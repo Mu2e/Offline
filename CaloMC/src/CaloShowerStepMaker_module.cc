@@ -19,7 +19,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 #include "canvas/Utilities/InputTag.h"
@@ -137,7 +136,7 @@ namespace mu2e {
          bool                                     compressData_;
          double                                   eDepThreshold_;
          int                                      diagLevel_;
-         const PhysicalVolumeInfoMultiCollection* vols_;
+         const PhysicalVolumeInfoMultiCollection* vols_ = nullptr;
          double                                   zSliceSize_;
 
          diagSummary                              diagSummary_;
@@ -246,7 +245,7 @@ namespace mu2e {
   void CaloShowerStepMaker::makeCompressedHits(const HandleVector& crystalStepsHandle, 
                                                CaloShowerStepCollection& caloShowerStepMCs,SimParticlePtrCollection& simsToKeep)
   {
-      PhysicalVolumeMultiHelper vi(*vols_);
+      PhysicalVolumeMultiHelper vi(vols_);
 
       const Calorimeter& cal = *(GeomHandle<Calorimeter>());
       zSliceSize_            = cal.caloInfo().getDouble("crystalZLength")/float(numZSlices_)+1e-5;

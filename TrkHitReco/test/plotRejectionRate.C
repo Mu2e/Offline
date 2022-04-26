@@ -23,25 +23,25 @@ void computeRejectionGraph(TH1F &electronHist, TH1F &protonHist, const int numbe
 
 void plotRejectionRate()
 {
-	const int numberOfBins = 400;
-	TFile f("FitDataProtonMultiplePeaks.root");
-	TTree* protonMultiplePeaksTree = (TTree*) gDirectory->Get("FitTree");
-        TH1F protonMultiplePeaksHist = TH1F("protonMultiplePeaksHist","protonMultiplePeaksHist",numberOfBins,0.0,0.2); 
- 
-	TFile g("FitDataElectronMultiplePeaks.root");
-	TTree* electronMultiplePeaksTree = (TTree*) gDirectory->Get("FitTree");
-	TH1F electronMultiplePeaksHist = TH1F("electronMultiplePeaksHist","electronMultiplePeaksHist",numberOfBins,0.0,0.2);
+  const int numberOfBins = 400;
+  TFile f("FitDataProtonMultiplePeaks.root");
+  TTree* protonMultiplePeaksTree = (TTree*) gDirectory->Get("FitTree");
+  TH1F protonMultiplePeaksHist = TH1F("protonMultiplePeaksHist","protonMultiplePeaksHist",numberOfBins,0.0,0.2);
 
-	TGraph rejectionMultiplePeaksGraph;
-	computeRejectionGraph(electronMultiplePeaksHist, protonMultiplePeaksHist, numberOfBins, rejectionMultiplePeaksGraph);
-	rejectionMultiplePeaksGraph.Draw("apl");
+  TFile g("FitDataElectronMultiplePeaks.root");
+  TTree* electronMultiplePeaksTree = (TTree*) gDirectory->Get("FitTree");
+  TH1F electronMultiplePeaksHist = TH1F("electronMultiplePeaksHist","electronMultiplePeaksHist",numberOfBins,0.0,0.2);
 
-/**
-	TFile h("FitDataProtonSum.root");
-	TFile k("FitDataElectronSum.root");
-	
-	TH1F electronHist25ns8 = TH1F("electronHist25ns8","electronHist25ns8",numberOfBins,0.0,0.2);
-**/	 
+  TGraph rejectionMultiplePeaksGraph;
+  computeRejectionGraph(electronMultiplePeaksHist, protonMultiplePeaksHist, numberOfBins, rejectionMultiplePeaksGraph);
+  rejectionMultiplePeaksGraph.Draw("apl");
+
+  /**
+    TFile h("FitDataProtonSum.root");
+    TFile k("FitDataElectronSum.root");
+
+    TH1F electronHist25ns8 = TH1F("electronHist25ns8","electronHist25ns8",numberOfBins,0.0,0.2);
+   **/
 
 }
 

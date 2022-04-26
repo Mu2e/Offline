@@ -9,7 +9,7 @@ using namespace std;
 namespace mu2e {
 
   StrawPhysics::ptr_t StrawPhysicsMaker::fromFcl(StrawDrift::cptr_t strawDrift) {
-    
+
     // integrate the number of ionizations
     double ptot = 0.0;
     std::vector<double> nProb = _config.probPerCharge();
@@ -33,7 +33,7 @@ namespace mu2e {
       EIonize[iion] = esum;
     }
 
-    // now compute the average charge and energy per ionization 
+    // now compute the average charge and energy per ionization
     // from these distributions
     double NAverage = 0.0;
     double EAverage = 0.0;
@@ -46,11 +46,11 @@ namespace mu2e {
 
       double ionizationEnergy = 0.0;
       if(nele >=1 && nele <= EIonize.size()) {
-	ionizationEnergy = EIonize[nele-1];
+        ionizationEnergy = EIonize[nele-1];
       } else if(nele<1) {
-	ionizationEnergy = 0.0;
+        ionizationEnergy = 0.0;
       } else {
-	ionizationEnergy = EIonize.back();
+        ionizationEnergy = EIonize.back();
       }
 
       EAverage += nprob*ionizationEnergy/nele;
@@ -58,25 +58,25 @@ namespace mu2e {
     }
 
     auto ptr = std::make_shared<StrawPhysics>(
-		 EIonize,
-		 _config.meanFreePath(), _config.ionizedElectronKE(), 
-		 _config.electronCharge(),
-		 intNProb,
-		 _config.gasGain(), _config.polyaA(),
-		 _config.gainRMSSlope(),_config.nGainGauss(),
-		 _config.propagationVelocity(),
-		 NAverage,
-		 EAverage,
-		 _config.clusterDriftPolynomial(),
-		 _config.driftTimeVariance(),
-		 _config.useNonLinearDrift(),
-		 _config.bFieldOverride(),
-		 strawDrift);
- 
+        EIonize,
+        _config.meanFreePath(), _config.ionizedElectronKE(),
+        _config.electronCharge(),
+        intNProb,
+        _config.gasGain(), _config.polyaA(),
+        _config.gainRMSSlope(),_config.nGainGauss(),
+        _config.propagationVelocity(),
+        NAverage,
+        EAverage,
+        _config.clusterDriftPolynomial(),
+        _config.driftTimeVariance(),
+        _config.useNonLinearDrift(),
+        _config.bFieldOverride(),
+        strawDrift);
+
 
     return ptr;
   }
- 
+
 }
 
 

@@ -16,12 +16,12 @@ namespace mu2e {
 
   class FixedAmbigResolver : public AmbigResolver {
     public:
-// construct from parameter set
+      // construct from parameter set
 #ifndef __GCCXML__
-    explicit FixedAmbigResolver(fhicl::ParameterSet const& pset,double tmpErr);
+      explicit FixedAmbigResolver(fhicl::ParameterSet const& pset,double tmpErr);
 #endif/*__GCCXML__*/
       virtual ~FixedAmbigResolver();
-    virtual bool resolveTrk(KalRep* kfit) const;
+      virtual bool resolveTrk(KalRep* kfit) const;
     private:
       bool _neutralize; // if true, set the initial ambiguity to 0
   };

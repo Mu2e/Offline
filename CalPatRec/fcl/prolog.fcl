@@ -49,7 +49,7 @@ CalPatRec : { @table::CalPatRec
 	smartTag                                : 1
 	diagLevel                               : 0
 	HelixFitSelectionBits                   : []
-	BackgroundSelectionBits                 : ["Background"]
+	BackgroundSelectionBits                 : ["Background","Noisy","Dead"]
 	maxElectronHitEnergy                    : 0.005           # 5 KeV, in MeV
 	minNHit                                 : @local::CalPatRec.minNStrawHits       # minimal number of hits on found helix
 	hitChi2Max                              : @local::CalPatRec.chi2HitCut
@@ -326,10 +326,11 @@ CalPatRec : { @table::CalPatRec
 	    fitdirection                                : @local::FitDir.downstream
 	    KalFit                                      : { @table::CalPatRec.CprKFFinal }
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	    AddHitBackgroundBits                        : ["Dead"]
 	    diagPlugin : { tool_type  : "KalFinalFitDiag"
 		mcTruth       : 0
 		mcUtils       : { @table::TrkReco.McUtils }
-	    }
+    }
 	}
 
 	MergeHelixFinder : { module_type:MergeHelixFinder
@@ -520,13 +521,12 @@ CalPatRec : { @table::CalPatRec
 	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
 	    caloClusterModuleLabel                      : CaloClusterMaker
 	    HitSelectionBits                            : []
-	    BackgroundSelectionBits                     : []
+	    BackgroundSelectionBits                     : ["Noisy","Dead"]
 	    MinNHits                                    : @local::CalPatRec.minNStrawHits
-	    DtMin                                       : -30.   # value before 2017-11-17 was -40. ns
-	    DtMax                                       :  30.   # 2018-07-29 P.M.: DtMax=20ns was cutting out a few percent of hits
+	    DtMin                                       : -20.   # value before 2022-02-14 was -30. ns
+	    DtMax                                       :  20.   # value before 2022-02-14 was 30. ns
 	    minClusterEnergy                            : 50.    # MeV
 	    minClusterSize                              : 2      # number of crystals
-	    minClusterTime                              : 500.   # ns
 	    pitchAngle                                  : 0.67   # mean pitch for CE
 	    beta                                        : 1.0    # for muon reco needs to be changed
 	    dtOffset                                    : @local::TrackCaloMatching.DtOffset

@@ -9,7 +9,6 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // C++ includes.
 #include <iostream>

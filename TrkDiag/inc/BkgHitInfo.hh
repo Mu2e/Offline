@@ -4,9 +4,9 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Rtypes.h"
 namespace mu2e {
-// extend StrawHitInfo struct with additional info on background hits
+  // extend StrawHitInfo struct with additional info on background hits
   struct BkgHitInfo : public StrawHitInfo {
-    Float_t _gdist; // generalized distance 
+    Float_t _gdist; // generalized distance
     Float_t _rrho; // transverse distance to cluster center
     Float_t _rerr; // estimated error on transverse distance
     Int_t _index; // index into StrawHit collection

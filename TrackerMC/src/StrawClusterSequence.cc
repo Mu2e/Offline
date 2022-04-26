@@ -29,9 +29,9 @@ namespace mu2e {
 
     StrawClusterSequence& StrawClusterSequence::operator =(StrawClusterSequence const& other) {
       if(&other != this){
-	_strawId = other._strawId;
-	_end = other._end;
-	_clist = other._clist;
+        _strawId = other._strawId;
+        _end = other._end;
+        _clist = other._clist;
       }
       return *this;
     }
@@ -39,30 +39,30 @@ namespace mu2e {
     StrawClusterList::iterator StrawClusterSequence::insert(StrawCluster const& clust) {
       StrawClusterList::iterator retval = _clist.end();
       if(clust.type() == StrawCluster::unknown){
-	throw cet::exception("SIM")
-	  << "mu2e::StrawClusterSequence: tried to add unknown clust type"
-	  << endl;
-	return retval;
+        throw cet::exception("SIM")
+          << "mu2e::StrawClusterSequence: tried to add unknown clust type"
+          << endl;
+        return retval;
       }
       // make sure the straw and end are the same
       if(!_clist.empty() && (clust.strawId() != strawId()
-	    || clust.strawEnd() != strawEnd())){
-	throw cet::exception("SIM")
-	  << "mu2e::StrawClusterSequence: tried to add clust from a different straw/end to a sequence"
-	  << endl;
-	return retval;
+            || clust.strawEnd() != strawEnd())){
+        throw cet::exception("SIM")
+          << "mu2e::StrawClusterSequence: tried to add clust from a different straw/end to a sequence"
+          << endl;
+        return retval;
       }
       if(_clist.empty()){
-	_clist.push_front(clust);
-	_strawId = clust.strawId();
-	_end = clust.strawEnd();
-	retval = _clist.begin();
+        _clist.push_front(clust);
+        _strawId = clust.strawId();
+        _end = clust.strawEnd();
+        retval = _clist.begin();
       } else {
-	// loop over the contents and insert in the correct place
-	StrawClusterList::iterator ibefore = _clist.begin();
-	while(ibefore != _clist.end() && ibefore->time() < clust.time())
-	  ++ibefore;
-	retval = _clist.insert(ibefore,clust);
+        // loop over the contents and insert in the correct place
+        StrawClusterList::iterator ibefore = _clist.begin();
+        while(ibefore != _clist.end() && ibefore->time() < clust.time())
+          ++ibefore;
+        retval = _clist.insert(ibefore,clust);
       }
       return retval;
     }

@@ -10,72 +10,72 @@ TTPBTFSD : {
 }
 
 TTmakeSH : {
-    module_type             : StrawHitReco
-    minimumTime             : 0.0 # accept all digis
-    maximumTime             : 100.0e3 # allow offspill events
-    FitType                 : 5
-    FilterHits              : true
-    WriteStrawHitCollection : false
-    ProtonBunchTimeTag      : "EWMProducer"
-    StrawDigiCollectionTag  : "makeSD"
-    CaloClusterCollectionTag  : "CaloClusterFast"
-    StrawDigiADCWaveformCollectionTag : "notUsed"
+  module_type             : StrawHitReco
+  minimumTime             : 0.0 # accept all digis
+  maximumTime             : 100.0e3 # allow offspill events
+  FitType                 : 5
+  FilterHits              : true
+  WriteStrawHitCollection : false
+  ProtonBunchTimeTag      : "EWMProducer"
+  StrawDigiCollectionTag  : "makeSD"
+  CaloClusterCollectionTag  : "CaloClusterFast"
+  StrawDigiADCWaveformCollectionTag : "notUsed"
 }
 # combine hits in a panel
 TTmakePH : {
-    module_type             : CombineStrawHits
-    TestFlag                : false
-    TestRadius              : true
-    ComboHitCollection      : "TTmakeSH"
-    StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
-    StrawHitMask          : []
-    MaxDt                 : 40
-    UseTOT                : false
-    MaxWireDistDiffPull   : 4.0
-    TransError            : 8.0
-    MaxDS                 : 3
-    WireError             : 10.0
-    MinimumRadius         : 395.0
-    MaximumRadius         : 650.0
+  module_type             : CombineStrawHits
+  TestFlag                : false
+  TestRadius              : true
+  ComboHitCollection      : "TTmakeSH"
+  StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
+  StrawHitMask          : []
+  MaxDt                 : 40
+  UseTOT                : false
+  MaxWireDistDiffPull   : 4.0
+  TransError            : 8.0
+  MaxDS                 : 3
+  WireError             : 10.0
+  MinimumRadius         : 395.0
+  MaximumRadius         : 650.0
 }
 TTmakeSHUCC : {
-    module_type             : StrawHitReco
-    FitType                 : 5
-    UseCalorimeter          : true
-    FilterHits              : true
-    WriteStrawHitCollection : false
-    ProtonBunchTimeTag      : "EWMProducer"
-    StrawDigiCollectionTag  : "makeSD"
-    StrawDigiADCWaveformCollectionTag : "makeSD"
-    CaloClusterCollectionTag  : "CaloClusterFast"
+  module_type             : StrawHitReco
+  FitType                 : 5
+  UseCalorimeter          : true
+  FilterHits              : true
+  WriteStrawHitCollection : false
+  ProtonBunchTimeTag      : "EWMProducer"
+  StrawDigiCollectionTag  : "makeSD"
+  StrawDigiADCWaveformCollectionTag : "makeSD"
+  CaloClusterCollectionTag  : "CaloClusterFast"
 }
 # combine hits in a panel
 TTmakePHUCC : {
-    module_type             : CombineStrawHits
-    TestFlag                : false
-    TestRadius              : true
-    ComboHitCollection      : "TTmakeSHUCC"
-    StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
-    StrawHitMask          : []
-    MaxDt                 : 40
-    UseTOT                : false
-    MaxWireDistDiffPull   : 4.0
-    TransError            : 8.0
-    MaxDS                 : 3
-    WireError             : 10.0
-    MinimumRadius         : 395.0
-    MaximumRadius         : 650.0
+  module_type             : CombineStrawHits
+  TestFlag                : false
+  TestRadius              : true
+  ComboHitCollection      : "TTmakeSHUCC"
+  StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
+  StrawHitMask          : []
+  MaxDt                 : 40
+  UseTOT                : false
+  MaxWireDistDiffPull   : 4.0
+  TransError            : 8.0
+  MaxDS                 : 3
+  WireError             : 10.0
+  MinimumRadius         : 395.0
+  MaximumRadius         : 650.0
 }
 # stereo version: defer the radius test
 TTSmakePH : {
-    @table::TTmakePH
-    TestRadius : false
+  @table::TTmakePH
+  TestRadius : false
 }
 # combine panel hits in a station
 TTmakeSTH : {
-    @table::makeSTH
-    TestFlag           : false
-    ComboHitCollection : "TTSmakePH"
+  @table::makeSTH
+  TestFlag           : false
+  ComboHitCollection : "TTSmakePH"
 }
 TTflagBkgHits : {
   @table::FlagBkgHits
@@ -88,33 +88,33 @@ TTflagBkgHits : {
 
 # stereo versions
 TTSflagBkgHits : {
-    @table::TTflagBkgHits
-    ComboHitCollection : TTSmakePH
+  @table::TTflagBkgHits
+  ComboHitCollection : TTSmakePH
 }
 
 # combine together
 TrkHitRecoTrigger : {
-    producers : {
-	TTPBTFSD            : { @table::TTPBTFSD             }
-	TTmakeSH            : { @table::TTmakeSH             }
-	TTmakePH            : { @table::TTmakePH             }
-	TTmakeSHUCC         : { @table::TTmakeSHUCC          }
-	TTmakePHUCC         : { @table::TTmakePHUCC          }
-	TTmakeSTH           : { @table::TTmakeSTH            }
-	TTflagBkgHits	    : { @table::TTflagBkgHits        }
-	TTflagBkgHitsUCC    : { @table::TTflagBkgHits
-	        ComboHitCollection : TTmakePHUCC
-	}
+  producers : {
+    TTPBTFSD            : { @table::TTPBTFSD             }
+    TTmakeSH            : { @table::TTmakeSH             }
+    TTmakePH            : { @table::TTmakePH             }
+    TTmakeSHUCC         : { @table::TTmakeSHUCC          }
+    TTmakePHUCC         : { @table::TTmakePHUCC          }
+    TTmakeSTH           : { @table::TTmakeSTH            }
+    TTflagBkgHits     : { @table::TTflagBkgHits        }
+    TTflagBkgHitsUCC    : { @table::TTflagBkgHits
+      ComboHitCollection : TTmakePHUCC
     }
+  }
 
-    # SEQUENCES
-    # production sequence to prepare hits for tracking
-    sequences: {
-	TTprepareHits     : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
-	TTprepareHitsUCC  : [ TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
-	TTmakefastHits    : [ TTmakeSH, TTmakePH ]
-	TTSprepareHits    : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
-    }
+  # SEQUENCES
+  # production sequence to prepare hits for tracking
+  sequences: {
+    TTprepareHits     : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
+    TTprepareHitsUCC  : [ TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
+    TTmakefastHits    : [ TTmakeSH, TTmakePH ]
+    TTSprepareHits    : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
+  }
 }
 
 END_PROLOG

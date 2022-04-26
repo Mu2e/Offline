@@ -1,18 +1,18 @@
 
 #include "Offline/Validation/inc/TValPar.hh"
 
-//ClassImp(TValPar)
+// ClassImp(TValPar)
 
 //_____________________________________________________________________________
 void TValPar::SetIndependent(Int_t x) {
-  fIndep = x; 
+  fIndep = x;
   // if the loose and tight were set by user, don't overwrite
-  if(!fChanged) {
-    if(fIndep==0) {
-      fLoose = 0.99; 
+  if (!fChanged) {
+    if (fIndep == 0) {
+      fLoose = 0.99;
       fTight = 0.999;
     } else {
-      fLoose = 0.001; 
+      fLoose = 0.001;
       fTight = 0.01;
     }
   }
@@ -29,4 +29,3 @@ void TValPar::Clear(Option_t* Opt) {
   fTight = 0.999;
   fChanged = false;
 }
-

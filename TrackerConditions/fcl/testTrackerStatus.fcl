@@ -1,0 +1,26 @@
+#include "Offline/fcl/standardServices.fcl"
+process_name : TestTrackerStatus
+
+source : {
+  module_type : EmptyEvent
+}
+services : @local::Services.Core
+
+physics : {
+  analyzers : {
+    trkgeomtest : {
+      module_type : TrkGeomTest
+      printLevel : 1
+      diagLevel : 1
+    }
+  }
+  e1        : [trkgeomtest]
+  end_paths : [e1]
+}
+
+services.ProditionsService.trackerStatus.Settings.useDb: true
+services.ProditionsService.trackerStatus.Settings.verbose: 2
+services.DbService.textFile : ["RandomTrackerStatus.txt" ]
+services.DbService.verbose: 2
+
+services.TFileService.fileName: "/dev/null"

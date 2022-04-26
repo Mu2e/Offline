@@ -5,7 +5,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/fwd.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -40,11 +39,11 @@
 
 #include "TTree.h"
 
-using namespace std; 
-using CLHEP::HepVector; 
-using CLHEP::Hep3Vector; 
- 
-namespace mu2e 
+using namespace std;
+using CLHEP::HepVector;
+using CLHEP::Hep3Vector;
+
+namespace mu2e
 {
 
   TrkExtDiag::TrkExtDiag(fhicl::ParameterSet const& pset) :
@@ -155,19 +154,19 @@ namespace mu2e
     _extdiag->Branch ("extstdp", _extstdp, "extstdp[nextst]/F");
     _extdiag->Branch ("extstdptot", &_extstdptot, "extstdptot/F");
     // trkext - vd
-    _extdiag->Branch ("extvdsi", &_extvdsi, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i"); 
-    _extdiag->Branch ("extvdso", &_extvdso, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i"); 
-    _extdiag->Branch ("extvdtf", &_extvdtf, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i"); 
-    _extdiag->Branch ("extvdtm", &_extvdtm, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i"); 
-    _extdiag->Branch ("extvdtb", &_extvdtb, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i"); 
+    _extdiag->Branch ("extvdsi", &_extvdsi, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i");
+    _extdiag->Branch ("extvdso", &_extvdso, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i");
+    _extdiag->Branch ("extvdtf", &_extvdtf, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i");
+    _extdiag->Branch ("extvdtm", &_extvdtm, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i");
+    _extdiag->Branch ("extvdtb", &_extvdtb, "r[2]/F:p[2]/F:d0[2]/F:p0[2]/F:om[2]/F:z0[2]/F:td[2]/F:er[2]/F:ep[2]/F:ed0[2]/F:ep0[2]/F:eom[2]/F:ez0[2]/F:etd[2]/F:status/i");
     // trkext - turn around point
     _extdiag->Branch ("extitp", &_extitp, "extitp/I");
     _extdiag->Branch ("exttp", &_exttp, "x/F:y:z:px:py:pz:t:s:volid/I");
-;
+    ;
     return _extdiag;
   }
 
-  void TrkExtDiag::setRunInfo(){ 
+  void TrkExtDiag::setRunInfo(){
     GeomHandle<DetectorSystem> det;
     _origin = det->toMu2e( CLHEP::Hep3Vector(0.,0.,0.) );   // add this to transfer detector coord. to mu2e coord.
     _vdzsi = _vdzso = _vdztf = _vdztm = _vdztb = 0;
@@ -179,7 +178,7 @@ namespace mu2e
     _vdztb = (vd->getGlobal(VirtualDetectorId::TT_Back) - _origin).z();
   }
 
-  void TrkExtDiag::setSubRunInfo(){ 
+  void TrkExtDiag::setSubRunInfo(){
     _bfMgr = GeomHandle<BFieldManager>().get();
   }
 
@@ -221,7 +220,7 @@ namespace mu2e
   double TrkExtDiag::findTurnAroundSim (int i, double f1, double f2, double f3) {
     double a = 0.5*f1 - f2 + 0.5*f3;
     double b = -0.5*f1*(2*i+1) + f2*(2*i) - 0.5*f3*(2*i-1);
-    if (a!=0) return -b/2./a; 
+    if (a!=0) return -b/2./a;
     else return 0;
   }
 
@@ -243,7 +242,7 @@ namespace mu2e
       else return 0.5*(r1+r2);
     }
     else {
-      return 0; 
+      return 0;
     }
   }
 
@@ -299,11 +298,11 @@ namespace mu2e
     _nsim = 0;
     _simp0 = _simt0 = 0;
     _nmcpa = _nmcst = 0;
-    _vdsi.status = 0; 
-    _vdso.status = 0; 
-    _vdtf.status = 0; 
-    _vdtm.status = 0; 
-    _vdtb.status = 0; 
+    _vdsi.status = 0;
+    _vdso.status = 0;
+    _vdtf.status = 0;
+    _vdtm.status = 0;
+    _vdtb.status = 0;
     _next = 0;
     _nextpa = _nextst = 0;
     _extpadptot =  _extstdptot = 0;
@@ -373,9 +372,9 @@ namespace mu2e
     _trk0.td = parl0.tanDip();
     const HepSymMatrix & cov0 = parl0.covariance();
     _trk0.ed0 = sqrt(cov0(1,1));
-    _trk0.ep0 = sqrt(cov0(2,2)); 
+    _trk0.ep0 = sqrt(cov0(2,2));
     _trk0.eom = sqrt(cov0(3,3));
-    _trk0.ez0 = sqrt(cov0(4,4)); 
+    _trk0.ez0 = sqrt(cov0(4,4));
     _trk0.etd = sqrt(cov0(5,5));
     HelixParams parl1 = krep.helix(_trkl1);
     _trk1.d0 = parl1.d0();
@@ -385,9 +384,9 @@ namespace mu2e
     _trk1.td = parl1.tanDip();
     const HepSymMatrix & cov1 = parl1.covariance();
     _trk1.ed0 = sqrt(cov1(1,1));
-    _trk1.ep0 = sqrt(cov1(2,2)); 
+    _trk1.ep0 = sqrt(cov1(2,2));
     _trk1.eom = sqrt(cov1(3,3));
-    _trk1.ez0 = sqrt(cov1(4,4)); 
+    _trk1.ez0 = sqrt(cov1(4,4));
     _trk1.etd = sqrt(cov1(5,5));
     return (unsigned int)i;
   }
@@ -434,7 +433,7 @@ namespace mu2e
         cerr << "TrkExtDiag warning : matching straw hit not found" << endl;
         continue;
       }
-  
+
       art::Handle<PtrStepPointMCVectorCollection> stepsCHandle;
       evt.getByLabel(_makerModuleLabel, "StrawHitMCPtr", stepsCHandle);
       if (!(stepsCHandle.isValid())) {
@@ -442,40 +441,40 @@ namespace mu2e
         continue;
       }
       PtrStepPointMCVectorCollection const & stepsC = *stepsCHandle;
-  
+
       if (stepsC.size() <=0) {
         cerr << "TrkExtDiag warning : no stepsC" << endl;
         continue;
       }
-  
+
       PtrStepPointMCVector const & steps (stepsC.at(hitid));
-  
+
       if (steps.size() <=0) {
         cerr << "TrkExtDiag warning : no steps" << endl;
         continue;
       }
-  
+
       StepPointMC const & step = *steps.at(0);
-  
+
       SimParticle const &sim = *step.simParticle();
-      
+
       cet::map_vector_key simid =  sim.id();
-  
-//      art::Handle<PointTrajectoryCollection> trajHandle;
-//      evt.getByLabel(_g4ModuleLabel, trajHandle);
-//      if (!(trajHandle.isValid())) {
-//        cerr << "TrkExtDiag warning : tragHandle invalid" << endl;
-//        continue;
-//      }
-//
-//      const PointTrajectoryCollection & trajC = *trajHandle;
-// 
-//      const PointTrajectory* traj = trajC.getOrNull(simid);
-//      if (traj == nullptr) {
-//        cerr << "TrkExtDiag warning : traj invalid" << endl;
-//        continue;
-//      }
-//  
+
+      //      art::Handle<PointTrajectoryCollection> trajHandle;
+      //      evt.getByLabel(_g4ModuleLabel, trajHandle);
+      //      if (!(trajHandle.isValid())) {
+      //        cerr << "TrkExtDiag warning : tragHandle invalid" << endl;
+      //        continue;
+      //      }
+      //
+      //      const PointTrajectoryCollection & trajC = *trajHandle;
+      //
+      //      const PointTrajectory* traj = trajC.getOrNull(simid);
+      //      if (traj == nullptr) {
+      //        cerr << "TrkExtDiag warning : traj invalid" << endl;
+      //        continue;
+      //      }
+      //
 
       //const vector<Hep3Vector>& pvec = traj->points();
       const vector<Hep3Vector> pvec; // PointTrajectoryCollection has been gone for years.  Leave a dummy variable here to not break compilation; there is a request to not remove this file.
@@ -497,7 +496,7 @@ namespace mu2e
       }
       _simtp.z = 99999;
       _simtpqual = -1;
-      
+
       for (i = 1 ; i < pvec.size()-1 ; ++i) {
         double z1 = pvec[i-1].z();
         double z2 = pvec[i].z();
@@ -509,7 +508,7 @@ namespace mu2e
             double z102 = pvec[i].z();
             double z103 = pvec[i+10].z();
             if ((z103-z102)*(z101-z102)> 0) _simtpqual = 3;
-            else _simtpqual = 2; 
+            else _simtpqual = 2;
           }
           else {
             _simtpqual = 1;
@@ -527,7 +526,7 @@ namespace mu2e
           break;
         }
       }
-  
+
       _simt0 = sim.startGlobalTime();
       _simp0 = sim.startMomentum().vect().mag();
 
@@ -661,7 +660,7 @@ namespace mu2e
         }
       }
 
-      // pa 
+      // pa
       TrkExtMCHits mcpa(evt, _g4ModuleLabel, "protonabsorber", simid);
       _nmcpa = mcpa.getNClusters();
       for (i = 0 ; i < _nmcpa ; ++i) {
@@ -707,7 +706,7 @@ namespace mu2e
       }
 
     } // end of hot loop
-  
+
     if (!readflag) {
       cerr << "TrkExtDiag Error: Cannot read MC information" << endl;
       return 0;
@@ -721,7 +720,7 @@ namespace mu2e
 
   unsigned int TrkExtDiag::readExt(const art::Event &evt, const TrkExtTraj & trkext){
     unsigned int i;
-    // trkext 
+    // trkext
     double x, y, z, px, py, pz, p, rho;
     int turnaround = -1;
     for (i = 0 ; i < trkext.size() ; ++i) {
@@ -734,9 +733,9 @@ namespace mu2e
       _extpx[i] = px = hit.px();
       _extpy[i] = py = hit.py();
       _extpz[i] = pz = hit.pz();
-      _extex[i] = hit.ex(); 
-      _extey[i] = hit.ey(); 
-      _extez[i] = hit.ez(); 
+      _extex[i] = hit.ex();
+      _extey[i] = hit.ey();
+      _extez[i] = hit.ez();
       _extepx[i] = hit.epx();
       _extepy[i] = hit.epy();
       _extepz[i] = hit.epz();
