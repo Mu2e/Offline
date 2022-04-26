@@ -37,6 +37,12 @@
 // trigger
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
+// Headers
+#include "Offline/DataProducts/inc/TimeStamp.hh"
+#include "Offline/DataProducts/inc/RunHeader.hh"
+#include "Offline/DataProducts/inc/SubRunHeader.hh"
+#include "Offline/DataProducts/inc/EventHeader.hh"
+
 // CLHEP
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"

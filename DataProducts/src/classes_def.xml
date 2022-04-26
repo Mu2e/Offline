@@ -38,6 +38,15 @@
  <class name="mu2e::EventWindowMarker" />
  <class name="art::Wrapper<mu2e::EventWindowMarker>"/>
 
+<!--  ********* Headers  ********* -->
+<class name="mu2e::TimeStamp" />
+<class name="mu2e::RunHeader" />
+<class name="mu2e::SubRunHeader" />
+<class name="mu2e::EventHeader" />
+<class name="art::Wrapper<mu2e::RunHeader>"/>
+<class name="art::Wrapper<mu2e::SubRunHeader>"/>
+<class name="art::Wrapper<mu2e::EventHeader>"/>
+
 <!--  ********* CLHEP  ********* -->
  <class name="std::vector<CLHEP::Hep2Vector>" />
 
