@@ -34,8 +34,6 @@ namespace mu2e {
 
     double nominalMomentum() const { return nominalMomentum_; }
 
-    ;
-
   private:
     ExtMonFNALMuonID();
     // An initialized instance of this class should be obtained via ExtMonFNALMuonIDMaker
