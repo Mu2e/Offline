@@ -6,8 +6,8 @@
 process_name : emfRecoTrackAnalysis
 
 source: {
-   module_type: RootInput
-   readParameterSets: false  # we neither write out a framework file, nor use pset in the current job
+    module_type: RootInput
+    readParameterSets: false  # we neither write out a framework file, nor use pset in the current job
 }
 
 services: {
@@ -19,19 +19,19 @@ services: {
 }
 
 physics: {
-   analyzers: {
-      genCountLogger: {
-         module_type: GenEventCountReader
-      }
-      patArbRecoOnly: {
-         module_type: EMFDetHistPatRec
-         patRecInTag  : "EMFTrackClusterArbiter"
-         geomModuleLabel: ""
-      }
-   }
+    analyzers: {
+        genCountLogger: {
+            module_type: GenEventCountReader
+        }
+        patArbRecoOnly: {
+            module_type: EMFDetHistPatRec
+            patRecInTag  : "EMFTrackClusterArbiter"
+            geomModuleLabel: ""
+        }
+    }
 
-   e1: [ genCountLogger, patArbRecoOnly ]
-   end_paths: [e1]
+    e1: [ genCountLogger, patArbRecoOnly ]
+    end_paths: [e1]
 }
 
 // Limit the amount of "Begin processing the ... record" messages
