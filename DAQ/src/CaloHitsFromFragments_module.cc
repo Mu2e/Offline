@@ -15,7 +15,7 @@
 #include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/RecoDataProducts/inc/IntensityInfo.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -180,7 +180,7 @@ art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<C
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
   produces<mu2e::CaloHitCollection>("caphri");
-  produces<mu2e::IntensityInfo>();
+  produces<mu2e::IntensityInfoCalo>();
 }
 
 // ----------------------------------------------------------------------
@@ -194,8 +194,8 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   std::unique_ptr<mu2e::CaloHitCollection> calo_hits(new mu2e::CaloHitCollection);
   std::unique_ptr<mu2e::CaloHitCollection> caphri_hits(new mu2e::CaloHitCollection);
 
-  //IntensityInfo
-  std::unique_ptr<mu2e::IntensityInfo>     int_info(new mu2e::IntensityInfo);
+  //IntensityInfoCalo
+  std::unique_ptr<mu2e::IntensityInfoCalo>     int_info(new mu2e::IntensityInfoCalo);
 
   size_t         totalSize(0), numCalFrags(0);
   unsigned short evtEnergy(0);
