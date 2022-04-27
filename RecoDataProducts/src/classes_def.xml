@@ -357,9 +357,12 @@
 
 
 <!--  ********* POT / stopped muons monitoring  ********* -->
-<!--  bvitali May 2021 -->
- <class name="mu2e::IntensityInfo"/>
- <class name="art::Wrapper<mu2e::IntensityInfo>"/>
+ <class name="mu2e::IntensityInfoCalo"/>
+ <class name="art::Wrapper<mu2e::IntensityInfoCalo>"/>
+ <class name="mu2e::IntensityInfoTrackerHits"/>
+ <class name="art::Wrapper<mu2e::IntensityInfoTrackerHits>"/>
+ <class name="mu2e::IntensityInfoTimeCluster"/>
+ <class name="art::Wrapper<mu2e::IntensityInfoTimeCluster>"/>
 
 
 <!--  ********* general reco ********* -->

@@ -67,7 +67,6 @@ namespace mu2e {
 
     void produce(art::Event& e) override;
 
-
   private:
     using pulseMapType = std::unordered_map<unsigned, std::vector<HitInfo>>;
     
@@ -86,7 +85,6 @@ namespace mu2e {
   };
 
  
-
   //--------------------------------------------------------------------------------------------------------------
   void CaloHitMakerFast::produce(art::Event& event)
   {
@@ -111,30 +109,6 @@ namespace mu2e {
     if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi] end"<<std::endl;
     return;
   }
-
-  //--------------------------------------------------------------------------------------------------------------
-  void CaloHitMakerFast::addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep)
-  {
-
-    bool addNewHit(true);
-    for (auto& pulse : pulseMap[crystalID])
-      {
-	if (std::fabs(pulse.time_ - time) > deltaTPulses_) continue;
-
-	float ratio  = (eDep-pulse.eDep_)/(eDep+pulse.eDep_);
-	float eMean  = (eDep+pulse.eDep_)/2.0;
-	float sigmaR = 0.707*sqrt(1.0/eMean/nPEperMeV_ + noise2_/eMean/eMean);
-
-	if (abs(ratio) > nSigmaNoise_*sigmaR) continue;
-
-	pulse.add(time,eDep); 
-	addNewHit = false;
-	break;
-      }
-    if (addNewHit) pulseMap[crystalID].push_back(HitInfo(time, eDep));  
-  }
-
-
 
   //--------------------------------------------------------------------------------------------------------------
   void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intInfo, double pbtOffset)
@@ -177,6 +151,28 @@ namespace mu2e {
     
     if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
     if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CapriDigis"<<std::endl;
+  }
+
+  //--------------------------------------------------------------------------------------------------------------
+  void CaloHitMakerFast::addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep)
+  {
+
+    bool addNewHit(true);
+    for (auto& pulse : pulseMap[crystalID])
+      {
+	if (std::fabs(pulse.time_ - time) > deltaTPulses_) continue;
+
+	float ratio  = (eDep-pulse.eDep_)/(eDep+pulse.eDep_);
+	float eMean  = (eDep+pulse.eDep_)/2.0;
+	float sigmaR = 0.707*sqrt(1.0/eMean/nPEperMeV_ + noise2_/eMean/eMean);
+
+	if (abs(ratio) > nSigmaNoise_*sigmaR) continue;
+
+	pulse.add(time,eDep); 
+	addNewHit = false;
+	break;
+      }
+    if (addNewHit) pulseMap[crystalID].push_back(HitInfo(time, eDep));  
   }
 
 }

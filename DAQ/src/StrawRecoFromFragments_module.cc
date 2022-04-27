@@ -17,7 +17,7 @@
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
-#include "Offline/RecoDataProducts/inc/IntensityInfo.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -73,7 +73,7 @@ art::StrawRecoFromFragmnets::StrawRecoFromFragmnets(const art::EDProducer::Table
     if (useTrkADC_) {
       produces<mu2e::StrawDigiADCWaveformCollection>();
     }
-    produces<mu2e::IntensityInfo>();
+    produces<mu2e::IntensityInfoTrackerHits>();
     //FIXME!
     produces<mu2e::ProtonBunchTime>();    
   }
@@ -86,8 +86,8 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   // Collection of StrawDigis for the event
   std::unique_ptr<mu2e::StrawDigiCollection>            straw_digis(new mu2e::StrawDigiCollection);
   std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> straw_digi_adcs(new mu2e::StrawDigiADCWaveformCollection);
-  // IntensityInfo
-  std::unique_ptr<mu2e::IntensityInfo>                  intInfo(new mu2e::IntensityInfo);
+  // IntensityInfoTrackerHits
+  std::unique_ptr<mu2e::IntensityInfoTrackerHits>                  intInfo(new mu2e::IntensityInfoTrackerHits);
 
   //FIXME! this is temporary
   std::unique_ptr<mu2e::ProtonBunchTime> pbt(new mu2e::ProtonBunchTime);
