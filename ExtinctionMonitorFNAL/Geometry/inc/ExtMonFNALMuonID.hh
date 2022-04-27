@@ -14,7 +14,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
-  
+
 namespace mu2e {
 
   namespace ExtMonFNAL { class ExtMonMaker; }
@@ -31,10 +31,10 @@ namespace mu2e {
     //Positioning of Muon ID Detector
     CLHEP::Hep3Vector refPointInMu2e() const { return refPointInMu2e_; }
     CLHEP::HepRotation const& muonIDRotationInMu2e() const { return muonIDRotationInMu2e_; }
-           
+
     double nominalMomentum() const { return nominalMomentum_; }
 
- ;
+    ;
 
   private:
     ExtMonFNALMuonID();
@@ -49,20 +49,19 @@ namespace mu2e {
     std::vector<double> m_motherTransverseHalfSize;
     double m_motherStartZ;
     double m_motherEndZ;
-    
+
     //Momentum, Reference point, and Rotation
 
     double nominalMomentum_;
 
     CLHEP::Hep3Vector  refPointInMu2e_;
     CLHEP::HepRotation muonIDRotationInMu2e_;
-  
+
 
   };
 
   // std::ostream& operator<<(std::ostream& os, const ExtMonFNALMuonID& muid);
 
-  }// namespace mu2e*/
+}// namespace mu2e*/
 
 #endif/*EXTMONFNALMUONID_HH*/
-
