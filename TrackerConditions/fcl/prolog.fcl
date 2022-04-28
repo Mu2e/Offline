@@ -88,6 +88,7 @@ StrawPhysics : {
 StrawElectronics : {
   verbose : 0
   useDb : false
+  overrideDbTimeOffsets : false
 
   defaultThresholddVdI : 8.43e6
   thresholddVdI : []
