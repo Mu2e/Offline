@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "Offline/RecoDataProducts/inc/STMTestBeamPacketDefns.hh"
+#include "Offline/Sources/inc/STMTestBeamHeaders.hh"
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
 
 
@@ -37,11 +37,7 @@ namespace mu2e {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
     fhicl::Sequence<std::string> inputFiles{Name("fileNames"),Comment("Input binary file")};
-    fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("Run number")};
     fhicl::Atom<unsigned int> maxEvents{Name("maxEvents"), Comment("Max number of events")};
-    fhicl::Atom<unsigned int> nTriggersPerMacropulse{Name("nTriggersPerMacropulse"), Comment("Number of triggers per macropulse")};
-    fhicl::Atom<unsigned int> nSlicesPerExtTrigger{Name("nSlicesPerExtTrigger"), Comment("Number of slices per external trigger")};
-    fhicl::Atom<unsigned int> nSlicesPerIntTrigger{Name("nSlicesPerIntTrigger"), Comment("Number of slices per internal trigger")};
 
     // These are used by art and are required.
     fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
@@ -54,22 +50,19 @@ namespace mu2e {
   class STMTestBeamDataDetail : private boost::noncopyable {
     std::string myModuleLabel_;
     art::SourceHelper const& pm_;
-    unsigned runNumber_; // from ParSet
+    unsigned runNumber_; // from file name
     art::SubRunID lastSubRunID_;
     std::set<art::SubRunID> seenSRIDs_;
-    
+
     unsigned currentFileNumber_;
     std::string currentFileName_;
     std::ifstream* currentFile_ = nullptr;
-      
+
     mu2e::STMDigiCollection digis_;
 
     unsigned currentSubRunNumber_; // from file
     unsigned currentEventNumber_;
     unsigned maxEvents_;
-    unsigned nTriggersPerMacropulse_;
-    unsigned nSlicesPerExtTrigger_;
-    unsigned nSlicesPerIntTrigger_;
 
     int printAtEvent;
 
@@ -103,21 +96,13 @@ namespace mu2e {
       art::ProductRegistryHelper& rh,
       const art::SourceHelper& pm)
     : myModuleLabel_("FromSTMTestBeamData")
-      , pm_(pm)
-      , runNumber_(conf().runNumber())
+    , pm_(pm)
+    , runNumber_(0)
     , currentFileNumber_(0)
-      , currentSubRunNumber_(-1U)
-      , currentEventNumber_(0)
-      , maxEvents_(conf().maxEvents())
-      , nTriggersPerMacropulse_(conf().nTriggersPerMacropulse())
-      , nSlicesPerExtTrigger_(conf().nSlicesPerExtTrigger())
-      , nSlicesPerIntTrigger_(conf().nSlicesPerIntTrigger())
+    , currentSubRunNumber_(-1U)
+    , currentEventNumber_(0)
+    , maxEvents_(conf().maxEvents())
   {
-    if(!art::RunID(runNumber_).isValid()) {
-      throw cet::exception("BADCONFIG", " FromSTMTestBeamData: ")
-        << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
-    }
-
     rh.reconstitutes<mu2e::STMDigiCollection,art::InEvent>(myModuleLabel_);
 
     currentSubRunNumber_ = 0;
@@ -137,6 +122,28 @@ namespace mu2e {
     if (!currentFile_->is_open()) {
       throw cet::exception("MakeSTMDigisFromBin") << "A problem opening binary file " << currentFileName_ << std::endl;
     }
+    std::string delimeter = ".";
+    size_t currentPos = 0;
+    size_t previousPos = currentPos;
+    std::vector<std::string> tokens;
+    while ( (currentPos = currentFileName_.find(delimeter, previousPos)) != std::string::npos) {
+      tokens.push_back(currentFileName_.substr(previousPos, currentPos-previousPos));
+      previousPos = currentPos+1;
+    }
+    tokens.push_back(currentFileName_.substr(previousPos, currentPos-previousPos)); // add the final token which gets missed in the above loop
+    unsigned int n_expected_fields = 6;
+    if (tokens.size() != n_expected_fields) {
+      throw cet::exception("FromSTMTestBeamData") << "Number of fields in filename (" << tokens.size() << ") is not the same number we expected (" << n_expected_fields << "). Filename = " << currentFileName_ << std::endl;
+    }
+    std::string sequencer = tokens.at(4);
+    std::string runNo = sequencer.substr(0, 6); // sequencer always has 6 characters for run
+    runNumber_ = std::stoi(runNo);
+
+    if(!art::RunID(runNumber_).isValid()) {
+      throw cet::exception("BADCONFIG", " FromSTMTestBeamData: ")
+        << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
+    }
+
     ++currentSubRunNumber_;
     currentEventNumber_ = 1;
     fb = new art::FileBlock(art::FileFormatVersion(1, "STMTestBeamDataInput"), currentFileName_);
@@ -160,44 +167,38 @@ namespace mu2e {
     if (currentFile_->eof()) {
       return false;
     }
-    managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
+
     std::unique_ptr<mu2e::STMDigiCollection> outputSTMDigis(new mu2e::STMDigiCollection);
+    STMTestBeam::TriggerHeader trigger_header[1];
+    if(currentFile_->read((char *) &trigger_header[0], sizeof(STMTestBeam::TriggerHeader))) {
+      managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
 
-    int n_triggers = nTriggersPerMacropulse_;
-    for (int i_trigger = 0; i_trigger < n_triggers; ++i_trigger) {
-      STMTestBeamTriggerHeader triggerHeader[1];
-      currentFile_->read((char *) &triggerHeader[0], sizeof(STMTestBeamTriggerHeader));
-      std::cout << triggerHeader[0] << std::endl;
+      std::cout << trigger_header[0] << std::endl;
+      if (!trigger_header[0].checkFixedHeader()) {
+        throw cet::exception("FromSTMTestBeamData") << "Fixed header word (0x" << std::setfill('0') << std::setw(8) << std::hex << (trigger_header[0].getFixedHeader()) << ") != 0xDEADBEEF" << std::endl;
+      }
 
-      auto trigger_mode = triggerHeader[0].getTriggerMode();
-      int n_slices = 0;
-      if (trigger_mode == STMTestBeamTriggerMode::kExternal) {
-	n_slices = nSlicesPerExtTrigger_;
-      }
-      else if (trigger_mode == STMTestBeamTriggerMode::kInternal) {
-	n_slices = nSlicesPerIntTrigger_;
-      }
-      else {
-	throw cet::exception("FromSTMTestBeamData") << "Unknown trigger mode: " << trigger_mode << std::endl;
-      }
-      
-      std::vector<int16_t> adcs;
+      int n_slices = trigger_header[0].getNSlices();
       for (int i_slice = 0; i_slice < n_slices; ++i_slice) {
-	STMTestBeamSliceHeader sliceHeader[1];
-	currentFile_->read((char *) &sliceHeader[0], sizeof(STMTestBeamSliceHeader));
-	//	std::cout << sliceHeader[0] << std::endl;
-	
-	uint16_t n_samples = sliceHeader[0].getNSamples();
-	int16_t data[n_samples];
-	currentFile_->read((char *) &data[0], sizeof(data));
-	for (int i_sample = 0; i_sample < n_samples; ++i_sample) {
-	  adcs.push_back(data[i_sample]);
-	}
-      }
+        STMTestBeam::SliceHeader slice_header[1];
+        if(currentFile_->read((char *) &slice_header[0], sizeof(STMTestBeam::SliceHeader))) {
+          std::cout << slice_header[0] << std::endl;
 
-      STMDigi stm_digi(0, triggerHeader[0].getMacropulseTime(), 0, 0, 0, 0, adcs);
-      outputSTMDigis->push_back(stm_digi);
+          unsigned long int n_samples = slice_header[0].getNADC();
+          std::vector<int16_t> adcs;
+          int16_t adc[1];
+          for (unsigned long int i_sample = 0; i_sample < n_samples; ++i_sample) {
+            currentFile_->read((char *) &adc[0], sizeof(int16_t));
+            adcs.push_back(adc[0]);
+          }
+
+          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, trigger_header[0].getNDroppedPackets(), adcs);
+          outputSTMDigis->push_back(stm_digi);
+        }
+        else { return false; }
+      }
     }
+    else { return false; }
 
     art::put_product_in_principal(std::move(outputSTMDigis), *outE, myModuleLabel_);
 
