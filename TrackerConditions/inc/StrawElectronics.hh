@@ -51,7 +51,7 @@ namespace mu2e {
       constexpr static const char* cxname = {"StrawElectronics"};
 
       // construct with constants, then some values are computed and filled below
-      StrawElectronics( double tdeadAnalog, double tdeadDigital, double vsat,
+      StrawElectronics( bool overrideDbTimeOffsets, double tdeadAnalog, double tdeadDigital, double vsat,
           double snoise, double ADCLSB, int maxADC, unsigned nADCPackets, unsigned nADCpre,
           double ADCPeriod, double ADCOffset,
           unsigned maxtsep,
@@ -79,6 +79,7 @@ namespace mu2e {
           double triggerHysteresis,
           double clusterLookbackTime) :
             ProditionsEntity(cxname),
+            _overrideDbTimeOffsets(overrideDbTimeOffsets),
             _tdeadAnalog(tdeadAnalog), _tdeadDigital(tdeadDigital), _vsat(vsat),
             _snoise(snoise), _ADCLSB(ADCLSB), _maxADC(maxADC), _nADCPackets(nADCPackets),
             _nADCpre(nADCpre), _ADCPeriod(ADCPeriod), _ADCOffset(ADCOffset),
@@ -210,7 +211,10 @@ namespace mu2e {
       double getTimeOffsetStrawHV(size_t istraw) const { return _timeOffsetStrawHV[istraw]; }
       double getTimeOffsetStrawCal(size_t istraw)const { return _timeOffsetStrawCal[istraw]; }
 
+      bool overrideDbTimeOffsets() const { return _overrideDbTimeOffsets; }
+
     private:
+      bool _overrideDbTimeOffsets; // for digitization we override Db parameters and zero all time offsets
 
       // generic waveform parameters
       std::array<std::array<double, StrawId::_nustraws>,npaths> _dVdI; // scale factor between charge and voltage (milliVolts/picoCoulombs)

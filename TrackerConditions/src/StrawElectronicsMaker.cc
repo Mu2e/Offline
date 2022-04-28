@@ -20,7 +20,8 @@ namespace mu2e {
 
     // creat this at the beginning since it must be used,
     // partially constructed, to complete the construction
-    auto ptr = std::make_shared<StrawElectronics>(_config.deadTimeAnalog(),
+    auto ptr = std::make_shared<StrawElectronics>(
+        _config.overrideDbTimeOffsets(), _config.deadTimeAnalog(),
         _config.deadTimeDigital(), _config.saturationVoltage(), _config.strawNoise(),
         _config.ADCLSB(), _config.maxADC(), _config.nADCPackets(), _config.nADCPresamples(),
         _config.ADCPeriod(), _config.ADCOffset(),
@@ -273,13 +274,24 @@ namespace mu2e {
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV;
     std::array<double, StrawId::_nustraws> timeOffsetStrawCal;
-    for(size_t i=0; i<StrawId::_nupanels; i++) {
-      timeOffsetPanel[i] = tdp->rowAt(i).delay();
-    }
-    for(size_t i=0; i<StrawId::_nustraws; i++) {
-      size_t istraw = i % StrawId::_nstraws;
-      timeOffsetStrawHV[i] = tdrs->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
-      timeOffsetStrawCal[i] = tdrs->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
+
+    if (ptr->overrideDbTimeOffsets()){
+      for(size_t i=0; i<StrawId::_nupanels; i++) {
+        timeOffsetPanel[i] = 0;
+      }
+      for(size_t i=0; i<StrawId::_nustraws; i++) {
+        timeOffsetStrawHV[i] = 0;
+        timeOffsetStrawCal[i] = 0;
+      }
+    }else{
+      for(size_t i=0; i<StrawId::_nupanels; i++) {
+        timeOffsetPanel[i] = tdp->rowAt(i).delay();
+      }
+      for(size_t i=0; i<StrawId::_nustraws; i++) {
+        size_t istraw = i % StrawId::_nstraws;
+        timeOffsetStrawHV[i] = tdrs->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
+        timeOffsetStrawCal[i] = tdrs->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
+      }
     }
 
     ptr->setOffsets( timeOffsetPanel,
