@@ -42,7 +42,7 @@ namespace mu2e {
     art::InputTag _stepPointMCsTag;
   };
 
-  MakeSTMSteps::MakeSTMSteps(const Parameters& config )  : 
+  MakeSTMSteps::MakeSTMSteps(const Parameters& config )  :
     art::EDProducer{config},
     _stepPointMCsTag(config().stepPointMCsTag())
   {
