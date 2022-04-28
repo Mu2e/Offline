@@ -32,6 +32,7 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<art::InputTag> stepPointMCsTag{ Name("stepPointMCsTag"), Comment("InputTag for StepPointMCCollection")};
+        fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Level of verbosity to print")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit MakeSTMSteps(const Parameters& conf);
@@ -40,11 +41,13 @@ namespace mu2e {
       void produce(art::Event& e) override;
 
     art::InputTag _stepPointMCsTag;
+    int _verbosityLevel;
   };
 
   MakeSTMSteps::MakeSTMSteps(const Parameters& config )  :
-    art::EDProducer{config},
-    _stepPointMCsTag(config().stepPointMCsTag())
+    art::EDProducer{config}
+    ,_stepPointMCsTag(config().stepPointMCsTag())
+    ,_verbosityLevel(config().verbosityLevel())
   {
     consumes<StepPointMCCollection>(_stepPointMCsTag);
     produces<STMStepCollection>();
@@ -58,13 +61,15 @@ namespace mu2e {
     double sum_edep = 0;
     for (const auto& step : *stepsHandle) {
       sum_edep += step.totalEDep();
-      auto simPtr = step.simParticle();
-      std::cout << "Step EDep = " << step.totalEDep() << " MeV" << std::endl;
-      std::cout << "SimID: " << simPtr->id() << " (pdg = " << simPtr->pdgId() << ")" << std::endl;
-      auto parentPtr = simPtr->parent();
-      while (parentPtr.isNonnull()) {
-        std::cout << "Parent SimID: " << parentPtr->id() << " (pdg = " << parentPtr->pdgId() << ")" << std::endl;
-        parentPtr = parentPtr->parent();
+      if (_verbosityLevel > 0) { // just to demonstrate how SimParticlePtrs work in case we ever get around to doing it
+        auto simPtr = step.simParticle();
+        std::cout << "Step EDep = " << step.totalEDep() << " MeV" << std::endl;
+        std::cout << "SimID: " << simPtr->id() << " (pdg = " << simPtr->pdgId() << ")" << std::endl;
+        auto parentPtr = simPtr->parent();
+        while (parentPtr.isNonnull()) {
+          std::cout << "Parent SimID: " << parentPtr->id() << " (pdg = " << parentPtr->pdgId() << ")" << std::endl;
+          parentPtr = parentPtr->parent();
+        }
       }
     }
     STMStep stm_step(sum_edep);
