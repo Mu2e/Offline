@@ -32,22 +32,22 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<art::InputTag> stmHitsTag{ Name("stmHitsTag"), Comment("InputTag for STMHitCollection")};
+        fhicl::Atom<art::InputTag> stmHitsTag{ Name("stmHitsTag"), Comment("InputTag for STMHitCollection")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMSpectrum(const Parameters& conf);
 
     private:
-    void beginJob() override; 
+    void beginJob() override;
       void analyze(const art::Event& e) override;
 
     void endJob() override;
- 
+
     art::InputTag _stmHitsTag;
     TH1D* _energySpectrum;
   };
 
-  PlotSTMSpectrum::PlotSTMSpectrum(const Parameters& config )  : 
+  PlotSTMSpectrum::PlotSTMSpectrum(const Parameters& config )  :
     art::EDAnalyzer{config},
     _stmHitsTag(config().stmHitsTag())
   {
@@ -72,7 +72,7 @@ namespace mu2e {
   }
   void PlotSTMSpectrum::endJob() {
     // Insert pain (fits) here
-    // float peaks[] = [0.123,0.162,0.245,0.344]; 
+    // float peaks[] = [0.123,0.162,0.245,0.344];
     // double peak_energy = 0.344;
     // int bin_number = _energySpectrum->GetXaxis()->FindBin(peak_energy);
     // float bin_content = _energyContent->GetBinContent(bin_number);

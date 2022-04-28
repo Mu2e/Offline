@@ -32,7 +32,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
+        fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit MakeSTMHits(const Parameters& conf);
@@ -43,7 +43,7 @@ namespace mu2e {
     art::InputTag _stmDigisTag;
   };
 
-  MakeSTMHits::MakeSTMHits(const Parameters& config )  : 
+  MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config},
     _stmDigisTag(config().stmDigisTag())
   {

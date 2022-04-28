@@ -31,7 +31,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<art::InputTag> stepPointMCsTag{ Name("stepPointMCsTag"), Comment("InputTag for StepPointMCCollection")};
+        fhicl::Atom<art::InputTag> stepPointMCsTag{ Name("stepPointMCsTag"), Comment("InputTag for StepPointMCCollection")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit MakeSTMSteps(const Parameters& conf);
@@ -63,8 +63,8 @@ namespace mu2e {
       std::cout << "SimID: " << simPtr->id() << " (pdg = " << simPtr->pdgId() << ")" << std::endl;
       auto parentPtr = simPtr->parent();
       while (parentPtr.isNonnull()) {
-	std::cout << "Parent SimID: " << parentPtr->id() << " (pdg = " << parentPtr->pdgId() << ")" << std::endl;
-	parentPtr = parentPtr->parent();
+        std::cout << "Parent SimID: " << parentPtr->id() << " (pdg = " << parentPtr->pdgId() << ")" << std::endl;
+        parentPtr = parentPtr->parent();
       }
     }
     STMStep stm_step(sum_edep);
