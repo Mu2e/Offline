@@ -64,7 +64,6 @@ class Mu2eG4DecayMuonsWithSpinPhysicsConstructor : public G4VPhysicsConstructor
 private:
   G4Decay* fDecayWithSpinProcess;
   G4int    verbose;
-  G4bool   wasActivated;
 };
 
 
