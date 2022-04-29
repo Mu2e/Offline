@@ -11,7 +11,7 @@
 #include <Rtypes.h>
 
 namespace mu2e {
-  
+
   class STMDigi {
   public:
     STMDigi() {};
