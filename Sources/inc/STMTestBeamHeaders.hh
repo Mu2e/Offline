@@ -15,8 +15,6 @@
 namespace mu2e {
 
   namespace STMTestBeam {
-    enum TriggerType { kInternal=0, kExternal=1};
-
     struct TriggerHeader {
       uint16_t deadbeef[2]; // fixed header word (= 0xDEADBEEF)
       uint16_t datasize[2]; // data size
