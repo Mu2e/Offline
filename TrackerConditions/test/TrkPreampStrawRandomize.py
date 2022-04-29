@@ -2,11 +2,9 @@
 
 import sys
 import numpy as np
+from DataProducts import StrawId
 
-NPlanes = 36
-NPanels = 6
-NStraws = 96
-NUStraws = NPlanes*NPanels*NStraws
+NUStraws = StrawId._nustraws
 
 if len(sys.argv) < 7:
   print("Usage: python TrkPreampStrawRandomize.py <output filename> <seed> <absolute time offset sigma (ns)> <deltat time offset sigma (ns)> <cal mean threshold (mv)> <mean hv-cal threshold (mv)> <cal threshold sigma (mv)> <hv threshold sigma (mv)> <mean adc gain> <adc gain sigma>")
