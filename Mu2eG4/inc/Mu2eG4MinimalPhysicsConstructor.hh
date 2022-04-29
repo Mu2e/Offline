@@ -16,6 +16,9 @@ namespace mu2e {
     Mu2eG4MinimalPhysicsConstructor();
 
     virtual ~Mu2eG4MinimalPhysicsConstructor() = default;
+    Mu2eG4MinimalPhysicsConstructor(const Mu2eG4MinimalPhysicsConstructor &) = delete;
+    Mu2eG4MinimalPhysicsConstructor & operator=(const Mu2eG4MinimalPhysicsConstructor &) = delete;
+    Mu2eG4MinimalPhysicsConstructor & operator=( Mu2eG4MinimalPhysicsConstructor && ) = delete;
 
     void ConstructParticle();
 
