@@ -58,7 +58,7 @@ namespace mu2e {
 
     for (const auto& digi : *digisHandle) {
       int tdc = digi.trigTime();
-      int adc = digi.adc0();
+      int adc = digi.adcs().at(0); // pick the first ADC as a placeholder
       float time = tdc;
       float energy = adc/10000.0;
       STMHit stm_hit(time,energy);

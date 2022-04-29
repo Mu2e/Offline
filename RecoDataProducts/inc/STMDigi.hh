@@ -14,29 +14,37 @@ namespace mu2e {
 
   class STMDigi {
   public:
-    STMDigi() {};
-    STMDigi(uint16_t trigNum, uint64_t trigTime, uint64_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, std::vector<int16_t> adcs) : _trigNum(trigNum), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop), _adcs(adcs) {};
-    STMDigi(uint16_t trigNum, uint64_t trigTime, uint64_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, int adc0) : _trigNum(trigNum), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop) { _adcs.push_back(adc0); };
-    STMDigi(uint64_t trigTime, int adc0): _trigTime(trigTime) { _adcs.push_back(adc0); };
+    STMDigi() : _trigNum(0), _trigMode(0), _channel(0), _trigTime(0), _trigTimeOffset(0), _baselineMean(0), _baselineRMS(0), _nDrop(0), _adcs(std::vector<int16_t>()){};
 
-    uint16_t trigNum() const { return _trigNum; }
+    STMDigi(uint32_t trigNum, uint16_t trigMode, uint16_t channel, uint64_t trigTime, uint32_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, std::vector<int16_t> adcs) : _trigNum(trigNum), _trigMode(trigMode), _channel(channel), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop), _adcs(adcs) {};
+
+    // Simpler constructor for the simulation
+    STMDigi(int tdc, int adc) : _trigTime(tdc), _adcs(std::vector<int16_t>()) {
+      _adcs.push_back(adc);
+    }
+
+    uint32_t trigNum() const { return _trigNum; }
+    uint16_t trigMode() const { return _trigMode; }
+    uint16_t channel() const { return _channel; }
     uint64_t trigTime() const { return _trigTime; }
-    uint64_t trigTimeOffset() const { return _trigTimeOffset; }
+    uint32_t trigTimeOffset() const { return _trigTimeOffset; }
     uint16_t baselineMean() const { return _baselineMean; }
     uint16_t baselineRMS() const { return _baselineRMS; }
     uint16_t nDrop() const { return _nDrop; }
-    int adc0() const { return _adcs.at(0); }
     const std::vector<int16_t>& adcs() const { return _adcs; }
 
   private:
-    uint16_t _trigNum;
-    uint64_t _trigTime;
-    uint64_t _trigTimeOffset;
-    uint16_t _baselineMean;
-    uint16_t _baselineRMS;
-    uint16_t _nDrop;
-    std::vector<int16_t> _adcs;
+    uint32_t _trigNum;  // trigger number
+    uint16_t _trigMode; // external (beam) or internal (source)
+    uint16_t _channel;  // HPGe or LaBr
+    uint64_t _trigTime; // trigger time [ct]
+    uint32_t _trigTimeOffset; // time offset from trigger to first ADC value [ct]
+    uint16_t _baselineMean;   // mean baseline (calculated by MWD algorithm)
+    uint16_t _baselineRMS;    // RMS of baseline (calculated by MWD algorithm)
+    uint16_t _nDrop;    // number of dropped packets
+    std::vector<int16_t> _adcs; // vector of ADC values for the waveform
   };
+
   typedef std::vector<mu2e::STMDigi> STMDigiCollection;
 }
 #endif

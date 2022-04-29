@@ -29,6 +29,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
+#include "Offline/DataProducts/inc/STMTypes.hh"
 #include "Offline/Sources/inc/STMTestBeamHeaders.hh"
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
 
@@ -69,6 +70,7 @@ namespace mu2e {
     unsigned currentEventNumber_;
     unsigned maxEvents_;
     int verbosityLevel_;
+    uint16_t channel_; // the channel (HPGe or LaBr) will be different for each file
 
     int printAtEvent;
 
@@ -144,6 +146,20 @@ namespace mu2e {
     if (tokens.size() != n_expected_fields) {
       throw cet::exception("FromSTMTestBeamData") << "Number of fields in filename (" << tokens.size() << ") is not the same number we expected (" << n_expected_fields << "). Filename = " << currentFileName_ << std::endl;
     }
+
+    // Get the channel from the configuration field
+    std::string configuration = tokens.at(3);
+    if (configuration.find("HPGe") != std::string::npos) {
+      channel_ = STMChannel::kHPGe;
+    }
+    else if (configuration.find("LaBr") != std::string::npos) {
+      channel_ = STMChannel::kLaBr;
+    }
+    else {
+      throw cet::exception("FromSTMTestBeamData") << "Cannot determine the channel from the configuration field (" << configuration << "). This should contain either \"HPGe\" or \"LaBr\"" << std::endl;
+    }
+
+    // Get the run and subrun numbers from the sequencer
     std::string sequencer = tokens.at(4);
     std::string runNo = sequencer.substr(0, 6); // sequencer always has 6 characters for run
     runNumber_ = std::stoi(runNo);
@@ -215,7 +231,7 @@ namespace mu2e {
           }
 
           // Create the STMDigi and put it in the vent
-          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, trigger_header[0].getNDroppedPackets(), adcs);
+          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigger_header[0].getTriggerMode(), channel_, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, trigger_header[0].getNDroppedPackets(), adcs);
           outputSTMDigis->push_back(stm_digi);
         }
         else { return false; }
