@@ -1,3 +1,7 @@
+//
+// Source module to read binary files from the STM test beam
+// at gELBE collected in April 2022
+//
 #include <iostream>
 #include <fstream>
 #include <boost/utility.hpp>
@@ -38,6 +42,7 @@ namespace mu2e {
     using Comment = fhicl::Comment;
     fhicl::Sequence<std::string> inputFiles{Name("fileNames"),Comment("Input binary file")};
     fhicl::Atom<unsigned int> maxEvents{Name("maxEvents"), Comment("Max number of events")};
+    fhicl::Atom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
 
     // These are used by art and are required.
     fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
@@ -63,6 +68,7 @@ namespace mu2e {
     unsigned currentSubRunNumber_; // from file
     unsigned currentEventNumber_;
     unsigned maxEvents_;
+    int verbosityLevel_;
 
     int printAtEvent;
 
@@ -102,6 +108,7 @@ namespace mu2e {
     , currentSubRunNumber_(-1U)
     , currentEventNumber_(0)
     , maxEvents_(conf().maxEvents())
+    , verbosityLevel_(conf().verbosityLevel())
   {
     rh.reconstitutes<mu2e::STMDigiCollection,art::InEvent>(myModuleLabel_);
 
@@ -116,12 +123,14 @@ namespace mu2e {
   //----------------------------------------------------------------
   void STMTestBeamDataDetail::readFile(const std::string& filename, art::FileBlock*& fb) {
 
+    // Open the input file
     currentFileName_ = filename;
-
     currentFile_ = new std::ifstream(currentFileName_.c_str(), std::ios::in | std::ios::binary);
     if (!currentFile_->is_open()) {
-      throw cet::exception("MakeSTMDigisFromBin") << "A problem opening binary file " << currentFileName_ << std::endl;
+      throw cet::exception("FromSTMTestBeamData") << "A problem opening binary file " << currentFileName_ << std::endl;
     }
+
+    // Extract the run number and subrun number from the file name
     std::string delimeter = ".";
     size_t currentPos = 0;
     size_t previousPos = currentPos;
@@ -144,7 +153,8 @@ namespace mu2e {
         << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
     }
 
-    ++currentSubRunNumber_;
+    std::string subrunNo = sequencer.substr(7, 7+8); // sequencer always has 6 characters for run followed by an underscore and then 8 characters for the sub run
+    currentSubRunNumber_ = std::stoi(subrunNo);
     currentEventNumber_ = 1;
     fb = new art::FileBlock(art::FileFormatVersion(1, "STMTestBeamDataInput"), currentFileName_);
   }
@@ -168,30 +178,43 @@ namespace mu2e {
       return false;
     }
 
+    // Create the STMDigiCollection that we will write to the art event
     std::unique_ptr<mu2e::STMDigiCollection> outputSTMDigis(new mu2e::STMDigiCollection);
+
+    // Read the trigger header
     STMTestBeam::TriggerHeader trigger_header[1];
     if(currentFile_->read((char *) &trigger_header[0], sizeof(STMTestBeam::TriggerHeader))) {
       managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
 
-      std::cout << trigger_header[0] << std::endl;
+      if(verbosityLevel_ > 0) {
+        std::cout << trigger_header[0] << std::endl;
+      }
       if (!trigger_header[0].checkFixedHeader()) {
         throw cet::exception("FromSTMTestBeamData") << "Fixed header word (0x" << std::setfill('0') << std::setw(8) << std::hex << (trigger_header[0].getFixedHeader()) << ") != 0xDEADBEEF" << std::endl;
       }
 
+      // Get the number of slices in this trigger
       int n_slices = trigger_header[0].getNSlices();
       for (int i_slice = 0; i_slice < n_slices; ++i_slice) {
         STMTestBeam::SliceHeader slice_header[1];
+        // Read the slice header
         if(currentFile_->read((char *) &slice_header[0], sizeof(STMTestBeam::SliceHeader))) {
-          std::cout << slice_header[0] << std::endl;
+          if(verbosityLevel_ > 0) {
+            std::cout << slice_header[0] << std::endl;
+          }
 
-          unsigned long int n_samples = slice_header[0].getNADC();
+          // Get the number of ADC samples in this slice
+          unsigned long int n_adc_samples = slice_header[0].getNADC();
+
+          // Read the ADC samples into a vector for later
           std::vector<int16_t> adcs;
           int16_t adc[1];
-          for (unsigned long int i_sample = 0; i_sample < n_samples; ++i_sample) {
+          for (unsigned long int i_adc_sample = 0; i_adc_sample < n_adc_samples; ++i_adc_sample) {
             currentFile_->read((char *) &adc[0], sizeof(int16_t));
             adcs.push_back(adc[0]);
           }
 
+          // Create the STMDigi and put it in the vent
           STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, trigger_header[0].getNDroppedPackets(), adcs);
           outputSTMDigis->push_back(stm_digi);
         }
@@ -218,11 +241,6 @@ namespace mu2e {
       art::EventPrincipal*&  outE){
 
     art::Timestamp ts;
-
-    //    if (eventNumber == printAtEvent){
-    //      printAtEvent = (printAtEvent+1)*2-1;
-    //    }
-    std::cout << "AE: run, subrun, event = " << runNumber << ", " << subRunNumber << ", " << eventNumber << std::endl;
 
     art::SubRunID newID(runNumber, subRunNumber);
 
