@@ -24,6 +24,8 @@ helper.make_dict_and_map( [ mainlib,
                             'cetlib_except',
                             'Core'
                           ] )
+# turn pywrap.i into a python interface
+helper.make_pywrap ()
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
