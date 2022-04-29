@@ -64,15 +64,15 @@
 G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4DecayMuonsWithSpinPhysicsConstructor);
 
 Mu2eG4DecayMuonsWithSpinPhysicsConstructor::Mu2eG4DecayMuonsWithSpinPhysicsConstructor(G4int ver)
-  :  G4VPhysicsConstructor("Decay"), verbose(ver), wasActivated(false)
+  :  G4VPhysicsConstructor("Decay"), verbose(ver)
 {
-  fDecayWithSpinProcess = 0;
+  fDecayWithSpinProcess = nullptr;
 }
 
 Mu2eG4DecayMuonsWithSpinPhysicsConstructor::Mu2eG4DecayMuonsWithSpinPhysicsConstructor(const G4String& name, G4int ver)
-  :  G4VPhysicsConstructor(name), verbose(ver), wasActivated(false)
+  :  G4VPhysicsConstructor(name), verbose(ver)
 {
-  fDecayWithSpinProcess = 0;
+  fDecayWithSpinProcess = nullptr;
 }
 
 Mu2eG4DecayMuonsWithSpinPhysicsConstructor::~Mu2eG4DecayMuonsWithSpinPhysicsConstructor()
@@ -115,8 +115,6 @@ void Mu2eG4DecayMuonsWithSpinPhysicsConstructor::ConstructParticle()
 
 void Mu2eG4DecayMuonsWithSpinPhysicsConstructor::ConstructProcess()
 {
-  if(wasActivated) { return; }
-  wasActivated = true;
 
   // Add Decay With Spin Process
   fDecayWithSpinProcess = new G4DecayWithSpin();

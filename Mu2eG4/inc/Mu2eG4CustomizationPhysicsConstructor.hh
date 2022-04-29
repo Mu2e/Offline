@@ -23,15 +23,13 @@ namespace mu2e {
 
     Mu2eG4CustomizationPhysicsConstructor();
 
-    virtual ~Mu2eG4CustomizationPhysicsConstructor();
+    virtual ~Mu2eG4CustomizationPhysicsConstructor() = default;
 
     virtual void ConstructParticle();
 
     virtual void ConstructProcess();
 
   private:
-
-    static G4ThreadLocal G4bool wasActivated;
 
     // non owning pointer
     // can't be ref due to the default constructor factory requirement

@@ -14,7 +14,7 @@ namespace mu2e {
 
   public:
     Mu2eG4StepLimiterPhysicsConstructor();
-    ~Mu2eG4StepLimiterPhysicsConstructor();
+    virtual ~Mu2eG4StepLimiterPhysicsConstructor() = default;
 
     void ConstructParticle();
     void ConstructProcess();
