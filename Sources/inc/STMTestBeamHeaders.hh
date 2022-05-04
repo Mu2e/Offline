@@ -24,7 +24,6 @@ namespace mu2e {
       uint16_t trigger_time[4]; // trigger time
       uint16_t trigger_offset[2]; // time of first ADC value relative to trigger time
       uint16_t n_dropped_packets[1]; // number of dropped packets
-      uint16_t unixtime[4];
 
       uint32_t getFixedHeader() const {
         return ((uint32_t) deadbeef[1] << 16) | ((uint32_t) deadbeef[0]);
@@ -58,10 +57,6 @@ namespace mu2e {
         return ((uint16_t) n_dropped_packets[0]);
       }
 
-      uint64_t getUnixTime() const {
-        return ((uint64_t) unixtime[3] << 48) | ((uint64_t) unixtime[2] << 32) | ((uint64_t) unixtime[1] << 16) | ((uint64_t) unixtime[0]);
-      }
-
       bool checkFixedHeader() const {
         return (this->getFixedHeader() == (uint32_t) 0xDEADBEEF);
       }
@@ -76,10 +71,6 @@ namespace mu2e {
         os << "\tTime: " << header.getTriggerTime() << " ns" << std::endl;
         os << "\tTime Offset: " << header.getTriggerOffset() << " ns" << std::endl;
         os << "\tNo. of Dropped Packets: " << header.getNDroppedPackets() << std::endl;
-        using time_point = std::chrono::system_clock::time_point;
-        time_point header_timepoint(std::chrono::duration_cast<time_point::duration>(std::chrono::milliseconds(header.getUnixTime())));
-        std::time_t header_t = std::chrono::system_clock::to_time_t(header_timepoint);
-        os << "Unix Time: " << std::put_time(std::gmtime(&header_t), "%c %Z") << std::endl;
         return os;
       }
     };

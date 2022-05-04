@@ -71,6 +71,7 @@ namespace mu2e {
     unsigned maxEvents_;
     int verbosityLevel_;
     uint16_t channel_; // the channel (HPGe or LaBr) will be different for each file
+    int binaryFileVersion_;
 
     int printAtEvent;
 
@@ -111,6 +112,7 @@ namespace mu2e {
     , currentEventNumber_(0)
     , maxEvents_(conf().maxEvents())
     , verbosityLevel_(conf().verbosityLevel())
+    , binaryFileVersion_(0)
   {
     rh.reconstitutes<mu2e::STMDigiCollection,art::InEvent>(myModuleLabel_);
 
@@ -169,6 +171,20 @@ namespace mu2e {
         << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
     }
 
+    // There are two different versions of the binary file:
+    //  - v2 contains a unix timestamp after the trigger header
+    //  - v1 does not
+    // For the time being, just hardcode which runs belong to which (ideally would be in a DB)
+    if (runNumber_ == 101001) {
+      binaryFileVersion_ = 2;
+    }
+    else if (runNumber_ >= 101002 && runNumber_<=101014) {
+      binaryFileVersion_ = 1;
+    }
+    else {
+      binaryFileVersion_ = 2;
+    }
+
     std::string subrunNo = sequencer.substr(7, 7+8); // sequencer always has 6 characters for run followed by an underscore and then 8 characters for the sub run
     currentSubRunNumber_ = std::stoi(subrunNo);
     currentEventNumber_ = 1;
@@ -209,6 +225,19 @@ namespace mu2e {
         throw cet::exception("FromSTMTestBeamData") << "Fixed header word (0x" << std::setfill('0') << std::setw(8) << std::hex << (trigger_header[0].getFixedHeader()) << ") != 0xDEADBEEF" << std::endl;
       }
 
+      // binary file version 2 now contains the unix time stamp
+      if (binaryFileVersion_ == 2) {
+        uint16_t unixtime[4];
+        currentFile_->read((char *) &unixtime[0], sizeof(unixtime));
+        uint64_t time = ((uint64_t) unixtime[3] << 48) | ((uint64_t) unixtime[2] << 32) | ((uint64_t) unixtime[1] << 16) | ((uint64_t) unixtime[0]);
+        if (verbosityLevel_ > 0) {
+          using time_point = std::chrono::system_clock::time_point;
+          time_point header_timepoint(std::chrono::duration_cast<time_point::duration>(std::chrono::milliseconds(time)));
+          std::time_t header_t = std::chrono::system_clock::to_time_t(header_timepoint);
+          std::cout << "Unix Time: " << std::put_time(std::gmtime(&header_t), "%c %Z") << std::endl;
+        }
+      }
+
       // Get the number of slices in this trigger
       int n_slices = trigger_header[0].getNSlices();
       for (int i_slice = 0; i_slice < n_slices; ++i_slice) {
@@ -231,7 +260,8 @@ namespace mu2e {
           }
 
           // Create the STMDigi and put it in the vent
-          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigger_header[0].getTriggerMode(), channel_, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, trigger_header[0].getNDroppedPackets(), adcs);
+          STMTrigType trigType(trigger_header[0].getTriggerMode(), channel_, STMDataType::kUnsuppressed);
+          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigType, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, trigger_header[0].getNDroppedPackets(), adcs);
           outputSTMDigis->push_back(stm_digi);
         }
         else { return false; }
