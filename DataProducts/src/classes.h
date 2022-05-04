@@ -49,3 +49,6 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/SymMatrix.h"
+
+// STM
+#include "Offline/DataProducts/inc/STMTypes.hh"

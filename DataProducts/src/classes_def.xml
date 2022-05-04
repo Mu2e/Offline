@@ -48,5 +48,8 @@
 
  <class name="HepGeom::Transform3D"/>
 
+<!--  ********* STM  ********* -->
+ <class name="mu2e::STMTrigType" />
+
 
 </lcgdict>
