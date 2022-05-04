@@ -2,6 +2,7 @@
 
 process_name: STMTestBeamData
 source : { module_type : FromSTMTestBeamData
+       	   verbosityLevel : 0
 }
 services : @local::Services.Core
 physics : { 
