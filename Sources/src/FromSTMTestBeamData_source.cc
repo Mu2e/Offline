@@ -171,6 +171,10 @@ namespace mu2e {
         << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
     }
 
+    if(runNumber_ < 101000 || runNumber_ > 101999) {
+      throw cet::exception("FromSTMTestBeamData") << "Run number is outside of our reserved run range (101000 -- 101999)" << std::endl;
+    }
+
     // There are two different versions of the binary file:
     //  - v2 contains a unix timestamp after the trigger header
     //  - v1 does not
