@@ -13,14 +13,15 @@ namespace mu2e {
   class STMStep {
   public:
 
-    STMStep() : _edep(0) {} 
-    STMStep( float edep) : _edep(edep) { }
-    
+    STMStep() : _time(0), _edep(0), _simp(art::Ptr<SimParticle>()) {}
+    STMStep(float time, float edep, art::Ptr<SimParticle> const& simp) : _time(time), _edep(edep), _simp(simp) { }
+
+    float time() const { return _time; }
+    float edep() const { return _edep; }
     art::Ptr<SimParticle> const& simParticle() const { return _simp; }
 
-    float edep() const { return _edep; }
-
   private:
+    float _time;
     float _edep;
     art::Ptr<SimParticle> _simp;
   };
@@ -29,4 +30,3 @@ namespace mu2e {
 }
 
 #endif
-

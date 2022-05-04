@@ -58,23 +58,17 @@ namespace mu2e {
     unique_ptr<STMStepCollection> outputSTMSteps(new STMStepCollection);
     auto stepsHandle = event.getValidHandle<StepPointMCCollection>(_stepPointMCsTag);
 
-    double sum_edep = 0;
-    for (const auto& step : *stepsHandle) {
-      sum_edep += step.totalEDep();
-      if (_verbosityLevel > 0) { // just to demonstrate how SimParticlePtrs work in case we ever get around to doing it
-        auto simPtr = step.simParticle();
-        std::cout << "Step EDep = " << step.totalEDep() << " MeV" << std::endl;
-        std::cout << "SimID: " << simPtr->id() << " (pdg = " << simPtr->pdgId() << ")" << std::endl;
-        auto parentPtr = simPtr->parent();
-        while (parentPtr.isNonnull()) {
-          std::cout << "Parent SimID: " << parentPtr->id() << " (pdg = " << parentPtr->pdgId() << ")" << std::endl;
-          parentPtr = parentPtr->parent();
-        }
+    // For the time being just sum everything in the event FIXME
+    if (stepsHandle->size() > 0) {
+      double sum_edep = 0;
+      for (const auto& step : *stepsHandle) {
+        sum_edep += step.totalEDep();
       }
+      double time = stepsHandle->at(0).time(); // just use the first step as a placeholder
+      const auto& simPtr = stepsHandle->at(0).simParticle();
+      STMStep stm_step(time, sum_edep, simPtr);
+      outputSTMSteps->push_back(stm_step);
     }
-    STMStep stm_step(sum_edep);
-    outputSTMSteps->push_back(stm_step);
-
     event.put(std::move(outputSTMSteps));
   }
 }
