@@ -65,20 +65,11 @@ G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4DecayMuonsWithSpinPhysicsConstructor);
 
 Mu2eG4DecayMuonsWithSpinPhysicsConstructor::Mu2eG4DecayMuonsWithSpinPhysicsConstructor(G4int ver)
   :  G4VPhysicsConstructor("Decay"), verbose(ver)
-{
-  fDecayWithSpinProcess = nullptr;
-}
+{}
 
 Mu2eG4DecayMuonsWithSpinPhysicsConstructor::Mu2eG4DecayMuonsWithSpinPhysicsConstructor(const G4String& name, G4int ver)
   :  G4VPhysicsConstructor(name), verbose(ver)
-{
-  fDecayWithSpinProcess = nullptr;
-}
-
-Mu2eG4DecayMuonsWithSpinPhysicsConstructor::~Mu2eG4DecayMuonsWithSpinPhysicsConstructor()
-{
-  delete fDecayWithSpinProcess;
-}
+{}
 
 void Mu2eG4DecayMuonsWithSpinPhysicsConstructor::ConstructParticle()
 {
@@ -117,7 +108,8 @@ void Mu2eG4DecayMuonsWithSpinPhysicsConstructor::ConstructProcess()
 {
 
   // Add Decay With Spin Process
-  fDecayWithSpinProcess = new G4DecayWithSpin();
+  // the process table takes ownership of it
+  G4Decay* fDecayWithSpinProcess = new G4DecayWithSpin();
 
   G4ProcessTable* processTable = G4ProcessTable::GetProcessTable();
 
