@@ -88,6 +88,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>           lfToken{Name("LineFinderTag"),Comment("tag for line finder seed")};
       fhicl::Atom<bool>                    DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
       fhicl::Atom<bool>                    UseTime{Name("UseTime"),Comment("use time for drift fit")};
+      fhicl::Atom<double>                  driftRes{Name("DriftRes"),Comment("Drift resolution for first fit stage")};
       fhicl::Atom<double>                  mnTolerance{Name("MinuitTolerance"),Comment("Tolerance for minuit convergence")};
       fhicl::Atom<double>                  mnPrecision{Name("MinuitPrecision"),Comment("Effective precision for likelihood function")};
       fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
@@ -121,6 +122,7 @@ namespace mu2e {
 
     bool            _DoDrift;
     bool       _UseTime;
+    double _driftRes;
     double _mnTolerance;
     double _mnPrecision;
 
@@ -264,7 +266,7 @@ namespace mu2e {
 
           if(_DoDrift) {
             if (_UseTime) {
-              MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker, _mnTolerance, _mnPrecision );
+              MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker, _driftRes, _mnTolerance, _mnPrecision );
             } else {
               _tfit.DriftFit(tseed, srep);
             }
@@ -283,7 +285,14 @@ namespace mu2e {
             // tseed._straw_chits = tmpHits;
             // if (tmpHits.size() == 0)
             //   continue;
+          }else{
+            tseed._track.MinuitParams = tseed._track.FitParams;
+            tseed._track.MinuitCoordSystem = tseed._track.FitCoordSystem;
+            tseed._track.MinuitEquation = tseed._track.FitEquation;
+            tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
           }
+
+          tseed._straw_chits.setParent(chcol.parent());
 
           CosmicTrackSeedCollection* col = seed_col.get();
           col->emplace_back(tseed);

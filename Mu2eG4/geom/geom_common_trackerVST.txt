@@ -3,7 +3,7 @@
 // The file that is included will be time dependent.
 //
 // This puts things in extracted or "garage" position
-#include "Mu2eG4/geom/geom_common_extracted.txt"
+#include "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 // If you'd rather have nominal position, comment above line and uncomment
 // below
 //#include "Mu2eG4/geom/geom_common.txt"
