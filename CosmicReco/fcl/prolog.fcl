@@ -44,6 +44,7 @@ LineFinder : {
     ComboHitCollection : "makePH"
     TimeClusterCollection : "SimpleTimeCluster"
     NSteps : 2
+    Ntsteps : 1
     StepSize : 0.5
     t0offset : 0
     maxDOCA : 3
