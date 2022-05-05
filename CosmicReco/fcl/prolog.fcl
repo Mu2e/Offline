@@ -172,6 +172,15 @@ CosmicTrackDiag : {
     CosmicTrackSeedCollection : "CosmicTrackFinder"
 }
 
+CosmicShowerFilter : {
+    module_type : CosmicShowerFilter
+    maxCrossingGap : 2
+    maxSameGap : 1
+    maxTotalSameGap : 1
+    TimeClusterCollection : "SimpleTimeCluster"
+    ComboHitCollection : "makePH"
+}
+
 CosmicMuonInfo : {
     module_type : CosmicMuonInfo
     strawDigisTag   : "makeSD"
@@ -192,6 +201,7 @@ CosmicMuonInfo : {
 CosmicTracking : {
     producers :{
         SimpleTimeCluster  : @local::SimpleTimeCluster
+        CosmicShowerFilter : @local::CosmicShowerFilter
         TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
         CosmicTrackFinder  : @local::CosmicTrackFinder
         CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
