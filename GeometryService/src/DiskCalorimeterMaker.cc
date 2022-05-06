@@ -112,20 +112,40 @@ namespace mu2e {
 	  calo_->caloInfo_.set("BPPipeThickness",        config.getDouble("calorimeter.BPPipeThickness") );
 	  calo_->caloInfo_.set("BPPipeZOffset",          config.getDouble("calorimeter.BPPipeZOffset") );
 	  
-	  calo_->caloInfo_.set("FPInnerRadius",          config.getDouble("calorimeter.FPInnerRadius") );
-	  calo_->caloInfo_.set("FPOuterRadius",          config.getDouble("calorimeter.FPOuterRadius") );
-	  calo_->caloInfo_.set("FPFoamZLength",          config.getDouble("calorimeter.FPFoamZLength") );
-	  calo_->caloInfo_.set("FPCarbonZLength",        config.getDouble("calorimeter.FPCarbonZLength") );	  
-          calo_->caloInfo_.set("FPCoolPipeTorRadius",    config.getDouble("calorimeter.FPCoolPipeTorRadius") );
-          calo_->caloInfo_.set("FPCoolPipeRadius",       config.getDouble("calorimeter.FPCoolPipeRadius") );
-          calo_->caloInfo_.set("FPCoolPipeThickness",    config.getDouble("calorimeter.FPCoolPipeThickness") );
-	  calo_->caloInfo_.set("nPipes",                 config.getInt("calorimeter.nPipes") );
+    calo_->caloInfo_.set("FPInnerRadius",          config.getDouble("calorimeter.FPInnerRadius") );
+    calo_->caloInfo_.set("FPOuterRadius",          config.getDouble("calorimeter.FPOuterRadius") );
+    calo_->caloInfo_.set("FPFoamZLength",          config.getDouble("calorimeter.FPFoamZLength") );
+    calo_->caloInfo_.set("FPCarbonZLength",        config.getDouble("calorimeter.FPCarbonZLength") );	  
+    calo_->caloInfo_.set("FPCoolPipeTorRadius",    config.getDouble("calorimeter.FPCoolPipeTorRadius") );
+    calo_->caloInfo_.set("FPCoolPipeRadius",       config.getDouble("calorimeter.FPCoolPipeRadius") );
+    calo_->caloInfo_.set("FPCoolPipeThickness",    config.getDouble("calorimeter.FPCoolPipeThickness") );
+    calo_->caloInfo_.set("nPipes",                 config.getInt("calorimeter.nPipes") );
 	  calo_->caloInfo_.set("pipeRadius",             config.getDouble("calorimeter.pipeRadius") );
 	  calo_->caloInfo_.set("pipeThickness",          config.getDouble("calorimeter.pipeThickness") );
-	  calo_->caloInfo_.set("pipeInitSeparation",     config.getDouble("calorimeter.pipeInitSeparation") );
-          temp.clear();
-            config.getVectorDouble("calorimeter.pipeTorRadius", temp, calo_->caloInfo_.getInt("nPipes"));
-	  calo_->caloInfo_.set("pipeTorRadius",temp );
+    calo_->caloInfo_.set("pipeInitSeparation",     config.getDouble("calorimeter.pipeInitSeparation") );
+    temp.clear();
+    config.getVectorDouble("calorimeter.pipeTorRadius", temp, calo_->caloInfo_.getInt("nPipes"));
+    calo_->caloInfo_.set("pipeTorRadius",temp );
+    temp.clear();
+    //For source calibration system:
+    config.getVectorDouble("calorimeter.largeTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
+    calo_->caloInfo_.set("largeTorPhi", temp );
+    temp.clear();
+    config.getVectorDouble("calorimeter.smallTorPhi", temp, calo_->caloInfo_.getInt("nPipes"));
+    calo_->caloInfo_.set("smallTorPhi", temp );
+    temp.clear();
+    config.getVectorDouble("calorimeter.yposition", temp, calo_->caloInfo_.getInt("nPipes"));
+    calo_->caloInfo_.set("yposition", temp );
+    temp.clear();
+    config.getVectorDouble("calorimeter.straightEndPhi", temp, calo_->caloInfo_.getInt("nPipes"));
+    calo_->caloInfo_.set("straightEndPhi", temp );
+    temp.clear();
+    calo_->caloInfo_.set("radSmTor", config.getDouble("calorimeter.radSmTor") );
+    calo_->caloInfo_.set("xsmall", config.getDouble("calorimeter.xsmall") );
+    calo_->caloInfo_.set("xdistance", config.getDouble("calorimeter.xdistance") );
+    calo_->caloInfo_.set("rInnerManifold", config.getDouble("calorimeter.rInnerManifold") );
+    temp.clear();
+
 
 	  calo_->caloInfo_.set("numberOfCrates",         config.getInt("calorimeter.numberOfCrates") );
 	  calo_->caloInfo_.set("nCrateBeforeSpace",      config.getInt("calorimeter.nCrateBeforeSpace") );

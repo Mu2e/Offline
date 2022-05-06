@@ -103,11 +103,6 @@ Mu2eG4MinDEDXPhysicsConstructor::Mu2eG4MinDEDXPhysicsConstructor(G4int ver)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-Mu2eG4MinDEDXPhysicsConstructor::~Mu2eG4MinDEDXPhysicsConstructor()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void Mu2eG4MinDEDXPhysicsConstructor::ConstructParticle()
 {
   // gamma

@@ -144,11 +144,11 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck));
 
-    std::string simulatedDetector = _geom.pset().get<std::string>("simulatedDetector.tool_type");
+    std::string simulatedDetector = _geom.simulatedDetector().get<std::string>("tool_type");
 
     if (simulatedDetector != "Mu2e") {
 
-      constructEnv_ = art::make_tool<InitEnvToolBase>(_geom.pset().get<fhicl::ParameterSet>("simulatedDetector"));
+      constructEnv_ = art::make_tool<InitEnvToolBase>(_geom.simulatedDetector());
 
       if (constructEnv_) constructEnv_->construct(boxInTheWorldVInfo,_config);
       else {

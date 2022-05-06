@@ -14,7 +14,6 @@ CaloProtoClusterMaker :
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
   addSecondRing          : false
-  timeCut                : 500
   deltaTime              : 2
   diagLevel              : 0
 }  

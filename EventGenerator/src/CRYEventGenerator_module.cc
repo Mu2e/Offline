@@ -12,7 +12,6 @@
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/SubRun.h"
@@ -83,7 +82,7 @@ namespace mu2e {
                                                                 1.8e4, // http://pdg.lbl.gov/2018/reviews/rpp2018-rev-cosmic-rays.pdf eq. 29.2
                                                                 cryGen->getLiveTime()  ));
     std::cout << *livetime << std::endl;
-    subrun.put(std::move(livetime));
+    subrun.put(std::move(livetime), art::fullSubRun());
   }
 
 }

@@ -23,6 +23,7 @@
 // C++ includes
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
@@ -36,6 +37,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -58,6 +60,8 @@
 #include "Geant4/G4MaterialCutsCouple.hh"
 #include "Geant4/G4ParticleChange.hh"
 #include "Geant4/G4DynamicParticle.hh"
+#include "Geant4/G4Log.hh"
+#include "Geant4/Randomize.hh"
 
 using namespace std;
 
@@ -83,7 +87,10 @@ namespace mu2e {
     _steppingAction(steppingAction),
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
-    _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose())
+    _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose()),
+    _muonPreAssignedDecayProperTime(-1.0),
+    _muonMinPreAssignedDecayProperTime(-1.0),
+    _muonMaxPreAssignedDecayProperTime(-1.0)
   {
 
     if ( _stepLimitKillerVerbose && (G4Threading::G4GetThreadId() <= 0) ) {
@@ -95,6 +102,54 @@ namespace mu2e {
              << G4endl;
     }
 
+    // validate muon preassigned proper time
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime) &&
+        conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      throw cet::exception("CONFIG")
+        << "In Mu2eG4TrackingAction(): only one of  muonPreAssignedDecayProperTime or "
+        << "muonMaxPreAssignedDecayProperTime can be set"
+        << G4endl;
+    }
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime) &&
+        conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime)) {
+      throw cet::exception("CONFIG")
+        << "In Mu2eG4TrackingAction(): only one of  muonPreAssignedDecayProperTime or "
+        << "muonMinPreAssignedDecayProperTime can be set"
+        << G4endl;
+    }
+    if (conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime) &&
+        conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      if ( _muonMinPreAssignedDecayProperTime >= _muonMaxPreAssignedDecayProperTime ) {
+        throw cet::exception("CONFIG")
+          << "In Mu2eG4TrackingAction(): inconsistent "
+          << "muonMinPreAssignedDecayProperTime muonMaxPreAssignedDecayProperTime: "
+          << _muonMinPreAssignedDecayProperTime << " ns,"
+          << _muonMaxPreAssignedDecayProperTime << " ns"
+          << G4endl;
+      }
+    }
+
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonPreAssignedDecayProperTime to "
+               << _muonPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
+    if (conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonMaxPreAssignedDecayProperTime to "
+               << _muonMaxPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
+    if (conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonMinPreAssignedDecayProperTime to "
+               << _muonMinPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
   }
 
   // Receive information that has a lifetime of a run.
@@ -185,6 +240,56 @@ namespace mu2e {
     // Need to cast away const-ness to do this.
     const_cast<G4Track*>(trk)->SetUserInformation(ti);
 
+    if (_muonPreAssignedDecayProperTime>=0.0) {
+      const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
+      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
+        // if track is a muon and preassigned proper time is set, assing it
+        if (trackingVerbosityLevel>0) {
+          G4cout << __func__
+                 << " Setting muonPreAssignedDecayProperTime to track "
+                 << trk->GetTrackID() << G4endl;
+        }
+        const_cast<G4DynamicParticle*>(dynPart)
+          ->SetPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime*CLHEP::ns);
+      }
+    }
+
+    // bias muon proper time if requested
+    if ((_muonMaxPreAssignedDecayProperTime>=0.0) ||
+        (_muonMinPreAssignedDecayProperTime>=0.0)) {
+      const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
+      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
+        // if track is a muon and preassigned proper time is set, assing it
+        if (trackingVerbosityLevel>0) {
+          G4cout << __func__
+                 << " Setting random muonPreAssignedDecayProperTime to the track "
+                 << " between muonMaxPreAssignedDecayProperTime and muonMaxPreAssignedDecayProperTime to track "
+                 << trk->GetTrackID() << G4endl;
+        }
+        // 0 is a special case
+        if (_muonMaxPreAssignedDecayProperTime == 0.0) {
+          const_cast<G4DynamicParticle*>(dynPart)
+            ->SetPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime*CLHEP::ns);
+        } else {
+          double pdgLifeTime = dynPart->GetParticleDefinition()->GetPDGLifeTime();
+          double expNormalizedMaxProperTime =
+            (_muonMaxPreAssignedDecayProperTime>=0.0) ?
+            G4Exp(-1.0*_muonMaxPreAssignedDecayProperTime*CLHEP::ns/pdgLifeTime) :
+            0.0;
+          double expNormalizedMinProperTime =
+            (_muonMinPreAssignedDecayProperTime>=0.0) ?
+            G4Exp(-1.0*_muonMinPreAssignedDecayProperTime*CLHEP::ns/pdgLifeTime) :
+            1.0;
+          double offset = std::max(expNormalizedMaxProperTime, 0.0);
+          double width  = std::min(expNormalizedMinProperTime, 1.0) - offset;
+          // transforming the value into the potentially narrower interval
+          double theValue = offset + G4UniformRand()*width;
+          const_cast<G4DynamicParticle*>(dynPart)
+            ->SetPreAssignedDecayProperTime(-1.0*G4Log(theValue)*pdgLifeTime);
+        }
+      }
+    }
+
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
 
@@ -240,12 +345,12 @@ namespace mu2e {
     const Mu2eG4IOConfigHelper& ioconf = perThreadObjects_->ioconf;
 
     // Read in data products from previous stages and reseat SimParticle pointers
-    // The returned handle is not valid for GenParticle driven jobs
-    // but also for non-filtered events in subsequent stages which do not
-    // have any primary StepPointMCs, for example.
-    const auto inputSimHandle = ioconf.inputs().inputSimParticles(*perThreadObjects_->artEvent);
-    if(inputSimHandle.isValid()) {
-      const SimParticleCollection& inputSims = *inputSimHandle;
+    // The returned object is allowed to be in an invalid state for GenParticle driven jobs
+    // and non-filtered events in subsequent stages which do not have any primary
+    // StepPointMCs, for example.
+    auto simsInfo = ioconf.inputs().inputSimParticles(*perThreadObjects_->artEvent);
+    if( simsInfo.isValid()) {
+      const SimParticleCollection& inputSims = simsInfo.sims.ref();
       // We do not compress anything here, but use the call to reseat the pointers
       // while copying the inputs to _transientMap.
       compressSimParticleCollection(perThreadObjects_->simParticleHelper->productID(),
@@ -256,7 +361,7 @@ namespace mu2e {
 
       // old -> new particle remapping
       for(const auto& sim: inputSims) {
-        art::ProductID oldID(inputSimHandle.id());
+        art::ProductID oldID(simsInfo.id);
         auto key(sim.second.id().asUint());
         art::Ptr<SimParticle> oldSim(oldID, key, perThreadObjects_->simParticleHelper->otherProductGetter(oldID));
         art::Ptr<SimParticle> newSim(perThreadObjects_->simParticleHelper->productID(), key, perThreadObjects_->simParticleHelper->productGetter());
@@ -526,8 +631,8 @@ namespace mu2e {
     if (pname == "Transportation" &&
         Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trVerbosity)) {
       pname = G4String("mu2eFieldPropagator");
-      if ( !(trk->GetDefinition()->GetPDGEncoding() == 11 || // electron & proton codes hardcoded for now
-             trk->GetDefinition()->GetPDGEncoding() == 2212 ) ||
+      if ( !(trk->GetDefinition()->GetPDGEncoding() == PDGCode::e_minus ||
+             trk->GetDefinition()->GetPDGEncoding() == PDGCode::proton ) ||
            G4LossTableManager::Instance()->
            GetRange(trk->GetDefinition(),
                     trk->GetKineticEnergy(),
@@ -568,6 +673,7 @@ namespace mu2e {
              << G4endl;
       G4cout << __func__ << " KE            " << theKEnergy
              << " Momentum direction            " << theMomentumDirection
+             << " Proper time " << pParticle->GetProperTime()
              << G4endl;
       G4cout.precision(prec);
     }

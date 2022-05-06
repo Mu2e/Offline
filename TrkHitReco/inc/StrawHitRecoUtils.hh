@@ -13,22 +13,22 @@
 
 namespace mu2e {
   class StrawHitRecoUtils {
-    public: 
+    public:
       StrawHitRecoUtils(double pbtOffset, mu2e::TrkHitReco::FitType fittype, unsigned npre, float invnpre, float invgainAvg, float* invgain, int diagLevel, TH1F* maxiter,
-        mu2e::StrawIdMask mask, size_t nplanes, size_t npanels, bool writesh, float minT, float maxT, float minE, float maxE, bool filter, bool flagXT,
-        float ctE, float ctMinT, float ctMaxT, bool usecc, float clusterDt, size_t numDigis) : 
+          mu2e::StrawIdMask mask, size_t nplanes, size_t npanels, bool writesh, float minT, float maxT, float minE, float maxE, bool filter, bool flagXT,
+          float ctE, float ctMinT, float ctMaxT, bool usecc, float clusterDt, size_t numDigis) :
         _pbtOffset(pbtOffset), _fittype(fittype), _npre(npre), _invnpre(invnpre), _invgainAvg(invgainAvg), _invgain(invgain), _diagLevel(diagLevel),
         _maxiter(maxiter), _mask(mask), _npanels(npanels), _writesh(writesh), _minT(minT), _maxT(maxT), _minE(minE), _maxE(maxE),
         _filter(filter), _flagXT(flagXT), _ctE(ctE), _ctMinT(ctMinT), _ctMaxT(ctMaxT), _usecc(usecc), _clusterDt(clusterDt)
-        {
-          if (!_filter && _flagXT){
-            hits_by_panel = std::vector<std::vector<size_t> >(nplanes*npanels,std::vector<size_t>());
-            largeHits.clear();
-            largeHitPanels.clear();
-            largeHits.reserve(numDigis);
-            largeHitPanels.reserve(numDigis);
-          }
-        };
+    {
+      if (!_filter && _flagXT){
+        hits_by_panel = std::vector<std::vector<size_t> >(nplanes*npanels,std::vector<size_t>());
+        largeHits.clear();
+        largeHitPanels.clear();
+        largeHits.reserve(numDigis);
+        largeHitPanels.reserve(numDigis);
+      }
+    };
 
       void flagCrossTalk(std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
           std::unique_ptr<mu2e::ComboHitCollection> const& chCol);
@@ -60,7 +60,7 @@ namespace mu2e {
       float _ctE, _ctMinT, _ctMaxT;
       bool _usecc;
       float _clusterDt;
-      
+
       std::vector<std::vector<size_t> > hits_by_panel;
       std::vector<size_t> largeHits;
       std::vector<size_t> largeHitPanels;

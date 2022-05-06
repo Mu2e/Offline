@@ -7,7 +7,7 @@
 process_name: EMFBoxFluxAnalyzer
 
 source: {
-    module_type: RootInput
+   module_type: RootInput
 }
 
 services: {
@@ -18,36 +18,36 @@ services: {
 }
 
 physics: {
-    analyzers: {
-        EMFBoxFluxAnalyzer: {
-            module_type: EMFBoxFluxAnalyzer
-            verbosityLevel : 2
+   analyzers: {
+      EMFBoxFluxAnalyzer: {
+         module_type: EMFBoxFluxAnalyzer
+         verbosityLevel : 2
 
-            hitsModuleLabel : "EMFBoxHitsFilter"
-            marsInfoModuleLabel : "SimParticleMARSAssnsMaker"
-            geomModuleLabel  : "geoms1"
+         hitsModuleLabel : "EMFBoxHitsFilter"
+         marsInfoModuleLabel : "SimParticleMARSAssnsMaker"
+         geomModuleLabel  : "geoms1"
 
-            cutMinTime : 120 // ns
-            cutLengthScale : 1500 //mm
+         cutMinTime : 120 // ns
+         cutLengthScale : 1500 //mm
 
-            numNeighbors : 5
-            minSourceGroupStatistics : 10
-        }
+         numNeighbors : 5
+         minSourceGroupStatistics : 10
+      }
 
 
-        StoppedMuons: {
-            module_type: EMFBoxMuonAnalyzer
-            particlesModuleLabel : "EMFBoxHitsFilter"
-            marsInfoModuleLabel :  "SimParticleMARSAssnsMaker"
-            geomModuleLabel : "geoms1"
+      StoppedMuons: {
+         module_type: EMFBoxMuonAnalyzer
+         particlesModuleLabel : "EMFBoxHitsFilter"
+         marsInfoModuleLabel :  "SimParticleMARSAssnsMaker"
+         geomModuleLabel : "geoms1"
 
-            cutEKineAtStop : 0.1
-            // Enclose ExtMon setup.  E.g. use extMonFNAL.box.vd.halfSize
-            cutExtMonPos : [ 100, 200, 650. ]
+         cutEKineAtStop : 0.1
+         // Enclose ExtMon setup.  E.g. use extMonFNAL.box.vd.halfSize
+         cutExtMonPos : [ 100, 200, 650. ]
 
-        }
-    }
+      }
+   }
 
-    e1: [EMFBoxFluxAnalyzer, StoppedMuons]
-    end_paths: [e1]
+   e1: [EMFBoxFluxAnalyzer, StoppedMuons]
+   end_paths: [e1]
 }

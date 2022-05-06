@@ -80,7 +80,7 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     rhocan->cd(4);
     radiusbkg->Draw();
     radiuscon->Draw("same");
- } else if(spage == "z"){
+  } else if(spage == "z"){
 
     TH1F* zmincon = new TH1F("zmincon","peak zmin;zmin (mm)",100,-1600,1600);
     TH1F* zminbkg = new TH1F("zminbkg","peak zmin;zmin (mm)",100,-1600,1600);
@@ -219,7 +219,7 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     nphitsbkg->SetStats(0);
     sfraccon->SetStats(0);
     sfracbkg->SetStats(0);
-    
+
     bdiag->Project("nshitscon","nshits",con+cluster);
     bdiag->Project("nshitsbkg","nshits",bkg+cluster);
     bdiag->Project("nchitscon","nchits",con+cluster);
@@ -253,7 +253,7 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     nhcan->cd(4);
     sfracbkg->Draw();
     sfraccon->Draw("same");
- } else if (spage=="mva") {
+  } else if (spage=="mva") {
     TH1F* mvacon = new TH1F("mvacon","Background MVA output;MVA Output",200,-0.05,1.05);
     TH1F* mvabkg = new TH1F("mvabkg","Background MVA output;MVA Output",200,-0.05,1.05);
     mvacon->SetLineColor(kRed);
@@ -279,7 +279,7 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     mcleg->AddEntry(mvacon,"Conversion electron (X50)","L");
     mcleg->AddEntry(sel,"Selection","F");
     mcleg->Draw();
- 
+
   }  else if(spage=="hits") {
     TH1F* drhobkgp = new TH1F("drhobkgp","Bkg Hit #rho difference;#Delta #rho (mm)",100,-50.0,100.0);
     TH1F* drhobkgu = new TH1F("drhobkgu","Bkg Hit #rho difference;#Delta #rho (mm)",100,-50.0,100.0);
@@ -332,5 +332,5 @@ void BDiag(TTree* bdiag, const char* page="rho",bool train=false) {
     dhcan->cd(4);
     chibkgp->Draw();
     chibkgu->Draw("same");
-  }    
+  }
 }

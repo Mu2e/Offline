@@ -17,7 +17,6 @@
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 
-#include "art/Framework/Core/ModuleMacros.h"
 
 namespace mu2e {
 

@@ -14,6 +14,7 @@ CaloClusterFast:
    ExpandCut              : 1.0
    EnoiseCut              : 1.0
    deltaTime              : 10
+   minSiPMPerHit          : 2
    extendSearch           : true
    diagLevel              : 0
 }  

@@ -3,9 +3,6 @@
 // Start from recent baseline geometry
 #include "Offline/Mu2eG4/geom/geom_common.txt"
 
-// Set the magnetic field to zero everywhere.
-#include "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
-
 // Special - for garage position!
 bool inGaragePosition   = true;
 double garage.zOffset   = 14000.0;  // for creating special garageFakeDS(2/3)Vacuum volume

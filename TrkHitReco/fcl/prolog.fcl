@@ -49,37 +49,37 @@ makeSTH : {
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
 # First, configure the clusters
 TNTClusterer : {
-    HitDistance      : 5.0
-    SeedDistance     : 20.0
-    ClusterDiameter  : 5.0
-    ClusterTime      : 20.0
-    MaxHitTimeDiff   : 30.0
-    MaxSumDistance   : 100.0
-    MaxCluIterations : 10
-    MaxDistance      : 100.0
-    MinHitError      : 5.0
-    TimeRMS          : 2.0
-    MedianCentroid   : false
-    ComboInit        : true
-    TestFlag         : true
-    BackgroundMask   : []
-    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
+  HitDistance      : 5.0
+  SeedDistance     : 20.0
+  ClusterDiameter  : 5.0
+  ClusterTime      : 20.0
+  MaxHitTimeDiff   : 30.0
+  MaxSumDistance   : 100.0
+  MaxCluIterations : 10
+  MaxDistance      : 100.0
+  MinHitError      : 5.0
+  TimeRMS          : 2.0
+  MedianCentroid   : false
+  ComboInit        : true
+  TestFlag         : true
+  BackgroundMask   : []
+  SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
 }
 
 #FilterAlgo: 1 for next neighbor version, 2 for clustering version
 ScanClusterer: {
-    Pbin             : 0.08
-    Tbin             : 20
-    Rbin             : 50
-    Rmin             : 350
-    Rmax             : 650
-    MinPeakHit       : 3
-    MinSeedHit       : 2
-    MinRadHit        : 50
-    FilterAlgo       : 1
-    TestFlag         : true
-    BackgroundMask   : []
-    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
+  Pbin             : 0.08
+  Tbin             : 20
+  Rbin             : 50
+  Rmin             : 350
+  Rmax             : 650
+  MinPeakHit       : 3
+  MinSeedHit       : 2
+  MinRadHit        : 50
+  FilterAlgo       : 1
+  TestFlag         : true
+  BackgroundMask   : []
+  SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
 }
 
 # Now configure the module
@@ -110,20 +110,20 @@ SflagBkgHits : {
 
 # combine together
 TrkHitReco : {
-    producers : {
-	# normal reco
-	PBTFSD       : { @table::PBTFSD       }
-	makeSH        : { @table::makeSH       }
-	makePH        : { @table::makePH       }
-	makeSTH       : { @table::makeSTH      }
-	FlagBkgHits   : { @table::FlagBkgHits  }
-	SflagBkgHits  : { @table::SflagBkgHits }
-    }
+  producers : {
+    # normal reco
+    PBTFSD       : { @table::PBTFSD       }
+    makeSH        : { @table::makeSH       }
+    makePH        : { @table::makePH       }
+    makeSTH       : { @table::makeSTH      }
+    FlagBkgHits   : { @table::FlagBkgHits  }
+    SflagBkgHits  : { @table::SflagBkgHits }
+  }
 
-    # SEQUENCES
-    # production sequence to prepare hits for tracking
-    PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
-    SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SflagBkgHits ]
+  # SEQUENCES
+  # production sequence to prepare hits for tracking
+  PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
+  SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SflagBkgHits ]
 }
 
 END_PROLOG

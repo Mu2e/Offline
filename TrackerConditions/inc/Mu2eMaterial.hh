@@ -19,33 +19,33 @@ namespace mu2e {
 
   class Mu2eMaterial : public ProditionsEntity {
 
-  public:
+    public:
 
-    typedef std::shared_ptr<Mu2eMaterial> ptr_t;
-    typedef std::shared_ptr<const Mu2eMaterial> cptr_t;
-    friend class Mu2eMaterialMaker;
-    constexpr static const char* cxname = {"Mu2eMaterial"};
+      typedef std::shared_ptr<Mu2eMaterial> ptr_t;
+      typedef std::shared_ptr<const Mu2eMaterial> cptr_t;
+      friend class Mu2eMaterialMaker;
+      constexpr static const char* cxname = {"Mu2eMaterial"};
 
-    Mu2eMaterial():ProditionsEntity(cxname)  {}
-    virtual ~Mu2eMaterial() {}
+      Mu2eMaterial():ProditionsEntity(cxname)  {}
+      virtual ~Mu2eMaterial() {}
 
-    DetStrawType const* strawType() const { return _strawtype.get(); }
+      DetStrawType const* strawType() const { return _strawtype.get(); }
 
-    void print( std::ostream& ) const;
+      void print( std::ostream& ) const;
 
-  private:
+    private:
 
-    // types for straw elements
-    std::unique_ptr<DetStrawType> _strawtype; // straw materials description
-    // materials
-    std::string _gasmatname, _wallmatname, _wirematname;
+      // types for straw elements
+      std::unique_ptr<DetStrawType> _strawtype; // straw materials description
+      // materials
+      std::string _gasmatname, _wallmatname, _wirematname;
 
-    // this hold pointers to material descriptions inside of 
-    // BTrk material singleton
-    MatDBInfo _mat;
+      // this hold pointers to material descriptions inside of
+      // BTrk material singleton
+      MatDBInfo _mat;
 
-    std::unique_ptr<FileFinder> _fileFinder;
-    std::unique_ptr<ParticleInfo> _particleInfo;
+      std::unique_ptr<FileFinder> _fileFinder;
+      std::unique_ptr<ParticleInfo> _particleInfo;
 
   };
 

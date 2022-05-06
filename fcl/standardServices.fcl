@@ -38,7 +38,9 @@ Services : {
 # a complete job
   Core	    : {
     message		    : @local::default_message
-    GeometryService	    : { inputFile      : "Offline/Mu2eG4/geom/geom_common.txt" 
+    GeometryService	    : {
+        inputFile           : "Offline/Mu2eG4/geom/geom_common.txt"
+        bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_v01.txt"
 	simulatedDetector   : { tool_type: "Mu2e" }
     }
     ConditionsService	    : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }

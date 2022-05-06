@@ -22,8 +22,7 @@ namespace mu2e {
       config.tol_ = fitconfig.btol();
       // set the schedule for the meta-iterations
       for(auto const& misetting : fitconfig.miConfig()) {
-        MetaIterConfig mconfig;
-        mconfig.temp_ = std::get<0>(misetting);
+        MetaIterConfig mconfig(std::get<0>(misetting));
         config.schedule_.push_back(mconfig);
       }
       // create the updaters requested; these don't have to exist, but if they
@@ -37,7 +36,7 @@ namespace mu2e {
         double minddoca = std::get<2>(shusetting);
         double maxddoca = std::get<3>(shusetting);
         KKStrawHitUpdater shupdater(maxdoca,minprob,minddoca,maxddoca);
-        config.schedule_[imeta++].updaters_.push_back(shupdater);
+        config.schedule_[imeta++].addUpdater(std::any(shupdater));
       }
       return config;
     }

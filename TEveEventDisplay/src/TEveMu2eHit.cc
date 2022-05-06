@@ -154,15 +154,15 @@ namespace mu2e{
     if(sposi.x()!=0){
       TEveMu2eCustomHelix *line_twoDstrawXZ = new TEveMu2eCustomHelix();
       line_twoDstrawXZ->SetLineWidth(1);
-      line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y())+ 1000,pointmmTocm(sposi.z()));
-      line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y())+ 1000,pointmmTocm(sposf.z()));
+      line_twoDstrawXZ->SetPoint(0,pointmmTocm(sposi.x()),pointmmTocm(sposi.y()),pointmmTocm(sposi.z()));
+      line_twoDstrawXZ->SetNextPoint(pointmmTocm(sposf.x()),pointmmTocm(sposf.y()),pointmmTocm(sposf.z()));
       line_twoDstrawXZ->SetLineColor(colorid);
       line_twoDstrawXZ->SetTitle(Form(title.c_str()));
       HitList2DXZ->AddElement(line_twoDstrawXZ);
     }
     this->SetTitle((DataTitle(pstr, n)).c_str());
     hep3vectormmTocm(pointInMu2e);
-    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y()+1000.0, pointInMu2e.z());
+    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
     this->SetPickable(kTRUE);

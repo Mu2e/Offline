@@ -68,8 +68,9 @@ DAQ : {
 	 caloTag       : "daq:calo"
 	 digiSampling  : 5
 	 deltaTPulses  : 5.
-	 pulseRatioMax : 1.1
-	 pulseRatioMin : 0.9
+         nPEperMeV     : 30
+         noiseLevelMeV : 0.55
+         nSigmaNoise   : 4
 	 # hitEDepMax    : 80.
 	 hitEDepMax    : 1000. # for testing
       }

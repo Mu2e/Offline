@@ -11,7 +11,6 @@
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/CRVResponse/inc/CrvHelper.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
