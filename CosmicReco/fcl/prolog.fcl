@@ -168,8 +168,11 @@ CosmicFitDisplay : {
 CosmicTrackDiag : {
     module_type : CosmicTrackDiag
     StrawHitCollection : "makeSH"
+    ComboHitCollection : "makeSH"
+    PanelHitCollection : "makePH"
     TimeClusterCollection : SimpleTimeCluster
     StrawDigiMCCollection : "compressDigiMCs"
+    ProtonBunchTimeMC : "EWMProducer"
     CosmicTrackSeedCollection : "CosmicTrackFinder"
 }
 

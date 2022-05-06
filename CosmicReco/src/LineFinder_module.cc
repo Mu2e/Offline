@@ -229,6 +229,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
     seedInt -= seedDir*seedInt.y()/seedDir.y();
   }
 
+  tseed._track.FitParams.T0 = tseed._t0._t0;
   tseed._track.FitParams.A0 = seedInt.x();
   tseed._track.FitParams.B0 = seedInt.z();
   tseed._track.FitParams.A1 = seedDir.x();
