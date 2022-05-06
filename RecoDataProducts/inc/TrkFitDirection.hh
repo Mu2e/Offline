@@ -6,7 +6,7 @@
 #define TrkFitDirection_HH
 #include <string>
 
-namespace mu2e 
+namespace mu2e
 {
   class TrkFitDirection {
     public:

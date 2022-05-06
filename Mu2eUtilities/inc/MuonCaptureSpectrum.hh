@@ -21,7 +21,7 @@ namespace mu2e {
   class MuonCaptureSpectrum {
 
   public:
-    
+
     enum enum_type    { Flat  , RMC             };
     enum enum_type_2D { Flat2D, KrollWadaJoseph };
 
@@ -31,14 +31,14 @@ namespace mu2e {
     MuonCaptureSpectrum(CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
 
     MuonCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
-			CLHEP::RandFlat* randFlat = 0, RandomUnitSphere* randomUnitSphere = 0);
+                        CLHEP::RandFlat* randFlat = 0, RandomUnitSphere* randomUnitSphere = 0);
 
     ~MuonCaptureSpectrum(){}
 
     double getWeight   (double E) const;
-    double get2DWeight (double x, double y, double E) const; 
+    double get2DWeight (double x, double y, double E) const;
     double get2DMax    (double E) const;
- 
+
     void   setSpectrum   (enum_type    spectrum  ) { _spectrum   = spectrum;   }
     void   setSpectrum2D (enum_type_2D spectrum2D) { _spectrum2D = spectrum2D; }
 
@@ -50,8 +50,8 @@ namespace mu2e {
 
     double getKrollWadaJosephSpectrum(double e, double x, double y) const;
 
-    void   fire(double energy, double& x, double& y) const; 
-   
+    void   fire(double energy, double& x, double& y) const;
+
 
   private:
 
@@ -64,9 +64,9 @@ namespace mu2e {
     CLHEP::RandFlat*   _rnFlat;
     RandomUnitSphere*  _rnUnitSphere;
 
-    double             _me;		// electron mass
-    double             _mmu;		// muon mass
-    double             _MN;		// mass of the initial state nucleus
+    double             _me;                // electron mass
+    double             _mmu;                // muon mass
+    double             _MN;                // mass of the initial state nucleus
   };
 
 } // end of namespace mu2e

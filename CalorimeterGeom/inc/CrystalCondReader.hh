@@ -1,7 +1,7 @@
 //
 // reader to simulate a mock-up database
 //
-// Original author B Echenard 
+// Original author B Echenard
 //
 
 #ifndef CalorimeterGeom_CrystalCondReader_hh
@@ -18,21 +18,21 @@ namespace mu2e {
 
      class CrystalCondReader {
 
-	  public:
+          public:
 
              CrystalCondReader(const std::string& filename);
              ~CrystalCondReader() {};
 
              int                     nCrystal()               const;
-             const CLHEP::Hep3Vector position(int index)      const; 
-             const CLHEP::Hep3Vector size(int index)          const; 
+             const CLHEP::Hep3Vector position(int index)      const;
+             const CLHEP::Hep3Vector size(int index)          const;
              const void              print(std::ostream &os)  const;
 
 
-	 private:
-	 
-	     void read(const std::string& filename);
-             
+         private:
+
+             void read(const std::string& filename);
+
              std::map<int, std::vector<double>> dataPosition_;
              std::map<int, std::vector<double>> dataSize_;
 
@@ -41,4 +41,4 @@ namespace mu2e {
 }
 
 
-#endif 
+#endif

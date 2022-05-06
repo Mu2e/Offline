@@ -11,7 +11,7 @@ physics: {
         muonReactions: {
             module_type: G4ReactionAnalyzer
             inputs: "g4run"
-            pdgId: 13	// Muon.  pbar pdgId is -2212.
+            pdgId: 13        // Muon.  pbar pdgId is -2212.
         }
     }
 

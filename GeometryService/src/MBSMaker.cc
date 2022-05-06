@@ -6,7 +6,7 @@
 //
 // Notes
 // see mu2e-doc-1351 for naming conventions etc...
-// 
+//
 // Updated by dnbrow01 on 30/10/2015 using mu2e-doc-1351 v7.
 // - this produces MBS "Version 2"
 
@@ -95,11 +95,11 @@ namespace mu2e {
       MBSMCornersOutRadii.push_back(_BSTSOuterRadius);
 
       mbs._pMBSMParams = std::unique_ptr<Polycone>
-	(new Polycone(MBSMCornersZ,
-		      MBSMCornersInnRadii,
-		      MBSMCornersOutRadii,
-		      _MBSMOffsetInMu2e,
-		      "DSVacuum"));
+        (new Polycone(MBSMCornersZ,
+                      MBSMCornersInnRadii,
+                      MBSMCornersOutRadii,
+                      _MBSMOffsetInMu2e,
+                      "DSVacuum"));
 
       CLHEP::Hep3Vector _BSTSOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_BSTSZ);
 
@@ -114,85 +114,85 @@ namespace mu2e {
       BSTSCornersOutRadii.push_back(_BSTSOuterRadius);
 
       mbs._pBSTSParams = std::unique_ptr<Polycone>
-	(new Polycone(BSTSCornersZ,
-		      BSTSCornersInnRadii,
-		      BSTSCornersOutRadii,
-		      _BSTSOffsetInMu2e,
-		      _BSTSMaterialName));
+        (new Polycone(BSTSCornersZ,
+                      BSTSCornersInnRadii,
+                      BSTSCornersOutRadii,
+                      _BSTSOffsetInMu2e,
+                      _BSTSMaterialName));
 
 
       CLHEP::Hep3Vector _SPBSSup1OffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_SPBSSup1Z);
 
       mbs._pSPBSSup1Params = std::unique_ptr<Tube>
-	(new Tube(_SPBSSup1MaterialName,
-		  _SPBSSup1OffsetInMu2e,
-		  _SPBSSup1InnerRadius,
-		  _SPBSSup1OuterRadius,
-		  _SPBSSup1HLength));
+        (new Tube(_SPBSSup1MaterialName,
+                  _SPBSSup1OffsetInMu2e,
+                  _SPBSSup1InnerRadius,
+                  _SPBSSup1OuterRadius,
+                  _SPBSSup1HLength));
 
       CLHEP::Hep3Vector _SPBSSup2OffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_SPBSSup2Z);
 
       mbs._pSPBSSup2Params = std::unique_ptr<Tube>
-	(new Tube(_SPBSSup2MaterialName,
-		  _SPBSSup2OffsetInMu2e,
-		  _SPBSSup2InnerRadius,
-		  _SPBSSup2OuterRadius,
-		  _SPBSSup2HLength));
+        (new Tube(_SPBSSup2MaterialName,
+                  _SPBSSup2OffsetInMu2e,
+                  _SPBSSup2InnerRadius,
+                  _SPBSSup2OuterRadius,
+                  _SPBSSup2HLength));
 
       CLHEP::Hep3Vector _SPBSLOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_SPBSLZ);
 
       mbs._pSPBSLParams = std::unique_ptr<Tube>
-	(new Tube(_SPBSLMaterialName,
-		  _SPBSLOffsetInMu2e,
-		  _SPBSLInnerRadius,
-		  _SPBSLOuterRadius,
-		  _SPBSLHLength));
+        (new Tube(_SPBSLMaterialName,
+                  _SPBSLOffsetInMu2e,
+                  _SPBSLInnerRadius,
+                  _SPBSLOuterRadius,
+                  _SPBSLHLength));
 
       CLHEP::Hep3Vector _SPBSCOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_SPBSCZ);
 
       mbs._pSPBSCParams = std::unique_ptr<Tube>
-	(new Tube(_SPBSCMaterialName,
-		  _SPBSCOffsetInMu2e,
-		  _SPBSCInnerRadius,
-		  _SPBSCOuterRadius,
-		  _SPBSCHLength,
-		  _SPBSCminAngle,
-		  _SPBSCmaxAngle));
+        (new Tube(_SPBSCMaterialName,
+                  _SPBSCOffsetInMu2e,
+                  _SPBSCInnerRadius,
+                  _SPBSCOuterRadius,
+                  _SPBSCHLength,
+                  _SPBSCminAngle,
+                  _SPBSCmaxAngle));
 
       CLHEP::Hep3Vector _SPBSROffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_SPBSRZ);
 
       mbs._pSPBSRParams = std::unique_ptr<Tube>
-	(new Tube(_SPBSRMaterialName,
-		  _SPBSROffsetInMu2e,
-		  _SPBSRInnerRadius,
-		  _SPBSROuterRadius,
-		  _SPBSRHLength));
+        (new Tube(_SPBSRMaterialName,
+                  _SPBSROffsetInMu2e,
+                  _SPBSRInnerRadius,
+                  _SPBSROuterRadius,
+                  _SPBSRHLength));
 
       CLHEP::Hep3Vector _BSTCOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_BSTCZ);
 
       std::size_t nBSTCSurfs = _BSTCLengths.size();
       if (nBSTCSurfs != _BSTCInnerRadii.size() ||  nBSTCSurfs != _BSTCOuterRadii.size()) {
-	throw cet::exception("GEOM")
-	  << "BSTC has different number of radii and lengths, check the geom config file. \n";
+        throw cet::exception("GEOM")
+          << "BSTC has different number of radii and lengths, check the geom config file. \n";
       }
       std::vector<double> BSTCCornersZ, BSTCCornersInnRadii, BSTCCornersOutRadii;
       double BSTCtotLength=0;
       for (std::vector<double>::iterator length_it=_BSTCLengths.begin(); length_it!=_BSTCLengths.end(); ++length_it) {
-	BSTCtotLength+=*length_it;
+        BSTCtotLength+=*length_it;
       }
       double tmpBSTCPntZ=/*_BSTCZ*/-0.5*BSTCtotLength;
       for (std::size_t isurf=0; isurf<nBSTCSurfs; ++isurf) {
-	BSTCCornersZ.push_back(tmpBSTCPntZ);
-	BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
-	BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
-	tmpBSTCPntZ+=_BSTCLengths.at(isurf);
-	BSTCCornersZ.push_back(tmpBSTCPntZ);
-	BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
-	BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
+        BSTCCornersZ.push_back(tmpBSTCPntZ);
+        BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
+        BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
+        tmpBSTCPntZ+=_BSTCLengths.at(isurf);
+        BSTCCornersZ.push_back(tmpBSTCPntZ);
+        BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
+        BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
       }
 
       mbs._pBSTCParams = std::unique_ptr<Polycone>
-	(new Polycone(BSTCCornersZ,
+        (new Polycone(BSTCCornersZ,
                       BSTCCornersInnRadii,
                       BSTCCornersOutRadii,
                       _BSTCOffsetInMu2e,
@@ -202,27 +202,27 @@ namespace mu2e {
 
       int nBSBSSurfs = _BSBSLengths.size();
       if (nBSBSSurfs != (int) _BSBSInnerRadii.size() ||  nBSBSSurfs != (int) _BSBSOuterRadii.size()) {
-	throw cet::exception("GEOM")
-	  << "BSBS has different number of radii and lengths, check the geom config file. \n";
+        throw cet::exception("GEOM")
+          << "BSBS has different number of radii and lengths, check the geom config file. \n";
       }
       std::vector<double> BSBSCornersZ, BSBSCornersInnRadii, BSBSCornersOutRadii;
       double BSBStotLength=0;
       for (std::vector<double>::iterator length_it=_BSBSLengths.begin(); length_it!=_BSBSLengths.end(); ++length_it) {
-	BSBStotLength+=*length_it;
+        BSBStotLength+=*length_it;
       }
       double tmpBSBSPntZ=/*_BSBSZ*/-0.5*BSBStotLength;
       for (int isurf=0; isurf<nBSBSSurfs; ++isurf) {
-	BSBSCornersZ.push_back(tmpBSBSPntZ);
-	BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
-	BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
-	tmpBSBSPntZ+=_BSBSLengths.at(isurf);
-	BSBSCornersZ.push_back(tmpBSBSPntZ);
-	BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
-	BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
+        BSBSCornersZ.push_back(tmpBSBSPntZ);
+        BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
+        BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
+        tmpBSBSPntZ+=_BSBSLengths.at(isurf);
+        BSBSCornersZ.push_back(tmpBSBSPntZ);
+        BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
+        BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
       }
 
       mbs._pBSBSParams = std::unique_ptr<Polycone>
-	(new Polycone(BSBSCornersZ,
+        (new Polycone(BSBSCornersZ,
                       BSBSCornersInnRadii,
                       BSBSCornersOutRadii,
                       _BSBSOffsetInMu2e,
@@ -233,34 +233,34 @@ namespace mu2e {
 
       int nCLV2Surfs = _CLV2Lengths.size();
       if (nCLV2Surfs != (int) _CLV2InnerRadii.size() ||  nCLV2Surfs != (int) _CLV2OuterRadii.size()) {
-	throw cet::exception("GEOM")
-	  << "CLV2 has different number of radii and lengths, check the geom config file. \n";
+        throw cet::exception("GEOM")
+          << "CLV2 has different number of radii and lengths, check the geom config file. \n";
       }
 
       std::vector<double> CLV2CornersZ, CLV2CornersInnRadii, CLV2CornersOutRadii;
       double CLV2totLength=0;
       for (std::vector<double>::iterator length_it=_CLV2Lengths.begin(); length_it!=_CLV2Lengths.end(); ++length_it) {
-	CLV2totLength+=*length_it;
+        CLV2totLength+=*length_it;
       }
 
       double tmpCLV2PntZ=/*_CLV2Z*/-0.5*CLV2totLength;
       for (int isurf=0; isurf<nCLV2Surfs; ++isurf) {
-	CLV2CornersZ.push_back(tmpCLV2PntZ);
-	CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
-	CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
-	tmpCLV2PntZ+=_CLV2Lengths.at(isurf);
-	CLV2CornersZ.push_back(tmpCLV2PntZ);
-	CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
-	CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
+        CLV2CornersZ.push_back(tmpCLV2PntZ);
+        CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
+        CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
+        tmpCLV2PntZ+=_CLV2Lengths.at(isurf);
+        CLV2CornersZ.push_back(tmpCLV2PntZ);
+        CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
+        CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
       }
-      
+
       mbs._pCLV2Params = std::unique_ptr<Polycone>
-	(new Polycone(CLV2CornersZ,
+        (new Polycone(CLV2CornersZ,
                       CLV2CornersInnRadii,
                       CLV2CornersOutRadii,
                       _CLV2OffsetInMu2e,
                       _CLV2MaterialName));
-      
+
     } else if ( _MBSVersion >= 2 ) {
 
       mbs._zMax = _MBSCZ+_BSTSZ+_BSTSHLength;
@@ -305,11 +305,11 @@ namespace mu2e {
       MBSMCornersOutRadii.push_back(_BSTSOutRadii[2]);
 
       mbs._pMBSMParams = std::unique_ptr<Polycone>
-	(new Polycone(MBSMCornersZ,
-		      MBSMCornersInnRadii,
-		      MBSMCornersOutRadii,
-		      _MBSMOffsetInMu2e,
-		      "DSVacuum"));
+        (new Polycone(MBSMCornersZ,
+                      MBSMCornersInnRadii,
+                      MBSMCornersOutRadii,
+                      _MBSMOffsetInMu2e,
+                      "DSVacuum"));
 
       CLHEP::Hep3Vector _BSTSOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_BSTSZ);
 
@@ -317,15 +317,15 @@ namespace mu2e {
       // Stainless Steel pipe
       // ******************************
 
-      // In the geometry file, we have vectors with radii and lengths.  
-      // But a polycone requires planes at which the radii are defined, 
+      // In the geometry file, we have vectors with radii and lengths.
+      // But a polycone requires planes at which the radii are defined,
       // with planes separated by lengths.  So first we have to translate the
       // lengths to plane positions and copy the radii to both ends.
 
       std::size_t nBSTSSurfs = _BSTSZLengths.size();
       if (nBSTSSurfs != _BSTSInnRadii.size() ||  nBSTSSurfs != _BSTSOutRadii.size()) {
-	throw cet::exception("GEOM")
-	  << "BSTS has different number of radii and lengths, check the geom config file. \n";
+        throw cet::exception("GEOM")
+          << "BSTS has different number of radii and lengths, check the geom config file. \n";
       }
       std::vector<double> BSTSPlanes, BSTSInRads, BSTSOutRads;
 
@@ -336,22 +336,22 @@ namespace mu2e {
         // Be sure to stay inside the MBS mother.
         const double epsilon = (iSeg>0 )? 0.1 : 0.0;
 
-	BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ + epsilon);
-	BSTSInRads.push_back(_BSTSInnRadii[iSeg]);
-	BSTSOutRads.push_back(_BSTSOutRadii[iSeg]);
-	zpos += _BSTSZLengths[iSeg];
+        BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ + epsilon);
+        BSTSInRads.push_back(_BSTSInnRadii[iSeg]);
+        BSTSOutRads.push_back(_BSTSOutRadii[iSeg]);
+        zpos += _BSTSZLengths[iSeg];
 
-	BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ);
-	BSTSInRads.push_back(_BSTSInnRadii[iSeg]);
-	BSTSOutRads.push_back(_BSTSOutRadii[iSeg]);
+        BSTSPlanes.push_back(zpos - _BSTSHLength + _BSTSZ);
+        BSTSInRads.push_back(_BSTSInnRadii[iSeg]);
+        BSTSOutRads.push_back(_BSTSOutRadii[iSeg]);
       }
 
       mbs._pBSTSParams = std::unique_ptr<Polycone>
-	( new Polycone(BSTSPlanes,
-		       BSTSInRads,
-		       BSTSOutRads,
-		       _BSTSOffsetInMu2e,
-		       _BSTSMaterialName ));
+        ( new Polycone(BSTSPlanes,
+                       BSTSInRads,
+                       BSTSOutRads,
+                       _BSTSOffsetInMu2e,
+                       _BSTSMaterialName ));
 
       // *****************************
       //     Holes in the Steel and poly
@@ -359,18 +359,18 @@ namespace mu2e {
       // *****************************
 
       if ( _MBSVersion > 3 ) {
-	mbs._holeXDimInSteel     = _BSTSHoleXDim;
-	mbs._holeYDimInSteel     = _BSTSHoleYDim;
-	mbs._holeZDimInSteel     = _BSTSHoleZDim;
-	mbs._holeXDimInUpPoly    = _upPolyHoleXDim;
-	mbs._holeYDimInUpPoly    = _upPolyHoleYDim;
-	mbs._holeZDimInUpPoly    = _upPolyHoleZDim;
-	mbs._holeXDimInDownPoly  = _downPolyHoleXDim;
-	mbs._holeYDimInDownPoly  = _downPolyHoleYDim;
-	mbs._holeZDimInDownPoly  = _downPolyHoleZDim;
-	mbs._holeCentersInSteel  = _BSTSHoleCenters;
-	mbs._holeCentersInUpstreamPoly = _upPolyHoleCenters;
-	mbs._holeCentersInDownstreamPoly = _downPolyHoleCenters;
+        mbs._holeXDimInSteel     = _BSTSHoleXDim;
+        mbs._holeYDimInSteel     = _BSTSHoleYDim;
+        mbs._holeZDimInSteel     = _BSTSHoleZDim;
+        mbs._holeXDimInUpPoly    = _upPolyHoleXDim;
+        mbs._holeYDimInUpPoly    = _upPolyHoleYDim;
+        mbs._holeZDimInUpPoly    = _upPolyHoleZDim;
+        mbs._holeXDimInDownPoly  = _downPolyHoleXDim;
+        mbs._holeYDimInDownPoly  = _downPolyHoleYDim;
+        mbs._holeZDimInDownPoly  = _downPolyHoleZDim;
+        mbs._holeCentersInSteel  = _BSTSHoleCenters;
+        mbs._holeCentersInUpstreamPoly = _upPolyHoleCenters;
+        mbs._holeCentersInDownstreamPoly = _downPolyHoleCenters;
       }
 
       // ******************************
@@ -380,13 +380,13 @@ namespace mu2e {
       CLHEP::Hep3Vector _SPBSCOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.,_SPBSCZ);
 
       mbs._pSPBSCParams = std::unique_ptr<Tube>
-	(new Tube(_SPBSCMaterialName,
-		  _SPBSCOffsetInMu2e,
-		  _SPBSCInnerRadius,
-		  _SPBSCOuterRadius,
-		  _SPBSCHLength,
-		  _SPBSCminAngle,
-		  _SPBSCmaxAngle));
+        (new Tube(_SPBSCMaterialName,
+                  _SPBSCOffsetInMu2e,
+                  _SPBSCInnerRadius,
+                  _SPBSCOuterRadius,
+                  _SPBSCHLength,
+                  _SPBSCminAngle,
+                  _SPBSCmaxAngle));
 
 
 
@@ -399,13 +399,13 @@ namespace mu2e {
 
       std::size_t nBSTCSurfs = _BSTCLengths.size();
       if (nBSTCSurfs != _BSTCInnerRadii.size() ||  nBSTCSurfs != _BSTCOuterRadii.size()) {
-	throw cet::exception("GEOM")
-	  << "BSTC has different number of radii and lengths, check the geom config file. \n";
+        throw cet::exception("GEOM")
+          << "BSTC has different number of radii and lengths, check the geom config file. \n";
       }
       std::vector<double> BSTCCornersZ, BSTCCornersInnRadii, BSTCCornersOutRadii;
       double BSTCtotLength=0;
       for (std::vector<double>::iterator length_it=_BSTCLengths.begin(); length_it!=_BSTCLengths.end(); ++length_it) {
-	BSTCtotLength+=*length_it;
+        BSTCtotLength+=*length_it;
       }
       double tmpBSTCPntZ=/*_BSTCZ*/-0.5*BSTCtotLength;
       for (std::size_t isurf=0; isurf<nBSTCSurfs; ++isurf) {
@@ -414,18 +414,18 @@ namespace mu2e {
         // No overlap issues here.
         const double epsilon = (isurf>0 )? 0.1 : 0.0;
 
-	BSTCCornersZ.push_back(tmpBSTCPntZ+epsilon);
-	BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
-	BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
-	tmpBSTCPntZ+=_BSTCLengths.at(isurf);
+        BSTCCornersZ.push_back(tmpBSTCPntZ+epsilon);
+        BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
+        BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
+        tmpBSTCPntZ+=_BSTCLengths.at(isurf);
 
-	BSTCCornersZ.push_back(tmpBSTCPntZ);
-	BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
-	BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
+        BSTCCornersZ.push_back(tmpBSTCPntZ);
+        BSTCCornersInnRadii.push_back(_BSTCInnerRadii.at(isurf));
+        BSTCCornersOutRadii.push_back(_BSTCOuterRadii.at(isurf));
       }
 
       mbs._pBSTCParams = std::unique_ptr<Polycone>
-	(new Polycone(BSTCCornersZ,
+        (new Polycone(BSTCCornersZ,
                       BSTCCornersInnRadii,
                       BSTCCornersOutRadii,
                       _BSTCOffsetInMu2e,
@@ -440,27 +440,27 @@ namespace mu2e {
 
       int nBSBSSurfs = _BSBSLengths.size();
       if (nBSBSSurfs != (int) _BSBSInnerRadii.size() ||  nBSBSSurfs != (int) _BSBSOuterRadii.size()) {
-	throw cet::exception("GEOM")
-	  << "BSBS has different number of radii and lengths, check the geom config file. \n";
+        throw cet::exception("GEOM")
+          << "BSBS has different number of radii and lengths, check the geom config file. \n";
       }
       std::vector<double> BSBSCornersZ, BSBSCornersInnRadii, BSBSCornersOutRadii;
       double BSBStotLength=0;
       for (std::vector<double>::iterator length_it=_BSBSLengths.begin(); length_it!=_BSBSLengths.end(); ++length_it) {
-	BSBStotLength+=*length_it;
+        BSBStotLength+=*length_it;
       }
       double tmpBSBSPntZ=/*_BSBSZ*/-0.5*BSBStotLength;
       for (int isurf=0; isurf<nBSBSSurfs; ++isurf) {
-	BSBSCornersZ.push_back(tmpBSBSPntZ);
-	BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
-	BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
-	tmpBSBSPntZ+=_BSBSLengths.at(isurf);
-	BSBSCornersZ.push_back(tmpBSBSPntZ);
-	BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
-	BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
+        BSBSCornersZ.push_back(tmpBSBSPntZ);
+        BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
+        BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
+        tmpBSBSPntZ+=_BSBSLengths.at(isurf);
+        BSBSCornersZ.push_back(tmpBSBSPntZ);
+        BSBSCornersInnRadii.push_back(_BSBSInnerRadii.at(isurf));
+        BSBSCornersOutRadii.push_back(_BSBSOuterRadii.at(isurf));
       }
 
       mbs._pBSBSParams = std::unique_ptr<Polycone>
-	(new Polycone(BSBSCornersZ,
+        (new Polycone(BSBSCornersZ,
                       BSBSCornersInnRadii,
                       BSBSCornersOutRadii,
                       _BSBSOffsetInMu2e,
@@ -475,53 +475,53 @@ namespace mu2e {
 
       int nCLV2Surfs = _CLV2Lengths.size();
       if (nCLV2Surfs != (int) _CLV2InnerRadii.size() ||  nCLV2Surfs != (int) _CLV2OuterRadii.size()) {
-	throw cet::exception("GEOM")
-	  << "CLV2 has different number of radii and lengths, check the geom config file. \n";
+        throw cet::exception("GEOM")
+          << "CLV2 has different number of radii and lengths, check the geom config file. \n";
       }
       std::vector<double> CLV2CornersZ, CLV2CornersInnRadii, CLV2CornersOutRadii;
       double CLV2totLength=0;
       for (std::vector<double>::iterator length_it=_CLV2Lengths.begin(); length_it!=_CLV2Lengths.end(); ++length_it) {
-	CLV2totLength+=*length_it;
+        CLV2totLength+=*length_it;
       }
       double tmpCLV2PntZ=/*_CLV2Z*/-0.5*CLV2totLength;
       for (int isurf=0; isurf<nCLV2Surfs; ++isurf) {
-	CLV2CornersZ.push_back(tmpCLV2PntZ);
-	CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
-	CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
-	tmpCLV2PntZ+=_CLV2Lengths.at(isurf);
-	CLV2CornersZ.push_back(tmpCLV2PntZ);
-	CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
-	CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
+        CLV2CornersZ.push_back(tmpCLV2PntZ);
+        CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
+        CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
+        tmpCLV2PntZ+=_CLV2Lengths.at(isurf);
+        CLV2CornersZ.push_back(tmpCLV2PntZ);
+        CLV2CornersInnRadii.push_back(_CLV2InnerRadii.at(isurf));
+        CLV2CornersOutRadii.push_back(_CLV2OuterRadii.at(isurf));
       }
 
       mbs._pCLV2Params = std::unique_ptr<Polycone>
-	(new Polycone(CLV2CornersZ,
+        (new Polycone(CLV2CornersZ,
                       CLV2CornersInnRadii,
                       CLV2CornersOutRadii,
                       _CLV2OffsetInMu2e,
                       _CLV2MaterialName));
 
-      if ( _MBSVersion == 3 || _MBSVersion >= 5 ){  
-        CLHEP::Hep3Vector _CLV2AbsOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.0,_CLV2Z+0.5*CLV2totLength-_CLV2AbsHLength);        
+      if ( _MBSVersion == 3 || _MBSVersion >= 5 ){
+        CLHEP::Hep3Vector _CLV2AbsOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.0,_CLV2Z+0.5*CLV2totLength-_CLV2AbsHLength);
         mbs._pCLV2ABSParams = std::unique_ptr<Tube>
           (new Tube(_CLV2AbsMaterialName,
                     _CLV2AbsOffsetInMu2e,
                     0.0, //inner radius
                     _CLV2InnerRadii.at(0)-0.01, //outer radius of the plug is the same as the inner radius of the hole, leave a 10 micron gap
                     _CLV2AbsHLength));
-      }    
+      }
       //Shield at upstream end of the MBS to protect the Calorimeter
-      if (_MBSVersion == 6 ){  
-        CLHEP::Hep3Vector _CalShieldRingOffsetInMu2e  = _MBSMOffsetInMu2e + 
-	  CLHEP::Hep3Vector(0.0,0.0,_CalShieldRingZ);        
+      if (_MBSVersion == 6 ){
+        CLHEP::Hep3Vector _CalShieldRingOffsetInMu2e  = _MBSMOffsetInMu2e +
+          CLHEP::Hep3Vector(0.0,0.0,_CalShieldRingZ);
         mbs._pCalShieldRingParams = std::unique_ptr<Tube>
           (new Tube(_CalShieldRingMaterialName,
                     _CalShieldRingOffsetInMu2e,
-                    _CalShieldRingInnerRadius, 
+                    _CalShieldRingInnerRadius,
                     _CalShieldRingOuterRadius,
                     _CalShieldRingHLength));
-      }    
-        
+      }
+
     } // end of Version 2 - specific constructor
   } // end of constructor for MBSMaker
 
@@ -539,7 +539,7 @@ namespace mu2e {
       _config.getVectorDouble("mbs.BSTSZLengths",_BSTSZLengths);
       _BSTSOuterRadius = 0.0;
       for ( unsigned int iR = 0; iR < _BSTSOutRadii.size(); iR++ ) {
-	if ( _BSTSOutRadii[iR] > _BSTSOuterRadius ) _BSTSOuterRadius = _BSTSOutRadii[iR];
+        if ( _BSTSOutRadii[iR] > _BSTSOuterRadius ) _BSTSOuterRadius = _BSTSOutRadii[iR];
       }
     } else if ( _MBSVersion == 1 ) {
       _BSTSInnerRadius      = _config.getDouble("mbs.BSTSInnerRadius");
@@ -624,30 +624,30 @@ namespace mu2e {
       _downPolyHoleZDim = _config.getDouble("mbs.downPolyHoleZDim",0.0);
       CLHEP::Hep3Vector moveIt(0.0,0.0,-_BSTSHLength);
       for ( int ihole = 0; ihole < _nHolesSt; ihole++ ) {
-	CLHEP::Hep3Vector tempLoc;
-	std::ostringstream sHoleName;
-	sHoleName << "mbs.steelHoleCenter" << ihole+1;
-	tempLoc = _config.getHep3Vector(sHoleName.str());
-	tempLoc+=moveIt;
-	_BSTSHoleCenters.push_back(tempLoc);
+        CLHEP::Hep3Vector tempLoc;
+        std::ostringstream sHoleName;
+        sHoleName << "mbs.steelHoleCenter" << ihole+1;
+        tempLoc = _config.getHep3Vector(sHoleName.str());
+        tempLoc+=moveIt;
+        _BSTSHoleCenters.push_back(tempLoc);
       }
       for ( int ihole = 0; ihole < _nHolesUP; ihole++ ) {
-	CLHEP::Hep3Vector tempLoc;
-	std::ostringstream pHoleName;
-	pHoleName << "mbs.upPolyHoleCenter" << ihole+1;
-	tempLoc = _config.getHep3Vector(pHoleName.str());
-	tempLoc+=moveIt;
-	_upPolyHoleCenters.push_back(tempLoc);
+        CLHEP::Hep3Vector tempLoc;
+        std::ostringstream pHoleName;
+        pHoleName << "mbs.upPolyHoleCenter" << ihole+1;
+        tempLoc = _config.getHep3Vector(pHoleName.str());
+        tempLoc+=moveIt;
+        _upPolyHoleCenters.push_back(tempLoc);
       }
       for ( int ihole = 0; ihole < _nHolesDP; ihole++ ) {
-	CLHEP::Hep3Vector tempLoc;
-	std::ostringstream pHoleName;
-	pHoleName << "mbs.downPolyHoleCenter" << ihole+1;
-	tempLoc =_config.getHep3Vector(pHoleName.str());
-	tempLoc+=moveIt;
-	_downPolyHoleCenters.push_back(tempLoc);
+        CLHEP::Hep3Vector tempLoc;
+        std::ostringstream pHoleName;
+        pHoleName << "mbs.downPolyHoleCenter" << ihole+1;
+        tempLoc =_config.getHep3Vector(pHoleName.str());
+        tempLoc+=moveIt;
+        _downPolyHoleCenters.push_back(tempLoc);
       }
-      
+
     }
     //Get parameters for the Calorimeter shield
     if(_MBSVersion == 6) {

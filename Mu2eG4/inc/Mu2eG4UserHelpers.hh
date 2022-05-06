@@ -57,7 +57,7 @@ namespace mu2e {
     double getEndKE(G4Track const* const trk);
     CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk);
 
-    int  getNSteps(G4Track const* const trk);  
+    int  getNSteps(G4Track const* const trk);
 
     // Control the saving of trajectories.
     // The first method does the big picture bookkeeping.

@@ -45,14 +45,14 @@ namespace mu2e
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
-	    explicit TEveEventDisplay(const Parameters& conf);
+            explicit TEveEventDisplay(const Parameters& conf);
       virtual ~TEveEventDisplay();
       virtual void beginJob() override;
       virtual void beginRun(const art::Run& run) override;
       virtual void analyze(const art::Event& e);
       virtual void endJob() override;
-      
-    private:   
+
+    private:
       Config _conf;
       int _diagLevel;
       bool _isMCOnly;
@@ -73,7 +73,7 @@ namespace mu2e
       int eventn = 0;
       bool eventSelected = false;
   };
-      
+
   TEveEventDisplay::TEveEventDisplay(const Parameters& conf) :
   art::EDAnalyzer(conf),
   _diagLevel(conf().diagLevel()),
@@ -84,21 +84,21 @@ namespace mu2e
   _particles(conf().particles()),
   _show(conf().show())
   {}
-      
-      
+
+
   TEveEventDisplay::~TEveEventDisplay(){}
-      
+
   void TEveEventDisplay::beginJob(){
-      
+
     directory_ = gDirectory;
     if ( !gApplication ){
       int    tmp_argc(0);
       char** tmp_argv(0);
       application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
-    } 
+    }
     //construct GUI:
-    const DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, _filler.addTrkHits_, _filler.addTimeClusters_, false, _filler.addMCTraj_); 
-    
+    const DrawOptions DrawOpts(_filler.addCrvHits_, _filler.addCosmicSeedFit_, _filler.addTracks_, _filler.addClusters_, _filler.addHits_, _filler.addTrkHits_, _filler.addTimeClusters_, false, _filler.addMCTraj_);
+
     _frame = new TEveMu2eMainWindow(gClient->GetRoot(), 1000,600, _pset, DrawOpts, _show);
 
     //build 2D geometries (now optional):
@@ -107,9 +107,9 @@ namespace mu2e
     _frame->CreateTrackerProjection();
     //send list of particles to viewer:
     _frame->SetParticleOpts(_particles);
-  
+
   }
-          
+
   void TEveEventDisplay::beginRun(const art::Run& run){
     //import 3D GDML geom:
     _frame->SetRunGeometry(run, _gdmlname, _diagLevel);
@@ -117,13 +117,13 @@ namespace mu2e
     if(_filler.addClusters_) _frame->PrepareCaloProjectionTab(run);
     _frame->PrepareTrackerProjectionTab(run);
   }
-      
+
   void TEveEventDisplay::analyze(const art::Event& event){
     std::cout<<"[In TEveEventDisplay::analyze()]"<<std::endl;
     int eventid = event.id().event();
     int runid = event.run();
     int subrunid = event.subRun();
-    
+
     if((eventSelected==false) or ( eventSelected == true and runid == runn and eventid == eventn)){
       std::cout<<"Drawing Run : "<<runid<<" Sub-Run "<<subrunid<<" Event : "<<eventid<<std::endl;
       foundEvent = true;
@@ -138,11 +138,11 @@ namespace mu2e
       if(_filler.addMCTraj_)_filler.FillMCCollections(event, data, MCTrajectories);
       if(!_frame->isClosed()) _frame->setEvent(event,  _firstLoop, data, -1, _accumulate, runn, eventn, eventSelected, _isMCOnly);
       _firstLoop = false;
-      
+
     }
   }
-   
-      
+
+
   void TEveEventDisplay::endJob(){
     if(!foundEvent){
       char msg[300];
@@ -150,7 +150,7 @@ namespace mu2e
       new TGMsgBox(gClient->GetRoot(), gClient->GetRoot(), "Event Not Found", msg, kMBIconExclamation,kMBOk);
     }
   }
-      
+
 }
 using mu2e::TEveEventDisplay;
 DEFINE_ART_MODULE(TEveEventDisplay);

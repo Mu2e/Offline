@@ -7,22 +7,22 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : ReadCaloClusterEff
 
 # Start form a data source
-source : 
-{ 
-  module_type : RootInput 
+source :
+{
+  module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : -1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "CaloClusterEffOut.root"
   }
@@ -32,12 +32,12 @@ services :
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }  
+  }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
@@ -66,7 +66,7 @@ physics :
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
- 
+
    extractElData:
    {
      module_type          : ExtractElectronsData
@@ -79,12 +79,12 @@ physics :
      #doDisplay            : true
      #clickToAdvance       : false
    }
-    
+
   }
 
   analyzers:
   {
-  
+
     checkhitsEff:
     {
       module_type            : CaloClusterEff
@@ -102,7 +102,7 @@ physics :
      maxFullPrint           : 201
     }
 
-  } 
+  }
 
   p1 : [ extractElData ]
   e1 : [ checkhitsEff ]

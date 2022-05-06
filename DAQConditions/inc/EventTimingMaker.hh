@@ -16,10 +16,10 @@ namespace mu2e {
   public:
     EventTimingMaker(EventTimingConfig const& config):_config(config) {}
     EventTiming::ptr_t fromFcl();
-  
+
   private:
 
-    // this object needs to be thread safe, 
+    // this object needs to be thread safe,
     // _config should only be initialized once
     const EventTimingConfig _config;
 

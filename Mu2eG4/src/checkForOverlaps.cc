@@ -44,8 +44,8 @@ namespace mu2e{
 
     if (verbose) {
       auto cflags = G4cout.flags();
-      G4cout << __func__ << " SurfaceArea is: " << std::setw(12) << G4long(vsa) 
-             << ", surfaceCheckPoints " << std::setw(12) << nSurfaceCheckPoints 
+      G4cout << __func__ << " SurfaceArea is: " << std::setw(12) << G4long(vsa)
+             << ", surfaceCheckPoints " << std::setw(12) << nSurfaceCheckPoints
              << " for " << pv->GetName() << std::endl;
       G4cout.flags(cflags);
       ocTimer.start();
@@ -61,10 +61,10 @@ namespace mu2e{
       auto cprecision = G4cout.precision();
       auto cwidth = G4cout.width();
       G4cout << __func__
-	     << " RealElapsed: " << std::fixed << std::setw(12) << std::setprecision(6) << realElapsed
-	     << " CpuElapsed:  " << cpuElapsed
-	     << " CpuElapsed/surfaceCheckPoint: " << std::setprecision(9) << cpuElapsed/nSurfaceCheckPoints
-	     << std::endl;
+             << " RealElapsed: " << std::fixed << std::setw(12) << std::setprecision(6) << realElapsed
+             << " CpuElapsed:  " << cpuElapsed
+             << " CpuElapsed/surfaceCheckPoint: " << std::setprecision(9) << cpuElapsed/nSurfaceCheckPoints
+             << std::endl;
       G4cout.flags(cflags);
       G4cout.precision(cprecision);
       G4cout.width(cwidth);

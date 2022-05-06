@@ -1,4 +1,4 @@
-# Sophie Middleton 
+# Sophie Middleton
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -19,13 +19,13 @@ source : { module_type : RootInput }
 
 physics :
 {
-  
-  producers : { @table::TrkHitReco.producers} 
+
+  producers : { @table::TrkHitReco.producers}
   analyzers : { @table::TEveDis.analyzers}
   filters : { @table::TEveDis.filters}
 }
 
 physics.RecoPath : [ EventFilter, @sequence::TrkHitReco.PrepareHits]
-physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
+physics.EndPath  : [ @sequence::TEveDis.seqHelix]
 
 

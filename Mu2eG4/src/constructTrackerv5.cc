@@ -13,7 +13,7 @@
 //
 //     This version makes logical mother volumes per plane and per
 //     panel and places panels in plane and straws in panel
-//     This version places individual panels and planes, in order to 
+//     This version places individual panels and planes, in order to
 //     work with alignment.
 //
 // 2) This function can build the Tracker designs described in:

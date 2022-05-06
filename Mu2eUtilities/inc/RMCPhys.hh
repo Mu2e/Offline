@@ -37,7 +37,7 @@
 namespace mu2e {
 
   class RMCPhys {
-    
+
     private :
       art::InputTag input_;
       double kmax_;
@@ -64,12 +64,12 @@ namespace mu2e {
               std::cout << "Particle id:" << i.pdgId() << "& momentum: " << i.momentum().e() << std::endl;
             }
           }
-        } 
+        }
       }
       else {
         for ( const auto& i: *genColl ) {
           if (i.pdgId() == 22 && i.generatorId().id() == 41 ) {
-            energy = i.momentum().e(); 
+            energy = i.momentum().e();
           }
         }
       }
@@ -82,7 +82,7 @@ namespace mu2e {
         std::cout << "Norm: " << norm << std::endl;
         std::cout << "Energy: " << energy << std::endl;
         std::cout << "Weight:" << wt << std::endl;
-      
+
       }
       return wt;
     };

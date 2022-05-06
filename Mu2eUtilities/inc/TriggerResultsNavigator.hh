@@ -17,13 +17,13 @@ namespace mu2e {
 
   public:
     TriggerResultsNavigator(const art::TriggerResults* trigResults);
-    
+
     // Trigger path information for the current process
     size_t  size() const
     {
       return _trigPathsNames.size();
     }
-    
+
     std::vector<std::string> const& getTrigPaths   () const  { return _trigPathsNames; }
     std::string              const& getTrigPath    (unsigned int const i) const { return _trigPathsNames.at(i); }
     std::string              const  getTrigPathName(unsigned int const i) const;
@@ -37,12 +37,12 @@ namespace mu2e {
 
     bool      wasrun(std::string const& name) const;
 
-    //NOTE: the following three functions can be used only within the same job that runs the 
+    //NOTE: the following three functions can be used only within the same job that runs the
     // trigger paths, otherwise they will fail
     std::vector<std::string>   triggerModules (std::string const& name) const;
     unsigned                   indexLastModule(std::string const& name) const;
     std::string                nameLastModule (std::string const& name) const;
-    
+
     art::hlt::HLTState state(std::string const& name) const;
     void      print() const;
 
@@ -52,9 +52,9 @@ namespace mu2e {
     std::map<std::string, unsigned int>  _trigMap;
     std::map<std::string, unsigned int>  _trigPathMap;
   };
-  
-  
-  
+
+
+
 
 } // namespace mu2e
 

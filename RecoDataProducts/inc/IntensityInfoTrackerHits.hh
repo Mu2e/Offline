@@ -17,7 +17,7 @@ namespace mu2e {
       nTrackerHits_(nTrackerHits)
     {}
 
-	   
+
     void setNTrackerHits   (unsigned short tmp) {nTrackerHits_ = tmp;}
 
     unsigned short nTrackerHits () const { return nTrackerHits_; }

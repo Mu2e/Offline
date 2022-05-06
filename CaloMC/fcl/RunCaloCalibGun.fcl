@@ -10,7 +10,7 @@
 #include "Production/JobConfig/digitize/prolog.fcl"
 process_name: CaloCalibExample
 
-source: { 
+source: {
    module_type: EmptyEvent
    maxEvents : 1000
 }
@@ -24,7 +24,7 @@ services.SeedService.maxUniqueEngines :  20
 physics: {
 
     producers: {
-        
+
       generate: {
         module_type : CaloCalibGun
         cosmin :  -1.0
@@ -56,17 +56,17 @@ physics: {
     }
 
     analyzers: {
-        
+
       CaloExample: {
         module_type                : CaloCalibAna
         caloHitCollection     : CaloHitMaker
         caloClusterCollection : CaloClusterMaker
-        caloHitTruth    : CaloHitTruthMatch 
-        vdCollection        : virtualdetector 
+        caloHitTruth    : CaloHitTruthMatch
+        vdCollection        : virtualdetector
         caloClusterTruth  : CaloClusterTruthMatch
-        
-	    }
-  
+
+            }
+
     }
 
     p1: [ generate, g4run, protonTimeMap, muonTimeMap, EWMProducer,
@@ -74,8 +74,8 @@ physics: {
           @sequence::CommonMC.DigiSim,
           @sequence::CaloMC.DigiSim,
           @sequence::CaloReco.Reco,
-          @sequence::CaloCluster.Reco,	 
-	        @sequence::CaloMC.TruthMatch
+          @sequence::CaloCluster.Reco,
+                @sequence::CaloMC.TruthMatch
        ]
 
     e1: [CaloExample]

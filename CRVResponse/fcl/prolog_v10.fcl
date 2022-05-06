@@ -101,7 +101,7 @@ BEGIN_PROLOG
       TrapType0Lifetime            : 5.0        //ns  ????
       TrapType1Lifetime            : 50.0       //ns  ????
 
-      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM 
+      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM
       CrossTalkProb                : 0.05       //
     }
     CrvWaveforms:
@@ -147,7 +147,7 @@ BEGIN_PROLOG
                                         //e.g. 1.385 for a leading edge at 20% pulse height
                                         //e.g. 1.587 for a leading edge at 10% pulse height
       allowDoubleGumbel         : false //tries fitting with two Gumbel functions (needs a very small "minPulseHeightRatio", e.g. 0.01)
-      doubleGumbelThreshold     : 2.0   //Chi2/#ADCsamples (based on a single Gumble fit) 
+      doubleGumbelThreshold     : 2.0   //Chi2/#ADCsamples (based on a single Gumble fit)
                                         //at which a fit with two Gumbel functions should be attempted
       minPEs                    : 0     //0 PEs
     }
@@ -400,9 +400,9 @@ BEGIN_PROLOG
       timeEnd                        : 1600
     }
 
-CrvDAQPackage : 
+CrvDAQPackage :
 {
-   producers : 
+   producers :
    {
      CrvPhotons                  : @local::CrvPhotons
      CrvSiPMCharges              : @local::CrvSiPMCharges

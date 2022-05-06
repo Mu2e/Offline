@@ -55,7 +55,7 @@ physics :
       //pathlengths    : [ 1, 2, 3, 4, 5, 7.5, 10, 15 ] //in mm
       maxTCut_dEdx   : 100.0 // MeV
       nStepTCut_dEdx : 200
- 
+
     }
   }
   p1 : []

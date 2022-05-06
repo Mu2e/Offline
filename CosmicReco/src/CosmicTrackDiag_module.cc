@@ -52,9 +52,9 @@
 #include "TLatex.h"
 #include "TGraph.h"
 #include "TProfile.h"
-using namespace std; 
+using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
   class CosmicTrackDiag : public art::EDAnalyzer {
     public:
@@ -78,7 +78,7 @@ namespace mu2e
       virtual void beginJob() override;
       virtual void beginRun(const art::Run& r) override;
       virtual void analyze(const art::Event& e) override;
-    private: 
+    private:
 
       Config _conf;
 
@@ -100,15 +100,15 @@ namespace mu2e
 
       Float_t _pbtmc;
       const Tracker* tracker;
-      ProditionsHandle<StrawResponse> _strawResponse_h; 
+      ProditionsHandle<StrawResponse> _strawResponse_h;
 
 
       //TTree Info:
       TTree* _trackT;
       TTree* _hitT;
 
-      // track tree 
-      Int_t _evt; 
+      // track tree
+      Int_t _evt;
       Int_t _ntrack;
       Int_t _nsh; // # associated straw hits / event
       Int_t _ntc; // # clusters/event
@@ -124,7 +124,7 @@ namespace mu2e
       Float_t _a0err,_b0err,_a1err,_b1err,_t0err;
       Float_t _mca0,_mcb0,_mca1,_mcb1, _mct0;
 
-      // hit tree 
+      // hit tree
       Float_t _hitminuitdoca, _hitminuitlong, _hitminuitdpocat;
       Float_t _hittruedoca, _hitmcdoca, _hitrecodoca;
       Float_t _hitmcdpocat;
@@ -183,7 +183,7 @@ namespace mu2e
       _trackT->Branch("PanelsCrossedInEvent", &_n_panels, "PanelsCrossedInEvent/I");
       _trackT->Branch("PlanesCrossedInEvent", &_n_planes, "PlanesCrossedInEvent/I");
       _trackT->Branch("StationsCrossedInEvent", &_n_stations, "StationsCrossedInEvent/I");
-      _trackT->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I"); 
+      _trackT->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I");
       _trackT->Branch("a0",&_a0,"a0/F");
       _trackT->Branch("b0",&_b0,"b0/F");
       _trackT->Branch("a1",&_a1,"a1/F");
@@ -264,7 +264,7 @@ namespace mu2e
         _hitT->Branch("edep",&_hitedep,"edep/F");
       }
     }
-  } 
+  }
 
   void CosmicTrackDiag::beginRun(const art::Run& run){
     mu2e::GeomHandle<mu2e::Tracker> th;
@@ -275,8 +275,8 @@ namespace mu2e
 
     _evt = event.id().event();  // add event id
     if(!findData(event)) // find data
-      throw cet::exception("RECO")<<"No Time Clusters in event"<< endl; 
-    
+      throw cet::exception("RECO")<<"No Time Clusters in event"<< endl;
+
     StrawResponse const& srep = _strawResponse_h.get(event.id());
 
     //find time clusters:
@@ -291,7 +291,7 @@ namespace mu2e
     _nsh = 0;
     for(size_t ich = 0;ich < _shcol->size(); ++ich){
       ComboHit const& chit =(*_shcol)[ich];
-      _nsh += chit.nStrawHits(); 
+      _nsh += chit.nStrawHits();
       uint16_t panelid = chit.strawId().uniquePanel();
       if (std::find(panels.begin(),panels.end(),panelid) == panels.end())
         panels.push_back(panelid);
@@ -349,8 +349,8 @@ namespace mu2e
       _llike = 0;
       _ontrackhits = 0;
       for (size_t i=0; i<tseed._straw_chits.size(); ++i) {
-        auto sh = tseed._straw_chits[i]; 
-        
+        auto sh = tseed._straw_chits[i];
+
         double llike = 0;
         Straw const& straw = tracker->getStraw(sh.strawId());
         TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), minuitpos, minuitdir);
@@ -381,7 +381,7 @@ namespace mu2e
 
 
       TwoLinePCA minuitpca( _mcpos, _mcdir, minuitpos, minuitdir);
-      _minuitdoca = minuitpca.dca(); 
+      _minuitdoca = minuitpca.dca();
       _minuitangle = _mcdir.dot(minuitdir);
 
       if (_printlevel > 0){
@@ -396,9 +396,9 @@ namespace mu2e
   }
 
   bool CosmicTrackDiag::findData(const art::Event& evt){
-    _shcol = 0; 
+    _shcol = 0;
     _tccol = 0;
-    _tscol = 0; 
+    _tscol = 0;
     _ewMarkerOffset = 0;
     _pbtmc = 0;
     auto shH = evt.getValidHandle<ComboHitCollection>(_shtag);
@@ -425,14 +425,14 @@ namespace mu2e
     std::vector<CLHEP::Hep3Vector> pppos;
     std::vector<CLHEP::Hep3Vector> ppdir;
     for (size_t i=0;i<mccol.size();i++){
-      StrawDigiMC mcdigi = mccol[i]; 
+      StrawDigiMC mcdigi = mccol[i];
       auto const& sgsptr = mcdigi.earlyStrawGasStep();
       auto const& sgs = *sgsptr;
       auto const& sp = *sgs.simParticle();
       auto posi = GenVector::Hep3Vec(sgs.startPosition());
       if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
         for (size_t j=i+1;j<mccol.size();j++){
-          StrawDigiMC jmcdigi = mccol[j]; 
+          StrawDigiMC jmcdigi = mccol[j];
           auto const& jsgsptr = jmcdigi.earlyStrawGasStep();
           auto const& jsgs = *jsgsptr;
           auto const& jsp = *jsgs.simParticle();
@@ -440,7 +440,7 @@ namespace mu2e
           if ((jsp.pdgId() == 13 || jsp.pdgId() == -13) && jsp.creationCode() == 56){
             pppos.push_back(posi);
             ppdir.push_back((posi-posj).unit());
-          } 
+          }
         }
       }
     }
@@ -453,7 +453,7 @@ namespace mu2e
       CLHEP::Hep3Vector ppintercept(0,0,0);
       CLHEP::Hep3Vector ppdirection(0,1,0);
       for (size_t i=0;i<mccol.size();i++){
-        StrawDigiMC mcdigi = mccol[i]; 
+        StrawDigiMC mcdigi = mccol[i];
 
         const Straw& straw = tracker->getStraw( mcdigi.strawId() );
         auto const& sgsptr = mcdigi.earlyStrawGasStep();
@@ -463,12 +463,12 @@ namespace mu2e
         if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
               GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
-          double true_doca = pca.dca(); 
+          double true_doca = pca.dca();
 
           TwoLinePCA pca2( straw.getMidPoint(), straw.getDirection(),
               pppos[j], ppdir[j]);
 
-          double mctrack_doca = pca2.dca(); 
+          double mctrack_doca = pca2.dca();
           if (fabs(true_doca - mctrack_doca) < 0.5){
             count++;
             ppintercept = pppos[j] - ppdir[j]*pppos[j].y()/ppdir[j].y();
@@ -520,12 +520,12 @@ namespace mu2e
         if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
               GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
-          double true_doca = pca.dca(); 
+          double true_doca = pca.dca();
 
           TwoLinePCA pca2( straw.getMidPoint(), straw.getDirection(),
               _mcpos, _mcdir);
 
-          double mctrack_doca = pca2.dca(); 
+          double mctrack_doca = pca2.dca();
           if (fabs(true_doca - mctrack_doca) < 0.5){
             _mcnsh += 1;
           }
@@ -571,7 +571,7 @@ namespace mu2e
       _hitrecodoca = sh.driftTime();
 
       _hitproptime = sh.propTime();
-      _hittime = sh.time(); 
+      _hittime = sh.time();
 
       CLHEP::Hep3Vector pcapoint2(0,0,0);
       if (_mcdiag){
@@ -600,14 +600,14 @@ namespace mu2e
         // Get the actual DOCA of the MC step
         TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
             GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
-        _hittruedoca = pca.dca(); 
+        _hittruedoca = pca.dca();
         _hittruelong = (GenVector::Hep3Vec(sgs.startPosition())-straw.getMidPoint()).dot(straw.getDirection());
 
         // Get the DOCA from the MC straight line track
         TwoLinePCA pca1( straw.getMidPoint(), straw.getDirection(),
             _mcpos, _mcdir);
         pcapoint2 = pca.point2();
-        _hitmcdoca = pca1.dca(); 
+        _hitmcdoca = pca1.dca();
         // get the delta transverse distance between POCA of step and POCA of track
         _hitmcdpocat = sqrt((pca.point2()-pca1.point2()).mag2()-pow((pca.point2()-pca1.point2()).dot(straw.getDirection()),2));
         _hitmclong = (pca1.point1()-straw.getMidPoint()).dot(straw.getDirection());
@@ -627,14 +627,14 @@ namespace mu2e
 
       if (_tscol->size() > 0){
         auto tseed = _tscol->at(0);
-        auto minuitpos = GenVector::Hep3Vec(tseed._track.MinuitEquation.Pos); 
+        auto minuitpos = GenVector::Hep3Vec(tseed._track.MinuitEquation.Pos);
         auto minuitdir = GenVector::Hep3Vec(tseed._track.MinuitEquation.Dir.unit());
         // convert to y orientation
         if (minuitdir.y() > 0)
           minuitdir *= -1;
         if (minuitdir.y() != 0)
           minuitpos -= minuitdir*minuitpos.y()/minuitdir.y();
-        
+
 
         bool found = false;
         for (size_t k=0;k<tseed._straw_chits.size();k++){

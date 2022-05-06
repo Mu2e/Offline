@@ -350,11 +350,11 @@ EventGenerator : { @table::EventGenerator
                 physicsVerbosityLevel : 0
             }
             muonStops                 : { @table::muonStops  }
-	}
+        }
 
         CaloTBGun : {
-	    module_type    : CaloTBGun
-	}
+            module_type    : CaloTBGun
+        }
     }
 }
 

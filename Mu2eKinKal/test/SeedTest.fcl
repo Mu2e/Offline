@@ -38,13 +38,13 @@ physics :
   ]
   analyzers : {
     #      TAKSF : { @table::TrackAnalysisReco
-    #      		    candidate : @local::DeM
-    #		    supplements : []
-    #		  }
+    #                          candidate : @local::DeM
+    #                    supplements : []
+    #                  }
     #      TAKFF : { @table::TrackAnalysisReco
-    #      		    candidate : @local::DeM
-    #		    supplements : []
-    #		  }
+    #                          candidate : @local::DeM
+    #                    supplements : []
+    #                  }
     TAKK : { @table::TrackAnalysisReco
       candidate : @local::DeM
       supplements : []

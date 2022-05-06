@@ -21,10 +21,10 @@ void mu2e::NotchManager::loadNotches( const SimpleConfig& config ) {
   for ( auto theVar : variables ) {
     std::size_t pos = 0;
     if ( (pos = theVar.find(searchString)) != std::string::npos ) {
-      // Assume variable names go like this:  
+      // Assume variable names go like this:
       // part_name.Notch.notch_property_name.number   OR
-      // part_name.Notch.numberOfNotches  
-      // We trigger on the latter here 
+      // part_name.Notch.numberOfNotches
+      // We trigger on the latter here
       std::string partName = theVar.substr(0,pos);
       usedVariables.push_back(partName);
     } // end of if Notch found
@@ -36,7 +36,7 @@ void mu2e::NotchManager::loadNotches( const SimpleConfig& config ) {
     // ask how many notches for the part, then loop and for each notch,
     // find the dimensions, position, and orientation.  Dimensions are in
     // the form of a vector of 3 doubles.  Position is in the form of a
-    // Hep3Vector (entered in SimpleConfig as a vector of 3 doubles).  
+    // Hep3Vector (entered in SimpleConfig as a vector of 3 doubles).
     // Orientation is a 3-character string.
     std::ostringstream tmpName1;
     tmpName1 << partName << ".Notch.numberOfNotches";

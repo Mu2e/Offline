@@ -10,76 +10,76 @@ BEGIN_PROLOG
 DAQ : {
    producers : {
       binaryOutput: {
-	 #      module_type     : BinaryPacketsFromDataBlocks
-	 module_type     : ArtBinaryPacketsFromDigis
-	 strawDigiCollection : "makeSD"
-	 caloDigiCollection  : "CaloDigiMaker"
-	 crvDigiCollection   : "CrvDigi"
-	 diagLevel       : 0
-	 maxFullPrint    : 0
+         #      module_type     : BinaryPacketsFromDataBlocks
+         module_type     : ArtBinaryPacketsFromDigis
+         strawDigiCollection : "makeSD"
+         caloDigiCollection  : "CaloDigiMaker"
+         crvDigiCollection   : "CrvDigi"
+         diagLevel       : 0
+         maxFullPrint    : 0
 
-	 includeTracker : 0
-	 includeCalorimeter : 0
-	 includeCrv : 0
-	 includeDMAHeaders: 1
+         includeTracker : 0
+         includeCalorimeter : 0
+         includeCrv : 0
+         includeDMAHeaders: 1
 
-	 generateTimestampTable : 0
-	 tableFile              : "tsTable.bin"
-	 timestampOffset        : 0
+         generateTimestampTable : 0
+         tableFile              : "tsTable.bin"
+         timestampOffset        : 0
 
-	 generateBinaryFile : 1
-	 generateTextFile   : 0
-#	 outputFile      : "DTC_packets.bin"
-#	 maxDMABlockSize : 32000
-#	 bufferSize      : 1000
+         generateBinaryFile : 1
+         generateTextFile   : 0
+#         outputFile      : "DTC_packets.bin"
+#         maxDMABlockSize : 32000
+#         bufferSize      : 1000
       }
-      
+
       makeSDOld:
       {
-	 module_type: StrawAndCaloDigisFromFragments
-	 diagLevel: 0
-	 parseCAL: 0
-	 parseTRK: 1
+         module_type: StrawAndCaloDigisFromFragments
+         diagLevel: 0
+         parseCAL: 0
+         parseTRK: 1
          useTrkADC : 0
-	 
-	 trkTag  : "daq:trk"
-	 caloTag : "daq:calo"
+
+         trkTag  : "daq:trk"
+         caloTag : "daq:calo"
       }
 
       makeSD:
       {
-	 module_type: StrawRecoFromFragments
-	 diagLevel : 0
+         module_type: StrawRecoFromFragments
+         diagLevel : 0
          useTrkADC : 0
-	 trkTag    : "daq:trk"
+         trkTag    : "daq:trk"
       }
 
-      CaloDigiMaker:		
+      CaloDigiMaker:
       {
-	 module_type : CaloRecoFromFragments
-	 diagLevel   : 0
-	 caloTag     : "daq:calo"
+         module_type : CaloRecoFromFragments
+         diagLevel   : 0
+         caloTag     : "daq:calo"
       }
 
-       FastCaloHitMaker:		
+       FastCaloHitMaker:
       {
-	 module_type   : CaloHitsFromFragments
-	 diagLevel     : 0
-	 caloTag       : "daq:calo"
-	 digiSampling  : 5
-	 deltaTPulses  : 5.
+         module_type   : CaloHitsFromFragments
+         diagLevel     : 0
+         caloTag       : "daq:calo"
+         digiSampling  : 5
+         deltaTPulses  : 5.
          nPEperMeV     : 30
          noiseLevelMeV : 0.55
          nSigmaNoise   : 4
-	 # hitEDepMax    : 80.
-	 hitEDepMax    : 1000. # for testing
+         # hitEDepMax    : 80.
+         hitEDepMax    : 1000. # for testing
       }
 
       CrvDigi:
       {
-	 module_type: CrvDigisFromFragments
-	 diagLevel: 0
-	 crvTag   : "daq:crv"
+         module_type: CrvDigisFromFragments
+         diagLevel: 0
+         crvTag   : "daq:crv"
       }
 
       FastMakeSH:
@@ -88,7 +88,7 @@ DAQ : {
          diagLevel : 0
          printLevel : 0
          FitType : 5
-         UseCalorimeter : false 
+         UseCalorimeter : false
          clusterDt : 100
          minimumEnergy : 0.0
          maximumEnergy : 0.0035
@@ -102,7 +102,7 @@ DAQ : {
          FlagCrossTalk : false
          CaloClusterCollectionTag : "CaloClusterFast"
          ProtonBunchTimeTag : "EWMProducer"
-         TrackerFragmentTag : "daq:trk"        
+         TrackerFragmentTag : "daq:trk"
       }
    }
 }

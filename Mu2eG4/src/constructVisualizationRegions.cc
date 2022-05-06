@@ -52,9 +52,9 @@ namespace mu2e {
         const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
         geomOptions->loadEntry( config, configPrefix + "visible", configPrefix);
 
-        const bool isVisible            = geomOptions->isVisible(configPrefix + "visible"); 
-        const bool isSolid              = geomOptions->isSolid(configPrefix + "visible"); 
-        const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible(configPrefix + "visible"); 
+        const bool isVisible            = geomOptions->isVisible(configPrefix + "visible");
+        const bool isSolid              = geomOptions->isSolid(configPrefix + "visible");
+        const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible(configPrefix + "visible");
         const bool doSurfaceCheck       = geomOptions->doSurfaceCheck(configPrefix + "visible");
         const bool placePV              = geomOptions->placePV(configPrefix + "visible");
         const int  verbosityLevel       = config.getInt("visregions.verbosityLevel", 0);
@@ -133,9 +133,9 @@ namespace mu2e {
         const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
         geomOptions->loadEntry( config, "visregionsBoxes", "visregions.boxes");
 
-        const bool isVisible            = geomOptions->isVisible("visregionsBoxes"); 
-        const bool isSolid              = geomOptions->isSolid("visregionsBoxes"); 
-        const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("visregionsBoxes"); 
+        const bool isVisible            = geomOptions->isVisible("visregionsBoxes");
+        const bool isSolid              = geomOptions->isSolid("visregionsBoxes");
+        const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("visregionsBoxes");
         const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("visregionsBoxes");
         const bool placePV              = geomOptions->placePV("visregionsBoxes");
         const int  verbosityLevel       = config.getInt("visregions.verbosityLevel", 0);

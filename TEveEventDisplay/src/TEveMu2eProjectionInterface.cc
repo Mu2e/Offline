@@ -8,7 +8,7 @@ namespace mu2e{
       // Create detector and event scenes for ortho views
       CRV2Dproj->fDetXYScene = gEve->SpawnNewScene("CRV Top", "");
       CRV2Dproj->fEvtXYScene = gEve->SpawnNewScene("CRV Top event", "");
-    
+
       // Create XY/RZ calo2Dprojection mgrs, draw projected axes, & add them to scenes
       CRV2Dproj->fXYMgr = new TEveProjectionManager(TEveProjection::kPT_RPhi);
       TEveProjectionAxes* axes_xy1 = new TEveProjectionAxes(CRV2Dproj->fXYMgr);
@@ -79,7 +79,7 @@ namespace mu2e{
 
    // gEve->GetBrowser()->GetTabRight()->SetTab(0);
   }
-  
+
   /*------------Function to add tracker 2D projection to display:-------------*/
   void TEveMu2eProjectionInterface::CreateTrackerProjection(TEveMu2e2DProjection *tracker2Dproj){
     // Create detector and event scenes for ortho views
@@ -133,7 +133,7 @@ namespace mu2e{
     calo2Dproj->fDetRZScene->DestroyElements();
     TEveElementList *orthodet0 = new TEveElementList("CaloOrthoDet0");
     TEveElementList *orthodet1 = new TEveElementList("CaloOrthoDet1");
-    TGeoVolume* topvol = geom->GetTopVolume(); 
+    TGeoVolume* topvol = geom->GetTopVolume();
     Mu2eCalo->DrawCaloDetector(run, topvol,orthodet0,orthodet1);
 
     gEve->AddGlobalElement(orthodet0);

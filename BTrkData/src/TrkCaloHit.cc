@@ -17,16 +17,16 @@ using CLHEP::Hep3Vector;
 namespace mu2e
 {
   TrkCaloHit::TrkCaloHit(CaloCluster const& caloCluster, Hep3Vector const& caloClusterPos,
-			 double crystalLength, Hep3Vector const& clusterAxis,
-			 const HitT0& hitt0,double fltlen, double timeWeight,
-			 double hiterr, double terr, double dtoffset) :
+                         double crystalLength, Hep3Vector const& clusterAxis,
+                         const HitT0& hitt0,double fltlen, double timeWeight,
+                         double hiterr, double terr, double dtoffset) :
     _caloCluster(caloCluster), _clen(crystalLength),
     _dtoffset(dtoffset),
     _hitErr(hiterr) , _tErr(terr)
   {
-// the hit trajectory is defined as a line segment directed along the cluster axis 
+// the hit trajectory is defined as a line segment directed along the cluster axis
     _hittraj = new TrkLineTraj(HepPoint(caloClusterPos.x(), caloClusterPos.y(), caloClusterPos.z()),
-			       clusterAxis, 0.0, crystalLength);
+                               clusterAxis, 0.0, crystalLength);
     setHitLen(0.5*crystalLength); // approximpate
     setFltLen(fltlen);
 // compute initial hit t0
@@ -51,7 +51,7 @@ namespace mu2e
     return caloCluster().time()  + _dtoffset; // following Pasha's convention
   }
 
-  // bool 
+  // bool
   // TrkCaloHit::time(HitT0& t0) const{
   //   HitT0 st0;
   //   if (signalPropagationTime(st0)){
@@ -71,12 +71,12 @@ namespace mu2e
     if( poca().status().success()) {
 // check the cluster distance to make sure we're on the right loop
       if(hitLen() < _hittraj->lowRange() || hitLen() > 1.5*_hittraj->hiRange()){
-	double cost = traj->direction(fltLen()).dot(_hittraj->direction(hitLen()));
-	double smax =  0.5*_hittraj->hiRange(); // approximate shwowermax
-	double dflt = (hitLen()-smax)/cost;
-	setFltLen(fltLen() - dflt);
-	setHitLen(smax);
-	updatePoca(traj);
+        double cost = traj->direction(fltLen()).dot(_hittraj->direction(hitLen()));
+        double smax =  0.5*_hittraj->hiRange(); // approximate shwowermax
+        double dflt = (hitLen()-smax)/cost;
+        setFltLen(fltLen() - dflt);
+        setHitLen(smax);
+        updatePoca(traj);
       }
       status = poca().status();
       double residual = poca().doca();
@@ -113,7 +113,7 @@ namespace mu2e
       tlight = clen/vlprop;
     }
     t0._t0    =  tlight;
-    t0._t0err = _tErr; // intrinsic error on time, used in T0 updating. 
+    t0._t0err = _tErr; // intrinsic error on time, used in T0 updating.
                        //Contribution from the uncertainty of the light propagation is below 100 ps
 
     return true;//FIXME!

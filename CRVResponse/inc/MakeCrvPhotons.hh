@@ -70,7 +70,7 @@ struct LookupBin
   static const int maxTimeDelays=150;
   static const int maxFiberEmissions=10;
   static const unsigned short probabilityScale=255;  //still within unsigned char (1 byte)
-  //the lookup tables encodes probabilities as probability*probabilityScale(255), 
+  //the lookup tables encodes probabilities as probability*probabilityScale(255),
   //so that the probabilities can be stored as unsigned chars.
   //therefore, the probability of 1 is stored as 255.
 
@@ -93,7 +93,7 @@ class MakeCrvPhotons
 {
   public:
 
-    MakeCrvPhotons(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ) : 
+    MakeCrvPhotons(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ) :
                                                       _randFlat(randFlat), _randGaussQ(randGaussQ), _randPoissonQ(randPoissonQ) {}
 
     ~MakeCrvPhotons();

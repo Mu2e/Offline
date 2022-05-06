@@ -270,10 +270,10 @@ namespace mu2e {
     art::Ptr<GenParticle>  _genParticle;
 
     // Information at the start of the track.
-    XYZVectorD		    _startPosition;
+    XYZVectorD                    _startPosition;
     XYZTVectorF             _startMomentum;
-    float		    _startGlobalTime;
-    float		    _startProperTime;
+    float                    _startGlobalTime;
+    float                    _startProperTime;
     unsigned                _startVolumeIndex;
     unsigned                _startG4Status;
     ProcessCode             _creationCode;
@@ -281,13 +281,13 @@ namespace mu2e {
 
     // Information at the end of the track.
     XYZVectorD              _endPosition;
-    XYZTVectorF		    _endMomentum;
+    XYZTVectorF                    _endMomentum;
     float                  _endGlobalTime;
     float                  _endProperTime;
     unsigned                _endVolumeIndex;
     unsigned                _endG4Status;
     ProcessCode             _stoppingCode;
-    float		    _preLastStepKE;
+    float                    _preLastStepKE;
     float                   _endKE;
     int                     _nSteps;
     float                   _trackLength;
