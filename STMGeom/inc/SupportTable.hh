@@ -15,14 +15,14 @@ namespace mu2e {
 
   class SupportTable {
   public:
-    SupportTable(bool build, double tabletopHalfWidth, 
-                 double tabletopHalfHeight, double tabletopHalfLength, 
+    SupportTable(bool build, double tabletopHalfWidth,
+                 double tabletopHalfHeight, double tabletopHalfLength,
                  double legRadius,
                  CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
-                 CLHEP::HepRotation const & rotation = CLHEP::HepRotation(), 
+                 CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
                  std::string const & materialName = ""
                 ) :
-      _build( build ),          
+      _build( build ),
       _tabletopHalfWidth( tabletopHalfWidth ),
       _tabletopHalfHeight( tabletopHalfHeight ),
       _tabletopHalfLength( tabletopHalfLength ),
@@ -39,10 +39,10 @@ namespace mu2e {
     double legRadius()              const { return _legRadius; }
     //double zBegin()          const { return _originInMu2e.z() - zTabletopHalfLength(); }
     //double zEnd()            const { return _originInMu2e.z() + zTabletopHalfLength(); }
-   
+
     CLHEP::Hep3Vector const &  originInMu2e() const { return _originInMu2e; }
     CLHEP::HepRotation const & rotation()     const { return _rotation; }
-    std::string const &        materialName() const { return _materialName; }    
+    std::string const &        materialName() const { return _materialName; }
 
     // Genreflex can't do persistency of vector<SupportTable> without a default constructor
     SupportTable() {}

@@ -165,11 +165,11 @@ namespace mu2e {
 
       _hasDownRing    = config.getBool( "trackerSupport.downRing.build",false);
       if ( _hasDownRing ) {
-	_downRingOuterRadius      = config.getDouble( "trackerSupport.downRing.outerRadius" );
-	_downRingInnerRadius      = config.getDouble( "trackerSupport.downRing.innerRadius" );
-	_downRingHalfLength       = config.getDouble( "trackerSupport.downRing.halfLength"  );
-	_downRingZOffset          = config.getDouble( "trackerSupport.downRing.zOffset"     );
-	_downRingMaterial         = config.getString( "trackerSupport.downRing.material"    );
+        _downRingOuterRadius      = config.getDouble( "trackerSupport.downRing.outerRadius" );
+        _downRingInnerRadius      = config.getDouble( "trackerSupport.downRing.innerRadius" );
+        _downRingHalfLength       = config.getDouble( "trackerSupport.downRing.halfLength"  );
+        _downRingZOffset          = config.getDouble( "trackerSupport.downRing.zOffset"     );
+        _downRingMaterial         = config.getString( "trackerSupport.downRing.material"    );
       }
 
       config.getVectorInt( "trackerSupport.midRing.slot", _midRingSlot );
@@ -543,12 +543,12 @@ namespace mu2e {
       double planeDeltaZ = choosePlaneSpacing(ipln);
       CLHEP::Hep3Vector planeorigin( 0.0, 0.0, _z0+planeDeltaZ);
       for ( int ipnl=0; ipnl<StrawId::_npanels; ++ipnl ){
-	_strawPanelConstrCount = -1; // these counts are useless and should go away FIXME!
-	for ( int ilay=0; ilay<StrawId::_nlayers; ++ilay ){
-	  StrawId sid(ipln,ipnl,ilay);
-	  // we use the straw field to indicate the layer.  Layer structure is deprecated FIXME
-	  makeLayer(sid,planeorigin,straws);
-	}
+        _strawPanelConstrCount = -1; // these counts are useless and should go away FIXME!
+        for ( int ilay=0; ilay<StrawId::_nlayers; ++ilay ){
+          StrawId sid(ipln,ipnl,ilay);
+          // we use the straw field to indicate the layer.  Layer structure is deprecated FIXME
+          makeLayer(sid,planeorigin,straws);
+        }
       }
     }
   }
@@ -838,8 +838,8 @@ namespace mu2e {
         // Rotate straw midpoint to its actual location.
         CLHEP::Hep3Vector offset = RZ*mid;
 
-	// compute the half-length; this is just the distance to the manifold
-	double halflen = sqrt( _innerSupportRadius*_innerSupportRadius - xstraw*xstraw);
+        // compute the half-length; this is just the distance to the manifold
+        double halflen = sqrt( _innerSupportRadius*_innerSupportRadius - xstraw*xstraw);
 
         ++_strawTrckrConstrCount;
         ++_strawPanelConstrCount;
@@ -862,7 +862,7 @@ namespace mu2e {
           Straw( lsid,
                  offset,
                  Udir,
-		 halflen
+                 halflen
                  );
 
 //        allStraws_p.at(lsid.asUint16()) = &allStraws.at(strawCountReCounted);
@@ -985,8 +985,8 @@ namespace mu2e {
     if ( _hasDownRing ) {
       TubsParams downRingTubs( _downRingInnerRadius, _downRingOuterRadius, _downRingHalfLength);
       sup._stiffRings.push_back(PlacedTubs ( "TrackerEndRingDownstream",
-					     downRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter + _downRingZOffset),
-					     _downRingMaterial ));
+                                             downRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter + _downRingZOffset),
+                                             _downRingMaterial ));
     }
 
     {
@@ -1000,8 +1000,8 @@ namespace mu2e {
       // Including all materials.
       double overallLength = (StrawId::_nstations-1)*_planeSpacing + 2.*_planeHalfSeparation + 2.* _innerRingHalfLength;
       if ( _ttVersion > 3 ) overallLength = (StrawId::_nstations-1)*_planeSpacing +
-			      2.*_planeHalfSeparation + 4.*_innerRingHalfLength
-			      + _planePadding + 2.*_panelPadding;
+                              2.*_planeHalfSeparation + 4.*_innerRingHalfLength
+                              + _planePadding + 2.*_panelPadding;
 
       // we make support beams here (they used to be called staves)
 
@@ -1285,8 +1285,8 @@ namespace mu2e {
       double halfLength = (_innerRingHalfLength - _centerPlateHalfLength)/2.;
       double dz         = _centerPlateHalfLength + halfLength;
       if ( _ttVersion > 3 ) {
-	halfLength *= 2.0;
-	dz = -_centerPlateHalfLength;
+        halfLength *= 2.0;
+        dz = -_centerPlateHalfLength;
       }
       TubsParams outerRingTubs( _outerRingInnerRadius, _outerRingOuterRadius, halfLength,0.0, _panelPhi);
       sup._outerRingUpstream   = PlacedTubs ( "TrackerSupportOuterRingUpstream",   outerRingTubs, CLHEP::Hep3Vector(0.,0.,-dz), _outerRingMaterial );
@@ -1305,8 +1305,8 @@ namespace mu2e {
       double halfLength = (_innerRingHalfLength - _centerPlateHalfLength - 2.*_coverHalfLength)/2.;
       double dz         = _centerPlateHalfLength + halfLength;
       if ( _ttVersion > 3 ) {
-	halfLength = _innerRingHalfLength - _centerPlateHalfLength - 2.0 * _coverHalfLength;
-	dz = 2.0 * _coverHalfLength - _centerPlateHalfLength;
+        halfLength = _innerRingHalfLength - _centerPlateHalfLength - 2.0 * _coverHalfLength;
+        dz = 2.0 * _coverHalfLength - _centerPlateHalfLength;
       }
 
       TubsParams gasTubs( _innerRingOuterRadius, _outerRingInnerRadius, halfLength, 0., _panelPhi );
@@ -1371,28 +1371,28 @@ namespace mu2e {
 
     if ( _supportModel == SupportModel::simple ){
       double halfThick = g4tt->_supportParams.halfThickness() +
-	2.*_manifoldHalfLengths[2];
+        2.*_manifoldHalfLengths[2];
       g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
-					      g4tt->_supportParams.outerRadius(),
-					      halfThick);
+                                              g4tt->_supportParams.outerRadius(),
+                                              halfThick);
     } else if ( _supportModel == SupportModel::detailedv0 ){
       // This is new for version 5, its existence doesn't affect earlier
       // versions.
       g4tt->_panelEnvelopeParams = TubsParams( _envelopeInnerRadius,
                                                _outerRingOuterRadius,
                                                _innerRingHalfLength
-					      + _panelPadding,
-					      0., _panelPhi);
+                                              + _panelPadding,
+                                              0., _panelPhi);
       if ( _ttVersion > 3 ) {
-	g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
-						_outerRingOuterRadius,
-						2.0 * (_innerRingHalfLength
-						       + _panelPadding )
-						+ _planePadding );
+        g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+                                                _outerRingOuterRadius,
+                                                2.0 * (_innerRingHalfLength
+                                                       + _panelPadding )
+                                                + _planePadding );
       } else {
-	g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
-						_outerRingOuterRadius,
-						_innerRingHalfLength);
+        g4tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
+                                                _outerRingOuterRadius,
+                                                _innerRingHalfLength);
       } // end of if on version in assigning plane envelope params
     }else{
       throw cet::exception("GEOM")

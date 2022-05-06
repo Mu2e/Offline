@@ -50,7 +50,7 @@ namespace mu2e
     std::string _singlePEWaveformFileName;
     std::string _eventWindowMarkerLabel;
     std::string _protonBunchTimeMCLabel;
- 
+
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
     double                              _digitizationStart, _digitizationEnd;
@@ -64,7 +64,7 @@ namespace mu2e
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
 
-    
+
     std::vector<double> _digitizationPointShiftFEBsSide0, _digitizationPointShiftFEBsSide1;
     std::vector<double> _timeShiftFEBsSide0, _timeShiftFEBsSide1;
 
@@ -102,7 +102,7 @@ namespace mu2e
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
-    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformStretchFactor, 
+    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformStretchFactor,
                                             _singlePEWaveformMaxTime, singlePEReferenceCharge);
     produces<CrvDigiMCCollection>();
   }
@@ -150,7 +150,7 @@ namespace mu2e
     unsigned int nFEBs = rint(ceil(nCounters/32.0));
     for(unsigned int i=0; i<nFEBs; ++i)
     {
-      //the closest digitization point with respect to a certain time 
+      //the closest digitization point with respect to a certain time
       //can happen anywhere within the digitization period of 12.55ns.
       //this time is different for each FEB.
       _digitizationPointShiftFEBsSide0.emplace_back(_randFlat.fire()*_digitizationPeriod);
@@ -225,7 +225,7 @@ namespace mu2e
             std::map<art::Ptr<SimParticle>, int> simparticles;
             for(size_t j=0; j<timesAndCharges.size(); ++j)
             {
-              if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime && 
+              if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime &&
                  timesAndCharges[j]._time<=digiStartTime+CrvDigiMC::NSamples*_digitizationPeriod)
               {
                 steps.insert(timesAndCharges[j]._step);

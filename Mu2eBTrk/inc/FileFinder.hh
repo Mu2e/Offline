@@ -14,8 +14,8 @@ namespace mu2e {
 
   public:
     FileFinder(std::string elementsBaseName,
-	       std::string isotopesBaseName,
-	       std::string materialsBaseName):
+               std::string isotopesBaseName,
+               std::string materialsBaseName):
       elementsBaseName_(elementsBaseName),
       isotopesBaseName_(isotopesBaseName),
       materialsBaseName_(materialsBaseName){}

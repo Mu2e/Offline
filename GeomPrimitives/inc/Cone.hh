@@ -23,7 +23,7 @@ namespace mu2e {
          double halfLength,
          double phi0, double deltaPhi,
          CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
-         CLHEP::HepRotation const & rotation = CLHEP::HepRotation(), 
+         CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
          std::string const & materialName = "" ) :
       _innerRadius1( innerRadius1 ),
       _outerRadius1( outerRadius1 ),
@@ -63,8 +63,8 @@ namespace mu2e {
     double _innerRadius2; // at +pDz
     double _outerRadius2;
     double _halfLength;
-    double _phi0; 
-    double _deltaPhi; 
+    double _phi0;
+    double _deltaPhi;
 
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation; // wrt to parent volume

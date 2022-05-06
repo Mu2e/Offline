@@ -6,10 +6,10 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CRSAluminumSheet.hh"
 
-namespace mu2e 
+namespace mu2e
 {
 
-  CRSAluminumSheet::CRSAluminumSheet(const CLHEP::Hep3Vector &position, const std::vector<double> &halfLength) : 
+  CRSAluminumSheet::CRSAluminumSheet(const CLHEP::Hep3Vector &position, const std::vector<double> &halfLength) :
   _position(position),
   _halfLengths(halfLength)
   {}

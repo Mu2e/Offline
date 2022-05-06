@@ -28,7 +28,7 @@ namespace mu2e {
     std::string instanceName_;
   };
 
-  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset) : 
+  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset) :
     art::EDAnalyzer(pset),
     moduleLabel_(pset.get<std::string>("inputModuleLabel")),
     instanceName_(pset.get<std::string>("inputInstanceName"))

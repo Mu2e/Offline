@@ -9,9 +9,9 @@
 // MC data
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-namespace mu2e 
-{  
- // some convenient typedefs    
+namespace mu2e
+{
+ // some convenient typedefs
   class MCRelationship {
     public:
     typedef art::Ptr<SimParticle> SPPtr;
@@ -25,11 +25,11 @@ namespace mu2e
     bool operator < (MCRelationship const& other ) const {
     // note the sign flip: smaller removal = more related, to follow conventional meaning
       if(_rel != none && other._rel != none){
-	return _rem > other._rem;
+        return _rem > other._rem;
       } else if(_rel != none)
-	return false;
+        return false;
       else
-	return true;
+        return true;
     }
     bool operator > (MCRelationship const& other ) const {
       return ((!operator ==(other)) && (!operator < (other))); }

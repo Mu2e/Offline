@@ -75,7 +75,7 @@ namespace mu2e {
           explicit ReadTrackCaloMatchingMVA(fhicl::ParameterSet const& pset):
             art::EDAnalyzer(pset),
             _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
-	    _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel")),
+            _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel")),
             _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
             _caloClusterTruthModuleLabel(pset.get<std::string>("caloClusterTruthModuleLabel")),
             _trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
@@ -100,7 +100,7 @@ namespace mu2e {
           int findBestTrack(  TrkCaloMatchCollection const& trkCaloMatches, int cluId, double maxChi2);
 
           std::string      _caloCrystalModuleLabel;
-	  std::string      _caloReadoutModuleLabel;
+          std::string      _caloReadoutModuleLabel;
           std::string      _caloClusterModuleLabel;
           std::string      _caloClusterTruthModuleLabel;
           std::string      _trkCaloMatchModuleLabel;
@@ -129,7 +129,7 @@ namespace mu2e {
           float _cluE1[4096],_cluE9[4096],_cluE25[4096],_clu2Mom[4096],_cluAngle[4096];
           int   _cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
           std::vector<std::vector<int> > _cluList;
-      
+
           int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384],_clusimCrCode[16384];
           float _clusimMom[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
@@ -235,7 +235,7 @@ namespace mu2e {
        _Ntup->Branch("vdPosZ",       &_vdPosZ ,   "vdPosZ[nVd]/F");
        _Ntup->Branch("vdTime",       &_vdTime ,   "vdTime[nVd]/F");
        _Ntup->Branch("vdGenIdx",     &_vdenIdx , "vdGenIdx[nVd]/I");
-  
+
 
   }
 
@@ -274,17 +274,17 @@ namespace mu2e {
         art::Handle<StepPointMCCollection> vdhits;
         event.getByLabel(_g4ModuleLabel,_virtualDetectorLabel,vdhits);
 
- 
-	std::map<art::Ptr<SimParticle>, const StepPointMC*> vdMap;
-	if (vdhits.isValid())
-	{
+
+        std::map<art::Ptr<SimParticle>, const StepPointMC*> vdMap;
+        if (vdhits.isValid())
+        {
            for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
            {
               const StepPointMC& hit = *iter;
               if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
-	      vdMap[hit.simParticle()] = &hit;
-	   }
-	}
+              vdMap[hit.simParticle()] = &hit;
+           }
+        }
 
 
         _evt = event.id().event();
@@ -322,12 +322,12 @@ namespace mu2e {
               CLHEP::Hep3Vector posTrkInTracker(point.x(),point.y(),point.z());
               CLHEP::Hep3Vector posInMu2e = cal.geomUtil().trackerToMu2e(posTrkInTracker);
               CLHEP::Hep3Vector posTrkInSectionFF = cal.geomUtil().mu2eToDiskFF(intersect.diskId(),posInMu2e);
-                  
-              CLHEP::Hep3Vector posTrkInCrystal = cal.geomUtil().mu2eToCrystal(cal.nearestIdxFromPosition(posInMu2e),posInMu2e);  
-              
-              
-              
- 
+
+              CLHEP::Hep3Vector posTrkInCrystal = cal.geomUtil().mu2eToCrystal(cal.nearestIdxFromPosition(posInMu2e),posInMu2e);
+
+
+
+
               HelixTraj trkHel(trk.helix(pathLength).params(),trk.helix(pathLength).covariance());
 
               _trkFFx[_nTrk]    = posTrkInSectionFF.x();
@@ -367,21 +367,21 @@ namespace mu2e {
                std::vector<int> cryList;
                for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(std::distance(&CaloHits.at(0),cryPtr.get()));
 
-               
-               //Find the caloDigiMC in the truth map          
+
+               //Find the caloDigiMC in the truth map
                auto itMC = caloClusterTruth.begin();
                while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
                const auto eDepMCs = (itMC != caloClusterTruth.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
 
                bool isConversion(false);
-               if (itMC != caloClusterTruth.end()) 
+               if (itMC != caloClusterTruth.end())
                {
                   for (auto& edep : eDepMCs)
                   {
                      auto parent(edep.sim());
-                     while (parent->hasParent()) parent = parent->parent();                     
-	             if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
-                  }    		          
+                     while (parent->hasParent()) parent = parent->parent();
+                     if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
+                  }
                }
 
                _cluEnergy[_nCluster] = cluster.energyDep();
@@ -396,41 +396,41 @@ namespace mu2e {
                _cluSimIdx[_nCluster] = _nCluSim;
                _cluSimLen[_nCluster] = eDepMCs.size();
 
-	       for (unsigned i=0;i< eDepMCs.size();++i)
-	       {	       
-                   const auto& eDepMC = eDepMCs[i];	       
+               for (unsigned i=0;i< eDepMCs.size();++i)
+               {
+                   const auto& eDepMC = eDepMCs[i];
                    art::Ptr<SimParticle> sim = eDepMC.sim();
 
-		   art::Ptr<SimParticle> smother(sim);
-        	   while (smother->hasParent()) smother = smother->parent();
-        	   int genIdx=-1;
-        	   if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
+                   art::Ptr<SimParticle> smother(sim);
+                   while (smother->hasParent()) smother = smother->parent();
+                   int genIdx=-1;
+                   if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
 
-		   //double simMom(-1);
-		   CLHEP::Hep3Vector simPos(0,0,0);
-		   auto vdMapEntry = vdMap.find(sim);
-		   if (vdMapEntry != vdMap.end())
-		   {
-	              //simMom = vdMapEntry->second->momentum().mag();
-		      CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());		  
-		   } 
+                   //double simMom(-1);
+                   CLHEP::Hep3Vector simPos(0,0,0);
+                   auto vdMapEntry = vdMap.find(sim);
+                   if (vdMapEntry != vdMap.end())
+                   {
+                      //simMom = vdMapEntry->second->momentum().mag();
+                      CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());
+                   }
 
-        	   _clusimId[_nCluSim]     = sim->id().asInt();
-        	   _clusimPdgId[_nCluSim]  = sim->pdgId();
-        	   _clusimGenIdx[_nCluSim] = genIdx;
-        	   _clusimCrCode[_nCluSim] = sim->creationCode();
-        	   _clusimTime[_nCluSim]   = eDepMC.time();
-        	   _clusimEdep[_nCluSim]   = eDepMC.energyDep();
-        	   _clusimMom[_nCluSim]    = eDepMC.momentumIn();
-        	   _clusimPosX[_nCluSim]   = simPos.x(); // in disk FF frame
-        	   _clusimPosY[_nCluSim]   = simPos.y();
-        	   _clusimPosZ[_nCluSim]   = simPos.z();  
+                   _clusimId[_nCluSim]     = sim->id().asInt();
+                   _clusimPdgId[_nCluSim]  = sim->pdgId();
+                   _clusimGenIdx[_nCluSim] = genIdx;
+                   _clusimCrCode[_nCluSim] = sim->creationCode();
+                   _clusimTime[_nCluSim]   = eDepMC.time();
+                   _clusimEdep[_nCluSim]   = eDepMC.energyDep();
+                   _clusimMom[_nCluSim]    = eDepMC.momentumIn();
+                   _clusimPosX[_nCluSim]   = simPos.x(); // in disk FF frame
+                   _clusimPosY[_nCluSim]   = simPos.y();
+                   _clusimPosZ[_nCluSim]   = simPos.z();
 
-        	   ++_nCluSim;
-        	}
+                   ++_nCluSim;
+                }
 
                ++_nCluster;
-	   }
+           }
 
 
            //--------------------------  Dump crystal info --------------------------------
@@ -472,7 +472,7 @@ namespace mu2e {
                 _vdMomX[_nVd]   = hit.momentum().x();
                 _vdMomY[_nVd]   = hit.momentum().y();
                 _vdMomZ[_nVd]   = hit.momentum().z();
-		_vdenIdx[_nVd]  = hit.simParticle()->generatorIndex();
+                _vdenIdx[_nVd]  = hit.simParticle()->generatorIndex();
                 ++_nVd;
            }
 

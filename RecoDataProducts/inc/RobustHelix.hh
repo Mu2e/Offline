@@ -19,9 +19,9 @@ namespace mu2e {
     RobustHelix() : _rcent(-1.0), _fcent(0.0), _radius(-1.0), _lambda(0.0) , _fz0(0.0), _helicity(Helicity::unknown) {}
     ~RobustHelix(){}
     // accessors
-    Float_t radius() const { return _radius; } 
-    Float_t rcent() const { return _rcent; } 
-    Float_t fcent() const { return _fcent; } 
+    Float_t radius() const { return _radius; }
+    Float_t rcent() const { return _rcent; }
+    Float_t fcent() const { return _fcent; }
     Float_t lambda() const { return _lambda; }
     Float_t fz0() const { return _fz0; }
     // simple functions that can be derived from the data members
@@ -49,8 +49,8 @@ namespace mu2e {
     // unit vector in direction at the given z
     XYZVectorF direction(float zval) const {
       return XYZVectorF( -_radius*sin(circleAzimuth(zval)),
-	  _radius*cos(circleAzimuth(zval)),
-	  _lambda)/momentum(); }
+          _radius*cos(circleAzimuth(zval)),
+          _lambda)/momentum(); }
     void direction(float zval,XYZVectorF& dir) const {
       float mom = momentum();
       dir.SetX(-_radius*sin(circleAzimuth(zval))/mom);

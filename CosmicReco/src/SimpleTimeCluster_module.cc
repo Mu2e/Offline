@@ -1,4 +1,4 @@
-//Author: R Bonventre 
+//Author: R Bonventre
 //Date: Feb 2020
 //Purpose: To improve TimeClustering for Cosmics
 #include "art/Framework/Principal/Event.h"
@@ -61,7 +61,7 @@ namespace mu2e {
       bool              _hasmaxnsh;
       int               _maxnsh;
       double            _timeWindow;
-      bool		_testflag;
+      bool                _testflag;
       art::InputTag  _chToken;
       art::InputTag _shfToken;
       const StrawHitFlagCollection *_shfcol;
@@ -128,7 +128,7 @@ namespace mu2e {
     //sort the hits by time
     ComboHitCollection ordChCol;
     ordChCol.reserve(_chcol->size());
-    
+
     for (size_t i=0; i<_chcol->size(); ++i) {
       const ComboHit& ch  = _chcol->at(i);
       if (_testflag && !goodHit((*_shfcol)[i]))

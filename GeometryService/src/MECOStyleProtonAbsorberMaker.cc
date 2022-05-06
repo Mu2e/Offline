@@ -101,7 +101,7 @@ namespace mu2e {
     std::string oPAmaterialName = _config.getString("protonabsorber.outerPAMaterialName", "Polyethylene092");
     double ds23split = _ds->vac_zLocDs23Split();
 
-    
+
     // TS and DS geometry for locating the center of Proton Absorber
     double solenoidOffset = _config.getDouble("mu2e.solenoidOffset");
 
@@ -278,10 +278,10 @@ namespace mu2e {
     } else {
       std::string opaSupportMaterial = _config.getString("protonabsorber.oPASupportMaterialName");
       for(int iSlat = 0; iSlat < _pabs->_nOPASupportSlatTypes; ++iSlat) {
-	_pabs->_oPASlatMaterials.push_back(opaSupportMaterial);
-	_pabs->_oPASlatHeights  .push_back(oPASlatHeight);
-	_pabs->_oPASlatWidths   .push_back(oPASlatWidth);
-	_pabs->_oPASlatLengths  .push_back(oPASlatLength);
+        _pabs->_oPASlatMaterials.push_back(opaSupportMaterial);
+        _pabs->_oPASlatHeights  .push_back(oPASlatHeight);
+        _pabs->_oPASlatWidths   .push_back(oPASlatWidth);
+        _pabs->_oPASlatLengths  .push_back(oPASlatLength);
       }
       _pabs->_oPASlatAngles.push_back(0.);
       _pabs->_oPASlatAngles.push_back(120.);
@@ -333,10 +333,10 @@ namespace mu2e {
     (_pabs->_oPAnSupports) = _config.getInt("protonabsorber.oPASupportNSupportRing",0);
     if ( _pabs->_oPAnSupports > 0 ) {
       if(oPAversion > 2) //each support can have individual materials
-	_config.getVectorString("protonabsorber.oPASupportMaterials",_pabs->_oPASupportMaterials,_pabs->_oPAnSupports);
+        _config.getVectorString("protonabsorber.oPASupportMaterials",_pabs->_oPASupportMaterials,_pabs->_oPAnSupports);
       else {//assume one material for all supports
-	std::string opaSupportMaterial = _config.getString("protonabsorber.oPASupportMaterialName");
-	for(int iSup = 0; iSup < _pabs->_oPAnSupports; ++iSup) _pabs->_oPASupportMaterials.push_back(opaSupportMaterial);
+        std::string opaSupportMaterial = _config.getString("protonabsorber.oPASupportMaterialName");
+        for(int iSup = 0; iSup < _pabs->_oPAnSupports; ++iSup) _pabs->_oPASupportMaterials.push_back(opaSupportMaterial);
       }
       _config.getVectorDouble("protonabsorber.oPASupportInnerRadii",_pabs->_oPASupportIR,(_pabs->_oPAnSupports));
       _config.getVectorDouble("protonabsorber.oPASupportOuterRadii",_pabs->_oPASupportOR,(_pabs->_oPAnSupports));
@@ -363,7 +363,7 @@ namespace mu2e {
     // Calculate zPosition spacing
     double zSpacing = 0;
     if (_IPAVersion == 1) {
-      zSpacing = 2*pabs1halflen/(supportSets+1); 
+      zSpacing = 2*pabs1halflen/(supportSets+1);
     }
     else if (_IPAVersion >= 2) {
       zSpacing = 2*pabs1halflen; // want one set at each end of the IPA so the spacing between the sets for v2
@@ -384,16 +384,16 @@ namespace mu2e {
     if ( _pabs->_degraderBuild ) {
       _pabs->_degraderRot = _config.getDouble("degrader.rotation");
       _pabs->_degraderZ0 =  _config.getDouble("degrader.upstreamEdge.z");
-      _pabs->_degraderFiltMaterial = 
-	_config.getString("degrader.filter.materialName");
+      _pabs->_degraderFiltMaterial =
+        _config.getString("degrader.filter.materialName");
       _pabs->_degraderFramMaterial =
-	_config.getString("degrader.frame.materialName");
-      _pabs->_degraderCowtMaterial = 
-	_config.getString("degrader.counterweight.materialName");
+        _config.getString("degrader.frame.materialName");
+      _pabs->_degraderCowtMaterial =
+        _config.getString("degrader.counterweight.materialName");
       _pabs->_degraderRodMaterial =
-	_config.getString("degrader.rod.materialName");
+        _config.getString("degrader.rod.materialName");
       _pabs->_degraderSuptMaterial =
-	_config.getString("degrader.support.materialName","G4_Al");
+        _config.getString("degrader.support.materialName","G4_Al");
 
       double rin = _config.getDouble("degrader.frame.rIn");
       _pabs->_degraderFrameDims.push_back(rin);
@@ -436,8 +436,8 @@ namespace mu2e {
       double depth = _config.getDouble("degrader.rod.depth");
       _pabs->_degraderRodDims.push_back(depth);
 
-      // Allow for a support structure for stepper motor and axle for 
-      // pion degrader.  There will be four "arms" sticking out from the 
+      // Allow for a support structure for stepper motor and axle for
+      // pion degrader.  There will be four "arms" sticking out from the
       // OPA support upstream side and a plate mounted on them.  First
       // configure the arms.
       // First get the half-length dimensions of the arms
@@ -447,7 +447,7 @@ namespace mu2e {
       _pabs->_degraderSupportArmDims.push_back(hly);
       double hlz = _config.getDouble("degrader.supportArm.dz",0.0);
       _pabs->_degraderSupportArmDims.push_back(hlz);
-      // Now get the offsets from the pivot point (in x&y) and 
+      // Now get the offsets from the pivot point (in x&y) and
       // from the z0 of the filter above in z.
       double osx = _config.getDouble("degrader.supportArm.offsetx",0.0);
       _pabs->_degraderSupportArmDims.push_back(osx);
@@ -475,23 +475,23 @@ namespace mu2e {
     const double endRingHalfLength = _config.getDouble("protonabsorber.ipa.endRingHalfLength", 0);
     const double endRingRadialLength = _config.getDouble("protonabsorber.ipa.endRingRadialLength", 0);
     const string endRingMaterial = _config.getString("protonabsorber.ipa.endRingMaterial", "DSVacuum");
-    
+
     for (std::size_t iRing(0); iRing < _pabs->_ipaSupport->nEndRings(); iRing++) {
       const double zPosition = ipazstart + zSpacing*(iRing); // same z spacing as for the wire sets
-      
+
       const double endRingOuterRadius = pabs1rIn0 + ( zPosition-ipazstart )*(pabs1rIn1-pabs1rIn0)/(2*pabs1halflen) - 0.01; // have the end ring on the inside of the IPA
       const double endRingInnerRadius = endRingOuterRadius - endRingRadialLength;
 
       _pabs->_ipaSupport->_endRingMap.push_back( Tube( endRingInnerRadius,
-						       endRingOuterRadius,
-						       endRingHalfLength, 
-						       CLHEP::Hep3Vector( -3904, 0., zPosition+endRingHalfLength ), // want the front end of the ring to be at the front of the IPA
-						       CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
-						       0,
-						       CLHEP::twopi,
-						       endRingMaterial
-						       )
-						 );
+                                                       endRingOuterRadius,
+                                                       endRingHalfLength,
+                                                       CLHEP::Hep3Vector( -3904, 0., zPosition+endRingHalfLength ), // want the front end of the ring to be at the front of the IPA
+                                                       CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
+                                                       0,
+                                                       CLHEP::twopi,
+                                                       endRingMaterial
+                                                       )
+                                                 );
     }
 
     /////////////////
@@ -502,10 +502,10 @@ namespace mu2e {
 
       double zPosition = 0;
       if (_IPAVersion == 1) {
-	zPosition = ipazstart + zSpacing*(iS+1);
+        zPosition = ipazstart + zSpacing*(iS+1);
       }
       else if (_IPAVersion >= 2) {
-	zPosition = ipazstart + zSpacing*(iS); 
+        zPosition = ipazstart + zSpacing*(iS);
       }
 
       const double wireOuterRadius = oPAin0 + ( zPosition-opazstart )*(oPAin1-oPAin0)/(2*_pabs->_oPAhalflength);
@@ -513,26 +513,26 @@ namespace mu2e {
       double wireLength      = wireOuterRadius - wireInnerRadius;
 
       if (_IPAVersion >= 2) { // for v2, we want the wire to be angled from the vertical in order to provide longitudinal tension
-	//	wireLength = wireLength / cos(wire_rotation_from_vertical);
-	// However, because the OPA is conical the wires at one end need to be longer than the wires at the other
-	double theta_opa = atan2(oPAin1 - oPAin0, 2*_pabs->_oPAhalflength);
-	//if OPA entirely covers the region of the wires (as it should) -->
-	//tan(angle of OPA descent) = delta r / delta z
-	//r at OPA where wire connects = r at OPA at IPA edge / cos(wire angle from horizontal) / (tan(wire angle from horizontal) + tan(OPA angle))
+        //        wireLength = wireLength / cos(wire_rotation_from_vertical);
+        // However, because the OPA is conical the wires at one end need to be longer than the wires at the other
+        double theta_opa = atan2(oPAin1 - oPAin0, 2*_pabs->_oPAhalflength);
+        //if OPA entirely covers the region of the wires (as it should) -->
+        //tan(angle of OPA descent) = delta r / delta z
+        //r at OPA where wire connects = r at OPA at IPA edge / cos(wire angle from horizontal) / (tan(wire angle from horizontal) + tan(OPA angle))
 
-	double wire_angle = wire_rotation_from_vertical;
-	if(_IPAVersion > 2) {
-	  wire_angle *= CLHEP::degree; //fix bug in newer versions
-	  wireLength -= (0.1 + 2.*abs(wireRadius*tan(wire_angle))); //add buffer + wire radius effect
-	}
-	if (zPosition < ipazstart+pabs1halflen) {
-	  // if we're closer to the target
-	    wireLength = (wireLength * sin(CLHEP::pi - 2*wire_angle - theta_opa)) / sin(wire_angle + theta_opa);
-	}
-	else {
-	  // we're further from the target so the wire needs to be longer
-	    wireLength = (wireLength * sin(CLHEP::pi -2*wire_angle - theta_opa)) / sin(wire_angle - theta_opa);
-	}
+        double wire_angle = wire_rotation_from_vertical;
+        if(_IPAVersion > 2) {
+          wire_angle *= CLHEP::degree; //fix bug in newer versions
+          wireLength -= (0.1 + 2.*abs(wireRadius*tan(wire_angle))); //add buffer + wire radius effect
+        }
+        if (zPosition < ipazstart+pabs1halflen) {
+          // if we're closer to the target
+            wireLength = (wireLength * sin(CLHEP::pi - 2*wire_angle - theta_opa)) / sin(wire_angle + theta_opa);
+        }
+        else {
+          // we're further from the target so the wire needs to be longer
+            wireLength = (wireLength * sin(CLHEP::pi -2*wire_angle - theta_opa)) / sin(wire_angle - theta_opa);
+        }
       }
 
 

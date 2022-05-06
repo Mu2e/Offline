@@ -115,11 +115,11 @@ namespace mu2e {
                        bool const placePV,
                        bool const doSurfaceCheck
                        ){
-     
+
     VolumeInfo info(name,offset,parent.centerInWorld);
-     
+
     info.solid   = new G4Box( name, box.getXhalfLength(), box.getYhalfLength(), box.getZhalfLength() );
-     
+
     finishNesting(info,
                   material,
                   rot,
@@ -133,20 +133,20 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck
                   );
-     
+
     return info;
-     
-  } 
+
+  }
 
   VolumeInfo nestBox ( string const& name,
                        std::vector<double> const& halfDim,
                        G4Material* material,
                        G4RotationMatrix const* rot,
                        G4ThreeVector const& offset,
-		       G4LogicalVolume* parent,
+                       G4LogicalVolume* parent,
                        int copyNo,
                        G4Colour const color,
-		       string const& lookupToken
+                       string const& lookupToken
                        ){
 
     VolumeInfo info;
@@ -162,14 +162,14 @@ namespace mu2e {
                   parent,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;
 
   }
-  
-  
+
+
   VolumeInfo nestBox ( string const& name,
                        double const halfDim[3],
                        G4Material* material,
@@ -178,7 +178,7 @@ namespace mu2e {
                        const VolumeInfo& parent,
                        int copyNo,
                        G4Colour const color,
-		       string const& lookupToken
+                       string const& lookupToken
                        ){
 
     VolumeInfo info(name,offset,parent.centerInWorld);
@@ -192,7 +192,7 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;

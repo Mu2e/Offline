@@ -1,6 +1,6 @@
 //
 // Class to collect the info needed for monitoring POT / stop muons
-// 
+//
 //
 
 
@@ -17,7 +17,7 @@ namespace mu2e {
       nCaloHits_(nCaloHits),caloEnergy_(caloEnergy)
     {}
 
-	   
+
     void setNCaloHits      (unsigned short tmp) {nCaloHits_    = tmp;}
     void setCaloEnergy     (unsigned short tmp) {caloEnergy_   = tmp;}
 
@@ -25,8 +25,8 @@ namespace mu2e {
     unsigned short caloEnergy   () const { return caloEnergy_  ; }
 
   private:
-    unsigned short  nCaloHits_    = 0;            
-    unsigned short  caloEnergy_   = 0;        
+    unsigned short  nCaloHits_    = 0;
+    unsigned short  caloEnergy_   = 0;
   };
 }
 

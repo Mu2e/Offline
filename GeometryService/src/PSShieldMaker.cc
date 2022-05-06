@@ -56,8 +56,8 @@ namespace mu2e {
                                                + c.getDouble("PSShield.zOffsetFromProductionTarget")
                                                - zPlane[0]
                                                );
-    c.getInt("PSShield.verbosityLevel") > 0 && std::cout << " PSShieldMaker " << __func__ << productionTargetCenter.z() 
-						      << " " << c.getDouble("PSShield.zOffsetFromProductionTarget") << " " << zPlane[0] << std::endl;
+    c.getInt("PSShield.verbosityLevel") > 0 && std::cout << " PSShieldMaker " << __func__ << productionTargetCenter.z()
+                                                      << " " << c.getDouble("PSShield.zOffsetFromProductionTarget") << " " << zPlane[0] << std::endl;
     //----------------------------------------------------------------
     // Read in the shells
 
@@ -97,10 +97,10 @@ namespace mu2e {
       res->endRings_.reserve(4);
 
       // First do upstream ("front") end ring
-      std::vector<double> zPf; 
+      std::vector<double> zPf;
       c.getVectorDouble("PSShield.frontRing.zPlane", zPf);
       if(!std::is_sorted(zPf.begin(), zPf.end())) {
-	throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the frontRing zPlane vector must be non-decreasing\n";
+        throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the frontRing zPlane vector must be non-decreasing\n";
       }
       std::vector<double> rIf, rOf;
       c.getVectorDouble("PSShield.frontRing.rIn", rIf, zPf.size());
@@ -108,12 +108,12 @@ namespace mu2e {
       const std::string materialf = c.getString("PSShield.frontRing.material");
 
       res->endRings_.emplace_back(zPf, rIf, rOf, shieldOriginInMu2e, materialf );
-      
+
       // Now do downstream ("back") end ring.
-      std::vector<double> zPb; 
+      std::vector<double> zPb;
       c.getVectorDouble("PSShield.backRing.zPlane", zPb);
       if(!std::is_sorted(zPb.begin(), zPb.end())) {
-	throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the backRing zPlane vector must be non-decreasing\n";
+        throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the backRing zPlane vector must be non-decreasing\n";
       }
       std::vector<double> rIb, rOb;
       c.getVectorDouble("PSShield.backRing.rIn", rIb, zPb.size());
@@ -123,10 +123,10 @@ namespace mu2e {
       res->endRings_.emplace_back(zPb, rIb, rOb, shieldOriginInMu2e, materialb );
 
       // Now the water ring
-      std::vector<double> zPw; 
+      std::vector<double> zPw;
       c.getVectorDouble("PSShield.waterRing.zPlane", zPw);
       if(!std::is_sorted(zPw.begin(), zPw.end())) {
-	throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the waterRing zPlane vector must be non-decreasing\n";
+        throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the waterRing zPlane vector must be non-decreasing\n";
       }
       std::vector<double> rIw, rOw;
       c.getVectorDouble("PSShield.waterRing.rIn", rIw, zPw.size());
@@ -136,10 +136,10 @@ namespace mu2e {
       res->endRings_.emplace_back(zPw, rIw, rOw, shieldOriginInMu2e, materialw );
 
       // And the extension of the sheath around the HRS proper
-      std::vector<double> zPs; 
+      std::vector<double> zPs;
       c.getVectorDouble("PSShield.sheathRing.zPlane", zPs);
       if(!std::is_sorted(zPs.begin(), zPs.end())) {
-	throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the sheathRing zPlane vector must be non-decreasing\n";
+        throw cet::exception("GEOM")<<"PSShieldMaker::make(): coordinates in the sheathRing zPlane vector must be non-decreasing\n";
       }
       std::vector<double> rIs, rOs;
       c.getVectorDouble("PSShield.sheathRing.rIn", rIs, zPs.size());
@@ -149,7 +149,7 @@ namespace mu2e {
       res->endRings_.emplace_back(zPs, rIs, rOs, shieldOriginInMu2e, materials );
 
     } // If version > 1
-  
+
     //----------------------------------------------------------------
     // Read in the proton beam inlet information.  This is a tube
     // representing the beam pipe extended into HRS.

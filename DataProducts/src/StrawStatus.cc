@@ -1,6 +1,6 @@
 //
 // Class to describe flag bits used for defining straw (or panel or plane) status
-// 
+//
 // Original author David Brown (7/2020)
 //
 // Mu2e includes
@@ -28,7 +28,7 @@ namespace mu2e {
       bitnames[std::string("NoHVPreamp")]      = bit_to_mask(noHVPreamp);
       bitnames[std::string("NoCalPreamp")]      = bit_to_mask(noCalPreamp);
       bitnames[std::string("Disabled")]      = bit_to_mask(disabled);
-      bitnames[std::string("NoADC")]	      = bit_to_mask(noADC);
+      bitnames[std::string("NoADC")]              = bit_to_mask(noADC);
       bitnames[std::string("NoTDC")]          = bit_to_mask(noTDC);
       bitnames[std::string("Sparking")]       = bit_to_mask(sparking);
       bitnames[std::string("Noise")]          = bit_to_mask(noise);

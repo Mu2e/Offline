@@ -34,7 +34,7 @@ namespace mu2e {
     std::string const& wireMaterialName()            const{ return _wireMaterialName; }
     std::string const& wireCoreMaterialName()        const{ return  wireMaterialName();  }
     std::string const& wirePlateMaterialName()       const{ return _wirePlateMaterial;   }
-    std::string const& envelopeMaterial()	     const { return _envelopeMaterial; }
+    std::string const& envelopeMaterial()             const { return _envelopeMaterial; }
 
     double panelOffset() const { return _panelZOffset; }
     double z0()   const { return _z0;} // in Mu2e coordinates

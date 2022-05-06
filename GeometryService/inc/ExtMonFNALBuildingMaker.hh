@@ -23,8 +23,8 @@ namespace mu2e {
 
   public:
     static std::unique_ptr<ExtMonFNALBuilding> make(const SimpleConfig& config,
-						    const Mu2eHall& hall,
-						    const ProtonBeamDump& dump);
+                                                    const Mu2eHall& hall,
+                                                    const ProtonBeamDump& dump);
   };
 }
 

@@ -8,7 +8,7 @@ process_name : CRVResponseReco
 source :
 {
   module_type : RootInput
-  inputCommands: ["keep *", 
+  inputCommands: ["keep *",
                   "drop *KalRepPayload*_*_*_*",
                   "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
@@ -38,9 +38,9 @@ physics :
   end_paths:     [out]
 }
 
-outputs: 
+outputs:
 {
-  Output : 
+  Output :
   {
     module_type : RootOutput
     fileName    : "data_crv_reco.art"

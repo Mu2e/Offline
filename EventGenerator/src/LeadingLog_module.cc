@@ -72,13 +72,13 @@ namespace mu2e {
     ProcessCode process_;
     int pdgId_;
     PDGCode::type pid_;
-    
+
     double _mass;
     BinnedSpectrum    spectrum_;
     RandomUnitSphere*   randomUnitSphere_;
     CLHEP::RandGeneral* randSpectrum_;
     double endPointEnergy_;
-    
+
   };
 
   //================================================================
@@ -91,21 +91,21 @@ namespace mu2e {
     , randExp_{eng_}
     , pdgId_(conf().pdgId())
     , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-    
+
   {
     produces<mu2e::StageParticleCollection>();
     pid_ = static_cast<PDGCode::type>(pdgId_);
-    
-    if (pid_ == PDGCode::e_minus) { 
-      process_ = ProcessCode::mu2eCeMinusLeadingLog; 
-    } else if (pid_ == PDGCode::e_plus) { 
+
+    if (pid_ == PDGCode::e_minus) {
+      process_ = ProcessCode::mu2eCeMinusLeadingLog;
+    } else if (pid_ == PDGCode::e_plus) {
       process_ = ProcessCode::mu2eCePlusLeadingLog;
     }
     else {
       throw   cet::exception("BADINPUT")
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id : "<<pid_<<std::endl;
     }
-   
+
     randomUnitSphere_ = new RandomUnitSphere(eng_);
     randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
   }
@@ -115,25 +115,25 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto mus = stoppedMuMinusList(simh);
-    
+
     if(mus.empty()) {
         throw   cet::exception("BADINPUT")
         <<"LeadingLog::produce(): no suitable stopped muon in the input SimParticleCollection\n";
     }
-    
+
     for(const auto& mustop: mus) {
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       addParticles(output.get(), mustop, time);
     }
     event.put(std::move(output));
   }
-  
+
   //================================================================
   void LeadingLog::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> mustop,
                             double time)
   {
-  
+
     double energy = spectrum_.sample(randSpectrum_->fire());
 
     const double p = sqrt((energy + _mass) * (energy - _mass));

@@ -88,13 +88,13 @@ namespace mu2e {
   {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
-    
-    if (pid == PDGCode::e_minus) { 
-      process = ProcessCode::mu2eCeMinusEndpoint; 
+
+    if (pid == PDGCode::e_minus) {
+      process = ProcessCode::mu2eCeMinusEndpoint;
       endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy(conf().stoppingTargetMaterial());
-    } 
-    else if (pid == PDGCode::e_plus) { 
-      process = ProcessCode::mu2eCePlusEndpoint; 
+    }
+    else if (pid == PDGCode::e_plus) {
+      process = ProcessCode::mu2eCePlusEndpoint;
       endPointEnergy_ = GlobalConstantsHandle<PhysicsParams>()->getePlusEndpointEnergy(conf().stoppingTargetMaterial());
     }
     else {
@@ -117,7 +117,7 @@ namespace mu2e {
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto mus = stoppedMuMinusList(simh);
-    
+
     if(mus.empty()) {
       throw   cet::exception("BADINPUT")
         <<"CeEndpoint::produce(): no suitable stopped muon in the input SimParticleCollection\n";

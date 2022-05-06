@@ -15,7 +15,7 @@ namespace mu2e {
   void ExtMonFNALRecoClusterCollection::insert(const ExtMonFNALRecoCluster& c) {
     storage_.push_back(c);
     planes_[c.plane()].push_back(storage_.size() - 1);
-    AGDEBUG("storage_.size() = "<<storage_.size()<<", planes_.size()="<<planes_.size() 
+    AGDEBUG("storage_.size() = "<<storage_.size()<<", planes_.size()="<<planes_.size()
             <<", planes_[c.plane()].indexes_.back()="<< planes_[c.plane()].indexes_.back()
             <<", planes_[c.plane()].parent_="<<planes_[c.plane()].parent_
             <<", this="<<this

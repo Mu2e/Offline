@@ -17,7 +17,7 @@ using namespace std;
 
 using CLHEP::Hep3Vector;
 
-namespace mu2e 
+namespace mu2e
 {
 
   CRSScintillatorLayer::CRSScintillatorLayer()

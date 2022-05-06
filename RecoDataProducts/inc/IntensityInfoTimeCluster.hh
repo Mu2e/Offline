@@ -17,13 +17,13 @@ namespace mu2e {
       nProtonTCs_(nProtonTCs)
     {}
 
-	   
+
     void setNProtonTCs     (unsigned short tmp) {nProtonTCs_   = tmp;}
 
     unsigned short nProtonTCs   () const { return nProtonTCs_  ; }
 
   private:
-    unsigned short  nProtonTCs_   = 0;        
+    unsigned short  nProtonTCs_   = 0;
   };
 }
 

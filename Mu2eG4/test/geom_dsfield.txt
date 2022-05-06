@@ -1,5 +1,5 @@
 //
-// In this geometry file the magnetic field configuration 
+// In this geometry file the magnetic field configuration
 // is modified:
 // - field only exist in detector solenoid
 // - the field map is used everywhere except downstream section
@@ -9,8 +9,8 @@
 //
 #include "Offline/Mu2eG4/test/geom_01.txt";
 
-// Form of DS field: 0 is full field; 
-//                   1 is full upstream, const downstream; 
+// Form of DS field: 0 is full field;
+//                   1 is full upstream, const downstream;
 //                   2 is const throughout
 int detSolFieldForm = 1;
 

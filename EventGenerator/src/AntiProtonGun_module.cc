@@ -94,7 +94,7 @@ namespace mu2e {
 
     CLHEP::HepRotation targetRotation_; // rotates target frame to Mu2e frame
     CLHEP::Hep3Vector  targetCenter_;
-  
+
     TF1 *f1;
     TF2 *fsig;
 
@@ -190,7 +190,7 @@ namespace mu2e {
 
     double pLab=8.8;
     double Mp=0.938272029;
- 
+
     double kpar[10]={
     0.1699,  //___0
     10.28,   //___1

@@ -28,7 +28,7 @@ int             crs.nCountersPerModuleTest       =   16;
 vector<double>  crs.firstCounterTest             =  {-3904.0, 2600.6, 10200.0};
 
 vector<double>  crs.layerDirectionTest           =  {0, 1, 0};
-vector<double>  crs.offsetDirectionTest          =  {0, 0, -1}; 
+vector<double>  crs.offsetDirectionTest          =  {0, 0, -1};
 vector<double>  crs.gapDirectionTest             =  {0, 0, 1};
 
 bool crs.sipmsAtSide0Test = true;
