@@ -17,6 +17,7 @@
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -72,8 +73,9 @@ art::StrawRecoFromFragmnets::StrawRecoFromFragmnets(const art::EDProducer::Table
     if (useTrkADC_) {
       produces<mu2e::StrawDigiADCWaveformCollection>();
     }
+    produces<mu2e::IntensityInfoTrackerHits>();
     //FIXME!
-    produces<mu2e::ProtonBunchTime>();
+    produces<mu2e::ProtonBunchTime>();    
   }
 
 // ----------------------------------------------------------------------
@@ -82,8 +84,10 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
   // Collection of StrawDigis for the event
-  std::unique_ptr<mu2e::StrawDigiCollection> straw_digis(new mu2e::StrawDigiCollection);
+  std::unique_ptr<mu2e::StrawDigiCollection>            straw_digis(new mu2e::StrawDigiCollection);
   std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> straw_digi_adcs(new mu2e::StrawDigiADCWaveformCollection);
+  // IntensityInfoTrackerHits
+  std::unique_ptr<mu2e::IntensityInfoTrackerHits>                  intInfo(new mu2e::IntensityInfoTrackerHits);
 
   //FIXME! this is temporary
   std::unique_ptr<mu2e::ProtonBunchTime> pbt(new mu2e::ProtonBunchTime);
@@ -129,8 +133,6 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   if (numTrkFrags == 0) {
     std::cout << "[StrawRecoFromFragmnets::produce] found no Tracker fragments!"
 	      << std::endl;
-    event.put(std::move(straw_digis));
-    return;
   }
   
   if (diagLevel_ > 1) {
@@ -146,6 +148,8 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
               << (int)(event.event()) << " / timestamp=" << (int)eventNumber << std::endl;
   }
 
+  intInfo->setNTrackerHits(straw_digis->size());
+  event.put(std::move(intInfo));
   // Store the straw digis in the event
   event.put(std::move(straw_digis));
   if (useTrkADC_) {

@@ -15,6 +15,7 @@
 #include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -83,7 +84,8 @@ public:
 private:
   void analyze_calorimeter_(const mu2e::CalorimeterFragment& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
-                            std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits);
+                            std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
+			    unsigned short& evtEnergy);
 
   void addPulse(uint16_t& crystalID, float& time, float& eDep,
                 std::unique_ptr<mu2e::CaloHitCollection> const& hits_calo,
@@ -178,6 +180,7 @@ art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<C
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
   produces<mu2e::CaloHitCollection>("caphri");
+  produces<mu2e::IntensityInfoCalo>();
 }
 
 // ----------------------------------------------------------------------
@@ -191,8 +194,12 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   std::unique_ptr<mu2e::CaloHitCollection> calo_hits(new mu2e::CaloHitCollection);
   std::unique_ptr<mu2e::CaloHitCollection> caphri_hits(new mu2e::CaloHitCollection);
 
-  size_t totalSize = 0;
-  size_t numCalFrags = 0;
+  //IntensityInfoCalo
+  std::unique_ptr<mu2e::IntensityInfoCalo>     int_info(new mu2e::IntensityInfoCalo);
+
+  size_t         totalSize(0), numCalFrags(0);
+  unsigned short evtEnergy(0);
+
   std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
@@ -209,7 +216,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
         for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
           auto pair = mef.calorimeterAtPtr(ii);
           mu2e::CalorimeterFragment cc(pair);
-          analyze_calorimeter_(cc, calo_hits, caphri_hits);
+          analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
 
           totalSize += pair.second;
           numCalFrags++;
@@ -219,7 +226,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
       if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
         for (auto frag : *handle) {
           mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_calorimeter_(cc, calo_hits, caphri_hits);
+          analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
 
           totalSize += frag.dataSizeBytes();
           numCalFrags++;
@@ -230,9 +237,6 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
   if (numCalFrags == 0) {
     std::cout << "[CaloHitsFromFragments::produce] found no Calorimeter fragments!" << std::endl;
-    event.put(std::move(calo_hits), "calo");
-    event.put(std::move(caphri_hits), "caphri");
-    return;
   }
 
   if (diagLevel_ > 1) {
@@ -247,6 +251,10 @@ void art::CaloHitsFromFragments::produce(Event& event) {
     std::cout << "mu2e::CaloHitsFromFragments::produce exiting eventNumber=" << (int)(event.event())
               << " / timestamp=" << (int)eventNumber << std::endl;
   }
+  
+  int_info->setCaloEnergy(evtEnergy);
+  int_info->setNCaloHits(calo_hits->size());
+  event.put(std::move(int_info));
 
   // Store the calo hits in the event
   event.put(std::move(calo_hits), "calo");
@@ -256,7 +264,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
 void art::CaloHitsFromFragments::analyze_calorimeter_(
     const mu2e::CalorimeterFragment& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
-    std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits) {
+    std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy) {
 
   if (diagLevel_ > 1) {
     caloDAQUtil_.printCaloFragmentInfo(cc);
@@ -352,6 +360,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
       if (eDep < hitEDepMax_) {
         addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
+	evtEnergy += eDep;
       }
       if (diagLevel_ > 1) {
         // Until we have the final mapping, the BoardID is just a placeholder
