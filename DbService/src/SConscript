@@ -45,6 +45,7 @@ helper.make_plugins( [ mainlib,
 
 BINLIBS   = [ mainlib, 'mu2e_DbTables' , 'cetlib', 'cetlib_except', "pq" ]
 helper.make_bin("dbTool",BINLIBS,[])
+helper.make_bin("epicsTool",BINLIBS,[])
 
 # turn pywrap.i into a python interface
 helper.make_pywrap (['mu2e_DbTables'])
