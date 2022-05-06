@@ -11,6 +11,7 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
 
 namespace
@@ -61,6 +62,7 @@ namespace mu2e {
         {
             produces<CaloHitCollection>("calo");
             produces<CaloHitCollection>("caphri");
+	    produces<IntensityInfoCalo>();
         }
 
         void produce(art::Event& e) override;
@@ -69,7 +71,7 @@ namespace mu2e {
     private:
         using pulseMapType = std::unordered_map<unsigned, std::vector<HitInfo>>;
 
-        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, double pbtOffset);
+    void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo&intCalo, double pbtOffset);
         void addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep);
 
         art::ProductToken<CaloDigiCollection> caloDigisToken_;
@@ -99,10 +101,12 @@ namespace mu2e {
 
         auto caloHitsColl   = std::make_unique<CaloHitCollection>();
         auto caphriHitsColl = std::make_unique<CaloHitCollection>();
-        extractHits(caloDigis,*caloHitsColl,*caphriHitsColl,pbtOffset);
+	auto intInfo        = std::make_unique<IntensityInfoCalo>();
+	extractHits(caloDigis,*caloHitsColl,*caphriHitsColl,*intInfo,pbtOffset);
 
         event.put(std::move(caloHitsColl),  "calo");
         event.put(std::move(caphriHitsColl),"caphri");
+        event.put(std::move(intInfo));
 
         if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi] end"<<std::endl;
         return;
@@ -110,7 +114,7 @@ namespace mu2e {
 
 
    //--------------------------------------------------------------------------------------------------------------
-   void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, double pbtOffset)
+   void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intInfo, double pbtOffset)
    {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
@@ -132,6 +136,7 @@ namespace mu2e {
            if (diagLevel_ > 2) std::cout<<"[FastRecoDigiFromDigi] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
        }
 
+       unsigned short evtEnergy(0);
        for (auto& crystal : pulseMap)
        {
 	   int crID = crystal.first;
@@ -141,8 +146,12 @@ namespace mu2e {
                if (diagLevel_ > 1) std::cout<<"[FastRecoDigiFromDigi] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
                if (isCaphri) caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
                else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_)); 
+	       evtEnergy += info.eDep_;
 	   }
        }
+
+       intInfo.setCaloEnergy(evtEnergy);
+       intInfo.setNCaloHits(pulseMap.size());
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CapriDigis"<<std::endl;
