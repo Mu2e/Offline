@@ -66,7 +66,7 @@ BEGIN_PROLOG
       TrapType0Lifetime            : 5.0        //ns  ????
       TrapType1Lifetime            : 50.0       //ns  ????
 
-      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM 
+      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM
       CrossTalkProb                : 0.05       //
     }
     CrvWaveforms:
@@ -107,8 +107,8 @@ BEGIN_PROLOG
 //      PEthresholds                  : [ 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 12 , 14 , 14 , 14 , 18 , 12 , 14 , 14 , 14 , 18 , 18 , 18 ] //end of run
       adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
       maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
-      useFourLayers                 : [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] 
-//      useFourLayers                 : [ true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true] 
+      useFourLayers                 : [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false]
+//      useFourLayers                 : [ true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true]
       usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
@@ -140,9 +140,9 @@ BEGIN_PROLOG
       timeOffsets                            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     }
 
-CrvResponsePackage : 
+CrvResponsePackage :
 {
-   producers : 
+   producers :
    {
      CrvPhotons                  : @local::CrvPhotons
      CrvSiPMCharges              : @local::CrvSiPMCharges
@@ -156,9 +156,9 @@ CrvResponsePackage :
    CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 }
 
-CrvDAQPackage : 
+CrvDAQPackage :
 {
-   producers : 
+   producers :
    {
      CrvPhotons                  : @local::CrvPhotons
      CrvSiPMCharges              : @local::CrvSiPMCharges

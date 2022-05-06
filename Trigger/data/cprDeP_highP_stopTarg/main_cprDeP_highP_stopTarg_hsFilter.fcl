@@ -1,4 +1,4 @@
-physics.filters.cprDePHighPStopTargHSFilter.requireCaloCluster   : false	 
+physics.filters.cprDePHighPStopTargHSFilter.requireCaloCluster   : false
 physics.filters.cprDePHighPStopTargHSFilter.doHelicityCheck  : true
 physics.filters.cprDePHighPStopTargHSFilter.helicity      : -1
 physics.filters.cprDePHighPStopTargHSFilter.minNStrawHits : 15.0

@@ -24,19 +24,19 @@
 
 namespace mu2e {
 
-  class CaloRecoDigiMaker : public art::EDProducer 
+  class CaloRecoDigiMaker : public art::EDProducer
   {
      public:
         enum processorStrategy {NoChoice, RawExtract, Template};
 
-        struct Config 
+        struct Config
         {
            using Name    = fhicl::Name;
-           using Comment = fhicl::Comment;        
+           using Comment = fhicl::Comment;
            fhicl::Table<mu2e::CaloRawWFProcessor::Config>      proc_raw_conf       { Name("RawProcessor"),        Comment("Raw processor config") };
-           fhicl::Table<mu2e::CaloTemplateWFProcessor::Config> proc_templ_conf     { Name("TemplateProcessor"),   Comment("Log normal fit processor config") };                    
+           fhicl::Table<mu2e::CaloTemplateWFProcessor::Config> proc_templ_conf     { Name("TemplateProcessor"),   Comment("Log normal fit processor config") };
            fhicl::Atom<art::InputTag>                          caloDigiCollection  { Name("caloDigiCollection"),  Comment("Calo Digi module label") };
-	   fhicl::Atom<art::InputTag>                          pbttoken            { Name("ProtonBunchTimeTag"),  Comment("ProtonBunchTime producer")};
+           fhicl::Atom<art::InputTag>                          pbttoken            { Name("ProtonBunchTimeTag"),  Comment("ProtonBunchTime producer")};
            fhicl::Atom<std::string>                            processorStrategy   { Name("processorStrategy"),   Comment("Digi reco processor name") };
            fhicl::Atom<double>                                 digiSampling        { Name("digiSampling"),        Comment("Calo ADC sampling time (ns)") };
            fhicl::Atom<double>                                 maxChi2Cut          { Name("maxChi2Cut"),          Comment("Chi2 cut for keeping reco digi") };
@@ -59,7 +59,7 @@ namespace mu2e {
             std::map<std::string, processorStrategy> spmap;
             spmap["RawExtract"]  = RawExtract;
             spmap["TemplateFit"] = Template;
-            
+
             switch (spmap[processorStrategy_])
             {
                 case RawExtract:
@@ -165,14 +165,14 @@ namespace mu2e {
               bool   isPileUp  = waveformProcessor_->isPileUp(i);
               double chi2      = waveformProcessor_->chi2();
               int    ndf       = waveformProcessor_->ndf();
-              
+
               if (diagLevel_ > 2) std::cout<<"Found reco digi hit with eDep="<<eDep<<"  time="<<time<<" chi2="<<chi2<<"  ndf="<<ndf<<std::endl;
               if (chi2/float(ndf) > maxChi2Cut_) continue;
-           
+
               if (SiPMID%2==0) totEnergyReco += eDep;
               recoCaloHits.emplace_back(CaloRecoDigi(caloDigiPtr, eDep, eDepErr, time, timeErr, chi2, ndf, isPileUp));
           }
-      }     
+      }
 
       if (diagLevel_ > 1) std::cout<<"[CaloRecoDigiMaker] Total energy reco "<<totEnergyReco <<std::endl;
   }

@@ -20,7 +20,7 @@ process_name : BkgRatesCounter
 source :
 {
   module_type : EmptyEvent
-#   module_type: RootInput  
+#   module_type: RootInput
   maxEvents : -1
 #   fileNames :  ["BkgInput.root"]
 }
@@ -48,7 +48,7 @@ physics :
   }
 
   filters:
-  { 
+  {
     # Filter module. Do not write events with no Tracker or calo hits
     filterEmpty :
     {
@@ -81,7 +81,7 @@ physics :
 
   }
 
-  p1 : [ 
+  p1 : [
 #randomsaver,
        generate
        , g4run
@@ -101,7 +101,7 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "data_bkg.root"
@@ -110,7 +110,7 @@ outputs:
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
                    # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }
 

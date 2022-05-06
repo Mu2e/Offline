@@ -1,7 +1,7 @@
 #ifndef CaloNoiseSimGenerator_HH
 #define CaloNoiseSimGenerator_HH
 //
-// Generate long noise waveform to use for calorimeter digitization 
+// Generate long noise waveform to use for calorimeter digitization
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -21,26 +21,26 @@
 
 namespace mu2e {
 
-  class CaloNoiseSimGenerator 
+  class CaloNoiseSimGenerator
   {
      public:
         struct Config
         {
             using Name    = fhicl::Name;
-            using Comment = fhicl::Comment;        
-            fhicl::Atom<double>   elecNphotPerNs { Name("elecNphotPerNs"), Comment("Electronics noise number of PE / ns ") }; 
-            fhicl::Atom<double>   rinNphotPerNs  { Name("rinNphotPerNs"),  Comment("RIN noise number of PE / ns ") }; 
-            fhicl::Atom<double>   darkNphotPerNs { Name("darkNphotPerNs"), Comment("SiPM Dark noise number of PE / ns ") }; 
-            fhicl::Atom<double>   digiSampling   { Name("digiSampling"),   Comment("Digitization time sampling") }; 
+            using Comment = fhicl::Comment;
+            fhicl::Atom<double>   elecNphotPerNs { Name("elecNphotPerNs"), Comment("Electronics noise number of PE / ns ") };
+            fhicl::Atom<double>   rinNphotPerNs  { Name("rinNphotPerNs"),  Comment("RIN noise number of PE / ns ") };
+            fhicl::Atom<double>   darkNphotPerNs { Name("darkNphotPerNs"), Comment("SiPM Dark noise number of PE / ns ") };
+            fhicl::Atom<double>   digiSampling   { Name("digiSampling"),   Comment("Digitization time sampling") };
             fhicl::Atom<unsigned> noiseWFSize    { Name("noiseWFSize"),    Comment("Noise WF size") };
-            fhicl::Atom<bool>     enableAR       { Name("enableAR"),       Comment("Enable AR noise generation ") }; 
-            fhicl::Atom<double>   nparAR         { Name("nParAR"),         Comment("Number parameters for AR fit ") }; 
-            fhicl::Atom<unsigned> nMaxFragment   { Name("nMaxFragment"),   Comment("maximum number of wf generated for extracting noise fragments ") }; 
-            fhicl::Atom<int>      minPeakADC     { Name("minPeakADC"),     Comment("Minimum ADC hits of local peak to digitize") }; 
+            fhicl::Atom<bool>     enableAR       { Name("enableAR"),       Comment("Enable AR noise generation ") };
+            fhicl::Atom<double>   nparAR         { Name("nParAR"),         Comment("Number parameters for AR fit ") };
+            fhicl::Atom<unsigned> nMaxFragment   { Name("nMaxFragment"),   Comment("maximum number of wf generated for extracting noise fragments ") };
+            fhicl::Atom<int>      minPeakADC     { Name("minPeakADC"),     Comment("Minimum ADC hits of local peak to digitize") };
             fhicl::Atom<int>      diagLevel      { Name("diagLevel"),      Comment("Diag Level"),0 };
         };
 
-     
+
         CaloNoiseSimGenerator(const Config& config, CLHEP::HepRandomEngine& engine, int iRO);
 
         void                         initialize(const CaloWFExtractor& wfExtractor);
@@ -57,7 +57,7 @@ namespace mu2e {
 
      private:
         using vvd = std::vector<std::vector<double>>;
- 
+
         void                  generateWF(std::vector<double>& wfVector);
         void                  generateFragments(const CaloWFExtractor& wfExtractor);
         void                  initAR();

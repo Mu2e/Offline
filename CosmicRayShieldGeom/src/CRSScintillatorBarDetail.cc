@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
   CRSScintillatorBarDetail::CRSScintillatorBarDetail(std::string const& materialName,
                                                      std::vector<double> const& halfLengths,
@@ -33,7 +33,7 @@ namespace mu2e
   {
   }
 
-  CLHEP::Hep3Vector CRSScintillatorBarDetail::toWorld(const CLHEP::Hep3Vector &localPosition, 
+  CLHEP::Hep3Vector CRSScintillatorBarDetail::toWorld(const CLHEP::Hep3Vector &localPosition,
                                                       const CLHEP::Hep3Vector &barPosition) const
   {
     CLHEP::Hep3Vector worldPosition=barPosition;
@@ -41,7 +41,7 @@ namespace mu2e
     return worldPosition;
   }
 
-  CLHEP::Hep3Vector CRSScintillatorBarDetail::toLocal(const CLHEP::Hep3Vector &worldPosition, 
+  CLHEP::Hep3Vector CRSScintillatorBarDetail::toLocal(const CLHEP::Hep3Vector &worldPosition,
                                                       const CLHEP::Hep3Vector &barPosition) const
   {
     CLHEP::Hep3Vector localPosition;
@@ -50,7 +50,7 @@ namespace mu2e
     return localPosition;
   }
 
-  CLHEP::Hep3Vector CRSScintillatorBarDetail::toLocalNormalized(const CLHEP::Hep3Vector &worldPosition, 
+  CLHEP::Hep3Vector CRSScintillatorBarDetail::toLocalNormalized(const CLHEP::Hep3Vector &worldPosition,
                                                                 const CLHEP::Hep3Vector &barPosition) const
   {
     CLHEP::Hep3Vector localPosition;
@@ -59,11 +59,11 @@ namespace mu2e
     return localPosition;
   }
 
-  bool CRSScintillatorBarDetail::isInside(const CLHEP::Hep3Vector &worldPosition, 
+  bool CRSScintillatorBarDetail::isInside(const CLHEP::Hep3Vector &worldPosition,
                                           const CLHEP::Hep3Vector &barPosition) const
   {
     CLHEP::Hep3Vector tmp=worldPosition-barPosition;
-    for(int i=0; i<3; i++) 
+    for(int i=0; i<3; i++)
     {
       if(abs(tmp[i]/_halfLengths[i])>1.0) return false;
     }
@@ -126,7 +126,7 @@ namespace mu2e
   {
     if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
 
-    int fiberNumber=SiPMNumber/2;    
+    int fiberNumber=SiPMNumber/2;
     int side=SiPMNumber%2;
 
     return getSiPMPosition(fiberNumber, side, barPosition);

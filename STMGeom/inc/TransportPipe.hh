@@ -15,15 +15,15 @@ namespace mu2e {
 
   class TransportPipe {
   public:
-    TransportPipe(bool build, double radiusIn, double radiusOut, 
+    TransportPipe(bool build, double radiusIn, double radiusOut,
                   std::string material, std::string gasMaterial,
-                  double upStrSpace, double dnStrHalflength, 
+                  double upStrSpace, double dnStrHalflength,
                   std::string upStrWindowMaterial, double upStrWindowHalflength,
                   std::string dnStrWindowMaterial, double dnStrWindowHalflength,
                   double flangeHalflength, double flangeOverhangR,
                   CLHEP::Hep3Vector originInMu2e, CLHEP::HepRotation rotation
                 ) :
-      _build( build ),   
+      _build( build ),
       _radiusIn( radiusIn ),
       _radiusOut( radiusOut ),
       _material( material ),
@@ -43,8 +43,8 @@ namespace mu2e {
     bool   build()                            const { return _build; }
     double radiusIn()                         const { return _radiusIn; }
     double radiusOut()                        const { return _radiusOut; }
-    std::string const & material()            const { return _material; }      
-    std::string const & gasMaterial()         const { return _gasMaterial; }   
+    std::string const & material()            const { return _material; }
+    std::string const & gasMaterial()         const { return _gasMaterial; }
     double upStrSpace()                       const { return _upStrSpace; }
     double dnStrHalflength()                  const { return _dnStrHalflength; }
     std::string const & upStrWindowMaterial() const { return _upStrWindowMaterial; }
@@ -53,10 +53,10 @@ namespace mu2e {
     double dnStrWindowHalflength()            const { return _dnStrWindowHalflength; }
     double flangeHalfLength()                 const { return _flangeHalflength; }
     double flangeOverhangR()                  const { return _flangeOverhangR; }
-        
+
     //double zBegin()          const { return _originInMu2e.z() - zTabletopHalflength(); }
     //double zEnd()            const { return _originInMu2e.z() + zTabletopHalflength(); }
-    
+
     CLHEP::Hep3Vector const &  originInMu2e() const { return _originInMu2e; }
     CLHEP::HepRotation const & rotation()     const { return _rotation; }
 

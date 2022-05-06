@@ -1,7 +1,7 @@
 //
 // A module to find clusters of coincidences of CRV pulses
 //
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -29,9 +29,9 @@
 #include <TMath.h>
 #include <TH2D.h>
 
-namespace mu2e 
+namespace mu2e
 {
-  class CrvCoincidenceClusterFinder : public art::EDProducer 
+  class CrvCoincidenceClusterFinder : public art::EDProducer
   {
     public:
     explicit CrvCoincidenceClusterFinder(fhicl::ParameterSet const& pset);
@@ -56,29 +56,29 @@ namespace mu2e
 
     struct ClusterHit
     {
-      art::Ptr<CrvRecoPulse> _crvRecoPulse; 
+      art::Ptr<CrvRecoPulse> _crvRecoPulse;
       float  _x, _y;
       double _time;
       CLHEP::Hep3Vector _counterPosition;
       int    _layer;
-      ClusterHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, float x, float y, double time, const CLHEP::Hep3Vector &counterPosition, int layer) 
+      ClusterHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, float x, float y, double time, const CLHEP::Hep3Vector &counterPosition, int layer)
             : _crvRecoPulse(crvRecoPulse), _x(x), _y(y), _time(time), _counterPosition(counterPosition), _layer(layer) {}
     };
 
     struct PosCompare
     {
-      bool operator() (const ClusterHit &lhs, const ClusterHit &rhs) const 
-      {                                                //identical hits will be removed, 
-        if(lhs._x!=rhs._x) return lhs._x < rhs._x; 
+      bool operator() (const ClusterHit &lhs, const ClusterHit &rhs) const
+      {                                                //identical hits will be removed,
+        if(lhs._x!=rhs._x) return lhs._x < rhs._x;
         return lhs._crvRecoPulse < rhs._crvRecoPulse;
       }
     };
 
     struct TimeCompare
     {
-      bool operator() (const ClusterHit &lhs, const ClusterHit &rhs) const 
-      {                                                //identical hits will be removed, 
-        if(lhs._time!=rhs._time) return lhs._time < rhs._time; 
+      bool operator() (const ClusterHit &lhs, const ClusterHit &rhs) const
+      {                                                //identical hits will be removed,
+        if(lhs._time!=rhs._time) return lhs._time < rhs._time;
         return lhs._crvRecoPulse < rhs._crvRecoPulse;
       }
     };
@@ -111,7 +111,7 @@ namespace mu2e
     double fractionDeadTime = _totalDeadTime / _totalTime;
     if(_verboseLevel>0)
       {
-	std::cout << "SUMMARY " << _crvCoincidenceCheckModuleLabel << "    Total dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%   using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
+        std::cout << "SUMMARY " << _crvCoincidenceCheckModuleLabel << "    Total dead time: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%   using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
       }
   }
 
@@ -119,7 +119,7 @@ namespace mu2e
   {
   }
 
-  void CrvCoincidenceClusterFinder::produce(art::Event& event) 
+  void CrvCoincidenceClusterFinder::produce(art::Event& event)
   {
     _totalTime += _timeWindowEnd - _timeWindowStart;
 
@@ -146,8 +146,8 @@ namespace mu2e
       for(size_t i=0; i<crvRecoPulses.size(); i++)
       {
         const art::Ptr<CrvRecoPulse> crvRecoPulse = crvRecoPulses[i];
- 
-        const mu2e::CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex(); 
+
+        const mu2e::CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
         const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);
         int widthDirection=crvCounter.getBarDetail().getWidthDirection();
         int thicknessDirection=crvCounter.getBarDetail().getThicknessDirection();
@@ -163,7 +163,7 @@ namespace mu2e
     for(sectorTypeMapIter=sectorTypeMap.begin(); sectorTypeMapIter!=sectorTypeMap.end(); sectorTypeMapIter++)
     {
       int crvSectorType = sectorTypeMapIter->first;
-      const std::set<ClusterHit,PosCompare> &posOrderedHits = sectorTypeMapIter->second; 
+      const std::set<ClusterHit,PosCompare> &posOrderedHits = sectorTypeMapIter->second;
 
       //loop through the vector of (x-position ordered) crv hits for this particular crv sector type
       std::set<ClusterHit,PosCompare>::const_iterator hp=posOrderedHits.begin();
@@ -235,7 +235,7 @@ namespace mu2e
           if(deadTimeWindowEnd<_timeWindowStart) continue;
           if(deadTimeWindowStart>_timeWindowEnd) continue;
           if(deadTimeWindowEnd>_timeWindowEnd) deadTimeWindowEnd=_timeWindowEnd;
-   
+
           double deadTime = deadTimeWindowEnd-deadTimeWindowStart;
           _totalDeadTime += deadTime;
 

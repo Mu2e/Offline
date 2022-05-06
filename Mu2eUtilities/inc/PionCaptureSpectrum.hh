@@ -38,7 +38,7 @@ namespace mu2e {
     PionCaptureSpectrum(CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
 
     PionCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
-			CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
+                        CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
 
     ~PionCaptureSpectrum(){}
 
@@ -52,7 +52,7 @@ namespace mu2e {
     double getFlat              (double e, double x = 0., double y = 0.) const ;
     double getBistirlichSpectrum(double e) const ;
 
-    void   fire(double energy, double& x, double& y) const; 
+    void   fire(double energy, double& x, double& y) const;
 
     void   getElecPosiVectors(double energy, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const;
 
@@ -69,9 +69,9 @@ namespace mu2e {
     CLHEP::RandFlat*   _rnFlat;
     RandomUnitSphere*  _rnUnitSphere;
 
-    double             _me;		// electron mass
-    double             _mpi;		// pi- mass
-    double             _MN;		// mass of the initial state nucleus (Al)
+    double             _me;                // electron mass
+    double             _mpi;                // pi- mass
+    double             _MN;                // mass of the initial state nucleus (Al)
   };
 
 } // end of namespace mu2e

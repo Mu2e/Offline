@@ -14,7 +14,7 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CRSScintillatorLayerId

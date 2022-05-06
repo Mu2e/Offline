@@ -22,7 +22,7 @@ namespace mu2e {
 
     //CaloDAQMap():_name("CaloDAQMap") {}
     constexpr static const char* cxname = {"CaloDAQMap"};
-    
+
     // construct with constants, then some values are computed and filled below
     CaloDAQMap(std::vector<uint16_t> DIRAC2CaloMap, std::vector<uint16_t> Calo2DIRACMap) :
        ProditionsEntity(cxname),
@@ -30,7 +30,7 @@ namespace mu2e {
       _DIRAC2CaloMap(DIRAC2CaloMap), _Calo2DIRACMap(Calo2DIRACMap){}
 
     virtual ~CaloDAQMap() {}
-    
+
     //ora ..    std::string const& name() const { return _name; }
     void print(std::ostream& os) const;
 
@@ -45,14 +45,14 @@ namespace mu2e {
     void setCalo2DIRACMap(std::vector<uint16_t> Calo2DIRACMap) { _Calo2DIRACMap = Calo2DIRACMap; }
 
   private:
-    
+
     //ora ... std::string _name;
 
     std::vector<uint16_t> _DIRAC2CaloMap;
     std::vector<uint16_t> _Calo2DIRACMap;
 
   };
-  
+
 }
 
 #endif

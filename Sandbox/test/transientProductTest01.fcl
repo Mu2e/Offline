@@ -1,4 +1,4 @@
-# 
+#
 # Test of transient data products
 #
 #
@@ -7,12 +7,12 @@
 
 #include "Offline/fcl/minimalMessageService.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : transientProductTest01
 
 # Read events from file made by transientTest00.fcl
-source : 
-{ 
+source :
+{
   module_type : RootInput
   fileNames : [ "transientTest00.root"]
   maxEvents : 2
@@ -27,7 +27,7 @@ physics :
 {
   producers: {}
 
-  analyzers: 
+  analyzers:
   {
    readTransient :{ module_type : ReadTransientProduct00 }
   }

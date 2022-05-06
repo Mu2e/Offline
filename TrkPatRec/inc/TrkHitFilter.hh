@@ -1,5 +1,5 @@
 //
-// Simple class to filter hits based on residual, 
+// Simple class to filter hits based on residual,
 //
 //
 // struct for outlier search tuple

@@ -184,7 +184,7 @@ namespace mu2e {
       async<art::InEvent>();
 
       if (num_schedules>1) {
-	G4cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
+        G4cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
       }
     } // end Mu2eG4MT constructor
 

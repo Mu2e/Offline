@@ -8,11 +8,11 @@ namespace mu2e {
   class CaloTrigSeed
   {
       public:
- 
+
         CaloTrigSeed(): _crystalId(0),_epeak(0.),_tpeak(0.),_rpeak(0.),_ring1max(0.),_ring1max2(0.),_ring2max(0.),_cluenergy(0.),_clutime(0.),_clucogx(0.),_clucogy(0.)
         {}
 
-        CaloTrigSeed(unsigned int crystalId, float epeak, float tpeak, float rpeak, float ring1max, float ring1max2, float ring2max, 
+        CaloTrigSeed(unsigned int crystalId, float epeak, float tpeak, float rpeak, float ring1max, float ring1max2, float ring2max,
                      float cluenergy, float clutime, float clucogx, float clucogy)  :
            _crystalId(crystalId),_epeak(epeak),_tpeak(tpeak),_rpeak(rpeak),_ring1max(ring1max),_ring1max2(ring1max2),_ring2max(ring2max),
            _cluenergy(cluenergy),_clutime(clutime),_clucogx(clucogx),_clucogy(clucogy)
@@ -32,7 +32,7 @@ namespace mu2e {
         float     clucogx()    const { return _clucogx;}
         float     clucogy()    const { return _clucogy;}
 
-     
+
      private:
         unsigned   _crystalId;
         float      _epeak;

@@ -10,9 +10,9 @@
 namespace mu2e {
   struct TrkStraw {
     TrkStraw() : _doca(-1.0), _trklen(0.0), _wirelen(0.0), _slen(0.0), _radlen(0.0)  {}
-    TrkStraw(StrawId const& id, double doca, double trklen, double wirelen, double slen, double radlen, double pfrac, bool active) : _straw(id), _doca(doca), _trklen(trklen), 
+    TrkStraw(StrawId const& id, double doca, double trklen, double wirelen, double slen, double radlen, double pfrac, bool active) : _straw(id), _doca(doca), _trklen(trklen),
     _wirelen(wirelen), _slen(slen), _radlen(radlen), _pfrac(pfrac), _active(active) {}
-   
+
     StrawId const& straw() const { return _straw; }
     Float_t doca() const { return _doca; }
     Float_t trkLen() const { return _trklen; }
@@ -21,7 +21,7 @@ namespace mu2e {
     Float_t radLen() const { return _radlen; }
     Float_t pfrac() const { return _pfrac; }
     Bool_t active() const { return _active; }
-  
+
     StrawId   _straw; // which straw was traversed
     Float_t   _doca; // DOCA from the track to the wire of this straw
     Float_t   _trklen; // length along the track from z=0 to track-wire POCA

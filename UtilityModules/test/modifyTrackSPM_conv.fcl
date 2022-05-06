@@ -39,7 +39,7 @@ outputs : {
 
     outputCommands:   [ "keep *_*_*_*",
                         "drop *_detectorFilter_tracker_beamg4s4conversion",
-			"drop *_TriggerResults_*_modifyTrackSPM"
+                        "drop *_TriggerResults_*_modifyTrackSPM"
                       ]
 
   }

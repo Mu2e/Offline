@@ -1,4 +1,4 @@
-physics.filters.tprCosmicSeedDeMTSFilter.fitparticle   : @local::Particle.eminus	 
+physics.filters.tprCosmicSeedDeMTSFilter.fitparticle   : @local::Particle.eminus
 physics.filters.tprCosmicSeedDeMTSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.tprCosmicSeedDeMTSFilter.minNStrawHits : 15.0
 physics.filters.tprCosmicSeedDeMTSFilter.minMomentum   : 50.0

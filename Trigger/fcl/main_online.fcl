@@ -61,39 +61,39 @@ services : @local::Services.Reco
 
 physics:
 {
-    
-    producers : { @table::Trigger.producers 
 
-	makeSD:
-	{
-	    module_type: Mu2eProducer
-	    diagLevel: 0
-	    parseCAL: 0
-	    parseTRK: 1
-	}
-	
-	CaloDigiMaker:
-	{
-	    module_type: Mu2eProducer
-	    diagLevel: 0
-	    parseCAL: 1
-	    parseTRK: 0
-	}
-	
-	
+    producers : { @table::Trigger.producers
+
+        makeSD:
+        {
+            module_type: Mu2eProducer
+            diagLevel: 0
+            parseCAL: 0
+            parseTRK: 1
+        }
+
+        CaloDigiMaker:
+        {
+            module_type: Mu2eProducer
+            diagLevel: 0
+            parseCAL: 1
+            parseTRK: 0
+        }
+
+
     }
-    
+
     filters   : { @table::Trigger.filters }
-    
+
     analyzers : {  @table::Trigger.analyzers
-	
-	readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
-	    nFilters      : 70
-	}
-	
+
+        readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
+            nFilters      : 70
+        }
+
     }
-    
-    
+
+
     e2: [ readTriggerInfo ]
 
     end_paths: [ e2 ]
@@ -103,11 +103,11 @@ physics:
 outputs:
 {
     @table::Trigger.outputs
-    
+
     out1:
     {
-	module_type: FileDumperOutput
-	wantProductFriendlyClassName: true
+        module_type: FileDumperOutput
+        wantProductFriendlyClassName: true
     }
 
 }

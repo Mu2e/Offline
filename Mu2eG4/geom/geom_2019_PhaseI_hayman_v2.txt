@@ -1,5 +1,5 @@
 // Updated to be used in the 2019/2020 CRY simulation campaign, based off Mu2eG4/geom/geom_MARS_2019.txt
-// updates muon beam line internals + shielding, DS internals, 
+// updates muon beam line internals + shielding, DS internals,
 // and the production target + supports
 
 string detector.name  = "g4geom_v00";

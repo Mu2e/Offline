@@ -7,11 +7,11 @@
 BEGIN_PROLOG
 
 CaloHitMakerFast :
-{ 
+{
     module_type            : CaloHitMakerFast
     caloDigiCollection     : CaloDigiMaker
     digiSampling           : @local::HitMakerDigiSampling
-    ProtonBunchTimeTag     : "EWMProducer" 
+    ProtonBunchTimeTag     : "EWMProducer"
     diagLevel              : 0
     deltaTPulses           : 11
     nPEperMeV              : 30
@@ -21,7 +21,7 @@ CaloHitMakerFast :
 }
 
 
-CaloHitRecoTrigger : 
+CaloHitRecoTrigger :
 {
    producers : {
      CaloHitMakerFast : @local::CaloHitMakerFast

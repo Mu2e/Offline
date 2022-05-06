@@ -8,7 +8,7 @@
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvSiPMCharges
   {
@@ -26,7 +26,7 @@ namespace mu2e
       double _charge;
       double _chargeInPEs;
       art::Ptr<CrvStep> _step;
-      SingleCharge(double time, double charge, double chargeInPEs, art::Ptr<CrvStep> step) : 
+      SingleCharge(double time, double charge, double chargeInPEs, art::Ptr<CrvStep> step) :
                                                _time(time), _charge(charge), _chargeInPEs(chargeInPEs), _step(step) {}
       SingleCharge(double time, double charge, double chargeInPEs) :   //that's for dark noise (i.e. no StepPointMCs)
                                                _time(time), _charge(charge), _chargeInPEs(chargeInPEs) {}
@@ -41,7 +41,7 @@ namespace mu2e
     private:
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    int                            _SiPMNumber; 
+    int                            _SiPMNumber;
     std::vector<SingleCharge>      _charges;
   };
 

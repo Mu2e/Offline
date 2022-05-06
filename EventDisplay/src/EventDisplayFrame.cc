@@ -44,7 +44,7 @@ using namespace std;
 namespace mu2e_eventdisplay
 {
 
-EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) : 
+EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
   TGMainFrame(p, w, h),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
@@ -126,7 +126,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(trackLabel, lh1);
   _subFrame->AddFrame(trackBox, lh1);
 
-  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,  
+  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,
                                                                           _g4ModuleLabel, _physicalVolumesMultiLabel,
                                                                           _protonBunchTimeLabel));
 
@@ -455,7 +455,7 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, boo
                                     bool showSupportStructures,
                                     bool showCRV,
                                     bool showOtherStructures,
-                                    bool showMuonBeamStop, 
+                                    bool showMuonBeamStop,
                                     bool showProtonAbsorber)
 {
   _mainPad->cd();
@@ -490,31 +490,31 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, boo
      redraw=true;
      _showSupportStructures=showSupportStructures;
      _dataInterface->makeSupportStructuresVisible(showSupportStructures);
-  }  
+  }
   if(_showCRV!=showCRV)
   {
      redraw=true;
      _showCRV=showCRV;
      _dataInterface->makeCrvScintillatorBarsVisible(showCRV);
-  }  
+  }
   if(_showOtherStructures!=showOtherStructures)
   {
      redraw=true;
      _showOtherStructures=showOtherStructures;
      _dataInterface->makeOtherStructuresVisible(showOtherStructures);
-  }  
+  }
   if(_showMuonBeamStop!=showMuonBeamStop)
   {
      redraw=true;
      _showMuonBeamStop=showMuonBeamStop;
      _dataInterface->makeMuonBeamStopStructuresVisible(showMuonBeamStop);
-  }  
+  }
   if(_showProtonAbsorber!=showProtonAbsorber)
   {
      redraw=true;
      _showProtonAbsorber=showProtonAbsorber;
      _dataInterface->makeMecoStyleProtonAbsorberVisible(showProtonAbsorber);
-  }  
+  }
 
   if(std::isnan(_timeCurrent) || redraw) drawEverything();
   else drawSituation();
@@ -618,7 +618,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
 
   std::string eventInfoText;
   eventInfoText=Form("Event #: %i",_eventNumber);
-  if(_eventNumberText==nullptr) 
+  if(_eventNumberText==nullptr)
   {
     _eventNumberText = new TText(0.6,-0.8,eventInfoText.c_str());
     _eventNumberText->SetTextColor(5);
@@ -780,22 +780,22 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
             double phi = _phiField->GetNumber();
             double theta = _thetaField->GetNumber();
             double psi = _psiField->GetNumber();
-            while (phi>360) 
+            while (phi>360)
             {
               phi-=360;
               _phiField->SetText(Form("%.0f",phi));
             }
-            while (phi<0) 
+            while (phi<0)
             {
               phi+=360;
               _phiField->SetText(Form("%.0f",phi));
             }
-            while (theta>360) 
+            while (theta>360)
             {
               theta-=360;
               _thetaField->SetText(Form("%.0f",theta));
             }
-            while (theta<0) 
+            while (theta<0)
             {
               theta+=360;
               _thetaField->SetText(Form("%.0f",theta));
@@ -804,7 +804,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
               psi-=360;
               _psiField->SetText(Form("%.0f",psi));
             }
-            while (psi<0) 
+            while (psi<0)
             {
               psi+=360;
               _psiField->SetText(Form("%.0f",psi));
@@ -939,13 +939,13 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->Modified();
                            _mainPad->Update();
                          }
-                         if(param1==1507 || param1==1508) 
+                         if(param1==1507 || param1==1508)
                          {
                            double min[3],max[3],hdist,cen;
                            _mainPad->GetView()->GetRange(min,max);
-                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2]) 
+                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2])
                            {
-                             for(int i=0; i<3; i++) 
+                             for(int i=0; i<3; i++)
                              {
                                hdist = (max[i] - min[i])/2.0;
                                cen   = min[i] + hdist;
@@ -965,7 +965,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                              _mainPad->Update();
                            }
                          }
-                         if(1509 <= param1 && param1 <= 1514) 
+                         if(1509 <= param1 && param1 <= 1514)
                          {
                            double min[3],max[3];
                            min[0]=atof(_minXField->GetText());
@@ -978,22 +978,22 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            int dir = (param1 - 1509)%2;
                            double diff = 100;
                            if (!dir) diff*=-1;
-                           if (0 <= mode && mode <3) 
+                           if (0 <= mode && mode <3)
                            {
                              min[mode] += diff;
                              max[mode] += diff;
                              _mainPad->GetView()->SetRange(min,max);
-                             if(mode == 0) 
+                             if(mode == 0)
                              {
                                _minXField->SetText(Form("%.0f",min[0]));
                                _maxXField->SetText(Form("%.0f",max[0]));
                              }
-                             else if(mode == 1) 
+                             else if(mode == 1)
                              {
                                _minYField->SetText(Form("%.0f",min[1]));
                                _maxYField->SetText(Form("%.0f",max[1]));
                              }
-                             else if(mode == 2) 
+                             else if(mode == 2)
                              {
                                _minZField->SetText(Form("%.0f",min[2]));
                                _maxZField->SetText(Form("%.0f",max[2]));
@@ -1012,7 +1012,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          }
                          if(param1==64)
                          {
-                           new SetupDialog(gClient->GetRoot(), this, _whiteBackground, 
+                           new SetupDialog(gClient->GetRoot(), this, _whiteBackground,
                                            _useHitColors, _useTrackColors,
                                            _showSupportStructures, _showCRV, _showOtherStructures,
                                            _showMuonBeamStop, _showProtonAbsorber);

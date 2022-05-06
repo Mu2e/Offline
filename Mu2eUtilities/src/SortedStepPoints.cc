@@ -67,7 +67,7 @@ namespace mu2e {
       if ( d < dmin ){
         dmin = d;
         midByZ_ = step;
-	//        cout << "             Mark" <<endl;
+        //        cout << "             Mark" <<endl;
       }
 //       cout << "Test: "
 //            << step->position().z() << " "

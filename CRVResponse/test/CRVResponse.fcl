@@ -29,9 +29,9 @@ physics :
   end_paths:     [out]
 }
 
-outputs: 
+outputs:
 {
-  Output : 
+  Output :
   {
     module_type : RootOutput
     fileName    : "data_crv.art"

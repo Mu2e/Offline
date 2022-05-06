@@ -106,7 +106,7 @@ namespace mu2e {
                          VolumeInfo const & parent,
                          int copyNo,
                          G4Colour const color,
-			 string const & lookupToken
+                         string const & lookupToken
                          ){
 
 
@@ -121,7 +121,7 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;
@@ -129,25 +129,25 @@ namespace mu2e {
   }
 
   VolumeInfo nestTorus( string const& name,
-			TorusParams const& halfDim,
+                        TorusParams const& halfDim,
                         G4Material* material,
-			G4RotationMatrix const* rot,
-			G4ThreeVector const & offset,
-			VolumeInfo const & parent,
-			int copyNo,
-			bool const isVisible,
-			G4Colour const color,
-			bool const forceSolid,
-			bool const forceAuxEdgeVisible,
-			bool const placePV,
-			bool const doSurfaceCheck )
+                        G4RotationMatrix const* rot,
+                        G4ThreeVector const & offset,
+                        VolumeInfo const & parent,
+                        int copyNo,
+                        bool const isVisible,
+                        G4Colour const color,
+                        bool const forceSolid,
+                        bool const forceAuxEdgeVisible,
+                        bool const placePV,
+                        bool const doSurfaceCheck )
   {
 
     VolumeInfo info(name,offset,parent.centerInWorld);
 
-    info.solid    = new G4Torus( name, halfDim.innerRadius(), 
-				 halfDim.outerRadius(), halfDim.torusRadius(),
-				 halfDim.phi0(), halfDim.phiMax() );
+    info.solid    = new G4Torus( name, halfDim.innerRadius(),
+                                 halfDim.outerRadius(), halfDim.torusRadius(),
+                                 halfDim.phi0(), halfDim.phiMax() );
 
     finishNesting(info,
                   material,
@@ -166,6 +166,6 @@ namespace mu2e {
     return info;
 
 
-  }			
+  }
 
 }

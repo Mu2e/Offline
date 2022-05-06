@@ -58,11 +58,11 @@ namespace mu2e {
         apexY_({-0.5,-0.5,0.5,0.5,-0.5})
       {
           step_.push_back( SquShiftLK(  1,  1) ); //right
-	  step_.push_back( SquShiftLK(  0 , 1) ); //down right
-	  step_.push_back( SquShiftLK( -1,  0) ); //down left
-	  step_.push_back( SquShiftLK( -1, -1) ); //left
-	  step_.push_back( SquShiftLK(  0, -1) ); //up left
-	  step_.push_back( SquShiftLK(  1,  0) ); //up right
+          step_.push_back( SquShiftLK(  0 , 1) ); //down right
+          step_.push_back( SquShiftLK( -1,  0) ); //down left
+          step_.push_back( SquShiftLK( -1, -1) ); //left
+          step_.push_back( SquShiftLK(  0, -1) ); //up left
+          step_.push_back( SquShiftLK(  1,  0) ); //up right
       }
 
 
@@ -78,22 +78,22 @@ namespace mu2e {
 
       int SquareShiftMapper::indexFromXY(double x0, double y0) const
       {
-	  int l,k;
-	  int ny = (y0>0) ? int(std::abs(y0)+0.5) : -int(std::abs(y0)+0.5);
+          int l,k;
+          int ny = (y0>0) ? int(std::abs(y0)+0.5) : -int(std::abs(y0)+0.5);
 
-	  if (ny%2==0)
-	  {
-	      int nx = (x0>0) ? int(std::abs(x0)+0.5) : -int(std::abs(x0)+0.5);
-	      l = nx+ny/2;
-	      k = nx-ny/2;
-	  } else {
-	      int nx = (x0>0) ? int(std::abs(x0)) : (-int(std::abs(x0))-1);
-	      l = nx + (ny+1)/2;
-	      k = nx - (ny-1)/2;
-	  }
+          if (ny%2==0)
+          {
+              int nx = (x0>0) ? int(std::abs(x0)+0.5) : -int(std::abs(x0)+0.5);
+              l = nx+ny/2;
+              k = nx-ny/2;
+          } else {
+              int nx = (x0>0) ? int(std::abs(x0)) : (-int(std::abs(x0))-1);
+              l = nx + (ny+1)/2;
+              k = nx - (ny-1)/2;
+          }
 
-	  SquShiftLK lk(l,k);
-	  return index(lk);
+          SquShiftLK lk(l,k);
+          return index(lk);
       }
 
 
@@ -101,81 +101,81 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       int SquareShiftMapper::indexFromRowCol(int nRow, int nCol) const
       {
-	  int k = nRow/2-nRow + nCol;
+          int k = nRow/2-nRow + nCol;
           int l = nRow/2 + nCol;
 
-	  SquShiftLK lk(l,k);
-	  return index(lk);
+          SquShiftLK lk(l,k);
+          return index(lk);
       }
 
 
       //--------------------------------------------------------------------------------
-      bool SquareShiftMapper::isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos, 
-                                              const CLHEP::Hep3Vector& size) const 
+      bool SquareShiftMapper::isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos,
+                                              const CLHEP::Hep3Vector& size) const
       {
-          return (std::abs(x-pos.x()) < 0.5*size.x()) && (std::abs(y-pos.y()) < 0.5*size.y());                 
-      } 
- 
+          return (std::abs(x-pos.x()) < 0.5*size.x()) && (std::abs(y-pos.y()) < 0.5*size.y());
+      }
+
 
 
       //--------------------------------------------------------------------------------
       std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level)  const
       {
-	  std::vector<int> thisNeighbour;
-	  thisNeighbour.reserve(12);
+          std::vector<int> thisNeighbour;
+          thisNeighbour.reserve(12);
 
-	  SquShiftLK init = lk(thisIndex);
-	  SquShiftLK lk(init.l_, init.k_ - level);
+          SquShiftLK init = lk(thisIndex);
+          SquShiftLK lk(init.l_, init.k_ - level);
 
-	  for (size_t i=0;i<step_.size();++i)
-	  {
-	      for (int iseg=0;iseg<level;++iseg)
-	      {
-		 lk.add(step_[i]);
-		 thisNeighbour.push_back( index(lk) );
-	      }
-	  }
-	  return thisNeighbour;
+          for (size_t i=0;i<step_.size();++i)
+          {
+              for (int iseg=0;iseg<level;++iseg)
+              {
+                 lk.add(step_[i]);
+                 thisNeighbour.push_back( index(lk) );
+              }
+          }
+          return thisNeighbour;
       }
 
 
       //--------------------------------------------------------------------------------
       SquShiftLK SquareShiftMapper::lk(int thisIndex) const
       {
-	 if (thisIndex==0) return SquShiftLK(0,0);
+         if (thisIndex==0) return SquShiftLK(0,0);
 
-	 int nRing = int(0.5+sqrt(0.25+float(thisIndex-1)/3.0));
-	 int nSeg  = (thisIndex - 3*nRing*(nRing-1)-1) / nRing;
-	 int nPos  = (thisIndex - 3*nRing*(nRing-1)-1) % nRing;
+         int nRing = int(0.5+sqrt(0.25+float(thisIndex-1)/3.0));
+         int nSeg  = (thisIndex - 3*nRing*(nRing-1)-1) / nRing;
+         int nPos  = (thisIndex - 3*nRing*(nRing-1)-1) % nRing;
 
-	 int l =          nPos*step_[nSeg].l_;
-	 int k = -nRing + nPos*step_[nSeg].k_;
+         int l =          nPos*step_[nSeg].l_;
+         int k = -nRing + nPos*step_[nSeg].k_;
 
-	 for (int i=0;i<nSeg;++i)
-	 {
-	    l += step_[i].l_*nRing;
-	    k += step_[i].k_*nRing;
-	 }
+         for (int i=0;i<nSeg;++i)
+         {
+            l += step_[i].l_*nRing;
+            k += step_[i].k_*nRing;
+         }
 
-	 return SquShiftLK(l,k);
+         return SquShiftLK(l,k);
       }
 
 
       //--------------------------------------------------------------------------------
       int SquareShiftMapper::index(const SquShiftLK& thisLK) const
       {
-	 if (thisLK.l_==0 && thisLK.k_==0) return 0;
+         if (thisLK.l_==0 && thisLK.k_==0) return 0;
 
-	 int nRing = ring(thisLK);
-	 int pos   = 3*nRing*(nRing-1)+1;
+         int nRing = ring(thisLK);
+         int pos   = 3*nRing*(nRing-1)+1;
 
-	 //add position along segment -- a drawing helps...
-	 if (thisLK.k_ == -nRing && thisLK.l_==0) return pos;
-	 if (thisLK.l_ ==  nRing)                 return pos + nRing   + thisLK.k_;
-	 if (thisLK.l_ == -nRing)                 return pos + 4*nRing + std::abs(thisLK.k_);
-	 if (thisLK.k_ ==  nRing)                 return pos + 3*nRing - thisLK.l_;
-	 if (thisLK.k_ == -nRing)                 return pos + 6*nRing - std::abs(thisLK.l_);
-	 if (thisLK.l_ > thisLK.k_)               return pos + thisLK.l_;
+         //add position along segment -- a drawing helps...
+         if (thisLK.k_ == -nRing && thisLK.l_==0) return pos;
+         if (thisLK.l_ ==  nRing)                 return pos + nRing   + thisLK.k_;
+         if (thisLK.l_ == -nRing)                 return pos + 4*nRing + std::abs(thisLK.k_);
+         if (thisLK.k_ ==  nRing)                 return pos + 3*nRing - thisLK.l_;
+         if (thisLK.k_ == -nRing)                 return pos + 6*nRing - std::abs(thisLK.l_);
+         if (thisLK.l_ > thisLK.k_)               return pos + thisLK.l_;
          return pos + 3*nRing +std::abs(thisLK.l_);
       }
 
@@ -183,8 +183,8 @@ namespace mu2e {
       //--------------------------------------------------------------------------------
       int SquareShiftMapper::ring(const SquShiftLK& thisLK) const
       {
-	  if (thisLK.l_*thisLK.k_>0) return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
-	  return std::abs(thisLK.l_-thisLK.k_);
+          if (thisLK.l_*thisLK.k_>0) return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
+          return std::abs(thisLK.l_-thisLK.k_);
       }
 
 }

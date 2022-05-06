@@ -58,8 +58,8 @@ namespace mu2e {
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
-        fhicl::Atom<bool> pionDecayOff{Name("pionDecayOff"),true}; 
-        fhicl::Atom<bool> doHistograms{Name("doHistograms"),false}; 
+        fhicl::Atom<bool> pionDecayOff{Name("pionDecayOff"),true};
+        fhicl::Atom<bool> doHistograms{Name("doHistograms"),false};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -89,7 +89,7 @@ namespace mu2e {
     const double            phimax_ = CLHEP::twopi;
     ProcessCode process_;
     PionCaptureSpectrum pionCaptureSpectrum_;
-    
+
     TH1F* _hmomentum;
     TH1F* _hElecMom {nullptr};
     TH1F* _hPosiMom {nullptr};
@@ -109,7 +109,7 @@ namespace mu2e {
     , randExp_{eng_}
     , randomFlat_{eng_}
     , RPCType_{conf().RPCType()}
-    , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())} 
+    , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())}
     , pionDecayOff_{conf().pionDecayOff()}
     , doHistograms_{conf().doHistograms()}
     , randomUnitSphere_ {eng_, czmin_,czmax_,phimin_,phimax_}
@@ -123,7 +123,7 @@ namespace mu2e {
     else {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no such process, must be mu2eInternalRPC or mu2eExternalRPC";
-    } 
+    }
     if ( doHistograms_ ) {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
@@ -135,23 +135,23 @@ namespace mu2e {
           _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
           _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
           _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
-          _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);      
+          _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
         }
       }
   }
-  
-  double RPCGun::MakeEventWeight(art::Ptr<SimParticle> part){ 
+
+  double RPCGun::MakeEventWeight(art::Ptr<SimParticle> part){
       const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>();
       double weight = 0.;
       double tau = part->endProperTime() / gc.getParticleLifetime(part->pdgId());
-     
+
       while(part->parent().isNonnull()) { //while particle has a parent which is not null
         part = part->parent();
         if ( abs(part->pdgId()) == PDGCode::pi_plus ) { //if pion
-            tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+            tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
           }
       }
-   
+
     weight = exp(-tau);
     return weight;
   }
@@ -159,9 +159,9 @@ namespace mu2e {
   //================================================================
   void RPCGun::produce(art::Event& event) {
     auto output{std::make_unique<StageParticleCollection>()};
-    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_); 
+    const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
     const auto pis = stoppedPiMinusList(simh);
-    
+
     if(pis.empty()) {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no suitable stopped pion in the input SimParticleCollection\n";
@@ -171,12 +171,12 @@ namespace mu2e {
     double time_weight = 1.0;
     if(pionDecayOff_) time_weight = MakeEventWeight(pis[randIn]);
     std::unique_ptr<EventWeight> pw(new EventWeight(time_weight));
-    event.put(std::move(pw)); 
+    event.put(std::move(pw));
     addParticles(output.get(), pis[randIn]);
-    event.put(std::move(output)); 
- 
+    event.put(std::move(output));
+
   }
-  
+
   void RPCGun::addParticles(StageParticleCollection* output,
                             art::Ptr<SimParticle> pistop)
   {
@@ -186,7 +186,7 @@ namespace mu2e {
     const CLHEP::HepLorentzVector fourmom(p3, energy);
     if(process_ == ProcessCode::mu2eExternalRPC){
      output->emplace_back(pistop,
-                         process_, 
+                         process_,
                          PDGCode::gamma,
                          pistop->endPosition(),
                          fourmom,
@@ -198,21 +198,21 @@ namespace mu2e {
       CLHEP::HepLorentzVector mome, momp;
       pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp);
       output->emplace_back(pistop,
-                           process_, 
+                           process_,
                            PDGCode::e_minus,
                            pistop->endPosition(),
                            mome,
                            pistop->endGlobalTime()
                            );
-                           
+
        output->emplace_back(pistop,
-                           process_, 
-                           PDGCode::e_plus, 
+                           process_,
+                           PDGCode::e_plus,
                            pistop->endPosition(),
                            momp,
                            pistop->endGlobalTime()
                            );
-                  
+
         if(doHistograms_){
           _hElecMom ->Fill(mome.vect().mag());
           _hPosiMom ->Fill(momp.vect().mag());

@@ -214,13 +214,13 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
 }
 
 void DoDriftTimeFit(
-    std::vector<double> & pars, 
+    std::vector<double> & pars,
     std::vector<double> & errors,
     std::vector<double> & cov_out,
     bool & minuit_converged,
     GaussianDriftFit const& fit,
     int diag, double mntolerance, double mnprecision) {
-  
+
   // Initiate Minuit Fit:
   ROOT::Minuit2::MnStrategy mnStrategy(2);
   ROOT::Minuit2::MnUserParameters params(pars, errors);
@@ -278,8 +278,8 @@ void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const
 
   // Define the PDF used by Minuit:
   GaussianDriftFit fit(tseed._straw_chits, srep, tracker);
-  DoDriftTimeFit(pars, errors, tseed._track.MinuitParams.cov, 
-    tseed._track.minuit_converged, fit, 
+  DoDriftTimeFit(pars, errors, tseed._track.MinuitParams.cov,
+    tseed._track.minuit_converged, fit,
     diag, mntolerance, mnprecision);
 
   tseed._track.MinuitParams.A0 = pars[0];

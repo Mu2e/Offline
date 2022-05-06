@@ -7,19 +7,19 @@
 
 
 namespace mu2e {
-    
+
     double ClusterUtils::e1() const
-    {        
+    {
        return hits_[0]->energyDep();
     }
 
     double ClusterUtils::e2() const
-    {        
+    {
        return (hits_.size()>1) ? hits_[0]->energyDep()+hits_[1]->energyDep() : hits_[0]->energyDep();
     }
 
     double ClusterUtils::e9() const
-    {        
+    {
        const auto& neighborsId = cal_.crystal(hits_[0]->crystalID()).neighbors();
 
        double e9 = e1();
@@ -31,7 +31,7 @@ namespace mu2e {
     }
 
     double ClusterUtils::e25() const
-    {        
+    {
        const auto& nneighborsId = cal_.crystal(hits_[0]->crystalID()).nextNeighbors();
 
        double e25 = e9();
@@ -46,22 +46,22 @@ namespace mu2e {
 
 
     CLHEP::Hep3Vector ClusterUtils::cog3Vector() const
-    {        
+    {
         double sx(0),sy(0),sz(0),sx2(0),sy2(0),sw(0);
         fill(sx,sy,sz,sx2,sy2,sw);
-        
+
         int iSection  = cal_.crystal(hits_[0]->crystalID()).diskID();
         CLHEP::Hep3Vector cogMu2eFrame(sx/sw,sy/sw,sz/sw);
         return cal_.geomUtil().mu2eToDiskFF(iSection,cogMu2eFrame);
     }
-    
+
     double ClusterUtils::secondMoment() const
-    {        
+    {
         double sx(0),sy(0),sz(0),sx2(0),sy2(0),sw(0);
         fill(sx,sy,sz,sx2,sy2,sw);
         return sx2-sx*sx/sw + sy2-sy*sy/sw;
     }
-    
+
     void ClusterUtils::fill(double& sx, double& sy, double& sz, double& sx2, double& sy2, double& sw) const
     {
         int iSection  = cal_.crystal(hits_[0]->crystalID()).diskID();

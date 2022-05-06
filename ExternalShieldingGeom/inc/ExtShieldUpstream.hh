@@ -52,16 +52,16 @@ namespace mu2e {
     friend class ExtShieldUpstreamMaker;
 
     // Private ctr: the class should only be constructed via ExtShieldUpstream::ExtShieldUpstreamMaker.
-    ExtShieldUpstream(const std::vector<std::vector<double> >& dims, 
-		      const std::vector<std::vector<double> >& tols, 
-		      const std::vector<std::string>& mats, 
-		      const std::vector<CLHEP::Hep3Vector>& sites, 
-		      const std::vector<std::string>& orients )
+    ExtShieldUpstream(const std::vector<std::vector<double> >& dims,
+                      const std::vector<std::vector<double> >& tols,
+                      const std::vector<std::string>& mats,
+                      const std::vector<CLHEP::Hep3Vector>& sites,
+                      const std::vector<std::string>& orients )
       : _extShieldBoxDims(dims),
-	_extShieldBoxTols(tols),
-	_materialNames(mats),
-	_centerPositions(sites),
-	_orientations(orients)
+        _extShieldBoxTols(tols),
+        _materialNames(mats),
+        _centerPositions(sites),
+        _orientations(orients)
     { }
 
     // Or read back from persistent storage
@@ -70,7 +70,7 @@ namespace mu2e {
 
 
     // Current description based on Geometry 14, adapted by
-    // David Norvil Brown, 
+    // David Norvil Brown,
 
     std::vector< std::vector< double > > _extShieldBoxDims;
     std::vector< std::vector< double > > _extShieldBoxTols;
