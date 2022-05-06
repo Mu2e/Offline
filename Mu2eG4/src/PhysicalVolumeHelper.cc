@@ -93,11 +93,11 @@ namespace mu2e {
     // Loop over physical volume store.
     G4PhysicalVolumeStore* pstore = G4PhysicalVolumeStore::GetInstance();
     unsigned current(0u);
-    for ( std::vector<G4VPhysicalVolume*>::const_iterator i=pstore->begin(); i!=pstore->end(); ++i){
+    for (auto i=pstore->begin(); i!=pstore->end(); ++i, ++current){
 
       // Add volume to the map; it's an error if its already there.
       G4VPhysicalVolume* vpv = *i;
-      pair<VolMapType_iterator,bool> ret = _volumeMap.insert( std::make_pair(vpv,_volumeMap.size()) );
+      pair<VolMapType_iterator,bool> ret = _volumeMap.insert( std::make_pair(vpv, current) );
       if ( !ret.second ){
         throw cet::exception("RANGE")
           << "Error building the persistent volume list.  Volume: "
@@ -107,7 +107,7 @@ namespace mu2e {
           << " already exisist!\n";
       }
 
-      _pSingleStage[cet::map_vector_key(current++)] =
+      _pSingleStage[cet::map_vector_key(current)] =
         PhysicalVolumeInfo(vpv->GetName(), vpv->GetCopyNo(), vpv->GetLogicalVolume()->GetMaterial()->GetName() );
     }
 

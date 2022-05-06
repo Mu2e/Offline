@@ -22,8 +22,8 @@ using namespace std;
 
 namespace mu2e {
 
- 
-  TrkExtMCHits::TrkExtMCHits( ) { 
+
+  TrkExtMCHits::TrkExtMCHits( ) {
     _g4ModuleLabel = "";
     _instanceName = "";
     _hitcol.clear();
@@ -222,6 +222,6 @@ namespace mu2e {
     }
   }
 
-    
+
 } // end namespace mu2e
 

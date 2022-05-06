@@ -12,7 +12,6 @@
 #include <unistd.h>
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 
 namespace mu2e {

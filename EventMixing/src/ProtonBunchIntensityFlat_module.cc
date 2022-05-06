@@ -12,7 +12,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 
@@ -74,7 +73,7 @@ namespace mu2e {
   }
 
   void ProtonBunchIntensityFlat::beginSubRun(art::SubRun & subrun ) {
-    subrun.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(mean_))),"MeanIntensity");
+    subrun.put(std::make_unique<ProtonBunchIntensity>(static_cast<unsigned long long>(llrint(mean_))),"MeanIntensity", art::fullSubRun());
   }
 
 }

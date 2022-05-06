@@ -15,7 +15,6 @@
 #include "CLHEP/Vector/LorentzVector.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 
@@ -82,7 +81,7 @@ namespace mu2e {
     // content for the ion test use, but we still need a stage count.
     mvi->resize(1);
 
-    sr.put(std::move(mvi));
+    sr.put(std::move(mvi), art::fullSubRun());
   }
 
   //================================================================

@@ -24,43 +24,43 @@ physics :
   filters : {
     @table::CalPatRec.filters
   }
-  RecoPath : [ 
+  RecoPath : [
     @sequence::Reconstruction.CaloReco,
     @sequence::Reconstruction.TrkReco,
     @sequence::Reconstruction.CrvReco,
     TimeClusterFinderDe, HelixFinderDe,
     CalTimePeakFinder, CalHelixFinderDe,
     MHDeM,
-#    KSFDeM,
-#    KFFDeM,
+    #    KSFDeM,
+    #    KFFDeM,
     KKDeMSeedFit,
     @sequence::Reconstruction.MCReco
-  ] 
-  analyzers : { 
-#      TAKSF : { @table::TrackAnalysisReco 
-#      		    candidate : @local::DeM
-#		    supplements : []
-#		  }
-#      TAKFF : { @table::TrackAnalysisReco 
-#      		    candidate : @local::DeM
-#		    supplements : []
-#		  }
-      TAKK : { @table::TrackAnalysisReco 
-      		    candidate : @local::DeM
-		    supplements : []
-		  }
-      evtprint : {
-		module_type : RunEventSubRun
-		printSam    : false
-		printRun    : false
-		printSubrun : false
-		printEvent  : true
-       }
-}
-#  EndPath : [TAKSF, TAKFF, TAKK]
+  ]
+  analyzers : {
+    #      TAKSF : { @table::TrackAnalysisReco
+    #      		    candidate : @local::DeM
+    #		    supplements : []
+    #		  }
+    #      TAKFF : { @table::TrackAnalysisReco
+    #      		    candidate : @local::DeM
+    #		    supplements : []
+    #		  }
+    TAKK : { @table::TrackAnalysisReco
+      candidate : @local::DeM
+      supplements : []
+    }
+    evtprint : {
+      module_type : RunEventSubRun
+      printSam    : false
+      printRun    : false
+      printSubrun : false
+      printEvent  : true
+    }
+  }
+  #  EndPath : [TAKSF, TAKFF, TAKK]
   EndPath : [TAKK,evtprint]
 }
-outputs : {   
+outputs : {
   Output : {
     @table::Reconstruction.Output
     SelectEvents : [ "RecoPath" ]
@@ -80,7 +80,7 @@ physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
-physics.producers.KKDeMSeedFit.FitSettings.PrintLevel : 1 
+physics.producers.KKDeMSeedFit.FitSettings.PrintLevel : 1
 
 outputs.Output.fileName: "KKSeed.art"
 services.TFileService.fileName: "KKSeed.root"
@@ -95,7 +95,7 @@ services.TFileService.fileName: "KKSeed.root"
 #physics.analyzers.TAKFF.FillTrkPIDInfo : false
 #physics.analyzers.TAKFF.FillHitInfo : true
 #physics.analyzers.TAKFF.FillTriggerInfo : false
-#physics.analyzers.TAKFF.candidate.input : "KFF" 
+#physics.analyzers.TAKFF.candidate.input : "KFF"
 ##
 #physics.analyzers.TAKSF.candidate.options : @local::AllOpt
 #physics.analyzers.TAKSF.diagLevel : 1
@@ -107,7 +107,7 @@ services.TFileService.fileName: "KKSeed.root"
 #physics.analyzers.TAKSF.FillTrkPIDInfo : false
 #physics.analyzers.TAKSF.FillHitInfo : true
 #physics.analyzers.TAKSF.FillTriggerInfo : false
-#physics.analyzers.TAKSF.candidate.input : "KSF" 
+#physics.analyzers.TAKSF.candidate.input : "KSF"
 #
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.diagLevel : 1
@@ -119,8 +119,8 @@ physics.analyzers.TAKK.FillTrkQualInfo : false
 physics.analyzers.TAKK.FillTrkPIDInfo : false
 physics.analyzers.TAKK.FillHitInfo : true
 physics.analyzers.TAKK.FillTriggerInfo : false
-physics.analyzers.TAKK.candidate.input : "KK" 
-physics.analyzers.TAKK.candidate.suffix : "DeMSeedFit" 
+physics.analyzers.TAKK.candidate.input : "KK"
+physics.analyzers.TAKK.candidate.suffix : "DeMSeedFit"
 
 services.TimeTracker.printSummary: true
 #

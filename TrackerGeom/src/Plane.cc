@@ -13,7 +13,7 @@ using namespace std;
 using CLHEP::HepRotation;
 using CLHEP::Hep3Vector;
 namespace mu2e {
-// define equivalence plane 
+  // define equivalence plane
   StrawIdMask Plane::_sidmask(StrawIdMask::plane);
 
   string Plane::name( string const& base ) const{
@@ -26,9 +26,9 @@ namespace mu2e {
 
   Plane::Plane( const StrawId& id, TrackerPanelCollection const& panels) : _id(id) {
     for(auto const& panel : panels ) {
-    // pick out all the panels belonging to this plane.  This code relies on the Tracker collection being in order.
+      // pick out all the panels belonging to this plane.  This code relies on the Tracker collection being in order.
       if(_sidmask.equal(_id,panel.id())){
-	_panels[panel.id().panel()] = &panel;
+        _panels[panel.id().panel()] = &panel;
       }
     }
     // define the origin (in the tracker nominal frame) as the geometric average of the panel origins

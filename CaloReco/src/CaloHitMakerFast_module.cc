@@ -1,6 +1,5 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -13,7 +12,7 @@
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 
-   
+
 namespace
 {
     struct HitInfo {
@@ -40,10 +39,11 @@ namespace mu2e {
             fhicl::Atom<art::InputTag> caloDigiCollection { Name("caloDigiCollection"), Comment("CaloDigi collection name") }; 
 	    fhicl::Atom<art::InputTag> pbttoken           { Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer")};
             fhicl::Atom<double>        digiSampling       { Name("digiSampling"),       Comment("Digitization time sampling") }; 
-            fhicl::Atom<double>        deltaTPulses       { Name("deltaTPulses"),       Comment("Maximum time difference between two signals ") }; 
-            fhicl::Atom<double>        pulseRatioMin      { Name("pulseRatioMin"),      Comment("Min value of energy ratio between pulses ") }; 
-            fhicl::Atom<double>        pulseRatioMax      { Name("pulseRatioMax"),      Comment("Max value of energy ratio between pulses ") }; 
-            fhicl::Sequence<double>    caphriCrystalID    { Name("caphriCrystalID"),    Comment("List of caphri crystal ID") }; 
+            fhicl::Atom<double>        deltaTPulses       { Name("deltaTPulses"),       Comment("Maximum time difference between two signals") }; 
+            fhicl::Atom<double>        nPEperMeV          { Name("nPEperMeV"),          Comment("number of photo-electrons per MeV") }; 
+            fhicl::Atom<double>        noiseLevelMeV      { Name("noiseLevelMeV"),      Comment("Noise level in MeV") }; 
+            fhicl::Atom<double>        nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") }; 
+            fhicl::Sequence<int>       caphriCrystalID    { Name("caphriCrystalID"),    Comment("List of caphri crystal ID") }; 
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
         };
 
@@ -53,8 +53,9 @@ namespace mu2e {
            pbttoken_          {consumes<ProtonBunchTime>(config().pbttoken())},
            digiSampling_      (config().digiSampling()),
            deltaTPulses_      (config().deltaTPulses()),
-           pulseRatioMin_     (config().pulseRatioMin()),
-           pulseRatioMax_     (config().pulseRatioMax()),
+           nPEperMeV_         (config().nPEperMeV()),
+           noise2_            (config().noiseLevelMeV()*config().noiseLevelMeV()),
+           nSigmaNoise_       (config().nSigmaNoise()),
            caphriCrystalID_   (config().caphriCrystalID()),
            diagLevel_         (config().diagLevel())
         {
@@ -75,9 +76,10 @@ namespace mu2e {
         const  art::ProductToken<ProtonBunchTime>    pbttoken_;
         double              digiSampling_;
         double              deltaTPulses_;
-        double              pulseRatioMin_;
-        double              pulseRatioMax_;
-        std::vector<double> caphriCrystalID_;
+        double              nPEperMeV_;
+        double              noise2_;
+        double              nSigmaNoise_;
+        std::vector<int>    caphriCrystalID_;
         int                 diagLevel_;
     };
 
@@ -117,6 +119,7 @@ namespace mu2e {
        for (const auto& caloDigi : caloDigis)
        {
            int crystalID   = cal.caloIDMapper().crystalIDFromSiPMID(caloDigi.SiPMID());
+
 	   size_t nSamPed  = caloDigi.peakpos() > 3 ? 4 : std::max(caloDigi.peakpos()-1, 1);
            double baseline(0);
 	   for (size_t i=0; i<nSamPed; ++i){ baseline += caloDigi.waveform().at(i);}
@@ -126,16 +129,16 @@ namespace mu2e {
            //double time     = caloDigi.t0() + (caloDigi.peakpos()+0.5)*digiSampling_ - shiftTime_; //Bertrand's definition
 
            addPulse(pulseMap, crystalID, time, eDep);
-           if (diagLevel_ > 2) std::cout<<"[CaloHitMakerFast] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
+           if (diagLevel_ > 2) std::cout<<"[FastRecoDigiFromDigi] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
        }
 
        for (auto& crystal : pulseMap)
        {
-	   int  crID     = crystal.first;
+	   int crID = crystal.first;
            bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crID) != caphriCrystalID_.end();
 	   for (auto& info : crystal.second)
            {
-               if (diagLevel_ > 1) std::cout<<"[CaloHitMakerFast] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
+               if (diagLevel_ > 1) std::cout<<"[FastRecoDigiFromDigi] extracted Hit with crystalID="<<crID<<" eDep="<<info.eDep_<<"\t time=" <<info.time_<<"\t nSiPM= "<<info.nSiPM_<<std::endl;
                if (isCaphri) caphriHitsColl.emplace_back(CaloHit(crID, info.nSiPM_, info.time_,info.eDep_));
                else          caloHitsColl.emplace_back(  CaloHit(crID, info.nSiPM_, info.time_,info.eDep_)); 
 	   }
@@ -143,6 +146,7 @@ namespace mu2e {
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caphriHitsColl.size()<<" CapriDigis"<<std::endl;
+
    }
 
 
@@ -150,16 +154,21 @@ namespace mu2e {
    //--------------------------------------------------------------------------------------------------------------
    void CaloHitMakerFast::addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep)
    {
+
        bool addNewHit(true);
        for (auto& pulse : pulseMap[crystalID])
        {
-	   double pulseRatio = eDep / pulse.eDep_;
-	   if ( pulseRatio < pulseRatioMax_ && pulseRatio > pulseRatioMin_  && std::fabs(pulse.time_ - time) < deltaTPulses_)
-	   {
-              pulse.add(time,eDep); 
-              addNewHit = false;
-              break;
-	   }
+	   if (std::fabs(pulse.time_ - time) > deltaTPulses_) continue;
+
+	   float ratio  = (eDep-pulse.eDep_)/(eDep+pulse.eDep_);
+	   float eMean  = (eDep+pulse.eDep_)/2.0;
+           float sigmaR = 0.707*sqrt(1.0/eMean/nPEperMeV_ + noise2_/eMean/eMean);
+
+           if (abs(ratio) > nSigmaNoise_*sigmaR) continue;
+
+           pulse.add(time,eDep); 
+           addNewHit = false;
+           break;
        }
 
        if (addNewHit) pulseMap[crystalID].push_back(HitInfo(time, eDep));  

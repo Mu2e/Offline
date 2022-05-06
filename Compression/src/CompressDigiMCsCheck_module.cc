@@ -7,7 +7,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"

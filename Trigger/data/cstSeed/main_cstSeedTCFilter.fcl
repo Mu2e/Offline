@@ -1,2 +1,0 @@
-physics.filters.cstSeedTCFilter.requireCaloCluster : false
-physics.filters.cstSeedTCFilter.minNHits           : 8

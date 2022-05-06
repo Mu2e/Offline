@@ -7,7 +7,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatus.hh"

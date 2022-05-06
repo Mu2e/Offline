@@ -96,6 +96,8 @@ namespace mu2e{
   void Collection_Filler::FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName CollectionName){
     if(FillAll_ or MCOnly_ or (addMCTraj_ and CollectionName == MCTrajectories)){ 
       auto chH = evt.getValidHandle<mu2e::MCTrajectoryCollection>(mctrajTag_);
+      std::string name = TurnNameToString(mctrajTag_);
+      std::cout<<"Plotting MCtraj Instance: "<<name<<std::endl;
       data.mctrajcol = chH.product();
     }
   }

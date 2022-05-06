@@ -12,7 +12,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "canvas/Utilities/InputTag.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StatusG4.hh"

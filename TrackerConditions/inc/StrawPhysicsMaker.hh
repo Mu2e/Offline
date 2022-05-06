@@ -16,16 +16,16 @@
 
 namespace mu2e {
   class StrawPhysicsMaker {
-  public:
-    StrawPhysicsMaker(StrawPhysicsConfig const& config):_config(config) {}
-    StrawPhysics::ptr_t fromFcl(StrawDrift::cptr_t strawDrift);
-    StrawPhysics::ptr_t fromDb( /* db tables will go here*/ );
-  
-  private:
+    public:
+      StrawPhysicsMaker(StrawPhysicsConfig const& config):_config(config) {}
+      StrawPhysics::ptr_t fromFcl(StrawDrift::cptr_t strawDrift);
+      StrawPhysics::ptr_t fromDb( /* db tables will go here*/ );
 
-    // this object needs to be thread safe, 
-    // _config should only be initialized once
-    const StrawPhysicsConfig _config;
+    private:
+
+      // this object needs to be thread safe,
+      // _config should only be initialized once
+      const StrawPhysicsConfig _config;
 
   };
 }

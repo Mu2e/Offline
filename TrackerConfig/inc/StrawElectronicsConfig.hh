@@ -16,6 +16,8 @@ namespace mu2e {
       Name("verbose"), Comment("verbosity: 0 or 1")}; 
     fhicl::Atom<bool> useDb{
       Name("useDb"), Comment("use database or fcl")}; 
+    fhicl::Atom<bool> overrideDbTimeOffsets{
+      Name("overrideDbTimeOffsets"), Comment("Override Db time offsets and set to zero")};
 
     fhicl::Atom<double> defaultThresholddVdI {
       Name("defaultThresholddVdI"), Comment("defaultThresholddVdI")};

@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "fhiclcpp/ParameterSet.h"

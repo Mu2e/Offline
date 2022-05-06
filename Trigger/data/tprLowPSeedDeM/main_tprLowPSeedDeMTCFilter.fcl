@@ -1,2 +1,0 @@
-physics.filters.tprLowPSeedDeMTCFilter.requireCaloCluster : false
-physics.filters.tprLowPSeedDeMTCFilter.minNHits : 10.0

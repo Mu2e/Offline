@@ -15,7 +15,10 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Registry/ServiceTable.h"
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Table.h"
 #include "cetlib_except/exception.h"
 
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
@@ -35,9 +38,33 @@ namespace mu2e {
   class Mu2eHall;
   class G4GeometryOptions;
 
+
   class GeometryService {
 public:
-    GeometryService(const fhicl::ParameterSet&, art::ActivityRegistry&);
+    // Validated fhcil configuration
+    struct SimulatedDetector {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<std::string> tool_type{Name("tool_type"),"Mu2e"};
+    };
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<std::string> inputFile{Name("inputFile")};
+      fhicl::Atom<std::string> bFieldFile{Name("bFieldFile")};
+      fhicl::Atom<bool>   allowReplacement{Name("allowReplacement"),true};
+      fhicl::Atom<bool>   messageOnReplacement{Name("messageOnReplacement"),false};
+      fhicl::Atom<bool>   messageOnDefault{Name("messageOnDefault"),false};
+      fhicl::Atom<int>    configStatsVerbosity{Name("configStatsVerbosity"),false};
+      fhicl::Atom<bool>   printConfig{Name("printConfig"),false};
+      fhicl::Atom<bool>   printConfigTopLevel{Name("printConfigTopLevel"),false};
+      fhicl::Table<SimulatedDetector> simulatedDetector{Name("simulatedDetector")};
+    };
+
+    using Parameters= art::ServiceTable<Config>;
+
+    GeometryService(const Parameters&, art::ActivityRegistry&);
     ~GeometryService();
 
     // Functions registered for callbacks.
@@ -46,7 +73,7 @@ public:
 
     SimpleConfig const& config() const { return *_config;}
 
-    fhicl::ParameterSet const& pset() const { return _pset; }
+    fhicl::ParameterSet const& simulatedDetector() const { return _simulatedDetector; }
 
     G4GeometryOptions const * geomOptions() const { return _g4GeomOptions.get(); }
     G4GeometryOptions       * geomOptions()       { return _g4GeomOptions.get(); }
@@ -69,7 +96,7 @@ public:
 
     }
 
-    bool isStandardMu2eDetector() const { return standardMu2eDetector_; }
+    bool isStandardMu2eDetector() const { return _standardMu2eDetector; }
 
 private:
 
@@ -77,21 +104,25 @@ private:
     // Some day this will become a database key or similar.
     std::string _inputfile;
 
+    // The name of the file that contains the configuration of the B fields.
+    std::string _bFieldFile;
+
     // Control the behaviour of messages from the SimpleConfig object holding
-    // the geometry parameters.
+    // the geometry parameters. These affect both SimpleConfig objects.
     bool _allowReplacement;
     bool _messageOnReplacement;
     bool _messageOnDefault;
     int  _configStatsVerbosity;
 
-    // Print final config file after all replacements.
+    // Print final config file after all replacements.  These affect both SimpleConfig objects.
     bool _printConfig;
     bool _printTopLevel;
 
-    // The object that parses run-time configuration file.
+    // The objects that parse the run-time configuration files.
     std::unique_ptr<SimpleConfig> _config;
+    std::unique_ptr<SimpleConfig> _bfConfig;
 
-    const fhicl::ParameterSet          _pset;
+    const fhicl::ParameterSet       _simulatedDetector;
 
     // Load G4 geometry options
     std::unique_ptr<G4GeometryOptions> _g4GeomOptions;
@@ -134,13 +165,13 @@ private:
     }
 
     // is this the standard Mu2e detector?
-    bool standardMu2eDetector_;
+    bool _standardMu2eDetector;
 
     // All of the detectors that we know about.
     DetMap _detectors;
 
     // Keep a count of how many runs we have seen.
-    int _run_count;
+    int _run_count = 0;
 
     // This is not copyable or assignable - private and unimplemented.
     GeometryService const& operator=(GeometryService const& rhs);

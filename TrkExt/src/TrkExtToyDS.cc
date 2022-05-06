@@ -28,13 +28,10 @@ using namespace std;
 namespace mu2e {
 
 
-
-
- 
   TrkExtToyDS::TrkExtToyDS() :
     TrkExtShape(0.001),
     TrkExtMaterial("Vac")
-  { 
+  {
     rin = 1000;
     rout = 1300;
     zmin = 6000;
@@ -62,10 +59,6 @@ namespace mu2e {
     if (z<zmin || z>zmax || r>rin) return false;
     return true;
   }
-
-
-
-
 
 } // end namespace mu2e
 

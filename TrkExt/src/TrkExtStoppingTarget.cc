@@ -26,15 +26,12 @@ using namespace std;
 namespace mu2e {
 
 
-
-
- 
   TrkExtStoppingTarget::TrkExtStoppingTarget() :
     TrkExtShape(),
     TrkExtMaterial("Al")
-  { 
-   foil.clear();
-   nfoil = -1;
+  {
+    foil.clear();
+    nfoil = -1;
   }
 
   void TrkExtStoppingTarget::initialize() {
@@ -47,9 +44,9 @@ namespace mu2e {
     for (int i = 0 ; i < target->nFoils() ; ++i) {
       TargetFoil f = target->foil(i);
       foil_data_type ftmp (f.rOut(),
-                           f.centerInDetectorSystem().z() - f.halfThickness(),
-                           f.centerInDetectorSystem().z(),
-                           f.centerInDetectorSystem().z() + f.halfThickness());
+          f.centerInDetectorSystem().z() - f.halfThickness(),
+          f.centerInDetectorSystem().z(),
+          f.centerInDetectorSystem().z() + f.halfThickness());
       foil.push_back(ftmp);
     }
 
@@ -78,10 +75,6 @@ namespace mu2e {
     }
     return false;
   }
-
-
-
-
 
 } // end namespace mu2e
 
