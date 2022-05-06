@@ -21,8 +21,8 @@ namespace mu2e {
   struct StrawHit{
   private:
 
-    StrawId      _strawId;       
-    TrkTypes::TDCTimes	    _time;             // (ns)
+    StrawId      _strawId;
+    TrkTypes::TDCTimes            _time;             // (ns)
     TrkTypes::TOTTimes        _tot;               // (ns)
     float           _energyDep;        // (MeV)
 
@@ -55,13 +55,13 @@ namespace mu2e {
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
         bool operator==(StrawHit const& other) const {
-	  return (_strawId==other._strawId&&
-	      _time[0]==other._time[0]&&
-	      _time[1]==other._time[1]&&
-	      _tot[0]==other._tot[0]&&
-	      _tot[1]==other._tot[1]&&
-	      _energyDep==other._energyDep);
-	}
+          return (_strawId==other._strawId&&
+              _time[0]==other._time[0]&&
+              _time[1]==other._time[1]&&
+              _tot[0]==other._tot[0]&&
+              _tot[1]==other._tot[1]&&
+              _energyDep==other._energyDep);
+        }
     bool operator<( const StrawHit other) const{
       return ( _strawId< other._strawId);
     }

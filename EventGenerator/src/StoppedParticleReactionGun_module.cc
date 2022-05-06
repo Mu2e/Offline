@@ -71,11 +71,11 @@ namespace mu2e {
     TH1F*   _hGenId;
     TH1F*   _hTime;
     TH1F*   _hZ;
-  
+
   private:
     static SpectrumVar    parseSpectrumVar(const std::string& name);
     double                generateEnergy();
-    
+
   public:
     explicit StoppedParticleReactionGun(const fhicl::ParameterSet& pset);
 
@@ -117,11 +117,11 @@ namespace mu2e {
       std::cout<<"StoppedParticleReactionGun: producing particle "<< pdgId_ << ", mass = "<< mass_ << std::endl;
 
       std::cout <<"StoppedParticleReactionGun: spectrum shape = "
-		<<psphys_.get<std::string>("spectrumShape") << std::endl;
+                <<psphys_.get<std::string>("spectrumShape") << std::endl;
       if (psphys_.get<std::string>("spectrumShape")  == "tabulated")
-	std::cout << " Spectrum file = "
-		  << psphys_.get<std::string>("spectrumFileName")
-		  << std::endl;
+        std::cout << " Spectrum file = "
+                  << psphys_.get<std::string>("spectrumFileName")
+                  << std::endl;
     }
     if (verbosityLevel_ > 1){
       std::cout <<"StoppedParticleReactionGun: spectrum: " << std::endl;
@@ -182,8 +182,8 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// generate (pseudo-)random particle energy 
-// the spectrum itself doesn't know whether is stored momentum, kinetic or full 
+// generate (pseudo-)random particle energy
+// the spectrum itself doesn't know whether is stored momentum, kinetic or full
 // energy
 //-----------------------------------------------------------------------------
   double StoppedParticleReactionGun::generateEnergy() {

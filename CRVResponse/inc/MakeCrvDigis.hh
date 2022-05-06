@@ -13,7 +13,7 @@ class MakeCrvDigis
   public:
     MakeCrvDigis() {}
     ~MakeCrvDigis() {}
-   
+
     void SetWaveform(const std::vector<double> &waveform, double ADCconversionFactor, int pedestal, double startTime, double digitizationPrecision);
 
     std::vector<int16_t> GetADCs() {return _ADCs;}

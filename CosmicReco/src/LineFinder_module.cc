@@ -82,14 +82,14 @@ namespace mu2e{
 
  LineFinder::LineFinder(const Parameters& conf) :
    art::EDProducer(conf),
-   	_diag (conf().diag()),
+           _diag (conf().diag()),
         _minPeak (conf().minpeak()),
         _maxDOCA (conf().maxDOCA()),
         _t0offset (conf().t0offset()),
         _Nsteps (conf().nsteps()),
         _stepSize (conf().stepsize()),
-    	_chToken (conf().chToken()),
-	_tcToken (conf().tcToken())
+            _chToken (conf().chToken()),
+        _tcToken (conf().tcToken())
 {
   consumes<ComboHitCollection>(_chToken);
   consumes<TimeClusterCollection>(_tcToken);

@@ -31,14 +31,14 @@ namespace mu2e {
         unknown = -1,
         pabs1 = 0,
         pabs2 = 1,
-	opabs1 = 2,
-	opabs2 = 3}; 
+        opabs1 = 2,
+        opabs2 = 3};
       explicit ProtonAbsorberId (enum_type id):
         _id(id)
       {}
       enum_type id() const { return _id; }
       ProtonAbsorberId():
-        _id(unknown) 
+        _id(unknown)
       {}
     private:
       enum_type _id;
@@ -50,10 +50,10 @@ namespace mu2e {
 
   public:
 
-    InnerProtonAbsSupport( std::size_t nSets, std::size_t nWiresPerSet ) 
+    InnerProtonAbsSupport( std::size_t nSets, std::size_t nWiresPerSet )
       : _nSets ( nSets ) , _nWiresPerSet ( nWiresPerSet ) {}
     ~InnerProtonAbsSupport(){}
-    
+
     void setWireAngleOffset(double offset) { _wireAngleOffset = offset; }
     const Tube& getWire( std::size_t iSet, std::size_t iWire ) const { return _supportWireMap.at(iSet).at(iWire); }
     std::size_t nSets() const { return _nSets; }
@@ -82,7 +82,7 @@ namespace mu2e {
 
     MECOStyleProtonAbsorberPart const& part ( unsigned int n ) const { return _parts.at(n); }
     double virtualDetectorHalfLength()  const { return _vdHL; }
-    std::string fillMaterial()           const { return _materialName; } 
+    std::string fillMaterial()           const { return _materialName; }
     double distanceFromTargetEnd() const { return _distfromtargetend; }
     double halfLength () const { return _halflength; }
     double thickness() const { return _thickness;}
@@ -163,8 +163,8 @@ namespace mu2e {
     double _vdHL;        // Virtual Detector half length
     std::string _materialName;  // Proton Absorber material
     double _distfromtargetend;  //distance from the target end to the start of proton absorber
-    double _halflength; 
-    double _thickness;  
+    double _halflength;
+    double _thickness;
     bool _pabs1flag, _pabs2flag;
 
     //outer PA
@@ -191,7 +191,7 @@ namespace mu2e {
     int                      _nOPASupportSlats;
     std::vector<int>         _oPASlatTypes;
     int                      _nOPASupportSlatTypes;
-    std::vector<double>      _oPASlatHeights; 
+    std::vector<double>      _oPASlatHeights;
     std::vector<double>      _oPASlatWidths;
     std::vector<double>      _oPASlatLengths;
     std::vector<double>      _oPASlatAngles;
@@ -238,4 +238,4 @@ namespace mu2e {
     std::vector<double>  _degraderSupportPlateDims;
   };
 }
-#endif 
+#endif

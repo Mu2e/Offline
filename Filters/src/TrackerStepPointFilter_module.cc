@@ -12,9 +12,9 @@ using namespace CLHEP;
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
-  class TrackerStepPointFilter : public art::EDFilter 
+  class TrackerStepPointFilter : public art::EDFilter
   {
     public:
     explicit TrackerStepPointFilter(fhicl::ParameterSet const& pset);
@@ -35,7 +35,7 @@ namespace mu2e
   {
   }
 
-  bool TrackerStepPointFilter::filter(art::Event& event) 
+  bool TrackerStepPointFilter::filter(art::Event& event)
   {
     art::Handle<StepPointMCCollection> stepPoints;
     if(event.getByLabel(_g4ModuleLabel, _stepPointInstance, stepPoints))

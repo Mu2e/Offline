@@ -66,58 +66,58 @@ outputs      : { @table::Trigger.outputs   }
 
 physics:
 {
-    
-    producers : { @table::producers 
 
-	makeSD:
-	{
-	    module_type: Mu2eProducer
-	    diagLevel: 0
-	    parseCAL: 0
-	    parseTRK: 1
-	}
-	
-	CaloDigiMaker:
-	{
-	    module_type: Mu2eProducer
-	    diagLevel: 0
-	    parseCAL: 1
-	    parseTRK: 0
-	}
-	
-	
+    producers : { @table::producers
+
+        makeSD:
+        {
+            module_type: Mu2eProducer
+            diagLevel: 0
+            parseCAL: 0
+            parseTRK: 1
+        }
+
+        CaloDigiMaker:
+        {
+            module_type: Mu2eProducer
+            diagLevel: 0
+            parseCAL: 1
+            parseTRK: 0
+        }
+
+
     }
-    
+
     filters   : { @table::filters }
-    
-    analyzers : {  
-	
-	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 70
-	    SelecEvents   : [ unbiased_path, 
-			      minimumbiasSDCount_path,
-			      largeSDCount_path,
-			      caloOnly_path,
-			      tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
-	}
-	
+
+    analyzers : {
+
+        readTriggerInfo : { @table::analyzers.ReadTriggerInfo
+            nFilters      : 70
+            SelecEvents   : [ unbiased_path,
+                              minimumbiasSDCount_path,
+                              largeSDCount_path,
+                              caloOnly_path,
+                              tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
+        }
+
     }
-    
-    
+
+
 #    prod_sequence : [ makeSD, CaloDigiMaker ]
-    
+
     #unbiased trigger path
     unbiased_path                : [ @sequence::paths.unbiased                       ]
-    
+
     #minimum bias filters
     minimumbiasSDCount_path      : [ @sequence::paths.minimumbiasSDCount             ]
 
     #path for selecting events with large ammount of strawDigis
     largeSDCount_path            : [ @sequence::paths.largeSDCount                   ]
-    
+
     #path for the calorimeter only trigger
     caloMVACE_path               : [ CaloDigiMaker, @sequence::paths.caloMVACE   ]
- 
+
     #path for calorimeter cosmic muon calibration
     caloCosmicMuon_path          : [ CaloDigiMaker, @sequence::paths.caloCalibCosmic   ]
 
@@ -128,8 +128,8 @@ physics:
     #paths for CalPatRec downstream e- and e+
     cprSeedDeM_path                 : [ makeSD, CaloDigiMaker, @sequence::paths.cprSeedDeM       ]
     cprSeedDeP_path                 : [ makeSD, CaloDigiMaker, @sequence::paths.cprSeedDeP       ]
-    
-    
+
+
 
     e2: [ readTriggerInfo ]
 
@@ -140,11 +140,11 @@ physics:
 outputs:
 {
     @table::outputs
-    
+
     out1:
     {
-	module_type: FileDumperOutput
-	wantProductFriendlyClassName: true
+        module_type: FileDumperOutput
+        wantProductFriendlyClassName: true
     }
 
 }

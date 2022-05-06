@@ -84,7 +84,7 @@ namespace mu2e {
 
     double          _chi2e, _chi2t, _chi2u, _chi2v;
 
-					    // no offset in Y ?
+                                            // no offset in Y ?
     double          _solenoidOffSetX;
     double          _solenoidOffSetZ;
 

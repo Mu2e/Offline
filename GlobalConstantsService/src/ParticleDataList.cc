@@ -18,11 +18,11 @@ namespace mu2e {
   ParticleDataList::ParticleDataList( SimpleConfig const& config ) {
 
     ConfigFileLookupPolicy findConfig;
-    
+
     std::string tableFilename = findConfig(
                     config.getString("particleDataList.filename") );
     if( tableFilename.empty() ) {
-      throw cet::exception("PARTICLELIST_NO_FILE") 
+      throw cet::exception("PARTICLELIST_NO_FILE")
         << "ParticleDataList: file name not found\n";
     }
 
@@ -52,7 +52,7 @@ namespace mu2e {
           << line << "\n";
       }
       int id = std::stoi(words[0]);
-      _list.try_emplace(id, id, words[1], words[2], 
+      _list.try_emplace(id, id, words[1], words[2],
          std::stod(words[4]), std::stod(words[5]), std::stod(words[6]) );
       _names.try_emplace(words[1],id);
       if( words[2] != "none" ) _names.try_emplace(words[2],id);
@@ -71,7 +71,7 @@ namespace mu2e {
       return it->second;
     }
 
-    if ( id <= PDGCode::G4Threshold ){    
+    if ( id <= PDGCode::G4Threshold ){
       throw cet::exception("PARTICLELIST_BAD_ID")
         << "ParticleList: Failed to look up id: "
         << id << "\n";
@@ -94,12 +94,12 @@ namespace mu2e {
     _list.try_emplace(id,id, name, name, double(pZ), mass, 0.0);
 
     return _list.at(id);
-    
+
   }
 
   // *************************************************************
 
-  const ParticleData& ParticleDataList::particle( 
+  const ParticleData& ParticleDataList::particle(
                                     const std::string& name ) const {
     auto it = _names.find(name);
     if( it == _names.end() ) {
@@ -108,7 +108,7 @@ namespace mu2e {
         << name << "\n";
     }
     return particle(it->second);
-    
+
   }
 
   // *************************************************************

@@ -8,13 +8,13 @@
 
 namespace mu2e
 {
-DYBGenerator::DYBGenerator(Direction direction, double minTheta, double maxTheta, double minEnergy, double maxEnergy, 
-                           double minPhi, double maxPhi, int nBinsTheta, int nBinsEnergy) : 
-                           _direction(direction), 
-                           _minTheta(minTheta), _maxTheta(maxTheta), 
-                           _minEnergy(minEnergy), _maxEnergy(maxEnergy), 
+DYBGenerator::DYBGenerator(Direction direction, double minTheta, double maxTheta, double minEnergy, double maxEnergy,
+                           double minPhi, double maxPhi, int nBinsTheta, int nBinsEnergy) :
+                           _direction(direction),
+                           _minTheta(minTheta), _maxTheta(maxTheta),
+                           _minEnergy(minEnergy), _maxEnergy(maxEnergy),
                            _minPhi(minPhi), _maxPhi(maxPhi),
-                           _nBinsTheta(nBinsTheta), _nBinsEnergy(nBinsEnergy) 
+                           _nBinsTheta(nBinsTheta), _nBinsEnergy(nBinsEnergy)
 {
   if(minTheta<0.0 || maxTheta>M_PI/2.0) throw std::logic_error("Theta needs to be within 0 and Pi/2");
   if(minEnergy<0.1 || maxEnergy>10000.0) throw std::logic_error("Energy needs to be within 0.1 GeV and 10,000 GeV");
@@ -37,7 +37,7 @@ DYBGenerator::DYBGenerator(Direction direction, double minTheta, double maxTheta
   _cosMaxPhi=cos(maxPhi);
 
   _dTheta=(maxTheta-minTheta)/_nBinsTheta;
- 
+
   double dLogEnergy=log(maxEnergy/minEnergy)/_nBinsEnergy;  //log(maxEnergy/minEnergy)=log(maxEnergy)-log(minEnergy)
   double logMinEnergy=log(minEnergy);
   _energyBinBorder.resize(_nBinsEnergy+1);
@@ -55,7 +55,7 @@ DYBGenerator::DYBGenerator(Direction direction, double minTheta, double maxTheta
 
   PrepareMuonMap();
 }
-  
+
 void DYBGenerator::PrepareMuonMap()
 {
   double sumTheta=0;
@@ -85,7 +85,7 @@ void DYBGenerator::PrepareMuonMap()
 
 void DYBGenerator::GenerateMuon(double &theta, double &energy, double &phi, CLHEP::RandFlat &randFlat)
 {
-  double uTheta = randFlat.fire(); 
+  double uTheta = randFlat.fire();
   int iTheta=0;
   for(; iTheta<_nBinsTheta; iTheta++)
   {
@@ -93,7 +93,7 @@ void DYBGenerator::GenerateMuon(double &theta, double &energy, double &phi, CLHE
   }
   theta=_minTheta+_dTheta*(iTheta+randFlat.fire());
 
-  double uEnergy = randFlat.fire(); 
+  double uEnergy = randFlat.fire();
   int iEnergy=0;
   for(; iEnergy<_nBinsEnergy; iEnergy++)
   {
@@ -101,7 +101,7 @@ void DYBGenerator::GenerateMuon(double &theta, double &energy, double &phi, CLHE
   }
   energy=_energyBinBorder[iEnergy]+randFlat.fire()*_dEnergy[iEnergy];
 
-  double uPhi = randFlat.fire(); 
+  double uPhi = randFlat.fire();
   switch(_direction)
   {
     case NEGATIVE_Y: phi=2.0*M_PI*uPhi; break;

@@ -13,17 +13,17 @@ namespace mu2e {
     ExtrudedSolid() : yHalfThickness_() {}
 
     ExtrudedSolid( const std::string& name,
-		   const std::string& mat,
-		   CLHEP::Hep3Vector& offset,
-		   double yht,
-		   const std::vector<CLHEP::Hep2Vector>& v )
+                   const std::string& mat,
+                   CLHEP::Hep3Vector& offset,
+                   double yht,
+                   const std::vector<CLHEP::Hep2Vector>& v )
       : name_(name)
       , material_(mat)
       , offsetFromMu2eOrigin_(offset)
       , yHalfThickness_(yht)
-      , vertices_(v) 
+      , vertices_(v)
     {}
-    
+
     const std::string& getName()     const { return name_; }
     const std::string& getMaterial() const { return material_; }
 

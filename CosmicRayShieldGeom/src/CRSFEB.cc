@@ -6,10 +6,10 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CRSFEB.hh"
 
-namespace mu2e 
+namespace mu2e
 {
 
-  CRSFEB::CRSFEB(const CLHEP::Hep3Vector &position, const std::vector<double> &halfLength) : 
+  CRSFEB::CRSFEB(const CLHEP::Hep3Vector &position, const std::vector<double> &halfLength) :
   _position(position),
   _halfLengths(halfLength)
   {}

@@ -43,7 +43,7 @@ namespace mu2e {
 
     int          _verbosityLevel;
     double       _stmZAllowed;
-    
+
     bool         _magnetBuild;
     double       _magnetUpStrSpace;
     double       _magnetHalfLength;
@@ -58,7 +58,7 @@ namespace mu2e {
     bool         _magnetHasLiner;
     double       _magnetField;
     bool         _magnetFieldVisible;
-    
+
     bool        _FOVCollimatorBuild;
     std::string _FOVCollimatorMaterial;
     double      _FOVCollimatorUpStrSpace;
@@ -83,14 +83,14 @@ namespace mu2e {
     bool        _FOVCollimatorHole2LinerBuild;
     double      _FOVCollimatorHole2LinerThickness;
     std::string _FOVCollimatorHoleLinerMaterial;
-    
+
     bool         _magnetTableBuild;
     std::string  _magnetTableMaterial;
     double       _magnetTableTopExtraWidth;
     double       _magnetTableTopExtraLength;
     double       _magnetTableTopHalfHeight;
     double       _magnetTableLegRadius;
-    
+
     bool         _pipeBuild;
     double       _pipeRadiusIn;
     double       _pipeRadiusOut;
@@ -125,18 +125,18 @@ namespace mu2e {
     bool        _SSCollimatorHole2Build;
     double      _SSCollimatorHole2xOffset;
     double      _SSCollimatorHole2RadiusUpStr;
-    double      _SSCollimatorHole2RadiusDnStr;    
+    double      _SSCollimatorHole2RadiusDnStr;
     bool        _SSCollimatorHole2LinerBuild;
     double      _SSCollimatorHole2LinerThickness;
     std::string _SSCollimatorHoleLinerMaterial;
-    
+
     bool         _detectorTableBuild;
     std::string  _detectorTableMaterial;
     double       _detectorTableTopExtraWidth;
     double       _detectorTableTopExtraLength;
     double       _detectorTableTopHalfHeight;
     double       _detectorTableLegRadius;
-    
+
     bool         _detector1Build;
     std::string  _detector1CrystalMaterial;
     double       _detector1CrystalRadiusIn;
@@ -151,7 +151,7 @@ namespace mu2e {
     std::string  _detector1CanUpStrWindowMaterial;
     double       _detector1CanUpStrWindowHalfLength;
     std::string  _detector1CanGasMaterial;
-    
+
     bool         _detector2Build;
     std::string  _detector2CrystalMaterial;
     double       _detector2CrystalRadiusIn;
@@ -166,7 +166,7 @@ namespace mu2e {
     std::string  _detector2CanUpStrWindowMaterial;
     double       _detector2CanUpStrWindowHalfLength;
     std::string  _detector2CanGasMaterial;
-    
+
     bool         _shieldBuild;
     double       _shieldRadiusIn;
     bool         _shieldHasLiner;

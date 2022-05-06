@@ -45,7 +45,7 @@ namespace mu2e
     ost << "( "
         << lw.deBuncherPeriod << ", "
         << lw.intrinsicExtinction << ", "
-        << lw.limitingHalfWidth 
+        << lw.limitingHalfWidth
         << " )";
 
     return ost;

@@ -16,14 +16,14 @@ physics: {
 
     producers: {
 
-    SPEP: 
+    SPEP:
        {
             module_type: FromSimParticleEndPoint
             inputModuleLabel : "g4run"
             inputPdgIds : [-211]
             inputVolumes : ["TargetFoil"]
-	    inputProcessCode : "nCapture"	
-   	    outputGenId: "PiCaptureCombined"
+            inputProcessCode : "nCapture"
+               outputGenId: "PiCaptureCombined"
         }
 
     # Run G4 and add hits to the event
@@ -40,15 +40,15 @@ physics: {
     p1: [SPEP, g4run2, makeSH2, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco]
     e1: [outfile2]
 
-	trigger_paths  :  [p1]
-	end_paths      :  [e1]
+        trigger_paths  :  [p1]
+        end_paths      :  [e1]
 }
 
 
 outputs:
 {
   # Define the output file.
-  outfile2 : 
+  outfile2 :
   {
     module_type    : RootOutput
     fileName       : "data_SPEP.root"
@@ -57,7 +57,7 @@ outputs:
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
                    # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }
 

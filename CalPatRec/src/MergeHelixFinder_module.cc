@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// takes inputs from two helix finding algorithms, produces one helix collection 
+// takes inputs from two helix finding algorithms, produces one helix collection
 // on output to be used for the track seed-fit
 //
-// also use to merge collections of negative and positive helices. In this case, 
+// also use to merge collections of negative and positive helices. In this case,
 // expect algorithm ID colelctions to be present
 //
 // Original author P. Murat
@@ -45,7 +45,7 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
-// root 
+// root
 #include "TMath.h"
 // C++
 #include <iostream>
@@ -57,7 +57,7 @@
 #include <vector>
 #include <set>
 #include <map>
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
@@ -67,29 +67,29 @@ namespace mu2e {
     virtual ~MergeHelixFinder();
     virtual void beginJob();
     virtual void beginRun(art::Run&);
-    virtual void produce(art::Event& event ); 
+    virtual void produce(art::Event& event );
     void endJob();
-    
-    void saveBest(HelixSeedCollection* HelixColl, const HelixSeed* Helix, 
-		  art::Event& AnEvent, const art::Provenance* Prov, 
-		  int Index, AlgorithmIDCollection* AidColl);
-    
+
+    void saveBest(HelixSeedCollection* HelixColl, const HelixSeed* Helix,
+                  art::Event& AnEvent, const art::Provenance* Prov,
+                  int Index, AlgorithmIDCollection* AidColl);
+
     void checkPresenceOfDuplicates(HelixSeedCollection* HelixColl, std::vector<int> &IndexToSkip);
 
   private:
     unsigned         _iev;
-					// configuration parameters
+                                        // configuration parameters
     int              _diag;
     int              _debugLevel;
     float            _minTprChi2;
     float            _minCprChi2;
     int              _printfreq;
-    bool             _addhits; 
-					// event object labels
+    bool             _addhits;
+                                        // event object labels
     std::string      _tprHelixCollTag;
     std::string      _cprHelixCollTag;
   };
-  
+
   MergeHelixFinder::MergeHelixFinder(fhicl::ParameterSet const& pset) :
     EDProducer{pset},
     _diag            (pset.get<int>        ("diagLevel"      )),
@@ -100,25 +100,25 @@ namespace mu2e {
 
     produces<AlgorithmIDCollection>  ();
     produces<HelixSeedCollection>    ();
-    
+
   }
 
   MergeHelixFinder::~MergeHelixFinder() {
   }
-  
+
   void MergeHelixFinder::beginJob() {
   }
-  
+
   void MergeHelixFinder::beginRun(art::Run& ) {
   }
-  
+
 //-----------------------------------------------------------------------------
 // search within the collection the presence of duplicates
 //-----------------------------------------------------------------------------
   void MergeHelixFinder::checkPresenceOfDuplicates(HelixSeedCollection* HelixColl, std::vector<int> &IndexToSkip){
     int    nHel = HelixColl->size();
     int    nh1(0), nh2(0), natc(0);
-    
+
     const HelixSeed          *h1(0), *h2(0);
     const ComboHitCollection *list1(0), *list2(0);
     const mu2e::HelixHit     *hitt, *hitc;
@@ -130,46 +130,46 @@ namespace mu2e {
       natc  = 0;
 
       for (int j=i+1; j<nHel; ++j){
-	h2    = &HelixColl->at(j);
-	list2 = &h2->hits();
-	nh2   = list2->size();
-	
-	for (int k=0; k<nh1; ++k){
-	  hitt = &list1->at(k);
-	  for (int l=0; l<nh2; l++){ 
-	    hitc = &list2->at(l);
-	    if (hitt->index() == hitc->index()) {
-	      natc += 1;
-	      break;
-	    }
-	  }
-	}
+        h2    = &HelixColl->at(j);
+        list2 = &h2->hits();
+        nh2   = list2->size();
+
+        for (int k=0; k<nh1; ++k){
+          hitt = &list1->at(k);
+          for (int l=0; l<nh2; l++){
+            hitc = &list2->at(l);
+            if (hitt->index() == hitc->index()) {
+              natc += 1;
+              break;
+            }
+          }
+        }
 //-----------------------------------------------------------------------------
 // if > 50% of the helix hits are common, it unlikely to be an "independent" object
-// logic of the choice: 
+// logic of the choice:
 // 1. take the track which has more hits
-// 2. if two helices have the same number of hits, pending future studies, 
+// 2. if two helices have the same number of hits, pending future studies,
 //    the choose CalPatRec one
 //-----------------------------------------------------------------------------
-	if ((natc > nh1/2.) || (natc > nh2/2.)) {
-	  //-----------------------------------------------------------------------------
-	  // for one of the two helices, the number of shared hits > 50%
-	  //-----------------------------------------------------------------------------
-	  if (nh2 > nh1) {
-	    //-----------------------------------------------------------------------------
-	    // h2 is a winner, no need to save h1
-	    //-----------------------------------------------------------------------------
-	    IndexToSkip.push_back(i);
-	    break;
-	  }
-	  else {
-	    //-----------------------------------------------------------------------------
-	    // h1 is a winner, mark h2 in hope that it will be OK, continue looping
-	    //-----------------------------------------------------------------------------
-	    IndexToSkip.push_back(j);
-	  }
-	}
-	
+        if ((natc > nh1/2.) || (natc > nh2/2.)) {
+          //-----------------------------------------------------------------------------
+          // for one of the two helices, the number of shared hits > 50%
+          //-----------------------------------------------------------------------------
+          if (nh2 > nh1) {
+            //-----------------------------------------------------------------------------
+            // h2 is a winner, no need to save h1
+            //-----------------------------------------------------------------------------
+            IndexToSkip.push_back(i);
+            break;
+          }
+          else {
+            //-----------------------------------------------------------------------------
+            // h1 is a winner, mark h2 in hope that it will be OK, continue looping
+            //-----------------------------------------------------------------------------
+            IndexToSkip.push_back(j);
+          }
+        }
+
       }//end loop over j
     }//end loop over i
   }
@@ -177,9 +177,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // algorithm collections are unnamed
 //-----------------------------------------------------------------------------
-  void MergeHelixFinder::saveBest(HelixSeedCollection* HelixColl, const HelixSeed* Helix, 
-				  art::Event& AnEvent, const art::Provenance* Prov, 
-				  int Index, AlgorithmIDCollection* AidColl) {
+  void MergeHelixFinder::saveBest(HelixSeedCollection* HelixColl, const HelixSeed* Helix,
+                                  art::Event& AnEvent, const art::Provenance* Prov,
+                                  int Index, AlgorithmIDCollection* AidColl) {
 
     AlgorithmID                              aid;
     short                                    best(0),  mask(0xffff);
@@ -195,12 +195,12 @@ namespace mu2e {
     }
     else                 {
       if      (_cprHelixCollTag.find("HelixFinder:"  ) == 0) {
-	mask = 1 << AlgorithmID::TrkPatRecBit;
-	best = AlgorithmID::TrkPatRecBit;
+        mask = 1 << AlgorithmID::TrkPatRecBit;
+        best = AlgorithmID::TrkPatRecBit;
       }
       else if (_cprHelixCollTag.find("CalHelixFinder") == 0) {
-	mask = 1 << AlgorithmID::CalPatRecBit;
-	best = AlgorithmID::CalPatRecBit;
+        mask = 1 << AlgorithmID::CalPatRecBit;
+        best = AlgorithmID::CalPatRecBit;
       }
     }
 
@@ -212,7 +212,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void MergeHelixFinder::produce(art::Event& AnEvent) {
 
-					// assume less than 100 tracks
+                                        // assume less than 100 tracks
 
     int nhel[2] {0,0} ;
 
@@ -238,10 +238,10 @@ namespace mu2e {
     AnEvent.getByLabel(_cprHelixCollTag,hcH[1]);
 
     for (int i=0; i<2; i++) {
-      if (hcH[i].isValid()) { 
-	prov [i] = hcH[i].provenance();
-	hcoll[i] = (mu2e::HelixSeedCollection*) &(*hcH[i]);
-	nhel [i] = hcoll[i]->size();
+      if (hcH[i].isValid()) {
+        prov [i] = hcH[i].provenance();
+        hcoll[i] = (mu2e::HelixSeedCollection*) &(*hcH[i]);
+        nhel [i] = hcoll[i]->size();
       }
     }
 
@@ -280,65 +280,65 @@ namespace mu2e {
       natc         = 0;
 
       for (int i2=0; i2<nhel[1]; i2++) {
-	std::vector<int>::iterator it2;
-	it2 = find(helixToSkip1.begin(), helixToSkip1.end(), i2);
-	if (it2 != helixToSkip1.end())                  continue;
+        std::vector<int>::iterator it2;
+        it2 = find(helixToSkip1.begin(), helixToSkip1.end(), i2);
+        if (it2 != helixToSkip1.end())                  continue;
 
-	h2 = &hcoll[1]->at(i2);
+        h2 = &hcoll[1]->at(i2);
 //-----------------------------------------------------------------------------
 // at Mu2e, 2 helices with different helicity could be duplicates of each other
 //-----------------------------------------------------------------------------
-	clist        = &h2->hits();
-	nh2          = clist->size();
+        clist        = &h2->hits();
+        nh2          = clist->size();
 //-----------------------------------------------------------------------------
-// check the number of common hits: do we need to check also if they have 
+// check the number of common hits: do we need to check also if they have
 // close momentum?
 //-----------------------------------------------------------------------------
-	for (int k=0; k<nh1; ++k){ 
-	  hitt = &tlist->at(k);
-	  for (int l=0; l<nh2; l++){ 
-	    hitc = &clist->at(l);
-	    if (hitt->index() == hitc->index()) {
-	      natc += 1;
-	      break;
-	    }
-	  }
-	}
+        for (int k=0; k<nh1; ++k){
+          hitt = &tlist->at(k);
+          for (int l=0; l<nh2; l++){
+            hitc = &clist->at(l);
+            if (hitt->index() == hitc->index()) {
+              natc += 1;
+              break;
+            }
+          }
+        }
 //-----------------------------------------------------------------------------
 // if > 50% of the helix hits are common, it unlikely to be an "independent" object
-// logic of the choice: 
+// logic of the choice:
 // 1. take the track which has more hits
-// 2. if two helices have the same number of hits, pending future studies, 
+// 2. if two helices have the same number of hits, pending future studies,
 //    the choose CalPatRec one
 //-----------------------------------------------------------------------------
-	if ((natc > nh1/2.) || (natc > nh2/2.)) {
+        if ((natc > nh1/2.) || (natc > nh2/2.)) {
 //-----------------------------------------------------------------------------
 // for one of the two helices, the number of shared hits > 50%
 //-----------------------------------------------------------------------------
-	  if (nh2 > nh1) {
+          if (nh2 > nh1) {
 //-----------------------------------------------------------------------------
 // h2 is a winner, no need to save h1
 //-----------------------------------------------------------------------------
-	    saveBest(helixPtrs.get(),h2,AnEvent,prov[1],i2,algs.get());
+            saveBest(helixPtrs.get(),h2,AnEvent,prov[1],i2,algs.get());
 
-	    flag[0][i1] = 0;
-	    flag[1][i2] = 0;
-	    break;
-	  }
-	  else {
+            flag[0][i1] = 0;
+            flag[1][i2] = 0;
+            break;
+          }
+          else {
 //-----------------------------------------------------------------------------
 // h1 is a winner, mark h2 in hope that it will be OK, continue looping
 //-----------------------------------------------------------------------------
-	    flag[1][i2] = 0;
-	  }
-	}
+            flag[1][i2] = 0;
+          }
+        }
       }
 
       if (flag[0][i1] == 1) {
 //-----------------------------------------------------------------------------
 // looped over all helices from the second coll, nothing looking like h1
 //-----------------------------------------------------------------------------
-	saveBest(helixPtrs.get(),h1,AnEvent,prov[0],i1,algs.get());
+        saveBest(helixPtrs.get(),h1,AnEvent,prov[0],i1,algs.get());
       }
     }
 //-----------------------------------------------------------------------------
@@ -347,8 +347,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int i=0; i<nhel[1]; i++) {
       if (flag[1][i] == 1) {
-	h2 = &hcoll[1]->at(i);
-	saveBest(helixPtrs.get(),h2,AnEvent,prov[1],i,algs.get());
+        h2 = &hcoll[1]->at(i);
+        saveBest(helixPtrs.get(),h2,AnEvent,prov[1],i,algs.get());
       }
     }
 
@@ -356,11 +356,11 @@ namespace mu2e {
     AnEvent.put(std::move(algs     ));
   }
 //-----------------------------------------------------------------------------
-// end job : 
+// end job :
 //-----------------------------------------------------------------------------
   void MergeHelixFinder::endJob() {
   }
-  
+
 }
 
 using mu2e::MergeHelixFinder;

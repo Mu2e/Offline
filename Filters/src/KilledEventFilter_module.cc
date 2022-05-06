@@ -211,7 +211,7 @@ namespace mu2e {
 
     ntup_->Fill();
 
-    mf::LogInfo("Summary") 
+    mf::LogInfo("Summary")
       << "KilledEventFilter_module: Number of events passing the filter: "
       << _nPassed
       << "\nNumber of events skipped: "

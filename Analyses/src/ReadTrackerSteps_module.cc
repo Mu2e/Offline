@@ -76,7 +76,7 @@ namespace mu2e {
 
   };
 
-  ReadTrackerSteps::ReadTrackerSteps(fhicl::ParameterSet const& pset) : 
+  ReadTrackerSteps::ReadTrackerSteps(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
@@ -89,7 +89,7 @@ namespace mu2e {
     _tsStepPoints(pset.get<string>("tsStepPoints","trackerDS"))
   {}
 
- 
+
 
   void ReadTrackerSteps::beginJob(){
 
@@ -97,16 +97,16 @@ namespace mu2e {
 
     art::ServiceHandle<art::TFileService> tfs;
 
-    _hNtset  = tfs->make<TH1F>( "hNtset ", 
+    _hNtset  = tfs->make<TH1F>( "hNtset ",
                                  "Number/ID of the detector with step",
                                  50,  0., 50. );
 
-    _hNtsetH = tfs->make<TH1F>( "hNtsetH", 
+    _hNtsetH = tfs->make<TH1F>( "hNtsetH",
                                  "Number of steps",
                                  50,  0., 50. );
 
     // Create an ntuple.
-    _nttts = tfs->make<TNtuple>( "nttts", 
+    _nttts = tfs->make<TNtuple>( "nttts",
                                   "Tracker steps ntuple",
                                   "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                   "g4bl_time");
@@ -117,19 +117,19 @@ namespace mu2e {
     ++_nAnalyzed;
 
     if (_diagLevel>1 ) {
-      cout << "ReadTrackerSteps::" << __func__ 
-           << setw(4) << " called for event "  
+      cout << "ReadTrackerSteps::" << __func__
+           << setw(4) << " called for event "
            << event.id().event()
            << " hitMakerModuleLabel "
-           << _hitMakerModuleLabel 
-           << " tsStepPoints " 
+           << _hitMakerModuleLabel
+           << " tsStepPoints "
            << _tsStepPoints
            << endl;
     }
 
     art::ServiceHandle<GeometryService> geom;
 
-    if (!geom->hasElement<Tracker>()) 
+    if (!geom->hasElement<Tracker>())
       {
         mf::LogError("Geom")
           << "Skipping ReadTrackerSteps::analyze due to lack of tracker\n";
@@ -155,8 +155,8 @@ namespace mu2e {
     unsigned int const nhits = hits.size();
 
     if (_diagLevel>0 && nhits>0 ) {
-      cout << "ReadTrackerSteps::" << __func__ 
-           << " Number of TS hits: " <<setw(4) 
+      cout << "ReadTrackerSteps::" << __func__
+           << " Number of TS hits: " <<setw(4)
            << nhits
            << endl;
     }
@@ -218,14 +218,14 @@ namespace mu2e {
       _nttts->Fill(nt);
 
       if ( _nAnalyzed < _maxFullPrint){
-        cout <<  "ReadTrackerSteps::" << __func__ 
+        cout <<  "ReadTrackerSteps::" << __func__
              << ": TS hit: "
              << setw(8) << event.id().event() << " | "
              << setw(4) << hit.volumeId()     << " | "
              << setw(6) << pdgId              << " | "
-             << setw(8) << hit.time()         << " | "  
+             << setw(8) << hit.time()         << " | "
              << setw(8) << mom.mag()          << " | "
-             << pos               
+             << pos
              << endl;
 
       }

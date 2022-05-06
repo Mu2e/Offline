@@ -1,6 +1,6 @@
 //--------------------------------------------------------------------------
 // Name:
-//   DetStrawElem: class to represent a straw. Depending on the 
+//   DetStrawElem: class to represent a straw. Depending on the
 //   type this class can represent the material of the gas, wall, wire, or all
 //        Copyright (C) 2008    Lawrence Berkeley Laboratory
 // Author List:
@@ -17,7 +17,7 @@ namespace mu2e {
   class Straw;
   class Tracker;
   class DetStrawType;
-// element class  
+// element class
   class DetStrawElem : public DetElem {
   public:
 // construct from a Straw
@@ -29,12 +29,12 @@ namespace mu2e {
     virtual bool reIntersect(const Trajectory* traj,DetIntersection& dinter) const;
 // overwrite the material info function to allow heterogenous materials with a single intersection
     virtual void materialInfo(const DetIntersection&,
-	double momentum,
-	TrkParticle const& tpart,
-	double& deflectRMS,
-	double& pFractionRMS,
-	double& pFraction,
-	trkDirection dedxdir=trkOut) const;
+        double momentum,
+        TrkParticle const& tpart,
+        double& deflectRMS,
+        double& pFractionRMS,
+        double& pFraction,
+        trkDirection dedxdir=trkOut) const;
     // override KalMaterial function which is broken and shouldn't be used
     double radiationFraction(const DetIntersection&) const;
     // accessors

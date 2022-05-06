@@ -58,7 +58,7 @@ namespace mu2e {
 
 
   class CaloClusterCheck : public art::EDAnalyzer {
-     
+
      public:
        explicit CaloClusterCheck(fhicl::ParameterSet const& pset);
 
@@ -71,7 +71,7 @@ namespace mu2e {
        std::string caloClusterModuleLabel_;
        int diagLevel_;
        int nProcess_;
-      
+
        TH2F *crIn_,*crOut_;
        TH1F *dtime_;
   };
@@ -103,13 +103,13 @@ namespace mu2e {
   {
       ++nProcess_;
       if (nProcess_%10==0 && diagLevel_ > 0) std::cout<<"Processing event from CaloClusterCheck =  "<<nProcess_ << std::endl;
-      
- 
+
+
       //Get handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-  
+
       //Get calo crystal hits (average from readouts)
       art::Handle<CaloHitCollection> CaloHitsHandle;
       event.getByLabel(caloCrystalModuleLabel_, CaloHitsHandle);
@@ -121,53 +121,53 @@ namespace mu2e {
       CaloClusterCollection const& caloClusters(*caloClustersHandle);
 
 
-      for (const auto& hit : CaloHits) 
-      {	   
-	  if (hit.time() < 500 || hit.energyDep() < 0.9) continue;
+      for (const auto& hit : CaloHits)
+      {
+          if (hit.time() < 500 || hit.energyDep() < 0.9) continue;
 
-	  int nClu(0),nCr(0);
-	  std::vector<double> dmin,dtime;
-	  for (auto const& clusterIt : caloClusters) 
-	  {	      	      
-	       for (auto const& crystalIncluster : clusterIt.caloHitsPtrVector()) 
-	       {
-		    if (cal.crystal(hit.crystalID()).diskID() != cal.crystal(crystalIncluster->crystalID()).diskID()) break;
+          int nClu(0),nCr(0);
+          std::vector<double> dmin,dtime;
+          for (auto const& clusterIt : caloClusters)
+          {
+               for (auto const& crystalIncluster : clusterIt.caloHitsPtrVector())
+               {
+                    if (cal.crystal(hit.crystalID()).diskID() != cal.crystal(crystalIncluster->crystalID()).diskID()) break;
 
-		    if (&(*crystalIncluster) == &hit) ++nCr;
+                    if (&(*crystalIncluster) == &hit) ++nCr;
                     if (nCr > 1) std::cout<<"Warning, crystal associated to more than one cluster "<<hit.crystalID()<<" for cluster "<<nClu<<std::endl;
 
-		    CLHEP::Hep3Vector crystalPos2 = cal.crystal(crystalIncluster->crystalID()).position();
-		    double deltaDist = (cal.crystal(hit.crystalID()).position()-crystalPos2).mag();
-		    double deltaTime = abs(crystalIncluster->time() - hit.time());
+                    CLHEP::Hep3Vector crystalPos2 = cal.crystal(crystalIncluster->crystalID()).position();
+                    double deltaDist = (cal.crystal(hit.crystalID()).position()-crystalPos2).mag();
+                    double deltaTime = abs(crystalIncluster->time() - hit.time());
 
-		    dmin.push_back(deltaDist);
-		    dtime.push_back(deltaTime);
+                    dmin.push_back(deltaDist);
+                    dtime.push_back(deltaTime);
                }
-	       ++nClu;	         
-	   }
+               ++nClu;
+           }
 
-	   if (nCr!=0) continue;
-	   for (unsigned int i=0;i<dmin.size();++i) crOut_->Fill(dmin[i],dtime[i]);
+           if (nCr!=0) continue;
+           for (unsigned int i=0;i<dmin.size();++i) crOut_->Fill(dmin[i],dtime[i]);
        }
-       
-       
+
+
        for (auto const& clusterIt : caloClusters)
        {
            double dtime(0);
-	   for (int i=0;i<clusterIt.size()-1;++i)
-	   {
-	      for (int j=i+1;j<clusterIt.size();++j)
-	      {
-	          double deltaTime = abs(clusterIt.caloHitsPtrVector().at(i)->time()- clusterIt.caloHitsPtrVector().at(j)->time());
-	          if (deltaTime > dtime) dtime = deltaTime;
-	      }	   
-	   }
-	   dtime_->Fill(dtime);
-       }      
+           for (int i=0;i<clusterIt.size()-1;++i)
+           {
+              for (int j=i+1;j<clusterIt.size();++j)
+              {
+                  double deltaTime = abs(clusterIt.caloHitsPtrVector().at(i)->time()- clusterIt.caloHitsPtrVector().at(j)->time());
+                  if (deltaTime > dtime) dtime = deltaTime;
+              }
+           }
+           dtime_->Fill(dtime);
+       }
 
   }
 
-}  
+}
 
 DEFINE_ART_MODULE(mu2e::CaloClusterCheck);
 

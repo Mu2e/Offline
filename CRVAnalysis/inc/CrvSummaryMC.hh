@@ -19,8 +19,8 @@ namespace mu2e
               {}
     CrvSummaryMC() :
               _totalEnergyDeposited(0),
-	      _minPathLayer(0),
-	      _maxPathLayer(0),
+              _minPathLayer(0),
+              _maxPathLayer(0),
               _nHitCounters(0)
               {}
   };

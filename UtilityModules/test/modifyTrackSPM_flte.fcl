@@ -38,7 +38,7 @@ outputs : {
     fileName    : "sim.owner.DNBtrackerTestFlte.version.sequencer.art"
     outputCommands:   [ "keep *_*_*_*",
                         "drop *_detectorFilter_tracker_beamg4s4flate",
-			"drop *_TriggerResults_*_modifyTrackSPM"
+                        "drop *_TriggerResults_*_modifyTrackSPM"
                       ]
 
   }

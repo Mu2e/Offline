@@ -74,36 +74,36 @@ namespace mu2e {
                                pse->shellCone().phi0(),
                                pse->shellCone().deltaPhi() };
       nestCons( sName,
-		consParams,
-		findMaterialOrThrow(pse->shellCone().materialName()),
-		0,
-		pse->shellCone().originInMu2e() - parent.centerInMu2e()
-		+ extraOffset,
-		parent,
-		0,
-	       PSIsVisible,
-	       G4Colour::Blue(),
-	       PSIsSolid,
-	       forceAuxEdgeVisible,
-	       placePV,
-	       doSurfaceCheck
-	       );
+                consParams,
+                findMaterialOrThrow(pse->shellCone().materialName()),
+                0,
+                pse->shellCone().originInMu2e() - parent.centerInMu2e()
+                + extraOffset,
+                parent,
+                0,
+               PSIsVisible,
+               G4Colour::Blue(),
+               PSIsSolid,
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
 
     } else {  // Old cylindrical version (version 1)
       nestTubs(sName,
-	       pse->shell().getTubsParams(),
-	       findMaterialOrThrow(pse->shell().materialName()),
-	       0,
-	       pse->shell().originInMu2e() - parent.centerInMu2e(),
-	       parent,
-	       0,
-	       PSIsVisible,
-	       G4Colour::Blue(),
-	       PSIsSolid,
-	       forceAuxEdgeVisible,
-	       placePV,
-	       doSurfaceCheck
-	       );
+               pse->shell().getTubsParams(),
+               findMaterialOrThrow(pse->shell().materialName()),
+               0,
+               pse->shell().originInMu2e() - parent.centerInMu2e(),
+               parent,
+               0,
+               PSIsVisible,
+               G4Colour::Blue(),
+               PSIsSolid,
+               forceAuxEdgeVisible,
+               placePV,
+               doSurfaceCheck
+               );
     } // end adding shell, either conical or cylindrical
 
     // get the mass of the Shell
@@ -229,10 +229,10 @@ namespace mu2e {
                        <<pse->windows()[i].originInMu2e()
                        << std::endl;
 
-	//      verbosityLevel
-	//        && std::cout << __func__ << " " << sName << " Mass in kg: "
-	//                     << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg
-	//                     << std::endl;
+        //      verbosityLevel
+        //        && std::cout << __func__ << " " << sName << " Mass in kg: "
+        //                     << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg
+        //                     << std::endl;
 
 
       } //end window for loop

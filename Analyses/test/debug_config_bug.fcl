@@ -24,9 +24,9 @@ END_PROLOG
 process_name : GenReco
 physics : {
     gen_allpatrec_reco : [ @sequence::generatorSeq,
-			   @sequence::hitMakerSeq,
-			   @sequence::allPatRecDemDmmSeq
-			  ]
+                           @sequence::hitMakerSeq,
+                           @sequence::allPatRecDemDmmSeq
+                          ]
 
     trigger_paths  : [gen_allpatrec_reco]
 

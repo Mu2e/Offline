@@ -73,16 +73,16 @@ namespace mu2e {
 
     for(ExtMonFNALRawHitCollection::const_iterator i=inputs.begin(); i!=inputs.end(); ++i) {
       ++numSeenHits_;
-      
+
       if(i->pixelId().chip().module().plane() >= extmon_->nplanes()) {
         throw cet::exception("BUG")<<*i<<": invalid plane number\n";
       }
-      
+
       if(i->pixelId().chip().module().plane() < extmon_->dn().nplanes()) {
         if(i->pixelId().chip().module().number() >= extmon_->dn().nModulesPerPlane())
           throw cet::exception("BUG")<<*i<<": invalid module number\n";
       }
-      
+
       else if (i->pixelId().chip().module().number() >= extmon_->up().nModulesPerPlane()) {
         throw cet::exception("BUG")<<*i<<": invalid module number\n";
       }

@@ -11,7 +11,7 @@
 #include <ostream>
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorLayerId.hh"
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CRSScintillatorBarId
@@ -53,12 +53,12 @@ namespace mu2e
     const int getLayerNumber() const {return _layerId._layerNumber;}
     const int getBarNumber() const {return _barNumber;}
 
-    bool operator==( CRSScintillatorBarId const & rhs) const 
+    bool operator==( CRSScintillatorBarId const & rhs) const
     {
       return ( _layerId == rhs._layerId && _barNumber == rhs._barNumber );
     }
 
-    bool operator!=( CRSScintillatorBarId const & rhs) const 
+    bool operator!=( CRSScintillatorBarId const & rhs) const
     {
       return !( *this == rhs);
     }

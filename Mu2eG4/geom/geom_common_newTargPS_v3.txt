@@ -16,7 +16,7 @@ double targetPS_hubDistanceUS  = 0.0; // mm  Parameter "C"  (Upstream)
 double targetPS_hubDistanceDS  = 0.0;// mm  Parameter "D"  (Downstream)
 double targetPS_hubAngleUS     = 42.0;// deg Parameter "E"
 double targetPS_hubAngleDS     = 30.8;// deg Parameter "F"
-double targetPS_rOut	       = 3.15;// mm  radius of the main rod
+double targetPS_rOut               = 3.15;// mm  radius of the main rod
 double targetPS_hubOverhangUS = 16.93; // mm
 double targetPS_hubOverhangDS = 15.87; // mm
 
