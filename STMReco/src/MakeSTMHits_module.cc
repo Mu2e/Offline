@@ -23,6 +23,9 @@
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 
+// C++
+#include <vector>
+
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
@@ -32,7 +35,8 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
+       fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
+       fhicl::Atom<art::InputTag> adcNorm{ Name("adcNorm"), Comment("Normalization for the adc values")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit MakeSTMHits(const Parameters& conf);
@@ -41,15 +45,17 @@ namespace mu2e {
       void produce(art::Event& e) override;
 
     art::InputTag _stmDigisTag;
+    art::InputTag _adcNorm;
   };
 
-  MakeSTMHits::MakeSTMHits(const Parameters& config )  : 
+  MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config},
-    _stmDigisTag(config().stmDigisTag())
-  {
+    _stmDigisTag(config().stmDigisTag()),
+    _adcNorm(config().adcNorm())
+    {
     consumes<STMDigiCollection>(_stmDigisTag);
     produces<STMHitCollection>();
-  }
+    }
 
     void MakeSTMHits::produce(art::Event& event) {
     // create output
@@ -58,9 +64,9 @@ namespace mu2e {
 
     for (const auto& digi : *digisHandle) {
       int tdc = digi.trigTime();
-      int adc = digi.adc0();
+      const std::vector<short int>& adc = digi.adcs();
       float time = tdc;
-      float energy = adc/10000.0;
+      float energy = *std::max_element(adc.begin(), adc.end()) / 10000.0;// _adcNorm;
       STMHit stm_hit(time,energy);
       outputSTMHits->push_back(stm_hit);
     }

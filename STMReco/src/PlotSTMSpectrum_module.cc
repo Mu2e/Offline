@@ -20,8 +20,13 @@
 #include "TH1F.h"
 #include "TF1.h"
 #include "TTree.h"
+#include "TFitResultPtr.h"
+#include "TFitResult.h"
 
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+
+// c++ headers
+#include <fstream>
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -32,22 +37,22 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<art::InputTag> stmHitsTag{ Name("stmHitsTag"), Comment("InputTag for STMHitCollection")};
+       fhicl::Atom<art::InputTag> stmHitsTag{ Name("stmHitsTag"), Comment("InputTag for STMHitCollection")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMSpectrum(const Parameters& conf);
 
     private:
-    void beginJob() override; 
+    void beginJob() override;
       void analyze(const art::Event& e) override;
 
     void endJob() override;
- 
+
     art::InputTag _stmHitsTag;
     TH1D* _energySpectrum;
   };
 
-  PlotSTMSpectrum::PlotSTMSpectrum(const Parameters& config )  : 
+  PlotSTMSpectrum::PlotSTMSpectrum(const Parameters& config )  :
     art::EDAnalyzer{config},
     _stmHitsTag(config().stmHitsTag())
   {
@@ -72,13 +77,33 @@ namespace mu2e {
   }
   void PlotSTMSpectrum::endJob() {
     // Insert pain (fits) here
-    // float peaks[] = [0.123,0.162,0.245,0.344]; 
+    double peaks[4] = {0.123,0.162,0.245,0.344};
     // double peak_energy = 0.344;
-    // int bin_number = _energySpectrum->GetXaxis()->FindBin(peak_energy);
-    // float bin_content = _energyContent->GetBinContent(bin_number);
-    TF1* fitGaus = new TF1("fit_Gaus", "[0]*TMath::Gaus(x,[1],[2])",0.340,0.350);
-    fitGaus->SetParameters(1700,0.344,0.001);
-    _energySpectrum->Fit(fitGaus,"R");
+    //int bin_number = _energySpectrum->GetXaxis()->FindBin(peak_energy);
+    //float bin_content = _energyContent->GetBinContent(bin_number);
+    ofstream out;
+    out.open("out.log", ios::out | ios::trunc);
+    out << "par_name, par_value, par_error" << std::endl;
+    for (int j = 0; j < 4; j++)
+      {
+       TString fname(Form("fgaus_%d", j));
+       TF1* fitGaus = new TF1(fname, "[0]*TMath::Gaus(x,[1],[2])",peaks[j]-0.005,peaks[j]+0.005);
+       fitGaus->SetParameters(1700,peaks[j],0.001);
+       _energySpectrum->Fit(fitGaus,"R+");
+       // Export fit parameters to a file
+       // Write out fit parameters to screen separate from the MSG
+       TFitResultPtr fitresult = _energySpectrum->Fit(fitGaus, "QRS");
+       int n_par = fitresult->NPar();
+
+       for (int i_par = 0; i_par < n_par; ++i_par)
+         {
+           out   << j << ", "
+                 << fitresult->GetParameterName(i_par)
+                 << ", " << fitresult->Parameter(i_par)
+                 << ", " << fitresult->ParError(i_par)
+                 << std::endl;
+         }
+      }
   }
 }
 

@@ -16,8 +16,6 @@ namespace mu2e {
   public:
     STMDigi() {};
     STMDigi(uint16_t trigNum, uint64_t trigTime, uint64_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, std::vector<int16_t> adcs) : _trigNum(trigNum), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop), _adcs(adcs) {};
-    STMDigi(uint16_t trigNum, uint64_t trigTime, uint64_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, int adc0) : _trigNum(trigNum), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop) { _adcs.push_back(adc0); };
-    STMDigi(uint64_t trigTime, int adc0): _trigTime(trigTime) { _adcs.push_back(adc0); };
 
     uint16_t trigNum() const { return _trigNum; }
     uint64_t trigTime() const { return _trigTime; }
@@ -25,7 +23,6 @@ namespace mu2e {
     uint16_t baselineMean() const { return _baselineMean; }
     uint16_t baselineRMS() const { return _baselineRMS; }
     uint16_t nDrop() const { return _nDrop; }
-    int adc0() const { return _adcs.at(0); }
     const std::vector<int16_t>& adcs() const { return _adcs; }
 
   private:

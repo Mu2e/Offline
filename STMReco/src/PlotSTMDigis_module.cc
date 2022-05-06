@@ -32,22 +32,22 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
+       fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMDigis(const Parameters& conf);
 
     private:
-    void beginJob() override; 
+    void beginJob() override;
       void analyze(const art::Event& e) override;
 
     void endJob() override;
- 
+
     art::InputTag _stmDigisTag;
-    TH1D* _energySpectrum;
+    TH1D* _baselineMean;
   };
 
-  PlotSTMDigis::PlotSTMDigis(const Parameters& config )  : 
+  PlotSTMDigis::PlotSTMDigis(const Parameters& config )  :
     art::EDAnalyzer{config},
     _stmDigisTag(config().stmDigisTag())
   {
@@ -57,32 +57,43 @@ namespace mu2e {
   void PlotSTMDigis::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
     // create TTree
-    _energySpectrum=tfs->make<TH1D>("energySpectrum", "Energy Spectrum", 5000,0,5000.0);
+    _baselineMean=tfs->make<TH1D>("baselineMean", "Energy Spectrum", 5000,0,5000.0);
   }
 
   void PlotSTMDigis::analyze(const art::Event& event) {
-
+    art::ServiceHandle<art::TFileService> tfs;
     auto digisHandle = event.getValidHandle<STMDigiCollection>(_stmDigisTag);
-
+    int j = 0;
     for (const auto& digi : *digisHandle) {
-      //      float time = hit.time();
       float baselineMean = digi.baselineMean();
-      _energySpectrum->Fill(baselineMean);
-
-      // TODO: Create a histogram here (i.e. with tfs->make<TH1D>...)
-      // TODO: loop through the adcs (i.e. with for (const aurto& sample : digi.adcs()) { } )
-      // TODO: fill each sample into a separate bin of the histogram
+      _baselineMean->Fill(baselineMean);
+      TString fname(Form("digiSpectrum_%d_%d", event.event(), j));
+      // Create a histogram
+      TH1D* hWaveform = tfs->make<TH1D>(fname, "Digi Spectrum", digi.adcs().size(), 0, digi.adcs().size());
+      // Loop through the adcs
+      int i_bin = 1;
+      for (const auto& sample : digi.adcs())
+         {
+           hWaveform->SetBinContent(i_bin, sample);
+           i_bin++;
+         }
+      j++;
     }
   }
   void PlotSTMDigis::endJob() {
     // Insert pain (fits) here
-    // float peaks[] = [0.123,0.162,0.245,0.344]; 
+    // Goal is to automatically find peaks, these peaks are from the Eu152 source, so...
+    /*
+      double peaks[4] = [0.123,0.162,0.245,0.344];
     // double peak_energy = 0.344;
-    // int bin_number = _energySpectrum->GetXaxis()->FindBin(peak_energy);
-    // float bin_content = _energyContent->GetBinContent(bin_number);
-    //TF1* fitGaus = new TF1("fit_Gaus", "[0]*TMath::Gaus(x,[1],[2])",0.340,0.350);
-    //fitGaus->SetParameters(1700,0.344,0.001);
-    //_energySpectrum->Fit(fitGaus,"R");
+      for (int j = 0; j < 4; j++)
+      {
+       TString fname(Form("fgaus_%d", j));
+       TF1* fitGaus = new TF1(fname, "[0]*TMath::Gaus(x,[1],[2])",peaks[j]-0.005,peaks[j]+0.005);
+       fitGaus->SetParameters(1700,peaks[j],0.001);
+       _baselineMean->Fit(fitGaus,"R+");
+      }
+    */
   }
 }
 

@@ -33,7 +33,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<art::InputTag> stmStepsTag{ Name("stmStepsTag"), Comment("InputTag for STMStepCollection")};
+       fhicl::Atom<art::InputTag> stmStepsTag{ Name("stmStepsTag"), Comment("InputTag for STMStepCollection")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit MakeSTMDigis(const Parameters& conf);
@@ -44,7 +44,7 @@ namespace mu2e {
     art::InputTag _stmStepsTag;
   };
 
-  MakeSTMDigis::MakeSTMDigis(const Parameters& config )  : 
+  MakeSTMDigis::MakeSTMDigis(const Parameters& config )  :
     art::EDProducer{config},
     _stmStepsTag(config().stmStepsTag())
   {
@@ -56,7 +56,6 @@ namespace mu2e {
     // create output
     unique_ptr<STMDigiCollection> outputSTMDigis(new STMDigiCollection);
     auto stepsHandle = event.getValidHandle<STMStepCollection>(_stmStepsTag);
-    
     // Create Gaussian jitter
     TF1* res_fnc = new TF1("res_fnc", "TMath::Gaus(x, [0], [1])", -0.002, 0.002);
     res_fnc->SetParameters(0,0.001);
@@ -64,7 +63,9 @@ namespace mu2e {
     for (const auto& step : *stepsHandle) {
       int tdc = 0;
       int adc = step.edep()*10000.0 + 10000.0*res_fnc->GetRandom();
-      STMDigi stm_digi(tdc, adc);
+      std::vector<int16_t> adcs;
+      adcs.push_back(adc);
+      STMDigi stm_digi(0,tdc,0,0,0,0, adcs);
       outputSTMDigis->push_back(stm_digi);
     }
 
