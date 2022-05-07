@@ -24,9 +24,9 @@ double targetMotherHalfLength  = 200.;    //mm
 
 int targetPS_nFins             = 4;
 
-double targetPS_finHeight      = 13.0;    // mm 
-double targetPS_finThickness   = 1.0;     // mm  
-double targetPS_rOut	       = 3.15;    // mm  
+double targetPS_finHeight      = 13.0;    // mm
+double targetPS_finThickness   = 1.0;     // mm
+double targetPS_rOut           = 3.15;    // mm
 
 double targetPS_innerRadiusRing = 15.;
 double targetPS_outerRadiusRing = 17.;
@@ -34,7 +34,7 @@ double targetPS_halfLengthRing  =  2.;
 
 vector<double> finAngle = {45.,135.,225.,315.};
 string targetPS_materialName = "G4_";
-double targetPS_halfLength   = 110.; 
+double targetPS_halfLength   = 110.;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
