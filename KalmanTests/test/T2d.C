@@ -46,9 +46,9 @@ void FitT2D(TTree* trks) {
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   t2dcan->Divide(2,2);
   t2dcan->cd(1);
-  rt2d->Draw(); 
+  rt2d->Draw();
   t2dcan->cd(2);
-  tt2d->Draw(); 
+  tt2d->Draw();
   t2dcan->cd(3);
   rt2dp->Fit("pol1","","",0,43);
   t2dcan->cd(4);
@@ -69,4 +69,3 @@ void FitT2D(TTree* trks) {
   t2drcan->cd(2);
   tt2d_2->Draw();
 }
-

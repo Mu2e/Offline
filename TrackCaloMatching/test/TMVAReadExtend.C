@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <iostream> 
+#include <iostream>
 #include <map>
 #include <string>
 
@@ -16,12 +16,12 @@
 
 
 using namespace TMVA;
-   
-void TMVAReadExtend(TString testDS, int mode=1) 
+
+void TMVAReadExtend(TString testDS, int mode=1)
 {
 
    if (mode!=1 && mode !=2 && mode!=3 ) {cout<<"Mose must be 1 or 2 or 3"<<endl; return;}
-   
+
    TMVA::Tools::Instance();
 
    gStyle->SetFrameBorderMode(0);
@@ -38,7 +38,7 @@ void TMVAReadExtend(TString testDS, int mode=1)
    gStyle->SetPadBottomMargin(0.12);
    gStyle->SetPalette(1);
    gStyle->SetFrameLineWidth(2);
-      
+
    Float_t e0,e1,e2,e3,e4,e5,e6,e7,e8,e9;
    Float_t e10,e11,e12,e13,e14,e15,e16,e17,e18,e19;
    Float_t e20,e21,e22,e23,e24;
@@ -46,9 +46,9 @@ void TMVAReadExtend(TString testDS, int mode=1)
    Float_t targetX,targetY,targetA;
 
 
-   TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );    
-   if (mode==3)reader->AddVariable( "e0", &e0); 
-   if (mode==3)reader->AddVariable( "e1", &e1); 
+   TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
+   if (mode==3)reader->AddVariable( "e0", &e0);
+   if (mode==3)reader->AddVariable( "e1", &e1);
    reader->AddVariable( "e2",   &e2);
    reader->AddVariable( "e3",   &e3);
    reader->AddVariable( "e4",   &e4);
@@ -75,14 +75,14 @@ void TMVAReadExtend(TString testDS, int mode=1)
    reader->AddSpectator( "c0",  &c0);
    reader->AddSpectator( "c1",  &c1);
    reader->AddSpectator( "c2",  &c2);
-   reader->AddSpectator( "c3",  &c3); 
-   reader->AddSpectator( "c4",  &c4); 
-   reader->AddSpectator( "c5",  &c5); 
-   reader->AddSpectator( "ffx", &FFX); 
-   reader->AddSpectator( "ffy", &FFY); 
-   reader->AddSpectator( "ffz", &FFZ); 
-   reader->BookMVA("BDTG method", "weightsA/weights/TMVARegression_BDTG.weights.xml" ); 
-   
+   reader->AddSpectator( "c3",  &c3);
+   reader->AddSpectator( "c4",  &c4);
+   reader->AddSpectator( "c5",  &c5);
+   reader->AddSpectator( "ffx", &FFX);
+   reader->AddSpectator( "ffy", &FFY);
+   reader->AddSpectator( "ffz", &FFZ);
+   reader->BookMVA("BDTG method", "weightsA/weights/TMVARegression_BDTG.weights.xml" );
+
 
 
    TFile input(testDS);
@@ -135,29 +135,29 @@ void TMVAReadExtend(TString testDS, int mode=1)
    for (Long64_t ievt=0; ievt<regTree->GetEntries();ievt++)
    {
       regTree->GetEntry(ievt);
-      
+
       Float_t val1 = 100*((reader->EvaluateRegression("BDTG method"))[0]);
-      
-      
+
+
       TVector3 trkDir(sin(t1)*cos(t0),sin(t1)*sin(t0),cos(t1));
       TVector3 pos0(FFX,FFY,FFZ);
-      
+
       TVector3 pos = pos0+val1*trkDir;
       double dx = c2-pos.X();
-      double dy = c3-pos.Y();      
-      
-      hh1.Fill(dx);      
+      double dy = c3-pos.Y();
+
+      hh1.Fill(dx);
       hh2.Fill(dy);
       hh3.Fill(val1-targetA);
-      
+
       //need to add stuff to calculate X ad Y position
-      
+
    }
 
 
    TLatex text;
    text.SetTextSize(0.045);
-    
+
 
    hh1.SetLineWidth(2);
    hh1.GetYaxis()->SetTitleOffset(1.2);
@@ -165,7 +165,7 @@ void TMVAReadExtend(TString testDS, int mode=1)
    hh1.GetYaxis()->SetTitleSize(0.045);
    hh1.GetXaxis()->SetLabelSize(0.04);
    hh1.GetYaxis()->SetLabelSize(0.04);
- 
+
    hh2.SetLineWidth(2);
    hh2.GetYaxis()->SetTitleOffset(1.2);
    hh2.GetXaxis()->SetTitleSize(0.045);
@@ -180,11 +180,11 @@ void TMVAReadExtend(TString testDS, int mode=1)
    myfit->SetParameter(3,100);
    myfit->SetParameter(4,0);
    myfit->SetParameter(5,20);
- 
+
    TCanvas *ca1 = new TCanvas("ca1","ca1");
    hh1.Draw();
    hh1.SetLineWidth(2);
-   hh1.Fit("myfit","","",-40,40);   
+   hh1.Fit("myfit","","",-40,40);
    hh1.GetXaxis()->SetTitle("X_{rec}-X_{gen} (mm)");
    hh1.GetYaxis()->SetTitle("Entries / 2 mm");
    text.DrawLatexNDC(0.17,0.82,Form("#sigma_{core} =%4.2g #pm %2.1g mm",myfit->GetParameter(2),myfit->GetParError(2)));
@@ -195,7 +195,7 @@ void TMVAReadExtend(TString testDS, int mode=1)
    cout<<"Results RMS = "<<hh1.GetRMS()<<endl;
    cout<<endl;
    cout<<endl;
-   
+
 
    hh2.Draw();
    hh2.SetLineWidth(2);
@@ -210,12 +210,12 @@ void TMVAReadExtend(TString testDS, int mode=1)
    cout<<"Results RMS = "<<hh2.GetRMS()<<endl;
    cout<<endl;
    cout<<endl;
-    
+
    TFile res(Form("dataMu2e/results_%i.root",mode),"RECREATE");
    res.Add(&hh1);
    res.Add(&hh2);
    res.Add(&hh3);
    res.Write();
-   res.Close();   
-   
+   res.Close();
+
 }
