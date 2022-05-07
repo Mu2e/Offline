@@ -8,7 +8,7 @@
 #include <vector>
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
-#include "Offline/RecoDataProducts/inc/CosmicTrack.hh" 
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // beam
@@ -48,7 +48,7 @@
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummary.hh"
-#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh" 
+#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitPID.hh"

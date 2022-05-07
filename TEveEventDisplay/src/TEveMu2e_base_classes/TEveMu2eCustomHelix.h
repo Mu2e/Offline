@@ -18,8 +18,8 @@ namespace mu2e {
       TEveMu2eCustomHelix(const TEveMu2eCustomHelix &helix);
       virtual ~TEveMu2eCustomHelix(){};
       #endif
-      
-      KalSeed fKalSeed_; 
+
+      KalSeed fKalSeed_;
       HelixSeed fHelixSeed_;
       TrkExtTraj fTrkExtTraj_;
 
