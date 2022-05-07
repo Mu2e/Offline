@@ -40,7 +40,7 @@ class EventDisplayPolyLine3D : public TPolyLine3D, public ComponentInfoContainer
     TList  *l=IsA()->GetMenuList();
     l->Clear();
 
-    TObject *obj = dynamic_cast<TObject*>(_mainframe);    
+    TObject *obj = dynamic_cast<TObject*>(_mainframe);
     TClassMenuItem *m = new TClassMenuItem(TClassMenuItem::kPopupUserFunction,IsA(),"Information","showInfo",obj,"TObject*",1); //TClassMenuItem accepts only bare pointers. m needs to be bare pointer because it is managed by ROOT.
     l->AddFirst(m);
 
