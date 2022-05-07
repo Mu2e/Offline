@@ -23,4 +23,4 @@ if [ ! $# == 1 ]; then
   exit
 fi
 SCRIPTDIR=$( dirname $(readlink -f $BASH_SOURCE) )
-root -l $SCRIPTDIR/browse.cint\(\"$1\"\)
+root -l --web=off $SCRIPTDIR/browse.C\(\"$1\"\)
