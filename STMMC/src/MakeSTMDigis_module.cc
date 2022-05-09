@@ -56,6 +56,7 @@ namespace mu2e {
     // create output
     unique_ptr<STMDigiCollection> outputSTMDigis(new STMDigiCollection);
     auto stepsHandle = event.getValidHandle<STMStepCollection>(_stmStepsTag);
+
     // Create Gaussian jitter
     TF1* res_fnc = new TF1("res_fnc", "TMath::Gaus(x, [0], [1])", -0.002, 0.002);
     res_fnc->SetParameters(0,0.001);

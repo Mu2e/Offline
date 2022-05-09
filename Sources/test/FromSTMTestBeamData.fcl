@@ -2,10 +2,7 @@
 
 process_name: STMTestBeamData
 source : { module_type : FromSTMTestBeamData
-       	   runNumber : 101000
-	   nTriggersPerMacropulse : 11
-	   nSlicesPerExtTrigger : 788
-	   nSlicesPerIntTrigger : 314
+verbosityLevel : 0
 }
 services : @local::Services.Core
 physics : { 
