@@ -125,6 +125,7 @@ namespace mu2e
       Int_t _n_stations; // # stations
       Int_t _n_planes; // # stations
       Int_t _mcnsh;
+      Int_t _outsidehits;
       Float_t _minuitdoca, _minuitangle;
       Int_t _tcnhits, _ontrackhits;
       Int_t _converged, _minuitconverged;
@@ -204,6 +205,7 @@ namespace mu2e
       _trackT->Branch("evt",&_evt,"evt/I");  // add event id
       _trackT->Branch("run",&_run,"run/I");
       _trackT->Branch("ntrack",&_ntrack,"ntrack/I");
+      _trackT->Branch("outsidehits",&_outsidehits,"outsidehits/I");
       _trackT->Branch("StrawHitsInEvent", &_nsh, "StrawHitsInEvent/I");
       _trackT->Branch("PanelsCrossedInEvent", &_n_panels, "PanelsCrossedInEvent/I");
       _trackT->Branch("PlanesCrossedInEvent", &_n_planes, "PlanesCrossedInEvent/I");
@@ -242,6 +244,7 @@ namespace mu2e
       _hitT->Branch("evt",&_evt,"evt/I");  // add event id
       _hitT->Branch("run",&_run,"run/I");
       _hitT->Branch("ntrack",&_ntrack,"ntrack/I");
+      _hitT->Branch("outsidehits",&_outsidehits,"outsidehits/I");
       _hitT->Branch("doca",&_hitminuitdoca,"doca/F");
       _hitT->Branch("hitused",&_hitused,"hitused/I");
       _hitT->Branch("hitintclust",&_hitintclust,"hitintclust/I");
@@ -397,6 +400,8 @@ namespace mu2e
       _maxllike = 0;
       _llike = 0;
       _ontrackhits = 0;
+      _outsidehits = 0;
+
       for (size_t i=0; i<tseed._straw_chits.size(); ++i) {
         auto sh = tseed._straw_chits[i];
 
@@ -408,6 +413,12 @@ namespace mu2e
 
         if (pca.dca() < 3)
           _ontrackhits += 1;
+
+        double even_z = tracker.getStraw(StrawId(sh.strawId().plane(),sh.strawId().panel(),0)).getMidPoint().z();
+        double odd_z = tracker.getStraw(StrawId(sh.strawId().plane(),sh.strawId().panel(),1)).getMidPoint().z();
+        if ((pca.point2().z() > even_z && pca.point2().z() > odd_z) || (pca.point2().z() < even_z && pca.point2().z() < odd_z)){
+          _outsidehits++;
+        }
 
         llike += pow(longdist-sh.wireDist(),2)/pow(longres,2);
 

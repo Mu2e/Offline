@@ -39,6 +39,7 @@ namespace mu2e {
         fhicl::Atom<int> maxcrossinggap {Name("maxCrossingGap"), Comment("maximum missing straws when crossing layers")};
         fhicl::Atom<int> maxsamegap {Name("maxSameGap"), Comment("maximum missing straws on same layers"),1};
         fhicl::Atom<int> maxtotalsamegap {Name("maxTotalSameGap"), Comment("maximum total missing straws on same layers"),1};
+        fhicl::Atom<bool> cutsinglelayer {Name("cutSingleLayer"), Comment("remove events on only a single layer of a panel"),false};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
       };
@@ -53,6 +54,7 @@ namespace mu2e {
       int _maxCrossingGap;
       int _maxSameGap;
       int _maxTotalSameGap;
+      bool _cutsinglelayer;
       art::InputTag _tcToken;
       art::InputTag _chToken;
 
@@ -67,6 +69,7 @@ namespace mu2e {
     _maxCrossingGap (conf().maxcrossinggap()),
     _maxSameGap (conf().maxsamegap()),
     _maxTotalSameGap (conf().maxtotalsamegap()),
+    _cutsinglelayer (conf().cutsinglelayer()),
     _tcToken (conf().tcToken()),
     _chToken (conf().chToken())
   {
@@ -102,8 +105,16 @@ namespace mu2e {
 
       std::vector<std::vector<uint16_t> > straws(216,std::vector<uint16_t>());
       std::vector<uint16_t> panels;
+
+      bool singlelayer = true;
+      int singlelayer_panel = shcol[0].strawId().uniquePanel();
+      int singlelayer_layer = shcol[0].strawId().layer();
+
       for(size_t ich = 0;ich < shcol.size(); ++ich){
         ComboHit const& chit = shcol[ich];
+        if (chit.strawId().uniquePanel() != singlelayer_panel || chit.strawId().layer() != singlelayer_layer){
+          singlelayer = false;
+        }
         uint16_t panelid = chit.strawId().uniquePanel();
         if (std::find(panels.begin(),panels.end(),panelid) == panels.end())
           panels.push_back(panelid);
@@ -111,6 +122,8 @@ namespace mu2e {
       }
       // filter if too many panels in this cluster
       if (_hasmaxnpanel && (int) panels.size() > _maxnpanel)
+        continue;
+      if (singlelayer && _cutsinglelayer)
         continue;
 
       // check each panel to see if it has a bad hit pattern
