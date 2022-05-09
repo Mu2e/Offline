@@ -340,6 +340,10 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
     average_time += hit_t0;
     times[i] = hit_t0;
     tres[i] = drift_res;
+
+    if (constrainToStraw && pca.dca() > 2.5){
+      llike += pow((pca.dca()-2.5)/0.1,2);
+    }
   }
 
   if (fixedT0){
@@ -354,7 +358,7 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
       drift_res = driftRes;
     llike += pow((t0 - times[i]) / drift_res, 2);
   }
-  //  std::cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << "  =>  " <<
+  //  std::cout << t0 << " " << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << "  =>  " <<
   //  llike << std::endl;
 
   return (double)llike;

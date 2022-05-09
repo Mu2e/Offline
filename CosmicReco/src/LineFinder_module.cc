@@ -133,7 +133,7 @@ void LineFinder::produce(art::Event& event ) {
 
     if (seedSize >= _minPeak){
       if (_diag > 0)
-        std::cout << "LineFinder: found line (" << seedSize << ")" << std::endl;
+        std::cout << "LineFinder: found line (" << seedSize << ")" << " " << tseed._track.FitParams.T0 << " " << tseed._track.FitParams.A0 << " " << tseed._track.FitParams.B0 << " " << tseed._track.FitParams.A1 << " " << tseed._track.FitParams.B1 << std::endl;
       tseed._status.merge(TrkFitFlag::Straight);
       tseed._status.merge(TrkFitFlag::hitsOK);
       tseed._status.merge(TrkFitFlag::helixOK);
@@ -158,10 +158,15 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
   CLHEP::Hep3Vector seedDir(0,0,0);
   CLHEP::Hep3Vector seedInt(0,0,0);
 
+  bool found_all = false;
   // lets get the best pairwise vector
   for (size_t i=0;i<shC.size();i++){
+    if (found_all)
+      break;
     Straw const& strawi = tracker->getStraw(shC[i].strawId());
     for (size_t j=i+1;j<shC.size();j++){
+      if (found_all)
+        break;
       Straw const& strawj = tracker->getStraw(shC[j].strawId());
       for (int is=-1*_Nsteps;is<_Nsteps+1;is++){
         CLHEP::Hep3Vector ipos = shC[i].posCLHEP() + strawi.getDirection()*shC[i].wireRes()*_stepSize*is;
@@ -189,6 +194,8 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
                   ll += pow(dist-shC[k].wireDist(),2)/shC[k].wireErr2();
                 }
               }
+              if (count == (int) shC.size())
+                found_all = true;
               if (count > bestcount || (count == bestcount && ll < bestll)){
                 bestcount = count;
                 bestll = ll;
@@ -225,7 +232,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
 
   // get pos and direction into Z alignment
   if (seedDir.y() != 0){
-    seedDir /= seedDir.y();
+    seedDir /= -1*seedDir.y();
     seedInt -= seedDir*seedInt.y()/seedDir.y();
   }
 

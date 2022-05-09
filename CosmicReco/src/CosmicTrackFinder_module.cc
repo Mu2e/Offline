@@ -149,6 +149,7 @@ namespace mu2e {
     _lfToken (conf().lfToken()),
     _DoDrift (conf().DoDrift()),
     _UseTime (conf().UseTime()),
+    _driftRes(conf().driftRes()),
     _mnTolerance (conf().mnTolerance()),
     _mnPrecision (conf().mnPrecision()),
     _tfit (conf().tfit())
