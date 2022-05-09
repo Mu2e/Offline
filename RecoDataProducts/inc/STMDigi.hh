@@ -21,9 +21,7 @@ namespace mu2e {
     STMDigi(uint32_t trigNum, STMTrigType trigType, uint64_t trigTime, uint32_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, std::vector<int16_t> adcs) : _trigNum(trigNum), _trigType(trigType), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop), _adcs(adcs) {};
 
     // Simpler constructor for the simulation
-    STMDigi(int channel, int tdc, int adc) : _trigType(STMTrigType(0, channel, 0)), _trigTime(tdc), _adcs(std::vector<int16_t>()) {
-      _adcs.push_back(adc);
-    }
+    STMDigi(int channel, int tdc, std::vector<int16_t> adcs) : _trigType(STMTrigType(0, channel, 0)), _trigTime(tdc), _adcs(adcs) { }
 
     uint32_t trigNum() const { return _trigNum; }
     STMTrigType trigType() const { return _trigType; }

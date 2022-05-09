@@ -66,7 +66,7 @@ namespace mu2e {
       int adc = step.edep()*10000.0 + 10000.0*res_fnc->GetRandom();
       std::vector<int16_t> adcs;
       adcs.push_back(adc);
-      STMDigi stm_digi(0,tdc,0,0,0,0, adcs);
+      STMDigi stm_digi(0,tdc,adcs);
       outputSTMDigis->push_back(stm_digi);
     }
 
