@@ -1,16 +1,16 @@
 //
 // Root script to display some of the plots in made by ReadBack0_plugin.cc
-// 
-// 
+//
+//
 // Original author Rob Kutschke
 //
 // This also serves as a introduction to root scripts for those who
 // have not seen root.  It shows how to:
-// 
+//
 // 1) Configure root to display underflows and overflows in the statistics box.
 //
 // 2) Change the default color of histograms.
-//    
+//
 // 3) Retrieve histograms and ntuples from the file that was created
 //    by readback0.py
 //
@@ -85,7 +85,7 @@
   canvas->cd(3); hCrystalEDep->DrawCopy("H9");
 
   // Redraw the previous histogram but zoom the x axis.
-  canvas->cd(4); 
+  canvas->cd(4);
   TH1* htmp = hCrystalEDep->DrawCopy("H9");
   htmp->GetXaxis()->SetRange(0,120);
 

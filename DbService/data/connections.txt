@@ -3,7 +3,7 @@
 # It is here so all starting connections can be steered in approximately real time.
 #
 # Each database staza should be of the form
-#  
+#
 #  db_name
 #    sql_host
 #    sql_port
