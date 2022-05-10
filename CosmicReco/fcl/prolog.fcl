@@ -44,6 +44,7 @@ LineFinder : {
     ComboHitCollection : "makePH"
     TimeClusterCollection : "SimpleTimeCluster"
     NSteps : 2
+    NTSteps : 1
     StepSize : 0.5
     t0offset : 0
     maxDOCA : 3
@@ -88,6 +89,7 @@ CosmicTrackFinder : { #split into Loose and tight below for efficieny studies
     UseChiFit              : true
     DoDrift                : true
     UseTime                : false
+    DriftRes               : 10
     MinuitTolerance        : 0.1
     MinuitPrecision        : -1
     CosmicTrackFit : @local::CosmicTrackFit
@@ -166,9 +168,21 @@ CosmicFitDisplay : {
 CosmicTrackDiag : {
     module_type : CosmicTrackDiag
     StrawHitCollection : "makeSH"
+    ComboHitCollection : "makeSH"
+    PanelHitCollection : "makePH"
     TimeClusterCollection : SimpleTimeCluster
     StrawDigiMCCollection : "compressDigiMCs"
+    ProtonBunchTimeMC : "EWMProducer"
     CosmicTrackSeedCollection : "CosmicTrackFinder"
+}
+
+CosmicShowerFilter : {
+    module_type : CosmicShowerFilter
+    maxCrossingGap : 2
+    maxSameGap : 1
+    maxTotalSameGap : 1
+    TimeClusterCollection : "SimpleTimeCluster"
+    ComboHitCollection : "makePH"
 }
 
 CosmicMuonInfo : {
@@ -191,6 +205,7 @@ CosmicMuonInfo : {
 CosmicTracking : {
     producers :{
         SimpleTimeCluster  : @local::SimpleTimeCluster
+        CosmicShowerFilter : @local::CosmicShowerFilter
         TimeClusterFinderCosmics : @local::TimeClusterFinderCosmics
         CosmicTrackFinder  : @local::CosmicTrackFinder
         CosmicTrackFinderLoose  : @local::CosmicTrackFinderLoose
