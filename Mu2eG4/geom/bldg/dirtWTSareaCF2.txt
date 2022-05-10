@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_TSareaW-CF2.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.W.TSareaCF2.xPositions = {
   -2921   // p2_to_S
 };
 
-vector<int>    dirt.W.TSareaCF2.yreplace   = { 2, 3 }; 
+vector<int>    dirt.W.TSareaCF2.yreplace   = { 2, 3 };
 vector<double> dirt.W.TSareaCF2.yPositions = {
   -10617.2,   // p2
   -10617.2,   // p3

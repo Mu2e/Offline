@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_foundation_ExtMonPSarea.ccl
 
@@ -12,7 +12,7 @@ double dirt.foundation.extMonPSarea.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.foundation.extMonPSarea.yHalfThickness           = 1739.9;
 
-vector<int>    dirt.foundation.extMonPSarea.xreplace   = { 4, 5 }; 
+vector<int>    dirt.foundation.extMonPSarea.xreplace   = { 4, 5 };
 vector<double> dirt.foundation.extMonPSarea.xPositions = {
   -18204.4,   // q1
   -19241.2,   // q2
@@ -23,7 +23,7 @@ vector<double> dirt.foundation.extMonPSarea.xPositions = {
   -18204.4   // q1_to_S
 };
 
-vector<int>    dirt.foundation.extMonPSarea.yreplace   = { 5, 6 }; 
+vector<int>    dirt.foundation.extMonPSarea.yreplace   = { 5, 6 };
 vector<double> dirt.foundation.extMonPSarea.yPositions = {
   -3627.89,   // q1
   -3879.1,   // q2

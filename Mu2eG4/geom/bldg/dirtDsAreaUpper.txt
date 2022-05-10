@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_DSwall_upper.ccl
 
@@ -29,7 +29,7 @@ vector<double> dirt.dsArea.upper.xPositions = {
   29083   // h9_to_S
 };
 
-vector<int>    dirt.dsArea.upper.yreplace   = { 12, 13 }; 
+vector<int>    dirt.dsArea.upper.yreplace   = { 12, 13 };
 vector<double> dirt.dsArea.upper.yPositions = {
   -9271,   // h9
   -9271,   // i0
