@@ -36,8 +36,8 @@ void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpane
     << nnoisystraws << " noisy straws" << endl;
   os << "#" << endl;
 
+  os  << "TABLE TrkPlaneStatus" << endl;
   if(ndeadplanes > 0){
-    os  << "TABLE TrkPlaneStatus" << endl;
     unsigned ndplane(0);
     while(ndplane < ndeadplanes){
       int plane = myrand.Integer(NPlanes);
@@ -50,8 +50,8 @@ void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpane
   }
   os << "#" << endl << "#" << endl << "#" << endl;
 
+  os  << "TABLE TrkPanelStatus"  << endl;
   if(ndeadpanels > 0){
-    os  << "TABLE TrkPanelStatus"  << endl;
     unsigned ndpanel(0);
     while(ndpanel < ndeadpanels){
       int plane = myrand.Integer(NPlanes);
@@ -70,8 +70,8 @@ void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpane
   }
   os << "#" << endl << "#" << endl << "#" << endl;
 
+  os  << "TABLE TrkStrawStatusLong" << endl;
   if(ndeadstraws > 0) {
-    os  << "TABLE TrkStrawStatusLong" << endl;
     unsigned ndstraw(0);
     while (ndstraw < ndeadstraws){
       int plane = myrand.Integer(NPlanes);
@@ -94,8 +94,8 @@ void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpane
   }
   os << "#" << endl << "#" << endl << "#" << endl;
 
+  os  << "TABLE TrkStrawStatusShort" << endl;
   if(nnoisystraws > 0) {
-    os  << "TABLE TrkStrawStatusShort" << endl;
     unsigned ndstraw(0);
     while (ndstraw < nnoisystraws){
       int plane = myrand.Integer(NPlanes);

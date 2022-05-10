@@ -13,9 +13,9 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
     fhicl::Atom<double> wireVoltage {
       Name("wireVoltage"), Comment("wire voltage in V")};
     fhicl::Atom<int> phiBins{
@@ -25,8 +25,8 @@ namespace mu2e {
     fhicl::Atom<double> deltaTime{
       Name("deltaTime"), Comment("Size of bins in time for drift T2D model")};
     fhicl::Atom<int> driftIntegrationBins{
-      Name("driftIntegrationBins"), 
-	Comment("number of integrations steps for drift model")};
+      Name("driftIntegrationBins"),
+        Comment("number of integrations steps for drift model")};
     fhicl::Sequence<double> kVcm{
       Name("kVcm"), Comment("drift model field in KV/cm") };
     fhicl::Sequence<double> cmus{

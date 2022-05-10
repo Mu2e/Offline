@@ -6,22 +6,22 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : ExtMonUCIReadBack01
 
 # Start form an empty source
-source : 
-{ 
+source :
+{
   module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : -1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "emi_readback.root"
   }
@@ -29,12 +29,12 @@ services :
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }  
+  }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
@@ -59,7 +59,7 @@ physics :
       diagLevel              : -1
     }
 
-  } 
+  }
 
   e1 : [checkhits]
 

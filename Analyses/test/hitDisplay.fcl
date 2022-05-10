@@ -113,8 +113,8 @@ physics : {
   p1 : [makeCaloCluster, trkPatRec1, trkPatRec2]
 
   p2 : [makeCaloCluster, FSHPreStereo,
-	MakeStereoHits, FlagStrawHits, FlagBkgHits,
-	trkPatRec1, trkPatRec2]
+        MakeStereoHits, FlagStrawHits, FlagBkgHits,
+        trkPatRec1, trkPatRec2]
 
   e1 : [hitDisplay]
 

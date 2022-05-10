@@ -37,7 +37,7 @@ namespace mu2e {
       _nbins += 1;
       de = _par.eMax-_bin*(_nbins-1);
     }
-					// calculate integral.... for n-1 bins;
+                                        // calculate integral.... for n-1 bins;
      _integral = evalIntegral(de);
 
   }
@@ -103,13 +103,13 @@ namespace mu2e {
     double emax = _par.eMax-de;
 
     gsl_integration_qags(&F,
-			 emin, emax,
-			 epsabs,
-			 epsrel,
-			 limit,
-			 ws,
-			 &result,
-			 &abserr);
+                         emin, emax,
+                         epsabs,
+                         epsrel,
+                         limit,
+                         ws,
+                         &result,
+                         &abserr);
 
     gsl_integration_workspace_free(ws);
     //    std::cout<<"il valore dell'integrale fino al penultimo bin e' "<< result<<std::endl;

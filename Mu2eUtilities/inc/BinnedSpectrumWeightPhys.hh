@@ -38,7 +38,7 @@ namespace mu2e {
 
   class BinnedSpectrumWeightPhys {
     enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERGY, MOMENTUM };
-    
+
   private :
     fhicl::ParameterSet psphys_;
     art::InputTag input_;
@@ -75,20 +75,20 @@ namespace mu2e {
       if (spectrumVariable_ == TOTAL_ENERGY){
         for ( const auto& i: *genColl ) {
           if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
-            sampleVal += i.momentum().e(); 
+            sampleVal += i.momentum().e();
           }
         }
       }else if (spectrumVariable_ == KINETIC_ENERGY){
         for ( const auto& i: *genColl ) {
           if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
-            sampleVal += i.momentum().e() - i.momentum().restMass(); 
+            sampleVal += i.momentum().e() - i.momentum().restMass();
           }
         }
       }else{
         CLHEP::Hep3Vector mom(0,0,0);
         for ( const auto& i: *genColl ) {
           if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
-            mom += i.momentum().vect(); 
+            mom += i.momentum().vect();
           }
         }
         sampleVal = mom.mag();

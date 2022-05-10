@@ -407,17 +407,17 @@ namespace mu2e {
           const StepPointMCCollection& steps(*handle);
 
           for (const auto& step : steps )
-	  {
-	      stepPtMap[step.volumeId()] += step.totalEDep();
-	      ++stepPtMap2[step.volumeId()];
+          {
+              stepPtMap[step.volumeId()] += step.totalEDep();
+              ++stepPtMap2[step.volumeId()];
 
 
               CLHEP::Hep3Vector hitPos  = cal.geomUtil().mu2eToCrystal(step.volumeId(),step.position());
-	      _hCaCrystalXY->Fill(hitPos.x(),hitPos.y());
+              _hCaCrystalXY->Fill(hitPos.x(),hitPos.y());
 
               if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-        	cout << "Readback: Calo StepPointMC (" << step.volumeId() << "," << step.totalEDep() << ")";
-	  }
+                cout << "Readback: Calo StepPointMC (" << step.volumeId() << "," << step.totalEDep() << ")";
+          }
      }
 
      for (const auto& iter : stepPtMap) _hCaStepEdep->Fill(iter.first,iter.second);
@@ -437,8 +437,8 @@ namespace mu2e {
          _hCaTime->Fill(showerSim.time());
 
          if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalID()<<" eDep = "<<showerSim.energyDep()
-	            <<" time = "<<showerSim.time()<<std::endl;
+           std::cout<<"Readback: caloshower in crystal "<< showerSim.crystalID()<<" eDep = "<<showerSim.energyDep()
+                    <<" time = "<<showerSim.time()<<std::endl;
      }
 
      for (const auto& iter : showerMap)  _hCaShowerEdep->Fill(iter.first,iter.second);
@@ -458,8 +458,8 @@ namespace mu2e {
          totalEdep += hit.energyDep();
          hit_crystals.insert(hit.crystalID());
 
-	 if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
-	   cout<<"Readback: caloHit id = "<<hit.crystalID()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
+         if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )
+           cout<<"Readback: caloHit id = "<<hit.crystalID()<<" "<<"energy = "<<hit.energyDep()<<" time= "<<hit.time()<<endl;
      }
 
      _hCaEdep->Fill(totalEdep);
@@ -762,7 +762,7 @@ namespace mu2e {
 
     for ( auto const& step : *hits ){
       if ( step.strawId().nearestNeighbor(straw.id()) ){
-	++count;
+        ++count;
       }
     }
     return count;

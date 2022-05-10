@@ -1,4 +1,4 @@
-// 
+//
 // Detail class used to implement the MVAStruct used to qualify low-energy electron spirals in the tracker
 // D. Brown, LBNL 3/28/2017
 //

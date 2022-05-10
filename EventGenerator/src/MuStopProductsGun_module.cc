@@ -70,7 +70,7 @@ namespace mu2e {
 
     double _decayFraction;
     double _captureFraction;
-    
+
 
     std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonDecayGenerators;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> _muonCaptureGenerators;

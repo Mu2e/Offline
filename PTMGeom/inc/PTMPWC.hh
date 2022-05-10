@@ -11,7 +11,7 @@
 
 #include "Offline/GeomPrimitives/inc/Box.hh"
 
-// Proportional Wire Chamber object, part of the 
+// Proportional Wire Chamber object, part of the
 // production target monitor (PTM)
 //
 // Author: Helenka Casler
@@ -26,11 +26,11 @@ namespace mu2e {
     // copyNo argument when placing the wire gas in the geometry.
   public:
     PTMPWC(std::string const& nameSuffix,
-             double frameHeight, 
-             double frameWidth, 
-             double frameThick, 
+             double frameHeight,
+             double frameWidth,
+             double frameThick,
              double outerPlateThick,
-             std::string const& frameMaterialName, 
+             std::string const& frameMaterialName,
              double windowHeight,
              double windowWidth,
              double windowThick,

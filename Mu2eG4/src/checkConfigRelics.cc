@@ -1,6 +1,6 @@
 //
 //  checkConfigRelics.cc
-//  
+//
 //  Checks the configuration of a geomtry file.  Throws an exception
 //  if an "old style" geomtry file that is no longer supported is used.
 //
@@ -21,15 +21,15 @@
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
-    
+
     void checkConfigRelics(const SimpleConfig& config) {
-        
+
         static const std::vector<std::string> keys = {
-            
+
             // G4_module
             "g4.printPhysicsProcessSummary",
             "g4.pointTrajectoryMinSteps",
-            
+
             // old post G4InitializeTasks() call tree
             "g4.PiENuPolicy",
             "g4.PiENuPolicyVerbosity",
@@ -37,12 +37,12 @@ namespace mu2e {
             "g4.noDecay",
             "g4.doMuMinusConversionAtRest",
             "g4.useNewMuMinusAtomicCapture",
-            
+
             // physicsListDecider() call tree
             "g4.physicsListName",
             "g4.useNewMuMinusAtomicCapture",
             "g4.decayMuonsWithSpin",
-            
+
             // Mu2eWorld
             "world.verbosityLevel",
             "tracker.ActiveWr_Wl_SD",
@@ -50,12 +50,12 @@ namespace mu2e {
             "GDMLFileName",
             "g4.stepper",
             "bfield.maxStep",
-            
+
             // ConstructMaterials
             "mu2e.standardDetector",
             "g4.printElements",
             "g4.printMaterials",
-            
+
             // old StackingAction
             "g4.doCosmicKiller",
             "g4.cosmicKillLevel",
@@ -71,7 +71,7 @@ namespace mu2e {
             "g4.eKineMin",
             "g4.killLowEKinePDG",
             "g4.eKineMinPDG",
-            
+
             // old TrackingAction
             "g4.particlesSizeLimit",
             "g4.mcTrajectoryMomentumCut",
@@ -79,7 +79,7 @@ namespace mu2e {
             "g4.mcTrajectoryMinSteps",
             "g4.printTrackTiming",
             "g4.trackingActionEventList",
-            
+
             // old SteppingAction
             "g4.steppingActionStepsSizeLimit",
             "g4.killLowEKine",
@@ -97,9 +97,9 @@ namespace mu2e {
             "g4.mcTrajectoryVolumes",
             "g4.mcTrajectoryVolumePtDistances",
             "g4.mcTrajectoryDefaultMinPointDistance"
-            
+
         };
-        
+
         std::string present;
         for(const auto k: keys) {
             if(config.hasName(k)) {
@@ -111,6 +111,6 @@ namespace mu2e {
             << "Detected obsolete SimpleConfig parameters: " << present;
         }
     }
-    
+
 } // end namespace mu2e
 

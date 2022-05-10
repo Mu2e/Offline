@@ -8,7 +8,7 @@
 // Class for converting an (x,y) pair from standard units (formatted
 // as a string), to metric units (mm).  The construction of the object looks like:
 //
-//     CoordinateString("xft:xin,yft:yin"), 
+//     CoordinateString("xft:xin,yft:yin"),
 //
 // where xft, yft are integers expressed within the string, and xin,
 // yin are doubles expressed within the string.  Acceptable examples
@@ -19,7 +19,7 @@
 //
 // Note the following example:
 //
-//     CoordinateString("2:,-:5")   // parsed as x =  2' 0" | y = -0' +5" 
+//     CoordinateString("2:,-:5")   // parsed as x =  2' 0" | y = -0' +5"
 //
 // you probably don't want this, instead you'll have to do something like:
 //
@@ -48,26 +48,26 @@
 #include "cetlib_except/exception.h"
 
 namespace mu2e {
-  
+
   class CoordinateString {
-    
+
   public:
-    
+
     typedef std::pair <int,double> FtInchPair;
-    
+
     // Constructors
-    explicit CoordinateString( const std::string& coordStr ); 
-    
+    explicit CoordinateString( const std::string& coordStr );
+
     // Accessors
     const std::array<FtInchPair,2>& getPairStd( ) const { return coordStd_; }
     const std::array<double,2> & getPair() const { return coord_; }
-    
+
     // Metric (mm)
     double get(std::size_t i) const { return coord_.at(i); }
-    
+
     double x() const { return get(0); }
     double y() const { return get(1); }
-    
+
     void print() const;
 
     static std::array<FtInchPair,2> readCoordinatesStd( const std::string& coordStr );
@@ -77,13 +77,13 @@ namespace mu2e {
     static double     convert2mm    ( const FtInchPair& ftInchPair );
 
   private:
-    
+
     std::string coordStr_;
     std::array<FtInchPair,2> coordStd_;
     std::array<double,2> coord_;
-    
+
   };
- 
+
 } // end of namespace mu2e
 
 #endif /* Mu2eUtilities_CoordinateString_hh */

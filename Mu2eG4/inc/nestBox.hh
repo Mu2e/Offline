@@ -137,57 +137,57 @@ namespace mu2e {
                        bool const doSurfaceCheck
                        );
 
-  // Alternate argument list 
+  // Alternate argument list
   // using VolumeInfo object
   VolumeInfo nestBox ( std::string const& name,
-		       std::vector<double> const&  halfDim,
-		       G4Material* material,
-		       G4RotationMatrix const* rot,
-		       G4ThreeVector const& offset,
-		       G4LogicalVolume* parent,
-		       int copyNo,
-		       G4Colour const color,
-		       std::string const& lookupToken = ""
-		       );
+                       std::vector<double> const&  halfDim,
+                       G4Material* material,
+                       G4RotationMatrix const* rot,
+                       G4ThreeVector const& offset,
+                       G4LogicalVolume* parent,
+                       int copyNo,
+                       G4Colour const color,
+                       std::string const& lookupToken = ""
+                       );
 
-  // Alternate argument list 
+  // Alternate argument list
   // using VolumeInfo object
   VolumeInfo nestBox ( std::string const& name,
-		       double const halfDim[3],
-		       G4Material* material,
-		       G4RotationMatrix const* rot,
-		       G4ThreeVector const& offset,
-		       VolumeInfo const & parent,
-		       int copyNo,
-		       G4Colour const color,
-		       std::string const& lookupToken = ""
-		       );
+                       double const halfDim[3],
+                       G4Material* material,
+                       G4RotationMatrix const* rot,
+                       G4ThreeVector const& offset,
+                       VolumeInfo const & parent,
+                       int copyNo,
+                       G4Colour const color,
+                       std::string const& lookupToken = ""
+                       );
 
-  // Alternate argument list 
+  // Alternate argument list
   // using VolumeInfo object
   inline VolumeInfo nestBox ( std::string const& name,
-			      std::vector<double> const&  halfDim,
-			      G4Material* material,
-			      G4RotationMatrix const* rot,
-			      G4ThreeVector const& offset,
-			      VolumeInfo const & parent,
-			      int copyNo,
-			      G4Colour const color,
-			      std::string const& lookupToken = ""
-			      ) {
+                              std::vector<double> const&  halfDim,
+                              G4Material* material,
+                              G4RotationMatrix const* rot,
+                              G4ThreeVector const& offset,
+                              VolumeInfo const & parent,
+                              int copyNo,
+                              G4Colour const color,
+                              std::string const& lookupToken = ""
+                              ) {
     return nestBox( name,
-		    halfDim,
-		    material,
-		    rot,
-		    offset,
-		    parent.logical,
-		    copyNo,
-		    color,
-		    lookupToken
-		    );
+                    halfDim,
+                    material,
+                    rot,
+                    offset,
+                    parent.logical,
+                    copyNo,
+                    color,
+                    lookupToken
+                    );
 
   }
-  
+
 
 }
 

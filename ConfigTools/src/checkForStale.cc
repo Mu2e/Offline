@@ -21,7 +21,7 @@ namespace mu2e {
   void checkForStale ( const vector<string>& staleNames,
                        const SimpleConfig&             config,
                        bool  throwOnMatch ){
-    
+
     // Count how many of the matches there are
 
     int count(0);
@@ -37,7 +37,7 @@ namespace mu2e {
                 }
               } );
 
-    if ( count > 0 && throwOnMatch ) 
+    if ( count > 0 && throwOnMatch )
       throw cet::exception("GEOM") <<
         " Deprecated variables used in geom_01.txt " ;
 
@@ -46,7 +46,7 @@ namespace mu2e {
   void checkForStale ( string staleString,
                        const SimpleConfig& config,
                        bool  throwOnMatch ){
-    
+
     // Count how many of the matches there are
 
     int count(0);
@@ -62,7 +62,7 @@ namespace mu2e {
                 }
               } );
 
-    if ( count > 0 && throwOnMatch ) 
+    if ( count > 0 && throwOnMatch )
       throw cet::exception("GEOM") <<
         " Deprecated variables used in geom_01.txt " ;
 

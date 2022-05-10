@@ -19,7 +19,7 @@ namespace mu2e {
   class CzarneckiSpectrum {
 
   public:
-    
+
     CzarneckiSpectrum();
 
     double getWeight(double E) const;
@@ -30,7 +30,7 @@ namespace mu2e {
     double _halfBinWidth;
 
     double interpolate(const double E,
-                       const TableRow<2>& row_after, 
+                       const TableRow<2>& row_after,
                        const TableRow<2>& row,
                        const TableRow<2>& row_before) const;
 

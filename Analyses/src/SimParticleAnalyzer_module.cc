@@ -89,7 +89,7 @@ namespace mu2e {
   void SimParticleAnalyzer::analyze(const art::Event& event) {
 
     ++_nAnalyzed;
-    
+
     // ntuple buffer.
     float nt[_ntpssp->GetNvar()];
 

@@ -23,8 +23,8 @@ namespace mu2e {
     return HepTransform(v,r);
   }
 
-  CLHEP::Hep3Vector operator*(HepTransform const& a, 
-			      CLHEP::Hep3Vector const& v) {
+  CLHEP::Hep3Vector operator*(HepTransform const& a,
+                              CLHEP::Hep3Vector const& v) {
     return a.displacement() + a.rotation()*v;
   }
 

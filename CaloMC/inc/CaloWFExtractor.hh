@@ -9,19 +9,19 @@ namespace mu2e {
 
      class CaloWFExtractor
      {
-           public:                              
-               CaloWFExtractor(unsigned bufferDigi, unsigned  nBinsPeak, int minPeakADC, unsigned startOffset) : 
+           public:
+               CaloWFExtractor(unsigned bufferDigi, unsigned  nBinsPeak, int minPeakADC, unsigned startOffset) :
                   bufferDigi_(bufferDigi),nBinsPeak_(nBinsPeak),minPeakADC_(minPeakADC), startOffset_(startOffset)
                {};
 
                void extract(const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const;
 
-           private:               
+           private:
                unsigned  bufferDigi_;
                unsigned  nBinsPeak_;
-               int  	 minPeakADC_;
+               int           minPeakADC_;
                unsigned  startOffset_;
      };
-} 
+}
 
 #endif

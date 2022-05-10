@@ -175,21 +175,21 @@ namespace mu2e {
       std::string file = configFile(_inputfile);
       std::ifstream in(file.c_str());
       if ( !in ) {
-	// No conf file for this test.
-	throw cet::exception("Geom")
-	  << "GeometryService: Cannot open input file: "
-	  << file
-	  << endl;
+        // No conf file for this test.
+        throw cet::exception("Geom")
+          << "GeometryService: Cannot open input file: "
+          << file
+          << endl;
       }
       std::cout << "GeometryService: printing top level geometry file:\n";
       std::string line;
       while ( in ){
-	std::getline(in,line);
-	if ( !in ){
-	  break;
-	}
+        std::getline(in,line);
+        if ( !in ){
+          break;
+        }
 
-	std::cout << line.c_str() << std::endl;
+        std::cout << line.c_str() << std::endl;
       }
       std::cout << "GeometryService: finished printing top level geometry file.\n";
     }
@@ -199,7 +199,7 @@ namespace mu2e {
     // 2019-03-24 P.M. : *not needed* decide if this is standard Mu2e detector or something else ...
 
     if (!isStandardMu2eDetector() ||
-	!_config->getBool("mu2e.standardDetector",true)) {
+        !_config->getBool("mu2e.standardDetector",true)) {
       cout  << "Non-standard mu2e configuration, assuming it is intentional" << endl;
       return;
     }
@@ -244,15 +244,15 @@ namespace mu2e {
 
     //addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
 
-   if (_config->getString("targetPS_model") == "MDC2018"){ 
+   if (_config->getString("targetPS_model") == "MDC2018"){
      //      std::cout << "adding Tier1 in GeometryService" << std::endl;
       addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-	} else 
-      if (_config->getString("targetPS_model") == "Hayman_v_2_0"){ 
-	//	std::cout << " adding Hayman in GeometryService" << std::endl;
-	addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.haymanProdTargetPosition()));
-	  } else 
-	{throw cet::exception("GEOM") << " " << __func__ << " illegal production target version specified in GeometryService_service = " << _config->getString("targetPS_model")  << std::endl;}
+        } else
+      if (_config->getString("targetPS_model") == "Hayman_v_2_0"){
+        //        std::cout << " adding Hayman in GeometryService" << std::endl;
+        addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.haymanProdTargetPosition()));
+          } else
+        {throw cet::exception("GEOM") << " " << __func__ << " illegal production target version specified in GeometryService_service = " << _config->getString("targetPS_model")  << std::endl;}
 
 
 
@@ -333,7 +333,7 @@ namespace mu2e {
       addDetector(ExtMonFNALMuonIDMaker::make(*_config));
     }
 
-    
+
     if (_config->getBool("hasPTM",false) ){
       std::unique_ptr<PTM> ptmon(PTMMaker::make(*_config));
       addDetector(std::move(ptmon));
@@ -343,7 +343,7 @@ namespace mu2e {
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
     }
-    
+
 
     if(_bfConfig->getBool("hasBFieldManager",false)){
       std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_bfConfig, beamline).getBFieldConfig() );
@@ -351,7 +351,7 @@ namespace mu2e {
       addDetector(std::move(bfc));
       addDetector(bfmgr.getBFieldManager());
     }
- 
+
 
     if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
       MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);

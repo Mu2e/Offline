@@ -12,19 +12,19 @@ process_name : CosmicFilter
 # Start each new event with an empty event.
 source : {
   module_type : RootInput
-  fileNames   : [ "/mu2e/data/users/rhbob/rpcTestData.root" ]       
+  fileNames   : [ "/mu2e/data/users/rhbob/rpcTestData.root" ]
   maxEvents   : 1000000
 }
 
 services : {
   message : @local::default_message
-##   
+##
 ##     # Adjust configuration of message logger:
 ##     # Load the standard message logger configuration:
-##     # Threshold=Info (from using mf_interactive). 
+##     # Threshold=Info (from using mf_interactive).
 ##     # Limit of 5 per category; then exponential backoff.
 ##   #  message.destinations.log.default.limit : 5
-##      
+##
   TFileService : {
     fileName      : "CosmicFilter.root"
   }
@@ -32,11 +32,11 @@ services : {
   GeometryService : {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
   }
-  
+
   ConditionsService : {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
-  
+
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
   BTrkHelper : @local::BTrkHelperDefault
   Mu2eG4Helper   : { }
@@ -49,7 +49,7 @@ physics : {
     trkPatRec : @local::TrkPatRecDeM
   }
 
-  filters: { 
+  filters: {
     cosmicFilter: {
       module_type          : CosmicFilter
       maxD0                : 200.
@@ -78,6 +78,6 @@ outputs: {
 #                   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
 #                   , 'drop mu2eSimParticles_*_*_*'
 # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }

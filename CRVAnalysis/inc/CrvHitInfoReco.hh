@@ -34,7 +34,7 @@ namespace mu2e
                 {}
   };
 
-  typedef std::vector<CrvHitInfoReco> CrvHitInfoRecoCollection;  //this is the reco vector which will be stored in the main TTree 
+  typedef std::vector<CrvHitInfoReco> CrvHitInfoRecoCollection;  //this is the reco vector which will be stored in the main TTree
 
 }
 #endif

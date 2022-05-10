@@ -14,9 +14,9 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
     fhicl::Atom<double> eBins {
       Name("eBins"), Comment("Number of energy bins")};
     fhicl::Atom<double> eBinWidth {

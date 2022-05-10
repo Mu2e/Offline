@@ -12,7 +12,7 @@ namespace mu2e {
       explicit ProtonBunchIntensity(unsigned long long intensity=0) : _intensity(intensity) {}
       unsigned intensity() const { return _intensity; }
       bool operator == (ProtonBunchIntensity const& other ) const {
-	return _intensity == other.intensity(); }
+        return _intensity == other.intensity(); }
       bool operator != (ProtonBunchIntensity const& other ) const { return !(operator ==(other)); }
       void add(ProtonBunchIntensity const& other) { _intensity += other.intensity(); }
     private:

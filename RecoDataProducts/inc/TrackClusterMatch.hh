@@ -17,13 +17,13 @@ namespace mu2e {
   public:
 
     struct Data_t {
-      int      icl;			// cluster index
-      int      iex;			// extrapolated track index
-      double   xtrk;			// track coordinates
+      int      icl;                        // cluster index
+      int      iex;                        // extrapolated track index
+      double   xtrk;                        // track coordinates
       double   ytrk;
       double   ztrk;
-      double   ttrk;			// track time
-      double   nx;			// track direction in the "interaction point"
+      double   ttrk;                        // track time
+      double   nx;                        // track direction in the "interaction point"
       double   ny;
       double   nz;
       double   dx;
@@ -36,21 +36,21 @@ namespace mu2e {
       double   chi2;
       double   chi2_time;
       double   int_depth;
-      double   ds;			// path length inside the disk
+      double   ds;                        // path length inside the disk
       double   dr;                      // R(cluster)-R(track)
       double   sint;                    // "interaction length"
     };
 
   protected:
-    int                   _icl;		// cluster index
-    int                   _iex;		// extrapolated track index
-    TrkCaloIntersectPtr   _textrapol; 
-    CaloClusterPtr        _cluster; 
-    double                _xtrk;	// track coordinates
+    int                   _icl;                // cluster index
+    int                   _iex;                // extrapolated track index
+    TrkCaloIntersectPtr   _textrapol;
+    CaloClusterPtr        _cluster;
+    double                _xtrk;        // track coordinates
     double                _ytrk;
     double                _ztrk;
     double                _ttrk;
-    double                _nx;		// track direction
+    double                _nx;                // track direction
     double                _ny;
     double                _nz;
     double                _dx;

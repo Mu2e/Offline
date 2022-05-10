@@ -32,7 +32,7 @@ namespace mu2e {
     MCRelationship _rel; // relationship of this particle to its primary
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
-    XYZVectorF _mom; // initial momentum 
+    XYZVectorF _mom; // initial momentum
     cet::map_vector_key _spkey; // key to the SimParticle
     // construct a Ptr from Handle and key
     SPPtr simParticle(SPCH spcH) const { return SPPtr(spcH,_spkey.asUint()); }
@@ -44,7 +44,7 @@ namespace mu2e {
     // dig down to the GenParticle
       auto simPtr = spp;
       while (simPtr->genParticle().isNull() && simPtr->parent().isNonnull()) {
-	simPtr = simPtr->parent();
+        simPtr = simPtr->parent();
       }
       if(simPtr->genParticle().isNonnull())_gid = simPtr->genParticle()->generatorId();
     }
@@ -82,7 +82,7 @@ namespace mu2e {
     XYZVectorF _mom; // momentum of particle at point where digi created
   };
 
-  struct KalSeedMC { 
+  struct KalSeedMC {
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
     std::vector<TrkStrawHitMC> const & trkStrawHitMCs() const { return _tshmcs; }

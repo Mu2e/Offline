@@ -604,7 +604,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       i_stepPointMC.simParticle() = newSimPtr;
     }
   }
- 
+
   // Update the StrawGasSteps
   for (auto& i_strawGasStep : *_newStrawGasSteps) {
     art::Ptr<SimParticle> newSimPtr = remap.at(i_strawGasStep.simParticle());
@@ -736,10 +736,10 @@ void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_d
     const auto& newStepPtrIter = step_remap.find(old_step_point);
     if (newStepPtrIter == step_remap.end()) {
       if (old_step_point.isAvailable()) {
-	step_remap[old_step_point] = copyStrawGasStep( *old_step_point);
+        step_remap[old_step_point] = copyStrawGasStep( *old_step_point);
       }
       else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
-	step_remap[old_step_point] = old_step_point;
+        step_remap[old_step_point] = old_step_point;
       }
     }
     art::Ptr<StrawGasStep> new_step_point = step_remap.at(old_step_point);

@@ -3,7 +3,7 @@
 
 #include <bitset>
 
-namespace mu2e 
+namespace mu2e
 {
   enum CrvRecoPulseFlagEnums{failedFit=0, unused=1, unused2=2};
 

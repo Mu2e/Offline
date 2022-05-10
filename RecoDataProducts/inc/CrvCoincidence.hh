@@ -9,7 +9,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvCoincidence
   {
@@ -18,7 +18,7 @@ namespace mu2e
     CrvCoincidence() {}
 
     CrvCoincidence(const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, int crvSectorType,
-                   const std::vector<float> &slopes, const std::vector<int> &layers) : 
+                   const std::vector<float> &slopes, const std::vector<int> &layers) :
                    _crvRecoPulses(crvRecoPulses), _crvSectorType(crvSectorType), _slopes(slopes), _layers(layers) {}
 
     const std::vector<art::Ptr<CrvRecoPulse> > &GetCrvRecoPulses() const {return _crvRecoPulses;}
