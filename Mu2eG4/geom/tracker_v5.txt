@@ -87,14 +87,14 @@ double trackerSupport.downRing.outerRadius = 820.0;
 double trackerSupport.downRing.innerRadius =  700.;
 double trackerSupport.downRing.halfLength  =   25.;
 double trackerSupport.downRing.zOffset     = 1614.;
-string trackerSupport.downRing.material    = "BrassC360"; 
+string trackerSupport.downRing.material    = "BrassC360";
 
 // midRing =? support rings which connect to the rail system
 vector<int> trackerSupport.midRing.slot  = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 double trackerSupport.midRing.halfLength = 10.;
 double trackerSupport.midRing.Phi0       = 0.0;   // in degrees
 double trackerSupport.midRing.dPhi       = 360.0; // degrees
-string trackerSupport.midRing.material   = "BrassC360"; 
+string trackerSupport.midRing.material   = "BrassC360";
 
 // staves are called beams now
 // in doc-db 888.v7 the one at the top is different one from the ones
@@ -125,7 +125,7 @@ vector<string> trackerSupport.beam1.serviceMaterialsCov =
   { "G4_POLYETHYLENE", "G4_POLYETHYLENE", "StainlessSteel316", "G4_POLYETHYLENE", "G4_POLYETHYLENE" };
 
 
-// In this version, panel means the as-built panel and not just the 
+// In this version, panel means the as-built panel and not just the
 // straws associated to a panel.
 // Specify the angular composition
 // A panel's support ring structure covers 120 degrees of the circle

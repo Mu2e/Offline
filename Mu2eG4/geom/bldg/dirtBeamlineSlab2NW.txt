@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_beamline_dirtSlab2_N.ccl
 
@@ -12,7 +12,7 @@ double dirt.beamline.slab2.NW.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.slab2.NW.yHalfThickness           = 635;
 
-//vector<int>    dirt.beamline.slab2.NW.xreplace   = { 21, 21 }; 
+//vector<int>    dirt.beamline.slab2.NW.xreplace   = { 21, 21 };
 vector<double> dirt.beamline.slab2.NW.xPositions = {
   -1270,   // h3
   7975.6,   // h4
@@ -23,8 +23,8 @@ vector<double> dirt.beamline.slab2.NW.xPositions = {
   14046.2,   // h
   21158.2,   // x0
   21158.2,   // x1
-  20744.5,  // SE corner escape hatch                                       
-  17288.5,  // SW corner escape hatch                                       
+  20744.5,  // SE corner escape hatch
+  17288.5,  // SW corner escape hatch
   9550.51, // SE corner rem hatch
   3403.59, // SW corner rem hatch
   3403.59, // NW corner rem hatch
@@ -37,7 +37,7 @@ vector<double> dirt.beamline.slab2.NW.xPositions = {
   -1270   // h3_to_N
 };
 
-vector<int>    dirt.beamline.slab2.NW.yreplace   = { 15, 16 }; 
+vector<int>    dirt.beamline.slab2.NW.yreplace   = { 15, 16 };
 vector<double> dirt.beamline.slab2.NW.yPositions = {
   2438.4,   // h3
   2438.4,   // h4
@@ -48,7 +48,7 @@ vector<double> dirt.beamline.slab2.NW.yPositions = {
   -152.4,   // h
   -152.4,   // x0
   2616.2,   // x1
-  18794.4,     // SE corner escape hatch                                    
+  18794.4,     // SE corner escape hatch
   17957,     // SW corner escape hatch
   13055.59, // SE corner rem hatch
   13055.59, // SW corner rem hatch
