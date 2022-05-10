@@ -29,14 +29,15 @@ namespace mu2e {
   template <class KTRAJ> class KKStrawHit : public KinKal::WireHit<KTRAJ> {
     public:
       using WIREHIT = KinKal::WireHit<KTRAJ>;
+      using HIT = KinKal::Hit<KTRAJ>;
       using Dimension = typename WIREHIT::Dimension;
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
+      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
       KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const&, double rstraw,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // WireHit and Hit interface implementations
-      void update(PKTRAJ const& pktraj) override;
-      void update(PKTRAJ const& pktraj, MetaIterConfig const& config) override;
+      void updateState(MetaIterConfig const& config) override;
       void distanceToTime(POL2 const& drift, DriftInfo& dinfo) const override;
       double nullVariance(Dimension dim,DriftInfo const& dinfo) const override;
       double nullOffset(Dimension dim,DriftInfo const& dinfo) const override;
@@ -86,20 +87,31 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::update(PKTRAJ const& pktraj) {
-    WIREHIT::update(pktraj);
-  }
-
-
-
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::update(PKTRAJ const& pktraj, MetaIterConfig const& miconfig) {
-    WIREHIT::update(pktraj,miconfig);
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig) {
     // look for an updater; if it's there, update the state
-    auto kkshu = miconfig.findUpdater<KKStrawHitUpdater>();
-    if(kkshu != 0){
-      kkshu->update(*this);
-      WIREHIT::update(pktraj,miconfig);
+    auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
+    auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
+    if(nshu != 0 && dshu != 0)throw std::invalid_argument(">1 StrawHit updater specified");
+    if(nshu != 0){
+      mindoca_ = strawRadius();
+      auto whstate = nshu->wireHitState();
+      // set the residuals based on this state
+      this->updateResiduals(whstate);
+    } else if(dshu != 0){
+      // update minDoca (for null ambiguity error estimate)
+      mindoca_ = std::min(dshu->minDOCA(),strawRadius());
+      // compute the unbiased closest approach; this is brute force, but works
+      auto const& ca = this->closestApproach();
+      auto uparams = HIT::unbiasedParameters();
+      KTRAJ utraj(uparams,ca.particleTraj());
+      CA uca(utraj,this->wire(),ca.hint(),ca.precision());
+      WireHitState whstate(WireHitState::inactive);
+      if(uca.usable())whstate = dshu->wireHitState(uca.doca());
+      // set the residuals based on this state
+      this->updateResiduals(whstate);
     }
+    // update the temperature
+    HIT::updateState(miconfig);
   }
 
   // the purpose of this class is to allow computing the drift using calibrated quantities (StrawResponse)
