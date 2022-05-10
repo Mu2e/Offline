@@ -62,7 +62,6 @@ userlibs = [ rootlibs,
     'boost_system'
     ]
 
-
 # when using ClassDef, tell the build to include the
 # dictionary in the mainlib
 helper.classDef(True)

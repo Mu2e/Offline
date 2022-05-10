@@ -25,27 +25,27 @@ void Cosmics(TTree* cr, const char* page="parent") {
   if(tpage=="electron"){
     TH2F* pxyep = new TH2F("pxyep","Electron Production Position;x(mm); y(mm)",100,-800,800,100,-800,800);
     TH2F* pxyem = new TH2F("pxyem","Electron Production Position;x(mm); y(mm)",100,-800,800,100,-800,800);
-  
+
     pxyep->SetMarkerStyle(4);
     pxyep->SetMarkerColor(kBlue);
     pxyep->SetStats(0);
     pxyem->SetMarkerStyle(4);
     pxyem->SetMarkerColor(kRed);
     pxyem->SetStats(0);
-    
+
     cr->Project("pxyem","opos.y:opos.x","mc.pdg==11");
     cr->Project("pxyep","opos.y:opos.x","mc.pdg==-11");
 
     TH2F* pxzep = new TH2F("pxzep","Electron Production Position;z(mm); x(mm)",100,1000,3600,100,-800,800);
     TH2F* pxzem = new TH2F("pxzem","Electron Production Position;z(mm); x(mm)",100,1000,3600,100,-800,800);
-  
+
     pxzep->SetMarkerStyle(4);
     pxzep->SetMarkerColor(kBlue);
     pxzep->SetStats(0);
     pxzem->SetMarkerStyle(4);
     pxzem->SetMarkerColor(kRed);
     pxzem->SetStats(0);
-  
+
     cr->Project("pxzem","opos.x:opos.z","mc.pdg==11");
     cr->Project("pxzep","opos.x:opos.z","mc.pdg==-11");
 
@@ -82,7 +82,7 @@ void Cosmics(TTree* cr, const char* page="parent") {
 //    TH2F* ppxzem = new TH2F("ppxzem","Projected parent production position y=0;z(mm); x(mm)",50,-500,5000,50,-2500,2500);
 //    TH2F* ppxzmp = new TH2F("ppxzmp","Projected parent production position y=0;z(mm); x(mm)",50,-500,5000,50,-2500,2500);
 //    TH2F* ppxzmm = new TH2F("ppxzmm","Projected parent production position y=0;z(mm); x(mm)",50,-500,5000,50,-2500,2500);
- 
+
     TH1F* pmomem = new TH1F("pmomem","Parent Momentum;MeV/c",200,-1000,10000);
     TH1F* pmomep = new TH1F("pmomep","Parent Momentum;MeV/c",200,-1000,10000);
     TH1F* pmommm = new TH1F("pmommm","Parent Momentum;MeV/c",200,-1000,10000);
@@ -188,7 +188,7 @@ void Cosmics(TTree* cr, const char* page="parent") {
     cr->Project("pctep","pmom.z/sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-11");
     cr->Project("pctmm","pmom.z/sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==13");
     cr->Project("pctmp","pmom.z/sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-13");
-    
+
     TLine* momcut = new TLine(1500,0,1500,pmommm->GetMaximum());
     momcut->SetLineStyle(3);
     momcut->SetLineWidth(3);
@@ -348,7 +348,7 @@ void Cosmics(TTree* cr, const char* page="parent") {
     mcd0mp->Draw("same");
     mcd0mm->Draw("same");
 
-   
+
   } else if(tpage =="pselect") {
     TH2F* cmom = new TH2F("cmom","Downstream vs Upstream momentum;P_{d} (MeV);P_{u} (MeV)",100,30,250,100,30,250);
     TH2F* ctand = new TH2F("ctand","Downstream vs Upstream tan#lambda;tan(#lambda)_{d};tan(#lambda)_{u}",100,-1.25,-0.25,100,0.25,1.25);
@@ -358,7 +358,7 @@ void Cosmics(TTree* cr, const char* page="parent") {
     ctand->SetStats(0);
     cd0->SetStats(0);
     cp0->SetStats(0);
-   
+
     cr->Project("cmom","dtrk.mom:utrk.mom");
     cr->Project("ctand","dtrk.td:utrk.td");
     cr->Project("cp0","dtrk.p0:utrk.p0");
@@ -428,7 +428,7 @@ void Cosmics(TTree* cr, const char* page="parent") {
     mucuthdir->Draw();
 
 
-    
+
   } else if(tpage == "momdiff" ){
 
     TH2F* umomdiff = new TH2F("umomdiff","Upstream particle #Delta P, tracker exit - entrance;True #Delta P (MeV/c);Reco #Delta P (MeV/c)",100,-1,5,100,-1,5);

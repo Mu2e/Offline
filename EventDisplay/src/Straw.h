@@ -94,7 +94,7 @@ class Straw: public VirtualShape
       _notDrawn=false;
     }
   }
- 
+
   void resetFilter()
   {
     _minTime=NAN;
@@ -108,7 +108,7 @@ class Straw: public VirtualShape
     _maxTime=maxTime;
     _invisible=invisible; //true, if the flag value is not satisfied for this hit
   }
- 
+
   void setHitNumber(int hitNumber)
   {
     _hitNumber=hitNumber;

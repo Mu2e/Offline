@@ -44,7 +44,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
   'boost_filesystem',
   ] )
 
-
 helper.make_plugins( [ mainlib,
   'mu2e_MCDataProducts',
   'mu2e_RecoDataProducts',

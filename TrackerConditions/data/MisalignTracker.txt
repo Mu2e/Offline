@@ -1,8 +1,8 @@
-# Tracker Misalignments from MisalignTracker.C, parameters: 
+# Tracker Misalignments from MisalignTracker.C, parameters:
 # twist 0.001 rad
 # parallelogram angle 0.001 rad
 # zsqueeze 1 mm
-# rsqueeze 0.5 mm 
+# rsqueeze 0.5 mm
 # trackerangle 0.001 rad
 # trackerpos 5 mm
 # planeangle = 0.001 rad
@@ -21,7 +21,7 @@
 #
 #
 #
-TABLE TrkAlignTracker 
+TABLE TrkAlignTracker
 #row, strawid, dx, dy, dz, rx, ry, rz
 0, 0_0_0, -6.48424, 3.98859, 2.37044, -0.00080944, 0.000585653, -0.000302189
 #

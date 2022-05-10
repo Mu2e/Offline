@@ -1,12 +1,12 @@
 //
 // Root script to display some of the plots made by ReadBack_module.cc & ReadStrawHit_module.cc
-// 
-// 
+//
+//
 // Original author Rob Kutschke, extednd by K. Genser for ReadStrawHit_module.cc
 //
 // This also serves as a introduction to root scripts for those who
 // have not seen root.  It shows how to:
-// 
+//
 // 1) Retrieve histograms and ntuples from the file that was created
 //    by g4test_03.py.
 //
@@ -56,7 +56,7 @@
   TH1F* hRadius;         file->GetObject("checkhits/hRadius", hRadius);
   TH1F* hxHit;           file->GetObject("checkhits/hxHit",   hxHit);
   TH1F* hyHit;           file->GetObject("checkhits/hyHit",   hyHit);
-  TH1F* hzHit;           file->GetObject("checkhits/hzHit",   hzHit); 
+  TH1F* hzHit;           file->GetObject("checkhits/hzHit",   hzHit);
 
   TH1F* hHitDeltaTime;   file->GetObject("readStrawHits/hHitDeltaTime",  hHitDeltaTime);
   TH1F* hHitEnergy;      file->GetObject("readStrawHits/hHitEnergy",     hHitEnergy);

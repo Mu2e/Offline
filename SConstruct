@@ -3,8 +3,8 @@
 #
 import os, re, string, sys
 
-import SCons 
-SCons.Defaults.DefaultEnvironment(tools = []) 
+import SCons
+SCons.Defaults.DefaultEnvironment(tools = [])
 
 # Functions that do small tasks and build lists
 import sconstruct_helper as sch
