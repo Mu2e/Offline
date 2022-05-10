@@ -17,8 +17,8 @@ void TMVACaloNN(const char* files="bkgfiles.txt", std::string basedir="caloNN")
     }
 
     // Selection cuts
-    TCut sigCut("cluConv==1"); 
-    TCut bkgCut("cluConv==0"); 
+    TCut sigCut("cluConv==1");
+    TCut bkgCut("cluConv==0");
 
     // Variables to be used for the classifier
     std::vector<std::string> varnames, vardescrip ;
@@ -32,7 +32,7 @@ void TMVACaloNN(const char* files="bkgfiles.txt", std::string basedir="caloNN")
     varnames.push_back("cluEout");
   //  varnames.push_back("cluEin");
     vardescrip.push_back("Cluster energy");
-    vardescrip.push_back("Cluster radius"); 
+    vardescrip.push_back("Cluster radius");
     vardescrip.push_back("Number of crystal");
     vardescrip.push_back("Energy Central crystal");
     vardescrip.push_back("Energy E1+E2");
@@ -40,8 +40,8 @@ void TMVACaloNN(const char* files="bkgfiles.txt", std::string basedir="caloNN")
     vardescrip.push_back("Energy E25");
     vardescrip.push_back("Energy out");
  //   vardescrip.push_back("Energy in");
-    
-    if (varnames.size() != vardescrip.size()) {cout<<"Variable name and description length mismatch, exit"; return;} 
+
+    if (varnames.size() != vardescrip.size()) {cout<<"Variable name and description length mismatch, exit"; return;}
 
 
     int dstat = mkdir(basedir.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -57,7 +57,7 @@ void TMVACaloNN(const char* files="bkgfiles.txt", std::string basedir="caloNN")
     }
     dataloader->AddSignalTree    ( mytree, 1.0);
     dataloader->AddBackgroundTree( mytree, 1.0);
-    dataloader->PrepareTrainingAndTestTree(sigCut, bkgCut,"SplitMode=Random:!V:SplitSeed=5309" ); 
+    dataloader->PrepareTrainingAndTestTree(sigCut, bkgCut,"SplitMode=Random:!V:SplitSeed=5309" );
 
 
     TMVA::Factory *factory = new TMVA::Factory( "TMVAClassification", outputFile,"!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
@@ -66,9 +66,8 @@ void TMVACaloNN(const char* files="bkgfiles.txt", std::string basedir="caloNN")
 
     factory->TrainAllMethods();
     factory->TestAllMethods();
-    factory->EvaluateAllMethods();    
- 
+    factory->EvaluateAllMethods();
+
     outputFile->Close();
     delete factory;
 }
-

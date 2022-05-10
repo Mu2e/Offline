@@ -1,12 +1,12 @@
 //
 // Root script to display some of the plots in made by ReadBack_plugin.cc
-// 
-// 
+//
+//
 // Original author Rob Kutschke
 //
 // This also serves as a introduction to root scripts for those who
 // have not seen root.  It shows how to:
-// 
+//
 // 1) Retrieve histograms and ntuples from the file that was created
 //    by g4test_03.py.
 //

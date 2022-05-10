@@ -48,7 +48,7 @@ class VirtualShape : public TObject
                const boost::shared_ptr<ComponentInfo> info, bool isGeometry):
                _startTime(NAN),_endTime(NAN),
                _isGeometry(isGeometry), _color(kGray),
-               _geomanager(geomanager), _topvolume(topvolume), 
+               _geomanager(geomanager), _topvolume(topvolume),
                _mainframe(mainframe), _info(info)
   {}
 

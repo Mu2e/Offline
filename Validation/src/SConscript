@@ -41,7 +41,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_Validation_root',
   'CLHEP',
   ] )
 
-
 helper.make_plugins( [ mainlib,'mu2e_Validation_root',
   'mu2e_GeometryService',
   'mu2e_ConditionsService',

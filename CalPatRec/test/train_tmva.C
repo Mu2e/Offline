@@ -1,4 +1,4 @@
-// use 
+// use
 
 namespace {
   const char* fn_trkpatrec = "/mu2e/data/users/murat/datasets/tmva_training/e11s5731.tmva_training_trkpatrec.root";
@@ -23,7 +23,7 @@ int train_tmva(const char* Algorithm = "calpatrec", const char* TrainingMode = "
   TString tmvaName, alg;
 
   alg = Algorithm;
-  
+
   if      (alg == "trkpatrec") f = TFile::Open(fn_trkpatrec);
   else if (alg == "calpatrec") f = TFile::Open(fn_calpatrec);
 
