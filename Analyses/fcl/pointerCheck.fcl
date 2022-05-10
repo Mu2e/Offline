@@ -1,5 +1,5 @@
 #
-#  check that art::Ptr's are valid in certain products 
+#  check that art::Ptr's are valid in certain products
 #
 
 #include "Offline/fcl/minimalMessageService.fcl"
@@ -16,9 +16,9 @@ physics :{
     checkModule : {
       module_type : PointerCheck
 
-	 skipDereference : false
-	 # 0 (quiet) or 1 (print every event)
-	 verbose : 1
+         skipDereference : false
+         # 0 (quiet) or 1 (print every event)
+         verbose : 1
          # skip any known problematic collections with these inputTags
          #skipSimParticle     : []
          #skipSimParticlePtr  : []

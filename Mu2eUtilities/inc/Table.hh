@@ -20,7 +20,7 @@
 #include "cetlib_except/exception.h"
 
 namespace mu2e {
-  
+
   // global templates for ease of use
   template<const unsigned M> using Value    = std::array<double,M>;
   template<const unsigned N> using TableRow = std::pair<double,Value<N-1>>;
@@ -28,11 +28,11 @@ namespace mu2e {
 
   // definition of class
   template <const unsigned N> class Table {
-    
+
     typedef typename TableVec<N>::const_iterator table_const_iterator;
 
   public:
-    
+
     // Constructors
     Table(){}
     explicit Table( const TableVec<N>& tablevec ) : rawTable_( tablevec ) {}
@@ -45,10 +45,10 @@ namespace mu2e {
     const TableVec<N>& rawTable()          const;
     TableVec<N> getShape( const double key1, const double key2, const double res, const double binCorr = 1. ) const;
     TableVec<N> getShape( const std::vector<double>& keys, const double binCorr = 1. ) const;
-    
+
     Value<N-1> getValueAtKey        ( const double key, const double binCorr = 1. ) const;
     unsigned   getLowerBoundRowIndex( const double key ) const;
-    
+
     // Helper utilities
     void printRow( unsigned i ) const;
     void printTable()           const;
@@ -60,7 +60,7 @@ namespace mu2e {
     void replaceShape    ( const TableVec<N>& newtable = TableVec<N>(), const bool sortA = true );
 
     // Operators and ordering functions
-    double operator()(unsigned i, unsigned j=1)  const { 
+    double operator()(unsigned i, unsigned j=1)  const {
       double val(-1.);
       if ( j == 0 ) val = rawTable_.at(i).first;
       else          val = rawTable_.at(i).second.at(j-1);
@@ -75,13 +75,13 @@ namespace mu2e {
   private:
     TableVec<N> rawTable_;
 
-    table_const_iterator getLowerBoundRow ( double key ) const; 
-    
-    template <const unsigned M, const bool SA> 
+    table_const_iterator getLowerBoundRow ( double key ) const;
+
+    template <const unsigned M, const bool SA>
     friend Table<M> loadTable( const std::string& tableFile );
-    
+
   };
-    
+
 
 
   // end of interface
@@ -94,12 +94,12 @@ namespace mu2e {
   template <const unsigned N> const TableRow<N>& Table<N>::getRow(const unsigned i) const { return rawTable_.at(i);}
 
   template <const unsigned N> const TableVec<N>& Table<N>::rawTable()     const { return rawTable_; }
-  
+
 
   template <const unsigned N> typename Table<N>::table_const_iterator Table<N>::getLowerBoundRow( double key ) const {
     return std::lower_bound( rawTable_.begin(), rawTable_.end(), key, CompareKeys() );
   }
-  
+
   template <const unsigned N> unsigned Table<N>::getLowerBoundRowIndex( const double key ) const {
     return std::distance( rawTable_.begin(), getLowerBoundRow( key ) );
   }
@@ -110,7 +110,7 @@ namespace mu2e {
       std::cout << val << " " ;
     std::cout << std::endl;
   }
-  
+
   template <const unsigned N> void Table<N>::printTable() const {
     for ( auto const & it : rawTable_ ) {
       std::cout << it.first << " : " ;
@@ -133,13 +133,13 @@ namespace mu2e {
   //-------------- free function, friend to Table class --------------------------------------------------------
   template <const unsigned N, const bool SA = true>
   Table<N> loadTable( const std::string& tableFile ) {
-      
+
     std::fstream intable(tableFile.c_str(),std::ios::in);
     if ( !intable.is_open() ) {
       throw cet::exception("ProductNotFound")
         << "No Tabulated spectrum table file found";
     }
-    
+
     Table<N> tmp_table;
 
     // Load table
@@ -147,25 +147,25 @@ namespace mu2e {
       TableRow<N> tableRow;
       intable >> tableRow.first;              // Get key first
       std::for_each( tableRow.second.begin(), // Now fill the values
-                     tableRow.second.end(), 
+                     tableRow.second.end(),
                      [&](double& d){
                        intable >> d;
                      } );
       if ( !intable.eof() ) {
         tmp_table.rawTable_.emplace_back( tableRow.first, Value<N-1>( tableRow.second ) );
       }
-      
+
     }
-    
+
     // Optional sorting, with first row corresponding to largest key
-    // (i.e. first-column) 
+    // (i.e. first-column)
     if ( SA ) std::sort( tmp_table.rawTable_.begin(), tmp_table.rawTable_.end(), typename Table<N>::SortAscend()  );
     else      std::sort( tmp_table.rawTable_.begin(), tmp_table.rawTable_.end(), typename Table<N>::SortDescend() );
-    
+
     return tmp_table;
-    
+
   }
- 
+
 } // end of namespace mu2e
 
 #endif /* Mu2eUtilities_Table_hh */

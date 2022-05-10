@@ -3,13 +3,13 @@
 
 namespace mu2e {
 
-   float CaloHitMC::totalEnergyDep() const 
+   float CaloHitMC::totalEnergyDep() const
    {
       auto sumEdep = [](float sum, const CaloEDepMC& edep){return sum +=edep.energyDep();};
       return std::accumulate(edeps_.begin(),edeps_.end(),0.0f,sumEdep);
    }
 
-   float CaloHitMC::totalEnergyDepG4() const 
+   float CaloHitMC::totalEnergyDepG4() const
    {
       auto sumEdepG4 = [](float sum, const CaloEDepMC& edep){return sum +=edep.energyDepG4();};
       return std::accumulate(edeps_.begin(),edeps_.end(),0.0f,sumEdepG4);

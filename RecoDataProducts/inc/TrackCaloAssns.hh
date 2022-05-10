@@ -12,13 +12,13 @@ namespace mu2e {
   public:
     TrackCaloMatchInfo() {};
     TrackCaloMatchInfo(
-		         double chi2
-		       , double chi2Pos
-		       , double chi2Time
-		       , double kFrac
-		       , double kinetic
-		       , double eOverP)
-    { 
+                         double chi2
+                       , double chi2Pos
+                       , double chi2Time
+                       , double kFrac
+                       , double kinetic
+                       , double eOverP)
+    {
       _chi2 = chi2;
       _chi2Pos = chi2Pos;
       _chi2Time = chi2Time;
@@ -46,7 +46,7 @@ namespace mu2e {
 
   };
 
- 
+
   // use as many-to-many Assns (want track, cluster, payload not Ptr's)
      typedef art::Assns<KalRepPtr,CaloCluster,TrackCaloMatchInfo> TrackCaloMatchAssns;
   //   typedef art::Assns<KalRep,CaloCluster,TrackCaloMatchInfo> TrackCaloMatchAssns;

@@ -28,9 +28,9 @@ namespace mu2e {
 
   struct ChannelID {
     int Station;
-    int Plane; 
-    int Face; 
-    int Panel; 
+    int Plane;
+    int Face;
+    int Panel;
     //      int Layer;
   };
 
@@ -39,7 +39,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   class CalHelixFinderData {
   public:
-   
+
 
     // enum {
     //   // kNStations      = 20,
@@ -49,7 +49,7 @@ namespace mu2e {
     //   // kNFaces         =  4,
     //   // kNPanelsPerFace =  3
     // };
-    
+
     enum { kMaxResidIndex = 500 };
 
     constexpr static uint16_t        kNMaxChHits = 500;
@@ -80,7 +80,7 @@ namespace mu2e {
       float    dphi0res_24;
 
       int       nStationPairs;
-      
+
       float    dfdz;
       float    dfdz_scaled;
       float    chi2_line;
@@ -96,7 +96,7 @@ namespace mu2e {
       int      nLoops;
       float    meanHitRadialDist;
     };
-    
+
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
 
@@ -108,14 +108,14 @@ namespace mu2e {
     HitInfo_t                         _seedIndex;
     HitInfo_t                         _candIndex;
 
-    int                               _nStrawHits;      
-    int                               _nComboHits;    
+    int                               _nStrawHits;
+    int                               _nComboHits;
 
     int                               _nXYSh;
     int                               _nZPhiSh;
-  
-    int                               _nFiltPoints;     //ComboHits from the TimeCluster + DeltaFinder filtering 
-    int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
+
+    int                               _nFiltPoints;     //ComboHits from the TimeCluster + DeltaFinder filtering
+    int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering
 
     float                            _helixChi2;
 
@@ -125,8 +125,8 @@ namespace mu2e {
     const ComboHitCollection*         _chcol;
     // const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _shfcol;
-    
-    TrkErrCode                        _fit;	    // fit status code from last fit
+
+    TrkErrCode                        _fit;            // fit status code from last fit
 //-----------------------------------------------------------------------------
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------
@@ -145,7 +145,7 @@ namespace mu2e {
     // float             _rw;
     // float             _chi2w;
 //-----------------------------------------------------------------------------
-// Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
+// Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)),
 // fz0 is the phi value of the particle where it goes through z=0
 // note that dfdz has a physical ambiguity in q*zdir.
 //-----------------------------------------------------------------------------

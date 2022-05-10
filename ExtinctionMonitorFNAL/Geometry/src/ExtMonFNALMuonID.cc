@@ -19,7 +19,7 @@ mu2e::ExtMonFNALMuonID::ExtMonFNALMuonID()
 
   /*std::ostream& operator<<(std::ostream& os, const ExtMonFNALMuonID& muid) {
   return os<<"ExtMonFNALMuonID(halfsize="<<muid.outerHalfSize()
-	    <<" )";
-	    }*/
+            <<" )";
+            }*/
 //================================================================
 } //namespace mu2e

@@ -1,4 +1,4 @@
-// Print out a StepPointMCCollection, based on StepPointsPrinter by 
+// Print out a StepPointMCCollection, based on StepPointsPrinter by
 // Andrei Gaponenko.
 //
 // In this version, can set a list of volumeIds to selectively print out.
@@ -42,10 +42,10 @@ namespace mu2e {
       int id = hit.volumeId();
       CLHEP::Hep3Vector r = hit.position();
       for ( const auto& testId : volumes_ ) {
-	//	std::cout << "id is " << id << ", while testId is " << testId << std::endl;
-	if ( id == testId ) {
-	  std::cout <<  "Volume:  " << id << ", particle: " << hit.simParticle()->pdgId() << ", position:  " << r << std::endl;
-	}
+        //        std::cout << "id is " << id << ", while testId is " << testId << std::endl;
+        if ( id == testId ) {
+          std::cout <<  "Volume:  " << id << ", particle: " << hit.simParticle()->pdgId() << ", position:  " << r << std::endl;
+        }
       }
       //      std::cout<<"   "<<hit<<std::endl;
     }

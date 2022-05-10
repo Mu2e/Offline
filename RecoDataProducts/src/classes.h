@@ -87,8 +87,10 @@
 // trigger
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
-// POT / stopped muons monitoring bvitaly May 2021
-#include "Offline/RecoDataProducts/inc/IntensityInfo.hh"
+// POT / stopped muons monitoring
+#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 
 // general reco
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"

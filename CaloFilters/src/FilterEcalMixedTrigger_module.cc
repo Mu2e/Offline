@@ -72,7 +72,7 @@ namespace mu2e {
     float dfdz;
     float dt;
   };
-  
+
   class FilterEcalMixedTrigger : public art::EDFilter {
   public:
     explicit FilterEcalMixedTrigger(fhicl::ParameterSet const& pset);
@@ -93,8 +93,8 @@ namespace mu2e {
     std::string _caloTrigSeedModuleLabel;
     std::string _ecalweightsfile;
     std::string _mixedweightsfile;
-    art::InputTag _shTag;   
-    
+    art::InputTag _shTag;
+
     float _TOFF; // time offset to align fast clustering with tracker
 
     float                      _MVArpivot;
@@ -143,7 +143,7 @@ namespace mu2e {
     float _sigmadphi;
     float _fevt,_fdiskpeak; // needed by TMVA reader
     int disk;
-  
+
     // Straw hits unpacking
     std::vector < float > _StrawTimes;
     std::vector < float > _StrawEnes;
@@ -184,7 +184,7 @@ namespace mu2e {
     int n2pi;
     float dz;
     float dalphadz;
-    int dadzbin;  
+    int dadzbin;
     int ndadzmax,dadzbinmax;
     float dalphadzbest;
     float dist;
@@ -219,10 +219,10 @@ namespace mu2e {
     // Find average and sigma for z,r,phi
     int   ndphicpeak;
     int   ndphicmed;
-    float meanz2; 
+    float meanz2;
     float meanr2;
-    float meandphi; 
-    float meandphi2; 
+    float meandphi;
+    float meandphi2;
     float rstraw;
     float dphipeak;
     int   ndphigood;
@@ -234,8 +234,8 @@ namespace mu2e {
   FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
     art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
-    _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")), 
+    _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")),
+    _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")),
     _ecalweightsfile               (pset.get<std::string>("ecalweightsfile")),
     _mixedweightsfile               (pset.get<std::string>("mixedweightsfile")),
     _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makePH")),
@@ -255,11 +255,11 @@ namespace mu2e {
     _mixedMVAlowcut1                 (pset.get<float>("mixedMVAlowcut1",0.2)),
     _downscale500_factor        (pset.get<float>("downscale500factor",0)),
     _step                       (pset.get<float>("step",10)),
-    _nProcessed(0)  
-  { 
+    _nProcessed(0)
+  {
     produces<TriggerInfo>();
 
-    _MVAmethod= _MVAMethodLabel + " method"; 
+    _MVAmethod= _MVAMethodLabel + " method";
     //
     _ecalMVAcutB[0]=(_ecalMVAhighcut0-_ecalMVApivotcut0)/(395.-_MVArpivot); // high cut is at r=395 mm
     _ecalMVAcutA[0]=_ecalMVApivotcut0-_ecalMVAcutB[0]*_MVArpivot;
@@ -285,12 +285,12 @@ namespace mu2e {
   void FilterEcalMixedTrigger::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("diag");
-    
+
     ConfigFileLookupPolicy configFile;
     // this loads the TMVA library
     TMVA::Tools::Instance();
     //
-    ecalreader = new TMVA::Reader( "!Color:Silent" );  
+    ecalreader = new TMVA::Reader( "!Color:Silent" );
     ecalreader->AddVariable("rpeak",&_rpeak);
     ecalreader->AddVariable("tpeak",&_tpeak);
     ecalreader->AddVariable("Epeak",&_Epeak);
@@ -298,10 +298,10 @@ namespace mu2e {
     ecalreader->AddVariable("E11",&_E11);
     ecalreader->AddVariable("E20",&_E20);
     ecalreader->AddSpectator("fdiskpeak",&_fdiskpeak);
-    ecalreader->AddSpectator("fevt",&_fevt);  
+    ecalreader->AddSpectator("fevt",&_fevt);
     ecalreader->BookMVA(_MVAmethod ,configFile(_ecalweightsfile));
     //
-    mixedreader = new TMVA::Reader( "!Color:Silent" );  
+    mixedreader = new TMVA::Reader( "!Color:Silent" );
     mixedreader->AddVariable("rpeak",&_rpeak);
     mixedreader->AddVariable("tpeak",&_tpeak);
     mixedreader->AddVariable("Epeak",&_Epeak);
@@ -316,7 +316,7 @@ namespace mu2e {
     mixedreader->AddVariable("sigmar",&_sigmar);
     mixedreader->AddVariable("sigmadphi",&_sigmadphi);
     mixedreader->AddSpectator("fdiskpeak",&_fdiskpeak);
-    mixedreader->AddSpectator("fevt",&_fevt);  
+    mixedreader->AddSpectator("fevt",&_fevt);
     mixedreader->BookMVA(_MVAmethod ,configFile(_mixedweightsfile));
   }
 
@@ -355,27 +355,27 @@ namespace mu2e {
       //
       _ecalMVA= ecalreader->EvaluateMVA(_MVAmethod);
       if (_rpeak>_MVArpivot){
-	ecalMVAcut=_ecalMVAlowcut[disk];
+        ecalMVAcut=_ecalMVAlowcut[disk];
       }
       else{
-	ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
+        ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
       }
       if (_diagLevel > 0){
-	std::cout<<"EVENT " << event.id().event() << " DISK " << disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " ecalMVA=" << _ecalMVA << " rpeak=" << _rpeak ;
-	if (_rpeak>_MVArpivot){
-	  std::cout << " cut at " << _ecalMVAlowcut[disk] << std::endl;
-	}
-	else{
-	    ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
-	    std::cout << " cut at " << ecalMVAcut <<  std::endl;
-	}
+        std::cout<<"EVENT " << event.id().event() << " DISK " << disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " ecalMVA=" << _ecalMVA << " rpeak=" << _rpeak ;
+        if (_rpeak>_MVArpivot){
+          std::cout << " cut at " << _ecalMVAlowcut[disk] << std::endl;
+        }
+        else{
+            ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
+            std::cout << " cut at " << ecalMVAcut <<  std::endl;
+        }
       }
       if (_rpeak>_MVArpivot){
-	if (_ecalMVA<_ecalMVAlowcut[disk]) continue;
+        if (_ecalMVA<_ecalMVAlowcut[disk]) continue;
       }
       else{
-	ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
-	if (_ecalMVA<ecalMVAcut) continue;
+        ecalMVAcut=_ecalMVAcutA[disk]+_ecalMVAcutB[disk]*_rpeak;
+        if (_ecalMVA<ecalMVAcut) continue;
       }
       // good peak
       peak.disk=disk;
@@ -390,9 +390,9 @@ namespace mu2e {
       peak.E20=_E20;
       _peaklist.push_back(peak);
     }
-  
+
     if (_peaklist.size()<1) return false;
-    
+
     if (_step==2) return false;
 
     // ------------------------- Unpack Straw Hits -------------------------------
@@ -408,45 +408,45 @@ namespace mu2e {
       _StrawZs.clear();
       nch=_chcol->size();
       for(int istr=0; istr<nch;++istr) {
-	comboHit=&_chcol->at(istr);
-	_StrawTimes.push_back(comboHit->time());
-	_StrawEnes.push_back(comboHit->energyDep());
-	_StrawXs.push_back(comboHit->pos().x());
-	_StrawYs.push_back(comboHit->pos().y());
-	_StrawZs.push_back(comboHit->pos().z());
+        comboHit=&_chcol->at(istr);
+        _StrawTimes.push_back(comboHit->time());
+        _StrawEnes.push_back(comboHit->energyDep());
+        _StrawXs.push_back(comboHit->pos().x());
+        _StrawYs.push_back(comboHit->pos().y());
+        _StrawZs.push_back(comboHit->pos().z());
       }
     }
     else{
       std::cout << "myntuple: ComboHitCollection Handle NOT VALID" << std::endl;
       return false;
     }
-    
+
     if (_step==3) return false;
     //-------------------------- STRAW HIT ANALYSIS --------------------------------
-  
+
     // Loop on good shower peaks
     for (std::vector<ecalPeak>::iterator it=_peaklist.begin(); it!=_peaklist.end(); ++it){
       peak = *it;
       _fdiskpeak=(float) peak.disk;
       if (peak.disk==0){
-	zpeak=1645;
-	DTPAR0=6.08;
-	DTPAR1=-0.00370;
-	DAPAR0=-8.01;
-	DAPAR1=0.0048;
+        zpeak=1645;
+        DTPAR0=6.08;
+        DTPAR1=-0.00370;
+        DAPAR0=-8.01;
+        DAPAR1=0.0048;
       }
       else{
-	zpeak=2345.;
-	DTPAR0=9.08;
-	DTPAR1=-0.00430;
-	DAPAR0=-11.4;
-	DAPAR1=0.0048;
+        zpeak=2345.;
+        DTPAR0=9.08;
+        DTPAR1=-0.00430;
+        DAPAR0=-11.4;
+        DAPAR1=0.0048;
       }
-      
+
       xpeak= peak.x;
       ypeak= peak.y;
       //
-      // Find circle centers close to peak 
+      // Find circle centers close to peak
       _rpeak=sqrt(xpeak*xpeak+ypeak*ypeak);
       BC= (R2SQ-R1SQ+_rpeak*_rpeak)/2./_rpeak;
       h= sqrt(R2SQ-BC*BC);
@@ -459,7 +459,7 @@ namespace mu2e {
       // angle at circumference
       alphapeak=atan2(ypeak,xpeak);
       for (int ibin=0;ibin<_nDADZBINs;ibin++){
-	_ndadz[ibin]=0;
+        _ndadz[ibin]=0;
       }
       // peak time
       _tpeak=peak.t;
@@ -472,164 +472,164 @@ namespace mu2e {
       _shitlist.clear();
       straw_index=0;
       for (std::vector<float>::iterator it=_StrawTimes.begin(); it!=_StrawTimes.end(); ++it){
-	strawtime=_StrawTimes.at(straw_index);
-	dt = _tpeak - strawtime;
-	zstraw=_StrawZs.at(straw_index);
-	if (abs(dt-DTPAR0-DTPAR1*zstraw)<25.){
-	  // POSITION SELECTION
-	  circleok=0;
-	  xstraw=_StrawXs.at(straw_index);
-	  ystraw=_StrawYs.at(straw_index);
-	  if (sqrt((xstraw-x10)*(xstraw-x10)+(ystraw-y10)*(ystraw-y10))<315.) circleok++;
-	  if (sqrt((xstraw-x11)*(xstraw-x11)+(ystraw-y11)*(ystraw-y11))<315.) circleok++;
-	  if (circleok==1){
-	    shit.x=xstraw;
-	    shit.y=ystraw;
-	    shit.z=zstraw;
-	    shit.t=strawtime;
-	    // ANGULAR VELOCITY SELECTION (ANGLES AT THE CIRCUMFERENCE)
-	    alphastraw=atan2(ystraw,xstraw);
-	    dalpha=2.*(alphastraw-alphapeak);
-	    if (dalpha>0) dalpha-=6.2832;
-	    n2pi=(int)((dalpha-DAPAR0-DAPAR1*zstraw)/6.2832+1.5);
-	    dalpha-=6.2832*(float)(n2pi-1);
-	    //
-	    dz=zstraw-zpeak;
-	    dalphadz=dalpha/dz;
-	    dadzbin=(int)((dalphadz-0.003)/0.0001);
-	    if (dadzbin>=0 && dadzbin<_nDADZBINs) _ndadz[dadzbin]++;
-	    shit.dadz=dalphadz;
-	    shit.dfdz=0.;
-	    shit.dt=100.;
-	    _shitlist.push_back(shit);
-	  }
-	}
-	straw_index++;
+        strawtime=_StrawTimes.at(straw_index);
+        dt = _tpeak - strawtime;
+        zstraw=_StrawZs.at(straw_index);
+        if (abs(dt-DTPAR0-DTPAR1*zstraw)<25.){
+          // POSITION SELECTION
+          circleok=0;
+          xstraw=_StrawXs.at(straw_index);
+          ystraw=_StrawYs.at(straw_index);
+          if (sqrt((xstraw-x10)*(xstraw-x10)+(ystraw-y10)*(ystraw-y10))<315.) circleok++;
+          if (sqrt((xstraw-x11)*(xstraw-x11)+(ystraw-y11)*(ystraw-y11))<315.) circleok++;
+          if (circleok==1){
+            shit.x=xstraw;
+            shit.y=ystraw;
+            shit.z=zstraw;
+            shit.t=strawtime;
+            // ANGULAR VELOCITY SELECTION (ANGLES AT THE CIRCUMFERENCE)
+            alphastraw=atan2(ystraw,xstraw);
+            dalpha=2.*(alphastraw-alphapeak);
+            if (dalpha>0) dalpha-=6.2832;
+            n2pi=(int)((dalpha-DAPAR0-DAPAR1*zstraw)/6.2832+1.5);
+            dalpha-=6.2832*(float)(n2pi-1);
+            //
+            dz=zstraw-zpeak;
+            dalphadz=dalpha/dz;
+            dadzbin=(int)((dalphadz-0.003)/0.0001);
+            if (dadzbin>=0 && dadzbin<_nDADZBINs) _ndadz[dadzbin]++;
+            shit.dadz=dalphadz;
+            shit.dfdz=0.;
+            shit.dt=100.;
+            _shitlist.push_back(shit);
+          }
+        }
+        straw_index++;
       }
       if (_diagLevel > 1) std::cout<< "hits in space-time=" << _shitlist.size() << std::endl;
       // Radius First Estimate
       ndadzmax=0;
       dadzbinmax=-1;
       for (int ibin=0;ibin<_nDADZBINs;ibin++){
-	if (_ndadz[ibin]>ndadzmax){
-	  dadzbinmax=ibin;
-	  ndadzmax=_ndadz[ibin];
-	}
+        if (_ndadz[ibin]>ndadzmax){
+          dadzbinmax=ibin;
+          ndadzmax=_ndadz[ibin];
+        }
       }
       if (_diagLevel > 1) std::cout<< "ndadzmax=" << ndadzmax << std::endl;
       if (ndadzmax>0){
-	dalphadzbest=0.003+(dadzbinmax+0.5)*dadzbinwidth;
-	rfirst= sqrt(103.3*103.3/0.3/0.3-1./dalphadzbest/dalphadzbest);
+        dalphadzbest=0.003+(dadzbinmax+0.5)*dadzbinwidth;
+        rfirst= sqrt(103.3*103.3/0.3/0.3-1./dalphadzbest/dalphadzbest);
       }
       else continue;
       if (_diagLevel > 1) std::cout<< "dalphadzbest=" <<  dalphadzbest << " rfirst=" << rfirst << std::endl;
       // Find Center
       for (int ibin=0;ibin<_nXBINs;ibin++){
-	for (int jbin=0;jbin<_nYBINs;jbin++){
-	  _nxy[ibin][jbin]=0;
-	}
+        for (int jbin=0;jbin<_nYBINs;jbin++){
+          _nxy[ibin][jbin]=0;
+        }
       }
       for (std::vector<strawHit>::iterator it=_shitlist.begin(); it!=_shitlist.end(); ++it){
-	shit=*it;
-	dalphadz=shit.dadz;
-	// preselect the straw hits to determine the best center
-	if (abs(dalphadz-dalphadzbest)<0.00015){
-	  xstraw=shit.x;
-	  ystraw=shit.y;
-	  // FIND CENTER CANDIDATES
-	  xo=(xpeak+xstraw)/2.;
-	  yo=(ypeak+ystraw)/2.;
-	  dist=sqrt((xstraw-xpeak)*(xstraw-xpeak)+(ystraw-ypeak)*(ystraw-ypeak));
-	  k=rfirst*rfirst-dist*dist/4.; 
-	  if (k>0.0001){
-	    k=sqrt(k);
-	    if (xo*(ystraw-ypeak)-yo*(xstraw-xpeak)>0){
-	      xci=xo-k*(ystraw-ypeak)/dist;
-	      yci=yo+k*(xstraw-xpeak)/dist;
-	    }
-	    else{
-	      xci=xo+k*(ystraw-ypeak)/dist;
-	      yci=yo-k*(xstraw-xpeak)/dist;
-	    }
-	    rci=sqrt(xci*xci+yci*yci);
-	    if (abs(rci-rfirst)<90.){ // 1 cm TOLERANCE
-	      if (_diagLevel > 2)  std::cout << "xci=" << xci << " yci=" << yci << std::endl;
-	      xrbin=(int)((xci+700.)/50.);
-	      if (xrbin>=0 && xrbin<_nXBINs){
-		yrbin=(int)((yci+700.)/50.);
-		if (yrbin>=0 && yrbin<_nYBINs){
-		  _nxy[xrbin][yrbin]++;
-		}
-	      }
-	    }
-	  }
-	}
+        shit=*it;
+        dalphadz=shit.dadz;
+        // preselect the straw hits to determine the best center
+        if (abs(dalphadz-dalphadzbest)<0.00015){
+          xstraw=shit.x;
+          ystraw=shit.y;
+          // FIND CENTER CANDIDATES
+          xo=(xpeak+xstraw)/2.;
+          yo=(ypeak+ystraw)/2.;
+          dist=sqrt((xstraw-xpeak)*(xstraw-xpeak)+(ystraw-ypeak)*(ystraw-ypeak));
+          k=rfirst*rfirst-dist*dist/4.;
+          if (k>0.0001){
+            k=sqrt(k);
+            if (xo*(ystraw-ypeak)-yo*(xstraw-xpeak)>0){
+              xci=xo-k*(ystraw-ypeak)/dist;
+              yci=yo+k*(xstraw-xpeak)/dist;
+            }
+            else{
+              xci=xo+k*(ystraw-ypeak)/dist;
+              yci=yo-k*(xstraw-xpeak)/dist;
+            }
+            rci=sqrt(xci*xci+yci*yci);
+            if (abs(rci-rfirst)<90.){ // 1 cm TOLERANCE
+              if (_diagLevel > 2)  std::cout << "xci=" << xci << " yci=" << yci << std::endl;
+              xrbin=(int)((xci+700.)/50.);
+              if (xrbin>=0 && xrbin<_nXBINs){
+                yrbin=(int)((yci+700.)/50.);
+                if (yrbin>=0 && yrbin<_nYBINs){
+                  _nxy[xrbin][yrbin]++;
+                }
+              }
+            }
+          }
+        }
       }
-      //  
+      //
       nxymax=0;
       xrbin=-1;
       yrbin=-1;
       for (int ibin=0;ibin<_nXBINs;ibin++){
-	for (int jbin=0;jbin<_nYBINs;jbin++){
-	  if (_nxy[ibin][jbin]>nxymax){
-	    nxymax=_nxy[ibin][jbin];
-	    xrbin=ibin;
-	    yrbin=jbin;
-	  }
-	}
+        for (int jbin=0;jbin<_nYBINs;jbin++){
+          if (_nxy[ibin][jbin]>nxymax){
+            nxymax=_nxy[ibin][jbin];
+            xrbin=ibin;
+            yrbin=jbin;
+          }
+        }
       }
       if (nxymax>0){
-	xmax=-675.+xrbin*50.;
-	ymax=-675.+yrbin*50.;
+        xmax=-675.+xrbin*50.;
+        ymax=-675.+yrbin*50.;
       }
       else continue;
-      if (_diagLevel > 1) std::cout << "xrbin=" << xrbin << " yrbin=" << yrbin << " xmax=" << xmax << " ymax=" << ymax << std::endl; 
-	   
+      if (_diagLevel > 1) std::cout << "xrbin=" << xrbin << " yrbin=" << yrbin << " xmax=" << xmax << " ymax=" << ymax << std::endl;
+
       // Add Straw Hits To Circle List (with dphi/dz)
       _shitcircle.clear();
       for (int ibin=0;ibin<_nDFDZBINs;ibin++){
-	_ndfdz[ibin]=0;
+        _ndfdz[ibin]=0;
       }
       phipeak=atan2(ypeak-ymax,xpeak-xmax);
       if (_diagLevel > 1) std::cout << "phipeak=" << phipeak << std::endl;
       for (std::vector<strawHit>::iterator it=_shitlist.begin(); it!=_shitlist.end(); ++it){
-	shit=*it;
-	xstraw=shit.x;
-	ystraw=shit.y;
-	r=sqrt((xstraw-xmax)*(xstraw-xmax)+(ystraw-ymax)*(ystraw-ymax));
-	// DELTA R SELECTION
-	if (abs(r-rfirst)<50.){ // circle selection
-	  //
-	  // ANGULAR VELOCITY SELECTION (ANGLES AT THE CENTER)
-	  zstraw=shit.z;
-	  phistraw=atan2(ystraw-ymax,xstraw-xmax);
-	  dphi=phistraw-phipeak;
-	  if (dphi>0) dphi-=6.2832;
-	  n2pi=(int)((dphi-DAPAR0-dalphadzbest*zstraw)/6.2832+1.5);
-	  dphi-=6.2832*(float)(n2pi-1);
-	  dz=zstraw-zpeak;
-	  dphidz=dphi/dz;
-	  dfdzbin=(int)((dphidz-0.003)/dfdzbinwidth);
-	  if (dfdzbin>=0 && dfdzbin<_nDFDZBINs) _ndfdz[dfdzbin]++;
-	  shit.dfdz=dphidz;
-	  shit.dt=100.; // dummy value
-	  _shitcircle.push_back(shit);
-	}
-      }    
+        shit=*it;
+        xstraw=shit.x;
+        ystraw=shit.y;
+        r=sqrt((xstraw-xmax)*(xstraw-xmax)+(ystraw-ymax)*(ystraw-ymax));
+        // DELTA R SELECTION
+        if (abs(r-rfirst)<50.){ // circle selection
+          //
+          // ANGULAR VELOCITY SELECTION (ANGLES AT THE CENTER)
+          zstraw=shit.z;
+          phistraw=atan2(ystraw-ymax,xstraw-xmax);
+          dphi=phistraw-phipeak;
+          if (dphi>0) dphi-=6.2832;
+          n2pi=(int)((dphi-DAPAR0-dalphadzbest*zstraw)/6.2832+1.5);
+          dphi-=6.2832*(float)(n2pi-1);
+          dz=zstraw-zpeak;
+          dphidz=dphi/dz;
+          dfdzbin=(int)((dphidz-0.003)/dfdzbinwidth);
+          if (dfdzbin>=0 && dfdzbin<_nDFDZBINs) _ndfdz[dfdzbin]++;
+          shit.dfdz=dphidz;
+          shit.dt=100.; // dummy value
+          _shitcircle.push_back(shit);
+        }
+      }
       if (_diagLevel > 1) std::cout << "hits in circle:" <<  _shitcircle.size() << std::endl;
       if (_shitcircle.size()<1) continue;
       // Find best dphi/dz
       ndfdzmax=0;
       dfdzbinmax=-1;
       for (int ibin=0;ibin<_nDFDZBINs;ibin++){
-	if (_ndfdz[ibin]>ndfdzmax){
-	  dfdzbinmax=ibin;
-	  ndfdzmax=_ndfdz[ibin];
-	}
+        if (_ndfdz[ibin]>ndfdzmax){
+          dfdzbinmax=ibin;
+          ndfdzmax=_ndfdz[ibin];
+        }
       }
       if (_diagLevel > 1) std::cout << "ndfdzmax=" <<  ndfdzmax << std::endl;
       if (ndfdzmax>0){
-	dphidzbest=0.003025+dfdzbinmax*0.00005;
+        dphidzbest=0.003025+dfdzbinmax*0.00005;
       }
       else continue;
       if (_diagLevel > 1) std::cout << "dphidzbest=" <<  dphidzbest << std::endl;
@@ -643,15 +643,15 @@ namespace mu2e {
       // Refined time selection
       _shittime.clear();
       for (std::vector<strawHit>::iterator it=_shitcircle.begin(); it!=_shitcircle.end(); ++it){
-	shit=*it;
-	zstraw=shit.z;
-	dz=zpeak-zstraw;
-	tstraw=shit.t;
-	dt= tstraw-(_tpeak-dz/betaz_est/300.);
-	if (dt>-10. && dt<20.){
-	  shit.dt=dt;
-	  _shittime.push_back(shit);
-	}
+        shit=*it;
+        zstraw=shit.z;
+        dz=zpeak-zstraw;
+        tstraw=shit.t;
+        dt= tstraw-(_tpeak-dz/betaz_est/300.);
+        if (dt>-10. && dt<20.){
+          shit.dt=dt;
+          _shittime.push_back(shit);
+        }
       }
       if (_diagLevel > 1) std::cout << "hits in time:" <<  _shittime.size() << std::endl;
       // Find average and sigma for z,r,phi
@@ -664,81 +664,81 @@ namespace mu2e {
       meandphi=0.;
       meandphi2=0.;
       for (std::vector<strawHit>::iterator it=_shittime.begin(); it!=_shittime.end(); ++it){
-	shit=*it;
-	dphidz=shit.dfdz;
-	xstraw=shit.x;
-	ystraw=shit.y;
-	rstraw=sqrt(xstraw*xstraw+ystraw*ystraw);
-	zstraw=shit.z;
-	dphipeak=(dphidz-dphidzbest)*(zstraw-zpeak);
-	if (dphipeak<-3.1416) dphipeak+=3.1416;
-	if (dphipeak>3.1416) dphipeak-=3.1416;
-	dphi=dphidz*(zstraw-zpeak);
-	n2pi=(int)(dphi/6.2832+7.5);
-	dphi-=6.2832*(float)(n2pi-7);
-	if (abs(dphipeak)< 0.08){
-	  ndphicpeak++;
-	}
-	if (abs(dphipeak)> 0.08 && abs(dphipeak)<0.2){
-	  ndphicmed++;
-	}
-	if (abs(dphipeak)<0.2){
-	  _meanz+=zstraw;
-	  meanz2+=zstraw*zstraw;
-	  _meanr+=rstraw;
-	  meanr2+=rstraw*rstraw;
-	  meandphi+=dphi;
-	  meandphi2+=dphi*dphi;
-	}
+        shit=*it;
+        dphidz=shit.dfdz;
+        xstraw=shit.x;
+        ystraw=shit.y;
+        rstraw=sqrt(xstraw*xstraw+ystraw*ystraw);
+        zstraw=shit.z;
+        dphipeak=(dphidz-dphidzbest)*(zstraw-zpeak);
+        if (dphipeak<-3.1416) dphipeak+=3.1416;
+        if (dphipeak>3.1416) dphipeak-=3.1416;
+        dphi=dphidz*(zstraw-zpeak);
+        n2pi=(int)(dphi/6.2832+7.5);
+        dphi-=6.2832*(float)(n2pi-7);
+        if (abs(dphipeak)< 0.08){
+          ndphicpeak++;
+        }
+        if (abs(dphipeak)> 0.08 && abs(dphipeak)<0.2){
+          ndphicmed++;
+        }
+        if (abs(dphipeak)<0.2){
+          _meanz+=zstraw;
+          meanz2+=zstraw*zstraw;
+          _meanr+=rstraw;
+          meanr2+=rstraw*rstraw;
+          meandphi+=dphi;
+          meandphi2+=dphi*dphi;
+        }
       }
       ndphigood=ndphicpeak+ndphicmed;
       if (_diagLevel > 1) std::cout << "ndphigood=" <<  ndphigood << std::endl;
-      
+
       if (ndphigood>0){
-	_meanz/=ndphigood;
-	_meanr/=ndphigood;
-	meandphi/=ndphigood;
+        _meanz/=ndphigood;
+        _meanr/=ndphigood;
+        meandphi/=ndphigood;
       }
       else continue;
-      if (ndphigood>1 && 
-	  meanz2>_meanz*_meanz*ndphigood &&
-	  meanr2>_meanr*_meanr*ndphigood &&
-	  meandphi2>meandphi*meandphi*ndphigood ){
-	_sigmaz=sqrt((meanz2-_meanz*_meanz*ndphigood)/(ndphigood-1));
-	_sigmar=sqrt((meanr2-_meanr*_meanr*ndphigood)/(ndphigood-1));
-	_sigmadphi=sqrt((meandphi2-meandphi*meandphi*ndphigood)/(ndphigood-1));
+      if (ndphigood>1 &&
+          meanz2>_meanz*_meanz*ndphigood &&
+          meanr2>_meanr*_meanr*ndphigood &&
+          meandphi2>meandphi*meandphi*ndphigood ){
+        _sigmaz=sqrt((meanz2-_meanz*_meanz*ndphigood)/(ndphigood-1));
+        _sigmar=sqrt((meanr2-_meanr*_meanr*ndphigood)/(ndphigood-1));
+        _sigmadphi=sqrt((meandphi2-meandphi*meandphi*ndphigood)/(ndphigood-1));
       }
       else continue;
       _fndphi0=(float) ndphicpeak;
       _fndphi1=(float) ndphicmed;
       //
       if (_step>4){
-	_mixedMVA= mixedreader->EvaluateMVA(_MVAmethod);
-	if (_diagLevel > 0){
-	  std::cout<<"EVENT " << event.id().event() << " DISK " << peak.disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " meanz=" << _meanz << " sigmaz=" << _sigmaz << " meanr=" << _meanr << " sigmar=" << _sigmar << " sigmadphi=" << _sigmadphi << " ndphicpeak=" << ndphicpeak << " ndphicmed=" << ndphicmed << " mixedMVA=" << _mixedMVA << " rpeak=" << _rpeak;
-	  if (_rpeak>_MVArpivot){
-	    std::cout << " cut at " << _mixedMVAlowcut[peak.disk] << std::endl;
-	  }
-	  else{
-	    mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
-	    std::cout << " cut at " << mixedMVAcut <<  std::endl;
-	  }
-	}
-	if (_rpeak>_MVArpivot){
-	  if (_mixedMVA>_mixedMVAlowcut[peak.disk]) {
-	    //FIX ME!
-	    event.put(std::move(triginfo));
-    	    return true;
-	  }
-	}
-	else{
-	  mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
-	  if (_mixedMVA>mixedMVAcut) {
-	    //FIX ME!!!!
-	    event.put(std::move(triginfo));	    
-	    return true;
-	  }
-	}
+        _mixedMVA= mixedreader->EvaluateMVA(_MVAmethod);
+        if (_diagLevel > 0){
+          std::cout<<"EVENT " << event.id().event() << " DISK " << peak.disk << " Epeak=" << _Epeak << " tpeak=" << _tpeak << " E10=" << _E10 << " E11=" << _E11 << " E20=" << _E20 << " meanz=" << _meanz << " sigmaz=" << _sigmaz << " meanr=" << _meanr << " sigmar=" << _sigmar << " sigmadphi=" << _sigmadphi << " ndphicpeak=" << ndphicpeak << " ndphicmed=" << ndphicmed << " mixedMVA=" << _mixedMVA << " rpeak=" << _rpeak;
+          if (_rpeak>_MVArpivot){
+            std::cout << " cut at " << _mixedMVAlowcut[peak.disk] << std::endl;
+          }
+          else{
+            mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
+            std::cout << " cut at " << mixedMVAcut <<  std::endl;
+          }
+        }
+        if (_rpeak>_MVArpivot){
+          if (_mixedMVA>_mixedMVAlowcut[peak.disk]) {
+            //FIX ME!
+            event.put(std::move(triginfo));
+                return true;
+          }
+        }
+        else{
+          mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
+          if (_mixedMVA>mixedMVAcut) {
+            //FIX ME!!!!
+            event.put(std::move(triginfo));
+            return true;
+          }
+        }
       }
     }
     return false;
@@ -746,7 +746,7 @@ namespace mu2e {
   void FilterEcalMixedTrigger::endJob(){
     std::cout << "FilterEcalMixedTrigger filter end job:" << _nProcessed << " events processed" << std::endl;
   }
-  
+
 }
 
 using mu2e::FilterEcalMixedTrigger;

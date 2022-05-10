@@ -9,7 +9,7 @@
 #------------------------------------------------------------------------------
 # input module definition
 #------------------------------------------------------------------------------
-source : { 
+source : {
     module_type : EmptyEvent
 }
 #------------------------------------------------------------------------------
@@ -38,62 +38,62 @@ services.scheduler.wantSummary: true
 physics : {
     producers: {
         generate             : { @table::StoppedMuonConversionGun }
-	g4run                : @local::g4run
+        g4run                : @local::g4run
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
         protonTimeMap             : { @table::protonTimeMap }
         muonTimeMap               : { @table::muonTimeMap }
-	@table::CaloDigiMC.producers
+        @table::CaloDigiMC.producers
 
 #------------------------------------------------------------------------------
 # Calorimeter digitization and clustering
 #------------------------------------------------------------------------------
-	@table::CaloReco.producers
-	@table::CaloCluster.producers
+        @table::CaloReco.producers
+        @table::CaloCluster.producers
     }
 
     filters: {
 #------------------------------------------------------------------------------
 # Andrej's filter
-# Reject events with no hits from signal-like tracks in the detectors.  
+# Reject events with no hits from signal-like tracks in the detectors.
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
-	detectorFilter:     @local::FilterStepPointMomentum
+        detectorFilter:     @local::FilterStepPointMomentum
 #------------------------------------------------------------------------------
 # event display
 #------------------------------------------------------------------------------
-#	MuHitDisplay: { @table::MuHitDisplay }
+#        MuHitDisplay: { @table::MuHitDisplay }
     }
 
     analyzers:
     {
-	eventdisplay:
-	{
-	    module_type               : EventDisplay
-	    g4ModuleLabel             : "g4run"
-	    physicalVolumesMultiLabel : "compressPV"
-	}	
+        eventdisplay:
+        {
+            module_type               : EventDisplay
+            g4ModuleLabel             : "g4run"
+            physicalVolumesMultiLabel : "compressPV"
+        }
 
-	ReadCaloDigi:
-	{
-	    module_type            : ReadCaloDigi
-	    diagLevel              : 0 	    
-	    caloDigisModuleLabel   : CaloHitsFromCaloDigis
-	    caloCrystalModuleLabel : CaloCrystalHitsFromCaloHits
-	    calorimeterStepPoints  : calorimeter
-	    calorimeterROStepPoints: calorimeterRO
-	    caloClusterModuleLabel : MakeCaloCluster
-	    vdStepPoints           : virtualdetector
-	    trackModuleLabel       : ""
-	    TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    TimeFoldingBuffer      : 100. # ns
-	    blindTime              : 500. # ns  
-	    fillWaveforms          : 0
-	    psdThreshold           : 90  #a.u.
-	}
-	
-    } 
+        ReadCaloDigi:
+        {
+            module_type            : ReadCaloDigi
+            diagLevel              : 0
+            caloDigisModuleLabel   : CaloHitsFromCaloDigis
+            caloCrystalModuleLabel : CaloCrystalHitsFromCaloHits
+            calorimeterStepPoints  : calorimeter
+            calorimeterROStepPoints: calorimeterRO
+            caloClusterModuleLabel : MakeCaloCluster
+            vdStepPoints           : virtualdetector
+            trackModuleLabel       : ""
+            TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+            TimeFoldingBuffer      : 100. # ns
+            blindTime              : 500. # ns
+            fillWaveforms          : 0
+            psdThreshold           : 90  #a.u.
+        }
+
+    }
 #------------------------------------------------------------------------------
 # paths
 # write out ntuple only, so don't need compression modules...
@@ -106,14 +106,14 @@ physics : {
 # MakeStereoHits also produces the StrawHitPosition collection
 #------------------------------------------------------------------------------
     all : [generate, g4run
-#	   , detectorFilter 
-	   , protonTimeMap, muonTimeMap
-	   #
+#           , detectorFilter
+           , protonTimeMap, muonTimeMap
+           #
           , @sequence::CaloDigiMC.DigiSim
-          , @sequence::CaloReco.Reco	 
-	  , @sequence::CaloCluster.Reco 
+          , @sequence::CaloReco.Reco
+          , @sequence::CaloCluster.Reco
 
-	 ]
+         ]
 
 
     trigger_paths  : [all]
@@ -123,7 +123,7 @@ physics : {
 #    out : [detectorOutput]
 #    out : [eventdisplay]
 
-    out  : [ReadCaloDigi] 
+    out  : [ReadCaloDigi]
     end_paths      : [out]
 }
 
@@ -133,7 +133,7 @@ outputs: {
         SelectEvents: [all]
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
-			   ]
+                           ]
         fileName    : "caloDigiTest.art"
     }
 }

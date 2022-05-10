@@ -20,13 +20,13 @@ namespace mu2e {
 
   public:
     MECOStyleProtonAbsorberPart( int id,
-				 CLHEP::Hep3Vector const& c,
-				 double rOut0, 
-				 double rIn0,
-				 double rOut1, 
-				 double rIn1,
-				 double halflen,
-				 std::string m):
+                                 CLHEP::Hep3Vector const& c,
+                                 double rOut0,
+                                 double rIn0,
+                                 double rOut1,
+                                 double rIn1,
+                                 double halflen,
+                                 std::string m):
       _id(id),
       _c(c),
       _rOut0(rOut0),
@@ -39,14 +39,14 @@ namespace mu2e {
     }
 
     MECOStyleProtonAbsorberPart( int id,
-				 CLHEP::Hep3Vector const& c,
-				 double rOut0, 
-				 double rIn0,
-				 double rOut1, 
-				 double rIn1,
-				 double halflen,
-				 int    nSides,
-				 std::string m):
+                                 CLHEP::Hep3Vector const& c,
+                                 double rOut0,
+                                 double rIn0,
+                                 double rOut1,
+                                 double rIn1,
+                                 double halflen,
+                                 int    nSides,
+                                 std::string m):
       _id(id),
       _c(c),
       _rOut0(rOut0),
@@ -60,7 +60,7 @@ namespace mu2e {
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    int id() const { return _id; } 
+    int id() const { return _id; }
 
     CLHEP::Hep3Vector const& center()  const { return _c;}
 

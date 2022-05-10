@@ -12,10 +12,10 @@ physics.end_paths : [eprint]
 
 physics.producers.pixelDigitization.totCalib : 6
 physics.producers.pixelDigitization.chipSimInputs : {
-   fileName : "hits.txt"
-	sensor : 3
-	chipCol : 0
-	chipRow : 0
+    fileName : "hits.txt"
+    sensor : 3
+    chipCol : 0
+    chipRow : 0
 }
 
 

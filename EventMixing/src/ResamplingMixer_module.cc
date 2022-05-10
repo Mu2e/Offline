@@ -72,16 +72,16 @@ namespace mu2e {
     using Parameters = art::MixFilterTable<Config>;
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
 
-    size_t eventsToSkip() { 
+    size_t eventsToSkip() {
       static bool first(true);
       size_t result(0);
       if(first) {
-	first = false;
-	std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
-	result = uniform(urbg_);
+        first = false;
+        std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
+        result = uniform(urbg_);
       }
       if(debugLevel_ > 0) {
-	std::cout << " Skipping " << result << " Secondaries " << std::endl;
+        std::cout << " Skipping " << result << " Secondaries " << std::endl;
       }
       return result;
     }

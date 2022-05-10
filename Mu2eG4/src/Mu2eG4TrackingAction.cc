@@ -23,6 +23,7 @@
 // C++ includes
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/Mu2eG4UserHelpers.hh"
@@ -59,6 +60,8 @@
 #include "Geant4/G4MaterialCutsCouple.hh"
 #include "Geant4/G4ParticleChange.hh"
 #include "Geant4/G4DynamicParticle.hh"
+#include "Geant4/G4Log.hh"
+#include "Geant4/Randomize.hh"
 
 using namespace std;
 
@@ -85,7 +88,9 @@ namespace mu2e {
     _processInfo(0),
     _printTrackTiming(conf.debug().printTrackTiming()),
     _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose()),
-    _muonPreAssignedDecayProperTime(-1.0)
+    _muonPreAssignedDecayProperTime(-1.0),
+    _muonMinPreAssignedDecayProperTime(-1.0),
+    _muonMaxPreAssignedDecayProperTime(-1.0)
   {
 
     if ( _stepLimitKillerVerbose && (G4Threading::G4GetThreadId() <= 0) ) {
@@ -96,11 +101,53 @@ namespace mu2e {
              << " mm"
              << G4endl;
     }
+
+    // validate muon preassigned proper time
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime) &&
+        conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      throw cet::exception("CONFIG")
+        << "In Mu2eG4TrackingAction(): only one of  muonPreAssignedDecayProperTime or "
+        << "muonMaxPreAssignedDecayProperTime can be set"
+        << G4endl;
+    }
+    if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime) &&
+        conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime)) {
+      throw cet::exception("CONFIG")
+        << "In Mu2eG4TrackingAction(): only one of  muonPreAssignedDecayProperTime or "
+        << "muonMinPreAssignedDecayProperTime can be set"
+        << G4endl;
+    }
+    if (conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime) &&
+        conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      if ( _muonMinPreAssignedDecayProperTime >= _muonMaxPreAssignedDecayProperTime ) {
+        throw cet::exception("CONFIG")
+          << "In Mu2eG4TrackingAction(): inconsistent "
+          << "muonMinPreAssignedDecayProperTime muonMaxPreAssignedDecayProperTime: "
+          << _muonMinPreAssignedDecayProperTime << " ns,"
+          << _muonMaxPreAssignedDecayProperTime << " ns"
+          << G4endl;
+      }
+    }
+
     if (conf.physics().muonPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime)) {
       if (conf.debug().diagLevel()>0) {
         G4cout << __func__
                << " Setting muonPreAssignedDecayProperTime to "
                << _muonPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
+    if (conf.physics().muonMaxPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonMaxPreAssignedDecayProperTime to "
+               << _muonMaxPreAssignedDecayProperTime << " ns" << G4endl;
+      }
+    }
+    if (conf.physics().muonMinPreAssignedDecayProperTime(_muonMinPreAssignedDecayProperTime)) {
+      if (conf.debug().diagLevel()>0) {
+        G4cout << __func__
+               << " Setting muonMinPreAssignedDecayProperTime to "
+               << _muonMinPreAssignedDecayProperTime << " ns" << G4endl;
       }
     }
   }
@@ -192,6 +239,7 @@ namespace mu2e {
 
     // Need to cast away const-ness to do this.
     const_cast<G4Track*>(trk)->SetUserInformation(ti);
+
     if (_muonPreAssignedDecayProperTime>=0.0) {
       const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
       if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
@@ -203,6 +251,42 @@ namespace mu2e {
         }
         const_cast<G4DynamicParticle*>(dynPart)
           ->SetPreAssignedDecayProperTime(_muonPreAssignedDecayProperTime*CLHEP::ns);
+      }
+    }
+
+    // bias muon proper time if requested
+    if ((_muonMaxPreAssignedDecayProperTime>=0.0) ||
+        (_muonMinPreAssignedDecayProperTime>=0.0)) {
+      const G4DynamicParticle* dynPart = trk->GetDynamicParticle();
+      if (dynPart->GetPDGcode() == PDGCode::mu_minus) {
+        // if track is a muon and preassigned proper time is set, assing it
+        if (trackingVerbosityLevel>0) {
+          G4cout << __func__
+                 << " Setting random muonPreAssignedDecayProperTime to the track "
+                 << " between muonMaxPreAssignedDecayProperTime and muonMaxPreAssignedDecayProperTime to track "
+                 << trk->GetTrackID() << G4endl;
+        }
+        // 0 is a special case
+        if (_muonMaxPreAssignedDecayProperTime == 0.0) {
+          const_cast<G4DynamicParticle*>(dynPart)
+            ->SetPreAssignedDecayProperTime(_muonMaxPreAssignedDecayProperTime*CLHEP::ns);
+        } else {
+          double pdgLifeTime = dynPart->GetParticleDefinition()->GetPDGLifeTime();
+          double expNormalizedMaxProperTime =
+            (_muonMaxPreAssignedDecayProperTime>=0.0) ?
+            G4Exp(-1.0*_muonMaxPreAssignedDecayProperTime*CLHEP::ns/pdgLifeTime) :
+            0.0;
+          double expNormalizedMinProperTime =
+            (_muonMinPreAssignedDecayProperTime>=0.0) ?
+            G4Exp(-1.0*_muonMinPreAssignedDecayProperTime*CLHEP::ns/pdgLifeTime) :
+            1.0;
+          double offset = std::max(expNormalizedMaxProperTime, 0.0);
+          double width  = std::min(expNormalizedMinProperTime, 1.0) - offset;
+          // transforming the value into the potentially narrower interval
+          double theValue = offset + G4UniformRand()*width;
+          const_cast<G4DynamicParticle*>(dynPart)
+            ->SetPreAssignedDecayProperTime(-1.0*G4Log(theValue)*pdgLifeTime);
+        }
       }
     }
 

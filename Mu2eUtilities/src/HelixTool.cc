@@ -49,11 +49,11 @@ namespace mu2e {
       ++counter;
       float z = hit->pos().z();
       if (isFirst){
-	z_first_hit = z;
-	z_last_hit  = z;
-	isFirst     = false;
+        z_first_hit = z;
+        z_last_hit  = z;
+        isFirst     = false;
       }else {
-	z_last_hit  = z;
+        z_last_hit  = z;
       }
     }//end loop over the hits
 
@@ -77,21 +77,21 @@ namespace mu2e {
       std::array<int,2>   idPanels = {0, (nPanels-1)};
 
       for (size_t ipn=0; ipn<idPanels.size(); ++ipn){
-	const Panel* panel = &pln->getPanel(ipn);
-	float    z = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-	// if (z < z_first_hit )  continue;
-	// if (z > z_last_hit  )  continue;
+        const Panel* panel = &pln->getPanel(ipn);
+        float    z = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+        // if (z < z_first_hit )  continue;
+        // if (z > z_last_hit  )  continue;
 
-	XYZVectorF  pos;
-	pos.SetZ(z);
-	robustHel->position(pos);
+        XYZVectorF  pos;
+        pos.SetZ(z);
+        robustHel->position(pos);
 
-	//now check that we are in the active area of tracker
-	float   hitR = sqrtf(pos.x()*pos.x() + pos.y()*pos.y());
-	if (hitR < _trackerRIn )  continue;
-	if (hitR > _trackerROut)  continue;
+        //now check that we are in the active area of tracker
+        float   hitR = sqrtf(pos.x()*pos.x() + pos.y()*pos.y());
+        if (hitR < _trackerRIn )  continue;
+        if (hitR > _trackerROut)  continue;
 
-	++expected_faces;
+        ++expected_faces;
       }//end loop over the two panels
     }//end loop over the planes
 

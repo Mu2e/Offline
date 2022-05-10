@@ -26,7 +26,7 @@ namespace mu2e{
   /*------------Function to 3D draw hits:-------------*/
   void TEveMu2eCRVEvent::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList3D)
   {
-    auto [sibardetails, crvCounterPos] = DrawSciBar();     
+    auto [sibardetails, crvCounterPos] = DrawSciBar();
     Double_t sibarposition[3];
     sibarposition[0] = (crvCounterPos.x());
     sibarposition[1] = (crvCounterPos.y());
@@ -47,7 +47,7 @@ namespace mu2e{
          /*------------Function to 2D draw hits:-------------*/
   void TEveMu2eCRVEvent::DrawHit2DXY(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList2DXY)
   {
-    auto [sibardetails, crvCounterPos] = DrawSciBar();  
+    auto [sibardetails, crvCounterPos] = DrawSciBar();
     Double_t sibarposition[3];
     sibarposition[0] = pointmmTocm(crvCounterPos.x());
     sibarposition[1] = pointmmTocm(crvCounterPos.y());
@@ -65,10 +65,10 @@ namespace mu2e{
     this->SetPickable(kTRUE);
     CrvList2DXY->AddElement(this);
   }
-        
+
   void TEveMu2eCRVEvent::DrawHit2DYZ(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, TEveElementList *CrvList2DYZ)
   {
-    auto [sibardetails, crvCounterPos] = DrawSciBar();  
+    auto [sibardetails, crvCounterPos] = DrawSciBar();
     Double_t sibarposition[3];
     sibarposition[0] = 0.0;
     sibarposition[1] = pointmmTocm(crvCounterPos.y());

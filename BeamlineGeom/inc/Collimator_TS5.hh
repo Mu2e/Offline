@@ -19,9 +19,9 @@ namespace mu2e {
     CollimatorTS5() : Collimator() {}
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor
-    CollimatorTS5(double halfZ, CLHEP::Hep3Vector origin) :  
+    CollimatorTS5(double halfZ, CLHEP::Hep3Vector origin) :
       Collimator( halfZ, origin) {}
- 
+
     double rIn()        const { return _rIn;        }
     double rOut()       const { return _rOut;       }
     int    version()    const { return _version;    }
@@ -29,7 +29,7 @@ namespace mu2e {
     std::string material()    const { return _material;    }
 
   private:
-    
+
     double _rIn;
     double _rOut;
     int    _version;

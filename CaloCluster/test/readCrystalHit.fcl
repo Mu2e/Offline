@@ -1,4 +1,4 @@
-# 
+#
 #
 #
 # Original author G. Pezzullo
@@ -8,44 +8,44 @@
 #include "Offline/fcl/standardServices.fcl"
 
 
-# Give this job a name.  
+# Give this job a name.
 process_name : CaloClusterTrj
 
 # Start from a source
-source : 
+source :
 {
   module_type : EmptyEvent
   maxEvents : -1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "CrystalHit_pileUp_backgrounds.root"
   }
 
-  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }   
-        
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
+
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
-              
-  GlobalConstantsService : { 
-    inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" 
+
+  GlobalConstantsService : {
+    inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"
   }
-  
-              
+
+
   Mu2eG4Helper : {         }
-   
+
   SeedService: @local::automaticSeeds
 
 }
@@ -68,7 +68,7 @@ physics :
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
- 
+
     makeCaloCluster:
     {
       module_type            : MakeCaloCluster
@@ -80,24 +80,24 @@ physics :
       deltaTime               : 100.0 #ns
       nCryPerCrystal          : 1
       EnoiseCut               : 0.00 #MeV
-      EclusterCut             : 0.00 #MeV  
+      EclusterCut             : 0.00 #MeV
     }
-     
+
   }
- 
+
  filters:
  {
     #Look at the bad events from G4.
     skipBadEvents:
     {
       module_type            : KilledEventFilter
-      g4ModuleLabel          : g4run 
+      g4ModuleLabel          : g4run
     }
  }
- 
+
   analyzers:
   {
-    
+
     caloTrj:
     {
      module_type            : CrystalHits
@@ -107,16 +107,16 @@ physics :
      caloClusterSeeding     : energy
      caloClusterAlgorithm   : closest
     }
-   
 
-  } 
 
-  p1 : [ generate 
+  }
+
+  p1 : [ generate
         , g4run
         , makeSH
         , CaloReadoutHitsMaker
         , CaloCrystalHitsMaker
-        , skipBadEvents 
+        , skipBadEvents
         ]
 
   e1 : [ caloTrj ]
@@ -140,7 +140,7 @@ physics.producers.generate.inputfile  : "Offline/Mu2eG4/test/genconfig_example.t
 services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 2
-source.firstRun                            :  1 
+source.firstRun                            :  1
 services.SeedService.baseSeed         :  1
 services.SeedService.maxUniqueEngines :  20
 physics.producers.KalFitTest.KalFit.RemoveFailedFits : false

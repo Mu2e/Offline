@@ -591,9 +591,9 @@ namespace mu2e {
             break;
           }
 
-	  // collect contribution to the hash
-	  boost::hash_combine<string>(_inputFileHash,line);
-	  _inputFileLines++;
+          // collect contribution to the hash
+          boost::hash_combine<string>(_inputFileHash,line);
+          _inputFileLines++;
 
           nextline = StripComment(nextline);
           if ( WantsExtension(nextline) ){
@@ -844,8 +844,8 @@ namespace mu2e {
 
   void SimpleConfig::printOpen( std::ostream& ost, std::string tag ) const{
     std::cout << tag << " file: "<< _inputfile << std::endl;
-    std::cout << tag << " lines: "<< _inputFileLines 
-	      <<"  hash: " << _inputFileHash << std::endl;
+    std::cout << tag << " lines: "<< _inputFileLines
+              <<"  hash: " << _inputFileHash << std::endl;
   }
 
   void SimpleConfig::printStatisticsByType ( std::ostream& ost, std::string tag ) const{

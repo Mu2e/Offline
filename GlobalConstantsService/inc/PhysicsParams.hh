@@ -87,7 +87,7 @@ namespace mu2e
       const std::string allowedMaterial = checkMaterial( material );
       return _endpointEnergy.find(allowedMaterial)->second;
     }
-    
+
     double   getePlusEndpointEnergy(targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
       return _ePlusEndpointEnergy.find(allowedMaterial)->second;

@@ -28,26 +28,26 @@ physics :
 {
   producers:
   {
-    generate: 
+    generate:
     {
        module_type          : EventGenerator
        inputfile            : "CRVResponse/singleCounter/genconfig_point.txt"
     }
 
-    g4run : 
+    g4run :
     {
        module_type: Mu2eG4
        physics: @local::mu2eg4DefaultPhysics
        ResourceLimits: @local::mu2eg4DefaultResourceLimits
-       TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+       TrajectoryControl: @local::mu2eg4DefaultTrajectories
        debug: @local::mu2eg4DefaultDebug
        visualization: @local::mu2eg4NoVisualization
 
        generatorModuleLabel: generate
 
-       SDConfig: 
+       SDConfig:
        {
-            enableSD: [ CRV ] 
+            enableSD: [ CRV ]
             sensitiveVolumes: []
             TimeVD: { times: [] }
        }
@@ -56,17 +56,17 @@ physics :
 
        Mu2eG4SteppingOnlyCut: {}
 
-       Mu2eG4CommonCut: 
+       Mu2eG4CommonCut:
        {
          type: union
          pars:
          [
             {
-              type  : plane 
-              normal: [  0, -1, 0 ] 
-              point : [ 0, 2653.31, 0 ] 
+              type  : plane
+              normal: [  0, -1, 0 ]
+              point : [ 0, 2653.31, 0 ]
             },
-            { 
+            {
               type: inVolume
               pars: [ worldDirtBottom, worldDirtNW, worldDirtSW, worldDirtSE, worldDirtNE ]
             }
@@ -86,13 +86,13 @@ physics :
 
   analyzers:
   {
-    CrvTest : 
+    CrvTest :
     {
       module_type                 : CRVTest
       crvStepsModuleLabel         : "g4run"
       crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
-      genParticleModuleLabel      : "generate" 
+      genParticleModuleLabel      : "generate"
     }
   }
 
@@ -104,9 +104,9 @@ physics :
   end_paths: [out]
 }
 
-outputs: 
+outputs:
 {
-    Output : 
+    Output :
     {
         module_type : RootOutput
         fileName    : "data_crv.root"
