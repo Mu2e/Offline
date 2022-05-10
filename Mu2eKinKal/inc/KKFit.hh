@@ -433,8 +433,8 @@ namespace mu2e {
       tmax = std::max(tmax,calohit->time());
     }
     for( auto const& strawxing : strawxings) {
-      tmin = std::min(tmin,strawxing->crossingTime());
-      tmax = std::max(tmax,strawxing->crossingTime());
+      tmin = std::min(tmin,strawxing->time());
+      tmax = std::max(tmax,strawxing->time());
     }
     return TimeRange(tmin,tmax);
   }

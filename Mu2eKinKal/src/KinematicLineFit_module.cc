@@ -269,7 +269,7 @@ namespace mu2e {
             std::set<double> savetimes;
             if(savefull_){
               // loop over all pieces of the fit trajectory and record their times
-              for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj.range().mid());
+              for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj->range().mid());
             } else {
               for(auto zpos : zsave_ ) {
                 // compute the time the trajectory crosses this plane

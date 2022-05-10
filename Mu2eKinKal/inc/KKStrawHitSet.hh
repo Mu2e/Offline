@@ -27,14 +27,11 @@ namespace mu2e {
       // create from a collection of panel hits
       KKStrawHitSet(SHCOLL const& hits) : hits_(hits) {}
       bool addHit(KKSTRAWHITPTR hit);
-      KinKal::Weights weight() const override { return KinKal::Weights(); }      // Panel hits intrinsically have no weight (null Weight)
       bool active() const override { return false; } // panel hits are never active
-      KinKal::Chisq chisq() const override { return KinKal::Chisq(); } // panel hits don't contribut to chisquared
       KinKal::Chisq chisq(KinKal::Parameters const& params) const override { return KinKal::Chisq(); }
       double time() const override;
-      void update(PKTRAJ const& pktraj)override {} // no algebraic update for panel hits
       // update the internals of the hit, specific to this meta-iteraion.  This will affect the next fit iteration
-      void update(PKTRAJ const& pktraj, KinKal::MetaIterConfig const& config) override;
+      void updateState(KinKal::MetaIterConfig const& config) override;
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       ~KKStrawHitSet(){}
     private:
@@ -58,7 +55,7 @@ namespace mu2e {
     return maxtime + epsilon;
   }
 
-  template<class KTRAJ> void KKStrawHitSet<KTRAJ>::update(PKTRAJ const& pktraj, KinKal::MetaIterConfig const& miconfig) {
+  template<class KTRAJ> void KKStrawHitSet<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig) {
     // look for an updater; if it's there, update the state
     auto kkphu = miconfig.findUpdater<KKCombinatoricUpdater>();
     if(kkphu != 0)kkphu->update(*this);

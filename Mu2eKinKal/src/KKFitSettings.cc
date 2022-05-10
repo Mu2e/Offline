@@ -21,22 +21,30 @@ namespace mu2e {
       config.bfcorr_ = fitconfig.bfieldCorr();
       config.tol_ = fitconfig.btol();
       // set the schedule for the meta-iterations
+      std::vector<size_t> shualg;
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig mconfig(std::get<0>(misetting));
         config.schedule_.push_back(mconfig);
+        shualg.push_back(std::get<1>(misetting));
       }
-      // create the updaters requested; these don't have to exist, but if they
-      // do, their dimension must match the meta-iterations
-      if(fitconfig.shuConfig().size() >0 && fitconfig.shuConfig().size() != config.schedule_.size())
-        throw cet::exception("RECO")<<"mu2e::KKFitSettings: KKStrawHitUpdaters don't match meta-iterations" << std::endl;
-      size_t imeta(0);
-      for(auto const& shusetting : fitconfig.shuConfig()) {
-        double maxdoca= std::get<0>(shusetting);
-        double minprob = std::get<1>(shusetting);
-        double minddoca = std::get<2>(shusetting);
-        double maxddoca = std::get<3>(shusetting);
-        KKStrawHitUpdater shupdater(maxdoca,minprob,minddoca,maxddoca);
-        config.schedule_[imeta++].addUpdater(std::any(shupdater));
+      // create the updaters requested
+      unsigned ndoca(0);
+      auto const& dhusettings = fitconfig.dhuConfig();
+      for( size_t imeta=0; imeta < config.schedule_.size(); ++imeta) {
+        auto ialg = shualg[imeta];
+        auto& miconfig = config.schedule_[imeta];
+        if(ialg == StrawHitUpdater::null) {
+          miconfig.addUpdater(std::any(NullStrawHitUpdater()));
+        } else if(ialg == StrawHitUpdater::DOCA) {
+          auto const& dhusetting = dhusettings.at(ndoca++);
+          double maxdoca= std::get<0>(dhusetting);
+          double minddoca = std::get<1>(dhusetting);
+          double maxddoca = std::get<2>(dhusetting);
+          DOCAStrawHitUpdater dhupdater(maxdoca,minddoca,maxddoca);
+          miconfig.addUpdater(std::any(dhupdater));
+        } else {
+          throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
+        }
       }
       return config;
     }
