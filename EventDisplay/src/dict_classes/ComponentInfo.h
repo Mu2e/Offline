@@ -98,7 +98,7 @@ namespace mu2e_eventdisplay
       std::vector<boost::shared_ptr<TText> >::const_iterator iter;
       for(iter=_text.begin(); iter!=_text.end(); iter++, i++)
       {
-        if((*iter)->GetTitle()!=nullptr) 
+        if((*iter)->GetTitle()!=nullptr)
         {
           if(strlen((*iter)->GetTitle())>0)
           {

@@ -9,7 +9,7 @@
 
 # Need to exit/return depending if this is source or executed.
 wasSourced=1
-if [ "`basename $0 2>/dev/null`" = "browse" ];then 
+if [ "`basename $0 2>/dev/null`" = "browse" ];then
     wasSourced=0
 fi
 
@@ -17,7 +17,7 @@ fi
 if [ ! $# == 1 ]; then
   echo "browse: must supply at least one argument"
   echo $*
-  if [ $wasSourced == 1 ]; then 
+  if [ $wasSourced == 1 ]; then
      return -1
   fi
   exit

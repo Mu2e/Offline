@@ -1,5 +1,5 @@
 //
-// Generator config file for study of pi->e nu at rest 
+// Generator config file for study of pi->e nu at rest
 //
 //
 // Original author Rob Kutschke
