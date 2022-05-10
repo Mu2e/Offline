@@ -49,14 +49,11 @@ Mu2eKinKal : {
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 10.0 ],
-      [ 2.0 ],
-      [ 0.0 ]]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0, 1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ]
+      [ 10.0, 0 ],
+      [ 2.0, 0 ],
+      [ 0.0, 0 ]
     ]
+    DOCAStrawHitUpdaterSettings : []
   }
 
   KKDRIFTFIT: {
@@ -71,15 +68,11 @@ Mu2eKinKal : {
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 10.0 ],
-      [ 2.0 ],
-      [ 0.0 ]
+      [ 10.0, 0 ],
+      [ 2.0, 0 ],
+      [ 0.0, 0 ]
     ]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0,  1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ]
-    ]
+    DOCAStrawHitUpdaterSettings : []
   }
 
   KKSEEDEXT: {
@@ -94,12 +87,10 @@ Mu2eKinKal : {
     BFieldCorrection : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 0.0 ]
+      [ 0.0, 0 ]
     ]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0, 1e-5, 10.0, 5.0  ]
-    ]
-  }
+    DOCAStrawHitUpdaterSettings : []
+ }
 
   KKDRIFTEXT: {
     PrintLevel : 0
@@ -113,16 +104,15 @@ Mu2eKinKal : {
     BFieldCorrection : true
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 0.0 ],
-      [ 2.0 ],
-      [ 1.0 ],
-      [ 0.0 ]
+      [ 0.0, 0 ],
+      [ 2.0, 1 ],
+      [ 1.0, 1 ],
+      [ 0.0, 1 ]
     ]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0,  1e-5, 10.0, 5.0  ],
-      [ 6.0, 1e-5, 0.5, 5.0 ],
-      [ 6.0, 1e-5, 0.5, 5.0 ],
-      [ 6.0, 1e-5, 0.5, 5.0 ]
+    DOCAStrawHitUpdaterSettings : [
+      [ 6.0, 0.5, 5.0 ],
+      [ 6.0, 0.5, 5.0 ],
+      [ 6.0, 0.5, 5.0 ]
     ]
   }
 
