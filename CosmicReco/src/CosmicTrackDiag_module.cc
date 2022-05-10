@@ -10,8 +10,10 @@
 #include "Offline/CosmicReco/inc/CosmicTrackMCInfo.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/CosmicReco/inc/PDFFit.hh"
+#include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
 
 //Mu2e Data Prods:
+//
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -26,8 +28,6 @@
 
 //Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "Offline/TrkDiag/inc/TrkMCTools.hh"
-#include "Offline/CosmicReco/inc/DriftFitUtils.hh"
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
@@ -63,12 +63,16 @@ namespace mu2e
         using Comment=fhicl::Comment;
         fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),2};
         fhicl::Atom<int> printlevel{Name("printLevel"), Comment("print level"), 0};
-        fhicl::Atom<bool> mcdiag{Name("mcdiag"), Comment("set on for MC info"),true};
-        fhicl::Atom<art::InputTag> shtag{Name("StrawHitCollection"),Comment("tag for combo hit collection")};
+        fhicl::Atom<bool> mcdiag{Name("mcdiag"), Comment("set on for MC info"),false};
+        fhicl::Atom<bool> shdiag{Name("shdiag"), Comment("shdiag"),false};
+        fhicl::Atom<bool> ubdiag{Name("ubresids"), Comment("Calculate unbiased residuals"),false};
+        fhicl::Atom<art::InputTag> phtag{Name("PanelHitCollection"),Comment("tag for panel hits")};
+        fhicl::Atom<art::InputTag> chtag{Name("ComboHitCollection"),Comment("tag for combo hit collection (single straw hit level)")};
+        fhicl::Atom<art::InputTag> shtag{Name("StrawHitCollection"),Comment("tag for straw hit objects")};
         fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
         fhicl::Atom<art::InputTag> tstag{Name("CosmicTrackSeedCollection"),Comment("CosmicTrackSeed collection tag")};
-        fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
-        fhicl::Atom<art::InputTag> pbtmcTag{Name("ProtonBunchTimeMC"),Comment("ProtonbBunchTimeMC tag"),"EWMProducer"};
+        fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag")};
+        fhicl::Atom<art::InputTag> pbtmcTag{Name("ProtonBunchTimeMC"),Comment("ProtonBunchTimeMC tag")};
         fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
       };
       typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -76,7 +80,6 @@ namespace mu2e
       explicit CosmicTrackDiag(const Parameters& conf);
       virtual ~CosmicTrackDiag();
       virtual void beginJob() override;
-      virtual void beginRun(const art::Run& r) override;
       virtual void analyze(const art::Event& e) override;
     private:
 
@@ -85,21 +88,26 @@ namespace mu2e
       int  _diag;
       int _printlevel;
       bool _mcdiag;
-      std::ofstream outputfile;
-      art::InputTag   _shtag;//combo
+      bool _shdiag;
+      bool _ubdiag;
+      art::InputTag   _phtag;
+      art::InputTag   _chtag;//combo
+      art::InputTag   _shtag;
       art::InputTag   _tctag;//timeclusters
       art::InputTag   _tstag;//Striaght tracks
       art::InputTag   _mcdigistag; //MC digis
       art::InputTag _pbtmcTag;
       SimParticleTimeOffset _toff;
-      const ComboHitCollection* _shcol;
+      const ComboHitCollection* _phcol;
+      const ComboHitCollection* _chcol;
+      const StrawHitCollection* _shcol;
       const TimeClusterCollection* _tccol;
       const CosmicTrackSeedCollection* _tscol;
       const StrawDigiMCCollection* _mcdigis;
       CLHEP::Hep3Vector _mcpos, _mcdir;
 
       Float_t _pbtmc;
-      const Tracker* tracker;
+      ProditionsHandle<Tracker> _alignedTracker_h;
       ProditionsHandle<StrawResponse> _strawResponse_h;
 
 
@@ -109,6 +117,7 @@ namespace mu2e
 
       // track tree
       Int_t _evt;
+      Int_t _run;
       Int_t _ntrack;
       Int_t _nsh; // # associated straw hits / event
       Int_t _ntc; // # clusters/event
@@ -116,6 +125,7 @@ namespace mu2e
       Int_t _n_stations; // # stations
       Int_t _n_planes; // # stations
       Int_t _mcnsh;
+      Int_t _outsidehits;
       Float_t _minuitdoca, _minuitangle;
       Int_t _tcnhits, _ontrackhits;
       Int_t _converged, _minuitconverged;
@@ -126,22 +136,33 @@ namespace mu2e
 
       // hit tree
       Float_t _hitminuitdoca, _hitminuitlong, _hitminuitdpocat;
-      Float_t _hittruedoca, _hitmcdoca, _hitrecodoca;
+      Float_t _hitublong, _hitubdoca, _hitubtresid, _hitublongrms, _hitubtresidrms;
+      Float_t _hitubt0;
+      Float_t _hitfiterr,_hitfiterr2;
+      Float_t _hitdz;
+      Float_t _hittruedoca, _hitmcdoca, _hitrecodoca, _hitdeltat;
+      Float_t _hittot[2];
+
       Float_t _hitmcdpocat;
       Float_t _hittruelong, _hitmclong, _hitrecolong;
       Float_t _hitmctresid, _hitmctresidrms, _hitmcdrifttime, _hitmcdrifttimeoffset, _hitmctrajtime;
+      Float_t _hitmcmom;
+      Int_t _hitmcpdg, _hitmccc;
       Int_t _hitbackground;
-      Int_t _hitused;
+      Int_t _hitused, _hitintclust;
       Int_t _hitambig, _hitmcambig;
       Float_t _hitrecolongrms;
       Float_t _hittresid, _hittresidrms, _hitdrifttime, _hitdrifttimeoffset, _hittrajtime, _hitllike;
       Float_t _hitdresid, _hitdresiderr;
       Float_t _hitedep, _hitproptime, _hittime;
 
+      Int_t _hitplane, _hitpanel, _hitstraw;
+      Float_t _strawlen;
+
       Float_t _ewMarkerOffset;
 
-      void GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol);
-      void hitDiag(const art::Event& event, StrawResponse const& srep);
+      void GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol, const Tracker* tracker);
+      void hitDiag(const art::Event& event, StrawResponse const& srep, int its, const Tracker* tracker);
       bool findData(const art::Event& evt);
   };
 
@@ -150,6 +171,10 @@ namespace mu2e
     _diag (conf().diag()),
     _printlevel (conf().printlevel()),
     _mcdiag (conf().mcdiag()),
+    _shdiag (conf().shdiag()),
+    _ubdiag (conf().ubdiag()),
+    _phtag (conf().phtag()),
+    _chtag (conf().chtag()),
     _shtag (conf().shtag()),
     _tctag (conf().tctag()),
     _tstag (conf().tstag()),
@@ -178,7 +203,9 @@ namespace mu2e
 
       //Create branches:
       _trackT->Branch("evt",&_evt,"evt/I");  // add event id
+      _trackT->Branch("run",&_run,"run/I");
       _trackT->Branch("ntrack",&_ntrack,"ntrack/I");
+      _trackT->Branch("outsidehits",&_outsidehits,"outsidehits/I");
       _trackT->Branch("StrawHitsInEvent", &_nsh, "StrawHitsInEvent/I");
       _trackT->Branch("PanelsCrossedInEvent", &_n_panels, "PanelsCrossedInEvent/I");
       _trackT->Branch("PlanesCrossedInEvent", &_n_planes, "PlanesCrossedInEvent/I");
@@ -215,8 +242,12 @@ namespace mu2e
 
       _hitT=tfs->make<TTree>("hitT","Hit tree");
       _hitT->Branch("evt",&_evt,"evt/I");  // add event id
+      _hitT->Branch("run",&_run,"run/I");
+      _hitT->Branch("ntrack",&_ntrack,"ntrack/I");
+      _hitT->Branch("outsidehits",&_outsidehits,"outsidehits/I");
       _hitT->Branch("doca",&_hitminuitdoca,"doca/F");
       _hitT->Branch("hitused",&_hitused,"hitused/I");
+      _hitT->Branch("hitintclust",&_hitintclust,"hitintclust/I");
       _hitT->Branch("long",&_hitminuitlong,"long/F");
       _hitT->Branch("time",&_hittime,"time/F");
       _hitT->Branch("proptime",&_hitproptime,"proptime/F");
@@ -227,7 +258,7 @@ namespace mu2e
       _hitT->Branch("recodoca",&_hitrecodoca,"recodoca/F");
       _hitT->Branch("recolongrms",&_hitrecolongrms,"recolongrms/F");
       _hitT->Branch("tresid",&_hittresid,"tresid/F");
-      _hitT->Branch("tresidrms",&_hittresid,"tresidrms/F");
+      _hitT->Branch("tresidrms",&_hittresidrms,"tresidrms/F");
       _hitT->Branch("dresid",&_hitdresid,"dresid/F");
       _hitT->Branch("dresiderr",&_hitdresiderr,"dresiderr/F");
       _hitT->Branch("llike",&_hitllike,"llike/F");
@@ -240,6 +271,29 @@ namespace mu2e
       _hitT->Branch("llike",&_llike,"llike/F");
       _hitT->Branch("maxtresid",&_maxtresid,"maxtresid/F");
       _hitT->Branch("maxllike",&_maxllike,"maxllike/F");
+      _hitT->Branch("PanelsCrossedInEvent", &_n_panels, "PanelsCrossedInEvent/I");
+      _hitT->Branch("plane",&_hitplane,"plane/I");
+      _hitT->Branch("panel",&_hitpanel,"panel/I");
+      _hitT->Branch("straw",&_hitstraw,"straw/I");
+      _hitT->Branch("strawlen",&_strawlen,"strawlen/F");
+      _hitT->Branch("edep",&_hitedep,"edep/F");
+      _hitT->Branch("ambig",&_hitambig,"ambig/I");
+      _hitT->Branch("dz",&_hitdz,"dz/F");
+      _hitT->Branch("edep",&_hitedep,"edep/F");
+
+      if (_ubdiag){
+        _hitT->Branch("ublong",&_hitublong,"ublong/F");
+        _hitT->Branch("ublongrms",&_hitublongrms,"ublongrms/F");
+        _hitT->Branch("ubdoca",&_hitubdoca,"ubdoca/F");
+        _hitT->Branch("ubt0",&_hitubt0,"ubt0/F");
+        _hitT->Branch("ubtresid",&_hitubtresid,"ubtresid/F");
+        _hitT->Branch("ubtresidrms",&_hitubtresidrms,"ubtresidrms/F");
+      }
+      if (_shdiag){
+        _hitT->Branch("deltat",&_hitdeltat,"deltat/F");
+        _hitT->Branch("tot",&_hittot,"totcal/F:tothv/F");
+      }
+
 
       if (_mcdiag){
         _hitT->Branch("background",&_hitbackground,"background/I");
@@ -259,23 +313,22 @@ namespace mu2e
         _hitT->Branch("mct0",&_mct0,"mct0/F");
         _hitT->Branch("minuitdoca",&_minuitdoca,"minuitdoca/F");
         _hitT->Branch("minuitangle",&_minuitangle,"minuitangle/F");
-        _hitT->Branch("ambig",&_hitambig,"ambig/I");
         _hitT->Branch("mcambig",&_hitmcambig,"mcambig/I");
-        _hitT->Branch("edep",&_hitedep,"edep/F");
+        _hitT->Branch("mcpdg",&_hitmcpdg,"mcpdg/I");
+        _hitT->Branch("mccc",&_hitmccc,"mccc/I");
+        _hitT->Branch("mcmom",&_hitmcmom,"mcmom/F");
       }
     }
-  }
-
-  void CosmicTrackDiag::beginRun(const art::Run& run){
-    mu2e::GeomHandle<mu2e::Tracker> th;
-    tracker = th.get();
   }
 
   void CosmicTrackDiag::analyze(const art::Event& event) {
 
     _evt = event.id().event();  // add event id
+    _run = event.id().run();
     if(!findData(event)) // find data
       throw cet::exception("RECO")<<"No Time Clusters in event"<< endl;
+
+    Tracker const& tracker = _alignedTracker_h.get(event.id());
 
     StrawResponse const& srep = _strawResponse_h.get(event.id());
 
@@ -284,13 +337,13 @@ namespace mu2e
 
 
     if (_mcdiag){
-      GetMCTrack(event, *_mcdigis);
+      GetMCTrack(event, *_mcdigis,&tracker);
     }
 
     std::vector<uint16_t> panels, planes, stations;
     _nsh = 0;
-    for(size_t ich = 0;ich < _shcol->size(); ++ich){
-      ComboHit const& chit =(*_shcol)[ich];
+    for(size_t ich = 0;ich < _chcol->size(); ++ich){
+      ComboHit const& chit =(*_chcol)[ich];
       _nsh += chit.nStrawHits();
       uint16_t panelid = chit.strawId().uniquePanel();
       if (std::find(panels.begin(),panels.end(),panelid) == panels.end())
@@ -309,16 +362,15 @@ namespace mu2e
 
     _minuitconverged = 0;
     _converged = 0;
-    //FIXME more than one track per event?
-    if (_tscol->size() > 0){
-      auto tseed = _tscol->at(0);
+    for (size_t its=0;its<_tscol->size();its++){
+      auto tseed = _tscol->at(its);
 
       auto tclust = tseed._timeCluster;
       _tcnhits = 0;
       const std::vector<StrawHitIndex>& shIndices = tclust->hits();
       for (size_t i=0; i<shIndices.size(); ++i) {
         int loc = shIndices[i];
-        const ComboHit& ch  = _shcol->at(loc);
+        const ComboHit& ch  = _chcol->at(loc);
         _tcnhits += ch.nStrawHits();
       }
 
@@ -348,11 +400,13 @@ namespace mu2e
       _maxllike = 0;
       _llike = 0;
       _ontrackhits = 0;
+      _outsidehits = 0;
+
       for (size_t i=0; i<tseed._straw_chits.size(); ++i) {
         auto sh = tseed._straw_chits[i];
 
         double llike = 0;
-        Straw const& straw = tracker->getStraw(sh.strawId());
+        Straw const& straw = tracker.getStraw(sh.strawId());
         TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), minuitpos, minuitdir);
         double longdist = (pca.point1()-straw.getMidPoint()).dot(straw.getDirection());
         double longres = srep.wpRes(sh.energyDep()*1000., fabs(longdist));
@@ -360,12 +414,18 @@ namespace mu2e
         if (pca.dca() < 3)
           _ontrackhits += 1;
 
+        double even_z = tracker.getStraw(StrawId(sh.strawId().plane(),sh.strawId().panel(),0)).getMidPoint().z();
+        double odd_z = tracker.getStraw(StrawId(sh.strawId().plane(),sh.strawId().panel(),1)).getMidPoint().z();
+        if ((pca.point2().z() > even_z && pca.point2().z() > odd_z) || (pca.point2().z() < even_z && pca.point2().z() < odd_z)){
+          _outsidehits++;
+        }
+
         llike += pow(longdist-sh.wireDist(),2)/pow(longres,2);
 
         double drift_time = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0);
-        drift_time += srep.driftDistanceOffset(sh.strawId(), 0, 0, pca.dca());
+        drift_time += srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
 
-        double drift_res = srep.driftDistanceError(sh.strawId(), 0, 0, pca.dca());
+        double drift_res = srep.driftTimeError(sh.strawId(), 0, 0, pca.dca());
 
         double traj_time = ((pca.point2() - minuitpos).dot(minuitdir))/299.9;
         double hit_t0 = sh.time() - sh.propTime() - traj_time - drift_time;
@@ -378,6 +438,7 @@ namespace mu2e
           _maxllike = llike;
         _llike += llike;
       }
+      _llike /= tseed._straw_chits.size();
 
 
       TwoLinePCA minuitpca( _mcpos, _mcdir, minuitpos, minuitdir);
@@ -387,22 +448,32 @@ namespace mu2e
       if (_printlevel > 0){
         std::cout << "Track found! angle: " << _minuitangle << " hits on track: " << _ontrackhits << " / " << _nsh << std::endl;
       }
+      _trackT->Fill();
+
+      if (_diag > 1)
+        hitDiag(event, srep, its, &tracker);
     }
-    _trackT->Fill();
 
-    if (_diag > 1)
-      hitDiag(event, srep);
-
+    if (_tscol->size() == 0){
+      if (_diag > 1)
+        hitDiag(event, srep, -1, &tracker);
+      _trackT->Fill();
+    }
   }
 
   bool CosmicTrackDiag::findData(const art::Event& evt){
+    _phcol = 0;
+    _chcol = 0;
     _shcol = 0;
     _tccol = 0;
     _tscol = 0;
     _ewMarkerOffset = 0;
     _pbtmc = 0;
-    auto shH = evt.getValidHandle<ComboHitCollection>(_shtag);
-    _shcol = shH.product();
+
+    auto phH = evt.getValidHandle<ComboHitCollection>(_phtag);
+    _phcol = phH.product();
+    auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
+    _chcol = chH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tctag);
     _tccol =tcH.product();
     auto tsH = evt.getValidHandle<CosmicTrackSeedCollection>(_tstag);
@@ -416,11 +487,16 @@ namespace mu2e
       _mcdigis = mcdH.product();
       _toff.updateMap(evt);
     }
-    return _shcol != 0 && _tccol!=0 && _tscol !=0 && (_mcdigis != 0 || !_mcdiag);
+
+    if (_shdiag){
+      auto shH = evt.getValidHandle<StrawHitCollection>(_shtag);
+      _shcol = shH.product();
+    }
+    return _phcol != 0 && _chcol != 0 && _tccol!=0 && _tscol !=0 && (_mcdigis != 0 || !_mcdiag) && (_shcol != 0 || !_shdiag);
   }
 
 
-  void CosmicTrackDiag::GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol) {
+  void CosmicTrackDiag::GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol, const Tracker* tracker) {
     // get all possible directions
     std::vector<CLHEP::Hep3Vector> pppos;
     std::vector<CLHEP::Hep3Vector> ppdir;
@@ -503,8 +579,9 @@ namespace mu2e
     _mcnsh = 0;
     // now lets count the number of straw hits in this mc event
     // loop over combohits, for each combo hit get all the sub strawhits
-    for (size_t ich=0;ich<_shcol->size();ich++){
-        const ComboHit &sh = _shcol->at(ich);
+    //
+    for (size_t ich=0;ich<_chcol->size();ich++){
+        const ComboHit &sh = _chcol->at(ich);
         const Straw& straw = tracker->getStraw( sh.strawId() );
 
         // shids.size() should be 1 if this is really all single StrawHits
@@ -533,11 +610,11 @@ namespace mu2e
     }
   }
 
-  void CosmicTrackDiag::hitDiag(const art::Event& event, StrawResponse const& srep) {
+  void CosmicTrackDiag::hitDiag(const art::Event& event, StrawResponse const& srep, int its, const Tracker* tracker) {
     GaussianDriftFit gdf(_shcol, srep, tracker);
     // loop over combohits
-    for (size_t ich=0;ich<_shcol->size();ich++){
-      const ComboHit &sh = _shcol->at(ich);
+    for (size_t ich=0;ich<_chcol->size();ich++){
+      const ComboHit &sh = _chcol->at(ich);
       const Straw& straw = tracker->getStraw( sh.strawId() );
 
 
@@ -562,8 +639,23 @@ namespace mu2e
       _hitambig = -999;
       _hitmcambig = -999;
       _hitedep = -999;
+      _hitublong = -999;
+      _hitublongrms = -999;
+      _hitubdoca = -999;
+      _hitubt0 = -999;
+      _hitdz = -999;
+      _hitubtresid = -999;
+      _hitubtresidrms = -999;
+      _hitdeltat = -999;
+      _hittot[0] = -999;
+      _hittot[1] = -999;
+      _hitintclust = 0;
 
 
+      _hitplane = sh.strawId().getPlane();
+      _hitpanel = sh.strawId().getPanel();
+      _hitstraw = sh.strawId().getStraw();
+      _strawlen = straw.halfLength();
 
       _hitedep = sh.energyDep()*1000.;
       _hitrecolong = sh.wireDist();
@@ -572,6 +664,14 @@ namespace mu2e
 
       _hitproptime = sh.propTime();
       _hittime = sh.time();
+
+      if( _shcol){
+        const StrawHit &strawh = _shcol->at(ich);
+        _hitdeltat = strawh.time(StrawEnd::hv)-strawh.time(StrawEnd::cal);
+        _hittot[0] = strawh.TOT(StrawEnd::cal);
+        _hittot[1] = strawh.TOT(StrawEnd::hv);
+      }
+
 
       CLHEP::Hep3Vector pcapoint2(0,0,0);
       if (_mcdiag){
@@ -597,6 +697,10 @@ namespace mu2e
           _hitbackground = 0;
         }
 
+        _hitmcpdg = sp.pdgId();
+        _hitmccc = sp.creationCode();
+        _hitmcmom = sgs.momvec().mag();
+
         // Get the actual DOCA of the MC step
         TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
             GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
@@ -619,14 +723,14 @@ namespace mu2e
           _hitmctrajtime = (GenVector::Hep3Vec(sgs.startPosition())-_mcpos).dot(_mcdir.unit())/299.9;
         }
         _hitmcdrifttime = srep.driftDistanceToTime(sh.strawId(), pca1.dca(), 0);
-        _hitmcdrifttimeoffset = srep.driftDistanceOffset(sh.strawId(), 0, 0, pca1.dca());
+        _hitmcdrifttimeoffset = srep.driftTimeOffset(sh.strawId(), 0, 0, pca1.dca());
         _hitmctresid = sh.time() - (_mct0 + _hitmctrajtime + sh.propTime() + _hitmcdrifttime + _hitmcdrifttimeoffset);
 
       }
 
 
-      if (_tscol->size() > 0){
-        auto tseed = _tscol->at(0);
+      if (its >= 0){
+        auto tseed = _tscol->at(its);
         auto minuitpos = GenVector::Hep3Vec(tseed._track.MinuitEquation.Pos);
         auto minuitdir = GenVector::Hep3Vec(tseed._track.MinuitEquation.Dir.unit());
         // convert to y orientation
@@ -636,15 +740,29 @@ namespace mu2e
           minuitpos -= minuitdir*minuitpos.y()/minuitdir.y();
 
 
+        size_t found_k = 0;
         bool found = false;
         for (size_t k=0;k<tseed._straw_chits.size();k++){
           if (tseed._straw_chits[k].strawId() == sh.strawId() && tseed._straw_chits[k].time() == sh.time()){
             found = true;
+            found_k = k;
             break;
           }
         }
         if (found)
           _hitused = 1;
+
+        auto tclust = tseed._timeCluster;
+        ComboHitCollection tchits;
+        std::vector<ComboHitCollection::const_iterator> chids;
+        _phcol->fillComboHits(event, tclust->hits(), chids);
+        for (auto const& it : chids){
+          if (it[0].strawId() == sh.strawId() && it[0].time() == sh.time()){
+            _hitintclust = 1;
+            break;
+          }
+        }
+
 
         TwoLinePCA pca3( straw.getMidPoint(), straw.getDirection(),
             minuitpos, minuitdir);
@@ -655,6 +773,7 @@ namespace mu2e
         CLHEP::Hep3Vector perp = (minuitdir.cross(straw.getDirection())).unit();
         double dperp = perp.dot(sep);
         _hitambig = dperp > 0 ? -1 : 1;
+        _hitdz = sep.z();
 
 
 
@@ -662,9 +781,9 @@ namespace mu2e
 
 
         _hitdrifttime = srep.driftDistanceToTime(sh.strawId(), pca3.dca(), 0);
-        _hitdrifttimeoffset = srep.driftDistanceOffset(sh.strawId(), 0, 0, pca3.dca());
+        _hitdrifttimeoffset = srep.driftTimeOffset(sh.strawId(), 0, 0, pca3.dca());
         _hittrajtime = ((pca3.point2() - minuitpos).dot(minuitdir))/299.9;
-        _hittresidrms = srep.driftDistanceError(sh.strawId(), 0, 0, pca3.dca());
+        _hittresidrms = srep.driftTimeError(sh.strawId(), 0, 0, pca3.dca());
 
         double hit_t0 = sh.time() - sh.propTime() - _hittrajtime - _hitdrifttime - _hitdrifttimeoffset;
 
@@ -685,6 +804,51 @@ namespace mu2e
 
         if (_mcdiag){
           _hitminuitdpocat = sqrt((pcapoint2-pca3.point2()).mag2()-pow((pcapoint2-pca3.point2()).dot(straw.getDirection()),2));
+        }
+
+        // redo the full fit without this hit to get unbiased residual
+        if (_ubdiag && found){
+          auto dir = tseed._track.FitEquation.Dir;
+          auto intercept = tseed._track.FitEquation.Pos;
+          dir /= -1 * dir.y();
+          intercept -= dir * intercept.y() / dir.y();
+
+          std::vector<double> errors(5, 0);
+          std::vector<double> pars(5, 0);
+
+          pars[0] = intercept.x();
+          pars[1] = intercept.z();
+          pars[2] = dir.x();
+          pars[3] = dir.z();
+          pars[4] = tseed._track.FitParams.T0;
+          errors[0] = tseed._track.FitParams.Covarience.sigA0;
+          errors[1] = tseed._track.FitParams.Covarience.sigB0;
+          errors[2] = tseed._track.FitParams.Covarience.sigA1;
+          errors[3] = tseed._track.FitParams.Covarience.sigB1;
+//          errors[4] = tseed._t0.t0Err();
+          errors[4] = 1.0;
+
+          std::vector<double> temp_cov;
+          bool temp_converged;
+          // Define the PDF used by Minuit:
+          GaussianDriftFit fit2(tseed._straw_chits, srep, tracker);
+          fit2.setExcludeHit(found_k);
+          MinuitDriftFitter::DoDriftTimeFit(pars, errors, temp_cov, temp_converged, fit2, 10, 0, 0.5);
+          if (temp_converged){
+            CLHEP::Hep3Vector temppos(pars[0],0,pars[1]);
+            CLHEP::Hep3Vector tempdir(pars[2],-1,pars[3]);
+            TwoLinePCA ubpca( straw.getMidPoint(), straw.getDirection(),
+                temppos, tempdir);
+            _hitublong = (ubpca.point1()-straw.getMidPoint()).dot(straw.getDirection());
+            _hitubdoca = ubpca.dca();
+            _hitubt0 = pars[4];
+            double uhitdrifttime = srep.driftDistanceToTime(sh.strawId(), ubpca.dca(), 0);
+            double uhitdrifttimeoffset = srep.driftTimeOffset(sh.strawId(), 0, 0, ubpca.dca());
+            double uhittrajtime = ((ubpca.point2() - temppos).dot(tempdir))/299.9;
+            _hitubtresidrms = srep.driftTimeError(sh.strawId(), 0, 0, ubpca.dca());
+            double uhit_t0 = sh.time() - sh.propTime() - uhittrajtime - uhitdrifttime - uhitdrifttimeoffset;
+            _hitubtresid = uhit_t0-_hitubt0;
+          }
         }
       }
       _hitT->Fill();
