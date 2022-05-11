@@ -43,7 +43,8 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        ] )
 
-BINLIBS   = [ mainlib, 'mu2e_DbTables' , 'cetlib', 'cetlib_except', "pq" ]
+BINLIBS   = [ mainlib, 'mu2e_DbTables' , 'boost_program_options',
+       'cetlib', 'cetlib_except', "pq" ]
 helper.make_bin("dbTool",BINLIBS,[])
 helper.make_bin("epicsTool",BINLIBS,[])
 
