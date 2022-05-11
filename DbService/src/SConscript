@@ -11,7 +11,7 @@ Import('mu2e_helper')
 
 helper=mu2e_helper(env)
 
-mainlib = helper.make_mainlib ( [ 'mu2e_DbTables',
+mainlib = helper.make_mainlib ( [ 'mu2e_DbTables','mu2e_GeneralUtilities',
                                   'art_Framework_Core',
                                   'art_Framework_Services_Registry',
                                   'CLHEP',

@@ -1,4 +1,6 @@
 #include "Offline/DbService/inc/EpicsVar.hh"
+#include "Offline/GeneralUtilities/inc/TimeUtility.hh"
+#include "cetlib_except/exception.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -11,8 +13,10 @@ using namespace mu2e;
 using namespace boost;
 
 //**************************************************
-
-void EpicsVar::set(std::string const& csv) {
+// Example csv:
+// 642,2022-05-05 14:10:02.089404-05:00,89404264,5,9,None,55.0,None, ,None
+//
+EpicsVar::EpicsVar(std::string const& csv) {
   _csv = csv;
 
   std::vector<std::string> sv;
@@ -27,9 +31,17 @@ void EpicsVar::set(std::string const& csv) {
     sv.emplace_back(ss);
   }
 
+  if(sv.size()!=10) {
+    throw cet::exception("EPICSVAR_BAD_CSV")
+      << " EpicsVar::ctor number of csv fields !=10 : \n   " << csv << " \n";
+  }
+
   _channel_id = std::stoll(sv[0]);
   _smpl_time_s = sv[1];
-  _smpl_time_t = 0;
+  if(TimeUtility::parseTimeTZ(sv[1],_smpl_time_t)) {
+    throw cet::exception("EPICSVAR_BAD_TIME")
+      << " EpicsVar::ctor could not parse time " << sv[1] << " \n";
+  }
   _nanosecs = std::stoll(sv[2]);
   _severity_id = std::stoll(sv[3]);
   _status_id = std::stoll(sv[4]);
@@ -46,10 +58,14 @@ void EpicsVar::set(std::string const& csv) {
     _float_val = std::stod(sv[6]);
   }
 
-  std::string _str_val = sv[7];
+  if (sv[7] == "None") {
+    _str_val = "";
+  } else {
+    _str_val = sv[7];
+  }
 
-  if (!sv[9].empty()) {
-    _datatype = sv[9][0];
+  if (!sv[8].empty()) {
+    _datatype = sv[8][0];
   } else {
     _datatype = ' ';
   }
