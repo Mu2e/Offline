@@ -876,7 +876,7 @@ namespace mu2e{
 
       std::string eveinfo = Form("Event : %i     Run : %i     Subrun : %i",_event,_run,_subrun); 
       auto evinfo = new TEveText(eveinfo.c_str());
-      double posy = -1400.0;
+      double posy = -140.0;
       double posz = 0.0;
       evinfo->SetFontSize(15);
       evinfo->SetMainColor(kRed);

@@ -42,7 +42,7 @@ namespace mu2e{
         std::vector<int> particleIds_;
         const Int_t linewidth =  3; 
         const Int_t fontsize = 15; 
-        const double text_z_pos = 3000.; 
+        const double text_z_pos = 300.; 
         ClassDef(TEveMu2eMCInterface,0);
 
   }; //end class def
