@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_upperExtension_S.ccl
 
@@ -28,7 +28,7 @@ vector<double> building.psArea.upper.S.xPositions = {
 vector<double> building.psArea.upper.S.yPositions = {
   -609.6,   // P0
   -609.6,   // P1
-  -2216.6,   // P2 mod DNB was -2045.09 
+  -2216.6,   // P2 mod DNB was -2045.09
   -2118,   // P3 mod DNB was  -2143.84
   -3077.66,   // P4
   -2682.68,   // P5

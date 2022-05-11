@@ -22,7 +22,7 @@ double mbs.MBSCZ              = 15273.0;
 
 vector<double> mbs.BSTSInnerRadii = { 437.5, 437.5, 437.5 };
 vector<double> mbs.BSTSOuterRadii = { 450.2, 475.6, 475.6 }; //last radii 462.9 --> 475.6 (MM)
-vector<double> mbs.BSTSZLengths   = { 1000.0, 2270.0, 816.0 }; 
+vector<double> mbs.BSTSZLengths   = { 1000.0, 2270.0, 816.0 };
 double mbs.BSTSHLength        =  2043.0;
 string mbs.BSTSMaterialName   = "StainlessSteel";
 double mbs.BSTSZrelCntr       =    0.0;
@@ -78,20 +78,20 @@ string mbs.BSBSMaterialName   = "Polyethylene0935"; // "Polyethylene096" --> "Po
 double mbs.BSBSZrelCntr            =  737.5;
 
 
-// Pump-out holes 
+// Pump-out holes
 int    mbs.nHolesSteel = 3;
 int    mbs.nHolesUpstreamPoly = 1;
 int    mbs.nHolesDownstreamPoly = 2;
 double mbs.steelHoleXDim = 615.0;
-double mbs.steelHoleYDim = 164.4; // 164.4 --> 
+double mbs.steelHoleYDim = 164.4; // 164.4 -->
 double mbs.steelHoleZDim = 300.0;
 double mbs.upPolyHoleXDim = 566.0; // 460.0 --> 566.0 (MM)
 double mbs.upPolyHoleYDim = 300.0; // 209 --> 213 to match inner radii changes
-double mbs.upPolyHoleZDim = 250.0; 
+double mbs.upPolyHoleZDim = 250.0;
 double mbs.downPolyHoleXDim = 566.0; // 490 --> 566 (MM)
 double mbs.downPolyHoleYDim = 300.0; //164.4 --> 168.4
 double mbs.downPolyHoleZDim = 250.0;
-vector<double> mbs.steelHoleCenter1 = {0.0, -393.4, 1340.0}; 
+vector<double> mbs.steelHoleCenter1 = {0.0, -393.4, 1340.0};
 vector<double> mbs.steelHoleCenter2 = {0.0, -393.4, 1960.0};
 vector<double> mbs.steelHoleCenter3 = {0.0, -393.4, 2580.0};
 vector<double> mbs.upPolyHoleCenter1   = {0.0, -319.45, 1315.0};   // moved to line up with steel edge (MM)
