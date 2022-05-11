@@ -12,7 +12,7 @@
 #include <string>
 
 
-namespace mu2e 
+namespace mu2e
 {
 
   class MVATools
@@ -20,9 +20,9 @@ namespace mu2e
      public:
        struct Config
        {
-	  fhicl::Atom<std::string> weights{ fhicl::Name("MVAWeights"), fhicl::Comment("MVA Weights xml file")};
-       };       
-       
+          fhicl::Atom<std::string> weights{ fhicl::Name("MVAWeights"), fhicl::Comment("MVA Weights xml file")};
+       };
+
        explicit MVATools(fhicl::ParameterSet const&);
        explicit MVATools(const Config& conf);
        explicit MVATools(const std::string& xmlfilename);
@@ -33,14 +33,14 @@ namespace mu2e
        float    evalMVA(const std::vector<float>&,  const MVAMask& vmask=0xffffffff) const;
        float    evalMVA(const std::vector<double>&, const MVAMask& vmask=0xffffffff) const;
        void     showMVA() const;
-       
-       const std::vector<std::string>& titles() const { return title_;}     
-       const std::vector<std::string>& labels() const { return label_;}     
- 
- 
-    private:       
+
+       const std::vector<std::string>& titles() const { return title_;}
+       const std::vector<std::string>& labels() const { return label_;}
+
+
+    private:
        enum   aType {null, tanh, sigmoid, relu};
-       
+
        void   getGen(xercesc::DOMDocument* xmlDoc);
        void   getOpts(xercesc::DOMDocument* xmlDoc);
        void   getNorm(xercesc::DOMDocument* xmlDoc);
@@ -49,13 +49,13 @@ namespace mu2e
 
        mutable std::vector<float> x_;
        mutable std::vector<float> y_;
-       mutable std::vector<float> fv_;      
+       mutable std::vector<float> fv_;
        std::vector<float>         wgts_;
        std::vector<unsigned>      links_;
        unsigned                   maxNeurons_;
        aType                      activeType_;
        bool                       oldMVA_;
-       bool                       isNorm_;       
+       bool                       isNorm_;
        std::vector<float>         voffset_;
        std::vector<float>         vscale_;
        std::vector<std::string>   title_;

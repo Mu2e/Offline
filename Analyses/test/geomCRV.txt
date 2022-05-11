@@ -10,7 +10,7 @@
 
 bool hasHall            = true;
 bool hasTarget          = true;
-bool hasProtonAbsorber  = true; 
+bool hasProtonAbsorber  = true;
 bool hasNeutronAbsorber = true;
 bool hasCalorimeter     = true;
 bool hasBFieldManager   = true;
@@ -19,7 +19,7 @@ bool hasVirtualDetector = true;
 bool hasCosmicRayShield = true;
 bool hasMBS             = true; // MBS assumes the presence of CosmicRayShield(Steel) & NeutronAbsorber
 
-// Some G4 controls which does not allow it to consume all the memory 
+// Some G4 controls which does not allow it to consume all the memory
 // or to spend all the time tracking one bad particle
 int g4.steppingActionMaxSteps = 10000;
 int g4.stepsSizeLimit = 10000;
@@ -37,20 +37,20 @@ double g4SteppingAction.eKineMin      = 0.000001;    // Kinetic energy in MeV; 1
 
 int            crs.scintillatorLayersPerModule              = 3;
 int            crs.scintillatorBarsPerFullLayer             = 20;
-vector<double> crs.scintillatorBarHalfLengths               = { 5.,  2475., 50.}; 
+vector<double> crs.scintillatorBarHalfLengths               = { 5.,  2475., 50.};
 string         crs.scintillatorBarMaterialName              = "G4_POLYSTYRENE";
 double         crs.scintillatorLayerShift                   = 25.0;
 double         crs.scintillatorLayerGap                     = 0.0;
 double         crs.scintillatorBarPigmentationHalfThickness = 0.125; // not used for now
-string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE"; 
+string         crs.scintillatorBarPigmentationMaterialName  = "G4_TITANIUM_DIOXIDE";
 vector<double> crs.scintillatorModuleOuterSheetHalfLengths  = { 0.8, 2475., 1045.}; // 0.063"=1.6mm;
 string         crs.scintillatorModuleOuterSheetMaterial     = "G4_Al";
 string         crs.scintillatorModuleInterLayerSheetMaterialName  = "G4_POLYSTYRENE";
 double         crs.scintillatorModuleInterLayerSheetHalfThickness = 6.0; // 0.125"=3.175mm; or 57.2-30-3.2/4
-vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2475., 157.}; // fig 11.9 p.179 
+vector<double> crs.moduleUnistrutHalfLengths                = {28.,  2475., 157.}; // fig 11.9 p.179
 double         crs.wallUnistrutHalfThickness                = 28.;  // (154 - 41)/4 = 28.25 ~28
 // assume the unistrut on the steel to be of the same thickness as the one on the modules
-double         crs.scintillatorOverlap                      = 100.; // fig 11.5 
+double         crs.scintillatorOverlap                      = 100.; // fig 11.5
 
 // full, half modules, more specific numbers TBD
 vector<int>    crs.shieldR_NumberOfModules  = {10,  1};
@@ -107,9 +107,9 @@ bool   neutronabsorber.solid        = false;
 
 double mbs.BSTSInnerRadius  =   410.0;
 double mbs.BSTSOuterRadius  =   430.0;
-double mbs.BSTSHLength      =  1700.0; 
+double mbs.BSTSHLength      =  1700.0;
 string mbs.BSTSMaterialName = "StainlessSteel";
-double mbs.BSTSZ            = 15150.0; 
+double mbs.BSTSZ            = 15150.0;
 double mbs.SPBSInnerRadius  =   430.0;
 double mbs.SPBSOuterRadius  =   452.0;
 double mbs.SPBSHLength      =  1320.0;
@@ -137,9 +137,9 @@ bool   mbs.solid        = false;
 //
 //
 // End notes:
-// 
+//
 // 1) Sources of information:
-//    
+//
 //
 //
 // This tells emacs to view this file in c++ mode.

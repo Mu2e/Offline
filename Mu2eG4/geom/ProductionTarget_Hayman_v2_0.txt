@@ -13,7 +13,7 @@ int targetPS_version                       = 3;
 string targetPS_model = "Hayman_v_2_0";
 double targetPS_productionTargetMotherOuterRadius = 200.; //mm
 double targetPS_productionTargetMotherHalfLength = 120.; //mm  wag right now; was calculated in earlier versions, formerly 200 and 94.1412 (target 1/2 = 80 + something)
-double targetPS_rOut	                   = 3.15;// mm  
+double targetPS_rOut                       = 3.15;// mm
 double targetPS_halfHaymanLength                 = 110.;// mm. We do not need this except for debugging.
 double targetPS_rotX                       = 0.;
 double targetPS_rotY           = 14.; //set to 14^0 in earlier file.  Here for debugging.
@@ -39,7 +39,7 @@ double targetPS_finThickness               = 1.0; //                            
 double targetPS_supportRingLength          = 8.0; // full length in mm
 double targetPS_supportRingInnerRadius     = 15.;
 double targetPS_supportRingOuterRadius     = 17.;
-double targetPS_supportRingCutoutThickness = 1.0; //full extent of cutout, divide by 2 when making G4 box 
+double targetPS_supportRingCutoutThickness = 1.0; //full extent of cutout, divide by 2 when making G4 box
 double targetPS_supportRingCutoutLength    = 4.0; //taken to be whole length of ring (so divide by 2 in G4). Needs to be check in code, see code
 
 

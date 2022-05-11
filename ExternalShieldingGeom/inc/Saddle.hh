@@ -10,7 +10,7 @@
 // Saddles for the various cryostats hold them in place.
 // The saddles can be described using extrusions.  Copy
 // the code from ExtShieldDownstream.
-// Details can be found in docdb #4678 
+// Details can be found in docdb #4678
 
 
 #include <vector>
@@ -29,24 +29,24 @@ namespace mu2e {
   class Saddle : virtual public Detector {
   public:
 
-    // 
+    //
 
     int                                      getVersion() const
     { return _version; }
 
-    const std::vector<std::vector<std::vector<double> > >& getOutlines() const 
+    const std::vector<std::vector<std::vector<double> > >& getOutlines() const
     { return _saddleOutlines; }
-    const std::vector<double> &              getLengths() const 
+    const std::vector<double> &              getLengths() const
     { return _saddleLengths; }
-    const std::vector<std::vector<double> >& getTolerances() const 
+    const std::vector<std::vector<double> >& getTolerances() const
     { return _saddleBoxTols; }
-    const std::vector<std::string>&          getMaterialNames() const 
+    const std::vector<std::string>&          getMaterialNames() const
     { return _materialNames; }
-    const std::vector<CLHEP::Hep3Vector>&    getCentersOfBoxes() const 
+    const std::vector<CLHEP::Hep3Vector>&    getCentersOfBoxes() const
     { return _centerPositions; }
-    const std::vector<std::string>&          getOrientations() const 
+    const std::vector<std::string>&          getOrientations() const
     { return _orientations; }
-    const std::vector<int>&                  getNHoles() const 
+    const std::vector<int>&                  getNHoles() const
     { return _nHoles; }
     const std::vector<int>&                  getNNotches() const
     { return _nNotches; }
@@ -73,39 +73,39 @@ namespace mu2e {
 
     // Private ctr: the class should only be constructed via Saddle::SaddleMaker.
     Saddle(const int                                version,
-	   const std::vector<std::vector<std::vector<double> > >& outlines,
-	   const std::vector<double>&               lengths,
-	   const std::vector<std::vector<double> >& tols, 
-	   const std::vector<std::string>&          mats, 
-	   const std::vector<CLHEP::Hep3Vector>&    sites, 
-	   const std::vector<std::string>&          orients,
-	   const std::vector<int>&                  nHoles,
-	   const std::vector<int>&                  nNotches,
-	   const std::vector<int>&                  iHole,
-	   const std::vector<CLHEP::Hep3Vector>&    locHole,
-	   const std::vector<double>&               radHole,
-	   const std::vector<double>&               lenHole,
-	   const std::vector<std::string>&          oHole,
-	   const std::vector<int>&                  iNotch,
-	   const std::vector<CLHEP::Hep3Vector>&    locNotch,
-	   const std::vector<std::vector<double> >& locDims)
+           const std::vector<std::vector<std::vector<double> > >& outlines,
+           const std::vector<double>&               lengths,
+           const std::vector<std::vector<double> >& tols,
+           const std::vector<std::string>&          mats,
+           const std::vector<CLHEP::Hep3Vector>&    sites,
+           const std::vector<std::string>&          orients,
+           const std::vector<int>&                  nHoles,
+           const std::vector<int>&                  nNotches,
+           const std::vector<int>&                  iHole,
+           const std::vector<CLHEP::Hep3Vector>&    locHole,
+           const std::vector<double>&               radHole,
+           const std::vector<double>&               lenHole,
+           const std::vector<std::string>&          oHole,
+           const std::vector<int>&                  iNotch,
+           const std::vector<CLHEP::Hep3Vector>&    locNotch,
+           const std::vector<std::vector<double> >& locDims)
       : _version(version),
-	_saddleOutlines(outlines),
-	_saddleLengths (lengths),
-	_saddleBoxTols (tols),
-	_materialNames    (mats),
-	_centerPositions  (sites),
-	_orientations     (orients),
-	_nHoles           (nHoles),
-	_nNotches         (nNotches),
-	_holeIndices      (iHole),
-	_holeLocations    (locHole),
+        _saddleOutlines(outlines),
+        _saddleLengths (lengths),
+        _saddleBoxTols (tols),
+        _materialNames    (mats),
+        _centerPositions  (sites),
+        _orientations     (orients),
+        _nHoles           (nHoles),
+        _nNotches         (nNotches),
+        _holeIndices      (iHole),
+        _holeLocations    (locHole),
         _holeRadii        (radHole),
-	_holeLengths      (lenHole),
-	_holeOrientations (oHole),
-	_notchIndices     (iNotch),
-	_notchLocations   (locNotch),
-	_notchDimensions  (locDims)
+        _holeLengths      (lenHole),
+        _holeOrientations (oHole),
+        _notchIndices     (iNotch),
+        _notchLocations   (locNotch),
+        _notchDimensions  (locDims)
     { }
 
     // Or read back from persistent storage
@@ -114,7 +114,7 @@ namespace mu2e {
 
 
     // Current description based on Geometry 14, adapted by
-    // David Norvil Brown, 
+    // David Norvil Brown,
     int _version;
     // The following vectors hold one piece of information per "block"
     std::vector<std::vector< std::vector< double > > > _saddleOutlines;

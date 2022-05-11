@@ -1,6 +1,6 @@
-// Description:	Class Header for |BaBarMu2eField|
+// Description:        Class Header for |BaBarMu2eField|
 //              Provide an arbitary fixed field
-// Author List:A. Snyder, Copyright (C) 1998	SLAC
+// Author List:A. Snyder, Copyright (C) 1998        SLAC
 #ifndef BaBarMu2eField_HH
 #define BaBarMu2eField_HH
 
@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // class interface //
-namespace mu2e 
+namespace mu2e
 {
   class BaBarMu2eField : public BField {
 
@@ -21,7 +21,7 @@ namespace mu2e
       virtual ~BaBarMu2eField();
       // field vector at a point.
       virtual CLHEP::Hep3Vector bFieldVect
-	(const HepPoint & point=HepPoint(0,0,0))const;
+        (const HepPoint & point=HepPoint(0,0,0))const;
       // override the nominal field
       virtual double bFieldNominal()const;
      CLHEP::Hep3Vector const& origin() const { return _origin; }

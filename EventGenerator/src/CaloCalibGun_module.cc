@@ -1,9 +1,9 @@
 /* Simulate the photons coming from the pipe calibration source
  based on CaloCalibGun orginally written by Bertrand Echenard (2014)
  Current module author: Sophie Middleton (2022)
- 
- Assumptions: 
- * We treat all 5 pipes as equal volume when we pick a pipe. 
+
+ Assumptions:
+ * We treat all 5 pipes as equal volume when we pick a pipe.
  * We treat each torus is if it were a right circular cylinder with a length equal to the arc length of the centerline of the torus
 */
 
@@ -76,7 +76,7 @@ namespace mu2e {
     double _tmin;
     double _tmax;
     int _nDisk;
-    
+
     std::vector<double> phi_lbd;
     // angle of small torus in degrees
     std::vector<double> phi_sbd;
@@ -93,7 +93,7 @@ namespace mu2e {
     // inner radius of the manifold
     double rInnerManifold;
     std::array<double, 2> sign{-1.0, 1.0};
-    
+
     art::RandomNumberGenerator::base_engine_t& _engine;
     CLHEP::RandFlat     _randFlat;
     RandomUnitSphere    _randomUnitSphere;
@@ -131,7 +131,7 @@ namespace mu2e {
       _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
       _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);
       _nPipes = _cal->caloInfo().getInt("nPipes");
-   
+
       //Define the parameters of the pipes:
       phi_lbd = _cal->caloInfo().getVDouble("largeTorPhi");
       phi_sbd = _cal->caloInfo().getVDouble("smallTorPhi");
@@ -141,18 +141,18 @@ namespace mu2e {
       xsmall = _cal->caloInfo().getDouble("radSmTor");
       xdistance = _cal->caloInfo().getDouble("xdistance");
       rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");
-      
+
 
   }
   //================================================================
-  
+
   void CaloCalibGun::produce(art::Event& event) {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
 
     double xpipe, ypipe, zpipe;
     //Pick position - find either 0,1 - these are indices of the sign list (so 0=-1, 1=+1)
-    int xsn = round(_randFlat.fire()); 
+    int xsn = round(_randFlat.fire());
     int ysn = round(_randFlat.fire());
 
     // pick a random theta, between 0 and 2*pi:
@@ -170,7 +170,7 @@ namespace mu2e {
 
     // The phi range from 0 to half phi_lbd for the large torus
     double phiLgTor = _randFlat.fire() * phi_lbd[idx]  * CLHEP::degree / 2.;
-    
+
     // x, y, z position of the large torus
     double xLgTor = sign[xsn]*(radLgTor + pipeR*cos(theta))*cos(phiLgTor);
     double yLgTor = sign[ysn]*(radLgTor + pipeR*cos(theta))*sin(phiLgTor);
@@ -192,7 +192,7 @@ namespace mu2e {
     double ystart = ysmall[idx] + radSmTor * sin(CLHEP::degree * phi_end[idx]);
     // height of the straight pipe
     double hPipe = (ymanifold - ystart) / sin(CLHEP::degree * (90 - phi_end[idx]));
-    
+
     // a cylinder along y-axis
     double y_center = _randFlat.fire() * hPipe;
     double xPipe = pipeR * cos(theta);
@@ -232,7 +232,7 @@ namespace mu2e {
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
 
   }
-      
+
   //================================================================
 } // namespace mu2e
 

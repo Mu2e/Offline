@@ -6,24 +6,24 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : ReadBackPis01
 
 # Start from a source with the pi events
-source : 
-{ 
+source :
+{
   module_type : RootInput
   fileNames   : [ "/mu2e/data/users/rhbob/StoppedPi.root" ]
 #  maxEvents   : 3000
   maxEvents   : -1
 }
 
-services : 
+services :
 {
-#  message : @local::default_message 
-   message : @local::mf_batch 
+#  message : @local::default_message
+   message : @local::mf_batch
 
-  TFileService : 
+  TFileService :
   {
     fileName : "readStoppedPis.root"
   }
@@ -31,12 +31,12 @@ services :
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }  
+  }
 
   GlobalConstantsService : {inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"}
 
@@ -59,12 +59,12 @@ physics :
       g4ModuleLabel          : g4run2
       g4VD5ModuleLabel       : g4run
 # may eliminate:
-      minimumEnergy          : 0.000 
+      minimumEnergy          : 0.000
       doTracker              : true
       diagLevel              : 0
     }
 
-  } 
+  }
 
   e1 : [checkhits]
 

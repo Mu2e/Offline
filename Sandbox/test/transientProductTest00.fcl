@@ -1,4 +1,4 @@
-# 
+#
 # Test of transient data products
 #
 #
@@ -7,20 +7,20 @@
 
 #include "Offline/fcl/minimalMessageService.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : transientProductTest00
 
 # Read events from a file (made by Mu2eG4 example g4test_03.py)
-source : 
-{ 
-  module_type : RootInput 
-  fileNames : ["data_03.root"]        
+source :
+{
+  module_type : RootInput
+  fileNames : ["data_03.root"]
   maxEvents : 10
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 }
 
 physics :
@@ -31,7 +31,7 @@ physics :
     transientTest  :{ module_type : MakeTransientProduct00 }
   }
 
-  analyzers: 
+  analyzers:
   {
    readTransient :{ module_type : ReadTransientProduct00 }
   }
@@ -51,7 +51,7 @@ outputs:
  outfile :
  {
    module_type   :   RootOutput
-   fileName	 :   "transientTest00.root"
+   fileName         :   "transientTest00.root"
  }
 
 }

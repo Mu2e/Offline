@@ -241,7 +241,7 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
                     << std::endl;
           std::cout << "[CaloRecoFromFragments] \tErrorFlags " << (int)hits[hitIdx].first.ErrorFlags
                     << std::endl;
-          std::cout << "[CaloRecoFromFragments] \tTime	      " << (int)hits[hitIdx].first.Time
+          std::cout << "[CaloRecoFromFragments] \tTime              " << (int)hits[hitIdx].first.Time
                     << std::endl;
           std::cout << "[CaloRecoFromFragments] \tNSamples   "
                     << (int)hits[hitIdx].first.NumberOfSamples << std::endl;

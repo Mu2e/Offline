@@ -1,4 +1,4 @@
-physics.filters.tprDeMLowPStopTargTSFilter.fitparticle   : @local::Particle.eminus	 
+physics.filters.tprDeMLowPStopTargTSFilter.fitparticle   : @local::Particle.eminus
 physics.filters.tprDeMLowPStopTargTSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.tprDeMLowPStopTargTSFilter.minNStrawHits : 15.0
 physics.filters.tprDeMLowPStopTargTSFilter.minMomentum   : 50.0

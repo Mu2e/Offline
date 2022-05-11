@@ -8,24 +8,24 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
-   struct BkgClusterHit 
+   struct BkgClusterHit
    {
        BkgClusterHit() : _dist(0.0) {}
 
-       BkgClusterHit(float dist, const StrawHitFlag& flag) : _dist(dist), _flag(flag) 
+       BkgClusterHit(float dist, const StrawHitFlag& flag) : _dist(dist), _flag(flag)
        {_flag.merge(StrawHitFlag::active);}
 
        float distance() const           { return _dist; }
        const StrawHitFlag& flag() const { return _flag; }
 
-       float        _dist;  
-       StrawHitFlag _flag; 
+       float        _dist;
+       StrawHitFlag _flag;
    };
 
    typedef std::vector<mu2e::BkgClusterHit> BkgClusterHitCollection;
 
-} 
+}
 #endif
 

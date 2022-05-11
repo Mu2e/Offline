@@ -8,22 +8,22 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : VDReadBack01
 
 # Start form an empty source
-source : 
-{ 
+source :
+{
   module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : -1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "psVacuum_readback.root"
   }
@@ -31,12 +31,12 @@ services :
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }  
+  }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
@@ -53,7 +53,7 @@ physics :
 
     checkhits:
     {
-      module_type            : ReadPSVacuum 
+      module_type            : ReadPSVacuum
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
       minimumEnergy          : 0.000
@@ -62,7 +62,7 @@ physics :
       savePDG                : [11, -11, 13, -13, 22, 111, 211, -211, 321, -321, 2112, 2212, -2212]
     }
 
-  } 
+  }
 
   e1 : [checkhits]
 

@@ -23,14 +23,14 @@ class HistDraw : public TObject  //needs to inherit from TObject to work with TC
   TPad                *_infoPad, *_mainPad;
   TRootEmbeddedCanvas *_infoEmbeddedCanvas;
   TGCanvas            *_infoCanvas;
-  
+
   HistDraw();
   HistDraw(const HistDraw &);
   HistDraw& operator=(const HistDraw &);
 
   public:
-  HistDraw(int index, TPad *infoPad, TPad *mainPad, TRootEmbeddedCanvas *infoEmbeddedCanvas, TGCanvas *infoCanvas) : 
-           _index(index), _infoPad(infoPad), _mainPad(mainPad), 
+  HistDraw(int index, TPad *infoPad, TPad *mainPad, TRootEmbeddedCanvas *infoEmbeddedCanvas, TGCanvas *infoCanvas) :
+           _index(index), _infoPad(infoPad), _mainPad(mainPad),
            _infoEmbeddedCanvas(infoEmbeddedCanvas), _infoCanvas(infoCanvas) {}
   void showHistogram(TObject *o)
   {

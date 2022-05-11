@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_upperExtension_S.ccl
 
@@ -20,7 +20,7 @@ vector<double> dirt.psArea.upper.S.xPositions = {
   -16232.6   // c_to_S
 };
 
-vector<int>    dirt.psArea.upper.S.yreplace   = { 3, 4 }; 
+vector<int>    dirt.psArea.upper.S.yreplace   = { 3, 4 };
 vector<double> dirt.psArea.upper.S.yPositions = {
   -3150.14,   // c
   -574.861,   // i1

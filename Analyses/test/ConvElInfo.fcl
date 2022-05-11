@@ -20,8 +20,8 @@ process_name : ConvElInfo
 source :
 {
   module_type : RootInput
-  #module_type : EmptyEvent  
-  fileNames   : [ "dataKut.root" ]       
+  #module_type : EmptyEvent
+  fileNames   : [ "dataKut.root" ]
   maxEvents : -1
 }
 
@@ -48,7 +48,7 @@ physics :
   }
 
   filters:
-  { 
+  {
    #  Filter module. Do not write events with no Tracker or calo hits
     filterEmpty :
     {
@@ -73,7 +73,7 @@ physics :
     }
   }
 
-  p1 : [ 
+  p1 : [
 #       generate
 #       , g4run
 #       , makeSH
@@ -81,8 +81,8 @@ physics :
 #       , @sequence::CaloReco.Reco
 #       , filterEmpty
        ]
-  e1 : [CE 
-#,outfile 
+  e1 : [CE
+#,outfile
 ]
 
 
@@ -94,15 +94,15 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "data_CEH.root"
     outputCommands : ['keep *_*_*_*'
                    , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                    , 'drop mu2eSimParticles_*_*_*'
-		   # Uncomment the above line to reduce file size.
-                     ]  
+                   # Uncomment the above line to reduce file size.
+                     ]
   }
 }
 

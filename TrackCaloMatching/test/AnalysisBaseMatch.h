@@ -204,16 +204,16 @@ public :
    TH2F*    Book2DF(TString name, TString title, Int_t nbinsx, Double_t xlow, Double_t xhigh, Int_t nbinsy, Double_t ylow, Double_t yhigh, TString xaxis="", TString yaxis="");
    void     SetStyle(TH1 *histo,TString xaxis, TString units);
    void     SetStyleGr(TGraph *gr);
-   double   cluDistance(int ic1, int ic2); 
+   double   cluDistance(int ic1, int ic2);
    double   targetExtend(int ic, int it);
    TVector3 calcCog(int ic);
    TVector3 getPosTrk(int it, double dlen);
-   
+
    int   vdFinder();
 
    TFile *fHistFile;
    TString histname;
-   
+
    Disk* disk;
 
    ClassDef(AnalysisBaseMatch,0);

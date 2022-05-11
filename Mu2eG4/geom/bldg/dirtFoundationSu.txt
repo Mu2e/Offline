@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_foundation_Su.ccl
 
@@ -21,7 +21,7 @@ vector<double> dirt.foundation.Su.xPositions = {
   -3022.6   // f2_to_S
 };
 
-vector<int>    dirt.foundation.Su.yreplace   = { 4, 5 }; 
+vector<int>    dirt.foundation.Su.yreplace   = { 4, 5 };
 vector<double> dirt.foundation.Su.yPositions = {
   -11836.4,   // f2
   -11836.4,   // f3

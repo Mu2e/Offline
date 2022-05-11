@@ -45,7 +45,7 @@ namespace mu2e {
 
     hitToT_ =   tfdir.make<TH1D>("hitToT", "Hit time over threshold, all hits", 16, -0.5, 15.5);
 
-    
+
     const unsigned nmodules = extmon.nmodules();
     ExtMonFNALModuleIdConverter con(extmon);
     for(unsigned mid = 0; mid < nmodules; ++mid) {
@@ -77,7 +77,7 @@ namespace mu2e {
       hitToT_->Fill(hit->tot());
       const ExtMonFNALPixelId& pix = hit->pixelId();
       chipOccupancy_[pix.chip()]->Fill(pix.col(), pix.row());
-      
+
     }
 
   } // end EMFRawHitHistograms::fill()

@@ -37,15 +37,15 @@ namespace mu2e {
 
     cout << "Event: " << event.id() << " contains the following:  " << endl;
 
-    for ( auto aTag : tags_ ) { 
+    for ( auto aTag : tags_ ) {
       art::InputTag theTag(aTag);
       auto testp = event.getValidHandle<vector<mu2e::StepPointMC> >(theTag);
       if ( 0 != testp ) {  // This is probably redundant.  Think about
-	cout << "  For Tag " << aTag << ": " << endl;
-	int count = 0;
-	for ( auto theTSPM : *testp ) {
-	  cout << ++count << theTSPM << endl;
-	} // end for loop over step points
+        cout << "  For Tag " << aTag << ": " << endl;
+        int count = 0;
+        for ( auto theTSPM : *testp ) {
+          cout << ++count << theTSPM << endl;
+        } // end for loop over step points
       } // end if 0 != testp
     } // end of loop over tags
   } // end ReadTrackSPM::analyze

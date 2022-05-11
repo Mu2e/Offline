@@ -48,7 +48,7 @@ namespace mu2e {
       }
       static std::map<enum_type,std::string> const& names() {
         static std::map<enum_type,std::string> nam;
-        
+
         if ( nam.empty() ) {
           nam[unknown] = "unknown";
           nam[Pol5]    = "pol5";
@@ -87,10 +87,10 @@ namespace mu2e {
 
       std::cout<< "DecayInOrbitWeight: "
                << std::endl << std::endl
-               << " NOTE: " 
+               << " NOTE: "
                << std::endl << std::endl
                << " The event weights added in this module should only be used when " << std::endl
-               << " the corresponding spectrum in DecayInOrbitGun is 'flat'. " 
+               << " the corresponding spectrum in DecayInOrbitGun is 'flat'. "
                << std::endl;
     }
   }
@@ -103,14 +103,14 @@ namespace mu2e {
     double weight(-1.);
     for ( const auto& i: *genColl ) {
       if (i.generatorId() == GenId::dioTail) {
-	const double energy = i.momentum().e();
-      
-	if      ( weightingScheme_ == SpectrumChoice::Pol5  ) weight = SimpleSpectrum::getPol5 ( energy ); 
-	else if ( weightingScheme_ == SpectrumChoice::Pol58 ) weight = SimpleSpectrum::getPol58( energy ); 
-	else {
-	  throw cet::exception("MODEL")
-	    << "Wrong or not allowed DIO energy spectrum";
-	}
+        const double energy = i.momentum().e();
+
+        if      ( weightingScheme_ == SpectrumChoice::Pol5  ) weight = SimpleSpectrum::getPol5 ( energy );
+        else if ( weightingScheme_ == SpectrumChoice::Pol58 ) weight = SimpleSpectrum::getPol58( energy );
+        else {
+          throw cet::exception("MODEL")
+            << "Wrong or not allowed DIO energy spectrum";
+        }
       }
     }
 

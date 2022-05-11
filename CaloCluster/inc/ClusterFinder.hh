@@ -2,7 +2,7 @@
 #define CaloCluster_ClusterFinder_HH_
 //
 // Class to find cluster of simply connected crystals
-// 
+//
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -13,16 +13,16 @@
 namespace mu2e {
 
 
-    class ClusterFinder 
+    class ClusterFinder
     {
          public:
              using CaloCrystalList = std::list<const CaloHit*>;
              using CaloCrystalVec  = std::vector<const CaloHit*>;
 
-             ClusterFinder(const Calorimeter&, const CaloHit*, double, double, bool addSecondRing);  
-             
+             ClusterFinder(const Calorimeter&, const CaloHit*, double, double, bool addSecondRing);
+
              void                   formCluster(std::vector<CaloCrystalList>&);
-             const CaloCrystalList& clusterList() const {return clusterList_;}             
+             const CaloCrystalList& clusterList() const {return clusterList_;}
 
 
          private:
@@ -31,8 +31,8 @@ namespace mu2e {
              double               seedTime_;
              CaloCrystalList      clusterList_;
              std::queue<int>      crystalToVisit_;
-             std::vector<bool>    isVisited_; 
-             double               deltaTime_; 
+             std::vector<bool>    isVisited_;
+             double               deltaTime_;
              double               ExpandCut_;
              bool                 addSecondRing_;
     };

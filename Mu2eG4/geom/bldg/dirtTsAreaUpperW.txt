@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_TSrWall_upperExtension.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.tsArea.upper.W.xPositions = {
   5308.6   // j_to_S
 };
 
-vector<int>    dirt.tsArea.upper.W.yreplace   = { 2, 3 }; 
+vector<int>    dirt.tsArea.upper.W.yreplace   = { 2, 3 };
 vector<double> dirt.tsArea.upper.W.yPositions = {
   -11734.8,   // j
   -11734.8,   // l

@@ -36,14 +36,14 @@ preDefinedSeeds : {
 Services : {
 # define services for specific tasks: these are components needed for
 # a complete job
-  Core	    : {
-    message		    : @local::default_message
-    GeometryService	    : {
+  Core            : {
+    message                    : @local::default_message
+    GeometryService            : {
         inputFile           : "Offline/Mu2eG4/geom/geom_common.txt"
         bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_v01.txt"
-	simulatedDetector   : { tool_type: "Mu2e" }
+        simulatedDetector   : { tool_type: "Mu2e" }
     }
-    ConditionsService	    : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
+    ConditionsService            : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
     GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     DbService : @local::DbEmpty
     ProditionsService: @local::Proditions
@@ -51,7 +51,7 @@ Services : {
 
   SimOnly   : {
     RandomNumberGenerator   : { defaultEngineKind: "MixMaxRng" }
-    SeedService		    : @local::automaticSeeds
+    SeedService                    : @local::automaticSeeds
     Mu2eG4Helper: {}
   }
 
@@ -60,12 +60,12 @@ Services : {
 
 }
 # aggregate to make complete sets that can be used to fully configure common jobs
-Services.Sim	    : {
+Services.Sim            : {
   @table::Services.Core
   @table::Services.SimOnly
 }
 
-Services.Reco	    : {
+Services.Reco            : {
   @table::Services.Core
   #@table::Services.RecoOnly
 }
