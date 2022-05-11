@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_SretainingWallFoot.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.S.retaining.Wall.Foot.xPositions = {
   -12192   // p2_to_S
 };
 
-vector<int>    dirt.S.retaining.Wall.Foot.yreplace   = { 2, 3 }; 
+vector<int>    dirt.S.retaining.Wall.Foot.yreplace   = { 2, 3 };
 vector<double> dirt.S.retaining.Wall.Foot.yPositions = {
   -8470.9,   // p2
   -8470.9,   // p3

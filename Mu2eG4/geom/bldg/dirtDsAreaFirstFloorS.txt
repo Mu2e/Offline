@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_DSarea_firstFloor_S.ccl
 
@@ -12,7 +12,7 @@ double dirt.dsArea.firstFloor.S.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.dsArea.firstFloor.S.yHalfThickness           = 203.2;
 
-vector<int>    dirt.dsArea.firstFloor.S.xreplace   = { 16, 17 }; 
+vector<int>    dirt.dsArea.firstFloor.S.xreplace   = { 16, 17 };
 vector<double> dirt.dsArea.firstFloor.S.xPositions = {
   45847,   // q
   45847,   // g2
@@ -34,7 +34,7 @@ vector<double> dirt.dsArea.firstFloor.S.xPositions = {
   50000   // q_to_E
 };
 
-vector<int>    dirt.dsArea.firstFloor.S.yreplace   = { 15, 16 }; 
+vector<int>    dirt.dsArea.firstFloor.S.yreplace   = { 15, 16 };
 vector<double> dirt.dsArea.firstFloor.S.yPositions = {
   -8661.4,   // q
   -10668,   // g2

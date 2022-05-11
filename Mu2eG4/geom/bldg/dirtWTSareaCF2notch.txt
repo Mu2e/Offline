@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_TSareaW-CF2notch.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.W.TSareaCF2notch.xPositions = {
   -2514.6   // p2_to_S
 };
 
-vector<int>    dirt.W.TSareaCF2notch.yreplace   = { 2, 3 }; 
+vector<int>    dirt.W.TSareaCF2notch.yreplace   = { 2, 3 };
 vector<double> dirt.W.TSareaCF2notch.yPositions = {
   -10617.2,   // p2
   -10617.2,   // p3

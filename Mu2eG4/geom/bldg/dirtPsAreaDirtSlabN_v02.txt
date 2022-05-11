@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_dirtSlab_N.ccl
 
@@ -12,7 +12,7 @@ double dirt.psArea.dirtSlab.N.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.psArea.dirtSlab.N.yHalfThickness           = 368.3;
 
-vector<int>    dirt.psArea.dirtSlab.N.xreplace   = { 17, 18 }; 
+vector<int>    dirt.psArea.dirtSlab.N.xreplace   = { 17, 18 };
 vector<double> dirt.psArea.dirtSlab.N.xPositions = {
   -1270,   // c
   -4140.2,   // P1
@@ -46,7 +46,7 @@ vector<double> dirt.psArea.dirtSlab.N.xPositions = {
   -1270    // c to N
 };
 
-vector<int>    dirt.psArea.dirtSlab.N.yreplace   = { 18, 19 }; 
+vector<int>    dirt.psArea.dirtSlab.N.yreplace   = { 18, 19 };
 vector<double> dirt.psArea.dirtSlab.N.yPositions = {
   2438.4,   // c
   2438.4,   // P1
