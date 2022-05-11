@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_DSarea.ccl
 
@@ -12,7 +12,7 @@ double dirt.dsArea.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.dsArea.yHalfThickness           = 1803.4;
 
-vector<int>    dirt.dsArea.xreplace   = { 14, 15 }; 
+vector<int>    dirt.dsArea.xreplace   = { 14, 15 };
 vector<double> dirt.dsArea.xPositions = {
   45745.4,   // g1
   45745.4,   // g2
@@ -32,7 +32,7 @@ vector<double> dirt.dsArea.xPositions = {
   50000   // g1_to_E
 };
 
-vector<int>    dirt.dsArea.yreplace   = { 13, 14 }; 
+vector<int>    dirt.dsArea.yreplace   = { 13, 14 };
 vector<double> dirt.dsArea.yPositions = {
   2616.2,   // g1
   -10617.2,   // g2

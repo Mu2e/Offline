@@ -1,4 +1,4 @@
-# author : Sophie Middleton 
+# author : Sophie Middleton
 # purpose : Basic example fcl for use with the helix instance
 
 #include "Offline/fcl/minimalMessageService.fcl"
@@ -27,7 +27,6 @@ physics.analyzers.TEveEventDisplayHelix.filler.addCosmicSeedFit : false
 physics.analyzers.TEveEventDisplayHelix.filler.addClusters : false
 physics.analyzers.TEveEventDisplayHelix.filler.addMCTraj : true
 physics.analyzers.TEveEventDisplayHelix.show.showCRV : false
-physics.analyzers.TEveEventDisplayHelix.gdmlname :    "DS.gdml"
-physics.EndPath  : [ @sequence::TEveDis.seqHelix] 
+physics.EndPath  : [ @sequence::TEveDis.seqHelix]
 
 

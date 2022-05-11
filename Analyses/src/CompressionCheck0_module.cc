@@ -78,7 +78,7 @@ namespace mu2e {
     art::InputTag simsTag1_;
     art::InputTag simsTag2_;
 
-    // Bin definitions: must be specified in the 
+    // Bin definitions: must be specified in the
     Binning trackerStepBins_;
     Binning caloStepBins_;
     Binning croStepBins_;

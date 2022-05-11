@@ -1,6 +1,6 @@
 // SimpleConfig geometry file hand-made by DNB
 //
-//   
+//
 
 string dirt.WallFill.2.name     = "dirtWallFill2";
 
@@ -23,7 +23,7 @@ vector<double> dirt.WallFill.2.xPositions = {
 
 vector<double> dirt.WallFill.2.yPositions = {
    10921.99,     // NE corner
-   10921.99,     // elbow     
+   10921.99,     // elbow
     9476.16,     // NW corner
     8877.50,     // P3
    10312.43,     // P4

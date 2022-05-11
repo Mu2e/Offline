@@ -76,40 +76,40 @@ namespace mu2e {
                                        SimParticleCollection  const& in,
                                        SELECTOR               const& keep,
                                        OUTCOLL&        out,
-				       KeyRemap* keyRemap = NULL){
+                                       KeyRemap* keyRemap = NULL){
 
     unsigned int initial_out_size = out.size();
     for ( SimParticleCollection::const_iterator i=in.begin(), e=in.end(); i!=e; ++i ){
       if ( keep[i->first] ){
 
         // Default construct and replace to avoid multiple searches through the collection.
-	cet::map_vector_key oldSimKey = i->first;
-	cet::map_vector_key newSimKey;
-	if (keyRemap) {
-	  newSimKey = getNewKey(oldSimKey, keyRemap, initial_out_size + keyRemap->size());
-	}
-	else { 
-	  newSimKey = oldSimKey;
-	}
+        cet::map_vector_key oldSimKey = i->first;
+        cet::map_vector_key newSimKey;
+        if (keyRemap) {
+          newSimKey = getNewKey(oldSimKey, keyRemap, initial_out_size + keyRemap->size());
+        }
+        else {
+          newSimKey = oldSimKey;
+        }
         SimParticle& sim = out[newSimKey];
         sim = i->second;
 
-	if (keyRemap) {
-	  sim.id() = newSimKey; // need to make sure the SimParticle's trackId is the same as its key in the output collection
-	}
+        if (keyRemap) {
+          sim.id() = newSimKey; // need to make sure the SimParticle's trackId is the same as its key in the output collection
+        }
 
         // See note 1).
         if ( sim.isSecondary() ){
           cet::map_vector_key parentKey = cet::map_vector_key(sim.parent().key());
           if ( keep[parentKey] ) {
-	    art::Ptr<SimParticle> newParentPtr;
-	    if (keyRemap) {
-	      cet::map_vector_key newParentKey = getNewKey(parentKey, keyRemap, initial_out_size + keyRemap->size());
-	      newParentPtr = art::Ptr<SimParticle>( newProductID, newParentKey.asUint(), productGetter);
-	    }
-	    else {
-	      newParentPtr = art::Ptr<SimParticle>( newProductID, sim.parent().key(), productGetter);
-	    }
+            art::Ptr<SimParticle> newParentPtr;
+            if (keyRemap) {
+              cet::map_vector_key newParentKey = getNewKey(parentKey, keyRemap, initial_out_size + keyRemap->size());
+              newParentPtr = art::Ptr<SimParticle>( newProductID, newParentKey.asUint(), productGetter);
+            }
+            else {
+              newParentPtr = art::Ptr<SimParticle>( newProductID, sim.parent().key(), productGetter);
+            }
             sim.parent() = newParentPtr;
           } else{
             // This particle is a secondary particle but does not have a mother.
@@ -125,14 +125,14 @@ namespace mu2e {
           cet::map_vector_key dkey = cet::map_vector_key(j->key());
 
           if ( keep[dkey] ){
-	    art::Ptr<SimParticle> newDPtr;
-	    if (keyRemap) {
-	      cet::map_vector_key newDKey = getNewKey(dkey, keyRemap, initial_out_size + keyRemap->size());
-	      newDPtr = art::Ptr<SimParticle>( newProductID, newDKey.asUint(), productGetter);
-	    }
-	    else {
-	      newDPtr = art::Ptr<SimParticle>( newProductID, j->key(), productGetter);
-	    }
+            art::Ptr<SimParticle> newDPtr;
+            if (keyRemap) {
+              cet::map_vector_key newDKey = getNewKey(dkey, keyRemap, initial_out_size + keyRemap->size());
+              newDPtr = art::Ptr<SimParticle>( newProductID, newDKey.asUint(), productGetter);
+            }
+            else {
+              newDPtr = art::Ptr<SimParticle>( newProductID, j->key(), productGetter);
+            }
             daughters.push_back(newDPtr);
           }
         }

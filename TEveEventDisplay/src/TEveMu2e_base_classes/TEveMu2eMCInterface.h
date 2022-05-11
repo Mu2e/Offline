@@ -24,7 +24,7 @@
 #include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 namespace mu2e{
     class TEveMu2eMCInterface {
-    
+
       public:
         #ifndef __CINT__
         TEveMu2eMCInterface() : fTrackList2DXY(0),fTrackList2DXZ(0),fTrackList3D(0){};

@@ -15,7 +15,7 @@ namespace mu2e {
 
   class GeDetector {
   public:
-    GeDetector(bool build, 
+    GeDetector(bool build,
                std::string const & crystalMaterial,
                double crystalRadiusIn, double crystalRadiusOut, double crystalHalfLength,
                std::string const & canMaterial,
@@ -25,7 +25,7 @@ namespace mu2e {
                CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
                CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
               ) :
-      _build( build ),          
+      _build( build ),
       _crystalMaterial( crystalMaterial ),
       _crystalRadiusIn( crystalRadiusIn ),
       _crystalRadiusOut( crystalRadiusOut ),
@@ -42,17 +42,17 @@ namespace mu2e {
     {}
 
     bool   build()                               const { return _build;  }
-    std::string const & crystalMaterial()        const { return _crystalMaterial; }    
+    std::string const & crystalMaterial()        const { return _crystalMaterial; }
     double crystalRadiusIn()                     const { return _crystalRadiusIn;  }
     double crystalRadiusOut()                    const { return _crystalRadiusOut;  }
     double crystalHalfLength()                   const { return _crystalHalfLength;  }
-    std::string const & canMaterial()            const { return _canMaterial; }    
+    std::string const & canMaterial()            const { return _canMaterial; }
     double canRadiusIn()                         const { return _canRadiusIn;  }
     double canRadiusOut()                        const { return _canRadiusOut;  }
     double canHalfLength()                       const { return _canHalfLength;  }
-    std::string const & canUpStrWindowMaterial() const { return _canUpStrWindowMaterial; }    
-    double canUpStrWindowHalfLength()            const { return _canUpStrWindowHalfLength; }    
-    std::string const & canGasMaterial()         const { return _canGasMaterial; }    
+    std::string const & canUpStrWindowMaterial() const { return _canUpStrWindowMaterial; }
+    double canUpStrWindowHalfLength()            const { return _canUpStrWindowHalfLength; }
+    std::string const & canGasMaterial()         const { return _canGasMaterial; }
     CLHEP::Hep3Vector const &  originInMu2e() const { return _originInMu2e; }
     CLHEP::HepRotation const & rotation()     const { return _rotation; }
 

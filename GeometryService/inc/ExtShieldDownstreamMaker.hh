@@ -19,8 +19,8 @@ namespace mu2e {
   class ExtShieldDownstreamMaker {
   public:
 
-    static std::unique_ptr<ExtShieldDownstream>  make(const SimpleConfig& 
-						      config );
+    static std::unique_ptr<ExtShieldDownstream>  make(const SimpleConfig&
+                                                      config );
 
   };
 

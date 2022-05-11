@@ -15,7 +15,7 @@ source : {
 }
 
 services : {
-    message		   : @local::default_message
+    message                   : @local::default_message
 
 //    scheduler: { defaultExceptions : false }
     TFileService           : { fileName : "g4hists_DNBTest.root" }
@@ -32,7 +32,7 @@ physics : {
     producers : {
         generate: @local::PrimaryProtonGun
 
-	genCounter  : { module_type : GenEventCounter }
+        genCounter  : { module_type : GenEventCounter }
 
         g4run : {
             module_type          : Mu2eG4
@@ -73,7 +73,7 @@ physics : {
         vdprint: {
             module_type      :  SelectiveStepPtPrinter
             inputCollection  : "g4run:virtualdetector"
-	    volumes           : [ 1, 2, 91, 92 ]
+            volumes           : [ 1, 2, 91, 92 ]
         }
     }
 

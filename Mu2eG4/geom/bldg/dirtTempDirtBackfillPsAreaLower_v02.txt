@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_tempFillpsAreaLower.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.tempDirt.backfill.psArea.Lower.xPositions = {
   -17853.7   // q5_to_S mod DNB was -18218.7
 };
 
-vector<int>    dirt.tempDirt.backfill.psArea.Lower.yreplace   = { 2, 3 }; 
+vector<int>    dirt.tempDirt.backfill.psArea.Lower.yreplace   = { 2, 3 };
 vector<double> dirt.tempDirt.backfill.psArea.Lower.yPositions = {
   -7505.7,   // q5
   -7505.7,   // q6

@@ -118,12 +118,12 @@ namespace mu2e {
 
       // Now make the pointer to the object itself.
     std::unique_ptr<ElectronicRack> res(new ElectronicRack(
-							   dims,
-							   mats,
-							   sites,
-							   orients)
-					);
-    
+                                                           dims,
+                                                           mats,
+                                                           sites,
+                                                           orients)
+                                        );
+
     //----------------------------------------------------------------
     if(c.getInt("ElectronicRack.verbosityLevel",0) > 0) {
       std::cout<<*res<<std::endl;

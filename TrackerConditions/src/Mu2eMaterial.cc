@@ -14,7 +14,7 @@ namespace mu2e {
     out << "wallMaterial "
       <<  *( _strawtype->wallMaterial()->name() ) << endl;
     //out << "wireMaterial "
-    //	<<  *( _strawtype->wireMaterial()->name() ) << endl;
+    //        <<  *( _strawtype->wireMaterial()->name() ) << endl;
     out << "offset " <<  _strawtype->offset() << endl;
     out << "tolerance " <<  _strawtype->tolerance() << endl;
     out << "maxRadiusFraction " <<  _strawtype->maxRadiusFraction() << endl;

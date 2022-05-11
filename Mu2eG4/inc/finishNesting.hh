@@ -48,11 +48,11 @@ namespace mu2e {
                             G4Colour const& color,
                             std::string const& lookupToken = "",
                             bool const verbose = false
-                            ) 
+                            )
   {
 
     const std::string& lookupString = lookupToken.empty() ? info.name : lookupToken;
-      
+
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
 
     finishNesting( info,
@@ -61,13 +61,13 @@ namespace mu2e {
                    offset,
                    parent,
                    copyNo,
-		   geomOptions->isVisible( lookupString ),
-		   color,
-		   geomOptions->isSolid( lookupString ),
-		   geomOptions->forceAuxEdgeVisible( lookupString ),
-		   geomOptions->placePV( lookupString ),
-		   geomOptions->doSurfaceCheck( lookupString ),
-		   verbose );
+                   geomOptions->isVisible( lookupString ),
+                   color,
+                   geomOptions->isSolid( lookupString ),
+                   geomOptions->forceAuxEdgeVisible( lookupString ),
+                   geomOptions->placePV( lookupString ),
+                   geomOptions->doSurfaceCheck( lookupString ),
+                   verbose );
   }
 
 }

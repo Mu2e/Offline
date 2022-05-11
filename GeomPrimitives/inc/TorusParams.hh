@@ -5,7 +5,7 @@
 // The parameters of a Torus, based on TubsParams by Rob Kutschke
 //
 //
-// 
+//
 //
 
 #include <cmath>

@@ -53,7 +53,7 @@ namespace mu2e{
         }
         return {sposi, sposf, strawtitle, colorid};
   }
-  
+
   /*------------Function to 3D draw hits:-------------*/
   void TEveMu2eHit::DrawHit3D(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList)
   {
@@ -70,7 +70,7 @@ namespace mu2e{
       line->SetTitle(Form(title.c_str()));
       HitList->AddElement(line);
     }
-  
+
     this->SetTitle((DataTitle(pstr, n)).c_str());
     //hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
@@ -116,7 +116,7 @@ namespace mu2e{
       line_twoDstrawXY->SetLineColor(colorid);
       line_twoDstrawXY->SetTitle(Form(title.c_str()));
       HitList2DXY->AddElement(line_twoDstrawXY);
-      
+
     }
     this->SetTitle((DataTitle(pstr, n)).c_str());
     hep3vectormmTocm(pointInMu2e);
@@ -124,7 +124,7 @@ namespace mu2e{
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
     this->SetPickable(kTRUE);
-      
+
     if(AddErrorBar_){
       TEveLine *error = new TEveLine();
       auto const& p = fComboHit_.pos();
@@ -136,7 +136,7 @@ namespace mu2e{
       double z2 = (p.z()-s*w.z());
       double y1 = (p.y()+s*w.y());
       double y2 = (p.y()-s*w.y());
-    
+
       std::string errorbar = "ErrorBar Length: %d, %d, %d";
       error->SetTitle(Form(errorbar.c_str(), (x1 - x2), (y1 - y2), (z1 - z2)));
       error->SetPoint(0, pointmmTocm(x1),pointmmTocm(y1),pointmmTocm(z1));
@@ -144,10 +144,10 @@ namespace mu2e{
       error->SetLineColor(kRed);
       error->SetPickable(kTRUE);
       HitList2DXY->AddElement(error);
-    } 
+    }
     HitList2DXY->AddElement(this);
   }
-  
+
  void TEveMu2eHit::DrawHit2DXZ(const std::string &pstr, Int_t n, CLHEP::Hep3Vector pointInMu2e, int energylevel, TEveElementList *HitList2DXZ)
   {
     auto [sposi, sposf, title, colorid] = DrawStraw();
@@ -169,4 +169,4 @@ namespace mu2e{
     HitList2DXZ->AddElement(this);
   }
 }
-  
+

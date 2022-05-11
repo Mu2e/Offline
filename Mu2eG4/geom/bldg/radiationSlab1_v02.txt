@@ -1,5 +1,5 @@
-// SimpleConfig geometry file automatically produced for original file: 
-// 
+// SimpleConfig geometry file automatically produced for original file:
+//
 //   geom/geom_radiation_slab1.ccl
 
 string building.radiation.slab1.name     = "radiationSlab1";

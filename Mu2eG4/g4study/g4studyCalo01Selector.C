@@ -88,19 +88,19 @@ Double_t hBinVol = 200.0;
 map<Int_t,Double_t> TEDS;
 map<Int_t,Double_t>::const_iterator TEDSCIterator;
 
-template <class myTH> void book(myTH* &hp, char const* const htitle, 
-	      Int_t nBinX, Double_t lBinX, Double_t hBinX,
-	      Int_t nBinY, Double_t lBinY, Double_t hBinY,
-	      Color_t const color=kRed) {
+template <class myTH> void book(myTH* &hp, char const* const htitle,
+              Int_t nBinX, Double_t lBinX, Double_t hBinX,
+              Int_t nBinY, Double_t lBinY, Double_t hBinY,
+              Color_t const color=kRed) {
 
   TString hname  = "h_";
   hname += htitle;
   hp =  new myTH(hname, htitle,
-	     nBinX, lBinX, hBinX,
-	     nBinY, lBinY, hBinY);
+             nBinX, lBinX, hBinX,
+             nBinY, lBinY, hBinY);
 
   hp->SetMarkerColor(color);
-  hp->SetLineColor(color);  
+  hp->SetLineColor(color);
 
   hp->Sumw2();
   hp->StatOverflows(includeOverflows);
@@ -108,19 +108,19 @@ template <class myTH> void book(myTH* &hp, char const* const htitle,
 
 }
 
-template <class myTH> void book(myTH* &hp, char const* const htitle, 
-				Int_t nBinX, Double_t lBinX, Double_t hBinX,
-				Int_t nBinY, const Double_t* ybins,
-				Color_t const color=kRed) {
+template <class myTH> void book(myTH* &hp, char const* const htitle,
+                                Int_t nBinX, Double_t lBinX, Double_t hBinX,
+                                Int_t nBinY, const Double_t* ybins,
+                                Color_t const color=kRed) {
 
   TString hname  = "h_";
   hname += htitle;
   hp =  new myTH(hname, htitle,
-	     nBinX, lBinX, hBinX,
-	     nBinY, ybins);
+             nBinX, lBinX, hBinX,
+             nBinY, ybins);
 
   hp->SetMarkerColor(color);
-  hp->SetLineColor(color);  
+  hp->SetLineColor(color);
 
   hp->Sumw2();
   hp->StatOverflows(includeOverflows);
@@ -128,16 +128,16 @@ template <class myTH> void book(myTH* &hp, char const* const htitle,
 
 }
 
-template <class myTH> void book(myTH* &hp, char const* const htitle, 
-	      Int_t nBinX, Double_t lBinX, Double_t hBinX,
-	      Color_t const color=kRed) {
+template <class myTH> void book(myTH* &hp, char const* const htitle,
+              Int_t nBinX, Double_t lBinX, Double_t hBinX,
+              Color_t const color=kRed) {
 
   TString hname  = "h_";
   hname += htitle;
   hp =  new myTH(hname, htitle,
-		 nBinX, lBinX, hBinX);
+                 nBinX, lBinX, hBinX);
   hp->SetMarkerColor(color);
-  hp->SetLineColor(color);  
+  hp->SetLineColor(color);
   hp->Sumw2();
   hp->StatOverflows(includeOverflows);
   return;
@@ -205,17 +205,17 @@ Bool_t g4studyCalo01Selector::Process(Long64_t entry)
          nBinVol, lBinVol, hBinVol,
          nBinTED, lBinTED, hBinTEDS);
 
-    cout << "g4studyCalo01Selector::Process GetEntries() " << fChain->GetEntries() 
+    cout << "g4studyCalo01Selector::Process GetEntries() " << fChain->GetEntries()
          << endl;
 
   }
 
   b_evt  ->GetEntry(entry);
-  b_vol  ->GetEntry(entry); 
+  b_vol  ->GetEntry(entry);
   b_tedep->GetEntry(entry);
 
   if (debug>3) {
-    cout << "g4studyCalo01Selector::Process evt, vol, tedep " 
+    cout << "g4studyCalo01Selector::Process evt, vol, tedep "
          << evt << ", "
          << vol << ", "
          << tedep
@@ -229,9 +229,9 @@ Bool_t g4studyCalo01Selector::Process(Long64_t entry)
   if (nEvent != evt) {
 
     if (debug>2) {
-      cout << "g4studyCalo01Selector::Process evt, nEvent " 
+      cout << "g4studyCalo01Selector::Process evt, nEvent "
            << evt    << ", "
-           << nEvent 
+           << nEvent
            << endl;
     }
 
@@ -293,8 +293,8 @@ Long_t const canvasShiftY =  25;
 
 
 void prepareNextCanvas( Int_t const logx = 0, Int_t const logy = 0,
-			Int_t const gridx = 1, Int_t const gridy = 1
-			) {
+                        Int_t const gridx = 1, Int_t const gridy = 1
+                        ) {
 
   Int_t canvasPosID = canvases.size()+1;
   ++canvasNumber;
@@ -307,7 +307,7 @@ void prepareNextCanvas( Int_t const logx = 0, Int_t const logy = 0,
   cout << "constructing canvas " << forCanvasSuffix.str() << ", position id: " <<  canvasPosID << endl;
 
   canvasName = canvasNameFullPrefix + "_c" + forCanvasSuffix.str();
-  
+
   canvasox = canvasOriginX + (canvasPosID%2)*(canvasWX+canvasSpace) + (canvasPosID/2)*canvasShiftX;
   canvasoy = canvasOriginY + (canvasPosID/2)*canvasShiftY;
 
@@ -335,10 +335,10 @@ void displayPrintCanvas() {
   return;
 }
 
-void prepareDisplayPrintCanvas(TH1* const hist, char const* const opt="", 
-			       Int_t const logx = 0, Int_t const logy = 0,
-			       Int_t const gridx = 1, Int_t const gridy = 1
-			       ) {
+void prepareDisplayPrintCanvas(TH1* const hist, char const* const opt="",
+                               Int_t const logx = 0, Int_t const logy = 0,
+                               Int_t const gridx = 1, Int_t const gridy = 1
+                               ) {
 
   prepareNextCanvas(logx,logy,gridx,gridy);
 
@@ -351,12 +351,12 @@ void prepareDisplayPrintCanvas(TH1* const hist, char const* const opt="",
 
 }
 
-void prepareDisplay2PrintCanvas(TH1* const hist1, 
-				TH1* const hist2, 
-				char const* const opt, 
-				Int_t const logx = 0, Int_t const logy = 0,
-				Int_t const gridx = 1, Int_t const gridy = 1
-				) {
+void prepareDisplay2PrintCanvas(TH1* const hist1,
+                                TH1* const hist2,
+                                char const* const opt,
+                                Int_t const logx = 0, Int_t const logy = 0,
+                                Int_t const gridx = 1, Int_t const gridy = 1
+                                ) {
 
   prepareNextCanvas(logx,logy,gridx,gridy);
 

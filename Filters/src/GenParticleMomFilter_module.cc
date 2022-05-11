@@ -34,7 +34,7 @@ namespace mu2e {
       bool beginRun(art::Run& run) override;
       bool endRun(art::Run& run) override;
       bool filter(art::Event& event) override;
-      
+
       art::InputTag _genParticleModule;
       double _momCutoff;
       PDGCode::type _cutoffPDG;

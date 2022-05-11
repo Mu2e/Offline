@@ -25,7 +25,7 @@
 namespace mu2e {
 
   class TransportSolenoid {
-    
+
     friend class BeamlineMaker;
 
   public:
@@ -33,10 +33,10 @@ namespace mu2e {
       _rTorus(0.), _rVac(0.)
     {
       // Reserve number of coils
-      for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; ++iTS ) 
+      for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; ++iTS )
         _coilMap[ (TSRegion)iTS ].reserve( getNCoils( (TSRegion)iTS ) );
     }
-    
+
     // use compiler-generated copy c'tor, copy assignment, and d'tor
 
     // - only the following enums should be used for the following
@@ -49,7 +49,7 @@ namespace mu2e {
       }
       static std::map<enum_type,std::string> const& names() {
         static std::map<enum_type,std::string> nam;
-        
+
         if ( nam.empty() ) {
           nam[unknown] = "unknown";
           nam[TS1]     = "TS1";
@@ -77,7 +77,7 @@ namespace mu2e {
           nam[IN]      = "IN";
           nam[OUT]     = "OUT";
         }
-        
+
         return nam;
       }
     };
@@ -91,13 +91,13 @@ namespace mu2e {
       }
       static std::map<enum_type,std::string> const& names() {
         static std::map<enum_type,std::string> nam;
-        
+
         if ( nam.empty() ) {
           nam[unknown] = "unknown";
           nam[TS1]     = "TS1";
           nam[TS2]     = "TS2";
           nam[TS3u]    = "TS3u";
-	  //          nam[TS3ud]   = "TS3ud";
+          //          nam[TS3ud]   = "TS3ud";
           nam[TS3uu]   = "TS3uu";
           nam[TS3dd]   = "TS3dd";
           nam[TS3d]    = "TS3d";
@@ -151,7 +151,7 @@ namespace mu2e {
 
     template <class T = TSSection>
     T* getTSCryo(TSRegion::enum_type i,TSRadialPart::enum_type j) const {
-      return static_cast<T*>( _cryoMap.find(i)->second.find(j)->second.get() );        
+      return static_cast<T*>( _cryoMap.find(i)->second.find(j)->second.get() );
     }
 
     template <class T = TSSection>
@@ -161,15 +161,15 @@ namespace mu2e {
 
     // The coils assemblies are approximated by a torus and cones for now
 
-    const std::vector<double> & caRadii(TSCARegion::enum_type i) const { 
+    const std::vector<double> & caRadii(TSCARegion::enum_type i) const {
       return _caRadiiMap.at(i);
     }
     // those only make sense for the toruses and cylinders
-    double innerCARadius(TSCARegion::enum_type i) const { 
-      return _caRadiiMap.at(i)[0]; 
+    double innerCARadius(TSCARegion::enum_type i) const {
+      return _caRadiiMap.at(i)[0];
     }
-    double outerCARadius(TSCARegion::enum_type i) const { 
-      return _caRadiiMap.at(i)[1]; 
+    double outerCARadius(TSCARegion::enum_type i) const {
+      return _caRadiiMap.at(i)[1];
     }
 
     // Rings  (David Norvil Brown, April 2015)
@@ -231,21 +231,21 @@ namespace mu2e {
 
     bool _build_endWallD2; //whether or not to build second component of endWallD
 
-    double _rIn_endWallU1; 
-    double _rIn_endWallU2; 
-    double _rIn_endWallD;  
+    double _rIn_endWallU1;
+    double _rIn_endWallU2;
+    double _rIn_endWallD;
     std::vector<double> _rIn_endWallD2;
 
-    double _rOut_endWallU1; 
-    double _rOut_endWallU2; 
-    double _rOut_endWallD;  
+    double _rOut_endWallU1;
+    double _rOut_endWallU2;
+    double _rOut_endWallD;
     std::vector<double> _rOut_endWallD2;
 
     std::vector<double> _z_endWallD2;
 
     double _halfLength_endWallU1;
     double _halfLength_endWallU2;
-    double _halfLength_endWallD; 
+    double _halfLength_endWallD;
     double _halfLength_endWallD2;
 
     std::string _material;
@@ -259,7 +259,7 @@ namespace mu2e {
     std::map<TSRegion::enum_type,map_unique_ptrs_TSSection> _cryoMap;
     std::map<TSRegion::enum_type,map_unique_ptrs_TSSection> _thermalShieldMap;
 
-    // Rings 
+    // Rings
     double _rInRingSide, _rOutRingSide, _thickRingSide;
     double _rInRing, _rOutRing, _lengthRing;
     std::string _RingMaterial;
@@ -278,7 +278,7 @@ namespace mu2e {
       {TSRegion::TS4,18},
       {TSRegion::TS5, 6}
     };
-    
+
     // Collimators
     CollimatorTS1 _coll1;
     CollimatorTS3 _coll31;
@@ -303,7 +303,7 @@ namespace mu2e {
     // Poly-lining map
     std::map<TSRegion::enum_type,std::unique_ptr<TorusSection>> _polyLiningMap;
 
-    PbarWindow _pbarWindow;   
+    PbarWindow _pbarWindow;
 
   };
 

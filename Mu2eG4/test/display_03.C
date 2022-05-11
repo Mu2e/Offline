@@ -1,5 +1,5 @@
 //
-// Crude event display running from the output of 
+// Crude event display running from the output of
 // g4test_03.py
 //
 //
@@ -16,7 +16,7 @@
 // The second page repeats the bottom two plots for
 // events 1 and 2.
 // The third page makes a 3d scatter plot of event 1.
-// 
+//
 
 {
 
@@ -38,7 +38,7 @@
   // There is a way to do this using the native objects, not using aliases.
   // I am still debugging that.
 
- 
+
   // Aliases for hit points.
   event->SetAlias("hx",   "mu2eStepPointMCs_g4run__G4Test03.obj._position.dx");
   event->SetAlias("hy",   "mu2eStepPointMCs_g4run__G4Test03.obj._position.dy");

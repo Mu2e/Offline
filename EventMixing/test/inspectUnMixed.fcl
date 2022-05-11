@@ -4,22 +4,22 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : InspectDataProducts
 
 # Start form an empty source
-source : 
-{ 
+source :
+{
   module_type : RootInput
   fileNames   : [ "/mu2e/data/outstage/kutschke/72784/72784_0000/TTrackerBg_0000_data.root" ]
   maxEvents   : 20
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "readback.root"
   }
@@ -27,12 +27,12 @@ services :
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }  
+  }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
@@ -55,7 +55,7 @@ physics :
       mixerModuleLabel       : g4run
     }
 
-  } 
+  }
 
   e1 : [inspect]
 

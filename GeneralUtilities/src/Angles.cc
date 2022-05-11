@@ -5,12 +5,12 @@ namespace mu2e {
       double dphi = phi - refphi;
       static const double twopi = 2*M_PI;
       while(dphi > M_PI){
-	dphi -= twopi;
-	phi -= twopi;
+        dphi -= twopi;
+        phi -= twopi;
       }
       while(dphi <= -M_PI){
-	dphi += twopi;
-	phi += twopi;
+        dphi += twopi;
+        phi += twopi;
       }
       return dphi;
     }

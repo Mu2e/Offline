@@ -12,14 +12,14 @@ namespace mu2e {
 
 
   class CaloRawWFProcessor : public CaloWaveformProcessor {
-     
+
 
      public:
 
         struct Config
         {
            using Name = fhicl::Name;
-           using Comment = fhicl::Comment;        
+           using Comment = fhicl::Comment;
            fhicl::Atom<int>    windowPeak{       Name("windowPeak"),       Comment("Number of bins around central vlue to inspect")};
            fhicl::Atom<double> minPeakAmplitude{ Name("minPeakAmplitude"), Comment("Minimum peak amplitude")};
            fhicl::Atom<double> shiftTime{        Name("shiftTime"),        Comment("Time between beginning and maximum value of pusle")};
@@ -41,17 +41,17 @@ namespace mu2e {
         virtual double amplitude(unsigned int i)    const override {return resAmp_.at(i);}
         virtual double amplitudeErr(unsigned int i) const override {return resAmpErr_.at(i);}
         virtual double time(unsigned int i)         const override {return resTime_.at(i);}
-        virtual double timeErr(unsigned int i)      const override {return resTimeErr_.at(i);}  
+        virtual double timeErr(unsigned int i)      const override {return resTimeErr_.at(i);}
         virtual bool   isPileUp(unsigned int i)     const override {return nPeaks_ > 1;}
-        
+
     private:
-       
+
        int                 windowPeak_;
        double              minPeakAmplitude_;
        double              shiftTime_;
        double              scaleFactor_;
        int                 diagLevel_;
-       
+
        int                 nPeaks_;
        double              chi2_;
        int                 ndf_;

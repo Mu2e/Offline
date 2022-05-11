@@ -58,18 +58,18 @@ namespace mu2e {
 
     // "Near" PWC -- the more upstream of the two.
     CLHEP::Hep3Vector nearPWCPos = CLHEP::Hep3Vector(0.0, 0.0, -0.5*pwcSeparation);
-    std::shared_ptr<PTMPWC> nearPWC( new PTMPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
+    std::shared_ptr<PTMPWC> nearPWC( new PTMPWC("_1", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName,
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
                                      gasMaterialName, numVertWires, numHorizWires, nearPWCPos, 0, containerMargin,
-                                     framesInDetector, outerPlatesInDetector, 
+                                     framesInDetector, outerPlatesInDetector,
                                      ground1Zframes, hv1Zframes, hv2Zframes, hv3Zframes, ground2Zframes) );
     // "Far" PWC
     CLHEP::Hep3Vector farPWCPos = CLHEP::Hep3Vector(0.0, 0.0, 0.5*pwcSeparation);
     int farWireNumStart = numHorizWires + numVertWires;
-    std::shared_ptr<PTMPWC> farPWC( new PTMPWC("_2", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName, 
+    std::shared_ptr<PTMPWC> farPWC( new PTMPWC("_2", frameHeight, frameWidth, frameThick, outerPlateThick, frameMaterialName,
                                      windowHeight, windowWidth, windowThick, windowMaterialName,
                                      gasMaterialName, numVertWires, numHorizWires, farPWCPos, farWireNumStart, containerMargin,
-                                     framesInDetector, outerPlatesInDetector, 
+                                     framesInDetector, outerPlatesInDetector,
                                      ground1Zframes, hv1Zframes, hv2Zframes, hv3Zframes, ground2Zframes) );
 
     std::unique_ptr<PTM> ptmon(new PTM(originInMu2e, rotationInMu2e, nearPWC, farPWC, pwcSeparation, motherMargin));

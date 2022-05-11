@@ -214,13 +214,14 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
 }
 
 void DoDriftTimeFit(
-    std::vector<double> & pars, 
+    std::vector<double> & pars,
     std::vector<double> & errors,
     std::vector<double> & cov_out,
     bool & minuit_converged,
-    GaussianDriftFit const& fit,
+    GaussianDriftFit &fit,
+    double driftres,
     int diag, double mntolerance, double mnprecision) {
-  
+
   // Initiate Minuit Fit:
   ROOT::Minuit2::MnStrategy mnStrategy(2);
   ROOT::Minuit2::MnUserParameters params(pars, errors);
@@ -229,6 +230,25 @@ void DoDriftTimeFit(
   if (mnprecision > 0) {
     migrad.SetPrecision(mnprecision);
   }
+
+  // Do first fit stage with fixed drift res
+  // and minimal t0
+  fit.setFixedT0(true);
+  fit.setFixedDriftRes(true,driftres);
+  migrad.Fix(4);
+  ROOT::Minuit2::FunctionMinimum temp_min = migrad(0, mntolerance);
+  ROOT::Minuit2::MnUserParameters const& temp_results = temp_min.UserParameters();
+  for (size_t i=0;i<4;i++){
+    pars[i] = temp_results.Params()[i];
+    errors[i] = temp_results.Errors()[i];
+  }
+  XYZVectorF ft0pos(pars[0], 0, pars[1]);
+  XYZVectorF ft0dir(pars[2], -1, pars[3]);
+  ft0dir = ft0dir.unit();
+  pars[4] = fit.averageT0(pars);
+  fit.setFixedT0(false);
+  fit.setFixedDriftRes(false);
+  migrad.Release(4);
 
   // Define Minimization method as "MIGRAD" (see minuit documentation)
   ROOT::Minuit2::FunctionMinimum min = migrad(0, mntolerance);
@@ -254,7 +274,7 @@ void DoDriftTimeFit(
 }
 
 void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const& srep,
-                    const Tracker* tracker, double mntolerance, double mnprecision) {
+                    const Tracker* tracker, double driftres, double mntolerance, double mnprecision) {
 
   auto dir = tseed._track.FitEquation.Dir;
   auto intercept = tseed._track.FitEquation.Pos;
@@ -278,8 +298,8 @@ void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const
 
   // Define the PDF used by Minuit:
   GaussianDriftFit fit(tseed._straw_chits, srep, tracker);
-  DoDriftTimeFit(pars, errors, tseed._track.MinuitParams.cov, 
-    tseed._track.minuit_converged, fit, 
+  DoDriftTimeFit(pars, errors, tseed._track.MinuitParams.cov,
+    tseed._track.minuit_converged, fit, driftres,
     diag, mntolerance, mnprecision);
 
   tseed._track.MinuitParams.A0 = pars[0];

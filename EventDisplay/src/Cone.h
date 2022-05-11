@@ -1,5 +1,5 @@
 //
-// Class for all static (i.e. time-independent) cone structures. Now only used for MecoStyleProtonAbsorber. The structure is displayed via EventDisplayGeoVolumeCone (inherited from TGeoVolume) which holds a TGeoCone. 
+// Class for all static (i.e. time-independent) cone structures. Now only used for MecoStyleProtonAbsorber. The structure is displayed via EventDisplayGeoVolumeCone (inherited from TGeoVolume) which holds a TGeoCone.
 //
 //
 // Original author MyeongJae Lee, based on Ralf Ehrlich's Tube.h.
@@ -81,8 +81,8 @@ class Cone: public VirtualShape
 
   Cone(double x, double y, double z,
            double phi, double theta, double psi, double halflength,
-           double innerRadius1, double outerRadius1, 
-           double innerRadius2, double outerRadius2, 
+           double innerRadius1, double outerRadius1,
+           double innerRadius2, double outerRadius2,
            double startTime,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
            EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
@@ -101,7 +101,7 @@ class Cone: public VirtualShape
     if(_topvolume->GetNodes()) i=_topvolume->GetNodes()->GetEntries();
     _topvolume->AddNode(_volume, i, _translation);
 
-    
+
     int nseg=_geomanager->GetNsegments();
     int nlayers=TMath::CeilNint((outerRadius1-innerRadius1)/500.0);
     double st=sin(theta);
@@ -143,7 +143,7 @@ class Cone: public VirtualShape
         addline(rx1+x, ry1+y, rz1+z,   rx2+x, ry2+y, rz2+z,   i, j, 0, mainframe);
       }
     }
-    
+
 /*
     for(int i=0; i<=nlayers; i++)
     {

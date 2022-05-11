@@ -6,19 +6,19 @@
 //
 // Original author KLG
 //
- 
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e 
+namespace mu2e
 {
   class CosmicRayShield;
   class SimpleConfig;
 
-  class CosmicRayShieldMaker 
+  class CosmicRayShieldMaker
   {
     public:
 
@@ -26,10 +26,10 @@ namespace mu2e
 
     void parseConfig( SimpleConfig const & _config );
     void makeCRVSectors();
-    void makeSingleSector(const std::vector<double> &counterHalfLengths, 
+    void makeSingleSector(const std::vector<double> &counterHalfLengths,
                           int isector,
-                          const std::string &name, 
-                          const CLHEP::Hep3Vector &firstCounter, 
+                          const std::string &name,
+                          const CLHEP::Hep3Vector &firstCounter,
                           const CLHEP::Hep3Vector *layerOffsets,
                           const CLHEP::Hep3Vector &VTNCSmallGap,
                           const CLHEP::Hep3Vector &VTNCLargeGap,
@@ -56,17 +56,17 @@ namespace mu2e
     double                   _strongBackThickness;
 
     //vector size is _nSectors
-    std::vector<double>             _counterLength;        
+    std::vector<double>             _counterLength;
     std::vector<int>                _nModules;
     std::vector<int>                _nCountersPerModule;
     std::vector<CLHEP::Hep3Vector>  _firstCounter;
     std::vector<CLHEP::Hep3Vector>  _offsetDirection;   //direction in which the layers are shifted
     std::vector<CLHEP::Hep3Vector>  _gapDirection;      //direction to the next gap between the counters
     std::vector<CLHEP::Hep3Vector>  _layerDirection;    //direction to the next layer
-    std::vector<bool>               _CMBside0;        
-    std::vector<bool>               _CMBside1;        
-    std::vector<int>                _FEBBoxesSide0;        
-    std::vector<int>                _FEBBoxesSide1;        
+    std::vector<bool>               _CMBside0;
+    std::vector<bool>               _CMBside1;
+    std::vector<int>                _FEBBoxesSide0;
+    std::vector<int>                _FEBBoxesSide1;
     std::vector<int>                _precedingSector;  //needed by coincidence finder
     std::vector<int>                _sectorType;       //needed by coincidence finder
 
