@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
   bool doHelp = false;
   bool doNames = false;
   std::string word, var, time;
+  float daysAgo = 0.0;
   size_t i = 1;
   size_t lim(argc);
   while (i < lim) {
@@ -36,6 +37,13 @@ int main(int argc, char** argv) {
         doHelp = true;
       } else {
         time = argv[++i];
+      }
+    } else if (word == "--daysAgo") {
+      if (i + 1 == lim) {
+        std::cout << "Error --daysAgo doesn't have an argument" << std::endl;
+        doHelp = true;
+      } else {
+        daysAgo = std::stof(argv[++i]);
       }
     } else {
       std::cout << "Error - unknown argument " << word << std::endl;
@@ -63,20 +71,21 @@ int main(int argc, char** argv) {
        The time restriction in ISO8601 format. This can
        be one time in which case the variable point closes to the
        time will be printed, if it is a time range, then values in
-       that range will be printed. If the time argument is a int or
-       float number, thee results returned will be from that many
-       days ago to now.
+       that range will be printed.
+  --daysAgo NUMBER
+       Number is an int or float, and the results returned will be
+       from that many days ago to now.
 
   epicsTool --names
   epicsTool --print Mu2e:CompStatus:calo-01:DTC0:dtctemp
   epicsTool --print Mu2e:CompStatus:calo-01:DTC0:dtctemp \
-            --time  2022-01-01T10:11:12
+            --time  2022-01-01T10:11:12-0500
   epicsTool --print Mu2e:CompStatus:calo-01:DTC0:dtctemp \
             --time  2022-01-01T10:11:12/2022-01-02T10:11:12
   epicsTool --print Mu2e:CompStatus:calo-01:DTC0:dtctemp \
-            --time 1.5
+            --daysAgo 1.5
 
-Variable prints will have the following format:
+Variable sample prints will have the following format:
 channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,datatype
 
 )" << std::endl;
@@ -90,12 +99,12 @@ channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,da
     mu2e::EpicsTool::StringVec names;
     rc = tool.names(names);
     if (rc != 0) return rc;
-    for (auto const& n : names) {
-      std::cout << n << std::endl;
+    for (auto const& name : names) {
+      std::cout << name << std::endl;
     }
     return 0;
   } else {
-    mu2e::EpicsVar::EpicsVec vec = tool.get(var, time);
+    mu2e::EpicsVar::EpicsVec vec = tool.get(var, time, daysAgo);
     for (auto const& e : vec) {
       std::cout << e.csv() << std::endl;
     }

@@ -15,7 +15,7 @@ class EpicsVar {
   typedef std::vector<EpicsVar> EpicsVec;
 
   EpicsVar() {}
-  EpicsVar(std::string const& csv) { set(csv); }
+  EpicsVar(std::string const& csv);
 
   // the channel number internal to EPICS
   int8_t channel_id() const { return _channel_id; }
@@ -38,10 +38,6 @@ class EpicsVar {
 
   // the database row in csv
   std::string const& csv() const { return _csv; };
-  // set values from database row as csv
-  void set(std::string const& csv);
-  // add the epoch time
-  void setTime(std::time_t t) { _smpl_time_t = t; }
 
  private:
   std::string _csv;
