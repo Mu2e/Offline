@@ -4,55 +4,33 @@
 //
 
 #include "Offline/DbService/inc/EpicsTool.hh"
+#include <boost/program_options.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
 
+namespace po = boost::program_options;
+
 int main(int argc, char** argv) {
   std::vector<std::string> words;
 
-  bool doHelp = false;
+  // bool doHelp = false;
   bool doNames = false;
-  std::string word, var, time;
+  std::string word, name, time;
   float daysAgo = 0.0;
-  size_t i = 1;
-  size_t lim(argc);
-  while (i < lim) {
-    // for (size_t i = 1; i < size_t(argc); ++i) {
-    word = argv[i];
-    if (word == "-h" || word == "--help") {
-      doHelp = true;
-    } else if (word == "--names") {
-      doNames = true;
-    } else if (word == "--print") {
-      if (i + 1 == lim) {
-        std::cout << "Error --print doesn't have an argument" << std::endl;
-        doHelp = true;
-      } else {
-        var = argv[++i];
-      }
-    } else if (word == "--time") {
-      if (i + 1 == lim) {
-        std::cout << "Error --time doesn't have an argument" << std::endl;
-        doHelp = true;
-      } else {
-        time = argv[++i];
-      }
-    } else if (word == "--daysAgo") {
-      if (i + 1 == lim) {
-        std::cout << "Error --daysAgo doesn't have an argument" << std::endl;
-        doHelp = true;
-      } else {
-        daysAgo = std::stof(argv[++i]);
-      }
-    } else {
-      std::cout << "Error - unknown argument " << word << std::endl;
-      doHelp = true;
-    }
-    i++;
-  }
 
-  if (doHelp) {
+  po::options_description desc("Allowed options");
+  desc.add_options()("help,h", "describe arguments")(
+      "names,n", po::bool_switch(&doNames), "print names of all variables")(
+      "print,p", po::value(&name), "print same for this variable name")(
+      "time,t", po::value(&time), "Restrict times for print, see help")(
+      "daysAgo,d", po::value(&daysAgo), "restrict time to dayaAgo to now");
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
     std::cout <<
         R"(
 
@@ -67,11 +45,12 @@ int main(int argc, char** argv) {
   --print NAME
        Print the all the values for the variable with this
        name, can be restricted with --time
-  --time TIME
+  --time TIME or TIME1/TIME2
        The time restriction in ISO8601 format. This can
        be one time in which case the variable point closes to the
        time will be printed, if it is a time range, then values in
-       that range will be printed.
+       that range will be printed. If time zone is not specified,
+       time is interpreted as UTC.
   --daysAgo NUMBER
        Number is an int or float, and the results returned will be
        from that many days ago to now.
@@ -89,8 +68,10 @@ Variable sample prints will have the following format:
 channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,datatype
 
 )" << std::endl;
-    return 0;
+
+    return 1;
   }
+
 
   mu2e::EpicsTool tool;
   int rc = 0;
@@ -103,8 +84,8 @@ channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,da
       std::cout << name << std::endl;
     }
     return 0;
-  } else {
-    mu2e::EpicsVar::EpicsVec vec = tool.get(var, time, daysAgo);
+  } else if (!name.empty()) {
+    mu2e::EpicsVar::EpicsVec vec = tool.get(name, time, daysAgo);
     for (auto const& e : vec) {
       std::cout << e.csv() << std::endl;
     }
