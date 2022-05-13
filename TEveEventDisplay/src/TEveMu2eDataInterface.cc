@@ -571,7 +571,7 @@ namespace mu2e{
               segment.helix().position(fltL,pos);
               CLHEP::Hep3Vector p = GenVector::Hep3Vec(pos);
               CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
-              line->SetPostionAndDirectionFromKalRep((InMu2e.z()));              
+              line->SetPostionAndDirectionFromKalRep((InMu2e.z()));
               line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()), pointmmTocm(InMu2e.z()));
               line_twoDXY->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));
               line_twoDXZ->SetNextPoint(pointmmTocm(p.x()), pointmmTocm(p.y()), pointmmTocm(p.z()));

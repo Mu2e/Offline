@@ -199,7 +199,7 @@ namespace mu2e{
 
               string energy = to_string(points[0].kineticEnergy());
 
-              const std::string title = " MCTrajectory "+ energy + " Creation code = " + to_string(trajectoryIter->first->creationCode()) + "Stopping code = " + to_string(trajectoryIter->first->stoppingCode()) + " End Global Time = " + to_string(trajectoryIter->first->endGlobalTime())  ;
+              const std::string title = " MCTrajectory "+ energy + " Creation code = " + to_string(trajectoryIter->first->creationCode()) + "Stopping code = " + to_string(trajectoryIter->first->stoppingCode()) + " End Global Time = " + to_string(trajectoryIter->first->endGlobalTime());
               line->SetTitle(Form(title.c_str()));
 
               //Get PID label:
