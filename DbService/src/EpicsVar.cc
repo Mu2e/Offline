@@ -50,18 +50,21 @@ EpicsVar::EpicsVar(std::string const& csv) {
     _num_val = 0;
   } else {
     _num_val = std::stoi(sv[5]);
+    _value = _num_val;
   }
 
   if (sv[6] == "None") {
     _float_val = 0.0;
   } else {
     _float_val = std::stod(sv[6]);
+    _value = _float_val;
   }
 
   if (sv[7] == "None") {
     _str_val = "";
   } else {
     _str_val = sv[7];
+    _value = _str_val;
   }
 
   if (!sv[8].empty()) {
