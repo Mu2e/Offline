@@ -7,12 +7,14 @@
 #include <ctime>
 #include <string>
 #include <vector>
+#include <variant>
 
 namespace mu2e {
 
 class EpicsVar {
  public:
   typedef std::vector<EpicsVar> EpicsVec;
+  typedef std::variant<int,double,std::string> variVar;
 
   EpicsVar() {}
   EpicsVar(std::string const& csv);
@@ -27,6 +29,12 @@ class EpicsVar {
   int8_t nanosecs() const { return _nanosecs; }
   int8_t severity_id() const { return _severity_id; }
   int8_t status_id() const { return _status_id; }
+  // PV value held, with its type, as std::variant
+  variVar value() const { return _value; }
+
+  // Not all of the following will be valid - depends on how PV was declared
+  // value() will contain the non-null PV type as a std::variant
+
   // PV value, if an int
   int num_val() const { return _num_val; }
   // PV value, if a float or double
@@ -52,6 +60,7 @@ class EpicsVar {
   double _float_val;
   std::string _str_val;
   char _datatype;
+  variVar _value;
 };
 
 }  // namespace mu2e
