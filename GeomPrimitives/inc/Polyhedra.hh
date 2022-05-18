@@ -5,7 +5,7 @@
 // The parameters of a Polyhedra
 //
 // This is a blatant rip-off of Kyle's Polycone class, but now
-// used for representing polyhedra, which correlates with 
+// used for representing polyhedra, which correlates with
 // Geant4's G4Polyhedra class, without the specific dependence on G4.
 // David Norvil Brown, September 2017
 //
@@ -36,13 +36,13 @@ namespace mu2e {
   public:
 
     Polyhedra( int nSides,
-	       const std::vector<double>& zPlanes,
-	       const std::vector<double>& rInner,
-	       const std::vector<double>& rOuter,
-	       const CLHEP::Hep3Vector& originInMu2e,
-	       const std::string& materialName,
-	       double phiStart = 0.,
-	       double phiTotal = CLHEP::twopi);
+               const std::vector<double>& zPlanes,
+               const std::vector<double>& rInner,
+               const std::vector<double>& rOuter,
+               const CLHEP::Hep3Vector& originInMu2e,
+               const std::string& materialName,
+               double phiStart = 0.,
+               double phiTotal = CLHEP::twopi);
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 

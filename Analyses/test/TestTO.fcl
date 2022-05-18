@@ -78,16 +78,16 @@ physics :
 
   }
 
-  p1 : [ 
+  p1 : [
        generate
        , g4run
        , makeDcH
        , makeDcHWTO
        , @sequence::CaloDigiMC.DigiSim
-       ,  @sequence::CaloReco.Reco	 
+       ,  @sequence::CaloReco.Reco
        ]
   e1 : [
-TurnOffTest, 
+TurnOffTest,
 outfile ]
 
 
@@ -99,13 +99,13 @@ outfile ]
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "TOTest_bkg.root"
     fastCloning    : false
     outputCommands : ['keep *_*_*_*'
-                     ]  
+                     ]
   }
 }
 

@@ -47,7 +47,10 @@ class Mu2eG4MinDEDXPhysicsConstructor : public G4VPhysicsConstructor
 public:
   Mu2eG4MinDEDXPhysicsConstructor(G4int ver = 0);
 
-  virtual ~Mu2eG4MinDEDXPhysicsConstructor();
+  virtual ~Mu2eG4MinDEDXPhysicsConstructor() = default;
+  Mu2eG4MinDEDXPhysicsConstructor(const Mu2eG4MinDEDXPhysicsConstructor &) = delete;
+  Mu2eG4MinDEDXPhysicsConstructor & operator=(const Mu2eG4MinDEDXPhysicsConstructor &) = delete;
+  Mu2eG4MinDEDXPhysicsConstructor & operator=( Mu2eG4MinDEDXPhysicsConstructor && ) = delete;
 
   virtual void ConstructParticle();
   virtual void ConstructProcess();

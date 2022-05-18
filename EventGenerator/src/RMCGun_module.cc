@@ -86,7 +86,7 @@ namespace mu2e {
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
-    TH1F* _hy;				// splitting function
+    TH1F* _hy;                                // splitting function
 
   public:
     explicit RMCGun(const fhicl::ParameterSet& pset);

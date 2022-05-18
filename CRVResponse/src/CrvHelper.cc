@@ -1,6 +1,6 @@
 #include "Offline/CRVResponse/inc/CrvHelper.hh"
 
-namespace mu2e 
+namespace mu2e
 {
   void CrvHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                                 const art::Handle<CrvDigiMCCollection> &digis,
@@ -9,7 +9,7 @@ namespace mu2e
     if(!digis.isValid()) return;
 
     const std::vector<size_t> &waveformIndices = crvRecoPulse->GetWaveformIndices();
-    for(size_t i=0; i<waveformIndices.size(); i++) 
+    for(size_t i=0; i<waveformIndices.size(); i++)
     {
       size_t waveformIndex = waveformIndices[i];
       const CrvDigiMC &digi = digis->at(waveformIndex);
@@ -21,7 +21,7 @@ namespace mu2e
     }
   }
 
-  void CrvHelper::GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps, 
+  void CrvHelper::GetInfoFromStepPoints(const std::set<art::Ptr<CrvStep> > &steps,
                                         const SimParticleTimeOffset &timeOffsets,
                                         double &visibleEnergyDeposited,
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
@@ -50,7 +50,7 @@ namespace mu2e
 
     //TODO: Is this still necessary? Removing it for now.
     //time folding is not applied here, but was used to create the digis, ...
-    //so we need to avoid that some step points from a different micro bunch 
+    //so we need to avoid that some step points from a different micro bunch
     //could be accidentally found to be the step point with the earliest hit time.
     //therefore, only step points of the most likely sim particle will be considered.
     earliestHitTime=NAN;
@@ -67,7 +67,7 @@ namespace mu2e
     }
   }
 
-  void CrvHelper::GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse, 
+  void CrvHelper::GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                           const art::Handle<CrvDigiMCCollection> &digis,
                                           const SimParticleTimeOffset &timeOffsets,
                                           double &visibleEnergyDeposited,
@@ -77,11 +77,11 @@ namespace mu2e
     std::set<art::Ptr<CrvStep> > steps;
 
     CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
-    CrvHelper::GetInfoFromStepPoints(steps, timeOffsets, visibleEnergyDeposited, 
+    CrvHelper::GetInfoFromStepPoints(steps, timeOffsets, visibleEnergyDeposited,
                                      earliestHitTime, earliestHitPos, mostLikelySimParticle);
   }
 
-  void CrvHelper::GetCrvCounterInfo(const GeomHandle<CosmicRayShield> &CRS, 
+  void CrvHelper::GetCrvCounterInfo(const GeomHandle<CosmicRayShield> &CRS,
                                     mu2e::CRSScintillatorBarIndex crvBarIndex,
                                     int &sectorNumber, int &moduleNumber, int &layerNumber, int &counterNumber)
   {
@@ -106,7 +106,7 @@ namespace mu2e
     return sector.getSectorType();
   }
 
-  CLHEP::Hep3Vector CrvHelper::GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS, 
+  CLHEP::Hep3Vector CrvHelper::GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS,
                                      mu2e::CRSScintillatorBarIndex crvBarIndex)
   {
     const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndex);

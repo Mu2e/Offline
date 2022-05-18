@@ -41,12 +41,12 @@ class Track: public VirtualShape
   bool _showOthers;
 
   public:
-//constructor for tracks with start and end point only 
+//constructor for tracks with start and end point only
 //(detailed trajectory can be added later)
   Track(double x1, double y1, double z1, double t1,
         double x2, double y2, double z2, double t2,
-        int particleId, int trackClass, int trackClassIndex, 
-        double momentum, 
+        int particleId, int trackClass, int trackClassIndex,
+        double momentum,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
         bool isGeometry):
@@ -80,7 +80,7 @@ class Track: public VirtualShape
 //constructor for a track without any points
 //trajectory points can be added later
   Track(int particleId, int trackClass, int trackClassIndex,
-        double momentum, 
+        double momentum,
         const TGeoManager *geomanager, TGeoVolume *topvolume,
         EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info):
         VirtualShape(geomanager, topvolume, mainframe, info, false)
@@ -164,7 +164,7 @@ class Track: public VirtualShape
     if(_momentum<_minMomentum) toDelete=true;
     switch(_particleId)
     {
-                case   11: 
+                case   11:
                 case  -11: if(!_showElectrons) toDelete=true; break;   //e+,e-
                 case   13:
                 case  -13: if(!_showMuons) toDelete=true; break;   //mu+,mu-
@@ -184,7 +184,7 @@ class Track: public VirtualShape
       return;
     }
 
-    if(time<getStartTime()) 
+    if(time<getStartTime())
     {
       start();  //shortens the track to a length of 0
       return;
@@ -204,8 +204,8 @@ class Track: public VirtualShape
         double y_tmp=_pVec[i-1].y+(_pVec[i].y-_pVec[i-1].y)*scale;
         double z_tmp=_pVec[i-1].z+(_pVec[i].z-_pVec[i-1].z)*scale;
         _line->SetPoint(i,x_tmp,y_tmp,z_tmp);
-        
-        for(int j=i+1; j<_line->Size(); j++) 
+
+        for(int j=i+1; j<_line->Size(); j++)
         {                 //needed, e.g if animation is restarted at an earlier time, which leaves
           _line->SetPoint(j,x_tmp,y_tmp,z_tmp);   //unused points which need to be overwritten
         }                                         //with the same point as the last one

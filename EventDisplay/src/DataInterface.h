@@ -131,17 +131,17 @@ class DataInterface
   void useHitColors(bool hitcolors, bool whitebackground);
   void useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground);
   void getFilterValues(unsigned int &minPoints, double &minTime, double &maxTime, double &minMomentum,
-                       bool &showElectrons, bool &showMuons, bool &showGammas, 
+                       bool &showElectrons, bool &showMuons, bool &showGammas,
                        bool &showNeutrinos, bool &showNeutrons, bool &showOthers,
                        mu2e::StrawHitFlag &hitFlagSetting);
   void setFilterValues(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
-                       bool showElectrons, bool showMuons, bool showGammas, 
+                       bool showElectrons, bool showMuons, bool showGammas,
                        bool showNeutrinos, bool showNeutrons, bool showOthers,
                        mu2e::StrawHitFlag hitFlagSetting);
   int getNumberHits() {return _numberHits;}
   int getNumberCrystalHits() {return _numberCrystalHits;}
 
-  timeminmax getHitsTimeBoundary(); 
+  timeminmax getHitsTimeBoundary();
   timeminmax getTracksTimeBoundary();
 
   spaceminmax getTrackerBoundary() {return _trackerMinmax;}

@@ -163,8 +163,8 @@ void ComboHitTest(TTree* CHD, const char* page="count"){
     st->SetX1NDC(st->GetX1NDC()-dx);
     st->Draw();
   } else if (spage == "edep") {
-    TH1F* pedep = new TH1F("pedep","ComboHit Energy Deposit;EDep (KeV)",100,0,4.0); 
-    TH1F* eedep = new TH1F("eedep","ComboHit Energy Deposit;EDep (KeV)",100,0,4.0); 
+    TH1F* pedep = new TH1F("pedep","ComboHit Energy Deposit;EDep (KeV)",100,0,4.0);
+    TH1F* eedep = new TH1F("eedep","ComboHit Energy Deposit;EDep (KeV)",100,0,4.0);
     pedep->SetLineColor(kBlue);
     eedep->SetLineColor(kRed);
     pedep->SetStats(0);

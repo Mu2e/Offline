@@ -221,7 +221,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/SRetainingWall.txt"
 #include "Offline/Mu2eG4/geom/bldg/SRetainingWallFoot.txt"
 
-vector<string> bldg.prefix.list = { 
+vector<string> bldg.prefix.list = {
    "building.beamline",
    "building.beamline.block.wall.E",
    "building.beamline.block.wall.S",
@@ -611,7 +611,7 @@ vector<string> dirt.prefix.list = {
   "dirt.escape.stair.04",
   "dirt.escape.stair.07",
   "dirt.escape.stair.11"
-}; 
+};
 
 
 

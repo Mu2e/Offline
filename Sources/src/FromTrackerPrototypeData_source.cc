@@ -65,7 +65,7 @@ namespace mu2e {
     unsigned runNumber_; // from ParSet
     art::SubRunID lastSubRunID_;
     std::set<art::SubRunID> seenSRIDs_;
-    
+
     std::string currentFileName_;
 
     TFile *currentFile_ = nullptr;
@@ -80,7 +80,7 @@ namespace mu2e {
     uint16_t _pmp;
     std::vector<uint16_t> *_samples = 0;
     int entryIndex_;
-      
+
     mu2e::StrawDigiCollection digis_;
     mu2e::StrawDigiADCWaveformCollection digiadcs_;
 
@@ -174,7 +174,7 @@ namespace mu2e {
 
     currentFile_ = new TFile(currentFileName_.c_str());
     tree_ = dynamic_cast<TTree*>(currentFile_->Get("T"));
-   
+
     tree_->SetBranchAddress("run",&_run);
     tree_->SetBranchAddress("panel",&_panel);
     tree_->SetBranchAddress("channel",&_channel);
@@ -236,12 +236,12 @@ namespace mu2e {
         currentEventNumber_ = _ewm;
         return true;
       }
-      
+
       mu2e::TrkTypes::TDCValues tdcs = {_tdcCal, _tdcHV};
       mu2e::TrkTypes::TOTValues tots = {_totCal, _totHV};
       mu2e::TrkTypes::ADCValue firmwarepmp = _pmp;
       mu2e::TrkTypes::ADCWaveform adc;
-      
+
       Long64_t tentry = tree_->LoadTree(entryIndex_);
       bsamples->GetEntry(tentry);
       for (size_t j=0;j<_samples->size();j++){

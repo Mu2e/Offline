@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_tempFillpsAreaFoundation.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.tempDirt.backfill.psArea.baselevel.xPositions = {
   -18218.7   // f5_to_S
 };
 
-vector<int>    dirt.tempDirt.backfill.psArea.baselevel.yreplace   = { 2, 3 }; 
+vector<int>    dirt.tempDirt.backfill.psArea.baselevel.yreplace   = { 2, 3 };
 vector<double> dirt.tempDirt.backfill.psArea.baselevel.yPositions = {
   -11836.4,   // f5
   -11785.6,   // f6

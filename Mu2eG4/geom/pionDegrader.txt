@@ -1,4 +1,4 @@
-// Pion degrader 
+// Pion degrader
 bool   piondegrader.build = false;
 double piondeg.xoffset = 0.0;
 double piondeg.zoffset =5.0;//-2350;

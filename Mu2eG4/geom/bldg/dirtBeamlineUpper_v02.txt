@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_beamline_upper.ccl
 
@@ -14,11 +14,11 @@ double dirt.beamline.upper.offsetFromMu2eOrigin.z   = -3581.4;
 //double dirt.beamline.upper.yHalfThickness           = 355.6;
 double dirt.beamline.upper.yHalfThickness           = 330.2;
 
-vector<int>    dirt.beamline.upper.xreplace   = { }; 
+vector<int>    dirt.beamline.upper.xreplace   = { };
 vector<double> dirt.beamline.upper.xPositions = {
   11684,  // R0 remote E wall
-  2463.8,   // RHC00                                                       
-  941.301,   // RHC01 
+  2463.8,   // RHC00
+  941.301,   // RHC01
   -2006.6,   // o9
   -2006.6,   // N to NRetWall
   3708.41,   // SE corner NRetWall
@@ -31,14 +31,14 @@ vector<double> dirt.beamline.upper.xPositions = {
   3403.59, // SW corner rem hatch
   9550.51, // SE corner rem hatch
   9550.51, // N of E wall rem hatch
-  11684   // o7dirt_to_N 
+  11684   // o7dirt_to_N
 };
 
-vector<int>    dirt.beamline.upper.yreplace   = { 8, 9, 14, 15 }; 
+vector<int>    dirt.beamline.upper.yreplace   = { 8, 9, 14, 15 };
 vector<double> dirt.beamline.upper.yPositions = {
-  10692.4, // R0 remote E wall S corner 
-  8446,   // RHC00                                                          
-  6858,   // RHC01 
+  10692.4, // R0 remote E wall S corner
+  8446,   // RHC00
+  6858,   // RHC01
   6858,   // o9
   9702.79,  // N to NRetWall
   9702.79,  // SE corner NRetWall
@@ -51,7 +51,7 @@ vector<double> dirt.beamline.upper.yPositions = {
   13055.59, // SW corner rem hatch
   13055.59, // SE corner rem hatch
   50000,    // N of E wall rem hatch
-  50000   // o7dirt_to_N 
+  50000   // o7dirt_to_N
 };
 
 // Local Variables:

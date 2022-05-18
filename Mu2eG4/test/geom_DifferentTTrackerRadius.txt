@@ -12,7 +12,7 @@ string detector.name  = "trackerDifferentRadius";
 
 int    tracker.strawsPerManifold    =   11; // this increases the coverage
 
-// change the radii, make sure to change protonabsorber.OutRadius1 
+// change the radii, make sure to change protonabsorber.OutRadius1
 // in step with tracker.envelopeInnerRadius
 
 double protonabsorber.OutRadius1     =   350.0;
@@ -31,7 +31,7 @@ double tracker.innerSupportRadius   =   680.0;
 
 vector<double> tracker.manifoldHalfLengths = { 33.0, 5.0, 5.1};  // mm
 
-// invoke volume overlap check to verify the above configuration 
+// invoke volume overlap check to verify the above configuration
 // make sure each output line with 'Checking overlaps for volume' has OK in it
 bool g4.doSurfaceCheck = true;
 

@@ -1,5 +1,5 @@
 //
-// Transform the energy deposited in the scintillator into photo-electrons (PE) seen by the photosensor. 
+// Transform the energy deposited in the scintillator into photo-electrons (PE) seen by the photosensor.
 // Includes corrections from Birks law, longitudinal response uniformity and photo-statistcs fluctuations.
 // The PE are generated individually and corrected for transit time.
 //
@@ -43,7 +43,7 @@ namespace {
 
   struct StepEntry
   {
-      StepEntry(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float timeCorr) : 
+      StepEntry(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float timeCorr) :
         step_(step),edepCorr_(edepCorr),timeCorr_(timeCorr)
       {}
 
@@ -54,7 +54,7 @@ namespace {
   struct SimParticleSummary
   {
       SimParticleSummary(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float timeCorr) :
-        steps_{step},edepCorr_(edepCorr),timeCorr_(timeCorr) 
+        steps_{step},edepCorr_(edepCorr),timeCorr_(timeCorr)
       {}
 
       void add(const art::Ptr<mu2e::CaloShowerStep>& step, float edepCorr, float timeCorr)
@@ -67,7 +67,7 @@ namespace {
       std::vector<art::Ptr<mu2e::CaloShowerStep>> steps_;
       float edepCorr_,timeCorr_;
   };
-  
+
   struct diagSummary
   {
       diagSummary() : totSteps(0),totNPE(0),totEdep(0.),totEdepCorr(0.),totEdepNPE(0.) {};
@@ -81,10 +81,10 @@ namespace {
 
 namespace mu2e {
 
-  class CaloShowerROMaker : public art::EDProducer 
+  class CaloShowerROMaker : public art::EDProducer
   {
       public:
-         struct Config 
+         struct Config
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
@@ -119,9 +119,9 @@ namespace mu2e {
          {
              // the following consumes statements are necessary because SimParticleTimeOffset::updateMap calls getValidHandle.
              for (auto const& tag : config().caloShowerStepCollection()) crystalShowerTokens_.push_back(consumes<CaloShowerStepCollection>(tag));
-	     consumes<EventWindowMarker>(ewMarkerTag_);
-	     consumes<ProtonBunchTimeMC>(pbtmcTag_);
-             
+             consumes<EventWindowMarker>(ewMarkerTag_);
+             consumes<ProtonBunchTimeMC>(pbtmcTag_);
+
              produces<CaloShowerROCollection>();
              produces<CaloShowerSimCollection>();
          }
@@ -160,7 +160,7 @@ namespace mu2e {
 
   //-----------------------------------------------
   void CaloShowerROMaker::beginJob()
-  {      
+  {
       if (diagLevel_ > 1)
       {
           art::ServiceHandle<art::TFileService> tfs;
@@ -170,10 +170,10 @@ namespace mu2e {
           hStot_      = tfs->make<TH1F>("hStot",     "Total Compress steps",  100,     0,   1000);
       }
   }
-  
+
   //-----------------------------------------------
   void CaloShowerROMaker::beginRun(art::Run& aRun)
-  {      
+  {
       photonProp_.buildTable();
   }
 
@@ -201,10 +201,10 @@ namespace mu2e {
       auto caloShowerSims = std::make_unique<CaloShowerSimCollection>();
 
       StepHandles newCrystalShowerTokens;
-      std::transform(std::begin(crystalShowerTokens_), std::end(crystalShowerTokens_),  
-                     back_inserter(newCrystalShowerTokens), 
+      std::transform(std::begin(crystalShowerTokens_), std::end(crystalShowerTokens_),
+                     back_inserter(newCrystalShowerTokens),
                      [&event](const auto& token) {return event.getValidHandle(token);});
-      
+
       makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims, ewMarker, pbtmc, timeFromProtonsToDRMarker );
 
       // Add the output hit collection to the event
@@ -216,8 +216,8 @@ namespace mu2e {
 
 
   //-----------------------------------------------------------------------------------------------------
-  void CaloShowerROMaker::makeReadoutHits(const StepHandles& crystalShowerHandles, CaloShowerROCollection& CaloShowerROs, 
-                                          CaloShowerSimCollection& caloShowerSims, const EventWindowMarker& ewMarker, 
+  void CaloShowerROMaker::makeReadoutHits(const StepHandles& crystalShowerHandles, CaloShowerROCollection& CaloShowerROs,
+                                          CaloShowerSimCollection& caloShowerSims, const EventWindowMarker& ewMarker,
                                           const ProtonBunchTimeMC& pbtmc, float timeFromProtonsToDRMarker)
   {
       GlobalConstantsHandle<ParticleDataList>  pdt;
@@ -234,8 +234,8 @@ namespace mu2e {
       diagSummary diagSum;
 
       // Digitization start / end  from accelerator DR marker with PB jitter
-      float  correctedDigitizeStart = digitizationStart_ - pbtmc.pbtime_ - timeFromProtonsToDRMarker - digitizationBuffer_; 
-      float  correctedDigitizeEnd   = digitizationEnd_   - pbtmc.pbtime_ - timeFromProtonsToDRMarker ; 
+      float  correctedDigitizeStart = digitizationStart_ - pbtmc.pbtime_ - timeFromProtonsToDRMarker - digitizationBuffer_;
+      float  correctedDigitizeEnd   = digitizationEnd_   - pbtmc.pbtime_ - timeFromProtonsToDRMarker ;
 
       //-----------------------------------------------------------------------
       //store corrected energy deposits for each redouts
@@ -259,12 +259,12 @@ namespace mu2e {
               if (hitTime < correctedDigitizeStart) continue;
 
               size_t idx = std::distance(caloShowerSteps.begin(), istep);
-              art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);            
-              
+              art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);
+
               int   crystalID  = step.volumeG4ID();
-              int   SiPMIDBase = cal.caloIDMapper().SiPMIDFromCrystalID(crystalID);              
+              int   SiPMIDBase = cal.caloIDMapper().SiPMIDFromCrystalID(crystalID);
               float posZ       = step.position().z();
-              
+
               float edep_corr(step.energyDepG4());
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
               if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr, calorimeterCalibrations);
@@ -274,16 +274,16 @@ namespace mu2e {
               {
                   int SiPMID = SiPMIDBase + i;
                   float peMeV = calorimeterCalibrations->peMeV(SiPMID);
-                  int NPE     = randPoisson_.fire(edep_corr*peMeV);                  
+                  int NPE     = randPoisson_.fire(edep_corr*peMeV);
                   if (NPE==0) continue;
-                  
-                  std::vector<float> PETime(NPE,hitTime);                  
-                  if (addTravelTime_) 
+
+                  std::vector<float> PETime(NPE,hitTime);
+                  if (addTravelTime_)
                   {
                       for (auto& time : PETime) time += photonProp_.propTimeSimu(2.0*cryhalflength-posZ);
-                  }    
-                  CaloShowerROs.push_back(CaloShowerRO(SiPMID,stepPtr,PETime));                  
-                                    
+                  }
+                  CaloShowerROs.push_back(CaloShowerRO(SiPMID,stepPtr,PETime));
+
                   if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::generatePE] SiPMID:"<<SiPMID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
                   if (diagLevel_ > 2) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
                   if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
@@ -298,12 +298,12 @@ namespace mu2e {
               //Produce an MC object that include the step and additional information for each original step
               simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr,hitTime));
           }
-          
-          auto sortFunctor = [](const auto& a, const auto& b){return a.SiPMID() < b.SiPMID();};
-          std::sort(CaloShowerROs.begin(),CaloShowerROs.end(),sortFunctor); 
-      } 
 
-      
+          auto sortFunctor = [](const auto& a, const auto& b){return a.SiPMID() < b.SiPMID();};
+          std::sort(CaloShowerROs.begin(),CaloShowerROs.end(),sortFunctor);
+      }
+
+
       //--------------------------------------------------
       // Produce the final MC truth info collecting energy deposits for each SimParticle in each crystal
       for (auto& kv : simEntriesMap)
@@ -325,7 +325,7 @@ namespace mu2e {
           // create the CaloShowerSim (MC truth) objects for a given crystalID
           for (auto& kvsumm : summaryMap) caloShowerSims.push_back(CaloShowerSim(kvsumm.second.steps_, kvsumm.second.edepCorr_, kvsumm.second.timeCorr_));
       }
-       
+
 
 
       //--------------------------------------------------
@@ -337,7 +337,7 @@ namespace mu2e {
          hEtot_->Fill(diagSum.totEdep);
          hECorrtot_->Fill(diagSum.totEdepCorr);
          hStot_->Fill(diagSum.totSteps);
-         
+
          std::set<int> crIds;
          for (const auto& css : caloShowerSims) crIds.insert(css.crystalID());
 
@@ -345,7 +345,7 @@ namespace mu2e {
          {
             std::map<const art::Ptr<SimParticle>, double> simMap;
             for (const auto& css : caloShowerSims) if (css.crystalID()==crId) simMap[css.sim()] += css.energyDep();
-            for (auto& kv : simMap) std::cout<<"CrId: "<<crId<<"  Sim id: "<<kv.first.id()<<"   energy="<<kv.second<<std::endl;   
+            for (auto& kv : simMap) std::cout<<"CrId: "<<crId<<"  Sim id: "<<kv.first.id()<<"   energy="<<kv.second<<std::endl;
          }
       }
 
@@ -359,7 +359,7 @@ namespace mu2e {
   //----------------------------------------------------------------------------------------------------------------------------------
   // apply a correction of type Energy = ((1-s)*Z/HL+s)*energy where Z position along the crystal, HL is the crystal half-length
   // and s is the intercept at Z=0 (i.e. non-uniformity factor, e.g. 5% -> s = 1.05)
-  float CaloShowerROMaker::LRUCorrection(int crystalID, float normalizedPosZ, float edepInit, 
+  float CaloShowerROMaker::LRUCorrection(int crystalID, float normalizedPosZ, float edepInit,
                                          const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {
       float alpha  = calorimeterCalibrations->LRUpar0(crystalID);

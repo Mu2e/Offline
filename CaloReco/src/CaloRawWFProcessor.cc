@@ -1,4 +1,4 @@
-// case checks: just one energy deposit, or two bins. 
+// case checks: just one energy deposit, or two bins.
 // refit the rising peak
 
 #include "Offline/CaloReco/inc/CaloRawWFProcessor.hh"
@@ -9,14 +9,14 @@
 #include "TCanvas.h"
 
 #include <algorithm>
-#include <string> 
+#include <string>
 #include <iostream>
 #include <vector>
 
 
 
 namespace mu2e {
-        
+
   //-----------------------------------------------------------------------------
   CaloRawWFProcessor::CaloRawWFProcessor(const Config& config) :
      CaloWaveformProcessor(),
@@ -24,7 +24,7 @@ namespace mu2e {
      minPeakAmplitude_(config.minPeakAmplitude()),
      shiftTime_       (config.shiftTime()),
      scaleFactor_     (config.scaleFactor()),
-     diagLevel_       (config.diagLevel()),           
+     diagLevel_       (config.diagLevel()),
      nPeaks_(0),
      chi2_(999),
      res_(),
@@ -34,7 +34,7 @@ namespace mu2e {
      resTimeErr_(),
      xvec_(),
      yvec_()
-   {}       
+   {}
 
 
    //---------------------------
@@ -73,7 +73,7 @@ namespace mu2e {
        std::vector<unsigned> peakLocation;
        for (unsigned iu=windowPeak_;iu+windowPeak_<xvec_.size();++iu)
        {
-	  if (yvec_[iu] < minPeakAmplitude_) continue;
+          if (yvec_[iu] < minPeakAmplitude_) continue;
           if (std::max_element(yvec_.begin()+iu-windowPeak_,yvec_.begin()+iu+windowPeak_+1) == yvec_.begin()+iu) peakLocation.push_back(iu);
        }
        if (diagLevel_ > 1) std::cout<<"[CaloRawWFProcessor] Peaks found : "<<peakLocation.size()<<std::endl;
@@ -83,16 +83,16 @@ namespace mu2e {
        chi2_   = 0;
        ndf_    = 1;
        for (size_t i=0;i<peakLocation.size();++i)
-       { 
+       {
            resAmp_.push_back(scaleFactor_*yvec_[peakLocation[i]]);
-	   resAmpErr_.push_back(0);
+           resAmpErr_.push_back(0);
            resTime_.push_back(xvec_[peakLocation[i]] - shiftTime_);
-           resTimeErr_.push_back(0);	  
+           resTimeErr_.push_back(0);
        }
 
    }
 
-   
+
    //---------------------------------------
    void CaloRawWFProcessor::plot(const std::string& pname) const
    {

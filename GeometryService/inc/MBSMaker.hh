@@ -6,7 +6,7 @@
 //
 // Original author KLG
 //
-// Update by D. No. Brown to Version 2, representing version in 
+// Update by D. No. Brown to Version 2, representing version in
 // WBS 5.8 v7 (Mu2e-doc-1351 v7)
 
 #include <memory>
@@ -116,7 +116,7 @@ namespace mu2e {
     std::vector<double> _CLV2Lengths;
     std::string _CLV2MaterialName;
     double _CLV2Z;
-    
+
     // Absorber
     bool _CLV2AbsBuild;
     std::string _CLV2AbsMaterialName;

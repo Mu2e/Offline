@@ -62,7 +62,7 @@ Common:
 
     exeActionRequired(GetFQDir)
     envSet (OFFLINE_LIB, \${OFFLINE_DIR}/\${OFFLINE_FQ}/lib )
-    pathAppend( CET_PLUGIN_PATH, \${OFFLINE_LIB} )    
+    pathAppend( CET_PLUGIN_PATH, \${OFFLINE_LIB} )
     pathPrepend(PATH, "\${OFFLINE_DIR}/\${OFFLINE_FQ}/bin")
 
     if ( test \`uname\` = "Darwin" )
@@ -114,7 +114,7 @@ EOG
 echo
 echo '****************************************************************'
 echo
-echo "GROUP_DEFINITIONS variable is: ${GROUP_DEFINITIONS}" 
+echo "GROUP_DEFINITIONS variable is: ${GROUP_DEFINITIONS}"
 echo
 echo '****************************************************************'
 echo

@@ -1,14 +1,14 @@
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 
 namespace mu2e {
-  ProductionTarget::ProductionTarget(std::string tier1TargetType, int version, double rOut, 
-				     double halfLength, double rotX, 
-				     double rotY, const CLHEP::Hep3Vector& position,
-				     int    nFins = 0,
-				     double finHt = 0, double finThick = 0,
-				     double hubDisU = 0, double hubDisD = 0,
-				     double hubAngU = 0, double hubAngD = 0,
-				     double huboverU = 0, double huboverD = 0)
+  ProductionTarget::ProductionTarget(std::string tier1TargetType, int version, double rOut,
+                                     double halfLength, double rotX,
+                                     double rotY, const CLHEP::Hep3Vector& position,
+                                     int    nFins = 0,
+                                     double finHt = 0, double finThick = 0,
+                                     double hubDisU = 0, double hubDisD = 0,
+                                     double hubAngU = 0, double hubAngD = 0,
+                                     double huboverU = 0, double huboverD = 0)
     : _protonBeamRotation(CLHEP::HepRotation::IDENTITY)
     , _prodTargetPosition(position)
     , _tier1TargetType(tier1TargetType)
@@ -30,36 +30,36 @@ namespace mu2e {
   }
 
   ProductionTarget::ProductionTarget(
-				     std::string haymanTargetType, int version
-				     ,double productionTargetMotherOuterRadius
-				     ,double productionTargetMotherHalfLength
-				     ,double rOut
-				     ,double halfHaymanLength
-				     ,double rotHaymanX
-				     ,double rotHaymanY
-				     ,double rotHaymanZ
-				     ,const CLHEP::Hep3Vector& haymanProdTargetPosition
-				     ,std::string targetCoreMaterial
-				     ,std::string targetFinMaterial
-				     ,std::string targetVacuumMaterial
-				     ,std::string supportRingMaterial
-				     ,std::string spokeMaterial
-				     ,int numberOfTargetSections
-				     ,std::vector<double> startingSectionThickness
-				     ,std::vector<int> numberOfSegmentsPerSection
-				     ,std::vector<double> thicknessOfSegmentPerSection
-				     ,std::vector<double> heightOfRectangularGapPerSection
-				     ,std::vector<double> thicknessOfGapPerSection
-				     ,int nHaymanFins
-				     ,std::vector<double> finAngles
-				     ,double haymanFinThickness
-				     ,double finOuterRadius
-				     ,double supportRingLength
-				     ,double supportRingInnerRadius
-				     ,double supportRingOuterRadius
-				     ,double supportRingCutoutThickness
-				     ,double supportRingCutoutLength
-				     )
+                                     std::string haymanTargetType, int version
+                                     ,double productionTargetMotherOuterRadius
+                                     ,double productionTargetMotherHalfLength
+                                     ,double rOut
+                                     ,double halfHaymanLength
+                                     ,double rotHaymanX
+                                     ,double rotHaymanY
+                                     ,double rotHaymanZ
+                                     ,const CLHEP::Hep3Vector& haymanProdTargetPosition
+                                     ,std::string targetCoreMaterial
+                                     ,std::string targetFinMaterial
+                                     ,std::string targetVacuumMaterial
+                                     ,std::string supportRingMaterial
+                                     ,std::string spokeMaterial
+                                     ,int numberOfTargetSections
+                                     ,std::vector<double> startingSectionThickness
+                                     ,std::vector<int> numberOfSegmentsPerSection
+                                     ,std::vector<double> thicknessOfSegmentPerSection
+                                     ,std::vector<double> heightOfRectangularGapPerSection
+                                     ,std::vector<double> thicknessOfGapPerSection
+                                     ,int nHaymanFins
+                                     ,std::vector<double> finAngles
+                                     ,double haymanFinThickness
+                                     ,double finOuterRadius
+                                     ,double supportRingLength
+                                     ,double supportRingInnerRadius
+                                     ,double supportRingOuterRadius
+                                     ,double supportRingCutoutThickness
+                                     ,double supportRingCutoutLength
+                                     )
   : _protonBeamRotation(CLHEP::HepRotation::IDENTITY)
     ,_haymanTargetType(haymanTargetType)
     ,_version(version)

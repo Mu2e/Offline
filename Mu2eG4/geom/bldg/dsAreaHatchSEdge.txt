@@ -1,4 +1,4 @@
-// South edge for DS area hatch 
+// South edge for DS area hatch
 
 string building.dsArea.hatchsedge.name     = "dsAreaHatchSEdge";
 

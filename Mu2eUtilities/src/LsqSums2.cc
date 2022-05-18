@@ -21,7 +21,7 @@ void LsqSums2::clear() {
   sw    = 0;
   sx    = 0;
   sy    = 0;
-  sx2   = 0; 
+  sx2   = 0;
   sxy   = 0;
   sy2   = 0;
 
@@ -34,7 +34,7 @@ void LsqSums2::init(const LsqSums2& S) {
   sw    = S.sw   ;
   sx    = S.sx   ;
   sy    = S.sy   ;
-  sx2   = S.sx2  ; 
+  sx2   = S.sx2  ;
   sxy   = S.sxy  ;
   sy2   = S.sy2  ;
 
@@ -52,7 +52,7 @@ void LsqSums2::addPoint(double XX, double YY, double W) {
   sw    += W;
   sx    += X*W;
   sy    += Y*W;
-  sx2   += X*X*W; 
+  sx2   += X*X*W;
   sxy   += X*Y*W;
   sy2   += Y*Y*W;
 }
@@ -67,7 +67,7 @@ void LsqSums2::removePoint(double XX, double YY, double W) {
   sw    -= 1*W;
   sx    -= X*W;
   sy    -= Y*W;
-  sx2   -= X*X*W; 
+  sx2   -= X*X*W;
   sxy   -= X*Y*W;
   sy2   -= Y*Y*W;
 }
@@ -76,12 +76,12 @@ double LsqSums2::dydx() {
 
   double dfdz(0), D;
   if (_qn > 1) {
-    D = sw*sx2 - sx*sx;				
-  
+    D = sw*sx2 - sx*sx;
+
     dfdz = sw*sxy - sy*sx;
     dfdz /= D;
   }
-  
+
   return dfdz;
 }
 
@@ -94,6 +94,6 @@ double LsqSums2::chi2Dof() {
 
  //  double chi2_new = sigYY() - dfdz()*sigXY();
 //   printf("[LsqSum4::chi2rphiDofCircle] chi2 = %5.3e chi2_new = %5.3e\n", chi2 , chi2_new);
-  
+
   return chi2;
 }

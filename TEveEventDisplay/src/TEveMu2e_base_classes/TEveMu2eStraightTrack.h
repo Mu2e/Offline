@@ -8,14 +8,14 @@
 
 namespace mu2e {
   class  TEveMu2eStraightTrack: public TEveStraightLineSet{
-     
+
     public:
       #ifndef __CINT__
       explicit TEveMu2eStraightTrack();
       virtual ~TEveMu2eStraightTrack(){};
-      
+
       CosmicTrackSeed* fCosmicTrackSeed_;
-       
+
       void DrawStraightTrack();
       XYZVectorF GetPositon();
       XYZVectorF GetDirection();
