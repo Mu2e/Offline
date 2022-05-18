@@ -6,9 +6,8 @@
 #include "Offline/DbService/inc/EpicsTool.hh"
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <string>
-#include <vector>
 
+using namespace mu2e;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
@@ -73,11 +72,11 @@ channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,da
   }
 
 
-  mu2e::EpicsTool tool;
+  EpicsTool tool;
   int rc = 0;
 
   if (doNames) {
-    mu2e::EpicsTool::StringVec names;
+    strVec names;
     rc = tool.names(names);
     if (rc != 0) return rc;
     for (auto const& name : names) {
@@ -85,7 +84,7 @@ channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,da
     }
     return 0;
   } else if (!name.empty()) {
-    mu2e::EpicsVar::EpicsVec vec = tool.get(name, time, daysAgo);
+    EpicsVar::EpicsVec vec = tool.get(name, time, daysAgo);
     for (auto const& e : vec) {
       std::cout << e.csv() << std::endl;
     }
