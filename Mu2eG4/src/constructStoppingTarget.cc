@@ -55,11 +55,11 @@ namespace mu2e {
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "stoppingTarget", "stoppingTarget");
 
-    const bool stoppingTargetIsVisible = geomOptions->isVisible("stoppingTarget"); 
-    const bool stoppingTargetIsSolid   = geomOptions->isSolid("stoppingTarget"); 
-    const bool forceAuxEdgeVisible     = geomOptions->forceAuxEdgeVisible("stoppingTarget"); 
-    const bool doSurfaceCheck          = geomOptions->doSurfaceCheck("stoppingTarget"); 
-    const bool placePV                 = geomOptions->placePV("stoppingTarget"); 
+    const bool stoppingTargetIsVisible = geomOptions->isVisible("stoppingTarget");
+    const bool stoppingTargetIsSolid   = geomOptions->isSolid("stoppingTarget");
+    const bool forceAuxEdgeVisible     = geomOptions->forceAuxEdgeVisible("stoppingTarget");
+    const bool doSurfaceCheck          = geomOptions->doSurfaceCheck("stoppingTarget");
+    const bool placePV                 = geomOptions->placePV("stoppingTarget");
 
     bool const inGaragePosition = config.getBool("inGaragePosition",false);
     bool const OPA_IPA_ST_Extracted = (inGaragePosition) ? config.getBool("garage.extractOPA_IPA_ST") : false;
@@ -173,15 +173,15 @@ namespace mu2e {
                                                 , foilMaterial
                                                 , foilInfo.name
                                                 );
-        
+
 
         // rotation matrix...
         G4RotationMatrix* rot = 0; //... will have to wait
 
         G4ThreeVector foilOffset(foil.centerInMu2e() - targetInfo.centerInMu2e() + relPosFake);
-        if ( verbosity > 1 ) std::cout << "foil " 
+        if ( verbosity > 1 ) std::cout << "foil "
                                   << itf
-                                  << " centerInMu2e=" 
+                                  << " centerInMu2e="
                                   << foil.centerInMu2e()
                                   << ", offset="<< foilOffset<< std::endl;
 
@@ -208,7 +208,7 @@ namespace mu2e {
       }// target foils
 
     for (int itf=0; itf<target->nSupportStructures(); ++itf) {
-	TargetFoilSupportStructure supportStructure=target->supportStructure(itf);
+        TargetFoilSupportStructure supportStructure=target->supportStructure(itf);
         //TargetFoil foil=target->foil(itf);
 
         //VolumeInfo foilInfo;
@@ -220,7 +220,7 @@ namespace mu2e {
         os << std::setfill('0') << std::setw(2) << itf;
         supportStructureInfo.name = "FoilSupportStructure_" + os.str();
 
-        if ( verbosity > 0 )  std::cout << __func__ << " " << supportStructureInfo.name 
+        if ( verbosity > 0 )  std::cout << __func__ << " " << supportStructureInfo.name
                                           << std::endl;
 
         supportStructureInfo.solid = new G4Tubs(supportStructureInfo.name
@@ -235,16 +235,16 @@ namespace mu2e {
                                                 , supportStructureMaterial
                                                 , supportStructureInfo.name
                                                 );
-        
 
-	if ( verbosity > 1 ) std::cout << "supportStructure.support_id() = "
-                                       << supportStructure.support_id() 
-                                       << "    target->nSupportStructures() = " 
-                                       << target->nSupportStructures() 
-                                       << "     target->nFoils() = " 
-                                       << target->nFoils() 
-                                       << "     supportStructure.length() = " 
-                                       << supportStructure.length() 
+
+        if ( verbosity > 1 ) std::cout << "supportStructure.support_id() = "
+                                       << supportStructure.support_id()
+                                       << "    target->nSupportStructures() = "
+                                       << target->nSupportStructures()
+                                       << "     target->nFoils() = "
+                                       << target->nFoils()
+                                       << "     supportStructure.length() = "
+                                       << supportStructure.length()
                                        << std::endl;
 
         // rotation matrices to rotate the orientation of the
@@ -253,23 +253,23 @@ namespace mu2e {
         // appropiate rotation around z-axis
 
         CLHEP::HepRotationY secRy(-M_PI/2.);
-        CLHEP::HepRotationZ secRz( -supportStructure.support_id() * 360.*CLHEP::deg / 
-                                   (target->nSupportStructures()/target->nFoils()) 
+        CLHEP::HepRotationZ secRz( -supportStructure.support_id() * 360.*CLHEP::deg /
+                                   (target->nSupportStructures()/target->nFoils())
                                    - 90.*CLHEP::deg - supportStructure.angleOffset()*CLHEP::deg);
         G4RotationMatrix* supportStructure_rotMatrix = reg.add(G4RotationMatrix(secRy*secRz));
 
-	if ( verbosity > 1 ) std::cout << "supportStructure_rotMatrix = " 
+        if ( verbosity > 1 ) std::cout << "supportStructure_rotMatrix = "
                                        << *supportStructure_rotMatrix << std::endl;
 
         // vector where to place to support tube
         // first find target center
-        G4ThreeVector supportStructureOffset(supportStructure.centerInMu2e() - targetInfo.centerInMu2e() + relPosFake); 
+        G4ThreeVector supportStructureOffset(supportStructure.centerInMu2e() - targetInfo.centerInMu2e() + relPosFake);
 
         if ( verbosity > 1 ) std::cout << supportStructureInfo.name << " "
-                                  << itf 
+                                  << itf
                                   << " centerInMu2e="
                                   << supportStructure.centerInMu2e()
-                                  << ", offset=" 
+                                  << ", offset="
                                   << supportStructureOffset
                                   << std::endl;
 
@@ -277,23 +277,23 @@ namespace mu2e {
                                        << supportStructureInfo.name
                                        <<  std::endl;
 
-        G4ThreeVector 
-          vector_supportStructure_Orientation( (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * 
-                                               std::cos(supportStructure.support_id() * 360.*CLHEP::deg / 
-                                                        (target->nSupportStructures()/target->nFoils()) + 
-                                                        90.*CLHEP::deg + 
-                                                        supportStructure.angleOffset()*CLHEP::deg), 
-                                               (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * 
-                                               std::sin(supportStructure.support_id() * 360.*CLHEP::deg / 
-                                                        (target->nSupportStructures()/target->nFoils()) + 
+        G4ThreeVector
+          vector_supportStructure_Orientation( (supportStructure.length()/2.+supportStructure.foil_outer_radius()) *
+                                               std::cos(supportStructure.support_id() * 360.*CLHEP::deg /
+                                                        (target->nSupportStructures()/target->nFoils()) +
+                                                        90.*CLHEP::deg +
+                                                        supportStructure.angleOffset()*CLHEP::deg),
+                                               (supportStructure.length()/2.+supportStructure.foil_outer_radius()) *
+                                               std::sin(supportStructure.support_id() * 360.*CLHEP::deg /
+                                                        (target->nSupportStructures()/target->nFoils()) +
                                                         90.*CLHEP::deg + supportStructure.angleOffset()*CLHEP::deg), 0);
-        
-	if ( verbosity > 1 ) std::cout << "vector_supportStructure_Orientation = " 
+
+        if ( verbosity > 1 ) std::cout << "vector_supportStructure_Orientation = "
                                        << vector_supportStructure_Orientation << std::endl;
 
-	supportStructureOffset += vector_supportStructure_Orientation; // second add vector to support wire tube center
+        supportStructureOffset += vector_supportStructure_Orientation; // second add vector to support wire tube center
 
-	if ( verbosity > 1 ) std::cout << "supportStructureOffset += vector_supportStructure_Orientation = " 
+        if ( verbosity > 1 ) std::cout << "supportStructureOffset += vector_supportStructure_Orientation = "
                                        << supportStructureOffset << std::endl;
 
         pv = new G4PVPlacement( supportStructure_rotMatrix,
@@ -319,5 +319,5 @@ namespace mu2e {
 
     return targetInfo;
   }
-    
+
 } // end namespace mu2e

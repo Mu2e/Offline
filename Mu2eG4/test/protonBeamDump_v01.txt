@@ -1,6 +1,6 @@
-// Proton beam dump parameters. 
+// Proton beam dump parameters.
 // See mu2e docdb #948 and #1944
-// 
+//
 // Andrei Gaponenko, 2011
 
 bool           hasProtonBeamDump = true;
@@ -50,10 +50,10 @@ double         protonBeamDump.coreRotY = 13.78; // degrees
 //----------------------------------------------------------------
 // The extinction monitor filter channel
 
-// the first collimator 
+// the first collimator
 double         extMonFilter.collimator1.horizontalLength = 4000.;
 // Upstream and downstream halfs may have different transverse sizes.
-// 
+//
 // The air channel {upstream size, downstream size}
 vector<double> extMonFilter.collimator1.channelWidth  = {50., 50.};
 vector<double> extMonFilter.collimator1.channelHeigh  = {50., 50.};
@@ -121,10 +121,10 @@ bool extMonFilter.magnet.iron.solid = false;
 bool extMonFilter.magnet.aperture.visible = true;
 bool extMonFilter.magnet.aperture.solid = true;
 
-// The magnet is positioned so that a positive particle with 
+// The magnet is positioned so that a positive particle with
 // the nominal momentum given below, travelling at the bottom of
 // collimator1 channel (at exit) parallel to the collimator1 axis,
-// will enter the magnet aperture at the bottom and exit at at the 
+// will enter the magnet aperture at the bottom and exit at at the
 // bottom after being deflected by the magnetic field.
 double extMonFilter.nominalMomentum = 4000.; // MeV/c
 // double extMonFilter.maxG4StepLength = 10.; // mm

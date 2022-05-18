@@ -43,14 +43,14 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   Mu2eEnvelope::Mu2eEnvelope(const Mu2eHall& building,
-			     const SimpleConfig& config)
+                             const SimpleConfig& config)
     : xmin_(), xmax_(), ymin_(), ymax_(), zmin_(), zmax_()
   {
 
     // Determine envelope from building solids
     for ( const auto& volPair : building.getBldgSolids() ) {
       const ExtrudedSolid& vol = volPair.second;
-      
+
       const auto xMinMax = getMinMax( vol.getVertices(), &CLHEP::Hep2Vector::y );
       xmin_ = std::min( xmin_, xMinMax.first  + vol.getOffsetFromMu2eOrigin().x() );
       xmax_ = std::max( xmax_, xMinMax.second + vol.getOffsetFromMu2eOrigin().x() );
@@ -61,15 +61,15 @@ namespace mu2e {
 
       const double yCenter = vol.getOffsetFromMu2eOrigin().y();
       ymin_ = std::min( ymin_ , yCenter-vol.getYhalfThickness() );
-      ymax_ = std::max( ymax_ , yCenter+vol.getYhalfThickness() );      
+      ymax_ = std::max( ymax_ , yCenter+vol.getYhalfThickness() );
 
     }
-     
+
     // Add extra room for dirt margins -- cannot be zero!
 
     if ( config.getDouble( "world.dirt.minimalMargin.zmin" ) <= 0. ||
-         config.getDouble( "world.dirt.minimalMargin.zmax" ) <= 0. || 
-         config.getDouble( "world.dirt.minimalMargin.xmin" ) <= 0. || 
+         config.getDouble( "world.dirt.minimalMargin.zmax" ) <= 0. ||
+         config.getDouble( "world.dirt.minimalMargin.xmin" ) <= 0. ||
          config.getDouble( "world.dirt.minimalMargin.xmax" ) <= 0. ) {
       throw cet::exception("GEOM") << "All world margins must be greater than 0.";
     }
@@ -86,12 +86,12 @@ namespace mu2e {
   //================================================================
   std::ostream& operator<<(std::ostream& os, const Mu2eEnvelope& env) {
     return os<<"Mu2eEnvelope(xmin="<<env.xmin()
-	     <<",xmax="<<env.xmax()
-	     <<",ymin="<<env.ymin()
-	     <<",ymax="<<env.ymax()
-	     <<",zmin="<<env.zmin()
-	     <<",zmax="<<env.zmax()
-	     <<" )";
+             <<",xmax="<<env.xmax()
+             <<",ymin="<<env.ymin()
+             <<",ymax="<<env.ymax()
+             <<",zmin="<<env.zmin()
+             <<",zmax="<<env.zmax()
+             <<" )";
   }
 
   //================================================================

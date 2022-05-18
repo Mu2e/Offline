@@ -13,9 +13,9 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
     fhicl::Atom<double>  meanFreePath {
       Name("meanFreePath"), Comment(" mm, average distance between ionizations for a MIP in STP Ar (Blum etal, table 1.1)")};
     fhicl::Atom<double>  ionizedElectronKE {

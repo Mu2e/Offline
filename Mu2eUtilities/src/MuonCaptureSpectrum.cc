@@ -49,7 +49,7 @@ namespace mu2e {
   }
 
   MuonCaptureSpectrum::MuonCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
-					   CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
+                                           CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
     _spectrum    (RMC             ),
     _spectrum2D  (KrollWadaJoseph ),
     _kMaxUserSet (kMaxUserSet     ),
@@ -203,7 +203,7 @@ namespace mu2e {
   void MuonCaptureSpectrum::getElecPosiVectors(double ePhoton,CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const {
 
     double x, y;
-					// generate invariant mass and energy splitting
+                                        // generate invariant mass and energy splitting
     fire(ePhoton,x,y);
 
     double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );

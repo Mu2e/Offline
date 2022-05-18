@@ -14,11 +14,11 @@ namespace mu2e {
         public:
             enum Cogtype {Linear, Logarithm};
 
-            ClusterUtils(const Calorimeter& cal, const CaloCluster& cluster, Cogtype mode = Linear) : 
+            ClusterUtils(const Calorimeter& cal, const CaloCluster& cluster, Cogtype mode = Linear) :
                 cal_(cal), hits_(cluster.caloHitsPtrVector()), mode_(mode)
             {};
 
-            ClusterUtils(const Calorimeter& cal, const CaloHitPtrVector& hits, Cogtype mode = Linear) : 
+            ClusterUtils(const Calorimeter& cal, const CaloHitPtrVector& hits, Cogtype mode = Linear) :
                 cal_(cal), hits_(hits), mode_(mode)
             {};
 
@@ -30,13 +30,13 @@ namespace mu2e {
             double            e25         () const;
 
 
-        private:       
+        private:
            const Calorimeter&     cal_;
            const CaloHitPtrVector hits_;
            const Cogtype          mode_;
-           
+
            void fill(double& sx, double& sy, double& sz, double& sx2, double& sy2, double& sw) const;
    };
-} 
+}
 
 #endif

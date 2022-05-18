@@ -1,6 +1,6 @@
 # Generation of the caloClusters from a source file
-# 
-# 
+#
+#
 #
 #
 # Original author G.Pezzullo & G.Tassielli
@@ -8,22 +8,22 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : CaloClusterProduction
 
 # Start from a source
-source : 
-{ 
-  module_type : RootInput 
+source :
+{
+  module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : -1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "CaloClusterTest.root"
   }
@@ -33,17 +33,17 @@ services :
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }  
+  }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
   Mu2eG4Helper : { }
-     
+
 }
 
 
@@ -66,7 +66,7 @@ physics :
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
- 
+
     makeCaloCluster:
     {
       module_type            : MakeCaloCluster
@@ -80,10 +80,10 @@ physics :
      deltaTime               : 100.0 #ns
      nCryPerCrystal          : 1
      EnoiseCut               : 0.200 #MeV
-     EclusterCut             : 0.200 #MeV  
+     EclusterCut             : 0.200 #MeV
      maxFullPrint            : 201
     }
-     
+
     extractElData:
     {
       module_type          : ExtractElectronsData
@@ -101,7 +101,7 @@ physics :
 
   analyzers:
   {
-    
+
     checkhitsEff:
     {
       module_type            : CaloClusterEff
@@ -118,11 +118,11 @@ physics :
      energyClusterCut       : 50.000 #MeV
      maxFullPrint           : 201
     }
-   
 
-  } 
 
-  p1 : [ 
+  }
+
+  p1 : [
         makeCaloCluster
        ]
   e1 : [ outfile ]
@@ -135,15 +135,15 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "data_03.root"
     outputCommands : ['keep *_*_*_*'
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
-		   # Uncomment the above line to reduce file size.
-                     ]  
+                   # Uncomment the above line to reduce file size.
+                     ]
   }
 }
 

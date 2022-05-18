@@ -10,8 +10,8 @@
 process_name : StrawHitExample
 
 # Start each new event with an empty event.
-source : 
-{ 
+source :
+{
   module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : -1
@@ -20,12 +20,12 @@ source :
 services :
 {
   message : @local::mf_debugging
-    
+
   TFileService : { fileName      : "strawHitExample.root" }
 
-  GeometryService : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }  
+  GeometryService : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }
 
-  ConditionsService :  { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }  
+  ConditionsService :  { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
@@ -45,7 +45,7 @@ physics :
       hitMakerModuleLabel : makeSH
       trackerStepPoints   : tracker
       minEnergyDep        : 0.001
-      minHits             : 5 
+      minHits             : 5
     }
   }
 

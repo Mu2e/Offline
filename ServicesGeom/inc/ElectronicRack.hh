@@ -5,7 +5,7 @@
 //
 // Original author David Norvil Brown
 // University of Louisville, Mu2e Collaboration
-// March 2016 
+// March 2016
 
 
 #include <vector>
@@ -38,14 +38,14 @@ namespace mu2e {
     friend class ElectronicRackMaker;
 
     // Private ctr: the class should only be constructed via ElectronicRack::ElectronicRackMaker.
-    ElectronicRack(const std::vector<std::vector<double> >& dims, 
-		      const std::vector<std::string>& mats, 
-		      const std::vector<CLHEP::Hep3Vector>& sites, 
-		      const std::vector<std::string>& orients )
+    ElectronicRack(const std::vector<std::vector<double> >& dims,
+                      const std::vector<std::string>& mats,
+                      const std::vector<CLHEP::Hep3Vector>& sites,
+                      const std::vector<std::string>& orients )
       : _elecRackBoxDims(dims),
-	_erMaterialNames(mats),
-	_erCenterPositions(sites),
-	_erOrientations(orients)
+        _erMaterialNames(mats),
+        _erCenterPositions(sites),
+        _erOrientations(orients)
     { }
 
     // Or read back from persistent storage
@@ -54,7 +54,7 @@ namespace mu2e {
 
 
     // Current description based on Geometry 14, adapted by
-    // David Norvil Brown, 
+    // David Norvil Brown,
 
     std::vector< std::vector< double > > _elecRackBoxDims;
     std::vector< std::string >           _erMaterialNames;

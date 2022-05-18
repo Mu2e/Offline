@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_TSDS_NfirstFloorEdge.ccl
 
@@ -12,7 +12,7 @@ double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.tsDsArea.firstFloorEdge.N.yHalfThickness           = 203.2;
 
-vector<int>    dirt.tsDsArea.firstFloorEdge.N.xreplace   = { 23, 24 }; 
+vector<int>    dirt.tsDsArea.firstFloorEdge.N.xreplace   = { 23, 24 };
 vector<double> dirt.tsDsArea.firstFloorEdge.N.xPositions = {
   45745.4,   // f2
   45745.4,   // g1
@@ -29,19 +29,19 @@ vector<double> dirt.tsDsArea.firstFloorEdge.N.xPositions = {
   9550.51, // SE corner rem hatch
   9550.51, // N of rem hatch E wall
   15900.8, // N of escape hatch NW corner
-  15900.8,  // NW corner escape hatch 
-  17204.7, // SW corner escape Hatch N   
-  17288.5,  // SW corner escape hatch                      
-  20744.5,  // SE corner escape hatch                               
+  15900.8,  // NW corner escape hatch
+  17204.7, // SW corner escape Hatch N
+  17288.5,  // SW corner escape hatch
+  20744.5,  // SE corner escape hatch
   20660.7,  // SE corner escape Hatch N
-  19356.8,  // NE corner escape hatch 
+  19356.8,  // NE corner escape hatch
   15900.81, // return to escape hatch NW corner
   15900.81, // return N of escape hatch NW corner
   50000,   // NEcorner
   50000   // f2_to_E
 };
 
-vector<int>    dirt.tsDsArea.firstFloorEdge.N.yreplace   = { 7, 8, 13, 14, 22, 23 }; 
+vector<int>    dirt.tsDsArea.firstFloorEdge.N.yreplace   = { 7, 8, 13, 14, 22, 23 };
 vector<double> dirt.tsDsArea.firstFloorEdge.N.yPositions = {
   -8661.4,   // f2
   2438.4,   // g1
@@ -58,14 +58,14 @@ vector<double> dirt.tsDsArea.firstFloorEdge.N.yPositions = {
   13055.59, // SE corner rem hatch
   50000,   // N of E wall rem hatch
   50000, // N of escape hatch NW corner
-  23684.2,  // NW corner escape hatch    
+  23684.2,  // NW corner escape hatch
   18302.6,  // SW corner escape hatch N
-  17957,     // SW corner escape hatch   
+  17957,     // SW corner escape hatch
   18794.4,     // SE corner escape hatch
-  19140.1,    // SE corner escape Hatch N  
-  24521.6,  // NE corner escape hatch           
-  23684.22,    // return to escape hatch NW corner     
-  50000, // return N or escape hatch NW corner   
+  19140.1,    // SE corner escape Hatch N
+  24521.6,  // NE corner escape hatch
+  23684.22,    // return to escape hatch NW corner
+  50000, // return N or escape hatch NW corner
   50000,   // NEcorner
   -8661.4   // f2_to_E
 };

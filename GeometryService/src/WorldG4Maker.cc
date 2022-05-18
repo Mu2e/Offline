@@ -24,7 +24,7 @@ namespace mu2e {
 
     // This is where we want mu2eOriginInWorld
     const CLHEP::Hep3Vector requestedWorldCenterInMu2e( -c.getHep3Vector("world.mu2eOriginInWorld"));
-    
+
     // The WorldG4Maker is special among geometry makers:
     // it is guaranteed it will be called after all other detector objects
     // are available in geometry service, therefore it can access their data.

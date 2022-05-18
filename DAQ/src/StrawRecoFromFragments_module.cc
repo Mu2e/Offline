@@ -17,6 +17,7 @@
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -65,13 +66,14 @@ private:
 
 art::StrawRecoFromFragmnets::StrawRecoFromFragmnets(const art::EDProducer::Table<Config>& config) :
   art::EDProducer{config},
-  diagLevel_(config().diagLevel()), 
+  diagLevel_(config().diagLevel()),
   useTrkADC_(config().useTrkADC()),
   trkFragmentsTag_(config().trkTag()){
     produces<mu2e::StrawDigiCollection>();
     if (useTrkADC_) {
       produces<mu2e::StrawDigiADCWaveformCollection>();
     }
+    produces<mu2e::IntensityInfoTrackerHits>();
     //FIXME!
     produces<mu2e::ProtonBunchTime>();
   }
@@ -82,15 +84,17 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
   // Collection of StrawDigis for the event
-  std::unique_ptr<mu2e::StrawDigiCollection> straw_digis(new mu2e::StrawDigiCollection);
+  std::unique_ptr<mu2e::StrawDigiCollection>            straw_digis(new mu2e::StrawDigiCollection);
   std::unique_ptr<mu2e::StrawDigiADCWaveformCollection> straw_digi_adcs(new mu2e::StrawDigiADCWaveformCollection);
+  // IntensityInfoTrackerHits
+  std::unique_ptr<mu2e::IntensityInfoTrackerHits>                  intInfo(new mu2e::IntensityInfoTrackerHits);
 
   //FIXME! this is temporary
   std::unique_ptr<mu2e::ProtonBunchTime> pbt(new mu2e::ProtonBunchTime);
   pbt->pbtime_ = 0;
   pbt->pbterr_ = 0;
   event.put(std::move(pbt));
-    
+
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
   std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
@@ -128,11 +132,9 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
 
   if (numTrkFrags == 0) {
     std::cout << "[StrawRecoFromFragmnets::produce] found no Tracker fragments!"
-	      << std::endl;
-    event.put(std::move(straw_digis));
-    return;
+              << std::endl;
   }
-  
+
   if (diagLevel_ > 1) {
     std::cout << std::dec << "Producer: Run " << event.run() << ", subrun " << event.subRun()
               << ", event " << eventNumber << " has " << std::endl;
@@ -146,6 +148,8 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
               << (int)(event.event()) << " / timestamp=" << (int)eventNumber << std::endl;
   }
 
+  intInfo->setNTrackerHits(straw_digis->size());
+  event.put(std::move(intInfo));
   // Store the straw digis in the event
   event.put(std::move(straw_digis));
   if (useTrkADC_) {
@@ -238,7 +242,7 @@ void art::StrawRecoFromFragmnets::analyze_tracker_(
 
         // Fill the StrawDigiCollection
         straw_digis->emplace_back(sid, tdc, tot, pmp);
-        if (useTrkADC_){ 
+        if (useTrkADC_){
           straw_digi_adcs->emplace_back(trkDataPair.second);
         }
 

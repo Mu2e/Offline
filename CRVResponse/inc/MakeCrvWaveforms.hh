@@ -13,12 +13,12 @@ class MakeCrvWaveforms
   public:
     MakeCrvWaveforms() {}
     ~MakeCrvWaveforms() {}
-   
+
 //the precision which is used when the single PE waveform is stored must be more precise than
 //the digitizaionInterval of the final waveform
-    void LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformStrechFactor, 
+    void LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformStrechFactor,
                               double singlePEWaveformMaxTime, double singlePEReferenceCharge);
-    void MakeWaveform(const std::vector<std::pair<double,double> > &timesAndCharges, 
+    void MakeWaveform(const std::vector<std::pair<double,double> > &timesAndCharges,
                       std::vector<double> &waveform,
                       double startTime, double digitizationInterval);
     void AddElectronicNoise(std::vector<double> &waveform, double noise, CLHEP::RandGaussQ &randGaussQ);

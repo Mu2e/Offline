@@ -8,7 +8,7 @@
 
 namespace mu2e {
 
-  class TEveMu2e2DProjection: public TEveProjectionManager { 
+  class TEveMu2e2DProjection: public TEveProjectionManager {
     public:
       #ifndef __CINT__
       TEveMu2e2DProjection(){};

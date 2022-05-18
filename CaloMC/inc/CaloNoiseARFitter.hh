@@ -11,7 +11,7 @@
 
 namespace mu2e {
 
-  class CaloNoiseARFitter 
+  class CaloNoiseARFitter
   {
      public:
         CaloNoiseARFitter(CLHEP::HepRandomEngine& engine, unsigned nParFit, int diagLevel);

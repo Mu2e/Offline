@@ -86,7 +86,7 @@ namespace mu2e {
     }
 
     void bilinear(std::vector<double> &bprime, std::vector<double> &aprime, std::vector<double> &b, std::vector<double> &a, double fs)
-    { 
+    {
       int D = a.size()-1;
       int N = b.size()-1;
 

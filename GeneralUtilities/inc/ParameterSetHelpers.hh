@@ -27,10 +27,10 @@ class Binning;
 namespace fhicl {
 
   // Converting list of strings into vector of art::InputTag's
-  template<> std::vector<art::InputTag> 
+  template<> std::vector<art::InputTag>
   ParameterSet::get<std::vector<art::InputTag>>(std::string const & key ) const;
 
-  template<> std::vector<art::InputTag> 
+  template<> std::vector<art::InputTag>
   ParameterSet::get<std::vector<art::InputTag>>(std::string const & key, std::vector<art::InputTag> const& default_value ) const;
 
   // Converting list of ints into set of ints

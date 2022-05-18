@@ -9,7 +9,7 @@
 #include <array>
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvDigi
   {
@@ -34,7 +34,7 @@ namespace mu2e
     uint16_t                       _startTDC;
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    uint8_t                        _SiPMNumber; 
+    uint8_t                        _SiPMNumber;
   };
   typedef std::vector<mu2e::CrvDigi> CrvDigiCollection;
 }

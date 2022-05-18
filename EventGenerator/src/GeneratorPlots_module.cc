@@ -23,7 +23,7 @@ using namespace std;
 namespace mu2e {
 
   class GeneratorPlots : public art::EDAnalyzer {
-     
+
      public:
 
       struct Config {
@@ -96,7 +96,7 @@ void GeneratorPlots::GetGenPartInfo(const art::Event& evt){
     _genpos = particle.startPosition();
     _genStartT  = particle.startGlobalTime();
     _Ntup->Fill();
-  } 
+  }
 }
 
 

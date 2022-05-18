@@ -21,7 +21,7 @@ namespace mu2eCrv
 
   struct Pixel
   {
-    bool   _discharged; 
+    bool   _discharged;
     double _t;          //time of last discharge (if _discharged is true), or NAN (if _discharged is false)
     Pixel() : _discharged(false), _t(NAN) {}
   };
@@ -33,7 +33,7 @@ namespace mu2eCrv
     double _chargeInPEs;  //in PEs
     size_t _photonIndex;  //index in the original photon vector
     bool   _darkNoise;
-    SiPMresponse(double time, double charge, double chargeInPEs, size_t photonIndex, bool darkNoise) : 
+    SiPMresponse(double time, double charge, double chargeInPEs, size_t photonIndex, bool darkNoise) :
                   _time(time), _charge(charge), _chargeInPEs(chargeInPEs), _photonIndex(photonIndex), _darkNoise(darkNoise) {}
   };
 
@@ -43,7 +43,7 @@ namespace mu2eCrv
     double              _time;
     size_t              _photonIndex; //index in the original photon vector
     bool                _darkNoise;   //this charge is dark noise and was not created by an "outside photon"
-    ScheduledCharge(const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise) : 
+    ScheduledCharge(const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise) :
                   _pixelId(pixelId), _time(time), _photonIndex(photonIndex), _darkNoise(darkNoise) {}
     bool operator<(const ScheduledCharge &r) const
     {
@@ -52,7 +52,7 @@ namespace mu2eCrv
     private:
     ScheduledCharge();
   };
-  
+
   class MakeCrvSiPMCharges
   {
     int    _nPixelsX;
@@ -71,7 +71,7 @@ namespace mu2eCrv
       double _trapType0Lifetime;
       double _trapType1Lifetime;
       double _thermalRate;  //in ns^-1
-      double _crossTalkProb; 
+      double _crossTalkProb;
     };
 
     private:
@@ -103,10 +103,10 @@ namespace mu2eCrv
     MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ, const std::string &photonMapFileName);
     ~MakeCrvSiPMCharges() {_photonMapFile->Close();}
 
-    void SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage, double timeConstant, 
+    void SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage, double timeConstant,
                           double capacitance, ProbabilitiesStruct probabilities,
                           const std::vector<std::pair<int,int> > &inactivePixels);
-    void Simulate(const std::vector<std::pair<double,size_t> > &photons, 
+    void Simulate(const std::vector<std::pair<double,size_t> > &photons,
                   std::vector<SiPMresponse> &SiPMresponseVector, double startTime, double endTime);
   };
 

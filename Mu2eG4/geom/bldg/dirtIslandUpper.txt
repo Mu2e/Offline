@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_DirtIsland_upperExtension.ccl
 
@@ -13,7 +13,7 @@ double dirt.island.upper.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.island.upper.yHalfThickness           = 1651;
 
-vector<int>    dirt.island.upper.xreplace   = { 12, 13 }; 
+vector<int>    dirt.island.upper.xreplace   = { 12, 13 };
 vector<double> dirt.island.upper.xPositions = {
   21158.2,   // D
   21158.2,   // C

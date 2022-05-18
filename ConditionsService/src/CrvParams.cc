@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-namespace mu2e 
+namespace mu2e
 {
   CrvParams::CrvParams( SimpleConfig const& config )
   {

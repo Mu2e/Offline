@@ -1,4 +1,4 @@
-//Author: R Bonventre 
+//Author: R Bonventre
 //Date: Feb 2020
 //Purpose: To improve TimeClustering for Cosmics
 #include "art/Framework/Principal/Event.h"
@@ -44,6 +44,7 @@ namespace mu2e {
         fhicl::OptionalAtom<int> maxnsh {Name("maxNStrawHits"), Comment("maximum number of straw hits ")};
         fhicl::Atom<double> timewindow {Name("TimeWindow"), Comment("Width of time window in ns"),100};
         fhicl::Atom<bool> testflag {Name("TestFlag"),Comment("Test StrawHitFlags")};
+        fhicl::Atom<bool> useonepanel {Name("UseOnlyOnePanel"),Comment("Use hits from one panel only"),false};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
         fhicl::Atom<art::InputTag> shfToken{Name("StrawHitFlagCollection"),Comment("tag for StrawHitFlag collection")};
         fhicl::Sequence<std::string> hsel{Name("HitSelectionBits"),Comment("Required flags if TestFlag is set"),vector<string>{"EnergySelection","TimeSelection"}};
@@ -61,7 +62,8 @@ namespace mu2e {
       bool              _hasmaxnsh;
       int               _maxnsh;
       double            _timeWindow;
-      bool		_testflag;
+      bool              _testflag;
+      bool _useonepanel;
       art::InputTag  _chToken;
       art::InputTag _shfToken;
       const StrawHitFlagCollection *_shfcol;
@@ -81,6 +83,7 @@ namespace mu2e {
     _maxnsh (0),
     _timeWindow (conf().timewindow()),
     _testflag (conf().testflag()),
+    _useonepanel (conf().useonepanel()),
     _chToken (conf().chToken()),
     _shfToken (conf().shfToken()),
     _hsel (conf().hsel()),
@@ -128,7 +131,7 @@ namespace mu2e {
     //sort the hits by time
     ComboHitCollection ordChCol;
     ordChCol.reserve(_chcol->size());
-    
+
     for (size_t i=0; i<_chcol->size(); ++i) {
       const ComboHit& ch  = _chcol->at(i);
       if (_testflag && !goodHit((*_shfcol)[i]))
@@ -166,6 +169,19 @@ namespace mu2e {
     if (maxCount < _minnsh) return;
     if (_hasmaxnsh && maxCount > _maxnsh) return;
 
+    std::vector<int> hits_in_panel(StrawId::_nupanels,0);
+    if (_useonepanel){
+      for (size_t i=0; i<_chcol->size(); ++i) {
+        if (_testflag && !goodHit((*_shfcol)[i]))
+          continue;
+        if (_chcol->at(i).time() < ordChCol[maxStart].time() || _chcol->at(i).time() > ordChCol[maxEnd].time())
+          continue;
+        hits_in_panel[_chcol->at(i).strawId().uniquePanel()] += _chcol->at(i).nStrawHits();
+      }
+    }
+    size_t max_panel = std::distance(hits_in_panel.begin(),std::max_element(hits_in_panel.begin(),hits_in_panel.end()));
+
+
     TimeCluster tclust;
     tclust._nsh = 0;
     double avg = 0;
@@ -173,6 +189,8 @@ namespace mu2e {
       if (_testflag && !goodHit((*_shfcol)[i]))
         continue;
       if (_chcol->at(i).time() < ordChCol[maxStart].time() || _chcol->at(i).time() > ordChCol[maxEnd].time())
+        continue;
+      if (_useonepanel && (_chcol->at(i).strawId().uniquePanel() != max_panel))
         continue;
       avg += _chcol->at(i).time();
       tclust._strawHitIdxs.push_back(i);

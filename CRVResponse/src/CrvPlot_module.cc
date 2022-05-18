@@ -1,7 +1,7 @@
 //
 // A module to extract number of PEs, arrival times, hit positions, etc. from the CRV waveforms
 //
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -38,7 +38,7 @@
 #include <TMarker.h>
 #include <TStyle.h>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvPlot : public art::EDAnalyzer
   {
@@ -105,7 +105,7 @@ namespace mu2e
     _recoPulsePedestal   = crvPar->pedestal;
   }
 
-  void CrvPlot::analyze(const art::Event& event) 
+  void CrvPlot::analyze(const art::Event& event)
   {
     int eventID = event.id().event();
 
@@ -151,7 +151,7 @@ namespace mu2e
           for(timeIter=photonTimes.begin(); timeIter!=photonTimes.end(); ++timeIter)
           {
             double time = timeIter->_time;
-            time = fmod(time,_microBunchPeriod); 
+            time = fmod(time,_microBunchPeriod);
             photonTimesAdjusted[SiPM].push_back(time);
           }
         }
@@ -239,7 +239,7 @@ namespace mu2e
       CrvDigiCollection::const_iterator digis;
       for(digis=crvDigiCollection->begin(); digis!=crvDigiCollection->end(); ++digis)
       {
-        if(digis->GetScintillatorBarIndex()==barIndex) 
+        if(digis->GetScintillatorBarIndex()==barIndex)
         {
           int SiPM=digis->GetSiPMNumber();
           if(SiPM<0 || SiPM>3) throw cet::exception("SIM")<<"mu2e::CrvPlot: Invalid SiPM# at event "<<eventID<<std::endl;
@@ -247,15 +247,15 @@ namespace mu2e
           std::vector<double> ADCsTmp;
           std::vector<double> timesTmp;
           for(size_t j=0; j<digis->GetADCs().size(); ++j)
-          {    
+          {
             double ADC=digis->GetADCs()[j];
             double time=(digis->GetStartTDC()+j)*_digitizationPeriod;
             ADCsTmp.push_back(ADC);
-            timesTmp.push_back(time); 
+            timesTmp.push_back(time);
             if(maxADC[SiPM]<ADC || isnan(maxADC[SiPM])) maxADC[SiPM]=ADC;
           }
           ADCs[SiPM].push_back(ADCsTmp);
-          times[SiPM].push_back(timesTmp); 
+          times[SiPM].push_back(timesTmp);
         }
       }
 
@@ -299,7 +299,7 @@ namespace mu2e
       CrvRecoPulseCollection::const_iterator recoPulse;
       for(recoPulse=crvRecoPulseCollection->begin(); recoPulse!=crvRecoPulseCollection->end(); ++recoPulse)
       {
-        if(recoPulse->GetScintillatorBarIndex()==barIndex) 
+        if(recoPulse->GetScintillatorBarIndex()==barIndex)
         {
           int SiPM=recoPulse->GetSiPMNumber();
           if(SiPM<0 || SiPM>3) throw cet::exception("SIM")<<"mu2e::CrvPlot: Invalid SiPM# at event "<<eventID<<std::endl;

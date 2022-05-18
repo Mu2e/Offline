@@ -122,7 +122,7 @@ void dio(){
   td->SetLineStyle(2);
   td->SetLineWidth(2);
   td->Draw();
- 
+
   int istart = diodiffwin[mu2ecut]->FindFixBin(split);
   double core = diodiffwin[mu2ecut]->Integral(0,istart);
   double tail = diodiffwin[mu2ecut]->Integral(istart+1,100);

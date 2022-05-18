@@ -19,9 +19,9 @@ using cet::square;
 
 namespace mu2e {
 
-  SimpleSpectrum::SimpleSpectrum( Spectrum::enum_type approx, 
+  SimpleSpectrum::SimpleSpectrum( Spectrum::enum_type approx,
                                   const PhysicsParams& physicsParams ) :
-    _approx ( approx ) ,  
+    _approx ( approx ) ,
     _phy    ( physicsParams )
   {
     if ( _approx > Spectrum::FlatTrunc && _phy.getCzarneckiCoefficients().empty() )
@@ -40,7 +40,7 @@ namespace mu2e {
     else if ( _approx == Spectrum::Pol5        ) weight = getPol5     (E, _phy);
     else if ( _approx == Spectrum::Pol58       ) weight = getPol58    (E, _phy);
 
-    return weight;      
+    return weight;
 
   }
 
@@ -49,17 +49,17 @@ namespace mu2e {
   //========================================
 
   double SimpleSpectrum::getFlat(const double e, const PhysicsParams& phy ) {
-    return  1.; 
+    return  1.;
   }
 
   double SimpleSpectrum::getFlatTrunc(const double e, const PhysicsParams& phy ) {
-    return ( e > phy.getEndpointEnergy() ) ? 0. : 1.; 
+    return ( e > phy.getEndpointEnergy() ) ? 0. : 1.;
   }
 
   double SimpleSpectrum::getPol5(const double e, const PhysicsParams& phy ) {
 
     const double delta = phy.getMuonEnergy() - e - cet::pow<2>( e )/(2*phy.getAtomicMass());
-    
+
     return (e > phy.getEndpointEnergy() ) ? 0. : phy.getCzarneckiCoefficient()*cet::pow<5>( delta );
 
   }
@@ -67,15 +67,15 @@ namespace mu2e {
   double SimpleSpectrum::getPol58(const double e, const PhysicsParams& phy ) {
 
     const double delta = phy.getMuonEnergy() - e - cet::pow<2>( e )/(2*phy.getAtomicMass());
-      
+
     if ( e > phy.getEndpointEnergy() ) return 0.;
-    
+
     const auto & coeffs = phy.getCzarneckiCoefficients();
 
     double prob(0.);
     double power = cet::pow<5>( delta );
     for ( size_t i=0; i < coeffs.size() ; i++ ) {
-      if( i > 0 ) power *= delta; 
+      if( i > 0 ) power *= delta;
       prob  += coeffs.at(i)*power;
     }
 

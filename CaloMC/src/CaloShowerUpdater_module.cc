@@ -13,10 +13,10 @@
 
 namespace mu2e {
 
-  class CaloShowerUpdater : public art::EDProducer 
+  class CaloShowerUpdater : public art::EDProducer
   {
       public:
-         struct Config 
+         struct Config
          {
              fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
              fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };

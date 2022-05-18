@@ -17,47 +17,47 @@ namespace mu2e {
       *this = StrawIdMask(uniquestraw);
     } else {
       throw cet::exception("CONFIG")
-	<< "strawIdMask: supported values:'tracker', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw'"
-	<< "  Input was: " << tomask
-	<< "\n";
+        << "strawIdMask: supported values:'tracker', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw'"
+        << "  Input was: " << tomask
+        << "\n";
     }
   }
 
   std::string StrawIdMask::levelName(Level level) {
     switch (level) {
       case tracker:
-	return std::string("tracker");
+        return std::string("tracker");
       case plane:
-	return std::string("plane");
+        return std::string("plane");
       case panel:
-	return std::string("panel");
+        return std::string("panel");
       case uniquepanel:
-	return std::string("uniquepanel");
+        return std::string("uniquepanel");
       case straw:
-	return std::string("straw");
+        return std::string("straw");
       case uniquestraw:
-	return std::string("uniquestraw");
+        return std::string("uniquestraw");
       default:
-	return std::string("unknown");
+        return std::string("unknown");
     }
   }
 
   uint16_t StrawIdMask::levelMask(Level level) {
     switch (level) {
       case tracker :
-	return 0;
+        return 0;
       case plane :
-	return StrawId::_planemsk;
+        return StrawId::_planemsk;
       case panel :
-	return StrawId::_panelmsk;
+        return StrawId::_panelmsk;
       case straw :
-	return StrawId::_strawmsk;
+        return StrawId::_strawmsk;
       case uniquepanel :
-	return StrawId::_panelmsk | StrawId::_planemsk;
+        return StrawId::_panelmsk | StrawId::_planemsk;
       case uniquestraw :
-	return StrawId::_strawmsk | StrawId::_panelmsk | StrawId::_planemsk;
+        return StrawId::_strawmsk | StrawId::_panelmsk | StrawId::_planemsk;
       default:
-	return 0;
+        return 0;
     }
     return 0;
   }

@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_dirtSlab2_S.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.psArea.dirtSlab2.S.xPositions = {
   -1270   // c_to_S
 };
 
-vector<int>    dirt.psArea.dirtSlab2.S.yreplace   = { 2, 3 }; 
+vector<int>    dirt.psArea.dirtSlab2.S.yreplace   = { 2, 3 };
 vector<double> dirt.psArea.dirtSlab2.S.yPositions = {
   0,   // c
   -2683.4,   // e6

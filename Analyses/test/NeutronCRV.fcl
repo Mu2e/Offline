@@ -49,7 +49,7 @@ physics :
     # Form StrawHits (SH).
     # Note: In original py file, this is named makeTH, not SH
     #       But it is configured exactly as the standard makeSH
-    makeSH: @local::makeSH        
+    makeSH: @local::makeSH
 
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
@@ -62,7 +62,7 @@ physics :
 
   filters:
   {
-    # since looking at CRV, don't want this filter--> 
+    # since looking at CRV, don't want this filter-->
     # if no tracker or calo hits,still interesting
     #
     # filterEmpty :
@@ -90,7 +90,7 @@ physics :
 
   p1 : [generate, g4run, makeSH]
   e1 : [CountRates, outfile ]
- 
+
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -100,13 +100,13 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "NeutronCRVData.root"
     outputCommands : [ "keep *_*_*_*"
 #                     , "drop mu2ePointTrajectorymv_*_*_*"
-                     ]  
+                     ]
   }
 }
 

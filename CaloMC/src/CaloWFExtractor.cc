@@ -7,10 +7,10 @@ namespace mu2e {
    void CaloWFExtractor::extract(const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const
    {
         size_t timeSample(nBinsPeak_+startOffset_);
-        while (timeSample+nBinsPeak_ < wf.size()) 
+        while (timeSample+nBinsPeak_ < wf.size())
         {
-	    // find starting point
-	    if (wf[timeSample] < minPeakADC_) {++timeSample; continue;}
+            // find starting point
+            if (wf[timeSample] < minPeakADC_) {++timeSample; continue;}
 
             size_t imax(timeSample-nBinsPeak_);
             for (auto i = timeSample-nBinsPeak_; i<=timeSample+nBinsPeak_;++i) {if (wf[i]>wf[imax]) imax=i;}
@@ -19,14 +19,14 @@ namespace mu2e {
             // find the starting / stopping point of the peak (stop = first value under threshold)
             size_t sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
             size_t sampleStop(timeSample);
-            ++sampleStop; 
-            while (sampleStop < wf.size() && wf[sampleStop] >= minPeakADC_) ++sampleStop; 
+            ++sampleStop;
+            while (sampleStop < wf.size() && wf[sampleStop] >= minPeakADC_) ++sampleStop;
 
-	    starts.push_back(sampleStart);
-	    stops.push_back(sampleStop);
+            starts.push_back(sampleStart);
+            stops.push_back(sampleStop);
 
-	    //fast forward to end of waveform to search for next one 
-	    timeSample = sampleStop+1;   
+            //fast forward to end of waveform to search for next one
+            timeSample = sampleStop+1;
         }
 
 

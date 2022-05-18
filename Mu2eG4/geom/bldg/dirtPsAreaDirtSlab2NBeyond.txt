@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_dirtSlab2_N.ccl
 
@@ -22,12 +22,12 @@ vector<double> dirt.psArea.dirtSlab2.N.Beyond.xPositions = {
   -1270   // c_to_N
 };
 
-vector<int>    dirt.psArea.dirtSlab2.N.Beyond.yreplace   = { 5, 6 }; 
+vector<int>    dirt.psArea.dirtSlab2.N.Beyond.yreplace   = { 5, 6 };
 vector<double> dirt.psArea.dirtSlab2.N.Beyond.yPositions = {
   10312.41,   // c
   10312.41, //  NW corner NRetWall
   10922.01,   //NE corner WextWallFoot
-  10922.01,   //top elbow WextWallFoot 
+  10922.01,   //top elbow WextWallFoot
   10335.6,   // e7
   50000,   // e7 to N
   50000   // c_to_N

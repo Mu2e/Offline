@@ -19,7 +19,7 @@ namespace mu2e {
     CollimatorTS3() : Collimator() {}
 
     // use compiler-generated copy c'tor, copy assignment, and d'tor
-    CollimatorTS3(double halfZ, CLHEP::Hep3Vector origin) :  
+    CollimatorTS3(double halfZ, CLHEP::Hep3Vector origin) :
       Collimator( halfZ, origin) {}
 
     double      rOut() const { return _rOut; }
@@ -29,7 +29,7 @@ namespace mu2e {
     double      holeHalfHeight()   const { return _holeHalfHeight;   }
     double      holeDisplacement() const { return _holeDisplacement; }
     double      rotationAngle()    const { return _rotationAngle;    }
-    
+
     bool        useFlashBlock()      const { return _useFlashBlock;    }
     double      flashBlockHeight()   const { return _flashBlockHeight; }
     double      flashBlockWidth()    const { return _flashBlockWidth;  }

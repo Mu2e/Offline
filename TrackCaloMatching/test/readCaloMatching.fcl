@@ -11,7 +11,7 @@ process_name : DiskCaloMatching
 source :
 {
  module_type : EmptyEvent
-  module_type: RootInput  
+  module_type: RootInput
  # maxEvents : -1
   fileNames :  ["BkgInput.root"]
 }
@@ -51,15 +51,15 @@ physics :
 
     # Form StrawHits (SH).
     makeSH : @local::makeSH
-    
+
     FSHPreStereo: @local::FSHPreStereo
- 
+
     MakeStereoHits : @local::MakeStereoHits
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
-    
-    # test module for Kalman fit: the 
-    
+
+    # test module for Kalman fit: the
+
     # Form CaloHits (APD hits)
     CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
 
@@ -67,7 +67,7 @@ physics :
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
     TrkPatRec : @local::TrkPatRec
- 
+
   makeCaloCluster:
     {
       module_type            : MakeCaloCluster
@@ -82,23 +82,23 @@ physics :
      deltaTime              : 100.0 #ns
      nCryPerCrystal         : 1
      EnoiseCut              : 0.00 #MeV
-     EclusterCut            : 0.00 #MeV  
+     EclusterCut            : 0.00 #MeV
      maxFullPrint           : 201
     }
       TrkExtrapol :
     {
         module_type       : TrkExtrapol
         diagLevel         : 0
-	outPutNtup        : 1
+        outPutNtup        : 1
         fitterModuleLabel : TrkPatRec
         # MC truth finder, analyzer configuration
-        KalFitMC : 
+        KalFitMC :
         {
-        }        
- 
+        }
+
     }
-    
-    
+
+
      CaloMatching :
     {
         module_type                : CaloMatching
@@ -110,11 +110,11 @@ physics :
       caloClusterSeeding           : energy
       trkToCaloExtrapolModuleLabel : TrkExtrapol
      # MC truth finder, analyzer configuration
-               
- 
+
+
     }
-    
-    
+
+
      extractElData:
    {
      module_type           : ExtractElectronsData
@@ -128,20 +128,20 @@ physics :
      #clickToAdvance       : false
    }
    }
-   
+
    filters:
  {
     #Look at the bad events from G4.
     skipBadEvents:
     {
       module_type            : KilledEventFilter
-      g4ModuleLabel          : g4run 
+      g4ModuleLabel          : g4run
     }
  }
 
-   
+
     analyzers : {
-   
+
      readfits : {
       module_type       : ReadKalFits
       fitterModuleLabel : TrkPatRec
@@ -151,7 +151,7 @@ physics :
       maxPrint          : 200
    }
      checkhitsEff:
-    {                              
+    {
       module_type                  : ReadCaloMatching
       fitterModuleLabel            : TrkPatRec
       diagLevel                    : 1
@@ -167,10 +167,10 @@ physics :
       elextractModuleLabel         : extractElData
       maxFullPrint                 : 201
     }
-    
+
   }
-  
-  p1 : [generate 
+
+  p1 : [generate
         , g4run
         , makeSH
         , CaloReadoutHitsMaker
@@ -183,19 +183,19 @@ physics :
        # , skipBadEvents
         ]
   p2 : [ FSHPreStereo
-	, MakeStereoHits
-	, FlagStrawHits
-	, FlagBkgHits
-	, TrkPatRec
+        , MakeStereoHits
+        , FlagStrawHits
+        , FlagBkgHits
+        , TrkPatRec
         , TrkExtrapol
-        , CaloMatching  
-	#, extractElData
-	]
+        , CaloMatching
+        #, extractElData
+        ]
 
   e1 : [readfits
-	#,checkhitsEff
-	# outfile
-	]
+        #,checkhitsEff
+        # outfile
+        ]
 
   trigger_paths  : [p2]
   end_paths      : [e1]
@@ -205,7 +205,7 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "data_disck_conv.root"
@@ -213,7 +213,7 @@ outputs:
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
                    # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }
 
@@ -224,7 +224,7 @@ physics.producers.generate.inputfile  : "Offline/Mu2eG4/test/genconfig_01.txt"
 services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 2
-source.firstRun                            :  1 
+source.firstRun                            :  1
 services.SeedService.baseSeed         :  1
 services.SeedService.maxUniqueEngines :  20
 physics.producers.KalFitTest.KalFit.RemoveFailedFits : false

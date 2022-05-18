@@ -9,7 +9,7 @@
 #include <string>
 #include <math.h>
 
-#include "Offline/DataProducts/inc/StrawEnd.hh" 
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 
 namespace mu2e {
 
@@ -62,8 +62,8 @@ namespace mu2e {
 
       // construct from fields
       StrawId( uint16_t plane,
-	  uint16_t panel,
-	  uint16_t straw);
+          uint16_t panel,
+          uint16_t straw);
 
       // No automatic conversion of uint16_t to StrawId.
       explicit StrawId(uint16_t sid):
@@ -75,84 +75,84 @@ namespace mu2e {
 
       // test validity
       bool valid() const { return validStraw(getStraw()) &&
-	validPanel(getPanel()) && validPlane(getPlane()); }
+        validPanel(getPanel()) && validPlane(getPlane()); }
 
       // various accessors
       uint16_t asUint16() const { return _sid;}
 
       uint16_t getPlane() const{
-	return plane();
+        return plane();
       }
 
       StrawId getPlaneId() const{
-	return static_cast<StrawId>(_sid & _planemsk);
+        return static_cast<StrawId>(_sid & _planemsk);
       }
 
       StrawId getPanelId() const{
-	return static_cast<StrawId>(_sid & (_planemsk+_panelmsk) );
+        return static_cast<StrawId>(_sid & (_planemsk+_panelmsk) );
       }
 
       // Id of the first straw in a layer assuming 0 is in 0th etc...
       StrawId getLayerId() const{
-	return static_cast<StrawId>( (_sid & (_planemsk+_panelmsk)) +
+        return static_cast<StrawId>( (_sid & (_planemsk+_panelmsk)) +
                                      (_sid & _strawmsk)%_nlayers);
       }
 
       uint16_t getPanel() const{
-	return panel();
+        return panel();
       }
 
       uint16_t getStraw() const{
-	return straw();
+        return straw();
       }
 
       uint16_t getLayer() const{
-	return layer();
+        return layer();
       }
 
       uint16_t getStation() const{
-	return station();
+        return station();
       }
 
       uint16_t plane() const{
-	return (_sid & _planemsk) >> _planesft;
+        return (_sid & _planemsk) >> _planesft;
       }
 
       uint16_t face() const {
-	return (_sid & _facemsk) >> _facesft;
+        return (_sid & _facemsk) >> _facesft;
       }
 
       uint16_t uniqueFace() const {
-	return plane()*_nfaces + face();
+        return plane()*_nfaces + face();
       }
 
       uint16_t panel() const{
-	return (_sid & _panelmsk) >> _panelsft;
+        return (_sid & _panelmsk) >> _panelsft;
       }
 
       uint16_t uniquePanel() const{
-	return plane()*_npanels + panel();
+        return plane()*_npanels + panel();
       }
 
       uint16_t straw() const{
-	return (_sid & _strawmsk);
+        return (_sid & _strawmsk);
       }
 
       uint16_t preamp() const{
-	return (_sid & _preampmsk) >> _preampsft;
+        return (_sid & _preampmsk) >> _preampsft;
       }
 
       uint16_t layer() const{
-	return (_sid & _layermsk);
+        return (_sid & _layermsk);
       }
 
       uint16_t station() const{
-	return (_sid & _stationmsk) >> _stationsft;
+        return (_sid & _stationmsk) >> _stationsft;
       }
 
     // compact unique integer
       uint16_t uniqueStraw() const{
-	return uniquePanel()*_nstraws + straw();
+        return uniquePanel()*_nstraws + straw();
       }
 
       uint16_t uniqueStrawEnd(StrawEnd::End iend) const{
@@ -162,25 +162,25 @@ namespace mu2e {
       // logical comparators
 
       bool samePreamp(StrawId other){
-	return plane() == other.plane() &&
-	      panel() == other.panel() &&
-	      preamp() == other.preamp();
+        return plane() == other.plane() &&
+              panel() == other.panel() &&
+              preamp() == other.preamp();
       }
 
       bool nearestNeighbor(StrawId other){
-	return plane() == other.plane() &&
-	      panel() == other.panel() &&
-	      abs(straw()-other.straw())<2;
+        return plane() == other.plane() &&
+              panel() == other.panel() &&
+              abs(straw()-other.straw())<2;
       }
 
       // operators
 
       bool operator==( StrawId const& rhs) const{
-	return ( _sid == rhs._sid );
+        return ( _sid == rhs._sid );
       }
 
       bool operator!=( StrawId const& rhs) const{
-	return !( *this == rhs);
+        return !( *this == rhs);
       }
 
       bool operator<( StrawId const& rhs) const{
@@ -193,11 +193,11 @@ namespace mu2e {
       // helpers
 
       bool samePlane( StrawId const& sid) const{
-	return ((_sid & _planemsk) == (sid._sid & _planemsk));
+        return ((_sid & _planemsk) == (sid._sid & _planemsk));
       }
 
       bool samePanel( StrawId const& sid) const{
-	return ((_sid & _panelmsk) == (sid._sid & _panelmsk));
+        return ((_sid & _panelmsk) == (sid._sid & _panelmsk));
       }
 
 // qualify how close 2 panels are by their Z separation.  This needs to be a logical

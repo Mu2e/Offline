@@ -39,7 +39,7 @@ cp $SCONSCRIPT $1/src
 
 # Make sure there is at least one file in each of the other subdirectories.
 cat > $1/inc/Placeholder.txt <<EOF
-A placeholder file 
+A placeholder file
 EOF
 
 cp $1/inc/Placeholder.txt $1/test/Placeholder.txt

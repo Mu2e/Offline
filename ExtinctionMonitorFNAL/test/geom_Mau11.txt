@@ -1,4 +1,4 @@
-#include "Offline/Mu2eG4/geom/geom_common.txt" 
+#include "Offline/Mu2eG4/geom/geom_common.txt"
 
 //-------------------------------------------
 // Magnetic field

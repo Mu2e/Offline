@@ -20,7 +20,7 @@ void PanelU(TTree* pad) {
   hpat->GetXaxis()->SetBinLabel(ibin++,"Opposite-sign");
   hpat->GetXaxis()->SetLabelSize(0.08);
   hpat->SetStats(0);
-  
+
   pad->Project("nhits","nhits");
   pad->Project("nactive","nactive");
   pad->Project("nres","log10(nres)");
@@ -45,14 +45,14 @@ void PanelU(TTree* pad) {
 }
 
 void PanelChisq(TTree* pad) {
-  TH1F* chisq1 = new TH1F("chisq1","Best Panel #chi^{2};u #chi^{2}",100,0,20.0);  
-  TH1F* chisq2 = new TH1F("chisq2","Best Panel #chi^{2};u #chi^{2}",100,0,20.0);  
-  TH1F* chisq3 = new TH1F("chisq3","Best Panel #chi^{2};u #chi^{2}",100,0,20.0);  
+  TH1F* chisq1 = new TH1F("chisq1","Best Panel #chi^{2};u #chi^{2}",100,0,20.0);
+  TH1F* chisq2 = new TH1F("chisq2","Best Panel #chi^{2};u #chi^{2}",100,0,20.0);
+  TH1F* chisq3 = new TH1F("chisq3","Best Panel #chi^{2};u #chi^{2}",100,0,20.0);
 
 
-  TH1F* dchisq1 = new TH1F("dchisq1","Panel #chi^{2} Next Best - Best;#Delta u #chi^{2}",100,0,20.0);  
-  TH1F* dchisq2 = new TH1F("dchisq2","Panel #chi^{2} Next Best - Best;#Delta u #chi^{2}",100,0,20.0);  
-  TH1F* dchisq3 = new TH1F("dchisq3","Panel #chi^{2} Next Best - Best;#Delta u #chi^{2}",100,0,20.0);  
+  TH1F* dchisq1 = new TH1F("dchisq1","Panel #chi^{2} Next Best - Best;#Delta u #chi^{2}",100,0,20.0);
+  TH1F* dchisq2 = new TH1F("dchisq2","Panel #chi^{2} Next Best - Best;#Delta u #chi^{2}",100,0,20.0);
+  TH1F* dchisq3 = new TH1F("dchisq3","Panel #chi^{2} Next Best - Best;#Delta u #chi^{2}",100,0,20.0);
 
   chisq1->SetLineColor(kBlack);
   chisq2->SetLineColor(kGreen);

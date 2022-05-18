@@ -4,7 +4,7 @@
 //
 // Original author Rob Kutschke
 // adapted by Gianni Onorato
-// 
+//
 
 // what processes to do
 bool ejectedProtonGun.do = 0;
@@ -36,7 +36,7 @@ vector<double> beamDisplacementOnTarget = {0.,0.,0.};
 // Distribution parameter of Primary Proton Gun beam
 double primaryProtonGun.stdDev = 1; //units are mm
 
-//int decayinorbitGun.nToSkip = 200000; 
+//int decayinorbitGun.nToSkip = 200000;
 //int ejectedProtonGun.nToSkip = 323000;
 //int ejectedNeutronGun.nToSkip = 380000;
 //int ejectedPhotonGun.nToSkip = 100000;

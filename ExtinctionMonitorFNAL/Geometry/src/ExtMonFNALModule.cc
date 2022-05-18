@@ -9,7 +9,7 @@
 
 namespace mu2e {
 
-  // Code in this file (only!) assumes these numbers are (2,1) 
+  // Code in this file (only!) assumes these numbers are (2,1)
   unsigned int ExtMonFNALModule::nxChips() const { return 2; }
   unsigned int ExtMonFNALModule::nyChips() const { return 1; }
 
@@ -33,7 +33,7 @@ namespace mu2e {
         // Assume no gaps between chips
         // x0 and y0 are the coordinates of the bottom left chip corner in the module frame
         const double chipx0 = (icx - nxChips()/2.)*chip_.nColumns()*chip_.xPitch();
-        const double chipy0 = (icy - nyChips()/2.)*chip_.nRows()*chip_.yPitch();    
+        const double chipy0 = (icy - nyChips()/2.)*chip_.nRows()*chip_.yPitch();
 
         // Zero based pixel column and row numbers for the offline identifier
         const int ix = std::floor((xSensor - chipx0)/chip_.xPitch());
