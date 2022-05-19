@@ -76,7 +76,7 @@ channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,da
   int rc = 0;
 
   if (doNames) {
-    strVec names;
+    StringVec names;
     rc = tool.names(names);
     if (rc != 0) return rc;
     for (auto const& name : names) {

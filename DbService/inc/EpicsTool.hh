@@ -6,7 +6,7 @@
 
 #include "Offline/DbService/inc/DbReader.hh"
 #include "Offline/DbService/inc/EpicsVar.hh"
-#include "Offline/GeneralUtilities/inc/strVec.hh"
+#include "Offline/GeneralUtilities/inc/StringVec.hh"
 #include <ctime>
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ class EpicsTool {
   EpicsTool();
 
   // fill argument with the names of all channels
-  int names(strVec& names);
+  int names(StringVec& names);
   // return a vector of EPICS samples of channel "name"
   // and consistent with time or daysAgo. Time can be a single time
   // 2022-05-05T12:45:02-05:00
