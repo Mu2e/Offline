@@ -11,7 +11,7 @@ Import('mu2e_helper')
 
 helper=mu2e_helper(env)
 
-mainlib = helper.make_mainlib ( [ 'mu2e_DbTables',
+mainlib = helper.make_mainlib ( [ 'mu2e_DbTables','mu2e_GeneralUtilities',
                                   'art_Framework_Core',
                                   'art_Framework_Services_Registry',
                                   'CLHEP',
@@ -43,8 +43,10 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                        ] )
 
-BINLIBS   = [ mainlib, 'mu2e_DbTables' , 'cetlib', 'cetlib_except', "pq" ]
+BINLIBS   = [ mainlib, 'mu2e_DbTables' , 'boost_program_options',
+       'cetlib', 'cetlib_except', "pq" ]
 helper.make_bin("dbTool",BINLIBS,[])
+helper.make_bin("epicsTool",BINLIBS,[])
 
 # turn pywrap.i into a python interface
 helper.make_pywrap (['mu2e_DbTables'])
