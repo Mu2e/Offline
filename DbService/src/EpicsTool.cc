@@ -27,7 +27,7 @@ EpicsVar::EpicsVec EpicsTool::get(std::string const& name,
   // run query url, answer returned in csv
   int rc;
   std::string tcsv, select, table, order;
-  strVec where;
+  StringVec where;
 
   select = "channel_id";
   table = "channel";
@@ -72,7 +72,7 @@ EpicsVar::EpicsVec EpicsTool::get(std::string const& name,
       // channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,datatype
       // 642,2022-05-05 14:10:02.089404-05:00,89404264,5,9,None,55.0,None, ,None
 
-      strVec sv;
+      StringVec sv;
 
       // split into words at commas
       escaped_list_separator<char> els2('\\', ',', '"');
@@ -176,11 +176,11 @@ EpicsVar::EpicsVec EpicsTool::get(std::string const& name,
 
 //**************************************************
 
-int EpicsTool::names(strVec& names) {
+int EpicsTool::names(StringVec& names) {
   // run query url, answer returned in csv
   int rc;
   std::string csv, select, table, order;
-  strVec where;
+  StringVec where;
 
   names.clear();
 
