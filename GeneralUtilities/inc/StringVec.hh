@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace mu2e {
-  typedef std::vector<std::string>    strVec;
+  typedef std::vector<std::string>    StringVec;
 }
 
 #endif
