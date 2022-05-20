@@ -401,7 +401,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   goButton->Associate(this);
 
   mu2e::ConfigFileLookupPolicy configFile;
-  std::string logoFileName = configFile("EventDisplay/src/logo_small.png");
+  std::string logoFileName = configFile("Offline/EventDisplay/src/logo_small.png");
   const TGPicture *logo = gClient->GetPicture(logoFileName.c_str());
   TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
   navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,20,0,0,0));
