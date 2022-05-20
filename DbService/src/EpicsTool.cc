@@ -1,14 +1,10 @@
 #include "Offline/DbService/inc/EpicsTool.hh"
 #include "Offline/DbService/inc/DbIdList.hh"
 #include "Offline/GeneralUtilities/inc/TimeUtility.hh"
+#include "Offline/GeneralUtilities/inc/splitString.hh"
 #include "cetlib_except/exception.h"
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/tokenizer.hpp>
 
 using namespace mu2e;
-using namespace boost;
 
 //**************************************************
 
@@ -54,70 +50,52 @@ EpicsVar::EpicsVec EpicsTool::get(std::string const& name,
 
   if (rc != 0) {
     throw cet::exception("EPICSTOOL_BAD_SAMPLE")
-      << "EpicsTool::get could not lookup data for channel id " << id
-              << "\n";
+        << "EpicsTool::get could not lookup data for channel id " << id << "\n";
   }
 
+  // the table is delivered with rows separated by \n, split them
+  StringVec rows = splitString(tcsv, "\n", "\"", "\\", true, false);
 
+  for (auto const& csv : rows) {
+    // Example csv:
+    // channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,datatype
+    // 642,2022-05-05 14:10:02.089404-05:00,89404264,5,9,None,55.0,None, ,None
 
-  escaped_list_separator<char> els('\\', '\n', '"');
-  tokenizer<escaped_list_separator<char>> tok(tcsv, els);
-  for (tokenizer<escaped_list_separator<char>>::iterator beg = tok.begin();
-       beg != tok.end(); ++beg) {
-    std::string csv(*beg);
-    boost::trim(csv);
-    if (!csv.empty()) {
+    // split on commas
+    StringVec sv = splitString(csv);
 
-      // Example csv:
-      // channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,datatype
-      // 642,2022-05-05 14:10:02.089404-05:00,89404264,5,9,None,55.0,None, ,None
-
-      StringVec sv;
-
-      // split into words at commas
-      escaped_list_separator<char> els2('\\', ',', '"');
-      tokenizer<escaped_list_separator<char>> tok2(csv, els2);
-      for (tokenizer<escaped_list_separator<char>>::iterator beg = tok2.begin();
-           beg != tok2.end(); ++beg) {
-        std::string ss(*beg);
-        boost::trim(ss);
-        sv.emplace_back(ss);
-      }
-
-      if(sv.size()!=10) {
-        throw cet::exception("EPICSTOOL_BAD_CSV")
+    if (sv.size() != 10) {
+      throw cet::exception("EPICSTOOL_BAD_CSV")
           << " EpicsTool::get number of csv fields !=10, csv: \n"
           << csv << " \n";
-      }
+    }
 
-      int64_t channel_id = std::stoll(sv[0]);
-      std::time_t smpl_time_t;
-      if(TimeUtility::parseTimeTZ(sv[1],smpl_time_t)) {
-        throw cet::exception("EPICSTOOL_BAD_TIME")
+    int64_t channel_id = std::stoll(sv[0]);
+    std::time_t smpl_time_t;
+    if (TimeUtility::parseTimeTZ(sv[1], smpl_time_t)) {
+      throw cet::exception("EPICSTOOL_BAD_TIME")
           << " EpicsTool::get could not parse time " << sv[1] << " \n";
-      }
-      int64_t nanosecs = std::stoll(sv[2]);
-      int64_t severity_id = std::stoll(sv[3]);
-      int64_t status_id = std::stoll(sv[4]);
-      EpicsVar::variVar value;
-      if (sv[6] == "None" && sv[7] == "None") {
-        value = std::stoi(sv[5]);
-      } else if(sv[5] == "None" && sv[7] == "None") {
-        value = std::stod(sv[6]);
-      } else if(sv[5] == "None" && sv[6] == "None") {
-        value = sv[7];
-      } else {
-        throw cet::exception("EPICSTOOL_BAD_CSV_ROW")
-          << " EpicsTool::get could not parse csv row:\n" << csv << " \n";
-      }
+    }
+    int64_t nanosecs = std::stoll(sv[2]);
+    int64_t severity_id = std::stoll(sv[3]);
+    int64_t status_id = std::stoll(sv[4]);
+    EpicsVar::variVar value;
+    if (sv[6] == "None" && sv[7] == "None") {
+      value = std::stoi(sv[5]);
+    } else if (sv[5] == "None" && sv[7] == "None") {
+      value = std::stod(sv[6]);
+    } else if (sv[5] == "None" && sv[6] == "None") {
+      value = sv[7];
+    } else {
+      throw cet::exception("EPICSTOOL_BAD_CSV_ROW")
+          << " EpicsTool::get could not parse csv row:\n"
+          << csv << " \n";
+    }
 
-      ev.emplace_back(csv,channel_id,sv[1],smpl_time_t,
-           nanosecs,severity_id,status_id,value);
+    ev.emplace_back(csv, channel_id, sv[1], smpl_time_t, nanosecs, severity_id,
+                    status_id, value);
 
-
-    } // csv not empty
-
-  } // loop over db sample rows
+  }  // loop over db sample rows
 
   if (ev.empty()) {
     return ev;
@@ -168,7 +146,8 @@ EpicsVar::EpicsVec EpicsTool::get(std::string const& name,
     }
   } else {
     throw cet::exception("EPICSTOOL_BAD_ARGS")
-      << " EpicsTool::get could not parse arguments " << " \n";
+        << " EpicsTool::get could not parse arguments "
+        << " \n";
   }
 
   return evt;
@@ -193,14 +172,7 @@ int EpicsTool::names(StringVec& names) {
     return 1;
   }
 
-  escaped_list_separator<char> els('\\', '\n', '"');
-  tokenizer<escaped_list_separator<char>> tok(csv, els);
-  for (tokenizer<escaped_list_separator<char>>::iterator beg = tok.begin();
-       beg != tok.end(); ++beg) {
-    std::string ss(*beg);
-    boost::trim(ss);
-    if (!ss.empty()) names.emplace_back(ss);
-  }
+  names = splitString(csv, "\n", "\"", "\\", true, false);
 
   return 0;
 }
