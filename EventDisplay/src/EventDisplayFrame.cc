@@ -253,9 +253,9 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGLabel *zoomLabel7  = new TGLabel(zoomFrame2, "mm  maxz");
   TGLabel *zoomLabel8  = new TGLabel(zoomFrame2, "mm");
   TGLabel *angleLabel1 = new TGLabel(angleFrame, "phi");
-  TGLabel *angleLabel2 = new TGLabel(angleFrame, "°  theta");
-  TGLabel *angleLabel3 = new TGLabel(angleFrame, "°  psi");
-  TGLabel *angleLabel4 = new TGLabel(angleFrame, "°");
+  TGLabel *angleLabel2 = new TGLabel(angleFrame, "deg  theta");
+  TGLabel *angleLabel3 = new TGLabel(angleFrame, "deg  psi");
+  TGLabel *angleLabel4 = new TGLabel(angleFrame, "deg");
   _minXField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1501);
   _minYField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1502);
   _minZField = new TGTextEntry(zoomFrame1, new TGTextBuffer, 1503);
@@ -401,7 +401,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   goButton->Associate(this);
 
   mu2e::ConfigFileLookupPolicy configFile;
-  std::string logoFileName = configFile("EventDisplay/src/logo_small.png");
+  std::string logoFileName = configFile("Offline/EventDisplay/src/logo_small.png");
   const TGPicture *logo = gClient->GetPicture(logoFileName.c_str());
   TGIcon *icon = new TGIcon(navigationFrame, logo, 50, 50);
   navigationFrame->AddFrame(icon, new TGLayoutHints(kLHintsLeft,20,0,0,0));

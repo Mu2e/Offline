@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_remote_ceiling.ccl
 
@@ -12,7 +12,7 @@ double dirt.remote.handling.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.remote.handling.ceiling.yHalfThickness           = 406.4;
 
-vector<int>    dirt.remote.handling.ceiling.xreplace   = { 3, 4 }; 
+vector<int>    dirt.remote.handling.ceiling.xreplace   = { 3, 4 };
 vector<double> dirt.remote.handling.ceiling.xPositions = {
   11684,   // r1
   -12319,   // r8
@@ -22,7 +22,7 @@ vector<double> dirt.remote.handling.ceiling.xPositions = {
   11684   // r1_to_N
 };
 
-vector<int>    dirt.remote.handling.ceiling.yreplace   = { 4, 5 }; 
+vector<int>    dirt.remote.handling.ceiling.yreplace   = { 4, 5 };
 vector<double> dirt.remote.handling.ceiling.yPositions = {
   16611.6,   // r1
   16611.6,   // r8

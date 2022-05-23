@@ -44,7 +44,7 @@ double mbs.SPBSRHLength       =   280.0;
 string mbs.SPBSRMaterialName  = "Polyethylene096";
 double mbs.SPBRZrelCntr       = 962.0;
 
-vector<double> mbs.BSTCInnerRadii  =   { 390.0, 320.0 }; 
+vector<double> mbs.BSTCInnerRadii  =   { 390.0, 320.0 };
 vector<double> mbs.BSTCOuterRadii  =   { 470.0, 470.0 };
 vector<double> mbs.BSTCLengths     =   { 570.0, 600.0 };
 string mbs.BSTCMaterialName   = "Polyethylene096";

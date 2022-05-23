@@ -107,32 +107,32 @@ namespace mu2e{
           case PDGCode::e_minus:
               color = kRed;
               pid = "electron -";
-              posy = 1400.0;
+              posy = 140.0;
               break;
           case PDGCode::e_plus:
               color = kYellow;
               pid = "positron +";
-              posy = 1500.0;
+              posy = 150.0;
               break;
           case PDGCode::mu_minus:
               color = kOrange-7; //used to help distinguish from other lines only
               pid = "muon - ";
-              posy = 1600.0;
+              posy = 160.0;
               break;
           case PDGCode::mu_plus:
               color = kRed-9;
               pid = "muon + ";
-              posy = 1700.0;
+              posy = 170.0;
               break;
           case PDGCode::pi_minus:
               color = kMagenta;
               pid = "pion -";
-              posy = 1800.0;
+              posy = 180.0;
               break;
           case PDGCode::pi_plus:
               color = kViolet;
               pid = "pion +";
-              posy = 1900.0;
+              posy = 190.0;
               break;
           case PDGCode::proton:
               color = kBlue;
@@ -186,12 +186,12 @@ namespace mu2e{
                 CLHEP::Hep3Vector HitPos2D = det->toDetector(Pos);
 
                 if(i==0) {
-                      line->SetPoint(i,(Pos.x()), (Pos.y()),(Pos.z()));
+                      line->SetPoint(i,pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
                       line_twoDXZ->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                       line_twoDXY->SetPoint(i,pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
 
                 } else {
-                    line->SetNextPoint((Pos.x()),(Pos.y()),(Pos.z()));
+                    line->SetNextPoint(pointmmTocm(Pos.x()), pointmmTocm(Pos.y()),pointmmTocm(Pos.z()));
                     line_twoDXZ->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                     line_twoDXY->SetNextPoint(pointmmTocm(HitPos2D.x()), pointmmTocm(HitPos2D.y()),pointmmTocm(HitPos2D.z()));
                 }
@@ -199,7 +199,7 @@ namespace mu2e{
 
               string energy = to_string(points[0].kineticEnergy());
 
-              const std::string title = " MCTrajectory "+ energy + " Creation code = " + to_string(trajectoryIter->first->creationCode()) + "Stopping code = " + to_string(trajectoryIter->first->stoppingCode()) + " End Global Time = " + to_string(trajectoryIter->first->endGlobalTime())  ;
+              const std::string title = " MCTrajectory "+ energy + " Creation code = " + to_string(trajectoryIter->first->creationCode()) + "Stopping code = " + to_string(trajectoryIter->first->stoppingCode()) + " End Global Time = " + to_string(trajectoryIter->first->endGlobalTime());
               line->SetTitle(Form(title.c_str()));
 
               //Get PID label:

@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_TSareaW-CFbeam.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.W.TSareaCFbeam.xPositions = {
   -2921   // p1_to_S
 };
 
-vector<int>    dirt.W.TSareaCFbeam.yreplace   = { 2, 3 }; 
+vector<int>    dirt.W.TSareaCFbeam.yreplace   = { 2, 3 };
 vector<double> dirt.W.TSareaCFbeam.yPositions = {
   -11734.8,   // p1
   -11734.8,   // p2
