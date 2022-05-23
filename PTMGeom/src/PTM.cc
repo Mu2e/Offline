@@ -4,6 +4,7 @@
 //
 // Author: Helenka Casler
 //
+// Added a comment
 
 namespace mu2e{
   PTM::PTM(CLHEP::Hep3Vector const& originInMu2e,

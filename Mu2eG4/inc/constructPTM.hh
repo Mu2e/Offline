@@ -6,6 +6,7 @@
 // Constructs the downstream production target scanning monitor.
 // Parent volume is the air in the target hall.
 //
+// Added a comment
 
 //Mu2e includes
 #include "Offline/Mu2eG4Helper/inc/VolumeInfo.hh"
