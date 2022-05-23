@@ -20,12 +20,12 @@ namespace mu2e{
     // set the "overall" dimensions based on the PWC dimensions and positions.
     // Not assuming the two PWCs are the same size.
     if (nearPWC->totalHeight() >= farPWC->totalHeight()) {
-      _totalHeight = nearPWC->totalHeight()+motherMargin;
+      _totalHeight = nearPWC->totalHeight()+motherMargin;  
     } else {
-      _totalHeight = farPWC->totalHeight()+motherMargin;
+      _totalHeight = farPWC->totalHeight()+motherMargin;  
     }
     if (nearPWC->totalWidth() >= farPWC->totalWidth()) {
-      _totalWidth = nearPWC->totalWidth()+motherMargin;
+      _totalWidth = nearPWC->totalWidth()+motherMargin;     
     } else {
       _totalWidth = farPWC->totalWidth()+motherMargin;
     }
