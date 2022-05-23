@@ -108,7 +108,8 @@ namespace mu2e {
   }
 
   double StrawResponse::halfPropV(StrawId strawId, double kedep) const {
-    return PieceLine(_edep,_halfvp,kedep);
+    double mean_prop_v = _strawHalfvp[strawId.uniqueStraw()];
+    return PieceLine(_edep,_halfvpscale,kedep)*mean_prop_v;
   }
 
   double StrawResponse::wpRes(double kedep,double wlen) const {
@@ -159,8 +160,9 @@ namespace mu2e {
     os << endl << "StrawResponse parameters: "  << std::endl;
 
     printVector(os,"edep",_edep);
-    printVector(os,"halfvp",_halfvp);
+    printVector(os,"ehalfvpscale",_halfvpscale);
     os << "central = " << _central << endl;
+    printArray(os,"halfvp",_strawHalfvp);
     printVector(os,"centres",_centres);
     printVector(os,"resslope",_resslope);
     printVector(os,"totdtime",_totdtime);

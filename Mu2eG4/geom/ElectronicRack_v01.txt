@@ -20,9 +20,9 @@ string ElectronicRack.materialType2   = "RackElectronics";
 
 
 // The center of the boxes in Mu2e Offline coordinates
-vector<double> ElectronicRack.centerType1Rack1 = {-9000,-1240,15000};// 
+vector<double> ElectronicRack.centerType1Rack1 = {-9000,-1240,15000};//
 vector<double> ElectronicRack.centerType1Rack2 = {-9612,-1240,15000};//
-vector<double> ElectronicRack.centerType2Rack1 = {-3904,-1200,40350};// 
+vector<double> ElectronicRack.centerType2Rack1 = {-3904,-1200,40350};//
 
 
 // The orientation of each detector.  See docdb xxx for details.

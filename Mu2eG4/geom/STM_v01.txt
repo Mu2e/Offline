@@ -1,6 +1,6 @@
 // (Muon) Stoping Target Monitor (STM)
 //
-// 
+//
 // Author: A. Palladino
 //
 // Notes: All dimensions in mm
@@ -16,9 +16,9 @@ int    vd.verbosityLevel = 0;
 bool   vd.STMUpStr.build     = false; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
 bool   vd.STMMagDnStr.build  = false; //VD87 Rectangle in x-y plane, same size as the CRV
 bool   vd.STMSSCollUpStr.build = false; //VD101 Disk upstream of Spot-Size collimator
-double vd.STMSSCollUpStr.r     = 200.0;// r=20cm 
+double vd.STMSSCollUpStr.r     = 200.0;// r=20cm
 bool   vd.STMCollDnStr.build = false; //VD88 Disk downstream of Spot-Size collimator
-double vd.STMCollDnStr.r     = 200.0;// r=20cm 
+double vd.STMCollDnStr.r     = 200.0;// r=20cm
 bool   vd.STMDet1UpStr.build = false; //VD89 Disk in x-y plane, same size as the Ge detector 1
 bool   vd.STMDet2UpStr.build = false; //VD90 Disk in x-y plane, same size as the Ge detector 2
 bool   vd.STMFieldOfViewCollDnStr.build = false; //VD100
@@ -33,7 +33,7 @@ double vd.DSNeutronShieldExit.r     =  110.0;//Must be the same as the following
 
 //DEPRECATED: Absorber in the MBS endplug hole. This causes too much brem photons for the STM (too high rate)
 //bool   mbs.CLV2.absorber.build          = true;
-//string mbs.CLV2.absorber.MaterialName   = "Polyethylene096";  
+//string mbs.CLV2.absorber.MaterialName   = "Polyethylene096";
 //double mbs.CLV2.absorber.halfLength     = 15.0;//mm
 
 //Build STM within z = 34 inches (863.6 mm) of downstream hall wall
@@ -74,14 +74,14 @@ double stm.det2.can.UpStrWindowHalfLength =   0.5;   //0.381; //Standard Be wind
 bool   stm.SScollimator.build             =  true; //
 string stm.SScollimator.material          = "G4_Pb";
 double stm.SScollimator.UpStrSpace        =    0.0; // this parameter not used for this collimator
-double stm.SScollimator.halfWidth         =  215.9; // 
-double stm.SScollimator.halfHeight        =  228.6; // 
-double stm.SScollimator.halfLength        =   76.2; // 76.2mm = 3 inch halflength 
+double stm.SScollimator.halfWidth         =  215.9; //
+double stm.SScollimator.halfHeight        =  228.6; //
+double stm.SScollimator.halfLength        =   76.2; // 76.2mm = 3 inch halflength
 bool   stm.SScollimator.liner.build       =  true; //
-string stm.SScollimator.liner.material    =  "G4_W"; 
-double stm.SScollimator.liner.halfWidth   =  105.0; // 
-double stm.SScollimator.liner.halfHeight  =   55.0; // 
-double stm.SScollimator.liner.halfLength  =   76.2; // 
+string stm.SScollimator.liner.material    =  "G4_W";
+double stm.SScollimator.liner.halfWidth   =  105.0; //
+double stm.SScollimator.liner.halfHeight  =   55.0; //
+double stm.SScollimator.liner.halfLength  =   76.2; //
 double stm.SScollimator.liner.cutOutHalfLength  =  0.0; // no cutout for this collimator
 double stm.SScollimator.hole1.xoffset     =   40.6; // (38.1mm = 1.5 inches)
 double stm.SScollimator.hole1.radiusUpStr =    6.795; // DEPRECATED parameter, no longer used
@@ -94,7 +94,7 @@ double stm.SScollimator.hole2.radiusUpStr =    6.795; // DEPRECATED parameter, n
 double stm.SScollimator.hole2.radiusDnStr =    5.642; // 5.642mm for A=1.0 cm^2 hole
 bool   stm.SScollimator.hole2.liner.build      =  false; // liner along the length of the hole itself
 double stm.SScollimator.hole2.liner.thickness  =  10.0; // 1cm thick hole liner
-string stm.SScollimator.hole.liner.material    =  "G4_W"; 
+string stm.SScollimator.hole.liner.material    =  "G4_W";
 
 //"field-of-view" collimator, just downstream of the sweeper magnet
 bool   stm.FOVcollimator.build                  =  true; //
@@ -104,26 +104,26 @@ double stm.FOVcollimator.halfWidth              =  205.9; // same width as magne
 double stm.FOVcollimator.halfHeight             =  218.6; // same height as magnet
 double stm.FOVcollimator.halfLength             =  225.0; // 12 inches thick = 6 inch halfLength
 bool   stm.FOVcollimator.liner.build            =  true;
-string stm.FOVcollimator.liner.material         =  "Polyethylene096"; 
+string stm.FOVcollimator.liner.material         =  "Polyethylene096";
 double stm.FOVcollimator.liner.cutOutHalfLength =  150.0;
-double stm.FOVcollimator.liner.halfWidth        =  100.0; // 
-double stm.FOVcollimator.liner.halfHeight       =  100.0; // 
-double stm.FOVcollimator.liner.halfLength       =   75.0; // 
-double stm.FOVcollimator.hole1.xoffset          =    0.0; // 
+double stm.FOVcollimator.liner.halfWidth        =  100.0; //
+double stm.FOVcollimator.liner.halfHeight       =  100.0; //
+double stm.FOVcollimator.liner.halfLength       =   75.0; //
+double stm.FOVcollimator.hole1.xoffset          =    0.0; //
 double stm.FOVcollimator.hole1.radiusUpStr      =   71.0; // Use 68.mm
 double stm.FOVcollimator.hole1.radiusDnStr      =   71.0; // Use 68.mm
 bool   stm.FOVcollimator.hole1.liner.build      =  false; // liner along the length of the hole itself
 double stm.FOVcollimator.hole1.liner.thickness  =    0.0; // no liner
 bool   stm.FOVcollimator.hole2.build            =  false; // has a second collimation hole?
-double stm.FOVcollimator.hole2.xoffset          =    0.0; // 
-double stm.FOVcollimator.hole2.radiusUpStr      =    0.0; // 
-double stm.FOVcollimator.hole2.radiusDnStr      =    0.0; // 
+double stm.FOVcollimator.hole2.xoffset          =    0.0; //
+double stm.FOVcollimator.hole2.radiusUpStr      =    0.0; //
+double stm.FOVcollimator.hole2.radiusDnStr      =    0.0; //
 bool   stm.FOVcollimator.hole2.liner.build      =  false; // liner along the length of the hole itself
 double stm.FOVcollimator.hole2.liner.thickness  =    0.0; // no liner
-string stm.FOVcollimator.hole.liner.material    =  "G4_W"; 
+string stm.FOVcollimator.hole.liner.material    =  "G4_W";
 bool   stm.FOVcollimator.absorber.build         =   true; //
 double stm.FOVcollimator.absorber.halfLength    =   10.0; //
-string stm.FOVcollimator.absorber.material      =  "Polyethylene096"; 
+string stm.FOVcollimator.absorber.material      =  "Polyethylene096";
 
 
 //Sweeper magnet

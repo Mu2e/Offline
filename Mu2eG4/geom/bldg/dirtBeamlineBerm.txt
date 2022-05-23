@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_beamline_dirtBerm.ccl
 
@@ -12,7 +12,7 @@ double dirt.beamline.berm.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.berm.yHalfThickness           = 1244.6;
 
-vector<int>    dirt.beamline.berm.xreplace   = { 7, 8, 24, 25 }; 
+vector<int>    dirt.beamline.berm.xreplace   = { 7, 8, 24, 25 };
 vector<double> dirt.beamline.berm.xPositions = {
   -2921,   // b
   -2921,   // P0
@@ -42,7 +42,7 @@ vector<double> dirt.beamline.berm.xPositions = {
   50000   // a_to_E
 };
 
-vector<int>    dirt.beamline.berm.yreplace   = { 8, 24 }; 
+vector<int>    dirt.beamline.berm.yreplace   = { 8, 24 };
 vector<double> dirt.beamline.berm.yPositions = {
   2438.4,   // b
   -609.6,   // P0

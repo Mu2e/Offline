@@ -4,7 +4,7 @@
 // Original author Andrei Gaponenko
 // Latest updates by David Norvil Brown (Lou), Dec 2017.
 
-int PSEnclosure.version   = 2;  
+int PSEnclosure.version   = 2;
 
 double PSEnclosure.length = 958.9; // mm
 double PSEnclosure.shell.outerDiameterEast = 1526.6; // mm

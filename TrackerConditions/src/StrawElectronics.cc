@@ -277,9 +277,7 @@ namespace mu2e {
     os << "ADCLSB = " << _ADCLSB << endl;
     os << "maxADC = " << _maxADC << endl;
 
-    os << "ADCped ("<<_ADCped.size()<<") = ";
-    for(auto x: _ADCped) os << x << " " ;
-    os << endl;
+    printArray(os,"ADCped",_ADCped);
 
     os << "nADCpre = " << _nADCpre << endl;
     os << "ADCPeriod = " << _ADCPeriod << endl;
