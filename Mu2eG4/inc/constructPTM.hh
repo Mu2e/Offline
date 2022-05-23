@@ -26,7 +26,7 @@ namespace mu2e {
                               SimpleConfig const& _config);
 
     void insertOuterFrame(VolumeInfo const& container,
-                        const PTMPWC* pwc);
+                        const PTMPWC* pwc);   
 
     void insertWindows(VolumeInfo const& container,
                      const PTMPWC* pwc,
@@ -42,7 +42,7 @@ namespace mu2e {
                             const PTMPWC* pwc,
                             G4Material* gasMaterial);
 
-    void insertVerticalProfileWires(VolumeInfo const& container,
+    void insertVerticalProfileWires(VolumeInfo const& container,    
                                   const PTMPWC* pwc,
                                   G4Material* gasMaterial,
                                   std::string const& wireNameSuffix,
