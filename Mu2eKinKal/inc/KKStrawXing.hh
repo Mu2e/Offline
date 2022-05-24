@@ -10,7 +10,7 @@ namespace mu2e {
   template <class KTRAJ> class KKStrawXing : public KinKal::StrawXing<KTRAJ> {
     public:
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
-      KKStrawXing(PTCA const& tpoca, KinKal::StrawMaterial const& smat, StrawId sid) : KinKal::StrawXing<KTRAJ>(tpoca,smat), sid_(sid) {}
+      KKStrawXing(PTCA const& ptca, KinKal::StrawMaterial const& smat, StrawId sid) : KinKal::StrawXing<KTRAJ>(ptca,smat), sid_(sid) {}
       StrawId strawId() const { return sid_; }
     private:
       StrawId sid_;
