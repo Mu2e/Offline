@@ -31,6 +31,8 @@ namespace mu2e {
       Residual const& residual(unsigned ires=0) const override;
       double time() const override { return tpca_.particleToca(); }
       void updateReference(KTRAJPTR const& ktrajptr) override;
+      void updateState(MetaIterConfig const& config,bool first) override;
+      KTRAJPTR const& refTrajPtr() const override { return tpca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // scintHit explicit interface
       KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar);
@@ -42,6 +44,7 @@ namespace mu2e {
       auto timeVariance() const { return tvar_; }
       auto widthVariance() const { return wvar_; }
       auto const& caloCluster() const { return caloCluster_; }
+      auto precision() const { return tpca_.precision(); }
 
     private:
       CCPtr caloCluster_;  // associated calorimeter cluster
@@ -54,10 +57,8 @@ namespace mu2e {
       Residual rresid_; // residual WRT most recent reference parameters
   };
 
-  template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :
-    caloCluster_(caloCluster), saxis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar), active_(true),
+  template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), saxis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar), active_(true),
     tpca_(pca.localTraj(),saxis_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()) {
-      HIT::updateReference(tpca_.particleTrajPtr());
     }
 
   template <class KTRAJ> bool KKCaloHit<KTRAJ>::activeRes(unsigned ires) const {
@@ -80,7 +81,29 @@ namespace mu2e {
     //    if(tpca_.usable()) tphint = CAHint(tpca_.particleToca(),tpca_.sensorToca());
     tpca_ = CA(ktrajptr,saxis_,tphint,tpca_.precision());
     if(!tpca_.usable())throw std::runtime_error("TPOCA failure");
-    HIT::updateReference(ktrajptr);
+  }
+
+
+  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& config,bool first) {
+    // check that TPCA position is consistent with the physical sensor. This can be off if the CA algorithm finds the wrong helix branch
+    // early in the fit when t0 has very large errors.
+    // If it is unphysical try to adjust it back using a better hint.
+    auto ppos = tpca_.particlePoca().Vect();
+    auto sstart = saxis_.startPosition();
+    auto send = saxis_.endPosition();
+    double slen = (send-sstart).R();
+    // tolerance should come from the config.  Should also test relative to the error. FIXME
+    double tol = slen*1.0;
+    if( (ppos-sstart).Dot(saxis_.direction()) < -tol ||
+        (ppos-send).Dot(saxis_.direction()) > tol) {
+      // adjust hint to the middle and try agian
+      double sspeed = tpca_.particleTraj().velocity(tpca_.particleToca()).Dot(saxis_.direction());
+      double sdist = (ppos - saxis_.position3(saxis_.range().mid())).Dot(saxis_.direction());
+      auto tphint = tpca_.hint();
+      tphint.particleToca_ -= sdist/sspeed;
+      tpca_ = CA(tpca_.particleTrajPtr(),saxis_,tphint,precision());
+      // should check if this is still unphysical and disable the hit if so FIXME
+    }
     // residual is just delta-T at CA.
     // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
     double dd2 = tpca_.dirDot()*tpca_.dirDot();

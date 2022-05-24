@@ -17,6 +17,7 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = shared_ptr<KKSTRAWHIT>;
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+      using KTRAJPTR = std::shared_ptr<KTRAJ>;
       // sort hits by time
       struct StrawHitSort {
         bool operator ()( const KKSTRAWHITPTR& hit1, const KKSTRAWHITPTR& hit2) {
@@ -30,8 +31,11 @@ namespace mu2e {
       bool active() const override { return false; } // panel hits are never active
       KinKal::Chisq chisq(KinKal::Parameters const& params) const override { return KinKal::Chisq(); }
       double time() const override;
+      void updateReference(KTRAJPTR const& ktrajptr) override {} // nothing to do here
+      KTRAJPTR const& refTrajPtr() const { hits_.front()->refTrajPtr(); } // this doesn't realy make sense, but
+
       // update the internals of the hit, specific to this meta-iteraion.  This will affect the next fit iteration
-      void updateState(KinKal::MetaIterConfig const& config) override;
+      void updateState(KinKal::MetaIterConfig const& config,bool first) override;
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       ~KKStrawHitSet(){}
     private:
@@ -55,10 +59,12 @@ namespace mu2e {
     return maxtime + epsilon;
   }
 
-  template<class KTRAJ> void KKStrawHitSet<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig) {
-    // look for an updater; if it's there, update the state
-    auto kkphu = miconfig.findUpdater<KKCombinatoricUpdater>();
-    if(kkphu != 0)kkphu->update(*this);
+  template<class KTRAJ> void KKStrawHitSet<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig,bool first) {
+    if(first){
+      // look for an updater; if it's there, update the state
+      auto kkphu = miconfig.findUpdater<KKCombinatoricUpdater>();
+      if(kkphu != 0)kkphu->update(*this);
+    }
   }
 
   template<class KTRAJ> void KKStrawHitSet<KTRAJ>::print(std::ostream& ost, int detail) const {

@@ -321,8 +321,8 @@ namespace mu2e {
   bool LoopHelixFit::goodFit(KKTRK const& ktrk) const {
     // require physical consistency: fit can succeed but the result can have changed charge or helicity
     return ktrk.fitStatus().usable() &&
-      ktrk.fitTraj().front().Q()*ktrk.seedTraj().Q() > 0 &&
-      ktrk.fitTraj().front().helicity()*ktrk.seedTraj().helicity() > 0;
+      ktrk.fitTraj().front().Q()*ktrk.seedTraj().front().Q() > 0 &&
+      ktrk.fitTraj().front().helicity()*ktrk.seedTraj().front().helicity() > 0;
   }
 
   void LoopHelixFit::fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const {
