@@ -17,7 +17,7 @@ namespace mu2e {
       #ifndef __CINT__
       explicit TEveMu2eMCTraj();
       virtual ~TEveMu2eMCTraj(){};
-      void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list); 
+      void DrawHit3D(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list);
       void DrawSimpleLine(const std::string &pstr, CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList);
       void DrawFullLine(const std::string &pstr, CLHEP::Hep3Vector Start, CLHEP::Hep3Vector End, TEveElementList *HitList);
       std::string DataTitle(const std::string &pstr, Int_t n);

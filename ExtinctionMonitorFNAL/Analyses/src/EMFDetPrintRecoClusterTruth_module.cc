@@ -12,7 +12,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindMany.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

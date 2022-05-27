@@ -23,10 +23,10 @@ namespace mu2e {
     unsigned nplanes() const { return m_plane_zoffset.size(); }
     unsigned nModulesPerPlane() const { return planes_[0].module_zoffset().size(); }
     unsigned nmodules() const { return (this->nplanes() * this->nModulesPerPlane()); }
-    
-    const std::vector<ExtMonFNALPlane>& planes() const { return planes_; } 
-    const int size() const { return planes_.size(); } 
-    
+
+    const std::vector<ExtMonFNALPlane>& planes() const { return planes_; }
+    const int size() const { return planes_.size(); }
+
     const std::vector<double>& plane_zoffset() const { return m_plane_zoffset; }
     const std::vector<double>& plane_xoffset() const { return m_plane_xoffset; }
     const std::vector<double>& plane_yoffset() const { return m_plane_yoffset; }
@@ -74,7 +74,7 @@ namespace mu2e {
 
     // For persistency
     template<class T> friend class art::Wrapper;
-    
+
     std::vector<ExtMonFNALPlane> planes_;
 
 

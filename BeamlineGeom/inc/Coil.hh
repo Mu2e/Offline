@@ -15,11 +15,11 @@ namespace mu2e {
   public:
 
     Coil() : _rIn(0.), _rOut(0.), _halfZ(0.) {}
-    
-    Coil( double x, double y, double z, 
-	  double rIn, double rOut, double halfZ, 
-	  CLHEP::HepRotation rotation = CLHEP::HepRotation() ) :
-      _rIn( rIn ), _rOut( rOut ) , _halfZ( halfZ ) 
+
+    Coil( double x, double y, double z,
+          double rIn, double rOut, double halfZ,
+          CLHEP::HepRotation rotation = CLHEP::HepRotation() ) :
+      _rIn( rIn ), _rOut( rOut ) , _halfZ( halfZ )
     {
       _origin = CLHEP::Hep3Vector( x, y, z );
       _rotation = rotation;

@@ -200,11 +200,11 @@ namespace mu2e {
       for ( unsigned iRAD = tsRad_enum::IN ; iRAD <= tsRad_enum::OUT ; ++iRAD ) {
         auto irad = (tsRad_enum)iRAD;
         auto straightParam = straightSectionParams.find( MapIndex(its,irad) );
-	auto strsec = new StraightSection ( straightParam->second );
-	if(its == tsReg_enum::TS1)
-	  strsec->setLengthDiff(ts1CALengthDiff); //end the cold mass before the endwall
-	if(its == tsReg_enum::TS5)
-	  strsec->setLengthDiff(ts5CALengthDiff); //end the cold mass before the endwall
+        auto strsec = new StraightSection ( straightParam->second );
+        if(its == tsReg_enum::TS1)
+          strsec->setLengthDiff(ts1CALengthDiff); //end the cold mass before the endwall
+        if(its == tsReg_enum::TS5)
+          strsec->setLengthDiff(ts5CALengthDiff); //end the cold mass before the endwall
         ts._cryoMap[its][irad] = std::unique_ptr<TSSection>( strsec );
 
       }
@@ -242,7 +242,7 @@ namespace mu2e {
                                                         c.getDouble("ts.ts5in.thermalshield.rOut"),
                                                         ts5HalfLength - ts.endWallD_halfLength() - ts.endWallD2_halfLength() - smallOffset,
                                                         CLHEP::Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset - ts.endWallD_halfLength()
-									  - ts.endWallD2_halfLength() - smallOffset)) },
+                                                                          - ts.endWallD2_halfLength() - smallOffset)) },
       // Outer straight sections
       { MapIndex(tsReg_enum::TS1,tsRad_enum::OUT), Tube(c.getDouble("ts.ts1out.thermalshield.rIn"),
                                                         c.getDouble("ts.ts1out.thermalshield.rOut"),
@@ -257,7 +257,7 @@ namespace mu2e {
                                                         c.getDouble("ts.ts5out.thermalshield.rOut"),
                                                         ts5HalfLength - ts.endWallD_halfLength() - ts.endWallD2_halfLength() - smallOffset,
                                                         CLHEP::Hep3Vector(-bl->solenoidOffset(),0.0,ts5zOffset - ts.endWallD_halfLength()
-									  - ts.endWallD2_halfLength() - smallOffset) ) },
+                                                                          - ts.endWallD2_halfLength() - smallOffset) ) },
     };
 
 
@@ -267,26 +267,26 @@ namespace mu2e {
       // Inner torus sections
       { MapIndex(tsReg_enum::TS2,tsRad_enum::IN ), Torus( ts.torusRadius(),
                                                           c.getDouble("ts.ts2in.thermalshield.rIn"),
-							  c.getDouble("ts.ts2in.thermalshield.rOut"),
+                                                          c.getDouble("ts.ts2in.thermalshield.rOut"),
                                                           1.5*CLHEP::pi, CLHEP::halfpi,
                                                           CLHEP::Hep3Vector( ts3HalfLength, 0.,-ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))) },
       { MapIndex(tsReg_enum::TS4,tsRad_enum::IN ), Torus( ts.torusRadius(),
                                                           c.getDouble("ts.ts4in.thermalshield.rIn"),
-							  c.getDouble("ts.ts4in.thermalshield.rOut"),
+                                                          c.getDouble("ts.ts4in.thermalshield.rOut"),
                                                           CLHEP::halfpi, CLHEP::halfpi,
                                                           CLHEP::Hep3Vector( -ts3HalfLength, 0.,ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))) },
       // Outer torus sections
       { MapIndex(tsReg_enum::TS2,tsRad_enum::OUT), Torus( ts.torusRadius(),
                                                           c.getDouble("ts.ts2out.thermalshield.rIn"),
-							  c.getDouble("ts.ts2out.thermalshield.rOut"),
+                                                          c.getDouble("ts.ts2out.thermalshield.rOut"),
                                                           1.5*CLHEP::pi, CLHEP::halfpi,
                                                           CLHEP::Hep3Vector( ts3HalfLength, 0.,-ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))) },
       { MapIndex(tsReg_enum::TS4,tsRad_enum::OUT), Torus( ts.torusRadius(),
                                                           c.getDouble("ts.ts4out.thermalshield.rIn"),
-							  c.getDouble("ts.ts4out.thermalshield.rOut"),
+                                                          c.getDouble("ts.ts4out.thermalshield.rOut"),
                                                           CLHEP::halfpi, CLHEP::halfpi,
                                                           CLHEP::Hep3Vector( -ts3HalfLength, 0.,ts.torusRadius() ),
                                                           CLHEP::HepRotation(CLHEP::HepRotationX(90.0*CLHEP::degree))) },
@@ -299,7 +299,7 @@ namespace mu2e {
       for ( unsigned iRAD = tsRad_enum::IN ; iRAD <= tsRad_enum::OUT ; ++iRAD ) {
         auto irad = (tsRad_enum)iRAD;
         auto straightParam = straightSectionThermalParams.find( MapIndex(its,irad) );
-	auto strsec = new StraightSection ( straightParam->second );
+        auto strsec = new StraightSection ( straightParam->second );
         ts._thermalShieldMap[its][irad] = std::unique_ptr<TSSection>( strsec );
 
       }

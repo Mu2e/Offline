@@ -9,7 +9,7 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvDigiMC
   {
@@ -18,10 +18,10 @@ namespace mu2e
     static constexpr size_t NSamples = 8; //FIXME: this is also a parameter in CrvDigi
 
     CrvDigiMC() {}
-    CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<CrvStep> > &steps, 
-              art::Ptr<SimParticle> simParticle, double startTime, double TDC0Time, 
+    CrvDigiMC(const std::array<double,NSamples> &voltages, const std::vector<art::Ptr<CrvStep> > &steps,
+              art::Ptr<SimParticle> simParticle, double startTime, double TDC0Time,
               mu2e::CRSScintillatorBarIndex scintillatorBarIndex, int SiPMNumber) :
-                          _voltages(voltages), 
+                          _voltages(voltages),
                           _steps(steps),
                           _simParticle(simParticle),
                           _startTime(startTime),
@@ -50,7 +50,7 @@ namespace mu2e
     double                              _TDC0Time;
 
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
-    int                            _SiPMNumber; 
+    int                            _SiPMNumber;
   };
   typedef std::vector<mu2e::CrvDigiMC> CrvDigiMCCollection;
 }

@@ -20,7 +20,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -63,7 +62,7 @@ namespace mu2e {
       virtual void analyze(const art::Event& event);
 
     private:
-      
+
       art::InputTag           hitsInputTag_;
       SimParticleTimeOffset   toff_;
       int _nProcess;
@@ -109,50 +108,50 @@ namespace mu2e {
       nt_->Branch("stepCrCode",   &_stepCrCode,    "stepCrCode[nStep]/I");
    }
 
- 
-  
+
+
   //================================================================
   void StepPointMCDumperCalo::analyze(const art::Event& event)
   {
-  
+
     ++_nProcess;
     toff_.updateMap(event);
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
     StepPointMCCollection const& hits(*ih);
 
     _nStep = hits.size();
-    
+
     for(unsigned int i=0; i < hits.size(); ++i)
     {
-           const auto& hit = hits[i];     
+           const auto& hit = hits[i];
            art::Ptr<SimParticle> grandMother = hit.simParticle();
            while (grandMother->startPosition().z() > 11840 && grandMother->hasParent())grandMother = grandMother->parent();
-           //while (grandMother->hasParent()){ std::cout<< grandMother->pdgId()<<" "<<grandMother->startPosition().z()  <<std::endl; grandMother = grandMother->parent();}          
+           //while (grandMother->hasParent()){ std::cout<< grandMother->pdgId()<<" "<<grandMother->startPosition().z()  <<std::endl; grandMother = grandMother->parent();}
            //std::cout<<"--"<<std::endl;
-	   
-	   _stepX[i]        = hit.position().x();
-	   _stepY[i]        = hit.position().y();
-	   _stepZ[i]        = hit.position().z();
-	   _stepT[i]        = toff_.timeWithOffsetsApplied(hit);
-	   
-	   _stepPx[i]       = hit.momentum().x();
-	   _stepPy[i]       = hit.momentum().y();
-	   _stepPz[i]       = hit.momentum().z();
-	   _stepEk[i]       = getKineticEnergy(hit);
-	   _stepEdep[i]     = hit.totalEDep();
 
-	   _stepCharge[i]   = getCharge(hit.simParticle()->pdgId());
-	   _stepPdgId[i]    = hit.simParticle()->pdgId();
-	   _stepPartId[i]   = hit.simParticle()->id().asUint();
-	   _stepVolumeId[i] = hit.volumeId();
-	   _stepCrCode[i]   = grandMother->pdgId();	   
-     
+           _stepX[i]        = hit.position().x();
+           _stepY[i]        = hit.position().y();
+           _stepZ[i]        = hit.position().z();
+           _stepT[i]        = toff_.timeWithOffsetsApplied(hit);
+
+           _stepPx[i]       = hit.momentum().x();
+           _stepPy[i]       = hit.momentum().y();
+           _stepPz[i]       = hit.momentum().z();
+           _stepEk[i]       = getKineticEnergy(hit);
+           _stepEdep[i]     = hit.totalEDep();
+
+           _stepCharge[i]   = getCharge(hit.simParticle()->pdgId());
+           _stepPdgId[i]    = hit.simParticle()->pdgId();
+           _stepPartId[i]   = hit.simParticle()->id().asUint();
+           _stepVolumeId[i] = hit.volumeId();
+           _stepCrCode[i]   = grandMother->pdgId();
+
      }
 
     nt_->Fill();
 
-  } 
- 
+  }
+
     //================================================================
 
 } // namespace mu2e

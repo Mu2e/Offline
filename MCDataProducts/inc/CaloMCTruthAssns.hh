@@ -16,4 +16,4 @@ namespace mu2e
     using CaloClusterMCTruthAssn = art::Assns<CaloCluster,CaloClusterMC> ;
 }
 
-#endif 
+#endif

@@ -23,7 +23,7 @@ void Timing(std::vector<std::string> names,double maxtime=0.1 ){
     fs.open(file.c_str());
     double time;
     while((fs >> time) != 0){
-    //  std::cout << "time = " << time << std::endl;
+      //  std::cout << "time = " << time << std::endl;
       histos[iname]->Fill(time);
     }
     tcan->cd(ican);++ican;

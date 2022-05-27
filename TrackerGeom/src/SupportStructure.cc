@@ -28,31 +28,31 @@ namespace mu2e {
     _stiffRings(),
     _beamBody(),
     _beamServices(){
-  }
+    }
 
   void SupportStructure::print ( std::ostream& ost ) const{
 
     ost << "\nNumber of Stiffening rings: " << _stiffRings.size() << std::endl;
     for ( size_t i=0; i<_stiffRings.size(); ++i ){
       ost << "\nStiff ring: "
-          << i << "    "
-          << _stiffRings[i]
-          << std::endl;
+        << i << "    "
+        << _stiffRings[i]
+        << std::endl;
     }
 
 
     for ( size_t i=0; i<_beamBody.size(); ++i ){
       ost << "\nBeam body: "
-          << i << "    "
-          << _beamBody[i]
-          << std::endl;
+        << i << "    "
+        << _beamBody[i]
+        << std::endl;
     }
 
     for ( size_t i=0; i<_beamServices.size(); ++i ){
       ost << "\nBeam services: "
-          << i << "    "
-          << _beamServices[i]
-          << std::endl;
+        << i << "    "
+        << _beamServices[i]
+        << std::endl;
     }
 
     ost << "\nCenterPlate:            " << _centerPlate            << std::endl;

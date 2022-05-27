@@ -1,7 +1,7 @@
 //
 // A module to extract leading edge times, pulse heights, integrals and number of photons from the CRV waveforms
 //
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CRVResponse/inc/MakeCrvRecoPulses.hh"
@@ -25,11 +25,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
@@ -38,9 +36,9 @@
 
 #include <TMath.h>
 
-namespace mu2e 
+namespace mu2e
 {
-  class CrvRecoPulsesFinder : public art::EDProducer 
+  class CrvRecoPulsesFinder : public art::EDProducer
   {
 
     public:
@@ -120,7 +118,7 @@ namespace mu2e
     _calibrationFactorPulseHeight  = crvPar->calibrationFactorPulseHeight;
   }
 
-  void CrvRecoPulsesFinder::produce(art::Event& event) 
+  void CrvRecoPulsesFinder::produce(art::Event& event)
   {
     std::unique_ptr<CrvRecoPulseCollection> crvRecoPulseCollection(new CrvRecoPulseCollection);
 
@@ -166,7 +164,7 @@ namespace mu2e
         double LEtime      = _makeCrvRecoPulses->GetLEtimes().at(j) + TDC0time;
         float  PEs         = _makeCrvRecoPulses->GetPEs().at(j);
         float  PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight().at(j);
-        float  pulseHeight = _makeCrvRecoPulses->GetPulseHeights().at(j); 
+        float  pulseHeight = _makeCrvRecoPulses->GetPulseHeights().at(j);
         float  pulseBeta   = _makeCrvRecoPulses->GetPulseBetas().at(j);
         float  pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2s().at(j);
 
@@ -179,8 +177,8 @@ namespace mu2e
         double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time;
         double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time;
 
-        if(PEs<_minPEs) continue; 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags, 
+        if(PEs<_minPEs) continue;
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
                                              PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
                                              waveformIndices, barIndex, SiPM);
       }

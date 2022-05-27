@@ -2,7 +2,7 @@ void CDRHits(TTree* hits) {
   gStyle->SetOptStat(0);
   TCanvas* ecan = new TCanvas("ecan","energy",1200,800);
   TCanvas* rcan = new TCanvas("rcan","radius",1200,800);
-    
+
   TH1F* econv = new TH1F("econv","Straw Hit Energy;MeV",200,-0.01,0.15);
   TH1F* edio = new TH1F("edio","Straw Hit Energy;MeV",200,-0.01,0.15);
   TH1F* edelta = new TH1F("edelta","Straw Hit Energy;MeV",200,-0.01,0.15);
@@ -37,7 +37,7 @@ void CDRHits(TTree* hits) {
   hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)","mcgen==6");
   hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)","mcgen<0");
   hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)","mcpdg==2212");
-    
+
   TLegend* leg2 = new TLegend(0.55,0.65,0.9,0.9);
   leg2->AddEntry(rconv,"Conv. Electrons","l");
   leg2->AddEntry(rdio,"DIO Electrons","l");
@@ -55,21 +55,21 @@ void CDRHits(TTree* hits) {
   leg2->Draw();
 
 
-//  TLine* ecut_t = new TLine(0.004,0.0,0.004,econv->GetMaximum());
-//  ecut_t->SetLineColor(kBlack);
-//  ecut_t->SetLineStyle(2);
-//  ecut_t->SetLineWidth(2);
-//  TLine* ecut_l = new TLine(0.0055,0.0,0.0055,econv->GetMaximum());
-//  ecut_l->SetLineColor(kBlack);
-//  ecut_l->SetLineStyle(3);
-//  ecut_l->SetLineWidth(2);
-//  ecut_t->Draw();
-//  ecut_l->Draw();
+  //  TLine* ecut_t = new TLine(0.004,0.0,0.004,econv->GetMaximum());
+  //  ecut_t->SetLineColor(kBlack);
+  //  ecut_t->SetLineStyle(2);
+  //  ecut_t->SetLineWidth(2);
+  //  TLine* ecut_l = new TLine(0.0055,0.0,0.0055,econv->GetMaximum());
+  //  ecut_l->SetLineColor(kBlack);
+  //  ecut_l->SetLineStyle(3);
+  //  ecut_l->SetLineWidth(2);
+  //  ecut_t->Draw();
+  //  ecut_l->Draw();
 
-//  TLegend* leg3 = new TLegend(0.55,0.7,0.9,0.9);
-//  leg3->AddEntry(ecut_t,"Tight cut","l");
-//  leg3->AddEntry(ecut_l,"Loose cut","l");
-//  leg3->Draw();
+  //  TLegend* leg3 = new TLegend(0.55,0.7,0.9,0.9);
+  //  leg3->AddEntry(ecut_t,"Tight cut","l");
+  //  leg3->AddEntry(ecut_l,"Loose cut","l");
+  //  leg3->Draw();
 
   rcan->Clear();
   rcan->Divide(1,1);
@@ -79,34 +79,34 @@ void CDRHits(TTree* hits) {
   rp->Draw("same");
   rconv->Draw("same");
   rdio->Draw("same");
-  
-//  TLine* rmin_t = new TLine(410,0.0,410,rp->GetMaximum());
-//  rmin_t->SetLineColor(kBlack);
-//  rmin_t->SetLineStyle(2);
-//  rmin_t->SetLineWidth(2);
-//  TLine* rmin_l = new TLine(390,0.0,390,rp->GetMaximum());
-//  rmin_l->SetLineColor(kBlack);
-//  rmin_l->SetLineStyle(3);
-//  rmin_l->SetLineWidth(2);
-//  
-//  TLine* rmax_t = new TLine(630,0.0,630,rp->GetMaximum());
-//  rmax_t->SetLineColor(kBlack);
-//  rmax_t->SetLineStyle(2);
-//  rmax_t->SetLineWidth(2);
-//  TLine* rmax_l = new TLine(650,0.0,650,rp->GetMaximum());
-//  rmax_l->SetLineColor(kBlack);
-//  rmax_l->SetLineStyle(3);
-//  rmax_l->SetLineWidth(2);
-//  rmin_t->Draw();
-//  rmin_l->Draw();
-//  rmax_t->Draw();
-//  rmax_l->Draw();
-  
+
+  //  TLine* rmin_t = new TLine(410,0.0,410,rp->GetMaximum());
+  //  rmin_t->SetLineColor(kBlack);
+  //  rmin_t->SetLineStyle(2);
+  //  rmin_t->SetLineWidth(2);
+  //  TLine* rmin_l = new TLine(390,0.0,390,rp->GetMaximum());
+  //  rmin_l->SetLineColor(kBlack);
+  //  rmin_l->SetLineStyle(3);
+  //  rmin_l->SetLineWidth(2);
+  //
+  //  TLine* rmax_t = new TLine(630,0.0,630,rp->GetMaximum());
+  //  rmax_t->SetLineColor(kBlack);
+  //  rmax_t->SetLineStyle(2);
+  //  rmax_t->SetLineWidth(2);
+  //  TLine* rmax_l = new TLine(650,0.0,650,rp->GetMaximum());
+  //  rmax_l->SetLineColor(kBlack);
+  //  rmax_l->SetLineStyle(3);
+  //  rmax_l->SetLineWidth(2);
+  //  rmin_t->Draw();
+  //  rmin_l->Draw();
+  //  rmax_t->Draw();
+  //  rmax_l->Draw();
+
   leg2->Draw();
-  
+
   TCanvas* ccan = new TCanvas("ccan","cleaned hits",1200,800);
   TCut clean("loose>0&&abs(time-tpeaks[0]s[0])<40.0");
-  
+
   TH1F* tconv = new TH1F("tconv","Hit Time WRT Peak;nsec",101,-80,80);
   TH1F* tdio = new TH1F("tdio","Hit Time WRT Peak;nsec",101,-80,80);
   TH1F* tdelta = new TH1F("tdelta","Hit Time WRT Peak;nsec",101,-80,80);
@@ -121,7 +121,7 @@ void CDRHits(TTree* hits) {
   hits->Project("tdio","time-tpeaks[0]","mcpdg==11&&mcgen==6&&loose");
   hits->Project("tdelta","time-tpeaks[0]","mcpdg==11&&mcgen<0&&loose");
   hits->Project("tp","time-tpeaks[0]","mcpdg==2212&&loose");
-    
+
   TLine* tmin = new TLine(-40,0.0,-40,tconv->GetMaximum());
   tmin->SetLineColor(kBlack);
   tmin->SetLineStyle(2);
@@ -130,7 +130,7 @@ void CDRHits(TTree* hits) {
   tmax->SetLineColor(kBlack);
   tmax->SetLineStyle(2);
   tmax->SetLineWidth(2);
-  
+
   ccan->Clear();
   ccan->Divide(1,1);
   ccan->cd(1);

@@ -40,7 +40,7 @@ void SWTest(TTree* sw){
   estack->Add(g4e1x);
   sw->Project("g4e2x","sesum*1000.0",tcut+digi);
   estack->Add(g4e2x);
-//
+  //
   THStack* dstack = new THStack("dstack","Thresh Cluster Drift Distance;D (mm)");
   TH1F* dw0x = new TH1F("dw0x","Thresh Cluster Drift Distance;D (mm)",150,0.0,2.6);
   dw0x->SetFillColor(kRed);
@@ -54,7 +54,7 @@ void SWTest(TTree* sw){
   dstack->Add(dw1x);
   sw->Project("dw2x","xdcal",tcut+digi);
   dstack->Add(dw2x);
-//
+  //
   THStack* pstack = new THStack("pstack","Thresh Cluster Perp Distance;D (mm)");
   TH1F* pw0x = new TH1F("pw0x","Thresh Cluster Perp Distance;D (mm)",150,0.0,2.6);
   pw0x->SetFillColor(kRed);
@@ -68,10 +68,10 @@ void SWTest(TTree* sw){
   pstack->Add(pw1x);
   sw->Project("pw2x","abs(xpdcal)",tcut+digi);
   pstack->Add(pw2x);
-//  TH1F* nclus = new TH1F("nclus","N clusters",50,-0.5,49.5);
+  //  TH1F* nclus = new TH1F("nclus","N clusters",50,-0.5,49.5);
   TH2F* nclusvs = new TH2F("nclusvs","N clusters vs steplength;steplength (mm);N clusters",50,0,10.0,50,-0.5,49.5);
   nclusvs->SetStats(0);
-//  sw->Project("nclus","nclucal","npAart==1&&nstep==1");
+  //  sw->Project("nclus","nclucal","npAart==1&&nstep==1");
   sw->Project("nclusvs","nclucal:slen","npart==1&&nstep==1");
   TH1F* tvmaxcal = new TH1F("tvmaxcal","Time of maximum voltage;ns",100,0,50);
   tvmaxcal->SetStats(0);
@@ -103,10 +103,10 @@ void SWTest(TTree* sw){
   vleg->AddEntry(tc,"Threshold","L");
   vleg->Draw();
   swcan->cd(2);
-//  npart->Draw();
-//  vvsdist->Draw();
-//  swcan->cd(3);
-//  nclusvs->Draw("box");
+  //  npart->Draw();
+  //  vvsdist->Draw();
+  //  swcan->cd(3);
+  //  nclusvs->Draw("box");
   tvmaxcal->Draw();
   swcan->cd(3);
   estack->Draw();

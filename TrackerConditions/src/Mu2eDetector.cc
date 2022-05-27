@@ -17,8 +17,8 @@ namespace mu2e {
       retval = ifnd->second;
     else
       throw cet::exception("RECO_NO_ELEMENT")
-	<<"mu2e::Mu2eDetector: no element associated to straw " 
-	<< istraw << std::endl;
+        <<"mu2e::Mu2eDetector: no element associated to straw "
+        << istraw << std::endl;
     return retval;
   }
 
@@ -31,5 +31,5 @@ namespace mu2e {
   void Mu2eDetector::print( ostream& out) const{
     out << "Mu2eDetector has "<<_strawmap.size() << " elements" << endl;
   }
-  
+
 } // namespace mu2e

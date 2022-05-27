@@ -2,7 +2,7 @@
 #define Sandbox_TracerProductCollection_hh
 //
 // Access to a bunch of TracerProdcuts created on the heap.
-// 
+//
 //
 // Original author Rob Kutschke
 //

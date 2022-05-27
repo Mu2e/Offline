@@ -30,7 +30,7 @@ namespace mu2e {
                        const TubsParams & parentParams,
                        const std::string & lookupToken,
                        const SimpleConfig & config, // to be removed?
-		       const int zNotPhi = 0
+                       const int zNotPhi = 0
                        );
 
   TubsParams calculateTubeCoreParams (const TubsParams& parentParams,
@@ -38,8 +38,8 @@ namespace mu2e {
                                       double radiusDFract,
                                       double dPhiFraction,
                                       int verbosityLevel=0,
-				      const int zNotPhi = 0
-				      );
+                                      const int zNotPhi = 0
+                                      );
 
 }
 

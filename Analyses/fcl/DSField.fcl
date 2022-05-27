@@ -28,4 +28,4 @@ physics : {
   e1        : [BFieldPlotter]
   end_paths : [e1]
 }
-services.GeometryService.inputFile      : "Offline/Mu2eG4/geom/geom_common_no_tsu_ps.txt"
+services.GeometryService.bFieldFile     : "Offline/Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt"

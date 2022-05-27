@@ -19,9 +19,9 @@ namespace mu2e {
       auto& smap = ifnd->second;
       auto jfnd = smap.find(mid);
       if(jfnd == smap.end())
-	smap[mid] = status;
+        smap[mid] = status;
       else
-	jfnd->second.merge(status);
+        jfnd->second.merge(status);
     }
   }
 
@@ -31,8 +31,8 @@ namespace mu2e {
       out << "Tracker level " << mask.levelName() << " has the following elements:" << std::endl;
       auto const& stati = ielem->second;
       for(auto istat = stati.begin(); istat != stati.end(); ++istat){
-	out << " Element with Id " << istat->first <<
-	" has status " << istat->second << std::endl;
+        out << " Element with Id " << istat->first <<
+          " has status " << istat->second << std::endl;
       }
     }
   }
@@ -43,9 +43,9 @@ namespace mu2e {
       auto const& mask = ielem->first;
       auto const& stati = ielem->second;
       for(auto istat = stati.begin(); istat != stati.end(); ++istat){
-	auto const& elem = istat->first;
-	auto const& stat = istat->second;
-	if(mask.equal(sid,elem))sstat.merge(stat);
+        auto const& elem = istat->first;
+        auto const& stat = istat->second;
+        if(mask.equal(sid,elem))sstat.merge(stat);
       }
     }
     return sstat;
@@ -56,12 +56,12 @@ namespace mu2e {
     for( auto ielem = _status.begin(); ielem != _status.end(); ++ielem) {
       auto const& mask = ielem->first;
       if(mask.level() != StrawIdMask::straw && mask.level() != StrawIdMask::uniquestraw){ // plane status also affects a panel
-	auto const& stati = ielem->second;
-	for(auto istat = stati.begin(); istat != stati.end(); ++istat){
-	  auto const& elem = istat->first;
-	  auto const& stat = istat->second;
-	  if(mask.equal(sid,elem))sstat.merge(stat);
-	}
+        auto const& stati = ielem->second;
+        for(auto istat = stati.begin(); istat != stati.end(); ++istat){
+          auto const& elem = istat->first;
+          auto const& stat = istat->second;
+          if(mask.equal(sid,elem))sstat.merge(stat);
+        }
       }
     }
     return sstat;
@@ -72,12 +72,12 @@ namespace mu2e {
     for( auto ielem = _status.begin(); ielem != _status.end(); ++ielem) {
       auto const& mask = ielem->first;
       if(mask.level() == StrawIdMask::plane || mask.level() == StrawIdMask::tracker){
-	auto const& stati = ielem->second;
-	for(auto istat = stati.begin(); istat != stati.end(); ++istat){
-	  auto const& elem = istat->first;
-	  auto const& stat = istat->second;
-	  if(mask.equal(sid,elem))sstat.merge(stat);
-	}
+        auto const& stati = ielem->second;
+        for(auto istat = stati.begin(); istat != stati.end(); ++istat){
+          auto const& elem = istat->first;
+          auto const& stat = istat->second;
+          if(mask.equal(sid,elem))sstat.merge(stat);
+        }
       }
     }
     return sstat;
@@ -98,11 +98,16 @@ namespace mu2e {
     return status.hasAnyProperty(mask);
   }
 
-  bool TrackerStatus::suppress(StrawId const& sid) const {
+  bool TrackerStatus::noisy(StrawId const& sid) const {
     static StrawStatus mask = StrawStatus(StrawStatus::sparking) |
       StrawStatus(StrawStatus::noise) |
-      StrawStatus(StrawStatus::pickup) |
-      StrawStatus(StrawStatus::suppress);
+      StrawStatus(StrawStatus::pickup);
+    StrawStatus status = strawStatus(sid);
+    return status.hasAnyProperty(mask);
+  }
+
+  bool TrackerStatus::suppress(StrawId const& sid) const {
+    static StrawStatus mask(StrawStatus::suppress);
     StrawStatus status = strawStatus(sid);
     return status.hasAnyProperty(mask);
   }

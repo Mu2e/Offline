@@ -14,7 +14,7 @@
 
 namespace mu2e {
   class TrackerG4Info {
-    friend class TrackerMaker; 
+    friend class TrackerMaker;
     public:
     // electronics board
     const PanelEB& panelElectronicsBoard() const { return _panelEB;}
@@ -34,10 +34,10 @@ namespace mu2e {
     std::string const& wireMaterialName()            const{ return _wireMaterialName; }
     std::string const& wireCoreMaterialName()        const{ return  wireMaterialName();  }
     std::string const& wirePlateMaterialName()       const{ return _wirePlateMaterial;   }
-    std::string const& envelopeMaterial()	     const { return _envelopeMaterial; }
+    std::string const& envelopeMaterial()             const { return _envelopeMaterial; }
 
     double panelOffset() const { return _panelZOffset; }
-    double z0()   const { return _z0;} // in Mu2e coordinates 
+    double z0()   const { return _z0;} // in Mu2e coordinates
 
     private:
     std::string _wallMaterialName;
@@ -66,13 +66,13 @@ namespace mu2e {
     // A more detailed model of the supports; again each plane has identical supports.
     // only relevant for _supportModel == "detailedv0".
     SupportStructure _supportStructure;
-   // Electronics board
+    // Electronics board
     PanelEB _panelEB;
 
     double _panelZOffset; // introduced for version 5
     // Position of the center of the tracker, in the Mu2e coordinate system.
     double _z0;
 
- };
+  };
 }
 #endif

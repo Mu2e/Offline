@@ -1,34 +1,34 @@
 BEGIN_PROLOG
 Mu2eMaterial : {
-   verbose : 0
-   #  Location of dictionary files for the material model.
-   elements  : "Offline/TrackerConditions/data/ElementsList.data"
-   isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
-   materials : "Offline/TrackerConditions/data/MaterialsList.data"
-   strawGasMaterialName  : "straw-gas"
-   strawWallMaterialName : "straw-wall"
-   strawWireMaterialName : "straw-wire"
-   dahlLynchScatteringFraction : 0.995
-   intersectionTolerance : 0.001
-   strawElementOffset    : 0.25
-   maximumIntersectionRadiusFraction : 0.96
+  verbose : 0
+  #  Location of dictionary files for the material model.
+  elements  : "Offline/TrackerConditions/data/ElementsList.data"
+  isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
+  materials : "Offline/TrackerConditions/data/MaterialsList.data"
+  strawGasMaterialName  : "straw-gas"
+  strawWallMaterialName : "straw-wall"
+  strawWireMaterialName : "straw-wire"
+  dahlLynchScatteringFraction : 0.995
+  intersectionTolerance : 0.001
+  strawElementOffset    : 0.25
+  maximumIntersectionRadiusFraction : 0.96
 }
 
 Mu2eDetector : {
-   verbose : 0
-   useDb : false
+  verbose : 0
+  useDb : false
 }
 
 AlignedTracker : {
-   verbose : 0
-   useDb : false
+  verbose : 0
+  useDb : false
 }
 
 FullReadoutStraw : {
-   verbose : 0
-   useDb : false
-   straws : []
-   # straws : ["16_2_1","10_0_23"]
+  verbose : 0
+  useDb : false
+  straws : []
+  # straws : ["16_2_1","10_0_23"]
 }
 
 TrackerStatus : {
@@ -37,223 +37,223 @@ TrackerStatus : {
     useDb : false
   }
   Status : [
-#    [ "20_2_0", "uniquepanel", "Absent" ], # single panel is physically absent
-#    [ "30_5_0", "uniquepanel", "NoHV" ], # single panel has HV problem
-#    [ "31_0_0", "uniquepanel", "NoGas" ], # single panel has gas problem
-#    [ "10_0_0", "plane", "Absent" ], # plane is physically absent
-#    [ "21_4_1", "uniquestraw", "Noise:Sparking" ], # noisy, sparking straw
-#    [ "0_0_95", "straw", "Suppress:Noise:Pickup" ], # suppress shortest straw on every panel (always noisy)
-#    [ "0_0_94", "straw", "Suppress:Noise:Pickup" ] # suppress shortest straw on every panel (always noisy)
+    #    [ "20_2_0", "uniquepanel", "Absent" ], # single panel is physically absent
+    #    [ "30_5_0", "uniquepanel", "NoHV" ], # single panel has HV problem
+    #    [ "31_0_0", "uniquepanel", "NoGas" ], # single panel has gas problem
+    #    [ "10_0_0", "plane", "Absent" ], # plane is physically absent
+    #    [ "21_4_1", "uniquestraw", "Noise:Sparking" ], # noisy, sparking straw
+    #    [ "0_0_95", "straw", "Suppress:Noise:Pickup" ], # suppress shortest straw on every panel (always noisy)
+    #    [ "0_0_94", "straw", "Suppress:Noise:Pickup" ] # suppress shortest straw on every panel (always noisy)
   ]
 }
 
 StrawDrift : {
-   verbose : 0
-   useDb : false
-   wireVoltage : 1400
-   phiBins : 20
-   deltaDistance : 0.001
-   deltaTime : 0.05
-   driftIntegrationBins : 50
-   # KV/cm
-   kVcm : [ 0.420,0.490,0.559,0.629,0.699,0.769,0.839,0.909,0.979,1.049,1.119,1.189,1.259,1.329,1.399,1.573,1.748,1.923,2.098,2.448,2.797,3.147,3.497,3.846,4.196,4.545,4.895,5.245,5.735, 500 ]
-   # cm/us
-   cmus : [  1.57, 1.90, 2.26, 2.65, 3.05, 3.47, 3.84, 4.25, 4.58, 4.91, 5.15, 5.36, 5.56, 5.68, 5.77, 5.92, 5.98, 6.02, 6.02, 6.09, 6.19, 6.35, 6.48, 6.64, 6.72, 6.83, 6.87, 6.89, 6.85, 6.85 ]
+  verbose : 0
+  useDb : false
+  wireVoltage : 1400
+  phiBins : 20
+  deltaDistance : 0.001
+  deltaTime : 0.05
+  driftIntegrationBins : 50
+  # KV/cm
+  kVcm : [ 0.420,0.490,0.559,0.629,0.699,0.769,0.839,0.909,0.979,1.049,1.119,1.189,1.259,1.329,1.399,1.573,1.748,1.923,2.098,2.448,2.797,3.147,3.497,3.846,4.196,4.545,4.895,5.245,5.735, 500 ]
+  # cm/us
+  cmus : [  1.57, 1.90, 2.26, 2.65, 3.05, 3.47, 3.84, 4.25, 4.58, 4.91, 5.15, 5.36, 5.56, 5.68, 5.77, 5.92, 5.98, 6.02, 6.02, 6.09, 6.19, 6.35, 6.48, 6.64, 6.72, 6.83, 6.87, 6.89, 6.85, 6.85 ]
 }
 
 StrawPhysics : {
-   verbose : 0
-   useDb : false
-   meanFreePath : 0.357
-   ionizedElectronKE : 0.0
-   electronCharge : 1.6e-7
-   gasGain : 7.0e4
-   polyaA : 1.25
-   gainRMSSlope : 0.809
-   nGainGauss : 30
-   propagationVelocity : 299.0
-   clusterDriftPolynomial : [0.0,16.0]
-   driftTimeVariance : [1.3,0.5]
-   useNonLinearDrift : true
-   bFieldOverride : -1.0
-   probPerCharge : [0.656,0.15,0.064,0.035,0.0225,0.0155,0.0105,
-      0.0081,0.0061, 0.0049, 0.0039, 0.0030, 0.0025, 0.0020, 0.0016, 
-      0.0012, 0.00095, 0.00075]
-   ionizationEnergyTable : [15.75962,27.62967,40.74,59.81,75.02,91.009,
-      124.323,143.460,422.45,478.69,538.96,618.26,686.10,755.74,854.77,
-      918.03,4120.8857,4426.2296]
+  verbose : 0
+  useDb : false
+  meanFreePath : 0.357
+  ionizedElectronKE : 0.0
+  electronCharge : 1.6e-7
+  gasGain : 7.0e4
+  polyaA : 1.25
+  gainRMSSlope : 0.809
+  nGainGauss : 30
+  propagationVelocity : 299.0
+  clusterDriftPolynomial : [0.0,16.0]
+  driftTimeVariance : [1.3,0.5]
+  useNonLinearDrift : true
+  bFieldOverride : -1.0
+  probPerCharge : [0.656,0.15,0.064,0.035,0.0225,0.0155,0.0105,
+    0.0081,0.0061, 0.0049, 0.0039, 0.0030, 0.0025, 0.0020, 0.0016,
+    0.0012, 0.00095, 0.00075]
+  ionizationEnergyTable : [15.75962,27.62967,40.74,59.81,75.02,91.009,
+    124.323,143.460,422.45,478.69,538.96,618.26,686.10,755.74,854.77,
+    918.03,4120.8857,4426.2296]
 }
 
 
 StrawElectronics : {
-   verbose : 0
-   useDb : false
+  verbose : 0
+  useDb : false
+  overrideDbTimeOffsets : false
 
-   defaultThresholddVdI : 8.43e6
-   thresholddVdI : []
-   defaultAdcdVdI : 1.528e6
-   adcdVdI : []
-   deadTimeAnalog : 100.0
-   deadTimeDigital : 400.0
-   saturationVoltage : 140.0
-   defaultDiscriminatorThreshold : 12.0
-   discriminatorThreshold : []
-   strawNoise : 1.25
-   thresholdAnalogNoise : 1.25
-   adcAnalogNoise : 0.9 
-   ADCLSB : 1.953125
-   maxADC : 1024
-   nADCPresamples : 5
-   nADCPackets : 1
-   ADCPeriod : 20.0
-   ADCOffset : 2.0
-   maxThreshTimeSeparation : 2
-   TDCLSB : 0.01953125
-   numTDCbits : 24
-   TOTLSB : 5.0
-   maxTOT : 15
-   TDCResolution : 0.1
-   electronicsTimeDelay : 0.0
-   eventWindowMarkerROCJitter : 0.5
-   digitizationStart : 450.0
-   digitizationEnd : 1705.0
-   responseBins : 10000
-   sampleRate : 10.0
-   saturationSampleFactor : 25
-   preampPoles : [ 160., 6.]
-   preampZeros : [ 0.2 ]
-   ADCPoles : [ 160., 6, 1.45 ]
-   ADCZeros : [ 0.2 ]
-   preampToAdc1Poles : [ 160., 6. ]
-   preampToAdc1Zeros : [ 0.2 ]
-   preampToAdc2Poles : [ 1.45 ]
-   preampToAdc2Zeros : []
-   wireDistances : [  0., 300., 600., 900., 1200.  ]
-   currentMeans : [ 0, -0.1806,  -0.3613, -0.5419, -0.7226 ]
-   currentNormalizations : [ 1.0, 0.97931167, 0.91455972, 0.83082332, 0.7414788 ]
-   currentSigmas : [ 2.24, 2.24, 2.24, 2.24, 2.24 ]
-   currentT0s : [ 0.8, 1.26, 1.72, 2.17, 2.63 ]
-   reflectionTimeShift : 5.08
-   reflectionVelocity : 513.8
-   reflectionALength : 2568.
-   reflectionFrac : 0.58
-   triggerHysteresis : 2
-   clusterLookbackTime : 5.0
-   timeOffsetPanel : []
-   timeOffsetStrawHV : [] 
-   timeOffsetStrawCal : [] 
+  defaultThresholddVdI : 8.43e6
+  thresholddVdI : []
+  defaultAdcdVdI : 1.528e6
+  adcdVdI : []
+  deadTimeAnalog : 100.0
+  deadTimeDigital : 400.0
+  saturationVoltage : 140.0
+  defaultDiscriminatorThreshold : 12.0
+  discriminatorThreshold : []
+  strawNoise : 1.25
+  thresholdAnalogNoise : 1.25
+  adcAnalogNoise : 0.9
+  ADCLSB : 1.953125
+  maxADC : 1024
+  nADCPresamples : 5
+  nADCPackets : 1
+  ADCPeriod : 20.0
+  ADCOffset : 2.0
+  maxThreshTimeSeparation : 2
+  TDCLSB : 0.01953125
+  numTDCbits : 24
+  TOTLSB : 5.0
+  maxTOT : 15
+  TDCResolution : 0.1
+  electronicsTimeDelay : 0.0
+  eventWindowMarkerROCJitter : 0.5
+  digitizationStart : 450.0
+  digitizationEnd : 1705.0
+  responseBins : 10000
+  sampleRate : 10.0
+  saturationSampleFactor : 25
+  preampPoles : [ 160., 6.]
+  preampZeros : [ 0.2 ]
+  ADCPoles : [ 160., 6, 1.45 ]
+  ADCZeros : [ 0.2 ]
+  preampToAdc1Poles : [ 160., 6. ]
+  preampToAdc1Zeros : [ 0.2 ]
+  preampToAdc2Poles : [ 1.45 ]
+  preampToAdc2Zeros : []
+  wireDistances : [  0., 300., 600., 900., 1200.  ]
+  currentMeans : [ 0, -0.1806,  -0.3613, -0.5419, -0.7226 ]
+  currentNormalizations : [ 1.0, 0.97931167, 0.91455972, 0.83082332, 0.7414788 ]
+  currentSigmas : [ 2.24, 2.24, 2.24, 2.24, 2.24 ]
+  currentT0s : [ 0.8, 1.26, 1.72, 2.17, 2.63 ]
+  reflectionTimeShift : 5.08
+  reflectionVelocity : 513.8
+  reflectionALength : 2568.
+  reflectionFrac : 0.58
+  triggerHysteresis : 2
+  clusterLookbackTime : 5.0
+  timeOffsetPanel : []
+  timeOffsetStrawHV : []
+  timeOffsetStrawCal : []
 
 }
 
 StrawResponse : {
-   verbose : 0
-   useDb : false
+  verbose : 0
+  useDb : false
 
-   eBins : 59
-   eBinWidth : 0.1
-   totTBins : 16
-   totTBinWidth : 5
-   totEBins : 10
-   totEBinWidth : 0.00025
+  eBins : 59
+  eBinWidth : 0.1
+  totTBins : 16
+  totTBinWidth : 5
+  totEBins : 10
+  totEBinWidth : 0.00025
+  // KeV
 
-   // KeV
+  eHalfPVScale : [0.691, 0.691, 0.691, 0.731, 0.803, 0.840, 0.867, 0.887,
+    0.904, 0.918, 0.930, 0.943, 0.954, 0.965, 0.974, 0.986, 0.993, 1.000,
+    1.009, 1.014, 1.020, 1.029, 1.034, 1.038, 1.044, 1.049, 1.058, 1.058,
+    1.065, 1.068, 1.069, 1.078, 1.076, 1.088, 1.090, 1.087, 1.090, 1.094,
+    1.097, 1.097, 1.089, 1.094, 1.097, 1.095, 1.092, 1.092, 1.098, 1.095,
+    1.103, 1.101, 1.106, 1.115, 1.114, 1.099, 1.117, 1.124, 1.130, 1.125,
+    1.160]
+  strawHalfPropVelocity : []
+  defaultHalfPropVelocity : 100.0
+  // mm/ns
 
-   // mm/ns
-   halfPropVelocity : [ 69.11, 69.11, 69.1105 , 73.0766 , 80.2505 , 84.0017 ,
-      86.7241 , 88.7419 , 90.3863 , 91.7609 , 92.9701 , 94.3336 , 95.352 ,
-      96.5198 , 97.449 , 98.5558 , 99.3359 , 100.006 , 100.884 , 101.408 ,
-      102.034 , 102.939 , 103.356 , 103.784 , 104.363 , 104.887 , 105.787 ,
-      105.767 , 106.466 , 106.756 , 106.877 , 107.844 , 107.607 , 108.807 ,
-      109.008 , 108.739 , 109.034 , 109.362 , 109.665 , 109.749 , 108.927 ,
-      109.394 , 109.665 , 109.495 , 109.162 , 109.233 , 109.825 , 109.512 ,
-      110.291 , 110.128 , 110.608 , 111.531 , 111.359 , 109.925 , 111.66 ,
-      112.412 , 113.01 , 112.498 , 115.961] 
-   
-   centralWirePos : 65.0
-   
-   tdCentralRes : [74.2564, 74.2564, 74.2564 , 61.7574 , 55.602 , 52.7235 ,
-      50.1056 , 48.6748 , 46.8374 , 45.6831 , 44.7303 , 43.5795 , 42.9621 ,
-      41.8427 , 41.2092 , 40.5468 , 39.9888 , 39.3458 , 38.9888 , 38.5862 ,
-      38.0267 , 37.8514 , 37.3503 , 37.5752 , 37.0629 , 36.7771 , 36.3548 ,
-      36.5917 , 36.1298 , 35.8741 , 35.9195 , 35.0278 , 34.4885 , 35.2898 ,
-      34.8833 , 34.0712 , 34.2877 , 34.3935 , 34.4055 , 35.0469 , 33.6655 ,
-      32.8297 , 34.3856 , 36.121 , 33.2945 , 33.9505 , 33.9454 , 33.0114 ,
-      34.0775 , 33.4312 , 31.4984 , 31.7544 , 34.172 , 33.4761 , 33.3159 ,
-      33.3004 , 33.4495 , 31.506 , 32.1603]
-   tdResSlope : [0.00571992, 0.00571992, 0.00571992 , 0.0739071 , 0.0685885 ,
-      0.0647137 , 0.0669334 , 0.0614503 , 0.0625388 , 0.0593293 , 0.0567595 ,
-      0.0559269 , 0.0509541 , 0.0514417 , 0.0490053 , 0.044666 , 0.0452655 ,
-      0.0457525 , 0.0415223 , 0.0425142 , 0.040691 , 0.0391693 , 0.0416697 , 
-      0.0373214 , 0.0394176 , 0.03889 , 0.0404102 , 0.0397879 , 0.0423069 , 
-      0.0461902 , 0.0448854 , 0.0514913 , 0.0594551 , 0.0550648 , 0.056485 , 
-      0.0710772 , 0.0670975 , 0.0598919 , 0.0645311 , 0.0593204 , 0.0723293 ,
-      0.0705138 , 0.0657311 , 0.0559622 , 0.0685536 , 0.0604229 , 0.0574693 ,
-      0.063125 , 0.0623292 , 0.0508882 , 0.0601387 , 0.0662105 , 0.0501727 ,
-      0.0581113 , 0.0628786 , 0.0615793 , 0.0704129 , 0.0817835 , 0.0399332]
+  centralWirePos : 65.0
 
-   totDriftTime : [ 
-     20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 
-     44.11, 32.60, 17.95, 15.51, 13.47, 14.07, 11.66, 11.67, 13.60, 10.62, 
-     42.82, 38.20, 17.82, 13.06, 11.45, 11.33, 9.65, 11.56, 12.41, 11.99, 
-     41.41, 37.69, 28.95, 11.71, 9.56, 8.94, 8.97, 8.50, 8.92, 11.06, 
-     38.40, 34.11, 32.42, 32.00, 31.67, 29.57, 24.35, 20.31, 17.93, 15.64, 
-     27.61, 24.41, 24.56, 26.14, 27.86, 29.02, 29.88, 30.41, 30.56, 30.57, 
-     20.74, 19.49, 18.27, 18.58, 19.31, 20.41, 21.41, 22.22, 22.79, 23.31, 
-     15.24, 14.57, 14.50, 14.18, 14.33, 14.60, 15.09, 15.40, 15.89, 16.26, 
-     10.96, 12.85, 11.00, 10.68, 10.52, 10.59, 10.58, 10.72, 10.79, 11.09, 
-     7.79, 7.79, 8.68, 7.88, 7.79, 7.59, 7.39, 7.33, 7.46, 7.34, 
-     5.73, 5.73, 5.64, 5.67, 5.52, 5.29, 5.11, 5.03, 4.94, 5.08, 
-     5.12, 5.12, 5.12, 8.26, 4.42, 2.63, 3.91, 3.05, 3.97, 4.54, 
-     4.92, 4.92, 4.92, 4.92, 4.92, 4.92, 4.92, 4.92, 6.96, 5.17, 
-     7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 
-     20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 
-     20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00]
+  tdCentralRes : [74.2564, 74.2564, 74.2564 , 61.7574 , 55.602 , 52.7235 ,
+    50.1056 , 48.6748 , 46.8374 , 45.6831 , 44.7303 , 43.5795 , 42.9621 ,
+    41.8427 , 41.2092 , 40.5468 , 39.9888 , 39.3458 , 38.9888 , 38.5862 ,
+    38.0267 , 37.8514 , 37.3503 , 37.5752 , 37.0629 , 36.7771 , 36.3548 ,
+    36.5917 , 36.1298 , 35.8741 , 35.9195 , 35.0278 , 34.4885 , 35.2898 ,
+    34.8833 , 34.0712 , 34.2877 , 34.3935 , 34.4055 , 35.0469 , 33.6655 ,
+    32.8297 , 34.3856 , 36.121 , 33.2945 , 33.9505 , 33.9454 , 33.0114 ,
+    34.0775 , 33.4312 , 31.4984 , 31.7544 , 34.172 , 33.4761 , 33.3159 ,
+    33.3004 , 33.4495 , 31.506 , 32.1603]
+  tdResSlope : [0.00571992, 0.00571992, 0.00571992 , 0.0739071 , 0.0685885 ,
+    0.0647137 , 0.0669334 , 0.0614503 , 0.0625388 , 0.0593293 , 0.0567595 ,
+    0.0559269 , 0.0509541 , 0.0514417 , 0.0490053 , 0.044666 , 0.0452655 ,
+    0.0457525 , 0.0415223 , 0.0425142 , 0.040691 , 0.0391693 , 0.0416697 ,
+    0.0373214 , 0.0394176 , 0.03889 , 0.0404102 , 0.0397879 , 0.0423069 ,
+    0.0461902 , 0.0448854 , 0.0514913 , 0.0594551 , 0.0550648 , 0.056485 ,
+    0.0710772 , 0.0670975 , 0.0598919 , 0.0645311 , 0.0593204 , 0.0723293 ,
+    0.0705138 , 0.0657311 , 0.0559622 , 0.0685536 , 0.0604229 , 0.0574693 ,
+    0.063125 , 0.0623292 , 0.0508882 , 0.0601387 , 0.0662105 , 0.0501727 ,
+    0.0581113 , 0.0628786 , 0.0615793 , 0.0704129 , 0.0817835 , 0.0399332]
 
-   timeOffsetPanel : []
-   timeOffsetStrawHV : [] 
-   timeOffsetStrawCal : [] 
+  totDriftTime : [
+    20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
+    44.11, 32.60, 17.95, 15.51, 13.47, 14.07, 11.66, 11.67, 13.60, 10.62,
+    42.82, 38.20, 17.82, 13.06, 11.45, 11.33, 9.65, 11.56, 12.41, 11.99,
+    41.41, 37.69, 28.95, 11.71, 9.56, 8.94, 8.97, 8.50, 8.92, 11.06,
+    38.40, 34.11, 32.42, 32.00, 31.67, 29.57, 24.35, 20.31, 17.93, 15.64,
+    27.61, 24.41, 24.56, 26.14, 27.86, 29.02, 29.88, 30.41, 30.56, 30.57,
+    20.74, 19.49, 18.27, 18.58, 19.31, 20.41, 21.41, 22.22, 22.79, 23.31,
+    15.24, 14.57, 14.50, 14.18, 14.33, 14.60, 15.09, 15.40, 15.89, 16.26,
+    10.96, 12.85, 11.00, 10.68, 10.52, 10.59, 10.58, 10.72, 10.79, 11.09,
+    7.79, 7.79, 8.68, 7.88, 7.79, 7.59, 7.39, 7.33, 7.46, 7.34,
+    5.73, 5.73, 5.64, 5.67, 5.52, 5.29, 5.11, 5.03, 4.94, 5.08,
+    5.12, 5.12, 5.12, 8.26, 4.42, 2.63, 3.91, 3.05, 3.97, 4.54,
+    4.92, 4.92, 4.92, 4.92, 4.92, 4.92, 4.92, 4.92, 6.96, 5.17,
+    7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25, 7.25,
+    20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
+    20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00]
 
-   useDriftErrorCalibration : true
-   driftErrorParameters : [ 0.363559, 0.362685, 0.359959, 0.349385, 
-      0.336731, 0.321784, 0.302363, 0.282691, 0.268223, 0.252673, 0.238557, 
-      0.229172, 0.2224, 0.219224, 0.217334, 0.212797, 0.210303, 0.209876, 
-      0.208739, 0.207411, 0.208738, 0.209646, 0.210073, 0.207101, 0.20431, 
-      0.203994, 0.202931, 0.19953, 0.196999, 0.194559, 0.191766, 0.187725, 
-      0.185959, 0.181423, 0.17848, 0.171357, 0.171519, 0.168422, 0.161338, 
-      0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319, 
-      0.132159, 0.130062, 0.123545, 0.120212 ]
+  timeOffsetPanel : []
+  timeOffsetStrawHV : []
+  timeOffsetStrawCal : []
 
-   useParameterizedDriftErrors : false
-   parameterizedDriftBins : 5000
-   parameterizedDriftSigma : 1.39
-   parameterizedDriftTau : 11.22
+  useDriftErrorCalibration : true
+  driftErrorParameters : [ 0.363559, 0.362685, 0.359959, 0.349385,
+    0.336731, 0.321784, 0.302363, 0.282691, 0.268223, 0.252673, 0.238557,
+    0.229172, 0.2224, 0.219224, 0.217334, 0.212797, 0.210303, 0.209876,
+    0.208739, 0.207411, 0.208738, 0.209646, 0.210073, 0.207101, 0.20431,
+    0.203994, 0.202931, 0.19953, 0.196999, 0.194559, 0.191766, 0.187725,
+    0.185959, 0.181423, 0.17848, 0.171357, 0.171519, 0.168422, 0.161338,
+    0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319,
+    0.132159, 0.130062, 0.123545, 0.120212 ]
+
+  useParameterizedDriftErrors : false
+  parameterizedDriftBins : 5000
+  parameterizedDriftSigma : 1.39
+  parameterizedDriftTau : 11.22
 
 
-   wireLengthBuffer : 2.0
-   strawLengthFactor : 0.9
-   errorFactor : 1.0
-   useNonLinearDrift : true
-   linearDriftVelocity : 0.0625
-   minDriftRadiusResolution : 0.2
-   maxDriftRadiusResolution : 0.2
-   driftRadiusResolutionRadius : -1
-   minT0DOCA : -0.2
-   t0shift : 4.0
+  wireLengthBuffer : 2.0
+  strawLengthFactor : 0.9
+  errorFactor : 1.0
+  useNonLinearDrift : true
+  linearDriftVelocity : 0.0625
+  minDriftRadiusResolution : 0.2
+  maxDriftRadiusResolution : 0.2
+  driftRadiusResolutionRadius : -1
+  minT0DOCA : -0.2
+  t0shift : 4.0
 
-   defaultPeakMinusPedestalEnergyScale : 0.002
-   peakMinusPedestalEnergyScale : []
+  defaultPeakMinusPedestalEnergyScale : 0.002
+  peakMinusPedestalEnergyScale : []
 
-   # if the following are not defined here, the code will get
-   # values from StrawElectronics and StrawPhysics
-   #electronicsTimeDelay : 0.0
-   #gasGain : 7.0e4
-   #thresholdAnalogNoise : 0.95
-   #adcAnalogNoise : 3.0 
-   #defaultThresholddVdI : 1.1e7
-   #defaultAdcdVdI : 2.11e4
-   #saturationVoltage : 90.0
-   # this one is not in fcl, it is actually computed in StrawElectronics
-   #ADCPedestal : 0.0
+  # if the following are not defined here, the code will get
+  # values from StrawElectronics and StrawPhysics
+  #electronicsTimeDelay : 0.0
+  #gasGain : 7.0e4
+  #thresholdAnalogNoise : 0.95
+  #adcAnalogNoise : 3.0
+  #defaultThresholddVdI : 1.1e7
+  #defaultAdcdVdI : 2.11e4
+  #saturationVoltage : 90.0
+  # this one is not in fcl, it is actually computed in StrawElectronics
+  #ADCPedestal : 0.0
 }
 
 END_PROLOG

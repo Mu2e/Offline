@@ -30,14 +30,14 @@ namespace mu2e {
       fhicl::Atom<std::string> tool_type{fhicl::Name("tool_type"), fhicl::Comment("tool type: Robust Helix Finder Diag")};
       fhicl::Atom<int> mcTruth{fhicl::Name("mcTruth"), fhicl::Comment("MC truth")};
     };
-  
+
     struct Data_t {
       const art::Event*               event;
       //      RobustHelixFit*                 result;
       fhicl::ParameterSet*            timeOffsets;
 
       enum  { kMaxHelicities = 2, kMaxSeeds = 100, kMaxNHits = 500 };
-      
+
       int     nTimePeaks;               // number of time peaks (input)
       int     nChPPanel[kMaxHelicities][kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
       int     nChHits  [kMaxHelicities][kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
@@ -61,13 +61,13 @@ namespace mu2e {
       int     nshsxy_0    [kMaxHelicities][kMaxSeeds];
       double  rsxy_0      [kMaxHelicities][kMaxSeeds];
       double  chi2dsxy_0  [kMaxHelicities][kMaxSeeds];
-                  
+
       int     nshsxy_1    [kMaxHelicities][kMaxSeeds];
       double  rsxy_1      [kMaxHelicities][kMaxSeeds];
       double  chi2dsxy_1  [kMaxHelicities][kMaxSeeds];
-      
+
       int     nfz0counter [kMaxHelicities][kMaxSeeds];
-                  
+
       int     nshszphi_0  [kMaxHelicities][kMaxSeeds];
       double  lambdaszphi_0[kMaxHelicities][kMaxSeeds];
       double  chi2dszphi_0[kMaxHelicities][kMaxSeeds];
@@ -86,7 +86,7 @@ namespace mu2e {
       double  p        [kMaxHelicities][kMaxSeeds];
       double  dr       [kMaxHelicities][kMaxSeeds];
       double  chi2d_helix[kMaxHelicities][kMaxSeeds];
-      
+
       double  hitDr    [kMaxHelicities][kMaxSeeds][kMaxNHits];
       double  hitRWDot [kMaxHelicities][kMaxSeeds][kMaxNHits];
 
@@ -100,7 +100,7 @@ namespace mu2e {
       int     nHitsLoopFailed [kMaxHelicities][kMaxSeeds];
 
       int maxSeeds() { return kMaxSeeds; }
-      
+
     };
   }
 }

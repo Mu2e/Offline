@@ -52,7 +52,6 @@
 #include "Offline/Print/inc/TriggerResultsPrinter.hh"
 #include "Offline/Print/inc/TrkCaloIntersectPrinter.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 using namespace std;
 

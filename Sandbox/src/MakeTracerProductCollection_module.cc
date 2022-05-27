@@ -7,7 +7,6 @@
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 
 // Other infrastructure includes
@@ -35,7 +34,7 @@ namespace mu2e {
 
   };
 
-  MakeVectorTracerProduct00::MakeVectorTracerProduct00(fhicl::ParameterSet const& pset): 
+  MakeVectorTracerProduct00::MakeVectorTracerProduct00(fhicl::ParameterSet const& pset):
     art::EDProducer{pset}
   {
     produces<TracerProductCollection>();

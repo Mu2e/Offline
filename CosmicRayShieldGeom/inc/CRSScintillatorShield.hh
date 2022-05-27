@@ -15,7 +15,7 @@
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
 
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CRSScintillatorShield
@@ -28,7 +28,7 @@ namespace mu2e
 
     public:
 
-    CRSScintillatorShield(CRSScintillatorShieldId const & id, 
+    CRSScintillatorShield(CRSScintillatorShieldId const & id,
                           std::string const & name,
                           const std::shared_ptr<CRSScintillatorBarDetail> barDetails,
                           const std::string &absorberMaterialName, const std::string &aluminumSheetMaterialName, const std::string &FEBMaterialName,
@@ -48,7 +48,7 @@ namespace mu2e
       return _modules;
     }
 
-    const CRSScintillatorModule& getModule( int n) const 
+    const CRSScintillatorModule& getModule( int n) const
     {
       return _modules.at(n);
     }
@@ -68,22 +68,22 @@ namespace mu2e
       return _modules.at(bid.getModuleNumber()).getBar(bid);
     }
 
-    const CRSScintillatorBarDetail& getCRSScintillatorBarDetail() const 
+    const CRSScintillatorBarDetail& getCRSScintillatorBarDetail() const
     {
       return *_barDetails;
     }
 
-    const std::string &getAbsorberMaterialName() const 
+    const std::string &getAbsorberMaterialName() const
     {
       return _absorberMaterialName;
     }
 
-    const std::string &getAluminumSheetMaterialName() const 
+    const std::string &getAluminumSheetMaterialName() const
     {
       return _absorberMaterialName;
     }
 
-    const std::string &getFEBMaterialName() const 
+    const std::string &getFEBMaterialName() const
     {
       return _FEBMaterialName;
     }
@@ -111,7 +111,7 @@ namespace mu2e
 
 
     // Information needed for the coincidence finder
-    public: 
+    public:
     const CRSScintillatorShieldId getPrecedingSector() const {return _precedingSector;}
     const int getSectorType() const {return _sectorType;}
     const int getCountersPerModule() const {return _countersPerModule;}

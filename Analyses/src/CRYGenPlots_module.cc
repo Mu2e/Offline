@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -133,7 +132,7 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
   else
     success = e.getByLabel(CRYModuleLabel_, CRYInstanceName_, gpHandle);
 
-  if (!success) 
+  if (!success)
     return;
 
   const auto & particles = *gpHandle;

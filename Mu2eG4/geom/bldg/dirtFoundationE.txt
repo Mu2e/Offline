@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_foundation_dirtE.ccl
 
@@ -12,7 +12,7 @@ double dirt.foundation.E.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.foundation.E.yHalfThickness           = 533.4;
 
-vector<int>    dirt.foundation.E.xreplace   = { 6, 7 }; 
+vector<int>    dirt.foundation.E.xreplace   = { 6, 7 };
 vector<double> dirt.foundation.E.xPositions = {
   17957.8,   // g2
   17957.8,   // g3

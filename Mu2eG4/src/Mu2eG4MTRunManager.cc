@@ -218,7 +218,7 @@ namespace mu2e {
 
     if ((G4MTRunManager::GetMTMasterRunManagerKernel()!=nullptr) && !m_runTerminated) {
       if(rmvlevel_>0) {
-	G4cerr << "CALLING RunTermination() from MTRunManager\n";
+        G4cerr << "CALLING RunTermination() from MTRunManager\n";
       }
       G4RunManager::TerminateEventLoop();
       G4RunManager::RunTermination();
@@ -227,12 +227,12 @@ namespace mu2e {
   }
 
   G4bool Mu2eG4MTRunManager::SetUpEvent() {
-    
+
     if( numberOfEventProcessed < numberOfEventToBeProcessed ) {
       numberOfEventProcessed++;
       return true;
     }
-    
+
     return false;
   }
 

@@ -43,7 +43,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector DetecToG4bl  ( const CLHEP::Hep3Vector& ptInDetec  );
     CLHEP::Hep3Vector G4blToDetec  ( const CLHEP::Hep3Vector& ptInG4bl );
-    
+
   private:
 
     double DetecZ0InMu2e;
@@ -52,7 +52,7 @@ namespace mu2e {
     double G4blZ0InMu2e;
     double G4blX0InMu2e;
 
-    
+
   };  // end of class def
 
 } // end of namespace

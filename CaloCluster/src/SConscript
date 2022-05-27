@@ -23,7 +23,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_RecoDataProducts',
                                   'mu2e_CalorimeterGeom',
                                   'mu2e_GlobalConstantsService',
-				  'mu2e_Mu2eInterfaces',
+                                  'mu2e_Mu2eInterfaces',
                                   'mu2e_DataProducts',
                                   'mu2e_GeneralUtilities',
                                   'art_Persistency_Common',
@@ -46,7 +46,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                 ] )
 
 helper.make_plugins( [ mainlib,
-		       'mu2e_Mu2eUtilities',
+                       'mu2e_Mu2eUtilities',
                        'mu2e_ConditionsService',
                        'mu2e_GeometryService',
                        'mu2e_SeedService_SeedService_service',
@@ -71,7 +71,7 @@ helper.make_plugins( [ mainlib,
                        'cetlib_except',
                        'CLHEP',
                        'TMVA',
-                       'xerces-c',  #needed for MVA 
+                       'xerces-c',  #needed for MVA
                        'boost_filesystem',
                        rootlibs
                      ],

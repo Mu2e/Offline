@@ -9,7 +9,7 @@ namespace mu2e {
     CLHEP::Hep3Vector vpoint(position.x(),position.y(),position.z());
     CLHEP::Hep3Vector vpoint_mu2e = det_.toMu2e(vpoint);
     CLHEP::Hep3Vector field;
-//    = bfmgr_.getBField(vpoint_mu2e);
+    //    = bfmgr_.getBField(vpoint_mu2e);
     if(bfmgr_.getBFieldWithStatus(vpoint_mu2e,field))
       return VEC3(field);
     else

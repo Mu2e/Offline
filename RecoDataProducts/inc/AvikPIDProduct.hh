@@ -14,27 +14,27 @@ namespace mu2e {
   class AvikPIDProduct {
 
   private:
-    int    _eleTrkID;			// electron track ID
-    int    _muoTrkID;			// muon     track ID
-					// dE/dX
+    int    _eleTrkID;                        // electron track ID
+    int    _muoTrkID;                        // muon     track ID
+                                        // dE/dX
     float  _logDedxProbEle;
     float  _logDedxProbMuo;
-					// Vadim's dr/ds
+                                        // Vadim's dr/ds
     float  _drdsVadimEle;
     float  _drdsVadimEleErr;
 
     float  _drdsVadimMuo;
     float  _drdsVadimMuoErr;
-					// Avik's part
-    float  _sumAvikEle;			// sum of Avik's terms
-    float  _sumAvikMuo;			// 
+                                        // Avik's part
+    float  _sumAvikEle;                        // sum of Avik's terms
+    float  _sumAvikMuo;                        //
 
     int    _nMatched;
     int    _nMatchedAll;
 
-    float  _sq2AvikEle;		// sum of local slope residuals, OS float ts 
-    float  _sq2AvikMuo;		// 
-					// global dR/dS , SS and OS float ts only; (R = residual)
+    float  _sq2AvikEle;                // sum of local slope residuals, OS float ts
+    float  _sq2AvikMuo;                //
+                                        // global dR/dS , SS and OS float ts only; (R = residual)
     float  _drdsOsEle;
     float  _drdsOsEleErr;
 
@@ -61,28 +61,28 @@ namespace mu2e {
 
   public:
 
-    AvikPIDProduct(); 
-    AvikPIDProduct (const AvikPIDProduct & p) ; 
-    ~AvikPIDProduct() {} 
+    AvikPIDProduct();
+    AvikPIDProduct (const AvikPIDProduct & p) ;
+    ~AvikPIDProduct() {}
     AvikPIDProduct & operator = (const AvikPIDProduct & p) ;
 
     void   clear() ;
 
     void   init(int     EleTrkID        , int   MuoTrkID        ,
-		float   LogDedxProbEle  , float LogDedxProbMuo  , 
-		float   DrdsVadimEle    , float DrdsVadimEleErr ,
-		float   DrdsVadimMuo    , float DrdsVadimMuoErr ,
-		int     NMatched        , int   NMatchedAll     ,
-		float   SumAvikEle      , float SumAvikMuo      ,
-		float   Sq2AvikEle      , float Sq2AvikMuo      ,
-		float   DrdsOsEle       , float DrdsOsEleErr    ,
-		float   DrdsOsMuo       , float DrdsOsMuoErr    ,
-		int     NUsedSsEleH     , int   NUsedSsMuoH     ,    
-		float   DrdsSsEle       , float DrdsSsEleErr    ,
-		float   DrdsSsMuo       , float DrdsSsMuoErr    ,
-		int     NUsedOsEleH     , int   NUsedOsMuoH     ,    
-		float   SumAvikOsEle    , float SumAvikOsMuo    ,
-		int     NUsedOsEleD     , int   NUsedOsMuoD	);
+                float   LogDedxProbEle  , float LogDedxProbMuo  ,
+                float   DrdsVadimEle    , float DrdsVadimEleErr ,
+                float   DrdsVadimMuo    , float DrdsVadimMuoErr ,
+                int     NMatched        , int   NMatchedAll     ,
+                float   SumAvikEle      , float SumAvikMuo      ,
+                float   Sq2AvikEle      , float Sq2AvikMuo      ,
+                float   DrdsOsEle       , float DrdsOsEleErr    ,
+                float   DrdsOsMuo       , float DrdsOsMuoErr    ,
+                int     NUsedSsEleH     , int   NUsedSsMuoH     ,
+                float   DrdsSsEle       , float DrdsSsEleErr    ,
+                float   DrdsSsMuo       , float DrdsSsMuoErr    ,
+                int     NUsedOsEleH     , int   NUsedOsMuoH     ,
+                float   SumAvikOsEle    , float SumAvikOsMuo    ,
+                int     NUsedOsEleD     , int   NUsedOsMuoD        );
   int                       fNUsedOsEleH;      // for fDrdsSsEle
   int                       fNUsedOsMuoH;
 

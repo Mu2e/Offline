@@ -11,7 +11,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
@@ -36,11 +35,11 @@
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 // diagnostics
 #include "Offline/TrkDiag/inc/ComboHitInfo.hh"
-using namespace std; 
+using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
- class ComboHitDiag : public art::EDAnalyzer {
+  class ComboHitDiag : public art::EDAnalyzer {
     public:
       explicit ComboHitDiag(fhicl::ParameterSet const&);
       virtual ~ComboHitDiag();
@@ -61,7 +60,7 @@ namespace mu2e
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
-        // time offset
+      // time offset
       SimParticleTimeOffset _toff;
       // diagnostics
       TTree *_chdiag;
@@ -79,11 +78,11 @@ namespace mu2e
       Int_t _nsh, _nch; // number of associated straw hits
       Int_t _strawid; // strawid info
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
-    // mc diag
+      // mc diag
       XYZVectorF _mcpos; // average MC hit position
-      
+
       Float_t _mctime, _mcdist;
-      Int_t _mcpdg, _mcproc, _mcgen; 
+      Int_t _mcpdg, _mcproc, _mcgen;
 
       Float_t _delay[2], _threshold[2], _adcgain;
       std::vector<short unsigned> _digiadc;
@@ -92,8 +91,8 @@ namespace mu2e
       Float_t _digipedestal;
       Int_t _digitdc[2], _digitot[2];
       ProditionsHandle<StrawElectronics> _strawele_h;
- 
-// per-hit diagnostics
+
+      // per-hit diagnostics
       vector<ComboHitInfo> _chinfo;
       vector<ComboHitInfoMC> _chinfomc;
       // helper functions
@@ -102,13 +101,13 @@ namespace mu2e
 
   ComboHitDiag::ComboHitDiag(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-    _diag		(pset.get<int>("diagLevel",1)),
-    _mcdiag		(pset.get<bool>("MCdiag",true)),
+    _diag   (pset.get<int>("diagLevel",1)),
+    _mcdiag   (pset.get<bool>("MCdiag",true)),
     _digidiag           (pset.get<bool>("digidiag",false)),
-    _useshfcol		(pset.get<bool>("UseStrawHitFlagCollection",false)),
-    _chtag		(pset.get<art::InputTag>("ComboHitCollection")),
-    _shftag		(pset.get<art::InputTag>("StrawHitFlagCollection","none")),
-    _mcdigistag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
+    _useshfcol    (pset.get<bool>("UseStrawHitFlagCollection",false)),
+    _chtag    (pset.get<art::InputTag>("ComboHitCollection")),
+    _shftag   (pset.get<art::InputTag>("StrawHitFlagCollection","none")),
+    _mcdigistag   (pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _digistag           (pset.get<art::InputTag>("StrawDigiCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
@@ -150,16 +149,16 @@ namespace mu2e
       _chdiag->Branch("calosel",&_calosel,"calosel/I");
       _chdiag->Branch("strawid",&_strawid,"strawid/I");
       if(_diag > 1)
-	_chdiag->Branch("chinfo",&_chinfo);
+        _chdiag->Branch("chinfo",&_chinfo);
       if(_mcdiag){
-	_chdiag->Branch("mcpos.",&_mcpos);
-	_chdiag->Branch("mctime",&_mctime,"mctime/F");
-	_chdiag->Branch("mcdist",&_mcdist,"mcdist/F");
-	_chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
-	_chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-	_chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
-	if(_diag > 1)
-	  _chdiag->Branch("chinfomc",&_chinfomc);
+        _chdiag->Branch("mcpos.",&_mcpos);
+        _chdiag->Branch("mctime",&_mctime,"mctime/F");
+        _chdiag->Branch("mcdist",&_mcdist,"mcdist/F");
+        _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
+        _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
+        _chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
+        if(_diag > 1)
+          _chdiag->Branch("chinfomc",&_chinfomc);
       }
       if (_digidiag){
         _chdiag->Branch("digitdc",&_digitdc,"digitdccal/I:digitdchv/I");
@@ -188,7 +187,7 @@ namespace mu2e
       _nch = ch.nCombo();
       _strawid = ch.strawId().asUint16();
       _pos = ch.pos();
-      
+
       _wdir = ch.wdir();
       _wdist = ch.wireDist();
       _wres = ch.wireRes();
@@ -201,9 +200,9 @@ namespace mu2e
       _qual = ch.qual();
       StrawHitFlag flag;
       if(_useshfcol)
-	flag = _shfcol->at(ich);
+        flag = _shfcol->at(ich);
       else
-	flag = ch.flag();
+        flag = ch.flag();
       _stereo = flag.hasAllProperties(StrawHitFlag::stereo);
       _tdiv = flag.hasAllProperties(StrawHitFlag::tdiv);
       _esel = flag.hasAllProperties(StrawHitFlag::energysel);
@@ -221,81 +220,81 @@ namespace mu2e
       // now hit-by-hit info
       _chinfo.clear();
       if(_diag > 1){
-      // loop over comopnents (also ComboHits)
-	ComboHitCollection::CHCIter compis;
-	_chcol->fillComboHits(evt,ich,compis);
-	float minz(1.0e6),maxz(-1.0);
-	for(auto compi : compis) {
-	  ComboHit const& comp = *compi;
-	  if(comp.pos().z() > maxz) maxz = comp.pos().z();
-	  if(comp.pos().z() < minz) minz = comp.pos().z();
-	  ComboHitInfo chi;
-	 
-	  chi._pos= comp.pos();
-	  chi._wdist = comp.wireDist();
-	  chi._wres = comp.wireRes();
-	  chi._tres = comp.transRes();
-	  chi._tdrift = comp.driftTime();
-	  chi._thit = comp.time();
-	  chi._strawid = comp.strawId().straw();
-	  chi._panelid = comp.strawId().panel();
-	
-	  XYZVectorF dpos = comp.pos()-ch.pos();
-	  chi._dwire = dpos.Dot(ch.wdir());
-	  chi._dwerr = comp.wireRes();
-	  chi._dterr = comp.transRes();
-	  chi._dperp = sqrt(dpos.mag2() - chi._dwire*chi._dwire);
-	  chi._dtime = comp.time()- ch.time(); 
-	  chi._dedep = comp.energyDep() - ch.energyDep();
-	  chi._ds = comp.strawId().straw() - compis.front()->strawId().straw();
-	  chi._dp = comp.strawId().panel() - compis.front()->strawId().panel();
-	  chi._nch = comp.nCombo();
-	  chi._nsh = comp.nStrawHits();
-	  _chinfo.push_back(chi);
-	}
-	_dz = maxz-minz;
+        // loop over comopnents (also ComboHits)
+        ComboHitCollection::CHCIter compis;
+        _chcol->fillComboHits(evt,ich,compis);
+        float minz(1.0e6),maxz(-1.0);
+        for(auto compi : compis) {
+          ComboHit const& comp = *compi;
+          if(comp.pos().z() > maxz) maxz = comp.pos().z();
+          if(comp.pos().z() < minz) minz = comp.pos().z();
+          ComboHitInfo chi;
+
+          chi._pos= comp.pos();
+          chi._wdist = comp.wireDist();
+          chi._wres = comp.wireRes();
+          chi._tres = comp.transRes();
+          chi._tdrift = comp.driftTime();
+          chi._thit = comp.time();
+          chi._strawid = comp.strawId().straw();
+          chi._panelid = comp.strawId().panel();
+
+          XYZVectorF dpos = comp.pos()-ch.pos();
+          chi._dwire = dpos.Dot(ch.wdir());
+          chi._dwerr = comp.wireRes();
+          chi._dterr = comp.transRes();
+          chi._dperp = sqrt(dpos.mag2() - chi._dwire*chi._dwire);
+          chi._dtime = comp.time()- ch.time();
+          chi._dedep = comp.energyDep() - ch.energyDep();
+          chi._ds = comp.strawId().straw() - compis.front()->strawId().straw();
+          chi._dp = comp.strawId().panel() - compis.front()->strawId().panel();
+          chi._nch = comp.nCombo();
+          chi._nsh = comp.nStrawHits();
+          _chinfo.push_back(chi);
+        }
+        _dz = maxz-minz;
       }
       if(_mcdiag){
-	_chinfomc.clear();
-	// get the StrawDigi indices associated with this ComboHit
-	std::vector<StrawDigiIndex> shids;
-	_chcol->fillStrawDigiIndices(evt,ich,shids);
-	if(shids.size() != ch.nStrawHits())
-	  throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
-	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
-	StrawDigiMC const& mcd1 = _mcdigis->at(shids[0]);
-	auto const& spmcp = mcd1.strawGasStep(StrawEnd::cal);
-	art::Ptr<SimParticle> spp = spmcp->simParticle();
-	_mctime = _toff.timeWithOffsetsApplied(*spmcp);
-	_mcpdg = spp->pdgId();
-	_mcproc = spp->creationCode();
-	if(spp->genParticle().isNonnull())
-	  _mcgen = spp->genParticle()->generatorId().id();
-	else
-	  _mcgen = -1;
-	// find the relation with each hit
-	_mcpos = XYZVectorF(0.0,0.0,0.0);
-	for(auto shi : shids) {
-	  ComboHitInfoMC chimc;
-	  StrawDigiMC const& mcd = _mcdigis->at(shi);
-	  //chimc._rel = MCRelationship::relationship(mcd,mcd1);
-	  chimc._mcpos = XYZVectorF(spmcp->position().x(),spmcp->position().y(), spmcp->position().z() );
-	  
-	  MCRelationship rel(mcd,mcd1);
-	  chimc._rel = rel.relationship();
-	  _chinfomc.push_back(chimc);
-	  // find average MC properties
-	  _mcpos += XYZVectorF(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
-	}
-	_mcpos /= shids.size();
-	_mcdist = (_mcpos - cpos).Dot(_wdir);
-	
+        _chinfomc.clear();
+        // get the StrawDigi indices associated with this ComboHit
+        std::vector<StrawDigiIndex> shids;
+        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        if(shids.size() != ch.nStrawHits())
+          throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
+        // use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
+        StrawDigiMC const& mcd1 = _mcdigis->at(shids[0]);
+        auto const& spmcp = mcd1.strawGasStep(StrawEnd::cal);
+        art::Ptr<SimParticle> spp = spmcp->simParticle();
+        _mctime = _toff.timeWithOffsetsApplied(*spmcp);
+        _mcpdg = spp->pdgId();
+        _mcproc = spp->creationCode();
+        if(spp->genParticle().isNonnull())
+          _mcgen = spp->genParticle()->generatorId().id();
+        else
+          _mcgen = -1;
+        // find the relation with each hit
+        _mcpos = XYZVectorF(0.0,0.0,0.0);
+        for(auto shi : shids) {
+          ComboHitInfoMC chimc;
+          StrawDigiMC const& mcd = _mcdigis->at(shi);
+          //chimc._rel = MCRelationship::relationship(mcd,mcd1);
+          chimc._mcpos = XYZVectorF(spmcp->position().x(),spmcp->position().y(), spmcp->position().z() );
+
+          MCRelationship rel(mcd,mcd1);
+          chimc._rel = rel.relationship();
+          _chinfomc.push_back(chimc);
+          // find average MC properties
+          _mcpos += XYZVectorF(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+        }
+        _mcpos /= shids.size();
+        _mcdist = (_mcpos - cpos).Dot(_wdir);
+
 
       }
       if (_digis != 0){
-	std::vector<StrawDigiIndex> shids;
-	_chcol->fillStrawDigiIndices(evt,ich,shids);
-	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
+        std::vector<StrawDigiIndex> shids;
+        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        // use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
         auto digi = _digis->at(shids[0]);
         for(size_t iend=0;iend<2;++iend){
           _digitdc[iend] = digi.TDC(static_cast<StrawEnd::End>(iend));
@@ -311,9 +310,9 @@ namespace mu2e
         _adcgain = strawele.currentToVoltage(ch.strawId(),StrawElectronics::adc);
       }
       if (_digiadcs != 0){
-	std::vector<StrawDigiIndex> shids;
-	_chcol->fillStrawDigiIndices(evt,ich,shids);
-	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
+        std::vector<StrawDigiIndex> shids;
+        _chcol->fillStrawDigiIndices(evt,ich,shids);
+        // use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
         auto digiadc = _digiadcs->at(shids[0]);
         _digiadc = digiadc.samples();
         _digipedestal = 0;

@@ -1,8 +1,8 @@
 //
 // This module produces simply connected clusters (aka proto-clusters) in two steps
 //
-// 1. Form Energetic proto-clusters 
-//    - start from a seed with an energy greater than some threshold and ad all simply connected hits 
+// 1. Form Energetic proto-clusters
+//    - start from a seed with an energy greater than some threshold and ad all simply connected hits
 //      (simply connected = any two hits in a cluster can be joined by a continuous path of clusters in the crystal)
 //    - repeat until all "energetic" seeds are exhausted
 //
@@ -16,9 +16,7 @@
 //
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 
@@ -43,18 +41,18 @@ namespace mu2e {
      public:
         typedef std::vector<const CaloHit*>  CaloCrystalVec;
         typedef std::list<const CaloHit*>    CaloCrystalList;
-        
+
         struct Config
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
             fhicl::Atom<art::InputTag>  caloHitCollection  { Name("caloHitCollection"), Comment("CaloHit collection name")};
-            fhicl::Atom<double>         EminSeed           { Name("EminSeed"),          Comment("Minimum energy for a hit to be a cluster seed") }; 
-            fhicl::Atom<double>         EnoiseCut          { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") }; 
-            fhicl::Atom<double>         ExpandCut          { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") }; 
-            fhicl::Atom<bool>           addSecondRing      { Name("addSecondRing"),     Comment("Add secondary ring around crystal when forming clusters") }; 
-            fhicl::Atom<double>         deltaTime          { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") }; 
-            fhicl::Atom<int>            diagLevel          { Name("diagLevel"),         Comment("Diag level"),0 }; 
+            fhicl::Atom<double>         EminSeed           { Name("EminSeed"),          Comment("Minimum energy for a hit to be a cluster seed") };
+            fhicl::Atom<double>         EnoiseCut          { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") };
+            fhicl::Atom<double>         ExpandCut          { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") };
+            fhicl::Atom<bool>           addSecondRing      { Name("addSecondRing"),     Comment("Add secondary ring around crystal when forming clusters") };
+            fhicl::Atom<double>         deltaTime          { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") };
+            fhicl::Atom<int>            diagLevel          { Name("diagLevel"),         Comment("Diag level"),0 };
         };
 
         explicit CaloProtoClusterMaker(const art::EDProducer::Table<Config>& config) :
@@ -78,7 +76,7 @@ namespace mu2e {
         double                               EminSeed_;
         double                               EnoiseCut_;
         double                               ExpandCut_;
-	bool                                 addSecondRing_;
+        bool                                 addSecondRing_;
         double                               deltaTime_;
         int                                  diagLevel_;
 
@@ -124,9 +122,9 @@ namespace mu2e {
           caloIdHitMap[hit.crystalID()].push_back(&hit);
           if (hit.energyDep() > EminSeed_ ) seedList.insert(&hit);
       }
-      
+
       if (diagLevel_ > 2) dump("Init", caloIdHitMap,seedList);
-       
+
 
 
       //produce main clusters
@@ -141,16 +139,16 @@ namespace mu2e {
 
           for (const auto& hit: finder.clusterList()) seedList.erase(hit);
       }
- 
+
 
       //filter unneeded hits and fill new seeds
       for (unsigned i=0; i < caloIdHitMap.size(); ++i ) filterByTime(caloIdHitMap[i], clusterTime);
       for (const auto& liste: caloIdHitMap) {for (const auto& ptr : liste) seedList.insert(ptr);}
       if (diagLevel_ > 2) dump("Post filtering", caloIdHitMap,seedList);
 
- 
- 
- 
+
+
+
       //produce split-offs clusters
       while (!seedList.empty())
       {
@@ -182,7 +180,7 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloProtoClusterMaker::fillCluster(CaloProtoClusterCollection& caloProtoClustersColl, 
+  void CaloProtoClusterMaker::fillCluster(CaloProtoClusterCollection& caloProtoClustersColl,
                                           const CaloCrystalList& clusterPtrList,
                                           const art::Handle<CaloHitCollection>& CaloHitsHandle)
   {
@@ -232,10 +230,10 @@ namespace mu2e {
       while (it != liste.end())
       {
           const CaloHit* hit = *it;
-          
+
           auto itTime = clusterTime.begin();
           while (itTime != clusterTime.end()){if ( (*itTime - hit->time()) < deltaTime_) break; ++itTime;}
-                    
+
           if (itTime == clusterTime.end() ) it = liste.erase(it);
           else ++it;
       }
@@ -244,7 +242,7 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloProtoClusterMaker::dump(const std::string& title, const std::vector<CaloCrystalList>& caloIdHitMap, 
+  void CaloProtoClusterMaker::dump(const std::string& title, const std::vector<CaloCrystalList>& caloIdHitMap,
                                             std::set<const CaloHit*> seedList)
   {
       std::cout<<title<<std::endl;
@@ -260,9 +258,9 @@ namespace mu2e {
       for (auto& ptr :seedList) std::cout<<ptr<<" ";
       std::cout<<std::endl;
   }
- 
- 
- 
+
+
+
 
 
 }

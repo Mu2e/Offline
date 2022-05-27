@@ -5,7 +5,6 @@
 // ======================================================================
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -454,7 +453,7 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
                     << (int)hits[hitIdx].first.DIRACB << std::endl;
           std::cout << "[StrawAndCaloDigiFromFragments] \tErrorFlags "
                     << (int)hits[hitIdx].first.ErrorFlags << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tTime	      "
+          std::cout << "[StrawAndCaloDigiFromFragments] \tTime              "
                     << (int)hits[hitIdx].first.Time << std::endl;
           std::cout << "[StrawAndCaloDigiFromFragments] \tNSamples   "
                     << (int)hits[hitIdx].first.NumberOfSamples << std::endl;

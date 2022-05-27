@@ -1,6 +1,6 @@
 bool cosmicDYB.do = true;
 
-double cosmicDYB.mean =  -1.1; 
+double cosmicDYB.mean =  -1.1;
 double cosmicDYB.muEMin = 0.5e3;
 double cosmicDYB.muEMax = 5000e3;
 double cosmicDYB.muThMax= 0.785;  //45 deg

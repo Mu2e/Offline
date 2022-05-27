@@ -16,9 +16,9 @@ namespace mu2e {
   class STMCollimator {
   public:
     STMCollimator(bool build,
-                  double halfWidth, double halfHeight, double halfLength, 
+                  double halfWidth, double halfHeight, double halfLength,
                   bool linerBuild,
-                  double linerHalfWidth, double linerHalfHeight, double linerHalfLength, 
+                  double linerHalfWidth, double linerHalfHeight, double linerHalfLength,
                   double linerCutOutHalfLength,
                   double hole1xOffset, double hole1RadiusUpStr, double hole1RadiusDnStr,
                   bool hole1LinerBuild, double hole1LinerThickness,
@@ -26,15 +26,15 @@ namespace mu2e {
                   double hole2xOffset, double hole2RadiusUpStr, double hole2RadiusDnStr,
                   bool hole2LinerBuild, double hole2LinerThickness,
                   CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
-                  CLHEP::HepRotation const & rotation = CLHEP::HepRotation(), 
+                  CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
                   std::string const & material = "", std::string const & linerMaterial = "",
                   std::string const & holeLinerMaterial = ""
                  ) :
-      _build( build ),          
+      _build( build ),
       _halfWidth(  halfWidth  ),
       _halfHeight( halfHeight ),
       _halfLength( halfLength ),
-      _linerBuild( linerBuild ),     
+      _linerBuild( linerBuild ),
       _linerHalfWidth(  linerHalfWidth  ),
       _linerHalfHeight( linerHalfHeight ),
       _linerHalfLength( linerHalfLength ),
@@ -43,7 +43,7 @@ namespace mu2e {
       _hole1RadiusUpStr( hole1RadiusUpStr ),
       _hole1RadiusDnStr( hole1RadiusDnStr ),
       _hole1LinerBuild(  hole1LinerBuild  ),
-      _hole1LinerThickness(  hole1LinerThickness ),      
+      _hole1LinerThickness(  hole1LinerThickness ),
       _hole2Build(       hole2Build       ),
       _hole2xOffset(     hole2xOffset     ),
       _hole2RadiusUpStr( hole2RadiusUpStr ),
@@ -66,25 +66,25 @@ namespace mu2e {
     double linerHalfHeight()       const { return _linerHalfHeight; }
     double linerHalfLength()       const { return _linerHalfLength; }
     double linerCutOutHalfLength() const { return _linerCutOutHalfLength; }
-    double hole1xOffset()          const { return _hole1xOffset; }    
-    double hole1RadiusUpStr()      const { return _hole1RadiusUpStr; }    
-    double hole1RadiusDnStr()      const { return _hole1RadiusDnStr; }    
+    double hole1xOffset()          const { return _hole1xOffset; }
+    double hole1RadiusUpStr()      const { return _hole1RadiusUpStr; }
+    double hole1RadiusDnStr()      const { return _hole1RadiusDnStr; }
     bool   hole1LinerBuild()       const { return _hole1LinerBuild; }
-    double hole1LinerThickness()   const { return _hole1LinerThickness; }    
+    double hole1LinerThickness()   const { return _hole1LinerThickness; }
     bool   hole2Build()            const { return _hole2Build; }
-    double hole2xOffset()          const { return _hole2xOffset; }    
-    double hole2RadiusUpStr()      const { return _hole2RadiusUpStr; }    
-    double hole2RadiusDnStr()      const { return _hole2RadiusDnStr; }    
+    double hole2xOffset()          const { return _hole2xOffset; }
+    double hole2RadiusUpStr()      const { return _hole2RadiusUpStr; }
+    double hole2RadiusDnStr()      const { return _hole2RadiusDnStr; }
     bool   hole2LinerBuild()       const { return _hole2LinerBuild; }
-    double hole2LinerThickness()   const { return _hole2LinerThickness; }    
+    double hole2LinerThickness()   const { return _hole2LinerThickness; }
     //double zBegin()          const { return _originInMu2e.z() - zTabletopHalfLength(); }
     //double zEnd()            const { return _originInMu2e.z() + zTabletopHalfLength(); }
-   
+
     CLHEP::Hep3Vector const &  originInMu2e()     const { return _originInMu2e; }
     CLHEP::HepRotation const & rotation()         const { return _rotation; }
-    std::string const &        material()         const { return _material; }    
-    std::string const &        linerMaterial()    const { return _linerMaterial; }    
-    std::string const &        holeLinerMaterial()const { return _holeLinerMaterial; }    
+    std::string const &        material()         const { return _material; }
+    std::string const &        linerMaterial()    const { return _linerMaterial; }
+    std::string const &        holeLinerMaterial()const { return _holeLinerMaterial; }
     // Genreflex can't do persistency of vector<STMCollimator> without a default constructor
     STMCollimator() {}
   private:
@@ -106,7 +106,7 @@ namespace mu2e {
     bool   _hole2Build;
     double _hole2xOffset;
     double _hole2RadiusUpStr;
-    double _hole2RadiusDnStr;    
+    double _hole2RadiusDnStr;
     bool   _hole2LinerBuild;
     double _hole2LinerThickness;
     CLHEP::Hep3Vector  _originInMu2e;

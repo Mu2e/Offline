@@ -28,7 +28,6 @@
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
@@ -89,7 +88,7 @@ namespace mu2e {
        std::string calorimeterROCardStepPoints_;
        std::string calorimeterCrateStepPoints_;
        std::string virtualDetectorLabel_;
-       SimParticleTimeOffset toff_;  
+       SimParticleTimeOffset toff_;
        int diagLevel_;
        int nProcess_;
        int numEvents_;
@@ -101,18 +100,18 @@ namespace mu2e {
 
        int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
        float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384],_vdMomX[16384],_vdMomY[16384],_vdMomZ[16384];
-       
+
        int   _nCry,_cryId[16384];
        float _cryEdep[16384],_cryTime[16384],_cryPosX[16384],_cryPosY[16384],_cryPosZ[16384];
 
        int   _nRO,_ROId[16384];
-       float _ROEdep[16384],_ROPosX[16384],_ROPosY[16384],_ROPosZ[16384]; 
+       float _ROEdep[16384],_ROPosX[16384],_ROPosY[16384],_ROPosZ[16384];
 
        int   _nROCard,_ROCardId[16384];
-       float _ROCardEdep[16384],_ROCardPosX[16384],_ROCardPosY[16384],_ROCardPosZ[16384]; 
+       float _ROCardEdep[16384],_ROCardPosX[16384],_ROCardPosY[16384],_ROCardPosZ[16384];
 
        int   _nCrate,_CrateId[16384];
-       float _CrateEdep[16384],_CratePosX[16384],_CratePosY[16384],_CratePosZ[16384]; 
+       float _CrateEdep[16384],_CratePosX[16384],_CratePosY[16384],_CratePosZ[16384];
 
 
   };
@@ -139,10 +138,10 @@ namespace mu2e {
   void CaloNeutron::beginJob(){
 
        art::ServiceHandle<art::TFileService> tfs;
-       
+
        hEvents_ = tfs->make<TH1D>("numEvents", "numEvents", 1, -0.5, 0.5);
-       
-       
+
+
        Ntup_  = tfs->make<TTree>("Calo", "Calo");
 
        Ntup_->Branch("evt",          &_evt ,        "evt/I");
@@ -174,7 +173,7 @@ namespace mu2e {
        Ntup_->Branch("ROPosX",   &_ROPosX ,  "ROPosX[nRO]/F");
        Ntup_->Branch("ROPosY",   &_ROPosY ,  "ROPosY[nRO]/F");
        Ntup_->Branch("ROPosZ",   &_ROPosZ ,  "ROPosZ[nRO]/F");
-       
+
        Ntup_->Branch("nROCard",      &_nROCard ,     "nROCard/I");
        Ntup_->Branch("ROCardId",     &_ROCardId ,    "vdId[nROCard]/I");
        Ntup_->Branch("ROCardEdep",   &_ROCardEdep ,  "ROCardEdep[nROCard]/F");
@@ -189,7 +188,7 @@ namespace mu2e {
        Ntup_->Branch("CratePosY",   &_CratePosY ,  "CratePosY[nCrate]/F");
        Ntup_->Branch("CratePosZ",   &_CratePosZ ,  "CratePosZ[nCrate]/F");
 
- 
+
   }
 
 
@@ -207,7 +206,7 @@ namespace mu2e {
 
     std::vector<art::Handle<GenEventCount> > hh = sr.getMany<GenEventCount>();
 
-    if(hh.size() > 1) 
+    if(hh.size() > 1)
     {
        std::ostringstream os;
        os<<"GenEventCountReader: multiple GenEventCount objects found in "
@@ -278,14 +277,14 @@ namespace mu2e {
 
        _nCry=0;
        for ( HandleVector::const_iterator i=crystalStepsHandles.begin(), e=crystalStepsHandles.end(); i != e; ++i )
-       {     
+       {
             const art::Handle<StepPointMCCollection>& handle(*i);
             const StepPointMCCollection& steps(*handle);
 
             for (const auto& step : steps)
             {
                 CLHEP::Hep3Vector Pos = cal.geomUtil().mu2eToTracker(step.position());
-                
+
                 _cryId[_nCry]   = step.volumeId();
                 _cryEdep[_nCry] = step.totalEDep();
                 _cryTime[_nCry] = step.time();
@@ -299,7 +298,7 @@ namespace mu2e {
 
        _nRO=0;
        for ( HandleVector::const_iterator i=ROStepsHandles.begin(), e=ROStepsHandles.end(); i != e; ++i )
-       {     
+       {
             const art::Handle<StepPointMCCollection>& handle(*i);
             const StepPointMCCollection& steps(*handle);
 
@@ -317,7 +316,7 @@ namespace mu2e {
 
        _nROCard=0;
        for ( HandleVector::const_iterator i=ROCardStepsHandles.begin(), e=ROCardStepsHandles.end(); i != e; ++i )
-       {     
+       {
             const art::Handle<StepPointMCCollection>& handle(*i);
             const StepPointMCCollection& steps(*handle);
 
@@ -335,7 +334,7 @@ namespace mu2e {
 
        _nCrate=0;
        for ( HandleVector::const_iterator i=CrateStepsHandles.begin(), e=CrateStepsHandles.end(); i != e; ++i )
-       {     
+       {
             const art::Handle<StepPointMCCollection>& handle(*i);
             const StepPointMCCollection& steps(*handle);
 
@@ -368,7 +367,7 @@ namespace mu2e {
               //if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
               double hitTimeUnfolded = toff_.timeWithOffsetsApplied(hit);
-   	      double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+                 double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
               CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
               //CLHEP::Hep3Vector VDPos = cal.toTrackerFrame(hit.position());
@@ -385,7 +384,7 @@ namespace mu2e {
               _vdMomZ[_nVd]  = hit.momentum().z();
               _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
               ++_nVd;
-            }             
+            }
         }
 
 
@@ -395,7 +394,7 @@ namespace mu2e {
 
 
 
-}  
+}
 
 DEFINE_ART_MODULE(mu2e::CaloNeutron);
 

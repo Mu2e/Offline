@@ -92,7 +92,7 @@ void TrackColorSelector::drawTrackLegend(TText **legendParticleGroup, TText **le
               drawLineAndText(11, 9, "other particles");
               break;
      default: for(unsigned int i=0; i<8 && i<n; i++)
-              { 
+              {
                 drawLineAndText(i, i+2, _trackInfos->at(i).entryText);
               }
               if(n<8) drawLineAndText(n, 28, "other tracks");
@@ -103,8 +103,8 @@ void TrackColorSelector::drawTrackLegend(TText **legendParticleGroup, TText **le
 int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
 {
   int particleid=track->getParticleId();
-  int trackclass=track->getTrackClass(); 
-  int trackclassindex=track->getTrackClassIndex(); 
+  int trackclass=track->getTrackClass();
+  int trackclassindex=track->getTrackClassIndex();
   int color=_whiteBackground?28:25;
 
   unsigned int n=_trackInfos->size();
@@ -122,7 +122,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                 default  : color=_whiteBackground?28:25;
               };
               break;
-      case 2: if((trackclass==_trackInfos->at(0).classID) && 
+      case 2: if((trackclass==_trackInfos->at(0).classID) &&
                  (trackclassindex==_trackInfos->at(0).index))
               {
                 switch(particleid)
@@ -136,7 +136,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                   default  : color=_whiteBackground?28:25;
                 };
               }
-              if((trackclass==_trackInfos->at(1).classID) && 
+              if((trackclass==_trackInfos->at(1).classID) &&
                  (trackclassindex==_trackInfos->at(1).index))
               {
                 switch(particleid)
@@ -151,7 +151,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                 };
               }
               break;
-      case 3: if((trackclass==_trackInfos->at(0).classID) && 
+      case 3: if((trackclass==_trackInfos->at(0).classID) &&
                  (trackclassindex==_trackInfos->at(0).index))
               {
                 switch(particleid)
@@ -163,7 +163,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                   default  : color=_whiteBackground?28:25;
                 };
               }
-              if((trackclass==_trackInfos->at(1).classID) && 
+              if((trackclass==_trackInfos->at(1).classID) &&
                  (trackclassindex==_trackInfos->at(1).index))
               {
                 switch(particleid)
@@ -175,7 +175,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                   default  : color=46;
                 };
               }
-              if((trackclass==_trackInfos->at(2).classID) && 
+              if((trackclass==_trackInfos->at(2).classID) &&
                  (trackclassindex==_trackInfos->at(2).index))
               {
                 switch(particleid)
@@ -188,7 +188,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                 };
               }
               break;
-      case 4: if((trackclass==_trackInfos->at(0).classID) && 
+      case 4: if((trackclass==_trackInfos->at(0).classID) &&
                  (trackclassindex==_trackInfos->at(0).index))
               {
                 switch(particleid)
@@ -198,7 +198,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                   default  : color=_whiteBackground?28:25;
                 };
               }
-              if((trackclass==_trackInfos->at(1).classID) && 
+              if((trackclass==_trackInfos->at(1).classID) &&
                  (trackclassindex==_trackInfos->at(1).index))
               {
                 switch(particleid)
@@ -208,7 +208,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                   default  : color=46;
                 };
               }
-              if((trackclass==_trackInfos->at(2).classID) && 
+              if((trackclass==_trackInfos->at(2).classID) &&
                  (trackclassindex==_trackInfos->at(2).index))
               {
                 switch(particleid)
@@ -218,7 +218,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
                   default  : color=8;
                 };
               }
-              if((trackclass==_trackInfos->at(3).classID) && 
+              if((trackclass==_trackInfos->at(3).classID) &&
                  (trackclassindex==_trackInfos->at(3).index))
               {
                 switch(particleid)
@@ -232,7 +232,7 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
      default: color=_whiteBackground?28:25;
               for(unsigned int i=0; i<8 && i<n; i++)
               {
-                if((trackclass==_trackInfos->at(i).classID) && 
+                if((trackclass==_trackInfos->at(i).classID) &&
                    (trackclassindex==_trackInfos->at(i).index)) color=i+2;
               }
   };

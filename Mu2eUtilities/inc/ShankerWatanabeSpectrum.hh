@@ -28,12 +28,12 @@ namespace mu2e {
     // built-in energy tolerance (in MeV) - not used currently!
     const double _tolerance = 0.0049;
 
-    const Table<2> _table;    
+    const Table<2> _table;
 
     double evaluateShanker (double E) const;
     double evaluateWatanabe(double E) const;
 
-    double interpolate(const double E, 
+    double interpolate(const double E,
                        const TableRow<2>& row_after,
                        const TableRow<2>& row,
                        const TableRow<2>& row_before ) const;
