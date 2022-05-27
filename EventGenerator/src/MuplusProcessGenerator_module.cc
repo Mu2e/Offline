@@ -159,8 +159,8 @@ namespace mu2e {
       _genTime=time;
       _genP=sqrt(d.fourmom.px()*d.fourmom.px()+d.fourmom.py()*d.fourmom.py()+d.fourmom.pz()*d.fourmom.pz());
       _genPz=d.fourmom.pz();
-      printf("the z position is %f\n",_genPosZ);
-      printf("the R position is %f\n",_genPosR);
+      //    printf("the z position is %f\n",_genPosZ);
+      //   printf("the R position is %f\n",_genPosR);
       _Ntup->Fill();
 
     }
