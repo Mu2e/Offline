@@ -10,12 +10,11 @@
 
 #include "Offline/DataProducts/inc/GenVector.hh"
 
-#include "Offline/Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 
 using CLHEP::Hep3Vector;
-using namespace std;
+namespace mu2e {
    //Struct To Hold Covarience Info:
    struct TrackCov{
     std::vector<double> Covariance;
@@ -83,8 +82,6 @@ using namespace std;
           TrackSeedDiag();
 
    };
-
-namespace mu2e {
 
   class CosmicTrack{
 
@@ -215,7 +212,7 @@ namespace mu2e {
         double cost = dir.Z();
         double t0 = this->MinuitParams.T0; //TODO
         double mom = 1.0;//TODO
-        info = make_tuple(d0,phi0,z0,cost, t0, mom);
+        info = std::make_tuple(d0,phi0,z0,cost, t0, mom);
         return info;
       }
 
