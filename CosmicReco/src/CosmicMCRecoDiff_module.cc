@@ -30,6 +30,8 @@
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
+#include "Offline/Mu2eUtilities/inc/CosmicTrackUtils.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 // Mu2e diagnostics
 #include "Offline/TrkDiag/inc/ComboHitInfo.hh"
@@ -218,7 +220,7 @@ namespace mu2e
         _RecoB0=(st.MinuitParams.B0);
 
         // Get KinKal:
-        std::tuple <double, double, double, double, double, double> KinKalParams = st.KinKalTrackParams();
+        std::tuple <double, double, double, double, double, double> KinKalParams = KinKalTrackParams(st);
         _Recod0 = get<0>(KinKalParams);
         _Recoz0 = get<2>(KinKalParams);
         _RecoCosT = get<3>(KinKalParams);
