@@ -1,29 +1,18 @@
 //
-//  Classes for updating straw hits
+// Simple updater of StrawHits based on (unbiased) Distance Of Closest Approach (DOCA)
 //
-#ifndef Mu2eKinKal_KKStrawHitUpdater_hh
-#define Mu2eKinKal_KKStrawHitUpdater_hh
-
+#ifndef Mu2eKinKal_DOCAStrawHitUpdater_hh
+#define Mu2eKinKal_DOCAStrawHitUpdater_hh
 #include "KinKal/Detector/WireHitStructs.hh"
 
 namespace mu2e {
-  // types of updaters: this needs to be extended if new updaters are defined
-  // Note not all updaters are defined in this file, complicated updaters should be in their own files
-  namespace StrawHitUpdater {
-    enum algorithm: size_t {null=0, DOCA=1 };
-  }
-  // always set the wire hit state to null; used for seed fitting
-  struct NullStrawHitUpdater {
-    KinKal::WireHitState wireHitState() const { return KinKal::WireHitState(KinKal::WireHitState::null); }
-  };
-
-  // Update based just on (unbiased) DOCA to the wire, not including this hit
+// Update based just on (unbiased) DOCA to the wire, not including this hit
   class DOCAStrawHitUpdater {
     public:
       DOCAStrawHitUpdater() : maxdoca_(-1.0), mindoca_(0), maxddoca_(-1) {}
       DOCAStrawHitUpdater(double maxdoca, double minddoca, double maxddoca) :
         maxdoca_(maxdoca), mindoca_(minddoca), maxddoca_(maxddoca) {}
-      // set the state based on the current DOCA value
+     // set the state based on the current DOCA value
       KinKal::WireHitState wireHitState(double doca) const;
       auto maxDOCA() const { return maxdoca_; }
       auto minDOCA() const { return mindoca_; }

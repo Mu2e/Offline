@@ -7,7 +7,8 @@
 //
 // mu2eKinKal classes
 //KinKal classes
-#include "Offline/Mu2eKinKal/inc/KKStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
 #include "KinKal/Detector/WireHit.hh"
 // Mu2e-specific classes
 #include "Offline/TrackerGeom/inc/Straw.hh"
@@ -24,7 +25,6 @@ namespace mu2e {
   using KinKal::MetaIterConfig;
   using KinKal::DriftInfo;
   using KinKal::POL2;
-  class KKStrawHitUpdater;
 
   template <class KTRAJ> class KKStrawHit : public KinKal::WireHit<KTRAJ> {
     public:
@@ -57,7 +57,6 @@ namespace mu2e {
       StrawHitIndex shindex_; // index to the StrawHit
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
-      friend class KKStrawHitUpdater;
   };
 
   template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate, double rstraw,
@@ -94,23 +93,21 @@ namespace mu2e {
       auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
       auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
       if(nshu != 0 && dshu != 0)throw std::invalid_argument(">1 StrawHit updater specified");
-      if(nshu != 0){
-        mindoca_ = strawRadius();
-        auto whstate = nshu->wireHitState();
-        // set the residuals based on this state
-        this->updateResiduals(whstate);
-      } else if(dshu != 0){
-        // update minDoca (for null ambiguity error estimate)
-        mindoca_ = std::min(dshu->minDOCA(),strawRadius());
+      if(nshu != 0 || dshu != 0){
         // compute the unbiased closest approach; this is brute force, but works
         auto const& ca = this->closestApproach();
         auto uparams = HIT::unbiasedParameters();
         KTRAJ utraj(uparams,ca.particleTraj());
         CA uca(utraj,this->wire(),ca.hint(),ca.precision());
         WireHitState whstate(WireHitState::inactive);
-        if(uca.usable())whstate = dshu->wireHitState(uca.doca());
-        // set the residuals based on this state
-        this->updateResiduals(whstate);
+        if(nshu != 0){
+          mindoca_ = strawRadius();
+          if(uca.usable())whstate = nshu->wireHitState(uca.doca());
+        } else if(dshu != 0){
+          // update minDoca (for null ambiguity error estimate)
+          mindoca_ = std::min(dshu->minDOCA(),strawRadius());
+          if(uca.usable())whstate = dshu->wireHitState(uca.doca());
+        }
       }
     }
     // update residuals

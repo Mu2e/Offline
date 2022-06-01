@@ -395,30 +395,41 @@ namespace mu2e {
     needstrackerinfo_= false;
   }
 
-  // the following implementation only works for a monotonic trajectory, not for a reflecting track
+  // this finds the first time at which the traj crosses the given z value, or the nearest
   template <class KTRAJ> double KKFit<KTRAJ>::zTime(PKTRAJ const& ptraj, double zpos) const {
-    if(ptraj.range().null())throw cet::exception("RECO")<<"mu2e::KKFit: PTraj range error in zTime"<< endl;
-    auto bvel = ptraj.velocity(ptraj.range().begin());
-    auto evel = ptraj.velocity(ptraj.range().end());
-    if(bvel.Z()*evel.Z() < 0.0)throw cet::exception("RECO")<<"mu2e::KKFit: zTime called using reflecting trajectory"<< endl;
-    double vz = 0.5*(bvel.Z()+evel.Z());
-    double zmid = ptraj.position3(ptraj.range().mid()).Z();
-    // assume linear transit to get an initial estimate
-    double tz = ptraj.range().mid() + (zpos-zmid)/vz;
-    auto zindex = ptraj.nearestIndex(tz);
-    size_t oldzindex;
-    auto const& traj = ptraj.piece(zindex);
-    unsigned ntries(0);
-    static const unsigned maxntries(10);// this usually converges in 1 iteration
-    do {
-      oldzindex = zindex;
-      zmid = traj.position3(traj.range().mid()).Z();
-      vz = ptraj.velocity(ptraj.range().mid()).Z();
-      tz = traj.range().mid() + (zpos-zmid)/vz;
-      zindex = ptraj.nearestIndex(tz);
-      ++ntries;
-    } while (ntries < maxntries && zindex != oldzindex);
-    return tz;
+    // bootstrap to find a nearby piece
+    auto bvz = ptraj.front().velocity(ptraj.front().range().begin()).Z();
+    auto evz = ptraj.back().velocity(ptraj.back().range().end()).Z();
+    auto bz = ptraj.front().position3(ptraj.front().range().begin()).Z();
+    auto ez = ptraj.back().position3(ptraj.back().range().end()).Z();
+    // test for outside the ramge.  If so, just extrapolate
+    double ztime(0.);
+    if((zpos-bz)*bvz <0.0){
+      ztime = ptraj.range().begin()-(bz-zpos)/bvz;
+    } else if((ez-zpos)*evz<0.0) {
+      ztime = ptraj.range().end()+(zpos-ez)/evz;
+    } else {
+      // if the traj is monotonic estimate the start.  Otherwise start at the beginning
+      bool monotonic = bvz*evz > 0.0;
+      double vz = monotonic ? 0.5*(bvz+evz) : bvz;
+      double zmid = monotonic ? 0.5*(bz+ez) : bz;
+      // assume linear transit to get an initial estimate
+      ztime = ptraj.range().mid() + (zpos-zmid)/vz;
+      auto zindex = ptraj.nearestIndex(ztime);
+      size_t oldzindex;
+      auto const& traj = ptraj.piece(zindex);
+      unsigned ntries(0);
+      static const unsigned maxntries(10);// this usually converges in 1 iteration, but it can oscillate with bad fits
+      do {
+        oldzindex = zindex;
+        zmid = traj.position3(traj.range().mid()).Z();
+        vz = ptraj.velocity(ptraj.range().mid()).Z();
+        ztime = traj.range().mid() + (zpos-zmid)/vz;
+        zindex = ptraj.nearestIndex(ztime);
+        ++ntries;
+      } while (ntries < maxntries && zindex != oldzindex);
+    }
+    return ztime;
   }
 
   template <class KTRAJ> TimeRange KKFit<KTRAJ>::range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const{
