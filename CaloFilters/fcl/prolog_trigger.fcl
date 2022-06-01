@@ -7,26 +7,26 @@ BEGIN_PROLOG
 CaloFilters : {
 caloTriggerPreselect : {
 diagLevel: 0
-	module_type            : EcalTriggerPreselect
-	trkPatRecModuleLabel   : MergePatRec
-	trkQualTag             : MergePatRec
-	caloClusterModuleLabel : CaloClusterMaker
-	trackClusterMatchModuleLabel : TrackCaloMatching
-	fitparticle            : 11
-	fitdirection           : 0 
-	TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	virtualhit             : 1 # ask for CE hit on a ECAL virtual detector
-	trkgood                : 1 # 0:no match 1:good track 
-	matchgood              : 1 # 0:no match 1:good track match
-	T0MIN                  : 700
-	ECLUMIN                : 50
+      module_type            : EcalTriggerPreselect
+      trkPatRecModuleLabel   : MergePatRec
+      trkQualTag             : MergePatRec
+      caloClusterModuleLabel : CaloClusterMaker
+      trackClusterMatchModuleLabel : TrackCaloMatching
+      fitparticle            : 11
+      fitdirection           : 0
+      TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      virtualhit             : 1 # ask for CE hit on a ECAL virtual detector
+      trkgood                : 1 # 0:no match 1:good track
+      matchgood              : 1 # 0:no match 1:good track match
+      T0MIN                  : 700
+      ECLUMIN                : 50
 }
 
 caloMVACEFilter : {
 module_type:
   FilterEcalMVATrigger caloTrigSeedModuleLabel : CaloTrigger diagLevel : 0 MVAMethod
       : BDT weightsfile
-      : "Offline/CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" TimeOFFSET : 22.5 MVAhighcut0 : 0.1 MVArpivot0 : 445 #mm MVApivotcut0 : 0.1 MVAlowcut0 : 0.0 MVAhighcut1 : 0.1 MVArpivot1 : 445 #mm MVApivotcut1 : 0.1 MVAlowcut1 : 0.0 downscale500factor : 1
+      : "Offline/CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" TimeOFFSET : 22.5 MVAhighcut0 : 0.1 MVArpivot0 : 445 MVApivotcut0 : 0.1 MVAlowcut0 : 0.0 MVAhighcut1 : 0.1 MVArpivot1 : 445 MVApivotcut1 : 0.1 MVAlowcut1 : 0.0 downscale500factor : 1
 }
 
 caloFastMVAMixedCEFilter : {
@@ -35,7 +35,7 @@ module_type:
       : CaloTrigger ecalweightsfile
       : "Offline/CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" mixedweightsfile
       : "Offline/CaloFilters/data/ce_bkg_20_BDT.weights.xml" StrawHitCollectionTag
-      : "TTmakePH" TimeOFFSET : 22.5 MVArpivot : 445 #mm ecalMVAhighcut0 : -0.3 ecalMVApivotcut0
+      : "TTmakePH" TimeOFFSET : 22.5 MVArpivot : 445 ecalMVAhighcut0 : -0.3 ecalMVApivotcut0
       : -0.3 ecalMVAlowcut0 : -0.3 ecalMVAhighcut1 : -0.3 ecalMVApivotcut1 : -0.3 ecalMVAlowcut1
       : -0.3 mixedMVAhighcut0 : -0.1 mixedMVApivotcut0 : -0.1 mixedMVAlowcut0
       : -0.1 mixedMVAhighcut1 : -0.1 mixedMVApivotcut1 : -0.1 mixedMVAlowcut1
@@ -46,14 +46,15 @@ module_type:
 caloFastCosmicFilter : {
 module_type:
   CaloCosmicCalib CaloClusterModuleLabel
-      : "CaloClusterFast" debugLevel : 0 MinNCrystalHits : 0 MinEnergy : 10.0 #MeV MaxEnergy : 600.0 #MeV MinNumCelinout : 6 MinNumCeldiagver : 6 MinCelEneCut : 15.0 #MeV OutRadius : 580 #mm InnerRadius : 460 #mm diagminval : 1.5 #slope min
-            diagmaxval : 2.5 #slope max dyminval : 140 #mm
+      : "CaloClusterFast" debugLevel : 0 MinNCrystalHits : 0 MinEnergy : 10.0 MaxEnergy : 600.0 MinNumCelinout : 6 MinNumCeldiagver : 6 MinCelEneCut : 15.0 OutRadius : 580 InnerRadius : 460 diagminval : 1.5 #slope min
+            diagmaxval : 2.5 #slope max
+            dyminval : 140
 }
 
 caloFastRMCFilter : {
 module_type:
   CaloClusterCounterFilter CaloClusterModuleLabel
-      : "CaloClusterFast" diagLevel : 0 MinNCel : 2 MaxNCel : 10 MinClusterEnergy : 55.0 #MeV MaxClusterEnergy : 200.0 #MeV MinClusterRadius : 490 #mm MinNCl : 1 DiskID
+      : "CaloClusterFast" diagLevel : 0 MinNCel : 2 MaxNCel : 10 MinClusterEnergy : 55.0 MaxClusterEnergy : 200.0 MinClusterRadius : 490 MinNCl : 1 DiskID
       : [0]
 }
 
@@ -62,7 +63,7 @@ module_type:
   CaloLikelihood CaloClusterModuleLabel : CaloClusterFast SignalTemplates
       : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root" BackgroundTemplates
       : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root" DropSecondDisk
-      : false MinClusterEnergy : 50. #MeV ClusterEnergyStep : 10. #MeV MinClusterRadialDist : 350. #mm ClusterRadialDistStep : 50. #mm MinLikelihoodCut
+      : false MinClusterEnergy : 50. ClusterEnergyStep : 10. MinClusterRadialDist : 350. ClusterRadialDistStep : 50. MinLikelihoodCut
       : [ 41.44, 10.36 ]
 }
 
@@ -72,15 +73,14 @@ module_type:
   CaloLikelihood CaloClusterModuleLabel : CaloClusterFast SignalTemplates
       : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root" BackgroundTemplates
       : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root" DropSecondDisk
-      : false MinClusterEnergy : 50. #MeV ClusterEnergyStep : 10. #MeV MinClusterRadialDist : 350. #mm ClusterRadialDistStep : 50. #mm MinLikelihoodCut
+      : false MinClusterEnergy : 50. ClusterEnergyStep : 10. MinClusterRadialDist : 350. ClusterRadialDistStep : 50. MinLikelihoodCut
       : [ 41.44, 10.36 ]
 }
 
 caloFastMVANNCEFilter : {
 module_type:
   FilterEcalNNTrigger caloClusterCollection : CaloClusterFast caloBkgMVA : {
-    MVAWeights : "Offline/CaloFilters/data/"
-                 "CE_NN_ReLU.weights.xml"
+    MVAWeights : "Offline/CaloFilters/data/CE_NN_ReLU.weights.xml"
   } minEtoTest : 40 minMVAScore : 0.95 diagLevel : 0
 }
 }
@@ -229,7 +229,7 @@ module_type:
 }
 
 #FIXME !this filter will no longer be needed once we will have a standardized definition of good   \
-    events
+#    events
 caloTriggerPreselect : { @table::CaloFilters.caloTriggerPreselect }
 
 #filter instances
@@ -293,7 +293,7 @@ caloFast_mvaNNCE:
       ]
 
 #caloFast_photon : [caloFastMVANNCEEventPrescale, sequence::CaloHitRecoTrigger.prepareHits,        \
-                    CaloClusterFast, caloFastMVANNCEFilter]
+#                    CaloClusterFast, caloFastMVANNCEFilter]
 }
 }
 
