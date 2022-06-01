@@ -13,11 +13,9 @@ Mu2eKinKal : {
   }
   KKMU2E: {
     PrintLevel : 0
-    TimeBuffer : 0.0 # ns
     TPOCAPrecision : 1e-4 # mm
     NullHitDimension : 2 # constrain position or position+time
     NullHitVarianceScale : 1.0
-    TimeBuffer : 0.0 # ns
     UseCaloCluster : true
     AddMaterial : true
     StrawHitSetDeltaT : 1.0
@@ -45,13 +43,18 @@ Mu2eKinKal : {
     ConvergenceDeltaChisq : 0.1
     DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
     BFieldCorrection : false
+    ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 10.0, 0 ],
       [ 2.0, 0 ],
       [ 0.0, 0 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 10.0],
+      [ 5.0 ],
+      [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
   }
@@ -64,13 +67,18 @@ Mu2eKinKal : {
     ConvergenceDeltaChisq : 0.1
     DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
     BFieldCorrection : true
+    ProcessEnds : true
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 5.0, 0 ],
       [ 2.0, 0 ],
       [ 0.0, 0 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 10.0],
+      [ 5.0 ],
+      [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
   }
@@ -83,14 +91,17 @@ Mu2eKinKal : {
     ConvergenceDeltaChisq : 1.0
     DivergenceDeltaChisq : 50.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
     BFieldCorrection : false
+    ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 0.0, 0 ]
     ]
+    NullStrawHitUpdaterSettings : [
+      [ 5.0 ]
+    ]
     DOCAStrawHitUpdaterSettings : []
- }
+  }
 
   KKDRIFTEXT: {
     PrintLevel : 0
@@ -100,14 +111,17 @@ Mu2eKinKal : {
     ConvergenceDeltaChisq : 1.0
     DivergenceDeltaChisq : 50.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
     BFieldCorrection : true
+    ProcessEnds : true
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 0.0, 0 ],
       [ 2.0, 1 ],
       [ 1.0, 1 ],
       [ 0.0, 1 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 5.0 ]
     ]
     DOCAStrawHitUpdaterSettings : [
       [ 6.0, 0.5, 5.0 ],
