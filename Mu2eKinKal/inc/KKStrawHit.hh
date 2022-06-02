@@ -9,6 +9,7 @@
 //KinKal classes
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
+#include "Offline/TrackerGeom/inc/StrawProperties.hh"
 #include "KinKal/Detector/WireHit.hh"
 // Mu2e-specific classes
 #include "Offline/TrackerGeom/inc/Straw.hh"
@@ -34,7 +35,7 @@ namespace mu2e {
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using CA = KinKal::ClosestApproach<KTRAJ,Line>;
-      KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const&, double rstraw,
+      KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const&, StrawProperties const& sprops,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // WireHit and Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
@@ -59,9 +60,10 @@ namespace mu2e {
       StrawResponse const& sresponse_; // straw calibration information
   };
 
-  template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate, double rstraw,
+  template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate,
+      StrawProperties const& sprops,
       ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) :
-    WIREHIT(bfield,ptca,whstate), mindoca_(rstraw), rstraw_(rstraw), chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
+    WIREHIT(bfield,ptca,whstate), mindoca_(sprops.strawInnerRadius()), rstraw_(sprops.strawInnerRadius()), chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
   {
     // make sure this is a single-straw based ComboHit
     if(chit_.mask().level() != StrawIdMask::uniquestraw)

@@ -2,6 +2,7 @@
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
 #include "KinKal/Detector/WireHitStructs.hh"
 #include <iostream>
 
@@ -34,6 +35,10 @@ namespace mu2e {
       unsigned nnull(0);
       auto const& nhusettings = fitconfig.nhuConfig();
       auto const& dhusettings = fitconfig.dhuConfig();
+      auto const& sxusettings = fitconfig.sxuConfig();
+      if(config.schedule_.size() != sxusettings.size())
+        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of KKStrawXing updaters" <<  std::endl;
+
       for( size_t imeta=0; imeta < config.schedule_.size(); ++imeta) {
         auto ialg = shualg[imeta];
         auto& miconfig = config.schedule_[imeta];
@@ -52,6 +57,13 @@ namespace mu2e {
         } else {
           throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
         }
+        //StrawXing updater too
+        auto const& sxusetting = sxusettings.at(ndoca++);
+        double maxdocasig= std::get<0>(sxusetting);
+        double maxdoca = std::get<1>(sxusetting);
+        double maxddoca = std::get<2>(sxusetting);
+        KKStrawXingUpdater sxupdater(maxdocasig,maxdoca,maxddoca);
+        miconfig.addUpdater(std::any(sxupdater));
       }
       // consistency test
       if(config.schedule_.size() != ndoca+nnull)

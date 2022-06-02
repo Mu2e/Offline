@@ -38,6 +38,9 @@ namespace mu2e {
       using DOCAStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       DOCAStrawHitUpdaterSettings dhuConfig{ Name("DOCAStrawHitUpdaterSettings"), Comment("DOCAStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum DOCA to use L/R ambiguity'") };
+      using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
+          " 'Maximum DOCA error to use unaveraged material', 'Maximum DOCA to use straw material', 'Maximum DOCA to use unaveraged material'") };
       //NB: when new updaters are introduced their config must be added as a new tuple sequences
     };
     // function to convert fhicl configuration to KinKal Config object

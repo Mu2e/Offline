@@ -40,7 +40,6 @@
 #include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "KinKal/Detector/StrawXing.hh"
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/Trajectory/Line.hh"
 // Mu2eKinKal
