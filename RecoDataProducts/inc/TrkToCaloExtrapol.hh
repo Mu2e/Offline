@@ -42,7 +42,7 @@ namespace mu2e {
   struct TrkToCaloExtrapol{
 
   private:
-    int                                    _diskId;         
+    int                                    _diskId;
     int                                    _trackNumber;       // track numeber
     KalRepPtr                              _trk;
     double                                 _pathLengthEntrance;
@@ -53,13 +53,13 @@ namespace mu2e {
   public:
 
     TrkToCaloExtrapol():_diskId(-1),
-			_pathLengthEntrance(0.0),
-			_pathLengthExit(0.0){}
+                        _pathLengthEntrance(0.0),
+                        _pathLengthExit(0.0){}
 
 
 
-    TrkToCaloExtrapol(int disk, int trkNumber, 
-		      KalRepPtr& trk, double entrance, double exit):
+    TrkToCaloExtrapol(int disk, int trkNumber,
+                      KalRepPtr& trk, double entrance, double exit):
       _diskId(disk),
       _trackNumber(trkNumber),
       _trk(trk),

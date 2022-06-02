@@ -51,20 +51,20 @@ DigiCompression : {
 DigiCompression : {
   @table::DigiCompression
     Check : {
-	module_type : CompressDigiMCsCheck
-	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
-	newStrawDigiMCTag : "compressDigiMCs"
-	OldTimeOffsets : { inputs : [ ] }
-	NewTimeOffsets : { inputs : [ ] }
-	oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
-	newCaloShowerSimTag : "compressDigiMCs"
-	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
-	newCrvDigiMCTag : "compressDigiMCs"
-	strawDigiMCIndexMapTag : ""
-	crvDigiMCIndexMapTag : ""
-	checkTrackerDuplicateSteps : true
-	oldCaloClusterMCTag : ""
-	newCaloClusterMCTag : ""
+        module_type : CompressDigiMCsCheck
+        oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+        newStrawDigiMCTag : "compressDigiMCs"
+        OldTimeOffsets : { inputs : [ ] }
+        NewTimeOffsets : { inputs : [ ] }
+        oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
+        newCaloShowerSimTag : "compressDigiMCs"
+        oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
+        newCrvDigiMCTag : "compressDigiMCs"
+        strawDigiMCIndexMapTag : ""
+        crvDigiMCIndexMapTag : ""
+        checkTrackerDuplicateSteps : true
+        oldCaloClusterMCTag : ""
+        newCaloClusterMCTag : ""
     }
 }
 

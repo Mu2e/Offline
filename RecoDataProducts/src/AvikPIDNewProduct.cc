@@ -29,7 +29,7 @@ namespace mu2e {
     _drdsSs         = p._drdsSs    ;
     _drdsSsErr      = p._drdsSsErr ;
 
-    _sumAvik        = p._sumAvik   ; 
+    _sumAvik        = p._sumAvik   ;
     _sq2Avik        = p._sq2Avik;
     _sumAvikOs      = p._sumAvikOs ;
   }
@@ -53,7 +53,7 @@ namespace mu2e {
     _drdsSs         = p._drdsSs    ;
     _drdsSsErr      = p._drdsSsErr ;
 
-    _sumAvik        = p._sumAvik   ; 
+    _sumAvik        = p._sumAvik   ;
     _sq2Avik        = p._sq2Avik;
     _sumAvikOs      = p._sumAvikOs ;
 
@@ -79,25 +79,25 @@ namespace mu2e {
     _drdsSs         = -1.;
     _drdsSsErr      = -1.;
 
-    _sumAvik        = -1.; 
+    _sumAvik        = -1.;
     _sq2Avik        = -1.;
     _sumAvikOs      = 1.e6;
   }
 
-  void  AvikPIDNewProduct::init(int     TrkID           , 
-				int     NMatched        , int   NMatchedAll  ,
-				int     NUsedOsH     , int   NUsedSsH     ,    
-				int     NUsedOsD     ,
+  void  AvikPIDNewProduct::init(int     TrkID           ,
+                                int     NMatched        , int   NMatchedAll  ,
+                                int     NUsedOsH     , int   NUsedSsH     ,
+                                int     NUsedOsD     ,
 
-				float   LogDedxProbEle, float   LogDedxProbMuo, 
+                                float   LogDedxProbEle, float   LogDedxProbMuo,
 
-				float   DrdsVadim    , float DrdsVadimErr ,
-				float   DrdsOs       , float DrdsOsErr    ,
-				float   DrdsSs       , float DrdsSsErr    ,
+                                float   DrdsVadim    , float DrdsVadimErr ,
+                                float   DrdsOs       , float DrdsOsErr    ,
+                                float   DrdsSs       , float DrdsSsErr    ,
 
-				float   SumAvik      , 
-				float   Sq2Avik      , 
-				float   SumAvikOs    )
+                                float   SumAvik      ,
+                                float   Sq2Avik      ,
+                                float   SumAvikOs    )
   {
     _trkID         = TrkID       ;
     _nMatched      = NMatched    ;
@@ -116,7 +116,7 @@ namespace mu2e {
     _drdsOsErr     = DrdsOsErr   ;
     _drdsSs        = DrdsSs      ;
     _drdsSsErr     = DrdsSsErr   ;
-    _sumAvik       = SumAvik     ; 
+    _sumAvik       = SumAvik     ;
     _sq2Avik       = Sq2Avik     ;
     _sumAvikOs     = SumAvikOs   ;
   }

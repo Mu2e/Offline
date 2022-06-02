@@ -22,9 +22,9 @@ namespace mu2e
   class TrkCaloHit : public TrkHit {
   public:
     TrkCaloHit(CaloCluster const& caloCluster, CLHEP::Hep3Vector const& caloClusterPos,
-	       double crystalLength,  CLHEP::Hep3Vector const& clusterAxis,
-	       const HitT0& trkt0, double fltlen, double timeWeight, 
-	       double hiterr, double terr, double _dtoffset);
+               double crystalLength,  CLHEP::Hep3Vector const& clusterAxis,
+               const HitT0& trkt0, double fltlen, double timeWeight,
+               double hiterr, double terr, double _dtoffset);
     virtual ~TrkCaloHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
@@ -33,7 +33,7 @@ namespace mu2e
     virtual double time                 () const;
 //    virtual bool   time                 (HitT0&t0);
     virtual void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
-    virtual bool signalPropagationTime(	TrkT0& t0);  // this function should be const FIXME!!!
+    virtual bool signalPropagationTime(        TrkT0& t0);  // this function should be const FIXME!!!
     // the followin function isn't used and should be removed FIXME!
     virtual void   trackT0Time          (double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
      // test the consistincy of this hit with 'physical' limts, with a given # of sigma
@@ -51,11 +51,11 @@ namespace mu2e
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
 
     const CaloCluster& _caloCluster;
-    double	       _clen; // crystal length
+    double               _clen; // crystal length
     double             _dtoffset;
     TrkLineTraj*       _hittraj;
     double             _hitErr; // geometric error on the cluster transverse position for POCA calculation
-    double		_tErr; // error on the calorimeter time
+    double                _tErr; // error on the calorimeter time
   };
 
 // define TrkStrawHitVector, to allow explicit conversion and construction

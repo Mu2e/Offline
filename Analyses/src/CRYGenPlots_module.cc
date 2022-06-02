@@ -132,7 +132,7 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
   else
     success = e.getByLabel(CRYModuleLabel_, CRYInstanceName_, gpHandle);
 
-  if (!success) 
+  if (!success)
     return;
 
   const auto & particles = *gpHandle;

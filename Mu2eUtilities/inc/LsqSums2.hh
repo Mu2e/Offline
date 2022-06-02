@@ -2,8 +2,8 @@
 #define murat_LsqSums2
 ///////////////////////////////////////////////////////////////////////////////
 // circle fit
-// Author: P. Murat 
-// Date:      
+// Author: P. Murat
+// Date:
 ///////////////////////////////////////////////////////////////////////////////
 
 class LsqSums2 {
@@ -11,7 +11,7 @@ class LsqSums2 {
 protected:
   double _qn, sw, sx, sy, sx2, sxy, sy2;
   double fX0, fY0; // offsets, need to be defined in the very beginning, by default - 0
-  
+
 
 public:
   LsqSums2();
@@ -35,7 +35,7 @@ public:
   double sigXX   () { return x2Mean() - xMean()*xMean(); }
   double sigXY   () { return xyMean() - xMean()*yMean(); }
   double sigYY   () { return y2Mean() - yMean()*yMean(); }
-		  
+
   double det     () { return sigXX()*sigYY() -sigXY()*sigXY(); }
 
   // reconstructed parameters of the line

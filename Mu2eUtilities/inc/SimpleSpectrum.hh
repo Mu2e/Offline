@@ -32,7 +32,7 @@ namespace mu2e {
   class SimpleSpectrum {
 
   public:
-    
+
     class SpectrumType {
     public:
       enum enum_type { unknown, Flat, FlatTrunc, Pol5, Pol58 };
@@ -41,7 +41,7 @@ namespace mu2e {
       }
       static std::map<enum_type,std::string> const& names() {
         static std::map<enum_type,std::string> nam;
-        
+
         if ( nam.empty() ) {
           nam[unknown]     = "unknown";
           nam[Flat]        = "flat";

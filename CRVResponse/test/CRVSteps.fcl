@@ -25,13 +25,13 @@ physics :
   end_paths:     [out]
 }
 
-outputs: 
+outputs:
 {
-  Output : 
+  Output :
   {
     module_type : RootOutput
-    outputCommands:   
-    [ 
+    outputCommands:
+    [
       "keep *_*_*_*",
       "drop mu2e::StepPointMCs_*_CRV_*"
     ]

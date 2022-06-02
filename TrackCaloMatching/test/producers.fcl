@@ -8,7 +8,7 @@ TrkExtrapol : {
     maxNumberStoresPoints        : 1
     # MC truth finder, analyzer configuration
     KalFitMC : {
-    }        
+    }
 }
 
 CaloMatching : {

@@ -71,7 +71,7 @@ namespace mu2e {
   //================================================================
   class StepPointMCDumperCompact : public art::EDAnalyzer {
     typedef std::vector<art::InputTag> InputTags;
-    InputTags stepInputs_; 
+    InputTags stepInputs_;
 
     typedef vector<int> Vint;
     // List of particles of interest for the particles ntuple

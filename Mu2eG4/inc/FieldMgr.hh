@@ -78,8 +78,8 @@ namespace mu2e {
 
     // Factory method to construct a manager for a gradient magnetic field.
     static std::unique_ptr<FieldMgr> forGradientField(double fieldValue,
-						   double gradient,
-						   const G4ThreeVector& fieldOrigin,
+                                                   double gradient,
+                                                   const G4ThreeVector& fieldOrigin,
                                                    double stepMinimum=1.0e-2*CLHEP::mm);
 
     // Factory method to construct a manager for a magnetic field described by a Mu2e field map

@@ -41,8 +41,8 @@ services : @local::Services.SimAndReco
 # timing information
 services.TimeTracker : {
     dbOutput : {
-	filename : "ReadCaloDigis.db"
-	overwrite : true
+        filename : "ReadCaloDigis.db"
+        overwrite : true
     }
 }
 
@@ -55,9 +55,9 @@ paths        : { @table::CaloFilters.sequences }
 
 physics : {
     producers: {
-	@table::producers 
-	@table::CaloClusterTrigger.producers
-	@table::TrkHitRecoTrigger.producers
+        @table::producers
+        @table::CaloClusterTrigger.producers
+        @table::TrkHitRecoTrigger.producers
     }
 
     filters  : { @table::filters }

@@ -1,7 +1,7 @@
 //
 // A module to extract number of PEs, arrival times, hit positions, etc. from the CRV waveforms
 //
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -29,7 +29,7 @@
 #include <TMath.h>
 #include <TNtuple.h>
 
-namespace mu2e 
+namespace mu2e
 {
   class CRVTest : public art::EDAnalyzer
   {
@@ -66,7 +66,7 @@ namespace mu2e
   {
   }
 
-  void CRVTest::analyze(const art::Event& event) 
+  void CRVTest::analyze(const art::Event& event)
   {
     art::Handle<CrvStepCollection> crvStepsCollection;
     event.getByLabel(_crvStepsModuleLabel,"",crvStepsCollection);
@@ -81,7 +81,7 @@ namespace mu2e
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
-    std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter; 
+    std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter;
     for(iter=counters.begin(); iter!=counters.end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
@@ -96,7 +96,7 @@ namespace mu2e
         }
       }
 
-      for(int SiPM=0; SiPM<4; SiPM++) 
+      for(int SiPM=0; SiPM<4; SiPM++)
       {
 
         int    nRecoPulses=0;
@@ -111,7 +111,7 @@ namespace mu2e
         for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
         {
           const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
-          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM) 
+          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM)
           {
             nRecoPulses++;
             if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
@@ -129,13 +129,13 @@ namespace mu2e
         for(size_t chargeIndex=0; chargeIndex<crvSiPMChargesCollection->size(); chargeIndex++)
         {
           const CrvSiPMCharges &crvSiPMCharges = crvSiPMChargesCollection->at(chargeIndex);
-          if(crvSiPMCharges.GetScintillatorBarIndex()==barIndex && crvSiPMCharges.GetSiPMNumber()==SiPM) 
+          if(crvSiPMCharges.GetScintillatorBarIndex()==barIndex && crvSiPMCharges.GetSiPMNumber()==SiPM)
           {
             const std::vector<CrvSiPMCharges::SingleCharge> &singleCharges = crvSiPMCharges.GetCharges();
-            for(size_t i=0; i<singleCharges.size(); i++) 
+            for(size_t i=0; i<singleCharges.size(); i++)
             {
               double charge = singleCharges[i]._chargeInPEs;
-              MCPEs+=charge; 
+              MCPEs+=charge;
             }
           }
         }

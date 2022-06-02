@@ -36,7 +36,7 @@ namespace mu2e {
 
     void set(double halfZ, CLHEP::Hep3Vector origin) {
       _halfZ  = halfZ;
-      _origin = origin; 
+      _origin = origin;
     }
 
     // The following are for version 3, which has the "wedge" built from

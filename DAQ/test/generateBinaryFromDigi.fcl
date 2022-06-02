@@ -26,35 +26,35 @@ physics : {
 
    producers : {
       binaryOutput: {
-	 @table::DAQ.producers.binaryOutput
-	 generateTimestampTable : 1
+         @table::DAQ.producers.binaryOutput
+         generateTimestampTable : 1
       }
    }
    analyzers : {
-      readSD : 
+      readSD :
       {
-	  module_type : ReadStrawDigiReco
-	  digisTag    : makeSD
+          module_type : ReadStrawDigiReco
+          digisTag    : makeSD
       }
 
-      readCD : 
+      readCD :
       {
-	  module_type : CaloDigiAna
-	 digisTag     : CaloDigiMaker
+          module_type : CaloDigiAna
+         digisTag     : CaloDigiMaker
       }
 
 
       readFragments : {
-	 module_type : FragmentAna
-	 diagLevel   : 0
-	 parseCAL    : 1
-	 parseTRK    : 1
-	 caloTag     : "daq:calo"
-	 trkTag      : "daq:trk"
+         module_type : FragmentAna
+         diagLevel   : 0
+         parseCAL    : 1
+         parseTRK    : 1
+         caloTag     : "daq:calo"
+         trkTag      : "daq:trk"
       }
    }
 
-   t1 : [ binaryOutput ] 
+   t1 : [ binaryOutput ]
    #e1 : [ readSD, readCD ]
    e1 : [  readSD, readCD, readFragments ]
 
@@ -66,6 +66,6 @@ physics : {
 physics.producers.binaryOutput.includeTracker : 1
 physics.producers.binaryOutput.includeCalorimeter : 1
 physics.producers.binaryOutput.outputFile : "DTC_packets.bin"
-services.TFileService.fileName : "generateBinaryFromDigi_test.root" 
+services.TFileService.fileName : "generateBinaryFromDigi_test.root"
 
 # physics.producers.binaryOutput.diagLevel : 10

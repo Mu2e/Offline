@@ -1,6 +1,6 @@
 //
 //  Select events based on filters run in previous processing
-// 
+//
 // Original author: David Brown (LBNL) 20 Jun 2019
 //
 // C++
@@ -29,12 +29,12 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<int> diagLevel{ Name("DiagLevel"), Comment("Diagonstic Level"), 0};
-	fhicl::Atom<bool> printFirst{ Name("PrintFirst"),
-	  Comment("Print the TriggerResults on the first event"), false};
-	fhicl::Atom<string> processName{Name("ProcessName"), Comment("Process which generated TriggerResults")};
-	fhicl::Sequence<string> triggerNames{ Name("TriggerNames"),
-	  Comment("Trigger line names to test; if any of these are set the event will pass the filter")};
+        fhicl::Atom<int> diagLevel{ Name("DiagLevel"), Comment("Diagonstic Level"), 0};
+        fhicl::Atom<bool> printFirst{ Name("PrintFirst"),
+          Comment("Print the TriggerResults on the first event"), false};
+        fhicl::Atom<string> processName{Name("ProcessName"), Comment("Process which generated TriggerResults")};
+        fhicl::Sequence<string> triggerNames{ Name("TriggerNames"),
+          Comment("Trigger line names to test; if any of these are set the event will pass the filter")};
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -72,7 +72,7 @@ namespace mu2e {
     TriggerResultsNavigator tnav(trigResults);
     if(_pfirst){
       _pfirst = false;
-      tnav.print(); 
+      tnav.print();
     }
     // loop over all the lines in this TriggerResults and see if any of the requested are set.
     // Count each line separately for diagnostics
@@ -86,8 +86,8 @@ namespace mu2e {
       << trigResults->accept(itrig) << endl;
 
       if(trigResults->accept(itrig)){
-	passed = true;
-	_nset[iname]++;
+        passed = true;
+        _nset[iname]++;
       }
     }
     if(passed)_npassed++;

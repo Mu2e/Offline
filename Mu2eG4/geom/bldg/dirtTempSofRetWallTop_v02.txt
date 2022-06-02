@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_dirtTempSofRetWallTop.ccl
 
@@ -21,7 +21,7 @@ vector<double> dirt.Temp.SofRetWallTop.xPositions = {
   -2921   // p0_to_S
 };
 
-vector<int>    dirt.Temp.SofRetWallTop.yreplace   = { 4, 5 }; 
+vector<int>    dirt.Temp.SofRetWallTop.yreplace   = { 4, 5 };
 vector<double> dirt.Temp.SofRetWallTop.yPositions = {
   -7861.3,   // p0
   -7861.3,   // P1

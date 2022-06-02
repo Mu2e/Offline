@@ -9,12 +9,12 @@
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
-namespace mu2e 
+namespace mu2e
 {
-    CRSScintillatorBar::CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
+    CRSScintillatorBar::CRSScintillatorBar(CRSScintillatorBarIndex const &index,
                        CRSScintillatorBarId const &id,
                        CLHEP::Hep3Vector const &position,
-                       const std::shared_ptr<CRSScintillatorBarDetail> detail) : 
+                       const std::shared_ptr<CRSScintillatorBarDetail> detail) :
     _index(index),
     _id(id),
     _position(position),

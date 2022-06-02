@@ -27,7 +27,7 @@ string ds.insideMaterialName = "DSVacuum";
 // Test geometry added for Jim Miller for study of absorbing radiation in DS
 bool   ds.hasInnerLining     = false;
 double ds.innerLiningThickness = 10.0; // mm
-string ds.innerLiningMaterial  = "G4_Li"; // 
+string ds.innerLiningMaterial  = "G4_Li"; //
 
 
 // The shield
@@ -45,8 +45,8 @@ double dsShield.rOut.out           = 1250.;
 int    dsCoil.version           = 2; // Adds Al spacers and mods coil materials
 string dsCoil.materialName      = "NbTi"; // Only relevant for version 1
 vector<string> dsCoil.materialNameVector = {
-  "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", 
-  "DS1CoilMix", "DS1CoilMix", "DS2CoilMix", "DS2CoilMix", "DS2CoilMix", 
+  "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix",
+  "DS1CoilMix", "DS1CoilMix", "DS2CoilMix", "DS2CoilMix", "DS2CoilMix",
   "DS1CoilMix"
 };
 
@@ -61,7 +61,7 @@ vector<double> dsCoil.zLength = {
   419.75,419.75,419.75,419.75,
   362.25,362.25,362.25,
   1777.50,1777.50,1777.50,
-  362.25 
+  362.25
 };
 vector<double> dsCoil.zPosition = { // these correspond to the START
   3539.,3964.,4389.,5042.,          // of the coil
@@ -126,7 +126,7 @@ vector<double> ds.outlineV = {-750,-825.4,-807.4,-788,-750,-750,-738,-730,-722,-
 double ds.lengthRail2       = 4160;
 double ds.lengthRail3       = 5500;
 string ds.RailMaterialType = "StainlessSteel";
-// The following center points are each relative to the center of the 
+// The following center points are each relative to the center of the
 // corresponding dsVacuum area (DS2Vacuum, DS3Vacuum) n= north, s=south
 vector<double> ds.n2RailCenter = { 0, 0, 0 };
 vector<double> ds.s2RailCenter = { 0, 0, 0 };
@@ -146,7 +146,7 @@ vector<double> ds.xCentersBBlock = { 500, -500, 500, -500, 500, -500, 500, -500,
 vector<double> ds.yCentersBBlock = { -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705}; //, -705, -705, -705, -705 };
 vector<double> ds.zCentersBBlock = { 4789, 4789, 5850,5850, 6100, 6100, 6350, 6350, 6976, 6976, 8028, 8028, 12025, 12025, 12725, 12725, 13355, 13355, 13655, 13655 };
 
-				     //9397, 9397, 10953, 10953, 
+                                     //9397, 9397, 10953, 10953,
 // Temporarily discard Bearing blocks under tracker
 
 // Spherical support for the upstream end of the MBS.  (DNB, April 2017)
@@ -169,14 +169,14 @@ double    ds.CableRunCal.Rout      = 906.0;  // estimate
 double    ds.CableRunCal.dPhi      = 13.0; // degrees
 double    ds.CableRunCal.zC        = 15050.0; //
 double    ds.CableRunCal.phi0      = 83.5; // degrees
-string    ds.CableRunCal.material  = "Electronics"; // 
+string    ds.CableRunCal.material  = "Electronics"; //
 double    ds.CableRunTrk.length    = 2000; // mm - actually halflength
-double    ds.CableRunTrk.Rin       = 820.0;  
+double    ds.CableRunTrk.Rin       = 820.0;
 double    ds.CableRunTrk.Rout      = 850.0;
 double    ds.CableRunTrk.dPhi      = 20.7; // degrees
 double    ds.CableRunTrk.zC        = 15050.0; //
 double    ds.CableRunTrk.phi0      = 194.5; // degrees
-string    ds.CableRunTrk.material  = "Electronics"; // 
+string    ds.CableRunTrk.material  = "Electronics"; //
 
 
 

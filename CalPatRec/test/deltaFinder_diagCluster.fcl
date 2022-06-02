@@ -4,7 +4,7 @@
 
 physics.producers.DeltaFinder.diagLevel            : 1
 physics.producers.DeltaFinder.debugLevel           : 1
-physics.producers.DeltaFinder.diagPlugin           : { @table::CalPatRec.deltaFinderDiagClusterPlugin 
+physics.producers.DeltaFinder.diagPlugin           : { @table::CalPatRec.deltaFinderDiagClusterPlugin
     printHitClusters       : 0
     maxChi2W               : 3.
 }

@@ -1,4 +1,4 @@
-# 
+#
 #
 #
 # Original author Giovanni Onoratto
@@ -8,45 +8,45 @@
 #include "Offline/fcl/standardServices.fcl"
 
 
-# Give this job a name.  
+# Give this job a name.
 process_name : CaloClusterTrj
 
 # Start from a source
-source : 
-{ 
-  module_type : RootInput 
+source :
+{
+  module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : -1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     fileName : "CaloClusterTrj.root"
   }
 
-  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }	
-	
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
+
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
   }
-  		
-  GlobalConstantsService : { 
-    inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" 
+
+  GlobalConstantsService : {
+    inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"
   }
-  
-  		
-  Mu2eG4Helper : {	 }
-   
+
+
+  Mu2eG4Helper : {         }
+
   SeedService: @local::automaticSeeds
 
 }
@@ -69,7 +69,7 @@ physics :
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
- 
+
     makeCaloCluster:
     {
       module_type            : MakeCaloCluster
@@ -81,14 +81,14 @@ physics :
       deltaTime               : 100.0 #ns
       nCryPerCrystal          : 1
       EnoiseCut               : 0.200 #MeV
-      EclusterCut             : 0.200 #MeV  
+      EclusterCut             : 0.200 #MeV
     }
-     
+
   }
 
   analyzers:
   {
-    
+
     caloTrj:
     {
      module_type            : ClusterParticleTrajectory
@@ -99,9 +99,9 @@ physics :
      caloClusterSeeding     : energy
      caloClusterAlgorithm   : closest
     }
-   
 
-  } 
+
+  }
 
   p1 : [  ]
 

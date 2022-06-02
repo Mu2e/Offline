@@ -30,51 +30,51 @@ services : {
 physics : {
 
     producers : {
-	FSHPreStereo         : @local::FSHPreStereo
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
+        FSHPreStereo         : @local::FSHPreStereo
+        MakeStereoHits       : @local::MakeStereoHits
+        FlagStrawHits        : @local::FlagStrawHits
+        FlagBkgHits          : @local::FlagBkgHits
 # Tracking for some different particle types
-	TPRDeM  : @local::TrkPatRecDeM
-	TPRDmuM : @local::TrkPatRecDmuM
-	PID                  : @local::ParticleID
+        TPRDeM  : @local::TrkPatRecDeM
+        TPRDmuM : @local::TrkPatRecDmuM
+        PID                  : @local::ParticleID
     }
 
     analyzers : {
-	RKFDeM : {
-	    module_type       : ReadKalFits
-	    fitterModuleLabel : TPRDeM
-	    fitparticle       : 11
-	    fitdirection      : 0
-	verbosity         : 0
-	    maxPrint          : 0
-	    
-	
+        RKFDeM : {
+            module_type       : ReadKalFits
+            fitterModuleLabel : TPRDeM
+            fitparticle       : 11
+            fitdirection      : 0
+        verbosity         : 0
+            maxPrint          : 0
+
+
     }
-	RKFDmuM : {
-	    module_type       : ReadKalFits
-	    fitterModuleLabel : TPRDmuM
-	    fitparticle       : 13
-	    fitdirection      : 0
-	    verbosity         : 0
-	    maxPrint          : 0
-	}
-	
-	PIDReadDeM :  {
-	    module_type    : ParticleIDRead
-	    fitterModuleLabel : PID
-	    verbosity : 0
-	    maxPrint : 10
-	    
-	}
+        RKFDmuM : {
+            module_type       : ReadKalFits
+            fitterModuleLabel : TPRDmuM
+            fitparticle       : 13
+            fitdirection      : 0
+            verbosity         : 0
+            maxPrint          : 0
+        }
+
+        PIDReadDeM :  {
+            module_type    : ParticleIDRead
+            fitterModuleLabel : PID
+            verbosity : 0
+            maxPrint : 10
+
+        }
     }
-    
+
     p1 : [ FSHPreStereo
-	   , MakeStereoHits, FlagStrawHits, FlagBkgHits
-	   , TPRDeM, TPRDmuM, PID]
-    
+           , MakeStereoHits, FlagStrawHits, FlagBkgHits
+           , TPRDeM, TPRDmuM, PID]
+
     e1 : [ PIDReadDeM]
-    
+
     trigger_paths  : [p1]
     end_paths      : [e1]
 }
@@ -82,7 +82,7 @@ physics : {
 outputs: {
     # Print info about all data products in the file.
     dump: {
-	module_type   : DataProductDump
+        module_type   : DataProductDump
     }
 }
 #------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ outputs: {
 #------------------------------------------------------------------------------
 # print per event timing for ::event entry points
 # services.Timing: { }
-# print 
+# print
 
 services.scheduler.wantSummary: true
 physics.producers.PID.fitterModuleLabel    : TPRDeM

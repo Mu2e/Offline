@@ -54,7 +54,7 @@ Contains callers for access to Tracker and Calo geometry. This class also contai
 Contains geometry transforms. The GDML was in cm so we convert all our coordinates to cm here.
 
 ### TEveMu2e basis
-Contains base classes which inherit from TEve objects. This is the interface between TEve objects and mu2e products. 
+Contains base classes which inherit from TEve objects. This is the interface between TEve objects and mu2e products.
 
 ### Collection Filler and Data Collections
 The DataCollection class has a list all the possible Mu2e data collections we might want to access. The full list is found in ```Offline/RecoDataProduct/inc```. The collections in DataCollections are set to 0 unless they are filled. The filling is done by a function ```FillRecoCollections``` in the Collection_Filler class. This is called in the module Analyze function.
@@ -65,7 +65,7 @@ Any src directory in mu2e which wants to use classes needs to list them in a cla
 
 ### Main Window
 
-This class sets up the GUI and imports the geometry. 
+This class sets up the GUI and imports the geometry.
 
 ## Data and MC Interfaces
 
@@ -89,12 +89,12 @@ In order to add Data Products to the Event Display you may need to add an additi
 
 7. To utilize the 3D only feature, create a condition and pass the show2D parameter and control the 2D drawing functions with that parameter.
 
-8. Call the function in TEveMu2eMainWindow 
+8. Call the function in TEveMu2eMainWindow
 
 9. Modify the Collection Filler in TEveMu2eModule to get your data product from the art file. Add the product to the fcl file and change the prolog.fcl as needed.
 
 ## Authors
 
-This code is built upon the Mu2e Offline code however TEveEventDisplay is package developed within Mu2e Offline by Sophie Middleton (Caltech) with help from: Aditi Venkatesh (Caltech) and Namitha Chithirasee from (Pisa). 
+This code is built upon the Mu2e Offline code however TEveEventDisplay is package developed within Mu2e Offline by Sophie Middleton (Caltech) with help from: Aditi Venkatesh (Caltech) and Namitha Chithirasee from (Pisa).
 
 If you have any questions/comments about TEveEventDisplay please contact: smidd@caltech.edu.

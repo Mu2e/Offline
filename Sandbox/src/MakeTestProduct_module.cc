@@ -22,7 +22,7 @@ namespace mu2e {
 
   };
 
-  MakeTestProduct::MakeTestProduct(fhicl::ParameterSet const& pset): 
+  MakeTestProduct::MakeTestProduct(fhicl::ParameterSet const& pset):
     art::EDProducer{pset}
   {
     produces<int>();

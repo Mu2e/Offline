@@ -607,21 +607,21 @@ namespace mu2e {
         // Read data
         double x[3], b[3];
         int nread = 0;
-	getline(in, cbuf);
+        getline(in, cbuf);
         while (!in.eof()) {
 
             istringstream sin(cbuf);
             if ((sin >> x[0] >> x[1] >> x[2] >> b[0] >> b[1] >> b[2]).fail()) {
                 break;
-		throw cet::exception("BFIELD_FILE_CORRUPT") << "Could not parse  " << filename << "\nat line: "<<cbuf<<"\n" ;
-	    }
+                throw cet::exception("BFIELD_FILE_CORRUPT") << "Could not parse  " << filename << "\nat line: "<<cbuf<<"\n" ;
+            }
 
             // sucessfully read and parsed a line
             ++nread;
 
             if (nread > nrecord) {
-	      throw cet::exception("BFIELD_FILE_TOO_LONG") << "Found too many lines in " << filename << "\n";
-	    }
+              throw cet::exception("BFIELD_FILE_TOO_LONG") << "Found too many lines in " << filename << "\n";
+            }
 
             // Store the information into the 3d arrays.
             CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(x[0], x[1], x[2]) - G4BL_offset;
@@ -655,11 +655,11 @@ namespace mu2e {
                                              << "Attempt to redefine an already defined point.";
             }
 
-            bfmap._field.set(ipos.ix, ipos.iy, ipos.iz, 
-			    CLHEP::Hep3Vector(b[0], b[1], b[2]));
+            bfmap._field.set(ipos.ix, ipos.iy, ipos.iz,
+                            CLHEP::Hep3Vector(b[0], b[1], b[2]));
             bfmap._isDefined.set(ipos.ix, ipos.iy, ipos.iz, true);
 
-	    // next line
+            // next line
             getline(in, cbuf);
         }
 

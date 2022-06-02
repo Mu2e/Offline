@@ -1,7 +1,7 @@
 //
 // Make plots from the ntuple made by Analyses/src/stoppingTarget00_plugin.cc
-// 
-// 
+//
+//
 // Original author Rob Kutschke
 //
 
@@ -28,8 +28,8 @@
   bool page10 = true;
 
   // Number of entries in the true scatterplots.
-  int nDrawPage2=50000; 
-  int nDrawPage2d=75000; 
+  int nDrawPage2=50000;
+  int nDrawPage2d=75000;
   int nDrawPage6=50000;  // For pages 6.
   int nDrawPage7=75000;  // For pages 7.
 
@@ -69,7 +69,7 @@
   TCut reachedEnd  = "scode==32&&sz>15800";
   TCut outOfTarget = "sfoil==-1";                  // Stopped out of the target
   TCut interactOutofTarget = stopped&&outOfTarget&&!reachedEnd; // Interacted out of the target
-  
+
   // Some computed ntuple variables
   char * cr    = "sqrt(cx*cx+cy*cy)";     // Radius at entry point
   char * sr    = "sqrt(sx*sx+sy*sy)";     // Radius at stopping point
@@ -85,7 +85,7 @@
   if ( page01 ){
     // Split the canvas into 4 pads.
     c->Divide(1,2);
-    
+
     c->cd(1); hStopFoil->Draw("H9");
     c->cd(2); hnSimPart->Draw("H9");
 
@@ -112,7 +112,7 @@
   if ( page02 ){
 
     c->Divide(2,2);
-    c->cd(1) ; 
+    c->cd(1) ;
     TH1F* frame = c_1->DrawFrame(-250.,-250.,250.,250.);
     nt->Draw( "cx:cy","","PSAME",nDrawPage2);
     frame->SetTitle("y vs x at Entry;(mm);(mm)");
@@ -121,13 +121,13 @@
     frame = c_2->DrawFrame(-250.,-250.,250.,250.);
     nt->Draw( "x9:y9","","PSAME",nDrawPage2);
     frame->SetTitle("y vs x at VD 9;(mm);(mm)");
-    
+
     c->cd(3);
     frame = c_3->DrawFrame(-250.,-250.,250.,250.);
     nt->Draw( "x10:y10","","PSAME",nDrawPage2);
     frame->SetTitle("y vs x at VD 10;(mm);(mm)");
 
-    c->cd(4); 
+    c->cd(4);
     frame = c_4->DrawFrame(-250.,-250.,250.,250.);
     nt->Draw( "sx:sy",inTarget,"PSAME",nDrawPage2d);
     frame->SetTitle("y vs x at Stopping Point in Target;(mm);(mm)");
@@ -156,7 +156,7 @@
   if ( page02a ){
 
     c->Divide(2,2);
-    c->cd(1) ; 
+    c->cd(1) ;
     TH2F* hxyCreation = new TH2F( "hxyCreation",
                                   "y vs x at Creation All Tracks;(mm);(mm)",
                                   50, -250., 250.,
@@ -164,7 +164,7 @@
     nt->Project( "hxyCreation", "cx:cy" );
     hxyCreation->Draw("Box");
 
-    c->cd(2) ; 
+    c->cd(2) ;
     TH2F* hxyvd9 = new TH2F( "hxyvd9",
                                   "y vs x at Virtual Detector 9 All Tracks;(mm);(mm)",
                                   50, -250., 250.,
@@ -172,7 +172,7 @@
     nt->Project( "hxyvd9", "x9:y9", "sz>5499.89" );
     hxyvd9->Draw("Box");
 
-    c->cd(3) ; 
+    c->cd(3) ;
     TH2F* hxyvd10 = new TH2F( "hxyvd10",
                                   "y vs x at Virtual Detector 10 All Tracks;(mm);(mm)",
                                   50, -250., 250.,
@@ -180,7 +180,7 @@
     nt->Project( "hxyvd10", "x10:y10", "sz>6301.11" );
     hxyvd10->Draw("Box");
 
-    c->cd(4) ; 
+    c->cd(4) ;
     TH2F* hxyTarget = new TH2F( "hxyTarget",
                                   "y vs x at Stopping Point in Target;(mm);(mm)",
                                   50, -250., 250.,
@@ -211,15 +211,15 @@
 
   if ( page03 ) {
 
-    TH1F* hr0          = new TH1F( "hr0",        
+    TH1F* hr0          = new TH1F( "hr0",
                                    "Radius at entry", 100, 0., 200. );
-    TH1F* hr0Stopped   = new TH1F( "hr0Stopped", 
+    TH1F* hr0Stopped   = new TH1F( "hr0Stopped",
                                    "Radius at entry iff stopped in Foil", 100, 0., 200. );
-    TH1F* hrvd9        = new TH1F( "hrvd9",      
+    TH1F* hrvd9        = new TH1F( "hrvd9",
                                    "Radius at VD 9", 100, 0., 400. );
-    TH1F* hrvd9Stopped = new TH1F( "hrvd9Stopped",  
+    TH1F* hrvd9Stopped = new TH1F( "hrvd9Stopped",
                                    "Radius at VD 9 iff stopped in Foil", 100, 0., 400. );
-    TH1F* hrvd10       = new TH1F( "hrvd10",     
+    TH1F* hrvd10       = new TH1F( "hrvd10",
                                    "Radius at VD 10", 100, 0., 400. );
 
     nt->Project( "hr0",          cr );
@@ -269,12 +269,12 @@
 
     TH1F* hp0          = new TH1F( "hp0",
                                    "Momentum at entry", 100, 0., 120. );
-    TH1F* hp0Stopped   = new TH1F( "hp0Stopped", 
+    TH1F* hp0Stopped   = new TH1F( "hp0Stopped",
                                    "Momentum at entry iff stopped in Foil", 100, 0., 120. );
 
     TH1F* hpt0          = new TH1F( "hpt0",
                                    "pT at entry", 100, 0., 60. );
-    TH1F* hpt0Stopped   = new TH1F( "hpt0Stopped", 
+    TH1F* hpt0Stopped   = new TH1F( "hpt0Stopped",
                                    "pT at entry iff stopped in Foil", 100, 0., 60. );
 
     nt->Project( "hp0",         "cp" );
@@ -321,14 +321,14 @@
     nt->Project( "hszFoils",  "sz", inTarget);
     nt->Project( "hszOther",  "sz", interactOutofTarget );
     nt->Project( "hszEnd",    "sz", reachedEnd );
-    
+
     c->Divide(2,2);
 
     hszDecay->GetXaxis()->SetNdivisions(504);
     hszFoils->GetXaxis()->SetNdivisions(504);
     hszOther->GetXaxis()->SetNdivisions(504);
     hszEnd->GetXaxis()->SetNdivisions(504);
-    
+
     c->cd(1); hszDecay->Draw("H9");
     c->cd(2); hszFoils->Draw("H9");
     c->cd(3); hszOther->Draw("H9");
@@ -403,7 +403,7 @@
 
     for ( int ifoil=9; ifoil<17; ++ifoil ){
       int ipad = ifoil-8;
-      
+
       ostringstream cut;
       cut << "sfoil==" << ifoil <<"&&scode==32";
 
@@ -460,7 +460,7 @@
                              title.str().c_str(),
                              30, -120., 120.,
                              30, -120., 120. );
-                             
+
       nt->Project( name.str().c_str(), "sx:sy", cut.str().c_str() );
 
       hist->Draw("BOX");
@@ -509,7 +509,7 @@
                              title.str().c_str(),
                              30, -120., 120.,
                              30, -120., 120. );
-                             
+
       nt->Project( name.str().c_str(), "sx:sy", cut.str().c_str() );
 
       hist->Draw("BOX");
@@ -546,19 +546,19 @@
                            "Number of hit foils vs stopping foil;Stopping Foil Number; Number of Hit Foils",
                            22, 0., 22.,
                            22, 0., 22. );
-                             
+
     nt->Project( "hnFoilsVssFoil", "nfoils:sfoil", "sfoil>-1&&scode==32" );
     hFoils1->Draw("BOX");
 
     c->cd(2);
-    TH1F* hFoils2 = new TH1F( "hFoils2", 
+    TH1F* hFoils2 = new TH1F( "hFoils2",
                               "Number of hit foils for particles stopping elsewhere; Foil Number",
                               22, -1., 21. );
     nt->Project( "hFoils2", "nfoils","scode==32&&sfoil==-1");
     hFoils2->Draw("H9");
 
     c->cd(3);
-    TH1F* hFoils3 = new TH1F( "hFoils3", 
+    TH1F* hFoils3 = new TH1F( "hFoils3",
                               "Number of hit foils for particles that decay; Foil Number",
                               22, -1., 21. );
     nt->Project( "hFoils3", "nfoils","scode==14&&sfoil==-1");

@@ -5,7 +5,7 @@
 //
 // Original author Andrei Gaponenko
 //
-// Added proton beam inlet to HRS.  David N. Brown (Louisville), 
+// Added proton beam inlet to HRS.  David N. Brown (Louisville),
 // March 2015
 // Add upstream and downstream end rings to HRS, January 2017
 #include <ostream>

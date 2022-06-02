@@ -32,7 +32,7 @@ namespace mu2e {
           StrawElectronics::cptr_t strawElectronics,
           StrawPhysics::cptr_t strawPhysics,
           int eBins, double eBinWidth,
-          std::vector<double> edep, std::vector<double> halfvp,
+          std::vector<double> edep, std::vector<double> halfvpscale,
           double central, std::vector<double> centres,
           std::vector<double> resslope, int totTBins, double totTBinWidth,
           int totEBins, double totEBinWidth, std::vector<double> totdtime,
@@ -46,13 +46,14 @@ namespace mu2e {
           double electronicsTimeDelay, double gasGain,
           std::array<double,StrawElectronics::npaths> analognoise,
           std::array<double,StrawElectronics::npaths> dVdI,
-          double vsat, double ADCped, double pmpEnergyScaleAvg) :
+          double vsat, double ADCped, double pmpEnergyScaleAvg,
+          std::array<double, StrawId::_nustraws> strawHalfvp) :
         ProditionsEntity(cxname),
         _strawDrift(strawDrift),
         _strawElectronics(strawElectronics),
         _strawPhysics(strawPhysics),
         _eBins(eBins), _eBinWidth(eBinWidth),
-        _edep(edep), _halfvp(halfvp), _central(central), _centres(centres),
+        _edep(edep), _halfvpscale(halfvpscale), _central(central), _centres(centres),
         _resslope(resslope), _totTBins(totTBins), _totTBinWidth(totTBinWidth),
         _totEBins(totEBins), _totEBinWidth(totEBinWidth),
         _totdtime(totdtime), _usederr(usederr),
@@ -66,7 +67,8 @@ namespace mu2e {
         _electronicsTimeDelay(electronicsTimeDelay),
         _gasGain(gasGain), _analognoise(analognoise),
         _dVdI(dVdI), _vsat(vsat), _ADCped(ADCped),
-        _pmpEnergyScaleAvg(pmpEnergyScaleAvg)  {}
+        _pmpEnergyScaleAvg(pmpEnergyScaleAvg),
+        _strawHalfvp(strawHalfvp) {}
 
       virtual ~StrawResponse() {}
 
@@ -153,7 +155,7 @@ namespace mu2e {
       int _eBins;
       double _eBinWidth;
       std::vector<double> _edep; // energy deposit boundaries
-      std::vector<double> _halfvp; // effective 1/2 propagation velocity by edep
+      std::vector<double> _halfvpscale; // scaling of effective 1/2 propagation velocity by edep
       double _central; // max wire distance for central wire region
       std::vector<double> _centres; // wire center resolution by edep
       std::vector<double> _resslope; // resolution slope vs position by edep
@@ -191,6 +193,7 @@ namespace mu2e {
       double _vsat;
       double _ADCped;
       double _pmpEnergyScaleAvg;
+      std::array<double, StrawId::_nustraws> _strawHalfvp;
   };
 }
 #endif

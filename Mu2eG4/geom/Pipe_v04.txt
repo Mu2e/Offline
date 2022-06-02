@@ -7,7 +7,7 @@ int Pipe.numberOfPipeTypes = 6;
 int Pipe.version           = 2;
 
 // How many of each type pipe to make, and how many components in each.
-int Pipe.nPipeType1 = 20;  // straight sections of ln2 and lHE pipes   
+int Pipe.nPipeType1 = 20;  // straight sections of ln2 and lHE pipes
 int Pipe.nComponentsInType1 = 10;
 int Pipe.nPipeType2 = 16;  // Bend sections of those pipes
 int Pipe.nComponentsInType2 = 10;
@@ -126,7 +126,7 @@ vector<double> Pipe.centerType5Pipe3 = { -4550.0, -250.0, 17420.0 };
 vector<double> Pipe.centerType5Pipe4 = { -4900.0, -500.0, 17420.0 };
 
 vector<double> Pipe.centerType6Pipe1 = { 8550.0, 0.0, -4500.0};
-  
+
 // The orientation of the pipe.  See docdb xxxx for details.
 string Pipe.orientationType1Pipe1 = "100";
 string Pipe.orientationType1Pipe2 = "010";
@@ -184,27 +184,27 @@ string Pipe.orientationType6Pipe1 = "000";
 
 // Radii in mm
 // First, inner radii
-double Pipe.rInType1Comp1 = 124.23; 
-double Pipe.rInType1Comp2 = 100.015; 
-double Pipe.rInType1Comp3 = 11.05; 
-double Pipe.rInType1Comp4 = 11.05; 
-double Pipe.rInType1Comp5 = 11.05; 
-double Pipe.rInType1Comp6 = 11.05; 
-double Pipe.rInType1Comp7 = 17.4; 
-double Pipe.rInType1Comp8 = 14.224; 
-double Pipe.rInType1Comp9 = 9.464; 
-double Pipe.rInType1Comp10 = 9.464; 
+double Pipe.rInType1Comp1 = 124.23;
+double Pipe.rInType1Comp2 = 100.015;
+double Pipe.rInType1Comp3 = 11.05;
+double Pipe.rInType1Comp4 = 11.05;
+double Pipe.rInType1Comp5 = 11.05;
+double Pipe.rInType1Comp6 = 11.05;
+double Pipe.rInType1Comp7 = 17.4;
+double Pipe.rInType1Comp8 = 14.224;
+double Pipe.rInType1Comp9 = 9.464;
+double Pipe.rInType1Comp10 = 9.464;
 
 double Pipe.rInType2Comp1 = 124.23;
-double Pipe.rInType2Comp2 = 100.015; 
-double Pipe.rInType2Comp3 = 11.05; 
-double Pipe.rInType2Comp4 = 11.05; 
-double Pipe.rInType2Comp5 = 11.05; 
-double Pipe.rInType2Comp6 = 11.05; 
-double Pipe.rInType2Comp7 = 17.4; 
-double Pipe.rInType2Comp8 = 14.224; 
-double Pipe.rInType2Comp9 = 9.464; 
-double Pipe.rInType2Comp10 = 9.464; 
+double Pipe.rInType2Comp2 = 100.015;
+double Pipe.rInType2Comp3 = 11.05;
+double Pipe.rInType2Comp4 = 11.05;
+double Pipe.rInType2Comp5 = 11.05;
+double Pipe.rInType2Comp6 = 11.05;
+double Pipe.rInType2Comp7 = 17.4;
+double Pipe.rInType2Comp8 = 14.224;
+double Pipe.rInType2Comp9 = 9.464;
+double Pipe.rInType2Comp10 = 9.464;
 
 double Pipe.rInType3Comp1 = 200.0;
 
@@ -215,27 +215,27 @@ double Pipe.rInType5Comp1 = 1.0; // "solid"
 double Pipe.rInType6Comp1 = 400.0;
 
 // next, outer radii
-double Pipe.rOutType1Comp1 = 127.0; 
-double Pipe.rOutType1Comp2 = 103.19; 
-double Pipe.rOutType1Comp3 = 12.7; 
-double Pipe.rOutType1Comp4 = 12.7; 
-double Pipe.rOutType1Comp5 = 12.7; 
-double Pipe.rOutType1Comp6 = 12.7; 
-double Pipe.rOutType1Comp7 = 19.05; 
-double Pipe.rOutType1Comp8 = 15.875; 
-double Pipe.rOutType1Comp9 = 11.115; 
-double Pipe.rOutType1Comp10 = 11.115; 
+double Pipe.rOutType1Comp1 = 127.0;
+double Pipe.rOutType1Comp2 = 103.19;
+double Pipe.rOutType1Comp3 = 12.7;
+double Pipe.rOutType1Comp4 = 12.7;
+double Pipe.rOutType1Comp5 = 12.7;
+double Pipe.rOutType1Comp6 = 12.7;
+double Pipe.rOutType1Comp7 = 19.05;
+double Pipe.rOutType1Comp8 = 15.875;
+double Pipe.rOutType1Comp9 = 11.115;
+double Pipe.rOutType1Comp10 = 11.115;
 
 double Pipe.rOutType2Comp1 = 127.0;
-double Pipe.rOutType2Comp2 = 103.19; 
-double Pipe.rOutType2Comp3 = 12.7; 
-double Pipe.rOutType2Comp4 = 12.7; 
-double Pipe.rOutType2Comp5 = 12.7; 
-double Pipe.rOutType2Comp6 = 12.7; 
-double Pipe.rOutType2Comp7 = 19.05; 
-double Pipe.rOutType2Comp8 = 15.875; 
-double Pipe.rOutType2Comp9 = 11.115; 
-double Pipe.rOutType2Comp10 = 11.115; 
+double Pipe.rOutType2Comp2 = 103.19;
+double Pipe.rOutType2Comp3 = 12.7;
+double Pipe.rOutType2Comp4 = 12.7;
+double Pipe.rOutType2Comp5 = 12.7;
+double Pipe.rOutType2Comp6 = 12.7;
+double Pipe.rOutType2Comp7 = 19.05;
+double Pipe.rOutType2Comp8 = 15.875;
+double Pipe.rOutType2Comp9 = 11.115;
+double Pipe.rOutType2Comp10 = 11.115;
 
 double Pipe.rOutType3Comp1 = 260.0;
 
@@ -245,7 +245,7 @@ double Pipe.rOutType5Comp1 = 75.0;
 
 double Pipe.rOutType6Comp1 = 415.0;
 
-// Materials for each type of component pipe.  
+// Materials for each type of component pipe.
 string Pipe.materialType1Comp1   = "StainlessSteel";
 string Pipe.materialType1Comp2   = "G4_Al";
 string Pipe.materialType1Comp3   = "G4_Al";
