@@ -19,8 +19,8 @@ namespace mu2e {
   class PipeMaker {
   public:
 
-    static std::unique_ptr<Pipe>  make(const SimpleConfig& 
-						      config );
+    static std::unique_ptr<Pipe>  make(const SimpleConfig&
+                                                      config );
 
   };
 

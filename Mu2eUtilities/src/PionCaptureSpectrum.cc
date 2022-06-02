@@ -50,7 +50,7 @@ namespace mu2e {
   }
 
   PionCaptureSpectrum::PionCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
-					   CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
+                                           CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
     _spectrum    (Bistirlich      ),
     _spectrum2D  (KrollWadaJoseph ),
     _kMaxUserSet (kMaxUserSet     ),
@@ -147,10 +147,10 @@ namespace mu2e {
     // mass of the recoiling system, neglecting the muon binding energy and nuclear recoil
 
     double M = _MN + _mpi - E;
-					// Set pdf to zero if x is out of bounds
+                                        // Set pdf to zero if x is out of bounds
     if (  x > E || x < 2*_me ) return 0.;
 
-					// Set pdf to zero if x or y are out of bounds
+                                        // Set pdf to zero if x or y are out of bounds
     double eta = sqrt( 1 - pow(2*_me/x,2) );
     if ( abs( y ) > eta ) return 0.;
 
@@ -197,7 +197,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void PionCaptureSpectrum::getElecPosiVectors(double ePhoton, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const {
     double x, y;
-					// generate invariant mass and energy splitting
+                                        // generate invariant mass and energy splitting
     fire(ePhoton,x,y);
     // Get electron/positron energies from x, y values (see Mu2eUtilities/src/PionCaptureSpectrum.cc for details)
     double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );

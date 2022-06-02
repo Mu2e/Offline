@@ -23,7 +23,7 @@
 
 
 
-//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl; 
+//#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
 
 //using namespace std;
@@ -39,7 +39,7 @@ namespace mu2e {
   ExtMonFNALMuonID
   ExtMonFNALMuonIDMaker::read(const SimpleConfig& c, const std::string& prefix,
                              const CLHEP::HepRotation& muonIDInRotationInMu2e, // of the input arm of ref trajectory
-			      const CLHEP::Hep3Vector& refTrajmuonIDEntranceInMu2e,
+                              const CLHEP::Hep3Vector& refTrajmuonIDEntranceInMu2e,
                              double nominalMomentum)
   {
     ExtMonFNALMuonID muid;
@@ -47,7 +47,7 @@ namespace mu2e {
     muid.nominalMomentum_ = nominalMomentum;
 
     c.getVectorDouble(prefix + ".motherTransverseHalfSize", muid.m_motherTransverseHalfSize, 2);
- 
+
     // distance between the points
    //const double MuonIDEntranceToBendPointDistance = muid.outerHalfSize_[2]/cos(trackBendHalfAngle);
 
@@ -55,19 +55,19 @@ namespace mu2e {
     muid.m_motherStartZ = c.getDouble(prefix+".motherStartZ");
     muid.m_motherEndZ = c.getDouble(prefix+".motherEndZ");
    // muid.geometricCenterInMu2e_ = muid.refPointInMu2e_ + muid.muonIDRotationInMu2e_ * CLHEP::Hep3Vector(0, 0, -2000);
-      
+
    if(c.getInt("extMonFNAL.verbosityLevel") > 0) {
      std::cout<<"ExtMonFNALMuonID "<<prefix<<": refTrajMuonIDEntranceInMu2e = "<< refTrajmuonIDEntranceInMu2e<<std::endl;
      std::cout<<"ExtMonFNALMuonID "<<prefix<<": refPointInMu2e = "<<muid.refPointInMu2e_<<std::endl;
      std::cout<<"ExtMonFNALMuonID "<<prefix<<": Momentum = "<<muid.nominalMomentum_<<std::endl;
-     std::cout<<"ExtMonFNALMuonID "<<prefix<<": motherTransverseHalfSize[0] = "<<muid.m_motherTransverseHalfSize[0]<<std::endl;  
-     std::cout<<"ExtMonFNALMuonID "<<prefix<<": motherTransverseHalfSize[1] = "<<muid.m_motherTransverseHalfSize[1]<<std::endl; 
+     std::cout<<"ExtMonFNALMuonID "<<prefix<<": motherTransverseHalfSize[0] = "<<muid.m_motherTransverseHalfSize[0]<<std::endl;
+     std::cout<<"ExtMonFNALMuonID "<<prefix<<": motherTransverseHalfSize[1] = "<<muid.m_motherTransverseHalfSize[1]<<std::endl;
   }
 
     return muid;
 
-    
-  } 
+
+  }
 
 } // namespace mu2e
 

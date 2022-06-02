@@ -50,7 +50,7 @@ void CalibTrkQual(TTree* tree, std::string train_name, std::string leaf_name, TC
       //      outfile << calibtable_bkg_rej;
 
       outfile << "  </Calibration>" << std::endl;
-    }    
+    }
     outfile << xml_string << std::endl;
   }
   std::rename(outfilename.c_str(), xmlfilename.c_str());
@@ -91,7 +91,7 @@ double EfficiencyToTrkQual(TTree* inpt_tree, const char* leaf_name, double effic
   TH1F *cumhist = (TH1F*)hist->GetCumulative();
   double target = (hist->GetEntries())*(1-effic);
   float N = floor(log2(subdivs));
- 
+
   int i = 0;
   int ind = subdivs/2;
   int step = subdivs/4;
@@ -114,5 +114,5 @@ double EfficiencyToTrkQual(TTree* inpt_tree, const char* leaf_name, double effic
   // }
   //  string add_on = " && dequal.";
   //  //  cout << "Relative Efficiency " << inpt_tree->GetEntries((std_cuts+add_on+train_str+" > "+to_string(approx_trkqual)).c_str())/hist->GetEntries() << "\n" << endl;
-  return approx_trkqual;  
+  return approx_trkqual;
 }

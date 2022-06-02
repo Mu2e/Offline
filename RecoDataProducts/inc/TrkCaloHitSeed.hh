@@ -21,23 +21,23 @@ namespace mu2e {
     // accessors
     art::Ptr<CaloCluster> const& caloCluster() const { return _cluster; }
     HitT0 const&  t0() const { return _t0; }
-    Float_t	trkLen() const { return _trklen; }
-    Float_t	hitLen() const { return _hitlen; }
-    Float_t	clusterAxisDOCA() const { return _cdoca; }
-    Float_t	transverseErr() const { return _rerr; }
-    Float_t	time() const { return _time; }
-    Float_t	timeErr() const { return _terr; }
+    Float_t        trkLen() const { return _trklen; }
+    Float_t        hitLen() const { return _hitlen; }
+    Float_t        clusterAxisDOCA() const { return _cdoca; }
+    Float_t        transverseErr() const { return _rerr; }
+    Float_t        time() const { return _time; }
+    Float_t        timeErr() const { return _terr; }
     StrawHitFlag const& flag() const { return _flag; }
     //
     art::Ptr<CaloCluster> _cluster; // cluster this hit is based on
-    HitT0	    _t0;	  // time origin for this hit
-    Float_t	    _trklen;	  // Length from the nominal track start to the POCA of this hit
-    Float_t	    _hitlen;	  // Length along the cluster axis to the POCA of this hit
-    Float_t	    _cdoca;	  // DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
-    Float_t	    _rerr;	  // intrinsic radial error
-    Float_t	    _time;	  // time of this hit, = cluster time at the SIPM
-    Float_t	    _terr;	  // time error assigned to this hit 
-    StrawHitFlag    _flag;	  // flag describing the status of this hit (active, ....)
+    HitT0            _t0;          // time origin for this hit
+    Float_t            _trklen;          // Length from the nominal track start to the POCA of this hit
+    Float_t            _hitlen;          // Length along the cluster axis to the POCA of this hit
+    Float_t            _cdoca;          // DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
+    Float_t            _rerr;          // intrinsic radial error
+    Float_t            _time;          // time of this hit, = cluster time at the SIPM
+    Float_t            _terr;          // time error assigned to this hit
+    StrawHitFlag    _flag;          // flag describing the status of this hit (active, ....)
   };
 }
 #endif

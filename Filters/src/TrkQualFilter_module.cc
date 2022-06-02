@@ -1,7 +1,7 @@
 
 // ======================================================================
 //
-// TrkQualFilter_module: allows filtering on the TrkQual 
+// TrkQualFilter_module: allows filtering on the TrkQual
 // when given a cut efficiency
 //
 // ======================================================================
@@ -58,7 +58,7 @@ namespace mu2e {
     _trainName(conf().trainName()),
     _trkHypo(conf().trkHypo()),
     _effRequest(conf().effRequest())
-    { 
+    {
       _inputTag = _trainName + _trkHypo;
     }
 
@@ -77,15 +77,15 @@ namespace mu2e {
 
     // Get the cut we want
     float trkQualCut = trkQualEntry.getCutVal(1 - _effRequest);
-    
+
     auto trkQualCollsH = event.getValidHandle<TrkQualCollection>(_inputTag);
 
     bool pass = false;
     for(const auto& i_trkQual : *trkQualCollsH) {
       //      std::cout << _trainName << " = " << i_trkQual.MVAOutput() << std::endl;
-            
+
       if (i_trkQual.MVAOutput() >= trkQualCut) {
-      	pass = true;
+              pass = true;
       }
     }
     //    std::cout << "Passed? " << pass << std::endl;

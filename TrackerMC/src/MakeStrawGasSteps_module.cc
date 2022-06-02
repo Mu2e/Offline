@@ -320,7 +320,7 @@ namespace mu2e {
     setStepType(first,pdata,stype);
     // compute the end position and step type
     XYZVectorF end = XYZVectorF(last->postPosition());
-    XYZVectorF momvec = XYZVectorF(0.5*(first->momentum() + last->momentum()));	// average first and last momentum
+    XYZVectorF momvec = XYZVectorF(0.5*(first->momentum() + last->momentum()));        // average first and last momentum
     float  mom = sqrt(momvec.mag2());
     // determine the width from the sigitta or curl radius
     auto pdir = first->momentum().unit();

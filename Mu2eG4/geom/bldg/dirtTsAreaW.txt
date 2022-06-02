@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_TSrWall.ccl
 
@@ -20,7 +20,7 @@ vector<double> dirt.tsArea.W.xPositions = {
   3784.6   // t4_to_S
 };
 
-vector<int>    dirt.tsArea.W.yreplace   = { 2, 3 }; 
+vector<int>    dirt.tsArea.W.yreplace   = { 2, 3 };
 vector<double> dirt.tsArea.W.yPositions = {
   -11734.8,   // t4
   -11734.8,   // t5

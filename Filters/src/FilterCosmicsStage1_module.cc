@@ -1,5 +1,5 @@
 // Pass events based on the energy depositon and hit locations in CRV
-// 
+//
 // Yuri Oksuzian, 2019
 
 #include <string>
@@ -35,19 +35,19 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      
+
       fhicl::Sequence<art::InputTag> inputs {
         Name("inputs"),
           Comment("Particles and StepPointMCs mentioned in thise collections will be preserved.")
           };
-      
+
       fhicl::Atom<double> cutEDepMin {
         Name("cutEDepMin"),
           Comment("The filter passes events if total energy deposition in CRV > cutEDepMin\n"
                   "By default cutEDepMin=-inf\n"),
           -std::numeric_limits<double>::max()
           };
-      
+
       fhicl::Atom<double> cutEDepMax {
         Name("cutEDepMax"),
           Comment("The filter passes events if total energy deposition in CRV < cutEDepMax\n"
@@ -61,14 +61,14 @@ namespace mu2e {
                   "By default cutZMin=-inf\n"),
           -std::numeric_limits<double>::max()
           };
-      
+
       fhicl::Atom<double> cutZMax {
         Name("cutZMax"),
           Comment("The filter passes events if z-pos of the first step in CRV < cutZMax\n"
                   "By default cutZMax=inf\n"),
           std::numeric_limits<double>::max()
           };
-      
+
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -102,24 +102,24 @@ namespace mu2e {
     for(const auto& cn : inputs_) {
       auto ih = event.getValidHandle<StepPointMCCollection>(cn);
       for(const auto& hit : *ih) {
-	// skip steps w/o energy deposition
-	if( hit.ionizingEdep() < std::numeric_limits<double>::epsilon())
-	  continue;
-	// Sum up the total energy deposition in CRV
-	totalEDep = totalEDep + hit.ionizingEdep();
+        // skip steps w/o energy deposition
+        if( hit.ionizingEdep() < std::numeric_limits<double>::epsilon())
+          continue;
+        // Sum up the total energy deposition in CRV
+        totalEDep = totalEDep + hit.ionizingEdep();
 
       }
       std::vector<mu2e::StepPointMC> stepPoints = *ih;
       if (stepPoints.size()){
-	// Check if any steps are inside the specified z-region
-	if(stepPoints.at(0).position().z() > cutZMin_ && stepPoints.at(0).position().z() < cutZMax_)
-	  passedZ = true;
+        // Check if any steps are inside the specified z-region
+        if(stepPoints.at(0).position().z() > cutZMin_ && stepPoints.at(0).position().z() < cutZMax_)
+          passedZ = true;
       }
       else
-	passedZ = true; // No hits in CRV. Pass z-cut as the default     
+        passedZ = true; // No hits in CRV. Pass z-cut as the default
     }
     // Select only events with energy deposition in specified range
-    if(totalEDep > cutEDepMin_ && totalEDep < cutEDepMax_) 
+    if(totalEDep > cutEDepMin_ && totalEDep < cutEDepMax_)
       passedE = true;
 
     bool passed=passedE&passedZ;

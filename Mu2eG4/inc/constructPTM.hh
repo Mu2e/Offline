@@ -20,15 +20,15 @@ namespace mu2e {
 
     // helper methods
 
-    void constructTargetHallPWC(VolumeInfo const& motherVolume, 
-                              const PTMPWC* pwc, 
+    void constructTargetHallPWC(VolumeInfo const& motherVolume,
+                              const PTMPWC* pwc,
                               SimpleConfig const& _config);
 
-    void insertOuterFrame(VolumeInfo const& container, 
+    void insertOuterFrame(VolumeInfo const& container,
                         const PTMPWC* pwc);
 
-    void insertWindows(VolumeInfo const& container, 
-                     const PTMPWC* pwc, 
+    void insertWindows(VolumeInfo const& container,
+                     const PTMPWC* pwc,
                      SimpleConfig const& _config,
                      bool const visible,
                      bool const forceSolid,
@@ -37,14 +37,14 @@ namespace mu2e {
                      bool const doSurfaceCheck,
                      int const verbosity);
 
-    void insertOuterGasBlocks(VolumeInfo const& container, 
-                            const PTMPWC* pwc, 
+    void insertOuterGasBlocks(VolumeInfo const& container,
+                            const PTMPWC* pwc,
                             G4Material* gasMaterial);
 
-    void insertVerticalProfileWires(VolumeInfo const& container, 
-                                  const PTMPWC* pwc, 
-                                  G4Material* gasMaterial, 
-                                  std::string const& wireNameSuffix, 
+    void insertVerticalProfileWires(VolumeInfo const& container,
+                                  const PTMPWC* pwc,
+                                  G4Material* gasMaterial,
+                                  std::string const& wireNameSuffix,
                                   SimpleConfig const& _config,
                                   bool const visible,
                                   bool const forceSolid,
@@ -53,10 +53,10 @@ namespace mu2e {
                                   bool const doSurfaceCheck,
                                   int const verbosity);
 
-    void insertHorizontalProfileWires(VolumeInfo const& container, 
-                                    const PTMPWC* pwc, 
-                                    G4Material* gasMaterial, 
-                                    std::string const& wireNameSuffix, 
+    void insertHorizontalProfileWires(VolumeInfo const& container,
+                                    const PTMPWC* pwc,
+                                    G4Material* gasMaterial,
+                                    std::string const& wireNameSuffix,
                                     SimpleConfig const& _config,
                                     bool const visible,
                                     bool const forceSolid,

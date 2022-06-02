@@ -100,11 +100,11 @@ namespace mu2e {
 
     return info;
 
-    
+
 
   }
 
-  
+
   VolumeInfo nestTubs ( string const & name,
                         double const params[5],
                         G4Material* material,
@@ -113,7 +113,7 @@ namespace mu2e {
                         VolumeInfo const & parent,
                         int copyNo,
                         G4Colour const color,
-			string const & lookupToken
+                        string const & lookupToken
                         ){
 
 
@@ -128,12 +128,12 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;
 
-    
+
 
   }
 

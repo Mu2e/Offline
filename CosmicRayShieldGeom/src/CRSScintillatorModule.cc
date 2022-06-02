@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
 
     CRSScintillatorModule::CRSScintillatorModule():

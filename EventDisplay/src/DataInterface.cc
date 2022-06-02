@@ -376,9 +376,9 @@ void DataInterface::fillGeometry()
     double holeDZ                   = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
 
     double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
-    double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;    
-    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;    
-    double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;    
+    double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;
+    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;
+    double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;
     double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
     double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
 
@@ -429,7 +429,7 @@ void DataInterface::fillGeometry()
 
   //MBS
 /*
-  if(config.getBool("hasMBS", false)) 
+  if(config.getBool("hasMBS", false))
   {
     double mbsinr[3], mbsoutr[3], mbslen[3], mbsz[3];
     mbsinr[0]  = config.getDouble("mbs.BSTCInnerRadius");
@@ -447,7 +447,7 @@ void DataInterface::fillGeometry()
     mbsz[0] = mbsstartz + mbslen[0] ;
     mbsz[1] = mbsstartz + mbslen[0]*2. + mbslen[1];
     mbsz[2] = mbsstartz +mbstotallen - mbslen[2];
-    for (unsigned int i = 0 ; i <3 ; ++i) 
+    for (unsigned int i = 0 ; i <3 ; ++i)
     {
       boost::shared_ptr<ComponentInfo> infoMBS(new ComponentInfo());
       std::string c=Form(c,"MBS %d", i);
@@ -465,9 +465,9 @@ void DataInterface::fillGeometry()
   }
 */
   //MecoStyleProtonAbsorber
-  if(config.getBool("hasProtonAbsorber", false)) 
+  if(config.getBool("hasProtonAbsorber", false))
   {
-    if (!config.getBool("protonabsorber.isHelical", false)) 
+    if (!config.getBool("protonabsorber.isHelical", false))
     {
       double inr[2], outr[2], thickness, halflength, z;
       outr[0] = config.getDouble("protonabsorber.OutRadius0");
@@ -1096,7 +1096,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerStyle(20);
         graph->SetMarkerSize(2);
         for(size_t k=0; k<mu2e::CrvDigi::NSamples; k++)
-        { 
+        {
           graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*digitizationPeriod,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
@@ -1315,7 +1315,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
         }
 
-	int charge = kalrep->charge();
+        int charge = kalrep->charge();
         double t0=kalrep->t0().t0();
         double firsthitfltlen = kalrep->lowFitRange();
         double lasthitfltlen = kalrep->hiFitRange();
@@ -1327,9 +1327,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         double om = params[2];
         double rmax = d0+2.0/om;
 
-	info->setText(1,Form("Charge %i",charge));
-	info->setText(2,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
-	info->setText(3,Form("t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm));
+        info->setText(1,Form("Charge %i",charge));
+        info->setText(2,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
+        info->setText(3,Form("t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm));
     }
   }
 
@@ -1363,7 +1363,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
       double t0   = kalseed.t0().t0();
       double flt0 = kalseed.flt0();
-      double mass = ptable->particle(kalseed.particle()).mass(); 
+      double mass = ptable->particle(kalseed.particle()).mass();
       double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());

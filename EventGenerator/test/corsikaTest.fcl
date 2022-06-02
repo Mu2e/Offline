@@ -84,7 +84,7 @@ physics : {
       module_type: Mu2eG4
       physics: @local::mu2eg4DefaultPhysics
       ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	    TrajectoryControl: @local::mu2eg4DefaultTrajectories
+            TrajectoryControl: @local::mu2eg4DefaultTrajectories
       debug: @local::mu2eg4DefaultDebug
       visualization: @local::mu2eg4NoVisualization
 
@@ -122,7 +122,7 @@ physics : {
   analyzers : {
 
     genCountLogger: {
-         module_type: GenEventCountReader 
+         module_type: GenEventCountReader
     }
 
     corsikaGenPlots: {

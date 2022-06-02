@@ -43,11 +43,11 @@ double         protonabsorber.oPASupportNotchWidth = 130.;
 double         protonabsorber.oPASupportNotchHeight = 110.;
 
 vector<string> protonabsorber.oPASupportMaterials = { "StainlessSteel316"
-						     ,"StainlessSteel316"
-						     ,"StainlessSteel316"
-						     ,"StainlessSteel316"
-						     ,"StainlessSteel316"
-						     ,"StainlessSteel316"};
+                                                     ,"StainlessSteel316"
+                                                     ,"StainlessSteel316"
+                                                     ,"StainlessSteel316"
+                                                     ,"StainlessSteel316"
+                                                     ,"StainlessSteel316"};
 //slats for the stopping target supports
 int            protonabsorber.nOPASupportSlats             = 3;
 vector<double> protonabsorber.oPASupportSlatAngles         = {0.,120.,240.}; // degrees

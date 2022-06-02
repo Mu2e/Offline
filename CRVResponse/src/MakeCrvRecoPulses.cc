@@ -26,8 +26,8 @@ MakeCrvRecoPulses::MakeCrvRecoPulses(float minADCdifference, float defaultBeta, 
                                      float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
                                      float LEtimeFactor, bool allowDoubleGumbel, float doubleGumbelThreshold) :
                                      _f1("peakfitter",Gumbel,0,0,3), _f2("peakfitter",Gumbel2,0,0,6),
-                                     _minADCdifference(minADCdifference), 
-                                     _defaultBeta(defaultBeta), _minBeta(minBeta), _maxBeta(maxBeta), 
+                                     _minADCdifference(minADCdifference),
+                                     _defaultBeta(defaultBeta), _minBeta(minBeta), _maxBeta(maxBeta),
                                      _maxTimeDifference(maxTimeDifference),
                                      _minPulseHeightRatio(minPulseHeightRatio),
                                      _maxPulseHeightRatio(maxPulseHeightRatio),
@@ -42,7 +42,7 @@ void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<unsigned int> &w
   size_t nBins = waveform.size();
   size_t peakStartBin=0;
   size_t peakEndBin=0;
-  for(size_t bin=0; bin<nBins; ++bin) 
+  for(size_t bin=0; bin<nBins; ++bin)
   {
     g.SetPoint(bin,(startTDC+bin)*digitizationPeriod,waveform[bin]-pedestal);
 
@@ -122,7 +122,7 @@ double MakeCrvRecoPulses::Chi2(TF1 &f, const TGraph &g)
   return chi2;
 }
 
-void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, float pedestal, 
+void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, float pedestal,
                                     size_t peakStart, float &sum, size_t &pulseStart, size_t &pulseEnd)
 {
   float maxADC=waveform[peakStart]-pedestal;
@@ -150,8 +150,8 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, f
   if(!foundPulseStart) pulseStart=0;
 }
 
-void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, 
-                                    unsigned int startTDC, float digitizationPeriod, float pedestal, 
+void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
+                                    unsigned int startTDC, float digitizationPeriod, float pedestal,
                                     float calibrationFactor, float calibrationFactorPulseHeight)
 {
   _pulseTimes.clear();
@@ -375,7 +375,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform,
       _pulseStart.push_back(0);
       _pulseEnd.push_back(0);
     }
-    
+
   }
 
 }

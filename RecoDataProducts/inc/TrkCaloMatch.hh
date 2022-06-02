@@ -32,41 +32,41 @@ namespace mu2e {
 
        public:
 
-	   TrkCaloMatch() {}
+           TrkCaloMatch() {}
 
-	   TrkCaloMatch(art::Ptr<TrkCaloIntersect> const& intersect, art::Ptr<CaloCluster> const& cluster, int cluId, double chi2, double chi2Pos, double chi2Time) :
-	      _intersect(intersect), _cluster(cluster), _cluId(cluId), _chi2(chi2), _chi2Pos(chi2Pos), _chi2Time(chi2Time)
-	   {}
+           TrkCaloMatch(art::Ptr<TrkCaloIntersect> const& intersect, art::Ptr<CaloCluster> const& cluster, int cluId, double chi2, double chi2Pos, double chi2Time) :
+              _intersect(intersect), _cluster(cluster), _cluId(cluId), _chi2(chi2), _chi2Pos(chi2Pos), _chi2Time(chi2Time)
+           {}
 
-	   ~TrkCaloMatch(){}
+           ~TrkCaloMatch(){}
 
-	   art::Ptr<TrkCaloIntersect>  const&  intersect()  const {return _intersect;}
-	   KalRepPtr                   const&  trk()        const {return _intersect->trk();}
-	   int                                 trkId()      const {return _intersect->trkId();}
-	   
-	   art::Ptr<CaloCluster>       const&  cluster()    const {return _cluster;}
-	   int                                 cluId()      const {return _cluId;}
-           
-	   double                              chi2()       const {return _chi2;} 
-           double                              chi2Pos()    const {return _chi2Pos;} 
-           double                              chi2Time()   const {return _chi2Time;} 
+           art::Ptr<TrkCaloIntersect>  const&  intersect()  const {return _intersect;}
+           KalRepPtr                   const&  trk()        const {return _intersect->trk();}
+           int                                 trkId()      const {return _intersect->trkId();}
+
+           art::Ptr<CaloCluster>       const&  cluster()    const {return _cluster;}
+           int                                 cluId()      const {return _cluId;}
+
+           double                              chi2()       const {return _chi2;}
+           double                              chi2Pos()    const {return _chi2Pos;}
+           double                              chi2Time()   const {return _chi2Time;}
 
 
 
        private:
 
-	   art::Ptr<TrkCaloIntersect>   _intersect;
-	   art::Ptr<CaloCluster>        _cluster;
-	   int                          _cluId;	   	   
-	   double                       _chi2;	   
-	   double                       _chi2Pos;	   
-	   double                       _chi2Time;	   
+           art::Ptr<TrkCaloIntersect>   _intersect;
+           art::Ptr<CaloCluster>        _cluster;
+           int                          _cluId;
+           double                       _chi2;
+           double                       _chi2Pos;
+           double                       _chi2Time;
 
    };
 
   typedef std::vector<mu2e::TrkCaloMatch> TrkCaloMatchCollection;
 
-} 
+}
 
-#endif 
+#endif
 

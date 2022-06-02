@@ -20,33 +20,33 @@ namespace mu2e {
 
   public:
 
-    // fixme: improve  _materialName initialization 
+    // fixme: improve  _materialName initialization
     ConeSection() : TSSection(),
-                    _rIn1(0.), _rOut1(0.),  _rIn2(0.), _rOut2(0.), _halfZ(0.), 
+                    _rIn1(0.), _rOut1(0.),  _rIn2(0.), _rOut2(0.), _halfZ(0.),
                     _phi0(0.), _deltaPhi(CLHEP::twopi)
-    {      
+    {
       fillData();
     }
 
     ConeSection(double rIn1, double rOut1, double rIn2, double rOut2, double halfZ,
                 double phi0, double deltaPhi,
-                CLHEP::Hep3Vector const & origin, 
+                CLHEP::Hep3Vector const & origin,
                 CLHEP::HepRotation  const & rotation = CLHEP::HepRotation(),
                 std::string const & materialName = "") :
       TSSection(origin, rotation, materialName),
       _rIn1(rIn1), _rOut1(rOut1),  _rIn2(rIn2), _rOut2(rOut2), _halfZ(halfZ),
       _phi0(phi0), _deltaPhi(deltaPhi)
-    {      
-      fillData(); 
+    {
+      fillData();
     }
 
-    ConeSection( const Cone& cone )  : 
+    ConeSection( const Cone& cone )  :
       TSSection(cone.originInMu2e(),  cone.rotation(), cone.materialName()),
       _rIn1  ( cone.innerRadius1() ),
       _rOut1 ( cone.outerRadius1() ),
       _rIn2  ( cone.innerRadius2() ),
       _rOut2 ( cone.outerRadius2() ),
-      _halfZ ( cone.zHalfLength()  ), 
+      _halfZ ( cone.zHalfLength()  ),
       _phi0  ( cone.phi0()         ),
       _deltaPhi ( cone.deltaPhi()  )
     {
@@ -55,7 +55,7 @@ namespace mu2e {
 
     ~ConeSection(){}
 
-    void set(double rIn1, double rOut1, double rIn2, double rOut2, double halfZ, 
+    void set(double rIn1, double rOut1, double rIn2, double rOut2, double halfZ,
              double phi0, double deltaPhi,
              CLHEP::Hep3Vector const & origin, CLHEP::HepRotation const & rotation=CLHEP::HepRotation(),
              std::string const & materialName = "" ) {

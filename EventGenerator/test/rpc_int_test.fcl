@@ -29,42 +29,42 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  8
-	maxUniqueEngines :  20
+        baseSeed         :  8
+        maxUniqueEngines :  20
     }
 
     TimeTracker : {
-	printSummary : true
-	dbOutput : {
-	    filename  : ""
-	    overwrite : false
-	}
+        printSummary : true
+        dbOutput : {
+            filename  : ""
+            overwrite : false
+        }
     }
 }
 services.scheduler.wantSummary: true
 
 source    : { module_type : EmptyEvent   }
 
-producers : { 
-    @table::EventGenerator.producers 
+producers : {
+    @table::EventGenerator.producers
     @table::Mu2eG4.producers
 }
 
 physics : {
-    producers: { @table::producers 
-	generate              : { @table::producers.StoppedParticleRPCGun
-	    doHistograms      : true
-	    physics: { @table::producers.StoppedParticleRPCGun.physics
-		generateIntConversion : 1
-	    }
-	}
+    producers: { @table::producers
+        generate              : { @table::producers.StoppedParticleRPCGun
+            doHistograms      : true
+            physics: { @table::producers.StoppedParticleRPCGun.physics
+                generateIntConversion : 1
+            }
+        }
     }
-    
-    p1            : [ generate ] 
+
+    p1            : [ generate ]
 
     trigger_paths : [ p1 ]
 
-    #    out : [detectorOutput]  
+    #    out : [detectorOutput]
     out           : [     ]
     end_paths     : [ out ]
 }
@@ -77,7 +77,7 @@ services.TFileService.fileName            : "nts.user.rpc_int_test.xxx.000001.ro
 #outputs.detectorOutput.SelectEvents       : [ p3l ]
 #outputs.detectorOutput.fileName           : "sim.user.rmc_test.xxx.000001.art"
 #------------------------------------------------------------------------------
-# uncomment to avoid waisting time on the initialization of detailed neutron 
-# cross sections - that shouldn't affect the CE simulation 
+# uncomment to avoid waisting time on the initialization of detailed neutron
+# cross sections - that shouldn't affect the CE simulation
 #------------------------------------------------------------------------------
 physics.producers.g4run.physics.physicsListName : "QGSP_BERT"

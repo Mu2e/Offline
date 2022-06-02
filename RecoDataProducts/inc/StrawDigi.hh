@@ -41,7 +41,7 @@ namespace mu2e {
       TrkTypes::ADCWaveform _adc;
   };
   typedef std::vector<mu2e::StrawDigiADCWaveform> StrawDigiADCWaveformCollection;
-  
+
   class StrawDigi {
     public:
       StrawDigi() = default;

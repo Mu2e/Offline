@@ -29,7 +29,7 @@ namespace mu2e {
 
   class SimParticle;
   class StrawDigiMCCollection;
-  
+
   class DeltaFinderDiagCluster: public ModuleHistToolBase {
 
     enum {
@@ -57,19 +57,19 @@ namespace mu2e {
       vector<HitData_t*>       _hits;
       int                      _unique;
       const mu2e::SimParticle* _simp;    // SimParticle corresponding to the first hit
-      
-      HitCluster_t() { 
-	init(); 
+
+      HitCluster_t() {
+        init();
       }
 
       void init() {
-	_hits.clear();
-	_unique = -1;
-	_simp   = NULL;
+        _hits.clear();
+        _unique = -1;
+        _simp   = NULL;
       }
     };
 
-    
+
     struct Hist_t {
       EventHist_t*       fEvent     [kNEventHistSets     ];
       HitClusterHist_t*  fHitCluster[kNHitClusterHistSets];
@@ -87,9 +87,9 @@ namespace mu2e {
 
     int                                   _eventNumber;
     //    const StrawDigiMCCollection*          _listOfMcStrawHits;
-    
+
     std::vector<McPart_t*>                _list_of_mc_particles; // list_of_particles with hits in the tracker
-    std::vector<McPart_t*>                _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart 
+    std::vector<McPart_t*>                _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart
 
     Data_t*                               _data;                 // diag data, passed from the caller, cached
 
@@ -100,9 +100,9 @@ namespace mu2e {
     int                                   _nsh;  // number of straw hits
     int                                   _nosh;  // number of straw hits in the oTracker structure
     int                                   _nhcl; // number of hit clusters
-    
+
   public:
-    
+
     DeltaFinderDiagCluster(const fhicl::ParameterSet& PSet);
     ~DeltaFinderDiagCluster();
 
@@ -115,7 +115,7 @@ namespace mu2e {
     void        fillHitClusterHistograms(HitClusterHist_t* Hist, HitCluster_t*        Mc );
 
     int         associateMcTruth();
-    
+
     void        printHitData(const HitData_t* Hd, int Index);
     void        printHitClusters();
     void        printOTracker();
@@ -148,11 +148,11 @@ namespace mu2e {
     if (_mcDiag != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
     else              _mcUtils = std::make_unique<McUtilsToolBase>();
   }
-  
+
 //-----------------------------------------------------------------------------
   DeltaFinderDiagCluster::~DeltaFinderDiagCluster() {
   }
-  
+
 //-----------------------------------------------------------------------------
   void DeltaFinderDiagCluster::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
 
@@ -188,15 +188,15 @@ namespace mu2e {
     int book_event_histset[kNEventHistSets];
     for (int i=0; i<kNEventHistSets; i++) book_event_histset[i] = 0;
 
-    book_event_histset[ 0] = 1;		// all events
+    book_event_histset[ 0] = 1;                // all events
 
     for (int i=0; i<kNEventHistSets; i++) {
       if (book_event_histset[i] != 0) {
-	sprintf(folder_name,"evt_%i",i);
-	art::TFileDirectory dir = Tfs->mkdir(folder_name);
-	
-	_hist.fEvent[i] = new EventHist_t;
-	bookEventHistograms(_hist.fEvent[i],&dir);
+        sprintf(folder_name,"evt_%i",i);
+        art::TFileDirectory dir = Tfs->mkdir(folder_name);
+
+        _hist.fEvent[i] = new EventHist_t;
+        bookEventHistograms(_hist.fEvent[i],&dir);
       }
     }
 //-----------------------------------------------------------------------------
@@ -205,17 +205,17 @@ namespace mu2e {
     int book_hit_cluster_histset[kNHitClusterHistSets];
     for (int i=0; i<kNHitClusterHistSets; i++) book_hit_cluster_histset[i] = 0;
 
-    book_hit_cluster_histset[  0] = 1;		// all hit clusters
-    book_hit_cluster_histset[  1] = 1;		// unique hit clusters
-    book_hit_cluster_histset[  2] = 1;		// merged hit clusters
+    book_hit_cluster_histset[  0] = 1;                // all hit clusters
+    book_hit_cluster_histset[  1] = 1;                // unique hit clusters
+    book_hit_cluster_histset[  2] = 1;                // merged hit clusters
 
     for (int i=0; i<kNHitClusterHistSets; i++) {
       if (book_hit_cluster_histset[i] != 0) {
-	sprintf(folder_name,"hcl_%i",i);
-	art::TFileDirectory dir = Tfs->mkdir(folder_name);
+        sprintf(folder_name,"hcl_%i",i);
+        art::TFileDirectory dir = Tfs->mkdir(folder_name);
 
-	_hist.fHitCluster[i] = new HitClusterHist_t;
-	bookHitClusterHistograms(_hist.fHitCluster[i],&dir);
+        _hist.fHitCluster[i] = new HitClusterHist_t;
+        bookHitClusterHistograms(_hist.fHitCluster[i],&dir);
       }
     }
     return 0;
@@ -226,7 +226,7 @@ namespace mu2e {
   void  DeltaFinderDiagCluster::fillEventHistograms(EventHist_t* Hist) {
 
     int event_number = _data->event->event();
-    
+
     Hist->fEventNumber->Fill(event_number);
     Hist->fNHits->Fill(_nsh);
     Hist->fNOHits->Fill(_nosh);
@@ -260,9 +260,9 @@ namespace mu2e {
     int en = _data->event->event();
     if (_mcDiag) {
       if (_eventNumber != en) {
-	_eventNumber       = en;
-	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
-	associateMcTruth();
+        _eventNumber       = en;
+        //        _listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+        associateMcTruth();
       }
     }
 
@@ -273,14 +273,14 @@ namespace mu2e {
 
     for (int station=0; station<kNStations; station++) {
       for (int face=0; face<kNFaces; face++) {
-	for (int ip=0; ip<3; ip++) {
-	  _nhcl += _list_of_hclusters[station][face][ip].size();
+        for (int ip=0; ip<3; ip++) {
+          _nhcl += _list_of_hclusters[station][face][ip].size();
 
-	  PanelZ_t* pz = &_data->oTracker[station][face][ip];
-	  int nosh      = pz->fHitData.size();
+          PanelZ_t* pz = &_data->oTracker[station][face][ip];
+          int nosh      = pz->fHitData.size();
 
-	  _nosh += nosh;
-	}
+          _nosh += nosh;
+        }
       }
     }
 //-----------------------------------------------------------------------------
@@ -292,15 +292,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int station=0; station<kNStations; station++) {
       for (int face=0; face<kNFaces; face++) {
-	for (int ip=0; ip<3; ip++) {
-	  //	  int ncl = _list_of_hclusters[station][face][ip].size();
-	  for (auto hcl : _list_of_hclusters[station][face][ip]) {
-	    fillHitClusterHistograms(_hist.fHitCluster[0],&hcl);
+        for (int ip=0; ip<3; ip++) {
+          //          int ncl = _list_of_hclusters[station][face][ip].size();
+          for (auto hcl : _list_of_hclusters[station][face][ip]) {
+            fillHitClusterHistograms(_hist.fHitCluster[0],&hcl);
 
-	    if (hcl._unique == 1) fillHitClusterHistograms(_hist.fHitCluster[1],&hcl);
-	    else                  fillHitClusterHistograms(_hist.fHitCluster[2],&hcl);
-	  }
-	}
+            if (hcl._unique == 1) fillHitClusterHistograms(_hist.fHitCluster[1],&hcl);
+            else                  fillHitClusterHistograms(_hist.fHitCluster[2],&hcl);
+          }
+        }
       }
     }
 
@@ -316,100 +316,100 @@ namespace mu2e {
 
     for (int station=0; station<kNStations; ++station) {
       for (int face=0; face<kNFaces; ++face) {
-	for (int ip=0; ip<3; ++ip) {
-	  vector<HitCluster_t>* list = & _list_of_hclusters[station][face][ip];
+        for (int ip=0; ip<3; ++ip) {
+          vector<HitCluster_t>* list = & _list_of_hclusters[station][face][ip];
 
-	  list->clear();
+          list->clear();
 //-----------------------------------------------------------------------------
 // count clusters in a given panel
 //-----------------------------------------------------------------------------
-	  PanelZ_t* pz = &_data->oTracker[station][face][ip];
-	  int nh = pz->fHitData.size();
+          PanelZ_t* pz = &_data->oTracker[station][face][ip];
+          int nh = pz->fHitData.size();
 
-	  for (int ih=0; ih<nh; ih++) {
-	    HitData_t* hd  = &pz->fHitData[ih];
-	    uint16_t is    = hd->fStraw->id().straw();
+          for (int ih=0; ih<nh; ih++) {
+            HitData_t* hd  = &pz->fHitData[ih];
+            uint16_t is    = hd->fStraw->id().straw();
 //------------------------------------------------------------------------------
 // first , see if this hit belongs to already found hit cluster
 //-----------------------------------------------------------------------------
-	    int added = 0;
-	    for (auto hit_cluster = list->begin(); hit_cluster != list->end(); hit_cluster++) {
-	      HitData_t* last_hit = hit_cluster->_hits.back();
-	      uint16_t lstraw = last_hit->fStraw->id().straw();
-	      if (is-lstraw < 3) {
+            int added = 0;
+            for (auto hit_cluster = list->begin(); hit_cluster != list->end(); hit_cluster++) {
+              HitData_t* last_hit = hit_cluster->_hits.back();
+              uint16_t lstraw = last_hit->fStraw->id().straw();
+              if (is-lstraw < 3) {
 //-----------------------------------------------------------------------------
 // hit is close, check time and z
 //-----------------------------------------------------------------------------
-		float dt = hd->fHit->time()-last_hit->fHit->time();
-		float dw = hd->fPos->wireDist()-last_hit->fPos->wireDist();
+                float dt = hd->fHit->time()-last_hit->fHit->time();
+                float dw = hd->fPos->wireDist()-last_hit->fPos->wireDist();
 
-		double sigw1 =  hd->fPos->posRes(StrawHitPosition::wire);
-		double sigw2 =  last_hit->fPos->posRes(StrawHitPosition::wire);
+                double sigw1 =  hd->fPos->posRes(StrawHitPosition::wire);
+                double sigw2 =  last_hit->fPos->posRes(StrawHitPosition::wire);
 
-		double chi2w = dw*dw/(sigw1*sigw1+sigw2*sigw2);
+                double chi2w = dw*dw/(sigw1*sigw1+sigw2*sigw2);
 
-		if ((fabs(dt) < 50) && (chi2w < _maxChi2W)) {
-		  hit_cluster->_hits.push_back(hd);
-		  added = 1;
-		  break;
-		}
-	      }
-	    }
+                if ((fabs(dt) < 50) && (chi2w < _maxChi2W)) {
+                  hit_cluster->_hits.push_back(hd);
+                  added = 1;
+                  break;
+                }
+              }
+            }
 
-	    if (added == 1)                                   continue;
+            if (added == 1)                                   continue;
 //-----------------------------------------------------------------------------
 // new hit cluster
 //-----------------------------------------------------------------------------
-	    HitCluster_t hcl;
+            HitCluster_t hcl;
 
-	    hcl._hits.push_back(hd);
+            hcl._hits.push_back(hd);
 
-	    const StrawHit* sh            = hd->fHit;
-	    int i0                        = sh-sh0;
-	    const mu2e::SimParticle* simp = _mcUtils->getSimParticle(_data->event,i0);
-	    hcl._simp                     = simp;
+            const StrawHit* sh            = hd->fHit;
+            int i0                        = sh-sh0;
+            const mu2e::SimParticle* simp = _mcUtils->getSimParticle(_data->event,i0);
+            hcl._simp                     = simp;
 
-	    _list_of_hclusters[station][face][ip].push_back(hcl);
-	  }
-	}
+            _list_of_hclusters[station][face][ip].push_back(hcl);
+          }
+        }
       }
     }
 //-----------------------------------------------------------------------------
-// at this point, lists of hit clusters are formed, need to check whether 
+// at this point, lists of hit clusters are formed, need to check whether
 // all hits in a cluster belong to the same particle
 //-----------------------------------------------------------------------------
     for (int station=0; station<kNStations; station++) {
       for (int face=0; face<kNFaces; face++) {
-	for (int ip=0; ip<3; ++ip) {
-	  int ncl = _list_of_hclusters[station][face][ip].size();
-	  for (int icl=0; icl<ncl; icl++) {
-	    HitCluster_t* hcl = &_list_of_hclusters[station][face][ip][icl];
-	    int nhits = hcl->_hits.size();
+        for (int ip=0; ip<3; ++ip) {
+          int ncl = _list_of_hclusters[station][face][ip].size();
+          for (int icl=0; icl<ncl; icl++) {
+            HitCluster_t* hcl = &_list_of_hclusters[station][face][ip][icl];
+            int nhits = hcl->_hits.size();
 
-	    const StrawHit* sh           = hcl->_hits.front()->fHit;
-	    int i0                       = sh-sh0;
-	    const mu2e::SimParticle* mc0 = _mcUtils->getSimParticle(_data->event,i0);
+            const StrawHit* sh           = hcl->_hits.front()->fHit;
+            int i0                       = sh-sh0;
+            const mu2e::SimParticle* mc0 = _mcUtils->getSimParticle(_data->event,i0);
 
-	    hcl->_unique = 1;
+            hcl->_unique = 1;
 
-	    for (int ih=1; ih<nhits; ih++) {
-	      const StrawHit* sh           = hcl->_hits[ih]->fHit;
-	      int i1                       = sh-sh0;
-	      const mu2e::SimParticle* mc1 = _mcUtils->getSimParticle(_data->event,i1);
+            for (int ih=1; ih<nhits; ih++) {
+              const StrawHit* sh           = hcl->_hits[ih]->fHit;
+              int i1                       = sh-sh0;
+              const mu2e::SimParticle* mc1 = _mcUtils->getSimParticle(_data->event,i1);
 
-	      if (mc1 != mc0) {
-		hcl->_unique = 0;
-		break;
-	      }
-	    }
-	  }
-	}
+              if (mc1 != mc0) {
+                hcl->_unique = 0;
+                break;
+              }
+            }
+          }
+        }
       }
     }
 
     return 0;
   }
-  
+
 //-----------------------------------------------------------------------------
 // debugLevel > 0: print seeds
 //-----------------------------------------------------------------------------
@@ -422,10 +422,10 @@ namespace mu2e {
     int en = _data->event->event();
     if (_mcDiag) {
       if (_eventNumber != en) {
-	_eventNumber       = en;
-	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
-	//	InitMcDiag();
-	associateMcTruth();
+        _eventNumber       = en;
+        //        _listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+        //        InitMcDiag();
+        associateMcTruth();
       }
     }
 
@@ -457,14 +457,14 @@ namespace mu2e {
 
     const StrawHitPosition* shp = Hd->fPos;
     const StrawHitFlag*     shf = &_data->shfcol->at(loc);
-   
+
     int radselOK        = (! shf->hasAnyProperty(StrawHitFlag::radsel));
     int edepOK          = (! shf->hasAnyProperty(StrawHitFlag::energysel));
 
     const SimParticle* sim(0);
     int                pdg_id(-9999), sim_id(-9999);
     float              mc_mom(-9999.);
-	
+
     if (_mcDiag) {
       sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
@@ -473,30 +473,30 @@ namespace mu2e {
     }
 
     const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawId());
-    
+
     printf("%5i ",loc);
     printf("%5i" ,sh->strawId().asUint16());
-	
+
     printf("  %2i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
-	   straw->id().getStation(),
-	   straw->id().getPlane(),
-	   straw->id().getPanel(),
-	   straw->id().getLayer(),
-	   straw->id().getStraw(),
-	   sh->time(),
-	   sh->dt(),
-	   sh->energyDep(),
-	   shp->wireDist(),
-	   shp->posRes(StrawHitPosition::wire),
-	   pdg_id,
-	   sim_id,
-	   mc_mom,
-	   shp->pos().x(),
-	   shp->pos().y(),
-	   shp->pos().z(),
-	   Hd->fDeltaIndex,
-	   radselOK,
-	   edepOK);
+           straw->id().getStation(),
+           straw->id().getPlane(),
+           straw->id().getPanel(),
+           straw->id().getLayer(),
+           straw->id().getStraw(),
+           sh->time(),
+           sh->dt(),
+           sh->energyDep(),
+           shp->wireDist(),
+           shp->posRes(StrawHitPosition::wire),
+           pdg_id,
+           sim_id,
+           mc_mom,
+           shp->pos().x(),
+           shp->pos().y(),
+           shp->pos().z(),
+           Hd->fDeltaIndex,
+           radselOK,
+           edepOK);
   }
 
 //-----------------------------------------------------------------------------
@@ -508,17 +508,17 @@ namespace mu2e {
     int nhitso = 0;
     for (int is=0; is<kNStations; is++) {
       for (int face=0; face<kNFaces; face++) {
-	for (int ip=0; ip<kNPanelsPerFace; ip++) {
-	  PanelZ_t* pz = &_data->oTracker[is][face][ip];
-	  printf("#        --------------- station: %2i face: %2i panel: %2i nhits[0]:%3li\n",
-		 is,face,ip, pz->fHitData.size());
-	  printHitData(NULL,-1);
-	  int nh = pz->fHitData.size();
-	  for (int ih=0; ih<nh; ih++) {
-	    printHitData(&pz->fHitData[ih],ih);
-	  }
-	  nhitso += nh;
-	}
+        for (int ip=0; ip<kNPanelsPerFace; ip++) {
+          PanelZ_t* pz = &_data->oTracker[is][face][ip];
+          printf("#        --------------- station: %2i face: %2i panel: %2i nhits[0]:%3li\n",
+                 is,face,ip, pz->fHitData.size());
+          printHitData(NULL,-1);
+          int nh = pz->fHitData.size();
+          for (int ih=0; ih<nh; ih++) {
+            printHitData(&pz->fHitData[ih],ih);
+          }
+          nhitso += nh;
+        }
       }
     }
 
@@ -534,23 +534,23 @@ namespace mu2e {
     int nhitso = 0;
     for (int is=0; is<kNStations; is++) {
       for (int face=0; face<kNFaces; face++) {
-	for (int ip=0; ip<kNPanelsPerFace; ip++) {
-	  vector<HitCluster_t>* list = &_list_of_hclusters[is][face][ip];
-	  int nhcl = list->size();
-	  printf("#        --------------- station: %2i face: %2i panel: %2i N(clusters): %3i\n",
-		 is,face,ip, nhcl);
+        for (int ip=0; ip<kNPanelsPerFace; ip++) {
+          vector<HitCluster_t>* list = &_list_of_hclusters[is][face][ip];
+          int nhcl = list->size();
+          printf("#        --------------- station: %2i face: %2i panel: %2i N(clusters): %3i\n",
+                 is,face,ip, nhcl);
 
-	  for (int ihcl=0; ihcl<nhcl; ihcl++) {
-	    HitCluster_t* hcl = &(*list)[ihcl];
-	    int nh = hcl->_hits.size();
-	    printf(" -------------------------- hit cluster # %2i nhits = %i unique=%i\n",ihcl,nh,hcl->_unique);
-	    printHitData(NULL,-1);
-	    for (int ih=0; ih<nh; ih++) {
-	      printHitData(hcl->_hits[ih],ih);
-	    }
-	    nhitso += nh;
-	  }
-	}
+          for (int ihcl=0; ihcl<nhcl; ihcl++) {
+            HitCluster_t* hcl = &(*list)[ihcl];
+            int nh = hcl->_hits.size();
+            printf(" -------------------------- hit cluster # %2i nhits = %i unique=%i\n",ihcl,nh,hcl->_unique);
+            printHitData(NULL,-1);
+            for (int ih=0; ih<nh; ih++) {
+              printHitData(hcl->_hits[ih],ih);
+            }
+            nhitso += nh;
+          }
+        }
       }
     }
 

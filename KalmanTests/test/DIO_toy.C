@@ -67,7 +67,7 @@ Dio_toy(unsigned ntrials,double corefactor=1.0,double ratefactor=1.0,double lamb
   double plothi(105.0);
   double receff(0.11);
   double nstopped(6.7e17);
-  double capfrac(0.609); 
+  double capfrac(0.609);
   double decayfrac = 1.0 - capfrac;
   double ndecay = nstopped*decayfrac;
   size_t nbins(151);
@@ -113,7 +113,7 @@ Dio_toy(unsigned ntrials,double corefactor=1.0,double ratefactor=1.0,double lamb
     for(unsigned jtrial=0;jtrial<nres;++jtrial){
       double mres = cball->GetRandom();
       momres->Fill(mres);
-      recodio->Fill(diomom+mres); 
+      recodio->Fill(diomom+mres);
     }
   }
   rawdio->Scale(rawscale);

@@ -42,7 +42,7 @@ namespace mu2e
   private:
 
     art::InputTag   _cosmicTag;
-    TrkFitFlag      _goodcosmic; 
+    TrkFitFlag      _goodcosmic;
     unsigned int    _minnsh;
     int             _debug;
     unsigned        _nevt, _npass;
@@ -68,12 +68,12 @@ namespace mu2e
     const CosmicTrackSeedCollection* coscol = cosH.product();
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
-     
+
       if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
-       
-        ++_npass;        
+
+        ++_npass;
         size_t index = std::distance(coscol->begin(),icos);
-	triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
+        triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

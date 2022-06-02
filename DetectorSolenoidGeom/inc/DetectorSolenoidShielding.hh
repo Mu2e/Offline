@@ -23,8 +23,8 @@ namespace mu2e {
     const Tube* getVPSPmain()      const { return _vpspMain.get();      }
     const Tube* getVPSPendSeal()   const { return _vpspEndSeal.get();   }
     const Tube* getVPSPendFlange() const { return _vpspEndFlange.get(); }
-                                                  
-    // IFB                                        
+
+    // IFB
     const Tube* getIFBmain()       const { return _ifbMain.get();      }
     const Tube* getIFBendSeal()    const { return _ifbEndSeal.get();   }
     const Tube* getIFBendPlug()    const { return _ifbEndPlug.get();   }
@@ -46,7 +46,7 @@ namespace mu2e {
     std::unique_ptr<Tube> _vpspEndSeal;
     std::unique_ptr<Tube> _vpspEndFlange;
 
-    // IFB                       
+    // IFB
     std::unique_ptr<Tube> _ifbMain;
     std::unique_ptr<Tube> _ifbEndSeal;
     std::unique_ptr<Tube> _ifbEndPlug;

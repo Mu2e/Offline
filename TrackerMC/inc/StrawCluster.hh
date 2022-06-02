@@ -62,7 +62,7 @@ namespace mu2e {
       private:
         ClusterType _type; // type of cluster
         StrawId  _strawId;      // Straw id
-        StrawEnd	_end;		  // which end of the straw
+        StrawEnd        _end;                  // which end of the straw
         float  _time;            // microbunch time at the wire end, in ns since EventWindowMarker, offsets and wrapping applied
         float  _charge;          // charge at the wire end, in units of pC
         float _wdist;    // propagation distance from cluster to the wire end

@@ -8,11 +8,11 @@ namespace mu2e {
   // gas corresponding to wires. This same wire numbering is used for the
   // copyNo argument when placing the wire gas in the geometry.
   PTMPWC::PTMPWC(std::string const& nameSuffix,
-                     double frameHeight, 
-                     double frameWidth, 
-                     double frameThick, 
+                     double frameHeight,
+                     double frameWidth,
+                     double frameThick,
                      double outerPlateThick,
-                     std::string const& frameMaterialName, 
+                     std::string const& frameMaterialName,
                      double windowHeight,
                      double windowWidth,
                      double windowThick,
@@ -29,7 +29,7 @@ namespace mu2e {
                      double hv1Zframes,
                      double hv2Zframes,
                      double hv3Zframes,
-                     double ground2Zframes) : 
+                     double ground2Zframes) :
     _nameSuffix(nameSuffix),
     _originInParent(originInParent),
     _frameHeight(frameHeight),

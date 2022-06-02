@@ -1,4 +1,4 @@
-#include "LoadChain.C" 
+#include "LoadChain.C"
 #include "Offline/TrkDiag/test/TrkRecoDiag.C+"
 #include "TCanvas.h"
 #include <string>

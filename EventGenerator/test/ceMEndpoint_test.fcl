@@ -24,28 +24,28 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  8
-	maxUniqueEngines :  20
+        baseSeed         :  8
+        maxUniqueEngines :  20
     }
 
     TimeTracker : {
-	printSummary : true
-	dbOutput : {
-	    filename  : ""
-	    overwrite : false
-	}
+        printSummary : true
+        dbOutput : {
+            filename  : ""
+            overwrite : false
+        }
     }
 }
 services.scheduler.wantSummary: true
 
 physics : {
     producers: {
-	generate              : { @table::EventGenerator.producers.ceMEndpoint
-	    doHistograms              : true
-	}
+        generate              : { @table::EventGenerator.producers.ceMEndpoint
+            doHistograms              : true
+        }
     }
-    
-    p1            : [ generate ] 
+
+    p1            : [ generate ]
 
     trigger_paths : [ p1 ]
 }

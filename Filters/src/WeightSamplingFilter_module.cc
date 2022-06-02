@@ -38,7 +38,7 @@ namespace mu2e {
       bool beginRun(art::Run& run) override;
       bool endRun(art::Run& run) override;
       bool filter(art::Event& event) override;
-      
+
       art::InputTag _evtWtModule;
       art::InputTag _genParticleModule;
       art::RandomNumberGenerator::base_engine_t& _engine;
