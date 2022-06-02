@@ -57,6 +57,11 @@ Mu2eKinKal : {
       [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 10., 100.0 ],
+      [-1.0, 10., 100.0 ],
+      [-1.0, 10., 100.0 ]
+    ]
   }
 
   KKDRIFTFIT: {
@@ -81,6 +86,11 @@ Mu2eKinKal : {
       [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 10.0, 100.0 ],
+      [-1.0, 5.0,  100.0 ],
+      [-1.0, 4.0, 100.0 ]
+    ]
   }
 
   KKSEEDEXT: {
@@ -101,6 +111,9 @@ Mu2eKinKal : {
       [ 5.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 10.0, 100.0 ]
+    ]
   }
 
   KKDRIFTEXT: {
@@ -127,6 +140,12 @@ Mu2eKinKal : {
       [ 6.0, 0.5, 5.0 ],
       [ 6.0, 0.5, 5.0 ],
       [ 6.0, 0.5, 5.0 ]
+    ]
+    StrawXingUpdaterSettings : [
+      [-1.0, 5.0, 5.0 ],
+      [0.5, 4.0, 4.0 ],
+      [0.4, 3.0, 4.0 ],
+      [0.3, 3.0, 4.0 ]
     ]
   }
 
