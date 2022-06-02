@@ -7,6 +7,7 @@
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 //#include "Mu2eKinKal/inc/KKPanelHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
@@ -32,7 +33,6 @@
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Trajectory/Line.hh"
-#include "KinKal/Detector/StrawMaterial.hh"
 // Other
 #include "cetlib_except/exception.h"
 #include <memory>
@@ -41,7 +41,6 @@
 namespace mu2e {
   using KinKal::WireHitState;
   using KinKal::Line;
-  using KinKal::StrawMaterial;
   using KinKal::TimeRange;
   using KinKal::Status;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
@@ -79,13 +78,13 @@ namespace mu2e {
       // construct from fit configuration objects
       explicit KKFit(Mu2eConfig const& fitconfig);
       // helper functions used to create components of the fit
-      void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
+      void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
           PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       // extend a track with a new configuration, optionally searching for and adding hits and straw material
       void extendTrack(Config const& config, KKBField const& kkbf, Tracker const& tracker,
-          StrawResponse const& strawresponse, StrawMaterial const& smat, ComboHitCollection const& chcol,
+          StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
           KKTRK& kktrk) const;
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& tsave) const;
@@ -97,9 +96,9 @@ namespace mu2e {
       bool addMaterial() const { return addmat_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
-       void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
+       void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
           KKTRK& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
-      void addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const;
+      void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
      PDGCode::type tpart_;
       TrkFitDirection tdir_;
@@ -149,15 +148,13 @@ namespace mu2e {
     sbuff_(fitconfig.strawBuffer()),
     printLevel_(fitconfig.printLevel()),
     needstrackerinfo_(true)
-  {
-  }
+  {}
 
-  template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KKBField const& kkbf, StrawMaterial const& smat,
+  template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KKBField const& kkbf, KKStrawMaterial const& smat,
       PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
     // initialize hits as null (no drift).  Drift is turned on when updating
     auto const& sprop = tracker.strawProperties();
-    double rstraw = sprop.strawInnerRadius();
     WireHitState whstate(WireHitState::null); // initial wire hit state
 
     // loop over the individual straw combo hits
@@ -177,10 +174,10 @@ namespace mu2e {
       CAHint hint(ptime,htime);
       // compute PTCA between the seed trajectory and this straw
       PTCA ptca(ptraj, wline, hint, tprec_ );
-      // create the material crossing
-      if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
-      // create the hit
-      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, rstraw, combohit, straw, strawidx, strawresponse));
+       // create the hit
+      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, combohit, straw, strawidx, strawresponse));
+     // create the material crossing, including this reference
+      if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
     }
   }
 
@@ -216,7 +213,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::extendTrack(Config const& exconfig, KKBField const& kkbf, Tracker const& tracker,
-          StrawResponse const& strawresponse, StrawMaterial const& smat, ComboHitCollection const& chcol,
+          StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
           KKTRK& kktrk) const {
     KKSTRAWHITCOL addstrawhits;
@@ -234,12 +231,11 @@ namespace mu2e {
     kktrk.extendTrack(exconfig,addstrawhits,addcalohits,addstrawxings);
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
+  template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
       KKTRK& kktrk, ComboHitCollection const& chcol,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
-    // initialize hits as null (no drift).  Drift is turned on when updating
     auto const& sprop = tracker.strawProperties();
-    double rstraw = sprop.strawInnerRadius();
+   // initialize hits as null (no drift).  Drift is turned on when updating
     WireHitState whstate(WireHitState::null); // initial wire hit state;
     auto const& ftraj = kktrk.fitTraj();
     // build the set of existing hits
@@ -262,7 +258,7 @@ namespace mu2e {
             // compute PTCA between the trajectory and this straw
             PTCA ptca(ftraj, wline, hint, tprec_ );
             if(fabs(ptca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
-              hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, rstraw, strawhit, straw, ich, strawresponse));
+              hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, strawhit, straw, ich, strawresponse));
               if(addmat_ && oldstraws.find(straw.id()) == oldstraws.end())exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
             }
           }
@@ -271,7 +267,7 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const {
+  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const {
     // this algorithm assumes the track never hits the same straw twice.  That could be violated by reflecting tracks, and could be addressed
     // by including the time of the Xing as part of its identity.  That would slow things down so it remains to be proven it's a problem  TODO
     // build the set of existing straws
