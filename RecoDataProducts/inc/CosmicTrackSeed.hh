@@ -3,7 +3,6 @@
 
 // Mu2e includes
 #include "BTrk/TrkBase/TrkT0.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
