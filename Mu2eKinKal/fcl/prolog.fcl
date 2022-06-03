@@ -47,9 +47,9 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 10.0, 0 ],
+      [ 5.0, 0 ],
       [ 2.0, 0 ],
-      [ 0.0, 0 ]
+      [ 1.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
       [ 10.0],
@@ -58,9 +58,32 @@ Mu2eKinKal : {
     ]
     DOCAStrawHitUpdaterSettings : []
     StrawXingUpdaterSettings : [
-      [-1.0, 10., 100.0 ],
-      [-1.0, 10., 100.0 ],
-      [-1.0, 10., 100.0 ]
+      [-1.0, 10., 10.0 ],
+      [-1.0, 5., 5.0 ],
+      [-1.0, 4., 4.0 ]
+    ]
+  }
+
+  KKSEEDEXT: {
+    PrintLevel : 0
+    MinNDOF : 5
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DeltaParams : 1e6 # chisquared
+    BFieldCorrection : false
+    ProcessEnds : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      [ 1.0, 0 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 4.0 ]
+    ]
+    DOCAStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 4.0, 4.0 ]
     ]
   }
 
@@ -73,12 +96,12 @@ Mu2eKinKal : {
     DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
     BFieldCorrection : true
-    ProcessEnds : true
+    ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       [ 5.0, 0 ],
       [ 2.0, 0 ],
-      [ 0.0, 0 ]
+      [ 1.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
       [ 10.0],
@@ -93,28 +116,6 @@ Mu2eKinKal : {
     ]
   }
 
-  KKSEEDEXT: {
-    PrintLevel : 0
-    MinNDOF : 5
-    MaxNIter : 10
-    Deweight : 1.0e6
-    ConvergenceDeltaChisq : 1.0
-    DivergenceDeltaChisq : 50.0
-    DeltaParams : 1e6 # chisquared
-    BFieldCorrection : false
-    ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
-    MetaIterationSettings : [
-      [ 0.0, 0 ]
-    ]
-    NullStrawHitUpdaterSettings : [
-      [ 5.0 ]
-    ]
-    DOCAStrawHitUpdaterSettings : []
-    StrawXingUpdaterSettings : [
-      [-1.0, 10.0, 100.0 ]
-    ]
-  }
 
   KKDRIFTEXT: {
     PrintLevel : 0
@@ -125,10 +126,10 @@ Mu2eKinKal : {
     DivergenceDeltaChisq : 50.0
     DeltaParams : 1e6 # chisquared
     BFieldCorrection : true
-    ProcessEnds : true
+    ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 0.0, 0 ],
+      [ 1.0, 0 ],
       [ 2.0, 1 ],
       [ 1.0, 1 ],
       [ 0.0, 1 ]

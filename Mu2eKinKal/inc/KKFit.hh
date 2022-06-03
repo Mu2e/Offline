@@ -97,8 +97,8 @@ namespace mu2e {
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
        void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
-          KKTRK& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
-      void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const;
+          KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits) const;
+      void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
      PDGCode::type tpart_;
       TrkFitDirection tdir_;
@@ -219,9 +219,9 @@ namespace mu2e {
     KKSTRAWHITCOL addstrawhits;
     KKCALOHITCOL addcalohits;
     KKSTRAWXINGCOL addstrawxings;
-    addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits, addstrawxings );
+    addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits );
+    if(addMaterial())addStraws(tracker, smat, kktrk, addstrawhits, addstrawxings);
     if(useCalo()&&kktrk.caloHits().size()==0)addCaloHit(calo, kktrk, cchandle, addcalohits);
-    if(addMaterial())addStraws(tracker, smat, kktrk, addstrawxings);
     if(printLevel_ > 1){
       std::cout << "KKTrk extension adding "
         << addstrawhits.size() << " StrawHits and "
@@ -232,8 +232,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
-      KKTRK& kktrk, ComboHitCollection const& chcol,
-      KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
+      KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& addhits) const {
     auto const& sprop = tracker.strawProperties();
    // initialize hits as null (no drift).  Drift is turned on when updating
     WireHitState whstate(WireHitState::null); // initial wire hit state;
@@ -241,14 +240,11 @@ namespace mu2e {
     // build the set of existing hits
     std::set<StrawHitIndex> oldhits;
     for(auto const& strawhit : kktrk.strawHits())oldhits.insert(strawhit->strawHitIndex());
-    std::set<StrawId> oldstraws;
-    for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
-    for(auto const& strawxing : exings)oldstraws.insert(strawxing->strawId());
     for( size_t ich=0; ich < chcol.size();++ich){
       if(oldhits.find(ich)==oldhits.end()){      // make sure this hit wasn't already found
         ComboHit const& strawhit = chcol[ich];
         if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_))){
-          double zt = zTime(kktrk.fitTraj(),strawhit.pos().Z());
+          double zt = zTime(ftraj,strawhit.pos().Z());
           if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
             const Straw& straw = tracker.getStraw(strawhit.strawId());
             auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
@@ -258,8 +254,7 @@ namespace mu2e {
             // compute PTCA between the trajectory and this straw
             PTCA ptca(ftraj, wline, hint, tprec_ );
             if(fabs(ptca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
-              hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, strawhit, straw, ich, strawresponse));
-              if(addmat_ && oldstraws.find(straw.id()) == oldstraws.end())exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
+              addhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, strawhit, straw, ich, strawresponse));
             }
           }
         }
@@ -267,71 +262,78 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const {
+  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk,
+      KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const {
     // this algorithm assumes the track never hits the same straw twice.  That could be violated by reflecting tracks, and could be addressed
     // by including the time of the Xing as part of its identity.  That would slow things down so it remains to be proven it's a problem  TODO
     // build the set of existing straws
-    if(addmat_){
-      auto const& ftraj = kktrk.fitTraj();
-      // pre-compute some tracker info if needed
-      if(needstrackerinfo_)fillTrackerInfo(tracker);
-      std::set<StrawId> oldstraws;
-      for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
-      // test for the track going through a panel.  Start with planes
-      for(auto const& plane : tracker.planes()){
-        if(tracker.planeExists(plane.id())) {
-          double plz = plane.origin().z();
-          // find the track position in at this plane's central z.
-          double zt = zTime(ftraj,plz);
-          auto plpos = ftraj.position3(zt);
-          // rough check on the point radius
-          double rho = plpos.Rho();
-          if(rho > rmin_ && rho < rmax_){
-            // loop over panels in this plane
-            for(auto panel_p : plane.panels()){
-              auto const& panel = *panel_p;
-              // linearly correct position for the track direction due to difference in panel-plane Z position
-              auto tdir = ftraj.direction(zt);
-              double dz = panel.origin().z()-plz;
-              auto papos = plpos + (dz/tdir.Z())*tdir;
-              // convert this position into panel coordinates
-              CLHEP::Hep3Vector cpos(papos.X(),papos.Y(),papos.Z()); // clumsy translation
-              auto pposv = panel.dsToPanel()*cpos;
-              // translate the y position into a rough straw number
-              int istraw = static_cast<int>(rint( (pposv.y()-ymin_)*spitch_));
-              // require this be within the (integral) straw buffer.  This just reduces the number of calls to PTCA
-              if(istraw >= -sbuff_ && istraw < static_cast<int>(panel.nStraws()) + sbuff_ ){
-                unsigned istrmin = static_cast<unsigned>(std::max(istraw-sbuff_,0));
-                // largest straw is the innermost; use that to test length
-                if(fabs(pposv.x()) < panel.getStraw(istrmin).halfLength() ) {
-                  unsigned istrmax = static_cast<unsigned>(std::min(istraw+sbuff_,static_cast<int>(panel.nStraws())-1));
-                  // loop over straws
-                  for(unsigned istr = istrmin; istr <= istrmax; ++istr){
-                    auto const& straw = panel.getStraw(istr);
-                    // add strawExists test TODO
-                    // make sure we haven't already seen this straw
-                    if(oldstraws.find(straw.id()) == oldstraws.end()){
-                      KinKal::VEC3 vp0(straw.wireEnd(StrawEnd::cal));
-                      KinKal::VEC3 vp1(straw.wireEnd(StrawEnd::hv));
-                      KinKal::VEC3 smid = 0.5*(vp0+vp1);
-                      // eventually this trajectory should be a native member of Straw TODO
-                      KinKal::Line wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
-                      CAHint hint(zt,zt);
-                      // compute PTCA between the trajectory and this straw
-                      PTCA ptca(ftraj, wline, hint, tprec_ );
-                      double du = (ptca.sensorPoca().Vect()-smid).R();
-                      if(fabs(ptca.doca()) < maxStrawDoca_ && du < straw.halfLength()){ // add test of chi TODO
-                        exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
-                      }
-                    } // not existing straw cut
-                  } // straws loop
-                } // straw length cut
-              } // straw index cut
-            } // panels loop
-          } // radius cut
-        } // plane exists cut
-      }  // planes loop
-    } // adding material
+    auto const& ftraj = kktrk.fitTraj();
+    // pre-compute some tracker info if needed
+    if(needstrackerinfo_)fillTrackerInfo(tracker);
+    // list the IDs of existing straws: this speeds the search
+    std::set<StrawId> oldstraws;
+    for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
+    // create materials for straw hits just added
+    for(auto const& strawhit : addhits){
+      if(oldstraws.find(strawhit->strawId()) == oldstraws.end()){
+        addexings.push_back(std::make_shared<KKSTRAWXING>(strawhit,smat));
+        oldstraws.insert(strawhit->strawId());
+      }
+    }
+    // Go hierarchically through planes and panels to find new straws hit by this track.
+    for(auto const& plane : tracker.planes()){
+      if(tracker.planeExists(plane.id())) {
+        double plz = plane.origin().z();
+        // find the track position in at this plane's central z.
+        double zt = zTime(ftraj,plz);
+        auto plpos = ftraj.position3(zt);
+        // rough check on the point radius
+        double rho = plpos.Rho();
+        if(rho > rmin_ && rho < rmax_){
+          // loop over panels in this plane
+          for(auto panel_p : plane.panels()){
+            auto const& panel = *panel_p;
+            // linearly correct position for the track direction due to difference in panel-plane Z position
+            auto tdir = ftraj.direction(zt);
+            double dz = panel.origin().z()-plz;
+            auto papos = plpos + (dz/tdir.Z())*tdir;
+            // convert this position into panel coordinates
+            CLHEP::Hep3Vector cpos(papos.X(),papos.Y(),papos.Z()); // clumsy translation
+            auto pposv = panel.dsToPanel()*cpos;
+            // translate the y position into a rough straw number
+            int istraw = static_cast<int>(rint( (pposv.y()-ymin_)*spitch_));
+            // require this be within the (integral) straw buffer.  This just reduces the number of calls to PTCA
+            if(istraw >= -sbuff_ && istraw < static_cast<int>(panel.nStraws()) + sbuff_ ){
+              unsigned istrmin = static_cast<unsigned>(std::max(istraw-sbuff_,0));
+              // largest straw is the innermost; use that to test length
+              if(fabs(pposv.x()) < panel.getStraw(istrmin).halfLength() ) {
+                unsigned istrmax = static_cast<unsigned>(std::min(istraw+sbuff_,static_cast<int>(panel.nStraws())-1));
+                // loop over straws
+                for(unsigned istr = istrmin; istr <= istrmax; ++istr){
+                  auto const& straw = panel.getStraw(istr);
+                  // add strawExists test TODO
+                  // make sure we haven't already seen this straw
+                  if(oldstraws.find(straw.id()) == oldstraws.end()){
+                    KinKal::VEC3 vp0(straw.wireEnd(StrawEnd::cal));
+                    KinKal::VEC3 vp1(straw.wireEnd(StrawEnd::hv));
+                    KinKal::VEC3 smid = 0.5*(vp0+vp1);
+                    // eventually this trajectory should be a native member of Straw TODO
+                    KinKal::Line wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
+                    CAHint hint(zt,zt);
+                    // compute PTCA between the trajectory and this straw
+                    PTCA ptca(ftraj, wline, hint, tprec_ );
+                    double du = (ptca.sensorPoca().Vect()-smid).R();
+                    if(fabs(ptca.doca()) < maxStrawDoca_ && du < straw.halfLength()){ // add test of chi TODO
+                      addexings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
+                    }
+                  } // not existing straw cut
+                } // straws loop
+              } // straw length cut
+            } // straw index cut
+          } // panels loop
+        } // radius cut
+      } // plane exists cut
+    }  // planes loop
   } // end function
 
   template <class KTRAJ> void KKFit<KTRAJ>::addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const {

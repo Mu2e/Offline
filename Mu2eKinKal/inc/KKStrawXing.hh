@@ -40,7 +40,7 @@ namespace mu2e {
       auto const& strawMaterial() const { return smat_; }
       auto const& config() const { return sxconfig_; }
       auto precision() const { return tpca_.precision(); }
-      StrawId strawId() const { return sid_; }
+      auto const& strawId() const { return sid_; }
     private:
       StrawId sid_; // StrawId
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
@@ -64,7 +64,7 @@ namespace mu2e {
     shptr_(strawhit),
     axis_(strawhit->closestApproach().sensorTraj()),
     smat_(smat),
-    tpca_(strawhit->closestApproach()),
+    tpca_(strawhit->closestApproach().particleTraj(),axis_,strawhit->closestApproach().hint(),strawhit->closestApproach().precision()),
     toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca()))
   {}
 
