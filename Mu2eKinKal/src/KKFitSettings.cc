@@ -58,7 +58,7 @@ namespace mu2e {
           throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
         }
         //StrawXing updater too
-        auto const& sxusetting = sxusettings.at(ndoca++);
+        auto const& sxusetting = sxusettings.at(imeta);
         double maxdocasig= std::get<0>(sxusetting);
         double maxdoca = std::get<1>(sxusetting);
         double maxddoca = std::get<2>(sxusetting);

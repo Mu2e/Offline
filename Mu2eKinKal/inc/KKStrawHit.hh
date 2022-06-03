@@ -46,9 +46,10 @@ namespace mu2e {
       // specific to KKStrawHit: this has a constant drift speed
       virtual ~KKStrawHit(){}
       // accessors
-      ComboHit const& hit() const { return chit_; }
-      Straw const& straw() const { return straw_; }
-      StrawHitIndex const& strawHitIndex() const { return shindex_; }
+      auto const& hit() const { return chit_; }
+      auto const& straw() const { return straw_; }
+      auto const& strawId() const { return straw_.id(); }
+      auto const& strawHitIndex() const { return shindex_; }
       double minDOCA() const { return mindoca_; }
       double strawRadius() const { return rstraw_; }
     private:
@@ -101,7 +102,6 @@ namespace mu2e {
         auto uparams = HIT::unbiasedParameters();
         KTRAJ utraj(uparams,ca.particleTraj());
         CA uca(utraj,this->wire(),ca.hint(),ca.precision());
-        WireHitState whstate(WireHitState::inactive);
         if(nshu != 0){
           mindoca_ = strawRadius();
           if(uca.usable())whstate = nshu->wireHitState(uca.doca());
