@@ -38,7 +38,7 @@ namespace mu2e {
     void fillSegment(HelixTraj const& htraj, double locflt, double globflt, TrkT0 t0, double mass, int charge, BField const& bfield,  KalSegment& kseg);
     // create HitSeeds from the TrkStrawHits in a KalRep
     void fillStrawHitSeeds(const KalRep* krep, ComboHitCollection const& chits, std::vector<TrkStrawHitSeed>& hitseeds);
-    void fillCaloHitSeed(const TrkCaloHit* chit, TrkCaloHitSeed& caloseed);
+    void fillCaloHitSeed(const TrkCaloHit* chit, CLHEP::Hep3Vector const& tmom, TrkCaloHitSeed& caloseed);
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& straws);
     // compute overlap between 2 time clusters
     double overlap(TimeCluster const& tc1, TimeCluster const& tc2);

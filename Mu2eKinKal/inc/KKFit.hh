@@ -187,7 +187,7 @@ namespace mu2e {
     CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
     VEC3 ffcog(cog);
-    double lcrystal = calo.caloInfo().getDouble("crystalZLength");
+    double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
     VEC3 crystalF2B = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
     VEC3 sipmcog = ffcog + crystalF2B;
     // create the Line trajectory from this information: signal goes towards the sipm
@@ -195,7 +195,7 @@ namespace mu2e {
     // find the time the seed traj passes the middle of the crystal
     double zt = zTime(ptraj,0.5*(sipmcog.Z()+ffcog.Z()));
     CAHint hint( zt, caxis.t0());
-    // compute a preliminary PTCA between the seed trajectory and this straw.
+    // compute a preliminary PTCA between the seed trajectory and the cluster axis
     PTCA ptca(ptraj, caxis, hint, tprec_ );
     // check that this is within tolerance
     if(ptca.usable() && fabs(ptca.doca()) < maxCaloDoca_){
@@ -474,7 +474,8 @@ namespace mu2e {
       auto const& ca = strawhit->closestApproach();
       TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
           HitT0(ca.particleToca(), sqrt(ca.tocaVar())),
-          static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
+          static_cast<float>(ca.particleToca()),
+          static_cast<float>(ca.sensorToca()),
           static_cast<float>(strawhit->timeResidual().value()), // drift radius isn't a clear concept in KinKal, use time residual instead
           static_cast<float>(strawhit->time()),
           static_cast<float>(ca.doca()),
@@ -491,10 +492,23 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::active);
         hflag.merge(StrawHitFlag::doca);
       }
-      fseed._chit = TrkCaloHitSeed(HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
-          static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
-          static_cast<float>(ca.doca()),static_cast<float>(sqrt(ca.docaVar())), static_cast<float>(ca.sensorToca()),
-          static_cast<float>(sqrt(ca.tocaVar())),hflag);
+      // calculate the unbiased time at the cluster
+      auto tres = calohit->unbiasedResidual(0);
+      HitT0 unbiasedt0(ca.sensorToca()-tres.value(),sqrt(tres.variance()));
+      // calculate the cluster length; this should be the particle path through the CsI, but
+      // for now (backwards compatible) it's the length along the cluster axis FIXME!
+//      double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
+      double clen = (calohit->caloCluster()->time() - ca.sensorToca())/ca.sensorTraj().speed();
+      fseed._chit = TrkCaloHitSeed(unbiasedt0,
+          static_cast<float>(ca.particleToca()),
+          static_cast<float>(clen),
+          static_cast<float>(ca.doca()), // cdoca
+          static_cast<float>(sqrt(ca.docaVar())), //rerr
+          static_cast<float>(ca.sensorToca()), // time
+          static_cast<float>(sqrt(ca.tocaVar())), // time error
+          XYZVectorF(ca.sensorTraj().position3(ca.sensorToca())), // cluster position at PTCA
+          XYZVectorF(ca.particleTraj().momentum3(ca.particleToca())), // track momentum at PTCA
+          hflag);
       fseed._chit._cluster = calohit->caloCluster();
     }
     fseed._straws.reserve(kktrk.strawXings().size());
