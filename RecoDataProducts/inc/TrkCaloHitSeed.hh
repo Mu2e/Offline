@@ -17,7 +17,8 @@ namespace mu2e {
     // construct from the information
     TrkCaloHitSeed(HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t cdoca, Float_t rerr,
     Float_t time, Float_t terr, XYZVectorF const& cpos, XYZVectorF const& tmom, StrawHitFlag const& flag) :
-      _t0(t0), _trklen(trklen), _hitlen(hitlen), _cdoca(cdoca), _rerr(rerr), _time(time), _terr(terr), _flag(flag)
+      _t0(t0), _trklen(trklen), _hitlen(hitlen), _cdoca(cdoca), _rerr(rerr), _time(time), _terr(terr),
+      _cpos(cpos), _tmom(tmom), _flag(flag)
     {}
     // accessors
     art::Ptr<CaloCluster> const& caloCluster() const { return _cluster; }

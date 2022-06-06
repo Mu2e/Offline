@@ -28,7 +28,7 @@ namespace mu2e {
       // Hit interface overrrides
       unsigned nResid() const override { return 1; } // 1 time residual
       bool activeRes(unsigned ires=0) const override;
-      Residual const& residual(unsigned ires=0) const override;
+      Residual const& refResidual(unsigned ires=0) const override;
       double time() const override { return tpca_.particleToca(); }
       void updateReference(KTRAJPTR const& ktrajptr) override;
       void updateState(MetaIterConfig const& config,bool first) override;
@@ -68,7 +68,7 @@ namespace mu2e {
       return false;
   }
 
-  template <class KTRAJ> Residual const& KKCaloHit<KTRAJ>::residual(unsigned ires) const {
+  template <class KTRAJ> Residual const& KKCaloHit<KTRAJ>::refResidual(unsigned ires) const {
     if(ires !=0)throw std::invalid_argument("Invalid residual");
     return rresid_;
   }
@@ -108,7 +108,7 @@ namespace mu2e {
     // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
     double dd2 = tpca_.dirDot()*tpca_.dirDot();
     double totvar = tvar_ + wvar_*dd2/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
-    rresid_ = Residual(tpca_.deltaT(),totvar,-tpca_.dTdP());
+    rresid_ = Residual(tpca_.deltaT(),totvar,0.0,-tpca_.dTdP());
   }
 
   template<class KTRAJ> void KKCaloHit<KTRAJ>::print(std::ostream& ost, int detail) const {

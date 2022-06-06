@@ -279,7 +279,7 @@ namespace mu2e {
               }
             }
 
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,savetimes));
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
             //kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             kktrkcol->push_back(kktrk.release());
             // fill assns with the cosmic seed
