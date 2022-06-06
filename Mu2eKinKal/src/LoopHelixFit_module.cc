@@ -264,7 +264,7 @@ namespace mu2e {
             // Decide which segments to save
             std::set<double> savetimes;
             fillSaveTimes(*kktrk,savetimes);
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,savetimes));
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
             // fill assns with the helix seed
             auto hptr = art::Ptr<HelixSeed>(hseedcol_h,iseed);
             auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);

@@ -87,7 +87,7 @@ namespace mu2e {
           StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
           KKTRK& kktrk) const;
-      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& tsave) const;
+      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& tsave) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position.  Note this can have multiple solutions if the track reflects in z, FIXME
       bool useCalo() const { return usecalo_; }
@@ -148,7 +148,8 @@ namespace mu2e {
     sbuff_(fitconfig.strawBuffer()),
     printLevel_(fitconfig.printLevel()),
     needstrackerinfo_(true)
-  {}
+  {
+  }
 
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KKBField const& kkbf, KKStrawMaterial const& smat,
       PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
@@ -448,7 +449,7 @@ namespace mu2e {
     return TimeRange(tmin,tmax);
   }
 
-  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& savetimes) const {
+  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& savetimes) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
     if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
@@ -493,12 +494,13 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::doca);
       }
       // calculate the unbiased time at the cluster
-      auto tres = calohit->unbiasedResidual(0);
+      auto tres = calohit->residual(0);
       HitT0 unbiasedt0(ca.sensorToca()-tres.value(),sqrt(tres.variance()));
       // calculate the cluster length; this should be the particle path through the CsI, but
       // for now (backwards compatible) it's the length along the cluster axis FIXME!
 //      double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
-      double clen = (calohit->caloCluster()->time() - ca.sensorToca())/ca.sensorTraj().speed();
+//      double clen = lcrystal - (calohit->caloCluster()->time() - ca.sensorToca())*ca.sensorTraj().speed();
+      double clen = (ca.sensorToca() - calohit->caloCluster()->time() )*ca.sensorTraj().speed();
       fseed._chit = TrkCaloHitSeed(unbiasedt0,
           static_cast<float>(ca.particleToca()),
           static_cast<float>(clen),
