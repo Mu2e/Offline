@@ -97,15 +97,6 @@ namespace mu2e {
     Generator_ = art::make_tool<ParticleGeneratorTool>(pset);
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
 
-   art::ServiceHandle<art::TFileService> tfs;
-   _Ntup = tfs->make<TTree>("GenAna","GenAna");
-   _Ntup -> Branch("genId",&_genPdgId,"genId/I");
-  _Ntup -> Branch("genCrCode",&_genCrCode,"genCrCode/I");
- _Ntup -> Branch("genPz",&_genPz,"genPz/F");
- _Ntup -> Branch("genPosZ",&_genPosZ,"genPosZ/F");
- _Ntup -> Branch("genPosR",&_genPosR,"genPosR/F");
- _Ntup -> Branch("genTime",&_genTime,"genTime/F");
-  _Ntup -> Branch("genP",&_genP,"genP/F");
     
   }
 
@@ -114,8 +105,8 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    int eventid=event.id().event();  
-    int count_particle=0;
+    // int eventid=event.id().event();  
+    // int count_particle=0;
     auto mus_temp = stoppedMuMinusList(simh); //default, negative muon stops
  
     if (pdgId_==-11){
@@ -128,7 +119,7 @@ namespace mu2e {
      for(const auto& mustop: mus) {
     //  count_particle++;
     
-      const double time = mus->endGlobalTime() + randExp_.fire(muonLifeTime_);
+      const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
 
       addParticles(output.get(), mustop, time, Generator_.get());
       //  printf("the event number is %d\n",eventid);
