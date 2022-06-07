@@ -16,13 +16,18 @@ namespace mu2e
     Float_t             _timeWindowEnd;   //last hit time
     Int_t               _PEs;                   //total number of PEs for this cluster
     Int_t               _nCoincidenceHits;      //number of coincidence hits in this cluster
-    CrvHitInfoReco(int crvSectorType, CLHEP::Hep3Vector pos, float timeWindowStart, float timeWindowEnd, int PEs, int nCoincidenceHits) :
+    Int_t               _nCoincidenceLayers;      //number of coincidence layers in this cluster
+    Float_t             _angle;   //coincidence direction
+
+    CrvHitInfoReco(int crvSectorType, CLHEP::Hep3Vector pos, float timeWindowStart, float timeWindowEnd, int PEs, int nCoincidenceHits, int nCoincidenceLayers, float angle) :
                 _crvSectorType(crvSectorType),
                 _x(pos.x()), _y(pos.y()), _z(pos.z()),
                 _timeWindowStart(timeWindowStart),
                 _timeWindowEnd(timeWindowEnd),
                 _PEs(PEs),
-                _nCoincidenceHits(nCoincidenceHits)
+                _nCoincidenceHits(nCoincidenceHits),
+                _nCoincidenceLayers(nCoincidenceLayers),
+                _angle(angle)
                 {}
     CrvHitInfoReco() :
                 _crvSectorType(-1),
@@ -30,7 +35,9 @@ namespace mu2e
                 _timeWindowStart(0),
                 _timeWindowEnd(0),
                 _PEs(0),
-                _nCoincidenceHits(0)
+                _nCoincidenceHits(0),
+                _nCoincidenceLayers(0),
+                _angle(-999)
                 {}
   };
 
@@ -38,5 +45,3 @@ namespace mu2e
 
 }
 #endif
-
-
