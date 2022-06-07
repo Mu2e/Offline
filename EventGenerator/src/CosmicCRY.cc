@@ -229,8 +229,8 @@ void CosmicCRY::generate(GenParticleCollection& genParts) {
 
             Hep3Vector projectedPos = _worldIntersections.at(idx);
             // genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-            // 				     GenId::cosmicCRY, position, mom4,
-            // 				     secondary->t() - _cryGen->timeSimulated()));
+            //                                      GenId::cosmicCRY, position, mom4,
+            //                                      secondary->t() - _cryGen->timeSimulated()));
             genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
                                            GenId::cosmicCRY, projectedPos, mom4,
                                            secondary->t() - _cryGen->timeSimulated()));

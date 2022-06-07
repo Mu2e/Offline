@@ -7,11 +7,11 @@ namespace mu2e {
   uint16_t CaloDAQMap::packetIdTocaloRoId(uint16_t packetId) const {
     //
     // FIXME this is made up for now FF-mask for channel Number and BoardNumber
-    // DiracChannel (0-19) OK in FF , DiracNumber (0-136) ok in FF 
+    // DiracChannel (0-19) OK in FF , DiracNumber (0-136) ok in FF
     // No INC-files to descrive Board numbering yet. First Check V09 mapping
     //
     /* version 09
-    uint16_t DiracChannel = packetId & 0xFF; 
+    uint16_t DiracChannel = packetId & 0xFF;
     uint16_t DiracNumber = (packetId & 0xFF00) >> 8; */
 
     uint16_t DiracNumber  = packetId & 0xFF;              // first 8 bits
@@ -21,37 +21,37 @@ namespace mu2e {
     if (DiracChannel >= 19 || DiracNumber >= 136){
       throw cet::exception("BADINPUTS")<<"CaloDAQMap::packetIdTocaloRoId : packetId DiracChannel/DiracNumber out of range" << std::endl;
     }
-    
+
     if( DetType <=1 ){
       uint16_t DiracPoi = DiracNumber*20 + DiracChannel;
       uint16_t roId  = _DIRAC2CaloMap[DiracPoi];
       if( roId < 0 ){
-	throw cet::exception("BadRoId")<<"CaloDAQMap::packetIdTocaloRoId : roID for Calo empty channels or Calo PINs" << std::endl; 
+        throw cet::exception("BadRoId")<<"CaloDAQMap::packetIdTocaloRoId : roID for Calo empty channels or Calo PINs" << std::endl;
       }
       //printf(" DIRAC # %d Chan # %d -> RoId %d \n",DiracChannel,DiracNumber,roId);
-      return roId;   
-    }else{    
+      return roId;
+    }else{
       throw cet::exception("BadRoId")<<"CaloDAQMap::packetIdTocaloRoId : DetType not implemented" << std::endl;
     }
   }
-  
+
   uint16_t CaloDAQMap::caloRoIdToPacketId(uint16_t caloRoId) const {
-  
+
     if ( caloRoId >= 674*4  ){
       throw cet::exception("BADINPUTS")<<"CaloDAQMap::caloRoIdToPacketId : caloRoId out of range" << std::endl;
     }
-    
+
     uint16_t DiracPoi  = _Calo2DIRACMap[caloRoId];
     if ( DiracPoi >= 136*20 ){
       throw cet::exception("BADINPUTS")<<"CaloDAQMap::caloRoIdToPacketId : return DiracPoi  out of range" << std::endl;
     }
-    
-    uint16_t DiracNum = DiracPoi/20;  
+
+    uint16_t DiracNum = DiracPoi/20;
     uint16_t DiracChannel = DiracPoi -20*DiracNum;
-    
-    // printf(" RoID %d --> DIRAC Poi %d DIRAC # %d Chan # %d \n", 
-    //	   caloRoId,DiracPoi,DiracNum,DiracChannel);
-    
+
+    // printf(" RoID %d --> DIRAC Poi %d DIRAC # %d Chan # %d \n",
+    //           caloRoId,DiracPoi,DiracNum,DiracChannel);
+
     //
     // Now from CaloRoId decide DetType to discriminate btw Calo/Caphri
     // Leave PIN-diodes for another round

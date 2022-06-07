@@ -9,7 +9,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 
@@ -29,7 +28,7 @@ namespace mu2e {
     std::string instanceName_;
   };
 
-  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset) : 
+  PrintGenParticles::PrintGenParticles(const fhicl::ParameterSet& pset) :
     art::EDAnalyzer(pset),
     moduleLabel_(pset.get<std::string>("inputModuleLabel")),
     instanceName_(pset.get<std::string>("inputInstanceName"))

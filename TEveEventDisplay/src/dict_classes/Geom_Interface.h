@@ -37,8 +37,8 @@
 
 
 namespace mu2e{
-	class Geom_Interface {
-             
+        class Geom_Interface {
+
     public:
       #ifndef __CINT__
       explicit Geom_Interface();
@@ -68,7 +68,7 @@ namespace mu2e{
       #endif
     ClassDef(Geom_Interface,0);
 
-	}; //end class def
+        }; //end class def
 
 }//end namespace mu2e
 

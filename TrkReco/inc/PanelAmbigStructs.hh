@@ -21,7 +21,7 @@ class HepPoint;
 namespace mu2e {
   class TrkStrawHit;
   namespace PanelAmbig {
-// struct to describe the ambiguity and activity state of a single TrkStrawHit
+    // struct to describe the ambiguity and activity state of a single TrkStrawHit
     struct HitState {
       enum TSHState {negambig=-1,noambig,posambig,inactive};
       HitState(TSHState state=negambig) : _state(state){}
@@ -36,14 +36,14 @@ namespace mu2e {
       bool operator < (HitState const& other ) const { return _state < other._state; }
       TSHState _state; //
     };
-// vector of HitStates 
+    // vector of HitStates
     typedef std::vector<HitState> HSV;
-// the state of all hits in a panel defines the panel state
+    // the state of all hits in a panel defines the panel state
     typedef std::vector<HitState> PanelState;
-// a vector to expliclty define all possible panel states
+    // a vector to expliclty define all possible panel states
     typedef std::vector<PanelState> PSV;
 
-   // class to store the 1-d projection of a hit.
+    // class to store the 1-d projection of a hit.
     // this direction (u) is perpendicular to the wire and to the track as it hits the panel
     struct TSHUInfo {
       enum Use {free=0,fixed,unused}; // free hits are allowed change.  Fixed are not, but are still used in chisquared.  unused hits are ignored
@@ -54,7 +54,7 @@ namespace mu2e {
       HitState _hstate; // initial hitstate
       Float_t _upos; // hit position in u relative to the projected track position
       Float_t _wcpos; // wire center position in detector coordinate
-      Float_t _uerr; // hit error projected in u direction 
+      Float_t _uerr; // hit error projected in u direction
       Float_t _uwt; // cache of the hit weight = 1/error^2
       Float_t _dr; // drift radius
       Float_t _dv; // drift velocity
@@ -89,8 +89,8 @@ namespace mu2e {
 
     // struct to hold the result of optimizing the panel parameters.
     struct PanelResult {
-    // classify the hit patterns in terms of having hits on the same or opposite sides
-    // null is when
+      // classify the hit patterns in terms of having hits on the same or opposite sides
+      // null is when
       enum HitPattern{null=0,same,opposite};
       PanelResult(PanelState const& state);
       PanelResult() : _chisq(-1.0), _status(-1), _hpat(null) , _statechange(0) {}

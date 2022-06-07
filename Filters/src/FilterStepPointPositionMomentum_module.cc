@@ -1,5 +1,5 @@
-// Select hits from an StepPointMCCollection-s based on momentum 
-// and position and copy selected hits to output collections, 
+// Select hits from an StepPointMCCollection-s based on momentum
+// and position and copy selected hits to output collections,
 // preserving product instance names.
 //
 // Zhengyun You, 2013
@@ -15,7 +15,6 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -49,7 +48,7 @@ namespace mu2e {
     double pyMin_;
     double pyMax_;
     double pzMin_;
-    double pzMax_;  
+    double pzMax_;
     double pMin_;
     double pMax_;
 
@@ -117,7 +116,7 @@ namespace mu2e {
     pxMin_ = pset.get<double>("pxMin", kMin);
     pxMax_ = pset.get<double>("pxMax", kMax);
     pyMin_ = pset.get<double>("pyMin", kMin);
-    pyMax_ = pset.get<double>("pyMax", kMax);    
+    pyMax_ = pset.get<double>("pyMax", kMax);
     pzMin_ = pset.get<double>("pzMin", kMin);
     pzMax_ = pset.get<double>("pzMax", kMax);
     pMin_  = pset.get<double>("pMin",  kMin);
@@ -156,7 +155,7 @@ namespace mu2e {
              z <  zMin_ ||  z >  zMax_ ||
             px < pxMin_ || px > pxMax_ ||
             py < pyMin_ || py > pyMax_ ||
-            pz < pzMin_ || pz > pzMax_ || 
+            pz < pzMin_ || pz > pzMax_ ||
             p  < pMin_  || p  > pMax_  ) {
           continue;
         }

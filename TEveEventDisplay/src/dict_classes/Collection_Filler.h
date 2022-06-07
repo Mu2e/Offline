@@ -45,8 +45,8 @@ namespace mu2e{
   enum RecoDataProductName {ComboHits, TimeClusters, CaloCrystalHits, CaloClusters, CosmicTracks, HelixSeeds, KalSeeds, CRVRecoPulses, TrkExtTrajectories};
   enum MCDataProductName {MCTrajectories};
 
-	class Collection_Filler
-	{
+        class Collection_Filler
+        {
   public:
 #ifndef __ROOTCLING__
 

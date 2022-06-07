@@ -7,20 +7,21 @@
 BEGIN_PROLOG
 
 CaloHitMakerFast :
-{ 
+{
     module_type            : CaloHitMakerFast
     caloDigiCollection     : CaloDigiMaker
     digiSampling           : @local::HitMakerDigiSampling
-    ProtonBunchTimeTag     : "EWMProducer" 
+    ProtonBunchTimeTag     : "EWMProducer"
     diagLevel              : 0
-    deltaTPulses           : 5
-    pulseRatioMin          : 0.9
-    pulseRatioMax          : 1.1
+    deltaTPulses           : 11
+    nPEperMeV              : 30
+    noiseLevelMeV          : 0.55
+    nSigmaNoise            : 4
     caphriCrystalID        : [623, 624, 595, 596]
 }
 
 
-CaloHitRecoTrigger : 
+CaloHitRecoTrigger :
 {
    producers : {
      CaloHitMakerFast : @local::CaloHitMakerFast

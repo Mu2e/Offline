@@ -23,7 +23,7 @@ namespace mu2e {
     ost << "Primary process " << pp.primaryProcess();
     return ost;
   }
- 
+
 
   // don't create a vector of these: there should only ever be one/event!
 }

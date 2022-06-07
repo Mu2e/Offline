@@ -18,20 +18,20 @@ namespace mu2e {
 
   void constructVirtualDetectorSDs(SimpleConfig const & _config,
                                    Mu2eG4SensitiveDetector* vdSD){
-      
+
       G4LogicalVolumeStore* store = G4LogicalVolumeStore::GetInstance();
-      
+
       for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
-          
+
           G4String LVname = (*pos)->GetName();
-          
+
             if (LVname.find("VirtualDetector") != std::string::npos) {
                 //std::cout << "Setting this VirtualDetector LV: " << LVname << std::endl;
                 store->GetVolume(LVname)->SetSensitiveDetector(vdSD);
             }
 
       }//for G4LogicalVolumeStore::iterator
-      
-    
+
+
   } // constructVirtualDetectorSDs()
 }

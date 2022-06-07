@@ -57,7 +57,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
@@ -544,9 +543,9 @@ namespace mu2e {
     if ( _rmvlevel > 0 ) {
       G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
       G4cout << "  User="  << _userElapsed
-	     << "s Real="  << _realElapsed
-	     << "s Sys="   << _systemElapsed
-	     << "s" << G4endl;
+             << "s Real="  << _realElapsed
+             << "s Sys="   << _systemElapsed
+             << "s" << G4endl;
     }
   }//BeamOnEndRun
 

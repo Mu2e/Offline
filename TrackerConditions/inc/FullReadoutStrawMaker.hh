@@ -15,16 +15,16 @@ namespace mu2e {
 
   class FullReadoutStrawMaker {
 
-  public:
-    FullReadoutStrawMaker(FullReadoutStrawConfig const& config):_config(config) {}
-    FullReadoutStraw::ptr_t fromFcl();
-    FullReadoutStraw::ptr_t fromDb( /* db tables will go here*/ );
+    public:
+      FullReadoutStrawMaker(FullReadoutStrawConfig const& config):_config(config) {}
+      FullReadoutStraw::ptr_t fromFcl();
+      FullReadoutStraw::ptr_t fromDb( /* db tables will go here*/ );
 
-  private:
+    private:
 
-    // this object needs to be thread safe, 
-    // _config should only be initialized once
-    const FullReadoutStrawConfig _config;
+      // this object needs to be thread safe,
+      // _config should only be initialized once
+      const FullReadoutStrawConfig _config;
   };
 
 

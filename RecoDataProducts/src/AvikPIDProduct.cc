@@ -23,8 +23,8 @@ namespace mu2e {
     _drdsVadimMuoErr  = p._drdsVadimMuoErr;
     _nMatched         = p._nMatched;
     _nMatchedAll      = p._nMatchedAll;
-    _sumAvikEle       = p._sumAvikEle   ; 
-    _sumAvikMuo       = p._sumAvikMuo   ; 
+    _sumAvikEle       = p._sumAvikEle   ;
+    _sumAvikMuo       = p._sumAvikMuo   ;
     _sq2AvikEle       = p._sq2AvikEle;
     _sq2AvikMuo       = p._sq2AvikMuo;
     _drdsOsEle        = p._drdsOsEle    ;
@@ -57,8 +57,8 @@ namespace mu2e {
     _drdsVadimMuoErr  = p._drdsVadimMuoErr;
     _nMatched         = p._nMatched;
     _nMatchedAll      = p._nMatchedAll;
-    _sumAvikEle       = p._sumAvikEle   ; 
-    _sumAvikMuo       = p._sumAvikMuo   ; 
+    _sumAvikEle       = p._sumAvikEle   ;
+    _sumAvikMuo       = p._sumAvikMuo   ;
     _sq2AvikEle       = p._sq2AvikEle;
     _sq2AvikMuo       = p._sq2AvikMuo;
     _drdsOsEle        = p._drdsOsEle    ;
@@ -93,8 +93,8 @@ namespace mu2e {
     _drdsVadimMuoErr  = -1.;
     _nMatched         = -1 ;
     _nMatchedAll      = -1 ;
-    _sumAvikEle       = -1.; 
-    _sumAvikMuo       = -1.; 
+    _sumAvikEle       = -1.;
+    _sumAvikMuo       = -1.;
     _sq2AvikEle       = -1.;
     _sq2AvikMuo       = -1.;
     _drdsOsEle        = -1.;
@@ -116,20 +116,20 @@ namespace mu2e {
   }
 
   void  AvikPIDProduct::init(int     EleTrkID        , int   MuoTrkID        ,
-			     float   LogDedxProbEle  , float LogDedxProbMuo  , 
-			     float   DrdsVadimEle    , float DrdsVadimEleErr ,
-			     float   DrdsVadimMuo    , float DrdsVadimMuoErr ,
-			     int     NMatched        , int   NMatchedAll     ,
-			     float   SumAvikEle      , float SumAvikMuo      ,
-			     float   Sq2AvikEle      , float Sq2AvikMuo      ,
-			     float   DrdsOsEle       , float DrdsOsEleErr    ,
-			     float   DrdsOsMuo       , float DrdsOsMuoErr    ,
-			     int     NUsedSsEleH     , int   NUsedSsMuoH     ,    
-			     float   DrdsSsEle       , float DrdsSsEleErr    ,
-			     float   DrdsSsMuo       , float DrdsSsMuoErr    ,
-			     int     NUsedOsEleH     , int   NUsedOsMuoH     ,    
-			     float   SumAvikOsEle    , float SumAvikOsMuo    ,
-			     int     NUsedOsEleD     , int   NUsedOsMuoD     )
+                             float   LogDedxProbEle  , float LogDedxProbMuo  ,
+                             float   DrdsVadimEle    , float DrdsVadimEleErr ,
+                             float   DrdsVadimMuo    , float DrdsVadimMuoErr ,
+                             int     NMatched        , int   NMatchedAll     ,
+                             float   SumAvikEle      , float SumAvikMuo      ,
+                             float   Sq2AvikEle      , float Sq2AvikMuo      ,
+                             float   DrdsOsEle       , float DrdsOsEleErr    ,
+                             float   DrdsOsMuo       , float DrdsOsMuoErr    ,
+                             int     NUsedSsEleH     , int   NUsedSsMuoH     ,
+                             float   DrdsSsEle       , float DrdsSsEleErr    ,
+                             float   DrdsSsMuo       , float DrdsSsMuoErr    ,
+                             int     NUsedOsEleH     , int   NUsedOsMuoH     ,
+                             float   SumAvikOsEle    , float SumAvikOsMuo    ,
+                             int     NUsedOsEleD     , int   NUsedOsMuoD     )
   {
     _eleTrkID         = EleTrkID       ;
     _muoTrkID         = MuoTrkID       ;
@@ -141,8 +141,8 @@ namespace mu2e {
     _drdsVadimMuoErr  = DrdsVadimMuoErr;
     _nMatched         = NMatched;
     _nMatchedAll      = NMatchedAll    ;
-    _sumAvikEle       = SumAvikEle     ; 
-    _sumAvikMuo       = SumAvikMuo     ; 
+    _sumAvikEle       = SumAvikEle     ;
+    _sumAvikMuo       = SumAvikMuo     ;
     _sq2AvikEle       = Sq2AvikEle;
     _sq2AvikMuo       = Sq2AvikMuo;
     _drdsOsEle        = DrdsOsEle      ;

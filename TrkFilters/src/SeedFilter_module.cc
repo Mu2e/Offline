@@ -6,7 +6,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
@@ -28,77 +27,77 @@ namespace mu2e
 {
   class SeedFilter : public art::EDFilter
   {
-  public:
+    public:
 
-    struct Config{
-      using Name    = fhicl::Name;
-      using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>      kalSeedCollection {     Name("kalSeedCollection"),       Comment("kalSeedCollection ") };
-      fhicl::Atom<bool>               requireCaloCluster{     Name("requireCaloCluster"),      Comment("requireCaloCluster") };
-      fhicl::Atom<int>                fitparticle       {     Name("fitparticle"),             Comment("fitparticle       ") };
-      fhicl::Atom<int>                fitdirection      {     Name("fitdirection"),            Comment("fitdirection      ") };
-      fhicl::Atom<double>             minFitCons        {     Name("minFitCons"),              Comment("minFitCons        ") };
-      fhicl::Atom<double>             minNHits          {     Name("minNStrawHits"),           Comment("minNStrawHits     ") };
-      fhicl::Atom<double>             minMomentum       {     Name("minMomentum"),             Comment("minMomentum       ") };
-      fhicl::Atom<double>             maxMomentum       {     Name("maxMomentum"),             Comment("maxMomentum       ") };
-      fhicl::Atom<double>             minTanDip         {     Name("minTanDip"),               Comment("minTanDip         ") };
-      fhicl::Atom<double>             maxTanDip         {     Name("maxTanDip"),               Comment("maxTanDip         ") };
-      fhicl::Atom<double>             maxChi2DOF        {     Name("maxChi2DOF"),              Comment("maxChi2DOF        ") };
-      fhicl::Atom<double>             maxMomErr         {     Name("maxMomErr"),               Comment("maxMomErr         ") };
-      fhicl::Atom<double>             minD0             {     Name("minD0"),                   Comment("minD0             ") };
-      fhicl::Atom<double>             maxD0             {     Name("maxD0"),                   Comment("maxD0             ") };
-      fhicl::Atom<double>             minT0             {     Name("minT0"),                   Comment("minT0             ") };
-      fhicl::Sequence<std::string>    seedFitFlag       {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
-      fhicl::Atom<int>                debugLevel        {     Name("debugLevel "),             Comment("debugLevel        ") , 0};                                        
+      struct Config{
+        using Name    = fhicl::Name;
+        using Comment = fhicl::Comment;
+        fhicl::Atom<art::InputTag>      kalSeedCollection {     Name("kalSeedCollection"),       Comment("kalSeedCollection ") };
+        fhicl::Atom<bool>               requireCaloCluster{     Name("requireCaloCluster"),      Comment("requireCaloCluster") };
+        fhicl::Atom<int>                fitparticle       {     Name("fitparticle"),             Comment("fitparticle       ") };
+        fhicl::Atom<int>                fitdirection      {     Name("fitdirection"),            Comment("fitdirection      ") };
+        fhicl::Atom<double>             minFitCons        {     Name("minFitCons"),              Comment("minFitCons        ") };
+        fhicl::Atom<double>             minNHits          {     Name("minNStrawHits"),           Comment("minNStrawHits     ") };
+        fhicl::Atom<double>             minMomentum       {     Name("minMomentum"),             Comment("minMomentum       ") };
+        fhicl::Atom<double>             maxMomentum       {     Name("maxMomentum"),             Comment("maxMomentum       ") };
+        fhicl::Atom<double>             minTanDip         {     Name("minTanDip"),               Comment("minTanDip         ") };
+        fhicl::Atom<double>             maxTanDip         {     Name("maxTanDip"),               Comment("maxTanDip         ") };
+        fhicl::Atom<double>             maxChi2DOF        {     Name("maxChi2DOF"),              Comment("maxChi2DOF        ") };
+        fhicl::Atom<double>             maxMomErr         {     Name("maxMomErr"),               Comment("maxMomErr         ") };
+        fhicl::Atom<double>             minD0             {     Name("minD0"),                   Comment("minD0             ") };
+        fhicl::Atom<double>             maxD0             {     Name("maxD0"),                   Comment("maxD0             ") };
+        fhicl::Atom<double>             minT0             {     Name("minT0"),                   Comment("minT0             ") };
+        fhicl::Sequence<std::string>    seedFitFlag       {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
+        fhicl::Atom<int>                debugLevel        {     Name("debugLevel "),             Comment("debugLevel        ") , 0};
 
 
-    };   
-    
-    using Parameters = art::EDFilter::Table<Config>;
-    
-    explicit     SeedFilter(const Parameters& config);
-    virtual bool filter(art::Event& event) override;
-    virtual bool endRun( art::Run& run ) override;
+      };
 
-  private:
-    art::InputTag   _ksTag;
-    bool            _hascc; // Calo Cluster
-    PDGCode::type     _tpart; // particle type being searched for
-    TrkFitDirection _fdir;  // fit direction in search
-    double          _minfitcons;
-    unsigned        _minnhits;
-    double          _minmom, _maxmom, _mintdip, _maxtdip, _maxchi2dof, _maxmomerr;
-    double          _minD0, _maxD0; // impact parameter limits
-    double          _minT0;
-    TrkFitFlag      _goods; // helix fit flag
-    int             _debug;
-    // counters
-    unsigned        _nevt, _npass;
+      using Parameters = art::EDFilter::Table<Config>;
+
+      explicit     SeedFilter(const Parameters& config);
+      virtual bool filter(art::Event& event) override;
+      virtual bool endRun( art::Run& run ) override;
+
+    private:
+      art::InputTag   _ksTag;
+      bool            _hascc; // Calo Cluster
+      PDGCode::type     _tpart; // particle type being searched for
+      TrkFitDirection _fdir;  // fit direction in search
+      double          _minfitcons;
+      unsigned        _minnhits;
+      double          _minmom, _maxmom, _mintdip, _maxtdip, _maxchi2dof, _maxmomerr;
+      double          _minD0, _maxD0; // impact parameter limits
+      double          _minT0;
+      TrkFitFlag      _goods; // helix fit flag
+      int             _debug;
+      // counters
+      unsigned        _nevt, _npass;
   };
 
   SeedFilter::SeedFilter(const Parameters& config):
     art::EDFilter{config},
-    _ksTag     (config().kalSeedCollection()),				       
-    _hascc     (config().requireCaloCluster()),				       
-    _tpart     ((PDGCode::type)(config().fitparticle())),		       
-    _fdir      ((TrkFitDirection::FitDirection)(config().fitdirection())),     
-    _minfitcons(config().minFitCons()),					       
-    _minnhits  (config().minNHits()),					       
-    _minmom    (config().minMomentum()),				       
-    _maxmom    (config().maxMomentum()),				       
-    _mintdip   (config().minTanDip()),					       
-    _maxtdip   (config().maxTanDip()),					       
-    _maxchi2dof(config().maxChi2DOF()),					       
-    _maxmomerr (config().maxMomErr()),					       
-    _minD0     (config().minD0()),					       
-    _maxD0     (config().maxD0()),					       
-    _minT0     (config().minT0()),					       
+    _ksTag     (config().kalSeedCollection()),
+    _hascc     (config().requireCaloCluster()),
+    _tpart     ((PDGCode::type)(config().fitparticle())),
+    _fdir      ((TrkFitDirection::FitDirection)(config().fitdirection())),
+    _minfitcons(config().minFitCons()),
+    _minnhits  (config().minNHits()),
+    _minmom    (config().minMomentum()),
+    _maxmom    (config().maxMomentum()),
+    _mintdip   (config().minTanDip()),
+    _maxtdip   (config().maxTanDip()),
+    _maxchi2dof(config().maxChi2DOF()),
+    _maxmomerr (config().maxMomErr()),
+    _minD0     (config().minD0()),
+    _maxD0     (config().maxD0()),
+    _minT0     (config().minT0()),
     _goods     (config().seedFitFlag()),
-    _debug     (config().debugLevel()),                                        
+    _debug     (config().debugLevel()),
     _nevt(0), _npass(0)
-  {
-    produces<TriggerInfo>();
-  }
+    {
+      produces<TriggerInfo>();
+    }
 
   bool SeedFilter::filter(art::Event& evt){
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
@@ -137,7 +136,7 @@ namespace mu2e
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(kscol->begin(),iks);
-	triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
+        triginfo->_tracks.push_back(art::Ptr<KalSeed>(ksH,index));
         if(_debug > 1){
           std::cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << std::endl;
         }

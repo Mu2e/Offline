@@ -42,7 +42,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include <iostream>
 void setRecursiveColorTransp(TGeoVolume *vol, Int_t color, Int_t transp)
   {
@@ -55,15 +54,15 @@ void setRecursiveColorTransp(TGeoVolume *vol, Int_t color, Int_t transp)
   }
 
 
-namespace mu2e 
+namespace mu2e
 {
   class TEveNonGDMLTest : public art::EDAnalyzer {
-	public:
+        public:
 
       struct Config{
         using Name=fhicl::Name;
         using Comment=fhicl::Comment;
-        fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};   
+        fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("for info"),0};
       };
 
       typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -75,10 +74,10 @@ namespace mu2e
       virtual void endJob() override;
     private:
       Config _conf;
-      int _diagLevel;     
+      int _diagLevel;
       bool isFirstEvent = true;
       TApplication* application_;
-      TDirectory*   directory_ = nullptr;   
+      TDirectory*   directory_ = nullptr;
       TEveBox* b = new TEveBox;
       fhicl::ParameterSet _pset;
       void MakeTEveMu2eMainWindow();
@@ -87,12 +86,12 @@ namespace mu2e
   TEveNonGDMLTest::TEveNonGDMLTest(const Parameters& conf) :
   art::EDAnalyzer(conf),
   _diagLevel(conf().diagLevel())
-  
-	{}
+
+        {}
 
   TEveNonGDMLTest::~TEveNonGDMLTest(){}
 
-  
+
   void TEveNonGDMLTest::beginJob(){
     std::cout<<"[Starting TEveNonGDMLTest::beginJob()]"<<std::endl;
     directory_ = gDirectory;
@@ -142,10 +141,10 @@ namespace mu2e
     std::cout<<"Press 1 to end test: "<<std::endl;
     std::cin>>enter;
     std::cout<<"[Ending TEveNonGDMLTest::analyze()]"<<std::endl;
-  } 
+  }
 
 
-  void TEveNonGDMLTest::endJob(){}  
+  void TEveNonGDMLTest::endJob(){}
 
 }
 using mu2e::TEveNonGDMLTest;

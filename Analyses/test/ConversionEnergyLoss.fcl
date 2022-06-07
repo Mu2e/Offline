@@ -32,7 +32,7 @@ services :
    message.categories.ToyHitInfo.limit : -1
    message.categories.GEOM.limit       : -1
    message.categories.g4run.limit      : -1
-   
+
    TFileService :
    {
       fileName      : "conversionEnergyLoss.root"

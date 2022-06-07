@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   KalFitData::KalFitData() {
     helixTraj   = NULL;
     //    tpart       = TrkParticle::e_minus;        // 11
@@ -30,7 +30,7 @@ namespace mu2e {
     // hitIndices  = new vector<StrawHitIndex>;
   }
 
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   KalFitData::~KalFitData() {
     // if (helixTraj)   { delete helixTraj; helixTraj = 0;}
     // if (caloCluster) { delete caloCluster; caloCluster = 0;}
@@ -44,36 +44,36 @@ namespace mu2e {
     // delete hitIndices;
   }
 
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   void KalFitData::deleteTrack() {
     if(krep != NULL) {
       delete krep;
-      krep = NULL; 
+      krep = NULL;
     }
-  } 
+  }
 
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   void KalFitData::init() {
     deleteTrack();
     missingHits.clear();
     nweediter    = 0;
     nweedtchiter = 0;
     helixTraj    = NULL;
-    
+
     diag.diskId   = 0;
-    diag.added	  = 0;
+    diag.added    = 0;
     diag.depth    = -9999;
     diag.dt       = -9999;
     diag.trkPath  = -9999;
     diag.energy   = -9999;
-    diag.doca     = -9999;   
-}
+    diag.doca     = -9999;
+  }
 
-//-----------------------------------------------------------------------------
-  KalRep*  KalFitData::stealTrack() { 
-    KalRep* retval = krep; 
-    krep           = 0; 
-    return retval; 
+  //-----------------------------------------------------------------------------
+  KalRep*  KalFitData::stealTrack() {
+    KalRep* retval = krep;
+    krep           = 0;
+    return retval;
   }
 
 }

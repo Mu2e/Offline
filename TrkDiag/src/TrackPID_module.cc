@@ -10,7 +10,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 #include "fhiclcpp/types/Table.h"
@@ -35,31 +34,31 @@ using namespace std;
 
 namespace mu2e {
   class TrackPID : public art::EDProducer {
-  public:
-    using Name=fhicl::Name;
-    using Comment=fhicl::Comment;
-    struct Config {
-      fhicl::Atom<int> debug{ Name("debugLevel"),
-	Comment("Debug Level"), 0};
-      fhicl::Atom<float> MaxDE{ Name("MaxDE"),
-	Comment("Maximum difference between calorimeter cluster EDep energy and the track energy (assuming electron mass)")};
-      fhicl::Atom<float> DT{ Name("DeltaTOffset"),
-	Comment("Track - Calorimeter time offset")}; // this should be a condition FIXME!
-      fhicl::Atom<art::InputTag> KSC { Name("KalSeedCollection"),
-	Comment("KalSeedCollection producer")};
-      fhicl::Table<typename MVATools::Config> MVAConfig{fhicl::Name("MVAConfig"),
-	fhicl::Comment("MVA Configuration") };
-    };
+    public:
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      struct Config {
+        fhicl::Atom<int> debug{ Name("debugLevel"),
+          Comment("Debug Level"), 0};
+        fhicl::Atom<float> MaxDE{ Name("MaxDE"),
+          Comment("Maximum difference between calorimeter cluster EDep energy and the track energy (assuming electron mass)")};
+        fhicl::Atom<float> DT{ Name("DeltaTOffset"),
+          Comment("Track - Calorimeter time offset")}; // this should be a condition FIXME!
+        fhicl::Atom<art::InputTag> KSC { Name("KalSeedCollection"),
+          Comment("KalSeedCollection producer")};
+        fhicl::Table<typename MVATools::Config> MVAConfig{fhicl::Name("MVAConfig"),
+          fhicl::Comment("MVA Configuration") };
+      };
 
-   using Parameters = art::EDProducer::Table<Config>;
-   explicit TrackPID(const Parameters& conf);
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit TrackPID(const Parameters& conf);
 
-  private:
-   void produce(art::Event& event) override;
-    bool _debug;
-    float _maxde, _dtoffset;
-    art::InputTag _kalSeedTag;
-    MVATools* _tchmva;
+    private:
+      void produce(art::Event& event) override;
+      bool _debug;
+      float _maxde, _dtoffset;
+      art::InputTag _kalSeedTag;
+      MVATools* _tchmva;
   };
 
   TrackPID::TrackPID(const Parameters& config ) :
@@ -93,37 +92,37 @@ namespace mu2e {
 
       static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
       if (kseed.status().hasAllProperties(goodfit)){
-	if(kseed.hasCaloCluster() &&
-	    kseed.caloHit().flag().hasAllProperties(StrawHitFlag::active)){
-	  auto const& tchs = kseed.caloHit();
-	  auto const& cc = tchs.caloCluster();
-	  XYZVectorF trkmom;
-	  auto ikseg = kseed.nearestSegment(tchs.trkLen());
-	  if(ikseg != kseed.segments().end())
-	    ikseg->mom(ikseg->localFlt(tchs.trkLen()),trkmom);
-	  else
-	    throw cet::exception("RECO")<<"mu2e::TrackPID: KalSeed segment missing" << endl;
-	  // compute the energy difference, assuming an electron mass
-	  tchpid[TrkCaloHitPID::DeltaE] = cc->energyDep() - sqrt(trkmom.Mag2());
-	  tchpid[TrkCaloHitPID::ClusterLen] = tchs.hitLen();
-	  // move into detector coordinates.  Yikes!!
-	  XYZVectorF cpos = XYZVectorF(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));
-	  tchpid[TrkCaloHitPID::RPOCA] = sqrt(cpos.Perp2());
-	  // compute transverse direction WRT position
-	  cpos.SetZ(0.0);
-	  trkmom.SetZ(0.0);
-	  tchpid[TrkCaloHitPID::TrkDir] = cpos.Dot(trkmom)/sqrt(cpos.Mag2()*trkmom.Mag2());
-	  // the following includes the (Calibrated) light-propagation time delay.  It should eventually be put in the reconstruction FIXME!
-	  // This velocity should come from conditions FIXME!
-	  tchpid[TrkCaloHitPID::DeltaT] = tchs.t0().t0()-tchs.time()- std::min((float)200.0,std::max((float)0.0,tchs.hitLen()))*0.005 - _dtoffset;
-	  // hard cut on the energy difference.  This rejects cosmic rays which hit the calo and produce an upstream-going track that is then
-	  // reconstructed as a downstream particle associated to this cluster
-	  if(tchpid[TrkCaloHitPID::DeltaE] < _maxde){
-	    // evaluate the MVA
-	    tchpid.setMVAValue(_tchmva->evalMVA(tchpid.values()));
-	    tchpid.setMVAStatus(MVAStatus::calculated);
-	  }
-	}
+        if(kseed.hasCaloCluster() &&
+            kseed.caloHit().flag().hasAllProperties(StrawHitFlag::active)){
+          auto const& tchs = kseed.caloHit();
+          auto const& cc = tchs.caloCluster();
+          XYZVectorF trkmom;
+          auto ikseg = kseed.nearestSegment(tchs.trkLen());
+          if(ikseg != kseed.segments().end())
+            ikseg->mom(ikseg->localFlt(tchs.trkLen()),trkmom);
+          else
+            throw cet::exception("RECO")<<"mu2e::TrackPID: KalSeed segment missing" << endl;
+          // compute the energy difference, assuming an electron mass
+          tchpid[TrkCaloHitPID::DeltaE] = cc->energyDep() - sqrt(trkmom.Mag2());
+          tchpid[TrkCaloHitPID::ClusterLen] = tchs.hitLen();
+          // move into detector coordinates.  Yikes!!
+          XYZVectorF cpos = XYZVectorF(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e( cc->diskID(), cc->cog3Vector())));
+          tchpid[TrkCaloHitPID::RPOCA] = sqrt(cpos.Perp2());
+          // compute transverse direction WRT position
+          cpos.SetZ(0.0);
+          trkmom.SetZ(0.0);
+          tchpid[TrkCaloHitPID::TrkDir] = cpos.Dot(trkmom)/sqrt(cpos.Mag2()*trkmom.Mag2());
+          // the following includes the (Calibrated) light-propagation time delay.  It should eventually be put in the reconstruction FIXME!
+          // This velocity should come from conditions FIXME!
+          tchpid[TrkCaloHitPID::DeltaT] = tchs.t0().t0()-tchs.time()- std::min((float)200.0,std::max((float)0.0,tchs.hitLen()))*0.005 - _dtoffset;
+          // hard cut on the energy difference.  This rejects cosmic rays which hit the calo and produce an upstream-going track that is then
+          // reconstructed as a downstream particle associated to this cluster
+          if(tchpid[TrkCaloHitPID::DeltaE] < _maxde){
+            // evaluate the MVA
+            tchpid.setMVAValue(_tchmva->evalMVA(tchpid.values()));
+            tchpid.setMVAStatus(MVAStatus::calculated);
+          }
+        }
       }
       tchpcol->push_back(tchpid);
       rqcol->push_back(RecoQual(tchpid.status(),tchpid.MVAValue()));

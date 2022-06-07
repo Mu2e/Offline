@@ -74,13 +74,13 @@ physics :
 
   }
 
-  p1 : [ 
+  p1 : [
        generate
        , g4run
        ]
   e1 : [ TMuSt
        #, eventdisplay
-       #, outfile 
+       #, outfile
        ]
 
 
@@ -92,7 +92,7 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "data_TMu.root"
@@ -101,7 +101,7 @@ outputs:
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
                    # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }
 

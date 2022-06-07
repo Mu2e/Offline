@@ -245,14 +245,14 @@ namespace mu2e
         if(ilayer==_nLayers-1)
         {
           for(int FEBlayer=0; FEBlayer<2; FEBlayer++)
-          {          
+          {
             double FEBcoordinate0 = layer._position[thicknessDirection] + _layerDirection[isector][thicknessDirection]*(0.5*_counterThickness+_FEBDistanceToModule);
             if(FEBlayer==1) FEBcoordinate0 += _layerDirection[isector][thicknessDirection]*_FEBDistanceBetween2FEBsT;
             double FEBcoordinate1_1FEB = layer._position[widthDirection]; //centered if only 1 FEB
             double FEBcoordinate1_2FEBs_0 = FEBcoordinate1_1FEB - 0.5*_FEBDistanceBetween2FEBsW;
             double FEBcoordinate1_2FEBs_1 = FEBcoordinate1_1FEB + 0.5*_FEBDistanceBetween2FEBsW;
-            double FEBcoordinate2_side0 = layer._position[lengthDirection] - layer._halfLengths[lengthDirection] + _FEBDistanceToEdge; 
-            double FEBcoordinate2_side1 = layer._position[lengthDirection] + layer._halfLengths[lengthDirection] - _FEBDistanceToEdge; 
+            double FEBcoordinate2_side0 = layer._position[lengthDirection] - layer._halfLengths[lengthDirection] + _FEBDistanceToEdge;
+            double FEBcoordinate2_side1 = layer._position[lengthDirection] + layer._halfLengths[lengthDirection] - _FEBDistanceToEdge;
 
             CLHEP::Hep3Vector FEBposition_side0;
             CLHEP::Hep3Vector FEBposition_side1;
@@ -297,12 +297,12 @@ namespace mu2e
             }
           }
         }
-        
+
         //add the additional length required for the counter motherboards
-        //this needs to be done after the absorber layers were constructed, 
+        //this needs to be done after the absorber layers were constructed,
         //since the absorber layers take the dimension of the "original" layer dimensions (i.e. without CMBs)
         if(_CMBside0[isector] && _CMBside1[isector]) layer._halfLengths[lengthDirection] += _CMBOffset + _CMBHalfThickness;  //CMB on both sides
-        else 
+        else
         {
           if(_CMBside0[isector])  //CMB at only one side
           {
@@ -375,7 +375,7 @@ namespace mu2e
   {
     for(int i=0; i<_nSupportStructures; i++)
     {
-      _crs->_supportStructures.emplace_back(_supportStructureNames[i], _supportStructurePositions[i], 
+      _crs->_supportStructures.emplace_back(_supportStructureNames[i], _supportStructurePositions[i],
                                             _supportStructureHalfLengths[i], _supportStructureMaterialName);
     }
   }

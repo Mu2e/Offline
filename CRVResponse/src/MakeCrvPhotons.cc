@@ -289,7 +289,7 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
                           double timeStart, double timeEnd,
                           double beta, double charge,
                           double visibleEnergyDeposited,
-                          double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering 
+                          double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering
                                                         //is needed for the Cerenkov photons
                           int    reflector)
 {
@@ -338,9 +338,9 @@ static int nPCerenkov=0;
     int    nSteps=std::max(static_cast<int>(totalStepLength/precision),1);
 
     double avgNPhotonsScintillation = _scintillationYield*visibleEnergyDeposited;
-    double avgNPhotonsCerenkovInScintillator 
+    double avgNPhotonsCerenkovInScintillator
            = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
-    double avgNPhotonsCerenkovInFiber 
+    double avgNPhotonsCerenkovInFiber
            = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to curved paths
 
     int nPhotonsScintillationPerStep          = GetNumberOfPhotonsFromAverage(avgNPhotonsScintillation,nSteps);
@@ -355,7 +355,7 @@ static int nPCerenkov=0;
 
       bool isInScintillator = IsInsideScintillator(p);
       double r=0;  //distance from fiber center for fiber tables
-      double phi=0;  //angle w.r.t. the radius vector from the fiber center to the point in the 2D cross section plane 
+      double phi=0;  //angle w.r.t. the radius vector from the fiber center to the point in the 2D cross section plane
                      //0...+pi due to symmetry
       bool isInFiber = IsInsideFiber(p,distanceVector, r,phi);
 
@@ -441,14 +441,14 @@ bool MakeCrvPhotons::IsInsideScintillator(const CLHEP::Hep3Vector &p)
   {
     double tmp=(pos2D[i]-fiberPos2D[i])/fiberRadius2D[i];
     ellipseSum+=tmp*tmp;
-  } 
+  }
   if(ellipseSum<1) return false; // <1 means inside ellipse, i.e. inside fiber hole. ellipse formula: (x-P_x)^2 / r_x^2 + (y-P_y)^2 / r_y^2 = 1
 
   CLHEP::Hep2Vector cornerPos2D(_LC.halfThickness-_LC.scintillatorCornerRadius,_LC.halfWidth-_LC.scintillatorCornerRadius);
   if(pos2D[0]>cornerPos2D[0] && pos2D[1]>cornerPos2D[1])
   {
     if((pos2D-cornerPos2D).mag()>_LC.scintillatorCornerRadius) return false;
-  } 
+  }
 
   return true;
 }
@@ -478,7 +478,7 @@ bool MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3
 
 double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin)
 {
-  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255),
   //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
   //Due to rounding issues, the sum of all entries for this bin may not be 255.
   //This bin-specifc sum is the probabilityScaleTimeDelays.
@@ -498,7 +498,7 @@ double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin)
 
 int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin)
 {
-  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255), 
+  //The lookup tables encodes probabilities as probability*mu2eCrv::LookupBin::probabilityScale(255),
   //so that the probabilities can be stored as integers. For example, the probability of 1 is stored as 255.
   //Due to rounding issues, the sum of all entries for this bin may not be 255.
   //This bin-specifc sum is the probabilityScaleFiberEmissions.
@@ -567,6 +567,6 @@ double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double cha
     }
   }
   return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
-} 
+}
 
 } //namespace mu2e

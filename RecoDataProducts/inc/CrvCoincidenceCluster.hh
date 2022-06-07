@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvCoincidenceCluster
   {
@@ -19,9 +19,9 @@ namespace mu2e
 
     CrvCoincidenceCluster() {}
 
-    CrvCoincidenceCluster(int crvSectorType, const CLHEP::Hep3Vector &avgCounterPos, double startTime, double endTime, float PEs, 
+    CrvCoincidenceCluster(int crvSectorType, const CLHEP::Hep3Vector &avgCounterPos, double startTime, double endTime, float PEs,
               const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, float slope, const std::vector<int> &layers) :
-              _crvSectorType(crvSectorType), _avgCounterPos(avgCounterPos), _startTime(startTime), _endTime(endTime), _PEs(PEs), 
+              _crvSectorType(crvSectorType), _avgCounterPos(avgCounterPos), _startTime(startTime), _endTime(endTime), _PEs(PEs),
               _crvRecoPulses(crvRecoPulses), _slope(slope), _layers(layers) {}
 
     int                                         GetCrvSectorType() const {return _crvSectorType;}

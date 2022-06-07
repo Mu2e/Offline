@@ -17,7 +17,7 @@ namespace mu2e{
       Double_t zpanel{pointmmTocm(planeEnvelope.zHalfLength())};
       Double_t rmin{pointmmTocm(planeEnvelope.innerRadius())};
       Double_t rmax{pointmmTocm(planeEnvelope.outerRadius())};
-  
+
       Double_t fullLength = trkr->planes().back().origin().z()- trkr->planes().front().origin().z();
       Double_t planespace = 2*((pointmmTocm(fullLength) - trkr->nPlanes()*zpanel)/(trkr->nPlanes()-2));
       double p = -dz;
@@ -27,7 +27,7 @@ namespace mu2e{
       //Tracker Planes in XZ
       for(size_t i =0;i<trkr->nPlanes()/2;i++)
         {
-        
+
         TEveGeoShape *panel = new TEveGeoShape();
         panelpos [2] = p;
         panel->SetShape(new TGeoBBox("panel",rmax+rmin/2,rmax+rmin/2,zpanel*2,panelpos));
@@ -35,7 +35,7 @@ namespace mu2e{
         orthodetXZ->AddElement(panel);
         p = p + planespace + zpanel*2;
         }
-        
+
       //XY:
       TEveGeoShape *tr = new TEveGeoShape();
       tr->SetShape(new TGeoTube(rmin, rmax, dz));
@@ -52,48 +52,48 @@ namespace mu2e{
       TGeoVolume *tracker = new TGeoVolume("Straw Tracker ",gs, My);
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
-      topvol->AddNode(tracker, 1, new TGeoTranslation(trackerCentrMu2e.x()/10, trackerCentrMu2e.y()/10, trackerCentrMu2e.z()/10));  
-     
-      //Stopping Target 
+      topvol->AddNode(tracker, 1, new TGeoTranslation(trackerCentrMu2e.x()/10, trackerCentrMu2e.y()/10, trackerCentrMu2e.z()/10));
+
+      //Stopping Target
       GeomHandle<StoppingTarget> target;
       CLHEP::Hep3Vector _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
       double stoppingtargetlength = target->cylinderLength();
       double stoppingtargetz = target->centerInMu2e().z() - _detSysOrigin.z();
       double startz = stoppingtargetz - stoppingtargetlength*0.5;
-      unsigned int nFoils = target->nFoils(); 
+      unsigned int nFoils = target->nFoils();
       double j =0.0;
-      for(unsigned int i=0; i<nFoils; i++)  
+      for(unsigned int i=0; i<nFoils; i++)
         {
         if(i > 0) j = j+abs(target->foil(i-1).centerInMu2e().z() - target->foil(i).centerInMu2e().z());
         const mu2e::TargetFoil &foil=target->foil(i);
         double halfThickness = foil.halfThickness();
         double r = foil.rOut() - foil.rIn();
-      
+
         CLHEP::Hep3Vector center = foil.centerInDetectorSystem();
 
         CLHEP::Hep3Vector foilposition(center.x() ,center.y(),pointmmTocm(startz+j)); // Stopping Target Location
-      
+
         Double_t foilpos[3];
         foilpos [0] = foilposition.x();
         foilpos [1] = foilposition.y();
         foilpos [2] = foilposition.z();
-      
+
         TEveGeoShape *stXZ = new TEveGeoShape();
 
         stXZ->SetShape(new TGeoBBox("foil",pointmmTocm(r),pointmmTocm(r),pointmmTocm(halfThickness), foilpos));
-        stXZ->SetMainTransparency(transpOpt); 
+        stXZ->SetMainTransparency(transpOpt);
         orthodetXZ->AddElement(stXZ);
-      
+
         TEveGeoShape *stXY = new TEveGeoShape();
         stXY->SetShape(new TGeoTube(pointmmTocm(foil.rIn()),pointmmTocm(foil.rOut()),pointmmTocm(halfThickness)));
 
         stXY->SetMainTransparency(transpOpt);
         orthodetXY->AddElement(stXY);
         }
-        
+
         //Calo disk outline in the Tracker XZ display window
-        GeomHandle<DiskCalorimeter> calo;   
-       
+        GeomHandle<DiskCalorimeter> calo;
+
         double diskInnerRingIn = calo->caloInfo().getDouble("diskInnerRingIn");
         double diskOuterRingOut = calo->caloInfo().getDouble("diskOuterRingOut");
         double diskOuterRailOut = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
@@ -103,11 +103,11 @@ namespace mu2e{
         double pipeRadius = calo->caloInfo().getDouble("pipeRadius");
         double frontPanelHalfThick = (2.0*FPCarbonDZ+2.0*FPFoamDZ-pipeRadius+FPCoolPipeRadius)/2.0;
         double holeDZ = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
-        
+
         double crystalDXY = calo->caloInfo().getDouble("crystalXYLength")*2.0;
         double crystalDZ = calo->caloInfo().getDouble("crystalZLength")/2.0;
         double wrapperDXY = crystalDXY + calo->caloInfo().getDouble("wrapperThickness");
-        
+
         Double_t crystalpos[3];
         for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++){
 
@@ -121,7 +121,7 @@ namespace mu2e{
 
             TEveGeoShape *crystalXZ = new TEveGeoShape();
             crystalXZ->SetShape(new TGeoBBox("Crystal",pointmmTocm(wrapperDXY),pointmmTocm(wrapperDXY),pointmmTocm(crystalDZ), crystalpos));
-            crystalXZ->SetMainTransparency(transpOpt);   
+            crystalXZ->SetMainTransparency(transpOpt);
             orthodetXZ->AddElement(crystalXZ);
             diskXZwidth-=wrapperDXY;
             }

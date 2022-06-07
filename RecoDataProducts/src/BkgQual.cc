@@ -14,19 +14,19 @@ namespace mu2e {
   std::map<std::string,BkgQualDetail::MVA_varindex> const& BkgQualDetail::varNames() {
     static std::map<std::string,BkgQualDetail::MVA_varindex> varnames;
     if(varnames.size()==0){
-      varnames[std::string("HitRho")]		= BkgQualDetail::hrho;
-      varnames[std::string("HitRhoSpread")]	= BkgQualDetail::shrho;
-      varnames[std::string("ClusterRho")]	= BkgQualDetail::crho;
-      varnames[std::string("TimeSpread")]	= BkgQualDetail::sdt;
-      varnames[std::string("ZMin")]		= BkgQualDetail::zmin;
-      varnames[std::string("ZMax")]		= BkgQualDetail::zmax;
-      varnames[std::string("ZGap")]		= BkgQualDetail::zgap;
-      varnames[std::string("NPlanes")]		= BkgQualDetail::np;
-      varnames[std::string("NExpectedPlanes")]	= BkgQualDetail::npexp; 
-      varnames[std::string("PlaneFraction")]	= BkgQualDetail::npfrac; 
-      varnames[std::string("NPlaneHits")]	= BkgQualDetail::nphits; 
-      varnames[std::string("NHits")]		= BkgQualDetail::nhits; 
-      varnames[std::string("StereoFraction")]	= BkgQualDetail::sfrac; 
+      varnames[std::string("HitRho")]                = BkgQualDetail::hrho;
+      varnames[std::string("HitRhoSpread")]        = BkgQualDetail::shrho;
+      varnames[std::string("ClusterRho")]        = BkgQualDetail::crho;
+      varnames[std::string("TimeSpread")]        = BkgQualDetail::sdt;
+      varnames[std::string("ZMin")]                = BkgQualDetail::zmin;
+      varnames[std::string("ZMax")]                = BkgQualDetail::zmax;
+      varnames[std::string("ZGap")]                = BkgQualDetail::zgap;
+      varnames[std::string("NPlanes")]                = BkgQualDetail::np;
+      varnames[std::string("NExpectedPlanes")]        = BkgQualDetail::npexp;
+      varnames[std::string("PlaneFraction")]        = BkgQualDetail::npfrac;
+      varnames[std::string("NPlaneHits")]        = BkgQualDetail::nphits;
+      varnames[std::string("NHits")]                = BkgQualDetail::nhits;
+      varnames[std::string("StereoFraction")]        = BkgQualDetail::sfrac;
     }
     return varnames;
   }
@@ -36,7 +36,7 @@ namespace mu2e {
     std::map<std::string,BkgQualDetail::MVA_varindex> const& varnames = varNames();
     for(const auto& ivar : varnames) {
       if(ivar.second == vindex){
-	return ivar.first;
+        return ivar.first;
       }
     }
     return nullret;

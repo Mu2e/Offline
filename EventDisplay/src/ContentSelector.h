@@ -97,7 +97,7 @@ class ContentSelector
                                                        std::vector<entryStruct> &newEntries, int classID);
 
   public:
-  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, 
+  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox,
                   std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel,
                   std::string const &protonBunchTimeLabel);
   void firstLoop();

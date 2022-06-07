@@ -18,7 +18,7 @@ source : {
 
    # firstEvent  : 500
    maxEvents   : -1
-#   inputCommands: ["keep *", 
+#   inputCommands: ["keep *",
 #                   "drop *Mu2eEventHeader*_*_*_*"]
 }
 
@@ -29,52 +29,52 @@ physics : {
    producers : {
       fetchData:
       {
-	  module_type : PrefetchDAQData
-	  debugLevel             : 0
-	  fetchCaloDigis         : 0
-	  fetchStrawDigis        : 0
-	  fetchCaloFragments     : 1
-	  fetchTrkFragments      : 1
-	  caloDigiCollectionTag  : "notNow"
-	  strawDigiCollectionTag : "notNow"
-	  caloFragmentTag        : "daq:calo"
-	  trkFragmentTag         : "daq:trk"
+          module_type : PrefetchDAQData
+          debugLevel             : 0
+          fetchCaloDigis         : 0
+          fetchStrawDigis        : 0
+          fetchCaloFragments     : 1
+          fetchTrkFragments      : 1
+          caloDigiCollectionTag  : "notNow"
+          strawDigiCollectionTag : "notNow"
+          caloFragmentTag        : "daq:calo"
+          trkFragmentTag         : "daq:trk"
       }
 
       makeSD:
       {
-	 @table::DAQ.producers.makeSD
+         @table::DAQ.producers.makeSD
       }
 
        CaloDigiMaker:
        {
-	 @table::DAQ.producers.CaloDigiMaker
+         @table::DAQ.producers.CaloDigiMaker
        }
 
-      CaloHitMaker:		
-      {	 
-	 @table::DAQ.producers.CaloHitMaker
+      CaloHitMaker:
+      {
+         @table::DAQ.producers.CaloHitMaker
       }
        CaloClusterFast:
        {
-	   @table::CaloClusterTrigger.producers.CaloClusterFast
+           @table::CaloClusterTrigger.producers.CaloClusterFast
        }
    }
 
    analyzers  : {
       readFragments : {
-	 module_type : FragmentAna
-	 diagLevel   : 0
-	 parseCAL    : 1
-	 parseTRK    : 1
-	 caloTag     : "daq:calo"
-	 trkTag      : "daq:trk"
+         module_type : FragmentAna
+         diagLevel   : 0
+         parseCAL    : 1
+         parseTRK    : 1
+         caloTag     : "daq:calo"
+         trkTag      : "daq:trk"
       }
    }
 
-   #  t1 : [ makeSD ] 
-   #   t1 : [ fetchData, makeSD , CaloDigiMaker, CaloHitMaker, CaloClusterFast] 
-   t1 : [ fetchData, makeSD , CaloHitMaker, CaloClusterFast] 
+   #  t1 : [ makeSD ]
+   #   t1 : [ fetchData, makeSD , CaloDigiMaker, CaloHitMaker, CaloClusterFast]
+   t1 : [ fetchData, makeSD , CaloHitMaker, CaloClusterFast]
    #e1 : [ outfile, readFragments]
    e1 : []
 
@@ -88,15 +88,15 @@ outputs:  {
    outfile :  {
       module_type   :   RootOutput
       fileName      :   "digis_from_frags_debug.art"
-      
-      outputCommands: [ 
-	 "drop *_*_*_*",
-	 "keep *_*_*_*"
+
+      outputCommands: [
+         "drop *_*_*_*",
+         "keep *_*_*_*"
       ]
    }
 }
 
-services.TFileService.fileName : "generateDigiFromFragment_test.root" 
+services.TFileService.fileName : "generateDigiFromFragment_test.root"
 services.TimeTracker : {
     dbOutput : {
         filename : "timing.csv"

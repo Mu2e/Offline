@@ -56,15 +56,16 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
 
 
 void DoDriftTimeFit(
-    std::vector<double> & pars, 
+    std::vector<double> & pars,
     std::vector<double> & errors,
     std::vector<double> & cov_out,
     bool & minuit_converged,
-    GaussianDriftFit const& fit, 
+    GaussianDriftFit & fit,
+    double driftres=10,
     int diag=0, double mntolerance=0.1, double mnprecision=-1);
 
 void DoDriftTimeFit(int const& diag, CosmicTrackSeed& tseed, StrawResponse const& srep,
-                    const Tracker* tracker, double mntolerance=0.1, double mnprecision=-1);
+                    const Tracker* tracker, double driftres, double mntolerance=0.1, double mnprecision=-1);
 
 } // namespace MinuitDriftFitter
 

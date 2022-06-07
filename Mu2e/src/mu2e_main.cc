@@ -43,7 +43,7 @@ void mu2eBanner() {
   mfile.close();
 
   cout << "   ************************** Mu2e Offline **************************" << endl;
-  cout << "     art "<< art <<"    root " << root 
+  cout << "     art "<< art <<"    root " << root
        << "    KinKal " << kinkal << endl;
   cout << "     build  " << dir << endl;
   cout << "     build  " << stub << "    " << btime << endl;
@@ -55,7 +55,7 @@ int
 main(int argc, char* argv[])
 {
   mu2eBanner();
-  p = artapp(argc, argv);
+  p = artapp(argc, argv, false);
   mf::EndMessageFacility();
   return p.exitcode();
 }

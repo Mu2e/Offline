@@ -6,20 +6,20 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : PtrTest0
 
 # Start form an empty source
-source : 
-{ 
+source :
+{
   module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : 1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 }
 
 physics :

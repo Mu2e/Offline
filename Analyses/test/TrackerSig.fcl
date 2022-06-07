@@ -81,15 +81,15 @@ physics :
 
   }
 
-  p1 : [ 
+  p1 : [
          #generate ,
          #g4run ,
          #makeSH ,
          extractElData
        ]
-  e1 : [ 
+  e1 : [
          tSig
-         #outfile 
+         #outfile
        ]
 
 
@@ -101,7 +101,7 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "TSig_bkg.root"
@@ -110,7 +110,7 @@ outputs:
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
                    # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }
 

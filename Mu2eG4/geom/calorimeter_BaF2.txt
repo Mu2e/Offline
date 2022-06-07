@@ -1,16 +1,16 @@
 // Crystal calorimeter
 
-double calorimeter.caloMotherInRadius           = 349;   
-double calorimeter.caloMotherOutRadius          = 818; //765;    
-double calorimeter.caloMotherZ0                 = 11842;   
-double calorimeter.caloMotherZ1                 = 13220;   
+double calorimeter.caloMotherInRadius           = 349;
+double calorimeter.caloMotherOutRadius          = 818; //765;
+double calorimeter.caloMotherZ0                 = 11842;
+double calorimeter.caloMotherZ1                 = 13220;
 
-double calorimeter.calorimeterZFront            = 11843.0;     // front posiiton of calo section in mu2e coordinates 
+double calorimeter.calorimeterZFront            = 11843.0;     // front posiiton of calo section in mu2e coordinates
                                                                // MUST be at least 1 mm larger than caloMotherZ0 for placing virtual detectors
 string calorimeter.vacuumMaterial               = "DSVacuum";
 string calorimeter.fillMaterial                 = "DSVacuum";
 string calorimeter.diskMaterial                 = "DSVacuum";
-double calorimeter.caseThickness                = 0;  
+double calorimeter.caseThickness                = 0;
 
 
 
@@ -38,18 +38,18 @@ double calorimeter.crystalWrapperThickness     = 0.100; //mm
 string calorimeter.readoutMaterial             = "G4_Si";
 double calorimeter.readoutHalfTrans            = 5;
 double calorimeter.readoutHalfThickness        = 1;
-int    calorimeter.readoutPerCrystal           = 2; 
+int    calorimeter.readoutPerCrystal           = 2;
 
 double calorimeter.readoutElecHalfX            = 0.75;
 double calorimeter.readoutElecHalfY            = 15;
 double calorimeter.readoutElecHalfZ            = 27;
 
 // Electronics crate
-int calorimeter.crateVersion        = 2; 
+int calorimeter.crateVersion        = 2;
 string calorimeter.crateMaterial    = "Electronics"; //"G10"  calorimeter electronics material. NEED to refine
-double calorimeter.crateInnerRadius = 680;       
+double calorimeter.crateInnerRadius = 680;
 double calorimeter.crateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
-double calorimeter.crateHalfLength  = 215.575;  
+double calorimeter.crateHalfLength  = 215.575;
 
 
 

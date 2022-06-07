@@ -5,7 +5,7 @@
 //   - the energy of the neighboring crystals (2 layers), using -1 to indicate if there is no crystal
 //
 // Note: the XY and UV distributions are also attainable by performing the coordinate transform in the TMVAReadRegress.C matrix
-//   
+//
 
 #define AnalysisBaseMatch_cxx
 #include "AnalysisBaseMatch.h"
@@ -63,10 +63,10 @@ void AnalysisBaseMatch::Begin(TTree * /*tree*/)
 {
 
    TString option = GetOption();
-   if (option.Sizeof()>=2) histname=option;   
+   if (option.Sizeof()>=2) histname=option;
    fHistFile = new TFile(histname,"RECREATE");
    cout<<endl<<"Histname "<<histname<<endl;
- 
+
    _sener    = Book1DF("sener",       "Rcog sig",          100,      0,    1, "E",      "MeV");
    _distOut  = Book1DF("distOut",     "Dist out",          100,      0, 1000, "d",      "mm");
    _dpos     = Book1DF("dpos",        "Delta pos",         100,   -200,  200, "dx",     "mm");
@@ -83,90 +83,90 @@ void AnalysisBaseMatch::Begin(TTree * /*tree*/)
    _div      = Book1DF("div",         "div",                50,      0,  200, "div",    "mm");
    _targ     = new TH2F("targ",       "targ",              100,     -2,    2, 100, -2, 2);
    _duv      = new TH2F("duv",        "targ uv",           100,     -2,    2, 100, -2, 2);
-    
+
    for (int i=0;i<10;++i) _view[i] = new TH2F(Form("view_%i",i),"view", 50, -5, 5, 50, -5, 5);
 
-   disk = new Disk(1,374,660,34.300); 
+   disk = new Disk(1,374,660,34.300);
 
 
    dTuple = new TTree("TreeReg","TreeReg");
-   b_e0 = dTuple->Branch("e0", &e0_, "e0/F");  
-   b_e1 = dTuple->Branch("e1", &e1_, "e1/F");  
-   b_e2 = dTuple->Branch("e2", &e2_, "e2/F");  
-   b_e3 = dTuple->Branch("e3", &e3_, "e3/F");  
-   b_e4 = dTuple->Branch("e4", &e4_, "e4/F");  
-   b_e5 = dTuple->Branch("e5", &e5_, "e5/F");  
-   b_e6 = dTuple->Branch("e6", &e6_, "e6/F");  
-   b_e7 = dTuple->Branch("e7", &e7_, "e7/F");  
-   b_e8 = dTuple->Branch("e8", &e8_, "e8/F");  
-   b_e9 = dTuple->Branch("e9", &e9_, "e9/F");  
+   b_e0 = dTuple->Branch("e0", &e0_, "e0/F");
+   b_e1 = dTuple->Branch("e1", &e1_, "e1/F");
+   b_e2 = dTuple->Branch("e2", &e2_, "e2/F");
+   b_e3 = dTuple->Branch("e3", &e3_, "e3/F");
+   b_e4 = dTuple->Branch("e4", &e4_, "e4/F");
+   b_e5 = dTuple->Branch("e5", &e5_, "e5/F");
+   b_e6 = dTuple->Branch("e6", &e6_, "e6/F");
+   b_e7 = dTuple->Branch("e7", &e7_, "e7/F");
+   b_e8 = dTuple->Branch("e8", &e8_, "e8/F");
+   b_e9 = dTuple->Branch("e9", &e9_, "e9/F");
 
-   b_e10 = dTuple->Branch("e10", &e10_, "e10/F");  
-   b_e11 = dTuple->Branch("e11", &e11_, "e11/F");  
-   b_e12 = dTuple->Branch("e12", &e12_, "e12/F");  
-   b_e13 = dTuple->Branch("e13", &e13_, "e13/F");  
-   b_e14 = dTuple->Branch("e14", &e14_, "e14/F");  
-   b_e15 = dTuple->Branch("e15", &e15_, "e15/F");  
-   b_e16 = dTuple->Branch("e16", &e16_, "e16/F");  
-   b_e17 = dTuple->Branch("e17", &e17_, "e17/F");  
-   b_e18 = dTuple->Branch("e18", &e18_, "e18/F");  
-   b_e19 = dTuple->Branch("e19", &e19_, "e19/F");  
+   b_e10 = dTuple->Branch("e10", &e10_, "e10/F");
+   b_e11 = dTuple->Branch("e11", &e11_, "e11/F");
+   b_e12 = dTuple->Branch("e12", &e12_, "e12/F");
+   b_e13 = dTuple->Branch("e13", &e13_, "e13/F");
+   b_e14 = dTuple->Branch("e14", &e14_, "e14/F");
+   b_e15 = dTuple->Branch("e15", &e15_, "e15/F");
+   b_e16 = dTuple->Branch("e16", &e16_, "e16/F");
+   b_e17 = dTuple->Branch("e17", &e17_, "e17/F");
+   b_e18 = dTuple->Branch("e18", &e18_, "e18/F");
+   b_e19 = dTuple->Branch("e19", &e19_, "e19/F");
 
-   b_e20 = dTuple->Branch("e20", &e20_, "e20/F");  
-   b_e21 = dTuple->Branch("e21", &e21_, "e21/F");  
-   b_e22 = dTuple->Branch("e22", &e22_, "e22/F");  
-   b_e23 = dTuple->Branch("e23", &e23_, "e23/F");  
-   b_e24 = dTuple->Branch("e24", &e24_, "e24/F");  
+   b_e20 = dTuple->Branch("e20", &e20_, "e20/F");
+   b_e21 = dTuple->Branch("e21", &e21_, "e21/F");
+   b_e22 = dTuple->Branch("e22", &e22_, "e22/F");
+   b_e23 = dTuple->Branch("e23", &e23_, "e23/F");
+   b_e24 = dTuple->Branch("e24", &e24_, "e24/F");
 
 
-   b_t0 = dTuple->Branch("t0", &t0_, "t0/F");  
-   b_t1 = dTuple->Branch("t1", &t1_, "t1/F");  
+   b_t0 = dTuple->Branch("t0", &t0_, "t0/F");
+   b_t1 = dTuple->Branch("t1", &t1_, "t1/F");
 
-   b_r0 = dTuple->Branch("r0", &r0_, "r0/F");  
-   b_z0 = dTuple->Branch("z0", &z0_, "z0/F");  
-   b_ip0 = dTuple->Branch("ip0", &ip0_, "ip0/F");  
-   b_ip1 = dTuple->Branch("ip1", &ip1_, "ip1/F");  
+   b_r0 = dTuple->Branch("r0", &r0_, "r0/F");
+   b_z0 = dTuple->Branch("z0", &z0_, "z0/F");
+   b_ip0 = dTuple->Branch("ip0", &ip0_, "ip0/F");
+   b_ip1 = dTuple->Branch("ip1", &ip1_, "ip1/F");
 
-   b_c0 = dTuple->Branch("c0", &c0_, "c0/F");  
-   b_c1 = dTuple->Branch("c1", &c1_, "c1/F");  
-   b_c2 = dTuple->Branch("c2", &c2_, "c2/F");  
-   b_c3 = dTuple->Branch("c3", &c3_, "c3/F");  
-   b_c4 = dTuple->Branch("c4", &c4_, "c4/F");  
-   b_c5 = dTuple->Branch("c5", &c5_, "c5/F");  
+   b_c0 = dTuple->Branch("c0", &c0_, "c0/F");
+   b_c1 = dTuple->Branch("c1", &c1_, "c1/F");
+   b_c2 = dTuple->Branch("c2", &c2_, "c2/F");
+   b_c3 = dTuple->Branch("c3", &c3_, "c3/F");
+   b_c4 = dTuple->Branch("c4", &c4_, "c4/F");
+   b_c5 = dTuple->Branch("c5", &c5_, "c5/F");
 
-   b_ffx = dTuple->Branch("ffx", &ffx_, "ffx/F");  
-   b_ffy = dTuple->Branch("ffy", &ffy_, "ffy/F");  
-   b_ffz = dTuple->Branch("ffz", &ffz_, "ffz/F");  
-   b_vdx = dTuple->Branch("vdx", &vdx_, "vdx/F");  
-   b_vdy = dTuple->Branch("vdy", &vdy_, "vdy/F");  
-   b_vdz = dTuple->Branch("vdz", &vdz_, "vdz/F");  
+   b_ffx = dTuple->Branch("ffx", &ffx_, "ffx/F");
+   b_ffy = dTuple->Branch("ffy", &ffy_, "ffy/F");
+   b_ffz = dTuple->Branch("ffz", &ffz_, "ffz/F");
+   b_vdx = dTuple->Branch("vdx", &vdx_, "vdx/F");
+   b_vdy = dTuple->Branch("vdy", &vdy_, "vdy/F");
+   b_vdz = dTuple->Branch("vdz", &vdz_, "vdz/F");
 
-   b_targetX = dTuple->Branch("targetX", &targetX_, "targetX/F");  
-   b_targetY = dTuple->Branch("targetY", &targetY_, "targetY/F");  
-   b_targetA = dTuple->Branch("targetA", &targetA_, "targetA/F");  
-   
+   b_targetX = dTuple->Branch("targetX", &targetX_, "targetX/F");
+   b_targetY = dTuple->Branch("targetY", &targetY_, "targetY/F");
+   b_targetA = dTuple->Branch("targetA", &targetA_, "targetA/F");
+
    is_train=false;
    if (histname.Contains("Train")) is_train = true;
-   
+
    Nplot = 0;
 
 }
 
-      
-      
-      
 
-      
-      
+
+
+
+
+
 
 Bool_t AnalysisBaseMatch::Process(Long64_t entry)
 {
-     
+
      fChain->GetTree()->GetEntry(entry);
-          
+
      double vdPhi(0),vdTheta(0),vdmom(-1);
-     
-     int VDTrk = vdFinder(); 
+
+     int VDTrk = vdFinder();
      if (VDTrk > -1)
      {
          vdmom   = sqrt(vdMomX[VDTrk]*vdMomX[VDTrk]+vdMomY[VDTrk]*vdMomY[VDTrk]+vdMomZ[VDTrk]*vdMomZ[VDTrk]);
@@ -182,83 +182,83 @@ Bool_t AnalysisBaseMatch::Process(Long64_t entry)
      for (int im=0;im<nMatch;++im)
      {
           int ic = mCluId[im];
-          if (cluConv[ic]!=1) continue; 
+          if (cluConv[ic]!=1) continue;
           itrkMatch = mTrkId[im];
-     } 
+     }
 
 
-     if (itrkMatch == -1)  return kTRUE; 
+     if (itrkMatch == -1)  return kTRUE;
      if (trkprob[itrkMatch] < 1e-3) return kTRUE;
      if (trkStat[itrkMatch] !=1) return kTRUE;
-     
+
      double trkp = sqrt(trkpX[itrkMatch]*trkpX[itrkMatch]+trkpY[itrkMatch]*trkpY[itrkMatch]+trkpZ[itrkMatch]*trkpZ[itrkMatch]);
 
      double trkPhi   = (atan2(trkpY[itrkMatch],trkpX[itrkMatch]));
      double trkTheta = acos(trkpZ[itrkMatch]/trkp);
-          
+
      if (VDTrk > -1) _dphi->Fill(vdPhi-trkPhi);
      if (VDTrk > -1) _dtheta->Fill(vdTheta-trkTheta);
-     
 
 
-     
-     
-     for (int ic=0;ic<nCluster;++ic) 
-     {     
-	  if (cluConv[ic]!=1)     continue;	
-          
+
+
+
+     for (int ic=0;ic<nCluster;++ic)
+     {
+          if (cluConv[ic]!=1)     continue;
+
           double dx0 = cluCogX[ic]-trkFFX[itrkMatch];
           double dy0 = cluCogY[ic]-trkFFY[itrkMatch];
-          if (sqrt(dx0*dx0+dy0*dy0)>200) continue; 
-          
-	  	  	  
-	  std::vector<int> crystalL = (*cluList)[ic];
-	  int seedId     = cryId[crystalL[0]];
-	  double centerX = cryPosX[crystalL[0]];
-	  double centerY = cryPosY[crystalL[0]];
-	  if (seedId >= disk->nCrystal()) seedId -= disk->nCrystal();
+          if (sqrt(dx0*dx0+dy0*dy0)>200) continue;
+
+
+          std::vector<int> crystalL = (*cluList)[ic];
+          int seedId     = cryId[crystalL[0]];
+          double centerX = cryPosX[crystalL[0]];
+          double centerY = cryPosY[crystalL[0]];
+          if (seedId >= disk->nCrystal()) seedId -= disk->nCrystal();
 
 
           int ivm(-1);
           for (int iv=0;iv<nVd;++iv) if (vdMom[iv] > 80 && (vdPdgId[iv]==11 ||vdPdgId[iv]==13) ) ivm=iv;
-          
+
           int ism(-1);
           for (int is=cluSimIdx[ic];is<cluSimIdx[ic]+cluSimLen[ic];++is)if (clusimMom[is]>90) ism = is;
 
 
-          //if (sqrt(centerX*centerX+centerY*centerY)>450) continue;          
-          //if (trkFFZ[itrkMatch]>1) continue; 
+          //if (sqrt(centerX*centerX+centerY*centerY)>450) continue;
+          //if (trkFFZ[itrkMatch]>1) continue;
           //std::cout<<entry<<" "<<nCluster<<" "<<ic<<" "<<centerX<<" "<<centerY<<" "<<endl;
-	  	  
 
-	  double matrixX[10]={0};
-	  double matrixY[10]={0};
-	  double matrixE[10]={0};
-	  double etot25b(0);
-	  for (unsigned int ii=0; ii<crystalL.size() && ii <10; ++ii)
-          {	  
-	      int cryIdx  = crystalL[ii];
-	      matrixX[ii] = (cryPosX[cryIdx]-centerX)/_cellSize;
-	      matrixY[ii] = (cryPosY[cryIdx]-centerY)/_cellSize;
-	      matrixE[ii] = cryEdep[cryIdx]/105.0;
-	      etot25b += cryEdep[cryIdx];
+
+          double matrixX[10]={0};
+          double matrixY[10]={0};
+          double matrixE[10]={0};
+          double etot25b(0);
+          for (unsigned int ii=0; ii<crystalL.size() && ii <10; ++ii)
+          {
+              int cryIdx  = crystalL[ii];
+              matrixX[ii] = (cryPosX[cryIdx]-centerX)/_cellSize;
+              matrixY[ii] = (cryPosY[cryIdx]-centerY)/_cellSize;
+              matrixE[ii] = cryEdep[cryIdx]/105.0;
+              etot25b += cryEdep[cryIdx];
               //cout<<"- "<<cryPosX[cryIdx]<<" "<<cryPosY[cryIdx]<<" "<<cryEdep[cryIdx]<<endl;
-	  }
-	  _sener->Fill(etot25b/cluEnergy[ic]);
-	  
-          
-          TVector3 cogNew = calcCog(ic);  
+          }
+          _sener->Fill(etot25b/cluEnergy[ic]);
 
-	  
- 	  double targetX =(trkFFX[itrkMatch]-centerX)/_cellSize;
- 	  double targetY =(trkFFY[itrkMatch]-centerY)/_cellSize;
-	  
-          TVector2 dxy(targetX,targetY); 
+
+          TVector3 cogNew = calcCog(ic);
+
+
+          double targetX =(trkFFX[itrkMatch]-centerX)/_cellSize;
+          double targetY =(trkFFY[itrkMatch]-centerY)/_cellSize;
+
+          TVector2 dxy(targetX,targetY);
           TVector2 du(cos(trkPhi),sin(trkPhi));
           TVector2 dv(-sin(trkPhi),cos(trkPhi));
           TVector2 deltaUV0(dxy*du,dxy*dv);
-          
-          
+
+
           _targ->Fill(targetX,targetY);
           _duv->Fill(deltaUV0.X(),deltaUV0.Y());
           _dtrk->Fill(trkFFX[itrkMatch]-clusimPosX[ic]);
@@ -267,113 +267,113 @@ Bool_t AnalysisBaseMatch::Process(Long64_t entry)
           int miv(-1);
           for (int iv=0;iv<nVd;iv++) if (vdMom[iv]> 90 && (vdPdgId[iv]==11 || vdPdgId[iv]==13 )) miv=iv;
           if (ivm==-1) return kTRUE;
-          if (miv > -1) 
+          if (miv > -1)
           {
              double divx = vdPosX[miv]-trkFFX[itrkMatch];
              double divy = vdPosY[miv]-trkFFY[itrkMatch];
              double div  = sqrt(divx*divx+divy*divy);
 
-             
+
              _div->Fill(div);
              if (div > 50) return kTRUE;
           }
 
 
 
-	  //this fills the position of the 7 most energetic crystals (w.r.t. most energetic one) in XY coordinates  
-	  if (mode==1)
+          //this fills the position of the 7 most energetic crystals (w.r.t. most energetic one) in XY coordinates
+          if (mode==1)
           {
              e0_  = matrixX[0];
-	     e1_  = matrixY[0];
-	     e2_  = matrixE[0];
-	     e3_  = matrixX[1];
-	     e4_  = matrixY[1];
-	     e5_  = matrixE[1];
-	     e6_  = matrixX[2];
-	     e7_  = matrixY[2];
-	     e8_  = matrixE[2];
-	     e9_  = matrixX[3];
-	     e10_ = matrixY[3];
-	     e11_ = matrixE[3];
-	     e12_ = matrixX[4];
-	     e13_ = matrixY[4];
-	     e14_ = matrixE[4];
-	     e15_ = matrixX[5];
-	     e16_ = matrixY[5];
-	     e17_ = matrixE[5];
-	     e18_ = matrixX[6];
-	     e19_ = matrixY[6];
-	     e20_ = matrixE[6];
+             e1_  = matrixY[0];
+             e2_  = matrixE[0];
+             e3_  = matrixX[1];
+             e4_  = matrixY[1];
+             e5_  = matrixE[1];
+             e6_  = matrixX[2];
+             e7_  = matrixY[2];
+             e8_  = matrixE[2];
+             e9_  = matrixX[3];
+             e10_ = matrixY[3];
+             e11_ = matrixE[3];
+             e12_ = matrixX[4];
+             e13_ = matrixY[4];
+             e14_ = matrixE[4];
+             e15_ = matrixX[5];
+             e16_ = matrixY[5];
+             e17_ = matrixE[5];
+             e18_ = matrixX[6];
+             e19_ = matrixY[6];
+             e20_ = matrixE[6];
 
              targetX_ = targetX;
              targetY_ = targetY;
              targetA_ = targetExtend(ic,itrkMatch);
 
-	     t0_ = trkPhi;
-	     t1_ = trkTheta;
+             t0_ = trkPhi;
+             t1_ = trkTheta;
              r0_ = sqrt(centerX*centerX+centerY*centerY)/1000;
              z0_ = trkFFZ[itrkMatch]/200;
              ip0_ = trkCposX[itrkMatch]/10;
              ip1_ = trkCposY[itrkMatch]/10;
 
-	     c0_  = cluCogX[ic];
-	     c1_  = cluCogY[ic]; 	     
+             c0_  = cluCogX[ic];
+             c1_  = cluCogY[ic];
              c2_  = cogNew.X();
-	     c3_  = cogNew.Y();
+             c3_  = cogNew.Y();
              c4_  = clusimPosX[ic];
-	     c5_  = clusimPosY[ic];
+             c5_  = clusimPosY[ic];
              ffx_ = trkFFX[itrkMatch];
              ffy_ = trkFFY[itrkMatch];
              ffz_ = trkFFZ[itrkMatch];
              vdx_ = (ivm>-1) ? vdPosX[ivm] : -999;
              vdy_ = (ivm>-1) ? vdPosY[ivm] : -999;
              vdz_ = (ivm>-1) ? vdPosZ[ivm] : -999;
-             
+
           }
 
 
-	  //this fills the position of the 7 most energetic crystals (w.r.t. most energetic one) in UV coordinates  
-	  if (mode==2)
+          //this fills the position of the 7 most energetic crystals (w.r.t. most energetic one) in UV coordinates
+          if (mode==2)
           {
               e0_  = matrixX[0];
-	      e1_  = matrixY[0];
-	      e2_  = matrixE[0];
-	      e3_  = cos(trkPhi)*matrixX[1]+sin(trkPhi)*matrixY[1];
-	      e4_  = -sin(trkPhi)*matrixX[1]+cos(trkPhi)*matrixY[1];
-	      e5_  = matrixE[1];
-	      e6_  = cos(trkPhi)*matrixX[2]+sin(trkPhi)*matrixY[2];
-	      e7_  = -sin(trkPhi)*matrixX[2]+cos(trkPhi)*matrixY[2];
-	      e8_  = matrixE[2];
-	      e9_  = cos(trkPhi)*matrixX[3]+sin(trkPhi)*matrixY[3];
-	      e10_ = -sin(trkPhi)*matrixX[3]+cos(trkPhi)*matrixY[3];
-	      e11_ = matrixE[3];
-	      e12_ = cos(trkPhi)*matrixX[4]+sin(trkPhi)*matrixY[4];
-	      e13_ = -sin(trkPhi)*matrixX[4]+cos(trkPhi)*matrixY[4];
-	      e14_ = matrixE[4];
-	      e15_ = cos(trkPhi)*matrixX[5]+sin(trkPhi)*matrixY[5];
-	      e16_ = -sin(trkPhi)*matrixX[5]+cos(trkPhi)*matrixY[5];
-	      e17_ = matrixE[5];
-	      e18_ = cos(trkPhi)*matrixX[6]+sin(trkPhi)*matrixY[6];
-	      e19_ = -sin(trkPhi)*matrixX[6]+cos(trkPhi)*matrixY[6];
-	      e20_ = matrixE[6];
+              e1_  = matrixY[0];
+              e2_  = matrixE[0];
+              e3_  = cos(trkPhi)*matrixX[1]+sin(trkPhi)*matrixY[1];
+              e4_  = -sin(trkPhi)*matrixX[1]+cos(trkPhi)*matrixY[1];
+              e5_  = matrixE[1];
+              e6_  = cos(trkPhi)*matrixX[2]+sin(trkPhi)*matrixY[2];
+              e7_  = -sin(trkPhi)*matrixX[2]+cos(trkPhi)*matrixY[2];
+              e8_  = matrixE[2];
+              e9_  = cos(trkPhi)*matrixX[3]+sin(trkPhi)*matrixY[3];
+              e10_ = -sin(trkPhi)*matrixX[3]+cos(trkPhi)*matrixY[3];
+              e11_ = matrixE[3];
+              e12_ = cos(trkPhi)*matrixX[4]+sin(trkPhi)*matrixY[4];
+              e13_ = -sin(trkPhi)*matrixX[4]+cos(trkPhi)*matrixY[4];
+              e14_ = matrixE[4];
+              e15_ = cos(trkPhi)*matrixX[5]+sin(trkPhi)*matrixY[5];
+              e16_ = -sin(trkPhi)*matrixX[5]+cos(trkPhi)*matrixY[5];
+              e17_ = matrixE[5];
+              e18_ = cos(trkPhi)*matrixX[6]+sin(trkPhi)*matrixY[6];
+              e19_ = -sin(trkPhi)*matrixX[6]+cos(trkPhi)*matrixY[6];
+              e20_ = matrixE[6];
 
               targetX_ = deltaUV0.X();
               targetY_ = deltaUV0.Y();
               targetA_ = targetExtend(ic,itrkMatch);
 
-	      t0_ = trkPhi;
-	      t1_ = trkTheta;
+              t0_ = trkPhi;
+              t1_ = trkTheta;
               r0_ = sqrt(centerX*centerX+centerY*centerY)/1000;
               z0_ = trkFFZ[itrkMatch]/200;
               ip0_ = trkCposX[itrkMatch]/10;
               ip1_ = trkCposY[itrkMatch]/10;
 
-	      c0_ =  cos(trkPhi)*cluCogX[ic] + sin(trkPhi)*cluCogY[ic];
-	      c1_ = -sin(trkPhi)*cluCogX[ic] + cos(trkPhi)*cluCogY[ic];
+              c0_ =  cos(trkPhi)*cluCogX[ic] + sin(trkPhi)*cluCogY[ic];
+              c1_ = -sin(trkPhi)*cluCogX[ic] + cos(trkPhi)*cluCogY[ic];
               c2_ =  cos(trkPhi)*cogNew.X() + sin(trkPhi)*cogNew.Y();
-	      c3_ = -sin(trkPhi)*cogNew.X() + cos(trkPhi)*cogNew.Y();
- 	      c4_ =  cos(trkPhi)*clusimPosX[ic] + sin(trkPhi)*clusimPosY[ic];
-	      c5_ = -sin(trkPhi)*clusimPosX[ic] + cos(trkPhi)*clusimPosY[ic];
+              c3_ = -sin(trkPhi)*cogNew.X() + cos(trkPhi)*cogNew.Y();
+              c4_ =  cos(trkPhi)*clusimPosX[ic] + sin(trkPhi)*clusimPosY[ic];
+              c5_ = -sin(trkPhi)*clusimPosX[ic] + cos(trkPhi)*clusimPosY[ic];
 
               ffx_ = trkFFX[itrkMatch];
               ffy_ = trkFFY[itrkMatch];
@@ -382,10 +382,10 @@ Bool_t AnalysisBaseMatch::Process(Long64_t entry)
               vdy_ = (ivm>-1) ? vdPosY[ivm] : -999;
               vdz_ = (ivm>-1) ? vdPosZ[ivm] : -999;
           }
-          
-          
-          //here we take the two rings around the most energetic         
-	  if (mode==3)
+
+
+          //here we take the two rings around the most energetic
+          if (mode==3)
           {
               int offset(0);
               if (cryId[crystalL[0]]>=disk->nCrystal()) offset=disk->nCrystal();
@@ -408,28 +408,28 @@ Bool_t AnalysisBaseMatch::Process(Long64_t entry)
                  etot19+=et;
               }
 
-	      //this fills the energy of the central / first layer / second layer of crystals
-	      e0_  = evec[0]/100;
-	      e1_  = evec[1]/50;
-	      e2_  = evec[2]/50;
-	      e3_  = evec[3]/50;
-	      e4_  = evec[4]/50;
-	      e5_  = evec[5]/50;
-	      e6_  = evec[6]/50;
-	      e7_  = evec[7];
-	      e8_  = evec[8];
-	      e9_  = evec[9];
-	      e10_ = evec[10];
-	      e11_ = evec[11];
-	      e12_ = evec[12];
-	      e13_ = evec[13];
-	      e14_ = evec[14];
-	      e15_ = evec[15];
-	      e16_ = evec[16];
-	      e17_ = evec[17];
-	      e18_ = evec[18];
-	      e19_ = (cluEnergy[ic]-etot19)/100;
-	      e20_ = 0;
+              //this fills the energy of the central / first layer / second layer of crystals
+              e0_  = evec[0]/100;
+              e1_  = evec[1]/50;
+              e2_  = evec[2]/50;
+              e3_  = evec[3]/50;
+              e4_  = evec[4]/50;
+              e5_  = evec[5]/50;
+              e6_  = evec[6]/50;
+              e7_  = evec[7];
+              e8_  = evec[8];
+              e9_  = evec[9];
+              e10_ = evec[10];
+              e11_ = evec[11];
+              e12_ = evec[12];
+              e13_ = evec[13];
+              e14_ = evec[14];
+              e15_ = evec[15];
+              e16_ = evec[16];
+              e17_ = evec[17];
+              e18_ = evec[18];
+              e19_ = (cluEnergy[ic]-etot19)/100;
+              e20_ = 0;
 
               targetX_ = targetX;
               targetY_ = targetY;
@@ -437,8 +437,8 @@ Bool_t AnalysisBaseMatch::Process(Long64_t entry)
               //targetY_ = deltaUV0.Y();
               targetA_ = targetExtend(ic,itrkMatch)/100;
 
-	      t0_ = trkPhi;
-	      t1_ = trkTheta;
+              t0_ = trkPhi;
+              t1_ = trkTheta;
               r0_ = sqrt(centerX*centerX+centerY*centerY)/1000;
               z0_ = trkFFZ[itrkMatch]/200;
               ip0_ = trkCposX[itrkMatch]/10;
@@ -446,30 +446,30 @@ Bool_t AnalysisBaseMatch::Process(Long64_t entry)
               //ip0_ = sqrt(trkCposX[itrkMatch]*trkCposX[itrkMatch]+trkCposY[itrkMatch]*trkCposY[itrkMatch])/10;
               //ip0_ = std::max(abs(trkCposX[itrkMatch]),abs(trkCposY[itrkMatch]))/10;
               //ip0_ = std::max(abs(trkCposX[itrkMatch]),abs(trkCposY[itrkMatch]))> 10 ? 1 : 0;
-              
 
-	      c0_  = cluCogX[ic];
-	      c1_  = cluCogY[ic];
+
+              c0_  = cluCogX[ic];
+              c1_  = cluCogY[ic];
               c2_  = cogNew.X();
-	      c3_  = cogNew.Y();
- 	      c4_  = clusimPosX[ic];
-	      c5_  = clusimPosY[ic];              
+              c3_  = cogNew.Y();
+              c4_  = clusimPosX[ic];
+              c5_  = clusimPosY[ic];
               ffx_ = trkFFX[itrkMatch];
               ffy_ = trkFFY[itrkMatch];
-              ffz_ = trkFFZ[itrkMatch]; 
+              ffz_ = trkFFZ[itrkMatch];
               vdx_ = (ivm>-1) ? vdPosX[ivm] : -999;
               vdy_ = (ivm>-1) ? vdPosY[ivm] : -999;
               vdz_ = (ivm>-1) ? vdPosZ[ivm] : -999;
           }
 
-          
-          if (is_train)	  
-	     {if (abs(targetX_)<2 && abs(targetY_)<2) dTuple->Fill();}           
-	  else 
- 	     {dTuple->Fill();}
 
-	  
-	  if ( (mode==1 || mode==2) && Nplot<10)
+          if (is_train)
+             {if (abs(targetX_)<2 && abs(targetY_)<2) dTuple->Fill();}
+          else
+             {dTuple->Fill();}
+
+
+          if ( (mode==1 || mode==2) && Nplot<10)
           {
              _view[Nplot]->Fill(e0_,e1_,e2_);
              _view[Nplot]->Fill(e3_,e4_,e5_);
@@ -479,13 +479,13 @@ Bool_t AnalysisBaseMatch::Process(Long64_t entry)
              _view[Nplot]->Fill(e15_,e16_,e17_);
              _view[Nplot]->Fill(e18_,e19_,e20_);
              _view[Nplot]->Fill(e21_,e22_,e23_);
-             ++Nplot;          
+             ++Nplot;
           }
-	  
-	  
-        
+
+
+
      }
-     
+
 
 
      return kTRUE;
@@ -498,34 +498,34 @@ double AnalysisBaseMatch::targetExtend(int ic, int it)
 {
      double trkp  = sqrt(trkpX[it]*trkpX[it] + trkpY[it]*trkpY[it]+ trkpZ[it]*trkpZ[it]);
      double trkpt = sqrt(trkpX[it]*trkpX[it]+trkpY[it]*trkpY[it]);
-     
+
      TVector3 trkPos0(trkFFX[it],trkFFY[it],trkFFZ[it]);
      TVector3 trkDir(trkpX[it]/trkp,trkpY[it]/trkp,trkpZ[it]/trkp);
 
      TVector3 cog = calcCog(ic);
-     
+
      double dlenT(0);
      TVector3 diff = trkPos0-cog ;
      double distMin = sqrt(diff.X()*diff.X()+diff.Y()*diff.Y());
      for (double dlent=0;dlent<400;dlent+=1)
      {
-	  //TVector3 trkPos = trkPos0+dlent*trkDir;
-	  TVector3 trkPos = getPosTrk(it,dlent);
-                    
-	  diff = trkPos-cog;
+          //TVector3 trkPos = trkPos0+dlent*trkDir;
+          TVector3 trkPos = getPosTrk(it,dlent);
+
+          diff = trkPos-cog;
           double dist = sqrt(diff.X()*diff.X()+diff.Y()*diff.Y());
           if (dist < distMin) {distMin=dist;dlenT=dlent;}
-          if (trkPos.Z() > 200) break; 
+          if (trkPos.Z() > 200) break;
      }
-     
+
      TVector3 TrkPosMin =  trkPos0+dlenT*trkDir;
      double dx = cog.X() - TrkPosMin.X();
      double dy = cog.Y() - TrkPosMin.Y();
-         
+
      _hx->Fill(dx);
      _hy->Fill(dy);
      _ha->Fill(dlenT);
-     
+
      return dlenT;
 }
 
@@ -544,28 +544,28 @@ TVector3 AnalysisBaseMatch::getPosTrk(int it, double dlen)
 
 TVector3 AnalysisBaseMatch::calcCog(int ic)
 {
-      
+
       TVector3 aVector(0,0,0);
-      double sumWeights(0);    
+      double sumWeights(0);
 
       std::vector<int> crystalL = (*cluList)[ic];
-      for (unsigned int il=0;il<crystalL.size();++il) 
-      {         
+      for (unsigned int il=0;il<crystalL.size();++il)
+      {
 
-	int icry = crystalL[il];
-	//double weight = -5.45 + 2.63*log(cryEdep[icry]);
-        double weight = -4.934 + cryEdep[icry]; 
-	if (weight < 0) weight = 0;
+        int icry = crystalL[il];
+        //double weight = -5.45 + 2.63*log(cryEdep[icry]);
+        double weight = -4.934 + cryEdep[icry];
+        if (weight < 0) weight = 0;
 
-	aVector[0] += (cryPosX[icry])*weight;
-	aVector[1] += cryPosY[icry]*weight;
-	sumWeights += weight;
+        aVector[0] += (cryPosX[icry])*weight;
+        aVector[1] += cryPosY[icry]*weight;
+        sumWeights += weight;
      }
 
      if (sumWeights>1e-3) { aVector[0] /= sumWeights; aVector[1] /= sumWeights;}
      else                 { aVector[0] = aVector[1] = 0;}
 
-     return aVector;   
+     return aVector;
 }
 
 
@@ -575,24 +575,24 @@ int AnalysisBaseMatch::vdFinder()
 {
      int nv(0),vIdxMax(-1);
      double dmax(0);
-     
+
      for (int i=0;i<nVd;++i)
-     {       
-       double vdmom = sqrt(vdMomX[i]*vdMomX[i]+vdMomY[i]*vdMomY[i]+vdMomZ[i]+vdMomZ[i]);       
+     {
+       double vdmom = sqrt(vdMomX[i]*vdMomX[i]+vdMomY[i]*vdMomY[i]+vdMomZ[i]+vdMomZ[i]);
        if (vdmom < 60  || vdGenIdx[i]!=0) continue;
-       double dist =sqrt(vdPosX[i]*vdPosX[i]+vdPosY[i]*vdPosY[i]);	 
-       if (dist > dmax) {dmax = dist; vIdxMax=i;} 
+       double dist =sqrt(vdPosX[i]*vdPosX[i]+vdPosY[i]*vdPosY[i]);
+       if (dist > dmax) {dmax = dist; vIdxMax=i;}
        ++nv;
      }
-     if (nv==1 || dmax > 370) return vIdxMax;     
+     if (nv==1 || dmax > 370) return vIdxMax;
      return -1;
 }
 
-double AnalysisBaseMatch::cluDistance(int ic1, int ic2) 
+double AnalysisBaseMatch::cluDistance(int ic1, int ic2)
 {
     std::vector<int> crystalL1 = (*cluList)[ic1];
     std::vector<int> crystalL2 = (*cluList)[ic2];
-    
+
     double dist(1e6);
     for (unsigned int i1 = 0;i1 < crystalL1.size();++i1)
     {
@@ -603,11 +603,11 @@ double AnalysisBaseMatch::cluDistance(int ic1, int ic2)
         double x2 = cryPosX[crystalL2[i2]];
         double y2 = cryPosY[crystalL2[i2]];
         double dd = sqrt( (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
-	if (dd <  dist) dist = dd;
-      }    
+        if (dd <  dist) dist = dd;
+      }
     }
     return dist;
-}    
+}
 
 
 
@@ -619,9 +619,9 @@ double AnalysisBaseMatch::cluDistance(int ic1, int ic2)
 
 void AnalysisBaseMatch::Terminate()
 {
-    fHistFile->cd();  
+    fHistFile->cd();
     fHistFile->Write();
-    fHistFile->Close();  
+    fHistFile->Close();
 }
 
 
@@ -647,14 +647,14 @@ void AnalysisBaseMatch::SetStyleGr(TGraph *gr)
 
 TH1F* AnalysisBaseMatch::Book1DF(TString name, TString title, Int_t nbins, Double_t low, Double_t high, TString xaxis, TString units)
 {
-   
+
    TH1F* histo = new TH1F(name,title,nbins,low,high);
    SetStyle(histo,xaxis,units);
    return histo;
 }
 
 TH1I* AnalysisBaseMatch::Book1DI(TString name, TString title, Int_t nbins, Double_t low, Double_t high, TString xaxis, TString units)
-{   
+{
    TH1I* histo = new TH1I(name,title,nbins,low,high);
    SetStyle(histo,xaxis,units);
    return histo;
@@ -669,15 +669,15 @@ TH2F* AnalysisBaseMatch::Book2DF(TString name, TString title, Int_t nbinsx, Doub
    histo->GetXaxis()->SetLabelSize(0.04);
    histo->GetYaxis()->SetLabelSize(0.04);
    histo->SetTitle("");
-   histo->GetXaxis()->SetTitle(xaxis);     
+   histo->GetXaxis()->SetTitle(xaxis);
    histo->GetYaxis()->SetTitle(yaxis);
-   
+
    return histo;
 }
 
 void AnalysisBaseMatch::SetStyle(TH1* histo,TString xaxis, TString units)
 {
-   
+
    histo->SetMarkerStyle(20);
    histo->SetMarkerSize(0.6);
    histo->SetLineWidth(2);
@@ -692,7 +692,7 @@ void AnalysisBaseMatch::SetStyle(TH1* histo,TString xaxis, TString units)
    Double_t binsize = histo->GetBinWidth(1);
    sprintf(ylabel,"Entries / %g ",binsize);
 
-   histo->GetXaxis()->SetTitle(xaxis+" ("+units+")"); 
+   histo->GetXaxis()->SetTitle(xaxis+" ("+units+")");
    if (units=="")histo->GetXaxis()->SetTitle(xaxis);
 
    histo->GetYaxis()->SetTitle(ylabel+units);
@@ -701,24 +701,24 @@ void AnalysisBaseMatch::SetStyle(TH1* histo,TString xaxis, TString units)
    return;
 }
 /*
-	  double output = (clusimPosY[ic]-centerY)/_cellSize;
-	  //double output = ((cluCogX[ic]-clusimPosX[ic]-3904)*cos(vdPhi)+(cluCogY[ic]-clusimPosY[ic])*sin(vdPhi))/_cellSize;	  	  
-	  _output->Fill(output);
-	  
-	  vector<double> res;
-	  
-	  res.push_back(vdPhi);
-	  res.push_back(vdTheta);
-	  res.push_back(cluCogX[ic]);
-	  res.push_back(cluCogY[ic]);
-	  res.push_back(clusimPosX[ic]);
-	  res.push_back(clusimPosY[ic]);
-	  
-	  res.push_back(matrixE[0]);
-	  for (int i=1;i<10;++i) {res.push_back(matrixX[i]);res.push_back(matrixY[i]);res.push_back(matrixE[i]);}	  
-  
-	  res.push_back(vdPhi);
-	  res.push_back(vdTheta);
-	  res.push_back(output);	  
-	  _results.push_back(res);
+          double output = (clusimPosY[ic]-centerY)/_cellSize;
+          //double output = ((cluCogX[ic]-clusimPosX[ic]-3904)*cos(vdPhi)+(cluCogY[ic]-clusimPosY[ic])*sin(vdPhi))/_cellSize;
+          _output->Fill(output);
+
+          vector<double> res;
+
+          res.push_back(vdPhi);
+          res.push_back(vdTheta);
+          res.push_back(cluCogX[ic]);
+          res.push_back(cluCogY[ic]);
+          res.push_back(clusimPosX[ic]);
+          res.push_back(clusimPosY[ic]);
+
+          res.push_back(matrixE[0]);
+          for (int i=1;i<10;++i) {res.push_back(matrixX[i]);res.push_back(matrixY[i]);res.push_back(matrixE[i]);}
+
+          res.push_back(vdPhi);
+          res.push_back(vdTheta);
+          res.push_back(output);
+          _results.push_back(res);
 */

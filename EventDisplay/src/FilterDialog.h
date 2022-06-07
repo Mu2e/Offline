@@ -30,9 +30,9 @@ class FilterDialog : public TGMainFrame
   FilterDialog& operator=(const FilterDialog &);
 
   public:
-  FilterDialog(const TGWindow* p, 
-               boost::shared_ptr<DataInterface> dataInterface, 
-               boost::shared_ptr<ContentSelector> contentSelector) : 
+  FilterDialog(const TGWindow* p,
+               boost::shared_ptr<DataInterface> dataInterface,
+               boost::shared_ptr<ContentSelector> contentSelector) :
                TGMainFrame(p, 500, 700), _dataInterface(dataInterface), _contentSelector(contentSelector)
   {
     SetCleanup(kDeepCleanup);
@@ -47,12 +47,12 @@ class FilterDialog : public TGMainFrame
     bool showNeutrinos=true;
     bool showNeutrons=true;
     bool showOthers=true;
-    
+
     mu2e::StrawHitFlag hitFlagSelection;
 
     if(_dataInterface) _dataInterface->getFilterValues(minPoints, minTime, maxTime, minMomentum,
-                                                       showElectrons, showMuons, showGammas, 
-                                                       showNeutrinos, showNeutrons, showOthers, 
+                                                       showElectrons, showMuons, showGammas,
+                                                       showNeutrinos, showNeutrons, showOthers,
                                                        hitFlagSelection);
 
     TGHorizontalFrame *subFrame1  = new TGHorizontalFrame(this,500,20);
@@ -126,8 +126,8 @@ class FilterDialog : public TGMainFrame
 
     AddFrame(subFrame5, lh);
     TGGroupFrame *hitFlagGroupFrame  = new TGGroupFrame(subFrame5,"Hit Flags");
-    subFrame5->AddFrame(hitFlagGroupFrame); 
- 
+    subFrame5->AddFrame(hitFlagGroupFrame);
+
     _hitFlagBox = new TGComboBox(hitFlagGroupFrame,30);
     _hitFlagBox->Resize(250,20);
     _hitFlagBox->Associate(this);
@@ -149,8 +149,8 @@ class FilterDialog : public TGMainFrame
     TGHorizontalFrame *hitFlagFrame0 = new TGHorizontalFrame(hitFlagGroupFrame,600,500);
     TGVerticalFrame *hitFlagFrame1 = new TGVerticalFrame(hitFlagFrame0,300,500);
     TGVerticalFrame *hitFlagFrame2 = new TGVerticalFrame(hitFlagFrame0,300,500);
-    hitFlagGroupFrame->AddFrame(hitFlagFrame0); 
-    hitFlagFrame0->AddFrame(hitFlagFrame1); 
+    hitFlagGroupFrame->AddFrame(hitFlagFrame0);
+    hitFlagFrame0->AddFrame(hitFlagFrame1);
     hitFlagFrame0->AddFrame(hitFlagFrame2);
 
     std::string flagnames[16]={"Stereo","EnergySel","RadSel","TimeSel","","",
@@ -220,10 +220,10 @@ class FilterDialog : public TGMainFrame
                                               mu2e::StrawHitFlagDetail::bit_type b=static_cast<mu2e::StrawHitFlagDetail::bit_type>(j);
                                               if(_checkButtonFlags[j]->GetState()==kButtonDown) hitFlagSetting.merge(b);
                                             }
-                                            if(_dataInterface) 
+                                            if(_dataInterface)
                                             {
                                               _dataInterface->setFilterValues(minPoints, minTime, maxTime, minMomentum,
-                                                                              showElectrons, showMuons, showGammas, 
+                                                                              showElectrons, showMuons, showGammas,
                                                                               showNeutrinos, showNeutrons, showOthers,
                                                                               hitFlagSetting);
                                               TGTextLBEntry *selectedEntry=dynamic_cast<TGTextLBEntry*>(_hitFlagBox->GetSelectedEntry());

@@ -87,7 +87,7 @@ class Sphere: public VirtualShape
   Sphere(double x, double y, double z, double radius, double t1,
          const TGeoManager *geomanager, TGeoVolume *topvolume,
          EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
-         bool isGeometry) : 
+         bool isGeometry) :
          VirtualShape(geomanager, topvolume, mainframe, info, isGeometry),
          _x0(x), _y0(y), _z0(z), _r0(radius)
   {

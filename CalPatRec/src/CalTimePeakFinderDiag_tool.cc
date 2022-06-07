@@ -36,10 +36,10 @@ using CLHEP::HepSymMatrix;
 namespace mu2e {
 
   using namespace CalTimePeakFinderTypes;
-  
+
   class CalTimePeakFinderDiag : public mu2e::ModuleHistToolBase {
   public:
-    
+
     enum {
       kNEventHistSets       = 10,
       kNClusterHistSets     = 10,
@@ -52,17 +52,17 @@ namespace mu2e {
       TH1F*   nseeds;
       TH1F*   dt;
     };
-    
+
     struct ClusterHist_t {
       TH1F*   energy;
       TH1F*   time;
       TH1F*   size;
       TH1F*   diskID;
     };
-    
+
     struct TimeClusterHist_t {
-      TH1F*  nhits;           // number of hits on a helix  
-      TH1F*  energy;   
+      TH1F*  nhits;           // number of hits on a helix
+      TH1F*  energy;
       TH1F*  time;
       TH2F*  time_vs_nhits;
       TH2F*  energy_vs_nhits;
@@ -77,27 +77,27 @@ namespace mu2e {
   protected:
     int          _mcTruth;
     std::string  _shDigiLabel;
-    
+
     std::unique_ptr<McUtilsToolBase> _mcUtils;
 
     Hist_t        _hist;
     Data_t*       _data;
 
   public:
-    
+
     CalTimePeakFinderDiag(const fhicl::ParameterSet& PSet);
     ~CalTimePeakFinderDiag();
-    
+
   private:
-    
+
     int  bookEventHistograms      (EventHist_t*       Hist, art::TFileDirectory* Dir);
     int  bookClusterHistograms    (ClusterHist_t*     Hist, art::TFileDirectory* Dir);
     int  bookTimeClusterHistograms(TimeClusterHist_t* Hist, art::TFileDirectory* Dir);
-    
+
     int  fillEventHistograms      (EventHist_t*       Hist, Data_t* Data);
     int  fillClusterHistograms    (ClusterHist_t*     Hist, const CaloCluster* Cl);
     int  fillTimeClusterHistograms(TimeClusterHist_t* Hist, TimeCluster* Tcl);
-				  
+
     virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override ;
     virtual int fillHistograms(void* Data, int Mode = -1) override ;
   };
@@ -105,7 +105,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   CalTimePeakFinderDiag::CalTimePeakFinderDiag(const fhicl::ParameterSet& PSet) {
-    _mcTruth = PSet.get <int >("mcTruth"); 
+    _mcTruth = PSet.get <int >("mcTruth");
 
     if (_mcTruth != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
     else               _mcUtils = std::make_unique<McUtilsToolBase>();
@@ -124,7 +124,7 @@ namespace mu2e {
     Hist->dt     = Dir->make<TH1F>("dt"     , "hit dt; #Delta t = t_{cl} - (t_{ch}+TOF-<t_{drift}>) [ns]", 200, -100, 100);
     return 0;
   }
-    
+
 //-----------------------------------------------------------------------------
   int CalTimePeakFinderDiag::bookClusterHistograms(ClusterHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->energy = Dir->make<TH1F>("energy", "Cluster energy", 200, 0,  200);
@@ -133,7 +133,7 @@ namespace mu2e {
     Hist->diskID = Dir->make<TH1F>("disk"  , "Cluster diskID",   5, 0,    5);
     return 0;
   }
-    
+
 //-----------------------------------------------------------------------------
   int CalTimePeakFinderDiag::bookTimeClusterHistograms(TimeClusterHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->nhits  = Dir->make<TH1F>("nhits" , "number of hits", 101, -0.5, 100.5);
@@ -144,11 +144,11 @@ namespace mu2e {
     Hist->energy_vs_nhits = Dir->make<TH2F>("energy_vs_nhits","energy vs nhits", 100, 0, 100, 400, 0, 200);
     return 0;
   }
-    
+
 //-----------------------------------------------------------------------------
   int CalTimePeakFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
     char folder_name[20];
-    
+
     TH1::AddDirectory(0);
 //-----------------------------------------------------------------------------
 // book event-level histograms - fill them once per event
@@ -156,16 +156,16 @@ namespace mu2e {
     int book_event_histset[kNEventHistSets];
     for (int i=0; i<kNEventHistSets; i++) book_event_histset[i] = 0;
 
-    book_event_histset[ 0] = 1;		// events: all
-    book_event_histset[ 1] = 1;		// events: with good seeds
+    book_event_histset[ 0] = 1;                // events: all
+    book_event_histset[ 1] = 1;                // events: with good seeds
 
     for (int i=0; i<kNEventHistSets; i++) {
       if (book_event_histset[i] != 0) {
-	sprintf(folder_name,"evt_%i",i);
-	art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
-	
-	_hist._event[i] = new EventHist_t;
-	bookEventHistograms(_hist._event[i],&tfdir);
+        sprintf(folder_name,"evt_%i",i);
+        art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
+
+        _hist._event[i] = new EventHist_t;
+        bookEventHistograms(_hist._event[i],&tfdir);
       }
     }
 //-----------------------------------------------------------------------------
@@ -174,16 +174,16 @@ namespace mu2e {
     int book_cluster_histset[kNClusterHistSets];
     for (int i=0; i<kNClusterHistSets; i++) book_cluster_histset[i] = 0;
 
-    book_cluster_histset[ 0] = 1;		// clusters: all 
-    book_cluster_histset[ 1] = 1;		// clusters: above time seeding threshold
+    book_cluster_histset[ 0] = 1;                // clusters: all
+    book_cluster_histset[ 1] = 1;                // clusters: above time seeding threshold
 
     for (int i=0; i<kNClusterHistSets; i++) {
       if (book_cluster_histset[i] != 0) {
-	sprintf(folder_name,"cl_%i",i);
-	art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
-	
-	_hist._cluster[i] = new ClusterHist_t;
-	bookClusterHistograms(_hist._cluster[i],&tfdir);
+        sprintf(folder_name,"cl_%i",i);
+        art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
+
+        _hist._cluster[i] = new ClusterHist_t;
+        bookClusterHistograms(_hist._cluster[i],&tfdir);
       }
     }
 //-----------------------------------------------------------------------------
@@ -192,16 +192,16 @@ namespace mu2e {
     int book_timecluster_histset[kNTimeClusterHistSets];
     for (int i=0; i<kNTimeClusterHistSets; i++) book_timecluster_histset[i] = 0;
 
-    book_timecluster_histset[ 0] = 1;		// all 
-    book_timecluster_histset[ 1] = 1;		// all 
+    book_timecluster_histset[ 0] = 1;                // all
+    book_timecluster_histset[ 1] = 1;                // all
 
     for (int i=0; i<kNTimeClusterHistSets; i++) {
       if (book_timecluster_histset[i] != 0) {
-	sprintf(folder_name,"tcl_%i",i);
-	art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
-	
-	_hist._tcl[i] = new TimeClusterHist_t;
-	bookTimeClusterHistograms(_hist._tcl[i],&tfdir);
+        sprintf(folder_name,"tcl_%i",i);
+        art::TFileDirectory tfdir = Tfs->mkdir(folder_name);
+
+        _hist._tcl[i] = new TimeClusterHist_t;
+        bookTimeClusterHistograms(_hist._tcl[i],&tfdir);
       }
     }
 
@@ -272,7 +272,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int nseeds       = _data->_tcColl->size();
     int n_good_seeds = 0;
-    
+
     for (int i=0; i<nseeds; ++i) {
       TimeCluster* tcl = &_data->_tcColl->at(i);
       int nhits        = tcl->hits().size();
@@ -301,7 +301,7 @@ namespace mu2e {
       fillTimeClusterHistograms(_hist._tcl[0],tcl);
       int nhits            = tcl->hits().size();
       if (nhits > _data->minNHits) {
-	fillTimeClusterHistograms(_hist._tcl[1],tcl);
+        fillTimeClusterHistograms(_hist._tcl[1],tcl);
       }
     }
 

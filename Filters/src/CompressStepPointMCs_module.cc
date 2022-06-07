@@ -14,7 +14,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -46,7 +45,7 @@ namespace mu2e {
   class SimParticleSelector {
   public:
     SimParticleSelector() { }
-    
+
     void push_back(cet::map_vector_key key) {
       m_keys.insert(key);
     }
@@ -65,7 +64,7 @@ namespace mu2e {
 
   private:
     std::set<cet::map_vector_key> m_keys;
-    
+
   };
 
   struct StepDiagInfo {
@@ -168,7 +167,7 @@ mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pse
     _maxTime(pset.get<double>("maxTime")),
     _minEdep(pset.get<double>("minEdep")),
     _maxEdep(pset.get<double>("maxEdep")),
-    _allStraw(pset.get<uint16_t>("AllHitsStraw",90)), 
+    _allStraw(pset.get<uint16_t>("AllHitsStraw",90)),
     _allPlanes(pset.get<std::vector<uint16_t>>("AllHitsPlanes",std::vector<uint16_t>{})), // planes to read all hits
     _diagLevel(pset.get<int>("diagLevel")),
     _numInputEvents(0), _numOutputEvents(0)
@@ -202,11 +201,11 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
   // Implementation of required member function here.
   bool passed = false;
   _simParticlesToKeep.clear();
-    
+
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
   _newSimParticlesPID = event.getProductID<SimParticleCollection>();
   _newSimParticleGetter = event.productGetter(_newSimParticlesPID);
-    
+
   _newGenParticles = std::unique_ptr<GenParticleCollection>(new GenParticleCollection);
   _newGenParticlesPID = event.getProductID<GenParticleCollection>();
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
@@ -233,7 +232,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
 
   _newStepPointMCs.clear();
   for (const auto& i_stepTag : _stepPointMCTags) {
-    _newStepPointMCs.push_back(std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection));  
+    _newStepPointMCs.push_back(std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection));
     _newStepPointMCsPID = event.getProductID<StepPointMCCollection>( i_stepTag.instance() );
     _newStepPointMCGetter = event.productGetter(_newStepPointMCsPID);
 
@@ -243,43 +242,43 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
       double i_edep = i_stepPointMC.totalEDep();
       double i_time = std::fmod(_toff.timeWithOffsetsApplied(i_stepPointMC), _mbtime);
       while (i_time < 0) {
-	i_time += _mbtime;
+        i_time += _mbtime;
       }
-      
+
       if (_diagLevel > 0) {
-	_stepDiag._eventid = event.id().event();
-	_stepDiag._stepRawTime = i_stepPointMC.time();
-	_stepDiag._stepTime = i_time;
-	_stepDiag._stepEdep = i_edep;
-	_stepDiag._filtered = 0;
+        _stepDiag._eventid = event.id().event();
+        _stepDiag._stepRawTime = i_stepPointMC.time();
+        _stepDiag._stepTime = i_time;
+        _stepDiag._stepEdep = i_edep;
+        _stepDiag._filtered = 0;
       }
-     
+
      // check if we are keeping all hits for this straw
       StrawId sid = i_stepPointMC.strawId();
       bool keepall = sid.straw() >= _allStraw &&
-	(std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end());
+        (std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end());
 
-      if ( keepall || 
-	  ((i_edep > _minEdep && i_edep < _maxEdep) &&
-	   (i_time > _minTime && i_time < _maxTime) ) )  {
+      if ( keepall ||
+          ((i_edep > _minEdep && i_edep < _maxEdep) &&
+           (i_time > _minTime && i_time < _maxTime) ) )  {
 
-	if (_diagLevel > 0) {
-	  _stepDiag._filtered = 1;
-	}
-	if(_diagLevel > 1 && keepall)
-	  std::cout << " Keeping hit in straw " << sid << " time " << i_time << std::endl;
-	copyStepPointMC(i_stepPointMC);
+        if (_diagLevel > 0) {
+          _stepDiag._filtered = 1;
+        }
+        if(_diagLevel > 1 && keepall)
+          std::cout << " Keeping hit in straw " << sid << " time " << i_time << std::endl;
+        copyStepPointMC(i_stepPointMC);
       }
-      
+
       if (_diagLevel > 0) {
-	_filterDiag->Fill();
+        _filterDiag->Fill();
       }
     }
   }
 
   _newCaloShowerSteps.clear();
   for (const auto& i_caloStepTag : _caloShowerStepTags) {
-    _newCaloShowerSteps.push_back(std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection));  
+    _newCaloShowerSteps.push_back(std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection));
     _newCaloShowerStepsPID = event.getProductID<CaloShowerStepCollection>( i_caloStepTag.label() );
     _newCaloShowerStepGetter = event.productGetter(_newCaloShowerStepsPID);
 
@@ -290,51 +289,51 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
       double i_edep = i_caloShowerStep.energyDepG4();
       double i_time;
       if (i_caloShowerStep.simParticle().get()) { // see note below in copyCaloShowerStep
-	i_time = std::fmod(i_caloShowerStep.time()+_toff.totalTimeOffset(i_caloShowerStep.simParticle()), _mbtime);
+        i_time = std::fmod(i_caloShowerStep.time()+_toff.totalTimeOffset(i_caloShowerStep.simParticle()), _mbtime);
       }
       else {
-	continue;
+        continue;
       }
-      
+
       while (i_time < 0) {
-	i_time += _mbtime;
+        i_time += _mbtime;
       }
 
 
       if (_diagLevel > 0) {
-	_caloStepDiag._eventid = event.id().event();
-	_caloStepDiag._stepRawTime = i_caloShowerStep.time();
-	_caloStepDiag._stepTime = i_time;
-	_caloStepDiag._stepEdep = i_edep;
-	_caloStepDiag._filtered = 0;
+        _caloStepDiag._eventid = event.id().event();
+        _caloStepDiag._stepRawTime = i_caloShowerStep.time();
+        _caloStepDiag._stepTime = i_time;
+        _caloStepDiag._stepEdep = i_edep;
+        _caloStepDiag._filtered = 0;
       }
 
       if ( (i_edep > _minEdep && i_edep < _maxEdep) &&
-	   (i_time > _minTime && i_time < _maxTime) ) {
-	
-	if (_diagLevel > 0) {
-	  _caloStepDiag._filtered = 1;
-	}
-	copyCaloShowerStep(i_caloShowerStep);
+           (i_time > _minTime && i_time < _maxTime) ) {
+
+        if (_diagLevel > 0) {
+          _caloStepDiag._filtered = 1;
+        }
+        copyCaloShowerStep(i_caloShowerStep);
       }
 
       if (_diagLevel > 0) {
-	_filterDiagCalo->Fill();
+        _filterDiagCalo->Fill();
       }
 
     }
   }
 
-  
+
   // Now compress the SimParticleCollections into their new collections
   const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(_simParticleTag);
   art::ProductID i_product_id = oldSimParticles.id();
-  compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
-				_simParticlesToKeep, *_newSimParticles);
+  compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles,
+                                _simParticlesToKeep, *_newSimParticles);
 
   passed = !_newSimParticles->empty();
   for(auto& i : *_newSimParticles) {
-      
+
     mu2e::SimParticle& newsim = i.second;
     if(!newsim.genParticle().isNull()) { // will crash if not resolvable
 
@@ -342,18 +341,18 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
       _newGenParticles->emplace_back(*newsim.genParticle());
       newsim.genParticle() = art::Ptr<GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
     }
-      
+
     // Update the time maps
     art::Ptr<SimParticle> oldSimPtr(i_product_id, newsim.id().asUint(), _oldSimParticleGetter);
     art::Ptr<SimParticle> newSimPtr(_newSimParticlesPID, newsim.id().asUint(), _newSimParticleGetter);
     for (std::vector<SimParticleTimeMap>::const_iterator i_time_map = _oldTimeMaps.begin(); i_time_map != _oldTimeMaps.end(); ++i_time_map) {
       size_t i_element = i_time_map - _oldTimeMaps.begin();
-      
+
       const SimParticleTimeMap& i_oldTimeMap = *i_time_map;
       SimParticleTimeMap& i_newTimeMap = *_newSimParticleTimeMaps.at(i_element);
       auto it = i_oldTimeMap.find(oldSimPtr);
       if (it != i_oldTimeMap.end()) {
-	i_newTimeMap[newSimPtr] = it->second;
+        i_newTimeMap[newSimPtr] = it->second;
       }
     }
   }
@@ -397,18 +396,18 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressStepPointMCs::copyStepPointMC(const mu
     parentPtr = parentPtr->parent();
     ++_stepDiag._nSimGenerations;
   }
-  
+
   StepPointMC new_step(old_step);
   new_step.simParticle() = newSimPtr;
 
   _newStepPointMCs.back()->push_back(new_step);
-  
+
   return art::Ptr<StepPointMC>(_newStepPointMCsPID, _newStepPointMCs.back()->size()-1, _newStepPointMCGetter);
 }
 
 art::Ptr<mu2e::CaloShowerStep> mu2e::CompressStepPointMCs::copyCaloShowerStep(const mu2e::CaloShowerStep& old_step) {
 
-  // Need this if-statement because sometimes the SimParticle that is being Ptr'd to 
+  // Need this if-statement because sometimes the SimParticle that is being Ptr'd to
   // is not there... The Ptr itself is valid (i.e. old_step.simParticle().isNonnull() returns true)
   // but there is no object there and so when we try to get the id of the SimParticle
   // there is a segfault
@@ -420,19 +419,19 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressStepPointMCs::copyCaloShowerStep(co
     art::Ptr<SimParticle> childPtr = old_step.simParticle();
     art::Ptr<SimParticle> parentPtr = childPtr->parent();
 
-    _caloStepDiag._nSimGenerations = 1;  
+    _caloStepDiag._nSimGenerations = 1;
     while (parentPtr) {
       _simParticlesToKeep.push_back(parentPtr->id());
-      
+
       childPtr = parentPtr;
       parentPtr = parentPtr->parent();
       ++_caloStepDiag._nSimGenerations;
     }
-    
+
     CaloShowerStep new_step(old_step.volumeG4ID(), newSimPtr, old_step.nCompress(), old_step.time(), old_step.energyDepG4(), old_step.energyDepBirks(), old_step.momentumIn(), old_step.position());
-    
+
     _newCaloShowerSteps.back()->push_back(new_step);
-    
+
     return art::Ptr<CaloShowerStep>(_newCaloShowerStepsPID, _newCaloShowerSteps.back()->size()-1, _newCaloShowerStepGetter);
   }
   else {

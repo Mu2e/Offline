@@ -120,57 +120,57 @@ void SHCombo::Loop()
 }
 
 void SHCombo::processEvent() {
-    // loop over hit pairs
+  // loop over hit pairs
   std::array<unsigned,240> np{0};
   for(size_t ihit = 0;ihit < _plane.size(); ++ihit){
     _wres->Fill(_wd[ihit]-_mcwd[ihit]);
     _wpull->Fill((_wd[ihit]-_mcwd[ihit])/_wderr[ihit]);
-    unsigned pid = 6*_plane[ihit]+_panel[ihit];	
+    unsigned pid = 6*_plane[ihit]+_panel[ihit];
     ++np[pid];
     unsigned nmatch(0), nmatchst(0), nmatcht(0);
     for(size_t jhit=ihit+1;jhit < _plane.size(); ++jhit){
       if(_plane[ihit] == _plane[jhit] &&
-	  _panel[ihit] == _panel[jhit]){
-	bool mcmatch = _mcid[ihit] == _mcid[jhit];
-	int ds = abs( (int)_straw[ihit]-(int)_straw[jhit]);
-	float dt = _time[ihit]-_time[jhit];
-	float dw = _wd[ihit]-_wd[jhit];
-	float dwe1 = _wderr[ihit]*_wderr[ihit];
-	float dwe2 = _wderr[jhit]*_wderr[jhit];
-	float dwerr = sqrt(dwe1+dwe2);
-	float awerr = 1.0/sqrt(1.0/dwe1+1.0/dwe2);
-	float dwp = dw/dwerr;
-	float wa = (_wd[ihit]/dwe1 + _wd[jhit]/dwe2)/(1.0/dwe1+1.0/dwe2);
-	float mcwa = 0.5*(_mcwd[ihit]+_mcwd[jhit]);
-	float dedep = _edep[ihit]-_edep[jhit];
-	_dsa->Fill(ds);
-	_dta->Fill(dt);
-	_dwdpa->Fill(dwp);
-	_dwda->Fill(dw);
-	_dedepa->Fill(dedep);
-	if(mcmatch){
-	  _mcdwd->Fill(_mcwd[ihit]-_mcwd[jhit]);
-	  nmatcht++;
-	  _dst->Fill(ds);
-	  _dtt->Fill(dt);
-	  _dwdpt->Fill(dwp);
-	  _dwdt->Fill(dw);
-	  _dedept->Fill(dedep);
-	}
-	bool goodds = ds !=0 && ds <= _maxds;
-	bool gooddt = fabs(dt) < _maxdt;
-	bool gooddwp = abs(dwp) < _maxdwp;
-	if(goodds&&gooddt) _dwdpo->Fill(dwp);
-	if(goodds&&gooddwp) _dto->Fill(dt);
-	if(gooddt&&gooddwp) _dso->Fill(ds);
-	if(gooddt&&gooddwp&&goodds){
-	  _dwdo->Fill(dw);
-	  _dedepo->Fill(dedep);
-	  ++nmatch;
-	  _awpull->Fill((wa-mcwa)/awerr);
-	  _awres->Fill(wa-mcwa);
-	  if(mcmatch)++nmatchst;
-	}
+          _panel[ihit] == _panel[jhit]){
+        bool mcmatch = _mcid[ihit] == _mcid[jhit];
+        int ds = abs( (int)_straw[ihit]-(int)_straw[jhit]);
+        float dt = _time[ihit]-_time[jhit];
+        float dw = _wd[ihit]-_wd[jhit];
+        float dwe1 = _wderr[ihit]*_wderr[ihit];
+        float dwe2 = _wderr[jhit]*_wderr[jhit];
+        float dwerr = sqrt(dwe1+dwe2);
+        float awerr = 1.0/sqrt(1.0/dwe1+1.0/dwe2);
+        float dwp = dw/dwerr;
+        float wa = (_wd[ihit]/dwe1 + _wd[jhit]/dwe2)/(1.0/dwe1+1.0/dwe2);
+        float mcwa = 0.5*(_mcwd[ihit]+_mcwd[jhit]);
+        float dedep = _edep[ihit]-_edep[jhit];
+        _dsa->Fill(ds);
+        _dta->Fill(dt);
+        _dwdpa->Fill(dwp);
+        _dwda->Fill(dw);
+        _dedepa->Fill(dedep);
+        if(mcmatch){
+          _mcdwd->Fill(_mcwd[ihit]-_mcwd[jhit]);
+          nmatcht++;
+          _dst->Fill(ds);
+          _dtt->Fill(dt);
+          _dwdpt->Fill(dwp);
+          _dwdt->Fill(dw);
+          _dedept->Fill(dedep);
+        }
+        bool goodds = ds !=0 && ds <= _maxds;
+        bool gooddt = fabs(dt) < _maxdt;
+        bool gooddwp = abs(dwp) < _maxdwp;
+        if(goodds&&gooddt) _dwdpo->Fill(dwp);
+        if(goodds&&gooddwp) _dto->Fill(dt);
+        if(gooddt&&gooddwp) _dso->Fill(ds);
+        if(gooddt&&gooddwp&&goodds){
+          _dwdo->Fill(dw);
+          _dedepo->Fill(dedep);
+          ++nmatch;
+          _awpull->Fill((wa-mcwa)/awerr);
+          _awres->Fill(wa-mcwa);
+          if(mcmatch)++nmatchst;
+        }
       }
     }
     _nmatch->Fill(nmatch);
@@ -179,7 +179,7 @@ void SHCombo::processEvent() {
   }
   for(auto nh : np)
     _np->Fill(nh);
-}  
+}
 void SHCombo::Draw() {
   // draw results
   TCanvas* selcan = new TCanvas("selcan","selcan",1000,700);
@@ -249,8 +249,8 @@ void SHCombo::Draw() {
   _nmatch->Draw("same");
   _nmatchst->Draw("same");
   TLegend* nleg = new TLegend(0.3,0.6,0.8,0.9);
-  nleg->AddEntry(_nmatcht,"MC True","L"); 
-  nleg->AddEntry(_nmatch,"Reco","L"); 
+  nleg->AddEntry(_nmatcht,"MC True","L");
+  nleg->AddEntry(_nmatch,"Reco","L");
   nleg->AddEntry(_nmatchst,"True Reco","L");
   nleg->Draw();
   ncan->cd(2);

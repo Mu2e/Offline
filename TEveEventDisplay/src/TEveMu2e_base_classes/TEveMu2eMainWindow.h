@@ -78,22 +78,22 @@ namespace mu2e{
     bool addCRVInfo = false;
     bool addCosmicTracks = false;
     bool addTracks = false;
-    bool addClusters = false; 
+    bool addClusters = false;
     bool addComboHits = false;
     bool addTrkHits = false;
     bool addTimeClusters = false;
     bool addCryHits = false;
     bool addMCTraj = false;
     DrawOptions(){};
-    DrawOptions(bool crv, bool cosmictracks, bool tracks, bool clusters, bool combohits, bool trkhits, bool timeclusters, bool cryhits, bool mctraj) 
+    DrawOptions(bool crv, bool cosmictracks, bool tracks, bool clusters, bool combohits, bool trkhits, bool timeclusters, bool cryhits, bool mctraj)
     : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addTrkHits(trkhits), addTimeClusters(timeclusters), addCryHits(cryhits), addMCTraj(mctraj) {};
    };
-   
-  
-    
-	class TEveMu2eMainWindow : public TGMainFrame {
+
+
+
+        class TEveMu2eMainWindow : public TGMainFrame {
     public:
-    
+
       struct GeomOptions{
         GeomOptions(){}
         GeomOptions( bool abuilding, bool aCRV, bool aDSOnly, bool aInsidePS )
@@ -109,16 +109,16 @@ namespace mu2e{
         bool showInsidePS = false;
       };
 
-      
+
       #ifndef __CINT__
       TEveMu2eMainWindow();
       TEveMu2eMainWindow(const TEveMu2eMainWindow &);
       TEveMu2eMainWindow& operator=(const TEveMu2eMainWindow &);
-      
+
       TEveMu2eMainWindow(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet _pset, const DrawOptions drawOpts, const GeomOptions geomOpts);
       virtual ~TEveMu2eMainWindow(){};
       enum ETestComandIdentifiers{HId1, HId2, HId3};
-      
+
       // For viewers:
       void StartProjectionTabs();
       void CreateMultiViews();
@@ -129,27 +129,27 @@ namespace mu2e{
       void PrepareCaloProjectionTab(const art::Run& run);
       void PrepareCRVProjectionTab(const art::Run& run);
       void SetParticleOpts(std::vector<int> particles_) { particles = particles_;}
-      
+
       //GUI and geom:
       void CreateGUI();
       void SetRunGeometry(const art::Run& run, std::string gdmlname, int _diagLevel);
       void RedrawDataProducts(std::string type);
-     
+
       // for menu:
       Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
-      
+
       // to add event info:
       void  setEvent(const art::Event& event, bool firstLoop, Data_Collections &data, double time, bool accumulate, int& runn, int& eventn, bool& update, bool isMCOnly);
       bool  isClosed() const;
       int   getEventToFind(bool &findEvent) const;
-      
+
       //List of parameters:
       TGeoManager* geom = new TGeoManager("geom","Geom");
-      Geom_Interface *mu2e_geom	= new Geom_Interface(); 
-      TEveMu2eDataInterface *pass_data	= new TEveMu2eDataInterface(); 
-      TEveMu2eMCInterface *pass_mc	= new TEveMu2eMCInterface(); 
+      Geom_Interface *mu2e_geom = new Geom_Interface();
+      TEveMu2eDataInterface *pass_data  = new TEveMu2eDataInterface();
+      TEveMu2eMCInterface *pass_mc      = new TEveMu2eMCInterface();
       TEveMu2eProjectionInterface *pass_proj = new TEveMu2eProjectionInterface();
-      
+
       // data options
       DrawOptions DrawOpts;
       GeomOptions GeomOpts;
@@ -158,10 +158,10 @@ namespace mu2e{
       std::vector<double> times;
 
       TEvePad *fPad = nullptr;
-      TEvePad	*fPadCRV = nullptr;
+      TEvePad   *fPadCRV = nullptr;
       TGSplitFrame *fSplitFrame = nullptr;
       TGSplitFrame *fSplitFrameCRV = nullptr;
-      TGSplitFrame *frm = nullptr; 
+      TGSplitFrame *frm = nullptr;
       TGSplitFrame *frmCRV = nullptr;
       TGLEmbeddedViewer *fViewer0 = nullptr;
       TGLEmbeddedViewer *fViewer1 = nullptr;
@@ -195,15 +195,15 @@ namespace mu2e{
 
 
       bool usereventSelected = false;
-      TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy, *hmintime, *hmaxtime;    
+      TGTextEntry     *fTeRun,*fTeEvt, *fTTEvt, *fTeh1, *fTeh2, *fTeh3, *cminenergy, *cmaxenergy, *hminenergy, *hmaxenergy, *hmintime, *hmaxtime;
       TGLabel         *fTlRun,*fTlEvt, *fTlTEvt, *fTlHSlid, *celabel, *helabel,*timelabel, *spacer, *spacer1;
-      TGButtonGroup	  *br;
-      TGCheckButton	  *clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
+      TGButtonGroup       *br;
+      TGCheckButton       *clusterscheck, *hitscheck, *trackscheck, *cosmicscheck, *cosmictrkscheck, *mctrajcheck;
 
       TGTextBuffer *_eventNumber, *_subrunNumber, *_runNumber, *_time,  *_clustminenergy, *_clustmaxenergy, *_hitminenergy, *_hitmaxenergy, *_hitmintime, *_hitmaxtime;
 
       int eventToFind, runToFind;
-      int  _eventToFind = 0; 
+      int  _eventToFind = 0;
 
       bool _isClosed = false;
       bool _findEvent = true;

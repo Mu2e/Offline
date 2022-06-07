@@ -2,7 +2,7 @@
 // Free function to create a geant4 "calorimetric" test environment geometry
 //
 //
-// Original author KLG 
+// Original author KLG
 //
 // Notes:
 //
@@ -77,7 +77,7 @@ namespace mu2e {
     string vName("fS");
 
     if (verbosityLevel > 0 ) {
-      cout << __func__ << " constructing: " << vName 
+      cout << __func__ << " constructing: " << vName
            << " " << "at " << fSCenterInParent
            << endl;
     }
@@ -187,7 +187,7 @@ namespace mu2e {
                                       bool const forceAuxEdgeVisible,
                                       bool const placePV,
                                       bool const doSurfaceCheck
-                                      ){ 
+                                      ){
     //
     //  construct a calorimetric module (could be made to a n-layerd if needed)
     //  ( P - Passive and A - Active layers)
@@ -242,11 +242,11 @@ namespace mu2e {
       mACenterInParent.setZ(mAZCenterInParent);
 
       if (verbosityLevel > 0 ) {
-        cout << __func__ << " constructing: " << vPName 
-             << " " << "at " << mPCenterInParent 
+        cout << __func__ << " constructing: " << vPName
+             << " " << "at " << mPCenterInParent
              << endl;
-        cout << __func__ << " constructing: " << vAName 
-             << " " << "at " << mACenterInParent 
+        cout << __func__ << " constructing: " << vAName
+             << " " << "at " << mACenterInParent
              << endl;
       }
 
