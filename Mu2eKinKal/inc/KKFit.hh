@@ -105,7 +105,6 @@ namespace mu2e {
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
      PDGCode::type tpart_;
       TrkFitDirection tdir_;
-      float nullvscale_;
       bool addmat_, usecalo_; // flags
       KKSTRAWHITGROUPER shgrouper_; // functor to group KKStrawHits
       // CaloHit configuration
@@ -119,7 +118,7 @@ namespace mu2e {
       double tprec_; // TPOCA calculation nominal precision
       StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
       // parameters controlling adding hits
-      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawHitChi_, maxStrawDoca_;
+      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_;
       int sbuff_; // maximum distance from the track a strawhit can be to consider it for adding.
       int printLevel_;
       // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
@@ -132,7 +131,6 @@ namespace mu2e {
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(Mu2eConfig const& fitconfig) :
     tpart_(static_cast<PDGCode::type>(fitconfig.fitParticle())),
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
-    nullvscale_(fitconfig.nullHitVarianceScale()),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
     shgrouper_(StrawIdMask(fitconfig.strawHitGroupLevel()),fitconfig.strawHitGroupDeltaT()),
@@ -147,7 +145,6 @@ namespace mu2e {
     addrej_(fitconfig.addHitReject()),
     maxStrawHitDoca_(fitconfig.maxStrawHitDOCA()),
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
-    maxStrawHitChi_(fitconfig.maxStrawHitChi()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     sbuff_(fitconfig.strawBuffer()),
     printLevel_(fitconfig.printLevel()),

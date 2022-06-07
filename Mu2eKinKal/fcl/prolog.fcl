@@ -14,8 +14,6 @@ Mu2eKinKal : {
   KKMU2E: {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
-    NullHitDimension : 2 # constrain position or position+time
-    NullHitVarianceScale : 1.0
     UseCaloCluster : true
     AddMaterial : true
     StrawHitGroupDeltaT : 1.0 # ns
@@ -30,9 +28,8 @@ Mu2eKinKal : {
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 4.0 # mm
     MaxStrawHitDt : 5.0 # ns
-    MaxStrawHitChi : 4.0
     StrawBuffer : 1 #
-    MaxStrawDOCA : 2.5 # mm
+    MaxStrawDOCA : 4.0 # mm
   }
 
   KKSEEDFIT: {
