@@ -10,7 +10,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileDirectory.h"
 
 // From the art tool-chain
@@ -85,7 +84,7 @@ namespace mu2e {
 
     double          _chi2e, _chi2t, _chi2u, _chi2v;
 
-					    // no offset in Y ?
+                                            // no offset in Y ?
     double          _solenoidOffSetX;
     double          _solenoidOffSetZ;
 

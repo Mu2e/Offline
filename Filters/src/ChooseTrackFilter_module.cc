@@ -30,7 +30,6 @@
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -67,7 +66,7 @@ namespace mu2e {
 
 
   class ChooseTrackFilter : public art::EDFilter {
-     
+
   public:
 
     typedef art::Ptr<StepPointMC> StepPtr;
@@ -79,16 +78,16 @@ namespace mu2e {
     explicit ChooseTrackFilter(fhicl::ParameterSet const& pset);
     virtual ~ChooseTrackFilter() { }
 
- 
+
     // This is called for each event.
     virtual bool filter(art::Event& e);
 
-       
+
 
 
 
   private:
-       
+
 
 
     int _diagLevel;
@@ -101,15 +100,15 @@ namespace mu2e {
     std::vector<TrkFitDirection> _fdir;
 
     std::vector<int> _tpartTemp;
-    std::vector<int> _fdirTemp;      
-       
+    std::vector<int> _fdirTemp;
 
-       
+
+
     int   _evt,_run;
 
- 
+
     float _pmin;
-    float _pmax;       
+    float _pmax;
 
   };
 
@@ -128,8 +127,8 @@ namespace mu2e {
 
     std::cout << "constructing ChooseTrackFilter" << std::endl;
 
-    // 
-    // check these match or module is misconfigured. 
+    //
+    // check these match or module is misconfigured.
     if ( (_fdirTemp.size() != _tpartTemp.size()) || (_trkPatRecModuleLabel.size() != _tpartTemp.size())  || (_trkPatRecModuleLabel.size() != _tpartTemp.size())){
       throw cet::exception("RECO") <<"ChooseTrackFilter ctor: sizes of module label, fitparticle, and fitdirection differ" << std::endl;
     }
@@ -137,35 +136,35 @@ namespace mu2e {
     for (uint i = 0; i < _fdirTemp.size(); ++i){
 
       //
-      //kluge until this gets cleaned up...not by me...sort of a giant kluge since what I want to do is deconstruct the module label 
+      //kluge until this gets cleaned up...not by me...sort of a giant kluge since what I want to do is deconstruct the module label
 
 
 
       if (_fdirTemp.at(i) == TrkFitDirection::downstream){
-	_fdir.emplace_back(TrkFitDirection(TrkFitDirection::downstream));}
+        _fdir.emplace_back(TrkFitDirection(TrkFitDirection::downstream));}
       else if (_fdirTemp.at(i) == TrkFitDirection::upstream){
-	_fdir.emplace_back(TrkFitDirection(TrkFitDirection::upstream));}
-    
+        _fdir.emplace_back(TrkFitDirection(TrkFitDirection::upstream));}
+
 
 
       if (_tpartTemp.at(i) == TrkParticle::e_minus){
-      	_tpart.emplace_back(TrkParticle::e_minus);}
+              _tpart.emplace_back(TrkParticle::e_minus);}
       else if (_tpartTemp.at(i) == TrkParticle::pi_minus){
-      	_tpart.emplace_back(TrkParticle(TrkParticle::pi_minus));}
+              _tpart.emplace_back(TrkParticle(TrkParticle::pi_minus));}
       else if (_tpartTemp.at(i) == TrkParticle::e_plus){
-      	_tpart.emplace_back(TrkParticle(TrkParticle::e_plus));}
+              _tpart.emplace_back(TrkParticle(TrkParticle::e_plus));}
       else if (_tpartTemp.at(i) == TrkParticle::pi_plus){
-      	_tpart.emplace_back(TrkParticle(TrkParticle::pi_plus));}
+              _tpart.emplace_back(TrkParticle(TrkParticle::pi_plus));}
       else throw cet::exception("RECO") << "ChooseTrackFilterParticleType misconfigured" << std::endl;
     }
- 
- 
+
+
 
 
     for (uint i = 0; i < _fdir.size(); ++i){
       _instanceName.emplace_back(_fdir.at(i).name() + _tpart.at(i).name());
       if (_diagLevel > 0){
-	std::cout << "ChooseTrackFilter ctor: element number " << i << " instance name " << _instanceName.at(i) << std::endl;
+        std::cout << "ChooseTrackFilter ctor: element number " << i << " instance name " << _instanceName.at(i) << std::endl;
       }
     }
   }
@@ -174,75 +173,75 @@ namespace mu2e {
 
     ++_nProcess;
     if (_nProcess%10==0 && _diagLevel > 0) std::cout <<"Processing event from ChooseTrackFilter =  " <<_nProcess <<std::endl;
-      
+
     bool cutC = false;
 
 
     // run through KalReps and see if the one we want is here
- 
+
     for (uint ithrep = 0; ithrep < _trkPatRecModuleLabel.size();++ithrep){
 
       art::Handle<KalRepPtrCollection> kalRepHandle;
 
       if (_diagLevel > 1){
-	std::cout << "ChooseTrackFilter filter : ithrep, trkPatRecModuleLabel = " << ithrep <<  "  xx" << _trkPatRecModuleLabel.at(ithrep) 
-		  << "xx " << std::endl;
+        std::cout << "ChooseTrackFilter filter : ithrep, trkPatRecModuleLabel = " << ithrep <<  "  xx" << _trkPatRecModuleLabel.at(ithrep)
+                  << "xx " << std::endl;
       }
       event.getByLabel(_trkPatRecModuleLabel.at(ithrep),_instanceName.at(ithrep),kalRepHandle);
 
       if (_diagLevel > 1 && !kalRepHandle.isValid() ){
-	std::cout << "ChooseTrackFilter: invalid handle, loser! xx" <<  _trkPatRecModuleLabel.at(ithrep)<< "xx xx" << _instanceName.at(ithrep)
-		  << "xx " << std::endl;
+        std::cout << "ChooseTrackFilter: invalid handle, loser! xx" <<  _trkPatRecModuleLabel.at(ithrep)<< "xx xx" << _instanceName.at(ithrep)
+                  << "xx " << std::endl;
       }
 
       if (kalRepHandle.isValid()){
-	if (_diagLevel > 1){
-	  std::cout <<"ChooseTrackFilter: valid handle " << _trkPatRecModuleLabel.at(ithrep) << " " <<_instanceName.at(ithrep) << std::endl;
-	} 
-	//
-	//bingo, found it.  Do stuff.
-	const KalRepPtrCollection& kreps = *kalRepHandle; // the * dereferences the handle and gives ptrs; def'n of * for handles.
+        if (_diagLevel > 1){
+          std::cout <<"ChooseTrackFilter: valid handle " << _trkPatRecModuleLabel.at(ithrep) << " " <<_instanceName.at(ithrep) << std::endl;
+        }
+        //
+        //bingo, found it.  Do stuff.
+        const KalRepPtrCollection& kreps = *kalRepHandle; // the * dereferences the handle and gives ptrs; def'n of * for handles.
 
-	for (auto const& krepPtr:kreps){ //looping over the collection and getting a ptr to each collection
+        for (auto const& krepPtr:kreps){ //looping over the collection and getting a ptr to each collection
 
-	  KalRep const& krep = *krepPtr;  //derefencing the ptr
+          KalRep const& krep = *krepPtr;  //derefencing the ptr
 
-	  // Arc length from center of tracker to the most upstream point on the fitted track.
-	  double s0 = krep.startValidRange();
+          // Arc length from center of tracker to the most upstream point on the fitted track.
+          double s0 = krep.startValidRange();
 
-	  // Momentum and position at s0.
-	  CLHEP::Hep3Vector p0     = krep.momentum(s0);
-	  HepPoint          pos0   = krep.position(s0);
+          // Momentum and position at s0.
+          CLHEP::Hep3Vector p0     = krep.momentum(s0);
+          HepPoint          pos0   = krep.position(s0);
 
-	  // Some other properties at s0.
-	  double loclen(0.);
-	  HepVector momvec(3);
-	  momvec = p0.unit();
+          // Some other properties at s0.
+          double loclen(0.);
+          HepVector momvec(3);
+          momvec = p0.unit();
 
-	  const TrkSimpTraj* ltraj = krep.localTrajectory(s0,loclen);
-	  BbrVectorErr momCov = krep.momentumErr(s0);
-	  double fitMomErr    = sqrt(momCov.covMatrix().similarity(momvec));
-	  double tanDip       = ltraj->parameters()->parameter()[HelixTraj::tanDipIndex];
-	  double omega        = ltraj->parameters()->parameter()[HelixTraj::omegaIndex];
-	  double d0           = ltraj->parameters()->parameter()[HelixTraj::d0Index];
-	  double fitCon       = krep.chisqConsistency().significanceLevel();
-	  double trkt0Err     = krep.t0().t0Err();
+          const TrkSimpTraj* ltraj = krep.localTrajectory(s0,loclen);
+          BbrVectorErr momCov = krep.momentumErr(s0);
+          double fitMomErr    = sqrt(momCov.covMatrix().similarity(momvec));
+          double tanDip       = ltraj->parameters()->parameter()[HelixTraj::tanDipIndex];
+          double omega        = ltraj->parameters()->parameter()[HelixTraj::omegaIndex];
+          double d0           = ltraj->parameters()->parameter()[HelixTraj::d0Index];
+          double fitCon       = krep.chisqConsistency().significanceLevel();
+          double trkt0Err     = krep.t0().t0Err();
 
-	  // Does this fit pass cut set C? 
-	  cutC  = 
-	    ( krep.fitStatus().success() >0                ) &&
-	    ( fitCon             > 2.e-3                   ) &&
-	    ( krep.nActive()    >= 20                      ) &&
-	    ( fitMomErr          < 0.25                    ) &&
-	    ( tanDip >= 0.577 && tanDip <= 1.0             ) &&
-	    ( krep.t0().t0() > 700 && krep.t0().t0() < 1695.   ) &&
-	    ( d0 > -80. && d0 < 105.                       ) &&
-	    ( d0 + 2./omega > 450. && d0 + 2./omega < 680. ) &&
-	    ( trkt0Err < 0.9                               ) &&
-	    ( p0.mag() > _pmin && p0.mag() < _pmax           ) ;
+          // Does this fit pass cut set C?
+          cutC  =
+            ( krep.fitStatus().success() >0                ) &&
+            ( fitCon             > 2.e-3                   ) &&
+            ( krep.nActive()    >= 20                      ) &&
+            ( fitMomErr          < 0.25                    ) &&
+            ( tanDip >= 0.577 && tanDip <= 1.0             ) &&
+            ( krep.t0().t0() > 700 && krep.t0().t0() < 1695.   ) &&
+            ( d0 > -80. && d0 < 105.                       ) &&
+            ( d0 + 2./omega > 450. && d0 + 2./omega < 680. ) &&
+            ( trkt0Err < 0.9                               ) &&
+            ( p0.mag() > _pmin && p0.mag() < _pmax           ) ;
 
-	  if (_diagLevel > 1) {std:: cout << "ChooseTrackFilter t0 = " << krep.t0().t0() << " and cut set C = " << cutC << std::endl;}
-	}
+          if (_diagLevel > 1) {std:: cout << "ChooseTrackFilter t0 = " << krep.t0().t0() << " and cut set C = " << cutC << std::endl;}
+        }
       }
     }
     return (cutC);

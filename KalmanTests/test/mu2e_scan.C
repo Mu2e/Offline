@@ -17,7 +17,7 @@ using namespace std;
 void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,double momlow,double momhigh, double cnom=0.0, bool weightdio=true,const char* suffix=".png") {
   // diogenrange is the momentum range over which the DIO events were generated
   double nstopped(5.76e17);
-  double capfrac(0.609); 
+  double capfrac(0.609);
   double decayfrac = 1.0 - capfrac;
   double ndecay = nstopped*decayfrac;
   double ncap = nstopped*capfrac;
@@ -39,7 +39,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   // integrate the DIO spectrum over the range specified.  This is relative to the free decay rate
   double dioint = diocz_f->Integral(trueconvmom-diogenrange,trueconvmom);
   double dioscale(1.0);
-  if(weightdio){ 
+  if(weightdio){
     dioscale =ndecay*diogenrange/ndio;
   } else {
     dioscale = dioint*ndecay/ndio;
@@ -139,7 +139,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   inttext->AddText(itext);
   inttext->Draw();
 
-  TPaveText* cuttext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
+  TPaveText* cuttext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");
   char line[40];
   snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
   cuttext->AddText(line);
@@ -243,8 +243,8 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
 
   double rlow = cnom -dioerrreq/lslope;
   double rhigh = cnom -dioerrreq/hslope;
-  double diolow = diofun->Eval(rlow); 
-  double diohigh = diofun->Eval(rhigh); 
+  double diolow = diofun->Eval(rlow);
+  double diohigh = diofun->Eval(rhigh);
 
   TLine* dlow = new TLine(rlow,smin,rlow,diolow);
   TLine* dhi = new TLine(rhigh,smin,rhigh,diohigh);
@@ -339,4 +339,3 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   leg->Draw();
   scancan2->SaveAs((string("mu2e_scan2")+ssuf).c_str());
 }
-

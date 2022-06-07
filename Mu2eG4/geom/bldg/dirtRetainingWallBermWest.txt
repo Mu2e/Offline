@@ -5,7 +5,7 @@ string dirt.retaining.Wall.berm.west.name     = "dirtRetainingWallBermWest";
 string dirt.retaining.Wall.berm.west.material = "MBOverburden";
 
 double dirt.retaining.Wall.berm.west.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.retaining.Wall.berm.west.offsetFromFloorSurface.y = 9372.6; 
+double dirt.retaining.Wall.berm.west.offsetFromFloorSurface.y = 9372.6;
 double dirt.retaining.Wall.berm.west.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.retaining.Wall.berm.west.yHalfThickness           =1600.2; //top of retaining wall to dirtUpToGradeLevelW
@@ -13,11 +13,11 @@ double dirt.retaining.Wall.berm.west.yHalfThickness           =1600.2; //top of 
 //trapezoid vertices
 vector<double> dirt.retaining.Wall.berm.west.xPositions = {
   -14605.,  // P1
-  -14605.,   // 
+  -14605.,   //
   -20527.1,   // P0
   -23031.1,  // P1
   -14605.,  // P1
-  -14605.,   // 
+  -14605.,   //
   -20527.1,   // P0
   -20527.1   // P1
 };

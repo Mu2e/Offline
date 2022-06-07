@@ -32,47 +32,47 @@ namespace mu2e {
     double         dr;
   };
 
-//-----------------------------------------------------------------------------
-// struct defining the Kalman fit inputs and output
-// an internal CalPatRec data structure
-// KalFitData doesn't own any pointers, '_krep' is handled in the pattern 
-// recognition modules, so, no need to delete it here
-// otherwise, deletion of the list of KalFitData's (a data product) results in a crash
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // struct defining the Kalman fit inputs and output
+  // an internal CalPatRec data structure
+  // KalFitData doesn't own any pointers, '_krep' is handled in the pattern
+  // recognition modules, so, no need to delete it here
+  // otherwise, deletion of the list of KalFitData's (a data product) results in a crash
+  //-----------------------------------------------------------------------------
   struct KalFitData {
     struct Diag_t {
-      unsigned  diskId;	
-      unsigned  added;	
-      double    depth;	
-      double    dt;	
+      unsigned  diskId;
+      unsigned  added;
+      double    depth;
+      double    dt;
       double    trkPath;
-      double    energy;	
-      double    doca;   
+      double    energy;
+      double    doca;
     };
-    
+
     const art::Event*                 event;
     KalRep*                           krep;           // Kalman rep, owned by the collection
-    const ComboHitCollection*         chcol;          // 
+    const ComboHitCollection*         chcol;          //
 
     const StrawHitFlagCollection*     shfcol;         //
-    std::string                       shDigiLabel;    // 
+    std::string                       shDigiLabel;    //
 
     TrkFitDirection                   fdir;
     const CaloCluster*                caloCluster;    //
     const CaloClusterCollection*      caloClusterCol;    //
 
     const HelixSeed*                  helixSeed;      //
-    const KalSeed*                    kalSeed;        // 
+    const KalSeed*                    kalSeed;        //
     HelixTraj*                        helixTraj;      // initial parameterization of the track
     unsigned                          nweediter;      // number of iterations on hit weeding
     unsigned                          nweedtchiter;   // number of iterations on TrkCaloHit weeding
-    std::vector<MissingHit_t>         missingHits; 
+    std::vector<MissingHit_t>         missingHits;
     int                               fitType;        // 0:seed 1:final
-    
+
     Diag_t                            diag;
-//-----------------------------------------------------------------------------
-// constructors and destructor
-//-----------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
+    // constructors and destructor
+    //-----------------------------------------------------------------------------
     KalFitData();
     ~KalFitData();
 
@@ -81,6 +81,6 @@ namespace mu2e {
     void    init        ();
   };
 
-} 
+}
 
 #endif

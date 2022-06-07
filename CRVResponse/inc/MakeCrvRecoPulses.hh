@@ -14,8 +14,8 @@ class MakeCrvRecoPulses
   MakeCrvRecoPulses(float minADCdifference, float defaultBeta, float minBeta, float maxBeta,
                     float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
                     float LEtimeFactor, bool allowDoubleGumbel, float doubleGumbelThreshold);
-  void         SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, 
-                           float digitizationPeriod, float pedestal, float calibrationFactor, 
+  void         SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC,
+                           float digitizationPeriod, float pedestal, float calibrationFactor,
                            float calibrationFactorPulseHeight);
 
   const std::vector<float>  &GetPEs() const            {return _PEs;}
@@ -48,7 +48,7 @@ class MakeCrvRecoPulses
   float  _doubleGumbelThreshold;
 
   std::vector<float>  _PEs, _PEsPulseHeight;
-  std::vector<double> _pulseTimes, _LEtimes; 
+  std::vector<double> _pulseTimes, _LEtimes;
   std::vector<float>  _pulseHeights, _pulseBetas, _pulseFitChi2s;
   std::vector<bool>   _failedFits;
 
@@ -59,7 +59,7 @@ class MakeCrvRecoPulses
   const std::vector<double> &GetPulseEnds() const       {return _pulseEnd;}
 
   private:
-  void NoFitOption(const std::vector<unsigned int> &waveform, float pedestal, 
+  void NoFitOption(const std::vector<unsigned int> &waveform, float pedestal,
                    size_t peakStart, float &sum, size_t &pulseStart, size_t &pulseEnd);
   std::vector<float>  _PEsNoFit;
   std::vector<double> _pulseTimesNoFit;

@@ -2,7 +2,7 @@
 #define RecoDataProducts_TrkFitFlag_hh
 //
 // Class to describe flag bits used for track fits
-// 
+//
 //
 // Original author David Brown
 //

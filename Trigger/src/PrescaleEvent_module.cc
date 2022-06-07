@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -52,7 +51,7 @@ namespace mu2e
 
   };
 
-  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p) : 
+  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p) :
       art::EDFilter{p},
       nPrescale_      (p.get<uint32_t>("nPrescale")),
       useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)),

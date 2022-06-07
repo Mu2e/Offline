@@ -23,15 +23,15 @@ namespace mu2e {
   class OrientationResolver
   {
   public:
-    
+
     OrientationResolver() {}
     ~OrientationResolver() {}
 
     void getRotationFromOrientation ( CLHEP::HepRotation& aRotation,
-				    std::string orient );
+                                    std::string orient );
 
   private:
-    
+
   };
 }  // end of namespace
 

@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_extMon.ccl
 
@@ -12,7 +12,7 @@ double dirt.extMon.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.extMon.yHalfThickness           = 1219.2;
 
-vector<int>    dirt.extMon.xreplace   = { 10, 11 }; 
+vector<int>    dirt.extMon.xreplace   = { 10, 11 };
 vector<double> dirt.extMon.xPositions = {
   -18300.1,   // t1
   -18996.1,   // e5
@@ -29,7 +29,7 @@ vector<double> dirt.extMon.xPositions = {
   -18300.1   // t1_to_S
 };
 
-vector<int>    dirt.extMon.yreplace   = { 11, 12 }; 
+vector<int>    dirt.extMon.yreplace   = { 11, 12 };
 vector<double> dirt.extMon.yPositions = {
   -3252.33,   // t1
   -3426.93,   // e5

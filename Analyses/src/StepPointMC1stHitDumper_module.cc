@@ -20,7 +20,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -82,8 +81,8 @@ namespace mu2e {
             , y(std::numeric_limits<double>::quiet_NaN())
             , z(std::numeric_limits<double>::quiet_NaN())
 
-	    , InitX(std::numeric_limits<double>::quiet_NaN())
-	    , InitY(std::numeric_limits<double>::quiet_NaN())
+            , InitX(std::numeric_limits<double>::quiet_NaN())
+            , InitY(std::numeric_limits<double>::quiet_NaN())
             , InitZ(std::numeric_limits<double>::quiet_NaN())
 
             , time(std::numeric_limits<double>::quiet_NaN())
@@ -194,7 +193,7 @@ namespace mu2e {
       spMCColls.push_back( *spColl );
     }
 
-    art::Handle<std::vector<mu2e::StepPointMC>> spHndl; 
+    art::Handle<std::vector<mu2e::StepPointMC>> spHndl;
     bool gotIt = event.getByLabel(hitsInputTag_, spHndl);
     if (gotIt) {
       std::vector<mu2e::StepPointMC> stepPoints = *spHndl;

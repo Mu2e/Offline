@@ -8,7 +8,6 @@
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -35,7 +34,7 @@ namespace mu2e {
       bool beginRun(art::Run& run) override;
       bool endRun(art::Run& run) override;
       bool filter(art::Event& event) override;
-      
+
       art::InputTag _genParticleModule;
       double _momCutoff;
       PDGCode::type _cutoffPDG;

@@ -11,7 +11,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 // conditions
@@ -119,9 +118,9 @@ class art::StrawHitRecoFromFragments : public art::EDProducer {
     // helper function
     //
     void analyze_tracker_(const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
-	std::unique_ptr<mu2e::ComboHitCollection> const& chCol, mu2e::StrawHitRecoUtils &shrUtils, mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
-	const mu2e::CaloClusterCollection* caloClusters, mu2e::Tracker const& tt
-	);
+        std::unique_ptr<mu2e::ComboHitCollection> const& chCol, mu2e::StrawHitRecoUtils &shrUtils, mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
+        const mu2e::CaloClusterCollection* caloClusters, mu2e::Tracker const& tt
+        );
     float peakMinusPedAvg(mu2e::TrkTypes::ADCWaveform const& adcData) const;
     float peakMinusPed(mu2e::StrawId id, mu2e::TrkTypes::ADCWaveform const& adcData) const;
     float peakMinusPedFirmware(mu2e::StrawId id, mu2e::TrkTypes::ADCValue const& pmp) const;
@@ -299,7 +298,7 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event)
 
 void art::StrawHitRecoFromFragments::analyze_tracker_(
     const mu2e::TrackerFragment& cc, std::unique_ptr<mu2e::StrawHitCollection> const& shCol,
-    std::unique_ptr<mu2e::ComboHitCollection> const& chCol, mu2e::StrawHitRecoUtils &shrUtils, 
+    std::unique_ptr<mu2e::ComboHitCollection> const& chCol, mu2e::StrawHitRecoUtils &shrUtils,
     mu2e::TrackerStatus const& trackerStatus, mu2e::StrawResponse const& srep,
     const mu2e::CaloClusterCollection* caloClusters, mu2e::Tracker const& tt
     ) {
@@ -313,7 +312,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
       << "====== Example Block Sizes ======" << std::endl;
     for (size_t i = 0; i < 10; i++) {
       if (i < cc.block_count()) {
-	std::cout << "\t" << i << "\t" << cc.blockSizeBytes(i) << std::endl;
+        std::cout << "\t" << i << "\t" << cc.blockSizeBytes(i) << std::endl;
       }
     }
     std::cout << "\t"
@@ -324,7 +323,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
     auto block = cc.dataAtBlockIndex(curBlockIdx);
     if (block == nullptr) {
       mf::LogError("StrawAndCaloDigisFromFragments")
-	<< "Unable to retrieve block " << curBlockIdx << "!" << std::endl;
+        << "Unable to retrieve block " << curBlockIdx << "!" << std::endl;
       continue;
     }
     auto hdr = block->GetHeader();
@@ -332,7 +331,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
     if (_diagLevel > 1) {
 
       std::cout << "timestamp: " << static_cast<int>(hdr->GetEventWindowTag().GetEventWindowTag(true))
-	<< std::endl;
+        << std::endl;
       std::cout << "hdr->SubsystemID: " << static_cast<int>(hdr->GetSubsystemID()) << std::endl;
       std::cout << "dtcID: " << static_cast<int>(hdr->GetID()) << std::endl;
       std::cout << "rocID: " << static_cast<int>(hdr->GetLinkID()) << std::endl;
@@ -351,10 +350,10 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
       // Create the StrawDigi data products
       auto trkDataVec = cc.GetTrackerData(curBlockIdx,getADC);
       if (trkDataVec.empty()) {
-	mf::LogError("StrawAndCaloDigisFromFragments")
-	  << "Error retrieving Tracker data from DataBlock " << curBlockIdx
-	  << "! Aborting processing of this block!";
-	continue;
+        mf::LogError("StrawAndCaloDigisFromFragments")
+          << "Error retrieving Tracker data from DataBlock " << curBlockIdx
+          << "! Aborting processing of this block!";
+        continue;
       }
 
 
@@ -366,7 +365,7 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
         mu2e::TrkTypes::ADCValue pmp = trkDataPair.first->PMP;
 
         shrUtils.createComboHit(-1,chCol, shCol, caloClusters, sid, tdc, tot, pmp, trkDataPair.second,
-	        trackerStatus,  srep, tt);
+                trackerStatus,  srep, tt);
 
       }
 

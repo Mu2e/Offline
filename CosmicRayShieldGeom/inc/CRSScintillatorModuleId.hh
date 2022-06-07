@@ -14,7 +14,7 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShieldId.hh"
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CRSScintillatorModuleId
@@ -37,14 +37,14 @@ namespace mu2e
       _moduleNumber(moduleNumber)
     {
     }
-*/   
+*/
     CRSScintillatorModuleId( int shieldNumber,
                              int moduleNumber):
       _shieldId(CRSScintillatorShieldId(shieldNumber)),
       _moduleNumber(moduleNumber)
     {
     }
-   
+
 
     // Compiler generated d'tor, copy and assignment constructors
     // should be OK.

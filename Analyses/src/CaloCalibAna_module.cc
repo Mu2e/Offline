@@ -2,7 +2,6 @@
 // An EDAnalyzer module that reads back the hits created by the calorimeter and produces an ntuple
 //
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -41,7 +40,7 @@
 #include "TH1F.h"
 
 
-namespace 
+namespace
 {
    constexpr int ntupLen = 16384;
 }
@@ -55,15 +54,15 @@ namespace mu2e {
     class CaloCalibAna : public art::EDAnalyzer {
 
       public:
-      struct Config 
+      struct Config
       {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<art::InputTag>     vdCollection          { Name("vdCollection"),           Comment("Virtual detector collection name") }; 
-        fhicl::Atom<art::InputTag>     caloHitCollection     { Name("caloHitCollection"),      Comment("Calo Hit collection name") }; 
-        fhicl::Atom<art::InputTag>     caloClusterCollection { Name("caloClusterCollection"),  Comment("Calo cluster collection name") }; 
-        fhicl::Atom<art::InputTag>     caloHitTruth          { Name("caloHitTruth"),           Comment("CaloHit truth name") }; 
-        fhicl::Atom<art::InputTag>     caloClusterTruth      { Name("caloClusterTruth"),       Comment("caloCluster truth name") }; 
+        fhicl::Atom<art::InputTag>     vdCollection          { Name("vdCollection"),           Comment("Virtual detector collection name") };
+        fhicl::Atom<art::InputTag>     caloHitCollection     { Name("caloHitCollection"),      Comment("Calo Hit collection name") };
+        fhicl::Atom<art::InputTag>     caloClusterCollection { Name("caloClusterCollection"),  Comment("Calo cluster collection name") };
+        fhicl::Atom<art::InputTag>     caloHitTruth          { Name("caloHitTruth"),           Comment("CaloHit truth name") };
+        fhicl::Atom<art::InputTag>     caloClusterTruth      { Name("caloClusterTruth"),       Comment("caloCluster truth name") };
         fhicl::Atom<int>               diagLevel             { Name("diagLevel"),              Comment("Diag Level"),0 };
       };
 
@@ -86,12 +85,12 @@ namespace mu2e {
 
 
         TH1F *hcryE_,*hcryT_,*hcryX_,*hcryY_,*hcryZ_;
-        TH1F *hcluE_,*hcluT_,*hcluX_,*hcluY_,*hcluZ_,*hcluE_1Et,*hcluE_1E9,*hcluE_1E25,*hcluE_F;       
+        TH1F *hcluE_,*hcluT_,*hcluX_,*hcluY_,*hcluZ_,*hcluE_1Et,*hcluE_1E9,*hcluE_1E25,*hcluE_F;
         TH2F *hxy_,*hECE,*hCryEEMC_,*hCryTTMC_,*hCluEEMC_,*hCluTTMC_,*hCryEEMC2_;
 
         TTree* Ntup_;
         int   _evt,_run;
-        
+
         int nHits_, nCrystals_;
         float truetotalEnergyDep_;
         int cryId_[ntupLen],crySectionId_[ntupLen],crySimIdx_[ntupLen],crySimLen_[ntupLen];
@@ -137,11 +136,11 @@ namespace mu2e {
 
       Ntup_->Branch("evt",          &_evt ,         "evt/I");
       Ntup_->Branch("run",          &_run ,         "run/I");
-      Ntup_->Branch("cryEtot",      &cryEtot_ ,     "cryEtot/F");      
+      Ntup_->Branch("cryEtot",      &cryEtot_ ,     "cryEtot/F");
       Ntup_->Branch("nCrystals",     &nCrystals_ ,       "nCrystals/I");
-      Ntup_->Branch("trueEtot",      &truetotalEnergyDep_ ,     "trueEtot/F");   
+      Ntup_->Branch("trueEtot",      &truetotalEnergyDep_ ,     "trueEtot/F");
 
-      
+
       // Reconstructed carystal hit info (from CaloHitCollection):
       Ntup_->Branch("nCry",         &nHits_ ,       "nCry/I");
       Ntup_->Branch("cryId",        &cryId_ ,       "cryId[nCry]/I");
@@ -216,7 +215,7 @@ namespace mu2e {
       Ntup_->Branch("cluSimStartZ", &cluSimStartZ_ ,"cluSimStartZ[nCluSim]/F");
       Ntup_->Branch("cluSimTime",   &cluSimTime_ ,  "cluSimTime[nCluSim]/F");
       Ntup_->Branch("cluSimEdep",   &cluSimEdep_ ,  "cluSimEdep[nCluSim]/F");*/
-      
+
       // Virtual Detector info (from StepPointMCCollection)
       Ntup_->Branch("nVd",          &nVd_ ,         "nVd/I");
       Ntup_->Branch("vdId",         &vdId_ ,        "vdId[nVd]/I");
@@ -302,18 +301,18 @@ namespace mu2e {
       std::vector<int> crystalsHit;
       for (unsigned int ic=0; ic<CaloHits.size();++ic)
       {
-        
+
         const CaloHit& hit            = CaloHits.at(ic);
         int diskId                    = cal.crystal(hit.crystalID()).diskID();
         CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
 
         const auto eDepMCs =  caloHitTruth[ic].energyDeposits();
 
-        bool isConversion(false); 
+        bool isConversion(false);
         for (auto& edep : eDepMCs)
         {
         if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint)  isConversion=true;
-        }    		          
+        }
 
         constexpr float invalid(999.0);
         float cryT1(invalid),cryT2(invalid),cryT1Err(invalid),cryT2Err(invalid);
@@ -325,11 +324,11 @@ namespace mu2e {
           cryT2    = hit.recoCaloDigis().at(idx1)->time();
           cryT1Err = hit.recoCaloDigis().at(idx0)->timeErr();
           cryT2Err = hit.recoCaloDigis().at(idx1)->timeErr();
-        } 
+        }
 
         cryId_[nHits_]        = hit.crystalID();
         if(ic == 0) crystalsHit.push_back(hit.crystalID());
-        else if(Contains(crystalsHit, hit.crystalID()) == 0) crystalsHit.push_back(hit.crystalID()); 
+        else if(Contains(crystalsHit, hit.crystalID()) == 0) crystalsHit.push_back(hit.crystalID());
         crySectionId_[nHits_] = diskId;
         cryEdep_[nHits_]      = hit.energyDep();
         cryEdepErr_[nHits_]   = hit.energyDepErr();
@@ -352,11 +351,11 @@ namespace mu2e {
 
         double sumEdepMC(0),edepTime(0);
         for (unsigned i=0;i< eDepMCs.size();++i)
-        {	       
-          const auto& eDepMC = eDepMCs[i];	       
+        {
+          const auto& eDepMC = eDepMCs[i];
 
           auto parent(eDepMC.sim());
-          while (parent->hasParent()) parent = parent->parent();               
+          while (parent->hasParent()) parent = parent->parent();
           int genId=-1;
           if (parent->genParticle()) genId = parent->genParticle()->generatorId().id();
 
@@ -364,19 +363,19 @@ namespace mu2e {
           crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
           crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
           crySimTime_[nSimHit_]    = eDepMC.time();
-          crySimEdep_[nSimHit_]    = eDepMC.energyDep();	                      
-          crySimMom_[nSimHit_]     = eDepMC.momentumIn();	   
-          
+          crySimEdep_[nSimHit_]    = eDepMC.energyDep();
+          crySimMom_[nSimHit_]     = eDepMC.momentumIn();
+
           crySimStartX_[nSimHit_]  = parent->startPosition().x();
           crySimStartY_[nSimHit_]  = parent->startPosition().y();
           crySimStartZ_[nSimHit_]  = parent->startPosition().z();
           crySimStartT_[nSimHit_]  = parent->startGlobalTime();
-          
+
           crySimEndX_[nSimHit_]    = parent->endPosition().x();
           crySimEndY_[nSimHit_]    = parent->endPosition().y();
-          crySimEndZ_[nSimHit_]    = parent->endPosition().z();  
+          crySimEndZ_[nSimHit_]    = parent->endPosition().z();
           crySimEndT_[nSimHit_]  = parent->endGlobalTime();
-            
+
           crySimGenIdx_[nSimHit_]  = genId;
           ++nSimHit_;
 
@@ -401,7 +400,7 @@ namespace mu2e {
       //--------------------------  Do clusters --------------------------------
       nCluster_ = nCluSim_ = 0;
       cluList_.clear();
-      
+
      /* for (unsigned int ic=0; ic<caloClusters.size();++ic)
       {
         const CaloCluster& cluster = caloClusters.at(ic);
@@ -413,17 +412,17 @@ namespace mu2e {
 
         const auto eDepMCs =  caloClusterTruth[ic].energyDeposits(); //TODO - fills truth information
 
-        bool isConversion(false); 
+        bool isConversion(false);
         for (auto& edep : eDepMCs)
         {
           if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint)  isConversion=true;
-        }    		          
+        }
 
         cluEnergy_[nCluster_]    = cluster.energyDep();
         cluEnergyErr_[nCluster_] = cluster.energyDepErr();
         cluTime_[nCluster_]      = cluster.time();
         cluTimeErr_[nCluster_]   = cluster.timeErr();
-        cluNcrys_[nCluster_]     = cluster.size();          
+        cluNcrys_[nCluster_]     = cluster.size();
         cluCogX_[nCluster_]      = cluster.cog3Vector().x(); //in disk FF frame
         cluCogY_[nCluster_]      = cluster.cog3Vector().y();
         cluCogZ_[nCluster_]      = cluster.cog3Vector().z();
@@ -437,11 +436,11 @@ namespace mu2e {
 
         cluSimIdx_[nCluster_] = nCluSim_;
         cluSimLen_[nCluster_] = eDepMCs.size();
-        
+
         double sumEdepMC(0),edepTime(0);
         for (unsigned i=0;i< eDepMCs.size();++i)
-        {	       
-          const auto& eDepMC = eDepMCs[i];	       
+        {
+          const auto& eDepMC = eDepMCs[i];
           art::Ptr<SimParticle> sim = eDepMC.sim();
 
           art::Ptr<SimParticle> smother(sim);
@@ -458,11 +457,11 @@ namespace mu2e {
           cluSimGenPdg_[nCluSim_] = genPdg;
           cluSimTime_[nCluSim_]   = eDepMC.time();
           cluSimEdep_[nCluSim_]   = eDepMC.energyDep();
-          
+
           cluSimMom_[nCluSim_]    = eDepMC.momentumIn();
           cluSimStartX_[nCluSim_] = sim->startPosition().x(); // in disk FF frame
           cluSimStartY_[nCluSim_] = sim->startPosition().y();
-          cluSimStartZ_[nCluSim_] = sim->startPosition().z();  
+          cluSimStartZ_[nCluSim_] = sim->startPosition().z();
           ++nCluSim_;
 
           sumEdepMC += eDepMC.energyDep();
@@ -490,14 +489,14 @@ namespace mu2e {
         {
           const StepPointMC& hit = *iter;
 
-          if ( (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) 
+          if ( (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut)
           && hit.volumeId() != VirtualDetectorId::TT_Back) continue;
 
           CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
 
           vdId_[nVd_]     = hit.volumeId();
           vdPdgId_[nVd_]  = hit.simParticle()->pdgId();
-          vdGenId_[nVd_]  = (hit.simParticle()->genParticle()) ? hit.simParticle()->genParticle()->generatorId().id() : -1; 
+          vdGenId_[nVd_]  = (hit.simParticle()->genParticle()) ? hit.simParticle()->genParticle()->generatorId().id() : -1;
           vdTime_[nVd_]   = hit.time();
           vdPosX_[nVd_]   = VDPos.x(); //tracker frame
           vdPosY_[nVd_]   = VDPos.y();
@@ -508,13 +507,13 @@ namespace mu2e {
           vdMomZ_[nVd_]   = hit.momentum().z();
           vdGenIdx_[nVd_] = hit.simParticle()->generatorIndex();
           ++nVd_;
-        }             
+        }
       }
       Ntup_->Fill();
 }
 
 
 
-}  
+}
 
 DEFINE_ART_MODULE(mu2e::CaloCalibAna);

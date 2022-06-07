@@ -15,9 +15,9 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{ Name("verbose"), Comment("verbosity: 0,1,2")};
-    fhicl::Atom<bool> useDb{ Name("useDb"), Comment("use database or fcl")}; 
+    fhicl::Atom<bool> useDb{ Name("useDb"), Comment("use database or fcl")};
   };
-  
+
   struct TrackerStatusConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
@@ -26,8 +26,8 @@ namespace mu2e {
     TSSTable settings { Name("Settings") };
     TSSequence status { Name("Status"),
       Comment("Provide in order: StrawId contained by the element in'plane_panel_straw' format \n"
-	  "Level of the element ('station', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw') \n"
-	  "Colon-separated status bits to set for the element(see StrawStatus for details)") };
+          "Level of the element ('station', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw') \n"
+          "Colon-separated status bits to set for the element(see StrawStatus for details)") };
   };
 
 }

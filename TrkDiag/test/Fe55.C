@@ -7,28 +7,28 @@
 
 void Fe55::Loop()
 {
-   if (fChain == 0) return;
-   Long64_t nentries = fChain->GetEntriesFast();
-   Int_t oldevtid(-1);
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
-       Long64_t nb = fChain->GetEntry(jentry);
-     // look for entries in the same event
-      if(eventid == oldevtid){
-//	cout << "found match eventid" << eventid << endl;
-	std::array<HitComp,2> hc;
-	fillHC(hc[0]);
-//	cout << "before straw = " << straw << endl;
-	Long64_t kentry = LoadTree(jentry-1);
-	Long64_t knb = fChain->GetEntry(jentry-1);
-//	cout << "after straw = " << straw << endl;
-	fillHC(hc[1]);
-	_eid = eventid;
-	plotDiff(hc);
-      }
-      oldevtid = eventid;
-   }
+  if (fChain == 0) return;
+  Long64_t nentries = fChain->GetEntriesFast();
+  Int_t oldevtid(-1);
+  for (Long64_t jentry=0; jentry<nentries;jentry++) {
+    Long64_t ientry = LoadTree(jentry);
+    if (ientry < 0) break;
+    Long64_t nb = fChain->GetEntry(jentry);
+    // look for entries in the same event
+    if(eventid == oldevtid){
+      //  cout << "found match eventid" << eventid << endl;
+      std::array<HitComp,2> hc;
+      fillHC(hc[0]);
+      //  cout << "before straw = " << straw << endl;
+      Long64_t kentry = LoadTree(jentry-1);
+      Long64_t knb = fChain->GetEntry(jentry-1);
+      //  cout << "after straw = " << straw << endl;
+      fillHC(hc[1]);
+      _eid = eventid;
+      plotDiff(hc);
+    }
+    oldevtid = eventid;
+  }
 }
 
 void Fe55::fillHC(HitComp& hc) {

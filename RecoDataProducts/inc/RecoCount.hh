@@ -8,9 +8,9 @@
 
 namespace mu2e {
  struct RecoCount {
-    uint16_t _nstrawdigi; // original number of straw digis in the event   
-    uint16_t _ncalodigi; // original number of calo digis in the event   
-    uint16_t _ncrvdigi; // original number of crv digis in the event   
+    uint16_t _nstrawdigi; // original number of straw digis in the event
+    uint16_t _ncalodigi; // original number of calo digis in the event
+    uint16_t _ncrvdigi; // original number of crv digis in the event
     uint16_t _nshfesel, _nshfrsel, _nshftsel, _nshfbkg, _nshftpk; // StrawHitFlag counts
     // add counts of original time clusters TODO
     uint16_t _ncc; // original number of calo clusters
@@ -18,7 +18,7 @@ namespace mu2e {
     // histogram of straw hit times
     static constexpr size_t _nshtbins =70; // number of bins in the Straw Hit time histogram
     AHist<uint16_t, _nshtbins> _shthist;
-    RecoCount() : _nstrawdigi(0), _ncalodigi(0),_ncrvdigi(0), 
+    RecoCount() : _nstrawdigi(0), _ncalodigi(0),_ncrvdigi(0),
     _nshfesel(0), _nshfrsel(0), _nshftsel(0), _nshfbkg(0), _nshftpk(0),
     _shthist(-25.0,1725.0) {}
   };

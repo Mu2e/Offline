@@ -6,7 +6,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -27,7 +26,7 @@ namespace mu2e {
     using  Comment = fhicl::Comment;
     struct Config {
       fhicl::Atom<int> debug{ Name("debugLevel"),
-	  Comment("Debug Level"), 0};
+          Comment("Debug Level"), 0};
     };
 
     using        Parameters = art::EDProducer::Table<Config>;
@@ -37,7 +36,7 @@ namespace mu2e {
     int          _debug;
   };
 
-  MergeTriggerInfo::MergeTriggerInfo(const Parameters& config) : 
+  MergeTriggerInfo::MergeTriggerInfo(const Parameters& config) :
     art::EDProducer{config},
     _debug   (config().debug())
   {
@@ -49,19 +48,19 @@ namespace mu2e {
 
     // create the selector
     art::Selector selector(art::ProductInstanceNameSelector("") &&
-			   art::ProcessNameSelector("*")); 
-    std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo; 
+                           art::ProcessNameSelector("*"));
+    std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo;
     event.getMany<TriggerInfo>(selector);
 
     if(_debug > 0){
       std::cout << "["<<moduleDescription().moduleLabel() << "] number of TriggerInfo found in the is: "<< list_of_triggerInfo.size() << std::endl;
     }
-    
+
     for (auto & trigInfoH: list_of_triggerInfo){
       TriggerInfo trigInfo(*trigInfoH.product());
       tiCol->push_back(trigInfo);
     }
-    
+
     event.put(std::move(tiCol));
   }
 }

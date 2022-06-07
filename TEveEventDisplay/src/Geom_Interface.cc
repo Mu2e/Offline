@@ -4,7 +4,7 @@
 using namespace mu2e;
 namespace mu2e{
 
-	Geom_Interface::Geom_Interface(){}
+        Geom_Interface::Geom_Interface(){}
 
   // Function to descend and remove nodes above the DS - run after HideBuilding
   void Geom_Interface::InsideDS( TGeoNode * node, bool inDSVac ){
@@ -26,7 +26,7 @@ namespace mu2e{
         InsideDS( dau, inDSVac );
       }
   }
-  
+
     // Function to descend and remove nodes above the PS - run after HideBuilding
   void Geom_Interface::InsidePS( TGeoNode * node, bool inPSVac ){
     std::string _name = (node->GetVolume()->GetName());
@@ -72,7 +72,7 @@ namespace mu2e{
       hideNodesByName( dau, str, onOff, _diagLevel);
     }
   }
-  
+
   void Geom_Interface::showNodesByName(TGeoNode* node, const std::string& str, bool onOff){
     std::string name(node->GetName());
     if ( name.find(str) != std::string::npos ){

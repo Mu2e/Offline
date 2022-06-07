@@ -1,4 +1,4 @@
-# 
+#
 # Add the tracer product to the event.
 #
 #
@@ -7,19 +7,19 @@
 
 #include "Offline/fcl/minimalMessageService.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : tracerProduct00
 
-source : {   
+source : {
   module_type : EmptyEvent
   maxEvents : 5
 }
 
-services : 
+services :
 {
-#  This must be commented out or some of the messages from the 
+#  This must be commented out or some of the messages from the
 #  TracerProduct d'tor are lost!
-#  message : @local::default_message 
+#  message : @local::default_message
 
 }
 
@@ -31,7 +31,7 @@ physics :
     tracerTest  :{ module_type : MakeTracerProduct00 }
   }
 
-  analyzers: 
+  analyzers:
   {
    readTracer :{ module_type : ReadTracerProduct00 }
   }
@@ -50,7 +50,7 @@ outputs:
  outfile :
  {
    module_type   :   RootOutput
-   fileName	 :   "tracerTest00.root"
+   fileName         :   "tracerTest00.root"
  }
 
 }

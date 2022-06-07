@@ -3,7 +3,7 @@
 //
 // Given a list of stale names and a SimpleConfig object, count how
 // many of the names have a value of true. Throw if more than
-// one is true.  
+// one is true.
 //
 //
 // Contact person Rob Kutschke

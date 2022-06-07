@@ -19,11 +19,11 @@
 
 namespace mu2e {
 
-    
+
     class CaloGeomUtil {
 
        public:
-          
+
           CaloGeomUtil(const std::vector<std::shared_ptr<Disk>>& disks,
                        const std::vector<const Crystal*>& fullCrystalList);
 
@@ -39,31 +39,31 @@ namespace mu2e {
 
 
           CLHEP::Hep3Vector mu2eToCrystal(  int crystalId, const CLHEP::Hep3Vector& pos) const;
-	  CLHEP::Hep3Vector mu2eToDisk(     int diskId, const CLHEP::Hep3Vector& pos)    const;	    
-	  CLHEP::Hep3Vector mu2eToDiskFF(   int diskId, const CLHEP::Hep3Vector& pos)    const;	    
-	  CLHEP::Hep3Vector mu2eToTracker(  const CLHEP::Hep3Vector& pos)                const;
+          CLHEP::Hep3Vector mu2eToDisk(     int diskId, const CLHEP::Hep3Vector& pos)    const;
+          CLHEP::Hep3Vector mu2eToDiskFF(   int diskId, const CLHEP::Hep3Vector& pos)    const;
+          CLHEP::Hep3Vector mu2eToTracker(  const CLHEP::Hep3Vector& pos)                const;
 
-	  CLHEP::Hep3Vector crystalToMu2e(  int crystalId, const CLHEP::Hep3Vector& pos) const;
-	  CLHEP::Hep3Vector diskToMu2e(     int diskId, const CLHEP::Hep3Vector& pos)    const;
-	  CLHEP::Hep3Vector diskFFToMu2e(   int diskId, const CLHEP::Hep3Vector& pos)    const;
-	  CLHEP::Hep3Vector trackerToMu2e(  const CLHEP::Hep3Vector& pos)                const;
+          CLHEP::Hep3Vector crystalToMu2e(  int crystalId, const CLHEP::Hep3Vector& pos) const;
+          CLHEP::Hep3Vector diskToMu2e(     int diskId, const CLHEP::Hep3Vector& pos)    const;
+          CLHEP::Hep3Vector diskFFToMu2e(   int diskId, const CLHEP::Hep3Vector& pos)    const;
+          CLHEP::Hep3Vector trackerToMu2e(  const CLHEP::Hep3Vector& pos)                const;
 
-	  bool isInsideCalorimeter(const CLHEP::Hep3Vector& pos)                                 const;       	 	 
+          bool isInsideCalorimeter(const CLHEP::Hep3Vector& pos)                                 const;
           bool isInsideSection(int iDisk, const CLHEP::Hep3Vector& pos)                          const;
-	  bool isContainedSection(const CLHEP::Hep3Vector& front, const CLHEP::Hep3Vector& back) const;
-	  
+          bool isContainedSection(const CLHEP::Hep3Vector& front, const CLHEP::Hep3Vector& back) const;
+
 
        private:
-          
+
           const std::vector<std::shared_ptr<Disk>>& disks_;
           const std::vector<const Crystal*>&        fullCrystalList_;
-	  CLHEP::Hep3Vector                         origin_;
-	  CLHEP::Hep3Vector                         trackerCenter_;
+          CLHEP::Hep3Vector                         origin_;
+          CLHEP::Hep3Vector                         trackerCenter_;
           double                                    crystalZLength_;
 
 
      };
 
-}    
+}
 
-#endif 
+#endif

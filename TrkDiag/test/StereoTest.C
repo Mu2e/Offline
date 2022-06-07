@@ -38,8 +38,8 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     const size_t nevt = ilast-ifirst+1;
     size_t nbins(200);
 
-    TH2F* shpos[nevt]; 
-    TH2F* shpose[nevt]; 
+    TH2F* shpos[nevt];
+    TH2F* shpose[nevt];
     TH2F* shposr[nevt];
     TH2F* shposd[nevt];
     TH2F* shposi[nevt];
@@ -104,8 +104,8 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     const size_t nevt = ilast-ifirst+1;
     size_t nbins(200);
 
-    TH2F* shpos[nevt]; 
-    TH2F* stpos[nevt]; 
+    TH2F* shpos[nevt];
+    TH2F* stpos[nevt];
     TH2F* nshpos[nevt];
     TH2F* mcpos[nevt];
     TCanvas* shcans[nevt];
@@ -183,7 +183,7 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
 
   } else if(spage=="dz") {
     TH1F* hdz = new TH1F("hdz","Hit #Delta z;#Delta z (mm)",100,0,70);
-//    dist->SetStats(0);
+    //    dist->SetStats(0);
     TProfile2D* evposdz = new TProfile2D("evposdz","Even Station #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
     TProfile2D* odposdz = new TProfile2D("odposdz","Odd Station #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
     TProfile2D* alposdz = new TProfile2D("alposdz","All Stations #Delta z vs reco position;x (mm);y (mm)",100,-800,800,100,-800,800);
@@ -216,7 +216,7 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     TH2F* apos = new TH2F("apos","True hit position;x (mm);y (mm)",100,-750,750,100,-750,750);
     TH2F* spos = new TH2F("spos","Stereo fraction vs true hit position;x (mm);y (mm)",100,-750,750,100,-750,750);
     TH2F* nspos = new TH2F("nspos","Non-stereo fraction vs true hit position;x (mm);y (mm)",100,-750,750,100,-750,750);
-  
+
     shdiag->Project("apos","mcshpos.y:mcshpos.x");
     shdiag->Project("spos","mcshpos.y:mcshpos.x",stereohit);
     shdiag->Project("nspos","mcshpos.y:mcshpos.x",!stereohit);
@@ -246,7 +246,7 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sdpc->Add(sdpc4);
     sdpc->Add(sdpc3);
     sdpc->Add(sdpc2);
-//    sdpc->Add(sdpc1);
+    //    sdpc->Add(sdpc1);
 
     TH1F* sdpd0 = new TH1F("sdpd0","#phi resolution, #delta-ray;#phi_{sh}-#phi_{MC}",100,-0.1,0.1);
     TH1F* sdpd1 = new TH1F("sdpd1","#phi resolution, #delta-ray;#phi_{sh}-#phi_{MC}",100,-0.1,0.1);
@@ -258,7 +258,7 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sdpd->Add(sdpd4);
     sdpd->Add(sdpd3);
     sdpd->Add(sdpd2);
-//    sdpd->Add(sdpd1);
+    //    sdpd->Add(sdpd1);
 
     TH1F* sdrc0 = new TH1F("sdrc0","#rho resolution, CE;#rho_{sh}-#rho_{MC}",100,-50,50);
     TH1F* sdrc1 = new TH1F("sdrc1","#rho resolution, CE;#rho_{sh}-#rho_{MC}",100,-50,50);
@@ -270,7 +270,7 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sdrc->Add(sdrc4);
     sdrc->Add(sdrc3);
     sdrc->Add(sdrc2);
-//    sdrc->Add(sdrc1);
+    //    sdrc->Add(sdrc1);
 
     TH1F* sdrd0 = new TH1F("sdrd0","#rho resolution, #delta-ray;#rho_{sh}-#rho_{MC}",100,-20,20);
     TH1F* sdrd1 = new TH1F("sdrd1","#rho resolution, #delta-ray;#rho_{sh}-#rho_{MC}",100,-20,20);
@@ -282,7 +282,7 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sdrd->Add(sdrd4);
     sdrd->Add(sdrd3);
     sdrd->Add(sdrd2);
-//    sdrd->Add(sdrd1);
+    //    sdrd->Add(sdrd1);
 
     sdpc0->SetFillColor(kYellow);
     sdpd0->SetFillColor(kYellow);
@@ -291,9 +291,9 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sdpc2->SetFillColor(kCyan);
     sdpd2->SetFillColor(kCyan);
     sdpc3->SetFillColor(kGreen);
-    sdpd3->SetFillColor(kGreen); 
+    sdpd3->SetFillColor(kGreen);
     sdpc4->SetFillColor(kRed);
-    sdpd4->SetFillColor(kRed); 
+    sdpd4->SetFillColor(kRed);
     sdpc0->SetStats(0);
 
     sdrc0->SetFillColor(kYellow);
@@ -303,29 +303,29 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     sdrc2->SetFillColor(kCyan);
     sdrd2->SetFillColor(kCyan);
     sdrc3->SetFillColor(kGreen);
-    sdrd3->SetFillColor(kGreen); 
+    sdrd3->SetFillColor(kGreen);
     sdrc4->SetFillColor(kRed);
-    sdrd4->SetFillColor(kRed); 
-//    sdrc0->SetStats(0);
-//    sdpc1->SetStats(0);
-//    sdpc2->SetStats(0);
-//    sdpc3->SetStats(0);
-//    sdpc4->SetStats(0);
-//    sdpd0->SetStats(0);
-//    sdpd1->SetStats(0);
-//    sdpd2->SetStats(0);
-//    sdpd3->SetStats(0); 
-//    sdpd4->SetStats(0); 
+    sdrd4->SetFillColor(kRed);
+    //    sdrc0->SetStats(0);
+    //    sdpc1->SetStats(0);
+    //    sdpc2->SetStats(0);
+    //    sdpc3->SetStats(0);
+    //    sdpc4->SetStats(0);
+    //    sdpd0->SetStats(0);
+    //    sdpd1->SetStats(0);
+    //    sdpd2->SetStats(0);
+    //    sdpd3->SetStats(0);
+    //    sdpd4->SetStats(0);
 
-//    sdrc1->SetStats(0);
-//    sdrc2->SetStats(0);
-//    sdrc3->SetStats(0);
-//    sdrc4->SetStats(0);
-//    sdrd0->SetStats(0);
-//    sdrd1->SetStats(0);
-//    sdrd2->SetStats(0);
-//    sdrd3->SetStats(0); 
-//    sdrd4->SetStats(0); 
+    //    sdrc1->SetStats(0);
+    //    sdrc2->SetStats(0);
+    //    sdrc3->SetStats(0);
+    //    sdrc4->SetStats(0);
+    //    sdrd0->SetStats(0);
+    //    sdrd1->SetStats(0);
+    //    sdrd2->SetStats(0);
+    //    sdrd3->SetStats(0);
+    //    sdrd4->SetStats(0);
 
     TCut st0("dist<0");
     TCut st1("");
@@ -360,84 +360,84 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     leg->AddEntry(sdpc4,"#Delta z > 50","f");
     leg->AddEntry(sdpc0,"non-stereo","f");
     leg->AddEntry(sdpc1,"all","l");
-//    sdpc0->Scale(1.0/sdpc0->GetEntries());
-//    sdpc1->Scale(1.0/sdpc1->GetEntries());
-//    sdpc2->Scale(1.0/sdpc2->GetEntries());
-//    sdpc3->Scale(1.0/sdpc3->GetEntries());
-//    sdpc4->Scale(1.0/sdpc4->GetEntries());
-//    sdpd0->Scale(1.0/sdpd0->GetEntries());
-//    sdpd1->Scale(1.0/sdpd1->GetEntries());
-//    sdpd2->Scale(1.0/sdpd2->GetEntries());
-//    sdpd3->Scale(1.0/sdpd3->GetEntries());
-//    sdpd4->Scale(1.0/sdpd4->GetEntries());
-//
-//    sdrc0->Scale(1.0/sdrc0->GetEntries());
-//    sdrc1->Scale(1.0/sdrc1->GetEntries());
-//    sdrc2->Scale(1.0/sdrc2->GetEntries());
-//    sdrc3->Scale(1.0/sdrc3->GetEntries());
-//    sdrc4->Scale(1.0/sdrc4->GetEntries());
-//    sdrd0->Scale(1.0/sdrd0->GetEntries());
-//    sdrd1->Scale(1.0/sdrd1->GetEntries());
-//    sdrd2->Scale(1.0/sdrd2->GetEntries());
-//    sdrd3->Scale(1.0/sdrd3->GetEntries());
-//    sdrd4->Scale(1.0/sdrd4->GetEntries());
-//    double pmax(0.125);
-//    sdpc0->SetMaximum(pmax);
-//    sdpc1->SetMaximum(pmax);
-//    sdpc2->SetMaximum(pmax);
-//    sdpc3->SetMaximum(pmax);
-//    sdpc4->SetMaximum(pmax);
-//    sdpd0->SetMaximum(pmax);
-//    sdpd1->SetMaximum(pmax);
-//    sdpd2->SetMaximum(pmax);
-//    sdpd3->SetMaximum(pmax);
-//    sdpd4->SetMaximum(pmax);
-//
-//    double rmax(0.1);
-//    sdrc0->SetMaximum(rmax);
-//    sdrc1->SetMaximum(rmax);
-//    sdrc2->SetMaximum(rmax);
-//    sdrc3->SetMaximum(rmax);
-//    sdrc4->SetMaximum(rmax);
-//    sdrd0->SetMaximum(rmax);
-//    sdrd1->SetMaximum(rmax);
-//    sdrd2->SetMaximum(rmax);
-//    sdrd3->SetMaximum(rmax);
-//    sdrd4->SetMaximum(rmax);
- 
+    //    sdpc0->Scale(1.0/sdpc0->GetEntries());
+    //    sdpc1->Scale(1.0/sdpc1->GetEntries());
+    //    sdpc2->Scale(1.0/sdpc2->GetEntries());
+    //    sdpc3->Scale(1.0/sdpc3->GetEntries());
+    //    sdpc4->Scale(1.0/sdpc4->GetEntries());
+    //    sdpd0->Scale(1.0/sdpd0->GetEntries());
+    //    sdpd1->Scale(1.0/sdpd1->GetEntries());
+    //    sdpd2->Scale(1.0/sdpd2->GetEntries());
+    //    sdpd3->Scale(1.0/sdpd3->GetEntries());
+    //    sdpd4->Scale(1.0/sdpd4->GetEntries());
+    //
+    //    sdrc0->Scale(1.0/sdrc0->GetEntries());
+    //    sdrc1->Scale(1.0/sdrc1->GetEntries());
+    //    sdrc2->Scale(1.0/sdrc2->GetEntries());
+    //    sdrc3->Scale(1.0/sdrc3->GetEntries());
+    //    sdrc4->Scale(1.0/sdrc4->GetEntries());
+    //    sdrd0->Scale(1.0/sdrd0->GetEntries());
+    //    sdrd1->Scale(1.0/sdrd1->GetEntries());
+    //    sdrd2->Scale(1.0/sdrd2->GetEntries());
+    //    sdrd3->Scale(1.0/sdrd3->GetEntries());
+    //    sdrd4->Scale(1.0/sdrd4->GetEntries());
+    //    double pmax(0.125);
+    //    sdpc0->SetMaximum(pmax);
+    //    sdpc1->SetMaximum(pmax);
+    //    sdpc2->SetMaximum(pmax);
+    //    sdpc3->SetMaximum(pmax);
+    //    sdpc4->SetMaximum(pmax);
+    //    sdpd0->SetMaximum(pmax);
+    //    sdpd1->SetMaximum(pmax);
+    //    sdpd2->SetMaximum(pmax);
+    //    sdpd3->SetMaximum(pmax);
+    //    sdpd4->SetMaximum(pmax);
+    //
+    //    double rmax(0.1);
+    //    sdrc0->SetMaximum(rmax);
+    //    sdrc1->SetMaximum(rmax);
+    //    sdrc2->SetMaximum(rmax);
+    //    sdrc3->SetMaximum(rmax);
+    //    sdrc4->SetMaximum(rmax);
+    //    sdrd0->SetMaximum(rmax);
+    //    sdrd1->SetMaximum(rmax);
+    //    sdrd2->SetMaximum(rmax);
+    //    sdrd3->SetMaximum(rmax);
+    //    sdrd4->SetMaximum(rmax);
+
     TCanvas* srcan = new TCanvas("srcan","Stereo resolution",1000,1000);
     srcan->Divide(2,2);
     srcan->cd(1);
     sdpd->Draw();
     sdpd1->Draw("sames");
-//    sdpd0->Draw("same");
-//    sdpd2->Draw("same");
-//    sdpd3->Draw("same");
-//    sdpd4->Draw("same");
+    //    sdpd0->Draw("same");
+    //    sdpd2->Draw("same");
+    //    sdpd3->Draw("same");
+    //    sdpd4->Draw("same");
     leg->Draw();
     srcan->cd(2);
     sdpc->Draw();
     sdpc1->Draw("sames");
-//    sdpc0->Draw("same");
-//    sdpc2->Draw("same");
-//    sdpc3->Draw("same");
-//    sdpc4->Draw("same");
+    //    sdpc0->Draw("same");
+    //    sdpc2->Draw("same");
+    //    sdpc3->Draw("same");
+    //    sdpc4->Draw("same");
     leg->Draw();
     srcan->cd(3);
     sdrd->Draw();
     sdrd1->Draw("sames");
-//    sdrd0->Draw("same");
-//    sdrd2->Draw("same");
-//    sdrd3->Draw("same");
-//    sdrd4->Draw("same");
+    //    sdrd0->Draw("same");
+    //    sdrd2->Draw("same");
+    //    sdrd3->Draw("same");
+    //    sdrd4->Draw("same");
     leg->Draw();
     srcan->cd(4);
     sdrc->Draw();
     sdrc1->Draw("sames");
-//    sdrc0->Draw("same");
-//    sdrc2->Draw("same");
-//    sdrc3->Draw("same");
-//    sdrc4->Draw("same");
+    //    sdrc0->Draw("same");
+    //    sdrc2->Draw("same");
+    //    sdrc3->Draw("same");
+    //    sdrc4->Draw("same");
     leg->Draw();
   } else if (spage == "delta") {
     TH2F* sdce = new TH2F("sdce","#delta-ray hit flaging, true CE;Reco hit #delta flag;Reco hit stereo flag",2,-0.5,1.5,2,-0.5,1.5);

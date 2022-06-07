@@ -18,7 +18,7 @@
 #include "Offline/CosmicRayShieldGeom/inc/CRSFEB.hh"
 
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CosmicRayShield;
@@ -50,12 +50,12 @@ namespace mu2e
       return _layers.size();
     }
 
-    const CRSScintillatorLayer& getLayer ( int n ) const 
+    const CRSScintillatorLayer& getLayer ( int n ) const
     {
       return _layers.at(n);
     }
 
-    const CRSScintillatorLayer& getLayer ( CRSScintillatorLayerId const & lid) const 
+    const CRSScintillatorLayer& getLayer ( CRSScintillatorLayerId const & lid) const
     {
       return _layers.at(lid.getLayerNumber());
     }
@@ -75,7 +75,7 @@ namespace mu2e
       return _absorberLayers.size();
     }
 
-    const CRSAbsorberLayer& getAbsorberLayer ( int n ) const 
+    const CRSAbsorberLayer& getAbsorberLayer ( int n ) const
     {
       return _absorberLayers.at(n);
     }
@@ -90,7 +90,7 @@ namespace mu2e
       return _aluminumSheets.size();
     }
 
-    const CRSAluminumSheet& getAluminumSheet ( int n ) const 
+    const CRSAluminumSheet& getAluminumSheet ( int n ) const
     {
       return _aluminumSheets.at(n);
     }
@@ -105,7 +105,7 @@ namespace mu2e
       return _FEBs.size();
     }
 
-    const CRSFEB& getFEB ( int n ) const 
+    const CRSFEB& getFEB ( int n ) const
     {
       return _FEBs.at(n);
     }

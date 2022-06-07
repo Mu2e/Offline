@@ -25,12 +25,12 @@ void NoMisalignTracker(const char* outfile="NoMisalignTracker.txt") {
   os << "0, 0_0_0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
   for(unsigned ibuf=0;ibuf<3;ibuf++)
     os << "#" << endl;
- 
+
   os << "TABLE TrkAlignPlane" << endl;
   os << "#row, strawid, dx, dy, dz, rx, ry, rz" << endl;
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
-     os << iplane << ", " << iplane << "_0_0, "
-       << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
+    os << iplane << ", " << iplane << "_0_0, "
+      << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
   }
 
   for(unsigned ibuf=0;ibuf<3;ibuf++)
@@ -41,7 +41,7 @@ void NoMisalignTracker(const char* outfile="NoMisalignTracker.txt") {
     for(unsigned ipanel=0;ipanel<NPanels; ++ipanel){
       unsigned irow = iplane*NPanels + ipanel;
       os << irow << ", " << iplane << "_" << ipanel << "_0, "
-	<< "0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
+        << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
     }
   }
 
@@ -52,9 +52,9 @@ void NoMisalignTracker(const char* outfile="NoMisalignTracker.txt") {
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
     for(unsigned ipanel=0;ipanel<NPanels; ++ipanel){
       for(unsigned istraw=0;istraw<NStraws; ++istraw){
-	unsigned irow = (iplane*NPanels + ipanel)*NStraws + istraw;
-	os << irow << ", " << iplane << "_" << ipanel << "_" << istraw << ", "
-	  << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
+        unsigned irow = (iplane*NPanels + ipanel)*NStraws + istraw;
+        os << irow << ", " << iplane << "_" << ipanel << "_" << istraw << ", "
+          << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
       }
     }
   }

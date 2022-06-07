@@ -24,8 +24,8 @@
 #include "Offline/TEveEventDisplay/src/dict_classes/GeomUtils.h"
 
 namespace mu2e{
-	class TEveMu2eCRV 
-	{
+        class TEveMu2eCRV
+        {
     public:
       #ifndef __CINT__
       explicit TEveMu2eCRV();

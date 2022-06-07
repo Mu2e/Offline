@@ -2,7 +2,7 @@
 // Free function to create a geant4 test environment geometry
 //
 //
-// Original author KLG 
+// Original author KLG
 //
 // Notes:
 //
@@ -97,7 +97,7 @@ namespace mu2e {
                                    rotation, // rotation
                                    tubeCenterInWorld,
                                    parentVInfo,
-                                   _config.getInt("tube.copyNumber",2), 
+                                   _config.getInt("tube.copyNumber",2),
                                    // we assign a non 0 copy nuber for
                                    // volume tracking purposes
                                    tubeVisible,

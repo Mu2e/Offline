@@ -44,7 +44,7 @@
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
   void constructCRV( VolumeInfo const & parent, SimpleConfig const & _config)
   {
@@ -53,14 +53,14 @@ namespace mu2e
     Mu2eG4Helper& _helper       = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry& reg   = _helper.antiLeakRegistry();
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    
+
     geomOptions->loadEntry( _config, "crsVeto", "crs.veto" );
-    const bool scintillatorShieldVisible   = geomOptions->isVisible("crsVeto"); 
-    const bool scintillatorShieldDrawSolid = geomOptions->isSolid("crsVeto"); 
-    const bool forceAuxEdgeVisible         = geomOptions->forceAuxEdgeVisible("crsVeto"); 
-    const bool doSurfaceCheck              = geomOptions->doSurfaceCheck("crsVeto"); 
-    //const bool placePV                     = geomOptions->placePV("crsVeto"); 
-    
+    const bool scintillatorShieldVisible   = geomOptions->isVisible("crsVeto");
+    const bool scintillatorShieldDrawSolid = geomOptions->isSolid("crsVeto");
+    const bool forceAuxEdgeVisible         = geomOptions->forceAuxEdgeVisible("crsVeto");
+    const bool doSurfaceCheck              = geomOptions->doSurfaceCheck("crsVeto");
+    //const bool placePV                     = geomOptions->placePV("crsVeto");
+
     int  verbosityLevel                    = _config.getInt("crs.verbosityLevel",0);
     bool forMARS                           = _config.getBool("crs.forMARS",false);
 
@@ -76,7 +76,7 @@ namespace mu2e
     //loop over all CRV sectors
     std::vector<CRSScintillatorShield> const &shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
     std::vector<CRSScintillatorShield>::const_iterator ishield;
-    for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    for(ishield=shields.begin(); ishield!=shields.end(); ++ishield)
     {
       CRSScintillatorShield const & shield = *ishield;
       std::string const & CRVsectorName = shield.getName();
@@ -166,7 +166,7 @@ namespace mu2e
           }
           motherHalfLengths.push_back(halfLengths);
         }
-      }//dimensions of all layers 
+      }//dimensions of all layers
 
       //construct the mother solid for the CRV sector
       //by combining the solids of each layer using G4UnionSolids
@@ -215,7 +215,7 @@ namespace mu2e
 
         if(l>0)
         {
-          //union of the total mother solid and 
+          //union of the total mother solid and
           //-either the newly created union of the solid of the l-th layer and the overlap solid
           //-or the solid of the last layer
           G4UnionSolid *motherSolidUnion=new G4UnionSolid(Form("%s_%s_%lu","CRSmotherSolidUnion",CRVsectorName.c_str(),l),
@@ -292,11 +292,11 @@ namespace mu2e
                                                                     scintillatorBarSolid->GetName());
 
       // visibility attributes
-      if(!scintillatorShieldVisible) 
+      if(!scintillatorShieldVisible)
       {
         scintillatorBarLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
-      else 
+      else
       {
         G4Colour  orange(.75, .55, .0);
         G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, orange));
@@ -305,7 +305,7 @@ namespace mu2e
         scintillatorBarLogical->SetVisAttributes(visAtt);
       }
 
-      if(verbosityLevel > 1) 
+      if(verbosityLevel > 1)
       {
         G4SDManager::GetSDMpointer()->SetVerboseLevel(verbosityLevel-1);
       }
@@ -322,11 +322,11 @@ namespace mu2e
       G4LogicalVolume* CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial,CMBSolid->GetName());
 
       // visibility attributes
-      if(!scintillatorShieldVisible) 
+      if(!scintillatorShieldVisible)
       {
         CMBLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
-      else 
+      else
       {
         G4Colour  green(.0, .55, .55);
         G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, green));
@@ -339,11 +339,11 @@ namespace mu2e
       /**** construct individual modules of a CRV sector ****/
       /******************************************************/
       //loop over all modules of a CRV sector
-      for(size_t m=0; m<modules.size(); ++m) 
+      for(size_t m=0; m<modules.size(); ++m)
       {
         //loop over all scintillator layers of a modules
         const std::vector<CRSScintillatorLayer> &scintLayers = modules.at(m).getLayers();
-        for(size_t l=0; l<scintLayers.size(); ++l) 
+        for(size_t l=0; l<scintLayers.size(); ++l)
         {
           //mother volumes around each layer of scintillators incl. CMBs (for each individual module)
           const std::vector<double> &scintLayerHalfLengths=scintLayers.at(l).getHalfLengths();
@@ -371,15 +371,15 @@ namespace mu2e
           //loop over individual scintillator bar of each layer
           const std::vector<std::shared_ptr<CRSScintillatorBar> > &bars = scintLayers.at(l).getBars();
           std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator ibar;
-          for(ibar=bars.begin(); ibar!=bars.end(); ++ibar) 
+          for(ibar=bars.begin(); ibar!=bars.end(); ++ibar)
           {
-            const CRSScintillatorBar &bar = **ibar; 
+            const CRSScintillatorBar &bar = **ibar;
 
             //bar.getPosition() returns the bar position in Mu2e coordinates
             //need the position relative to the layer center
-            CLHEP::Hep3Vector barLayerOffset = bar.getPosition() - scintLayerCenterInMu2e; 
-            CLHEP::Hep3Vector CMB0LayerOffset = bar.getCMBPosition(0) - scintLayerCenterInMu2e; 
-            CLHEP::Hep3Vector CMB1LayerOffset = bar.getCMBPosition(1) - scintLayerCenterInMu2e; 
+            CLHEP::Hep3Vector barLayerOffset = bar.getPosition() - scintLayerCenterInMu2e;
+            CLHEP::Hep3Vector CMB0LayerOffset = bar.getCMBPosition(0) - scintLayerCenterInMu2e;
+            CLHEP::Hep3Vector CMB1LayerOffset = bar.getCMBPosition(1) - scintLayerCenterInMu2e;
 
             //place the scintillator bar into the scintillator-layer-mother volume (of a particular module)
             G4VPhysicalVolume* pv = new G4PVPlacement(nullptr,
@@ -400,7 +400,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
             if(bar.hasCMB(0))
             {
               //MARS requires gdml file with unique logical volumes for the CMBs
-              if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB0_")); 
+              if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB0_"));
 
               //place the CMB at the negative bar end into the scintillator-layer-mother volume (of a particular module)
               G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(nullptr,
@@ -419,7 +419,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
             if(bar.hasCMB(1))
             {
               //MARS requires gdml file with unique logical volumes for the CMBs
-              if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB1_")); 
+              if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB1_"));
 
               //place the CMB at the positive bar end into the scintillator-layer-mother volume (of a particular module)
               G4VPhysicalVolume* pvCMB1 = new G4PVPlacement(nullptr,
@@ -441,7 +441,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
         //add absorber sheets between all scintillator layers of a module
         const std::vector<CRSAbsorberLayer> &absorberLayers = modules.at(m).getAbsorberLayers();
         const std::string &absorberNameBase = modules.at(m).name("CRSAbsorber_");
-        for(size_t l=0; l<absorberLayers.size(); ++l) 
+        for(size_t l=0; l<absorberLayers.size(); ++l)
         {
           const std::string absorberName = absorberNameBase+"_"+std::to_string(l);
           const std::vector<double> &absorberLayerHalflengths=absorberLayers[l].getHalfLengths();
@@ -460,11 +460,11 @@ if(!_config.getBool("crs.hideCRVCMBs"))
                                                                  absorberMaterial,
                                                                  absorberName);
 
-          if(!scintillatorShieldVisible) 
+          if(!scintillatorShieldVisible)
           {
             absorberLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
-          else 
+          else
           {
             G4Colour  darkorange  (.45, .25, .0);
             G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
@@ -482,7 +482,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
                                                     false,
                                                     0,
                                                     false);
-          if(doSurfaceCheck) 
+          if(doSurfaceCheck)
           {
             checkForOverlaps( pv, _config, verbosityLevel>0);
           }
@@ -492,7 +492,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
         //add aluminum sheets (strong back and thin cover sheet) of a module
         const std::vector<CRSAluminumSheet> &aluminumSheets = modules.at(m).getAluminumSheets();
         const std::string &aluminumSheetNameBase = modules.at(m).name("CRSAluminumSheet_");
-        for(size_t l=0; l<aluminumSheets.size(); ++l) 
+        for(size_t l=0; l<aluminumSheets.size(); ++l)
         {
           const std::string aluminumSheetName = aluminumSheetNameBase+"_"+std::to_string(l);
           const std::vector<double> &aluminumSheetHalflengths=aluminumSheets[l].getHalfLengths();
@@ -503,7 +503,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
             case 0: aluminumSheetMotherOffset-=motherCenterInMu2e.front(); break;
             case 1: aluminumSheetMotherOffset-=motherCenterInMu2e.back(); break;
             default: std::logic_error("found more than 2 aluminum sheets (strong back, thin cover sheet).");
-          } 
+          }
 
           const std::string &aluminumSheetMaterialName = shield.getAluminumSheetMaterialName();
           G4Material* aluminumSheetMaterial = findMaterialOrThrow(aluminumSheetMaterialName);
@@ -517,11 +517,11 @@ if(!_config.getBool("crs.hideCRVCMBs"))
                                                                       aluminumSheetMaterial,
                                                                       aluminumSheetName);
 
-          if(!scintillatorShieldVisible) 
+          if(!scintillatorShieldVisible)
           {
             aluminumSheetLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
-          else 
+          else
           {
             G4Colour  darkorange  (.45, .25, .0);
             G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
@@ -530,7 +530,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
             aluminumSheetLogical->SetVisAttributes(visAtt);
           }
 
-          //place the strong back and the thin cover sheet 
+          //place the strong back and the thin cover sheet
           //into into one of the layer-mother volumes (that spans the entire sector)
           G4VPhysicalVolume* pv = new G4PVPlacement(nullptr,
                                                     aluminumSheetMotherOffset,
@@ -540,7 +540,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
                                                     false,
                                                     0,
                                                     false);
-          if(doSurfaceCheck) 
+          if(doSurfaceCheck)
           {
             checkForOverlaps( pv, _config, verbosityLevel>0);
           }
@@ -550,7 +550,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
         //add all FEBs of a module (between none and several FEBs per module)
         const std::vector<CRSFEB> &FEBs = modules.at(m).getFEBs();
         const std::string &FEBNameBase = modules.at(m).name("CRSFEB_");
-        for(unsigned int FEBNumber=0; FEBNumber<FEBs.size(); FEBNumber++) 
+        for(unsigned int FEBNumber=0; FEBNumber<FEBs.size(); FEBNumber++)
         {
           const std::string FEBName = FEBNameBase+"_"+std::to_string(FEBNumber);
           const std::vector<double> &FEBHalflengths=FEBs[FEBNumber].getHalfLengths();
@@ -569,11 +569,11 @@ if(!_config.getBool("crs.hideCRVCMBs"))
                                                             FEBMaterial,
                                                             FEBName);
 
-          if(!scintillatorShieldVisible) 
+          if(!scintillatorShieldVisible)
           {
             FEBLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
           }
-          else 
+          else
           {
             G4Colour  darkorange  (.45, .25, .0);
             G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
@@ -590,7 +590,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
                                                     false,
                                                     0,
                                                     false);
-          if(doSurfaceCheck) 
+          if(doSurfaceCheck)
           {
             checkForOverlaps( pv, _config, verbosityLevel>0);
           }
@@ -605,7 +605,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
     /**********************************/
     std::vector<CRSSupportStructure> const &supportStructures = CosmicRayShieldGeomHandle->getSupportStructures();
     std::vector<CRSSupportStructure>::const_iterator iSupportStructure;
-    for(iSupportStructure=supportStructures.begin(); iSupportStructure!=supportStructures.end(); ++iSupportStructure) 
+    for(iSupportStructure=supportStructures.begin(); iSupportStructure!=supportStructures.end(); ++iSupportStructure)
     {
       CRSSupportStructure const & supportStructure = *iSupportStructure;
       std::string const & name = supportStructure.getName();
@@ -624,11 +624,11 @@ if(!_config.getBool("crs.hideCRVCMBs"))
 
       G4LogicalVolume* supportStructureLogical = new G4LogicalVolume(supportStructureSolid, material, name);
 
-      if(!scintillatorShieldVisible) 
+      if(!scintillatorShieldVisible)
       {
         supportStructureLogical->SetVisAttributes(G4VisAttributes::GetInvisible());
       }
-      else 
+      else
       {
         G4Colour  darkorange  (.45, .25, .0);
         G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
@@ -645,7 +645,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
                                                 false,
                                                 0,
                                                 false);
-      if(doSurfaceCheck) 
+      if(doSurfaceCheck)
       {
         checkForOverlaps( pv, _config, verbosityLevel>0);
       }

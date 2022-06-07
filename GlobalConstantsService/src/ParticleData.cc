@@ -14,8 +14,8 @@ namespace mu2e {
     return output;
   }
 
-  void ParticleData::print(std::ostream& ostr) const { 
-    ostr << *this; 
+  void ParticleData::print(std::ostream& ostr) const {
+    ostr << *this;
   }
 
 } // namespace mu2e

@@ -1,7 +1,7 @@
 BEGIN_PROLOG
 Mu2eKinKal : {
-# general configuration
-#
+  # general configuration
+  #
   KKMAT: {
     elements  : "Offline/TrackerConditions/data/ElementsList.data"
     isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
@@ -51,9 +51,9 @@ Mu2eKinKal : {
       [ 2.0 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
-       [ 30.0, 1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ]
+      [ 30.0, 1e-5, 10.0, 5.0  ],
+      [ 30.0,  1e-5, 10.0, 5.0  ],
+      [ 30.0,  1e-5, 10.0, 5.0  ]
     ]
   }
 
@@ -74,9 +74,9 @@ Mu2eKinKal : {
       [ 1.0 ],
       [ 0.0 ]]
     KKStrawHitUpdaterSettings : [
-       [ 30.0, 1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ],
-       [ 30.0,  1e-5, 10.0, 5.0  ]
+      [ 30.0, 1e-5, 10.0, 5.0  ],
+      [ 30.0,  1e-5, 10.0, 5.0  ],
+      [ 30.0,  1e-5, 10.0, 5.0  ]
     ]
   }
 
@@ -95,7 +95,7 @@ Mu2eKinKal : {
       [ 0.0 ]
     ]
     KKStrawHitUpdaterSettings : [
-       [ 30.0, 1e-5, 10.0, 5.0  ]
+      [ 30.0, 1e-5, 10.0, 5.0  ]
     ]
   }
 
@@ -117,10 +117,10 @@ Mu2eKinKal : {
       [ 0.0 ]
     ]
     KKStrawHitUpdaterSettings : [
-       [ 30.0,  1e-5, 10.0, 5.0  ],
-       [ 6.0, 1e-5, 0.5, 5.0 ],
-       [ 6.0, 1e-5, 0.5, 5.0 ],
-       [ 6.0, 1e-5, 0.5, 5.0 ]
+      [ 30.0,  1e-5, 10.0, 5.0  ],
+      [ 6.0, 1e-5, 0.5, 5.0 ],
+      [ 6.0, 1e-5, 0.5, 5.0 ],
+      [ 6.0, 1e-5, 0.5, 5.0 ]
     ]
   }
 

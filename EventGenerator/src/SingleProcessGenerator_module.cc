@@ -19,7 +19,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
@@ -45,8 +44,7 @@ namespace mu2e {
         Name("stoppingTargetMaterial"),
           Comment("Material determines muon life time, capture fraction, and particle spectra.\n"
                   "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),
-          "Al" };
-      //  fhicl::Atom<int> muoncharge{Name("muoncharge"), Comment("charge = -1: mu-; charge = +1: mu+.\n" ),-1};  
+          "Al" };  
       fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle"),11};
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("spectrum (and variables) to be generated")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
@@ -63,13 +61,12 @@ namespace mu2e {
     double muonLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
     unsigned verbosity_; 
-    //   int muoncharge_;
     int pdgId_;
 
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-  
+
     std::unique_ptr<ParticleGeneratorTool> Generator_;
 
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
@@ -97,16 +94,6 @@ namespace mu2e {
     Generator_ = art::make_tool<ParticleGeneratorTool>(pset);
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
 
-   art::ServiceHandle<art::TFileService> tfs;
-   _Ntup = tfs->make<TTree>("GenAna","GenAna");
-   _Ntup -> Branch("genId",&_genPdgId,"genId/I");
-  _Ntup -> Branch("genCrCode",&_genCrCode,"genCrCode/I");
- _Ntup -> Branch("genPz",&_genPz,"genPz/F");
- _Ntup -> Branch("genPosZ",&_genPosZ,"genPosZ/F");
- _Ntup -> Branch("genPosR",&_genPosR,"genPosR/F");
- _Ntup -> Branch("genTime",&_genTime,"genTime/F");
-  _Ntup -> Branch("genP",&_genP,"genP/F");
-    
   }
 
   //================================================================
@@ -114,8 +101,6 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    int eventid=event.id().event();  
-    int count_particle=0;
     auto mus_temp = stoppedMuMinusList(simh); //default, negative muon stops
  
     if (pdgId_==-11){
@@ -126,13 +111,8 @@ namespace mu2e {
     const auto mus=mus_temp;
 
      for(const auto& mustop: mus) {
-    //  count_particle++;
-    
-      const double time = mus->endGlobalTime() + randExp_.fire(muonLifeTime_);
-
+      const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       addParticles(output.get(), mustop, time, Generator_.get());
-      //  printf("the event number is %d\n",eventid);
-      //   if(count_particle>1)printf("number of particle is %d\t in event %d\n",count_particle,eventid);
       }
 
     event.put(std::move(output));

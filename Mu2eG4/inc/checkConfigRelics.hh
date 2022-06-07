@@ -14,11 +14,11 @@
 
 
 namespace mu2e {
-    
+
     class SimpleConfig;
-    
+
     void checkConfigRelics(const SimpleConfig& config);
-    
+
 }// end namespace mu2e
 
 

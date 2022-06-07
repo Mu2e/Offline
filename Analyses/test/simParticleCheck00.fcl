@@ -4,7 +4,7 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# this file can be used to test 
+# this file can be used to test
 # e.g., if a geant4 version has a "particle timing problem"
 #
 # to perform the test do:
@@ -13,8 +13,8 @@
 # bool g4.printPhysicsProcessSummary = true;
 # and use a full "hadronic" physics list e.g. ShieldingM or Shielding
 # physics.producers.g4run.physics.physicsListName : "ShieldingM"
-# 
-# in e.g.: g4test_03.fcl 
+#
+# in e.g.: g4test_03.fcl
 # use ejectedProtonGun
 # physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/ejectedProtonGun.txt"
 #

@@ -19,7 +19,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -96,7 +95,7 @@ namespace mu2e {
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;
-    TH1F* _hy;				// splitting function
+    TH1F* _hy;                                // splitting function
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -307,14 +306,14 @@ namespace mu2e {
                             pos,
                             mome,
                             //fakeElectron,
-                            //			    800. );
+                            //                            800. );
                             stop.t );
       output->emplace_back( PDGCode::e_plus,
                             GenId::InternalRMC,
                             pos,
                             momp,
                             //fakePositron,
-                            //			    800.);
+                            //                            800.);
                             stop.t );
 
       event.put(std::move(output));

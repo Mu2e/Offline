@@ -21,12 +21,12 @@ physics : {
     readTrackSPM : {
       module_type : ReadTrackSPM
       productTags : [ "deuteronMixer:tracker",
-      		      "ootMixer:tracker",
-		      "flashMixer:tracker",
-		      "photonMixer:tracker",
-		      "neutronMixer:tracker",
-		      "dioMixer:tracker",
-		      "protonMixer:tracker" ]
+                            "ootMixer:tracker",
+                      "flashMixer:tracker",
+                      "photonMixer:tracker",
+                      "neutronMixer:tracker",
+                      "dioMixer:tracker",
+                      "protonMixer:tracker" ]
     }
   }
 

@@ -2,7 +2,7 @@
 #define TrackerConditions_StrawTension_hh
 //
 // Class to specify the initial wire and straw tensions.  Actual tensions are modeled as an exponential decay
-// 
+//
 // Original author David Brown (7/2020)
 //
 // Mu2e includes

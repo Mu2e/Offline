@@ -24,7 +24,7 @@ namespace mu2e {
     std::vector<art::Ptr<CosmicTrackSeed>> const&  cosmics()          const { return _cosmics; }
 
     //data members
-    std::vector<art::Ptr<CaloCluster>>     _caloClusters; 
+    std::vector<art::Ptr<CaloCluster>>     _caloClusters;
     std::vector<art::Ptr<KalSeed>>         _tracks; // associated track
     std::vector<art::Ptr<HelixSeed>>       _helixes; // associated helix
     std::vector<art::Ptr<TimeCluster>>     _hitClusters; // associated time cluster
@@ -32,6 +32,6 @@ namespace mu2e {
     std::vector<art::Ptr<CosmicTrackSeed>> _cosmics; // associated CosmicTrackSeed
   };
   typedef std::vector<mu2e::TriggerInfo> TriggerInfoCollection;
-} 
+}
 
 #endif

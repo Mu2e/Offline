@@ -20,22 +20,22 @@ namespace mu2e {
   class McUtilsToolBase;
 
   class TrkPrintUtils {
-  protected:
-    int                              _mcTruth;
-    std::unique_ptr<McUtilsToolBase> _mcUtils;
-    std::string                      _strawHitCollTag;
-    
-  public:
-    TrkPrintUtils(const fhicl::ParameterSet& PSet);
-    ~TrkPrintUtils();
-//-----------------------------------------------------------------------------
-// Option = ""              : print banner + track parameters (but not hits)
-//        includes "banner" : print banner
-//        includes "data"   : print track parameters
-//        includes "hits    : print hits
-// if Message is not empty, it is also printed
-//-----------------------------------------------------------------------------
-    void       printTrack(const art::Event* event, const KalRep* Krep, const char* Option = "", const char* Message = "");
+    protected:
+      int                              _mcTruth;
+      std::unique_ptr<McUtilsToolBase> _mcUtils;
+      std::string                      _strawHitCollTag;
+
+    public:
+      TrkPrintUtils(const fhicl::ParameterSet& PSet);
+      ~TrkPrintUtils();
+      //-----------------------------------------------------------------------------
+      // Option = ""              : print banner + track parameters (but not hits)
+      //        includes "banner" : print banner
+      //        includes "data"   : print track parameters
+      //        includes "hits    : print hits
+      // if Message is not empty, it is also printed
+      //-----------------------------------------------------------------------------
+      void       printTrack(const art::Event* event, const KalRep* Krep, const char* Option = "", const char* Message = "");
   };
 }
 

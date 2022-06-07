@@ -8,7 +8,7 @@
 #include <vector>
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
-#include "Offline/RecoDataProducts/inc/CosmicTrack.hh" 
+#include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // beam
@@ -48,7 +48,7 @@
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummary.hh"
-#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh" 
+#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitPID.hh"
@@ -87,8 +87,10 @@
 // trigger
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 
-// POT / stopped muons monitoring bvitaly May 2021
-#include "Offline/RecoDataProducts/inc/IntensityInfo.hh"
+// POT / stopped muons monitoring
+#include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 
 // general reco
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"

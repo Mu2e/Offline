@@ -50,12 +50,12 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # test module for Kalman fit: the 
-    
+    # test module for Kalman fit: the
+
 
     TrkPatRec : @local::TrkPatRec
- 
- 
+
+
       TrkExtrapol :
     {
         module_type     : TrkExtrapol
@@ -63,22 +63,22 @@ physics :
       diagLevel         : 3
       maxNumberStoresPoints : 1
      # MC truth finder, analyzer configuration
-        KalFitMC : 
+        KalFitMC :
         {
-        }        
- 
+        }
+
     }
    }
     analyzers : {
-    
+
     eventdisplay:
     {
       module_type     : EventDisplay
       g4ModuleLabel   : "g4run"
     }
-    
+
   }
-  
+
   p1 : [generate , g4run, makeSH, TrkPatRec, TrkExtrapol ]
   e1 : [eventdisplay,outfile]
 
@@ -90,7 +90,7 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "data_extrapol.root"
@@ -98,7 +98,7 @@ outputs:
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
                    # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }
 
@@ -109,7 +109,7 @@ physics.producers.generate.inputfile  : "Offline/CaloCluster/test/genconfig_gian
 services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 2
-source.firstRun                            :  1 
+source.firstRun                            :  1
 services.SeedService.baseSeed         :  1
 services.SeedService.maxUniqueEngines :  20
 physics.producers.KalFitTest.KalFit.RemoveFailedFits : false

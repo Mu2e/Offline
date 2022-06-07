@@ -11,7 +11,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -41,8 +40,8 @@ namespace mu2e
                                                          const std::string &classNameToCheck,
                                                          const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                                          bool &showEvent);
-    void checkMinimumHitsKalman(const art::Event &event, 
-                                const mu2e_eventdisplay::EventDisplayFrame *_frame, 
+    void checkMinimumHitsKalman(const art::Event &event,
+                                const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                 bool &showEvent);
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
@@ -113,7 +112,7 @@ namespace mu2e
     if(temp_pad) temp_pad->cd(); else gPad=nullptr;
     if(temp_dir) temp_dir->cd(); else gDirectory=nullptr;
 
-    if(_frame->isClosed()) 
+    if(_frame->isClosed())
     {
       throw cet::exception("CONTROL")<<"QUIT\n";
     }
@@ -154,7 +153,7 @@ namespace mu2e
         {
           KalRep const* particle = kalmantrackCollection->get(i);
           TrkHitVector const& hots = particle->hitVector();
-	  numberHits+=hots.size();
+          numberHits+=hots.size();
         }
         if(numberHits < _frame->getMinimumHits())
         {

@@ -16,11 +16,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
@@ -75,7 +73,7 @@ namespace mu2e
       double                        _adjacentPulseTimeDifference;
       double                        _maxTimeDifference;
       int                           _coincidenceLayers;
-      CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, double timePulseStart, double timePulseEnd, float PEs, 
+      CrvHit(const art::Ptr<CrvRecoPulse> &crvRecoPulse, double time, double timePulseStart, double timePulseEnd, float PEs,
              int layer, int counter, double x, double y, int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference,
              int coincidenceLayers):
              _crvRecoPulse(crvRecoPulse), _time(time), _timePulseStart(timePulseStart), _timePulseEnd(timePulseEnd), _PEs(PEs),
@@ -455,7 +453,7 @@ if(crvCoincidenceCollection->size()==0)
 
   } // end produce
 
-  void CrvCoincidenceCheck::checkCombination(const std::vector<std::vector<CrvHit>::const_iterator> &layerIterators, 
+  void CrvCoincidenceCheck::checkCombination(const std::vector<std::vector<CrvHit>::const_iterator> &layerIterators,
                                              int sectorType, std::unique_ptr<CrvCoincidenceCollection> &crvCoincidenceCollection)
   {
     size_t n=layerIterators.size();

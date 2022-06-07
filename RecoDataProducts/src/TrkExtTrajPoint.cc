@@ -33,8 +33,8 @@ namespace mu2e {
     _cov =  HepMatrix(6,6,0);
   }
 
-  TrkExtTrajPoint::~TrkExtTrajPoint() 
-  { 
+  TrkExtTrajPoint::~TrkExtTrajPoint()
+  {
   }
 
   TrkExtTrajPoint::TrkExtTrajPoint(int id, Hep3Vector & x, Hep3Vector & p, HepMatrix & cov, int volid, double fl, double ft) :

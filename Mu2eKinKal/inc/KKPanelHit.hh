@@ -24,7 +24,7 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using SHCOLL = std::array<shared_ptr<KKSTRAWHIT>,MAXNHIT>;
       using PHState = std::array<WireHitState,MAXNHIT>;
-// the constraint this hit implies WRT the current reference, expressed as a weight
+      // the constraint this hit implies WRT the current reference, expressed as a weight
       Weights weight() const override;
       // hits are active if any component is active
       bool active() const override { return false; } // this hit never contributes to the fit
@@ -49,8 +49,8 @@ namespace mu2e {
     unsigned nactive(0);
     for(auto const& hit : hits_){
       if(hit && hit->active()){
-  ++nactive;
-  time += hit->time();
+        ++nactive;
+        time += hit->time();
       }
     }
     if(nactive > 0)
@@ -61,7 +61,7 @@ namespace mu2e {
   }
 
   template<class KTRAJ> double KKPanelHit<KTRAJ>::updateState(PKTRAJ const& pktraj, MetaIterConfig const& config)override {
-// find the specific configuration for this meta-iteration
+    // find the specific configuration for this meta-iteration
 
   }
 
@@ -69,18 +69,18 @@ namespace mu2e {
     unsigned nhits(0), nactive(0);
     for(auto const& hit : hits_){
       if(hit){
-  ++nhits;
-  if(hit->active()){
-    ++nactive;
-  }
+        ++nhits;
+        if(hit->active()){
+          ++nactive;
+        }
       }
     }
     ost << " KKPanelHit with " << nactive << " active hits among " << nhits << " total" << std::endl;
     if(detail > 0){
       for(size_t ihit=0; ihit < MAXNHIT; ++ihit){
-  if(hits_[ihit]){
-    ost << pstate_[ihit] << std::endl;
-  }
+        if(hits_[ihit]){
+          ost << pstate_[ihit] << std::endl;
+        }
       }
     }
   }

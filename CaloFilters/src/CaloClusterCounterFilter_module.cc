@@ -22,7 +22,6 @@
 
 // #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileDirectory.h"
@@ -53,19 +52,19 @@ namespace mu2e {
 
 
   class CaloClusterCounter : public art::EDFilter {
-     
+
   public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
       fhicl::Atom<int> diag{ Name("diagLevel"),
-	  Comment("Diagnostic Level"), 0};
+          Comment("Diagnostic Level"), 0};
       fhicl::Atom<art::InputTag> CCTag{ Name("CaloClusterModuleLabel"),
-	  Comment("CaloClusterModuleLabel producer")};
+          Comment("CaloClusterModuleLabel producer")};
       fhicl::Atom<int> minNClE{ Name("MinClusterEnergy"),
-	  Comment("Minimum energy deposit in a calo cluster")};
+          Comment("Minimum energy deposit in a calo cluster")};
       fhicl::Atom<int> minNCl{ Name("MinNCl"),
-	  Comment("Minimum number of calo cluster")};
+          Comment("Minimum number of calo cluster")};
     };
 
     virtual ~CaloClusterCounter() { }
@@ -79,29 +78,29 @@ namespace mu2e {
     explicit CaloClusterCounter(const Parameters& conf);
 
   private:
-       
+
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;
     art::InputTag           _clTag;
     double                  _minClEnergy;
     int                     _minNCl;
-    
+
   };
 
 
   CaloClusterCounter::CaloClusterCounter(const Parameters& config):
     art::EDFilter{config},
-    _diagLevel                   (config().diag()), 
-    _nProcess                    (0),		     
-    _nPass                       (0),		     
+    _diagLevel                   (config().diag()),
+    _nProcess                    (0),
+    _nPass                       (0),
     _clTag                       (config().CCTag()),
     _minClEnergy                 (config().minNClE()),
     _minNCl                      (config().minNCl()){
-      
+
       produces<TriggerInfo>();
     }
-  
+
   void CaloClusterCounter::beginJob(){ }
 
   void CaloClusterCounter::endJob(){}
@@ -112,7 +111,7 @@ namespace mu2e {
     }
     return true;
   }
-  
+
   //--------------------------------------------------------------------------------
   // Follow the body of the Filter logic
   //--------------------------------------------------------------------------------
@@ -120,7 +119,7 @@ namespace mu2e {
 
     ++_nProcess;
     if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloClusterCounter =  "<<_nProcess  <<std::endl;
-   
+
     unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     bool   retval(false);
 
@@ -137,13 +136,13 @@ namespace mu2e {
       if ( clEnergy < _minClEnergy)                       continue;
       ++nClusterAboveThreshold;
     }
-      
-    if (nClusterAboveThreshold>_minNCl) retval = true;  
+
+    if (nClusterAboveThreshold>_minNCl) retval = true;
 
     event.put(std::move(triginfo));
     return retval;
   }
- 
+
 }  // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::CaloClusterCounter);
