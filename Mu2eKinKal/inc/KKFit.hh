@@ -4,6 +4,7 @@
 // helper class for constructing KinKal Fits using Mu2e data
 //
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitGroup.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 //#include "Mu2eKinKal/inc/KKPanelHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -59,9 +60,10 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
-      using KKSTRAWHITSET = KKStrawHitSet<KTRAJ>;
-      using KKSTRAWHITSETPTR = std::shared_ptr<KKSTRAWHITSET>;
-      using KKSTRAWHITSETCOL = std::vector<KKSTRAWHITSETPTR>;
+      using KKSTRAWHITGROUP = KKStrawHitGroup<KTRAJ>;
+      using KKSTRAWHITGROUPPTR = std::shared_ptr<KKSTRAWHITGROUP>;
+      using KKSTRAWHITGROUPCOL = std::vector<KKSTRAWHITGROUPPTR>;
+      using KKSTRAWHITGROUPER = KKStrawHitGrouper<KTRAJ>;
       using KKSTRAWXING = KKStrawXing<KTRAJ>;
       using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
       using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
@@ -94,6 +96,7 @@ namespace mu2e {
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
       bool addMaterial() const { return addmat_; }
+      auto const& strawHitGrouper() const { return shgrouper_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
        void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
@@ -103,7 +106,8 @@ namespace mu2e {
      PDGCode::type tpart_;
       TrkFitDirection tdir_;
       float nullvscale_;
-      bool addmat_, usecalo_, strawhitset_; // flags
+      bool addmat_, usecalo_; // flags
+      KKSTRAWHITGROUPER shgrouper_; // functor to group KKStrawHits
       // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions FIXME!
       double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
@@ -114,7 +118,6 @@ namespace mu2e {
       // straw hit creation and processing
       double tprec_; // TPOCA calculation nominal precision
       StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
-      StrawIdMask setlevel_; // level to group straw hits into sets in pat-rec
       // parameters controlling adding hits
       float maxStrawHitDoca_, maxStrawHitDt_, maxStrawHitChi_, maxStrawDoca_;
       int sbuff_; // maximum distance from the track a strawhit can be to consider it for adding.
@@ -132,6 +135,7 @@ namespace mu2e {
     nullvscale_(fitconfig.nullHitVarianceScale()),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
+    shgrouper_(StrawIdMask(fitconfig.strawHitGroupLevel()),fitconfig.strawHitGroupDeltaT()),
     caloDt_(fitconfig.caloDt()),
     caloPosRes_(fitconfig.caloPosRes()),
     caloPropSpeed_(fitconfig.caloPropSpeed()),
@@ -148,8 +152,7 @@ namespace mu2e {
     sbuff_(fitconfig.strawBuffer()),
     printLevel_(fitconfig.printLevel()),
     needstrackerinfo_(true)
-  {
-  }
+  {}
 
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KKBField const& kkbf, KKStrawMaterial const& smat,
       PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
@@ -229,7 +232,7 @@ namespace mu2e {
         << addcalohits.size() << " CaloHits and "
         << addstrawxings.size() << " Straw Xings" << std::endl;
     }
-    kktrk.extendTrack(exconfig,addstrawhits,addcalohits,addstrawxings);
+    kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
