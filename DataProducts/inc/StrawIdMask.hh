@@ -12,13 +12,11 @@ namespace mu2e {
     // levels of StrawId to mask.  Note that 'straw' and 'panel' refer to ALL straws and panels with that value (ie
     // straw 18 of every panel in the detector.  uniquestraw and uniquepanel refer to individual straws and panels
     public:
-    enum Level{tracker,plane,panel,straw,uniquestraw,uniquepanel};
+    enum Level{none=-1,tracker,plane,panel,straw,uniquestraw,uniquepanel};
     // compute the mask associated with a given level
     static uint16_t levelMask(Level fval);
-    // default constructor matches nothing
-    StrawIdMask() : _level(tracker), _mask(0) {}  // default: will match Everything
     // specify which levels to compare on construction.
-    StrawIdMask(Level lev) : _level(lev), _mask(levelMask(_level)) {}
+    StrawIdMask(Level lev=none) : _level(lev), _mask(levelMask(_level)) {}
     // identity is obvious
     bool operator ==(StrawIdMask const& other ) const { return other._mask == _mask; } // must match exactly to be equal
     bool operator < (StrawIdMask const& other ) const { return other._level < _level; } // needed for sorting, no physical significance
@@ -31,9 +29,9 @@ namespace mu2e {
     // compare StrawIds given this objects mask.  The 2 match if their masked levels are the same.
     // This is the main function of this class
     bool equal (StrawId const& sid1, StrawId const& sid2) const {
-      return (sid1.asUint16() & _mask) == (sid2.asUint16() & _mask); }
+      return (level() != none) && (sid1.asUint16() & _mask) == (sid2.asUint16() & _mask); }
     bool notequal (StrawId const& sid1, StrawId const& sid2) const {
-      return (! equal(sid1,sid2)); }
+      return (level() == none) || (! equal(sid1,sid2)); }
     // return a truncated StrawID.  This is returned by value
     StrawId maskStrawId(StrawId const& sid) const {
       return StrawId(sid.asUint16() & _mask); }

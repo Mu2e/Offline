@@ -18,8 +18,8 @@ Mu2eKinKal : {
     NullHitVarianceScale : 1.0
     UseCaloCluster : true
     AddMaterial : true
-    StrawHitSetDeltaT : 1.0
-    StrawHitSetLevel : "panel"
+    StrawHitGroupDeltaT : 1.0 # ns
+    StrawHitGroupLevel : "panel"
     CaloTrackerTimeOffset : -1.35 #ns
     CaloPositionResolution : 15.0 #mm
     CaloPropagationSpeed : 200.0 #mm/ns

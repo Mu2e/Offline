@@ -1,5 +1,5 @@
 //
-// KinKal fit module using the LoopHelix parameterset
+// KinKal fit module using an input helix seed.
 //
 // Original author D. Brown (LBNL) 11/18/20
 //
@@ -48,6 +48,7 @@
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitGroup.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
@@ -73,6 +74,9 @@ namespace mu2e {
   using KKSTRAWXING = KKStrawXing<KTRAJ>;
   using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
   using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
+  using KKSTRAWHITGROUP = KKStrawHitGroup<KTRAJ>;
+  using KKSTRAWHITGROUPPTR = std::shared_ptr<KKSTRAWHITGROUP>;
+  using KKSTRAWHITGROUPCOL = std::vector<KKSTRAWHITGROUPPTR>;
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
@@ -243,14 +247,14 @@ namespace mu2e {
           strawhits.reserve(hhits.size());
           strawxings.reserve(hhits.size());
           kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
-          // optionally (and if present) add the CaloCluster hit
-          // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it
+          // optionally (and if present) add the CaloCluster hi
+          // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
           KKCALOHITCOL calohits;
           if (kkfit_.useCalo() && hseed.caloCluster().isNonnull())kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
           // extend the seed range given the hits and xings
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),strawhits,calohits,strawxings);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitGrouper(),strawhits,strawxings,calohits);
           // Check the fit
           auto goodfit = goodFit(*kktrk);
           if(goodfit && extend_) {
