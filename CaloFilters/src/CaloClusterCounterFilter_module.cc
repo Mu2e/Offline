@@ -36,12 +36,6 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "TDirectory.h"
-#include "TFile.h"
-#include "TH1D.h"
-#include "TH1F.h"
-#include "TH2F.h"
-
 #include <cmath>
 #include <string>
 #include <vector>
