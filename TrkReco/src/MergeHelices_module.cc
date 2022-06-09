@@ -26,47 +26,47 @@
 
 namespace mu2e {
   class MergeHelices : public art::EDProducer {
-  public:
-    using Name=fhicl::Name;
-    using Comment=fhicl::Comment;
-    struct Config {
-      fhicl::Atom<int> debug{ Name("debugLevel"),
-	      Comment("Debug Level"), 0};
-      fhicl::Atom<bool> selectbest{ Name("SelectBest"),
-	      Comment("Select best overlapping helices for output"), true};
-      fhicl::Atom<bool> usecalo{ Name("UseCalo"),
-	      Comment("Use CaloCluster info in comparison"), true};
-      fhicl::Atom<unsigned> minnover{ Name("MinNHitOverlap"),
-	      Comment("Minimum number of common hits to consider helices to be 'the same'"), 10};
-      fhicl::Atom<float> minoverfrac{ Name("MinHitOverlapFraction"),
-	      Comment("Minimum fraction of common hits to consider helices to be 'the same'"), 0.5};
-      fhicl::Sequence<std::string> BadHitFlags { Name("BadHitFlags"),
-	      Comment("HelixHit flag bits to exclude from counting"),std::vector<std::string>{"Outlier"}}; 
-      fhicl::Sequence<std::string> HelixFinders { Name("HelixFinders"),
-	      Comment("HelixSeed producers to merge")};
+    public:
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      struct Config {
+        fhicl::Atom<int> debug{ Name("debugLevel"),
+	  Comment("Debug Level"), 0};
+        fhicl::Atom<bool> selectbest{ Name("SelectBest"),
+	  Comment("Select best overlapping helices for output"), true};
+        fhicl::Atom<bool> usecalo{ Name("UseCalo"),
+	  Comment("Use CaloCluster info in comparison"), true};
+        fhicl::Atom<unsigned> minnover{ Name("MinNHitOverlap"),
+	  Comment("Minimum number of common hits to consider helices to be 'the same'"), 10};
+        fhicl::Atom<float> minoverfrac{ Name("MinHitOverlapFraction"),
+	  Comment("Minimum fraction of common hits to consider helices to be 'the same'"), 0.5};
+        fhicl::Sequence<std::string> BadHitFlags { Name("BadHitFlags"),
+	  Comment("HelixHit flag bits to exclude from counting"),std::vector<std::string>{"Outlier"}}; 
+        fhicl::Sequence<std::string> HelixFinders { Name("HelixFinders"),
+	  Comment("HelixSeed producers to merge")};
+      };
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit MergeHelices(const Parameters& conf);
+      void produce(art::Event& evt) override;
+    private:
+      enum HelixComp{unique=-1,first=0,second=1};
+      int _debug;
+      unsigned _minnover;
+      float _minoverfrac;
+      bool _selectbest, _usecalo;
+      std::vector<std::string> _hfs;
+      StrawHitFlag _badhit;
+      // helper functions
+      typedef std::vector<StrawHitIndex> SHIV;
+      HelixComp compareHelices(art::Event const& evt,
+          HelixSeed const& h1, HelixSeed const& h2);
+      void countHits(art::Event const& evt,
+	  HelixSeed const& h1, HelixSeed const& h2,
+	  unsigned& nh1, unsigned& nh2, unsigned& nover);
+      unsigned countOverlaps(SHIV const& s1, SHIV const& s2);
+      void findchisq(art::Event const& evt,
+          HelixSeed const& h2, float& chixy, float& chizphi);
     };
-    using Parameters = art::EDProducer::Table<Config>;
-    explicit MergeHelices(const Parameters& conf);
-    void produce(art::Event& evt) override;
-  private:
-    enum HelixComp{unique=-1,first=0,second=1};
-    int _debug;
-    unsigned _minnover;
-    float _minoverfrac;
-    bool _selectbest, _usecalo;
-    std::vector<std::string> _hfs;
-    StrawHitFlag _badhit;
-    // helper functions
-    typedef std::vector<StrawHitIndex> SHIV;
-    HelixComp compareHelices(art::Event const& evt,
-	      HelixSeed const& h1, HelixSeed const& h2);
-    void countHits(art::Event const& evt,
-	      HelixSeed const& h1, HelixSeed const& h2,
-	      unsigned& nh1, unsigned& nh2, unsigned& nover);
-    unsigned countOverlaps(SHIV const& s1, SHIV const& s2);
-    void findchisq(art::Event const& evt,
-        HelixSeed const& h2, float& chixy, float& chizphi);
-  };
 
   MergeHelices::MergeHelices(const Parameters& config) : 
     art::EDProducer{config},
@@ -97,18 +97,18 @@ namespace mu2e {
       auto hsch = event.getValidHandle<HelixSeedCollection>(hsct);
       auto const& hsc = *hsch;
       for(auto const&  hs : hsc) {
-	      hseeds.insert(hseeds.end(),&hs);
+	hseeds.insert(hseeds.end(),&hs);
       }
     }
     // now loop over all combinations
     for(auto ihel = hseeds.begin(); ihel != hseeds.end();) {
       auto jhel = ihel; jhel++;
       while( jhel != hseeds.end()){
-	      // compare the helices
+	// compare the helices
        	auto hcomp = compareHelices(event, **ihel, **jhel);
-	     if(hcomp == unique) {
-	       // both helices are unique: simply advance the iterator to keep both
-	       jhel++;
+	if(hcomp == unique) {
+	// both helices are unique: simply advance the iterator to keep both
+	 jhel++;
 	     } else if(hcomp == first) {
 	        // the first helix is 'better'; remove the second
 	        jhel = hseeds.erase(jhel);
@@ -160,19 +160,19 @@ namespace mu2e {
       // overlapping helices: decide which is best
       // Pick the one with a CaloCluster first	    
       if(h1.caloCluster().isNonnull() && h2.caloCluster().isNull())
-	      retval = first;
+	retval = first;
       else if( h2.caloCluster().isNonnull() && h1.caloCluster().isNull())
-	      retval = second;
-	    // then compare active StrawHit counts and if difference of the StrawHit counts greater than deltanh 
+        retval = second;
+	// then compare active StrawHit counts and if difference of the StrawHit counts greater than deltanh 
       else if((nh1 > nh2) && (nh1-nh2) > deltanh)
-	      retval = first;
+	retval = first;
       else if((nh2 > nh1) && (nh2-nh1) > deltanh)
-	      retval = second;
-	    // finally compare chisquared: sum xy and fz 
+	retval = second;
+	// finally compare chisquared: sum xy and fz 
       else if(chih1xy+chih1zphi  < chih2xy+chih2zphi)
-	      retval = first;
+        retval = first;
       else
-	      retval = second;
+	retval = second;
     }
     return retval;
   }
@@ -185,12 +185,12 @@ namespace mu2e {
     for(size_t ihit=0;ihit < h1.hits().size(); ihit++){
       auto const& hh = h1.hits()[ihit];
       if(!hh.flag().hasAnyProperty(_badhit))
-	    h1.hits().fillStrawHitIndices(evt,ihit,shiv1);
+	h1.hits().fillStrawHitIndices(evt,ihit,shiv1);
     }
     for(size_t ihit=0;ihit < h2.hits().size(); ihit++){
       auto const& hh = h2.hits()[ihit];
       if(!hh.flag().hasAnyProperty(_badhit))
-	   h2.hits().fillStrawHitIndices(evt,ihit,shiv2);
+        h2.hits().fillStrawHitIndices(evt,ihit,shiv2);
     }
     nh1 = shiv1.size();
     nh2 = shiv2.size();
@@ -207,20 +207,20 @@ namespace mu2e {
       auto const& hh = h1.hits()[ihit];
       float transErr = 5./sqrt(12.);
       if(!hh.flag().hasAnyProperty(_badhit)){
-	      // Calculate the transverse and z-phi weights of the hits
+        // Calculate the transverse and z-phi weights of the hits
         if(hh.nStrawHits() > 1) transErr *= 1.5;
-	      float transErr2 = transErr*transErr;
-        float dx  = hh.pos().x() - h1.helix().center().x();
-        float dy  = hh.pos().y() - h1.helix().center().y();
+	float transErr2 = transErr*transErr;
+        float dx = hh.pos().x() - h1.helix().center().x();
+        float dy = hh.pos().y() - h1.helix().center().y();
         float dxn = dx*hh._sdir.x()+dy*hh._sdir.y();
         float costh2 = dxn*dxn/(dx*dx+dy*dy);
         float sinth2 = 1-costh2;
-        float e2xy     = hh.wireErr2()*sinth2+transErr2*costh2;
-        float wtxy     = 1./e2xy;
-        float e2zphi     = hh.wireErr2()*costh2+hh.transErr2()*sinth2;        
-        float wtzphi     = h1.helix().radius()*h1.helix().radius()/e2zphi;
-        wtxy      *=1.1;
-        wtzphi  *=0.75;        
+        float e2xy = hh.wireErr2()*sinth2+transErr2*costh2;
+        float wtxy = 1./e2xy;
+        float e2zphi = hh.wireErr2()*costh2+hh.transErr2()*sinth2;        
+        float wtzphi = h1.helix().radius()*h1.helix().radius()/e2zphi;
+        wtxy *=1.1;
+        wtzphi *=0.75;        
         sxy.addPoint(hh.pos().x(),hh.pos().y(),wtxy);
         szphi.addPoint(hh.pos().z(),hh.helixPhi(),wtzphi);
       }
