@@ -52,7 +52,7 @@ namespace mu2e{
       TGeoVolume *tracker = new TGeoVolume("Straw Tracker ",gs, My);
       tracker->SetVisLeaves(kFALSE);
       tracker->SetInvisible();
-      topvol->AddNode(tracker, 1, new TGeoTranslation(trackerCentrMu2e.x()/10, trackerCentrMu2e.y()/10, trackerCentrMu2e.z()/10));
+      topvol->AddNode(tracker, 1);//new TGeoTranslation(trackerCentrMu2e.x()/10, trackerCentrMu2e.y()/10, trackerCentrMu2e.z()/10));
 
       //Stopping Target
       GeomHandle<StoppingTarget> target;

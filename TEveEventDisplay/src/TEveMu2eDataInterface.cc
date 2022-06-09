@@ -218,7 +218,9 @@ namespace mu2e{
 
         CLHEP::Hep3Vector HitPos(hit.pos().x(), hit.pos().y(), hit.pos().z());
         GeomHandle<DetectorSystem> det;
-        CLHEP::Hep3Vector pointInMu2e = det->toMu2e(HitPos);
+        CLHEP::Hep3Vector pointInMu2e0 = (det->toMu2e(HitPos));
+        hep3vectormmTocm(HitPos);
+        CLHEP::Hep3Vector pointInMu2e(pointmmTocm(pointInMu2e0.x()), pointmmTocm(pointInMu2e0.y()), pointmmTocm(pointInMu2e0.z()));
         string energy = to_string(teve_hit3D->GetEnergy());
         string pos3D = "(" + to_string((double)pointInMu2e.x()) + ", " + to_string((double)pointInMu2e.y()) + ", " + to_string((double)pointInMu2e.z()) + ")";
         string pos2D = "(" + to_string((double)hit.pos().x()) + ", " + to_string((double)hit.pos().y()) + ", " + to_string((double)hit.pos().z()) + ")";
