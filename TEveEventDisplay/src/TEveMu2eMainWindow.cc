@@ -7,6 +7,7 @@ namespace fhicl
 }
 
 using namespace mu2e;
+using namespace std;
 
   /*------------Function to make colour scheme:-------------*/
   void setRecursiveColorTransp(TGeoVolume *vol, Int_t color, Int_t transp)

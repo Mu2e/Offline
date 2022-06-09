@@ -85,6 +85,18 @@ CaloFilters : {
         dyminval               : 140   # mm
     }
 
+   caloFastRMCFilter : {
+      module_type:  CaloClusterCounterFilter
+      CaloClusterModuleLabel      : "CaloClusterFast"
+      diagLevel : 0
+      MinNCel : 2
+      MaxNCel : 10
+      MinClusterEnergy : 55.0
+      MaxClusterEnergy : 200.0
+      MinClusterRadius : 490
+      MinNCl : 1
+      DiskID : [0]
+   }
 
     caloFastMVALHCEFilter : {
         module_type            : CaloLikelihood
@@ -278,6 +290,12 @@ CaloFilters : { @table::CaloFilters
             nPrescale         : 1
         }
 
+        caloFastRMCEventPrescale : {
+            module_type:  PrescaleEvent
+            nPrescale : 1
+            useFilteredEvents : true
+        }
+
         caloFastCosmicEventPrescale : {
             module_type : PrescaleEvent
             nPrescale         : 1
@@ -332,6 +350,9 @@ CaloFilters : { @table::CaloFilters
         #dummy filter for cosmic muon calibration
         caloFastCosmicFilter  : { @table::CaloFilters.caloFastCosmicFilter }
 
+        #RMC filter
+        caloFastRMCFilter : { @table::CaloFilters.caloFastRMCFilter }
+
         #select events based on a likelihood discriminator
         caloFastMVALHCEFilter         : { @table::CaloFilters.caloFastMVALHCEFilter        }
 
@@ -350,6 +371,8 @@ CaloFilters : { @table::CaloFilters
                                   CaloTrigger, caloFastMVAMixedCEFilter ]
 
         caloFast_cosmic       : [ caloFastCosmicEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloFastCosmicFilter]
+
+        caloFast_rmc          : [ caloFastRMCEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloFastRMCFilter ]
 
         caloFast_mvaLHCE      : [ caloFastMVALHCEEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco, caloFastMVALHCEFilter]
 
