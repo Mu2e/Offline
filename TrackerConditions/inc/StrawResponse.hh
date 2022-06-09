@@ -34,7 +34,8 @@ namespace mu2e {
           int eBins, double eBinWidth,
           std::vector<double> edep, std::vector<double> halfvpscale,
           double central, std::vector<double> centres,
-          std::vector<double> resslope, int totTBins, double totTBinWidth,
+          std::vector<double> resslope, bool truncateLongitudinal,
+          bool rmsLongErrors, int totTBins, double totTBinWidth,
           int totEBins, double totEBinWidth, std::vector<double> totdtime,
           bool usederr, std::vector<double> derr,
           bool usepderr, std::vector<double> parDriftDocas,
@@ -54,7 +55,8 @@ namespace mu2e {
         _strawPhysics(strawPhysics),
         _eBins(eBins), _eBinWidth(eBinWidth),
         _edep(edep), _halfvpscale(halfvpscale), _central(central), _centres(centres),
-        _resslope(resslope), _totTBins(totTBins), _totTBinWidth(totTBinWidth),
+        _resslope(resslope), _truncateLongitudinal(truncateLongitudinal),
+        _rmsLongErrors(rmsLongErrors), _totTBins(totTBins), _totTBinWidth(totTBinWidth),
         _totEBins(totEBins), _totEBinWidth(totEBinWidth),
         _totdtime(totdtime), _usederr(usederr),
         _derr(derr), _usepderr(usepderr), _parDriftDocas(parDriftDocas),
@@ -159,6 +161,8 @@ namespace mu2e {
       double _central; // max wire distance for central wire region
       std::vector<double> _centres; // wire center resolution by edep
       std::vector<double> _resslope; // resolution slope vs position by edep
+      bool _truncateLongitudinal; // true for standard fit, false for straight line calibrated fit
+      bool _rmsLongErrors; // true for standard fit, false for straight line calibrated fit
       size_t _totTBins;
       double _totTBinWidth;
       size_t _totEBins;

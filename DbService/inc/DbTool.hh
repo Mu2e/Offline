@@ -48,7 +48,11 @@ class DbTool {
   int printTable();
   int printList();
   int printSet();
+  int printCid();
 
+  std::string returnContent(int cid);
+  int findCid(std::string purpose, std::string version, std::string table,
+      int run, int subrun);
   int printCIDLine(int cid, int indent = 0);
   int printIOVLine(int iov, int details = 0, int indent = 0);
   int printGIDLine(int gid, int details = 0, int indent = 0);
