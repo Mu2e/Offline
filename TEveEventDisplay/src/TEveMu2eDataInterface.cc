@@ -459,6 +459,7 @@ namespace mu2e{
 
         CLHEP::Hep3Vector COG(cluster.cog3Vector().x(),cluster.cog3Vector().y(), cluster.cog3Vector().z());
         CLHEP::Hep3Vector pointInMu2e3D(cal.geomUtil().diskToMu2e(cluster.diskID(),COG));
+        hep3vectormmTocm(pointInMu2e3D);
         GeomHandle<DetectorSystem> det;
         CLHEP::Hep3Vector pointInMu2e2D = det->toMu2e(COG);
         hep3vectormmTocm(pointInMu2e2D);
