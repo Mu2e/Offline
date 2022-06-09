@@ -18,8 +18,9 @@ namespace mu2e{
   const CRSScintillatorBarIndex &crvBarIndexn = fCrvRecoPulse_.GetScintillatorBarIndex();
   const CRSScintillatorBar &crvCounter = CRS->getBar(crvBarIndexn);
   CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
+  hep3vectormmTocm(crvCounterPos);
   const CRSScintillatorBarDetail &barDetail = crvCounter.getBarDetail();
-  CLHEP::Hep3Vector sibardetails(barDetail.getHalfLengths()[0],barDetail.getHalfLengths()[1],barDetail.getHalfLengths()[2]);
+  CLHEP::Hep3Vector sibardetails(barDetail.getHalfLengths()[0]/10,barDetail.getHalfLengths()[1]/10,barDetail.getHalfLengths()[2]/10);
   return {sibardetails, crvCounterPos};
   }
 
@@ -34,7 +35,6 @@ namespace mu2e{
     TEveGeoShape *sibar = new TEveGeoShape();
     sibar->SetShape(new TGeoBBox("sibar",sibardetails.x(),sibardetails.y(),sibardetails.z(), sibarposition));
     CrvList3D->AddElement(sibar);
-
 
     this->SetTitle((DataTitle(pstr, n)).c_str());
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
