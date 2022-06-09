@@ -261,7 +261,7 @@ namespace mu2e
       _hitT->Branch("tresidrms",&_hittresidrms,"tresidrms/F");
       _hitT->Branch("dresid",&_hitdresid,"dresid/F");
       _hitT->Branch("dresiderr",&_hitdresiderr,"dresiderr/F");
-      _hitT->Branch("llike",&_hitllike,"llike/F");
+      _hitT->Branch("hitllike",&_hitllike,"hitllike/F");
       _hitT->Branch("tcnhits",&_tcnhits,"tcnhits/I");
       _hitT->Branch("ontrackhits",&_ontrackhits,"ontrackhits/I");
       _hitT->Branch("t0",&_t0,"t0/F");
@@ -408,10 +408,21 @@ namespace mu2e
         double llike = 0;
         Straw const& straw = tracker.getStraw(sh.strawId());
         TwoLinePCA pca(straw.getMidPoint(), straw.getDirection(), minuitpos, minuitdir);
-        double longdist = (pca.point1()-straw.getMidPoint()).dot(straw.getDirection());
-        double longres = srep.wpRes(sh.energyDep()*1000., fabs(longdist));
 
-        if (pca.dca() < 3)
+        double longdist = (pca.point1() - straw.getMidPoint()).dot(straw.getDirection());
+        if (fabs(longdist) > straw.halfLength()){
+          llike += pow((fabs(longdist)-straw.halfLength()),2);
+          longdist = std::copysign(straw.halfLength(),longdist);
+        }
+        //double longres = srep.wpRes(sh.energyDep() * 1000., fabs(longdist));
+        double longres = srep.wpRes(sh.energyDep()*1000., sh.wireDist());
+
+        //FIXME ignoring likelihood contribution from outside straw
+        //llike += pow(longdist - sh.wireDist(), 2) / pow(longres, 2);
+        double trunc_wireDist = std::copysign(std::min(straw.halfLength(),fabs(sh.wireDist())),sh.wireDist());
+        llike += pow(longdist - trunc_wireDist, 2) / pow(longres, 2);
+
+        if (pca.dca() < 2.55)
           _ontrackhits += 1;
 
         double even_z = tracker.getStraw(StrawId(sh.strawId().plane(),sh.strawId().panel(),0)).getMidPoint().z();
@@ -419,8 +430,6 @@ namespace mu2e
         if ((pca.point2().z() > even_z && pca.point2().z() > odd_z) || (pca.point2().z() < even_z && pca.point2().z() < odd_z)){
           _outsidehits++;
         }
-
-        llike += pow(longdist-sh.wireDist(),2)/pow(longres,2);
 
         double drift_time = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0);
         drift_time += srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
@@ -547,7 +556,8 @@ namespace mu2e
           double mctrack_doca = pca2.dca();
           if (fabs(true_doca - mctrack_doca) < 0.5){
             count++;
-            ppintercept = pppos[j] - ppdir[j]*pppos[j].y()/ppdir[j].y();
+            if (ppdir[j].y() != 0)
+              ppintercept = pppos[j] - ppdir[j]*pppos[j].y()/ppdir[j].y();
             ppdirection = ppdir[j];
             if (ppdirection.y() > 0)
               ppdirection *= -1;
@@ -634,7 +644,7 @@ namespace mu2e
       _hittresidrms = -999;
       _hitdresid = -999;
       _hitdresiderr = -999;
-      _hitllike = -999;
+      _hitllike = 0;
       _hitrecodoca = -999;
       _hitambig = -999;
       _hitmcambig = -999;
@@ -775,9 +785,18 @@ namespace mu2e
         _hitambig = dperp > 0 ? -1 : 1;
         _hitdz = sep.z();
 
+        double trunc_hitminuitlong = _hitminuitlong;
+        if (fabs(_hitminuitlong) > straw.halfLength()){
+          _hitllike += pow((fabs(_hitminuitlong)-straw.halfLength()),2);
+          trunc_hitminuitlong = std::copysign(straw.halfLength(),_hitminuitlong);
+        }
+//        _hitrecolongrms = srep.wpRes(sh.energyDep() * 1000., fabs(trunc_hitminuitlong));
+        _hitrecolongrms = srep.wpRes(sh.energyDep() * 1000., fabs(sh.wireDist()));
 
-
-        _hitllike = pow(_hitminuitlong-_hitrecolong,2)/pow(_hitrecolongrms,2);
+        //FIXME ignoring likelihood contribution from beyond wire
+        //_hitllike += pow(trunc_hitminuitlong-_hitrecolong,2)/pow(_hitrecolongrms,2);
+        double trunc_wireDist = std::copysign(std::min(straw.halfLength(),fabs(_hitrecolong)),_hitrecolong);
+        _hitllike += pow(trunc_hitminuitlong-trunc_wireDist,2)/pow(_hitrecolongrms,2);
 
 
         _hitdrifttime = srep.driftDistanceToTime(sh.strawId(), pca3.dca(), 0);
@@ -785,9 +804,10 @@ namespace mu2e
         _hittrajtime = ((pca3.point2() - minuitpos).dot(minuitdir))/299.9;
         _hittresidrms = srep.driftTimeError(sh.strawId(), 0, 0, pca3.dca());
 
-        double hit_t0 = sh.time() - sh.propTime() - _hittrajtime - _hitdrifttime - _hitdrifttimeoffset;
+        //double hit_t0 = sh.time() - sh.propTime() - _hittrajtime - _hitdrifttime - _hitdrifttimeoffset;
 
-        _hittresid = hit_t0-tseed._t0._t0;
+        //_hittresid = hit_t0-tseed._t0._t0;
+        _hittresid = -1*gdf.TimeResidual(sh,tseed);
         _hitllike += pow(_hittresid,2)/pow(_hittresidrms,2);
 
         _hitdresid = gdf.DOCAresidual(sh,tseed);
@@ -837,6 +857,7 @@ namespace mu2e
           if (temp_converged){
             CLHEP::Hep3Vector temppos(pars[0],0,pars[1]);
             CLHEP::Hep3Vector tempdir(pars[2],-1,pars[3]);
+            tempdir = tempdir.unit();
             TwoLinePCA ubpca( straw.getMidPoint(), straw.getDirection(),
                 temppos, tempdir);
             _hitublong = (ubpca.point1()-straw.getMidPoint()).dot(straw.getDirection());
