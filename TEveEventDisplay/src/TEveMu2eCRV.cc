@@ -37,7 +37,7 @@ namespace mu2e{
       if(i==2)  Config.getVectorDouble("crs.firstCounterT3", Center);
       if(i==3)  Config.getVectorDouble("crs.firstCounterT4", Center) ;
       orthodetT1->AddElement(sectorshape);
-      topvol->AddNode(crv0, 1, new TGeoTranslation(pointmmTocm(Center[0]),pointmmTocm(Center[1]),pointmmTocm(Center[2]/10)));
+      topvol->AddNode(crv0, 1, new TGeoTranslation(pointmmTocm(Center[0]),pointmmTocm(Center[1]),pointmmTocm(Center[2])));
     }
   }
 }
