@@ -17,15 +17,12 @@
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
-#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 // C++
 #include <vector>
 #include <memory>
 #include <iostream>
 #include <forward_list>
 #include <string>
-
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
   class MergeHelices : public art::EDProducer {
@@ -236,7 +233,7 @@ namespace mu2e {
     unsigned retval(0);
     for(auto shi1 : shiv1)
       for(auto shi2 : shiv2)
-	      if(shi1 == shi2)retval++;
+	if(shi1 == shi2)retval++;
     return retval;
   }
 }
