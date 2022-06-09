@@ -231,7 +231,7 @@ namespace mu2e {
         float costh2 = dxn*dxn/(dx*dx+dy*dy);
         float sinth2 = 1-costh2;
         float e2xy     = hh.wireErr2()*sinth2+transErr2*costh2;
-        float wtxy     = 1./e2;
+        float wtxy     = 1./e2xy;
         float e2zphi     = hh.wireErr2()*costh2+hh.transErr2()*sinth2;        
         float wtzphi     = h1.helix().radius()*h1.helix().radius()/e2zphi;
         wtxy      *=1.1;
