@@ -167,7 +167,7 @@ namespace mu2e {
     countHits(evt,h1,h2, nh1, nh2, nover);
     unsigned minh = std::min(nh1, nh2);
     float chih1xy(0),chih1zphi(0),chih2xy(0),chih2zphi(0);
-    int deltanh = 5; 
+    unsigned deltanh = 5; 
     // Calculate the chi-sq of the helices
     findchisq(evt,h1,chih1xy,chih1zphi);
     findchisq(evt,h2,chih2xy,chih2zphi);
