@@ -20,7 +20,7 @@ namespace mu2e{
   CLHEP::Hep3Vector crvCounterPos = crvCounter.getPosition();
   hep3vectormmTocm(crvCounterPos);
   const CRSScintillatorBarDetail &barDetail = crvCounter.getBarDetail();
-  CLHEP::Hep3Vector sibardetails(barDetail.getHalfLengths()[0]/10,barDetail.getHalfLengths()[1]/10,barDetail.getHalfLengths()[2]/10);
+  CLHEP::Hep3Vector sibardetails(pointmmTocm(barDetail.getHalfLengths()[0]),pointmmTocm(barDetail.getHalfLengths()[1]),pointmmTocm(barDetail.getHalfLengths()[2]));
   return {sibardetails, crvCounterPos};
   }
 
