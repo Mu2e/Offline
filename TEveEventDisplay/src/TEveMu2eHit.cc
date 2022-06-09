@@ -64,8 +64,8 @@ namespace mu2e{
       CLHEP::Hep3Vector sposfn = det->toMu2e(sposf);
       TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
       line->SetLineWidth(1);
-      line->SetPoint(0,sposin.x(),sposin.y(),sposin.z());
-      line->SetNextPoint(sposfn.x(),sposfn.y(),sposfn.z());
+      line->SetPoint(0,pointmmTocm(sposin.x()),pointmmTocm(sposin.y()),pointmmTocm(sposin.z()));
+      line->SetNextPoint(pointmmTocm(sposfn.x()),pointmmTocm(sposfn.y()),pointmmTocm(sposfn.z()));
       line->SetLineColor(colorid);
       line->SetTitle(Form(title.c_str()));
       HitList->AddElement(line);
@@ -120,7 +120,7 @@ namespace mu2e{
     }
     this->SetTitle((DataTitle(pstr, n)).c_str());
     hep3vectormmTocm(pointInMu2e);
-    this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
+    this->SetNextPoint(pointmmTocm(pointInMu2e.x()), pointmmTocm(pointInMu2e.y()), pointmmTocm(pointInMu2e.z()));
     int colors[] = {-7, 3, -6, -1, 9, 0, -4, 10, 1};
     this->SetMarkerColor(kSpring + colors[energylevel]);
     this->SetPickable(kTRUE);
