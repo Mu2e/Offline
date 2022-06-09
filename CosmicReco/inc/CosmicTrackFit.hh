@@ -53,7 +53,7 @@ namespace mu2e
               fhicl::Atom<int> Npara{Name("NParameters"),Comment("number of fit parameters used")};
               fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),0};
               fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
-              fhicl::Atom<string> dontuseflag {Name("DoNotUseFlag"),Comment("if set to OK then save the track")};
+              fhicl::Atom<std::string> dontuseflag {Name("DoNotUseFlag"),Comment("if set to OK then save the track")};
               fhicl::Atom<unsigned> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits ")};
                   fhicl::Atom<unsigned> minnch {Name("minNComboHits"), Comment("number of combohits allowed")};
               fhicl::Atom<unsigned> n_outliers{Name("Noutliers"),Comment("maximum number of outliers allowed in track fit")};

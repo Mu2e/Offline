@@ -4,6 +4,7 @@
 
 using namespace std;
 
+namespace mu2e {
 TrackParams::TrackParams(){
         A0 = 0.;
         A1 = 0.;
@@ -45,7 +46,6 @@ TrackSeedDiag::TrackSeedDiag(){
 
         }
 
-namespace mu2e{
 
         CosmicTrack::CosmicTrack() {
 

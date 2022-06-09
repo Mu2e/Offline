@@ -29,7 +29,7 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<art::InputTag>   cosmictag {Name("CosmicTrackSeedCollection"),Comment("track collection")};
-      fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),vector<string>{"HelixOK","HelixConverged"}};
+      fhicl::Sequence<std::string> goodcosmic{Name("cosmicseedFitFlag"),Comment("Required flags"),std::vector<std::string>{"HelixOK","HelixConverged"}};
       fhicl::Atom<int>             minnsh    {Name("minnsh"), Comment("minimum number of straw hits ")};
       fhicl::Atom<int>             debug     {Name("debugLevel"), Comment("set to 1 for debug prints")};
     };

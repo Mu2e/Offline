@@ -90,7 +90,7 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
   ROOT::Minuit2::FunctionMinimum min = migrad(maxfcn, tolerance);
   if (_diag > 1) {
     ROOT::Minuit2::MnPrint::SetGlobalLevel(3);
-    ROOT::Minuit2::operator<<(cout, min);
+    ROOT::Minuit2::operator<<(std::cout, min);
   }
 
   // Will be the results of the fit routine:
@@ -126,7 +126,7 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
       std::cout << i << FitResult.names[i] << " : " << FitResult.bestfit[i] << " +- "
                 << FitResult.bestfiterrors[i] << std::endl;
       if (FitResult.bestfitcov.size() != 0)
-        cout << "cov " << FitResult.bestfitcov[i] << endl;
+        std::cout << "cov " << FitResult.bestfitcov[i] << std::endl;
     }
   }
 
@@ -254,7 +254,7 @@ void DoDriftTimeFit(
   ROOT::Minuit2::FunctionMinimum min = migrad(0, mntolerance);
   if (diag > 1) {
     ROOT::Minuit2::MnPrint::SetGlobalLevel(3);
-    ROOT::Minuit2::operator<<(cout, min);
+    ROOT::Minuit2::operator<<(std::cout, min);
   } else {
     ROOT::Minuit2::MnPrint::SetGlobalLevel(0);
   }
