@@ -10,23 +10,11 @@
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-
-#include "Offline/GeometryService/inc/GeometryService.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/CalPatRec/inc/CalTimePeakFinder_types.hh"
-
 // mu2e data products
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
-
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-
 // utilities
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
-
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
