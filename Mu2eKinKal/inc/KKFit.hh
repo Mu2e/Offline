@@ -22,6 +22,7 @@
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -473,15 +474,20 @@ namespace mu2e {
       StrawHitFlag hflag = chit.flag();
       if(strawhit->active())hflag.merge(StrawHitFlag::active);
       auto const& ca = strawhit->closestApproach();
+      auto uca = strawhit->unbiasedClosestApproach();
+      // use unbiased DOCA to compute expected drift time
+      KinKal::POL2 udrift(uca.doca(),0.0); // ignore phi for now FIXME!
+      KinKal::DriftInfo dinfo;
+      strawhit->distanceToTime(udrift,dinfo);
       TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
-          HitT0(ca.particleToca(), sqrt(ca.tocaVar())),
-          static_cast<float>(ca.particleToca()),
-          static_cast<float>(ca.sensorToca()),
-          static_cast<float>(strawhit->timeResidual().value()), // drift radius isn't a clear concept in KinKal, use time residual instead
-          static_cast<float>(strawhit->time()),
-          static_cast<float>(ca.doca()),
+          HitT0(uca.particleToca(), sqrt(uca.tocaVar())),
+          static_cast<float>(ca.particleToca()), // track length is undefined in KinKal: store reference TOCA instead
+          static_cast<float>(ca.sensorToca()), // hit length is undefined: store TOCA for the sensor instead
+          static_cast<float>(uca.deltaT()), // drift radius isn't a clear concept in KinKal, store (unbiased) drift time instead
+          static_cast<float>(dinfo.tdrift_), // sensor time is redundant with sensorTOCA above: store expected drift time instead
+          static_cast<float>(uca.doca()),
           strawhit->hitState().state_,
-          static_cast<float>(sqrt(strawhit->timeResidual().variance())), // substitute for drift radius error
+          static_cast<float>(sqrt(dinfo.tdriftvar_)), // substitute for drift radius error
           hflag, chit);
       fseed._hits.push_back(seedhit);
     }
