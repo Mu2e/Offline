@@ -107,16 +107,16 @@ namespace mu2e {
 	// compare the helices
        	auto hcomp = compareHelices(event, **ihel, **jhel);
 	if(hcomp == unique) {
-	// both helices are unique: simply advance the iterator to keep both
-	 jhel++;
-	     } else if(hcomp == first) {
-	        // the first helix is 'better'; remove the second
-	        jhel = hseeds.erase(jhel);
-	     } else if(hcomp == second) {
-	       // the second helix is better; remove the first and restart the loop
-	       ihel = hseeds.erase(ihel);
-	       break;
-	     }
+	  // both helices are unique: simply advance the iterator to keep both
+	  jhel++;
+	}else if(hcomp == first) {
+	   // the first helix is 'better'; remove the second
+	   jhel = hseeds.erase(jhel);
+	 }else if(hcomp == second) {
+	    // the second helix is better; remove the first and restart the loop
+	    ihel = hseeds.erase(ihel);
+	    break;
+	  }
       }
       // only advance the outer loop if we exhausted the inner one
       if(jhel == hseeds.end())ihel++;
