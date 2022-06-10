@@ -33,11 +33,11 @@ namespace mu2e {
         fhicl::Atom<int> debug{ Name("debugLevel"),
 	  Comment("Debug Level"), 0};
 	fhicl::Atom<unsigned> deltanh{ Name("DeltanHits"),
-	  Comment("difference in the active StrawHit counts"),5};
+	  Comment("difference in the active StrawHit counts")};
         fhicl::Atom<float> scaleXY{ Name("ScaleFactorXY"),
-	  Comment("scaling factor to have chi2XY/ndof distribution peak at 1"), 1.1};
+	  Comment("scaling factor to get chi2XY/ndof distribution peak at 1")};
         fhicl::Atom<float> scaleZPhi{ Name("ScaleFactorZPhi"),
-	  Comment("scaling factor to have chi2ZPhi/ndof distribution peak at 1"),0.75};
+	  Comment("scaling factor to get chi2ZPhi/ndof distribution peak at 1")};
         fhicl::Atom<bool> selectbest{ Name("SelectBest"),
 	  Comment("Select best overlapping helices for output"), true};
         fhicl::Atom<bool> usecalo{ Name("UseCalo"),
@@ -73,7 +73,7 @@ namespace mu2e {
 	  unsigned& nh1, unsigned& nh2, unsigned& nover);
       unsigned countOverlaps(SHIV const& s1, SHIV const& s2);
       void findchisq(art::Event const& evt,
-          HelixSeed const& h2, float& chixy, float& chizphi);
+          HelixSeed const& h2, float& chixy, float& chizphi) const;
     };
 
   MergeHelices::MergeHelices(const Parameters& config) : 
@@ -211,7 +211,7 @@ namespace mu2e {
   // The chisquared calculation method used here is 
   // taken from the LsqSums approach followed in CalPatRec
   void MergeHelices::findchisq(art::Event const& evt,
-      HelixSeed const& h1,float& chixy, float& chizphi) {
+      HelixSeed const& h1,float& chixy, float& chizphi) const{
     ::LsqSums4 sxy;
     ::LsqSums4 szphi;
     for(auto const& hh : h1.hits()) {
