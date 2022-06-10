@@ -163,7 +163,6 @@ namespace mu2e {
     countHits(evt,h1,h2, nh1, nh2, nover);
     unsigned minh = std::min(nh1, nh2);
     float chih1xy(0),chih1zphi(0),chih2xy(0),chih2zphi(0);
-    unsigned deltanh = 5; 
     // Calculate the chi-sq of the helices
     findchisq(evt,h1,chih1xy,chih1zphi);
     findchisq(evt,h2,chih2xy,chih2zphi);
@@ -215,7 +214,6 @@ namespace mu2e {
     ::LsqSums4 sxy;
     ::LsqSums4 szphi;
     for(auto const& hh : h1.hits()) {
-      auto const& hh = h1.hits()[ihit];
       if(!hh.flag().hasAnyProperty(_badhit)){
         // Calculate the transverse and z-phi weights of the hits
         float dx = hh.pos().x() - h1.helix().center().x();
