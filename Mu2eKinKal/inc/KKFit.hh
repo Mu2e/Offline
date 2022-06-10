@@ -500,7 +500,7 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::doca);
       }
       // calculate the unbiased time at the cluster
-      auto tres = calohit->residual(0);
+      auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual();
       HitT0 unbiasedt0(ca.sensorToca()-tres.value(),sqrt(tres.variance()));
       // calculate the cluster length; this should be the particle path through the CsI, but
       // for now (backwards compatible) it's the length along the cluster axis FIXME!
