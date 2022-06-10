@@ -32,11 +32,11 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<int> debug{ Name("debugLevel"),
 	  Comment("Debug Level"), 0};
-	fhicl::Atom<unsigned> deltanh{ Name("DeltanHits"),
+	fhicl::Atom<unsigned> deltanh{ Name("deltanh"),
 	  Comment("difference in the active StrawHit counts")};
-        fhicl::Atom<float> scaleXY{ Name("ScaleFactorXY"),
+        fhicl::Atom<float> scaleXY{ Name("scaleXY"),
 	  Comment("scaling factor to get chi2XY/ndof distribution peak at 1")};
-        fhicl::Atom<float> scaleZPhi{ Name("ScaleFactorZPhi"),
+        fhicl::Atom<float> scaleZPhi{ Name("scaleZPhi"),
 	  Comment("scaling factor to get chi2ZPhi/ndof distribution peak at 1")};
         fhicl::Atom<bool> selectbest{ Name("SelectBest"),
 	  Comment("Select best overlapping helices for output"), true};
