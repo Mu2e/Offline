@@ -214,9 +214,8 @@ namespace mu2e {
       HelixSeed const& h1,float& chixy, float& chizphi) {
     ::LsqSums4 sxy;
     ::LsqSums4 szphi;
-    for(size_t ihit=0;ihit < h1.hits().size(); ihit++) {
+    for(auto const& hh : h1.hits()) {
       auto const& hh = h1.hits()[ihit];
-      float transErr = 5./sqrt(12.);
       if(!hh.flag().hasAnyProperty(_badhit)){
         // Calculate the transverse and z-phi weights of the hits
         float dx = hh.pos().x() - h1.helix().center().x();
