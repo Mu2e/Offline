@@ -32,6 +32,12 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<int> debug{ Name("debugLevel"),
 	  Comment("Debug Level"), 0};
+	fhicl::Atom<unsigned> deltanh{ Name("DeltanHits"),
+	  Comment("difference in the active StrawHit counts"),5};
+        fhicl::Atom<float> scaleXY{ Name("ScaleFactorXY"),
+	  Comment("scaling factor to have chi2XY/ndof distribution peak at 1"), 1.1};
+        fhicl::Atom<float> scaleZPhi{ Name("ScaleFactorZPhi"),
+	  Comment("scaling factor to have chi2ZPhi/ndof distribution peak at 1"),0.75};
         fhicl::Atom<bool> selectbest{ Name("SelectBest"),
 	  Comment("Select best overlapping helices for output"), true};
         fhicl::Atom<bool> usecalo{ Name("UseCalo"),
@@ -51,6 +57,8 @@ namespace mu2e {
     private:
       enum HelixComp{unique=-1,first=0,second=1};
       int _debug;
+      unsigned _deltanh;
+      float _scaleXY,_scaleZPhi;
       unsigned _minnover;
       float _minoverfrac;
       bool _selectbest, _usecalo;
@@ -71,6 +79,9 @@ namespace mu2e {
   MergeHelices::MergeHelices(const Parameters& config) : 
     art::EDProducer{config},
     _debug(config().debug()),
+    _deltanh(config().deltanh()),
+    _scaleXY(config().scaleXY()),
+    _scaleZPhi(config().scaleZPhi()),
     _minnover(config().minnover()),
     _minoverfrac(config().minoverfrac()),
     _selectbest(config().selectbest()),
@@ -164,9 +175,9 @@ namespace mu2e {
       else if( h2.caloCluster().isNonnull() && h1.caloCluster().isNull())
         retval = second;
 	// then compare active StrawHit counts and if difference of the StrawHit counts greater than deltanh 
-      else if((nh1 > nh2) && (nh1-nh2) > deltanh)
+      else if((nh1 > nh2) && (nh1-nh2) > _deltanh)
 	retval = first;
-      else if((nh2 > nh1) && (nh2-nh1) > deltanh)
+      else if((nh2 > nh1) && (nh2-nh1) > _deltanh)
 	retval = second;
 	// finally compare chisquared: sum xy and fz 
       else if(chih1xy+chih1zphi  < chih2xy+chih2zphi)
@@ -208,19 +219,17 @@ namespace mu2e {
       float transErr = 5./sqrt(12.);
       if(!hh.flag().hasAnyProperty(_badhit)){
         // Calculate the transverse and z-phi weights of the hits
-        if(hh.nStrawHits() > 1) transErr *= 1.5;
-	float transErr2 = transErr*transErr;
         float dx = hh.pos().x() - h1.helix().center().x();
         float dy = hh.pos().y() - h1.helix().center().y();
         float dxn = dx*hh._sdir.x()+dy*hh._sdir.y();
         float costh2 = dxn*dxn/(dx*dx+dy*dy);
         float sinth2 = 1-costh2;
-        float e2xy = hh.wireErr2()*sinth2+transErr2*costh2;
+        float e2xy = hh.wireErr2()*sinth2+hh.transErr2()*costh2;
         float wtxy = 1./e2xy;
         float e2zphi = hh.wireErr2()*costh2+hh.transErr2()*sinth2;        
         float wtzphi = h1.helix().radius()*h1.helix().radius()/e2zphi;
-        wtxy *=1.1;
-        wtzphi *=0.75;        
+        wtxy *= _scaleXY;
+        wtzphi *= _scaleZPhi;        
         sxy.addPoint(hh.pos().x(),hh.pos().y(),wtxy);
         szphi.addPoint(hh.pos().z(),hh.helixPhi(),wtzphi);
       }
