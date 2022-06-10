@@ -16,11 +16,12 @@
 #include "KinKal/General/BFieldMap.hh"
 // Mu2e-specific classes
 #include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/TrackerGeom/inc/StrawProperties.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
-#include "Offline/TrackerGeom/inc/StrawProperties.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 // Other
 #include "cetlib_except/exception.h"
 #include <memory>
@@ -64,8 +65,6 @@ namespace mu2e {
       auto const& bfield() const { return bfield_; }
       auto precision() const { return ptca_.precision(); }
       void distanceToTime(POL2 const& drift, DriftInfo& dinfo) const;
-      double nullVariance(Dimension dim,DriftInfo const& dinfo) const;
-      double nullOffset(Dimension dim,DriftInfo const& dinfo) const;
      // accessors
       auto const& hit() const { return chit_; }
       auto const& straw() const { return straw_; }
@@ -73,7 +72,7 @@ namespace mu2e {
       auto const& strawHitIndex() const { return shindex_; }
       double minDOCA() const { return mindoca_; }
       double strawRadius() const { return rstraw_; }
-      bool nullUpdater() const { return null_; }
+      auto updater() const { return updater_; }
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
@@ -90,9 +89,7 @@ namespace mu2e {
       StrawHitIndex shindex_; // index to the StrawHit
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
-      bool null_; // record if null updater was used on this hit
-      // uitility functions
-      void updateResiduals(WireHitState const& whstate);
+      StrawHitUpdaters::algorithm updater_; // record which updater was last used on this hit
   };
 
   template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate,
@@ -101,7 +98,7 @@ namespace mu2e {
     bfield_(bfield), whstate_(whstate), wire_(ptca.sensorTraj()),
     ptca_(ptca.localTraj(),wire_,ptca.precision(),ptca.tpData(),ptca.dDdP(),ptca.dTdP()),
     mindoca_(sprops.strawInnerRadius()), rstraw_(sprops.strawInnerRadius()),
-    chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse), null_(false)
+    chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse), updater_(StrawHitUpdaters::none)
   {
     // make sure this is a single-straw based ComboHit
     if(chit_.mask().level() != StrawIdMask::uniquestraw)
@@ -124,26 +121,7 @@ namespace mu2e {
     if(!ptca_.usable())throw std::runtime_error("WireHit TPOCA failure");
   }
 
-  template <class KTRAJ> double KKStrawHit<KTRAJ>::nullVariance(Dimension dim,DriftInfo const& dinfo) const {
-    switch (dim) {
-      case dresid: default:
-        return (mindoca_*mindoca_)/3.0; // doca is signed
-      case tresid:
-        return (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0); // TOCA is always larger than the crossing time
-    }
-  }
-
-  template <class KTRAJ> double KKStrawHit<KTRAJ>::nullOffset(Dimension dim,DriftInfo const& dinfo) const {
-    switch (dim) {
-      case dresid: default:
-        return 0.0; // not sure if there's a better answer
-      case tresid:
-        return -0.5*mindoca_/dinfo.vdrift_;
-    }
-  }
-
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
-    WireHitState whstate = this->hitState();
     if(first){
       // look for an updater; if it's there, update the state
       auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
@@ -154,27 +132,21 @@ namespace mu2e {
         auto uca = this->unbiasedClosestApproach();
         if(uca.usable()){
           if(nshu != 0){
-            null_ = true;
+            updater_ = StrawHitUpdaters::null;
             mindoca_ = strawRadius();
-            whstate = nshu->wireHitState(uca.doca());
+            whstate_ = nshu->wireHitState(uca.doca());
           } else if(dshu != 0){
-            null_ = false;
+            updater_ = StrawHitUpdaters::DOCA;
             // update minDoca (for null ambiguity error estimate)
             mindoca_ = std::min(dshu->minDOCA(),strawRadius());
-            whstate = dshu->wireHitState(uca.doca());
+            whstate_ = dshu->wireHitState(uca.doca());
           }
         } else {
-          whstate = WireHitState();
+          whstate_ = WireHitState();
         }
       }
     }
     // update residuals
-    this->updateResiduals(whstate);
-  }
-
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateResiduals(WireHitState const& whstate) {
-    // update the state
-    whstate_ = whstate;
     if(whstate_.active()){
       // compute drift parameters.  These are used even for null-ambiguity hits
       VEC3 bvec = bfield_.fieldVect(ptca_.particlePoca().Vect());
@@ -196,14 +168,12 @@ namespace mu2e {
       } else {
         // interpret DOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
         DVEC dRdP = -ptca_.lSign()*ptca_.dDdP();
-        double dd = ptca_.doca() + nullOffset(dresid,dinfo);
-        double nulldvar = nullVariance(dresid,dinfo);
+        double dd = ptca_.doca();
+        double nulldvar = (mindoca_*mindoca_)/3.0;
         rresid_[dresid] = Residual(dd,nulldvar,0.0,true,dRdP);
         //  interpret TOCA as a residual
-        double dt = ptca_.deltaT() + nullOffset(tresid,dinfo);
-        // the time constraint variance is the sum of the variance from maxdoca and from the intrinsic measurement variance
-        double nulltvar = dinfo.tdriftvar_ + nullVariance(tresid,dinfo);
-        rresid_[tresid] = Residual(dt,nulltvar,0.0,true,-ptca_.dTdP());
+        double dt = ptca_.deltaT() - dinfo.tdrift_;
+        rresid_[tresid] = Residual(dt,dinfo.tdriftvar_,0.0,true,-ptca_.dTdP());
         // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
       }
     } else {
@@ -220,20 +190,23 @@ namespace mu2e {
 
   // the purpose of this class is to allow computing the drift using calibrated quantities (StrawResponse)
   template <class KTRAJ> void KKStrawHit<KTRAJ>::distanceToTime(POL2 const& drift, DriftInfo& dinfo) const {
+    double tderr = sresponse_.driftTimeError(straw_.id(),drift.R(),drift.Phi(),drift.R());
+    double tdvar = tderr*tderr;
     if(hitState().useDrift()){
       dinfo.vdrift_ = sresponse_.driftInstantSpeed(straw_.id(),drift.R(),drift.Phi());
       dinfo.tdrift_ = sresponse_.driftDistanceToTime(straw_.id(),drift.R(),drift.Phi());
-      double tderr = sresponse_.driftTimeError(straw_.id(),drift.R(),drift.Phi(),drift.R());
-      dinfo.tdriftvar_ = tderr*tderr;
-    } else {
-      if(null_){
+      dinfo.tdriftvar_ = tdvar;
+   } else {
+      if(updater_ == StrawHitUpdaters::null){
         dinfo.vdrift_ = sresponse_.driftConstantSpeed();
         dinfo.tdrift_ = chit_.driftTime(); // use TOT to estimate drift time
-        dinfo.tdriftvar_ =  50.0; // temporary hack FIXME!
+//        dinfo.tdriftvar_ =  50.0; // temporary hack, need to estimate the TOT precision FIXME!
+        dinfo.tdriftvar_ = (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0) + tdvar;
       } else {
         dinfo.vdrift_ = sresponse_.driftInstantSpeed(straw_.id(),0.5*mindoca_,drift.Phi());
         dinfo.tdrift_ = 0.5*mindoca_/dinfo.vdrift_; // average drift time, assuming a flat distribution
-        dinfo.tdriftvar_ = (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0); //
+        //sum the variance from maxdoca and from the intrinsic measurement
+        dinfo.tdriftvar_ = (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0) + tdvar;
       }
     }
   }
