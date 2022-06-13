@@ -164,12 +164,11 @@ namespace mu2e {
                 bz,
                 rh);
             if(diagLevel_ > 0)std::cout << "Impact Parameter " << fabs(rh.rcent() - rh.radius()) << std::endl;
-            break;
+            if(fabs(rh.rcent()-rh.radius()) < maxImpact_) {
+              selecttrk = true;
+              break;
+            }
           }
-        }
-        if(fabs(rh.rcent()-rh.radius()) < maxImpact_) {
-          selecttrk = true;
-          break;
         }
       }
       if(selecttrk)break;
