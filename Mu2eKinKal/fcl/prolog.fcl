@@ -29,12 +29,12 @@ Mu2eKinKal : {
     MaxStrawHitDOCA : 4.0 # mm
     MaxStrawHitDt : 5.0 # ns
     StrawBuffer : 1 #
-    MaxStrawDOCA : 4.0 # mm
+    MaxStrawDOCA : 2.5 # mm
   }
 
   KKSEEDFIT: {
     PrintLevel : 0
-    MinNDOF : 5
+    MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 0.1
@@ -49,21 +49,21 @@ Mu2eKinKal : {
       [ 1.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 25.0],
-      [ 10.0 ],
-      [ 5.0 ]
+      [ 10.0],
+      [ 5.0 ],
+      [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
     StrawXingUpdaterSettings : [
       [-1.0, 10., 10.0 ],
-      [-1.0, 10., 10.0 ],
-      [-1.0, 5.,  5.0 ]
+      [-1.0, 5., 5.0 ],
+      [-1.0, 4., 4.0 ]
     ]
   }
 
   KKSEEDEXT: {
     PrintLevel : 0
-    MinNDOF : 5
+    MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 0.1
@@ -76,17 +76,17 @@ Mu2eKinKal : {
       [ 1.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 5.0 ]
+      [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
     StrawXingUpdaterSettings : [
-      [-1.0, 5.0, 5.0 ]
+      [-1.0, 4.0, 4.0 ]
     ]
   }
 
   KKDRIFTFIT: {
     PrintLevel : 0
-    MinNDOF : 5
+    MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 0.1
@@ -98,64 +98,25 @@ Mu2eKinKal : {
     MetaIterationSettings : [
       [ 5.0, 0 ],
       [ 2.0, 0 ],
-      [ 1.0, 0 ],
-      [ 2.0, 1 ],
-      [ 1.0, 1 ],
-      [ 0.0, 1 ]
-   ]
+      [ 1.0, 0 ]
+    ]
     NullStrawHitUpdaterSettings : [
-      [ 25.0],
-      [ 10.0 ],
-      [ 5.0 ]
+      [ 10.0],
+      [ 5.0 ],
+      [ 4.0 ]
     ]
-     DOCAStrawHitUpdaterSettings : [
-      [ 6.0, 0.5, 5.0 ],
-      [ 6.0, 0.5, 5.0 ],
-      [ 6.0, 0.5, 5.0 ]
-    ]
-   StrawXingUpdaterSettings : [
-      [-1.0, 50.0, 50.0 ],
-      [-1.0, 10.0,  10.0 ],
-      [-1.0, 5.0, 5.0 ],
-      [0.5, 4.0, 4.0 ],
-      [0.4, 3.0, 4.0 ],
-      [0.3, 3.0, 4.0 ]
+    DOCAStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 10.0, 100.0 ],
+      [-1.0, 5.0,  100.0 ],
+      [-1.0, 4.0, 100.0 ]
     ]
   }
+
 
   KKDRIFTEXT: {
     PrintLevel : 0
-    MinNDOF : 5
-    MaxNIter : 10
-    Deweight : 1.0e6
-    ConvergenceDeltaChisq : 1.0
-    DivergenceDeltaChisq : 50.0
-    DeltaParams : 1e6 # chisquared
-    BFieldCorrection : true
-    ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
-    MetaIterationSettings : [
-      [ 2.0, 1 ],
-      [ 1.0, 1 ],
-      [ 0.0, 1 ]
-    ]
-    NullStrawHitUpdaterSettings : [
-    ]
-    DOCAStrawHitUpdaterSettings : [
-      [ 6.0, 0.5, 5.0 ],
-      [ 6.0, 0.5, 5.0 ],
-      [ 6.0, 0.5, 5.0 ]
-    ]
-    StrawXingUpdaterSettings : [
-      [0.5, 4.0, 4.0 ],
-      [0.4, 3.0, 4.0 ],
-      [0.3, 3.0, 4.0 ]
-    ]
-  }
-
-  KKSEEDDRIFTEXT: {
-    PrintLevel : 0
-    MinNDOF : 5
+    MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 1.0
@@ -225,15 +186,6 @@ Mu2eKinKal : {
     ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
   }
 
-  KKSeedDriftFit : {
-    module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.KKMAT
-    Mu2eSettings: @local::Mu2eKinKal.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKal.KKSEEDDRIFTEXT
-    ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
-  }
-
   KKLineSeedFit : {
     module_type : KinematicLineFit
     MaterialSettings : @local::Mu2eKinKal.KKMAT
@@ -256,8 +208,8 @@ Mu2eKinKal : {
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
     # drift fits, with BField corrections
-    KKDePDriftFit: @local::Mu2eKinKal.KKSeedDriftFit
-    KKDeMDriftFit: @local::Mu2eKinKal.KKSeedDriftFit
+    KKDePDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKDeMDriftFit: @local::Mu2eKinKal.KKDriftFit
 
   }
   filters : {
