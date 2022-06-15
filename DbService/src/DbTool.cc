@@ -24,6 +24,7 @@ int mu2e::DbTool::run() {
   if (_action == "print-table") return printTable();
   if (_action == "print-list") return printList();
   if (_action == "print-set") return printSet();
+  if (_action == "print-cid") return printCid();
 
   int iid, gid, eid;
   if (_action == "commit-calibration") return commitCalibration();
@@ -152,6 +153,16 @@ int mu2e::DbTool::printContent() {
   }
 
   return 0;
+}
+
+std::string mu2e::DbTool::returnContent(int cid) {
+  auto const& cidRow = _valcache.valCalibrations().row(cid);
+  int tid = cidRow.tid();
+  auto name = _valcache.valTables().row(tid).name();
+
+  auto ptr = mu2e::DbTableFactory::newTable(name);
+  _reader.fillTableByCid(ptr, cid);
+  return ptr->csv();
 }
 
 // ****************************************  printCalibration
@@ -592,6 +603,83 @@ int mu2e::DbTool::printSet() {
 
   return 0;
 }
+
+// **************************************** printCid
+int mu2e::DbTool::printCid() {
+  int rc = 0;
+
+  map_ss args;
+  args["purpose"] = "";
+  args["version"] = "";
+  args["table"] = "";
+  args["run"] = "";
+  args["subrun"] = "";
+  if ((rc = getArgs(args))) return rc;
+  std::string purpose = args["purpose"];
+  std::string version = args["version"];
+  std::string table = args["table"];
+  int run = 0;
+  if (!args["run"].empty()) run = std::stoi(args["run"]);
+  int subrun = 0;
+  if (!args["subrun"].empty()) subrun = std::stoi(args["subrun"]);
+
+  if (_verbose > 1)
+    std::cout << "print-cid: printing cid for run " << run << " : "
+              << subrun << std::endl;
+
+  std::cout << "       CID          Table      create_user        create_date "
+            << std::endl;
+
+  int cid = findCid(purpose,version,table,run,subrun);
+  if (cid < 0)
+    return 1;
+
+  rc = mu2e::DbTool::printCIDLine(cid);
+  if (rc != 0) return rc;
+
+  return 0;
+}
+
+int mu2e::DbTool::findCid(std::string purpose, std::string version, std::string table, int run, int subrun) {
+  int pid = -1;
+  int vid = -1;
+  int rc = findPidVid(purpose, version, pid, vid);
+  if (rc != 0) return 1;
+  for (auto const& ee : _valcache.valExtensions().rows()) {
+    if (vid < 0 || ee.vid() == vid) {
+      int eid = ee.eid();
+      for (auto glr : _valcache.valExtensionLists().rows()) {
+        if (glr.eid() == eid){
+          int gid = glr.gid();
+          auto const& gls = _valcache.valGroupLists();
+
+          for (auto glr : gls.rows()) {
+            if (glr.gid() == gid) {
+              int iid = glr.iid();
+              auto const& iids = _valcache.valIovs();
+              auto const& idr = iids.row(iid);
+              if (idr.iov().inInterval(run,subrun)){
+                int cid = idr.cid();
+                auto const& cids = _valcache.valCalibrations();
+                auto const& tids = _valcache.valTables();
+
+                auto const& cr = cids.row(cid);
+                auto name = tids.row(cr.tid()).name();
+                if (name == table){
+                  return cid;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return -1;
+}
+
+
 
 // ****************************************  printCIDLine
 int mu2e::DbTool::printCIDLine(int cid, int indent) {
@@ -2341,6 +2429,7 @@ int mu2e::DbTool::help() {
            "    print-list : print lists of table types used in a calibration "
            "set\n"
            "    print-set : print all the data in a calibration set\n"
+           "    print-cid : print cids for given run in a calibration set\n"
            "    \n"
            "    the following are for a calibration maintainer (subdetector "
            "roles)...\n"
@@ -2509,6 +2598,21 @@ int mu2e::DbTool::help() {
            "    --purpose PURPOSE : the purpose (required)\n"
            "    --version VERSION : the version (required)\n"
            "    --file FILENAME : the output file (required)\n"
+        << std::endl;
+  } else if (_action == "print-cid") {
+    std::cout
+        << " \n"
+           " dbTool print-cid [OPTIONS]\n"
+           " \n"
+           " Prints cids for table instances in a PURPOSE/VERSION.\n"
+           " whos IOVs cover the given run and subrun.\n"
+           " \n"
+           " [OPTIONS]\n"
+           "    --purpose PURPOSE : the purpose (required)\n"
+           "    --version VERSION : the version (required)\n"
+           "    --run RUNID : the run number (required)\n"
+           "    --subrun SUBRUNID : the subrun number\n"
+           "    --table TABLENAME : only print for this table\n"
         << std::endl;
   } else if (_action == "commit-calibration") {
     std::cout << " \n"

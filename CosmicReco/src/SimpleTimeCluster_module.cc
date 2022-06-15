@@ -41,10 +41,12 @@ namespace mu2e {
         using Comment=fhicl::Comment;
         fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),0};
         fhicl::Atom<int> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),5};
+        fhicl::Atom<int> minnpanels {Name("minNPanels"), Comment("minimum number of panels "),0};
         fhicl::OptionalAtom<int> maxnsh {Name("maxNStrawHits"), Comment("maximum number of straw hits ")};
         fhicl::Atom<double> timewindow {Name("TimeWindow"), Comment("Width of time window in ns"),100};
         fhicl::Atom<bool> testflag {Name("TestFlag"),Comment("Test StrawHitFlags")};
         fhicl::Atom<bool> useonepanel {Name("UseOnlyOnePanel"),Comment("Use hits from one panel only"),false};
+        fhicl::Atom<bool> useoneplane {Name("UseOnlyOnePlane"),Comment("Use hits from one plane only"),false};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
         fhicl::Atom<art::InputTag> shfToken{Name("StrawHitFlagCollection"),Comment("tag for StrawHitFlag collection")};
         fhicl::Sequence<std::string> hsel{Name("HitSelectionBits"),Comment("Required flags if TestFlag is set"),vector<string>{"EnergySelection","TimeSelection"}};
@@ -59,11 +61,13 @@ namespace mu2e {
       int               _iev;
       int               _debug;
       int               _minnsh;
+      int               _minnpanels;
       bool              _hasmaxnsh;
       int               _maxnsh;
       double            _timeWindow;
       bool              _testflag;
       bool _useonepanel;
+      bool _useoneplane;
       art::InputTag  _chToken;
       art::InputTag _shfToken;
       const StrawHitFlagCollection *_shfcol;
@@ -79,11 +83,13 @@ namespace mu2e {
     art::EDProducer(conf),
     _debug (conf().debug()),
     _minnsh (conf().minnsh()),
+    _minnpanels (conf().minnpanels()),
     _hasmaxnsh (false),
     _maxnsh (0),
     _timeWindow (conf().timewindow()),
     _testflag (conf().testflag()),
     _useonepanel (conf().useonepanel()),
+    _useoneplane (conf().useoneplane()),
     _chToken (conf().chToken()),
     _shfToken (conf().shfToken()),
     _hsel (conf().hsel()),
@@ -170,16 +176,27 @@ namespace mu2e {
     if (_hasmaxnsh && maxCount > _maxnsh) return;
 
     std::vector<int> hits_in_panel(StrawId::_nupanels,0);
-    if (_useonepanel){
+    std::vector<int> hits_in_plane(StrawId::_nplanes,0);
+    if (_useonepanel || _useoneplane || _minnpanels > 0){
       for (size_t i=0; i<_chcol->size(); ++i) {
         if (_testflag && !goodHit((*_shfcol)[i]))
           continue;
         if (_chcol->at(i).time() < ordChCol[maxStart].time() || _chcol->at(i).time() > ordChCol[maxEnd].time())
           continue;
         hits_in_panel[_chcol->at(i).strawId().uniquePanel()] += _chcol->at(i).nStrawHits();
+        hits_in_plane[_chcol->at(i).strawId().plane()] += _chcol->at(i).nStrawHits();
       }
     }
     size_t max_panel = std::distance(hits_in_panel.begin(),std::max_element(hits_in_panel.begin(),hits_in_panel.end()));
+    size_t max_plane = std::distance(hits_in_plane.begin(),std::max_element(hits_in_plane.begin(),hits_in_plane.end()));
+    int npanels = 0;
+    for (size_t ip=0;ip<hits_in_panel.size();ip++){
+      if (hits_in_panel[ip] > 0)
+        npanels++;
+    }
+    if (_minnpanels > 0 && npanels < _minnpanels)
+      return;
+
 
 
     TimeCluster tclust;
@@ -192,10 +209,13 @@ namespace mu2e {
         continue;
       if (_useonepanel && (_chcol->at(i).strawId().uniquePanel() != max_panel))
         continue;
+      if (_useoneplane && (_chcol->at(i).strawId().plane() != max_plane))
+        continue;
       avg += _chcol->at(i).time();
       tclust._strawHitIdxs.push_back(i);
       tclust._nsh += _chcol->at(i).nStrawHits();
     }
+    if (tclust._nsh < _minnsh) return;
     tclust._t0 = TrkT0(avg/tclust._strawHitIdxs.size(),(ordChCol[maxEnd].time()-ordChCol[maxStart].time())/2.);
     tccol.push_back(tclust);
   }
