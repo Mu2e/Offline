@@ -62,7 +62,7 @@ namespace mu2e {
           MEASCOL& hits, EXINGCOL& exings);
       // add hits to groups
       void addHitGroups(KKSTRAWHITCOL const& strawhits,MEASCOL& hits);
- };
+  };
 
   template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart,
       KKSTRAWHITGROUPER const& shgrouper,
@@ -75,8 +75,14 @@ namespace mu2e {
     calohits_(calohits) {
       MEASCOL hits; // polymorphic container of hits
       EXINGCOL exings; // polymorphic container of detector element crossings
-// add the hits to groups, as required
+      // add the hits to groups, as required
       addHitGroups(strawhits_,hits);
+      if(this->config().plevel_ > 0){
+        std::cout << "created " << strawhitgroups_.size() << " StrawHitGroups " << std::endl;
+        for (auto const& shgroup : strawhitgroups_) {
+          shgroup->print(std::cout,this->config().plevel_);
+        }
+      }
       convertTypes(strawhits_, strawxings_, calohits_,  hits,exings);
       this->fit(hits,exings);
     }
@@ -119,6 +125,21 @@ namespace mu2e {
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings
     addHitGroups(strawhits,hits);
+    if(strawhits.size() > 0 && this->config().plevel_ > 0){
+      unsigned nhit(0);
+      std::cout << "extended " << strawhits.size() << " hits into " << strawhitgroups_.size() << " StrawHitGroups " << std::endl;
+      for (auto const& shgroup : strawhitgroups_) {
+        for(auto const& strawhit : strawhits ) {
+          for (auto const& sh : shgroup->strawHits()) {
+            if(strawhit->strawId() == sh->strawId()){
+              shgroup->print(std::cout,this->config().plevel_);
+            }
+          }
+        }
+        nhit += shgroup->strawHits().size();
+      }
+      if(nhit != strawhits_.size()+strawhits.size()) std::cout << "group hit sum doesn't match " << nhit << " " << strawhits_.size() << std::endl;
+    }
     convertTypes(strawhits,strawxings,calohits,hits,exings);
     this->extend(config,hits,exings);
     // store the new hits
@@ -131,14 +152,14 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::printFit(std::ostream& ost,int printlevel) const {
-   if(printlevel > 1) std::cout << "Seed Helix " << this->seedTraj() << std::endl;
-   TRACK::print(ost,0);
-   ost << "Fit with " << strawhits_.size() << " StrawHits and " << calohits_.size() << " CaloHits and " << strawxings_.size() << " Straw Xings" << std::endl;
-   if(printlevel > 2){
-     for(auto const& strawhit : strawhits_) strawhit->print(std::cout,2);
-     for(auto const& calohit : calohits_) calohit->print(std::cout,2);
-     for(auto const& strawxing :strawxings_) strawxing->print(std::cout,2);
-   }
+    if(printlevel > 1) std::cout << "Seed Helix " << this->seedTraj() << std::endl;
+    TRACK::print(ost,0);
+    ost << "Fit with " << strawhits_.size() << " StrawHits and " << calohits_.size() << " CaloHits and " << strawxings_.size() << " Straw Xings" << std::endl;
+    if(printlevel > 2){
+      for(auto const& strawhit : strawhits_) strawhit->print(std::cout,2);
+      for(auto const& calohit : calohits_) calohit->print(std::cout,2);
+      for(auto const& strawxing :strawxings_) strawxing->print(std::cout,2);
+    }
   }
 
 }

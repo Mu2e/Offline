@@ -67,6 +67,7 @@ namespace mu2e {
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       ~KKStrawHitGroup(){}
 // KKStrawHitGroup specific interface
+      auto const& strawHits() const { return hits_; }
       bool canAddHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper) const;
       void addHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper);
     private:
@@ -130,7 +131,7 @@ namespace mu2e {
     ost << " KKStrawHitGroup with " << nactive << " active hits with " << ndrift  << " using drift information among " << hits_.size() << " total" << std::endl;
     if(detail > 0){
       for(auto const& hit : hits_) {
-        ost << hit << std::endl;
+        ost << hit->strawId() << std::endl;
       }
     }
   }
