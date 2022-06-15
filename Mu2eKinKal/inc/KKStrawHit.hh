@@ -67,7 +67,7 @@ namespace mu2e {
       auto const& wire() const { return wire_; }
       auto const& bfield() const { return bfield_; }
       auto precision() const { return ptca_.precision(); }
-      void distanceToTime(POL2 const& drift, DriftInfo& dinfo) const;
+      DriftInfo distanceToTime() const;
      // accessors
       auto const& hit() const { return chit_; }
       auto const& straw() const { return straw_; }
@@ -148,51 +148,54 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateResidual() {
-    // compute drift parameters.  These are used even for null-ambiguity hits
-    VEC3 bvec = bfield_.fieldVect(ptca_.particlePoca().Vect());
-    auto pdir = bvec.Cross(wire_.direction()).Unit(); // direction perp to wire and BFieldMap
-    VEC3 dvec = ptca_.delta().Vect();
-    double phi = asin(double(dvec.Unit().Dot(pdir))); // azimuth around the wire WRT the BField
-    POL2 drift(fabs(ptca_.doca()), phi);
-    DriftInfo dinfo;
-    distanceToTime(drift, dinfo);
-    bool active = whstate_.active();
-    if(whstate_.useDrift()){
-      // translate PCA to residual. Use ambiguity to convert drift time to a time difference.
-      double dsign = whstate_.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
-      double dt = ptca_.deltaT()-dinfo.tdrift_*dsign;
-      // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
-      DVEC dRdP = ptca_.dDdP()*dsign/dinfo.vdrift_ - ptca_.dTdP();
-      rresid_[tresid] = Residual(dt,dinfo.tdriftvar_,0.0,active,dRdP);
-      rresid_[dresid] = Residual();
+    if(whstate_.active()){
+      // compute drift parameters from PTCA
+      DriftInfo dinfo = distanceToTime();
+      if(whstate_.useDrift()){
+        // translate PCA to residual. Use ambiguity to convert drift time to a time difference.
+        double dsign = whstate_.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
+        double dt = ptca_.deltaT()-dinfo.tdrift_*dsign;
+        // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
+        DVEC dRdP = ptca_.dDdP()*dsign/dinfo.vdrift_ - ptca_.dTdP();
+        rresid_[tresid] = Residual(dt,dinfo.tdriftvar_,0.0,true,dRdP);
+        rresid_[dresid] = Residual(); // distance residual isn't used when drift is
+      } else {
+        // interpret DOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
+        DVEC dRdP = -ptca_.lSign()*ptca_.dDdP();
+        double dd = ptca_.doca();
+        double nulldvar =  (mindoca_*mindoca_)/3.0; //
+        rresid_[dresid] = Residual(dd,nulldvar,0.0,true,dRdP);
+        //  interpret hit time vs TOCA as a residual
+        double dt = ptca_.deltaT()  - 0.5*mindoca_/dinfo.vdrift_; // adjust for the average drift time given the cut.  This is algorithm specific FIXME
+        // the time constraint variance is the sum of the variance from maxdoca and from the intrinsic measurement variance
+        double nulltvar = dinfo.tdriftvar_ + (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0);
+        rresid_[tresid] = Residual(dt,nulltvar,0.0,true,-ptca_.dTdP());
+        // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
+      }
     } else {
-      // interpret DOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
-      DVEC dRdP = -ptca_.lSign()*ptca_.dDdP();
-      double dd = ptca_.doca();
-      double nulldvar =  (mindoca_*mindoca_)/3.0; //
-      rresid_[dresid] = Residual(dd,nulldvar,0.0,active,dRdP);
-      //  interpret TOCA as a residual
-      double dt = ptca_.deltaT()  - 0.5*mindoca_/dinfo.vdrift_;
-      // the time constraint variance is the sum of the variance from maxdoca and from the intrinsic measurement variance
-      double nulltvar = dinfo.tdriftvar_ + (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0);
-      rresid_[tresid] = Residual(dt,nulltvar,0.0,active,-ptca_.dTdP());
-      // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
+      rresid_[dresid] = rresid_[tresid] = Residual();
     }
   }
-
 
   template <class KTRAJ> Residual const& KKStrawHit<KTRAJ>::refResidual(unsigned ires) const {
     if(ires >=2)throw std::invalid_argument("Invalid residual");
     return rresid_[ires];
   }
 
-
-  // the purpose of this class is to allow computing the drift using calibrated quantities (StrawResponse)
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::distanceToTime(POL2 const& drift, DriftInfo& dinfo) const {
-     // for now, use simplified response model.
-     dinfo.vdrift_ = sresponse_.driftConstantSpeed();
-     dinfo.tdrift_ = drift.R()/dinfo.vdrift_;
-     dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
+  // compute estimated drift time using calibrated quantities (StrawResponse)
+  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::distanceToTime() const {
+    DriftInfo dinfo;
+//    VEC3 bvec = bfield_.fieldVect(ptca_.particlePoca().Vect());
+//    auto pdir = bvec.Cross(wire_.direction()).Unit(); // direction perp to wire and BFieldMap
+//    VEC3 dvec = ptca_.delta().Vect();
+//    double phi = asin(double(dvec.Unit().Dot(pdir))); // azimuth around the wire WRT the BField
+//    POL2 drift(fabs(ptca_.doca()), phi);
+    // for now, use simplified response model.
+    dinfo.vdrift_ = sresponse_.driftConstantSpeed();
+//    dinfo.tdrift_ = drift.R()/dinfo.vdrift_;
+    dinfo.tdrift_ = fabs(ptca_.doca())/dinfo.vdrift_;
+    dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
+    return dinfo;
   }
 
   template<class KTRAJ> void KKStrawHit<KTRAJ>::print(std::ostream& ost, int detail) const {

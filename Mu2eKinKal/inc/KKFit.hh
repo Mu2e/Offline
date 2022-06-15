@@ -475,10 +475,7 @@ namespace mu2e {
       if(strawhit->active())hflag.merge(StrawHitFlag::active);
       auto const& ca = strawhit->closestApproach();
       auto uca = strawhit->unbiasedClosestApproach();
-      // use unbiased DOCA to compute expected drift time
-      KinKal::POL2 udrift(uca.doca(),0.0); // ignore phi for now FIXME!
-      KinKal::DriftInfo dinfo;
-      strawhit->distanceToTime(udrift,dinfo);
+      KinKal::DriftInfo dinfo = strawhit->distanceToTime();
       TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
           HitT0(uca.particleToca(), sqrt(uca.tocaVar())),
           static_cast<float>(ca.particleToca()), // track length is undefined in KinKal: store reference TOCA instead
