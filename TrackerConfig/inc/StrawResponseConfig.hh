@@ -33,6 +33,10 @@ namespace mu2e {
       Name("strawHalfPropVelocity"), Comment(" mm/ns ")};
     fhicl::Atom<double> defaultHalfPropVelocity {
       Name("defaultHalfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Atom<bool> truncateLongitudinal {
+      Name("truncateLongitudinal"), Comment("truncate reco longitudinal at straw end")};
+    fhicl::Atom<bool> rmsLongErrors {
+      Name("rmsLongErrors"), Comment("Use errors tuned from residual profile rms")};
     fhicl::Atom<int> totTBins {
       Name("totTBins"), Comment("TOT drift time t bins")};
     fhicl::Atom<double> totTBinWidth {

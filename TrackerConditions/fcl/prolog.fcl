@@ -150,14 +150,9 @@ StrawResponse : {
   verbose : 0
   useDb : false
 
+  # May 4, 2021 - R. Bonventre, TDCalib.C on CeEndpoints
   eBins : 59
-  eBinWidth : 0.1
-  totTBins : 16
-  totTBinWidth : 5
-  totEBins : 10
-  totEBinWidth : 0.00025
-  // KeV
-
+  eBinWidth : 0.1 
   eHalfPVScale : [0.691, 0.691, 0.691, 0.731, 0.803, 0.840, 0.867, 0.887,
     0.904, 0.918, 0.930, 0.943, 0.954, 0.965, 0.974, 0.986, 0.993, 1.000,
     1.009, 1.014, 1.020, 1.029, 1.034, 1.038, 1.044, 1.049, 1.058, 1.058,
@@ -167,10 +162,7 @@ StrawResponse : {
     1.160]
   strawHalfPropVelocity : []
   defaultHalfPropVelocity : 100.0
-  // mm/ns
-
   centralWirePos : 65.0
-
   tdCentralRes : [74.2564, 74.2564, 74.2564 , 61.7574 , 55.602 , 52.7235 ,
     50.1056 , 48.6748 , 46.8374 , 45.6831 , 44.7303 , 43.5795 , 42.9621 ,
     41.8427 , 41.2092 , 40.5468 , 39.9888 , 39.3458 , 38.9888 , 38.5862 ,
@@ -190,7 +182,14 @@ StrawResponse : {
     0.0705138 , 0.0657311 , 0.0559622 , 0.0685536 , 0.0604229 , 0.0574693 ,
     0.063125 , 0.0623292 , 0.0508882 , 0.0601387 , 0.0662105 , 0.0501727 ,
     0.0581113 , 0.0628786 , 0.0615793 , 0.0704129 , 0.0817835 , 0.0399332]
+  truncateLongitudinal : true
+  rmsLongErrors : true
 
+  # May 4, 2021 - R. Bonventre, TOTDriftTime.py on CeEndpoints
+  totTBins : 16
+  totTBinWidth : 5
+  totEBins : 10
+  totEBinWidth : 0.00025
   totDriftTime : [
     20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
     44.11, 32.60, 17.95, 15.51, 13.47, 14.07, 11.66, 11.67, 13.60, 10.62,
@@ -212,7 +211,8 @@ StrawResponse : {
   timeOffsetPanel : []
   timeOffsetStrawHV : []
   timeOffsetStrawCal : []
-
+  
+  # Nov 1, 2018 - D. Brown
   useDriftErrorCalibration : true
   driftErrorParameters : [ 0.363559, 0.362685, 0.359959, 0.349385,
     0.336731, 0.321784, 0.302363, 0.282691, 0.268223, 0.252673, 0.238557,
@@ -240,6 +240,7 @@ StrawResponse : {
   minT0DOCA : -0.2
   t0shift : 4.0
 
+  # Jan 23, 2020 - R. Bonventre, docdb-31095
   defaultPeakMinusPedestalEnergyScale : 0.002
   peakMinusPedestalEnergyScale : []
 

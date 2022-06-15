@@ -97,7 +97,7 @@ namespace mu2e {
     wdist = halfpv*(dt);
     wderr = wpRes(kedep,fabs(wdist));
     // truncate positions that exceed the length of the straw (with a buffer): these come from missing a cluster on one end
-    if(fabs(wdist) > slen+_wbuf*wderr){
+    if(fabs(wdist) > slen+_wbuf*wderr && _truncateLongitudinal){
       // move the position to the correct half of the straw
       wdist = copysign(slen*_slfac,wdist);
       // inflat the error
@@ -115,13 +115,19 @@ namespace mu2e {
   double StrawResponse::wpRes(double kedep,double wlen) const {
     // central resolution depends on edep
     double tdres = PieceLine(_edep,_centres,kedep);
-    if( wlen > _central){
-      // outside the central region the resolution depends linearly on the distance
-      // along the wire.  The slope of that also depends on edep
+    if (_rmsLongErrors){
+      if( wlen > _central){
+        // outside the central region the resolution depends linearly on the distance
+        // along the wire.  The slope of that also depends on edep
+        double wslope = PieceLine(_edep,_resslope,kedep);
+        tdres += (wlen-_central)*wslope;
+      }
+      return tdres;
+    }else{
       double wslope = PieceLine(_edep,_resslope,kedep);
-      tdres += (wlen-_central)*wslope;
+
+      return tdres + wslope*wlen*wlen;
     }
-    return tdres;
   }
 
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc,
