@@ -60,6 +60,7 @@ namespace mu2e {
       KTRAJPTR const& refTrajPtr() const override { return ptca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // specific to KKStrawHit:
+      void updateResidual(); // update residuals after an internal state change (ambiguity or variances)
       auto const& closestApproach() const { return ptca_; }
       CA unbiasedClosestApproach() const;
       auto const& hitState() const { return whstate_; }
@@ -76,8 +77,6 @@ namespace mu2e {
       double strawRadius() const { return rstraw_; }
       auto updater() const { return updater_; }
     private:
-      double nullVariance(Dimension dim,DriftInfo const& dinfo) const;
-      double nullOffset(Dimension dim,DriftInfo const& dinfo) const; // temporary
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
       Line wire_; // local linear approximation to the wire of this hit, encoding all (local) position and time information.
@@ -125,26 +124,7 @@ namespace mu2e {
     if(!ptca_.usable())throw std::runtime_error("WireHit TPOCA failure");
   }
 
-  template <class KTRAJ> double KKStrawHit<KTRAJ>::nullVariance(Dimension dim,DriftInfo const& dinfo) const {
-    switch (dim) {
-      case dresid: default:
-        return (mindoca_*mindoca_)/3.0; // doca is signed
-      case tresid:
-        return (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0); // TOCA is always larger than the crossing time
-    }
-  }
-
-  template <class KTRAJ> double KKStrawHit<KTRAJ>::nullOffset(Dimension dim,DriftInfo const& dinfo) const {
-    switch (dim) {
-      case dresid: default:
-        return 0.0; // not sure if there's a better answer
-      case tresid:
-        return -0.5*mindoca_/dinfo.vdrift_;
-    }
-  }
-
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
-    WireHitState whstate = this->hitState();
     if(first){
       // look for an updater; if it's there, update the state
       auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
@@ -152,22 +132,22 @@ namespace mu2e {
       if(nshu != 0 && dshu != 0)throw std::invalid_argument(">1 StrawHit updater specified");
       if(nshu != 0 || dshu != 0){
         // compute the unbiased closest approach; this is brute force, but works
-        auto const& ca = this->closestApproach();
-        auto uparams = HIT::unbiasedParameters();
-        KTRAJ utraj(uparams,ca.particleTraj());
-        CA uca(utraj,this->wire(),ca.hint(),ca.precision());
+        CA uca = unbiasedClosestApproach();
         if(nshu != 0){
           mindoca_ = strawRadius();
-          if(uca.usable())whstate = nshu->wireHitState(uca.doca());
+          if(uca.usable())whstate_ = nshu->wireHitState(uca.doca());
         } else if(dshu != 0){
           // update minDoca (for null ambiguity error estimate)
           mindoca_ = std::min(dshu->minDOCA(),strawRadius());
-          if(uca.usable())whstate = dshu->wireHitState(uca.doca());
+          if(uca.usable())whstate_ = dshu->wireHitState(uca.doca());
         }
       }
     }
-    // update the state
-    whstate_ = whstate;
+    // then update the residual
+    updateResidual();
+  }
+
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateResidual() {
     // compute drift parameters.  These are used even for null-ambiguity hits
     VEC3 bvec = bfield_.fieldVect(ptca_.particlePoca().Vect());
     auto pdir = bvec.Cross(wire_.direction()).Unit(); // direction perp to wire and BFieldMap
@@ -188,13 +168,13 @@ namespace mu2e {
     } else {
       // interpret DOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
       DVEC dRdP = -ptca_.lSign()*ptca_.dDdP();
-      double dd = ptca_.doca() + nullOffset(dresid,dinfo);
-      double nulldvar = nullVariance(dresid,dinfo);
+      double dd = ptca_.doca();
+      double nulldvar =  (mindoca_*mindoca_)/3.0; //
       rresid_[dresid] = Residual(dd,nulldvar,0.0,active,dRdP);
       //  interpret TOCA as a residual
-      double dt = ptca_.deltaT() + nullOffset(tresid,dinfo);
+      double dt = ptca_.deltaT()  - 0.5*mindoca_/dinfo.vdrift_;
       // the time constraint variance is the sum of the variance from maxdoca and from the intrinsic measurement variance
-      double nulltvar = dinfo.tdriftvar_ + nullVariance(tresid,dinfo);
+      double nulltvar = dinfo.tdriftvar_ + (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0);
       rresid_[tresid] = Residual(dt,nulltvar,0.0,active,-ptca_.dTdP());
       // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
     }
