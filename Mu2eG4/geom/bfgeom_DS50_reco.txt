@@ -1,6 +1,0 @@
-#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
-
-vector<string> bfield.innerMaps = {
-  "BFieldMaps/Mau13/DSMap50.header"
-};
-vector<string> bfield.outerMaps = {};
