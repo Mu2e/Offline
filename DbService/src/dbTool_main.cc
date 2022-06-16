@@ -19,6 +19,7 @@ int main(int argc, char** argv) {
   if (rc != 0) return rc;
   rc = tool.run();
   if (rc != 0) return rc;
+  std::cout << tool.getResult();
 
   return 0;
 }
