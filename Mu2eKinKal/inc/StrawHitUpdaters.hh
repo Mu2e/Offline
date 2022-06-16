@@ -7,7 +7,7 @@
 namespace mu2e {
   // types of updaters: these need to be extended if new updaters are defined
   namespace StrawHitUpdaters {
-    enum algorithm: int {none=-1, null=0, DOCA=1 };
+    enum algorithm: int {none=-1, null=0, DOCA=1, Combinatoric=2 };
   }
 }
 #endif

@@ -54,6 +54,7 @@ Mu2eKinKal : {
       [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
+    CombinatoricStrawHitUpdaterSettings : []
     StrawXingUpdaterSettings : [
       [-1.0, 10., 10.0 ],
       [-1.0, 5., 5.0 ],
@@ -79,6 +80,7 @@ Mu2eKinKal : {
       [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
+    CombinatoricStrawHitUpdaterSettings : []
     StrawXingUpdaterSettings : [
       [-1.0, 4.0, 4.0 ]
     ]
@@ -106,6 +108,7 @@ Mu2eKinKal : {
       [ 4.0 ]
     ]
     DOCAStrawHitUpdaterSettings : []
+    CombinatoricStrawHitUpdaterSettings : []
     StrawXingUpdaterSettings : [
       [-1.0, 10.0, 100.0 ],
       [-1.0, 5.0,  100.0 ],
@@ -139,6 +142,7 @@ Mu2eKinKal : {
       [ 6.0, 0.5, 5.0 ],
       [ 6.0, 0.5, 5.0 ]
     ]
+    CombinatoricStrawHitUpdaterSettings : []
     StrawXingUpdaterSettings : [
       [-1.0, 5.0, 5.0 ],
       [0.5, 4.0, 4.0 ],

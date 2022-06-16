@@ -6,10 +6,12 @@
 //
 #include "KinKal/Detector/Hit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Offline/Mu2eKinKal/inc/KKCombinatoricUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "cetlib_except/exception.h"
 #include <vector>
+#include <memory>
 #include <limits>
 namespace mu2e {
 
@@ -33,13 +35,11 @@ namespace mu2e {
       double groupDt_; // max particle time difference between straw hits in a group
   };
 
-  using KinKal::WireHitState;
   template <class KTRAJ> class KKStrawHitGroup : public KinKal::Hit<KTRAJ> {
     public:
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
-      using KKSTRAWHITPTR = shared_ptr<KKSTRAWHIT>;
-      using KKSTRAWHITCOL = std::set<KKSTRAWHITPTR>;
-      using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
+      using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
+      using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using KKSTRAWHITGROUPER = KKStrawHitGrouper<KTRAJ>;
       // sort hits by time
@@ -47,7 +47,6 @@ namespace mu2e {
         bool operator ()( const KKSTRAWHITPTR& hit1, const KKSTRAWHITPTR& hit2) {
           return hit1->time() < hit2->time(); }
       };
-
       KKStrawHitGroup() {}
       // create from a single hit
       KKStrawHitGroup(KKSTRAWHITPTR const& hitptr);
@@ -63,20 +62,22 @@ namespace mu2e {
       KTRAJPTR const& refTrajPtr() const override { return (*hits_.begin())->refTrajPtr(); }
       // update the internals of the hit, specific to this meta-iteraion.  This will affect the next fit iteration
       void updateState(KinKal::MetaIterConfig const& config,bool first) override;
-      void updateWeight(MetaIterConfig const& config) override {} // no weight for this 'hit'
+      void updateWeight(MetaIterConfig const& config) override {} // to be removed FIXME
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       ~KKStrawHitGroup(){}
-// KKStrawHitGroup specific interface
+      // KKStrawHitGroup specific interface
       auto const& strawHits() const { return hits_; }
       bool canAddHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper) const;
       void addHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper);
+      // updater functions
+      void updateCombo(const CombinatoricStrawHitUpdater* cshu);
     private:
       // references to the individual hits in this hit group
       KKSTRAWHITCOL hits_;
   };
 
   template<class KTRAJ>  KKStrawHitGroup<KTRAJ>::KKStrawHitGroup(KKSTRAWHITPTR const& hitptr) {
-    hits_.insert(hitptr);
+    hits_.push_back(hitptr);
   }
 
   template<class KTRAJ>  KKStrawHitGroup<KTRAJ>::KKStrawHitGroup(KKSTRAWHITCOL const& hits,KKSTRAWHITGROUPER const& grouper) : hits_(hits) {
@@ -99,11 +100,12 @@ namespace mu2e {
   template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::addHit(KKSTRAWHITPTR hit, KKSTRAWHITGROUPER const& grouper) {
     bool add = canAddHit(hit,grouper);
     if(!add)throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: KKStrawHit doesn't belong in group"<< std::endl;
-    hits_.insert(hit);
+    hits_.push_back(hit);
   }
 
   template<class KTRAJ> double KKStrawHitGroup<KTRAJ>::time() const {
     // return time just past the last hit's time.  This insures hit groups are updated after individual hits
+    // that shouldn't matter, but...
     double maxtime(-std::numeric_limits<float>::max());
     unsigned nactive(0);
     for(auto const& hit : hits_){
@@ -116,9 +118,88 @@ namespace mu2e {
 
   template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig,bool first) {
     if(first){
+      // sort the hit ptrs
+      std::sort(hits_.begin(),hits_.end(),StrawHitSort ());
       // look for an updater; if it's there, update the state
-      auto kkphu = miconfig.findUpdater<KKCombinatoricUpdater>();
-      if(kkphu != 0)kkphu->update(*this);
+      // Extend this logic if new StrawHitGroup updaters are introduced
+      auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+      if(cshu != 0){
+        updateCombo(cshu);
+      }
+    }
+  }
+
+  // strawhit-specific functions assocated with Combinatoric updater.  These must go here as the Updater itself
+  // can't be templated
+  template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::updateCombo(const CombinatoricStrawHitUpdater* cshu) {
+    using KinKal::WireHitState;
+    using KinKal::Parameters;
+    using KinKal::Weights;
+    Parameters uparams;
+    Weights uweights;
+    // Find the first active hit
+    auto early = hits_.end();
+    for(auto ish=hits_.begin(); ish != hits_.end(); ++ish){
+      if((*ish)->active()){
+        early = ish;
+        break;
+      }
+    }
+    if(early != hits_.end()){
+      uweights = Weights((*early)->referenceParameters());
+      for (auto const& sh : hits_) {
+        if(sh->active()) uweights -= sh->weight();
+      }
+      uparams = Parameters(uweights);
+    } else {
+      uparams = hits_.front()->referenceParameters();
+      uweights = Weights(uparams);
+    }
+
+    // iterate over all possible states of each hit, and compute the total chisquared for that
+    WHSIterator whsiter(hits_.size(),cshu->allowed());
+    size_t ncombo = whsiter.nCombo();
+    CHI2WHSCOL chi2whscol(0);
+    chi2whscol.reserve(ncombo);
+    do {
+      // loop over hits in order and compute their residuals
+      double chisq(0.0);
+      for(size_t ihit=0;ihit < hits_.size(); ++ihit) {
+        auto const& shptr = hits_[ihit];
+        auto const& whstate = whsiter.current()[ihit];
+        if(whstate != WireHitState::inactive) {
+          // compute the chisquared contribution for this hit against the current parameters
+          RESIDCOL resids;
+          // compute residuals using this state (still WRT the reference parameters)
+          shptr->setResiduals(whstate,resids);
+          for(auto resid : resids) {
+            // update residuals to refer to unbiased parameters
+            DVEC dpvec = uparams.parameters() - shptr->referenceParameters().parameters();
+            double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
+            double pvar = ROOT::Math::Similarity(resid.dRdP(),uparams.covariance());
+            if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: negative variance " << std::endl;
+            Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
+            chisq += uresid.chisq();
+          }
+          // compute the weight from this hits state, and update the parameters for the next hit TODO
+        }
+        // add penalty terms
+        chisq += cshu->penalty(whstate);
+      }
+      // record this chisq with the state of all the hits
+      chi2whscol.emplace_back(chisq,whsiter.current());
+    } while(whsiter.increment());
+    // test
+    if(chi2whscol.size() != ncombo){
+     throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: incomplete chisquared combinatorics" << std::endl;
+    }
+    // Let the updater choose the best state
+    WHSCOL best = cshu->selectBest(chi2whscol);
+    // assign the individual hit states according to this
+    for(size_t ihit=0;ihit < hits_.size(); ++ihit) {
+      auto const& shptr = hits_[ihit];
+      auto const& whstate = best[ihit];
+      shptr->setState(whstate);
     }
   }
 

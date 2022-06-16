@@ -2,7 +2,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
 #include <cmath>
 #include <algorithm>
-#include <stdexcept>
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
 
@@ -40,7 +40,7 @@ namespace mu2e {
         gaspath = M_PI_2*strawRadius();
         wallpath = M_PI*wallThickness();
       }
-      if(isnan(wallpath) || isnan(gaspath))throw std::runtime_error("Invalid KKStrawMaterial pathlength");
+      if(isnan(wallpath) || isnan(gaspath))throw cet::exception("RECO")<<"mu2e::KKStrawMaterial: Invalid pathlength" << std::endl;
       // Model the wire as a diffuse gas, density constrained by DOCA TODO
       // correct for the angle WRT the axis
       double afac = angleFactor(cadata.dirDot());

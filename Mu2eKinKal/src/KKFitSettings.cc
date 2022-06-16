@@ -1,6 +1,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
 #include "KinKal/Detector/WireHitStructs.hh"
@@ -35,6 +36,7 @@ namespace mu2e {
       unsigned nnull(0);
       auto const& nhusettings = fitconfig.nhuConfig();
       auto const& dhusettings = fitconfig.dhuConfig();
+      auto const& chusettings = fitconfig.chuConfig();
       auto const& sxusettings = fitconfig.sxuConfig();
       if(config.schedule_.size() != sxusettings.size())
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of KKStrawXing updaters" <<  std::endl;
@@ -54,6 +56,12 @@ namespace mu2e {
           double maxddoca = std::get<2>(dhusetting);
           DOCAStrawHitUpdater dhupdater(maxdoca,minddoca,maxddoca);
           miconfig.addUpdater(std::any(dhupdater));
+        } else if(ialg == StrawHitUpdaters::Combinatoric) {
+          auto const& chusetting = chusettings.at(ndoca++);
+          double inactivep = std::get<0>(chusetting);
+          double nullambigp = std::get<1>(chusetting);
+          double mindchi2 = std::get<2>(chusetting);
+          CombinatoricStrawHitUpdater chupdater(inactivep,nullambigp,mindchi2);
         } else {
           throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
         }
