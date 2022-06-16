@@ -25,6 +25,7 @@
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/GeneralUtilities/inc/OwningPointerCollection.hh"
 // data
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/Helicity.hh"
@@ -34,7 +35,6 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -68,6 +68,7 @@ namespace mu2e {
   using KTRAJ= KinKal::LoopHelix;
   using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
   using KKTRK = KKTrack<KTRAJ>;
+  using KKTRKCOL = OwningPointerCollection<KKTRK>;
   using KKSTRAWHIT = KKStrawHit<KTRAJ>;
   using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
   using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
@@ -180,7 +181,7 @@ namespace mu2e {
         throw cet::exception("RECO")<<"mu2e::LoopHelixFit:Segment saving configuration error"<< endl;
       // collection handling
       for(const auto& hseedtag : settings().modSettings().helixSeedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
-      produces<KKLoopHelixCollection>();
+      produces<KKTRKCOL>();
       produces<KalSeedCollection>();
       produces<KalHelixAssns>();
       // build the initial seed covariance
@@ -207,7 +208,7 @@ namespace mu2e {
   }
 
   void LoopHelixFit::produce(art::Event& event ) {
-    GeomHandle<mu2e::Calorimeter> calo_h;
+    GeomHandle<Calorimeter> calo_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -216,7 +217,7 @@ namespace mu2e {
     auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // create output
-    unique_ptr<KKLoopHelixCollection> kktrkcol(new KKLoopHelixCollection );
+    unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
     unique_ptr<KalHelixAssns> kkseedassns(new KalHelixAssns());
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();

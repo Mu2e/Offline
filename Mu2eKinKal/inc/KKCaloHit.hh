@@ -10,7 +10,7 @@
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 // art includes
 #include "canvas/Persistency/Common/Ptr.h"
-#include <stdexcept>
+#include "cetlib_except/exception.h"
 namespace mu2e {
   using KinKal::Line;
   using KinKal::MetaIterConfig;
@@ -61,7 +61,7 @@ namespace mu2e {
     }
 
   template <class KTRAJ> Residual const& KKCaloHit<KTRAJ>::refResidual(unsigned ires) const {
-    if(ires !=0)throw std::invalid_argument("Invalid residual");
+    if(ires !=0)throw cet::exception("RECO")<<"mu2e::KKCaloHit: Invalid residual" << std::endl;
     return rresid_;
   }
 
@@ -72,9 +72,8 @@ namespace mu2e {
     // from which it's impossible to ever get back to the correct one.  Active loop checking might be useful eventually too TODO
     //    if(tpca_.usable()) tphint = CAHint(tpca_.particleToca(),tpca_.sensorToca());
     tpca_ = CA(ktrajptr,saxis_,tphint,tpca_.precision());
-    if(!tpca_.usable())throw std::runtime_error("TPOCA failure");
+    if(!tpca_.usable())throw cet::exception("RECO")<<"mu2e::KKCaloHit: TPOCA failure" << std::endl;
   }
-
 
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& config,bool first) {
     // check that TPCA position is consistent with the physical sensor. This can be off if the CA algorithm finds the wrong helix branch

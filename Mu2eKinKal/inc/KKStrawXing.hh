@@ -10,6 +10,7 @@
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
+#include "cetlib_except/exception.h"
 namespace mu2e {
   template <class KTRAJ> class KKStrawXing : public KinKal::ElementXing<KTRAJ> {
     public:
@@ -71,7 +72,7 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
     KinKal::CAHint tphint = tpca_.usable() ?  tpca_.hint() : KinKal::CAHint(axis_.range().mid(),axis_.range().mid());
     tpca_ = CA(ktrajptr,axis_,tphint,precision());
-    if(!tpca_.usable())throw std::runtime_error("KKStrawXing TPOCA failure");
+    if(!tpca_.usable())throw cet::exception("RECO")<<"mu2e::KKStrawXing: TPOCA failure" << std::endl;
  }
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {

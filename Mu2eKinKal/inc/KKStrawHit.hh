@@ -37,6 +37,7 @@ namespace mu2e {
   using KinKal::VEC3;
   using KinKal::DVEC;
   using KinKal::CAHint;
+  using RESIDCOL = std::array<Residual,2>;
 
   template <class KTRAJ> class KKStrawHit : public KinKal::ResidualHit<KTRAJ> {
     public:
@@ -53,14 +54,17 @@ namespace mu2e {
       void updateState(MetaIterConfig const& config,bool first) override;
       unsigned nResid() const override { return 2; } // potentially 2 residuals
       Residual const& refResidual(unsigned ires=tresid) const override;
-      auto const& timeResidual() const { return rresid_[tresid];}
-      auto const& distResidual() const { return rresid_[dresid];}
+      auto const& refResiduals() const { return resids_; }
+      auto const& timeResidual() const { return resids_[tresid];}
+      auto const& distResidual() const { return resids_[dresid];}
       double time() const override { return ptca_.particleToca(); }
       void updateReference(KTRAJPTR const& ktrajptr) override;
       KTRAJPTR const& refTrajPtr() const override { return ptca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // specific to KKStrawHit:
-      void updateResidual(); // update residuals after an internal state change (ambiguity or variances)
+      void setState(WireHitState const& whstate);
+      void setResiduals(WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
+      void updateResiduals() { setResiduals(whstate_, resids_); }
       auto const& closestApproach() const { return ptca_; }
       CA unbiasedClosestApproach() const;
       auto const& hitState() const { return whstate_; }
@@ -85,7 +89,7 @@ namespace mu2e {
       // is the effective signal propagation velocity along the wire, and the time range describes the active wire length
       // (when multiplied by the propagation velocity).
       CA ptca_; // reference time and position of closest approach to the wire; this is generally biased by the hit
-      std::array<Residual,2> rresid_; // residuals WRT most recent reference
+      RESIDCOL resids_; // residuals WRT most recent reference
       double mindoca_; // minimum doca: used in variance and offset for null hits
       double rstraw_; // straw radius
       ComboHit const& chit_; // reference to hit
@@ -121,7 +125,7 @@ namespace mu2e {
     // otherwise use the time at the center of the wire
     CAHint tphint = ptca_.usable() ?  ptca_.hint() : CAHint(wire_.range().mid(),wire_.range().mid());
     ptca_ = CA(ktrajptr,wire_,tphint,precision());
-    if(!ptca_.usable())throw std::runtime_error("WireHit TPOCA failure");
+    if(!ptca_.usable()) throw cet::exception("RECO")<<"mu2e::KKStrawHit: WireHit TPOCA failure" << std::endl;
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -129,7 +133,7 @@ namespace mu2e {
       // look for an updater; if it's there, update the state
       auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
       auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
-      if(nshu != 0 && dshu != 0)throw std::invalid_argument(">1 StrawHit updater specified");
+      if(nshu != 0 && dshu != 0)throw cet::exception("RECO")<<"mu2e::KKStrawHit: >1 StrawHit updater specified" << std::endl;
       if(nshu != 0 || dshu != 0){
         // compute the unbiased closest approach; this is brute force, but works
         CA uca = unbiasedClosestApproach();
@@ -144,42 +148,49 @@ namespace mu2e {
       }
     }
     // then update the residual
-    updateResidual();
+    updateResiduals();
+    // finally update the weight:  this is currently called by Measurement, but should move here TODO
+    // this->updateWeight(miconfig);
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateResidual() {
-    if(whstate_.active()){
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(WireHitState const& whstate) {
+    whstate_ = whstate;
+    updateResiduals();
+  }
+
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(WireHitState const& whstate, RESIDCOL& resids) const {
+    if(whstate.active()){
       // compute drift parameters from PTCA
       DriftInfo dinfo = distanceToTime();
-      if(whstate_.useDrift()){
+      if(whstate.useDrift()){
         // translate PCA to residual. Use ambiguity to convert drift time to a time difference.
-        double dsign = whstate_.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
+        double dsign = whstate.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
         double dt = ptca_.deltaT()-dinfo.tdrift_*dsign;
         // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
         DVEC dRdP = ptca_.dDdP()*dsign/dinfo.vdrift_ - ptca_.dTdP();
-        rresid_[tresid] = Residual(dt,dinfo.tdriftvar_,0.0,true,dRdP);
-        rresid_[dresid] = Residual(); // distance residual isn't used when drift is
+        resids[tresid] = Residual(dt,dinfo.tdriftvar_,0.0,true,dRdP);
+        resids[dresid] = Residual(); // distance residual isn't used when drift is
       } else {
         // interpret DOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
         DVEC dRdP = -ptca_.lSign()*ptca_.dDdP();
         double dd = ptca_.doca();
         double nulldvar =  (mindoca_*mindoca_)/3.0; //
-        rresid_[dresid] = Residual(dd,nulldvar,0.0,true,dRdP);
+        resids[dresid] = Residual(dd,nulldvar,0.0,true,dRdP);
         //  interpret hit time vs TOCA as a residual
         double dt = ptca_.deltaT()  - 0.5*mindoca_/dinfo.vdrift_; // adjust for the average drift time given the cut.  This is algorithm specific FIXME
         // the time constraint variance is the sum of the variance from maxdoca and from the intrinsic measurement variance
         double nulltvar = dinfo.tdriftvar_ + (mindoca_*mindoca_)/(dinfo.vdrift_*dinfo.vdrift_*12.0);
-        rresid_[tresid] = Residual(dt,nulltvar,0.0,true,-ptca_.dTdP());
+        resids[tresid] = Residual(dt,nulltvar,0.0,true,-ptca_.dTdP());
         // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
       }
     } else {
-      rresid_[dresid] = rresid_[tresid] = Residual();
+      resids[dresid] = resids[tresid] = Residual();
     }
   }
 
   template <class KTRAJ> Residual const& KKStrawHit<KTRAJ>::refResidual(unsigned ires) const {
-    if(ires >=2)throw std::invalid_argument("Invalid residual");
-    return rresid_[ires];
+    if(ires >=2)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
+    return resids_[ires];
   }
 
   // compute estimated drift time using calibrated quantities (StrawResponse)
@@ -215,10 +226,10 @@ namespace mu2e {
         break;
     }
     if(detail > 0){
-      if(rresid_[tresid].active())
-        ost << " Active Time Residual " << rresid_[tresid];
-      if(rresid_[dresid].active())
-        ost << " Active Distance Residual " << rresid_[dresid];
+      if(resids_[tresid].active())
+        ost << " Active Time Residual " << resids_[tresid];
+      if(resids_[dresid].active())
+        ost << " Active Distance Residual " << resids_[dresid];
       ost << std::endl;
     }
     if(detail > 1) {

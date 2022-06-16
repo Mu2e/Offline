@@ -29,6 +29,7 @@ namespace mu2e {
       fhicl::Atom<bool> bfieldCorr { Name("BFieldCorrection"), Comment("Apply correction for BField inhomogeneity") };
       fhicl::Atom<bool> ends { Name("ProcessEnds"), Comment("Process purely passive sites at the time range ends") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
+// Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,size_t>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
           " 'Temperature (dimensionless)', 'StrawHitUpdater algorithm'") };
@@ -38,6 +39,9 @@ namespace mu2e {
       using DOCAStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       DOCAStrawHitUpdaterSettings dhuConfig{ Name("DOCAStrawHitUpdaterSettings"), Comment("DOCAStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum DOCA to use L/R ambiguity'") };
+      using CombinatoricStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
+          " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference'") };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
           " 'Maximum DOCA error to use unaveraged material', 'Maximum DOCA to use straw material', 'Maximum DOCA to use unaveraged material'") };
