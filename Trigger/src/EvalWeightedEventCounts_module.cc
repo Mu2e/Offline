@@ -58,6 +58,8 @@ public:
     fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Debug Level"), 0};
     fhicl::Atom<art::InputTag> evtWeightTag{
         Name("protonBunchIntensity"), Comment("Proton Bunch Intenity "), "protonBunchIntensity"};
+    fhicl::Atom<float> nProcess{Name("nEventsProcessed"), Comment("Events Processed"), 1.};
+    fhicl::Atom<std::string> tagName{Name("tagName"), Comment("Tag Name"), "tagName"};
   };
 
   using Parameters = art::EDAnalyzer::Table<Config>;
@@ -90,7 +92,7 @@ public:
     }
   };
 
-  explicit EvalWeightedEventCounts(fhicl::ParameterSet const& pset);
+  explicit EvalWeightedEventCounts(const Parameters& config);
   virtual ~EvalWeightedEventCounts() {}
 
   virtual void beginJob();
@@ -122,11 +124,9 @@ private:
   double _wgSum[3] = {0};
 };
 
-EvalWeightedEventCounts::EvalWeightedEventCounts(fhicl::ParameterSet const& pset) :
-    art::EDAnalyzer(pset), _diagLevel(config().diagLevel()),
-    //    _diagLevel     (pset.get<int>   ("diagLevel", 0)),
-    _evtWeightTag(config().evtWeightTag()), _nProcess(pset.get<float>("nEventsProcessed", 1.)),
-    _tagName(pset.get<std::string>("tagName")), _minPOT(1e6), _maxPOT(4e8) {}
+EvalWeightedEventCounts::EvalWeightedEventCounts(const Parameters& config) :
+    art::EDAnalyzer(config), _diagLevel(config().diagLevel()), _evtWeightTag(config().evtWeightTag()),
+    _nProcess(config().nProcess()), _tagName(config().tagName()), _minPOT(1e6), _maxPOT(4e8) {}
 
 void EvalWeightedEventCounts::bookHistograms() {
   art::ServiceHandle<art::TFileService> tfs;
@@ -193,8 +193,9 @@ void EvalWeightedEventCounts::analyze(const art::Event& event) {
   const static double sigma = 0.7147;
   const static double mub1 = log(mean_b1) - 0.5 * sigma * sigma;
   const static double mub2 = log(mean_b2) - 0.5 * sigma * sigma;
-  const static double xlognorm_norm_b1 = 6.293492e-8; // evaluated in ROOT for cut_off = 1.2e8,
-                                                      // above mub(1/2) and sigma for x*log-normal(x)
+  const static double xlognorm_norm_b1 =
+      6.293492e-8; // evaluated in ROOT for cut_off = 1.2e8,
+                   // above mub(1/2) and sigma for x*log-normal(x)
   const static double xlognorm_norm_b2 = 2.887949e-8; // evaluated in ROOT
   const static double cut_off_norm_b1 =
       ROOT::Math::lognormal_cdf(1.2e8, mub1, sigma); // Due to max cutoff in generation
