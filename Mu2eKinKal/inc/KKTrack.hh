@@ -100,7 +100,7 @@ namespace mu2e {
         }
         if(!added){
           strawhitgroups_.emplace_back(std::make_shared<KKSTRAWHITGROUP>(strawhitptr));
-          hits.emplace_back(static_pointer_cast<MEAS>(strawhitgroups_.back()));
+          hits.emplace_back(std::static_pointer_cast<MEAS>(strawhitgroups_.back()));
         }
       }
     }
