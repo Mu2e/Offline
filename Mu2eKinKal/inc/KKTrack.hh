@@ -113,9 +113,9 @@ namespace mu2e {
       MEASCOL& hits, EXINGCOL& exings) {
     hits.reserve(strawhits_.size() + calohits_.size());
     exings.reserve(strawxings_.size());
-    for(auto const& strawhit : strawhits)hits.emplace_back(static_pointer_cast<MEAS>(strawhit));
-    for(auto const& calohit : calohits)hits.emplace_back(static_pointer_cast<MEAS>(calohit));
-    for(auto const& strawxing : strawxings)exings.emplace_back(static_pointer_cast<EXING>(strawxing));
+    for(auto const& strawhit : strawhits)hits.emplace_back(std::static_pointer_cast<MEAS>(strawhit));
+    for(auto const& calohit : calohits)hits.emplace_back(std::static_pointer_cast<MEAS>(calohit));
+    for(auto const& strawxing : strawxings)exings.emplace_back(std::static_pointer_cast<EXING>(strawxing));
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::extendTrack(Config const& config,

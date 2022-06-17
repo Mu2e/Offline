@@ -1,21 +1,14 @@
 #ifndef RecoDataProducts_CosmicTrack_hh
 #define RecoDataProducts_CosmicTrack_hh
 ////S. Middleton, Feb 2019 - Cosmic track class, main purpose id to store diagnostics.
-#include "TMath.h"
-#include "TMatrixD.h"
 #include "KinKal/General/Vectors.hh"
 #include <vector>
-#include <bitset>
-#include <tuple>
 
 #include "Offline/DataProducts/inc/GenVector.hh"
 
-#include "Offline/Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
-#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
-
 
 using CLHEP::Hep3Vector;
-using namespace std;
+namespace mu2e {
    //Struct To Hold Covarience Info:
    struct TrackCov{
     std::vector<double> Covariance;
@@ -84,8 +77,6 @@ using namespace std;
 
    };
 
-namespace mu2e {
-
   class CosmicTrack{
 
     // Constructors
@@ -146,8 +137,6 @@ namespace mu2e {
         this->MinuitEquation = Track;
       }
 
-      std::tuple <XYZVectorF, double, double> GetTrackPOCAInfo();
-
       XYZVectorF Pos0() const {
         XYZVectorF intercept(this->MinuitParams.A0, 0, this->MinuitParams.B0);
         return intercept;
@@ -193,30 +182,6 @@ namespace mu2e {
         cost_ = cost;
         t0_ = t0;
         mom_ = mom;
-      }
-
-
-      //function to make tuple of kinkal params info
-      std::tuple <double, double, double, double, double, double> KinKalTrackParams() const{
-        XYZVectorF zpos(0.,0.,0);
-        XYZVectorF  zdir(0.,0.,1.);
-        XYZVectorF  pos0(this->MinuitParams.A0, 0, this->MinuitParams.B0);
-        XYZVectorF  dir(this->MinuitParams.A1, -1, this->MinuitParams.B1);
-
-        std::tuple <double,double, double, double, double, double> info;
-        TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
-        XYZVectorF POCA = PCA.point1()-PCA.point2();
-        double DOCA = PCA.dca();
-        double amsign = copysign(1.0, -(zdir.Cross(POCA)).Dot(dir));
-
-        double d0 = amsign*DOCA;
-        double phi0 = dir.Phi();
-        double z0 = PCA.point1().Z();
-        double cost = dir.Z();
-        double t0 = this->MinuitParams.T0; //TODO
-        double mom = 1.0;//TODO
-        info = make_tuple(d0,phi0,z0,cost, t0, mom);
-        return info;
       }
 
       //Kinkal params:

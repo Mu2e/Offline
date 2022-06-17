@@ -26,6 +26,7 @@
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/Mu2eUtilities/inc/CosmicTrackUtils.hh"
 // data
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/Helicity.hh"
@@ -302,7 +303,7 @@ namespace mu2e {
     auto const& scosmic = hseed.track();
     VEC3 bnom(0.0,0.0,0.0);
     // create a PKTRAJ from the CosmicTrack fit result, to seed the KinKal fit.  First, translate the parameters
-    std::tuple <double, double, double, double, double, double> info = scosmic.KinKalTrackParams();//d0,phi0,z0,cost,t0,mom
+    std::tuple <double, double, double, double, double, double> info = KinKalTrackParams(scosmic);//d0,phi0,z0,cost,t0,mom
     DVEC pars;
     pars[KTRAJ::d0_] = get<0>(info);
     pars[KTRAJ::phi0_] = get<1>(info);

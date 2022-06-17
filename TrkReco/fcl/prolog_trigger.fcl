@@ -13,62 +13,62 @@ TrkRecoTrigger : {
     # from the output of the helix finders.
     # We need an instance for each track trigger sequence
     TTHelixMergerUeM : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TThelixFinderUe:Negative" ]
     }
 
     TTHelixMergerUeP : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TThelixFinderUe:Positive" ]
     }
 
     TTHelixMergerDeM : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TThelixFinder:Positive" ]
     }
 
     TTHelixMergerDeP : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TThelixFinder:Negative" ]
     }
 
     TTHelixUCCMergerDeM : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TThelixFinderUCC:Positive" ]
     }
 
     TTHelixUCCMergerDeP : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TThelixFinderUCC:Negative" ]
     }
 
     TTCalHelixMergerDeM : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TTCalHelixFinderDe:Positive" ]
     }
 
     TTCalHelixMergerDeP : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TTCalHelixFinderDe:Negative" ]
     }
 
     TTCalHelixMergerUeM : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TTCalHelixFinderUe:Negative" ]
     }
 
     TTCalHelixMergerUeP : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TTCalHelixFinderUe:Positive" ]
     }
 
     TTCalHelixUCCMergerDeM : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TTCalHelixFinderUCCDe:Positive" ]
     }
 
     TTCalHelixUCCMergerDeP : {
-      module_type : MergeHelices
+      @table::TrkReco.producers.MergeHelices
       HelixFinders  : [ "TTCalHelixFinderUCCDe:Negative" ]
     }
   }
