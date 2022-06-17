@@ -69,8 +69,6 @@ namespace mu2e {
       auto const& strawHits() const { return hits_; }
       bool canAddHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper) const;
       void addHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper);
-      // updater functions
-      void updateCombo(const CombinatoricStrawHitUpdater* cshu);
     private:
       // references to the individual hits in this hit group
       KKSTRAWHITCOL hits_;
@@ -118,88 +116,14 @@ namespace mu2e {
 
   template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig,bool first) {
     if(first){
-      // sort the hit ptrs
+      // sort the hit ptrs by time
       std::sort(hits_.begin(),hits_.end(),StrawHitSort ());
       // look for an updater; if it's there, update the state
       // Extend this logic if new StrawHitGroup updaters are introduced
       auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
       if(cshu != 0){
-        updateCombo(cshu);
+        cshu->updateHits<KTRAJ>(hits_);
       }
-    }
-  }
-
-  // strawhit-specific functions assocated with Combinatoric updater.  These must go here as the Updater itself
-  // can't be templated
-  template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::updateCombo(const CombinatoricStrawHitUpdater* cshu) {
-    using KinKal::WireHitState;
-    using KinKal::Parameters;
-    using KinKal::Weights;
-    Parameters uparams;
-    Weights uweights;
-    // Find the first active hit
-    auto early = hits_.end();
-    for(auto ish=hits_.begin(); ish != hits_.end(); ++ish){
-      if((*ish)->active()){
-        early = ish;
-        break;
-      }
-    }
-    if(early != hits_.end()){
-      uweights = Weights((*early)->referenceParameters());
-      for (auto const& sh : hits_) {
-        if(sh->active()) uweights -= sh->weight();
-      }
-      uparams = Parameters(uweights);
-    } else {
-      uparams = hits_.front()->referenceParameters();
-      uweights = Weights(uparams);
-    }
-
-    // iterate over all possible states of each hit, and compute the total chisquared for that
-    WHSIterator whsiter(hits_.size(),cshu->allowed());
-    size_t ncombo = whsiter.nCombo();
-    CHI2WHSCOL chi2whscol(0);
-    chi2whscol.reserve(ncombo);
-    do {
-      // loop over hits in order and compute their residuals
-      double chisq(0.0);
-      for(size_t ihit=0;ihit < hits_.size(); ++ihit) {
-        auto const& shptr = hits_[ihit];
-        auto const& whstate = whsiter.current()[ihit];
-        if(whstate != WireHitState::inactive) {
-          // compute the chisquared contribution for this hit against the current parameters
-          RESIDCOL resids;
-          // compute residuals using this state (still WRT the reference parameters)
-          shptr->setResiduals(whstate,resids);
-          for(auto resid : resids) {
-            // update residuals to refer to unbiased parameters
-            DVEC dpvec = uparams.parameters() - shptr->referenceParameters().parameters();
-            double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
-            double pvar = ROOT::Math::Similarity(resid.dRdP(),uparams.covariance());
-            if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: negative variance " << std::endl;
-            Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
-            chisq += uresid.chisq();
-          }
-          // compute the weight from this hits state, and update the parameters for the next hit TODO
-        }
-        // add penalty terms
-        chisq += cshu->penalty(whstate);
-      }
-      // record this chisq with the state of all the hits
-      chi2whscol.emplace_back(chisq,whsiter.current());
-    } while(whsiter.increment());
-    // test
-    if(chi2whscol.size() != ncombo){
-     throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: incomplete chisquared combinatorics" << std::endl;
-    }
-    // Let the updater choose the best state
-    WHSCOL best = cshu->selectBest(chi2whscol);
-    // assign the individual hit states according to this
-    for(size_t ihit=0;ihit < hits_.size(); ++ihit) {
-      auto const& shptr = hits_[ihit];
-      auto const& whstate = best[ihit];
-      shptr->setState(whstate);
     }
   }
 
