@@ -78,30 +78,28 @@ TEveEventDisplayUpstream : {
   }
 
 
-
 TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics can use the base)
     @table::TEveEventDisplayBase
-
     filler : {
-      ComboHitCollection                     : "makeSH"
+      ComboHitCollection 		    : NULL
       TimeClusterCollection                  : "MHDeM"
-      CrvRecoPulseCollection          :  "CrvRecoPulses"
-      CosmicTrackSeedCollection         : "CosmicTrackFinderTimeFit"
-      CaloClusterCollection                  :  NULL
+      CrvRecoPulseCollection	  :  "SelectRecoMC"
+      CosmicTrackSeedCollection 	: NULL #"CosmicTrackFinderTimeFit"
+      CaloClusterCollection		  :  NULL
       CaloHitCollection  :  NULL
       HelixSeedCollection       :  NULL
       KalSeedCollection         :  []
       TrkExtTrajCollection      :  NULL
-      MCTrajectoryCollection    :  "compressDigiMCs"
-      addHits                                     : true
-      addTrkHits                                     : true
+      MCTrajectoryCollection    :  NULL #"compressDigiMCs"
+      addHits 			            : false
+      addTrkHits 			            : false
       addTimeClusters                             : true
-      addTracks                                   : true
-      addCrvHits                                  : false
-      addCosmicSeedFit                : false
-      addClusters                                  : false
-      addTrkExtTrajs                        : false
-      addMCTraj                                          : false
+      addTracks 			          : false
+      addCrvHits			          : true
+      addCosmicSeedFit	        : false
+      addClusters			          : false
+      addTrkExtTrajs		        : false
+      addMCTraj				          : false
    }
     show :{
       showCRV : true

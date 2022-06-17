@@ -2,6 +2,7 @@
 #include "Offline/TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCInterface.h"
 
 using namespace mu2e;
+using namespace std;
 namespace mu2e{
 
   /*------------Function to clear lists for new events:-------------*/
