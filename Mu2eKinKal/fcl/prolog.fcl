@@ -13,13 +13,11 @@ Mu2eKinKal : {
   }
   KKMU2E: {
     PrintLevel : 0
-    TimeBuffer : 0.0 # ns
     TPOCAPrecision : 1e-4 # mm
-    NullHitDimension : 2 # constrain position or position+time
-    NullHitVarianceScale : 1.0
-    TimeBuffer : 0.0 # ns
     UseCaloCluster : true
     AddMaterial : true
+    StrawHitGroupDeltaT : 1.0 # ns
+    StrawHitGroupLevel : "uniquepanel"
     CaloTrackerTimeOffset : -1.35 #ns
     CaloPositionResolution : 15.0 #mm
     CaloPropagationSpeed : 200.0 #mm/ns
@@ -30,97 +28,126 @@ Mu2eKinKal : {
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 4.0 # mm
     MaxStrawHitDt : 5.0 # ns
-    MaxStrawHitChi : 4.0
     StrawBuffer : 1 #
     MaxStrawDOCA : 2.5 # mm
   }
 
   KKSEEDFIT: {
     PrintLevel : 0
-    MinNDOF : 5
+    MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 0.1
     DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
     BFieldCorrection : false
+    ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 10.0 ],
-      [ 2.0 ],
-      [ 0.0 ]]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0, 1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ]
+      [ 5.0, 0 ],
+      [ 2.0, 0 ],
+      [ 1.0, 0 ]
     ]
-  }
-
-  KKDRIFTFIT: {
-    PrintLevel : 0
-    MinNDOF : 5
-    MaxNIter : 10
-    Deweight : 1.0e6
-    ConvergenceDeltaChisq : 0.1
-    DivergenceDeltaChisq : 10.0
-    DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
-    BFieldCorrection : false
-    BCorrTolerance : 1e-4 # momemntum fraction
-    MetaIterationSettings : [
-      [ 0.0 ],
-      [ 2.0 ],
-      [ 1.0 ],
-      [ 0.0 ]]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0, 1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ],
-      [ 30.0,  1e-5, 10.0, 5.0  ]
+    NullStrawHitUpdaterSettings : [
+      [ 10.0],
+      [ 5.0 ],
+      [ 4.0 ]
+    ]
+    DOCAStrawHitUpdaterSettings : []
+    CombinatoricStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 10., 10.0 ],
+      [-1.0, 5., 5.0 ],
+      [-1.0, 4., 4.0 ]
     ]
   }
 
   KKSEEDEXT: {
     PrintLevel : 0
-    MinNDOF : 5
+    MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
-    ConvergenceDeltaChisq : 1.0
-    DivergenceDeltaChisq : 50.0
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
     BFieldCorrection : false
+    ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 0.0 ]
+      [ 1.0, 0 ]
     ]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0, 1e-5, 10.0, 5.0  ]
+    NullStrawHitUpdaterSettings : [
+      [ 4.0 ]
+    ]
+    DOCAStrawHitUpdaterSettings : []
+    CombinatoricStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 4.0, 4.0 ]
     ]
   }
 
+  KKDRIFTFIT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DeltaParams : 1e6 # chisquared
+    BFieldCorrection : true
+    ProcessEnds : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      [ 5.0, 0 ],
+      [ 2.0, 0 ],
+      [ 1.0, 0 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 10.0],
+      [ 5.0 ],
+      [ 4.0 ]
+    ]
+    DOCAStrawHitUpdaterSettings : []
+    CombinatoricStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 10.0, 100.0 ],
+      [-1.0, 5.0,  100.0 ],
+      [-1.0, 4.0, 100.0 ]
+    ]
+  }
+
+
   KKDRIFTEXT: {
     PrintLevel : 0
-    MinNDOF : 5
+    MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 1.0
     DivergenceDeltaChisq : 50.0
     DeltaParams : 1e6 # chisquared
-    TimeBuffer : 0.0 # ns
     BFieldCorrection : true
+    ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 0.0 ],
-      [ 2.0 ],
-      [ 1.0 ],
-      [ 0.0 ]
+      [ 1.0, 0 ],
+      [ 2.0, 1 ],
+      [ 1.0, 1 ],
+      [ 0.0, 1 ]
     ]
-    KKStrawHitUpdaterSettings : [
-      [ 30.0,  1e-5, 10.0, 5.0  ],
-      [ 6.0, 1e-5, 0.5, 5.0 ],
-      [ 6.0, 1e-5, 0.5, 5.0 ],
-      [ 6.0, 1e-5, 0.5, 5.0 ]
+    NullStrawHitUpdaterSettings : [
+      [ 5.0 ]
+    ]
+    DOCAStrawHitUpdaterSettings : [
+      [ 6.0, 0.5, 5.0 ],
+      [ 6.0, 0.5, 5.0 ],
+      [ 6.0, 0.5, 5.0 ]
+    ]
+    CombinatoricStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : [
+      [-1.0, 5.0, 5.0 ],
+      [0.5, 4.0, 4.0 ],
+      [0.4, 3.0, 4.0 ],
+      [0.3, 3.0, 4.0 ]
     ]
   }
 

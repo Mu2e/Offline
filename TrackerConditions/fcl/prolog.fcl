@@ -152,7 +152,7 @@ StrawResponse : {
 
   # May 4, 2021 - R. Bonventre, TDCalib.C on CeEndpoints
   eBins : 59
-  eBinWidth : 0.1 
+  eBinWidth : 0.1
   eHalfPVScale : [0.691, 0.691, 0.691, 0.731, 0.803, 0.840, 0.867, 0.887,
     0.904, 0.918, 0.930, 0.943, 0.954, 0.965, 0.974, 0.986, 0.993, 1.000,
     1.009, 1.014, 1.020, 1.029, 1.034, 1.038, 1.044, 1.049, 1.058, 1.058,
@@ -211,7 +211,7 @@ StrawResponse : {
   timeOffsetPanel : []
   timeOffsetStrawHV : []
   timeOffsetStrawCal : []
-  
+
   # Nov 1, 2018 - D. Brown
   useDriftErrorCalibration : true
   driftErrorParameters : [ 0.363559, 0.362685, 0.359959, 0.349385,

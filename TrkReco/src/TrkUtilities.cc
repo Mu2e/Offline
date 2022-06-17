@@ -168,13 +168,18 @@ namespace mu2e {
     }
 
 
-    void fillCaloHitSeed(const TrkCaloHit* tch, TrkCaloHitSeed& caloseed) {
+    void fillCaloHitSeed(const TrkCaloHit* tch, CLHEP::Hep3Vector const& tmom, TrkCaloHitSeed& caloseed) {
       // set the flag according to the status of this hit
       StrawHitFlag hflag;
       if(tch->isActive())hflag.merge(StrawHitFlag::active);
       if(tch->poca().status().success())hflag.merge(StrawHitFlag::doca);
+      Hep3Vector hpos;
+      tch->hitPosition(hpos);
       caloseed = TrkCaloHitSeed(tch->hitT0(), tch->fltLen(), tch->hitLen(),
-          tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(), hflag);
+          tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(),
+          XYZVectorF(hpos),
+          XYZVectorF(tmom),
+          hflag);
     }
     // DNB: the timeOffset() should NOT be added to time(), it is a double correction.
     // I'm leaving for now as the production was run with this error FIXME!

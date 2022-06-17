@@ -60,7 +60,7 @@ namespace mu2e {
       void countHits(art::Event const& evt, HelixSeed const& h1, HelixSeed const& h2, unsigned& nh1, unsigned& nh2, unsigned& nover);
       unsigned countOverlaps(SHIV const& s1, SHIV const& s2);
       void findchisq(art::Event const& evt, HelixSeed const& h2, float& chixy, float& chizphi) const;
-    };
+  };
 
   MergeHelices::MergeHelices(const Parameters& config) : art::EDProducer{config},
     _debug(config().debug()),
