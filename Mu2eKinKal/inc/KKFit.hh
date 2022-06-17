@@ -4,9 +4,11 @@
 // helper class for constructing KinKal Fits using Mu2e data
 //
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitGroup.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 //#include "Mu2eKinKal/inc/KKPanelHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
@@ -17,7 +19,10 @@
 // mu2e Includes
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -30,7 +35,6 @@
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "KinKal/Trajectory/Line.hh"
-#include "KinKal/Detector/StrawMaterial.hh"
 // Other
 #include "cetlib_except/exception.h"
 #include <memory>
@@ -39,7 +43,6 @@
 namespace mu2e {
   using KinKal::WireHitState;
   using KinKal::Line;
-  using KinKal::StrawMaterial;
   using KinKal::TimeRange;
   using KinKal::Status;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
@@ -58,6 +61,10 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
+      using KKSTRAWHITGROUP = KKStrawHitGroup<KTRAJ>;
+      using KKSTRAWHITGROUPPTR = std::shared_ptr<KKSTRAWHITGROUP>;
+      using KKSTRAWHITGROUPCOL = std::vector<KKSTRAWHITGROUPPTR>;
+      using KKSTRAWHITGROUPER = KKStrawHitGrouper<KTRAJ>;
       using KKSTRAWXING = KKStrawXing<KTRAJ>;
       using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
       using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
@@ -74,38 +81,48 @@ namespace mu2e {
       // construct from fit configuration objects
       explicit KKFit(Mu2eConfig const& fitconfig);
       // helper functions used to create components of the fit
-      void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
+      void makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
           PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
-      void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
-          KKTRK& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
-      void addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const;
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PKTRAJ const& pktraj, KKCALOHITCOL& hits) const;
-      void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
-      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& tsave) const;
+      // extend a track with a new configuration, optionally searching for and adding hits and straw material
+      void extendTrack(Config const& config, KKBField const& kkbf, Tracker const& tracker,
+          StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
+          Calorimeter const& calo, CCHandle const& cchandle,
+          KKTRK& kktrk) const;
+      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& tsave) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
-      double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position
+      double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position.  Note this can have multiple solutions if the track reflects in z, FIXME
       bool useCalo() const { return usecalo_; }
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
       bool addMaterial() const { return addmat_; }
+      auto const& strawHitGrouper() const { return shgrouper_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
-      PDGCode::type tpart_;
+       void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
+          KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits) const;
+      void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const;
+      void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
+     PDGCode::type tpart_;
       TrkFitDirection tdir_;
-      float nullvscale_;
-      bool addmat_, usecalo_;
+      bool addmat_, usecalo_; // flags
+      KKSTRAWHITGROUPER shgrouper_; // functor to group KKStrawHits
+      // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions FIXME!
       double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
       double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions FIXME
       double minCaloEnergy_; // minimum CaloCluster energy
       double maxCaloDt_; // maximum track-calo time difference
       double maxCaloDoca_; // maximum track-calo DOCA
-      double tprec_; // TPOCA precision
-      StrawHitFlag addsel_, addrej_;
-      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawHitChi_, maxStrawDoca_;
-      int sbuff_;
-      // cached info computed from the tracker; these should be set on construction, but the tracker doesn't exist
+      // straw hit creation and processing
+      double tprec_; // TPOCA calculation nominal precision
+      StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
+      // parameters controlling adding hits
+      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_;
+      int sbuff_; // maximum distance from the track a strawhit can be to consider it for adding.
+      int printLevel_;
+      // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
       mutable double ymin_, ymax_, umax_; // panel-level info
       mutable double rmin_, rmax_; // plane-level info
       mutable double spitch_;
@@ -115,9 +132,9 @@ namespace mu2e {
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(Mu2eConfig const& fitconfig) :
     tpart_(static_cast<PDGCode::type>(fitconfig.fitParticle())),
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
-    nullvscale_(fitconfig.nullHitVarianceScale()),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
+    shgrouper_(StrawIdMask(fitconfig.strawHitGroupLevel()),fitconfig.strawHitGroupDeltaT()),
     caloDt_(fitconfig.caloDt()),
     caloPosRes_(fitconfig.caloPosRes()),
     caloPropSpeed_(fitconfig.caloPropSpeed()),
@@ -129,19 +146,17 @@ namespace mu2e {
     addrej_(fitconfig.addHitReject()),
     maxStrawHitDoca_(fitconfig.maxStrawHitDOCA()),
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
-    maxStrawHitChi_(fitconfig.maxStrawHitChi()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     sbuff_(fitconfig.strawBuffer()),
+    printLevel_(fitconfig.printLevel()),
     needstrackerinfo_(true)
-  {
-  }
+  {}
 
-  template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KKBField const& kkbf, StrawMaterial const& smat,
+  template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KKBField const& kkbf, KKStrawMaterial const& smat,
       PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
     // initialize hits as null (no drift).  Drift is turned on when updating
     auto const& sprop = tracker.strawProperties();
-    double rstraw = sprop.strawInnerRadius();
     WireHitState whstate(WireHitState::null); // initial wire hit state
 
     // loop over the individual straw combo hits
@@ -161,10 +176,10 @@ namespace mu2e {
       CAHint hint(ptime,htime);
       // compute PTCA between the seed trajectory and this straw
       PTCA ptca(ptraj, wline, hint, tprec_ );
-      // create the material crossing
-      if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
-      // create the hit
-      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, rstraw, combohit, straw, strawidx, strawresponse));
+       // create the hit
+      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, combohit, straw, strawidx, strawresponse));
+     // create the material crossing, including this reference
+      if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
     }
   }
 
@@ -174,7 +189,7 @@ namespace mu2e {
     CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster->diskID(), cluster->cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
     VEC3 ffcog(cog);
-    double lcrystal = calo.caloInfo().getDouble("crystalZLength");
+    double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
     VEC3 crystalF2B = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
     VEC3 sipmcog = ffcog + crystalF2B;
     // create the Line trajectory from this information: signal goes towards the sipm
@@ -182,7 +197,7 @@ namespace mu2e {
     // find the time the seed traj passes the middle of the crystal
     double zt = zTime(ptraj,0.5*(sipmcog.Z()+ffcog.Z()));
     CAHint hint( zt, caxis.t0());
-    // compute a preliminary PTCA between the seed trajectory and this straw.
+    // compute a preliminary PTCA between the seed trajectory and the cluster axis
     PTCA ptca(ptraj, caxis, hint, tprec_ );
     // check that this is within tolerance
     if(ptca.usable() && fabs(ptca.doca()) < maxCaloDoca_){
@@ -199,25 +214,39 @@ namespace mu2e {
     return retval;
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, StrawMaterial const& smat,
-      KKTRK& kktrk, ComboHitCollection const& chcol,
-      KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
-    // initialize hits as null (no drift).  Drift is turned on when updating
+  template <class KTRAJ> void KKFit<KTRAJ>::extendTrack(Config const& exconfig, KKBField const& kkbf, Tracker const& tracker,
+          StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
+          Calorimeter const& calo, CCHandle const& cchandle,
+          KKTRK& kktrk) const {
+    KKSTRAWHITCOL addstrawhits;
+    KKCALOHITCOL addcalohits;
+    KKSTRAWXINGCOL addstrawxings;
+    addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits );
+    if(addMaterial())addStraws(tracker, smat, kktrk, addstrawhits, addstrawxings);
+    if(useCalo()&&kktrk.caloHits().size()==0)addCaloHit(calo, kktrk, cchandle, addcalohits);
+    if(printLevel_ > 1){
+      std::cout << "KKTrk extension adding "
+        << addstrawhits.size() << " StrawHits and "
+        << addcalohits.size() << " CaloHits and "
+        << addstrawxings.size() << " Straw Xings" << std::endl;
+    }
+    kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
+  }
+
+  template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
+      KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& addhits) const {
     auto const& sprop = tracker.strawProperties();
-    double rstraw = sprop.strawInnerRadius();
+   // initialize hits as null (no drift).  Drift is turned on when updating
     WireHitState whstate(WireHitState::null); // initial wire hit state;
     auto const& ftraj = kktrk.fitTraj();
     // build the set of existing hits
     std::set<StrawHitIndex> oldhits;
     for(auto const& strawhit : kktrk.strawHits())oldhits.insert(strawhit->strawHitIndex());
-    std::set<StrawId> oldstraws;
-    for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
-    for(auto const& strawxing : exings)oldstraws.insert(strawxing->strawId());
     for( size_t ich=0; ich < chcol.size();++ich){
       if(oldhits.find(ich)==oldhits.end()){      // make sure this hit wasn't already found
         ComboHit const& strawhit = chcol[ich];
         if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_))){
-          double zt = zTime(kktrk.fitTraj(),strawhit.pos().Z());
+          double zt = zTime(ftraj,strawhit.pos().Z());
           if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
             const Straw& straw = tracker.getStraw(strawhit.strawId());
             auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
@@ -227,8 +256,7 @@ namespace mu2e {
             // compute PTCA between the trajectory and this straw
             PTCA ptca(ftraj, wline, hint, tprec_ );
             if(fabs(ptca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
-              hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, rstraw, strawhit, straw, ich, strawresponse));
-              if(addmat_ && oldstraws.find(straw.id()) == oldstraws.end())exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
+              addhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, strawhit, straw, ich, strawresponse));
             }
           }
         }
@@ -236,71 +264,78 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, StrawMaterial const& smat, KKTRK& kktrk, KKSTRAWXINGCOL& exings) const {
+  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk,
+      KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const {
     // this algorithm assumes the track never hits the same straw twice.  That could be violated by reflecting tracks, and could be addressed
     // by including the time of the Xing as part of its identity.  That would slow things down so it remains to be proven it's a problem  TODO
     // build the set of existing straws
-    if(addmat_){
-      auto const& ftraj = kktrk.fitTraj();
-      // pre-compute some tracker info if needed
-      if(needstrackerinfo_)fillTrackerInfo(tracker);
-      std::set<StrawId> oldstraws;
-      for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
-      for(auto const& strawxing : exings)oldstraws.insert(strawxing->strawId());
-      // test for the track going through a panel.  Start with planes
-      for(auto const& plane : tracker.planes()){
-        if(tracker.planeExists(plane.id())) {
-          double plz = plane.origin().z();
-          // find the track position in at this plane's central z.
-          double zt = zTime(ftraj,plz);
-          auto plpos = ftraj.position3(zt);
-          // rough check on the point radius
-          double rho = plpos.Rho();
-          if(rho > rmin_ && rho < rmax_){
-            // loop over panels in this plane
-            for(auto panel_p : plane.panels()){
-              auto const& panel = *panel_p;
-              // linearly correct position for the track direction due to difference in panel-plane Z position
-              auto tdir = ftraj.direction(zt);
-              double dz = panel.origin().z()-plz;
-              auto papos = plpos + (dz/tdir.Z())*tdir;
-              // convert this position into panel coordinates
-              CLHEP::Hep3Vector cpos(papos.X(),papos.Y(),papos.Z()); // clumsy translation
-              auto pposv = panel.dsToPanel()*cpos;
-              // translate the y position into a rough straw number
-              int istraw = static_cast<int>(rint( (pposv.y()-ymin_)*spitch_));
-              // require this be within the (integral) straw buffer
-              if(istraw >= -sbuff_ && istraw < static_cast<int>(panel.nStraws()) + sbuff_ ){
-                unsigned istrmin = static_cast<unsigned>(std::max(istraw-sbuff_,0));
-                // largest straw is the innermost; use that to test length
-                if(fabs(pposv.x()) < panel.getStraw(istrmin).halfLength() ) {
-                  unsigned istrmax = static_cast<unsigned>(std::min(istraw+sbuff_,static_cast<int>(panel.nStraws())-1));
-                  // loop over straws
-                  for(unsigned istr = istrmin; istr <= istrmax; ++istr){
-                    auto const& straw = panel.getStraw(istr);
-                    // add strawExists test TODO
-                    // make sure we haven't already seen this straw
-                    if(oldstraws.find(straw.id()) == oldstraws.end()){
-                      KinKal::VEC3 vp0(straw.wireEnd(StrawEnd::cal));
-                      KinKal::VEC3 vp1(straw.wireEnd(StrawEnd::hv));
-                      KinKal::VEC3 smid = 0.5*(vp0+vp1);
-                      KinKal::Line wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
-                      CAHint hint(zt,zt);
-                      // compute PTCA between the trajectory and this straw
-                      PTCA ptca(ftraj, wline, hint, tprec_ );
-                      double du = (ptca.sensorPoca().Vect()-smid).R();
-                      if(fabs(ptca.doca()) < maxStrawDoca_ && du < straw.halfLength()){ // add test of chi TODO
-                        exings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
-                      }
-                    } // not existing straw cut
-                  } // straws loop
-                } // straw length cut
-              } // straw index cut
-            } // panels loop
-          } // radius cut
-        } // plane exists cut
-      }  // planes loop
-    } // adding material
+    auto const& ftraj = kktrk.fitTraj();
+    // pre-compute some tracker info if needed
+    if(needstrackerinfo_)fillTrackerInfo(tracker);
+    // list the IDs of existing straws: this speeds the search
+    std::set<StrawId> oldstraws;
+    for(auto const& strawxing : kktrk.strawXings())oldstraws.insert(strawxing->strawId());
+    // create materials for straw hits just added
+    for(auto const& strawhit : addhits){
+      if(oldstraws.find(strawhit->strawId()) == oldstraws.end()){
+        addexings.push_back(std::make_shared<KKSTRAWXING>(strawhit,smat));
+        oldstraws.insert(strawhit->strawId());
+      }
+    }
+    // Go hierarchically through planes and panels to find new straws hit by this track.
+    for(auto const& plane : tracker.planes()){
+      if(tracker.planeExists(plane.id())) {
+        double plz = plane.origin().z();
+        // find the track position in at this plane's central z.
+        double zt = zTime(ftraj,plz);
+        auto plpos = ftraj.position3(zt);
+        // rough check on the point radius
+        double rho = plpos.Rho();
+        if(rho > rmin_ && rho < rmax_){
+          // loop over panels in this plane
+          for(auto panel_p : plane.panels()){
+            auto const& panel = *panel_p;
+            // linearly correct position for the track direction due to difference in panel-plane Z position
+            auto tdir = ftraj.direction(zt);
+            double dz = panel.origin().z()-plz;
+            auto papos = plpos + (dz/tdir.Z())*tdir;
+            // convert this position into panel coordinates
+            CLHEP::Hep3Vector cpos(papos.X(),papos.Y(),papos.Z()); // clumsy translation
+            auto pposv = panel.dsToPanel()*cpos;
+            // translate the y position into a rough straw number
+            int istraw = static_cast<int>(rint( (pposv.y()-ymin_)*spitch_));
+            // require this be within the (integral) straw buffer.  This just reduces the number of calls to PTCA
+            if(istraw >= -sbuff_ && istraw < static_cast<int>(panel.nStraws()) + sbuff_ ){
+              unsigned istrmin = static_cast<unsigned>(std::max(istraw-sbuff_,0));
+              // largest straw is the innermost; use that to test length
+              if(fabs(pposv.x()) < panel.getStraw(istrmin).halfLength() ) {
+                unsigned istrmax = static_cast<unsigned>(std::min(istraw+sbuff_,static_cast<int>(panel.nStraws())-1));
+                // loop over straws
+                for(unsigned istr = istrmin; istr <= istrmax; ++istr){
+                  auto const& straw = panel.getStraw(istr);
+                  // add strawExists test TODO
+                  // make sure we haven't already seen this straw
+                  if(oldstraws.find(straw.id()) == oldstraws.end()){
+                    KinKal::VEC3 vp0(straw.wireEnd(StrawEnd::cal));
+                    KinKal::VEC3 vp1(straw.wireEnd(StrawEnd::hv));
+                    KinKal::VEC3 smid = 0.5*(vp0+vp1);
+                    // eventually this trajectory should be a native member of Straw TODO
+                    KinKal::Line wline(vp0,vp1,zt,CLHEP::c_light); // time is irrelevant: use speed of light as sprop
+                    CAHint hint(zt,zt);
+                    // compute PTCA between the trajectory and this straw
+                    PTCA ptca(ftraj, wline, hint, tprec_ );
+                    double du = (ptca.sensorPoca().Vect()-smid).R();
+                    if(fabs(ptca.doca()) < maxStrawDoca_ && du < straw.halfLength()){ // add test of chi TODO
+                      addexings.push_back(std::make_shared<KKSTRAWXING>(ptca,smat,straw.id()));
+                    }
+                  } // not existing straw cut
+                } // straws loop
+              } // straw length cut
+            } // straw index cut
+          } // panels loop
+        } // radius cut
+      } // plane exists cut
+    }  // planes loop
   } // end function
 
   template <class KTRAJ> void KKFit<KTRAJ>::addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const {
@@ -360,18 +395,41 @@ namespace mu2e {
     needstrackerinfo_= false;
   }
 
+  // this finds the first time at which the traj crosses the given z value, or the nearest
   template <class KTRAJ> double KKFit<KTRAJ>::zTime(PKTRAJ const& ptraj, double zpos) const {
-    if(ptraj.range().null())throw cet::exception("RECO")<<"mu2e::KKFit: PTraj range error in zTime"<< endl;
-    auto bpos = ptraj.position3(ptraj.range().begin());
-    auto epos = ptraj.position3(ptraj.range().end());
-    // assume linear transit to get an initial estimate
-    double tz = ptraj.range().begin() + ptraj.range().range()*(zpos-bpos.Z())/(epos.Z()-bpos.Z());
-    size_t zindex = ptraj.nearestIndex(tz);
-    auto const& traj = ptraj.piece(zindex);
-    bpos = traj.position3(traj.range().begin());
-    epos = traj.position3(traj.range().end());
-    tz = traj.range().begin() + traj.range().range()*(zpos-bpos.Z())/(epos.Z()-bpos.Z());
-    return tz;
+    // bootstrap to find a nearby piece
+    auto bvz = ptraj.front().velocity(ptraj.front().range().begin()).Z();
+    auto evz = ptraj.back().velocity(ptraj.back().range().end()).Z();
+    auto bz = ptraj.front().position3(ptraj.front().range().begin()).Z();
+    auto ez = ptraj.back().position3(ptraj.back().range().end()).Z();
+    // test for outside the ramge.  If so, just extrapolate
+    double ztime(0.);
+    if((zpos-bz)*bvz <0.0){
+      ztime = ptraj.range().begin()-(bz-zpos)/bvz;
+    } else if((ez-zpos)*evz<0.0) {
+      ztime = ptraj.range().end()+(zpos-ez)/evz;
+    } else {
+      // if the traj is monotonic estimate the start.  Otherwise start at the beginning
+      bool monotonic = bvz*evz > 0.0;
+      double vz = monotonic ? 0.5*(bvz+evz) : bvz;
+      double zmid = monotonic ? 0.5*(bz+ez) : bz;
+      // assume linear transit to get an initial estimate
+      ztime = ptraj.range().mid() + (zpos-zmid)/vz;
+      auto zindex = ptraj.nearestIndex(ztime);
+      size_t oldzindex;
+      auto const& traj = ptraj.piece(zindex);
+      unsigned ntries(0);
+      static const unsigned maxntries(10);// this usually converges in 1 iteration, but it can oscillate with bad fits
+      do {
+        oldzindex = zindex;
+        zmid = traj.position3(traj.range().mid()).Z();
+        vz = ptraj.velocity(ptraj.range().mid()).Z();
+        ztime = traj.range().mid() + (zpos-zmid)/vz;
+        zindex = ptraj.nearestIndex(ztime);
+        ++ntries;
+      } while (ntries < maxntries && zindex != oldzindex);
+    }
+    return ztime;
   }
 
   template <class KTRAJ> TimeRange KKFit<KTRAJ>::range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const{
@@ -386,13 +444,13 @@ namespace mu2e {
       tmax = std::max(tmax,calohit->time());
     }
     for( auto const& strawxing : strawxings) {
-      tmin = std::min(tmin,strawxing->crossingTime());
-      tmax = std::max(tmax,strawxing->crossingTime());
+      tmin = std::min(tmin,strawxing->time());
+      tmax = std::max(tmax,strawxing->time());
     }
     return TimeRange(tmin,tmax);
   }
 
-  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, std::set<double> const& savetimes) const {
+  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& savetimes) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
     if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
@@ -416,14 +474,17 @@ namespace mu2e {
       StrawHitFlag hflag = chit.flag();
       if(strawhit->active())hflag.merge(StrawHitFlag::active);
       auto const& ca = strawhit->closestApproach();
+      auto uca = strawhit->unbiasedClosestApproach();
+      KinKal::DriftInfo dinfo = strawhit->distanceToTime();
       TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
-          HitT0(ca.particleToca(), sqrt(ca.tocaVar())),
-          static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
-          static_cast<float>(strawhit->timeResidual().value()), // drift radius isn't a clear concept in KinKal, use time residual instead
-          static_cast<float>(strawhit->time()),
-          static_cast<float>(ca.doca()),
+          HitT0(uca.particleToca(), sqrt(uca.tocaVar())),
+          static_cast<float>(ca.particleToca()), // track length is undefined in KinKal: store reference TOCA instead
+          static_cast<float>(ca.sensorToca()), // hit length is undefined: store TOCA for the sensor instead
+          static_cast<float>(uca.deltaT()), // drift radius isn't a clear concept in KinKal, store (unbiased) drift time instead
+          static_cast<float>(dinfo.tdrift_), // sensor time is redundant with sensorTOCA above: store expected drift time instead
+          static_cast<float>(uca.doca()),
           strawhit->hitState().state_,
-          static_cast<float>(sqrt(strawhit->timeResidual().variance())), // substitute for drift radius error
+          static_cast<float>(sqrt(dinfo.tdriftvar_)), // substitute for drift radius error
           hflag, chit);
       fseed._hits.push_back(seedhit);
     }
@@ -435,17 +496,31 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::active);
         hflag.merge(StrawHitFlag::doca);
       }
-      fseed._chit = TrkCaloHitSeed(HitT0(ca.particleToca(),sqrt(ca.tocaVar())),
-          static_cast<float>(ca.particleToca()), static_cast<float>(ca.sensorToca()),
-          static_cast<float>(ca.doca()),static_cast<float>(sqrt(ca.docaVar())), static_cast<float>(ca.sensorToca()),
-          static_cast<float>(sqrt(ca.tocaVar())),hflag);
+      // calculate the unbiased time at the cluster
+      auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual();
+      HitT0 unbiasedt0(ca.sensorToca()-tres.value(),sqrt(tres.variance()));
+      // calculate the cluster length; this should be the particle path through the CsI, but
+      // for now (backwards compatible) it's the length along the cluster axis FIXME!
+//      double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
+//      double clen = lcrystal - (calohit->caloCluster()->time() - ca.sensorToca())*ca.sensorTraj().speed();
+      double clen = (ca.sensorToca() - calohit->caloCluster()->time() )*ca.sensorTraj().speed();
+      fseed._chit = TrkCaloHitSeed(unbiasedt0,
+          static_cast<float>(ca.particleToca()),
+          static_cast<float>(clen),
+          static_cast<float>(ca.doca()), // cdoca
+          static_cast<float>(sqrt(ca.docaVar())), //rerr
+          static_cast<float>(ca.sensorToca()), // time
+          static_cast<float>(sqrt(ca.tocaVar())), // time error
+          XYZVectorF(ca.sensorTraj().position3(ca.sensorToca())), // cluster position at PTCA
+          XYZVectorF(ca.particleTraj().momentum3(ca.particleToca())), // track momentum at PTCA
+          hflag);
       fseed._chit._cluster = calohit->caloCluster();
     }
     fseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {
       std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
       // compute energy loss
-      sxing->materialEffects(kktrk.refTraj(),KinKal::TimeDir::forwards, dmom, momvar);
+      sxing->materialEffects(KinKal::TimeDir::forwards, dmom, momvar);
       VEC3 dm(dmom[0],dmom[1],dmom[2]);
       // find material crossing properties
       double gaspath(0.0);

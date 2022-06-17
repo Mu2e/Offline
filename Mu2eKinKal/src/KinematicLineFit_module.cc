@@ -41,7 +41,6 @@
 #include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "KinKal/Detector/StrawXing.hh"
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/Trajectory/Line.hh"
 // Mu2eKinKal
@@ -258,7 +257,7 @@ namespace mu2e {
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),strawhits,calohits,strawxings); //TODO - check on this
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitGrouper(),strawhits,strawxings,calohits); //TODO - check on this
           bool save(true);//TODO - when would we like not to save?
           if(save || saveall_){
             // convert KKTrk into KalSeeds for persistence
@@ -270,7 +269,7 @@ namespace mu2e {
             std::set<double> savetimes;
             if(savefull_){
               // loop over all pieces of the fit trajectory and record their times
-              for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj.range().mid());
+              for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj->range().mid());
             } else {
               for(auto zpos : zsave_ ) {
                 // compute the time the trajectory crosses this plane
@@ -281,7 +280,7 @@ namespace mu2e {
               }
             }
 
-            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,savetimes));
+            kkseedcol->push_back(kkfit_.createSeed(*kktrk,fitflag,*calo_h,savetimes));
             //kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             kktrkcol->push_back(kktrk.release());
             // fill assns with the cosmic seed

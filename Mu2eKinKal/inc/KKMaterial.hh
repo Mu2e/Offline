@@ -9,7 +9,7 @@
 #include "fhiclcpp/types/Tuple.h"
 // KinKal
 #include "KinKal/MatEnv/MatDBInfo.hh"
-#include "KinKal/Detector/StrawMaterial.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKFileFinder.hh"
 #include <string>
 namespace mu2e {
@@ -17,7 +17,6 @@ namespace mu2e {
     public:
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      using StrawMaterial = KinKal::StrawMaterial;
       using MatDBInfo = MatEnv::MatDBInfo;
       struct Config {
         fhicl::Atom<std::string> isotopes { Name("isotopes"), Comment("Filename for istotopes information")};
@@ -32,13 +31,13 @@ namespace mu2e {
 
       explicit KKMaterial( Config const& config);
 
-      StrawMaterial const& strawMaterial() const;
+      KKStrawMaterial const& strawMaterial() const;
     private:
       KKFileFinder filefinder_; // used to find material info
       std::string wallmatname_, gasmatname_, wirematname_;
       MatEnv::DetMaterial::energylossmode eloss_;
       mutable MatDBInfo* matdbinfo_; // material database
-      mutable std::unique_ptr<StrawMaterial> smat_; // straw material
+      mutable std::unique_ptr<KKStrawMaterial> smat_; // straw material
   };
 }
 #endif

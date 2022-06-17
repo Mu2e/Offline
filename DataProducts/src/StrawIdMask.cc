@@ -3,7 +3,9 @@
 
 namespace mu2e {
   StrawIdMask::StrawIdMask(std::string const& tomask) {
-    if(0 ==tomask.compare(0,7,"tracker")){
+    if(0 ==tomask.compare(0,4,"none")){
+      *this = StrawIdMask(none);
+    } else if(0 ==tomask.compare(0,7,"tracker")){
       *this = StrawIdMask(tracker);
     } else if(0 ==tomask.compare(0,5,"plane")){
       *this = StrawIdMask(plane);
@@ -17,7 +19,7 @@ namespace mu2e {
       *this = StrawIdMask(uniquestraw);
     } else {
       throw cet::exception("CONFIG")
-        << "strawIdMask: supported values:'tracker', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw'"
+        << "strawIdMask: supported values:'none', 'tracker', 'plane', 'panel', 'uniquepanel', 'straw', 'uniquestraw'"
         << "  Input was: " << tomask
         << "\n";
     }
@@ -25,6 +27,8 @@ namespace mu2e {
 
   std::string StrawIdMask::levelName(Level level) {
     switch (level) {
+      case none:
+        return std::string("none");
       case tracker:
         return std::string("tracker");
       case plane:
@@ -44,7 +48,9 @@ namespace mu2e {
 
   uint16_t StrawIdMask::levelMask(Level level) {
     switch (level) {
+      case none :
       case tracker :
+      default:
         return 0;
       case plane :
         return StrawId::_planemsk;
@@ -56,8 +62,6 @@ namespace mu2e {
         return StrawId::_panelmsk | StrawId::_planemsk;
       case uniquestraw :
         return StrawId::_strawmsk | StrawId::_panelmsk | StrawId::_planemsk;
-      default:
-        return 0;
     }
     return 0;
   }
