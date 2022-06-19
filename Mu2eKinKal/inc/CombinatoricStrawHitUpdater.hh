@@ -29,10 +29,10 @@ namespace mu2e {
           return std::get<0>(a).chisqPerNDOF() < std::get<0>(b).chisqPerNDOF();
         }
       };
-      CombinatoricStrawHitUpdater(double inactivep, double nullp, double mindchi2) :
-        inactivep_(inactivep), nullp_(nullp), mindchi2_(mindchi2),
+      CombinatoricStrawHitUpdater(double inactivep, double nullp, double mindchi2,int diag=0) :
+        inactivep_(inactivep), nullp_(nullp), mindchi2_(mindchi2),diag_(diag),
         allowed_{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right} {}
-      WHSCOL selectBest(CHI2WHSCOL& chi2s) const; // find the best configuration given the total chisq for each
+      CHI2WHSCOL::const_iterator selectBest(CHI2WHSCOL& chi2s) const; // find the best configuration given the total chisq for each
       double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
       double inactivePenalty() const { return inactivep_;}
       double nullPenalty() const { return nullp_;}
@@ -44,6 +44,7 @@ namespace mu2e {
       double inactivep_; // chisquared penalty for inactive hits
       double nullp_; // chisquared penalty for null hits
       double mindchi2_; // minimum chisquared separation to consider 'significant'
+      int diag_; // diag print level
       WHSCOL allowed_; // allowed states
   };
 
@@ -107,9 +108,11 @@ namespace mu2e {
           ++ndof; // count this as a DOF
         }
       }
-      std::cout << "chisquared, ndof " << chisq << ndof << " States ";
-      for(auto whstate : whsiter.current()) std::cout << "  " << whstate.state_;
-      std::cout << std::endl;
+      if(diag_ > 1){
+        std::cout << "chi2 " << chisq << " ndof " << ndof << " States ";
+        for(auto whstate : whsiter.current()) std::cout << "  " << whstate.state_;
+        std::cout << std::endl;
+      }
       // record this chisq with the state of all the hits
       chi2whscol.emplace_back(Chisq(chisq,ndof),whsiter.current());
     } while(whsiter.increment());
@@ -117,13 +120,27 @@ namespace mu2e {
     if(chi2whscol.size() != ncombo){
       throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: incomplete chisquared combinatorics" << std::endl;
     }
-    // Let the updater choose the best state
-    WHSCOL best = selectBest(chi2whscol);
-    // assign the individual hit states according to this
-    for(size_t ihit=0;ihit < hits.size(); ++ihit) {
-      auto const& shptr = hits[ihit];
-      auto const& whstate = best[ihit];
-      shptr->setState(whstate);
+    // choose the best state
+    auto best = selectBest(chi2whscol);
+    if(best != chi2whscol.end()){
+      auto const& bestchi2whs = *best;
+      auto const& bestchisq = std::get<0>(bestchi2whs);
+      auto const& bestwhsc = std::get<1>(bestchi2whs);
+      if(diag_ > 0){
+        std::cout << "Best Combo chi2 " << bestchisq << " states ";
+        for(auto whs : bestwhsc)std::cout << "  " << whs.state_;
+        std::cout << std::endl;
+      }
+      // assign the individual hit states according to this
+      for(size_t ihit=0;ihit < hits.size(); ++ihit) {
+        auto const& shptr = hits[ihit];
+        auto const& whstate = bestwhsc[ihit];
+        shptr->setState(whstate);
+      }
+    } else {
+      if(diag_ > 0){
+        std::cout << "No best combo found" << std::endl;
+      }
     }
   }
 }

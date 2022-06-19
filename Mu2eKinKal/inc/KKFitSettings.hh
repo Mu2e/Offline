@@ -5,6 +5,7 @@
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "KinKal/Fit/Config.hh"
@@ -33,15 +34,15 @@ namespace mu2e {
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,size_t>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
           " 'Temperature (dimensionless)', 'StrawHitUpdater algorithm'") };
-      using NullStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float>>;
+      using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float>>;
       NullStrawHitUpdaterSettings nhuConfig{ Name("NullStrawHitUpdaterSettings"), Comment("NullStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit'") };
-      using DOCAStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      using DOCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float>>;
       DOCAStrawHitUpdaterSettings dhuConfig{ Name("DOCAStrawHitUpdaterSettings"), Comment("DOCAStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum DOCA to use L/R ambiguity'") };
-      using CombinatoricStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
-          " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference'") };
+          " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference', 'diag level'") };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
           " 'Maximum DOCA error to use unaveraged material', 'Maximum DOCA to use straw material', 'Maximum DOCA to use unaveraged material'") };
