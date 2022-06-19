@@ -69,6 +69,18 @@ namespace mu2e {
       uparams = hits.front()->referenceParameters();
       uweights = Weights(uparams);
     }
+    // check determinant
+    double determinant;
+    if(!uparams.covariance().Det(determinant) || determinant < 0.0){
+      if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
+// for now, nullify these hits and move on
+      for(size_t ihit=0;ihit < hits.size(); ++ihit) {
+        static WireHitState nullstate(WireHitState::null);
+        auto const& shptr = hits[ihit];
+        shptr->setState(nullstate);
+      }
+      return;
+    }
 
     // iterate over all possible states of each hit, and compute the total chisquared for that
     WHSIterator whsiter(hits.size(),allowed());
@@ -93,7 +105,10 @@ namespace mu2e {
               // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
               double pvar = ROOT::Math::Similarity(resid.dRdP(),uparams.covariance());
-              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << std::endl;
+//              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
+              double determinant(0.0);
+              if(pvar<0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
+                << " determinant = " << determinant << std::endl;
               Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
               chisq += uresid.chisq();
               ++ndof;
