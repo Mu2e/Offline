@@ -74,11 +74,13 @@ namespace mu2e {
     if(!uparams.covariance().Det(determinant) || determinant < 0.0){
       if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
 // for now, nullify these hits and move on
-      for(size_t ihit=0;ihit < hits.size(); ++ihit) {
-        static WireHitState nullstate(WireHitState::null);
-        auto const& shptr = hits[ihit];
-        shptr->setState(nullstate);
-      }
+// for now, do nothing
+//      for(size_t ihit=0;ihit < hits.size(); ++ihit) {
+//        static WireHitState nullstate(WireHitState::null);
+//        auto const& shptr = hits[ihit];
+//        shptr->setState(nullstate);
+//      }
+//      TODO: try a more careful weight subtraction including material effects.
       return;
     }
 
