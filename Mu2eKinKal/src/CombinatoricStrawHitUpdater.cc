@@ -10,12 +10,12 @@ namespace mu2e {
       return 0.0;
   }
 
-  WHSCOL CombinatoricStrawHitUpdater::selectBest(CHI2WHSCOL& chi2s) const {
+ CHI2WHSCOL::const_iterator CombinatoricStrawHitUpdater::selectBest(CHI2WHSCOL& chi2s) const {
     // sort the results by chisquared
     std::sort(chi2s.begin(),chi2s.end(), CHI2Comp());
     // pick the best configuration and update the hits
     // TODO: Test if the best solutions are nearly degenerate, and if so and they involve flipping a single hit, chose the most conservative option
     // This is especially important for single-hit 'groups'
-    return std::get<1>(chi2s.front());
+    return chi2s.begin();
   }
 }

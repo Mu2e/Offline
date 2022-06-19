@@ -12,7 +12,7 @@ namespace mu2e {
   class WHSIterator {
     public:
       WHSIterator(size_t nhits, WHSCOL const& allowed) : nhits_(nhits),allowed_(allowed), current_(nhits, allowed_.front()),
-      indices_(4,0), ihit_(0) {}
+      indices_(4,0){}
       size_t nCombo() const { return static_cast<size_t>(std::rint(std::pow(allowed_.size(),nhits_))); }
       bool increment();
       void reset();
@@ -22,7 +22,6 @@ namespace mu2e {
       WHSCOL const& allowed_; // allowed states for each hit
       WHSCOL current_; // current state of all hits
       std::vector<size_t> indices_; // current indices into allowed states for each hit
-      size_t ihit_; // current hit being incremented
   };
 }
 #endif
