@@ -15,7 +15,7 @@ namespace mu2e {
     std::sort(chi2s.begin(),chi2s.end(), CHI2Comp());
     // pick the best configuration and update the hits
     // TODO: Test if the best solutions are nearly degenerate, and if so and they involve flipping a single hit, chose the most conservative option
-    // This is especially important for single-hit 'groups'
+    // This is especially important for single-hit 'clusters'
     return chi2s.begin();
   }
 }

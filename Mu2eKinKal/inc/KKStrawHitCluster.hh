@@ -1,7 +1,7 @@
-#ifndef Mu2eKinKal_KKStrawHitGroup_hh
-#define Mu2eKinKal_KKStrawHitGroup_hh
+#ifndef Mu2eKinKal_KKStrawHitCluster_hh
+#define Mu2eKinKal_KKStrawHitCluster_hh
 //
-//  class describing a group of nearby (in time and space) straw hits which need to be updated coherently.
+//  class describing a cluster of nearby (in time and space) straw hits which need to be updated coherently.
 //  Even though it is formally a 'Hit', its only interaction with the fit is in iteration updating.
 //
 #include "KinKal/Detector/Hit.hh"
@@ -16,42 +16,42 @@
 namespace mu2e {
 
   //
-  // Functor to define which StrawHits belong in a single group
+  // Functor to define which StrawHits belong in a single cluster
   //
-  template <class KTRAJ> class KKStrawHitGrouper {
+  template <class KTRAJ> class KKStrawHitClusterer {
     public:
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
-      KKStrawHitGrouper( StrawIdMask groupLevel, double groupDt) :
-        groupLevel_(groupLevel), groupDt_(groupDt) {}
-      // decide if 2 hits should be grouped
-      bool group(KKSTRAWHIT const& sh1, KKSTRAWHIT const& sh2) const {
-        return groupLevel_.equal(sh1.strawId(),sh2.strawId()) &&
-          fabs(sh1.time()-sh2.time()) < groupDt_;
+      KKStrawHitClusterer( StrawIdMask clusterLevel, double clusterDt) :
+        clusterLevel_(clusterLevel), clusterDt_(clusterDt) {}
+      // decide if 2 hits should be clustered
+      bool cluster(KKSTRAWHIT const& sh1, KKSTRAWHIT const& sh2) const {
+        return clusterLevel_.equal(sh1.strawId(),sh2.strawId()) &&
+          fabs(sh1.time()-sh2.time()) < clusterDt_;
       }
-      auto groupLevel() const { return groupLevel_.level(); }
-      double groupDt() const { return groupDt_; }
+      auto clusterLevel() const { return clusterLevel_.level(); }
+      double clusterDt() const { return clusterDt_; }
     private:
-      StrawIdMask groupLevel_; // level to group straw hits
-      double groupDt_; // max particle time difference between straw hits in a group
+      StrawIdMask clusterLevel_; // level to cluster straw hits
+      double clusterDt_; // max particle time difference between straw hits in a cluster
   };
 
-  template <class KTRAJ> class KKStrawHitGroup : public KinKal::Hit<KTRAJ> {
+  template <class KTRAJ> class KKStrawHitCluster : public KinKal::Hit<KTRAJ> {
     public:
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
-      using KKSTRAWHITGROUPER = KKStrawHitGrouper<KTRAJ>;
+      using KKSTRAWHITCLUSTERER = KKStrawHitClusterer<KTRAJ>;
       // sort hits by time
       struct StrawHitSort {
         bool operator ()( const KKSTRAWHITPTR& hit1, const KKSTRAWHITPTR& hit2) {
           return hit1->time() < hit2->time(); }
       };
-      KKStrawHitGroup() {}
+      KKStrawHitCluster() {}
       // create from a single hit
-      KKStrawHitGroup(KKSTRAWHITPTR const& hitptr);
+      KKStrawHitCluster(KKSTRAWHITPTR const& hitptr);
       // create from a collection of panel hits
-      KKStrawHitGroup(KKSTRAWHITCOL const& hits,KKSTRAWHITGROUPER const& grouper);
+      KKStrawHitCluster(KKSTRAWHITCOL const& hits,KKSTRAWHITCLUSTERER const& clusterer);
       //Hit interface
       bool active() const override { return false; } // panel hits are never active
       KinKal::Chisq chisq(KinKal::Parameters const& params) const override { return KinKal::Chisq(); }
@@ -64,45 +64,45 @@ namespace mu2e {
       void updateState(KinKal::MetaIterConfig const& config,bool first) override;
       void updateWeight(MetaIterConfig const& config) override {} // to be removed FIXME
       void print(std::ostream& ost=std::cout,int detail=0) const override;
-      ~KKStrawHitGroup(){}
-      // KKStrawHitGroup specific interface
+      ~KKStrawHitCluster(){}
+      // KKStrawHitCluster specific interface
       auto const& strawHits() const { return hits_; }
-      bool canAddHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper) const;
-      void addHit(KKSTRAWHITPTR hit,KKSTRAWHITGROUPER const& grouper);
+      bool canAddHit(KKSTRAWHITPTR hit,KKSTRAWHITCLUSTERER const& clusterer) const;
+      void addHit(KKSTRAWHITPTR hit,KKSTRAWHITCLUSTERER const& clusterer);
     private:
-      // references to the individual hits in this hit group
+      // references to the individual hits in this hit cluster
       KKSTRAWHITCOL hits_;
   };
 
-  template<class KTRAJ>  KKStrawHitGroup<KTRAJ>::KKStrawHitGroup(KKSTRAWHITPTR const& hitptr) {
+  template<class KTRAJ>  KKStrawHitCluster<KTRAJ>::KKStrawHitCluster(KKSTRAWHITPTR const& hitptr) {
     hits_.push_back(hitptr);
   }
 
-  template<class KTRAJ>  KKStrawHitGroup<KTRAJ>::KKStrawHitGroup(KKSTRAWHITCOL const& hits,KKSTRAWHITGROUPER const& grouper) : hits_(hits) {
-    // verify grouping
+  template<class KTRAJ>  KKStrawHitCluster<KTRAJ>::KKStrawHitCluster(KKSTRAWHITCOL const& hits,KKSTRAWHITCLUSTERER const& clusterer) : hits_(hits) {
+    // verify clustering
     for (auto ihit=hits_.begin(); ihit != hits_.end(); ++ihit){
       for (auto jhit=ihit+1; jhit != hits_.end(); ++jhit){
-        if(!grouper.group(**ihit,**jhit))
-          throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: KKStrawHits don't belong in group"<< std::endl;
+        if(!clusterer.cluster(**ihit,**jhit))
+          throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: KKStrawHits don't belong in cluster"<< std::endl;
       }
     }
   }
 
-  template<class KTRAJ> bool KKStrawHitGroup<KTRAJ>::canAddHit(KKSTRAWHITPTR hit, KKSTRAWHITGROUPER const& grouper) const {
+  template<class KTRAJ> bool KKStrawHitCluster<KTRAJ>::canAddHit(KKSTRAWHITPTR hit, KKSTRAWHITCLUSTERER const& clusterer) const {
     bool add(true);
     for(auto const& myhit : hits_)
-      add &= grouper.group(*myhit,*hit);
+      add &= clusterer.cluster(*myhit,*hit);
     return add;
   }
 
-  template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::addHit(KKSTRAWHITPTR hit, KKSTRAWHITGROUPER const& grouper) {
-    bool add = canAddHit(hit,grouper);
-    if(!add)throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: KKStrawHit doesn't belong in group"<< std::endl;
+  template<class KTRAJ> void KKStrawHitCluster<KTRAJ>::addHit(KKSTRAWHITPTR hit, KKSTRAWHITCLUSTERER const& clusterer) {
+    bool add = canAddHit(hit,clusterer);
+    if(!add)throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: KKStrawHit doesn't belong in cluster"<< std::endl;
     hits_.push_back(hit);
   }
 
-  template<class KTRAJ> double KKStrawHitGroup<KTRAJ>::time() const {
-    // return time just past the last hit's time.  This insures hit groups are updated after individual hits
+  template<class KTRAJ> double KKStrawHitCluster<KTRAJ>::time() const {
+    // return time just past the last hit's time.  This insures hit clusters are updated after individual hits
     // that shouldn't matter, but...
     double maxtime(-std::numeric_limits<float>::max());
     unsigned nactive(0);
@@ -114,12 +114,12 @@ namespace mu2e {
     return maxtime + epsilon;
   }
 
-  template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig,bool first) {
+  template<class KTRAJ> void KKStrawHitCluster<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig,bool first) {
     if(first){
       // sort the hit ptrs by time
       std::sort(hits_.begin(),hits_.end(),StrawHitSort ());
       // look for an updater; if it's there, update the state
-      // Extend this logic if new StrawHitGroup updaters are introduced
+      // Extend this logic if new StrawHitCluster updaters are introduced
       auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
       if(cshu != 0){
         cshu->updateHits<KTRAJ>(hits_);
@@ -127,13 +127,13 @@ namespace mu2e {
     }
   }
 
-  template<class KTRAJ> void KKStrawHitGroup<KTRAJ>::print(std::ostream& ost, int detail) const {
+  template<class KTRAJ> void KKStrawHitCluster<KTRAJ>::print(std::ostream& ost, int detail) const {
     unsigned nactive(0), ndrift(0);
     for(auto const& hit : hits_){
       if(hit->active()) ++nactive;
       if(hit->hitState().useDrift()) ++ndrift;
     }
-    ost << " KKStrawHitGroup with " << nactive << " active hits with " << ndrift  << " using drift information among " << hits_.size() << " total" << std::endl;
+    ost << " KKStrawHitCluster with " << nactive << " active hits with " << ndrift  << " using drift information among " << hits_.size() << " total" << std::endl;
     if(detail > 0){
       for(auto const& hit : hits_) {
         ost << hit->strawId() << std::endl;
