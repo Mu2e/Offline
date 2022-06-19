@@ -6,7 +6,7 @@
 #include "KinKal/Fit/Track.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawHitGroup.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 namespace mu2e {
@@ -19,10 +19,10 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
-      using KKSTRAWHITGROUP = KKStrawHitGroup<KTRAJ>;
-      using KKSTRAWHITGROUPPTR = std::shared_ptr<KKSTRAWHITGROUP>;
-      using KKSTRAWHITGROUPCOL = std::vector<KKSTRAWHITGROUPPTR>;
-      using KKSTRAWHITGROUPER = KKStrawHitGrouper<KTRAJ>;
+      using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
+      using KKSTRAWHITCLUSTERPTR = std::shared_ptr<KKSTRAWHITCLUSTER>;
+      using KKSTRAWHITCLUSTERCOL = std::vector<KKSTRAWHITCLUSTERPTR>;
+      using KKSTRAWHITCLUSTERER = KKStrawHitClusterer<KTRAJ>;
       using KKSTRAWXING = KKStrawXing<KTRAJ>;
       using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
       using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
@@ -37,7 +37,7 @@ namespace mu2e {
       using EXINGCOL = std::vector<EXINGPTR>;
       using TRACK = KinKal::Track<KTRAJ>;
       // construct from configuration, fit environment, and hits and materials
-      KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITGROUPER const& shgrouper,
+      KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITCLUSTERER const& shclusterer,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits );
       // extend the track according to new configuration, hits, and/or exings
       void extendTrack(Config const& config,
@@ -45,62 +45,62 @@ namespace mu2e {
       // accessors
       PDGCode::type fitParticle() const { return tpart_;}
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
-      KKSTRAWHITGROUPCOL const& strawHitGroups() const { return strawhitgroups_; }
+      KKSTRAWHITCLUSTERCOL const& strawHitClusters() const { return strawhitclusters_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
       void printFit(std::ostream& ost=std::cout,int detail=0) const;
     private:
       // record the particle type
       PDGCode::type tpart_;
-      KKSTRAWHITGROUPER shgrouper_; // grouping functor
+      KKSTRAWHITCLUSTERER shclusterer_; // clustering functor
       KKSTRAWHITCOL strawhits_;  // straw hits used in this fit
       KKSTRAWXINGCOL strawxings_;  // straw material crossings used in this fit
-      KKSTRAWHITGROUPCOL strawhitgroups_;  // straw hit groups used in this fit
+      KKSTRAWHITCLUSTERCOL strawhitclusters_;  // straw hit clusters used in this fit
       KKCALOHITCOL calohits_;  // calo hits used in this fit
       // utility function to convert to generic types
       void convertTypes( KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings,KKCALOHITCOL const& calohits,
           MEASCOL& hits, EXINGCOL& exings);
-      // add hits to groups
-      void addHitGroups(KKSTRAWHITCOL const& strawhits,MEASCOL& hits);
+      // add hits to clusters
+      void addHitClusters(KKSTRAWHITCOL const& strawhits,MEASCOL& hits);
   };
 
   template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart,
-      KKSTRAWHITGROUPER const& shgrouper,
+      KKSTRAWHITCLUSTERER const& shclusterer,
       KKSTRAWHITCOL const& strawhits,
       KKSTRAWXINGCOL const& strawxings,
       KKCALOHITCOL const& calohits) :
-    KinKal::Track<KTRAJ>(config,bfield,seedtraj), tpart_(tpart), shgrouper_(shgrouper),
+    KinKal::Track<KTRAJ>(config,bfield,seedtraj), tpart_(tpart), shclusterer_(shclusterer),
     strawhits_(strawhits),
     strawxings_(strawxings),
     calohits_(calohits) {
       MEASCOL hits; // polymorphic container of hits
       EXINGCOL exings; // polymorphic container of detector element crossings
-      // add the hits to groups, as required
-      addHitGroups(strawhits_,hits);
+      // add the hits to clusters, as required
+      addHitClusters(strawhits_,hits);
       if(this->config().plevel_ > 0){
-        std::cout << "created " << strawhitgroups_.size() << " StrawHitGroups " << std::endl;
-        for (auto const& shgroup : strawhitgroups_) {
-          shgroup->print(std::cout,this->config().plevel_);
+        std::cout << "created " << strawhitclusters_.size() << " StrawHitClusters " << std::endl;
+        for (auto const& shcluster : strawhitclusters_) {
+          shcluster->print(std::cout,this->config().plevel_);
         }
       }
       convertTypes(strawhits_, strawxings_, calohits_,  hits,exings);
       this->fit(hits,exings);
     }
 
-  template <class KTRAJ> void KKTrack<KTRAJ>::addHitGroups(KKSTRAWHITCOL const& strawhits,MEASCOL& hits) {
-    if(shgrouper_.groupLevel() != StrawIdMask::none){
+  template <class KTRAJ> void KKTrack<KTRAJ>::addHitClusters(KKSTRAWHITCOL const& strawhits,MEASCOL& hits) {
+    if(shclusterer_.clusterLevel() != StrawIdMask::none){
       for(auto const& strawhitptr : strawhits){
         bool added(false);
-        for(auto& shgroupptr : strawhitgroups_) {
-          if(shgroupptr->canAddHit(strawhitptr,shgrouper_)){
-            shgroupptr->addHit(strawhitptr,shgrouper_);
+        for(auto& shclusterptr : strawhitclusters_) {
+          if(shclusterptr->canAddHit(strawhitptr,shclusterer_)){
+            shclusterptr->addHit(strawhitptr,shclusterer_);
             added = true;
             break;
           }
         }
         if(!added){
-          strawhitgroups_.emplace_back(std::make_shared<KKSTRAWHITGROUP>(strawhitptr));
-          hits.emplace_back(std::static_pointer_cast<MEAS>(strawhitgroups_.back()));
+          strawhitclusters_.emplace_back(std::make_shared<KKSTRAWHITCLUSTER>(strawhitptr));
+          hits.emplace_back(std::static_pointer_cast<MEAS>(strawhitclusters_.back()));
         }
       }
     }
@@ -120,25 +120,25 @@ namespace mu2e {
 
   template <class KTRAJ> void KKTrack<KTRAJ>::extendTrack(Config const& config,
       KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits) {
-    KKSTRAWHITGROUPCOL strawhitgroup;
+    KKSTRAWHITCLUSTERCOL strawhitcluster;
     // convert the hits and Xings to generic types and extend the track
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings
-    addHitGroups(strawhits,hits);
+    addHitClusters(strawhits,hits);
     if(strawhits.size() > 0 && this->config().plevel_ > 0){
       unsigned nhit(0);
-      std::cout << "extended " << strawhits.size() << " hits into " << strawhitgroups_.size() << " StrawHitGroups " << std::endl;
-      for (auto const& shgroup : strawhitgroups_) {
+      std::cout << "extended " << strawhits.size() << " hits into " << strawhitclusters_.size() << " StrawHitClusters " << std::endl;
+      for (auto const& shcluster : strawhitclusters_) {
         for(auto const& strawhit : strawhits ) {
-          for (auto const& sh : shgroup->strawHits()) {
+          for (auto const& sh : shcluster->strawHits()) {
             if(strawhit->strawId() == sh->strawId()){
-              shgroup->print(std::cout,this->config().plevel_);
+              shcluster->print(std::cout,this->config().plevel_);
             }
           }
         }
-        nhit += shgroup->strawHits().size();
+        nhit += shcluster->strawHits().size();
       }
-      if(nhit != strawhits_.size()+strawhits.size()) std::cout << "group hit sum doesn't match " << nhit << " " << strawhits_.size() << std::endl;
+      if(nhit != strawhits_.size()+strawhits.size()) std::cout << "cluster hit sum doesn't match " << nhit << " " << strawhits_.size() << std::endl;
     }
     convertTypes(strawhits,strawxings,calohits,hits,exings);
     this->extend(config,hits,exings);

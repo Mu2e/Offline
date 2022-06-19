@@ -4,7 +4,7 @@
 #include <vector>
 #include <cmath>
 //
-//  Iterator across all allowed states of a group of N StrawHits
+//  Iterator across all allowed states of a cluster of StrawHits
 //
 namespace mu2e {
   using KinKal::WireHitState;

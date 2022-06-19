@@ -4,7 +4,7 @@
 // helper class for constructing KinKal Fits using Mu2e data
 //
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawHitGroup.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 //#include "Mu2eKinKal/inc/KKPanelHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -61,10 +61,10 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
-      using KKSTRAWHITGROUP = KKStrawHitGroup<KTRAJ>;
-      using KKSTRAWHITGROUPPTR = std::shared_ptr<KKSTRAWHITGROUP>;
-      using KKSTRAWHITGROUPCOL = std::vector<KKSTRAWHITGROUPPTR>;
-      using KKSTRAWHITGROUPER = KKStrawHitGrouper<KTRAJ>;
+      using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
+      using KKSTRAWHITCLUSTERPTR = std::shared_ptr<KKSTRAWHITCLUSTER>;
+      using KKSTRAWHITCLUSTERCOL = std::vector<KKSTRAWHITCLUSTERPTR>;
+      using KKSTRAWHITCLUSTERER = KKStrawHitClusterer<KTRAJ>;
       using KKSTRAWXING = KKStrawXing<KTRAJ>;
       using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
       using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
@@ -97,7 +97,7 @@ namespace mu2e {
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
       bool addMaterial() const { return addmat_; }
-      auto const& strawHitGrouper() const { return shgrouper_; }
+      auto const& strawHitClusterer() const { return shclusterer_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
        void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
@@ -107,7 +107,7 @@ namespace mu2e {
      PDGCode::type tpart_;
       TrkFitDirection tdir_;
       bool addmat_, usecalo_; // flags
-      KKSTRAWHITGROUPER shgrouper_; // functor to group KKStrawHits
+      KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions FIXME!
       double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
@@ -134,7 +134,7 @@ namespace mu2e {
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
-    shgrouper_(StrawIdMask(fitconfig.strawHitGroupLevel()),fitconfig.strawHitGroupDeltaT()),
+    shclusterer_(StrawIdMask(fitconfig.strawHitClusterLevel()),fitconfig.strawHitClusterDeltaT()),
     caloDt_(fitconfig.caloDt()),
     caloPosRes_(fitconfig.caloPosRes()),
     caloPropSpeed_(fitconfig.caloPropSpeed()),

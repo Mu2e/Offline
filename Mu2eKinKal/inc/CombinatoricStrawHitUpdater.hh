@@ -1,7 +1,7 @@
 #ifndef Mu2eKinKal_CombinatoricStrawHitUpdater_hh
 #define Mu2eKinKal_CombinatoricStrawHitUpdater_hh
 //
-//  StrawHitGroup updating using an exhaustive combinatoric algorithm, following the BTrk PanelAmbigResolver algorithm
+//  StrawHitCluster updating using an exhaustive combinatoric algorithm, following the BTrk PanelAmbigResolver algorithm
 //
 #include "KinKal/Detector/WireHitStructs.hh"
 #include "KinKal/General/Chisq.hh"
@@ -93,7 +93,7 @@ namespace mu2e {
               // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
               double pvar = ROOT::Math::Similarity(resid.dRdP(),uparams.covariance());
-              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: negative variance " << std::endl;
+              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << std::endl;
               Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
               chisq += uresid.chisq();
               ++ndof;
@@ -118,7 +118,7 @@ namespace mu2e {
     } while(whsiter.increment());
     // test
     if(chi2whscol.size() != ncombo){
-      throw cet::exception("RECO")<<"mu2e::KKStrawHitGroup: incomplete chisquared combinatorics" << std::endl;
+      throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: incomplete chisquared combinatorics" << std::endl;
     }
     // choose the best state
     auto best = selectBest(chi2whscol);

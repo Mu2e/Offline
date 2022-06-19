@@ -47,7 +47,7 @@
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawHitGroup.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
@@ -71,9 +71,9 @@ namespace mu2e {
   using KKSTRAWXING = KKStrawXing<KTRAJ>;
   using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
   using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
-  using KKSTRAWHITGROUP = KKStrawHitGroup<KTRAJ>;
-  using KKSTRAWHITGROUPPTR = std::shared_ptr<KKSTRAWHITGROUP>;
-  using KKSTRAWHITGROUPCOL = std::vector<KKSTRAWHITGROUPPTR>;
+  using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
+  using KKSTRAWHITCLUSTERPTR = std::shared_ptr<KKSTRAWHITCLUSTER>;
+  using KKSTRAWHITCLUSTERCOL = std::vector<KKSTRAWHITCLUSTERPTR>;
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
@@ -250,7 +250,7 @@ namespace mu2e {
           // extend the seed range given the hits and xings
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitGrouper(),strawhits,strawxings,calohits);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
           // Check the fit
           auto goodfit = goodFit(*kktrk);
           if(goodfit && extend_) {
