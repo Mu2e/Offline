@@ -130,7 +130,7 @@ namespace mu2e {
       virtual ~HelixFit() {}
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
-    private:
+    protected:
       TrkFitFlag fitflag_;
       // utility functions
       virtual KTRAJ makeSeedTraj(HelixSeed const& hseed) const = 0;
