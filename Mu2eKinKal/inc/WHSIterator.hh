@@ -1,13 +1,12 @@
 #ifndef Mu2eKinKal_WHSIteratorator_hh
 #define Mu2eKinKal_WHSIteratorator_hh
-#include "KinKal/Detector/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
 #include <vector>
 #include <cmath>
 //
 //  Iterator across all allowed states of a cluster of StrawHits
 //
 namespace mu2e {
-  using KinKal::WireHitState;
   using WHSCOL = std::vector<WireHitState>;
   class WHSIterator {
     public:

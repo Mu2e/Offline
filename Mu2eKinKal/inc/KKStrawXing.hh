@@ -86,7 +86,7 @@ namespace mu2e {
       if(shptr_)
         sxconfig_.hitstate_ = shptr_->hitState();
       else
-        sxconfig_.hitstate_ = KinKal::WireHitState::inactive;
+        sxconfig_.hitstate_ = WireHitState::inactive;
     }
     // find the material xings from gas, straw wall, and wire
     smat_.findXings(tpca_.tpData(),sxconfig_,EXING::matXings());

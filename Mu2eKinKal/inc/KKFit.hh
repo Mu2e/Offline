@@ -41,7 +41,6 @@
 #include <cmath>
 #include <algorithm>
 namespace mu2e {
-  using KinKal::WireHitState;
   using KinKal::Line;
   using KinKal::TimeRange;
   using KinKal::Status;
@@ -475,7 +474,7 @@ namespace mu2e {
       if(strawhit->active())hflag.merge(StrawHitFlag::active);
       auto const& ca = strawhit->closestApproach();
       auto uca = strawhit->unbiasedClosestApproach();
-      KinKal::DriftInfo dinfo = strawhit->distanceToTime();
+      DriftInfo dinfo = strawhit->distanceToTime();
       TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
           HitT0(uca.particleToca(), sqrt(uca.tocaVar())),
           static_cast<float>(ca.particleToca()), // track length is undefined in KinKal: store reference TOCA instead

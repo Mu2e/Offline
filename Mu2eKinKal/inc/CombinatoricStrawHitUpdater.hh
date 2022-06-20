@@ -13,26 +13,29 @@
 #include <iostream>
 
 namespace mu2e {
-  using KinKal::WireHitState;
   using KinKal::Chisq;
-  using KinKal::WireHitState;
   using KinKal::Parameters;
   using KinKal::Weights;
   using WHSCOL = std::vector<WireHitState>;
-  using CHI2WHS = std::tuple<Chisq,WHSCOL>;
-  using CHI2WHSCOL = std::vector<CHI2WHS>;
+  struct ClusterScore{
+    ClusterScore(Chisq const& chi2, WHSCOL const& hitstates) : chi2_(chi2), hitstates_(hitstates) {}
+    ClusterScore() {}
+    Chisq chi2_; // total chisquared for this cluster
+    WHSCOL hitstates_; // states for all hits in the cluster
+  };
+  using ClusterScoreCOL = std::vector<ClusterScore>;
 
   class CombinatoricStrawHitUpdater {
     public:
-      struct CHI2Comp { // comparator to sort hit states by chisquared value
-        bool operator()(CHI2WHS const& a, CHI2WHS const& b)  const {
-          return std::get<0>(a).chisqPerNDOF() < std::get<0>(b).chisqPerNDOF();
+      struct ClusterScoreComp { // comparator to sort hit states by chisquared value
+        bool operator()(ClusterScore const& a, ClusterScore const& b)  const {
+          return a.chi2_.chisqPerNDOF() < b.chi2_.chisqPerNDOF();
         }
       };
       CombinatoricStrawHitUpdater(double inactivep, double nullp, double mindchi2,int diag=0) :
         inactivep_(inactivep), nullp_(nullp), mindchi2_(mindchi2),diag_(diag),
         allowed_{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right} {}
-      CHI2WHSCOL::const_iterator selectBest(CHI2WHSCOL& chi2s) const; // find the best configuration given the total chisq for each
+      ClusterScore selectBest(ClusterScoreCOL& cscores) const; // find the best cluster configuration given the score for each
       double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
       double inactivePenalty() const { return inactivep_;}
       double nullPenalty() const { return nullp_;}
@@ -87,8 +90,8 @@ namespace mu2e {
     // iterate over all possible states of each hit, and compute the total chisquared for that
     WHSIterator whsiter(hits.size(),allowed());
     size_t ncombo = whsiter.nCombo();
-    CHI2WHSCOL chi2whscol(0);
-    chi2whscol.reserve(ncombo);
+    ClusterScoreCOL cscores(0);
+    cscores.reserve(ncombo);
     do {
       // loop over hits in order and compute their residuals
       double chisq(0.0);
@@ -131,33 +134,22 @@ namespace mu2e {
         std::cout << std::endl;
       }
       // record this chisq with the state of all the hits
-      chi2whscol.emplace_back(Chisq(chisq,ndof),whsiter.current());
+      cscores.emplace_back(Chisq(chisq,ndof),whsiter.current());
     } while(whsiter.increment());
     // test
-    if(chi2whscol.size() != ncombo){
+    if(cscores.size() != ncombo){
       throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: incomplete chisquared combinatorics" << std::endl;
     }
-    // choose the best state
-    auto best = selectBest(chi2whscol);
-    if(best != chi2whscol.end()){
-      auto const& bestchi2whs = *best;
-      auto const& bestchisq = std::get<0>(bestchi2whs);
-      auto const& bestwhsc = std::get<1>(bestchi2whs);
-      if(diag_ > 0){
-        std::cout << "Best Combo chi2 " << bestchisq << " states ";
-        for(auto whs : bestwhsc)std::cout << "  " << whs.state_;
-        std::cout << std::endl;
-      }
-      // assign the individual hit states according to this
-      for(size_t ihit=0;ihit < hits.size(); ++ihit) {
-        auto const& shptr = hits[ihit];
-        auto const& whstate = bestwhsc[ihit];
-        shptr->setState(whstate);
-      }
-    } else {
-      if(diag_ > 0){
-        std::cout << "No best combo found" << std::endl;
-      }
+    // choose the best cluster score
+    auto best = selectBest(cscores);
+    if(diag_ > 0){
+      std::cout << "Best Combo chi2 " << best.chi2_ << " states ";
+      for(auto whs : best.hitstates_)std::cout << "  " << whs.state_;
+      std::cout << std::endl;
+    }
+    // assign the individual hit states according to this
+    for(size_t ihit=0;ihit < hits.size(); ++ihit) {
+      hits[ihit]->setState(best.hitstates_[ihit]);
     }
   }
 }

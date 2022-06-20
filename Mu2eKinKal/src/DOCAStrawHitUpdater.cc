@@ -2,8 +2,7 @@
 #include <cmath>
 
 namespace mu2e {
-  KinKal::WireHitState DOCAStrawHitUpdater::wireHitState(double doca) const {
-    using KinKal::WireHitState;
+  WireHitState DOCAStrawHitUpdater::wireHitState(double doca) const {
     WireHitState whstate(WireHitState::inactive);
     double absdoca = fabs(doca);
     if( absdoca < maxdoca_){ // hit isn't too far from the wire
