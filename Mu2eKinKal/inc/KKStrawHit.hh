@@ -8,7 +8,7 @@
 // mu2eKinKal classes
 //KinKal classes
 #include "KinKal/Detector/ResidualHit.hh"
-#include "KinKal/Detector/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/Line.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -28,10 +28,8 @@
 #include <cmath>
 namespace mu2e {
   using KinKal::BFieldMap;
-  using KinKal::WireHitState;
   using KinKal::Line;
   using KinKal::MetaIterConfig;
-  using KinKal::DriftInfo;
   using KinKal::POL2;
   using KinKal::Residual;
   using KinKal::VEC3;

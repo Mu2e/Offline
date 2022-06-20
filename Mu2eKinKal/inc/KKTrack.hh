@@ -120,7 +120,6 @@ namespace mu2e {
 
   template <class KTRAJ> void KKTrack<KTRAJ>::extendTrack(Config const& config,
       KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits) {
-    KKSTRAWHITCLUSTERCOL strawhitcluster;
     // convert the hits and Xings to generic types and extend the track
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings

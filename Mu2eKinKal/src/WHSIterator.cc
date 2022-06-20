@@ -7,13 +7,16 @@ namespace mu2e {
       if(indices_[ihit] < allowed_.size()){
         break;
       } else {
+        // flip to a higher hit, and zero all the lower indices
         for(size_t jhit = 0; jhit <= ihit; ++jhit)indices_[jhit] = 0;
         ++ihit;
       }
     }
     if(ihit < nhits_){
       for(size_t jhit=0; jhit < nhits_; ++jhit){
-        current_[jhit] = allowed_[indices_[jhit]];
+        // reverse the order, so we iterate higher-index hits first
+        size_t khit = nhits_-jhit-1;
+        current_[khit] = allowed_[indices_[jhit]];
       }
       return true;
     } else {
@@ -21,6 +24,6 @@ namespace mu2e {
     }
   }
   void WHSIterator::reset() {
-    for(size_t ihit =0; ihit < nhits_; ++ihit)indices_[ihit] = 0;
+    for(auto& index : indices_)index = 0;
   }
 }
