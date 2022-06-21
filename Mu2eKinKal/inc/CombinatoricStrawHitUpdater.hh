@@ -10,6 +10,7 @@
 #include <tuple>
 #include <vector>
 #include <memory>
+#include <limits>
 #include <iostream>
 
 namespace mu2e {
@@ -74,7 +75,7 @@ namespace mu2e {
     }
     // check determinant
     double determinant;
-    if(!uparams.covariance().Det(determinant) || determinant < 0.0){
+    if(!uparams.covariance().Det(determinant) || determinant < std::numeric_limits<float>::min()){
       if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
 // for now, nullify these hits and move on
 // for now, do nothing

@@ -133,7 +133,7 @@ namespace mu2e {
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
-    shclusterer_(StrawIdMask(fitconfig.strawHitClusterLevel()),fitconfig.strawHitClusterDeltaT()),
+    shclusterer_(StrawIdMask(fitconfig.strawHitClusterLevel()),fitconfig.strawHitClusterDeltaStraw(),fitconfig.strawHitClusterDeltaT()),
     caloDt_(fitconfig.caloDt()),
     caloPosRes_(fitconfig.caloPosRes()),
     caloPropSpeed_(fitconfig.caloPropSpeed()),
