@@ -16,6 +16,7 @@ Mu2eKinKal : {
     TPOCAPrecision : 1e-4 # mm
     UseCaloCluster : true
     AddMaterial : true
+    StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
     StrawHitClusterLevel : "uniquepanel"
     CaloTrackerTimeOffset : -1.35 #ns

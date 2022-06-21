@@ -21,17 +21,19 @@ namespace mu2e {
   template <class KTRAJ> class KKStrawHitClusterer {
     public:
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
-      KKStrawHitClusterer( StrawIdMask clusterLevel, double clusterDt) :
-        clusterLevel_(clusterLevel), clusterDt_(clusterDt) {}
+      KKStrawHitClusterer( StrawIdMask clusterLevel, size_t maxdstraw, double clusterDt) :
+        clusterLevel_(clusterLevel), maxdstraw_(maxdstraw), clusterDt_(clusterDt) {}
       // decide if 2 hits should be clustered
       bool cluster(KKSTRAWHIT const& sh1, KKSTRAWHIT const& sh2) const {
         return clusterLevel_.equal(sh1.strawId(),sh2.strawId()) &&
+          abs(sh1.strawId().straw()-sh2.strawId().straw())<= maxdstraw_ &&
           fabs(sh1.time()-sh2.time()) < clusterDt_;
       }
       auto clusterLevel() const { return clusterLevel_.level(); }
       double clusterDt() const { return clusterDt_; }
     private:
       StrawIdMask clusterLevel_; // level to cluster straw hits
+      size_t maxdstraw_; // max straw index difference
       double clusterDt_; // max particle time difference between straw hits in a cluster
   };
 

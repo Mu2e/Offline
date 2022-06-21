@@ -11,7 +11,7 @@ namespace mu2e {
   class WHSIterator {
     public:
       WHSIterator(size_t nhits, WHSCOL const& allowed) : nhits_(nhits),allowed_(allowed), current_(nhits, allowed_.front()),
-      indices_(4,0){}
+      indices_(nhits_,0){}
       size_t nCombo() const { return static_cast<size_t>(std::rint(std::pow(allowed_.size(),nhits_))); }
       bool increment();
       void reset();
