@@ -137,9 +137,8 @@ void EvalWeightedEventCounts::beginRun(const art::Run& run) {
 void EvalWeightedEventCounts::analyze(const art::Event& event) {
 
   // get the number of POT
-  double lumi = -1.;
   auto const evtWeightH = event.getValidHandle<ProtonBunchIntensity>(_evtWeightTag);
-  lumi = (double)evtWeightH->intensity();
+  double lumi = evtWeightH->intensity();
 
   // 1 batch mode
   _wgSum[0] += lumi;
@@ -158,11 +157,9 @@ void EvalWeightedEventCounts::analyze(const art::Event& event) {
       ROOT::Math::lognormal_cdf(1.2e8, mub1, sigma); // Due to max cutoff in generation
   const static double cut_off_norm_b2 =
       ROOT::Math::lognormal_cdf(1.2e8, mub2, sigma); // Due to max cutoff in generation
-  // if(mode == 1) {
+
   double p1 = lumi * xlognorm_norm_b1 * cut_off_norm_b1;
   _wgSum[1] += p1;
-  //   return p1;
-  // }
   _occupancyHist._hOccInfo[0][0]->Fill(lumi, p1);
 
   double p2 = lumi * xlognorm_norm_b2 * cut_off_norm_b2;
