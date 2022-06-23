@@ -53,6 +53,7 @@ namespace mu2e {
       void updateState(MetaIterConfig const& config,bool first) override;
       unsigned nResid() const override { return 2; } // potentially 2 residuals
       Residual const& refResidual(unsigned ires=tresid) const override;
+      double varianceScale(unsigned ires) const override;
       auto const& refResiduals() const { return resids_; }
       auto const& timeResidual() const { return resids_[tresid];}
       auto const& distResidual() const { return resids_[dresid];}
@@ -192,7 +193,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> Residual const& KKStrawHit<KTRAJ>::refResidual(unsigned ires) const {
-    if(ires >=2)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
+    if(ires >dresid)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
     return resids_[ires];
   }
 
@@ -210,6 +211,21 @@ namespace mu2e {
     dinfo.tdrift_ = fabs(ptca_.doca())/dinfo.vdrift_;
     dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
     return dinfo;
+  }
+
+  template <class KTRAJ> double KKStrawHit<KTRAJ>::varianceScale(unsigned ires) const {
+    if(ires >dresid)throw std::invalid_argument("Invalid residual");
+    double vdrift = sresponse_.driftConstantSpeed();
+    if(whstate_.useDrift() && ires == tresid)
+      return 16.0; // hack FIXME
+    else{
+      switch (ires) {
+        case dresid: default:
+          return (mindoca_*mindoca_)/3.0;
+        case tresid:
+          return (mindoca_*mindoca_)/(vdrift*vdrift*12.0); // TOCA is always larger than the crossing time
+      }
+    }
   }
 
   template <class KTRAJ> bool KKStrawHit<KTRAJ>::insideStraw(CA const& ca) const {
