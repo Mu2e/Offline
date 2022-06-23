@@ -3,10 +3,10 @@
 //
 //  StrawHitCluster updating using an exhaustive combinatoric algorithm, following the BTrk PanelAmbigResolver algorithm
 //
-#include "KinKal/Detector/WireHitStructs.hh"
 #include "KinKal/General/Chisq.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -52,7 +52,15 @@ namespace mu2e {
       WHSCOL allowed_; // allowed states
   };
 
-  template<class KTRAJ> void CombinatoricStrawHitUpdater::updateHits(std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& hits) const {
+  template<class KTRAJ> void CombinatoricStrawHitUpdater::updateHits(std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& allhits) const {
+    using SHCOL = std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>;
+    // leave alone hits that were forced inactive
+    SHCOL hits;
+    hits.reserve(allhits.size());
+    for(auto& shptr : allhits)
+      if(shptr->hitState().usable())
+        hits.push_back(shptr);
+    //
     Parameters uparams;
     Weights uweights;
     // Find the first active hit
@@ -100,7 +108,7 @@ namespace mu2e {
       for(size_t ihit=0;ihit < hits.size(); ++ihit) {
         auto const& shptr = hits[ihit];
         auto const& whstate = whsiter.current()[ihit];
-        if(whstate != WireHitState::inactive) {
+        if(whstate.active()) {
           // compute the chisquared contribution for this hit against the current parameters
           RESIDCOL resids;
           // compute residuals using this state (still WRT the reference parameters)

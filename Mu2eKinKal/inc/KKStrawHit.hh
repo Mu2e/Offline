@@ -8,7 +8,8 @@
 // mu2eKinKal classes
 //KinKal classes
 #include "KinKal/Detector/ResidualHit.hh"
-#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/Line.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -62,6 +63,7 @@ namespace mu2e {
       // specific to KKStrawHit:
       void setState(WireHitState const& whstate);
       void setResiduals(WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
+      bool insideStraw(CA const& ca) const; // decide if a CA is inside the straw
       void updateResiduals() { setResiduals(whstate_, resids_); }
       auto const& closestApproach() const { return ptca_; }
       CA unbiasedClosestApproach() const;
@@ -135,14 +137,17 @@ namespace mu2e {
       if(nshu != 0 || dshu != 0){
         // compute the unbiased closest approach; this is brute force, but works
         CA uca = unbiasedClosestApproach();
-        if(nshu != 0){
-          mindoca_ = strawRadius();
-          if(uca.usable())whstate_ = nshu->wireHitState(uca.doca());
-        } else if(dshu != 0){
-          // update minDoca (for null ambiguity error estimate)
-          mindoca_ = std::min(dshu->minDOCA(),strawRadius());
-          if(uca.usable())whstate_ = dshu->wireHitState(uca.doca());
-        }
+        if(uca.usable() && insideStraw (uca)){
+          if(nshu != 0){
+            mindoca_ = strawRadius();
+            whstate_ = nshu->wireHitState(uca.doca());
+          } else if(dshu != 0){
+            // update minDoca (for null ambiguity error estimate)
+            mindoca_ = std::min(dshu->minDOCA(),strawRadius());
+            whstate_ = dshu->wireHitState(uca.doca());
+          }
+        } else
+          whstate_ = WireHitState::forcedinactive;
       }
     }
     // then update the residual
@@ -205,6 +210,15 @@ namespace mu2e {
     dinfo.tdrift_ = fabs(ptca_.doca())/dinfo.vdrift_;
     dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
     return dinfo;
+  }
+
+  template <class KTRAJ> bool KKStrawHit<KTRAJ>::insideStraw(CA const& ca) const {
+    static const double ubuffer(10.0); // should be a parameter FIXME
+    // compute the position along the wire and compare to the 1/2 length
+    // have to translate from CLHEP, should be native to Straw FIXME
+    double upos = VEC3(straw_.wireDirection()).Dot((ca.sensorPoca().Vect() - VEC3(straw_.origin())));
+    return fabs(upos) < straw_.halfLength() + ubuffer;
+    // include transverse test TODO
   }
 
   template<class KTRAJ> void KKStrawHit<KTRAJ>::print(std::ostream& ost, int detail) const {

@@ -1,6 +1,6 @@
 #ifndef Mu2eKinKal_KKStrawXingUpdater_hh
 #define Mu2eKinKal_KKStrawXingUpdater_hh
-#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 namespace mu2e {
   // simple struct to hold crossing calculation configuration parameters
   struct KKStrawXingUpdater {
