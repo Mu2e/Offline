@@ -1,50 +1,29 @@
 //
-// An EDAnalyzer module that reads the Trigger Info
+// An EvalWeightedEventCount module that analyzes Trigger Rates
 //
-// Original author G. Pezzullo
+// Original author Tausif Hossain
 //
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Provenance.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/System/TriggerNamesService.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
-#include "canvas/Persistency/Common/TriggerResults.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/ParameterSetRegistry.h"
-
-#include "messagefacility/MessageLogger/MessageLogger.h"
-// #include "canvas/Utilities/InputTag.h"
-#include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
-
-// Conditions
-#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 // MC dataproducts
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 // ROOT
 #include "TH1F.h"
-#include "TH2F.h"
 
 #include "Math/PdfFuncMathCore.h"
 #include "Math/ProbFuncMathCore.h"
-
 #include <cmath>
-// #include <iostream>
 #include <string>
-// #include <map>
 #include <vector>
 
 namespace mu2e {
@@ -55,38 +34,23 @@ public:
   using Name = fhicl::Name;
   using Comment = fhicl::Comment;
   struct Config {
-    fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Debug Level"), 0};
-    fhicl::Atom<art::InputTag> evtWeightTag{
-        Name("protonBunchIntensity"), Comment("Proton Bunch Intenity "), "protonBunchIntensity"};
-    fhicl::Atom<float> nProcess{Name("nEventsProcessed"), Comment("Events Processed"), 1.};
-    fhicl::Atom<std::string> tagName{Name("tagName"), Comment("Tag Name"), "tagName"};
+    fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("diagLevel"), 0};
+    fhicl::Atom<art::InputTag> evtWeightTag{Name("protonBunchIntensity"),
+                                            Comment("protonBunchIntensity")};
+    fhicl::Atom<std::string> tagName{Name("tagName"), Comment("tagName")};
   };
 
   using Parameters = art::EDAnalyzer::Table<Config>;
 
-  enum {
-    kNTrigInfo = 40,
-    kNTrackTrig = 20,
-    kNTrackTrigVar = 30,
-    kNHelixTrig = 40,
-    kNHelixTrigVar = 130,
-    kNCaloCalib = 5,
-    kNCaloCalibVar = 30,
-    kNCaloOnly = 5,
-    kNCaloOnlyVar = 30,
-    kNOcc = 100,
-    kNOccVar = 100
-  };
+  enum { kNOcc = 2, kNOccVar = 2 };
 
   struct occupancyHist_ {
     TH1F* _hOccInfo[kNOcc][kNOccVar];
-    TH2F* _h2DOccInfo[kNOcc][kNOccVar];
 
     occupancyHist_() {
       for (int i = 0; i < kNOcc; ++i) {
         for (int j = 0; j < kNOccVar; ++j) {
           _hOccInfo[i][j] = NULL;
-          _h2DOccInfo[i][j] = NULL;
         }
       }
     }
@@ -109,24 +73,19 @@ private:
   int _diagLevel;
   art::InputTag _evtWeightTag;
 
-  float _nProcess;
   std::string _tagName;
   double _nPOT;
 
   occupancyHist_ _occupancyHist;
 
-  const mu2e::Tracker* _tracker;
-
-  // the following pointer is needed to navigate the MC truth info of the strawHits
-  const art::Event* _event;
-
   float _minPOT, _maxPOT;
-  double _wgSum[3] = {0};
+  std::array<double, 3> _wgSum = {0};
 };
 
 EvalWeightedEventCounts::EvalWeightedEventCounts(const Parameters& config) :
-    art::EDAnalyzer(config), _diagLevel(config().diagLevel()), _evtWeightTag(config().evtWeightTag()),
-    _nProcess(config().nProcess()), _tagName(config().tagName()), _minPOT(1e6), _maxPOT(4e8) {}
+    art::EDAnalyzer(config), _diagLevel(config().diagLevel()),
+    _evtWeightTag(config().evtWeightTag()), _tagName(config().tagName()), _minPOT(1e6),
+    _maxPOT(4e8) {}
 
 void EvalWeightedEventCounts::bookHistograms() {
   art::ServiceHandle<art::TFileService> tfs;
@@ -139,13 +98,13 @@ void EvalWeightedEventCounts::bookOccupancyInfoHist(art::ServiceHandle<art::TFil
 
   int index_last = 0;
   art::TFileDirectory occInfoDir = Tfs->mkdir("occInfoGeneral");
-  Hist._hOccInfo[index_last][0] = occInfoDir.make<TH1F>(
-      Form("hInstLum_%i", index_last), "distrbution of instantaneous lum; p/#mu-bunch", 1000,
-      _minPOT, _maxPOT);
-  Hist._hOccInfo[index_last][1] = occInfoDir.make<TH1F>(
-      Form("hInstLum2B_%i", index_last),
-      "distrbution of instantaneous lum re-weighted in 2 batch-mode; p/#mu-bunch", 1000, _minPOT,
-      _maxPOT);
+  Hist._hOccInfo[index_last][0] =
+      occInfoDir.make<TH1F>(Form("hInstLum_%i", index_last),
+                            "distrbution of instantaneous lum; p/pulse", 1000, _minPOT, _maxPOT);
+  Hist._hOccInfo[index_last][1] =
+      occInfoDir.make<TH1F>(Form("hInstLum2B_%i", index_last),
+                            "distrbution of instantaneous lum re-weighted in 2 batch-mode; p/pulse",
+                            1000, _minPOT, _maxPOT);
 }
 
 //--------------------------------------------------------------------------------//
@@ -154,7 +113,7 @@ void EvalWeightedEventCounts::beginJob() { bookHistograms(); }
 //--------------------------------------------------------------------------------//
 void EvalWeightedEventCounts::endJob() {
 
-  //    evalTriggerRate();
+  //    evalTriggerRate();  Tag names must be specified in the fcl
   printf("[%s::enJob] totWg    = %10.3e\n", _tagName.c_str(), _wgSum[0]);
   printf("[%s::enJob] totEvtB1 = %10.3f\n", _tagName.c_str(), _wgSum[1]);
   printf("[%s::enJob] totEvtB2 = %10.3f\n", _tagName.c_str(), _wgSum[2]);
@@ -179,18 +138,16 @@ void EvalWeightedEventCounts::analyze(const art::Event& event) {
 
   // get the number of POT
   double lumi = -1.;
-  art::Handle<ProtonBunchIntensity> evtWeightH;
-  event.getByLabel(_evtWeightTag, evtWeightH);
-  if (evtWeightH.isValid()) {
-    lumi = (double)evtWeightH->intensity();
-  }
+  auto const evtWeightH = event.getValidHandle<ProtonBunchIntensity>(_evtWeightTag);
+  lumi = (double)evtWeightH->intensity();
 
   // 1 batch mode
   _wgSum[0] += lumi;
 
-  const static double mean_b1 = 1.6e7;
-  const static double mean_b2 = 3.9e7;
-  const static double sigma = 0.7147;
+  const static double mean_b1 = 1.6e7; // Mean Proton Pulse Intensity in 1-Batch Mode
+  const static double mean_b2 = 3.9e7; // Mean  Proton Pulse Intensity in 2-Batch Mode
+  const static double sigma = 0.7147;  // Standard deviation of the x*log-normal(x) of the Proton
+                                       // Pulse Intensity distribution
   const static double mub1 = log(mean_b1) - 0.5 * sigma * sigma;
   const static double mub2 = log(mean_b2) - 0.5 * sigma * sigma;
   const static double xlognorm_norm_b1 =
