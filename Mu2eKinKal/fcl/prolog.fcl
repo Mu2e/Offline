@@ -40,7 +40,8 @@ Mu2eKinKal : {
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 0.1
     DivergenceDeltaChisq : 10.0
-    DeltaParams : 1e6 # chisquared
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
     BFieldCorrection : false
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
@@ -51,13 +52,13 @@ Mu2eKinKal : {
     ]
     NullStrawHitUpdaterSettings : [
       [ 10.0],
-      [ 5.0 ],
-      [ 4.0 ]
+      [ 10.0 ],
+      [ 10.0 ]
     ]
     StrawXingUpdaterSettings : [
       [-1.0, 10., 10.0 ],
-      [-1.0, 5., 5.0 ],
-      [-1.0, 4., 4.0 ]
+      [-1.0, 10., 10.0 ],
+      [-1.0, 10., 10.0 ]
     ]
   }
 
@@ -68,7 +69,8 @@ Mu2eKinKal : {
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 0.1
     DivergenceDeltaChisq : 10.0
-    DeltaParams : 1e6 # chisquared
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
     BFieldCorrection : false
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
@@ -76,10 +78,10 @@ Mu2eKinKal : {
       [ 1.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 4.0 ]
+      [ 10.0 ]
     ]
     StrawXingUpdaterSettings : [
-      [-1.0, 4.0, 4.0 ]
+      [-1.0, 10.0, 10.0 ]
     ]
   }
 
@@ -90,7 +92,8 @@ Mu2eKinKal : {
     Deweight : 1.0e6
     ConvergenceDeltaChisq : 1.0
     DivergenceDeltaChisq : 50.0
-    DeltaParams : 1e6 # chisquared
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
     BFieldCorrection : true
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction

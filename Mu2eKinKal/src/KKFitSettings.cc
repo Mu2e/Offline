@@ -20,7 +20,8 @@ namespace mu2e {
       config.dwt_ = fitconfig.dwt();
       config.convdchisq_ = fitconfig.convdchisq();
       config.divdchisq_ = fitconfig.divdchisq();
-      config.pdchi2_ = fitconfig.dparams();
+      config.pdchisq_ = fitconfig.dparams();
+      config.divgap_ = fitconfig.dgap();
       config.bfcorr_ = fitconfig.bfieldCorr();
       config.ends_ = fitconfig.ends();
       config.tol_ = fitconfig.btol();
