@@ -239,9 +239,9 @@ namespace mu2e {
     }
     if(detail > 0){
       if(resids_[tresid].active())
-        ost << " Active Time Residual " << resids_[tresid];
+        ost << " Active Time " << resids_[tresid];
       if(resids_[dresid].active())
-        ost << " Active Distance Residual " << resids_[dresid];
+        ost << " Active Dist " << resids_[dresid];
       ost << std::endl;
     }
     if(detail > 1) {
