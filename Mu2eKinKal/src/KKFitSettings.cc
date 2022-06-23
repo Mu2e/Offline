@@ -4,7 +4,7 @@
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include <iostream>
 
 namespace mu2e {

@@ -1,6 +1,6 @@
 #ifndef Mu2eKinKal_WHSIteratorator_hh
 #define Mu2eKinKal_WHSIteratorator_hh
-#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include <vector>
 #include <cmath>
 //

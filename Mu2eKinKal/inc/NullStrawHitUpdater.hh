@@ -4,7 +4,7 @@
 #ifndef Mu2eKinKal_NullStrawHitUpdater_hh
 #define Mu2eKinKal_NullStrawHitUpdater_hh
 
-#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 
 namespace mu2e {
   // always set the wire hit state to null; used for seed fitting

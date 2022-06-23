@@ -3,7 +3,7 @@
 //
 #ifndef Mu2eKinKal_DOCAStrawHitUpdater_hh
 #define Mu2eKinKal_DOCAStrawHitUpdater_hh
-#include "Offline/Mu2eKinKal/inc/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 
 namespace mu2e {
 // Update based just on (unbiased) DOCA to the wire, not including this hit
