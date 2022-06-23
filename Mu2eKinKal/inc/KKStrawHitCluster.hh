@@ -64,7 +64,6 @@ namespace mu2e {
       KTRAJPTR const& refTrajPtr() const override { return (*hits_.begin())->refTrajPtr(); }
       // update the internals of the hit, specific to this meta-iteraion.  This will affect the next fit iteration
       void updateState(KinKal::MetaIterConfig const& config,bool first) override;
-      void updateWeight(MetaIterConfig const& config) override {} // to be removed FIXME
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       ~KKStrawHitCluster(){}
       // KKStrawHitCluster specific interface

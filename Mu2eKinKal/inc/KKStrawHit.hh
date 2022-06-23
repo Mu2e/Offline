@@ -152,8 +152,8 @@ namespace mu2e {
     }
     // then update the residual
     updateResiduals();
-    // finally update the weight:  this is currently called by Measurement, but should move here TODO
-    // this->updateWeight(miconfig);
+    // finally update the weight
+    this->updateWeight(miconfig);
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(WireHitState const& whstate) {
