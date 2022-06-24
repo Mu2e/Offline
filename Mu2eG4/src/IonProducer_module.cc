@@ -122,6 +122,8 @@ namespace mu2e {
                   fourmom,
                   0., // time
                   0., //proper time
+                  0., // time
+                  0., //proper time
                   0, // volume index
                   1, // G4 status
                   ProcessCode::mu2ePrimary,

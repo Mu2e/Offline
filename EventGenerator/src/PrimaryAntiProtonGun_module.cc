@@ -488,6 +488,8 @@ namespace mu2e {
                        ,momPbar                          // ditto, just fill in
                        ,oldParent.endGlobalTime()        // ditto
                        ,0.                               // again no change in proper time
+                       ,oldParent.preLastStepGlobalTime()  // just fill it
+                       ,0.                               // again no change in proper time
                        ,oldParent.endVolumeIndex()       // same
                        ,1                                // G4 status for where pbar ends
                        ,ProcessCode::mu2eProtonInelastic // same process code
