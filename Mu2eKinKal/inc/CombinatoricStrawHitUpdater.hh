@@ -28,7 +28,8 @@ namespace mu2e {
 
   class CombinatoricStrawHitUpdater {
     public:
-      struct ClusterScoreComp { // comparator to sort hit states by chisquared value
+      // sort hit states by chisquared value
+      struct ClusterScoreComp {
         bool operator()(ClusterScore const& a, ClusterScore const& b)  const {
           return a.chi2_.chisqPerNDOF() < b.chi2_.chisqPerNDOF();
         }
@@ -42,7 +43,7 @@ namespace mu2e {
       double nullPenalty() const { return nullp_;}
       auto const& allowed() const { return allowed_; }
       double minDeltaChi2() const { return mindchi2_; }
-// the work is done here
+      // the work is done here
       template <class KTRAJ> void updateHits(std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& hits) const;
     private:
       double inactivep_; // chisquared penalty for inactive hits
@@ -61,6 +62,9 @@ namespace mu2e {
       if(shptr->hitState().usable())
         hits.push_back(shptr);
     //
+    if(hits.size() == 0)return;
+    // sort the hit ptrs by time
+    std::sort(hits.begin(),hits.end(),StrawHitTimeSort<KTRAJ>());
     Parameters uparams;
     Weights uweights;
     // Find the first active hit

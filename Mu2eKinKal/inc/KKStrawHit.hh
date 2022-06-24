@@ -100,6 +100,14 @@ namespace mu2e {
       StrawHitUpdaters::algorithm updater_; // record which updater was last used on this hit
   };
 
+  // struct to sort hits by time
+  template <class KTRAJ> struct StrawHitTimeSort {
+    using KKSTRAWHIT = KKStrawHit<KTRAJ>;
+    using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
+    bool operator ()( const KKSTRAWHITPTR& hit1, const KKSTRAWHITPTR& hit2) {
+      return hit1->time() < hit2->time(); }
+  };
+
   template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate,
       StrawProperties const& sprops,
       ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) :
