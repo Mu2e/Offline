@@ -124,7 +124,6 @@ namespace mu2e {
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
               double pvar = ROOT::Math::Similarity(resid.dRdP(),uparams.covariance());
 //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
-              double determinant(0.0);
               if(pvar<0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
                 << " determinant = " << determinant << std::endl;
               Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
