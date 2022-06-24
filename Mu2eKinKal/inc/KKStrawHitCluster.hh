@@ -44,11 +44,6 @@ namespace mu2e {
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using KKSTRAWHITCLUSTERER = KKStrawHitClusterer<KTRAJ>;
-      // sort hits by time
-      struct StrawHitSort {
-        bool operator ()( const KKSTRAWHITPTR& hit1, const KKSTRAWHITPTR& hit2) {
-          return hit1->time() < hit2->time(); }
-      };
       KKStrawHitCluster() {}
       // create from a single hit
       KKStrawHitCluster(KKSTRAWHITPTR const& hitptr);
@@ -117,8 +112,6 @@ namespace mu2e {
 
   template<class KTRAJ> void KKStrawHitCluster<KTRAJ>::updateState(KinKal::MetaIterConfig const& miconfig,bool first) {
     if(first){
-      // sort the hit ptrs by time
-      std::sort(hits_.begin(),hits_.end(),StrawHitSort ());
       // look for an updater; if it's there, update the state
       // Extend this logic if new StrawHitCluster updaters are introduced
       auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
