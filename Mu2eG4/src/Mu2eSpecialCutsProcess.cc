@@ -133,7 +133,7 @@ namespace mu2e{
              << ", max step limit "
              << static_cast<G4int>(mu2elimits_.maxStepsPerTrack())
              << ", proposed step "
-             << std::setw(24) << std::scientific << proposedStep
+             << std::setw(24) << std::scientific << proposedStep << std::defaultfloat
              << G4endl;
       G4cout.precision(prec);
     }
