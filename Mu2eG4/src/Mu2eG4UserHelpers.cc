@@ -64,13 +64,23 @@ namespace mu2e {
 
     }
 
-    // kinetic energy at the point of annihilation
+    // global time at the point of interaction/decay
+    double getEndGlobalTime(G4Track const* const trk) {
+      auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
+      return uti->GetGlobalTime();
+    }
+    // proper time at the point of interaction/decay
+    double getEndProperTime(G4Track const* const trk) {
+      auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
+      return uti->GetProperTime();
+    }
+    // kinetic energy at the point of interaction/decay
     double getEndKE(G4Track const* const trk) {
       auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
       return uti->GetKineticEnergy();
     }
 
-    // momentum at the point of annihilation
+    // momentum at the point of interaction/decay
     CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk) {
       auto const* const uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
       auto const& pdir = uti->GetMomentumDirection();
