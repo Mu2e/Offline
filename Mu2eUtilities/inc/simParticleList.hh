@@ -35,10 +35,9 @@ namespace mu2e {
 
 
 inline std::vector<art::Ptr<SimParticle> > stoppedMuPlusList(art::ValidHandle<SimParticleCollection> simh) {
-    // G4 sets this end code 
+    // G4 sets this end code
   return simParticleList(simh, PDGCode::mu_plus, ProcessCode::Decay);
   }
-  
 
   inline std::vector<art::Ptr<SimParticle> > stoppedPiMinusList(art::ValidHandle<SimParticleCollection> simh) {
     return simParticleList(simh, PDGCode::pi_minus, ProcessCode::mu2eKillerVolume);

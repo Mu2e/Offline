@@ -60,7 +60,7 @@ namespace mu2e {
   private:
     double muonLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
-    unsigned verbosity_; 
+    unsigned verbosity_;
     int pdgId_;
 
 
@@ -97,7 +97,6 @@ namespace mu2e {
     if(pdgId_==PDGCode::e_plus) {
       muonLifeTime_=0; //decay time already included for stopped muon(+) FIXME!!!
     }
-    
   }
 
   //================================================================
@@ -108,8 +107,6 @@ namespace mu2e {
     const auto mus=(pdgId_==PDGCode::e_minus) ? stoppedMuMinusList(simh) : stoppedMuPlusList(simh);
 
      for(const auto& mustop: mus) {
-    //  count_particle++;
-    
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       addParticles(output.get(), mustop, time, Generator_.get());
       }
