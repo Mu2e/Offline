@@ -4,11 +4,11 @@
 // See doc-3186, 3155, 3006, and 2259
 //
 //
-// This version introduces an OPA version number and  implements the OPA as 
+// This version introduces an OPA version number and  implements the OPA as
 // 24 slats in a "barrel" shape instead
 // of as a conical frustrum.  Slots are cut in the barrel to allow support
 // wires to penetrate.
-// It also adds the support rods for the Stopping Target and the notches in 
+// It also adds the support rods for the Stopping Target and the notches in
 // the OPA support ring for those support rods.
 //
 
@@ -53,7 +53,7 @@ double protonabsorber.outerPAThickness          = 20.0;
 double protonabsorber.outerPAZCenter            = 6405.0; // was 6392.5;
 string protonabsorber.outerPAMaterialName       = "Polyethylene096";
 int    protonabsorber.outerPAnSides             = 24;
-double protonabsorber.outerPAslotWidth          = 1.0; //mm 
+double protonabsorber.outerPAslotWidth          = 1.0; //mm
 double protonabsorber.outerPAslotLength         = 840.0; // mm
 double protonabsorber.outerPAslotOffset         = -410.0; // mm - relative
 

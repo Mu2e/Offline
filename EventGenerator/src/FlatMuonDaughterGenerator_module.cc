@@ -20,7 +20,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
@@ -94,15 +93,15 @@ namespace mu2e {
   {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
-    
-    if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eFlateMinus; } 
+
+    if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eFlateMinus; }
     else if (pid == PDGCode::e_plus) { process = ProcessCode::mu2eFlatePlus; }
     else if (pid == PDGCode::gamma) { process = ProcessCode::mu2eFlatPhoton; }
     else {
       throw   cet::exception("BADINPUT")
         <<"FlatMuonDaughterGenerator::produce(): No process associated with chosen PDG id\n";
     }
-   
+
   }
 
   //================================================================
@@ -122,7 +121,7 @@ namespace mu2e {
     double randomMom = randFlat_.fire(startMom_, endMom_);
     double randomE = sqrt(particleMass_*particleMass_ + randomMom*randomMom);
     double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-    
+
 
     output->emplace_back(mustop,
                          process,
@@ -131,7 +130,7 @@ namespace mu2e {
                          CLHEP::HepLorentzVector{randomUnitSphere_.fire(randomMom), randomE},
                          time
                          );
-    
+
     event.put(std::move(output));
   }
 

@@ -17,25 +17,25 @@ using namespace std;
 namespace mu2e {
   using namespace TrkTypes;
 
-  void StrawElectronics::calculateResponse(std::vector<double> const& poles, 
-		std::vector<double> const& zeros, std::vector<double> const& input, 
-		std::vector<double> &response) {
+  void StrawElectronics::calculateResponse(std::vector<double> const& poles,
+      std::vector<double> const& zeros, std::vector<double> const& input,
+      std::vector<double> &response) {
 
     std::vector<double> za;
     std::vector<double> pa;
     for (size_t i=0;i<poles.size();i++){
       if (poles[i] != 0)
-	pa.push_back(poles[i]*-1*TMath::TwoPi());
+        pa.push_back(poles[i]*-1*TMath::TwoPi());
     }
     for (size_t i=0;i<zeros.size();i++){
       if (zeros[i] != 0)
-	za.push_back(zeros[i]*-1*TMath::TwoPi());
+        za.push_back(zeros[i]*-1*TMath::TwoPi());
     }
     std::vector<double> a(za.size()+1,0);
     std::vector<double> b(pa.size()+1,0);
     std::vector<double> aprime(std::max(za.size()+1,pa.size()+1),0);
     std::vector<double> bprime(std::max(za.size()+1,pa.size()+1),0);
-    DigitalFiltering::zpk2tf(b,a,za,pa); 
+    DigitalFiltering::zpk2tf(b,a,za,pa);
     DigitalFiltering::bilinear(bprime,aprime,a,b,_sampleRate*1000.);
 
     // calculate gain at 160 MHz
@@ -115,7 +115,7 @@ namespace mu2e {
       index = 0;
     return charge * _preampToAdc2Response[index] * _saturationSampleFactor * _dVdI[adc][sid.uniqueStraw()]/_dVdI[thresh][sid.uniqueStraw()];
   }
- 
+
   double StrawElectronics::saturatedResponse(double vlin) const {
     if (vlin < _vsat)
       return vlin;
@@ -133,7 +133,7 @@ namespace mu2e {
     double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
     double p0 = _wPoints[distIndex]._tmax[ipath][sid.getStraw()];
     double p1 = _wPoints[distIndex + 1]._tmax[ipath][sid.getStraw()];
-    
+
     return p0 * distFrac + p1 * (1 - distFrac);
   }
 
@@ -147,7 +147,7 @@ namespace mu2e {
     double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
     double p0 = _wPoints[distIndex]._linmax[ipath][sid.getStraw()];
     double p1 = _wPoints[distIndex + 1]._linmax[ipath][sid.getStraw()];
- 
+
     return charge * (p0 * distFrac + p1 * (1 - distFrac)) * _dVdI[ipath][sid.uniqueStraw()];
   }
 
@@ -162,7 +162,7 @@ namespace mu2e {
     return min(static_cast<TDCValue>(max(static_cast<int>(floor((time_from_ewm)/_TDCLSB)),0)),_maxTDC);
   }
 
-  
+
   void StrawElectronics::digitizeWaveform(StrawId sid, ADCVoltages const& wf, ADCWaveform& adc, ADCValue& pmp) const{
     adc.reserve(wf.size());
     ADCValue peak = 0;
@@ -180,7 +180,7 @@ namespace mu2e {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
     // test these times against time wrapping.
-      
+
     bool notwrap(true);
     for(size_t itime=0;itime<2;++itime)
       notwrap &= times[itime]+_electronicsTimeDelay > 0 && tdcs[itime] < eventWindowEndTDC;
@@ -190,7 +190,7 @@ namespace mu2e {
   bool StrawElectronics::digitizeTimes(TDCTimes const& times, TDCValues& tdcs, bool onspill, TDCValue eventWindowEndTDC) const {
     for(size_t itime=0;itime<2;++itime)
       tdcs[itime] = tdcResponse(times[itime]);
-    // test bothe these times against the flash blanking. 
+    // test bothe these times against the flash blanking.
     TDCValue upperLimit;
     if (onspill)
       upperLimit = _digitizationEndTDC;
@@ -204,16 +204,16 @@ namespace mu2e {
   }
 
   void StrawElectronics::adcTimes(double time, ADCTimes& adctimes) const {
-// clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
+    // clock has a fixed phase; Assume we digitize with a fixed delay relative to the leading edge
     adctimes.clear();
     adctimes.reserve(nADCSamples());
-// find the phase immediately proceeding this time.  Subtract presamples
+    // find the phase immediately proceeding this time.  Subtract presamples
     size_t phase = std::max((int)0,int(ceil(time/_ADCPeriod))-(int)_nADCpre);
     for(unsigned itime=0;itime<nADCSamples();++itime){
       adctimes.push_back((phase+itime)*_ADCPeriod+_ADCOffset);
     }
   }
-  
+
   bool StrawElectronics::combineEnds(double t1, double t2) const {
     // currently two clock ticks are allowed for coincidence time
     int clockTicks1 = static_cast<int>(floor((t1)/_ADCPeriod));
@@ -231,24 +231,24 @@ namespace mu2e {
   }
 
   double StrawElectronics::adcCurrent(StrawId sid, ADCValue adcval) const {
-  // this includes the effects from normalization of the pulse shape
+    // this includes the effects from normalization of the pulse shape
     return adcVoltage(sid,adcval)/_dVdI[adc][sid.uniqueStraw()];
   }
 
   double StrawElectronics::mypow(double val,unsigned n) {
     switch ( n ) {
       case 1:
-	return val; break;
+        return val; break;
       case 2:
-	return val*val; break;
+        return val*val; break;
       case 3:
-	return val*val*val; break;
+        return val*val*val; break;
       case 4:
-	return val*val*val*val; break;
+        return val*val*val*val; break;
       case 5:
-	return val*val*val*val*val; break;
+        return val*val*val*val*val; break;
       default:
-	return 0.0; break;
+        return 0.0; break;
     }
   }
 
@@ -277,9 +277,7 @@ namespace mu2e {
     os << "ADCLSB = " << _ADCLSB << endl;
     os << "maxADC = " << _maxADC << endl;
 
-    os << "ADCped ("<<_ADCped.size()<<") = ";
-    for(auto x: _ADCped) os << x << " " ;
-    os << endl;
+    printArray(os,"ADCped",_ADCped);
 
     os << "nADCpre = " << _nADCpre << endl;
     os << "ADCPeriod = " << _ADCPeriod << endl;
@@ -297,7 +295,7 @@ namespace mu2e {
     os << "responseBins = " << _responseBins << endl;
     os << "sampleRate = " << _sampleRate << endl;
     os << "saturationSampleFactor = " << _saturationSampleFactor << endl;
-    printVector(os,"preampPoles",_preampPoles);          
+    printVector(os,"preampPoles",_preampPoles);
     printVector(os,"preampZeros",_preampZeros);
     printVector(os,"adcPoles",_adcPoles);
     printVector(os,"adcZeros",_adcZeros);
@@ -311,7 +309,7 @@ namespace mu2e {
     printVector(os,"currentSigmas",_currentSigmas);
     printVector(os,"currentT0s",_currentT0s);
     printVector(os,"currentImpulse",_currentImpulse);
-    printVector(os,"preampToAdc2Response",_preampToAdc2Response);  
+    printVector(os,"preampToAdc2Response",_preampToAdc2Response);
     if( _wPoints.size()>0) {
       size_t i = _wPoints.size()/2;
       os << "wPoints midpoint entry ("<<i<<") : " << endl;
@@ -332,17 +330,17 @@ namespace mu2e {
 
   }
 
-  void StrawElectronics::printVector(std::ostream& os, std::string const& name, 
-				    std::vector<double> const& a) const {
+  void StrawElectronics::printVector(std::ostream& os, std::string const& name,
+      std::vector<double> const& a) const {
     size_t n = a.size();
     if(n<=4) {
       os << name << " ("<<n<<") = ";
       for(auto x : a) os << x << " ";
       os << endl;
     } else {
-      os << name <<" ("<<n<<") = " 
-	 << a[0] << " " << a[1] << " ... " 
-	 << a[n-2] << " " << a[n-1] << endl;
+      os << name <<" ("<<n<<") = "
+        << a[0] << " " << a[1] << " ... "
+        << a[n-2] << " " << a[n-1] << endl;
     }
   }
 
@@ -355,8 +353,8 @@ namespace mu2e {
         for(auto x : a) os << x << " ";
         os << endl;
       } else {
-        os << name <<" ("<<n<<") = " 
-          << a[0] << " " << a[1] << " ... " 
+        os << name <<" ("<<n<<") = "
+          << a[0] << " " << a[1] << " ... "
           << a[n-2] << " " << a[n-1] << endl;
       }
 

@@ -62,7 +62,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
@@ -140,16 +139,16 @@ namespace mu2e {
     TrkFitDirection _fdir;
     SimParticleTimeOffset _toff;  // time offset smearing
     std::string _shLabel;
-    std::string _shpLabel; 
+    std::string _shpLabel;
     std::string _shfLabel;
     std::string _bkfLabel;
-    std::string _trkfitInstanceName; 
+    std::string _trkfitInstanceName;
     std::string _caloClusterAlgorithm;
     std::string _caloClusterSeeding;
     const std::string _producerName;
     std::string _instanceName;
 
- 
+
     const StrawHitCollection*         _shcol;
     const StrawHitFlagCollection*     _shfcol;
     const StrawHitFlagCollection*     _bkfcol;
@@ -209,7 +208,7 @@ namespace mu2e {
       ,*_hTotalEnergyAtSmallRadius
       ,*_hPdgIdOfAllClustersAtSmallRadius;
 
-    TH1F 
+    TH1F
     *_hPdgId
       ,*_hCluConv
       ,*_hEoverP1st
@@ -259,7 +258,7 @@ namespace mu2e {
     TH1F* _hFracOnEdgeFaceAndClusterInFront;
     TH1F* _hFracOnEdgeFaceAndClusterInBack;
 
-    TProfile 
+    TProfile
     *_hErrVsMomMuon
       ,*_hErrVsD0Muon
       ,*_hErrVsOmegaMuon
@@ -279,10 +278,10 @@ namespace mu2e {
 
     TH2F *_hTanDipVsMomentumHiFrac, *_hTanDipVsMomentumLoFrac;
 
-    TProfile *_hErrVsMomLoFrac, *_hErrVsD0LoFrac, *_hErrVsOmegaLoFrac, 
+    TProfile *_hErrVsMomLoFrac, *_hErrVsD0LoFrac, *_hErrVsOmegaLoFrac,
       *_hErrVsTanDipLoFrac;
 
-    TH2F *_hFracVsTime, *_hRadiusVsTime, *_hFracVsRadius, *_hFracVsLocation, 
+    TH2F *_hFracVsTime, *_hRadiusVsTime, *_hFracVsRadius, *_hFracVsLocation,
       *_hMuonFracVsLocation, *_hFracVsP;
 
     int _timeDiff;
@@ -324,7 +323,7 @@ namespace mu2e {
     int _nTrackerHits;
     int _nGoodHits;
     int _nDeltas;
-       
+
 
     int    _nMatch, _mTrkId[1024],_mCluId[1024];
     float  _mChi2[1024],_mChi2Pos[1024],_mChi2Time[1024];
@@ -374,23 +373,23 @@ namespace mu2e {
   {
     _instanceName = _fdir.name() + _tpart.name();
     _trkfitInstanceName = _fdir.name() + _tpart.name();
-  
+
   }
 
   /*            art::EDAnalyzer(pset),
-		_caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
-		_caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
-		_trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
-		_trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
-		_trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-		_tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-		_fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-		_g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
-		_virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
-		_Ntup(0)
-		{
-		_trkfitInstanceName = _fdir.name() + _tpart.name();
-		}
+                _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
+                _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
+                _trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
+                _trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
+                _trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
+                _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
+                _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+                _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+                _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
+                _Ntup(0)
+                {
+                _trkfitInstanceName = _fdir.name() + _tpart.name();
+                }
   */
   void KineticFracAnalysis::beginJob(){
 
@@ -401,7 +400,7 @@ namespace mu2e {
     _Ntup->Branch("evt",          &_evt ,        "evt/I");
     _Ntup->Branch("run",          &_run ,        "run/I");
     _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
- 
+
     _Ntup->Branch("nMatch",    &_nMatch ,   "nMatch/I");
     _Ntup->Branch("mTrkId",    &_mTrkId,    "mTrkId[nMatch]/I");
     _Ntup->Branch("mCluId",    &_mCluId,    "mCluId[nMatch]/I");
@@ -562,7 +561,7 @@ namespace mu2e {
     _hTotalEnergyAtSmallRadius = tfs->make<TH1F>("_hTotalEnergyAtSmallRadius","Summed Energy at Small Radius (get rid of DIO and track)",60,0.,300.);
     _hNumberAtSmallRadius = tfs->make<TH1F>("_hNumberAtSmallRadius","Number at Small Radius (get rid of DIO and track)",20,0.,20.);
     _hPdgIdOfAllClustersAtSmallRadius = tfs->make<TH1F>("_hPdgIdOfAllClustersAtSmallRadius","PDGId of Clusters at Small Radius",5000,-2500.,2500.);
-    
+
     _hCluConv = tfs->make<TH1F>("_hCluConv","CluConv", 10,-5.,5.);
     _hEoverP1st = tfs->make<TH1F>("_hEoverP1st","E/p for shortest distance cluster disk 1", 150,0.,1.5);
     _hEoverP2nd = tfs->make<TH1F>("_hEoverP2nd","E/p for shortest distance cluster disk 2", 150,0.,1.5);
@@ -688,7 +687,7 @@ namespace mu2e {
 
     //Get handle to the tracker
     if( ! geom->hasElement<Tracker>() ) return;
-	
+
     art::Handle<TrkCaloMatchCollection>  trkCaloMatchHandle;
     event.getByLabel(_trkCaloMatchModuleLabel, trkCaloMatchHandle);
     TrkCaloMatchCollection const& trkCaloMatches(*trkCaloMatchHandle);
@@ -735,7 +734,7 @@ namespace mu2e {
     // handle to PDG
     //    GlobalConstantsHandle<ParticleDataList> pdt;
     //ParticleDataList const & pdt_ = *pdt;
-    
+
 
     //      const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
     //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
@@ -758,7 +757,7 @@ namespace mu2e {
     for (unsigned int ic=0; ic<CaloHits.size();++ic)
     {
         const CaloHit &hit     = CaloHits.at(ic);
-	int diskId                    = cal.crystal(hit.crystalID()).diskID();
+        int diskId                    = cal.crystal(hit.crystalID()).diskID();
         CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position()); //in disk FF frame
 
            auto itMC = caloDigiTruth.begin();
@@ -778,16 +777,16 @@ namespace mu2e {
         _crySimLen[_nCluster] = nCrySims;
 
         for (unsigned i=0;i< nCrySims;++i)
-	{	       
-       
+        {
+
              const auto& eDepMC = itMC->second->energyDeposit(i);
 
             _motId[_nSim]      = eDepMC.sim()->id().asInt();
             _motPdgId[_nSim]   = eDepMC.sim()->pdgId();
             _motmom[_nSim]     = eDepMC.momentumIn();
             _motcrCode[_nSim]  = eDepMC.sim()->creationCode();
-       	    _motTime[_nSim]    = eDepMC.time();
-            _motEdep[_nSim]    = eDepMC.energyDep();	       
+                   _motTime[_nSim]    = eDepMC.time();
+            _motEdep[_nSim]    = eDepMC.energyDep();
             ++_nSim;
          }
         ++_nHits;
@@ -808,17 +807,17 @@ namespace mu2e {
         const auto eDepMCs = (itMC != caloClusterTruth.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
 
         bool isConversion(false);
-        if (itMC != caloClusterTruth.end()) 
+        if (itMC != caloClusterTruth.end())
         {
            for (auto& edep : eDepMCs)
            {
               auto parent(edep.sim());
-              while (parent->hasParent()) parent = parent->parent();                     
-	      if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
-           }    		          
+              while (parent->hasParent()) parent = parent->parent();
+              if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) isConversion=true;
+           }
         }
 
-          
+
         _cluEnergy[_nCluster] = cluster.energyDep();
         _cluTime[_nCluster]   = cluster.time();
         _cluNcrys[_nCluster]  = cluster.size();
@@ -830,13 +829,13 @@ namespace mu2e {
 
         _cluSimIdx[_nCluster] = _nCluSim;
         _cluSimLen[_nCluster] = eDepMCs.size();
-        
-	for (unsigned i=0;i< eDepMCs.size();++i)
-	{	       
-            const auto& eDepMC = eDepMCs[i];	       
+
+        for (unsigned i=0;i< eDepMCs.size();++i)
+        {
+            const auto& eDepMC = eDepMCs[i];
             art::Ptr<SimParticle> sim = eDepMC.sim();
 
-	    art::Ptr<SimParticle> smother(sim);
+            art::Ptr<SimParticle> smother(sim);
             while (smother->hasParent()) smother = smother->parent();
             int genIdx=-1;
             if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
@@ -862,83 +861,83 @@ namespace mu2e {
     std::vector<double>    bestChi2Time(_numberOfTracks,-1.);
     std::vector<int>       bestCluster(_numberOfTracks,-1);
     std::vector<int>       bestMatch(_numberOfTracks,-1);
- 
+
     for (int ithTrack = 0; ithTrack < _numberOfTracks; ++ithTrack)
       {
-	double minChi2 = -1.; int minMatch = -1; int minCluster = -1; double minChi2Pos = -1.; double minChi2Time = -1.;
-	int _nMatch(0);
-	for (auto const& trkCaloMatch: trkCaloMatches)
-	  {
-	    //
-	    // match this track only
-	    if (trkCaloMatch.trkId() == ithTrack)
-	      {
-		_mTrkId[_nMatch]     = trkCaloMatch.trkId();
-		_mCluId[_nMatch]     = trkCaloMatch.cluId();
-		_mChi2[_nMatch]      = trkCaloMatch.chi2();
-		_mChi2Pos[_nMatch]   = trkCaloMatch.chi2Pos();
-		_mChi2Time[_nMatch]  = trkCaloMatch.chi2Time();
-		if (trkCaloMatch.chi2() < minChi2 || minChi2 == -1)
-		  {
-		    minCluster = trkCaloMatch.cluId();
-		    minChi2 = trkCaloMatch.chi2();
-		    minChi2Pos = trkCaloMatch.chi2Pos();
-		    minChi2Time = trkCaloMatch.chi2Time();
-		    minMatch = _nMatch;
-		  }
-		if (_diagLevel > 3)
-		  {std::cout << "nmatch, track ID, cluster ID, chi2, cluster time " << _nMatch << " " << _mTrkId[_nMatch] << " " 
-			     << _mCluId[_nMatch] << " "  << _mChi2[_nMatch] << " " << _cluTime[_mCluId[_nMatch]]  << std::endl;
-		  }
-		++_nMatch;
-	      }
-	  }
-	bestChi2[ithTrack] = minChi2;
-	bestChi2Pos[ithTrack] = minChi2Pos;
-	bestChi2Time[ithTrack] = minChi2Time;
-	bestCluster[ithTrack] = minCluster;
-	bestMatch[ithTrack] = minMatch;
-	if (_diagLevel > 2)
-	  {std::cout << "for track " << ithTrack << " nmatch, track ID, cluster ID, chi2, cluster time " << minMatch << " " << _mTrkId[minMatch] << " " 
-		     << _mCluId[minMatch] << " "  << _mChi2[minMatch] << " " << _cluTime[_mCluId[minMatch]]  << std::endl;
-	  }
-	if (_diagLevel > 2){std::cout << "number of clusters = " << numberOfClusters << " number of matches = " << _nMatch << std::endl;}
+        double minChi2 = -1.; int minMatch = -1; int minCluster = -1; double minChi2Pos = -1.; double minChi2Time = -1.;
+        int _nMatch(0);
+        for (auto const& trkCaloMatch: trkCaloMatches)
+          {
+            //
+            // match this track only
+            if (trkCaloMatch.trkId() == ithTrack)
+              {
+                _mTrkId[_nMatch]     = trkCaloMatch.trkId();
+                _mCluId[_nMatch]     = trkCaloMatch.cluId();
+                _mChi2[_nMatch]      = trkCaloMatch.chi2();
+                _mChi2Pos[_nMatch]   = trkCaloMatch.chi2Pos();
+                _mChi2Time[_nMatch]  = trkCaloMatch.chi2Time();
+                if (trkCaloMatch.chi2() < minChi2 || minChi2 == -1)
+                  {
+                    minCluster = trkCaloMatch.cluId();
+                    minChi2 = trkCaloMatch.chi2();
+                    minChi2Pos = trkCaloMatch.chi2Pos();
+                    minChi2Time = trkCaloMatch.chi2Time();
+                    minMatch = _nMatch;
+                  }
+                if (_diagLevel > 3)
+                  {std::cout << "nmatch, track ID, cluster ID, chi2, cluster time " << _nMatch << " " << _mTrkId[_nMatch] << " "
+                             << _mCluId[_nMatch] << " "  << _mChi2[_nMatch] << " " << _cluTime[_mCluId[_nMatch]]  << std::endl;
+                  }
+                ++_nMatch;
+              }
+          }
+        bestChi2[ithTrack] = minChi2;
+        bestChi2Pos[ithTrack] = minChi2Pos;
+        bestChi2Time[ithTrack] = minChi2Time;
+        bestCluster[ithTrack] = minCluster;
+        bestMatch[ithTrack] = minMatch;
+        if (_diagLevel > 2)
+          {std::cout << "for track " << ithTrack << " nmatch, track ID, cluster ID, chi2, cluster time " << minMatch << " " << _mTrkId[minMatch] << " "
+                     << _mCluId[minMatch] << " "  << _mChi2[minMatch] << " " << _cluTime[_mCluId[minMatch]]  << std::endl;
+          }
+        if (_diagLevel > 2){std::cout << "number of clusters = " << numberOfClusters << " number of matches = " << _nMatch << std::endl;}
 
-	//
-	// there is (2/23/2016) a code infelicity in TrackCaloMatchingBis.  If the track hits the first disk, the intersection module
-	// still propagates the track to the second disk.  In that case the matching module matches
-	// clusters to each intersection, and you get the same matches twice: _nCluster for the first disk, then the cluster list repeated
-	// for the second disk.  Vice-versa for upstream tracks. In either case, take the first set and just use that.  The algorithm will be upgraded.
-	// perhaps then there can be more than two intersections (one per disk) per track but the throw will warn we need a code upgrade.
-	// 
-	// and then sometimes you find more than one track (as of this writing the tracks are found in order of time, but that can't be assumed)
-	//
-	// hence I put in:
-	if (_diagLevel > 2)
-	  {
-	    std::cout << " _nMatch = " << _nMatch << std::endl;
-	    std::cout << " _nCluster = " << _nCluster << std::endl;
-	    std::cout << " kreps.size() = " << kreps.size() << std::endl;
-	  }
-	if (_nMatch > 2*_nCluster*static_cast<int>(kreps.size()) )
-	  { throw cet::exception("RANGE") << " _nMatch and _nCluster mismatch, from KineticFracAnalysis. Call Bob ...nmatch and ncluster are " <<  _nMatch << " " << _nCluster << std::endl;}
+        //
+        // there is (2/23/2016) a code infelicity in TrackCaloMatchingBis.  If the track hits the first disk, the intersection module
+        // still propagates the track to the second disk.  In that case the matching module matches
+        // clusters to each intersection, and you get the same matches twice: _nCluster for the first disk, then the cluster list repeated
+        // for the second disk.  Vice-versa for upstream tracks. In either case, take the first set and just use that.  The algorithm will be upgraded.
+        // perhaps then there can be more than two intersections (one per disk) per track but the throw will warn we need a code upgrade.
+        //
+        // and then sometimes you find more than one track (as of this writing the tracks are found in order of time, but that can't be assumed)
+        //
+        // hence I put in:
+        if (_diagLevel > 2)
+          {
+            std::cout << " _nMatch = " << _nMatch << std::endl;
+            std::cout << " _nCluster = " << _nCluster << std::endl;
+            std::cout << " kreps.size() = " << kreps.size() << std::endl;
+          }
+        if (_nMatch > 2*_nCluster*static_cast<int>(kreps.size()) )
+          { throw cet::exception("RANGE") << " _nMatch and _nCluster mismatch, from KineticFracAnalysis. Call Bob ...nmatch and ncluster are " <<  _nMatch << " " << _nCluster << std::endl;}
 
       }
 
     _nTrk=0;
 
-	
+
     if (_diagLevel > 3)
       {
-	std::cout << "number of tracks = "<< kreps.size() << std::endl;
-	std::cout << "size of intersection collection = " << trkIntersect.size() << std::endl;
+        std::cout << "number of tracks = "<< kreps.size() << std::endl;
+        std::cout << "size of intersection collection = " << trkIntersect.size() << std::endl;
       }
     if (trkIntersect.size() == 0 ) return; // code purists look the other way
     if (trkIntersect.size()  > 2*kreps.size()) // can't have more than two intersections per track
-      { 
-	throw cet::exception("RANGE") << " more than two intersections for track and calorimeter, from KineticFracAnalysis. Call Bob or Bertrand..." << std::endl;
+      {
+        throw cet::exception("RANGE") << " more than two intersections for track and calorimeter, from KineticFracAnalysis. Call Bob or Bertrand..." << std::endl;
       }
- 
+
     //
     // we now have matches to each track.  Have to line these up with TrackIntersectionCollection.  Trivial if one track
     // but some events (small to be sure) have multiple tracks.  Therefore loop over TrackIntersectionCollections and see which track
@@ -947,185 +946,185 @@ namespace mu2e {
     int ithInt(0);
     for (auto const& trackCaloIntersect: trkIntersect)
       {
-	if (ithInt > 0) {break;}
-	++ithInt;
-	int trackNumber = trackCaloIntersect.trkId();
-	KalRep const &trk = *(trackCaloIntersect.trk());
-	double pathLength = trackCaloIntersect.pathLengthEntrance();
-	HepPoint point = trk.position(pathLength);
-	std::cout << "path length = " << pathLength << std::endl;
-	double trkArrivalTime = trk.arrivalTime(pathLength);
-	if (_cluCogZ[bestCluster[trackNumber]] > 1800.) {break;}
-	double deltaTime = _cluTime[bestCluster[trackNumber]] - trkArrivalTime;
+        if (ithInt > 0) {break;}
+        ++ithInt;
+        int trackNumber = trackCaloIntersect.trkId();
+        KalRep const &trk = *(trackCaloIntersect.trk());
+        double pathLength = trackCaloIntersect.pathLengthEntrance();
+        HepPoint point = trk.position(pathLength);
+        std::cout << "path length = " << pathLength << std::endl;
+        double trkArrivalTime = trk.arrivalTime(pathLength);
+        if (_cluCogZ[bestCluster[trackNumber]] > 1800.) {break;}
+        double deltaTime = _cluTime[bestCluster[trackNumber]] - trkArrivalTime;
 
-	//
-	// this is for comparing to clusters
+        //
+        // this is for comparing to clusters
 
-	HelixTraj trkHel(trk.helix(pathLength).params(),trk.helix(pathLength).covariance());
-	double trkTime                = trk.arrivalTime(pathLength);
-	double tPhi     = trkHel.phi0();
-	double td0     = trkHel.d0();
-	double tz0     = trkHel.z0();
-	double tOmega   = trkHel.omega();
-	double tCosDip  = trkHel.cosDip();
-	double tProb                  = trk.chisqConsistency().significanceLevel();
-	int    tNhits                 = trk.nActive();
-	int    tStatus                = trk.fitStatus().success();
-	CLHEP::Hep3Vector trkMomentum = trk.momentum(pathLength);
-	HepVector momvec(3);//establshing dimension for next line
-	momvec = trkMomentum.unit();
-	BbrVectorErr momCov = trk.momentumErr(0);
-	double fitMomErr    = sqrt(momCov.covMatrix().similarity(momvec));
+        HelixTraj trkHel(trk.helix(pathLength).params(),trk.helix(pathLength).covariance());
+        double trkTime                = trk.arrivalTime(pathLength);
+        double tPhi     = trkHel.phi0();
+        double td0     = trkHel.d0();
+        double tz0     = trkHel.z0();
+        double tOmega   = trkHel.omega();
+        double tCosDip  = trkHel.cosDip();
+        double tProb                  = trk.chisqConsistency().significanceLevel();
+        int    tNhits                 = trk.nActive();
+        int    tStatus                = trk.fitStatus().success();
+        CLHEP::Hep3Vector trkMomentum = trk.momentum(pathLength);
+        HepVector momvec(3);//establshing dimension for next line
+        momvec = trkMomentum.unit();
+        BbrVectorErr momCov = trk.momentumErr(0);
+        double fitMomErr    = sqrt(momCov.covMatrix().similarity(momvec));
 
-	double tanDip = sqrt( 1. - tCosDip*tCosDip)/tCosDip;
+        double tanDip = sqrt( 1. - tCosDip*tCosDip)/tCosDip;
 
-	      
-	double angleWrtZ = acos(trkMomentum.z()/trkMomentum.mag())*(180/3.14159);
 
-	std::cout << "delta time = " << _cluTime[bestCluster[trackNumber]] << " " << trkArrivalTime << " " << deltaTime << std::endl;
-	//	if (deltaTime > -4){break;}
-	if (_diagLevel > 2)
-	  {
-	    std::cout << "*****ith Int = " << ithInt << "**********" << std::endl;
-	    std::cout << "trackID, pathLengthEntrance, point: " << trackNumber << " " << pathLength << " " << point << std::endl;
-	  }
+        double angleWrtZ = acos(trkMomentum.z()/trkMomentum.mag())*(180/3.14159);
 
-	//
-	// only plot these for the disk that goes with the best match cluster
+        std::cout << "delta time = " << _cluTime[bestCluster[trackNumber]] << " " << trkArrivalTime << " " << deltaTime << std::endl;
+        //        if (deltaTime > -4){break;}
+        if (_diagLevel > 2)
+          {
+            std::cout << "*****ith Int = " << ithInt << "**********" << std::endl;
+            std::cout << "trackID, pathLengthEntrance, point: " << trackNumber << " " << pathLength << " " << point << std::endl;
+          }
 
-	double bestZ = _cluCogZ[bestCluster[trackNumber]];
+        //
+        // only plot these for the disk that goes with the best match cluster
 
-	if (_diagLevel > 2){std::cout << " best Z is " << bestZ << " and point z = " << point.z() << std::endl;}
+        double bestZ = _cluCogZ[bestCluster[trackNumber]];
 
-	_hZinter->Fill(point.z());
-	double rad1 = sqrt(point.x()*point.x() + point.y()*point.y());
+        if (_diagLevel > 2){std::cout << " best Z is " << bestZ << " and point z = " << point.z() << std::endl;}
 
-	// 
-	//just look at front disk
-	if (point.z() < 1800.)
-	  {
-	//    double rad2 = sqrt(pointFront.x()*pointBack.x() + pointFront.y()*pointBack.y());
-	    if (abs(point.z() - bestZ) < 1) {
-	      if (_diagLevel > 2)
-		{
-		  std::cout << "in good rad, chi2 = " << rad1 << " " << bestChi2[trackNumber]  
-			    << std::endl;
-		}
-	      _hChisqDisk1GoodZ->Fill(bestChi2Time[trackNumber]); _hDisk1GoodRadius->Fill(rad1);
-	      _hFracOnFrontFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
-	      _hAngGood->Fill(angleWrtZ);
-	    }
-	    if (abs(point.z() - bestZ) > 30) 
-	      {
-		if (_diagLevel > 2)
-		  {
-		    std::cout << "in bad rad, chi2 = "  << rad1 << " " << bestChi2[trackNumber] << std::endl;
-	    std::cout << "path lengths bad rad = " << trackCaloIntersect.pathLengthEntrance() << std::endl;
-	    std::cout << "point bad rad = " << point << std::endl;
-	    std::cout << " energy of best cluster match = " << _cluEnergy[bestCluster[trackNumber]] << " and momentum = " << trk.momentum(pathLength).mag() << std::endl; 
-		  }
-		_hAngBad->Fill(angleWrtZ);
-		_hChisqDisk1BadZ->Fill(bestChi2Time[trackNumber]);
-		_hDisk1BadRadius->Fill(rad1);
-		_hZForBadDisk1->Fill(_cluCogZ[bestCluster[trackNumber]]);
-		_hFracOnEdgeFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
-		if (bestZ < 2000.){_hFracOnEdgeFaceAndClusterInFront->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());}
-		if (bestZ > 2000.){_hFracOnEdgeFaceAndClusterInBack->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
-		}
-	      }
-	  }
+        _hZinter->Fill(point.z());
+        double rad1 = sqrt(point.x()*point.x() + point.y()*point.y());
 
-	if (_diagLevel > 2)
-	  {	
-	    std::cout << "path lengths = " << trackCaloIntersect.pathLengthEntrance() << std::endl;
-	    std::cout << "point = " << point << std::endl;
-	  }
-	      
-	//
-	// these are for cut set c comparisons; numbers aren't identical to Dave Brown's but are very close. Not worth going back into kreps
-	//
-	//after extendvalidrange is incorporated this fudge will be unnecessary.  Right now Bertrand has cast away original krep constancy so who knows
-	//what we have.
-	HelixTraj trkHel0(trk.helix(0).params(),trk.helix(0).covariance());
+        //
+        //just look at front disk
+        if (point.z() < 1800.)
+          {
+        //    double rad2 = sqrt(pointFront.x()*pointBack.x() + pointFront.y()*pointBack.y());
+            if (abs(point.z() - bestZ) < 1) {
+              if (_diagLevel > 2)
+                {
+                  std::cout << "in good rad, chi2 = " << rad1 << " " << bestChi2[trackNumber]
+                            << std::endl;
+                }
+              _hChisqDisk1GoodZ->Fill(bestChi2Time[trackNumber]); _hDisk1GoodRadius->Fill(rad1);
+              _hFracOnFrontFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
+              _hAngGood->Fill(angleWrtZ);
+            }
+            if (abs(point.z() - bestZ) > 30)
+              {
+                if (_diagLevel > 2)
+                  {
+                    std::cout << "in bad rad, chi2 = "  << rad1 << " " << bestChi2[trackNumber] << std::endl;
+            std::cout << "path lengths bad rad = " << trackCaloIntersect.pathLengthEntrance() << std::endl;
+            std::cout << "point bad rad = " << point << std::endl;
+            std::cout << " energy of best cluster match = " << _cluEnergy[bestCluster[trackNumber]] << " and momentum = " << trk.momentum(pathLength).mag() << std::endl;
+                  }
+                _hAngBad->Fill(angleWrtZ);
+                _hChisqDisk1BadZ->Fill(bestChi2Time[trackNumber]);
+                _hDisk1BadRadius->Fill(rad1);
+                _hZForBadDisk1->Fill(_cluCogZ[bestCluster[trackNumber]]);
+                _hFracOnEdgeFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
+                if (bestZ < 2000.){_hFracOnEdgeFaceAndClusterInFront->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());}
+                if (bestZ > 2000.){_hFracOnEdgeFaceAndClusterInBack->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
+                }
+              }
+          }
 
-		  
-	int    tNHits0    = trk.nActive();
-	double tPhi0     = trkHel0.phi0();
-	double td00     = trkHel0.d0();
-	double tz00     = trkHel0.z0();
-	double tOmega0   = trkHel0.omega();
-	double tCosDip0  = trkHel0.cosDip();
-	int    tStatus0     = trk.fitStatus().success();
-	double tProb0    = trk.chisqConsistency().significanceLevel(); //is this right?
-	double trkTime0 = trk.arrivalTime(0);
-	CLHEP::Hep3Vector trkMomentum0 = trk.momentum(0);
-	HepVector momvec0(3);
-	momvec0 = trkMomentum0.unit();
-	BbrVectorErr momCov0 = trk.momentumErr(0);
-	double fitMomErr0    = sqrt(momCov0.covMatrix().similarity(momvec0));
- 	
-	if (tCosDip0 == 0)
-	  { throw cet::exception("RANGE") << " cosDip = 0 for track, which makes no sense, from KineticFracAnalysis...it's Bobs fault" << std::endl;}
+        if (_diagLevel > 2)
+          {
+            std::cout << "path lengths = " << trackCaloIntersect.pathLengthEntrance() << std::endl;
+            std::cout << "point = " << point << std::endl;
+          }
 
-	double tanDip0 = sqrt( 1. - tCosDip0*tCosDip0)/tCosDip0;
-	CLHEP::Hep3Vector momVec0 = trk.momentum(0);
+        //
+        // these are for cut set c comparisons; numbers aren't identical to Dave Brown's but are very close. Not worth going back into kreps
+        //
+        //after extendvalidrange is incorporated this fudge will be unnecessary.  Right now Bertrand has cast away original krep constancy so who knows
+        //what we have.
+        HelixTraj trkHel0(trk.helix(0).params(),trk.helix(0).covariance());
 
-	// Does this fit pass cut set C?
-	bool cutC = ( tStatus0 >0)
-	  && ( tProb0             > 2.e-3  )
-	  && ( tNHits0    >= 20    ) 
-	  && ( fitMomErr0          < 0.25   ) 
-	  //      && ( trkTime0 > 700 && trkTime0 < 1695)
-	  ;
-	//    if (! cutC) return;  
-	//
-	// look at clusters to see if any match
 
-	//double timeDiff = 1696;
-	_htime->Fill(_cluTime[bestCluster[trackNumber]] - trkTime);
-	if (_diagLevel > 2) {std::cout << " cluster - track time = " << _cluTime[bestCluster[trackNumber]] << " " << trkTime<< " "  << _cluTime[bestCluster[trackNumber]] - trkTime << std::endl;}
+        int    tNHits0    = trk.nActive();
+        double tPhi0     = trkHel0.phi0();
+        double td00     = trkHel0.d0();
+        double tz00     = trkHel0.z0();
+        double tOmega0   = trkHel0.omega();
+        double tCosDip0  = trkHel0.cosDip();
+        int    tStatus0     = trk.fitStatus().success();
+        double tProb0    = trk.chisqConsistency().significanceLevel(); //is this right?
+        double trkTime0 = trk.arrivalTime(0);
+        CLHEP::Hep3Vector trkMomentum0 = trk.momentum(0);
+        HepVector momvec0(3);
+        momvec0 = trkMomentum0.unit();
+        BbrVectorErr momCov0 = trk.momentumErr(0);
+        double fitMomErr0    = sqrt(momCov0.covMatrix().similarity(momvec0));
 
-	//
-	// what's the distance for this cluster?
+        if (tCosDip0 == 0)
+          { throw cet::exception("RANGE") << " cosDip = 0 for track, which makes no sense, from KineticFracAnalysis...it's Bobs fault" << std::endl;}
 
-	double _dist = sqrt(pow( _cluCogX[bestCluster[trackNumber]] - point.x() ,2) + pow(_cluCogY[bestCluster[trackNumber]] - point.y(),2) );
-	_hDistToTrack->Fill(_dist);
-	if (! cutC){_hDistToTrackGoodCutC->Fill(_dist);}
+        double tanDip0 = sqrt( 1. - tCosDip0*tCosDip0)/tCosDip0;
+        CLHEP::Hep3Vector momVec0 = trk.momentum(0);
+
+        // Does this fit pass cut set C?
+        bool cutC = ( tStatus0 >0)
+          && ( tProb0             > 2.e-3  )
+          && ( tNHits0    >= 20    )
+          && ( fitMomErr0          < 0.25   )
+          //      && ( trkTime0 > 700 && trkTime0 < 1695)
+          ;
+        //    if (! cutC) return;
+        //
+        // look at clusters to see if any match
+
+        //double timeDiff = 1696;
+        _htime->Fill(_cluTime[bestCluster[trackNumber]] - trkTime);
+        if (_diagLevel > 2) {std::cout << " cluster - track time = " << _cluTime[bestCluster[trackNumber]] << " " << trkTime<< " "  << _cluTime[bestCluster[trackNumber]] - trkTime << std::endl;}
+
+        //
+        // what's the distance for this cluster?
+
+        double _dist = sqrt(pow( _cluCogX[bestCluster[trackNumber]] - point.x() ,2) + pow(_cluCogY[bestCluster[trackNumber]] - point.y(),2) );
+        _hDistToTrack->Fill(_dist);
+        if (! cutC){_hDistToTrackGoodCutC->Fill(_dist);}
 
     HepPoint point0 = trk.position(0);
 
-	if (_diagLevel >2 )
-	  {
-	    std::cout << "and the cluster match: best cluster = " << bestCluster[trackNumber] << " for track " << trackNumber << "  \n"
-	      "cluCogX = " << _cluCogX[bestCluster[trackNumber]] << " cluCogY = " << _cluCogY[bestCluster[trackNumber]] << " cluCogZ " << _cluCogZ[bestCluster[trackNumber]] << " \n"
-	      " point is " << point << std::endl;
-	  }
+        if (_diagLevel >2 )
+          {
+            std::cout << "and the cluster match: best cluster = " << bestCluster[trackNumber] << " for track " << trackNumber << "  \n"
+              "cluCogX = " << _cluCogX[bestCluster[trackNumber]] << " cluCogY = " << _cluCogY[bestCluster[trackNumber]] << " cluCogZ " << _cluCogZ[bestCluster[trackNumber]] << " \n"
+              " point is " << point << std::endl;
+          }
 
-	if (_diagLevel > 2 && _dist > 350)
-	  {
-	    std::cout << " big distance comparisons: dist = " << _dist << "\n"
-		      << " tStatus    = " << tStatus << " " << tStatus0  << " \n" 
-		      << " tProb      = " << tProb << " " << tProb0  << " \n"
-		      << " nhits      = " << tNhits << " " << tNHits0  << " \n"
-		      << " track time = " << trkTime << " " << trkTime0  << " \n"
-		      << " omega      = " << tOmega << " " << tOmega0  << " \n"
-		      << " phi        = " << tPhi << " " << tPhi0 << " \n"
-		      << " d0         = " << td0 << " " << td00  << " \n"
-		      << " z0         = " << tz0 << " " << tz00  << " \n"
-		      << " tandip     = " << tanDip << " " << tanDip0 << " \n"
-		      << " momentum   = " << trkMomentum << " " << trkMomentum0 << " \n"
-		      << " magnitude  = " << trkMomentum.mag() << " " << trkMomentum0.mag() << "\n"
-		      << " mom err    = " << fitMomErr <<  " " << fitMomErr0 << "\n"
-		      << " cut set C  = " << cutC 
-		      << std::endl;
+        if (_diagLevel > 2 && _dist > 350)
+          {
+            std::cout << " big distance comparisons: dist = " << _dist << "\n"
+                      << " tStatus    = " << tStatus << " " << tStatus0  << " \n"
+                      << " tProb      = " << tProb << " " << tProb0  << " \n"
+                      << " nhits      = " << tNhits << " " << tNHits0  << " \n"
+                      << " track time = " << trkTime << " " << trkTime0  << " \n"
+                      << " omega      = " << tOmega << " " << tOmega0  << " \n"
+                      << " phi        = " << tPhi << " " << tPhi0 << " \n"
+                      << " d0         = " << td0 << " " << td00  << " \n"
+                      << " z0         = " << tz0 << " " << tz00  << " \n"
+                      << " tandip     = " << tanDip << " " << tanDip0 << " \n"
+                      << " momentum   = " << trkMomentum << " " << trkMomentum0 << " \n"
+                      << " magnitude  = " << trkMomentum.mag() << " " << trkMomentum0.mag() << "\n"
+                      << " mom err    = " << fitMomErr <<  " " << fitMomErr0 << "\n"
+                      << " cut set C  = " << cutC
+                      << std::endl;
 
-	  }  
+          }
       }
- 
 
-     
 
-    
+
+
+
 
     //--------------------------  Do tracks  --------------------------------
     _nTrkOk = 0;
@@ -1164,17 +1163,17 @@ namespace mu2e {
       double fitmompt = p0.mag()*(1.0-p0.cosTheta()*p0.cosTheta());
 
       // Does this fit pass cut set C?
-      bool cutC = ( krep.fitStatus().success() >0) 
-	&& ( fitCon             > 2.e-3  ) 
-	&& ( krep.nActive()    >= 20    ) 
-	&& ( fitMomErr          < 0.25   ) 
-	//	( krep.t0().t0() > 700 && krep.t0().t0() < 1695)
-	;
+      bool cutC = ( krep.fitStatus().success() >0)
+        && ( fitCon             > 2.e-3  )
+        && ( krep.nActive()    >= 20    )
+        && ( fitMomErr          < 0.25   )
+        //        ( krep.t0().t0() > 700 && krep.t0().t0() < 1695)
+        ;
 
       if (!cutC && _diagLevel>2) {std::cout << "failed cutset" << std::endl;}
 
       //      cutC = true;
-      
+
       _trkDip[_nTrk] = tanDip;
       _trkOk[_nTrk]  = cutC? 1 : 0;
       _trkpt[_nTrk]  = fitmompt;
@@ -1192,10 +1191,10 @@ namespace mu2e {
       ++_nTrk;
 
       if (_diagLevel > 4)
-	{
-	  std:: cout << "KineticFracAnalysis _nTrk, t0 = " << _nTrk << " " << krep.t0().t0() << " and momentum " << p0.mag() << std::endl;
-	  std:: cout << "KineticFracAnalysis fitstatus = " << krep.fitStatus().success() << std::endl;
-	}
+        {
+          std:: cout << "KineticFracAnalysis _nTrk, t0 = " << _nTrk << " " << krep.t0().t0() << " and momentum " << p0.mag() << std::endl;
+          std:: cout << "KineticFracAnalysis fitstatus = " << krep.fitStatus().success() << std::endl;
+        }
 
       if (cutC)  ++_nTrkOk;
     }
@@ -1210,7 +1209,7 @@ namespace mu2e {
     else {
       _shcol  = 0;
       printf(" >>> ERROR in KineticFracAnalysis::findData: StrawHitCollection with label=%s not found.\n",
-	     _shLabel.data());
+             _shLabel.data());
     }
 
     art::Handle<mu2e::StrawHitPositionCollection> shposH;
@@ -1220,7 +1219,7 @@ namespace mu2e {
     else {
       _shpcol = 0;
       printf(" >>> ERROR in KineticFracAnalysis::findData: StrawHitPositionCollection with label=%s not found.\n",
-	     _shpLabel.data());
+             _shpLabel.data());
     }
 
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
@@ -1230,7 +1229,7 @@ namespace mu2e {
     else {
       _shfcol = 0;
       printf(" >>> ERROR in KineticFracAnalysis::findData: StrawHitFlagCollection with label=%s not found.\n",
-	     _shfLabel.data());
+             _shfLabel.data());
     }
 
     art::Handle<mu2e::StrawHitFlagCollection> bkflagH;
@@ -1240,7 +1239,7 @@ namespace mu2e {
     else {
       _bkfcol = 0;
       printf(" >>> ERROR in KineticFracAnalysis::findData: StrawHitFlagCollection with label=%s not found.\n",
-	     _bkfLabel.data());
+             _bkfLabel.data());
     }
 
     _nTrackerHits = _shcol->size();

@@ -42,13 +42,18 @@ mu2eg4DefaultPhysics: {
       "Inconel718","MBSCalShieldRing","MBSSupportMix","NbTi","NbTiCu",
       "ProductionTargetTungstenLa2_O3",
       "RackSteel","StainlessSteel","StainlessSteel316","StainlessSteel316L","StoppingTarget_Al"]
-    // comma separated list used when the above is set to true 
+    // comma separated list used when the above is set to true
     // e.g., ["StainlessSteel", "StainlessSteel316"]
 
     // mscModelTransitionEnergy: 115. // MeV uncomment to change the Geant4 deafult
 
     // muonPreAssignedDecayProperTime: 200.0 // ns uncomment and set specific time,
                                              // to activate seting muon fixed decay proper time
+
+    // muonMinPreAssignedDecayProperTime: 100.0 // ns uncomment and set the min proper time
+    // muonMaxPreAssignedDecayProperTime: 200.0 // ns uncomment and set the max proper time
+    // to activate seting muon random, fixed (from min up to the max value) decay proper time
+    // either the specific or one or both min, max options above can be activated at a time
 
     useEmOption4InTracker: false // to use that option in the tracker only if not using _EMZ;
                                  // does not seem to work all that well in geant4 10.4

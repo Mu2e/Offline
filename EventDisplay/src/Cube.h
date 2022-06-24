@@ -73,7 +73,7 @@ class Cube: public VirtualShape
            double phi, double theta, double psi, double time,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
            EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
-           bool isGeometry) : 
+           bool isGeometry) :
            VirtualShape(geomanager, topvolume, mainframe, info, isGeometry)
   {
     setStartTime(time);

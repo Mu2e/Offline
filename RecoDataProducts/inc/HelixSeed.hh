@@ -27,10 +27,10 @@ namespace mu2e {
     art::Ptr<CaloCluster> const& caloCluster() const { return _timeCluster->caloCluster(); }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
 
-    TrkT0	             _t0;	      // t0 for this helix
-    ComboHitCollection       _hhits;	      // hits potentially used for this helix
-    RobustHelix              _helix;	     // robust helix created from these hits
-    TrkFitFlag	             _status;      // status of processes used to create this seed
+    TrkT0                     _t0;              // t0 for this helix
+    ComboHitCollection       _hhits;              // hits potentially used for this helix
+    RobustHelix              _helix;             // robust helix created from these hits
+    TrkFitFlag                     _status;      // status of processes used to create this seed
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
   };
    typedef std::vector<mu2e::HelixSeed> HelixSeedCollection;

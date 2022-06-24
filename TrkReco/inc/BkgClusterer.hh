@@ -4,17 +4,17 @@
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
-namespace mu2e 
+namespace mu2e
 {
-    class BkgClusterer
-    {
-        public:
-            virtual ~BkgClusterer() {}
-            virtual void  init        () = 0;
-            virtual void  findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters, 
-                                       const ComboHitCollection& shcol, int iev) = 0;
-            virtual float distance    (const BkgCluster& cluster, const ComboHit& hit) const = 0; 
-    };
+  class BkgClusterer
+  {
+    public:
+      virtual ~BkgClusterer() {}
+      virtual void  init        () = 0;
+      virtual void  findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters,
+          const ComboHitCollection& shcol, int iev) = 0;
+      virtual float distance    (const BkgCluster& cluster, const ComboHit& hit) const = 0;
+  };
 }
 
 #endif

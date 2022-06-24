@@ -4,7 +4,7 @@
 // File:        StepPointsInDigis_module.cc
 //
 // Creates new StrawDigiMC and CrvDigiMC collections after creating new
-// StepPointMC, SimParticle, GenParticle and SimParticleTimeMaps with all 
+// StepPointMC, SimParticle, GenParticle and SimParticleTimeMaps with all
 // unnecessary MC objects removed
 //
 // Generated at Wed Apr 12 16:10:46 2017 by Andrew Edmonds using cetskelgen
@@ -12,7 +12,6 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -123,7 +122,7 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
       StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
       auto const& old_step_point = i_strawDigiMC.strawGasStep(end);
       if (old_step_point.isAvailable()) {
-	fillTree( *old_step_point );
+        fillTree( *old_step_point );
       }
     }
 
@@ -138,7 +137,7 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
 
     for (const auto& i_step_mc : i_crvDigiMC.GetCrvSteps()) {
       if (i_step_mc.isAvailable()) {
-	fillTree(*i_step_mc);
+        fillTree(*i_step_mc);
       }
     }
   }

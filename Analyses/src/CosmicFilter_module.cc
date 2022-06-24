@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// filter out cosmics events 
+// filter out cosmics events
 // -------------------------
-// 2013-03-01: first day of the sequester - require an event to have: 
-// 
+// 2013-03-01: first day of the sequester - require an event to have:
+//
 // 1. a reconstructed track with |d0| < 150mm
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,7 +17,6 @@
 // Framework includes
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 //#include <boost/shared_ptr.hpp>
@@ -40,20 +39,20 @@ namespace mu2e {
   public:
 
     struct Hist_t {
-      TH1F*  fNTracks;			// number of reconstructed tracks
-      TH1F*  fNGoodTracks;		// N(tracks passing all cuts)
-      TH1F*  fTrackD0;			// impact parameter
-      TH1F*  fTrackZ0[2];		// Z0 in the point of closest approach
-      TH1F*  fP; 			// track momentum
+      TH1F*  fNTracks;                        // number of reconstructed tracks
+      TH1F*  fNGoodTracks;                // N(tracks passing all cuts)
+      TH1F*  fTrackD0;                        // impact parameter
+      TH1F*  fTrackZ0[2];                // Z0 in the point of closest approach
+      TH1F*  fP;                         // track momentum
     } _hist;
-					// module parameters
+                                        // module parameters
     std::string  fTrkPatRecModuleLabel;
     int          fDiagLevel;
     double       fMaxD0;
     double       fMaxZ0;
-					// otehr variables
+                                        // otehr variables
     int          _nTracks;
-					// Pointers to histograms & ntuples
+                                        // Pointers to histograms & ntuples
 
   public:
 
@@ -64,7 +63,7 @@ namespace mu2e {
     virtual bool filter  (art::Event& event);
 
   };
-    
+
     CosmicFilter::CosmicFilter(fhicl::ParameterSet const& pset):
     EDFilter{pset},
     fTrkPatRecModuleLabel(pset.get<std::string>   ("trkPatRecModuleLabel")),
@@ -103,7 +102,7 @@ namespace mu2e {
 
 
     _nTracks = 0;
-    if (krepsHandle.isValid()) { 
+    if (krepsHandle.isValid()) {
       list_of_kreps = krepsHandle.product();
       _nTracks      = list_of_kreps->size();
     }
@@ -121,7 +120,7 @@ namespace mu2e {
       if (fabs(d0) < fMaxD0) _hist.fTrackZ0[1]->Fill(z0);
 
       if ((fabs(d0) < fMaxD0) && (fabs(z0) < fMaxZ0)) {
-	n_good_tracks += 1;
+        n_good_tracks += 1;
       }
 
       CLHEP::Hep3Vector mom = trk->momentum(0); // at S=0

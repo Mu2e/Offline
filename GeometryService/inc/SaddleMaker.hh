@@ -19,8 +19,8 @@ namespace mu2e {
   class SaddleMaker {
   public:
 
-    static std::unique_ptr<Saddle>  make(const SimpleConfig& 
-						      config );
+    static std::unique_ptr<Saddle>  make(const SimpleConfig&
+                                                      config );
 
   };
 

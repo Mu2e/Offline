@@ -14,16 +14,16 @@ namespace mu2e {
       int binIndex(float value) const { return (int)floorf( (value-_hlow)/binSize()); }
       Count binContents(size_t ibin) const { return ibin < nbins ? _hist[ibin] : 0; }
       Count binContents(float value) const {
-	auto ibin = binIndex(value);
-	if(ibin >= 0 && ibin < nbins) return _hist[Count(ibin)];
+        auto ibin = binIndex(value);
+        if(ibin >= 0 && ibin < nbins) return _hist[Count(ibin)];
       }
-      void fill(float value,Count increment=1) { 
-	auto ibin = binIndex(value);
-	if(ibin >= 0 && ibin < (int)nbins)_hist[Count(ibin)]+= increment;
+      void fill(float value,Count increment=1) {
+        auto ibin = binIndex(value);
+        if(ibin >= 0 && ibin < (int)nbins)_hist[Count(ibin)]+= increment;
       }
     private:
       float _hlow, _hbin; // low edge and bin size
       std::array<Count,nbins> _hist; // histogram counts
-  }; 
+  };
 }
-#endif 
+#endif

@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_extMon_ceiling.ccl
 
@@ -12,7 +12,7 @@ double dirt.extMon.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.extMon.ceiling.yHalfThickness           = 228.6;
 
-vector<int>    dirt.extMon.ceiling.xreplace   = { 11, 12 }; 
+vector<int>    dirt.extMon.ceiling.xreplace   = { 11, 12 };
 vector<double> dirt.extMon.ceiling.xPositions = {
   -17108.7,   // c
   -27322.5,   // d
@@ -34,7 +34,7 @@ vector<double> dirt.extMon.ceiling.xPositions = {
   -17108.7    // c to N again
 };
 
-vector<int>    dirt.extMon.ceiling.yreplace   = { 10, 11, 12, 13 }; 
+vector<int>    dirt.extMon.ceiling.yreplace   = { 10, 11, 12, 13 };
 vector<double> dirt.extMon.ceiling.yPositions = {
   1760.03,   // c
   -714.699,   // d

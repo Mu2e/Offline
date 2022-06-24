@@ -16,7 +16,7 @@ CaloProtoClusterMaker :
   addSecondRing          : false
   deltaTime              : 2
   diagLevel              : 0
-}  
+}
 
 CaloClusterMaker :
 {
@@ -28,16 +28,16 @@ CaloClusterMaker :
   maxDistMain                : 150
   strategy                   : 0
   diagLevel                  : 0
-}  
+}
 
 
-CaloCluster : 
+CaloCluster :
 {
    producers : {
       CaloProtoClusterMaker  : @local::CaloProtoClusterMaker
       CaloClusterMaker       : @local::CaloClusterMaker
    }
-   
+
    Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
 }
 

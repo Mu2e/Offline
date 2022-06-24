@@ -19,15 +19,15 @@ namespace mu2e {
     helicity _value;
     static const char* name(Helicity const& h) {
       switch (h._value) {
-	case Helicity::neghel:
-	  return "Negative";
-	  break;
-	case Helicity::poshel:
-	  return "Positive";
-	  break;
-	case Helicity::unknown : default:
-	  return "Unknown";
-	  break;
+        case Helicity::neghel:
+          return "Negative";
+          break;
+        case Helicity::poshel:
+          return "Positive";
+          break;
+        case Helicity::unknown : default:
+          return "Unknown";
+          break;
       }
     }
   };

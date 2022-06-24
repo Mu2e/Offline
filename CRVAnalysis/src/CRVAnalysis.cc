@@ -11,7 +11,6 @@
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/CRVResponse/inc/CrvHelper.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
@@ -42,7 +41,7 @@ namespace mu2e
     event.getByLabel(crvCoincidenceClusterModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(crvCoincidenceClusterMCModuleLabel,"",crvCoincidenceClusterMCCollection);
     event.getByLabel(crvRecoPulseLabel,"",crvRecoPulseCollection);
-    event.getByLabel(crvStepLabel,"CRV",crvStepCollection);
+    event.getByLabel(crvStepLabel,"",crvStepCollection);
     event.getByLabel(simParticleLabel,"",simParticleCollection);
     event.getByLabel(mcTrajectoryLabel,"",mcTrajectoryCollection);
 
@@ -55,7 +54,8 @@ namespace mu2e
       //fill the Reco collection
       recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(),
                             cluster.GetStartTime(), cluster.GetEndTime(),
-                            cluster.GetPEs(), cluster.GetCrvRecoPulses().size());
+                            cluster.GetPEs(), cluster.GetCrvRecoPulses().size(),
+                            cluster.GetLayers().size(), cluster.GetSlope());
     }
 
     if(!crvRecoPulseCollection.isValid()) return;
@@ -97,14 +97,14 @@ namespace mu2e
       }
     }
 
+    MCSummary = {};
     if(crvStepCollection.isValid())
     {
       size_t nSteps=crvStepCollection->size();
       MCSummary._totalEnergyDeposited=0;
       std::set<CRSScintillatorBarIndex> counters;
       double totalStep[] = {0, 0, 0, 0};
-      for(size_t i=0; i<nSteps; i++)
-      {
+      for(size_t i=0; i<nSteps; i++){
         MCSummary._totalEnergyDeposited+=crvStepCollection->at(i).visibleEDep();
         counters.insert(crvStepCollection->at(i).barIndex());
         const CRSScintillatorBarId &CRVCounterId = CRS->getBar(crvStepCollection->at(i).barIndex()).id();
@@ -112,7 +112,23 @@ namespace mu2e
         int pdgId = crvStepCollection->at(i).simParticle()->pdgId();
         if(abs(pdgId)==13)
           totalStep[layer] = totalStep[layer] + crvStepCollection->at(i).pathLength();
+
+        // Save info from the first step in the CRV
+        if(i==0){
+          CLHEP::Hep3Vector CrvPos = crvStepCollection->at(i).startPosition();
+          MCSummary._x = CrvPos.x();
+          MCSummary._y = CrvPos.y();
+          MCSummary._z = CrvPos.z();
+          int sectorNumber = CRVCounterId.getShieldNumber();
+          MCSummary._crvSectorNumber = sectorNumber;
+          MCSummary._crvSectorType = CRS->getCRSScintillatorShield(sectorNumber).getSectorType();
+          MCSummary._pdgId = pdgId;
+        }
+
       }
+
+
+
       MCSummary._nHitCounters=counters.size();
       MCSummary._minPathLayer=*std::min_element(totalStep,totalStep+4);
       MCSummary._maxPathLayer=*std::max_element(totalStep,totalStep+4);

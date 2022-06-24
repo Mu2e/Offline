@@ -57,7 +57,7 @@ namespace mu2e {
 
     // Construct all panels(panels) within one Plane
     void addPanelsAndEBKeys( VolumeInfo&     baseStrawPanel,
-			     int              idev,
+                             int              idev,
                              VolumeInfo&      plane,
                              VolumeInfo&      baseEBKey,
                              VolumeInfo&      baseEBKeyShield,
@@ -65,12 +65,12 @@ namespace mu2e {
                              double           panelCenterPhi );
 
 
-    // Build logical volume heirarchy for one panel: straws placed inside 
+    // Build logical volume heirarchy for one panel: straws placed inside
     // a panel mother volume with supports, then placed in a plane
     VolumeInfo preparePanel(const int& ipln, const int& ipnl,
-			    VolumeInfo& thePlane, VolumeInfo& strawPanel,
-			    CLHEP::Hep3Vector& pnlPos,
-			    G4RotationMatrix* rot);
+                            VolumeInfo& thePlane, VolumeInfo& strawPanel,
+                            CLHEP::Hep3Vector& pnlPos,
+                            G4RotationMatrix* rot);
 
     // This is like the former preparePanel function - it just makes a set of
     // straws for repeated use in panels.

@@ -20,13 +20,13 @@ namespace fhicl {
 namespace mu2e {
 
   class KalFitResultNew;
-  
+
   namespace CalTimePeakFinderTypes {
     enum { kMaxTimePeaks = 100 };
 //-----------------------------------------------------------------------------
 // data structure shared by CalTimePeakFinder with its plugins
 //-----------------------------------------------------------------------------
-    struct Data_t {                        
+    struct Data_t {
       const art::Event*               _event;
       const TimeCluster*              _timeCluster;
       const CaloClusterCollection*    ccCollection;

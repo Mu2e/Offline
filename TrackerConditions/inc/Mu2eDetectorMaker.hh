@@ -11,16 +11,16 @@
 namespace mu2e {
   class Mu2eDetectorMaker {
 
-  public:
-    Mu2eDetectorMaker(Mu2eDetectorConfig const& config):_config(config) {}
-    Mu2eDetector::ptr_t fromFcl(Mu2eMaterial::cptr_t material, 
-				Tracker::cptr_t det);
+    public:
+      Mu2eDetectorMaker(Mu2eDetectorConfig const& config):_config(config) {}
+      Mu2eDetector::ptr_t fromFcl(Mu2eMaterial::cptr_t material,
+          Tracker::cptr_t det);
 
-  private:
+    private:
 
-    // this object needs to be thread safe, 
-    // _config should only be initialized once
-    const Mu2eDetectorConfig _config;
+      // this object needs to be thread safe,
+      // _config should only be initialized once
+      const Mu2eDetectorConfig _config;
   };
 
 

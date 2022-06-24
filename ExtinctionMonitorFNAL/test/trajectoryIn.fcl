@@ -28,26 +28,26 @@ physics : {
       generate : {
          module_type : ExtMonFNALGun
          guns : [ {
-	       coneAngleMin: 3.14159265358979323844
-	       coneAngleMax: 3.14159265358979323844
-	       pmin: 8888.6000
-	       pmax: 8888.6000
-	       pdgId     : -2212 // antiproton
-	       reference : "productionTargetEntrance"
-	       offset   : [ 0, 0, 0 ]
-	       halfSize : [ 0, 0, 0 ]
-	       tmin     : 0
-	       tmax     : 0
-	       histDirName: ""
-	       multiplicity: -1
-	    } ]
+               coneAngleMin: 3.14159265358979323844
+               coneAngleMax: 3.14159265358979323844
+               pmin: 8888.6000
+               pmax: 8888.6000
+               pdgId     : -2212 // antiproton
+               reference : "productionTargetEntrance"
+               offset   : [ 0, 0, 0 ]
+               halfSize : [ 0, 0, 0 ]
+               tmin     : 0
+               tmax     : 0
+               histDirName: ""
+               multiplicity: -1
+            } ]
       }
 
       g4run : {
          module_type: Mu2eG4
          physics: @local::mu2eg4DefaultPhysics
          ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         TrajectoryControl: @local::mu2eg4NoTrajectories
          debug: @local::mu2eg4DefaultDebug
          visualization: @local::mu2eg4NoVisualization
          generatorModuleLabel: generate

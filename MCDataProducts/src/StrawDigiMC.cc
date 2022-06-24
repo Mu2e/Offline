@@ -25,7 +25,7 @@ namespace mu2e {
   {}
 
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgspa ) : StrawDigiMC(rhs)  {
-    _sgspa = sgspa; 
+    _sgspa = sgspa;
   }
 
   bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {

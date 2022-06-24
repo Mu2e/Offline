@@ -12,7 +12,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -77,20 +76,20 @@ namespace mu2e {
     for(const auto& cn : inputs_) {
       auto ih = event.getValidHandle<StepPointMCCollection>(cn);
       for(const auto& hit : *ih) {
-	const PDGCode::type pdgId = hit.simParticle()->pdgId();
-	double ke = getKineticEnergy(hit);
-	// Pass all the events that contain high momemntum particles that are on the drop PDG list
-	for (unsigned i=0; i<pdgToDrop_.size(); i++){
-	  if(ke > cutKEmin_[i] && pdgId == pdgToDrop_[i]){
-	    passed = true;
-	    break;
-	  }	 
-	}
-	// Pass all the events that contain particles that are not on the drop list
-	if(std::find(pdgToDrop_.begin(), pdgToDrop_.end(), pdgId) == pdgToDrop_.end()){
-	  passed = true;
-	  break;
-	}
+        const PDGCode::type pdgId = hit.simParticle()->pdgId();
+        double ke = getKineticEnergy(hit);
+        // Pass all the events that contain high momemntum particles that are on the drop PDG list
+        for (unsigned i=0; i<pdgToDrop_.size(); i++){
+          if(ke > cutKEmin_[i] && pdgId == pdgToDrop_[i]){
+            passed = true;
+            break;
+          }
+        }
+        // Pass all the events that contain particles that are not on the drop list
+        if(std::find(pdgToDrop_.begin(), pdgToDrop_.end(), pdgId) == pdgToDrop_.end()){
+          passed = true;
+          break;
+        }
       }
     }
 

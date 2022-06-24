@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_upToGradeLevel_W.ccl
 
@@ -12,7 +12,7 @@ double dirt.upToGradeLevel.W.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.upToGradeLevel.W.yHalfThickness           = 241.3;
 
-vector<int>    dirt.upToGradeLevel.W.xreplace   = { 16, 17 }; 
+vector<int>    dirt.upToGradeLevel.W.xreplace   = { 16, 17 };
 vector<double> dirt.upToGradeLevel.W.xPositions = {
   -2921,   // p0
   -4140.2,   // P1
@@ -43,7 +43,7 @@ vector<double> dirt.upToGradeLevel.W.xPositions = {
   -2921     // along NRetWall S face
 };
 
-vector<int>    dirt.upToGradeLevel.W.yreplace   = { 15, 16, 17, 18 }; 
+vector<int>    dirt.upToGradeLevel.W.yreplace   = { 15, 16, 17, 18 };
 vector<double> dirt.upToGradeLevel.W.yPositions = {
   2438.4,   // p0
   2438.4,   // P1

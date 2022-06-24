@@ -13,7 +13,7 @@ helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( ['cetlib',
                                  'cetlib_except',
-				  'mu2e_GeneralUtilities'] )
+                                  'mu2e_GeneralUtilities'] )
 
 helper.make_dict_and_map( [ mainlib,
                             'art_Persistency_Common',
@@ -24,6 +24,8 @@ helper.make_dict_and_map( [ mainlib,
                             'cetlib_except',
                             'Core'
                           ] )
+# turn pywrap.i into a python interface
+helper.make_pywrap ()
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

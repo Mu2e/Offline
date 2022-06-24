@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/fill_escape_inner02.ccl
 
@@ -17,7 +17,7 @@ vector<double> building.backfill.escape.inner.02.xPositions = {
   23064.7,   // bEI03
   15758.1,   // bEII03
   16621.9,   // F2
-  18461.6   // BLS09 
+  18461.6   // BLS09
 };
 
 vector<double> building.backfill.escape.inner.02.yPositions = {
@@ -25,7 +25,7 @@ vector<double> building.backfill.escape.inner.02.yPositions = {
   17631.7,   // bEI03
   15860,   // bEII03
   12305.1,   // F2
-  12751.5   // BLS09 
+  12751.5   // BLS09
 };
 
 // Local Variables:

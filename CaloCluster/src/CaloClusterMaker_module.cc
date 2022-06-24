@@ -9,7 +9,6 @@
 //
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
 #include "cetlib_except/exception.h"
@@ -32,22 +31,22 @@
 
 namespace mu2e {
 
-  class CaloClusterMaker : public art::EDProducer 
+  class CaloClusterMaker : public art::EDProducer
   {
      public:
         struct Config
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
-            fhicl::Atom<art::InputTag> caloClusterMainCollection  { Name("caloClusterMainCollection"),  Comment("CaloProtoClustere main collection name ") }; 
-            fhicl::Atom<art::InputTag> caloClusterSplitCollection { Name("caloClusterSplitCollection"), Comment("CaloProtoClustere main collection name ") }; 
-            fhicl::Atom<double>        deltaTime                  { Name("deltaTime"),                  Comment("Maximum time difference to associate clusters") }; 
-            fhicl::Atom<double>        maxDistSplit               { Name("maxDistSplit"),               Comment("Maximum distance between split off and main cluster") }; 
-            fhicl::Atom<double>        maxDistMain                { Name("maxDistMain"),                Comment("Maximum distance between main clusters") }; 
-            fhicl::Atom<int>           strategy                   { Name("strategy"),                   Comment("Main cluster associator strategy") }; 
-            fhicl::Atom<int>           diagLevel                  { Name("diagLevel"),                  Comment("Diag level"),0 }; 
+            fhicl::Atom<art::InputTag> caloClusterMainCollection  { Name("caloClusterMainCollection"),  Comment("CaloProtoClustere main collection name ") };
+            fhicl::Atom<art::InputTag> caloClusterSplitCollection { Name("caloClusterSplitCollection"), Comment("CaloProtoClustere main collection name ") };
+            fhicl::Atom<double>        deltaTime                  { Name("deltaTime"),                  Comment("Maximum time difference to associate clusters") };
+            fhicl::Atom<double>        maxDistSplit               { Name("maxDistSplit"),               Comment("Maximum distance between split off and main cluster") };
+            fhicl::Atom<double>        maxDistMain                { Name("maxDistMain"),                Comment("Maximum distance between main clusters") };
+            fhicl::Atom<int>           strategy                   { Name("strategy"),                   Comment("Main cluster associator strategy") };
+            fhicl::Atom<int>           diagLevel                  { Name("diagLevel"),                  Comment("Diag level"),0 };
         };
-        
+
         explicit CaloClusterMaker(const art::EDProducer::Table<Config>& config) :
           EDProducer{config},
           mainToken_    {consumes<CaloProtoClusterCollection>(config().caloClusterMainCollection())},
@@ -161,10 +160,10 @@ namespace mu2e {
           std::sort(caloHitsPtrVector.begin(),caloHitsPtrVector.end(),cmpEnergy);
 
 
-          ClusterUtils cluUtil(cal,caloHitsPtrVector); 
+          ClusterUtils cluUtil(cal,caloHitsPtrVector);
           const auto cog = cluUtil.cog3Vector();
           auto timeEnergy = clusterTimeEnergy(caloHitsPtrVector);
-          
+
           CaloCluster caloCluster(diskId,timeEnergy[0],timeEnergy[1],timeEnergy[2],timeEnergy[3],cog, caloHitsPtrVector,caloHitsPtrVector.size(),isSplit);
           caloClusters.push_back(caloCluster);
 
@@ -202,7 +201,7 @@ namespace mu2e {
       return std::vector<double>{time,timeErr,totalEnergy,totalEnergyErr};
   }
 
- 
+
 }
 
 DEFINE_ART_MODULE(mu2e::CaloClusterMaker);

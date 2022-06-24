@@ -68,17 +68,17 @@ namespace mu2e {
                          const VolumeInfo& parent,
                          int copyNo,
                          G4Colour const color,
-			 std::string const& lookupToken = ""
+                         std::string const& lookupToken = ""
                          );
 
 
   VolumeInfo nestTorus ( std::string const& name,
-			 TorusParams const& halfDim,
-			 G4Material* material,
-			 G4RotationMatrix const* rot,
-			 G4ThreeVector const& offset,
-			 const VolumeInfo& parent,
-			 int copyno,
+                         TorusParams const& halfDim,
+                         G4Material* material,
+                         G4RotationMatrix const* rot,
+                         G4ThreeVector const& offset,
+                         const VolumeInfo& parent,
+                         int copyno,
                          bool const isVisible,
                          G4Colour const color,
                          bool const forceSolid,
@@ -86,7 +86,7 @@ namespace mu2e {
                          bool const placePV,
                          bool const doSurfaceCheck
                          );
-			 
+
 }
 
 #endif /* Mu2eG4_nestTorus_hh */

@@ -22,57 +22,57 @@ void PlotTimeSpectra2D(TDirectory* tdir,double sigma=2.0,double minn=5,unsigned 
     char rname[100];
     char sname[100];
     char cname[100];
-      snprintf(rname,100,"rawptspectrum%lu",ievt);
-      snprintf(sname,100,"looseptspectrum%lu",ievt);
-      snprintf(cname,100,"convptspectrum%lu",ievt);
-      TH2F* rh = (TH2F*)tdir->Get(rname);
-      TH2F* th = (TH2F*)tdir->Get(sname);
-      TH2F* ch = (TH2F*)tdir->Get(cname);
-      if(rh != 0 && th != 0 && ch != 0){
-	div_t divide = div(iplot,nps*nps);
-	//      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
-	if(divide.rem == 0){
-	  ++ican;
-	  snprintf(canname,20,"can_%i",ican);
-	  cans[ican] = new TCanvas(canname,canname,800,600);
-	  cans[ican]->Clear();
-	  cans[ican]->Divide(nps,2);
-	}
-	cans[ican]->cd(divide.rem+1);
-	rh->SetStats(0);
-	th->SetStats(0);
-	ch->SetStats(0);
-	th->SetLineColor(kGreen);
-	th->SetMarkerColor(kGreen);
-	th->SetMarkerStyle(2);
-	// make an absolute threshold
-	double thresh(0.99);
-	double maxn = th->GetMaximum();
-	if(maxn > minn) thresh = minn/maxn;
-	std::cout << "threshold = " << thresh << std::endl;
-	tp2.Search(th,sigma,"nobackgroundnomarkovnodraw",thresh);
-// 	th->SetTitle("Time Spectrum;nsec;#phi");
-//        th->Draw("box");
-	th->Draw();
-//       rh->GetXaxis()->SetTitle("nsec");
-  //      rh->GetYaxis()->SetTitle("#phi");
-        rh->Draw("same");
-	ch->SetMarkerColor(kRed);
-        ch->SetMarkerStyle(5);
-        ch->Draw("same");
-        if(first){
-          first = false;
-          TLegend* leg = new TLegend(0.0,0.7,0.3,0.9);
-          leg->AddEntry(rh,"All hits","P");
-          leg->AddEntry(th,"Selected hits","P");
-          leg->AddEntry(ch,"Conversion hits","P");
-          leg->AddEntry(dummy,"TSpectrum Peak","P");
-          leg->Draw();
-        }
-	++iplot;
-	if(iplot > nmax)break;
+    snprintf(rname,100,"rawptspectrum%lu",ievt);
+    snprintf(sname,100,"looseptspectrum%lu",ievt);
+    snprintf(cname,100,"convptspectrum%lu",ievt);
+    TH2F* rh = (TH2F*)tdir->Get(rname);
+    TH2F* th = (TH2F*)tdir->Get(sname);
+    TH2F* ch = (TH2F*)tdir->Get(cname);
+    if(rh != 0 && th != 0 && ch != 0){
+      div_t divide = div(iplot,nps*nps);
+      //      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
+      if(divide.rem == 0){
+        ++ican;
+        snprintf(canname,20,"can_%i",ican);
+        cans[ican] = new TCanvas(canname,canname,800,600);
+        cans[ican]->Clear();
+        cans[ican]->Divide(nps,2);
       }
+      cans[ican]->cd(divide.rem+1);
+      rh->SetStats(0);
+      th->SetStats(0);
+      ch->SetStats(0);
+      th->SetLineColor(kGreen);
+      th->SetMarkerColor(kGreen);
+      th->SetMarkerStyle(2);
+      // make an absolute threshold
+      double thresh(0.99);
+      double maxn = th->GetMaximum();
+      if(maxn > minn) thresh = minn/maxn;
+      std::cout << "threshold = " << thresh << std::endl;
+      tp2.Search(th,sigma,"nobackgroundnomarkovnodraw",thresh);
+      //  th->SetTitle("Time Spectrum;nsec;#phi");
+      //        th->Draw("box");
+      th->Draw();
+      //       rh->GetXaxis()->SetTitle("nsec");
+      //      rh->GetYaxis()->SetTitle("#phi");
+      rh->Draw("same");
+      ch->SetMarkerColor(kRed);
+      ch->SetMarkerStyle(5);
+      ch->Draw("same");
+      if(first){
+        first = false;
+        TLegend* leg = new TLegend(0.0,0.7,0.3,0.9);
+        leg->AddEntry(rh,"All hits","P");
+        leg->AddEntry(th,"Selected hits","P");
+        leg->AddEntry(ch,"Conversion hits","P");
+        leg->AddEntry(dummy,"TSpectrum Peak","P");
+        leg->Draw();
+      }
+      ++iplot;
       if(iplot > nmax)break;
+    }
+    if(iplot > nmax)break;
   }
   if(name != 0){
     char fname[100];

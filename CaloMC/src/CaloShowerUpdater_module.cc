@@ -4,7 +4,6 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -14,10 +13,10 @@
 
 namespace mu2e {
 
-  class CaloShowerUpdater : public art::EDProducer 
+  class CaloShowerUpdater : public art::EDProducer
   {
       public:
-         struct Config 
+         struct Config
          {
              fhicl::Atom<std::string> showerInput     { fhicl::Name("showerInput")     };
              fhicl::Atom<std::string> newSimParticles { fhicl::Name("newSimParticles") };

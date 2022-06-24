@@ -48,7 +48,7 @@ namespace mu2e {
     void makePanel( const StrawId& panelId );
 // these functions create the straw objects: the use of Layer is deprecated FIXME
     void makeLayer ( const StrawId& layId,CLHEP::Hep3Vector const& planeorigin, StrawCollection& straws);
-    void makeStraws(StrawCollection& straws); 
+    void makeStraws(StrawCollection& straws);
 
     void computeStrawHalfLengths();
     void computeLayerSpacingAndShift();
@@ -109,8 +109,8 @@ namespace mu2e {
     double _planeSpacing;               // Z-separation between adjacent stations.
     double _planeHalfSeparation;        // Z-separation between adjacent planes
 
-    double _planePadding;         // Small spaces around panel and plane to 
-    double _panelPadding;         // allow for misalignment (and more 
+    double _planePadding;         // Small spaces around panel and plane to
+    double _panelPadding;         // allow for misalignment (and more
     // realistically describe how both are built.
 
     double _innerSupportRadius;          // Inner radius of support frame.
@@ -245,7 +245,7 @@ namespace mu2e {
     std::vector<double> _beam1_serviceCovRelThickness;
     std::vector<std::string> _beam1_serviceMaterialsCov;
 
-    // electronic board aka key 
+    // electronic board aka key
     // connected to each of the panels
 
     double _EBKeyHalfLength;

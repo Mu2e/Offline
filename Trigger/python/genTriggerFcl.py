@@ -2,8 +2,8 @@
 ################################################################################
 #           HOW RUN THE TRIGGER-FCL GENERATOR SCRIPT                           #
 #------------------------------------------------------------------------------#
-# 
-# Trigger/python/genTriggerFcl.py -c Trigger/data/allPaths.config 
+#
+# Trigger/python/genTriggerFcl.py -c Trigger/data/allPaths.config
 # or just
 # Trigger/python/genTriggerFcl.py -c allPaths
 #
@@ -42,7 +42,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
     unbiased_filters = ['eventPrescale']
     minbias_filters  = ['eventPrescale','filter'       ]
     cst_filters      = ['eventPrescale','tcFilter', 'tsFilter']
-    
+
     filters     = []
 
     #understand which kind of trigger path are we dealing with
@@ -86,10 +86,10 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
     for filter in filters :
         filterName       = trig_path+"_"+filter
 
-        subSubEpilogInputFileName = srcDir+"Trigger/data/" + trig_path + "/main_"+ filterName + '.fcl' 
+        subSubEpilogInputFileName = srcDir+"Trigger/data/" + trig_path + "/main_"+ filterName + '.fcl'
         sourceFiles.append(subSubEpilogInputFileName)
-        subSubEpilogFileName      = subEpilogDirName + "/main_"+ filterName + '.fcl' 
-        relSubSubEpilogFileName   = relSubEpilogDirName + "/main_"+ filterName + '.fcl' 
+        subSubEpilogFileName      = subEpilogDirName + "/main_"+ filterName + '.fcl'
+        relSubSubEpilogFileName   = relSubEpilogDirName + "/main_"+ filterName + '.fcl'
         targetFiles.append(subSubEpilogFileName)
         if verbose:
             print("Creating {}".format(subSubEpilogFileName))
@@ -125,7 +125,7 @@ def appendEpilog(trig_path, relProjectDir, outDir, srcDir, verbose, doWrite, sou
         subSubEpilogMergerFile.write("physics.producers."+trigInfoMergerName+" : { module_type : MergeTriggerInfo }");
         subSubEpilogMergerFile.close();
 
-        relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl' 
+        relSubSubEpilogFileName    = relSubEpilogDirName + "/main_"+ trigInfoMergerName + '.fcl'
         epilog=("\n#include \"Offline/"+relSubSubEpilogFileName +"\"")
 
         subEpilogFile.write(epilog)
@@ -149,10 +149,10 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         print("configFileText = ",configFileText)
         print("doWrite = ",doWrite)
 
-    # when we run from SConscript to create the targets, 
+    # when we run from SConscript to create the targets,
     # we are in the subdir.  When running in Offline scons, we are in Offline,
     # when in Muse, we are in Offline parent dir
-    # This code makes this always run in the scons default dir, either 
+    # This code makes this always run in the scons default dir, either
     # Offline or its parent dir
     srcDir=""
     outDir=""
@@ -211,7 +211,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
         sourceFiles.append(fn)
 
     hasFilteroutput = False
-    
+
     relProjectDir = "gen/fcl/Trigger/" + configFileBaseName
     projectDir = outDir+relProjectDir
 
@@ -271,7 +271,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
             for i in range(0, len(trig_prolog_files)):
                 if pathNameNoTags in open(trig_prolog_files[i]).read():
                     pathCheck  = True
-            if pathCheck == False: 
+            if pathCheck == False:
                 print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathNameNoTags))
                 exit(1)
 
@@ -282,20 +282,20 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
             #trig_list += "\""+pathName+"\""
 
             digi_path = "@sequence::Trigger.PrepareDigis, "
-            
+
             new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
             timing_paths = []
             if "Seed" in pathName:
                 nFilters = 3
                 if "cst" in pathName:
-                    nFilters = 2                    
+                    nFilters = 2
                 for ind in range(nFilters):
                     timing_label = "Timing{:d}".format(ind)
                     timing_paths.append("\nphysics."+pathName+"_"+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+timing_label+" ] \n")
 
             #now append the epilog files for setting the filters in the path
-            subEpilogInclude = appendEpilog(pathNameNoTags, relProjectDir, 
-                                            outDir, srcDir, verbose, 
+            subEpilogInclude = appendEpilog(pathNameNoTags, relProjectDir,
+                                            outDir, srcDir, verbose,
                                             doWrite, sourceFiles, targetFiles)
 
             if doWrite :
@@ -306,7 +306,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
                 #mainEpilogTimingFile.write(new_path)
                 for l in range(len(timing_paths)):
                     mainEpilogTimingFile.write(timing_paths[l])
-                
+
 
         else:
             # triggerOutput keyword means create an output path
@@ -314,7 +314,7 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
             if doWrite :
                 mainFclFile.write(trigerOutput_line)
             hasFilteroutput = True
-    
+
     if doWrite :
         mainEpilogFile.write("\n")
         mainEpilogTimingFile.write("\n")
@@ -363,7 +363,7 @@ if __name__ == "__main__":
     parser.add_argument("-q", "--quiet",
                         action="store_false", dest="verbose", default=True,
                         help="don't print status messages to stdout")
-    
+
     args = parser.parse_args()
     if args.verbose :
         print("Config file name: {}".format(args.configFileText))

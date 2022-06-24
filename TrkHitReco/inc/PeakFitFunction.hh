@@ -17,24 +17,24 @@ namespace mu2e {
   namespace TrkHitReco {
 
     // define the specific fit configuration among all options
-    struct FitConfig 
+    struct FitConfig
     {
-        enum fitOption : size_t {earlyPeak=0,latePeak,floatPedestal,floatWidth,truncateADC,findPeaks,nOptions};
+      enum fitOption : size_t {earlyPeak=0,latePeak,floatPedestal,floatWidth,truncateADC,findPeaks,nOptions};
 
-        unsigned _options;
-        int      _debug;  
-        unsigned _maxnit; 
+      unsigned _options;
+      int      _debug;
+      unsigned _maxnit;
 
-        bool hasOption(fitOption option) const { return (_options & (1<<option)) != 0; }
-        void setOption(fitOption option) { _options |= (1<<option); }
+      bool hasOption(fitOption option) const { return (_options & (1<<option)) != 0; }
+      void setOption(fitOption option) { _options |= (1<<option); }
 
 
-        FitConfig() : _options(0), _debug(0), _maxnit(1) {}
-        FitConfig(unsigned maxnit, int debug) : _options(0), _debug(debug), _maxnit(maxnit) {}
-        FitConfig(const std::vector<fitOption>& options) : FitConfig() 
-        {
-	   for (auto iopt : options) setOption(iopt);	
-        }
+      FitConfig() : _options(0), _debug(0), _maxnit(1) {}
+      FitConfig(unsigned maxnit, int debug) : _options(0), _debug(debug), _maxnit(maxnit) {}
+      FitConfig(const std::vector<fitOption>& options) : FitConfig()
+      {
+        for (auto iopt : options) setOption(iopt);
+      }
     };
 
 
@@ -44,14 +44,14 @@ namespace mu2e {
       public:
 
         // construct the model from the Straw conditions, the fit configuration
-        PeakFitFunction(const StrawResponse& srep); 
+        PeakFitFunction(const StrawResponse& srep);
         ~PeakFitFunction();
 
         //initialize the object once config is done
         void init(const FitConfig& fitConfig);
         // Returns the truncated response in ADC units
         void truncateResponse(Float_t& currentFunctionValue) const;
-        
+
         // the actual fit function, taking the explicit parameters as input
         Double_t fitModel(Double_t time, PeakFitParams const& params) const;
         // the root version of same.  This calls down to the above
@@ -71,18 +71,18 @@ namespace mu2e {
         Float_t unConvolvedSinglePeak(const Double_t t) const;
         // Convolution of single peak with uniform distribution
         Float_t convolvedSinglePeak(const Double_t t, const Double_t sigma) const;
-     
+
       private:
         typedef std::function<Double_t(Double_t,PeakFitParams const&)> FitFunction;
         typedef std::function<Double_t(Double_t *,Double_t *)> FitFunctionRoot;
 
-        const StrawResponse& _srep;      
-        FitConfig _fitConfig;  
-        TF1* _tf1;  
+        const StrawResponse& _srep;
+        FitConfig _fitConfig;
+        TF1* _tf1;
 
         void createTF1();
 
-    }; 
+    };
   }
-} 
+}
 #endif

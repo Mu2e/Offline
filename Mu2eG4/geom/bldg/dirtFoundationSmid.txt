@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_foundation_Smid.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.foundation.Smid.xPositions = {
   20345.4   // h1_to_S
 };
 
-vector<int>    dirt.foundation.Smid.yreplace   = { 2, 3 }; 
+vector<int>    dirt.foundation.Smid.yreplace   = { 2, 3 };
 vector<double> dirt.foundation.Smid.yPositions = {
   -12115.8,   // h1
   -11982.4,   // h2

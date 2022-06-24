@@ -26,7 +26,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindOne.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"

@@ -16,16 +16,16 @@
 
 namespace mu2e {
   class StrawDriftMaker {
-  public:
-    StrawDriftMaker(StrawDriftConfig const& config):_config(config) {}
-    StrawDrift::ptr_t fromFcl();
-    StrawDrift::ptr_t fromDb( /* db tables will go here*/ );
-  
-  private:
+    public:
+      StrawDriftMaker(StrawDriftConfig const& config):_config(config) {}
+      StrawDrift::ptr_t fromFcl();
+      StrawDrift::ptr_t fromDb( /* db tables will go here*/ );
 
-    // this object needs to be thread safe, 
-    // _config should only be initialized once
-    const StrawDriftConfig _config;
+    private:
+
+      // this object needs to be thread safe,
+      // _config should only be initialized once
+      const StrawDriftConfig _config;
 
   };
 }

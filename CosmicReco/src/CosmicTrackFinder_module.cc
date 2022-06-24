@@ -17,7 +17,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "art/Utilities/make_tool.h"
@@ -89,6 +88,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>           lfToken{Name("LineFinderTag"),Comment("tag for line finder seed")};
       fhicl::Atom<bool>                    DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
       fhicl::Atom<bool>                    UseTime{Name("UseTime"),Comment("use time for drift fit")};
+      fhicl::Atom<double>                  driftRes{Name("DriftRes"),Comment("Drift resolution for first fit stage")};
       fhicl::Atom<double>                  mnTolerance{Name("MinuitTolerance"),Comment("Tolerance for minuit convergence")};
       fhicl::Atom<double>                  mnPrecision{Name("MinuitPrecision"),Comment("Effective precision for likelihood function")};
       fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
@@ -106,12 +106,12 @@ namespace mu2e {
 
     Config _conf;
 
-    int 				_debug;
-    int 				_minnsh; // minimum # of strawHits in CH
-    int 				_minnch; // minimum # of ComboHits for viable fit
-    TrkFitFlag	_saveflag;//write tracks that satisfy these flags
-    int 				_minNHitsTimeCluster; //min number of hits in a time cluster
-    //float				_max_seed_chi2; ///maximum chi2 allowed for seed
+    int                                 _debug;
+    int                                 _minnsh; // minimum # of strawHits in CH
+    int                                 _minnch; // minimum # of ComboHits for viable fit
+    TrkFitFlag        _saveflag;//write tracks that satisfy these flags
+    int                                 _minNHitsTimeCluster; //min number of hits in a time cluster
+    //float                                _max_seed_chi2; ///maximum chi2 allowed for seed
 
     art::InputTag  _chToken;
     art::InputTag  _tcToken;
@@ -120,8 +120,9 @@ namespace mu2e {
     bool _UseChiFit;
     art::InputTag _lfToken;
 
-    bool 	   _DoDrift;
+    bool            _DoDrift;
     bool       _UseTime;
+    double _driftRes;
     double _mnTolerance;
     double _mnPrecision;
 
@@ -148,6 +149,7 @@ namespace mu2e {
     _lfToken (conf().lfToken()),
     _DoDrift (conf().DoDrift()),
     _UseTime (conf().UseTime()),
+    _driftRes(conf().driftRes()),
     _mnTolerance (conf().mnTolerance()),
     _mnPrecision (conf().mnPrecision()),
     _tfit (conf().tfit())
@@ -197,7 +199,7 @@ namespace mu2e {
 
       if ( nGoodTClusterHits < _minNHitsTimeCluster) {  continue; }
       if (_debug > 0){
-	std::cout<<"CosmicTrackFinder: time clusters " << _iev << std::endl;
+        std::cout<<"CosmicTrackFinder: time clusters " << _iev << std::endl;
       }
 
       std::vector<StrawHitIndex> panelHitIdxs;
@@ -206,89 +208,96 @@ namespace mu2e {
       int nFiltComboHits = 0;
       int nFiltStrawHits = 0;
       for (size_t i=0;i<panelHitIdxs.size();i++){
-	auto ch = chcol[panelHitIdxs[i]];
-	nFiltComboHits++;
-	nFiltStrawHits += ch.nStrawHits();
+        auto ch = chcol[panelHitIdxs[i]];
+        nFiltComboHits++;
+        nFiltStrawHits += ch.nStrawHits();
       }
 
       if (_debug != 0){
-	std::cout<<"CosmicTrackFinder: #filtered SHits"<<nFiltStrawHits<<" #filter CHits "<<nFiltComboHits<<std::endl;
+        std::cout<<"CosmicTrackFinder: #filtered SHits"<<nFiltStrawHits<<" #filter CHits "<<nFiltComboHits<<std::endl;
       }
 
-      if (nFiltComboHits < _minnch ) {	continue; }
+      if (nFiltComboHits < _minnch ) {        continue; }
       if (nFiltStrawHits < _minnsh) { continue; }
 
 
       ostringstream title;
       title << "Run: " << event.id().run()
-	    << "  Subrun: " << event.id().subRun()
-	    << "  Event: " << event.id().event()<<".root";
+            << "  Subrun: " << event.id().subRun()
+            << "  Event: " << event.id().event()<<".root";
 
       CosmicTrackSeed tseed ;
       if (_UseLineFinder) {
-	auto const& lfH = event.getValidHandle<CosmicTrackSeedCollection>(_lfToken);
-	const CosmicTrackSeedCollection& lfcol(*lfH);
-	if (lfcol.size() == 0) {
-	  continue;
-	}
+        auto const& lfH = event.getValidHandle<CosmicTrackSeedCollection>(_lfToken);
+        const CosmicTrackSeedCollection& lfcol(*lfH);
+        if (lfcol.size() == 0) {
+          continue;
+        }
 
-	tseed = lfcol[0];
-	double _interror = 40;
-	double _direrror = 2.5;
-	double _t0error = 1;
+        tseed = lfcol[0];
+        double _interror = 40;
+        double _direrror = 2.5;
+        double _t0error = 1;
 
-	tseed._track.FitParams.Covarience.sigA0 = _interror;
-	tseed._track.FitParams.Covarience.sigA1 = _direrror;
-	tseed._track.FitParams.Covarience.sigB0 = _interror;
-	tseed._track.FitParams.Covarience.sigB1 = _direrror;
-	tseed._t0._t0err = _t0error;
+        tseed._track.FitParams.Covarience.sigA0 = _interror;
+        tseed._track.FitParams.Covarience.sigA1 = _direrror;
+        tseed._track.FitParams.Covarience.sigB0 = _interror;
+        tseed._track.FitParams.Covarience.sigB1 = _direrror;
+        tseed._t0._t0err = _t0error;
 
       } else{
-	tseed._t0          = tclust._t0;
-	tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-	tseed._status.merge(TrkFitFlag::Straight);
-	tseed._status.merge(TrkFitFlag::hitsOK);
+        tseed._t0          = tclust._t0;
+        tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
+        tseed._status.merge(TrkFitFlag::Straight);
+        tseed._status.merge(TrkFitFlag::hitsOK);
       }
 
       if (_UseChiFit){
-	_tfit.BeginFit(title.str().c_str(), tseed, event, chcol, panelHitIdxs);
+        _tfit.BeginFit(title.str().c_str(), tseed, event, chcol, panelHitIdxs);
 
-	if( _tfit.goodTrack(tseed._track) == false){
-	  tseed._status.clear(TrkFitFlag::helixConverged);
-	  tseed._status.clear(TrkFitFlag::helixOK);
-	}
+        if( _tfit.goodTrack(tseed._track) == false){
+          tseed._status.clear(TrkFitFlag::helixConverged);
+          tseed._status.clear(TrkFitFlag::helixOK);
+        }
       }
 
       if (tseed._status.hasAnyProperty(TrkFitFlag::helixOK) && tseed._status.hasAnyProperty(TrkFitFlag::helixConverged) && tseed._track.converged == true ) {
 
-	if (tseed.status().hasAnyProperty(_saveflag)){
+        if (tseed.status().hasAnyProperty(_saveflag)){
 
-	  if(_DoDrift) {
-	    if (_UseTime) {
-	      MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker, _mnTolerance, _mnPrecision );
-	    } else {
-	      _tfit.DriftFit(tseed, srep);
-	    }
+          if(_DoDrift) {
+            if (_UseTime) {
+              MinuitDriftFitter::DoDriftTimeFit(_debug,tseed, srep, &tracker, _driftRes, _mnTolerance, _mnPrecision );
+            } else {
+              _tfit.DriftFit(tseed, srep);
+            }
 
-	    if( !tseed._track.minuit_converged ){
-	      continue;
-	    }
-	    // TODO: do we keep or remove this?
-	    // // remove all outliers from ComboHitCollection
-	    // ComboHitCollection tmpHits;
-	    // for(auto const &chit : tseed._straw_chits){
-	    //   if(!chit._flag.hasAnyProperty(StrawHitFlag::outlier)){
-	    //     tmpHits.push_back(chit);
-	    //   }
-	    // }
-	    // tseed._straw_chits = tmpHits;
-	    // if (tmpHits.size() == 0)
-	    //   continue;
-	  }
+            if( !tseed._track.minuit_converged ){
+              continue;
+            }
+            // TODO: do we keep or remove this?
+            // // remove all outliers from ComboHitCollection
+            // ComboHitCollection tmpHits;
+            // for(auto const &chit : tseed._straw_chits){
+            //   if(!chit._flag.hasAnyProperty(StrawHitFlag::outlier)){
+            //     tmpHits.push_back(chit);
+            //   }
+            // }
+            // tseed._straw_chits = tmpHits;
+            // if (tmpHits.size() == 0)
+            //   continue;
+          }else{
+            tseed._track.MinuitParams = tseed._track.FitParams;
+            tseed._track.MinuitCoordSystem = tseed._track.FitCoordSystem;
+            tseed._track.MinuitEquation = tseed._track.FitEquation;
+            tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
+          }
 
-	  CosmicTrackSeedCollection* col = seed_col.get();
-	  col->emplace_back(tseed);
-	}
+          tseed._straw_chits.setParent(chcol.parent());
+
+          CosmicTrackSeedCollection* col = seed_col.get();
+          col->emplace_back(tseed);
+        }
       }
     }
 
@@ -299,7 +308,7 @@ namespace mu2e {
     if (_debug != 0){
       std::cout<<"Ordering Hits..."<<std::endl;
     }
-    
+
     std::vector<std::vector<ComboHit>::const_iterator> ordChColIters;
     for (size_t i=0;i<inputIdxs.size();i++){
       std::vector<ComboHit>::const_iterator tempiter = chcol.begin() + inputIdxs[i];

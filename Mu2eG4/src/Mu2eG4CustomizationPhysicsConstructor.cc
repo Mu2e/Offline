@@ -21,8 +21,6 @@ namespace mu2e {
 
   G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4CustomizationPhysicsConstructor);
 
-  G4ThreadLocal G4bool Mu2eG4CustomizationPhysicsConstructor::wasActivated = false;
-
   Mu2eG4CustomizationPhysicsConstructor::
   Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys
                                         , const Mu2eG4Config::Debug* debug
@@ -44,9 +42,6 @@ namespace mu2e {
     , mu2elimits_(nullptr)
   {}
 
-  Mu2eG4CustomizationPhysicsConstructor::~Mu2eG4CustomizationPhysicsConstructor()
-  {}
-
   void Mu2eG4CustomizationPhysicsConstructor::ConstructParticle()
   {
     // Empty on purpose, for now
@@ -54,8 +49,6 @@ namespace mu2e {
 
   void Mu2eG4CustomizationPhysicsConstructor::ConstructProcess()
   {
-    if(wasActivated) { return; }
-    wasActivated = true;
 
     if (debug_->diagLevel()>0) {
       G4cout << "Mu2eG4CustomizationPhysicsConstructor::"

@@ -13,6 +13,8 @@
 //    - bfgeom_no_field.txt      ( Magnetic field is zero everywhere )
 //
 
+bool hasBFieldManager   = true;
+
 // Form of DS field: 0 is full field;
 //                   1 is full upstream, const downstream;
 //                   2 is const throughout

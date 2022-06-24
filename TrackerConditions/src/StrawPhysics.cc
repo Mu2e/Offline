@@ -18,7 +18,7 @@
 using namespace std;
 
 namespace mu2e {
-  
+
 
   unsigned StrawPhysics::nePerIon(double urand) const {
     // sample the distribution for the number of ionizations.
@@ -32,8 +32,8 @@ namespace mu2e {
     }
     return nele;
   }
-  
-  
+
+
   unsigned StrawPhysics::nePerEIon(double EIon) const {
     // Find the maximum number of electrons this energy could produce
     unsigned ie(0);
@@ -43,12 +43,12 @@ namespace mu2e {
     // require at least 1 electron
     return std::max((unsigned)1,ie);
   }
-  
 
-  // model gain fluctuations for a cluster using the Polya function.  
+
+  // model gain fluctuations for a cluster using the Polya function.
   // This depends on the # of electrons
-  double StrawPhysics::clusterGain(CLHEP::RandGaussQ& rgauss, 
-			     CLHEP::RandFlat& rflat, unsigned nele) const {
+  double StrawPhysics::clusterGain(CLHEP::RandGaussQ& rgauss,
+      CLHEP::RandFlat& rflat, unsigned nele) const {
     double gain(0.0);
     if(nele < _nggauss){
       // The theta parameter scales when nele>1
@@ -66,8 +66,8 @@ namespace mu2e {
     }
     return gain;
   }
-  
-  
+
+
   // get drift time
   double StrawPhysics::driftDistanceToTime(double ddist, double phi) const{
     if(_nonlindrift){
@@ -77,7 +77,7 @@ namespace mu2e {
       return ddist/0.0625; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
     }
   }
-  
+
 
   // a debuging function
   double StrawPhysics::testStrawDrift(double ddist, double phi){
@@ -86,18 +86,18 @@ namespace mu2e {
     // cout <<"ddist - lorentzDist = "<<ddist - lorentzDist<<"\n";
     return ddist - lorentzDist;
   }
-  
-  
+
+
   double StrawPhysics::driftTimeSpread(double ddist) const {
     return _dtvar[0] + ddist*_dtvar[1];
   }
-  
-  
+
+
   double StrawPhysics::propagationTime(double wdist) const {
     return  wdist/_vprop;
   }
-  
-  
+
+
   double StrawPhysics::ionizationEnergy(unsigned nele) const {
     if(nele >=1 && nele <= _EIonize.size())
       return _EIonize[nele-1];
@@ -106,25 +106,25 @@ namespace mu2e {
     else
       return _EIonize.back();
   }
-  
-  
+
+
   void StrawPhysics::print(std::ostream& os) const {
     os << endl << "StrawPhysics parameters: "  << std::endl
-       << "EIonize = ";
+      << "EIonize = ";
     for(auto x : _EIonize ) os << x << " " ;
     os << " MeV " << std::endl;
     os << "Mean free path = " << _meanpath << " mm " << std::endl
-       << "Ionization electron kinetic energy = " << _eKin << " MeV" << std::endl;
+      << "Ionization electron kinetic energy = " << _eKin << " MeV" << std::endl;
     os << "intNProb = ";
     for(auto x: _intNProb) os << x << " ";
     os << std::endl;
     os << "Average gas gain = " << _gasgain << std::endl
-    << "Polya 'A' parameter = " << _polyaA << std::endl
-    << "gslope = " << _gslope << std::endl
-    << "nggauss = " << _nggauss << std::endl
-    << "Signal propagagation velocity = " << _vprop << " mm/ns" <<  std::endl
-    << "Average # of ionization electrons = " << _NAverage << std::endl
-    << "Average electron ionization energy = " << _EAverage << " MeV" << std::endl;
+      << "Polya 'A' parameter = " << _polyaA << std::endl
+      << "gslope = " << _gslope << std::endl
+      << "nggauss = " << _nggauss << std::endl
+      << "Signal propagagation velocity = " << _vprop << " mm/ns" <<  std::endl
+      << "Average # of ionization electrons = " << _NAverage << std::endl
+      << "Average electron ionization energy = " << _EAverage << " MeV" << std::endl;
     os << "cdpoly = ";
     for(auto x: _cdpoly) os << x << " " ;
     os << std::endl;
@@ -132,7 +132,7 @@ namespace mu2e {
     for(auto x: _dtvar) os << x << " " ;
     os << std::endl;
     os << "nonlindrift = " << _nonlindrift << std::endl
-       << "bz = " << _bz << std::endl;
+      << "bz = " << _bz << std::endl;
 
   }
 }

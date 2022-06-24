@@ -67,7 +67,7 @@ namespace mu2e {
     _map = &*bfMgr;
 
     _cm = bfMgr->cacheManager();
-      
+
       //std::cout << " from Thread #" << G4Threading::G4GetThreadId()
       //<< ", address of CacheManager is " << &_cm << std::endl;
   }

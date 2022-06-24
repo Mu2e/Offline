@@ -33,7 +33,7 @@ void PlotWaveforms(TDirectory* tdir,unsigned nmax=20, unsigned nps=4,const char*
     std::cout << "Object name " << s << std::endl;
     if (s.Index(re) == kNPOS) continue;
     div_t divide = div(iplot,mps);
-     std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
+    std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
     if(divide.rem == 0){
       ++ican;
       snprintf(cname,20,"can_%i",ican);

@@ -6,9 +6,9 @@
 //
 
 namespace mu2e{
-  PTM::PTM(CLHEP::Hep3Vector const& originInMu2e, 
-          CLHEP::HepRotation const& rotationInMu2e, 
-          std::shared_ptr<PTMPWC> nearPWC, 
+  PTM::PTM(CLHEP::Hep3Vector const& originInMu2e,
+          CLHEP::HepRotation const& rotationInMu2e,
+          std::shared_ptr<PTMPWC> nearPWC,
           std::shared_ptr<PTMPWC> farPWC,
           double pwcSeparation,
           double motherMargin)

@@ -14,23 +14,19 @@ namespace mu2e {
 
   class TrkExtShape {
 
-  public:
-    TrkExtShape(double boundaryLimit = 0.001) ;
-    ~TrkExtShape() { }
+    public:
+      TrkExtShape(double boundaryLimit = 0.001) ;
+      ~TrkExtShape() { }
 
-    virtual bool contains (CLHEP::Hep3Vector& p)  =0 ;
-    virtual void initialize (void)  =0 ;
-    CLHEP::Hep3Vector  intersection (const CLHEP::Hep3Vector & x1, const CLHEP::Hep3Vector & x2) ; 
+      virtual bool contains (CLHEP::Hep3Vector& p)  =0 ;
+      virtual void initialize (void)  =0 ;
+      CLHEP::Hep3Vector  intersection (const CLHEP::Hep3Vector & x1, const CLHEP::Hep3Vector & x2) ;
 
-  protected:
+    protected:
 
-    double _limit;
-
-
+      double _limit;
 
   };
-
-
 
 } // end namespace mu2e
 

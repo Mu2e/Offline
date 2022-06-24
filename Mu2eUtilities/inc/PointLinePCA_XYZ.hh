@@ -8,20 +8,20 @@ namespace mu2e {
   class PointLinePCA_XYZ{
 
   public:
-	PointLinePCA_XYZ( XYZVectorF const& point,       
+        PointLinePCA_XYZ( XYZVectorF const& point,
                 XYZVectorF const& start ,
                 XYZVectorF const& end);
         ~PointLinePCA_XYZ();
-	double dca()   const { return _dca;};
-        XYZVectorF const& pca() const { return _pca;}; 
-	
+        double dca()   const { return _dca;};
+        XYZVectorF const& pca() const { return _pca;};
+
     private:
-	
-	XYZVectorF _point;
-	XYZVectorF _start;
-	XYZVectorF _end;
-	double _dca;
-	XYZVectorF _pca;
+
+        XYZVectorF _point;
+        XYZVectorF _start;
+        XYZVectorF _end;
+        double _dca;
+        XYZVectorF _pca;
    };
 }
 #endif

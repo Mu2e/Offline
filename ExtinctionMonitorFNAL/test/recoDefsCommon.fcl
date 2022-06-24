@@ -52,7 +52,7 @@ physics : {
         emfPatArb: {
             module_type: EMFDetHistPatRec
             patRecInTag  : "EMFTrackClusterArbiter"
-	    geomModuleLabel: ""
+            geomModuleLabel: ""
         }
         emfPatRecAnalysis: @local::PatRecAnalysis
         emfPatArbAnalysis: @local::PatRecAnalysis

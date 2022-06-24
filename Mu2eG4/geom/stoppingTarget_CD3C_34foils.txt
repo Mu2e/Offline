@@ -33,7 +33,7 @@ vector<double> stoppingTarget.radii  =
       75.00,  75.00,  75.00,  75.00 };
 
 // last material given will be repeated up to number radii.size()
-//  vector<string> stoppingTarget.materials = 
+//  vector<string> stoppingTarget.materials =
 //      { "G4_Al"};
 
 // Variation of locations of foil centers

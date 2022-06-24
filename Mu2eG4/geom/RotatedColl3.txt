@@ -1,0 +1,11 @@
+//
+// To generate a positive muon beam in Mu2e, we need to
+// rotate the collimator in TS3
+//
+
+double ts.coll3.rotationAngle    = 180.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

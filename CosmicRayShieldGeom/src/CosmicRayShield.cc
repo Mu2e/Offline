@@ -7,7 +7,7 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
-namespace mu2e 
+namespace mu2e
 {
     void CosmicRayShield::getMinMaxPoints(const std::string &sectorName, std::vector<double> &minPoint, std::vector<double> &maxPoint) const
     {

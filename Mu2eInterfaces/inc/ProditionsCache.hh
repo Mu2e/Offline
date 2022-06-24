@@ -25,7 +25,7 @@ namespace mu2e {
     std::chrono::microseconds _lockTime;
 
 
-  public: 
+  public:
     typedef std::shared_ptr<ProditionsCache> ptr;
     typedef std::tuple<ProditionsEntity::ptr,DbIoV> ret_t;
     typedef ProditionsEntity::set_t set_t;
@@ -41,7 +41,7 @@ namespace mu2e {
       _name(name),_verbose(verbose),_initialized(false) {}
     virtual ~ProditionsCache() {}
 
-    // the following are provided by the 
+    // the following are provided by the
     // concrete class
     //virtual std::string const& name() const =0 ;
     std::string const& name() const { return _name;}
@@ -59,30 +59,30 @@ namespace mu2e {
     // this is the main call to the cache asking for an existing
     // entity, creating and cacheing a new entity as needed
     ret_t update(art::EventID const& eid) {
-      // do lazy initialization, don't bother with 
+      // do lazy initialization, don't bother with
       // read lock since a bool can't be partially constructed
       if(!_initialized) {
-	//gain write lock
-	auto stime = std::chrono::high_resolution_clock::now();
-	std::unique_lock lock(_mutex); // write lock
-	auto mtime = std::chrono::high_resolution_clock::now();
-	auto dt = std::chrono::duration_cast<std::chrono::microseconds>
+        //gain write lock
+        auto stime = std::chrono::high_resolution_clock::now();
+        std::unique_lock lock(_mutex); // write lock
+        auto mtime = std::chrono::high_resolution_clock::now();
+        auto dt = std::chrono::duration_cast<std::chrono::microseconds>
                                                ( mtime - stime );
-	 _lockWaitTime += dt;
-	// check if another thread initialized while we were
-	// waiting for write lock
-	if(!_initialized) {
-	  // derived class creates database and service dependencies
-	  initialize(); 
-	  _initialized = true;
-	}
-	auto etime = std::chrono::high_resolution_clock::now();
-	dt = std::chrono::duration_cast<std::chrono::microseconds>
+         _lockWaitTime += dt;
+        // check if another thread initialized while we were
+        // waiting for write lock
+        if(!_initialized) {
+          // derived class creates database and service dependencies
+          initialize();
+          _initialized = true;
+        }
+        auto etime = std::chrono::high_resolution_clock::now();
+        dt = std::chrono::duration_cast<std::chrono::microseconds>
                                                ( etime - mtime );
-	_lockTime += dt;  // time we spent write locked
+        _lockTime += dt;  // time we spent write locked
       } // end initialize, write lock out of scope, released
 
-      // gain shared read lock to find what 
+      // gain shared read lock to find what
       // set of tables are needed
       bool made = false;
       bool found = false;
@@ -90,31 +90,31 @@ namespace mu2e {
       set_t cids;
       DbIoV iov;
       { // start read lock scope
-	std::shared_lock lock(_mutex);
+        std::shared_lock lock(_mutex);
         p = findByRun(eid,iov);  // if found, iov is valid
       } // end read lock lifetime
-      
+
       // if it was not found in cache, make it
       if(!p) {
-	//gain write lock
-	auto stime = std::chrono::high_resolution_clock::now();
-	std::unique_lock lock(_mutex); // write lock
-	auto mtime = std::chrono::high_resolution_clock::now();
-	auto dt = std::chrono::duration_cast<std::chrono::microseconds>
+        //gain write lock
+        auto stime = std::chrono::high_resolution_clock::now();
+        std::unique_lock lock(_mutex); // write lock
+        auto mtime = std::chrono::high_resolution_clock::now();
+        auto dt = std::chrono::duration_cast<std::chrono::microseconds>
                                                ( mtime - stime );
-	 _lockWaitTime += dt;
-	 // need to check again in case another thread made it
-	 // between read lock and write lock
+         _lockWaitTime += dt;
+         // need to check again in case another thread made it
+         // between read lock and write lock
          p = findByRun(eid,iov);
-	 if(!p) {
+         if(!p) {
 
-	   p = makeEntity(eid);
+           p = makeEntity(eid);
            cids = makeSet(eid);
-	   p->addCids(cids);
+           p->addCids(cids);
            iov = makeIov(eid);
 
-           // at this point, we might have existing cache items with 
-           // the same cids, but not the relevant iov, 
+           // at this point, we might have existing cache items with
+           // the same cids, but not the relevant iov,
            // in this case just add the iov
            for(auto& ci : _cache) {
              if(ci._p->getCids()==cids) {
@@ -131,17 +131,17 @@ namespace mu2e {
              made = true;
              if(_verbose>7) p->print(std::cout);
            }
-	 } // p not found
+         } // p not found
 
-	 auto etime = std::chrono::high_resolution_clock::now();
-	 dt = std::chrono::duration_cast<std::chrono::microseconds>
+         auto etime = std::chrono::high_resolution_clock::now();
+         dt = std::chrono::duration_cast<std::chrono::microseconds>
                                                ( etime - mtime );
-	_lockTime += dt;  // time we spent write locked
+        _lockTime += dt;  // time we spent write locked
 
       } // endif not in cache, write lock now destroyed
-      
+
       if(_verbose>1) {
-	if(made) {
+        if(made) {
           if(found) {
             std::cout<< "ProditionsCache::update made new iov for "
                      << name() << std::endl;
@@ -149,9 +149,9 @@ namespace mu2e {
             std::cout<< "ProditionsCache::update made new "
                      << name() << std::endl;
           }
-	} else {
-	  std::cout<< "ProditionsCache::update return cached "<< name() << std::endl;
-	}
+        } else {
+          std::cout<< "ProditionsCache::update return cached "<< name() << std::endl;
+        }
         std::cout << "     iov " << iov.to_string(true);
         std::cout << "     cids ";
         for(auto cid : cids) std::cout << cid << " " ;
@@ -161,7 +161,7 @@ namespace mu2e {
       return std::make_tuple(p,iov);
 
     } // end update
-    
+
     // is there a cache entry covering this run/subrun?
     // return good pointer or null, and fill iov
     ProditionsEntity::ptr  findByRun(art::EventID eid, DbIoV& iov) {
@@ -177,7 +177,7 @@ namespace mu2e {
       }
       return ProditionsEntity::ptr();
     }
-    
+
   private:
     std::string _name;
     int _verbose;
