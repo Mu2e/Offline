@@ -50,17 +50,17 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # test module for Kalman fit: the 
-    
+    # test module for Kalman fit: the
+
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
     @table::CaloCluster.producers
-    
+
     makeCaloCluster:
 
     TrkPatRec : @local::TrkPatRec
- 
- 
+
+
       TrkExtrapol :
     {
         module_type     : TrkExtrapol
@@ -68,12 +68,12 @@ physics :
       diagLevel         : 1
       maxNumberStoresPoints : 2
      # MC truth finder, analyzer configuration
-        KalFitMC : 
+        KalFitMC :
         {
-        }        
- 
+        }
+
     }
-    
+
    #  CaloMatching :
    # {
    #     module_type                : CaloMatching
@@ -85,27 +85,27 @@ physics :
    #   caloClusterSeeding           : energy
    #   trkToCaloExtrapolModuleLabel : TrkExtrapol
    # }
-    
+
    }
     analyzers : {
-    
+
     eventdisplay:
     {
       module_type     : EventDisplay
       g4ModuleLabel   : "g4run"
     }
-    
+
   }
-  
-  p1 : [generate 
+
+  p1 : [generate
         , g4run
         , makeSH
         , @sequence::CaloDigiMC.DigiSim
-        , @sequence::CaloReco.Reco 
+        , @sequence::CaloReco.Reco
         , @sequence::CaloCluster.Reco
         , TrkPatRec
         , TrkExtrapol
-       # , CaloMatching 
+       # , CaloMatching
         ]
   e1 : [outfile]
 
@@ -117,7 +117,7 @@ physics :
 outputs:
 {
   # Define the output file.
-  outfile : 
+  outfile :
   {
     module_type    : RootOutput
     fileName       : "data_caloMatching.root"
@@ -125,7 +125,7 @@ outputs:
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
                 #   , 'drop mu2eSimParticles_*_*_*'
                    # Uncomment the above line to reduce file size.
-                     ]  
+                     ]
   }
 }
 
@@ -136,7 +136,7 @@ physics.producers.generate.inputfile  : "Offline/CaloCluster/test/genconfig_gian
 services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 2
-source.firstRun                            :  1 
+source.firstRun                            :  1
 services.SeedService.baseSeed         :  1
 services.SeedService.maxUniqueEngines :  20
 physics.producers.KalFitTest.KalFit.RemoveFailedFits : false

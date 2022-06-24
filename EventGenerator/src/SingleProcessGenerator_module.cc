@@ -19,7 +19,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
@@ -46,6 +45,7 @@ namespace mu2e {
           Comment("Material determines muon life time, capture fraction, and particle spectra.\n"
                   "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),"Al" };
       fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle"),PDGCode::e_minus};
+
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("spectrum (and variables) to be generated")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
 
@@ -66,7 +66,7 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-  
+
     std::unique_ptr<ParticleGeneratorTool> Generator_;
 
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
@@ -111,7 +111,6 @@ namespace mu2e {
     //  count_particle++;
     
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
-
       addParticles(output.get(), mustop, time, Generator_.get());
       }
 

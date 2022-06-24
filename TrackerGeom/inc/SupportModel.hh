@@ -13,13 +13,13 @@
 namespace mu2e {
 
   class SupportModelDetail{
-  public:
+    public:
 
-    enum enum_type { unknown, simple, detailedv0 };
+      enum enum_type { unknown, simple, detailedv0 };
 
-    static std::string const& typeName();
+      static std::string const& typeName();
 
-    static std::map<enum_type,std::string> const& names();
+      static std::map<enum_type,std::string> const& names();
 
   };
 

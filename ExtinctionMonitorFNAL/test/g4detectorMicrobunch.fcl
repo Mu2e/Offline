@@ -17,9 +17,9 @@ physics.producers.generate.guns[0].histDirName : "inTime"
 physics.producers.generate.guns[1] : @local::defaultGunPars
 physics.producers.generate.guns[1].histDirName : "outOfTime"
 physics.producers.generate.guns[1].tmin: 150.
-physics.producers.generate.guns[1].tmax: 1694.
-// Get a reasonable statistics, still << in-time
-physics.producers.generate.guns[1].multiplicity: 12.
+    physics.producers.generate.guns[1].tmax: 1694.
+    // Get a reasonable statistics, still << in-time
+    physics.producers.generate.guns[1].multiplicity: 12.
 
 
 outputs.FullOutput.fileName    : "dataMicrobunch.art"

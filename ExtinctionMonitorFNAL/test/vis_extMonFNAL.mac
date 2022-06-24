@@ -45,7 +45,7 @@
 
 # ## Zoom onto the entrance to the first collimator - plan view
 # /vis/viewer/set/viewpointThetaPhi 90 89
-# /vis/viewer/panTo -4.7 -2.2 m 
+# /vis/viewer/panTo -4.7 -2.2 m
 # /vis/viewer/zoomTo 40
 
 # ## collimator1 exit and magnet entrance
@@ -58,7 +58,7 @@
 # /vis/viewer/panTo +2.5 +1.7 m
 # /vis/viewer/zoomTo 50
 
-# ## collimator2 
+# ## collimator2
 # /vis/viewer/set/viewpointThetaPhi 103.78 0
 # /vis/viewer/panTo +4.1 +1.7 m
 # /vis/viewer/zoomTo 10
@@ -101,11 +101,11 @@
 # Simple plan view for whatever the top volume is
 #/vis/viewer/set/viewpointThetaPhi 90 89
 #/vis/viewer/zoomTo 2
-# 
+#
 # /vis/viewer/panTo 22 -3 m
-# /vis/viewer/zoomTo 6   
+# /vis/viewer/zoomTo 6
 
 ################################################################
-/vis/enable 
+/vis/enable
 
 # Do NOT issue the /run/beamon command

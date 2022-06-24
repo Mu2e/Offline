@@ -41,7 +41,7 @@ namespace mu2e {
     double cryoZMax() const { return _position[CLHEP::Hep3Vector::Z] + _halfLength; }
     const CLHEP::Hep3Vector& position() const { return _position; } // in mu2e coordinates
 
-    // Experimental inner lining on cryostat, requested by Jim Miller for 
+    // Experimental inner lining on cryostat, requested by Jim Miller for
     // studies of shielding.
     bool hasInnerLining() const { return _hasInnerLining; }
     double innerLiningThickness() const { return _innerLiningThickness; }
@@ -108,7 +108,7 @@ namespace mu2e {
     CLHEP::Hep3Vector s2RailCenter() const { return _s2RailCenter; }
     CLHEP::Hep3Vector n3RailCenter() const { return _n3RailCenter; }
     CLHEP::Hep3Vector s3RailCenter() const { return _s3RailCenter; }
-    // Bearing Blocks for rails, similarly split into DS2Vacuum part and 
+    // Bearing Blocks for rails, similarly split into DS2Vacuum part and
     // DS3Vacuum part, except outlines and material  D. No. Brown, Jan 2016.
     std::vector<double>  uOutlineBBlock() const { return _uOutlineBBlock; }
     std::vector<double>  vOutlineBBlock() const { return _vOutlineBBlock; }
@@ -246,16 +246,16 @@ namespace mu2e {
     DetectorSolenoid();
 
     // DS cryostat
-    std::string _materialName; 
-    std::string _insideMaterialName; 
-    double _rIn1; 
-    double _rIn2; 
+    std::string _materialName;
+    std::string _insideMaterialName;
+    double _rIn1;
+    double _rIn2;
     double _rOut1;
     double _rOut2;
-    double _halfLength; 
-    double _endWallHalfLength; 
-    double _frontHalfLength; 
-    CLHEP::Hep3Vector _position; 
+    double _halfLength;
+    double _endWallHalfLength;
+    double _frontHalfLength;
+    CLHEP::Hep3Vector _position;
 
     // experimental innerLining for shielding studies, req by Jim Miller
     bool _hasInnerLining;
@@ -275,15 +275,15 @@ namespace mu2e {
 
     // DS solenoid coils
     const int _nCoils = 11;
-    std::string              _coil_materialName; 
-    double                   _coil_rIn; 
+    std::string              _coil_materialName;
+    double                   _coil_rIn;
     int                      _coilVersion;
     // Allow coil materials to vary in coilVersion 2
     std::vector<std::string> _coil_mats;
-    std::vector<double>      _coil_rOut; 
-    std::vector<double>      _coil_zLength; 
+    std::vector<double>      _coil_rOut;
+    std::vector<double>      _coil_zLength;
     std::vector<double>      _coil_zPosition;
- 
+
 
     // DS coil spacers
     const int                _nSpacers = 5;
@@ -295,12 +295,12 @@ namespace mu2e {
 
 
     // DS coil support system
-    std::string _support_materialName; 
-    double      _support_rIn; 
-    double      _support_rOut; 
-    double      _support_halfLength; 
+    std::string _support_materialName;
+    double      _support_rIn;
+    double      _support_rOut;
+    double      _support_halfLength;
 
-    // Rings 
+    // Rings
     double _rInRingSide, _rOutRingSide, _thickRingSide;
     double _rInRing, _rOutRing, _lengthRing;
     std::string         _RingMaterial;
@@ -330,7 +330,7 @@ namespace mu2e {
     double                             _widthCoupler;
     double                             _heightCoupler;
     double                             _yCenterCoupler;
-    int                                _couplerScheme;  
+    int                                _couplerScheme;
     // 0 = couplers along both rails,
     // 1 = couplers along north rails only,
     // 2 = couplers along south rail only
@@ -432,10 +432,10 @@ namespace mu2e {
     double                _servicePipeYC;
     std::vector<double>   _servicePipeXCs;
 
-   
+
     // Vacuum volumes inside DS
     double _vacuumPressure;
-    std::string _vacuumMaterialName; 
+    std::string _vacuumMaterialName;
     double _ds1HalfLength;
     double _ds2HalfLength;
     double _locationDs23Split;

@@ -46,30 +46,30 @@ namespace mu2e {
         typedef std::vector<art::Handle<GenParticleSPMHistory> > StepPointHandles;
         StepPointHandles stepPointResults = evt_->getMany<GenParticleSPMHistory>();
 
-	if (stepPointResults.empty() ) { //no associations with StepPoints. Trying with simparticle end points
+        if (stepPointResults.empty() ) { //no associations with StepPoints. Trying with simparticle end points
 
-	  if (simParticleMap_.empty()) { //need to load the associations
+          if (simParticleMap_.empty()) { //need to load the associations
 
-	    typedef std::vector<art::Handle<GenSimParticleLink> > SimParticleHandles;
-	    SimParticleHandles simParticleResults = evt_->getMany<GenSimParticleLink>();
+            typedef std::vector<art::Handle<GenSimParticleLink> > SimParticleHandles;
+            SimParticleHandles simParticleResults = evt_->getMany<GenSimParticleLink>();
 
-	    for(SimParticleHandles::const_iterator h = simParticleResults.begin(); h != simParticleResults.end(); ++h) {
-	      AGDEBUG("In loop over simParticleHandles");
-	      // could filter out entries here
-	      for(GenSimParticleLink::const_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
-		AGDEBUG("In loop over sim particle assns");
-		if(!simParticleMap_.insert(std::make_pair(i->first, i->second)).second) {
-		  throw cet::exception("BADINPUTS")<<"Non-unique GenParticle ptr in GenSimParticleLink";
-		}
-	      }
-	    }
-	  }
+            for(SimParticleHandles::const_iterator h = simParticleResults.begin(); h != simParticleResults.end(); ++h) {
+              AGDEBUG("In loop over simParticleHandles");
+              // could filter out entries here
+              for(GenSimParticleLink::const_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
+                AGDEBUG("In loop over sim particle assns");
+                if(!simParticleMap_.insert(std::make_pair(i->first, i->second)).second) {
+                  throw cet::exception("BADINPUTS")<<"Non-unique GenParticle ptr in GenSimParticleLink";
+                }
+              }
+            }
+          }
 
-	  SimParticleMapType::const_iterator gensimpair = simParticleMap_.find(gp);
+          SimParticleMapType::const_iterator gensimpair = simParticleMap_.find(gp);
 
-	  return (gensimpair == simParticleMap_.end()) ? nullPtr_ : gensimpair->second;
+          return (gensimpair == simParticleMap_.end()) ? nullPtr_ : gensimpair->second;
 
-	}
+        }
 
         for(StepPointHandles::const_iterator h = stepPointResults.begin(); h != stepPointResults.end(); ++h) {
           AGDEBUG("In loop over stepPointHandles");

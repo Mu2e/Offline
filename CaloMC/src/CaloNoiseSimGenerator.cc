@@ -12,7 +12,7 @@
 #include "TCanvas.h"
 
 #include <algorithm>
-#include <string> 
+#include <string>
 #include <iostream>
 #include <vector>
 #include <numeric>
@@ -41,14 +41,14 @@ namespace mu2e {
      ARFitter_      (engine, config.nparAR(), config.diagLevel()),
      pulseShape_    (digiSampling_),
      diagLevel_     (config.diagLevel())
-   {}       
+   {}
 
-   
+
    //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::initialize(const CaloWFExtractor& wfExtractor)
    {
        pulseShape_.buildShapes();
-       
+
        generateWF(waveform_);
        if (enableAR_) initAR();
        generateFragments(wfExtractor);
@@ -56,7 +56,7 @@ namespace mu2e {
 
    //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::generateWF(std::vector<double>& wfVector)
-   {     
+   {
        ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
        double scaleFactor = calorimeterCalibrations->MeV2ADC(iRO_)/calorimeterCalibrations->peMeV(iRO_);
 
@@ -73,16 +73,16 @@ namespace mu2e {
        const int nPh = randPoisson_(noiseLevelPE);
        for (int i=0;i<nPh;++i)
        {
-	   double t0 = randFlat_.fire(0.0,totalTime);       
-	   const auto& wf = pulseShape_.digitizedPulse(t0);
+           double t0 = randFlat_.fire(0.0,totalTime);
+           const auto& wf = pulseShape_.digitizedPulse(t0);
 
-	   int i0 = int(t0/digiSampling_) - bufferSize;
-	   int l0 = (i0<0) ? -i0 : 0;      
-	   int l1 = std::min(pulseSize,noiseSize-i0);
-	   for (int l=l0;l<l1;++l) wfVector[i0+l] += wf[l]*scaleFactor;
+           int i0 = int(t0/digiSampling_) - bufferSize;
+           int l0 = (i0<0) ? -i0 : 0;
+           int l1 = std::min(pulseSize,noiseSize-i0);
+           for (int l=l0;l<l1;++l) wfVector[i0+l] += wf[l]*scaleFactor;
        }
 
-       //add electronics noise        
+       //add electronics noise
        double noiseADC = noiseElec_*digiSampling_*scaleFactor;
        for (auto& val : wfVector) val += randGauss_.fire(0.0,noiseADC);
 
@@ -112,10 +112,10 @@ namespace mu2e {
 
           std::vector<int> wf;
           wf.reserve(temp.size());
-          for (const auto& val : temp) wf.emplace_back(val - pedestal_);    
+          for (const auto& val : temp) wf.emplace_back(val - pedestal_);
 
           std::vector<size_t> starts, stops;
-          starts.reserve(16); stops.reserve(16);         
+          starts.reserve(16); stops.reserve(16);
           wfExtractor.extract(wf,starts,stops);
           if (starts.empty()) continue;
 
@@ -124,12 +124,12 @@ namespace mu2e {
           std::copy(temp.begin()+starts[0], temp.begin()+stops[0]+1, std::back_inserter(fragment));
           digiNoise_.push_back(fragment);
 
-          ++nfound;         
+          ++nfound;
           if (nfound==enoughFragments) break;
        }
 
        digiNoiseProb_= float(nfound)/float(nwf)/float(length);
-   } 
+   }
 
    //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::refresh() {generateWF(waveform_);}
@@ -139,7 +139,7 @@ namespace mu2e {
    //------------------------------------------------------------------------------------------------------------------
    void CaloNoiseSimGenerator::addSampleNoise(std::vector<double>& wfVector, unsigned istart, unsigned ilength)
    {
-       if (ilength >=waveform_.size()) 
+       if (ilength >=waveform_.size())
           throw cet::exception("CATEGORY")<<"[CaloNoiseSimGenerator] noise length request too long";
 
        unsigned irandom = unsigned(randFlat_.fire(0.,waveform_.size()-ilength));
@@ -148,7 +148,7 @@ namespace mu2e {
    }
 
    //------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseSimGenerator::addFullNoise(std::vector<double>& wfVector, bool doAR) 
+   void CaloNoiseSimGenerator::addFullNoise(std::vector<double>& wfVector, bool doAR)
    {
        if (doAR && enableAR_)
        {
@@ -158,9 +158,9 @@ namespace mu2e {
        }
        else
        {
-           if (wfVector.size() >=waveform_.size()) 
+           if (wfVector.size() >=waveform_.size())
                 throw cet::exception("CATEGORY")<<"[CaloNoiseSimGenerator] noise length request too long";
-           
+
            std::vector<double> ynew(wfVector.size());
            generateWF(ynew);
            for (unsigned i=0;i<wfVector.size();++i) wfVector[i] += ynew[i];
@@ -169,8 +169,8 @@ namespace mu2e {
 
 
    //------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseSimGenerator::addSaltAndPepper(std::vector<double>& wfVector) 
-   {      
+   void CaloNoiseSimGenerator::addSaltAndPepper(std::vector<double>& wfVector)
+   {
        double muNoise = waveform_.size()*digiNoiseProb_;
        int    nNoise  = randPoisson_(muNoise);
        for (int in=0;in<nNoise;++in)
@@ -183,7 +183,7 @@ namespace mu2e {
            for (unsigned i=0;i<digi.size();++i)
            {
                 if (wfVector[istart+i] < minPeakADC_) wfVector[istart+i] += digi[i];
-           }   
+           }
        }
    }
 
@@ -191,7 +191,7 @@ namespace mu2e {
 
 
    //------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseSimGenerator::plotNoise(std::string name) 
+   void CaloNoiseSimGenerator::plotNoise(std::string name)
    {
        std::vector<double> x(waveform_.size()),y;
        std::iota(x.begin(),x.end(),0);
@@ -224,5 +224,5 @@ namespace mu2e {
    }
 
 }
- 
+
 

@@ -19,15 +19,15 @@ namespace mu2e {
 
     friend std::ostream& operator << (std::ostream& os, StrawEnd const& end) {
       switch ( end._end ) {
-	case cal:
-	  os << "Cal";
-	  break;
-	case hv:
-	  os << "HV";
-	  break;
-      	default:
-	  os << "Unknown";
-	  break;
+        case cal:
+          os << "Cal";
+          break;
+        case hv:
+          os << "HV";
+          break;
+              default:
+          os << "Unknown";
+          break;
       }
       return os;
     }

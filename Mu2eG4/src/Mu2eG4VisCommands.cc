@@ -28,7 +28,7 @@
 //
 // Modeled after G4VisCommandSceneHandler...
 //
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 #include "Offline/Mu2eG4/inc/Mu2eG4VisCommands.hh"
 
 #include "Geant4/G4VVisCommand.hh"
@@ -36,11 +36,11 @@
 #include "Geant4/G4UImanager.hh"
 
 Mu2eVisCommandSceneHandlerDrawEvent::Mu2eVisCommandSceneHandlerDrawEvent() {
-  
+
   fpCommand = new G4UIcommand("/vis/sceneHandler/drawEvent", this);
   fpCommand -> SetGuidance("Draws current event at the current scene/viewer");
   fpCommand -> SetGuidance("If a viewer does not exists, will try to create\n"
-			    "one for the current sceneHandler");
+                            "one for the current sceneHandler");
 
   G4UIparameter* parameter;
   G4bool omitable;
@@ -67,7 +67,7 @@ G4String Mu2eVisCommandSceneHandlerDrawEvent::GetCurrentValue(G4UIcommand*) {
 }
 
 void Mu2eVisCommandSceneHandlerDrawEvent::SetNewValue(G4UIcommand*,
-						  G4String newValue) {
+                                                  G4String newValue) {
 
   G4VisManager::Verbosity verbosity = fpVisManager->GetVerbosity();
 
@@ -76,7 +76,7 @@ void Mu2eVisCommandSceneHandlerDrawEvent::SetNewValue(G4UIcommand*,
     if (verbosity >= G4VisManager::errors) {
       G4cout <<
       "ERROR: No valid scenes available.  Please create one."
-	     << G4endl;
+             << G4endl;
     }
     return;
   }
@@ -86,7 +86,7 @@ void Mu2eVisCommandSceneHandlerDrawEvent::SetNewValue(G4UIcommand*,
     if (verbosity >= G4VisManager::errors) {
       G4cout <<
       "ERROR: Current scene handler not defined.  Please select or create one."
-	     << G4endl;
+             << G4endl;
     }
     return;
   }
@@ -101,27 +101,27 @@ void Mu2eVisCommandSceneHandlerDrawEvent::SetNewValue(G4UIcommand*,
     if (verbosity >= G4VisManager::warnings) {
       G4cout <<
       "WARNING: Current viewer not defined or no viewers.  Will try to create one"
-	     << G4endl;
+             << G4endl;
     }
     G4UImanager::GetUIpointer()->ApplyCommand("/vis/viewer/create ! "+newValue);
     pViewer = pSceneHandler->GetCurrentViewer();
-    if (!pViewer) {    
+    if (!pViewer) {
       if (verbosity >= G4VisManager::errors) {
-	G4cout <<
-	  "ERROR: Could not create a viewer, returning"
-	       << G4endl;
+        G4cout <<
+          "ERROR: Could not create a viewer, returning"
+               << G4endl;
       }
       return;
     }
-  } 
+  }
 
   const G4Event* currentEvent = G4RunManager::GetRunManager()->GetCurrentEvent();
 
   if (!currentEvent) {
     if (verbosity >= G4VisManager::errors) {
       G4cout <<
-	"ERROR: No current event, returning"
-	     << G4endl;
+        "ERROR: No current event, returning"
+             << G4endl;
     }
     return;
   }
@@ -138,7 +138,7 @@ void Mu2eVisCommandSceneHandlerDrawEvent::SetNewValue(G4UIcommand*,
   // else {
   //   if (verbosity >= G4VisManager::warnings) {
   //     G4cout << "Issue /vis/viewer/refresh or flush to see the effect."
-  // 	     << G4endl;
+  //              << G4endl;
   //   }
   // }
 

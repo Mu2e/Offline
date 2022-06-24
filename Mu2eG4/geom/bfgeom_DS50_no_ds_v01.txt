@@ -1,0 +1,33 @@
+//
+// Variant of the bfield maps with the DS field scaled down to 50% of nominal
+// and with the DS field map removed for production jobs
+//
+// Warning:
+//  There are multiple points of maintenance when you change any bfield maps.
+//    - bfgeom_v01.txt           ( the base geometry  )
+//    - bfgeom_no_ds_v01.txt     ( DS map removed     )
+//    - bfgeom_reco_v01.txt      ( only maps needed for reconstruction )
+//    - bfgeom_no_tsu_ps_v01.txt ( PS and TSu maps removed.
+//    - bfgeom_DS50_v01.txt      ( DS field reduced to 50% )
+//    - bfgeom_DS50_no_ds_v01.txt ( DS field reduced to 50% and with DS map removed )
+//    - bfgeom_DS50_no_tsu_ps_v01.txt ( DS field reduced to 50% and with PS and TSu maps removed )
+//    - bfgeom_DS50_reco_v01.txt ( DS field reduced to 50% and only maps needed for reconstrucion )
+//
+//  If more variants are added, update the comments in all relevant files.
+
+#include "Offline/Mu2eG4/geom/bfgeom_no_ds_v01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/PSMap.header",
+  "BFieldMaps/Mau13/TSuMap_fix.header",
+  "BFieldMaps/Mau13/TSdMap_DS50.header",
+  "BFieldMaps/Mau13/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau13/ProtonDumpAreaMap.header"
+};
+
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

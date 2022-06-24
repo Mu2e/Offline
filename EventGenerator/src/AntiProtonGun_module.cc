@@ -20,7 +20,6 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -95,7 +94,7 @@ namespace mu2e {
 
     CLHEP::HepRotation targetRotation_; // rotates target frame to Mu2e frame
     CLHEP::Hep3Vector  targetCenter_;
-  
+
     TF1 *f1;
     TF2 *fsig;
 
@@ -191,7 +190,7 @@ namespace mu2e {
 
     double pLab=8.8;
     double Mp=0.938272029;
- 
+
     double kpar[10]={
     0.1699,  //___0
     10.28,   //___1

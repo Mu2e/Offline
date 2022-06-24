@@ -1,7 +1,7 @@
 # kalSeedToTrkQualTree.fcl
 #
-# Takes a collection of KalSeeds and creates a TTree with the variables needed for the 
-# TrkQual testing and training 
+# Takes a collection of KalSeeds and creates a TTree with the variables needed for the
+# TrkQual testing and training
 #
 # A. Edmonds April 2017
 
@@ -15,18 +15,18 @@ source : {
   module_type : RootInput
 }
 
-services : { @table::Services.Reco 
+services : { @table::Services.Reco
 
-	     TFileService : { fileName : "data_dump/trkQualTree.root" }
+  TFileService : { fileName : "data_dump/trkQualTree.root" }
 }
 
 
 physics : {
   analyzers : {
     genCountLogger: { module_type: GenEventCountReader }
-    
-    kalSeedToTrkQualTree : { 
-      module_type: KalSeedToTrkQualTree 
+
+    kalSeedToTrkQualTree : {
+      module_type: KalSeedToTrkQualTree
 
       kalFinalTag : "kalSeedFilter"
       strawDigiMCTag: "kalSeedFilter"

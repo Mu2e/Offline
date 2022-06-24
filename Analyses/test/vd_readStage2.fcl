@@ -14,8 +14,8 @@
 # Give this job a name.
 process_name : readStage2
 
-source : { 
-  module_type : RootInput 
+source : {
+  module_type : RootInput
   #maxEvents : 1000
 }
 
@@ -61,7 +61,7 @@ services.SeedService.maxUniqueEngines :  20
 
 // List of virtual detectors to save in ntuple
 physics.analyzers.readvd.saveVD           : [1,2,5]
-// Save only those particles in the main ntuple (ntpart), which 
+// Save only those particles in the main ntuple (ntpart), which
 // cross the required VD. If not specified, save all particles.
 physics.analyzers.readvd.requireVD        : 5
 // Save only listed types of particles in the main ntuple
@@ -69,7 +69,7 @@ physics.analyzers.readvd.savePDG          : [ 11, -11 ]
 // Save only those particles in the ntuple, which survive until timeCut (ns)
 physics.analyzers.readvd.timeCut          : 0
 // Save only particles with p>minMomentum (MeV/c) in the main ntuple
-physics.analyzers.readvd.minMomentum	     : 90
+physics.analyzers.readvd.minMomentum             : 90
 // Drop listed types of particles in the time vd ntuple
 physics.analyzers.readvd.tvdDropPDG       : [ 2112 ]
 physics.analyzers.readvd.maxPrint         : 10

@@ -61,7 +61,7 @@ private:
   int _pdg;
 };
 
-Reflect::Reflect(TTree* ref,double momlow, double momhigh,int pdg) : _ref(ref), _momlow(momlow), _momhigh(momhigh), _pdg(pdg) 
+Reflect::Reflect(TTree* ref,double momlow, double momhigh,int pdg) : _ref(ref), _momlow(momlow), _momhigh(momhigh), _pdg(pdg)
 { init(); }
 
 void Reflect::init() {
@@ -143,7 +143,7 @@ void Reflect::init() {
   diffcball->SetParName(4,"alpha");
   diffcball->SetParName(5,"tailfrac");
   diffcball->SetParName(6,"taillambda");
- 
+
   truecball = new TF1("truecball",crystalball,-5.0,2.,7);
   truecball->SetParName(0,"Norm");
   truecball->SetParName(1,"x0");
@@ -301,7 +301,7 @@ void Reflect::params( TTree* ce) {
   _ref->Project("crdp0","dtrk.p0",dreco+dpdg+goodmc);
   _ref->Project("crdtq","dtrk.trkqual",dreco+dpdg+goodmc);
   _ref->Project("crdna","dtrk.nactive",dreco+dpdg+goodmc);
-  
+
   unsigned ncr = crdtd->GetEntries();
 
   TH1F* cetd(0);

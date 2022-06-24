@@ -22,6 +22,10 @@
 //    - bfgeom_no_ds_v01.txt     ( DS map removed     )
 //    - bfgeom_reco_v01.txt      ( only maps needed for reconstruction )
 //    - bfgeom_no_tsu_ps_v01.txt ( PS and TSu maps removed.
+//    - bfgeam_DS50_v01.txt      ( DS field reduced to 50% )
+//    - bfgeam_DS50_no_ds_v01.txt ( DS field reduced to 50% and with DS map removed )
+//    - bfgeam_DS50_no_tsu_ps_v01.txt ( DS field reduced to 50% and with PS and TSu maps removed )
+//    - bfgeam_DS50_reco_v01.txt ( DS field reduced to 50% and only maps needed for reconstrucion )
 //
 //  If more variants are added, update the comments in all relevant files.
 

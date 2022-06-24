@@ -3,10 +3,10 @@
 #include "CLHEP/Random/RandFlat.h"
 
 namespace mu2e
-{ 
+{
 class DYBGenerator
 {
-  public: 
+  public:
   enum Direction
   {
     UNDEFINED,
@@ -16,8 +16,8 @@ class DYBGenerator
     NEGATIVE_Z,
     POSITIVE_Z
   };
-  
-  DYBGenerator(Direction direction, double minTheta, double maxTheta, double minEnergy, double maxEnergy, 
+
+  DYBGenerator(Direction direction, double minTheta, double maxTheta, double minEnergy, double maxEnergy,
                double minPhi, double maxPhi, int nBinsTheta, int nBinsEnergy);
   ~DYBGenerator() {}
 

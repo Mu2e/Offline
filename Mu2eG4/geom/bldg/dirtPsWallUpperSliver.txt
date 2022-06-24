@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_upperExtension_DirtSliver.ccl
 
@@ -12,7 +12,7 @@ double dirt.psWall.upper.sliver.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.psWall.upper.sliver.yHalfThickness           = 533.4;
 
-vector<int>    dirt.psWall.upper.sliver.xreplace   = { 2, 3 }; 
+vector<int>    dirt.psWall.upper.sliver.xreplace   = { 2, 3 };
 vector<double> dirt.psWall.upper.sliver.xPositions = {
   -19472.4,   // q0
   -19400.7,   // c

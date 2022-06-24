@@ -42,7 +42,6 @@
 #include "Offline/Validation/inc/ValTriggerInfo.hh"
 #include "Offline/Validation/inc/ValTriggerResults.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/types/Atom.h"
 

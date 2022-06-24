@@ -11,7 +11,7 @@ namespace mu2eCrv
 {
 
 void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformStretchFactor,
-                                            double singlePEWaveformMaxTime, double singlePEReferenceCharge) 
+                                            double singlePEWaveformMaxTime, double singlePEReferenceCharge)
 {
   _singlePEWaveformPrecision = singlePEWaveformPrecision;
   _singlePEWaveformMaxTime = singlePEWaveformMaxTime;
@@ -27,14 +27,14 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
     currentTime*=singlePEWaveformStretchFactor;
     if(!std::isnan(previousTime))
     {
-      double t=index*singlePEWaveformPrecision;  
+      double t=index*singlePEWaveformPrecision;
       while(currentTime>=t && index*singlePEWaveformPrecision<singlePEWaveformMaxTime)
       {
         double fraction=(t-previousTime)/(currentTime-previousTime);
         double voltage=(currentVoltage-previousVoltage)*fraction+previousVoltage;
         _singlePEWaveform.push_back(voltage);
         index++;
-        t=index*singlePEWaveformPrecision;  
+        t=index*singlePEWaveformPrecision;
       }
       if(index*singlePEWaveformPrecision>=singlePEWaveformMaxTime) break;
     }
@@ -51,9 +51,9 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
   _singlePEMaxVoltage = *std::max_element(_singlePEWaveform.begin(), _singlePEWaveform.end());
 }
 
-void MakeCrvWaveforms::MakeWaveform(const std::vector<std::pair<double,double> > &timesAndCharges, 
+void MakeCrvWaveforms::MakeWaveform(const std::vector<std::pair<double,double> > &timesAndCharges,
                                     std::vector<double> &waveform,
-                                    double startTime, double digitizationPrecision) 
+                                    double startTime, double digitizationPrecision)
 {
   waveform.clear();
 
@@ -76,10 +76,10 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<std::pair<double,double> >
       double singlePEWaveformTime = waveformTime - timeOfCharge;
       if(singlePEWaveformTime<0) continue;
       size_t singlePEwaveformIndex=static_cast<size_t>(lrint(singlePEWaveformTime/_singlePEWaveformPrecision));
-      if(singlePEwaveformIndex>=_singlePEWaveform.size()) break; 
+      if(singlePEwaveformIndex>=_singlePEWaveform.size()) break;
 
       if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1,0);  //new vector elements are set to 0
-      waveform[waveformIndex]+=_singlePEWaveform[singlePEwaveformIndex]*charge; 
+      waveform[waveformIndex]+=_singlePEWaveform[singlePEwaveformIndex]*charge;
     }
   }
 }

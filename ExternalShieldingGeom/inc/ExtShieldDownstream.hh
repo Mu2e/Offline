@@ -11,7 +11,7 @@
 // geometry is described here for the TS Downstream portion of the shielding.
 // Details can be found in docdb #4678 and #xxxx.
 // Found in this class:
-// Various shaped blocks formed from extrusions, 
+// Various shaped blocks formed from extrusions,
 // constituting all parts of the Downstream External Shield
 
 
@@ -34,23 +34,23 @@ namespace mu2e {
     // class for shields, though?  Sort of a fake identifier.
   public:
 
-    // The downstream shielding can be built entirely from 
+    // The downstream shielding can be built entirely from
     // extrusions of concrete or Barite concrete.
 
 
-    const std::vector<std::vector<std::vector<double> > >& getOutlines() const 
+    const std::vector<std::vector<std::vector<double> > >& getOutlines() const
     { return _extShieldOutlines; }
-    const std::vector<double> &              getLengths() const 
+    const std::vector<double> &              getLengths() const
     { return _extShieldLengths; }
-    const std::vector<std::vector<double> >& getTolerances() const 
+    const std::vector<std::vector<double> >& getTolerances() const
     { return _extShieldBoxTols; }
-    const std::vector<std::string>&          getMaterialNames() const 
+    const std::vector<std::string>&          getMaterialNames() const
     { return _materialNames; }
-    const std::vector<CLHEP::Hep3Vector>&    getCentersOfBoxes() const 
+    const std::vector<CLHEP::Hep3Vector>&    getCentersOfBoxes() const
     { return _centerPositions; }
-    const std::vector<std::string>&          getOrientations() const 
+    const std::vector<std::string>&          getOrientations() const
     { return _orientations; }
-    const std::vector<int>&                  getNHoles() const 
+    const std::vector<int>&                  getNHoles() const
     { return _nHoles; }
     const std::vector<int>&                  getNNotches() const
     { return _nNotches; }
@@ -77,37 +77,37 @@ namespace mu2e {
 
     // Private ctr: the class should only be constructed via ExtShieldDownstream::ExtShieldDownstreamMaker.
     ExtShieldDownstream(const std::vector<std::vector<std::vector<double> > >& outlines,
-			const std::vector<double>&               lengths,
-			const std::vector<std::vector<double> >& tols, 
-			const std::vector<std::string>&          mats, 
-			const std::vector<CLHEP::Hep3Vector>&    sites, 
-			const std::vector<std::string>&          orients,
-			const std::vector<int>&                  nHoles,
-			const std::vector<int>&                  nNotches,
-			const std::vector<int>&                  iHole,
-			const std::vector<CLHEP::Hep3Vector>&    locHole,
-			const std::vector<double>&               radHole,
-			const std::vector<double>&               lenHole,
-			const std::vector<std::string>&          oHole,
-			const std::vector<int>&                  iNotch,
-			const std::vector<CLHEP::Hep3Vector>&    locNotch,
-			const std::vector<std::vector<double> >& locDims)
+                        const std::vector<double>&               lengths,
+                        const std::vector<std::vector<double> >& tols,
+                        const std::vector<std::string>&          mats,
+                        const std::vector<CLHEP::Hep3Vector>&    sites,
+                        const std::vector<std::string>&          orients,
+                        const std::vector<int>&                  nHoles,
+                        const std::vector<int>&                  nNotches,
+                        const std::vector<int>&                  iHole,
+                        const std::vector<CLHEP::Hep3Vector>&    locHole,
+                        const std::vector<double>&               radHole,
+                        const std::vector<double>&               lenHole,
+                        const std::vector<std::string>&          oHole,
+                        const std::vector<int>&                  iNotch,
+                        const std::vector<CLHEP::Hep3Vector>&    locNotch,
+                        const std::vector<std::vector<double> >& locDims)
       : _extShieldOutlines(outlines),
-	_extShieldLengths (lengths),
-	_extShieldBoxTols (tols),
-	_materialNames    (mats),
-	_centerPositions  (sites),
-	_orientations     (orients),
-	_nHoles           (nHoles),
-	_nNotches         (nNotches),
-	_holeIndices      (iHole),
-	_holeLocations    (locHole),
+        _extShieldLengths (lengths),
+        _extShieldBoxTols (tols),
+        _materialNames    (mats),
+        _centerPositions  (sites),
+        _orientations     (orients),
+        _nHoles           (nHoles),
+        _nNotches         (nNotches),
+        _holeIndices      (iHole),
+        _holeLocations    (locHole),
         _holeRadii        (radHole),
-	_holeLengths      (lenHole),
-	_holeOrientations (oHole),
-	_notchIndices     (iNotch),
-	_notchLocations   (locNotch),
-	_notchDimensions  (locDims)
+        _holeLengths      (lenHole),
+        _holeOrientations (oHole),
+        _notchIndices     (iNotch),
+        _notchLocations   (locNotch),
+        _notchDimensions  (locDims)
     { }
 
     // Or read back from persistent storage
@@ -116,7 +116,7 @@ namespace mu2e {
 
 
     // Current description based on Geometry 14, adapted by
-    // David Norvil Brown, 
+    // David Norvil Brown,
 
     // The following vectors hold one piece of information per "block"
     std::vector<std::vector< std::vector< double > > > _extShieldOutlines;

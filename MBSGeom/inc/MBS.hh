@@ -55,7 +55,7 @@ namespace mu2e {
     double getEnvelopeRmin() const { return _rMin; }
     double getEnvelopeTLng() const { return _totLength; }
 
-    std::vector<CLHEP::Hep3Vector> getHoleCentersInSteel() const 
+    std::vector<CLHEP::Hep3Vector> getHoleCentersInSteel() const
     { return _holeCentersInSteel; }
     std::vector<CLHEP::Hep3Vector> getHoleCentersInUpstreamPoly() const
     { return _holeCentersInUpstreamPoly; }

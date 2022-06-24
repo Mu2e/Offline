@@ -1,7 +1,7 @@
 //
 // Root c++ function to compare tracking plots specified by another macro
-// 
-// 
+//
+//
 // Original author KLG somewat based on Rob Kutschke's example
 //
 // 1) Retrieve histograms, ntuples and tree from the files that was created
@@ -72,7 +72,7 @@ void g4validate_01(Int_t isLog=1,bool isInteractive=false)
   gStyle->SetOptStat("emruo");
   // gStyle->SetOptStat(kFALSE);
 
-  // flag controlling the pause after each canvas 
+  // flag controlling the pause after each canvas
   // bool const isInteractive = true;
 
   // flag controlling creation of the png files
@@ -166,7 +166,7 @@ void g4validate_01(Int_t isLog=1,bool isInteractive=false)
 
       if ( nhistograms!=histograms[ff].size()) {
 
-        cout << "G4validate : number of histograms in file " 
+        cout << "G4validate : number of histograms in file "
              << files[ff]->GetName() << histograms[ff].size()
              << " is different from initial " << nhistograms << endl;
       }
@@ -184,7 +184,7 @@ void g4validate_01(Int_t isLog=1,bool isInteractive=false)
       histTmpSuffix << ff+1;
       histTmpName = histograms[ff][hh]->GetName()+histTmpSuffix.str();
       histograms[ff][hh]->SetName(histTmpName);
-    
+
     }
 
   }
@@ -193,7 +193,7 @@ void g4validate_01(Int_t isLog=1,bool isInteractive=false)
 
   // Open a new canvas on the screen.
   // The last two arguments are the size of the window.
-  TCanvas *canvas = new TCanvas("c", "Plots from " 
+  TCanvas *canvas = new TCanvas("c", "Plots from "
                                 + basename + " for various versions of Geant4", 900, 900 );
 
   // Open a multi-page output pdf file .
@@ -217,7 +217,7 @@ void g4validate_01(Int_t isLog=1,bool isInteractive=false)
     // Draw some histograms, one per pad.
     // cd(n): move to graphics pad number "n".
     // "H9": draw outline histogram ("H") in high resolution mode (9)
-    
+
     //    isLog = (hh==1000) ? 0 : 1; // decide on the log scale; could be per histogram if needed
 
     delete leg;
@@ -248,23 +248,23 @@ void g4validate_01(Int_t isLog=1,bool isInteractive=false)
 
       canvas->cd(ff+1);
       gPad->SetLogy(isLog);
-      cout << hh << " " << ff << " Drawing " << histograms[ff][hh]->GetTitle() 
-           << ", " << fileLabel[ff]->GetLabel() 
+      cout << hh << " " << ff << " Drawing " << histograms[ff][hh]->GetTitle()
+           << ", " << fileLabel[ff]->GetLabel()
            << ", " << fileText[ff]
            <<endl;
-      if (ff==0) 
+      if (ff==0)
         {histograms[ff][hh]->SetLineColor(602); }
-      else 
+      else
         {histograms[ff][hh]->SetLineColor(ff+1);}
       gStyle->SetOptStat("neMRuo");
-      
+
       // collecting legend info
       leg->AddEntry(histograms[ff][hh],fileText[ff],"L");
       histograms[ff][hh]->SetMaximum(vscalemax);
       histograms[ff][hh]->SetMinimum(vscalemin);
       histograms[ff][hh]->Draw("H9");
       fileLabel[ff]->Draw("9");
-      
+
     }
 
     // now draw the histograms overlayed + legend
@@ -272,18 +272,18 @@ void g4validate_01(Int_t isLog=1,bool isInteractive=false)
     for (unsigned ff=0; ff!=nfiles; ++ff) {
 
       gPad->SetLogy(isLog);
-      cout << hh << " " << ff << " Drawing " << histograms[ff][hh]->GetTitle() 
-           << ", " << fileLabel[ff]->GetLabel() 
+      cout << hh << " " << ff << " Drawing " << histograms[ff][hh]->GetTitle()
+           << ", " << fileLabel[ff]->GetLabel()
            << ", " << fileText[ff]
            <<endl;
-      if (ff==0) 
+      if (ff==0)
         {histograms[ff][hh]->SetLineColor(602); }
-      else 
+      else
         {histograms[ff][hh]->SetLineColor(ff+1);}
-            
+
       delete histograms_copy[ff];
       histograms_copy[ff] = static_cast<TH1*>(histograms[ff][hh]->Clone());
-      
+
       histTmpSuffix.str("");
       histTmpSuffix.width(3);
       histTmpSuffix.fill('0');

@@ -28,31 +28,31 @@ namespace mu2e {
 
   class TrkCaloDiag {
     public:
-    TrkCaloDiag(TrkParticle const& tpart, TrkFitDirection const& fdir, fhicl::ParameterSet const& pset);
-    // find the required data products in the event
-    void findData(const art::Event& event);
-    // add calo info for a particular track
-    void addCaloInfo(KalRep const* krep);
-    // add calo info for a particular match
-    void fillCaloInfo(TrackClusterMatch const& tcm, TrkCaloInfo& tcinfo);
-    // add the calo info branches to the tree
-    void addBranches(TTree* tree,const char* suffix="");
-    art::Handle<TrackClusterMatchCollection> const& caloMatchHandle() { return _caloMatchHandle; }
+      TrkCaloDiag(TrkParticle const& tpart, TrkFitDirection const& fdir, fhicl::ParameterSet const& pset);
+      // find the required data products in the event
+      void findData(const art::Event& event);
+      // add calo info for a particular track
+      void addCaloInfo(KalRep const* krep);
+      // add calo info for a particular match
+      void fillCaloInfo(TrackClusterMatch const& tcm, TrkCaloInfo& tcinfo);
+      // add the calo info branches to the tree
+      void addBranches(TTree* tree,const char* suffix="");
+      art::Handle<TrackClusterMatchCollection> const& caloMatchHandle() { return _caloMatchHandle; }
     private:
-// calorimeter matching labels 
-    std::string _caloMatchModule;
-    art::Handle<TrackClusterMatchCollection> _caloMatchHandle;
-    // branch variables
-    std::vector<TrkCaloInfo> _caloinfo;
-    Int_t _ncalo;
+      // calorimeter matching labels
+      std::string _caloMatchModule;
+      art::Handle<TrackClusterMatchCollection> _caloMatchHandle;
+      // branch variables
+      std::vector<TrkCaloInfo> _caloinfo;
+      Int_t _ncalo;
 
-// PID configuration
-    typedef PIDLogLRatio<PIDLogL1D> PIDdt;
-    typedef PIDLogLRatio<PIDLogLEp> PIDEp;
-    // there is no default constructor for PID classes so the configuration MUST be
-    // accurate to even instantiantiate these objects
-    PIDdt _pid_dt;
-    PIDEp _pid_ep;
+      // PID configuration
+      typedef PIDLogLRatio<PIDLogL1D> PIDdt;
+      typedef PIDLogLRatio<PIDLogLEp> PIDEp;
+      // there is no default constructor for PID classes so the configuration MUST be
+      // accurate to even instantiantiate these objects
+      PIDdt _pid_dt;
+      PIDEp _pid_ep;
 
   };
 

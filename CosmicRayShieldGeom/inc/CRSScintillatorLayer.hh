@@ -14,7 +14,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CRSScintillatorLayer
@@ -36,12 +36,12 @@ namespace mu2e
 
     int nBars() const { return _bars.size(); }
 
-    CRSScintillatorBar const & getBar( int n ) const 
+    CRSScintillatorBar const & getBar( int n ) const
     {
       return *_bars.at(n);
     }
 
-    CRSScintillatorBar const & getBar( const CRSScintillatorBarId& id ) const 
+    CRSScintillatorBar const & getBar( const CRSScintillatorBarId& id ) const
     {
       return getBar(id.getBarNumber());
     }

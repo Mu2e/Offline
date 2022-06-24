@@ -21,11 +21,11 @@ namespace mu2e {
   public:
 
     StraightSection() : TSSection(),
-			_rIn(0.), _rOut(0.), _halfZ(0.), _diffZ(0.)
+                        _rIn(0.), _rOut(0.), _halfZ(0.), _diffZ(0.)
     {}
 
-    StraightSection(double rIn, double rOut, double halfZ, 
-                    CLHEP::Hep3Vector const & origin, 
+    StraightSection(double rIn, double rOut, double halfZ,
+                    CLHEP::Hep3Vector const & origin,
                     CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
                     std::string const & materialName = "", double diffZ=0.) :
       TSSection(origin, rotation, materialName),
@@ -42,7 +42,7 @@ namespace mu2e {
 
     ~StraightSection(){}
 
-    void set(double rIn, double rOut, double halfZ, 
+    void set(double rIn, double rOut, double halfZ,
              CLHEP::Hep3Vector const & origin, CLHEP::HepRotation const & rotation=CLHEP::HepRotation(),
              std::string const & materialName = "", double diffZ = 0.) {
       _rIn=rIn;

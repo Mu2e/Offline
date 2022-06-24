@@ -1,4 +1,4 @@
-// Muon Stoping Target Monitor 
+// Muon Stoping Target Monitor
 //
 //
 // Original author: K. L. Genser
@@ -11,19 +11,19 @@ int  vd.verbosityLevel = 0;
 
 // build virtual detectors throughout the MSTM area
 bool   vd.MSTMWallUpStr.build  = false;
-double vd.MSTMWallUpStr.r      = 100.0; // r=10cm 
+double vd.MSTMWallUpStr.r      = 100.0; // r=10cm
 
 bool vd.MSTMColl1DnStr.build   = false;
-double vd.MSTMColl1DnStr.r     = 100.0; // r=10cm 
+double vd.MSTMColl1DnStr.r     = 100.0; // r=10cm
 
 bool vd.MSTMShutterDnStr.build = false;
-double vd.MSTMShutterDnStr.r   = 100.0; // r=10cm 
+double vd.MSTMShutterDnStr.r   = 100.0; // r=10cm
 
 bool vd.MSTMColl2DnStr.build   = false;
-double vd.MSTMColl2DnStr.r     = 100.0; // r=10cm 
+double vd.MSTMColl2DnStr.r     = 100.0; // r=10cm
 
 bool vd.MSTMColl3DnStr.build   = false;
-double vd.MSTMColl3DnStr.r     = 70.0; // r=7cm 
+double vd.MSTMColl3DnStr.r     = 70.0; // r=7cm
 
 
 
@@ -69,10 +69,10 @@ double mstm.magnet.holeHalfWidth  = 60.0;  //24cm wide hole
 double mstm.magnet.field          =   0.0; // Tesla
 
 string mstm.pipe0.material              = "StainlessSteel";
-string mstm.pipe0.gas                   = "G4_He"; 
+string mstm.pipe0.gas                   = "G4_He";
 double mstm.pipe0.rIn                   = 49.;
 double mstm.pipe0.rOut                  = 50.;
-double mstm.pipe0.halfLength            = 879.8; // = (2*mstm.wallUpStr.halfLength + mstm.magnet.UpStrSpace + 2*mstm.magnet.halfLength + 0.5*mstm.collimator1.UpStrSpace ) / 2 
+double mstm.pipe0.halfLength            = 879.8; // = (2*mstm.wallUpStr.halfLength + mstm.magnet.UpStrSpace + 2*mstm.magnet.halfLength + 0.5*mstm.collimator1.UpStrSpace ) / 2
 string mstm.pipe0.UpStrWindowMaterial   = "G4_MYLAR";
 double mstm.pipe0.UpStrWindowHalfLength = 0.125; // 0.25mm thick window
 string mstm.pipe0.DnStrWindowMaterial   = "G4_MYLAR";
@@ -80,7 +80,7 @@ double mstm.pipe0.DnStrWindowHalfLength = 0.125; // 0.25mm thick window
 
 string mstm.collimator1.material   = "G4_Pb";
 double mstm.collimator1.UpStrSpace =  100.0;  // z=10cm space between this and previous element
-double mstm.collimator1.halfLength =  200.0; //20cm thick 
+double mstm.collimator1.halfLength =  200.0; //20cm thick
 double mstm.collimator1.halfWidth  = 1000.0; // 2m wide
 double mstm.collimator1.halfHeight = 1000.0; // 2m tall
 double mstm.collimator1.holeRadius =   20.0; // 2cm radius hole
@@ -92,20 +92,20 @@ string mstm.shutter.segment1.material   = "G4_AIR"; //"StainlessSteel";
 double mstm.shutter.segment1.halfLength = 50.; // 10cm long
 string mstm.shutter.segment2.material   = "G4_AIR"; //"Polyethylene096";
 double mstm.shutter.segment2.halfLength = 50.; // 10cm long
-string mstm.shutter.segment3.material   = "G4_AIR"; //"G4_Pb"; 
+string mstm.shutter.segment3.material   = "G4_AIR"; //"G4_Pb";
 double mstm.shutter.segment3.halfLength = 27.5; // 5.5cm long
-string mstm.shutter.segment4.material   = "G4_AIR"; //"G4_Cu"; 
+string mstm.shutter.segment4.material   = "G4_AIR"; //"G4_Cu";
 double mstm.shutter.segment4.halfLength = 2.5;  // 0.5cm long
 
 string mstm.collimator2.material   = "G4_Pb";
 double mstm.collimator2.UpStrSpace =  500.0;  // z=50cm space between this and previous element
-double mstm.collimator2.halfLength =  200.0; //20cm thick 
+double mstm.collimator2.halfLength =  200.0; //20cm thick
 double mstm.collimator2.halfWidth  = 1000.0; // 2m wide
 double mstm.collimator2.halfHeight = 1000.0; // 2m tall
 double mstm.collimator2.holeRadius =   20.0; // 2cm radius hole
 
 string mstm.pipe1.material              = "StainlessSteel";
-string mstm.pipe1.gas                   = "G4_He"; 
+string mstm.pipe1.gas                   = "G4_He";
 double mstm.pipe1.rIn                   =  49.0;
 double mstm.pipe1.rOut                  =  50.0;
 double mstm.pipe1.UpStrSpace            =  50.0;  // z=5cm space between this and previous element
@@ -117,7 +117,7 @@ double mstm.pipe1.DnStrWindowHalfLength = 0.125; // 0.25mm thick window
 
 string mstm.collimator3.material   = "G4_Pb";
 double mstm.collimator3.UpStrSpace =  50.0;  // z=5cm space between this and previous element
-double mstm.collimator3.halfLength =  200.0; //20cm thick 
+double mstm.collimator3.halfLength =  200.0; //20cm thick
 double mstm.collimator3.halfWidth  = 1000.0; // 2m wide
 double mstm.collimator3.halfHeight = 1000.0; // 2m tall
 double mstm.collimator3.holeRadius =   20.0; // 2cm radius hole

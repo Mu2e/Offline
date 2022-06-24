@@ -15,7 +15,7 @@ source :
 {
     module_type : RootInput
     inputCommands : [  "keep *_*_*_*",
-		       "drop *mu2e::TriggerInfo_*_*_*"]
+                       "drop *mu2e::TriggerInfo_*_*_*"]
 }
 # we don't need any simulation services for this job
 #services : @local::Services.Reco
@@ -25,9 +25,9 @@ services : @local::Services.Reco
 # timing information
 services.TimeTracker : {
     dbOutput : {
-	filename : ""
-#	filename : "runGlobalTrigger.db" #uncomment to create the .db output
-	overwrite : true
+        filename : ""
+#        filename : "runGlobalTrigger.db" #uncomment to create the .db output
+        overwrite : true
     }
 }
 
@@ -43,24 +43,24 @@ physics : {
     producers : { @table::producers }
 
     filters   : { @table::filters }
- 
-    analyzers : {  
 
-	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 70
-	    nTrackTriggers: 5
-	    SelecEvents   : [ unbiased_path, 
-			      minimumbiasSDCount_path,
-			      largeSDCount_path,
-			      caloMVACE_path,
-			      tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
-	}
-	
+    analyzers : {
+
+        readTriggerInfo : { @table::analyzers.ReadTriggerInfo
+            nFilters      : 70
+            nTrackTriggers: 5
+            SelecEvents   : [ unbiased_path,
+                              minimumbiasSDCount_path,
+                              largeSDCount_path,
+                              caloMVACE_path,
+                              tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
+        }
+
     }
 
     #unbiased trigger path
     unbiased_path                : [ @sequence::paths.unbiased                         ]
-    
+
     #minimum bias filters
     minimumbiasSDCount_path      : [ @sequence::paths.minimumbiasSDCount               ]
 
@@ -80,10 +80,10 @@ physics : {
     #paths for CalPatRec downstream e- and e+
     cprSeedDeM_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeM        ]
     cprSeedDeP_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeP        ]
-    
-    
+
+
 #    out           : [ readTriggerInfo ]
-    
+
 
     out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]

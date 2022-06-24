@@ -13,9 +13,11 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
+    fhicl::Atom<bool> overrideDbTimeOffsets{
+      Name("overrideDbTimeOffsets"), Comment("Override Db time offsets and set to zero")};
 
     fhicl::Atom<double> defaultThresholddVdI {
       Name("defaultThresholddVdI"), Comment("defaultThresholddVdI")};
@@ -108,11 +110,11 @@ namespace mu2e {
       Name("currentSigmas"), Comment("currentSigmas")};
     fhicl::Sequence<double> currentT0s {
       Name("currentT0s"), Comment("currentT0s")};
-    fhicl::Atom<double> reflectionTimeShift { 
+    fhicl::Atom<double> reflectionTimeShift {
       Name("reflectionTimeShift"), Comment("reflectionTimeShift")};
-    fhicl::Atom<double> reflectionVelocity { 
+    fhicl::Atom<double> reflectionVelocity {
       Name("reflectionVelocity"), Comment("reflectionVelocity")};
-    fhicl::Atom<double> reflectionALength { 
+    fhicl::Atom<double> reflectionALength {
       Name("reflectionALength"), Comment("reflectionALength")};
     fhicl::Atom<double> reflectionFrac {
       Name("reflectionFrac"), Comment("reflectionFrac")};

@@ -78,11 +78,11 @@ namespace mu2e {
       double mass = trk->GetParticleDefinition()->GetPDGMass();
       double e=0,p=0;
       if(mass > std::numeric_limits<double>::epsilon() ) {
-	e = ke + mass;
-	p = sqrtOrThrow<double>(e*e-mass*mass,std::numeric_limits<double>::epsilon());
+        e = ke + mass;
+        p = sqrtOrThrow<double>(e*e-mass*mass,std::numeric_limits<double>::epsilon());
       } else {
-	e = ke;
-	p = ke;
+        e = ke;
+        p = ke;
       }
       return CLHEP::HepLorentzVector(p*pdir,e);
     }

@@ -44,15 +44,15 @@ using namespace std;
 
 namespace mu2e {
 
-  void insertOuterFrame(VolumeInfo const& container, 
+  void insertOuterFrame(VolumeInfo const& container,
                         const PTMPWC* pwc) {
-    G4Box *outerBox = new G4Box("pwcFrameOuter", 
-                pwc->frameWidth()/2., 
-                pwc->frameHeight()/2., 
+    G4Box *outerBox = new G4Box("pwcFrameOuter",
+                pwc->frameWidth()/2.,
+                pwc->frameHeight()/2.,
                 pwc->detectorThick()/2.);
-    G4Box *innerBox = new G4Box("pwcFrameInner", 
-                pwc->pwcWindow()->getXhalfLength(), 
-                pwc->pwcWindow()->getYhalfLength(), 
+    G4Box *innerBox = new G4Box("pwcFrameInner",
+                pwc->pwcWindow()->getXhalfLength(),
+                pwc->pwcWindow()->getYhalfLength(),
                 pwc->totalThick()/2.);
     std::string frameName = "PTMFrame";
     frameName.append(pwc->nameSuffix());
@@ -61,19 +61,19 @@ namespace mu2e {
     VolumeInfo frameInfo;
     frameInfo.name = frameName;
     frameInfo.solid = new G4SubtractionSolid(frameName, outerBox, innerBox);
-    finishNesting(frameInfo, 
-          frameMaterial, 
-          nullptr, 
-          G4ThreeVector(0.0, 0.0, 0.0), 
-          container.logical, 
-          0, 
-          G4Colour::Blue(), 
+    finishNesting(frameInfo,
+          frameMaterial,
+          nullptr,
+          G4ThreeVector(0.0, 0.0, 0.0),
+          container.logical,
+          0,
+          G4Colour::Blue(),
           "PTM");
 
   } // insertOuterFrame
 
-  void insertWindows(VolumeInfo const& container, 
-                     const PTMPWC* pwc, 
+  void insertWindows(VolumeInfo const& container,
+                     const PTMPWC* pwc,
                      int const vdNum,
                      SimpleConfig const& _config,
                      bool const visible,
@@ -85,8 +85,8 @@ namespace mu2e {
     G4Material *windowMaterial = findMaterialOrThrow(pwc->windowMaterialName());
     // most-upstream ground plane is a virtual detector
     std::string ground1Name = "VirtualDetector_PTMGroundIn"+pwc->nameSuffix();
-    double windowHalfDims[] = {pwc->pwcWindow()->getXhalfLength(), 
-                               pwc->pwcWindow()->getYhalfLength(), 
+    double windowHalfDims[] = {pwc->pwcWindow()->getXhalfLength(),
+                               pwc->pwcWindow()->getYhalfLength(),
                                pwc->pwcWindow()->getZhalfLength()};
     nestBox (ground1Name,
              windowHalfDims,
@@ -100,9 +100,9 @@ namespace mu2e {
     // The remaining windows are all identical, so make one logical volume and
     // paste it repeatedly.
     std::string windowName = "PTMWindow"+pwc->nameSuffix();
-    G4VSolid *windowBox = new G4Box(windowName, 
-                            pwc->pwcWindow()->getXhalfLength(), 
-                            pwc->pwcWindow()->getYhalfLength(), 
+    G4VSolid *windowBox = new G4Box(windowName,
+                            pwc->pwcWindow()->getXhalfLength(),
+                            pwc->pwcWindow()->getYhalfLength(),
                             pwc->pwcWindow()->getZhalfLength());
     G4LogicalVolume *windowLogical = new G4LogicalVolume(windowBox, windowMaterial, windowName);
     // 3 high-voltage planes
@@ -110,7 +110,7 @@ namespace mu2e {
     HV1Info.solid = windowBox;
     HV1Info.logical = windowLogical;
     HV1Info.name = "PTMHV1"+pwc->nameSuffix();
-    finishNesting(HV1Info, 
+    finishNesting(HV1Info,
                   windowMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(0, 0, pwc->hv1Z()),
@@ -127,7 +127,7 @@ namespace mu2e {
     HV2Info.solid = windowBox;
     HV2Info.logical = windowLogical;
     HV2Info.name = "PTMHV2"+pwc->nameSuffix();
-    finishNesting(HV2Info, 
+    finishNesting(HV2Info,
                   windowMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(0, 0, pwc->hv2Z()),
@@ -144,7 +144,7 @@ namespace mu2e {
     HV3Info.solid = windowBox;
     HV3Info.logical = windowLogical;
     HV3Info.name = "PTMHV3"+pwc->nameSuffix();
-    finishNesting(HV3Info, 
+    finishNesting(HV3Info,
                   windowMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(0, 0, pwc->hv3Z()),
@@ -162,7 +162,7 @@ namespace mu2e {
     ground2Info.solid = windowBox;
     ground2Info.logical = windowLogical;
     ground2Info.name = "PTMGround2"+pwc->nameSuffix();
-    finishNesting(ground2Info, 
+    finishNesting(ground2Info,
                   windowMaterial, // probably unnecessary, since we made the logical already
                   nullptr, // no rotation
                   G4ThreeVector(0, 0, pwc->ground2Z()),
@@ -178,8 +178,8 @@ namespace mu2e {
 
   } // insertWindows
 
-  void insertOuterGasBlocks(VolumeInfo const& container, 
-                            const PTMPWC* pwc, 
+  void insertOuterGasBlocks(VolumeInfo const& container,
+                            const PTMPWC* pwc,
                             G4Material* gasMaterial) {
     // between ground plane 1 and HV plane 1
     std::string gasName1 = "PTMGas1";
@@ -214,14 +214,14 @@ namespace mu2e {
              container,
              0, // copyNo
              G4Colour::Red(),
-             "PTM"); 
+             "PTM");
 
   } // insertOuterGasBlocks
 
-  void insertVerticalProfileWires(VolumeInfo const& container, 
-                                  const PTMPWC* pwc, 
-                                  G4Material* gasMaterial, 
-                                  std::string const& wireNameSuffix, 
+  void insertVerticalProfileWires(VolumeInfo const& container,
+                                  const PTMPWC* pwc,
+                                  G4Material* gasMaterial,
+                                  std::string const& wireNameSuffix,
                                   SimpleConfig const& _config,
                                   bool const visible,
                                   bool const forceSolid,
@@ -229,23 +229,23 @@ namespace mu2e {
                                   bool const placePV,
                                   bool const doSurfaceCheck,
                                   int const verbosity) {
-    // In the real detector wires run HORIZONTALLY, so as to measure the 
+    // In the real detector wires run HORIZONTALLY, so as to measure the
     // VERTICAL profile.
     // G4 geometry currently contains no actual wires.
-    // Contains gas broken into sections -- each section represents the region 
+    // Contains gas broken into sections -- each section represents the region
     // of the gas that is closest to one wire in the real detector.
     std::string wireGasNameVert = "PTMWireVert";
     wireGasNameVert.append(wireNameSuffix);
-    G4VSolid *vertWireBox = new G4Box(wireGasNameVert, 
-                                    pwc->vertWireGasSection()->getXhalfLength(), 
-                                    pwc->vertWireGasSection()->getYhalfLength(), 
+    G4VSolid *vertWireBox = new G4Box(wireGasNameVert,
+                                    pwc->vertWireGasSection()->getXhalfLength(),
+                                    pwc->vertWireGasSection()->getYhalfLength(),
                                     pwc->vertWireGasSection()->getZhalfLength());
     G4LogicalVolume *vertWireLogical = new G4LogicalVolume(vertWireBox, gasMaterial, wireGasNameVert);
     for (int i=0; i < pwc->numVertWires(); ++i) {
       int wireNum = pwc->wireNumStart() + i;
       std::string wireGasName = wireGasNameVert;
       wireGasName.append(std::to_string(wireNum));
-      // wire numbering such that the lowest-numered wire is 
+      // wire numbering such that the lowest-numered wire is
       // on the bottom
       double gasY2 = pwc->vertWireYPos()[i];
       VolumeInfo vertWireInfo;
@@ -266,13 +266,13 @@ namespace mu2e {
                     doSurfaceCheck,
                     verbosity>0);
     }
-    
+
   } // insertVerticalProfileWires
 
-  void insertHorizontalProfileWires(VolumeInfo const& container, 
-                                    const PTMPWC* pwc, 
-                                    G4Material* gasMaterial, 
-                                    std::string const& wireNameSuffix, 
+  void insertHorizontalProfileWires(VolumeInfo const& container,
+                                    const PTMPWC* pwc,
+                                    G4Material* gasMaterial,
+                                    std::string const& wireNameSuffix,
                                     SimpleConfig const& _config,
                                     bool const visible,
                                     bool const forceSolid,
@@ -280,23 +280,23 @@ namespace mu2e {
                                     bool const placePV,
                                     bool const doSurfaceCheck,
                                     int const verbosity) {
-    // In the real detector wires run VERTICALLY so as to measure the 
+    // In the real detector wires run VERTICALLY so as to measure the
     // HORIZONTAL profile.
     // G4 geometry currently contains no actual wires.
-    // Contains gas broken into sections -- each section represents the region 
+    // Contains gas broken into sections -- each section represents the region
     // of the gas that is closest to one wire in the real detector.
     std::string wireGasNameHoriz = "PTMWireHoriz";
     wireGasNameHoriz.append(wireNameSuffix);
-    G4VSolid *horizWireBox = new G4Box(wireGasNameHoriz, 
-                                     pwc->horizWireGasSection()->getXhalfLength(), 
-                                     pwc->horizWireGasSection()->getYhalfLength(), 
+    G4VSolid *horizWireBox = new G4Box(wireGasNameHoriz,
+                                     pwc->horizWireGasSection()->getXhalfLength(),
+                                     pwc->horizWireGasSection()->getYhalfLength(),
                                      pwc->horizWireGasSection()->getZhalfLength());
     G4LogicalVolume *horizWireLogical = new G4LogicalVolume(horizWireBox, gasMaterial, wireGasNameHoriz);
     for (int i=0; i < pwc->numVertWires(); ++i) {
       int wireNum = pwc->wireNumStart() + pwc->numVertWires() + i;
       std::string wireGasName = wireGasNameHoriz;
       wireGasName.append(std::to_string(wireNum));
-      // wire numbering such that the lowest-numered wire is 
+      // wire numbering such that the lowest-numered wire is
       // on the left, from the point of view of the oncoming beam.
       double gasX3 = pwc->horizWireXPos()[i];
       VolumeInfo horizWireInfo;
@@ -319,8 +319,8 @@ namespace mu2e {
     }
   } // insertHorizontalProfileWires
 
-  void constructTargetHallPWC(VolumeInfo const& motherVolume, 
-                              const PTMPWC* pwc, 
+  void constructTargetHallPWC(VolumeInfo const& motherVolume,
+                              const PTMPWC* pwc,
                               int const vdNum,
                               SimpleConfig const& _config) {
 
@@ -367,7 +367,7 @@ namespace mu2e {
     insertOuterGasBlocks(pwcContainerInfo, pwc, gasMaterial);
 
     // the wire planes
-    // Going to use the wireNameSuffix in a couple of places, so just do the 
+    // Going to use the wireNameSuffix in a couple of places, so just do the
     // string append once out here.
     std::string wireNameSuffix = pwc->nameSuffix();
     wireNameSuffix.append("_");
@@ -385,7 +385,7 @@ namespace mu2e {
     G4ThreeVector parentPosition = parent.centerInMu2e();
     G4RotationMatrix* parentRotation = parent.physical->GetObjectRotation();
     G4ThreeVector motherPosition = ptmon->originInMu2e() - parentPosition;
-    // try making the rotation matrix object first, then doing the 
+    // try making the rotation matrix object first, then doing the
     // main rotation, then un-rotating by whatever the parent's rotation is
     G4RotationMatrix* motherRotation;
     if (parentRotation->isIdentity()) {
@@ -394,7 +394,7 @@ namespace mu2e {
       motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
       motherRotation->transform(parentRotation->inverse());
     }
-    
+
     G4Material* motherMaterial = parent.logical->GetMaterial();
     std::vector<double> motherHalfDims;
     motherHalfDims.push_back(ptmon->totalWidth()/2.);
@@ -419,5 +419,5 @@ namespace mu2e {
   } // constructPTM
 
 
-  
+
 } // namespace mu2e

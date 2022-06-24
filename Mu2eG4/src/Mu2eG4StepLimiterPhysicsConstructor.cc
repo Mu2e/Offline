@@ -14,15 +14,15 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh"
 #include "Offline/Mu2eG4/inc/addStepLimiter.hh"
 
-using namespace std;
+// G4 includes
+#include "Geant4/G4PhysicsConstructorFactory.hh"
 
 namespace mu2e {
 
+  G4_DECLARE_PHYSCONSTR_FACTORY(Mu2eG4StepLimiterPhysicsConstructor);
+
   Mu2eG4StepLimiterPhysicsConstructor::Mu2eG4StepLimiterPhysicsConstructor():
     G4VPhysicsConstructor("Mu2eG4StepLimiterPhysicsConstructor"){
-  }
-
-  Mu2eG4StepLimiterPhysicsConstructor::~Mu2eG4StepLimiterPhysicsConstructor(){
   }
 
   void Mu2eG4StepLimiterPhysicsConstructor::ConstructParticle(){

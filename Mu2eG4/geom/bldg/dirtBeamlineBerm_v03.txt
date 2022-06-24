@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_beamline_dirtBerm.ccl
 
@@ -12,7 +12,7 @@ double dirt.beamline.berm.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.berm.yHalfThickness           = 1244.6;
 
-vector<int>    dirt.beamline.berm.xreplace   = { 36, 37 }; 
+vector<int>    dirt.beamline.berm.xreplace   = { 36, 37 };
 vector<double> dirt.beamline.berm.xPositions = {
   -4140.2,    // b
   -4140.2,    // P0
@@ -54,7 +54,7 @@ vector<double> dirt.beamline.berm.xPositions = {
   50000   // a_to_E (replace)
 };
 
-vector<int>    dirt.beamline.berm.yreplace   = { 36 }; 
+vector<int>    dirt.beamline.berm.yreplace   = { 36 };
 vector<double> dirt.beamline.berm.yPositions = {
   2438.4,   // b
   6858,   // P0
@@ -87,11 +87,11 @@ vector<double> dirt.beamline.berm.yPositions = {
   10312.5,  // back to wall
   10312.5,  // follow wall back
   20000.0,  // arbitrary
-  23684.2,  // NW corner escape hatch  
+  23684.2,  // NW corner escape hatch
   18302.6, // SW corner of escapehatchN
-  17957,     // SW corner escape hatch 
-  18794.4,     // SE corner escape hatch  
-  24521.6,  // NE corner escape hatch  
+  17957,     // SW corner escape hatch
+  18794.4,     // SE corner escape hatch
+  24521.6,  // NE corner escape hatch
   50000,   // NEcorner
   2438.4   // a_to_E
 };

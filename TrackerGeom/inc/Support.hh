@@ -17,43 +17,43 @@ namespace mu2e {
 
   class Support{
 
-  public:
+    public:
 
-    Support():
-      innerRadius_(0.),
-      outerRadius_(0.),
-      halfThickness_(0.),
-      materialName_(){}
+      Support():
+        innerRadius_(0.),
+        outerRadius_(0.),
+        halfThickness_(0.),
+        materialName_(){}
 
-    Support( double inRad, double outRad, double halfThick, const std::string& name):
-      innerRadius_(inRad),
-      outerRadius_(outRad),
-      halfThickness_(halfThick),
-      materialName_(name){}
+      Support( double inRad, double outRad, double halfThick, const std::string& name):
+        innerRadius_(inRad),
+        outerRadius_(outRad),
+        halfThickness_(halfThick),
+        materialName_(name){}
 
-    // Accept compiler supplied destructor, copy c'tor and assignment
-    // operator.
+      // Accept compiler supplied destructor, copy c'tor and assignment
+      // operator.
 
-    // Return the information formatted to make a G4Tubs.
-    TubsParams getTubsParams() const{
-      return TubsParams(innerRadius_, outerRadius_, halfThickness_);
-    }
+      // Return the information formatted to make a G4Tubs.
+      TubsParams getTubsParams() const{
+        return TubsParams(innerRadius_, outerRadius_, halfThickness_);
+      }
 
-    double innerRadius() const { return innerRadius_; }
-    double outerRadius() const { return outerRadius_; }
-    double halfThickness() const { return halfThickness_; }
-    std::string materialName() const { return materialName_; }
+      double innerRadius() const { return innerRadius_; }
+      double outerRadius() const { return outerRadius_; }
+      double halfThickness() const { return halfThickness_; }
+      std::string materialName() const { return materialName_; }
 
-  private:
+    private:
 
-    // Shape parameters of the support:
-    // Inner and outer radii and half of thickness.
-    double innerRadius_;
-    double outerRadius_;
-    double halfThickness_;
+      // Shape parameters of the support:
+      // Inner and outer radii and half of thickness.
+      double innerRadius_;
+      double outerRadius_;
+      double halfThickness_;
 
-    // Name of the G4material that makes up the support.
-    std::string materialName_;
+      // Name of the G4material that makes up the support.
+      std::string materialName_;
 
   };
 

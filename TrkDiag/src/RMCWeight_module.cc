@@ -19,7 +19,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -36,6 +35,6 @@
 #include "Offline/TrkDiag/inc/WeightModule.hh"
 #include "Offline/Mu2eUtilities/inc/RMCPhys.hh"
 namespace mu2e {
-  typedef WeightModule<RMCPhys> RMCWeight; 
+  typedef WeightModule<RMCPhys> RMCWeight;
 }
 DEFINE_ART_MODULE(mu2e::RMCWeight);

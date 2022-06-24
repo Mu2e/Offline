@@ -60,14 +60,14 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=16,TCut cut=TCu
   } else if(spage=="clusters") {
 
     TCut sig("mcmom>100&&ectime>300");
-    
+
     TH2F* etvsd = new TH2F("etvsd","Earliest Cluster Time vs MC DOCA;MC DOCA (mm);T_{earliest}-T_{MC} (ns)",50,0,2.5,50,0,50.0);
     TH2F* ttvsd = new TH2F("ttvsd","Threshold Cluster Time vs MC DOCA;MC DOCA (mm);T_{thresh}-T_{MC} (ns)",50,0,2.5,50,0,50.0);
     TH2F* xtvsd = new TH2F("xtvsd","Threhold Xing Time vs MC DOCA;MC DOCA (mm);T_{xing}-T_{MC} (ns)",50,0,2.5,50,0,50.0);
-//    TH1F* nclust = new TH1F("nclust","N Cluster in Straw",61,-.05,60.5);
+    //    TH1F* nclust = new TH1F("nclust","N Cluster in Straw",61,-.05,60.5);
     TH1F* iclust = new TH1F("iclust","Threshold - Earliest Cluster Index;I_{thresh}-I_{earliest}",21,-.05,20.5);
-//    TH1F* tclust = new TH1F("tclust","Threshold - Earliest Cluster Time;T_{thresh}-T_{earliest}(ns)",100,0.0,30.0);
-      
+    //    TH1F* tclust = new TH1F("tclust","Threshold - Earliest Cluster Time;T_{thresh}-T_{earliest}(ns)",100,0.0,30.0);
+
     etvsd->SetStats(0);
     ttvsd->SetStats(0);
     xtvsd->SetStats(0);
@@ -77,8 +77,8 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=16,TCut cut=TCu
     sddiag->Project("ttvsd","tctimecal-mctime%1695:mcdca",sig);
     sddiag->Project("xtvsd","xtimecal-mctime%1695:mcdca",sig);
     sddiag->Project("iclust","iclustcal",sig);
-//    sddiag->Project("nclust","nclustcal",sig);
-//    sddiag->Project("tclust","tctimecal-ectimecal",sig);
+    //    sddiag->Project("nclust","nclustcal",sig);
+    //    sddiag->Project("tclust","tctimecal-ectimecal",sig);
 
     TCanvas* ccan = new TCanvas("ccan","ccan",800,800);
     ccan->Divide(2,2);
@@ -94,7 +94,7 @@ void SDTest(TTree* sddiag, const char* page ="adc",unsigned NADC=16,TCut cut=TCu
     myP->SetParameter(1,iclust->GetMean());
     ccan->cd(4);
     TFitResultPtr fitres = iclust->Fit(myP);
-      
+
   } else if(spage == "ionize") {
     TH1F* dke = new TH1F("dke","Compton and #delta-Ray e Kinetic Energy;Energy (KeV)",100,0,10.0);
     TH1F* dbg = new TH1F("dbg","Compton and #delta-Ray e #beta#times#gamma;#beta#times#gamma",100,0,1.0);

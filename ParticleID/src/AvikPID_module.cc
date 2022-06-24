@@ -17,7 +17,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -738,9 +737,9 @@ namespace mu2e {
 
     if (_debugLevel > 0) {
       printf( "res_ele_sum  is:  %8.4f res_muo_sum  is: %8.4f res_ele_sum2 is:  %8.4f res_muo_sum2 is: %8.4f\n",
-	      res_ele_sum ,res_muo_sum, res_ele_sum2,res_muo_sum2);
+              res_ele_sum ,res_muo_sum, res_ele_sum2,res_muo_sum2);
       printf("logratio  is: %8.4f logratio2 is: %8.4f logratio3 is: %8.4f\n",
-	     logratio, logratio2, logratio3);
+             logratio, logratio2, logratio3);
     }
   }
 

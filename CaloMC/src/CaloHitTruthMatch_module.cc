@@ -2,7 +2,6 @@
 // An EDProducer Module to match caloHits to MC info
 //
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
@@ -32,18 +31,18 @@
 
 namespace mu2e {
 
-  class CaloHitTruthMatch : public art::EDProducer 
+  class CaloHitTruthMatch : public art::EDProducer
   {
       public:
-         struct Config 
+         struct Config
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
              fhicl::Atom<art::InputTag>  caloShowerSimCollection  { Name("caloShowerSimCollection"),  Comment("Name of caloShowerSim Collection") };
              fhicl::Atom<art::InputTag>  caloHitCollection        { Name("caloHitCollection"),        Comment("Name of CaloHit collection") };
-             fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),	      Comment("PrimaryParticle producer")};
-             fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") }; 
-             fhicl::Atom<double>         minAmplitude             { Name("minAmplitude"),             Comment("Minimum amplitude of waveform to define hit length") }; 
+             fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),              Comment("PrimaryParticle producer")};
+             fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") };
+             fhicl::Atom<double>         minAmplitude             { Name("minAmplitude"),             Comment("Minimum amplitude of waveform to define hit length") };
              fhicl::Atom<bool>           fillDetailedMC           { Name("fillDetailedMC"),           Comment("Fill SimParticle - SimShower Assn map")};
              fhicl::Atom<int>            diagLevel                { Name("diagLevel"),                Comment("Diag Level"),0 };
          };
@@ -59,9 +58,9 @@ namespace mu2e {
            fillDetailedMC_     (config().fillDetailedMC()),
            diagLevel_          (config().diagLevel())
         {
-            produces<CaloHitMCCollection>();    
-            produces<CaloHitMCTruthAssn>();    
-            if (fillDetailedMC_) produces<CaloShowerMCTruthAssn>();    
+            produces<CaloHitMCCollection>();
+            produces<CaloHitMCTruthAssn>();
+            if (fillDetailedMC_) produces<CaloShowerMCTruthAssn>();
         }
 
         void beginJob() override;
@@ -109,14 +108,14 @@ namespace mu2e {
   {
       if ( diagLevel_ > 2)
       {
-	  art::ServiceHandle<art::TFileService> tfs;
-	  hTime_     = tfs->make<TH1F>("hTime",    "delta Time",   2000, -20., 180);
-	  hTime2_    = tfs->make<TH1F>("hTime2",   "delta Time",   2000, -20., 180);
-	  hTime2d_   = tfs->make<TH2F>("hTime2d",  "Reco vs Gen time",  200,500,1700, 200,500,1700);
-	  hEner2d_   = tfs->make<TH2F>("hEner2d",  "Reco vs gen Ener",  200,0,40,  200,0.,40);
-	  hEnerTime_ = tfs->make<TH2F>("hTimeEner","delta Time vs Ener",500,0,100, 300,-50.,250);
-	  hdEdT_     = tfs->make<TH2F>("hdEdt",    "delta Time vs delta Ener",100,-10,70, 170,-10.,160);
-	  hChi2_     = tfs->make<TH1F>("hChi2",    "chi2 large dE",     50, 0., 10);
+          art::ServiceHandle<art::TFileService> tfs;
+          hTime_     = tfs->make<TH1F>("hTime",    "delta Time",   2000, -20., 180);
+          hTime2_    = tfs->make<TH1F>("hTime2",   "delta Time",   2000, -20., 180);
+          hTime2d_   = tfs->make<TH2F>("hTime2d",  "Reco vs Gen time",  200,500,1700, 200,500,1700);
+          hEner2d_   = tfs->make<TH2F>("hEner2d",  "Reco vs gen Ener",  200,0,40,  200,0.,40);
+          hEnerTime_ = tfs->make<TH2F>("hTimeEner","delta Time vs Ener",500,0,100, 300,-50.,250);
+          hdEdT_     = tfs->make<TH2F>("hdEdt",    "delta Time vs delta Ener",100,-10,70, 170,-10.,160);
+          hChi2_     = tfs->make<TH1F>("hChi2",    "chi2 large dE",     50, 0., 10);
       }
   }
 
@@ -125,13 +124,13 @@ namespace mu2e {
   {
       CaloPulseShape cps(digiSampling_);
       cps.buildShapes();
-      
+
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
       double MeVToADC = calorimeterCalibrations->MeV2ADC(0);
 
       wf_ = cps.digitizedPulse(0);
       for (auto& v : wf_) v *= MeVToADC;
-      wfBinMax_ = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end()));         
+      wfBinMax_ = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end()));
   }
 
 
@@ -140,7 +139,7 @@ namespace mu2e {
   {
       auto pph = event.getValidHandle<PrimaryParticle>(ppToken_);
       auto const& primaryParticles = *pph;
-      
+
       std::unique_ptr<CaloHitMCCollection>   caloHitMCs(new CaloHitMCCollection);
       std::unique_ptr<CaloHitMCTruthAssn>    caloHitMCTruth(new CaloHitMCTruthAssn);
       std::unique_ptr<CaloShowerMCTruthAssn> caloShowerMCTruth(new CaloShowerMCTruthAssn);
@@ -150,19 +149,19 @@ namespace mu2e {
       event.put(std::move(caloHitMCTruth));
       event.put(std::move(caloHitMCs));
       if (fillDetailedMC_) event.put(std::move(caloHitMCTruth));
-  } 
+  }
 
-  
-  
+
+
   // perform the association with the following rules:
   //   MCtime must be inside the window [recoTime-deltaTimeMinus, recoTime+deltaTimePlus] to be associated to RecoHit _unless_
   //   MCtime is already in the window of the next hit, in which case it is associate to this one.
   //--------------------------------------------------------------------
   void CaloHitTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloHitMCs,
-                                         CaloHitMCTruthAssn& CaloHitTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch, 
+                                         CaloHitMCTruthAssn& CaloHitTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch,
                                          const PrimaryParticle& primaryParticle)
   {
-        
+
       int nMatched(0);
       double totalEnergyMatched(0);
 
@@ -174,12 +173,12 @@ namespace mu2e {
       const auto& caloHits(*caloHitHandle);
       const auto& caloShowerSims(*caloShowerSimHandle);
 
-      // sort the caloHits and caloShowerSim per crystal and then per time for each crystal to help with the matching algorithm. 
+      // sort the caloHits and caloShowerSim per crystal and then per time for each crystal to help with the matching algorithm.
       std::map<int, std::vector<const CaloHit*>>       caloHitMap;
       std::map<int, std::vector<const CaloShowerSim*>> caloShowerSimsMap;
       for (const auto& caloHit: caloHits) caloHitMap[caloHit.crystalID()].push_back(&caloHit);
       for (const auto& caloShowerSim: caloShowerSims) caloShowerSimsMap[caloShowerSim.crystalID()].push_back(&caloShowerSim);
-      
+
       for (auto &kv : caloHitMap)        std::sort(kv.second.begin(),kv.second.end(), [](auto const a, auto const b){return a->time() < b->time();});
       for (auto &kv : caloShowerSimsMap) std::sort(kv.second.begin(),kv.second.end(), [](auto const a, auto const b){return a->time() < b->time();});
 
@@ -195,14 +194,14 @@ namespace mu2e {
           auto hitPtr            = art::Ptr<CaloHit>(caloHitHandle,ihit);
           auto showerIt          = sortedSims.begin();
           auto showerItEnd       = sortedSims.end();
-          
-          if (diagLevel_ > 2) 
+
+          if (diagLevel_ > 2)
              for (const auto& shower : sortedSims) std::cout<<"[CaloHitTruthMatch] Sim shower  id/time/energy="<<shower->crystalID()
                                                           <<" / "<<shower->time()<<" / "<<shower->energyDep()<<std::endl;
 
           // Maximum time difference for a MChit to be associated to the reco hit given the reco hit amplitude and time of the next reco hit
           unsigned nbin(wfBinMax_);
-          while (nbin < wf_.size()) {if (wf_[nbin]*hit.energyDep()<minAmplitude_) break; ++nbin;} 
+          while (nbin < wf_.size()) {if (wf_[nbin]*hit.energyDep()<minAmplitude_) break; ++nbin;}
           double deltaTimePlus(nbin*digiSampling_);
 
           if (hitNextIt != sortedHits.end() && (*hitNextIt)->time()- (*hitIt)->time() - 2*digiSampling_ < deltaTimePlus )
@@ -215,17 +214,17 @@ namespace mu2e {
 
           //forward until we reach the recoHit time, then loop as long as the shower time is within the recoTime window
           bool hitIsMatched(false);
-          std::vector<CaloEDepMC> edeps; 
-          while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - 2*digiSampling_) ) ++showerIt;                           
+          std::vector<CaloEDepMC> edeps;
+          while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - 2*digiSampling_) ) ++showerIt;
           while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() + deltaTimePlus) )
           {
               hitIsMatched = true;
               const CaloShowerSim* showerSim = *showerIt;
               fillEdeps(primaryParticle, edeps, showerSim);
-              
+
               if (fillDetailedMC_)
               {
-                  size_t idxShower(0); 
+                  size_t idxShower(0);
                   while (idxShower < caloShowerSims.size()) {if (&caloShowerSims[idxShower]==*showerIt) break; ++idxShower;}
                   auto  ShowerSimPtr = art::Ptr<CaloShowerSim>(caloShowerSimHandle,idxShower);
                   caloShowerTruthMatch.addSingle(hitPtr, showerSim->sim(), ShowerSimPtr);
@@ -236,43 +235,43 @@ namespace mu2e {
                                            <<" / "<<showerSim->time()<<" / "<<showerSim->energyDep()<<std::endl;
               ++showerIt;
           }
- 
+
           //sort CaloEDepMC by decreasing energy, create caloHit and keep track of hit -> MChit association
           std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
           caloHitMCs.emplace_back(CaloHitMC(std::move(edeps)));
 
-          art::Ptr<CaloHitMC> hitMCPtr = art::Ptr<CaloHitMC>(hitMCProductID, caloHitMCs.size()-1, hitMCProductGetter);             
+          art::Ptr<CaloHitMC> hitMCPtr = art::Ptr<CaloHitMC>(hitMCProductID, caloHitMCs.size()-1, hitMCProductGetter);
           CaloHitTruthMatch.addSingle(hitPtr,hitMCPtr);
 
           if (hitIsMatched) {totalEnergyMatched += (*hitIt)->energyDep();++nMatched;}
           ++hitIt;
 
-          if (diagLevel_ > 2 && !hitIsMatched) std::cout<<"[CaloHitTruthMatch] hit not matched"<<std::endl; 
+          if (diagLevel_ > 2 && !hitIsMatched) std::cout<<"[CaloHitTruthMatch] hit not matched"<<std::endl;
 
-      }    
-       
+      }
+
       if (diagLevel_ > 0) std::cout<<"[CaloHitTruthMatch]  total particles / energy matched = "<<nMatched<<" / "<<totalEnergyMatched<<std::endl;
-  } 
-  
+  }
+
 
   //--------------------------------------------------------------------
   void CaloHitTruthMatch::fillEdeps(const PrimaryParticle& primaryParticle, std::vector<CaloEDepMC>& edeps, const CaloShowerSim* showerSim)
   {
-      // check if there is already a caloEdep object with same caloShowerSim's SimParticle 
+      // check if there is already a caloEdep object with same caloShowerSim's SimParticle
       auto it = edeps.begin();
       while (it != edeps.end()) {if (it->sim() == showerSim->sim()) break;  ++it;}
 
       // if found the add caloShowerSim to matching caloEdep object, otherwise create new caloEdep
       if (it!= edeps.end())
-      { 
+      {
           it->addEDep(showerSim->energyDep());
           it->addEDepG4(showerSim->energyDepG4());
           it->addTime(showerSim->time());
           it->addMom(showerSim->momentumIn());
       }
-      else 
-      {                                     
-          MCRelationship mcrel;                     
+      else
+      {
+          MCRelationship mcrel;
           for (const auto& spp : primaryParticle.primarySimParticles())
           {
               MCRelationship mcr(spp,showerSim->sim());
@@ -294,11 +293,11 @@ namespace mu2e {
       hEner2d_->Fill(shower->energyDep(),hit.energyDep());
       hdEdT_->Fill(hit.energyDep()-shower->energyDep(),shower->time()-hit.time());
 
-      if (shower->energyDep() > 5) hTime2_->Fill(shower->time()-hit.time()); 
+      if (shower->energyDep() > 5) hTime2_->Fill(shower->time()-hit.time());
 
       double deltaE = std::abs(shower->energyDep()-hit.energyDep());
       if (deltaE > 5 && shower->energyDep() > 5)
-      if (!hit.recoCaloDigis().empty()) hChi2_->Fill(hit.recoCaloDigis().at(0)->chi2()/hit.recoCaloDigis().at(0)->ndf());		   
+      if (!hit.recoCaloDigis().empty()) hChi2_->Fill(hit.recoCaloDigis().at(0)->chi2()/hit.recoCaloDigis().at(0)->ndf());
   }
 
 

@@ -22,8 +22,8 @@ namespace mu2e
     // CRV digi parameters
     double digitizationPeriod;     //ns
 
-    // CRV calibration parameters 
-    // This is only a placeholder. 
+    // CRV calibration parameters
+    // This is only a placeholder.
     // In the future, these values need to be a function of time and SiPM number.
     double pedestal;               //ADC
     double calibrationFactor;      //ADC*ns/PE
@@ -45,7 +45,7 @@ namespace mu2e
   inline std::ostream& operator<<(std::ostream& ost,
                                   const CrvParams& lw ){
     ost << "( "
-        << lw.digitizationPeriod <<"ns, " 
+        << lw.digitizationPeriod <<"ns, "
         << lw.pedestal <<"ADC, "
         << lw.calibrationFactor <<"ADC*ns/PE, "
         << lw.calibrationFactorPulseHeight <<"ADC/PE"

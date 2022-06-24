@@ -70,7 +70,7 @@ BEGIN_PROLOG
       TrapType0Lifetime            : 5.0        //ns  ????
       TrapType1Lifetime            : 50.0       //ns  ????
 
-      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM 
+      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM
       CrossTalkProb                : 0.05       //
     }
     CrvWaveforms:
@@ -110,7 +110,7 @@ BEGIN_PROLOG
       PEthresholds                  : [ 26 , 26 , 26 , 26 , 26 , 26 , 26 , 36 , 22 , 18 , 20 , 36 , 36 , 28 , 36 , 36 , 36 , 36 , 26 , 26 , 26 , 26 ]
       adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 , 10 ,  5 ,  5 , 10 , 10 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
       maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 20 , 10 , 10 , 20 , 20 , 20 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
-      useFourLayers                 : [false,false,false,false,false,false,false,true,true,false,false,true,true,true,false,false,false,false,false,false,false,false] 
+      useFourLayers                 : [false,false,false,false,false,false,false,true,true,false,false,true,true,true,false,false,false,false,false,false,false,false]
       usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
@@ -143,9 +143,9 @@ BEGIN_PROLOG
     }
 
 
-CrvResponsePackage : 
+CrvResponsePackage :
 {
-   producers : 
+   producers :
    {
      CrvPhotons                  : @local::CrvPhotons
      CrvSiPMCharges              : @local::CrvSiPMCharges
@@ -159,9 +159,9 @@ CrvResponsePackage :
    CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 }
 
-CrvDAQPackage : 
+CrvDAQPackage :
 {
-   producers : 
+   producers :
    {
      CrvPhotons                  : @local::CrvPhotons
      CrvSiPMCharges              : @local::CrvSiPMCharges

@@ -12,7 +12,7 @@ cat <<EOF
    run the root overlap check, return error code if the process failed
    or if overlaps were detected.
    if GDMLFILE argument is not proesent, look in the Muse standard location
-   \$MUSE_BUILD_DIR/Offline/gen/gdml/muse.gdml. 
+   \$MUSE_BUILD_DIR/Offline/gen/gdml/muse.gdml.
 
    -q don't print the full output, only errors
 

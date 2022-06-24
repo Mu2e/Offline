@@ -9,7 +9,6 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 
 // C++ includes.
 #include <iostream>
@@ -48,7 +47,7 @@ namespace mu2e {
     cout << "Tracker: " << tracker.nPlanes() << endl;
     for ( auto const& pln : tracker.getPlanes() ){
       for ( auto const& pnlp : pln.getPanels() ){
-	auto const& pnl = *pnlp;
+        auto const& pnl = *pnlp;
         StrawId sid( pnl.id() ); // first straw id is equal to its panel id
         Straw const& straw = pnl.getStraw(sid);
         double phi  = straw.direction().phi();

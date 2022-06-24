@@ -20,7 +20,7 @@ vector<string> crs.sectorNames = {
                        "T3",  //10   CRV-T modules (four upstream modules)
                        "T4",  //11  CRV-T modules (remaining 16 downstream modules)
                        "E1",  //12  CRV-TS-Extension upstream module
-                       "E2",  //13  CRV-TS-Extension downstream module 
+                       "E2",  //13  CRV-TS-Extension downstream module
                        "U",   //14  CRV-U modules
                        "D1",  //15  CRV-D modules above beam pipe
                        "D2",  //16  CRV-D module at -x of beam pipe
@@ -129,7 +129,7 @@ vector<double>  crs.firstCounterT3        =  {-3904.0,   2663.21,   2014.55}; //
 vector<double>  crs.firstCounterT4        =  {-3904.0,   2663.21,   5326.55}; //11
 vector<double>  crs.firstCounterE1        =  {  517.85,  2837.58,    213.20}; //12
 vector<double>  crs.firstCounterE2        =  { -310.15,  2837.58,    213.20}; //13
-vector<double>  crs.firstCounterU         =  {-3267.80,  3083.35,  -2350.06}; //14 
+vector<double>  crs.firstCounterU         =  {-3267.80,  3083.35,  -2350.06}; //14
 vector<double>  crs.firstCounterD1        =  {-3904.0,   2935.35,  18665.76}; //15
 vector<double>  crs.firstCounterD2        =  {-5569.0,    451.35,  18665.76}; //16
 vector<double>  crs.firstCounterD3        =  {-2239.0,    451.35,  18665.76}; //17
@@ -232,7 +232,7 @@ double crs.CMBOffset        = 15.0;
 double crs.CMBHalfThickness =  5.0;
 string crs.CMBMaterialName  = "ElectronicsCMB";
 
-// information about the SiPMs 
+// information about the SiPMs
 double crs.fiberSeparation = 26.0; //mm
 
 // side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
@@ -244,8 +244,8 @@ bool crs.sipmsAtSide0R5  = true;  //4
 bool crs.sipmsAtSide0R6  = true;  //5
 bool crs.sipmsAtSide0L1  = true;  //6
 bool crs.sipmsAtSide0L2  = true;  //7
-bool crs.sipmsAtSide0T1  = true;  //8 
-bool crs.sipmsAtSide0T2  = true;  //9 
+bool crs.sipmsAtSide0T1  = true;  //8
+bool crs.sipmsAtSide0T2  = true;  //9
 bool crs.sipmsAtSide0T3  = true;  //10
 bool crs.sipmsAtSide0T4  = true;  //11
 bool crs.sipmsAtSide0E1  = false; //12 //no SiPMs at -z side
@@ -264,12 +264,12 @@ bool crs.sipmsAtSide0C4  = false; //22 //CRV-Cryo-Outer (bottom) (no SiPMs at -z
 bool crs.sipmsAtSide1R1  = true;  //0
 bool crs.sipmsAtSide1R2  = true;  //1
 bool crs.sipmsAtSide1R3  = true;  //2  //CRV-R counters above the cry hole
-bool crs.sipmsAtSide1R4  = true;  //3  //CRV-R counters below cryo hole 
+bool crs.sipmsAtSide1R4  = true;  //3  //CRV-R counters below cryo hole
 bool crs.sipmsAtSide1R5  = true;  //4
 bool crs.sipmsAtSide1R6  = true;  //5
 bool crs.sipmsAtSide1L1  = true;  //6
 bool crs.sipmsAtSide1L2  = true;  //7
-bool crs.sipmsAtSide1T1  = false; //8  //CRV-T in the TS region (no SiPMs at +x side) 
+bool crs.sipmsAtSide1T1  = false; //8  //CRV-T in the TS region (no SiPMs at +x side)
 bool crs.sipmsAtSide1T2  = false; //9  //CRV-T in the TS region (no SiPMs at +x side)
 bool crs.sipmsAtSide1T3  = true;  //10
 bool crs.sipmsAtSide1T4  = true;  //11
@@ -335,16 +335,16 @@ int crs.sectorTypeC3  = 9;  //21
 int crs.sectorTypeC4  = 9;  //22
 
 //information about the FEBs
-int crs.FEBBoxesAtSide0R1  = 1; //0 
-int crs.FEBBoxesAtSide0R2  = 1; //1 
-int crs.FEBBoxesAtSide0R3  = 0; //2 
-int crs.FEBBoxesAtSide0R4  = 1; //3 
-int crs.FEBBoxesAtSide0R5  = 1; //4 
-int crs.FEBBoxesAtSide0R6  = 1; //5 
-int crs.FEBBoxesAtSide0L1  = 1; //6 
-int crs.FEBBoxesAtSide0L2  = 1; //7 
-int crs.FEBBoxesAtSide0T1  = 0; //8 
-int crs.FEBBoxesAtSide0T2  = 0; //9 
+int crs.FEBBoxesAtSide0R1  = 1; //0
+int crs.FEBBoxesAtSide0R2  = 1; //1
+int crs.FEBBoxesAtSide0R3  = 0; //2
+int crs.FEBBoxesAtSide0R4  = 1; //3
+int crs.FEBBoxesAtSide0R5  = 1; //4
+int crs.FEBBoxesAtSide0R6  = 1; //5
+int crs.FEBBoxesAtSide0L1  = 1; //6
+int crs.FEBBoxesAtSide0L2  = 1; //7
+int crs.FEBBoxesAtSide0T1  = 0; //8
+int crs.FEBBoxesAtSide0T2  = 0; //9
 int crs.FEBBoxesAtSide0T3  = 0; //10
 int crs.FEBBoxesAtSide0T4  = 0; //11
 int crs.FEBBoxesAtSide0E1  = 0; //12
@@ -352,28 +352,28 @@ int crs.FEBBoxesAtSide0E2  = 0; //13
 int crs.FEBBoxesAtSide0U   = 1; //14  //TODO: this is not the correct location
 int crs.FEBBoxesAtSide0D1  = 1; //15  //TODO: this is not the correct location
 int crs.FEBBoxesAtSide0D2  = 1; //16  //TODO: this is not the correct location
-int crs.FEBBoxesAtSide0D3  = 0; //17 
+int crs.FEBBoxesAtSide0D3  = 0; //17
 int crs.FEBBoxesAtSide0D4  = 1; //18  //TODO: this is not the correct location
 int crs.FEBBoxesAtSide0C1  = 1; //19
 int crs.FEBBoxesAtSide0C2  = 0; //20
 int crs.FEBBoxesAtSide0C3  = 1; //21
 int crs.FEBBoxesAtSide0C4  = 0; //22
 
-int crs.FEBBoxesAtSide1R1  = 2; //0 
-int crs.FEBBoxesAtSide1R2  = 2; //1 
-int crs.FEBBoxesAtSide1R3  = 2; //2 
-int crs.FEBBoxesAtSide1R4  = 1; //3 
-int crs.FEBBoxesAtSide1R5  = 2; //4 
-int crs.FEBBoxesAtSide1R6  = 2; //5 
+int crs.FEBBoxesAtSide1R1  = 2; //0
+int crs.FEBBoxesAtSide1R2  = 2; //1
+int crs.FEBBoxesAtSide1R3  = 2; //2
+int crs.FEBBoxesAtSide1R4  = 1; //3
+int crs.FEBBoxesAtSide1R5  = 2; //4
+int crs.FEBBoxesAtSide1R6  = 2; //5
 int crs.FEBBoxesAtSide1L1  = 2; //6
-int crs.FEBBoxesAtSide1L2  = 2; //7 
-int crs.FEBBoxesAtSide1T1  = 0; //8 
-int crs.FEBBoxesAtSide1T2  = 0; //9 
+int crs.FEBBoxesAtSide1L2  = 2; //7
+int crs.FEBBoxesAtSide1T1  = 0; //8
+int crs.FEBBoxesAtSide1T2  = 0; //9
 int crs.FEBBoxesAtSide1T3  = 0; //10
 int crs.FEBBoxesAtSide1T4  = 0; //11
 int crs.FEBBoxesAtSide1E1  = 1; //12  //TODO: this is not the correct location
 int crs.FEBBoxesAtSide1E2  = 1; //13  //TODO: this is not the correct location
-int crs.FEBBoxesAtSide1U   = 0; //14 
+int crs.FEBBoxesAtSide1U   = 0; //14
 int crs.FEBBoxesAtSide1D1  = 1; //15  //TODO: this is not the correct location
 int crs.FEBBoxesAtSide1D2  = 0; //16
 int crs.FEBBoxesAtSide1D3  = 1; //17  //TODO: this is not the correct location
@@ -387,7 +387,7 @@ string         crs.FEBMaterialName     = "ElectronicsFEB";
 double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
 double         crs.FEBDistanceToEdge   = 240.0;
 double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
-double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other 
+double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other
 vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
 
 //simplified version of the top support structure

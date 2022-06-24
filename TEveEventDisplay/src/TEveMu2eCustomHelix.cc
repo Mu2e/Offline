@@ -8,8 +8,8 @@ namespace mu2e{
   TEveMu2eCustomHelix::TEveMu2eCustomHelix(){};
 
   /*------------Function to build Infor after contruction:-------------*/
-  void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) { 
-    fKalSeed_ = seed; 
+  void TEveMu2eCustomHelix::SetSeedInfo(KalSeed seed) {
+    fKalSeed_ = seed;
     auto const& fseg = fKalSeed_.segments().front();
     this->Momentum_ = fseg.mom();
     this->PDGcode_ = fKalSeed_.particle();
@@ -33,18 +33,18 @@ namespace mu2e{
     this->Momentum_ = zseg->mom();
     // these next assume a helix FIXME
     auto hel = zseg->centralHelix();
-    Position_ = hel.position3(tz); 
-    Direction_ = hel.direction(tz); 
+    Position_ = hel.position3(tz);
+    Direction_ = hel.direction(tz);
 
   }
-  
+
   /*void TEveMu2eCustomHelix::SetMomentumExt(){
     this->Momentum_ = fTrkExtTraj.front().momentum().mag(); // Not sure what this is supposed to do FIXME
   }
 
   void TEveMu2eCustomHelix::SetParticleExt(){
-    this->PDGcode_ = 11; 
- 
+    this->PDGcode_ = 11;
+
   }*/
-  
+
 }

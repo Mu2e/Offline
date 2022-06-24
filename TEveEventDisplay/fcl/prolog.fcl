@@ -14,9 +14,9 @@ TEveEventDisplayBase : {
 
     isMCOnly : false
     filler : {
-      ComboHitCollection 	  : "makePH"
+      ComboHitCollection           : "makePH"
       TimeClusterCollection                  : "MHDeM"
-      CrvRecoPulseCollection	  :  "SelectRecoMC"
+      CrvRecoPulseCollection          :  "SelectRecoMC"
       CosmicTrackSeedCollection :  NULL
       CaloClusterCollection     :  "CaloClusterMaker"
       CaloHitCollection  :  NULL
@@ -24,105 +24,105 @@ TEveEventDisplayBase : {
       KalSeedCollection         :  ["KFFDeM"]
       TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  "compressRecoMCs"
-      addHits 		  : true
-      addTrkHits 		  : true
+      addHits                   : true
+      addTrkHits                   : true
       addTimeClusters           : true
-      addTracks 		  : true
-      addCrvHits		  : true
-      addCosmicSeedFit	  : false
-      addClusters		  : true
-      addTrkExtTrajs		  : false
-      addMCTraj		  : true
+      addTracks                   : true
+      addCrvHits                  : true
+      addCosmicSeedFit          : false
+      addClusters                  : true
+      addTrkExtTrajs                  : false
+      addMCTraj                  : true
     }
     gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
     particles :   [11,13,2212,2112,211,22,212]
     show : {
       showCRV : false
-      showBuilding : false  
-      showDSOnly : true 
+      showBuilding : false
+      showDSOnly : true
       showInsidePS : false
     }
-  }  
-  
+  }
+
 TEveEventDisplayHelix : {
       @table::TEveEventDisplayBase
-  }  
-  
+  }
+
 TEveEventDisplayUpstream : {
     @table::TEveEventDisplayBase
-    
+
     isMCOnly : true
     filler : {
-      ComboHitCollection 		      : NULL
+      ComboHitCollection                       : NULL
       TimeClusterCollection       : NULL
-      CosmicTrackSeedCollection 	: NULL
-      CrvRecoPulseCollection		  : NULL
-      CaloClusterCollection		    : NULL
+      CosmicTrackSeedCollection         : NULL
+      CrvRecoPulseCollection                  : NULL
+      CaloClusterCollection                    : NULL
       CaloHitCollection           : NULL
-      MCTrajectoryCollection      : "g4run" 
+      MCTrajectoryCollection      : "g4run"
       HelixSeedCollection         : NULL
       KalSeedCollection           : [NULL]
       TrkExtTrajCollection        : NULL
-      addHits 			              : false
-      addTrkHits 			            : false
+      addHits                                       : false
+      addTrkHits                                     : false
       addTimeClusters             : false
-      addTracks 			            : false
-      addCrvHits			            : false
-      addCosmicSeedFit	          : false
-      addMCTraj				            : true
-   }    
+      addTracks                                     : false
+      addCrvHits                                    : false
+      addCosmicSeedFit                  : false
+      addMCTraj                                            : true
+   }
    show : {
       showDSOnly : false
       showInsidePS : true
     }
-  }  
-  
- 
+  }
+
+
 
 TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics can use the base)
     @table::TEveEventDisplayBase
 
     filler : {
-      ComboHitCollection 		    : "makeSH"
+      ComboHitCollection                     : "makeSH"
       TimeClusterCollection                  : "MHDeM"
-      CrvRecoPulseCollection	  :  "CrvRecoPulses"
-      CosmicTrackSeedCollection 	: "CosmicTrackFinderTimeFit"
-      CaloClusterCollection		  :  NULL
+      CrvRecoPulseCollection          :  "CrvRecoPulses"
+      CosmicTrackSeedCollection         : "CosmicTrackFinderTimeFit"
+      CaloClusterCollection                  :  NULL
       CaloHitCollection  :  NULL
       HelixSeedCollection       :  NULL
       KalSeedCollection         :  []
       TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  "compressDigiMCs"
-      addHits 			            : true
-      addTrkHits 			            : true
+      addHits                                     : true
+      addTrkHits                                     : true
       addTimeClusters                             : true
-      addTracks 			          : true
-      addCrvHits			          : false
-      addCosmicSeedFit	        : false
-      addClusters			          : false
-      addTrkExtTrajs		        : false
-      addMCTraj				          : false 
+      addTracks                                   : true
+      addCrvHits                                  : false
+      addCosmicSeedFit                : false
+      addClusters                                  : false
+      addTrkExtTrajs                        : false
+      addMCTraj                                          : false
    }
     show :{
       showCRV : true
     }
-  }   
+  }
 
 
-TEveDis : {  
-	analyzers : { 	
-	    TEveEventDisplayBase     : @local::TEveEventDisplayBase
-			TEveEventDisplayCosmics  : @local::TEveEventDisplayCosmics
- 			TEveEventDisplayHelix    : @local::TEveEventDisplayHelix
- 			TEveGDMLTest             : @local::TEveGDMLTest
- 			TEveNonGDMLTest           : @local::TEveNonGDMLTest
- 			TEveEventDisplayUpstream : @local::TEveEventDisplayUpstream
-	} 
+TEveDis : {
+        analyzers : {
+            TEveEventDisplayBase     : @local::TEveEventDisplayBase
+                        TEveEventDisplayCosmics  : @local::TEveEventDisplayCosmics
+                         TEveEventDisplayHelix    : @local::TEveEventDisplayHelix
+                         TEveGDMLTest             : @local::TEveGDMLTest
+                         TEveNonGDMLTest           : @local::TEveNonGDMLTest
+                         TEveEventDisplayUpstream : @local::TEveEventDisplayUpstream
+        }
 
-	seqCosmics 	: [TEveEventDisplayCosmics]
-	seqHelix   	: [TEveEventDisplayHelix]
-	seqTest     : [TEveGDMLTest]
-	seqGeomTest     : [TEveNonGDMLTest]
+        seqCosmics         : [TEveEventDisplayCosmics]
+        seqHelix           : [TEveEventDisplayHelix]
+        seqTest     : [TEveGDMLTest]
+        seqGeomTest     : [TEveNonGDMLTest]
   seqPOT     : [TEveEventDisplayUpstream]
 }
 END_PROLOG

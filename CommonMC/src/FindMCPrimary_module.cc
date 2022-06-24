@@ -9,10 +9,9 @@
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-// mu2e 
+// mu2e
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
@@ -28,10 +27,10 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-	fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
-	fhicl::Atom<art::InputTag> simPC{  Name("SimParticles"), Comment("SimParticle collection")};
-	fhicl::OptionalAtom<std::string> primaryProcess{ Name("PrimaryProcess"), Comment("Process code that produced the primary physics particle") };
-	fhicl::OptionalSequence<std::string> primaryGenIds{ Name("PrimaryGenIds"), Comment("Generator codes that produced the primary physics particle") };
+        fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
+        fhicl::Atom<art::InputTag> simPC{  Name("SimParticles"), Comment("SimParticle collection")};
+        fhicl::OptionalAtom<std::string> primaryProcess{ Name("PrimaryProcess"), Comment("Process code that produced the primary physics particle") };
+        fhicl::OptionalSequence<std::string> primaryGenIds{ Name("PrimaryGenIds"), Comment("Generator codes that produced the primary physics particle") };
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit FindMCPrimary(const Parameters& conf);
@@ -39,40 +38,40 @@ namespace mu2e {
     private:
       int _debug;
       art::InputTag _spc;
-      ProcessCode _pcode; 
-      std::vector<GenId> _gcodes; 
+      ProcessCode _pcode;
+      std::vector<GenId> _gcodes;
   };
 
-  FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
+  FindMCPrimary::FindMCPrimary(const Parameters& config )  :
     art::EDProducer{config},
     _debug(config().debug()),
     _spc(config().simPC())
- {
-   std::string pcode;
-   std::vector<std::string> gcodes;
-    if( config().primaryProcess(pcode)) _pcode = ProcessCode::findByName(pcode);
-    if( config().primaryGenIds(gcodes)){
-      for(auto const& gcodename : gcodes) {
-	_gcodes.emplace_back(GenId::findByName(gcodename));
+    {
+      std::string pcode;
+      std::vector<std::string> gcodes;
+      if( config().primaryProcess(pcode)) _pcode = ProcessCode::findByName(pcode);
+      if( config().primaryGenIds(gcodes)){
+        for(auto const& gcodename : gcodes) {
+          _gcodes.emplace_back(GenId::findByName(gcodename));
+        }
+      }
+      if(_pcode != ProcessCode::uninitialized && _gcodes.size() > 0 )
+        throw cet::exception("Configuration") << "Both process and gen codes specified " << std::endl;
+      else if(_pcode == ProcessCode::uninitialized && _gcodes.size() == 0)
+        throw cet::exception("Configuration") << "Neither process or gen codes specified " << std::endl;
+      consumes<SimParticleCollection>(_spc);
+      produces <PrimaryParticle>();
+      if(_debug > 0){
+        if(_pcode != ProcessCode::uninitialized)
+          std::cout << "Looking for primary SimParticles with code " << _pcode << std::endl;
+        else if(_gcodes.size() > 0){
+          std::cout << "Looking for primary GenParticles with code: " << std::endl;
+          for( auto const& gcode : _gcodes) {
+            std::cout << gcode << std::endl;
+          }
+        }
       }
     }
-    if(_pcode != ProcessCode::uninitialized && _gcodes.size() > 0 )
-      throw cet::exception("Configuration") << "Both process and gen codes specified " << std::endl;
-    else if(_pcode == ProcessCode::uninitialized && _gcodes.size() == 0)
-      throw cet::exception("Configuration") << "Neither process or gen codes specified " << std::endl;
-    consumes<SimParticleCollection>(_spc);
-    produces <PrimaryParticle>();
-    if(_debug > 0){
-      if(_pcode != ProcessCode::uninitialized)
-	std::cout << "Looking for primary SimParticles with code " << _pcode << std::endl;
-      else if(_gcodes.size() > 0){
-	std::cout << "Looking for primary GenParticles with code: " << std::endl;
-	for( auto const& gcode : _gcodes) {
-	  std::cout << gcode << std::endl;
-	}
-      }
-    }
-  }
 
   void FindMCPrimary::produce(art::Event& event) {
     typedef std::vector<art::Ptr<SimParticle> > SPPV;
@@ -83,17 +82,17 @@ namespace mu2e {
     for(auto isp = spc.begin(); isp != spc.end(); ++isp){
       // first, search for particles coming from a primary process
       if(isp->second.creationCode() == _pcode){
-	sims.emplace_back(spch, isp->first.asInt());
-	if(_debug > 1)std::cout << "found primary SimParticle, code " << _pcode << std::endl;
+        sims.emplace_back(spch, isp->first.asInt());
+        if(_debug > 1)std::cout << "found primary SimParticle, code " << _pcode << std::endl;
       }
       // then, by creation code
       if(isp->second.genParticle().isNonnull()){
-	for(auto const& gcode : _gcodes) {
-	  if(isp->second.genParticle()->generatorId() == gcode){
-	    sims.emplace_back(spch, isp->first.asInt());
-	    if(_debug > 1)std::cout << "found primary GenParticle, code " << gcode << std::endl;
-	  }
-	}
+        for(auto const& gcode : _gcodes) {
+          if(isp->second.genParticle()->generatorId() == gcode){
+            sims.emplace_back(spch, isp->first.asInt());
+            if(_debug > 1)std::cout << "found primary GenParticle, code " << gcode << std::endl;
+          }
+        }
       }
     }
     // if no primary was found, throw
@@ -102,9 +101,9 @@ namespace mu2e {
     if(sims.size() > 1){
       auto isim = sims.begin()++;
       while(isim != sims.end()){
-	if((*isim)->creationCode() != sims.front()->creationCode())
-	  throw cet::exception("Simulation")<<"PrimaryParticle: creation codes don't match" << std::endl;
-	++isim;
+        if((*isim)->creationCode() != sims.front()->creationCode())
+          throw cet::exception("Simulation")<<"PrimaryParticle: creation codes don't match" << std::endl;
+        ++isim;
       }
     }
     // create output object; this checks for consistency

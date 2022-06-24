@@ -14,7 +14,7 @@ command="Offline/scripts/build/bin/procs.sh "
 targets = ["DEPS","GDML","ROVERLAPS","TEST03","GITPACK","RMSO"]
 
 for target in targets:
-    exe_env.AlwaysBuild(exe_env.Alias(target, [], 
+    exe_env.AlwaysBuild(exe_env.Alias(target, [],
                                       command+target))
 
 # the RELEASE target runs all the above generators and tests

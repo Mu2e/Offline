@@ -5,117 +5,117 @@
 
 BEGIN_PROLOG
 
-outsideCrvCutT: 
+outsideCrvCutT:
 {
    type: union  //cut all tracks leaving to the side of the CRV
-   pars: 
+   pars:
    [
       // +x plane
-      { 
-        type  : plane 
-        normal: [  1, 0, 0 ] 
-        point : [ -904, 0, 0 ] 
+      {
+        type  : plane
+        normal: [  1, 0, 0 ]
+        point : [ -904, 0, 0 ]
       },
       // -x plane
-      { 
-        type  : plane 
-        normal: [ -1, 0, 0 ] 
-        point : [ -6904, 0, 0 ] 
+      {
+        type  : plane
+        normal: [ -1, 0, 0 ]
+        point : [ -6904, 0, 0 ]
       }
    ]
 }
-outsideCrvCutE: 
+outsideCrvCutE:
 {
    type: union  //cut all tracks leaving to the side of the CRV
-   pars: 
+   pars:
    [
       // +z plane
-      { 
-        type  : plane 
-        normal: [  0, 0, 1 ] 
-        point : [  0, 0, 2713.2 ] 
+      {
+        type  : plane
+        normal: [  0, 0, 1 ]
+        point : [  0, 0, 2713.2 ]
       },
       // -z plane
-      { 
-        type  : plane 
-        normal: [  0, 0, -1 ] 
-        point : [  0, 0, -2286.8 ] 
+      {
+        type  : plane
+        normal: [  0, 0, -1 ]
+        point : [  0, 0, -2286.8 ]
       }
    ]
 }
-outsideCrvCutR: 
+outsideCrvCutR:
 {
    type: union  //cut all tracks leaving to the side of the CRV
-   pars: 
+   pars:
    [
       // +y plane
-      { 
-        type  : plane 
-        normal: [  0, 1, 0 ] 
-        point : [  0, 2550.53, 0 ] 
+      {
+        type  : plane
+        normal: [  0, 1, 0 ]
+        point : [  0, 2550.53, 0 ]
       },
       // -y plane
-      { 
-        type  : plane 
-        normal: [  0, -1, 0 ] 
-        point : [  0, -1999.47, 0 ] 
+      {
+        type  : plane
+        normal: [  0, -1, 0 ]
+        point : [  0, -1999.47, 0 ]
       }
    ]
 }
-outsideCrvCutL: 
+outsideCrvCutL:
 {
    type: union  //cut all tracks leaving to the side of the CRV
-   pars: 
+   pars:
    [
       // +y plane
-      { 
-        type  : plane 
-        normal: [  0, 1, 0 ] 
-        point : [  0, 2550.53, 0 ] 
+      {
+        type  : plane
+        normal: [  0, 1, 0 ]
+        point : [  0, 2550.53, 0 ]
       },
       // -y plane
-      { 
-        type  : plane 
-        normal: [  0, -1, 0 ] 
-        point : [  0, -1999.47, 0 ] 
+      {
+        type  : plane
+        normal: [  0, -1, 0 ]
+        point : [  0, -1999.47, 0 ]
       }
    ]
 }
-outsideCrvCutU: 
+outsideCrvCutU:
 {
    type: union  //cut all tracks leaving to the side of the CRV
-   pars: 
+   pars:
    [
       // +x plane
-      { 
-        type  : plane 
-        normal: [  1, 0, 0 ] 
-        point : [ 182.2, 0, 0 ] 
+      {
+        type  : plane
+        normal: [  1, 0, 0 ]
+        point : [ 182.2, 0, 0 ]
       },
       // -x plane
-      { 
-        type  : plane 
-        normal: [ -1, 0, 0 ] 
-        point : [ -6717.8, 0, 0 ] 
+      {
+        type  : plane
+        normal: [ -1, 0, 0 ]
+        point : [ -6717.8, 0, 0 ]
       }
    ]
 }
-outsideCrvCutD: 
+outsideCrvCutD:
 {
    type: union  //cut all tracks leaving to the side of the CRV
-   pars: 
+   pars:
    [
       // +x plane
-      { 
-        type  : plane 
-        normal: [  1, 0, 0 ] 
-        point : [ -1054, 0, 0 ] 
+      {
+        type  : plane
+        normal: [  1, 0, 0 ]
+        point : [ -1054, 0, 0 ]
       },
       // -x plane
-      { 
-        type  : plane 
-        normal: [ -1, 0, 0 ] 
-        point : [ -6754, 0, 0 ] 
+      {
+        type  : plane
+        normal: [ -1, 0, 0 ]
+        point : [ -6754, 0, 0 ]
       }
    ]
 }
@@ -127,10 +127,10 @@ belowCrvCutT:
    type: intersection
    pars:
    [
-      { 
+      {
         type  : plane            //cut all tracks exiting below the CRV
                                  //since the "plane check" is inside an intersect, the next check will be done for all tracks exiting below the CRV
-        normal: [ 0, -1, 0 ] 
+        normal: [ 0, -1, 0 ]
         point : [ 0, 2653.31, 0 ]
       },
       {
@@ -141,7 +141,7 @@ belowCrvCutT:
         [
           {
             type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
-            pars : [ 13, -13 ] 
+            pars : [ 13, -13 ]
             write: belowCrv
           },
           {
@@ -157,10 +157,10 @@ belowCrvCutE:
    type: intersection
    pars:
    [
-      { 
+      {
         type  : plane            //cut all tracks exiting below the CRV
                                  //since the "plane check" is inside an intersect, the next check will be done for all tracks exiting below the CRV
-        normal: [ 0, -1, 0 ] 
+        normal: [ 0, -1, 0 ]
         point : [ 0, 2827.68, 0 ]
       },
       {
@@ -171,7 +171,7 @@ belowCrvCutE:
         [
           {
             type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
-            pars : [ 13, -13 ] 
+            pars : [ 13, -13 ]
             write: belowCrv
           },
           {
@@ -187,10 +187,10 @@ belowCrvCutR:
    type: intersection
    pars:
    [
-      { 
+      {
         type  : plane            //cut all tracks exiting below the CRV
                                  //since the "plane check" is inside an intersect, the next check will be done for all tracks exiting below the CRV
-        normal: [ 1, 0, 0 ] 
+        normal: [ 1, 0, 0 ]
         point : [ -6431.38, 0, 0 ]
       },
       {
@@ -201,7 +201,7 @@ belowCrvCutR:
         [
           {
             type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
-            pars : [ 13, -13 ] 
+            pars : [ 13, -13 ]
             write: belowCrv
           },
           {
@@ -217,10 +217,10 @@ belowCrvCutL:
    type: intersection
    pars:
    [
-      { 
+      {
         type  : plane            //cut all tracks exiting below the CRV
                                  //since the "plane check" is inside an intersect, the next check will be done for all tracks exiting below the CRV
-        normal: [ -1, 0, 0 ] 
+        normal: [ -1, 0, 0 ]
         point : [ -1376.62, 0, 0 ]
       },
       {
@@ -231,7 +231,7 @@ belowCrvCutL:
         [
           {
             type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
-            pars : [ 13, -13 ] 
+            pars : [ 13, -13 ]
             write: belowCrv
           },
           {
@@ -247,10 +247,10 @@ belowCrvCutU:
    type: intersection
    pars:
    [
-      { 
+      {
         type  : plane            //cut all tracks exiting below the CRV
                                  //since the "plane check" is inside an intersect, the next check will be done for all tracks exiting below the CRV
-        normal: [ 0, 0, 1 ] 
+        normal: [ 0, 0, 1 ]
         point : [ 0, 0, -2340.16 ]
       },
       {
@@ -261,7 +261,7 @@ belowCrvCutU:
         [
           {
             type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
-            pars : [ 13, -13 ] 
+            pars : [ 13, -13 ]
             write: belowCrv
           },
           {
@@ -277,10 +277,10 @@ belowCrvCutD:
    type: intersection
    pars:
    [
-      { 
+      {
         type  : plane            //cut all tracks exiting below the CRV
                                  //since the "plane check" is inside an intersect, the next check will be done for all tracks exiting below the CRV
-        normal: [ 0, 0, -1 ] 
+        normal: [ 0, 0, -1 ]
         point : [ 0, 0, 18655.86 ]
       },
       {
@@ -291,7 +291,7 @@ belowCrvCutD:
         [
           {
             type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
-            pars : [ 13, -13 ] 
+            pars : [ 13, -13 ]
             write: belowCrv
           },
           {
@@ -313,7 +313,7 @@ CrvCoincidenceT.useFourLayers                 : [ false]
 CrvCoincidenceT.muonsOnly                     : false
 CrvCoincidenceT.muonMinTime                   :  20.0  //ns
 CrvCoincidenceT.muonMaxTime                   : 150.0  //ns
-CrvCoincidenceT.genParticleModuleLabel        : "generate" 
+CrvCoincidenceT.genParticleModuleLabel        : "generate"
 
 CrvCoincidenceTS: @local::CrvCoincidence
 CrvCoincidenceTS.verboseLevel                  : 0
@@ -323,7 +323,7 @@ CrvCoincidenceTS.useFourLayers                 : [ true ]
 CrvCoincidenceTS.muonsOnly                     : false
 CrvCoincidenceTS.muonMinTime                   :  20.0  //ns
 CrvCoincidenceTS.muonMaxTime                   : 150.0  //ns
-CrvCoincidenceTS.genParticleModuleLabel        : "generate" 
+CrvCoincidenceTS.genParticleModuleLabel        : "generate"
 
 CrvCoincidenceE: @local::CrvCoincidence
 CrvCoincidenceE.verboseLevel                  : 0
@@ -333,7 +333,7 @@ CrvCoincidenceE.useFourLayers                 : [ true ]
 CrvCoincidenceE.muonsOnly                     : false
 CrvCoincidenceE.muonMinTime                   :  20.0  //ns
 CrvCoincidenceE.muonMaxTime                   : 150.0  //ns
-CrvCoincidenceE.genParticleModuleLabel        : "generate" 
+CrvCoincidenceE.genParticleModuleLabel        : "generate"
 
 CrvCoincidenceR: @local::CrvCoincidence
 CrvCoincidenceR.verboseLevel                  : 0
@@ -343,7 +343,7 @@ CrvCoincidenceR.useFourLayers                 : [ false]
 CrvCoincidenceR.muonsOnly                     : false
 CrvCoincidenceR.muonMinTime                   :  20.0  //ns
 CrvCoincidenceR.muonMaxTime                   : 150.0  //ns
-CrvCoincidenceR.genParticleModuleLabel        : "generate" 
+CrvCoincidenceR.genParticleModuleLabel        : "generate"
 
 CrvCoincidenceL: @local::CrvCoincidence
 CrvCoincidenceL.verboseLevel                  : 0
@@ -353,7 +353,7 @@ CrvCoincidenceL.useFourLayers                 : [ false]
 CrvCoincidenceL.muonsOnly                     : false
 CrvCoincidenceL.muonMinTime                   :  20.0  //ns
 CrvCoincidenceL.muonMaxTime                   : 150.0  //ns
-CrvCoincidenceL.genParticleModuleLabel        : "generate" 
+CrvCoincidenceL.genParticleModuleLabel        : "generate"
 
 CrvCoincidenceU: @local::CrvCoincidence
 CrvCoincidenceU.verboseLevel                  : 0
@@ -363,7 +363,7 @@ CrvCoincidenceU.useFourLayers                 : [ true ]
 CrvCoincidenceU.muonsOnly                     : false
 CrvCoincidenceU.muonMinTime                   :  20.0  //ns
 CrvCoincidenceU.muonMaxTime                   : 150.0  //ns
-CrvCoincidenceU.genParticleModuleLabel        : "generate" 
+CrvCoincidenceU.genParticleModuleLabel        : "generate"
 
 CrvCoincidenceD: @local::CrvCoincidence
 CrvCoincidenceD.verboseLevel                  : 0
@@ -373,7 +373,7 @@ CrvCoincidenceD.useFourLayers                 : [ true ]
 CrvCoincidenceD.muonsOnly                     : false
 CrvCoincidenceD.muonMinTime                   :  20.0  //ns
 CrvCoincidenceD.muonMaxTime                   : 150.0  //ns
-CrvCoincidenceD.genParticleModuleLabel        : "generate" 
+CrvCoincidenceD.genParticleModuleLabel        : "generate"
 
 CrvCoincidenceX: @local::CrvCoincidenceT  //REPLACE
 CrvCoincidenceX.timeWindowStart : 0
@@ -406,27 +406,27 @@ physics :
 {
   producers:
   {
-    generate: 
+    generate:
     {
        module_type          : EventGenerator
        inputfile            : "CRVResponse/efficiencyCheck/genconfig_T.txt"    //REPLACE
     }
 
-    g4run : 
+    g4run :
     {
        module_type: Mu2eG4
        physics: @local::mu2eg4DefaultPhysics
        ResourceLimits: @local::mu2eg4DefaultResourceLimits
-       TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+       TrajectoryControl: @local::mu2eg4DefaultTrajectories
        debug: @local::mu2eg4DefaultDebug
        visualization: @local::mu2eg4NoVisualization
 
        generatorModuleLabel: generate
 #       MultiStageParameters: {} // this is the first stage
 
-       SDConfig: 
+       SDConfig:
        {
-            enableSD: [ CRV ] 
+            enableSD: [ CRV ]
             sensitiveVolumes: []
             TimeVD: { times: [] }
        }
@@ -435,7 +435,7 @@ physics :
 
        Mu2eG4SteppingOnlyCut: {}
 
-       Mu2eG4CommonCut: 
+       Mu2eG4CommonCut:
        {
          type: union
          pars: [@local::outsideCrvCutT, @local::belowCrvCutT]  //REPLACE
@@ -559,9 +559,9 @@ physics :
     CrvCoincidencePE40T40  : @local::CrvCoincidenceX
   }
 
-  filters: 
+  filters:
   {
-    belowCrvFilter: 
+    belowCrvFilter:
     {
       module_type: FilterStepPointMomentum
       inputs : [ "g4run:belowCrv" ]
@@ -679,7 +679,7 @@ physics :
           CrvCoincidencePE36T40,
           CrvCoincidencePE38T40,
           CrvCoincidencePE40T40
-         ]  
+         ]
 
   trigger_paths  : [trig]
 

@@ -24,10 +24,10 @@ services :
 
   # Adjust configuration of message logger:
   # Load the standard message logger configuration:
-  # Threshold=Info (from using mf_interactive). 
+  # Threshold=Info (from using mf_interactive).
   # Limit of 5 per category; then exponential backoff.
   message.destinations.log.default.limit : 5
-    
+
   TFileService :
   {
     fileName      : "histforpabs.root"

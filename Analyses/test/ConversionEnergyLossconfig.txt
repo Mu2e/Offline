@@ -22,7 +22,7 @@ double cosmicDYB.mean   =   0.0;
 double picapture.mean   =   0.0; // guarantees exactly 1
 
 // Configure Daya Bay Cosmic generator.
-// Startup time is very sensitive to muEMin.  
+// Startup time is very sensitive to muEMin.
 //  3000 MeV takes 52 seconds on ilcsim2 and 104 seconds on ilcsim.
 double cosmicDYB.mean   =   0.0;
 double cosmicDYB.muEMin =   3000.;   // MeV
