@@ -51,6 +51,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
+#include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -284,9 +285,19 @@ namespace mu2e {
 
   bool HelixFit::goodFit(KKTRK const& ktrk) const {
     // require physical consistency: fit can succeed but the result can have changed charge or helicity
-    return ktrk.fitStatus().usable() &&
-      ktrk.fitTraj().front().Q()*ktrk.seedTraj().front().Q() > 0 &&
+    bool retval = ktrk.fitStatus().usable() &&
+      ktrk.fitTraj().front().parameterSign()*ktrk.seedTraj().front().parameterSign() > 0 &&
       ktrk.fitTraj().front().helicity()*ktrk.seedTraj().front().helicity() > 0;
+    // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
+    if(retval){
+      for(auto const& shptr : ktrk.strawHits()) {
+        if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
+          retval = false;
+          break;
+        }
+      }
+    }
+    return retval;
   }
 
   void HelixFit::fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const {
