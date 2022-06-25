@@ -262,6 +262,7 @@ namespace mu2e {
           if(goodfit || saveall_){
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(fitflag_);
+            if(goodfit)fitflag.merge(TrkFitFlag::FitOK);
             // Decide which segments to save
             std::set<double> savetimes;
             fillSaveTimes(*kktrk,savetimes);
