@@ -142,7 +142,7 @@ namespace mu2e {
           // this isn't necessary for the last hit since there are no subsequent hits
           if(ihit+1 < hits.size()){
             for(auto resid : resids) {
-              if(resid.active())cweights +=  shptr->residualWeight(miconfig,resid);
+              if(resid.active())cweights +=  resid.weight(cparams.parameters(),miconfig.varianceScale());
             }
             cparams = Parameters(cweights);
           }
