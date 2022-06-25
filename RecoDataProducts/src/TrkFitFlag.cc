@@ -34,8 +34,8 @@ namespace mu2e {
       bitnames[std::string("SeedConverged")]              = bit_to_mask(seedConverged);
       bitnames[std::string("KalmanConverged")]              = bit_to_mask(kalmanConverged);
       bitnames[std::string("MaterialCorrection")]              = bit_to_mask(MatCorr);
-      bitnames[std::string("IntegralBFieldCorrection")]              = bit_to_mask(BFCorr1);
-      bitnames[std::string("VariableBFieldCorrection")]              = bit_to_mask(BFCorr2);
+      bitnames[std::string("BFieldCorrection")]              = bit_to_mask(BFCorr);
+      bitnames[std::string("FitOK")]              = bit_to_mask(FitOK);
       bitnames[std::string("KalSeedFit")]              = bit_to_mask(KSF);
       bitnames[std::string("KalFinalFit")]              = bit_to_mask(KFF);
       bitnames[std::string("TrkPatRecHelix")]              = bit_to_mask(TPRHelix);

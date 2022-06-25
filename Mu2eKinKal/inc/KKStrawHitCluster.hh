@@ -116,7 +116,7 @@ namespace mu2e {
       // Extend this logic if new StrawHitCluster updaters are introduced
       auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
       if(cshu != 0){
-        cshu->updateHits<KTRAJ>(hits_);
+        cshu->updateHits<KTRAJ>(hits_,miconfig);
       }
     }
   }

@@ -456,7 +456,7 @@ namespace mu2e {
     if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
-    if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr2);
+    if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
     double tz0 = zTime(fittraj,0.0);

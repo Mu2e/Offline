@@ -4,6 +4,7 @@
 //  StrawHitCluster updating using an exhaustive combinatoric algorithm, following the BTrk PanelAmbigResolver algorithm
 //
 #include "KinKal/General/Chisq.hh"
+#include "KinKal/Fit/MetaIterConfig.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
@@ -44,7 +45,7 @@ namespace mu2e {
       auto const& allowed() const { return allowed_; }
       double minDeltaChi2() const { return mindchi2_; }
       // the work is done here
-      template <class KTRAJ> void updateHits(std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& hits) const;
+      template <class KTRAJ> void updateHits(std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& hits,KinKal::MetaIterConfig const& miconfig) const;
     private:
       double inactivep_; // chisquared penalty for inactive hits
       double nullp_; // chisquared penalty for null hits
@@ -53,7 +54,9 @@ namespace mu2e {
       WHSCOL allowed_; // allowed states
   };
 
-  template<class KTRAJ> void CombinatoricStrawHitUpdater::updateHits(std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& allhits) const {
+  template<class KTRAJ> void CombinatoricStrawHitUpdater::updateHits(
+      std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& allhits,
+      KinKal::MetaIterConfig const& miconfig) const {
     using SHCOL = std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>;
     // leave alone hits that were forced inactive
     SHCOL hits;
@@ -83,9 +86,9 @@ namespace mu2e {
       uparams = Parameters(uweights);
     } else {
       uparams = hits.front()->referenceParameters();
-      uweights = Weights(uparams);
     }
-    // check determinant
+    uweights = Weights(uparams);
+   // check determinant
     double determinant;
     if(!uparams.covariance().Det(determinant) || determinant < std::numeric_limits<float>::min()){
       if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
@@ -106,6 +109,8 @@ namespace mu2e {
     ClusterScoreCOL cscores(0);
     cscores.reserve(ncombo);
     do {
+      auto cparams = uparams;
+      auto cweights = uweights;
       // loop over hits in order and compute their residuals
       double chisq(0.0);
       unsigned ndof(0);
@@ -116,13 +121,13 @@ namespace mu2e {
           // compute the chisquared contribution for this hit against the current parameters
           RESIDCOL resids;
           // compute residuals using this state (still WRT the reference parameters)
-          DVEC dpvec = uparams.parameters() - shptr->referenceParameters().parameters();
+          DVEC dpvec = cparams.parameters() - shptr->referenceParameters().parameters();
           shptr->setResiduals(whstate,resids);
           for(auto resid : resids) {
             if(resid.active()){
               // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
-              double pvar = ROOT::Math::Similarity(resid.dRdP(),uparams.covariance());
+              double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());
 //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
               if(pvar<0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
                 << " determinant = " << determinant << std::endl;
@@ -133,7 +138,14 @@ namespace mu2e {
           }
           // add null penalty
           if(whstate == WireHitState::null) chisq += nullp_;
-          // compute the weight from this hits state, and update the parameters to use for subsequent hits TODO
+          // compute the weight from this hits state, and update the parameters to use for subsequent hits
+          // this isn't necessary for the last hit since there are no subsequent hits
+          if(ihit+1 < hits.size()){
+            for(auto resid : resids) {
+              if(resid.active())cweights +=  shptr->residualWeight(miconfig,resid);
+            }
+            cparams = Parameters(cweights);
+          }
         } else {
         // add penalty
           chisq += inactivep_;
