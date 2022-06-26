@@ -2,8 +2,10 @@
 #include <cmath>
 
 namespace mu2e {
-  WireHitState DOCAStrawHitUpdater::wireHitState(double doca) const {
+  using KinKal::ClosestApproachData;
+  WireHitState DOCAStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata ) const {
     WireHitState whstate(WireHitState::inactive);
+    double doca = tpdata.doca();
     double absdoca = fabs(doca);
     if( absdoca < maxdoca_){ // hit isn't too far from the wire
       if(absdoca > mindoca_ && absdoca < maxddoca_){  // in the sweet spot: use the DOCA to sign the ambiguity
