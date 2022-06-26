@@ -148,17 +148,17 @@ namespace mu2e {
         if(uca.usable() && insideStraw (uca)){
           if(nshu != 0){
             mindoca_ = strawRadius();
-            whstate_ = nshu->wireHitState(uca.doca());
+            whstate_ = nshu->wireHitState(uca.tpData());
           } else if(dshu != 0){
             // update minDoca (for null ambiguity error estimate)
             mindoca_ = std::min(dshu->minDOCA(),strawRadius());
-            whstate_ = dshu->wireHitState(uca.doca());
+            whstate_ = dshu->wireHitState(uca.tpData());
           }
         } else
           whstate_ = WireHitState::forcedinactive;
       }
     }
-    // then update the residual
+    // then update the residual.  This is necessary as the reference will have changed
     updateResiduals();
     // finally update the weight
     this->updateWeight(miconfig);

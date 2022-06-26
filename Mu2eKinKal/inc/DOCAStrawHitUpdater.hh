@@ -4,16 +4,17 @@
 #ifndef Mu2eKinKal_DOCAStrawHitUpdater_hh
 #define Mu2eKinKal_DOCAStrawHitUpdater_hh
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "KinKal/Trajectory/ClosestApproachData.hh"
 
 namespace mu2e {
 // Update based just on (unbiased) DOCA to the wire, not including this hit
   class DOCAStrawHitUpdater {
-    public:
+   public:
       DOCAStrawHitUpdater() : maxdoca_(-1.0), mindoca_(0), maxddoca_(-1) {}
       DOCAStrawHitUpdater(double maxdoca, double minddoca, double maxddoca) :
         maxdoca_(maxdoca), mindoca_(minddoca), maxddoca_(maxddoca) {}
      // set the state based on the current DOCA value
-      WireHitState wireHitState(double doca) const;
+      WireHitState wireHitState(KinKal::ClosestApproachData const& tpdata) const;
       auto maxDOCA() const { return maxdoca_; }
       auto minDOCA() const { return mindoca_; }
       auto maxDriftDOCA() const { return maxddoca_; }
