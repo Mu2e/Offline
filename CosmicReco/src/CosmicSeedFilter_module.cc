@@ -72,6 +72,7 @@ namespace mu2e
       if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.trkstrawhits().size() > _minnsh ){
 
         ++_npass;
+        retval = true;
         size_t index = std::distance(coscol->begin(),icos);
         triginfo->_cosmics.push_back(art::Ptr<CosmicTrackSeed>(cosH,index));
         if(_debug > 1){
