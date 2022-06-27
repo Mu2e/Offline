@@ -1,4 +1,5 @@
 #include "art/Utilities/ToolMacros.h"
+#include <memory>
 
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
