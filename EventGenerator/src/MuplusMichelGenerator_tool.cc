@@ -37,8 +37,8 @@ namespace mu2e {
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
-      _randomUnitSphere = std::make_unique(eng);
-      _randSpectrum = std::make_uniqueCLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
+      _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
 
   private:
@@ -47,8 +47,8 @@ namespace mu2e {
 
     BinnedSpectrum    _spectrum;
 
-    std::unique_ptr   _randomUnitSphere;
-    std::unique_ptrCLHEP::RandGeneral _randSpectrum;
+    std::unique_ptr<RandomUnitSphere>  _randomUnitSphere;
+    std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
   };
 
 
@@ -60,7 +60,8 @@ namespace mu2e {
     const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
     CLHEP::HepLorentzVector fourmom(_randomUnitSphere->fire(p), energy);
 
-    res.emplace_back(_pdgId, ProcessCode::mu2ePrimary, fourmom);
+    ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2ePrimary, fourmom};
+    res.emplace_back(k);
 
     return res;
   }
