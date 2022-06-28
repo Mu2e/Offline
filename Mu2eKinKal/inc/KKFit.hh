@@ -477,15 +477,18 @@ namespace mu2e {
       auto const& ca = strawhit->closestApproach();
       auto uca = strawhit->unbiasedClosestApproach();
       DriftInfo dinfo = strawhit->distanceToTime();
-      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
-          HitT0(uca.particleToca(), sqrt(uca.tocaVar())),
-          static_cast<float>(ca.particleToca()), // track length is undefined in KinKal: store reference TOCA instead
-          static_cast<float>(ca.sensorToca()), // hit length is undefined: store TOCA for the sensor instead
-          static_cast<float>(uca.deltaT()), // drift radius isn't a clear concept in KinKal, store (unbiased) drift time instead
-          static_cast<float>(dinfo.tdrift_), // sensor time is redundant with sensorTOCA above: store expected drift time instead
-          static_cast<float>(uca.doca()),
-          strawhit->hitState().state_,
-          static_cast<float>(sqrt(dinfo.tdriftvar_)), // substitute for drift radius error
+      auto tres = (kktrk.fitStatus().usable()) ? strawhit->residual(0) : strawhit->refResidual(0);
+      auto dres = (kktrk.fitStatus().usable()) ? strawhit->residual(1) : strawhit->refResidual(1);
+      HitT0 unbiasedt0(tres.value(),sqrt(tres.variance()));
+      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // strawid
+          unbiasedt0, // t0
+          static_cast<float>(ca.particleToca()), // trklen
+          static_cast<float>(ca.sensorToca()), // hitlen
+          static_cast<float>(dres.value()), // rdrift
+          static_cast<float>(dinfo.tdrift_), // stime
+          static_cast<float>(uca.doca()), // wdoca
+          strawhit->hitState().state_, // ambig
+          static_cast<float>(sqrt(dres.variance())), // rerr
           hflag, chit);
       fseed._hits.push_back(seedhit);
     }
@@ -498,16 +501,14 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::doca);
       }
       // calculate the unbiased time at the cluster
-      auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual();
-      HitT0 unbiasedt0(ca.sensorToca()-tres.value(),sqrt(tres.variance()));
+      auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual(0);
+      HitT0 unbiasedt0(tres.value(),sqrt(tres.variance()));
       // calculate the cluster length; this should be the particle path through the CsI, but
       // for now (backwards compatible) it's the length along the cluster axis FIXME!
-//      double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
-//      double clen = lcrystal - (calohit->caloCluster()->time() - ca.sensorToca())*ca.sensorTraj().speed();
-      double clen = (ca.sensorToca() - calohit->caloCluster()->time() )*ca.sensorTraj().speed();
-      fseed._chit = TrkCaloHitSeed(unbiasedt0,
-          static_cast<float>(ca.particleToca()),
-          static_cast<float>(clen),
+      double clen = (calohit->caloCluster()->time() - ca.sensorToca() )*ca.sensorTraj().speed();
+      fseed._chit = TrkCaloHitSeed(unbiasedt0, // t0
+          static_cast<float>(ca.particleToca()), // trklen
+          static_cast<float>(clen), // hitlen
           static_cast<float>(ca.doca()), // cdoca
           static_cast<float>(sqrt(ca.docaVar())), //rerr
           static_cast<float>(ca.sensorToca()), // time

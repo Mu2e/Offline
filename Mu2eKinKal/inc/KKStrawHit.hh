@@ -216,7 +216,7 @@ namespace mu2e {
     dinfo.vdrift_ = sresponse_.driftConstantSpeed();
 //    dinfo.tdrift_ = drift.R()/dinfo.vdrift_;
     dinfo.tdrift_ = fabs(ptca_.doca())/dinfo.vdrift_;
-    dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
+    dinfo.tdriftvar_ = 20.0; // temporary hack FIXME
     return dinfo;
   }
 
