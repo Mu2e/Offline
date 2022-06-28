@@ -19,7 +19,7 @@ Mu2eKinKal : {
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
     StrawHitClusterLevel : "uniquepanel"
-    CaloTrackerTimeOffset : -1.35 #ns
+    CaloTrackerTimeOffset : -1.1 #ns
     CaloPositionResolution : 15.0 #mm
     CaloPropagationSpeed : 200.0 #mm/ns
     MinCaloClusterEnergy : 10.0 #MeV
@@ -101,7 +101,9 @@ Mu2eKinKal : {
       [ 1.0, 0 ],
       [ 2.0, 1 ],
       [ 1.0, 1 ],
-      [ 0.0, 1 ]
+      [ 0.5, 1 ],
+      [ 0.5, 2 ],
+      [ 0.0, 2 ]
     ]
     NullStrawHitUpdaterSettings : [
       [ 5.0 ]
@@ -112,12 +114,18 @@ Mu2eKinKal : {
       [ 6.0, 0.5, 5.0 ]
     ]
     StrawXingUpdaterSettings : [
-      [-1.0, 5.0, 5.0 ],
+      [1.0, 5.0, 5.0 ],
       [0.5, 4.0, 4.0 ],
       [0.4, 3.0, 4.0 ],
+      [0.3, 3.0, 4.0 ],
+      [0.3, 3.0, 4.0 ],
       [0.3, 3.0, 4.0 ]
     ]
-  }
+    CombinatoricStrawHitUpdaterSettings : [
+      [25.0, 2.0, 0.5, 0],
+      [25.0, 2.0, 0.5, 0]
+    ]
+ }
 
   KKLOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)

@@ -29,7 +29,7 @@ namespace mu2e {
 
   class CombinatoricStrawHitUpdater {
     public:
-      // sort hit states by chisquared value
+      // struct to sort hit states by chisquared value
       struct ClusterScoreComp {
         bool operator()(ClusterScore const& a, ClusterScore const& b)  const {
           return a.chi2_.chisqPerNDOF() < b.chi2_.chisqPerNDOF();
@@ -52,6 +52,7 @@ namespace mu2e {
       double mindchi2_; // minimum chisquared separation to consider 'significant'
       int diag_; // diag print level
       WHSCOL allowed_; // allowed states
+      double wireHitRank(WHSCOL const& whscol) const; // rank wire hit states by 'conservativeness'
   };
 
   template<class KTRAJ> void CombinatoricStrawHitUpdater::updateHits(
