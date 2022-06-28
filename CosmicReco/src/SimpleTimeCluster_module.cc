@@ -81,7 +81,6 @@ private:
   bool _useoneplane;
   art::InputTag _chToken;
   art::InputTag _shfToken;
-  const StrawHitFlagCollection* _shfcol;
   const ComboHitCollection* _chcol;
   StrawHitFlag _hsel, _hbkg;
 
@@ -103,14 +102,6 @@ void SimpleTimeCluster::produce(art::Event& event) {
 
   auto const& chH = event.getValidHandle<ComboHitCollection>(_chToken);
   _chcol = chH.product();
-
-  if (_testflag) {
-    auto shfH = event.getValidHandle<StrawHitFlagCollection>(_shfToken);
-    _shfcol = shfH.product();
-    if (_shfcol->size() != _chcol->size())
-      throw cet::exception("RECO")
-          << "SimpleTimeCluster: inconsistent flag collection length " << std::endl;
-  }
 
   std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);
   findClusters(*tccol);
