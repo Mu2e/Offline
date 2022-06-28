@@ -27,10 +27,10 @@ Mu2eKinKal : {
     MaxCaloClusterDOCA : 50.0 # mm
     AddHitSelect : []
     AddHitReject : ["Dead"]
-    MaxStrawHitDOCA : 4.0 # mm
-    MaxStrawHitDt : 5.0 # ns
-    StrawBuffer : 1 #
-    MaxStrawDOCA : 2.5 # mm
+    MaxStrawHitDOCA : 10.0 # mm
+    MaxStrawHitDt : 20.0 # ns
+    StrawBuffer : 2 #
+    MaxStrawDOCA : 3.0 # mm
   }
 
   KKSEEDFIT: {
