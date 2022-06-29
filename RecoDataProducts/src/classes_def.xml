@@ -205,6 +205,10 @@
  <class name="mu2e::KKLoopHelixCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KKLoopHelixCollection>"/>
 
+ <class name="mu2e::KKCentralHelix"/>
+ <class name="mu2e::KKCentralHelixCollection" persistent="false"/>
+ <class name="art::Wrapper<mu2e::KKCentralHelixCollection>"/>
+
  <class name="mu2e::KKLine"/>
  <class name="mu2e::KKLineCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KKLineCollection>"/>

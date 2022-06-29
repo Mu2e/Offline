@@ -46,6 +46,7 @@
 #include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
+#include "Offline/RecoDataProducts/inc/KKCentralHelix.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "Offline/RecoDataProducts/inc/TrackSummary.hh"
 #include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"

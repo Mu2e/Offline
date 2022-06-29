@@ -11,7 +11,9 @@ namespace mu2e {
     public:
       explicit LoopHelixFit(const GlobalSettings& settings) :
         HelixFit(settings,TrkFitFlag::KKLoopHelix) {}
+      // parameter-specific functions
       KTRAJ makeSeedTraj(HelixSeed const& hseed) const override;
+      bool goodFit(KKTRK const& ktrk) const override;
       virtual ~LoopHelixFit() {}
   };
 
@@ -48,6 +50,25 @@ namespace mu2e {
     Parameters kkpars(pars,seedcov_);
     //  construct the seed trajectory (infinite initial time range)
     return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange(tmin,tmax));
+  }
+
+
+  bool LoopHelixFit::goodFit(KKTRK const& ktrk) const {
+    // require physical consistency: fit can succeed but the result can have changed charge or helicity
+    bool retval = ktrk.fitStatus().usable() &&
+      ktrk.fitTraj().front().parameterSign()*ktrk.seedTraj().front().parameterSign() > 0 &&
+      ktrk.fitTraj().front().helicity()*ktrk.seedTraj().front().helicity() > 0;
+    // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
+    if(retval){
+      for(auto const& shptr : ktrk.strawHits()) {
+        if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
+          retval = false;
+          break;
+        }
+      }
+    }
+    // test that the spatial parameter covariances and values aren't crazy TODO
+    return retval;
   }
 }
 DEFINE_ART_MODULE(mu2e::LoopHelixFit);

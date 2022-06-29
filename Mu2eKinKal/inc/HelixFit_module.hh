@@ -133,9 +133,9 @@ namespace mu2e {
       void produce(art::Event& event) override;
     protected:
       TrkFitFlag fitflag_;
-      // utility functions
+      // parameter-specific functions that need to be overridden in subclasses
       virtual KTRAJ makeSeedTraj(HelixSeed const& hseed) const = 0;
-      bool goodFit(KKTRK const& ktrk) const;
+      virtual bool goodFit(KKTRK const& ktrk) const = 0;
       void fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const;
       // data payload
       std::vector<art::ProductToken<HelixSeedCollection>> hseedCols_;
@@ -282,23 +282,6 @@ namespace mu2e {
     event.put(move(kktrkcol));
     event.put(move(kkseedcol));
     event.put(move(kkseedassns));
-  }
-
-  bool HelixFit::goodFit(KKTRK const& ktrk) const {
-    // require physical consistency: fit can succeed but the result can have changed charge or helicity
-    bool retval = ktrk.fitStatus().usable() &&
-      ktrk.fitTraj().front().parameterSign()*ktrk.seedTraj().front().parameterSign() > 0 &&
-      ktrk.fitTraj().front().helicity()*ktrk.seedTraj().front().helicity() > 0;
-    // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
-    if(retval){
-      for(auto const& shptr : ktrk.strawHits()) {
-        if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
-          retval = false;
-          break;
-        }
-      }
-    }
-    return retval;
   }
 
   void HelixFit::fillSaveTimes(KKTRK const& ktrk,std::set<double>& savetimes) const {
