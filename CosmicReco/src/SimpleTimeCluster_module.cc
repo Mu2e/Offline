@@ -45,8 +45,11 @@ public:
     fhicl::Atom<int> minnpanels{Name("minNStrawHits"), Comment("minimum number of panels "), 0};
     fhicl::OptionalAtom<int> maxnsh{Name("maxNStrawHits"),
                                     Comment("maximum number of straw hits ")};
-    fhicl::Atom<double> timestep{Name("TimeStep"), Comment("Width of timestep between hits in ns"),
-                                 20};
+    fhicl::Atom<int> timewindow{Name("TimeWindow"), Comment("Width of time window in ns"), 100};
+    fhicl::Atom<bool> usetimewindow{Name("useTimeWindow"), Comment("Use timewindow cut"), false};
+    fhicl::Atom<int> timestep{Name("TimeStep"), Comment("Width of timestep between hits in ns"),
+                              20};
+    fhicl::Atom<bool> usetimestep{Name("useTimeStep"), Comment("Use timestep cut"), true};
     fhicl::Atom<bool> testflag{Name("TestFlag"), Comment("Test StrawHitFlags")};
     fhicl::Atom<bool> useonepanel{Name("UseOnlyOnePanel"), Comment("Use hits from one panel only"),
                                   false};
@@ -75,7 +78,10 @@ private:
   int _minnpanels;
   bool _hasmaxnsh;
   int _maxnsh;
-  double _timeStep;
+  bool _usetimeWindow;
+  int _timeWindow;
+  bool _usetimeStep;
+  int _timeStep;
   bool _testflag;
   bool _useonepanel;
   bool _useoneplane;
@@ -90,9 +96,10 @@ private:
 
 SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
     art::EDProducer(conf), _debug(conf().debug()), _minnsh(conf().minnsh()),
-    _minnpanels(conf().minnpanels()), _hasmaxnsh(false), _maxnsh(0), _timeStep(conf().timestep()),
-    _testflag(conf().testflag()), _useonepanel(conf().useonepanel()), _chToken(conf().chToken()),
-    _shfToken(conf().shfToken()), _hsel(conf().hsel()), _hbkg(conf().hbkg()) {
+    _minnpanels(conf().minnpanels()), _hasmaxnsh(false), _maxnsh(0),
+    _timeWindow(conf().timewindow()), _timeStep(conf().timestep()), _testflag(conf().testflag()),
+    _useonepanel(conf().useonepanel()), _chToken(conf().chToken()), _shfToken(conf().shfToken()),
+    _hsel(conf().hsel()), _hbkg(conf().hbkg()) {
   produces<TimeClusterCollection>();
 }
 
@@ -146,7 +153,7 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
   int count = 0;
   for (size_t startIndex = 0; startIndex < ordChCol.size(); startIndex++) {
     count = ordChCol[startIndex].nStrawHits();
-    if (endIndex >= ordChCol.size() - 1)
+    if (endIndex >= ordChCol.size())
       break;
     if (startIndex < endIndex)
       continue;
@@ -160,15 +167,19 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
       count += ordChCol[endIndex].nStrawHits();
       if (endIndex >= ordChCol.size())
         break;
-      if (endTime - ordChCol[endIndex - 1].correctedTime() > _timeStep)
+      if (_usetimeStep && endTime - ordChCol[endIndex - 1].correctedTime() > _timeStep)
         break;
       if (endTime - startTime < 0)
+        break;
+      if (_usetimeWindow && endTime - startTime > _timeWindow)
         break;
     }
     count -= ordChCol[endIndex].nStrawHits();
     endIndex--;
     endTime = ordChCol[endIndex].correctedTime();
     if (_hasmaxnsh && count > _maxnsh)
+      continue;
+    if (!_usetimeWindow && endTime - startTime > 100)
       continue;
     if (count >= _minnsh) {
       peakStart.push_back(startIndex);
