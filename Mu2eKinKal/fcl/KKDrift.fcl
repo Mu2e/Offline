@@ -1,10 +1,19 @@
+# Minimal KinKal job that fits digis to a downstream electron using drift information, and analyzes the output with TrkAna
+# To create a functional job you must add database purpose and version; ie create a fcl stub that #includes this file and
+# adds (for instance):
+# services.DbService.purpose: MDC2020_perfect
+# services.DbService.version: v1_0
+#
+# To conver the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
+# physics.producers.KKDeMDriftFit.module_type : CentralHelixFit
+
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/reco/prolog.fcl"
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 
-process_name: Reconstruct
+process_name: R
 source : { module_type : RootInput }
 services : @local::Services.Reco
 physics :
@@ -66,7 +75,7 @@ physics.producers.KKDeMDriftFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" 
 physics.producers.KKDeMDriftFit.ModuleSettings.ComboHitCollection : "makeSH"
 physics.producers.KKDeMDriftFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
 physics.producers.KKDeMDriftFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-physics.producers.KKDeMDriftFit.ModuleSettings.PrintLevel : 1
+physics.producers.KKDeMDriftFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMDriftFit.ModuleSettings.SaveAllFits : true
 physics.producers.KKDeMDriftFit.ModuleSettings.Extend : true
 physics.producers.KKDeMDriftFit.KinKalFitSettings.PrintLevel : 0

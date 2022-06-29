@@ -461,7 +461,10 @@ namespace mu2e {
     auto const& fittraj = kktrk.fitTraj();
     double tz0 = zTime(fittraj,0.0);
     auto const& t0piece = fittraj.nearestPiece(tz0);
-    HitT0 t0(t0piece.paramVal(KTRAJ::t0_), sqrt(t0piece.paramVar(KTRAJ::t0_)));
+    double t0val = t0piece.paramVal(KTRAJ::t0_);
+//    double t0sig = sqrt(t0piece.paramVar(KTRAJ::t0_)); Temporary FIXME
+    double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
+    HitT0 t0(t0val,t0sig);
     // create the shell for the output.  Note the (obsolete) flight length is given as t0
     KalSeed fseed(tpart_,tdir_,fflag,t0.t0());
     auto const& fstatus = kktrk.fitStatus();
