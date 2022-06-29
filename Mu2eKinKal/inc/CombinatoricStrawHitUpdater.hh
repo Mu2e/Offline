@@ -101,6 +101,7 @@ namespace mu2e {
 //        shptr->setState(nullstate);
 //      }
 //      TODO: try a more careful weight subtraction including material effects.
+//      Or, revert to a hit-by-hit update of this cluster
       return;
     }
 
@@ -128,10 +129,10 @@ namespace mu2e {
             if(resid.active()){
               // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
-              double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());
+              double pvar = fabs(ROOT::Math::Similarity(resid.dRdP(),cparams.covariance()));
 //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
-              if(pvar<0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
-                << " determinant = " << determinant << std::endl;
+//              if(pvar<0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
+//                << " determinant = " << determinant << std::endl;
               Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
               chisq += uresid.chisq();
               ++ndof;
