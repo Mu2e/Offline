@@ -179,7 +179,7 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
     endTime = ordChCol[endIndex].correctedTime();
     if (_hasmaxnsh && count > _maxnsh)
       continue;
-    if (!_usetimeWindow && endTime - startTime > 100)
+    if (!_usetimeWindow && endTime - startTime > _timeWindow)
       continue;
     if (count >= _minnsh) {
       peakStart.push_back(startIndex);
