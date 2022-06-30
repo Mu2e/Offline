@@ -50,13 +50,11 @@ namespace mu2e {
       Line saxis_; // axis along the crystals, through the COG
       double tvar_; // variance in the time measurement: assumed independent of propagation distance/time
       double wvar_; // variance in transverse position of the sensor/measurement in mm.  Assumes cylindrical error, could be more general
-      bool active_; // active or not
-      CA tpca_; // reference time and distance of closest approach to the axis.
-      // caches
+      CA tpca_; // reference time and distance of closest approach to the axis
       Residual rresid_; // residual WRT most recent reference parameters
   };
 
-  template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), saxis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar), active_(true),
+  template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), saxis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar),
     tpca_(pca.localTraj(),saxis_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()) {
     }
 
@@ -75,7 +73,7 @@ namespace mu2e {
     if(!tpca_.usable())throw cet::exception("RECO")<<"mu2e::KKCaloHit: TPOCA failure" << std::endl;
   }
 
-  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& config,bool first) {
+  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
     // check that TPCA position is consistent with the physical sensor. This can be off if the CA algorithm finds the wrong helix branch
     // early in the fit when t0 has very large errors.
     // If it is unphysical try to adjust it back using a better hint.
@@ -83,7 +81,7 @@ namespace mu2e {
     auto sstart = saxis_.startPosition();
     auto send = saxis_.endPosition();
     double slen = (send-sstart).R();
-    // tolerance should come from the config.  Should also test relative to the error. FIXME
+    // tolerance should come from the miconfig.  Should also test relative to the error. FIXME
     double tol = slen*1.0;
     if( (ppos-sstart).Dot(saxis_.direction()) < -tol ||
         (ppos-send).Dot(saxis_.direction()) > tol) {
@@ -100,10 +98,12 @@ namespace mu2e {
     double dd2 = tpca_.dirDot()*tpca_.dirDot();
     double totvar = tvar_ + wvar_*dd2/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
     rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,-tpca_.dTdP());
+    // finally update the weight
+    this->updateWeight(miconfig);
   }
 
   template<class KTRAJ> void KKCaloHit<KTRAJ>::print(std::ostream& ost, int detail) const {
-    if(this->active())
+    if(rresid_.active())
       ost<<"Active ";
     else
       ost<<"Inactive ";

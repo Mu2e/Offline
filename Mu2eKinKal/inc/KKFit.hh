@@ -4,15 +4,16 @@
 // helper class for constructing KinKal Fits using Mu2e data
 //
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawHitGroup.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
-//#include "Mu2eKinKal/inc/KKPanelHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 // art includes
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Handle.h"
@@ -41,7 +42,6 @@
 #include <cmath>
 #include <algorithm>
 namespace mu2e {
-  using KinKal::WireHitState;
   using KinKal::Line;
   using KinKal::TimeRange;
   using KinKal::Status;
@@ -61,10 +61,10 @@ namespace mu2e {
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
-      using KKSTRAWHITGROUP = KKStrawHitGroup<KTRAJ>;
-      using KKSTRAWHITGROUPPTR = std::shared_ptr<KKSTRAWHITGROUP>;
-      using KKSTRAWHITGROUPCOL = std::vector<KKSTRAWHITGROUPPTR>;
-      using KKSTRAWHITGROUPER = KKStrawHitGrouper<KTRAJ>;
+      using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
+      using KKSTRAWHITCLUSTERPTR = std::shared_ptr<KKSTRAWHITCLUSTER>;
+      using KKSTRAWHITCLUSTERCOL = std::vector<KKSTRAWHITCLUSTERPTR>;
+      using KKSTRAWHITCLUSTERER = KKStrawHitClusterer<KTRAJ>;
       using KKSTRAWXING = KKStrawXing<KTRAJ>;
       using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
       using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
@@ -97,7 +97,7 @@ namespace mu2e {
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
       bool addMaterial() const { return addmat_; }
-      auto const& strawHitGrouper() const { return shgrouper_; }
+      auto const& strawHitClusterer() const { return shclusterer_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
        void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
@@ -107,7 +107,7 @@ namespace mu2e {
      PDGCode::type tpart_;
       TrkFitDirection tdir_;
       bool addmat_, usecalo_; // flags
-      KKSTRAWHITGROUPER shgrouper_; // functor to group KKStrawHits
+      KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions FIXME!
       double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
@@ -134,7 +134,7 @@ namespace mu2e {
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
-    shgrouper_(StrawIdMask(fitconfig.strawHitGroupLevel()),fitconfig.strawHitGroupDeltaT()),
+    shclusterer_(StrawIdMask(fitconfig.strawHitClusterLevel()),fitconfig.strawHitClusterDeltaStraw(),fitconfig.strawHitClusterDeltaT()),
     caloDt_(fitconfig.caloDt()),
     caloPosRes_(fitconfig.caloPosRes()),
     caloPropSpeed_(fitconfig.caloPropSpeed()),
@@ -230,7 +230,8 @@ namespace mu2e {
         << addcalohits.size() << " CaloHits and "
         << addstrawxings.size() << " Straw Xings" << std::endl;
     }
-    kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
+    if(addstrawhits.size() > 0 || addstrawxings.size() > 0 || addcalohits.size() > 0)
+      kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
@@ -455,12 +456,15 @@ namespace mu2e {
     if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
-    if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr2);
+    if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
     double tz0 = zTime(fittraj,0.0);
     auto const& t0piece = fittraj.nearestPiece(tz0);
-    HitT0 t0(t0piece.paramVal(KTRAJ::t0_), sqrt(t0piece.paramVar(KTRAJ::t0_)));
+    double t0val = t0piece.paramVal(KTRAJ::t0_);
+//    double t0sig = sqrt(t0piece.paramVar(KTRAJ::t0_)); Temporary FIXME
+    double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
+    HitT0 t0(t0val,t0sig);
     // create the shell for the output.  Note the (obsolete) flight length is given as t0
     KalSeed fseed(tpart_,tdir_,fflag,t0.t0());
     auto const& fstatus = kktrk.fitStatus();
@@ -475,16 +479,19 @@ namespace mu2e {
       if(strawhit->active())hflag.merge(StrawHitFlag::active);
       auto const& ca = strawhit->closestApproach();
       auto uca = strawhit->unbiasedClosestApproach();
-      KinKal::DriftInfo dinfo = strawhit->distanceToTime();
-      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(),
-          HitT0(uca.particleToca(), sqrt(uca.tocaVar())),
-          static_cast<float>(ca.particleToca()), // track length is undefined in KinKal: store reference TOCA instead
-          static_cast<float>(ca.sensorToca()), // hit length is undefined: store TOCA for the sensor instead
-          static_cast<float>(uca.deltaT()), // drift radius isn't a clear concept in KinKal, store (unbiased) drift time instead
-          static_cast<float>(dinfo.tdrift_), // sensor time is redundant with sensorTOCA above: store expected drift time instead
-          static_cast<float>(uca.doca()),
-          strawhit->hitState().state_,
-          static_cast<float>(sqrt(dinfo.tdriftvar_)), // substitute for drift radius error
+      DriftInfo dinfo = strawhit->distanceToTime();
+      auto tres = (kktrk.fitStatus().usable()) ? strawhit->residual(0) : strawhit->refResidual(0);
+      auto dres = (kktrk.fitStatus().usable()) ? strawhit->residual(1) : strawhit->refResidual(1);
+      HitT0 unbiasedt0(tres.value(),sqrt(tres.variance()));
+      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // strawid
+          unbiasedt0, // t0
+          static_cast<float>(ca.particleToca()), // trklen
+          static_cast<float>(ca.sensorToca()), // hitlen
+          static_cast<float>(dres.value()), // rdrift
+          static_cast<float>(dinfo.tdrift_), // stime
+          static_cast<float>(uca.doca()), // wdoca
+          strawhit->hitState().state_, // ambig
+          static_cast<float>(sqrt(dres.variance())), // rerr
           hflag, chit);
       fseed._hits.push_back(seedhit);
     }
@@ -497,16 +504,14 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::doca);
       }
       // calculate the unbiased time at the cluster
-      auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual();
-      HitT0 unbiasedt0(ca.sensorToca()-tres.value(),sqrt(tres.variance()));
+      auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual(0);
+      HitT0 unbiasedt0(tres.value(),sqrt(tres.variance()));
       // calculate the cluster length; this should be the particle path through the CsI, but
       // for now (backwards compatible) it's the length along the cluster axis FIXME!
-//      double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
-//      double clen = lcrystal - (calohit->caloCluster()->time() - ca.sensorToca())*ca.sensorTraj().speed();
-      double clen = (ca.sensorToca() - calohit->caloCluster()->time() )*ca.sensorTraj().speed();
-      fseed._chit = TrkCaloHitSeed(unbiasedt0,
-          static_cast<float>(ca.particleToca()),
-          static_cast<float>(clen),
+      double clen = (calohit->caloCluster()->time() - ca.sensorToca() )*ca.sensorTraj().speed();
+      fseed._chit = TrkCaloHitSeed(unbiasedt0, // t0
+          static_cast<float>(ca.particleToca()), // trklen
+          static_cast<float>(clen), // hitlen
           static_cast<float>(ca.doca()), // cdoca
           static_cast<float>(sqrt(ca.docaVar())), //rerr
           static_cast<float>(ca.sensorToca()), // time

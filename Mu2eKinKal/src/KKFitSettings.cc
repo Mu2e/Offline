@@ -4,7 +4,7 @@
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
-#include "KinKal/Detector/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include <iostream>
 
 namespace mu2e {
@@ -20,7 +20,8 @@ namespace mu2e {
       config.dwt_ = fitconfig.dwt();
       config.convdchisq_ = fitconfig.convdchisq();
       config.divdchisq_ = fitconfig.divdchisq();
-      config.pdchi2_ = fitconfig.dparams();
+      config.pdchisq_ = fitconfig.dparams();
+      config.divgap_ = fitconfig.dgap();
       config.bfcorr_ = fitconfig.bfieldCorr();
       config.ends_ = fitconfig.ends();
       config.tol_ = fitconfig.btol();
@@ -32,11 +33,14 @@ namespace mu2e {
         shualg.push_back(std::get<1>(misetting));
       }
       // create the updaters requested
-      unsigned ndoca(0); // indices into the updater config blocks
-      unsigned nnull(0);
-      auto const& nhusettings = fitconfig.nhuConfig();
-      auto const& dhusettings = fitconfig.dhuConfig();
-      auto const& chusettings = fitconfig.chuConfig();
+      unsigned ndoca, nnull, ncomb;
+      ndoca = nnull = ncomb = 0; // count how many updater configs have been seen
+      std::vector<std::tuple<float>> nhusettings;
+      std::vector<std::tuple<float,float,float>> dhusettings;
+      std::vector<std::tuple<float,float,float,int>> chusettings;
+      nhusettings = fitconfig.nhuConfig().value_or(nhusettings);
+      dhusettings = fitconfig.dhuConfig().value_or(dhusettings);
+      chusettings = fitconfig.chuConfig().value_or(chusettings);
       auto const& sxusettings = fitconfig.sxuConfig();
       if(config.schedule_.size() != sxusettings.size())
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of KKStrawXing updaters" <<  std::endl;
@@ -57,15 +61,17 @@ namespace mu2e {
           DOCAStrawHitUpdater dhupdater(maxdoca,minddoca,maxddoca);
           miconfig.addUpdater(std::any(dhupdater));
         } else if(ialg == StrawHitUpdaters::Combinatoric) {
-          auto const& chusetting = chusettings.at(ndoca++);
+          auto const& chusetting = chusettings.at(ncomb++);
           double inactivep = std::get<0>(chusetting);
           double nullambigp = std::get<1>(chusetting);
           double mindchi2 = std::get<2>(chusetting);
-          CombinatoricStrawHitUpdater chupdater(inactivep,nullambigp,mindchi2);
-        } else {
+          int diag = std::get<3>(chusetting);
+          CombinatoricStrawHitUpdater chupdater(inactivep,nullambigp,mindchi2,diag);
+          miconfig.addUpdater(std::any(chupdater));
+       } else {
           throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
         }
-        //StrawXing updater too
+        //StrawXing updater too; these must always be present
         auto const& sxusetting = sxusettings.at(imeta);
         double maxdocasig= std::get<0>(sxusetting);
         double maxdoca = std::get<1>(sxusetting);
@@ -74,7 +80,7 @@ namespace mu2e {
         miconfig.addUpdater(std::any(sxupdater));
       }
       // consistency test
-      if(config.schedule_.size() != ndoca+nnull)
+      if(config.schedule_.size() != ndoca+nnull+ncomb)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent StrawHitUpdater config "<< std::endl;
       return config;
     }

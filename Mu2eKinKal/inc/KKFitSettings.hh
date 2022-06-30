@@ -5,6 +5,7 @@
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "KinKal/Fit/Config.hh"
@@ -25,7 +26,8 @@ namespace mu2e {
       fhicl::Atom<float> dwt { Name("Deweight"), Comment("Deweighting factor when initializing the track end parameters") };
       fhicl::Atom<float> convdchisq { Name("ConvergenceDeltaChisq"), Comment("Maximum Chisq/DOF change between iterations to define convergence") };
       fhicl::Atom<float> divdchisq { Name("DivergenceDeltaChisq"), Comment("Minimum Chisq/DOF change between iterations to define divergence") };
-      fhicl::Atom<float> dparams { Name("DeltaParams"), Comment("Parameter difference threshold (units of chisquared)") };
+      fhicl::Atom<float> dparams { Name("DivergenceDeltaParams"), Comment("Parameter difference chisquared to define divergence threshold") };
+      fhicl::Atom<float> dgap { Name("DivergenceGap"), Comment("Average trajectory gap to define divergence (mm)") };
       fhicl::Atom<bool> bfieldCorr { Name("BFieldCorrection"), Comment("Apply correction for BField inhomogeneity") };
       fhicl::Atom<bool> ends { Name("ProcessEnds"), Comment("Process purely passive sites at the time range ends") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
@@ -33,15 +35,15 @@ namespace mu2e {
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,size_t>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
           " 'Temperature (dimensionless)', 'StrawHitUpdater algorithm'") };
-      using NullStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float>>;
+      using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float>>;
       NullStrawHitUpdaterSettings nhuConfig{ Name("NullStrawHitUpdaterSettings"), Comment("NullStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit'") };
-      using DOCAStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      using DOCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float>>;
       DOCAStrawHitUpdaterSettings dhuConfig{ Name("DOCAStrawHitUpdaterSettings"), Comment("DOCAStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum DOCA to use L/R ambiguity'") };
-      using CombinatoricStrawHitUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
-          " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference'") };
+          " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference', 'diag level'") };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
           " 'Maximum DOCA error to use unaveraged material', 'Maximum DOCA to use straw material', 'Maximum DOCA to use unaveraged material'") };
@@ -58,8 +60,9 @@ namespace mu2e {
       fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add material effects to the fit") };
       fhicl::Atom<bool> useCaloCluster { Name("UseCaloCluster"), Comment("Use CaloCluster in the fit") };
-      fhicl::Atom<float> strawHitGroupDeltaT { Name("StrawHitGroupDeltaT"), Comment("Maximum time difference between StrawHits in StrawHitGroups") };
-      fhicl::Atom<std::string> strawHitGroupLevel { Name("StrawHitGroupLevel"), Comment("Level for selecting StrawHitGroups (see StrawIdMask for details") };
+      fhicl::Atom<size_t> strawHitClusterDeltaStraw { Name("StrawHitClusterDeltaStraw"), Comment("Maximum straw index difference between StrawHits in StrawHitClusters") };
+      fhicl::Atom<float> strawHitClusterDeltaT { Name("StrawHitClusterDeltaT"), Comment("Maximum time difference between StrawHits in StrawHitClusters") };
+      fhicl::Atom<std::string> strawHitClusterLevel { Name("StrawHitClusterLevel"), Comment("Level for selecting StrawHitClusters (see StrawIdMask for details") };
       fhicl::Atom<float> caloDt{ Name("CaloTrackerTimeOffset"), Comment("Time offset of calorimeter data WRT tracker (ns)") }; // this should come from the database FIXME
       fhicl::Atom<float> caloPosRes{ Name("CaloPositionResolution"), Comment("Transverse resolution of CaloCluster position (mm)") }; // this should come from the CaloCluster FIXME!
       fhicl::Atom<float> caloPropSpeed{ Name("CaloPropagationSpeed"), Comment("Axial speed of light in a crystal (mm/ns)") }; // see doc 25320.  this should come from the CaloCluster FIXME!
