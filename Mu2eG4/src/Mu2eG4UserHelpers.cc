@@ -67,12 +67,12 @@ namespace mu2e {
     // global time at the point of interaction/decay
     double getEndGlobalTime(G4Track const* const trk) {
       auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
-      return uti->GetGlobalTime();
+      return (uti->GetGlobalTime() >= 0.) ? uti->GetGlobalTime() : trk->GetGlobalTime();
     }
     // proper time at the point of interaction/decay
     double getEndProperTime(G4Track const* const trk) {
       auto const* uti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation());
-      return uti->GetProperTime();
+      return (uti->GetProperTime() >= 0.) ? uti->GetProperTime() : trk->GetProperTime();
     }
     // kinetic energy at the point of interaction/decay
     double getEndKE(G4Track const* const trk) {

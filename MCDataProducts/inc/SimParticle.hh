@@ -68,8 +68,8 @@ namespace mu2e {
       _endMomentum(),
       _endGlobalTime(0.),
       _endProperTime(0.),
-      _preLastStepGlobalTime(0.),
-      _preLastStepProperTime(0.),
+      // _preLastStepGlobalTime(0.),
+      // _preLastStepProperTime(0.),
       _endVolumeIndex(0),
       _endG4Status(),
       _stoppingCode(),
@@ -111,8 +111,8 @@ namespace mu2e {
       _endMomentum(),
       _endGlobalTime(0.),
       _endProperTime(0.),
-      _preLastStepGlobalTime(0.),
-      _preLastStepProperTime(0.),
+      // _preLastStepGlobalTime(0.),
+      // _preLastStepProperTime(0.),
       _endVolumeIndex(0),
       _endG4Status(),
       _stoppingCode(),
@@ -129,8 +129,8 @@ namespace mu2e {
                      CLHEP::HepLorentzVector aendMomentum,
                      float                  aendGlobalTime,
                      float                  aendProperTime,
-                     float                  apreLastStepGlobalTime,
-                     float                  apreLastStepProperTime,
+                     // float                  apreLastStepGlobalTime,
+                     // float                  apreLastStepProperTime,
                      unsigned                aendVolumeIndex,
                      unsigned                aendG4Status,
                      ProcessCode             astoppingCode,
@@ -141,8 +141,8 @@ namespace mu2e {
       _endMomentum     = aendMomentum;
       _endGlobalTime   = aendGlobalTime;
       _endProperTime   = aendProperTime;
-      _preLastStepGlobalTime = apreLastStepGlobalTime;
-      _preLastStepProperTime = apreLastStepProperTime;
+      // _preLastStepGlobalTime = apreLastStepGlobalTime;
+      // _preLastStepProperTime = apreLastStepProperTime;
       _endVolumeIndex  = aendVolumeIndex;
       _endG4Status     = aendG4Status;
       _stoppingCode    = astoppingCode;
@@ -221,8 +221,8 @@ namespace mu2e {
     float       endGlobalTime()  const { return _endGlobalTime; }
     float&      endGlobalTime()        { return _endGlobalTime; }
     float       endProperTime()  const { return _endProperTime; }
-    float       preLastStepGlobalTime()  const { return _preLastStepGlobalTime; }
-    float       preLastStepProperTime()  const { return _preLastStepProperTime; }
+    // float       preLastStepGlobalTime()  const { return _preLastStepGlobalTime; }
+    // float       preLastStepProperTime()  const { return _preLastStepProperTime; }
     unsigned     endVolumeIndex() const { return _endVolumeIndex;}
     unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
@@ -294,8 +294,8 @@ namespace mu2e {
     XYZTVectorF                    _endMomentum;
     float                  _endGlobalTime;
     float                  _endProperTime;
-    float                  _preLastStepGlobalTime;
-    float                  _preLastStepProperTime;
+    // float                  _preLastStepGlobalTime;
+    // float                  _preLastStepProperTime;
     unsigned                _endVolumeIndex;
     unsigned                _endG4Status;
     ProcessCode             _stoppingCode;
