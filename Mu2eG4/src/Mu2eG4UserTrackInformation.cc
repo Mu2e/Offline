@@ -21,9 +21,9 @@ namespace mu2e{
     _muCapCode(),
     _momDirection(),
     _kinEnergy(0.),
-    _globalTime(0.),
-    _properTime(0.),
-    _position(0.)
+    _globalTime(-1.0),
+    _properTime(-1.0),
+    _position()
   {}
 
   Mu2eG4UserTrackInformation::~Mu2eG4UserTrackInformation(){

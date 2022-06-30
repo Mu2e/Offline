@@ -696,15 +696,15 @@ namespace mu2e {
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                          endMomentum,
-                          trk->GetGlobalTime(),
-                          trk->GetProperTime(),
+                          endMomentum, // from pre last step
+                          // trk->GetGlobalTime(),
+                          // trk->GetProperTime(),
                           preLastStepGlobalTime,
                           preLastStepProperTime,
                           _physVolHelper->index(trk),
                           trk->GetTrackStatus(),
                           stoppingCode,
-                          endKE,
+                          endKE, // from pre last step
                           nSteps,
                           trk->GetTrackLength()
                           );
