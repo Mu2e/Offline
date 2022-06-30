@@ -257,7 +257,7 @@ namespace mu2e {
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitGrouper(),strawhits,strawxings,calohits); //TODO - check on this
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitClusterer(),strawhits,strawxings,calohits); //TODO - check on this
           bool save(true);//TODO - when would we like not to save?
           if(save || saveall_){
             // convert KKTrk into KalSeeds for persistence

@@ -8,7 +8,8 @@
 // mu2eKinKal classes
 //KinKal classes
 #include "KinKal/Detector/ResidualHit.hh"
-#include "KinKal/Detector/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/Line.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -28,10 +29,8 @@
 #include <cmath>
 namespace mu2e {
   using KinKal::BFieldMap;
-  using KinKal::WireHitState;
   using KinKal::Line;
   using KinKal::MetaIterConfig;
-  using KinKal::DriftInfo;
   using KinKal::POL2;
   using KinKal::Residual;
   using KinKal::VEC3;
@@ -64,6 +63,7 @@ namespace mu2e {
       // specific to KKStrawHit:
       void setState(WireHitState const& whstate);
       void setResiduals(WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
+      bool insideStraw(CA const& ca) const; // decide if a CA is inside the straw
       void updateResiduals() { setResiduals(whstate_, resids_); }
       auto const& closestApproach() const { return ptca_; }
       CA unbiasedClosestApproach() const;
@@ -97,6 +97,14 @@ namespace mu2e {
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
       StrawHitUpdaters::algorithm updater_; // record which updater was last used on this hit
+  };
+
+  // struct to sort hits by time
+  template <class KTRAJ> struct StrawHitTimeSort {
+    using KKSTRAWHIT = KKStrawHit<KTRAJ>;
+    using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
+    bool operator ()( const KKSTRAWHITPTR& hit1, const KKSTRAWHITPTR& hit2) {
+      return hit1->time() < hit2->time(); }
   };
 
   template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate,
@@ -137,20 +145,23 @@ namespace mu2e {
       if(nshu != 0 || dshu != 0){
         // compute the unbiased closest approach; this is brute force, but works
         CA uca = unbiasedClosestApproach();
-        if(nshu != 0){
-          mindoca_ = strawRadius();
-          if(uca.usable())whstate_ = nshu->wireHitState(uca.doca());
-        } else if(dshu != 0){
-          // update minDoca (for null ambiguity error estimate)
-          mindoca_ = std::min(dshu->minDOCA(),strawRadius());
-          if(uca.usable())whstate_ = dshu->wireHitState(uca.doca());
-        }
+        if(uca.usable() && insideStraw (uca)){
+          if(nshu != 0){
+            mindoca_ = strawRadius();
+            whstate_ = nshu->wireHitState(uca.tpData());
+          } else if(dshu != 0){
+            // update minDoca (for null ambiguity error estimate)
+            mindoca_ = std::min(dshu->minDOCA(),strawRadius());
+            whstate_ = dshu->wireHitState(uca.tpData());
+          }
+        } else
+          whstate_ = WireHitState::forcedinactive;
       }
     }
-    // then update the residual
+    // then update the residual.  This is necessary as the reference will have changed
     updateResiduals();
-    // finally update the weight:  this is currently called by Measurement, but should move here TODO
-    // this->updateWeight(miconfig);
+    // finally update the weight
+    this->updateWeight(miconfig);
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(WireHitState const& whstate) {
@@ -189,7 +200,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> Residual const& KKStrawHit<KTRAJ>::refResidual(unsigned ires) const {
-    if(ires >=2)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
+    if(ires >dresid)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
     return resids_[ires];
   }
 
@@ -205,8 +216,17 @@ namespace mu2e {
     dinfo.vdrift_ = sresponse_.driftConstantSpeed();
 //    dinfo.tdrift_ = drift.R()/dinfo.vdrift_;
     dinfo.tdrift_ = fabs(ptca_.doca())/dinfo.vdrift_;
-    dinfo.tdriftvar_ = 16.0; // temporary hack FIXME
+    dinfo.tdriftvar_ = 20.0; // temporary hack FIXME
     return dinfo;
+  }
+
+  template <class KTRAJ> bool KKStrawHit<KTRAJ>::insideStraw(CA const& ca) const {
+    static const double ubuffer(10.0); // should be a parameter FIXME
+    // compute the position along the wire and compare to the 1/2 length
+    // have to translate from CLHEP, should be native to Straw FIXME
+    double upos = VEC3(straw_.wireDirection()).Dot((ca.sensorPoca().Vect() - VEC3(straw_.origin())));
+    return fabs(upos) < straw_.halfLength() + ubuffer;
+    // include transverse test TODO
   }
 
   template<class KTRAJ> void KKStrawHit<KTRAJ>::print(std::ostream& ost, int detail) const {
@@ -227,9 +247,9 @@ namespace mu2e {
     }
     if(detail > 0){
       if(resids_[tresid].active())
-        ost << " Active Time Residual " << resids_[tresid];
+        ost << " Active Time " << resids_[tresid];
       if(resids_[dresid].active())
-        ost << " Active Distance Residual " << resids_[dresid];
+        ost << " Active Dist " << resids_[dresid];
       ost << std::endl;
     }
     if(detail > 1) {

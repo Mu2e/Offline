@@ -1,9 +1,8 @@
 #ifndef Mu2eKinKal_KKStrawXingUpdater_hh
 #define Mu2eKinKal_KKStrawXingUpdater_hh
-#include "KinKal/Detector/WireHitStructs.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 namespace mu2e {
   // simple struct to hold crossing calculation configuration parameters
-  using KinKal::WireHitState;
   struct KKStrawXingUpdater {
     WireHitState hitstate_; // associated hit state (inactive if no hit)
     double maxdocasig_; // maximum doca error to use non-averaged value
