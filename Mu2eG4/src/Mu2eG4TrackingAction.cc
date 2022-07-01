@@ -171,14 +171,14 @@ namespace mu2e {
     // an old code used when mu2e was using a custom geant4 version
     G4VUserTrackInformation* tui = trk->GetUserInformation();
     if (tui) {
-      if ( trackingVerbosityLevel > 0 ) {
+      if ( trackingVerbosityLevel > 1 ) {
         G4cout << __func__
                << " the track was labeled as " << tui->GetType() << G4endl;
       }
       ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
       if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
         ti->setMuCapCode(ProcessCode::findByName((tui->GetType()).c_str()));
-        if ( trackingVerbosityLevel > 0 ) {
+        if ( trackingVerbosityLevel > 1 ) {
           G4cout << __func__ << " set Mu2eG4UserTrackInformation  muCapCode "
                  << ti->muCapCode()  << G4endl;
         }
@@ -196,7 +196,7 @@ namespace mu2e {
       const G4String& creatorModelName =  trk->GetCreatorModelName();
       size_t delPosition = creatorModelName.find_last_of("_");
 
-      if ( trackingVerbosityLevel > 0 ) {
+      if ( trackingVerbosityLevel > 1 ) {
         G4cout << __func__
                << " full creatorModelName "
                << creatorModelName << G4endl;
@@ -207,7 +207,7 @@ namespace mu2e {
         string modelName = creatorModelName.substr(delPosition+1);
         ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
 
-        if ( trackingVerbosityLevel > 0 ) {
+        if ( trackingVerbosityLevel > 1 ) {
           G4cout << __func__
                  << " Mu2e used model name: "
                  << modelName << G4endl;
@@ -226,7 +226,7 @@ namespace mu2e {
         if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
           ti->setMuCapCode(ProcessCode::findByName(modelName.c_str()));
 
-          if ( trackingVerbosityLevel > 0 ) {
+          if ( trackingVerbosityLevel > 1 ) {
             G4cout << __func__ << " set Mu2eG4UserTrackInformation  muCapCode "
                    << ti->muCapCode()  << G4endl;
           }
@@ -457,7 +457,7 @@ namespace mu2e {
 
       if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
 
-        if ( trackingVerbosityLevel > 0 ) {
+        if ( trackingVerbosityLevel > 1 ) {
           G4cout << __func__
                  << " particle created by " << creationCode.name()
                  << " will try to replace the creation code "
@@ -484,7 +484,7 @@ namespace mu2e {
     } // else - not a primary
 
 
-    if ( trackingVerbosityLevel > 0 ) {
+    if ( trackingVerbosityLevel > 1 ) {
       G4cout << __func__
              << " saving particle "
              << trk->GetParticleDefinition()->GetPDGEncoding()
@@ -516,7 +516,7 @@ namespace mu2e {
     PDGCode::type ppdgId = static_cast<PDGCode::type>(trk->GetDefinition()->GetPDGEncoding());
 
     // printing ions
-    if ( trackingVerbosityLevel > 0 && ppdgId>PDGCode::G4Threshold ) {
+    if ( trackingVerbosityLevel > 1 && ppdgId>PDGCode::G4Threshold ) {
       G4cout << __func__ << " Ion pdgid:          "
              << ppdgId
              << G4endl;
@@ -661,7 +661,7 @@ namespace mu2e {
 
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
-    if (trackingVerbosityLevel > 0 ) {
+    if (trackingVerbosityLevel > 1 ) {
       G4int prec = G4cout.precision(15);
       const G4DynamicParticle*  pParticle = trk->GetDynamicParticle();
       double theKEnergy  = pParticle->GetKineticEnergy();
@@ -670,31 +670,41 @@ namespace mu2e {
         (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()));
       G4cout << __func__ << " KE before int " << uti->GetKineticEnergy()
              << " Momentum direction before int " << uti->GetMomentumDirection()
+             << " Position before int " << uti->GetPosition()
+             << " Global time before int " << uti->GetGlobalTime()
+             << " Proper time before int " << uti->GetProperTime()
              << G4endl;
       G4cout << __func__ << " KE            " << theKEnergy
              << " Momentum direction            " << theMomentumDirection
-             << " Proper time " << pParticle->GetProperTime()
+             << " Position            " << trk->GetPosition()
+             << " Global time            " << trk->GetGlobalTime()
+             << " Proper time            " << trk->GetProperTime()
              << G4endl;
       G4cout.precision(prec);
     }
 
 
-    //Get kinematics just before annihilation
+    //Get kinematics just before the post step doit process acted (e.g., decay, annihilation, etc.)
+    //note that while we have the intermediate position we use it only for diagnostic printouts
     double endKE = Mu2eG4UserHelpers::getEndKE(trk);
     CLHEP::HepLorentzVector endMomentum =  Mu2eG4UserHelpers::getEndMomentum(trk);
+    double preLastStepGlobalTime = Mu2eG4UserHelpers::getEndGlobalTime(trk);
+    double preLastStepProperTime = Mu2eG4UserHelpers::getEndProperTime(trk);
 
     //Get number od steps the track is made of
     int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                          endMomentum,
-                          trk->GetGlobalTime(),
-                          trk->GetProperTime(),
+                          endMomentum, // from pre last step
+                          // trk->GetGlobalTime(),
+                          // trk->GetProperTime(),
+                          preLastStepGlobalTime,
+                          preLastStepProperTime,
                           _physVolHelper->index(trk),
                           trk->GetTrackStatus(),
                           stoppingCode,
-                          endKE,
+                          endKE, // from pre last step
                           nSteps,
                           trk->GetTrackLength()
                           );
@@ -720,7 +730,7 @@ namespace mu2e {
     //   parPDGId = i->second.pdgId();
     // }
 
-    if ( trackingVerbosityLevel > 0
+    if ( trackingVerbosityLevel > 1
          // || trk->GetDefinition()->GetPDGEncoding()>PDGCode::G4Threshold
         ) {
       G4int prec = G4cout.precision(15);

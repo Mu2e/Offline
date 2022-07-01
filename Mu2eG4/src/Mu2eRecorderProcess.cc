@@ -37,8 +37,9 @@ namespace mu2e{
     pParticleChange->Initialize(trk);
     if (verboseLevel>0) {
       G4int prec = G4cout.precision(15);
-      G4cout << __func__
-             << " particle "
+      G4cout << __func__ << " : "
+             << GetProcessName()
+             << " : particle "
              << trk.GetParticleDefinition()->GetParticleName()
              << " totE deposit " << std::fixed << trk.GetStep()->GetTotalEnergyDeposit()
              << " NonIonE deposit " << std::fixed << trk.GetStep()->GetNonIonizingEnergyDeposit()
@@ -46,17 +47,27 @@ namespace mu2e{
              << " material " << trk.GetMaterial()->GetName()
              << G4endl;
       G4cout << __func__
-             << " KE " << step.GetPostStepPoint()->GetKineticEnergy()
-             << " momentum direction " << step.GetPostStepPoint()->GetMomentumDirection()
+             << " Interim KE " << step.GetPostStepPoint()->GetKineticEnergy()
+             << " Interim momentum direction " << step.GetPostStepPoint()->GetMomentumDirection()
+             << " Interim position " << step.GetPostStepPoint()->GetPosition()
+             << " Interim Global Time " << step.GetPostStepPoint()->GetGlobalTime()
+             << " Interim Proper Time " << step.GetPostStepPoint()->GetProperTime()
+             << G4endl;
+      G4cout << __func__
+             << " Track Global Time " << trk.GetGlobalTime()
+             << " Proper Time " << trk.GetProperTime()
              << G4endl;
       G4cout.precision(prec);
       //      pParticleChange->DumpInfo();
     }
 
     Mu2eG4UserTrackInformation* ti = dynamic_cast<Mu2eG4UserTrackInformation*>(trk.GetUserInformation());
-    // the two most important lines getting the intermediate info from the G4PostStepPoint
+    // the most important lines getting the intermediate info from the G4PostStepPoint
     ti->SetKineticEnergy(step.GetPostStepPoint()->GetKineticEnergy());
     ti->SetMomentumDirection(step.GetPostStepPoint()->GetMomentumDirection());
+    ti->SetGlobalTime(step.GetPostStepPoint()->GetGlobalTime());
+    ti->SetProperTime(step.GetPostStepPoint()->GetProperTime());
+    ti->SetPosition(step.GetPostStepPoint()->GetPosition());
 
     return pParticleChange; // return unchanged
 
