@@ -15,6 +15,7 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Atom.h"
@@ -59,6 +60,7 @@ namespace mu2e
       //other settings
       fhicl::Atom<bool> useNoFitReco{Name("useNoFitReco"), Comment("use pulse reco results not based on a Gumbel fit")};
       fhicl::Atom<bool> usePEsPulseHeight{Name("usePEsPulseHeight"), Comment("use PEs determined by pulse height instead of pulse area")};
+      fhicl::Atom<int> bigClusterThreshold{Name("bigClusterThreshold"), Comment("no coincidence check for clusters with a number of hits above this threshold")};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -86,6 +88,7 @@ namespace mu2e
     double      _minOverlapTime;
     bool        _useNoFitReco;
     bool        _usePEsPulseHeight;
+    size_t      _bigClusterThreshold;
 
     int         _totalEvents;
     int         _totalEventsCoincidence;
@@ -164,6 +167,7 @@ namespace mu2e
     _minOverlapTime(conf().minOverlapTime()),
     _useNoFitReco(conf().useNoFitReco()),
     _usePEsPulseHeight(conf().usePEsPulseHeight()),
+    _bigClusterThreshold(conf().bigClusterThreshold()),
     _totalEvents(0),
     _totalEventsCoincidence(0)
   {
@@ -557,6 +561,22 @@ namespace mu2e
                                [](const CrvHit &a, const CrvHit &b){return a._coincidenceLayers < b._coincidenceLayers;})->_coincidenceLayers;
     int maxCoincidenceLayers = std::max_element(hits.begin(),hits.end(),
                                [](const CrvHit &a, const CrvHit &b){return a._coincidenceLayers < b._coincidenceLayers;})->_coincidenceLayers;
+
+    if(hits.size()>_bigClusterThreshold)
+    {
+      //this cluster has so many hits that it makes no sense anymore to search for individual coincidences.
+      //we still need to check that the minimum number of layers were hit to skip the coincidence check.
+      int nonEmptyLayers=0;
+      for(int iLayer=0; iLayer<nLayers; ++iLayer)
+      {
+        if(!hitsLayers[iLayer].empty()) ++nonEmptyLayers;
+      }
+      if(nonEmptyLayers>=minCoincidenceLayers)
+      {
+        for(auto iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit) coincidenceHits.push_back(*iterHit);
+        return;
+      }
+    }
 
     //***************************************************
     //find coincidences using 2/4 coincidence requirement

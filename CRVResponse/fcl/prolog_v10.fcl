@@ -379,6 +379,7 @@ BEGIN_PROLOG
       #other settings
       useNoFitReco                     : true
       usePEsPulseHeight                : false  //using the PEs that were calculated using the pulse height instead of pulse area
+      bigClusterThreshold              : 800
     }
     CrvCoincidenceClusterMatchMC:
     {
