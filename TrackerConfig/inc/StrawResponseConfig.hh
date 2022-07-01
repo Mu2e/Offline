@@ -47,8 +47,34 @@ namespace mu2e {
       Name("totEBinWidth"), Comment("TOT drift time e bin width")};
     fhicl::Sequence<double>  totDriftTime {
       Name("totDriftTime"), Comment(" totDriftTime ")};
-    fhicl::Atom<bool>  useDriftErrorCalibration {
-      Name("useDriftErrorCalibration"), Comment(" useDriftErrorCalibration ")};
+
+    fhicl::Atom<bool> useDriftSplines {
+      Name("useDriftSplines"), Comment("Use calibrated drift spline")};
+    fhicl::Atom<int> driftSplineDocaBins {
+      Name("driftSplineDocaBins"), Comment("Number of bins from 0 to 2.5 inclusive")};
+    fhicl::Atom<int> driftSplinePhiBins {
+      Name("driftSplinePhiBins"), Comment("Number of bins from 0 to pi/2")};
+    fhicl::Atom<bool> driftIgnorePhi {
+      Name("driftIgnorePhi"), Comment("Ignore phi for no field reco")};
+    fhicl::Sequence<double> driftSplineA {
+      Name("driftSplineA"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+    fhicl::Sequence<double> driftSplineB {
+      Name("driftSplineB"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+    fhicl::Sequence<double> driftSplineC {
+      Name("driftSplineC"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+    fhicl::Sequence<double> driftSplineD {
+      Name("driftSplineD"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+    fhicl::Sequence<double> driftResSplineA {
+      Name("driftResSplineA"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+    fhicl::Sequence<double> driftResSplineB {
+      Name("driftResSplineB"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+    fhicl::Sequence<double> driftResSplineC {
+      Name("driftResSplineC"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+    fhicl::Sequence<double> driftResSplineD {
+      Name("driftResSplineD"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+
+
+
     fhicl::Sequence<double> driftErrorParameters {
       Name("driftErrorParameters"), Comment(" driftErrorParameters ")};
     fhicl::Atom<bool>  useParameterizedDriftErrors {
@@ -70,16 +96,8 @@ namespace mu2e {
       Name("useNonLinearDrift"), Comment(" useNonLinearDrift ")};
     fhicl::Atom<double> linearDriftVelocity {
       Name("linearDriftVelocity"), Comment(" mm/ns, only used if nonlindrift= ")};
-    fhicl::Atom<double> minDriftRadiusResolution {
-      Name("minDriftRadiusResolution"), Comment(" mm ")};
-    fhicl::Atom<double> maxDriftRadiusResolution {
-      Name("maxDriftRadiusResolution"), Comment(" mm ")};
-    fhicl::Atom<double> driftRadiusResolutionRadius {
-      Name("driftRadiusResolutionRadius"), Comment(" mm ")};
     fhicl::Atom<double> minT0DOCA {
       Name("minT0DOCA"), Comment("FIXME should be moved to a reconstruction configuration ")};
-    fhicl::Atom<double> t0shift {
-      Name("t0shift"), Comment("FIXME should be average slewing?")};
     fhicl::Atom<double> defaultPeakMinusPedestalEnergyScale {
       Name("defaultPeakMinusPedestalEnergyScale"), Comment("default constant value for pmp energy method calibration")};
     fhicl::Sequence<double> peakMinusPedestalEnergyScale {

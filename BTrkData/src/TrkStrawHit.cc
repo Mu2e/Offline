@@ -140,7 +140,7 @@ namespace mu2e
    _rdrift = _strawResponse->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
    _vdriftinst = _strawResponse->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
    double vdriftconst = _strawResponse->driftConstantSpeed();
-   _rdrifterr = _strawResponse->driftDistanceError(_combohit.strawId(),_rdrift,_phi,fabs(poca().doca()));
+   _rdrifterr = _strawResponse->driftDistanceError(_combohit.strawId(),fabs(poca().doca()),_phi);
 
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_vdriftinst;
