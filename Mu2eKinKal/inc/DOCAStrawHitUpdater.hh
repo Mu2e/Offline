@@ -5,6 +5,7 @@
 #define Mu2eKinKal_DOCAStrawHitUpdater_hh
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 
 namespace mu2e {
 // Update based just on (unbiased) DOCA to the wire, not including this hit
@@ -18,7 +19,8 @@ namespace mu2e {
       auto maxDOCA() const { return maxdoca_; }
       auto minDOCA() const { return mindoca_; }
       auto maxDriftDOCA() const { return maxddoca_; }
-    private:
+      StrawHitUpdaters::algorithm algorithm() const { return StrawHitUpdaters::DOCA; }
+   private:
       double maxdoca_; // maximum DOCA to still use a hit
       double mindoca_; // minimum DOCA to use drift information
       double maxddoca_; // maximum DOCA to use drift information
