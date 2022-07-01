@@ -45,6 +45,7 @@ namespace mu2e {
   using KinKal::Line;
   using KinKal::TimeRange;
   using KinKal::Status;
+  using RESIDCOL = std::array<KinKal::Residual,2>;
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
   using Mu2eKinKal::Mu2eConfig;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
@@ -474,26 +475,28 @@ namespace mu2e {
     // loop over track components and store them
     fseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
-      auto const& chit = strawhit->hit();
-      StrawHitFlag hflag = chit.flag();
-      if(strawhit->active())hflag.merge(StrawHitFlag::active);
-      auto const& ca = strawhit->closestApproach();
-      auto uca = strawhit->unbiasedClosestApproach();
-      DriftInfo dinfo = strawhit->distanceToTime();
-      auto tres = (kktrk.fitStatus().usable()) ? strawhit->residual(0) : strawhit->refResidual(0);
-      auto dres = (kktrk.fitStatus().usable()) ? strawhit->residual(1) : strawhit->refResidual(1);
-      HitT0 unbiasedt0(tres.value(),sqrt(tres.variance()));
-      TrkStrawHitSeed seedhit(strawhit->strawHitIndex(), // strawid
-          unbiasedt0, // t0
-          static_cast<float>(ca.particleToca()), // trklen
-          static_cast<float>(ca.sensorToca()), // hitlen
-          static_cast<float>(dres.value()), // rdrift
-          static_cast<float>(dinfo.tdrift_), // stime
-          static_cast<float>(uca.doca()), // wdoca
-          strawhit->hitState().state_, // ambig
-          static_cast<float>(sqrt(dres.variance())), // rerr
-          hflag, chit);
-      fseed._hits.push_back(seedhit);
+      Residual tres, dres;
+      if(kktrk.fitStatus().usable()) {
+        // compute unbiased residuals
+        tres = strawhit->residual(0);
+        // if this hit used drift information, force the computation of distance residual
+        if(strawhit->hitState().useDrift()){
+          static WireHitState null(WireHitState::null);
+          RESIDCOL resids;
+          strawhit->setResiduals(null,resids);
+          dres = resids[1];
+        } else {
+          dres = strawhit->residual(1);
+        }
+      } else {
+        tres = strawhit->refResidual(0);
+        dres = strawhit->refResidual(1);
+      }
+      fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
+          strawhit->closestApproach().tpData(),
+          strawhit->unbiasedClosestApproach().tpData(),
+          tres, dres,
+          strawhit->hitState().state_, strawhit->updaterAlgorithm());
     }
     if(kktrk.caloHits().size() > 0){
       auto const& calohit = kktrk.caloHits().front(); // for now take the front: not sure if there will ever be >1 TODO

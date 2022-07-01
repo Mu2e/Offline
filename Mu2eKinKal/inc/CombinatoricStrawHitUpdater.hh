@@ -8,6 +8,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -44,6 +45,7 @@ namespace mu2e {
       double nullPenalty() const { return nullp_;}
       auto const& allowed() const { return allowed_; }
       double minDeltaChi2() const { return mindchi2_; }
+      StrawHitUpdaters::algorithm algorithm() const { return StrawHitUpdaters::Combinatoric; }
       // the work is done here
       template <class KTRAJ> void updateHits(std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>& hits,KinKal::MetaIterConfig const& miconfig) const;
     private:
@@ -175,7 +177,7 @@ namespace mu2e {
     }
     // assign the individual hit states according to this
     for(size_t ihit=0;ihit < hits.size(); ++ihit) {
-      hits[ihit]->setState(best.hitstates_[ihit]);
+      hits[ihit]->setState(best.hitstates_[ihit],algorithm());
     }
   }
 }

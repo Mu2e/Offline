@@ -52,8 +52,8 @@ Mu2eKinKal : {
     ]
     NullStrawHitUpdaterSettings : [
       [ 10.0],
-      [ 10.0 ],
-      [ 10.0 ]
+      [ 8.0 ],
+      [ 7.0 ]
     ]
     StrawXingUpdaterSettings : [
       [-1.0, 10., 10.0 ],
@@ -75,10 +75,10 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      [ 1.0, 0 ]
+      [ 0.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 10.0 ]
+      [ 6.0 ]
     ]
     StrawXingUpdaterSettings : [
       [-1.0, 10.0, 10.0 ]
