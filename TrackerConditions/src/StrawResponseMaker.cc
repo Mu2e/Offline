@@ -7,6 +7,7 @@
 #include "cetlib_except/exception.h"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "Offline/GeneralUtilities/inc/TwoDimSpline.hh"
 
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
@@ -94,6 +95,46 @@ namespace mu2e {
       _parDriftRes.push_back(stddev);
     }
 
+    double deltaPhi = 0;
+    std::vector<TwoDimSpline> timesplines;
+    std::vector<TwoDimSpline> ressplines;
+
+    if (_config.useDriftSplines()){
+      std::vector<double> driftSplineDoca;
+      for (int i=0;i<_config.driftSplineDocaBins();i++){
+        driftSplineDoca.push_back(i*2.5/(_config.driftSplineDocaBins()-1));
+      }
+      deltaPhi = (TMath::Pi()/2.0)/(_config.driftSplinePhiBins()-1);
+      if ((int) _config.driftSplineA().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
+          (int) _config.driftSplineB().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
+          (int) _config.driftSplineC().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
+          (int) _config.driftSplineD().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
+          (int) _config.driftResSplineA().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
+          (int) _config.driftResSplineB().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
+          (int) _config.driftResSplineC().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
+          (int) _config.driftResSplineD().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins()){
+        throw cet::exception("BADCONFIG")
+          << "StrawResponse drift spline vector lengths incorrect" << "\n";
+      }
+
+      for (int i=0;i<_config.driftSplinePhiBins();i++){
+        std::vector<double> driftSplineA, driftSplineB, driftSplineC, driftSplineD;
+        std::vector<double> driftResSplineA, driftResSplineB, driftResSplineC, driftResSplineD;
+        for (int j=0;j<_config.driftSplineDocaBins()-1;j++){
+          driftSplineA.push_back(_config.driftSplineA()[i*(_config.driftSplineDocaBins()-1) + j]);
+          driftSplineB.push_back(_config.driftSplineB()[i*(_config.driftSplineDocaBins()-1) + j]);
+          driftSplineC.push_back(_config.driftSplineC()[i*(_config.driftSplineDocaBins()-1) + j]);
+          driftSplineD.push_back(_config.driftSplineD()[i*(_config.driftSplineDocaBins()-1) + j]);
+          driftResSplineA.push_back(_config.driftResSplineA()[i*(_config.driftSplineDocaBins()-1) + j]);
+          driftResSplineB.push_back(_config.driftResSplineB()[i*(_config.driftSplineDocaBins()-1) + j]);
+          driftResSplineC.push_back(_config.driftResSplineC()[i*(_config.driftSplineDocaBins()-1) + j]);
+          driftResSplineD.push_back(_config.driftResSplineD()[i*(_config.driftSplineDocaBins()-1) + j]);
+        }
+        timesplines.push_back(TwoDimSpline(driftSplineDoca,driftSplineA,driftSplineB,driftSplineC,driftSplineD,true));
+        ressplines.push_back(TwoDimSpline(driftSplineDoca,driftResSplineA,driftResSplineB,driftResSplineC,driftResSplineD,false));
+      }
+    }
+
     std::vector<double> edep;
     for (int i=0;i<_config.eBins();i++)
       edep.push_back(_config.eBinWidth()*i);
@@ -132,17 +173,18 @@ namespace mu2e {
         _config.tdResSlope(), _config.truncateLongitudinal(),
         _config.rmsLongErrors(), _config.totTBins(), _config.totTBinWidth(),
         _config.totEBins(), _config.totEBinWidth(), _config.totDriftTime(),
-        _config.useDriftErrorCalibration(), _config.driftErrorParameters(),
+        _config.driftErrorParameters(),
         _config.useParameterizedDriftErrors(), _parDriftDocas, _parDriftOffsets, _parDriftRes,
         _config.wireLengthBuffer(), _config.strawLengthFactor(),
         _config.errorFactor(), _config.useNonLinearDrift(),
-        _config.linearDriftVelocity(), _config.minDriftRadiusResolution(),
-        _config.maxDriftRadiusResolution(),
-        _config.driftRadiusResolutionRadius(), _config.minT0DOCA(),
-        _config.t0shift(), pmpEnergyScale,
+        _config.linearDriftVelocity(),
+        _config.minT0DOCA(),
+        pmpEnergyScale,
         electronicsTimeDelay,
         gasGain, analognoise, dVdI, vsat, ADCped,
-        pmpEnergyScaleAvg, strawHalfPropVelocity );
+        pmpEnergyScaleAvg, strawHalfPropVelocity,
+        _config.useDriftSplines(), _config.driftIgnorePhi(),
+        deltaPhi,timesplines,ressplines);
 
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;
