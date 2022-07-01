@@ -668,6 +668,13 @@ namespace mu2e {
       const G4ThreeVector& theMomentumDirection = pParticle->GetMomentumDirection();
       Mu2eG4UserTrackInformation* uti =
         (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()));
+      G4StepPoint const* lastPreStepPoint = trk->GetStep()->GetPreStepPoint();
+      G4cout << __func__ << " KE pre step   "  << lastPreStepPoint->GetKineticEnergy()
+             << " Momentum direction pre step   " << lastPreStepPoint->GetMomentumDirection()
+             << " Position pre step   " << lastPreStepPoint->GetPosition()
+             << " Global time pre step   " << lastPreStepPoint->GetGlobalTime()
+             << " Proper time pre step   " << lastPreStepPoint->GetProperTime()
+             << G4endl;
       G4cout << __func__ << " KE before int " << uti->GetKineticEnergy()
              << " Momentum direction before int " << uti->GetMomentumDirection()
              << " Position before int " << uti->GetPosition()
