@@ -43,6 +43,7 @@ namespace mu2e{
              << trk.GetParticleDefinition()->GetParticleName()
              << " totE deposit " << std::fixed << trk.GetStep()->GetTotalEnergyDeposit()
              << " NonIonE deposit " << std::fixed << trk.GetStep()->GetNonIonizingEnergyDeposit()
+             << std::defaultfloat
              << " in " << trk.GetVolume()->GetName()
              << " material " << trk.GetMaterial()->GetName()
              << G4endl;
