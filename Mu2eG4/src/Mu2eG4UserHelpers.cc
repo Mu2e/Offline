@@ -73,7 +73,9 @@ namespace mu2e {
     // pre step point. Note that for the particles decaying in flight,
     // the end times are the ones after they decay, while for the ones
     // decaying at rest, the recorded times are the ones before they
-    // decay
+    // decay. Also note, that while the particle decays at rest the
+    // track length is not changing, so no special treatment is needed.
+    // Similarly, when the KE is zero, the momentum direction does not matter
 
     // global time at the point of interaction/decay
     double getEndGlobalTime(G4Track const* const trk) {
