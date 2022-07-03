@@ -444,7 +444,7 @@ namespace mu2e {
     for( auto const& calohit : calohits) {
       tmin = std::min(tmin,calohit->time());
       tmax = std::max(tmax,calohit->time());
-    }
+  }
     for( auto const& strawxing : strawxings) {
       tmin = std::min(tmin,strawxing->time());
       tmax = std::max(tmax,strawxing->time());
@@ -493,7 +493,7 @@ namespace mu2e {
         dres = strawhit->refResidual(1);
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
-          strawhit->closestApproach().tpData(),
+     strawhit->closestApproach().tpData(),
           strawhit->unbiasedClosestApproach().tpData(),
           tres, dres,
           strawhit->hitState().state_, strawhit->updaterAlgorithm());
@@ -506,23 +506,16 @@ namespace mu2e {
         hflag.merge(StrawHitFlag::active);
         hflag.merge(StrawHitFlag::doca);
       }
-      // calculate the unbiased time at the cluster
+      // calculate the unbiased time residual
       auto tres = (kktrk.fitStatus().usable()) ? calohit->residual(0) : calohit->refResidual(0);
-      HitT0 unbiasedt0(tres.value(),sqrt(tres.variance()));
-      // calculate the cluster length; this should be the particle path through the CsI, but
-      // for now (backwards compatible) it's the length along the cluster axis FIXME!
-      double clen = (calohit->caloCluster()->time() - ca.sensorToca() )*ca.sensorTraj().speed();
-      fseed._chit = TrkCaloHitSeed(unbiasedt0, // t0
-          static_cast<float>(ca.particleToca()), // trklen
-          static_cast<float>(clen), // hitlen
-          static_cast<float>(ca.doca()), // cdoca
-          static_cast<float>(sqrt(ca.docaVar())), //rerr
-          static_cast<float>(ca.sensorToca()), // time
-          static_cast<float>(sqrt(ca.tocaVar())), // time error
-          XYZVectorF(ca.sensorTraj().position3(ca.sensorToca())), // cluster position at PTCA
-          XYZVectorF(ca.particleTraj().momentum3(ca.particleToca())), // track momentum at PTCA
-          hflag);
-      fseed._chit._cluster = calohit->caloCluster();
+      // calculate the cluster depth
+      // First, find the Z of the front face of this disk
+      double frontz = calo.geomUtil().mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).geomInfo().frontFaceCenter()).z();
+      // calculate the distance from the front to the POCA, projected along the track
+      float clen = (ca.sensorPoca().Z()- frontz)/ca.particleTraj().direction(ca.particleToca()).Z();
+      fseed._chit = TrkCaloHitSeed(calohit->caloCluster(),hflag,
+          clen,
+          ca.tpData(),tres,ca.particleTraj().momentum(ca.particleToca()));
     }
     fseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {

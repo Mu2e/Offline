@@ -196,9 +196,9 @@ namespace mu2e {
         double dd,ddvar, dt, dtvar;
         if(algo_ == StrawHitUpdaters::null){
           dt = ptca_.deltaT() - chit_.driftTime() + 2.2; // correct using TOT drift time
-          dtvar = 40.0;
+          dtvar = 50.0;
           dd = ptca_.doca();
-          ddvar = 2.7; // calibrated
+          ddvar = 2.8; // calibrated
         } else {
           dt = -0.5*mindoca_/dinfo.vdrift_; // adjust for the average drift time given the cut.
           dtvar = dinfo.tdriftvar_ + (mindoca_*mindoca_)/dinfo.vdrift_*dinfo.vdrift_*12.0;
