@@ -661,6 +661,17 @@ namespace mu2e {
 
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
+
+    //Get kinematics just before the post step doit process acted (e.g., decay, annihilation, etc.)
+    //note that while we have the intermediate position we use it only for diagnostic printouts
+    double endKE = Mu2eG4UserHelpers::getEndKE(trk);
+    CLHEP::HepLorentzVector endMomentum =  Mu2eG4UserHelpers::getEndMomentum(trk);
+    double endGlobalTime = Mu2eG4UserHelpers::getEndGlobalTime(trk);
+    double endProperTime = Mu2eG4UserHelpers::getEndProperTime(trk);
+
+    //Get number of steps the track is made of
+    int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
+
     if (trackingVerbosityLevel > 1 ) {
       G4int prec = G4cout.precision(15);
       const G4DynamicParticle*  pParticle = trk->GetDynamicParticle();
@@ -668,6 +679,13 @@ namespace mu2e {
       const G4ThreeVector& theMomentumDirection = pParticle->GetMomentumDirection();
       Mu2eG4UserTrackInformation* uti =
         (dynamic_cast<Mu2eG4UserTrackInformation*>(trk->GetUserInformation()));
+      G4StepPoint const* lastPreStepPoint = trk->GetStep()->GetPreStepPoint();
+      G4cout << __func__ << " KE pre step   "  << lastPreStepPoint->GetKineticEnergy()
+             << " Momentum direction pre step   " << lastPreStepPoint->GetMomentumDirection()
+             << " Position pre step   " << lastPreStepPoint->GetPosition()
+             << " Global time pre step   " << lastPreStepPoint->GetGlobalTime()
+             << " Proper time pre step   " << lastPreStepPoint->GetProperTime()
+             << G4endl;
       G4cout << __func__ << " KE before int " << uti->GetKineticEnergy()
              << " Momentum direction before int " << uti->GetMomentumDirection()
              << " Position before int " << uti->GetPosition()
@@ -680,31 +698,23 @@ namespace mu2e {
              << " Global time            " << trk->GetGlobalTime()
              << " Proper time            " << trk->GetProperTime()
              << G4endl;
+      G4cout << __func__ << " KE stored     " << endKE
+             << " G4 Position stored  " << trk->GetPosition()
+             << " Global time stored     " << endGlobalTime
+             << " Proper time stored     " << endProperTime
+             << G4endl;
       G4cout.precision(prec);
     }
 
-
-    //Get kinematics just before the post step doit process acted (e.g., decay, annihilation, etc.)
-    //note that while we have the intermediate position we use it only for diagnostic printouts
-    double endKE = Mu2eG4UserHelpers::getEndKE(trk);
-    CLHEP::HepLorentzVector endMomentum =  Mu2eG4UserHelpers::getEndMomentum(trk);
-    double preLastStepGlobalTime = Mu2eG4UserHelpers::getEndGlobalTime(trk);
-    double preLastStepProperTime = Mu2eG4UserHelpers::getEndProperTime(trk);
-
-    //Get number od steps the track is made of
-    int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
-
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                          endMomentum, // from pre last step
-                          // trk->GetGlobalTime(),
-                          // trk->GetProperTime(),
-                          preLastStepGlobalTime,
-                          preLastStepProperTime,
+                          endMomentum, // based on pre last step
+                          endGlobalTime, // based on pre last step
+                          endProperTime, // based on pre last step
                           _physVolHelper->index(trk),
                           trk->GetTrackStatus(),
                           stoppingCode,
-                          endKE, // from pre last step
+                          endKE, // based on pre last step
                           nSteps,
                           trk->GetTrackLength()
                           );
