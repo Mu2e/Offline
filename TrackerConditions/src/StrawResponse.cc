@@ -1,12 +1,12 @@
 
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "TMath.h"
 #include <cmath>
 #include <algorithm>
 
 using namespace std;
 
 namespace mu2e {
-
 
   // simple line interpolation, this should be a utility function, FIXME!
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
@@ -20,16 +20,127 @@ namespace mu2e {
     return yval;
   }
 
+  double ConstrainAngle(double phi) {
+    if (phi < 0) {
+      phi = -1.0*phi;
+    }
+    phi = fmod(phi,TMath::Pi());
+    if (phi > TMath::Pi()/2.0) {
+      phi = phi - 2.0*fmod(phi,TMath::Pi()/2.0);
+    }
+    return phi;
+  }
+
+  void StrawResponse::driftInfoAtDistance(StrawId strawId,
+      double ddist, double phi, double &time, double &instvel, double &variance) const {
+    int ibin;
+    double t;
+    _driftSpline[0].getBin(ddist,ibin,t);
+
+    if (_driftIgnorePhi){
+      time = _driftSpline[0].interpolate(ibin,t);
+      instvel = 1.0/_driftSpline[0].derivative(ibin,t);
+      variance = _driftResSpline[0].interpolate(ibin,t);
+    }
+    double reducedPhi = ConstrainAngle(phi);
+    int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
+    int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
+    double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
+
+    double lowerVal = _driftSpline[lowerPhiIndex].interpolate(ibin,t);
+    double upperVal = _driftSpline[upperPhiIndex].interpolate(ibin,t);
+    time = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+
+    lowerVal = _driftSpline[lowerPhiIndex].derivative(ibin,t);
+    upperVal = _driftSpline[upperPhiIndex].derivative(ibin,t);
+    double inverse_speed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+    instvel = 1.0/inverse_speed;
+
+    lowerVal = _driftResSpline[lowerPhiIndex].interpolate(ibin,t);
+    upperVal = _driftResSpline[upperPhiIndex].interpolate(ibin,t);
+    variance = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+  }
+
   double StrawResponse::driftDistanceToTime(StrawId strawId,
       double ddist, double phi) const {
-    if(_usenonlindrift){
-      return _strawDrift->D2T(ddist,phi);
-    }
-    else{
-      return ddist/_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
+    if (_useDriftSplines){
+      if (_driftIgnorePhi)
+        return _driftSpline[0].interpolate(ddist);
+      double reducedPhi = ConstrainAngle(phi);
+      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
+      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
+      double lowerVal = _driftSpline[lowerPhiIndex].interpolate(ddist);
+      double upperVal = _driftSpline[upperPhiIndex].interpolate(ddist);
+
+      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
+      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+    }else{
+      //FIXME to be deprecated
+      if(_usenonlindrift){
+        return _strawDrift->D2T(ddist,phi);
+      }
+      else{
+        return ddist/_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
+      }
     }
   }
 
+  double StrawResponse::driftTimeError(StrawId strawId,
+      double ddist, double phi) const {
+    if (_useDriftSplines){
+      if (_driftIgnorePhi)
+        return _driftResSpline[0].interpolate(ddist);
+      double reducedPhi = ConstrainAngle(phi);
+      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
+      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
+      double lowerVal = _driftResSpline[lowerPhiIndex].interpolate(ddist);
+      double upperVal = _driftResSpline[upperPhiIndex].interpolate(ddist);
+
+      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
+      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+    }else{
+      //FIXME to be deprecated
+      if (useParameterizedDriftError()){
+        if (ddist > 2.5)
+          ddist = 2.5;
+        return PieceLine(_parDriftDocas, _parDriftRes, ddist);
+      }else{
+        return driftDistanceError(strawId, ddist, phi) / _lindriftvel;
+      }
+    }
+  }
+
+  double StrawResponse::driftInstantSpeed(StrawId strawId,
+      double ddist, double phi) const {
+    if (_useDriftSplines){
+      if (_driftIgnorePhi){
+        double inverse_speed = _driftSpline[0].derivative(ddist);
+        if (inverse_speed == 0)
+          return 1e8;
+        return 1.0/inverse_speed;
+      }
+      double reducedPhi = ConstrainAngle(phi);
+      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
+      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
+      double lowerVal = _driftSpline[lowerPhiIndex].derivative(ddist);
+      double upperVal = _driftSpline[upperPhiIndex].derivative(ddist);
+
+      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
+      double inverse_speed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+      if (inverse_speed == 0)
+        return 1e8;
+      return 1.0/inverse_speed;
+    }else{
+      // FIXME to be deprecated
+      if(_usenonlindrift){
+        return _strawDrift->GetInstantSpeedFromD(ddist);
+      }else{
+        return _lindriftvel;
+      }
+    }
+  }
+
+  // FIXME to be deprecated
   double StrawResponse::driftTimeToDistance(StrawId strawId,
       double dtime, double phi) const {
     if(_usenonlindrift){
@@ -40,49 +151,28 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftInstantSpeed(StrawId strawId,
-      double doca, double phi) const {
-    if(_usenonlindrift){
-      return _strawDrift->GetInstantSpeedFromD(doca);
-    }else{
-      return _lindriftvel;
-    }
-  }
-
+  // FIXME to be deprecated
   double StrawResponse::driftDistanceError(StrawId strawId,
-      double ddist, double phi, double DOCA) const {
-    if(useDriftError()){
-      // maximum drift is the straw radius.  should come from conditions FIXME!
-      static double rstraw(2.5);
-      double doca = std::min(fabs(DOCA),rstraw);
-      size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(doca/rstraw))));
-      return _derr[idoca];
-    }else{
-      double rres = _rres_min;
-      if(ddist < _rres_rad){
-        rres = _rres_min+_rres_max*(_rres_rad-ddist)/_rres_rad;
-      }
-      return rres;
-    }
+      double doca, double phi) const {
+    // maximum drift is the straw radius.  should come from conditions FIXME!
+    static double rstraw(2.5);
+    doca = std::min(fabs(doca),rstraw);
+    size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(doca/rstraw))));
+    return _derr[idoca];
   }
 
+  // FIXME to be deprecated
   double StrawResponse::driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
     return 0;
   }
 
-  double StrawResponse::driftTimeError(StrawId strawId,
-      double ddist, double phi, double DOCA) const {
-    if (useParameterizedDriftError()){
-      if (DOCA > 2.5)
-        DOCA = 2.5;
-      return PieceLine(_parDriftDocas, _parDriftRes, DOCA);
-    }else{
-      return driftDistanceError(strawId, ddist, phi, DOCA) / _lindriftvel;
-    }
-  }
-
+  // FIXME to be deprecated
   double StrawResponse::driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
-    return PieceLine(_parDriftDocas, _parDriftOffsets, DOCA);
+    if (_useDriftSplines){
+      return 0;
+    }else{
+      return PieceLine(_parDriftDocas, _parDriftOffsets, DOCA);
+    }
   }
 
 
@@ -172,17 +262,13 @@ namespace mu2e {
     printVector(os,"centres",_centres);
     printVector(os,"resslope",_resslope);
     printVector(os,"totdtime",_totdtime);
-    os << "usederr = " << _usederr << endl;
     printVector(os,"derr",_derr);
     os << "wbuf = " << _wbuf << endl;
     os << "slfac = " << _slfac << endl;
     os << "errfac = " << _errfac << endl;
     os << "usenonlindrift = " << _usenonlindrift << endl;
     os << "lindriftvel = " << _lindriftvel << endl;
-    os << "rres_min = " << _rres_min << endl;
-    os << "rres_max = " << _rres_max << endl;
     os << "mint0doca = " << _mint0doca << endl;
-    os << "t0shift = " << _t0shift << endl;
     printArray(os,"pmpEnergyScale",_pmpEnergyScale);
     printArray(os,"timeOffsetPanel",_timeOffsetPanel);
     printArray(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
