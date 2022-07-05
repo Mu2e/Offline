@@ -1,0 +1,24 @@
+#include "Offline/fcl/standardServices.fcl"
+process_name : StrawResponseTest
+
+source : {
+  module_type : EmptyEvent
+}
+services : @local::Services.Core
+
+physics : {
+  analyzers : {
+    srtest : {
+      module_type : StrawResponseTest
+      printLevel : 1
+      diagLevel : 1
+    }
+  }
+  e1        : [srtest]
+  end_paths : [e1]
+}
+#include "Offline/TrackerConditions/fcl/driftSpline.fcl"
+services.DbService.purpose: MDC2020_perfect
+services.DbService.version: v1_0
+
+services.DbService.verbose: 2
