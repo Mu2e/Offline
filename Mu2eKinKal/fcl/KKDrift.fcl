@@ -61,7 +61,10 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
+
+
 #include "Production/JobConfig/reco/epilog.fcl"
+#include "Offline/TrackerConditions/fcl/driftSpline.fcl"
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"

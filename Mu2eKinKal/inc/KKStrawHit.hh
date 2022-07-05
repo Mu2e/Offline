@@ -9,7 +9,6 @@
 //KinKal classes
 #include "KinKal/Detector/ResidualHit.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
-#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/Line.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -17,11 +16,11 @@
 #include "KinKal/General/BFieldMap.hh"
 // Mu2e-specific classes
 #include "Offline/TrackerGeom/inc/Straw.hh"
-#include "Offline/TrackerGeom/inc/StrawProperties.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
+//#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 // Other
 #include "cetlib_except/exception.h"
@@ -48,7 +47,7 @@ namespace mu2e {
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using CA = KinKal::ClosestApproach<KTRAJ,Line>;
       enum Dimension { tresid=0, dresid=1};  // residual dimensions; should be defined outside this class FIXME
-      KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const&, StrawProperties const& sprops,
+      KKStrawHit(BFieldMap const& bfield, PTCA const& ptca,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
@@ -61,7 +60,7 @@ namespace mu2e {
       void updateReference(KTRAJPTR const& ktrajptr) override;
       KTRAJPTR const& refTrajPtr() const override { return ptca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
-     // accessors
+      // accessors
       auto const& closestApproach() const { return ptca_; }
       auto const& hitState() const { return whstate_; }
       auto const& wire() const { return wire_; }
@@ -71,17 +70,14 @@ namespace mu2e {
       auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
       auto const& strawHitIndex() const { return shindex_; }
-      double strawRadius() const { return rstraw_; }
       auto updaterAlgorithm() const { return algo_; }
       // Functions used in updating
-      void setResiduals(WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
-      void updateResiduals() { setResiduals(whstate_, resids_); }
+      void setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
+      void updateResiduals(MetaIterConfig const& miconfig);
       bool insideStraw(CA const& ca) const; // decide if a CA is inside the straw
       CA unbiasedClosestApproach() const;
       auto updater() const { return algo_; }
-      DriftInfo distanceToTime() const;
-      void setState(WireHitState const& whstate,StrawHitUpdaters::algorithm algo);
-
+      void setState(MetaIterConfig const& miconfig,WireHitState const& whstate);
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
@@ -92,13 +88,13 @@ namespace mu2e {
       // (when multiplied by the propagation velocity).
       CA ptca_; // reference time and position of closest approach to the wire; this is generally biased by the hit
       RESIDCOL resids_; // residuals WRT most recent reference
-      double rstraw_; // straw radius; this isn't a property of the straw
       ComboHit const& chit_; // reference to hit
       StrawHitIndex shindex_; // index to the StrawHit
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
-      StrawHitUpdaters::algorithm algo_; // record which updater was last used on this hit
-      double mindoca_; // temporary
+      StrawHitUpdaters::algorithm algo_; // most recent algorithm
+      // utility functions
+      void updateWHS(MetaIterConfig const& miconfig);
   };
 
   // struct to sort hits by time
@@ -109,12 +105,10 @@ namespace mu2e {
       return hit1->time() < hit2->time(); }
   };
 
-  template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca, WireHitState const& whstate,
-      StrawProperties const& sprops,
+  template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca,
       ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) :
-    bfield_(bfield), whstate_(whstate), wire_(ptca.sensorTraj()),
+    bfield_(bfield), whstate_(WireHitState::null), wire_(ptca.sensorTraj()),
     ptca_(ptca.localTraj(),wire_,ptca.precision(),ptca.tpData(),ptca.dDdP(),ptca.dTdP()),
-    rstraw_(sprops.strawInnerRadius()),
     chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse), algo_(StrawHitUpdaters::none)
   {
     // make sure this is a single-straw based ComboHit
@@ -138,101 +132,120 @@ namespace mu2e {
     if(!ptca_.usable()) throw cet::exception("RECO")<<"mu2e::KKStrawHit: WireHit TPOCA failure" << std::endl;
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
-    // look for updaters
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
+    // look for updaters; there must be exactly 1
     unsigned nupdaters(0);
-    auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>(); if(cshu != 0)nupdaters++;
-    auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>(); if(dshu != 0)nupdaters++;
-    auto nshu = miconfig.findUpdater<NullStrawHitUpdater>(); if(nshu != 0)nupdaters++;
+    auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+    auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
+    auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
+    if(cshu){
+      algo_ = StrawHitUpdaters::Combinatoric;
+      nupdaters++;
+    }
+    if(dshu){
+      algo_ = dshu->algorithm();
+      nupdaters++;
+    }
+    if(nshu){
+      algo_ = nshu->algorithm();
+      nupdaters++;
+    }
     if(nupdaters != 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: StrawHit updater count error" << std::endl;
-    if(nshu != 0 || dshu != 0){ // single-hit updaters: do the work here
+    // Combo updater sets WireHitState in StrawHitCluster; leave it unchanged here
+    //  For locally-operating updaters, actually update the state
+    if(StrawHitUpdaters::updateStrawHits(algo_)){
       CA uca = unbiasedClosestApproach();
       if(uca.usable() && insideStraw (uca)){
-        if(nshu != 0){
-          if(first){
-            algo_ = nshu->algorithm();
-            whstate_ = nshu->wireHitState(uca.tpData());
-            mindoca_ = strawRadius();
-          }
-        } else if(dshu != 0){
-          if(first){
-            algo_ = dshu->algorithm();
-            whstate_ = dshu->wireHitState(uca.tpData());
-            mindoca_ = dshu->minDOCA();
-          }
-
-        }
+        if(dshu) whstate_ = dshu->wireHitState(uca.tpData());
+        if(nshu) whstate_ = nshu->wireHitState(uca.tpData());
       } else {
         whstate_ = WireHitState::forcedinactive;
       }
     }
-    // update residuals
-    updateResiduals();
-    // update the weight using the new residuals
+  }
+
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
+    // first iteration of a new meta-iteratin, update the wire hit state
+    if(first)updateWHS(miconfig);
+    // update residuals and weights if the algorithm operates directly on StrawHits
+    if(StrawHitUpdaters::updateStrawHits(algo_))updateResiduals(miconfig);
+  }
+
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(MetaIterConfig const& miconfig, WireHitState const& whstate) {
+    whstate_ = whstate;
+    updateResiduals(miconfig);
+  }
+
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateResiduals(MetaIterConfig const& miconfig) {
+    setResiduals(miconfig, whstate_, resids_);
     this->updateWeight(miconfig);
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(WireHitState const& whstate,StrawHitUpdaters::algorithm algo) {
-    whstate_ = whstate;
-    algo_ = algo;
-    updateResiduals();
-  }
-
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(WireHitState const& whstate, RESIDCOL& resids) const {
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
+    // reset the residuals
+    resids[tresid] = resids[dresid] = Residual();
     if(whstate.active()){
-      // compute drift parameters from PTCA
-      DriftInfo dinfo = distanceToTime();
       if(whstate.useDrift()){
-        // translate PCA to residual. Use ambiguity to convert drift time to a time difference.
+        // residual comes completely from StrawResponse in this case
+        // Transldate DOCA to a drift time. ignore phi (Lorentz effects) for now: TODO
+        double tdrift, vdrift, tvar;
+        sresponse_.driftInfoAtDistance(strawId(), fabs(ptca_.doca()),0.0, tdrift, vdrift, tvar);
+        // residual itself MUST be computed WRT the reference parameters
         double dsign = whstate.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
-        double dt = ptca_.deltaT()-dinfo.tdrift_*dsign;
+        double dt = ptca_.deltaT()-tdrift*dsign;
         // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
-        DVEC dRdP = ptca_.dDdP()*dsign/dinfo.vdrift_ - ptca_.dTdP();
-        resids[tresid] = Residual(dt,dinfo.tdriftvar_,0.0,true,dRdP);
-        resids[dresid] = Residual(); // distance residual isn't used when drift is
+        DVEC dRdP = ptca_.dDdP()*dsign/vdrift - ptca_.dTdP();
+        resids[tresid] = Residual(dt,tvar,0.0,true,dRdP);
+        // distance residual isn't used when drift is
       } else {
-        // interpret DOCA and TOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
+        // Null state. interpret DOCA and TOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
         DVEC dRdP = -ptca_.lSign()*ptca_.dDdP();
-        double dd,ddvar, dt, dtvar;
+        // distance residual is always WRT the wire
+        double dd = ptca_.doca();
+        // variances and time residuals depend on the algorithm
+        double ddvar, dt, dtvar;
         if(algo_ == StrawHitUpdaters::null){
-          dt = ptca_.deltaT() - chit_.driftTime() + 2.2; // correct using TOT drift time
-          dtvar = 50.0;
-          dd = ptca_.doca();
-          ddvar = 2.8; // calibrated
+          auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
+          if(!nshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+          // use the combo-hit time to set the time residual
+          dt = ptca_.deltaT() - chit_.driftTime();
+          dtvar = 50.0; // should come from ComboHit TODO
+          ddvar = nshu->distVariance(); // this should come from a prodition TODO
         } else {
-          dt = -0.5*mindoca_/dinfo.vdrift_; // adjust for the average drift time given the cut.
-          dtvar = dinfo.tdriftvar_ + (mindoca_*mindoca_)/dinfo.vdrift_*dinfo.vdrift_*12.0;
-          dd = ptca_.doca();
-          ddvar =  (mindoca_*mindoca_)/3.0; //
+          // other null updaters are based on an 'effective' DOCA
+          double deff;
+          if(algo_ == StrawHitUpdaters::DOCA){
+            auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
+            if(!dshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+            deff = 0.5*dshu->minDOCA();
+          } else if(algo_ == StrawHitUpdaters::Combinatoric){
+            auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+            if(!cshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+            // Get drift properties at effective average null-hit DOCA
+            //            deff = cshu->meanNullDOCA();
+            deff = 0.8; // temporary hack FIXME
+          } else
+            throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+          // get drift properties at this effective DOCA
+          double tdrift, vdrift, tvar;
+          sresponse_.driftInfoAtDistance(strawId(),deff,0.0, tdrift, vdrift, tvar);
+          // distance variance is geometric
+          ddvar =  (deff*deff)/12.0;
+          // time residual is delta-T corrected for the average drift time
+          dt = ptca_.deltaT() -tdrift;
+          // time variance has 2 parts: intrinsic and residual drift
+          dtvar = tvar + ddvar/vdrift*vdrift;
         }
         resids[dresid] = Residual(dd,ddvar,0.0,true,dRdP);
         resids[tresid] = Residual(dt,dtvar,0.0,true,-ptca_.dTdP());
         // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
       }
-    } else {
-      resids[tresid] = resids[dresid] = Residual();
     }
   }
 
   template <class KTRAJ> Residual const& KKStrawHit<KTRAJ>::refResidual(unsigned ires) const {
     if(ires >dresid)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
     return resids_[ires];
-  }
-
-  // compute estimated drift time using calibrated quantities (StrawResponse)
-  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::distanceToTime() const {
-    DriftInfo dinfo;
-//    VEC3 bvec = bfield_.fieldVect(ptca_.particlePoca().Vect());
-//    auto pdir = bvec.Cross(wire_.direction()).Unit(); // direction perp to wire and BFieldMap
-//    VEC3 dvec = ptca_.delta().Vect();
-//    double phi = asin(double(dvec.Unit().Dot(pdir))); // azimuth around the wire WRT the BField
-//    POL2 drift(fabs(ptca_.doca()), phi);
-    // for now, use simplified response model.
-    dinfo.vdrift_ = sresponse_.driftConstantSpeed();
-//    dinfo.tdrift_ = drift.R()/dinfo.vdrift_;
-    dinfo.tdrift_ = fabs(ptca_.doca())/dinfo.vdrift_;
-    dinfo.tdriftvar_ = 20.0; // temporary hack FIXME
-    return dinfo;
   }
 
   template <class KTRAJ> bool KKStrawHit<KTRAJ>::insideStraw(CA const& ca) const {

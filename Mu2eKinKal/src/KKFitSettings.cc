@@ -35,9 +35,9 @@ namespace mu2e {
       // create the updaters requested
       unsigned ndoca, nnull, ncomb;
       ndoca = nnull = ncomb = 0; // count how many updater configs have been seen
-      std::vector<std::tuple<float>> nhusettings;
+      std::vector<std::tuple<float,float>> nhusettings;
       std::vector<std::tuple<float,float,float>> dhusettings;
-      std::vector<std::tuple<float,float,float,int>> chusettings;
+      std::vector<std::tuple<float,float,float,float,int>> chusettings;
       nhusettings = fitconfig.nhuConfig().value_or(nhusettings);
       dhusettings = fitconfig.dhuConfig().value_or(dhusettings);
       chusettings = fitconfig.chuConfig().value_or(chusettings);
@@ -51,7 +51,8 @@ namespace mu2e {
         if(ialg == StrawHitUpdaters::null) {
           auto const& nhusetting = nhusettings.at(nnull++);
           double maxdoca= std::get<0>(nhusetting);
-          NullStrawHitUpdater nhupdater(maxdoca);
+          double dvar = std::get<1>(nhusetting);
+          NullStrawHitUpdater nhupdater(maxdoca,dvar);
           miconfig.addUpdater(std::any(nhupdater));
         } else if(ialg == StrawHitUpdaters::DOCA) {
           auto const& dhusetting = dhusettings.at(ndoca++);
@@ -65,8 +66,9 @@ namespace mu2e {
           double inactivep = std::get<0>(chusetting);
           double nullambigp = std::get<1>(chusetting);
           double mindchi2 = std::get<2>(chusetting);
-          int diag = std::get<3>(chusetting);
-          CombinatoricStrawHitUpdater chupdater(inactivep,nullambigp,mindchi2,diag);
+          double nulldoca = std::get<3>(chusetting);
+          int diag = std::get<4>(chusetting);
+          CombinatoricStrawHitUpdater chupdater(inactivep,nullambigp,mindchi2,nulldoca,diag);
           miconfig.addUpdater(std::any(chupdater));
        } else {
           throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
