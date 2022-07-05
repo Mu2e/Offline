@@ -156,10 +156,6 @@ namespace mu2e {
   template <class KTRAJ> void KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,KKBField const& kkbf, KKStrawMaterial const& smat,
       PKTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
-    // initialize hits as null (no drift).  Drift is turned on when updating
-    auto const& sprop = tracker.strawProperties();
-    WireHitState whstate(WireHitState::null); // initial wire hit state
-
     // loop over the individual straw combo hits
     for(auto strawidx : strawHitIdxs) {
       const ComboHit& combohit(chcol.at(strawidx));
@@ -178,7 +174,7 @@ namespace mu2e {
       // compute PTCA between the seed trajectory and this straw
       PTCA ptca(ptraj, wline, hint, tprec_ );
        // create the hit
-      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, combohit, straw, strawidx, strawresponse));
+      hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, combohit, straw, strawidx, strawresponse));
      // create the material crossing, including this reference
       if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
     }
@@ -237,9 +233,6 @@ namespace mu2e {
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, KKBField const& kkbf, KKStrawMaterial const& smat,
       KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& addhits) const {
-    auto const& sprop = tracker.strawProperties();
-   // initialize hits as null (no drift).  Drift is turned on when updating
-    WireHitState whstate(WireHitState::null); // initial wire hit state;
     auto const& ftraj = kktrk.fitTraj();
     // build the set of existing hits
     std::set<StrawHitIndex> oldhits;
@@ -258,7 +251,7 @@ namespace mu2e {
             // compute PTCA between the trajectory and this straw
             PTCA ptca(ftraj, wline, hint, tprec_ );
             if(fabs(ptca.doca()) < maxStrawHitDoca_){ // add test of chi TODO
-              addhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, whstate, sprop, strawhit, straw, ich, strawresponse));
+              addhits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, strawhit, straw, ich, strawresponse));
             }
           }
         }
@@ -483,7 +476,8 @@ namespace mu2e {
         if(strawhit->hitState().useDrift()){
           static WireHitState null(WireHitState::null);
           RESIDCOL resids;
-          strawhit->setResiduals(null,resids);
+          auto const& miconfig = kktrk.config().schedule().back();
+          strawhit->setResiduals(miconfig,null,resids);
           dres = resids[1];
         } else {
           dres = strawhit->residual(1);

@@ -40,25 +40,28 @@ namespace mu2e {
     if (_driftIgnorePhi){
       time = _driftSpline[0].interpolate(ibin,t);
       instvel = 1.0/_driftSpline[0].derivative(ibin,t);
-      variance = _driftResSpline[0].interpolate(ibin,t);
+      double sigma = _driftResSpline[0].interpolate(ibin,t);
+      variance = sigma*sigma;
+    } else {
+      double reducedPhi = ConstrainAngle(phi);
+      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
+      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
+      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
+
+      double lowerVal = _driftSpline[lowerPhiIndex].interpolate(ibin,t);
+      double upperVal = _driftSpline[upperPhiIndex].interpolate(ibin,t);
+      time = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+
+      lowerVal = _driftSpline[lowerPhiIndex].derivative(ibin,t);
+      upperVal = _driftSpline[upperPhiIndex].derivative(ibin,t);
+      double inverse_speed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+      instvel = 1.0/inverse_speed;
+
+      lowerVal = _driftResSpline[lowerPhiIndex].interpolate(ibin,t);
+      upperVal = _driftResSpline[upperPhiIndex].interpolate(ibin,t);
+      double sigma = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+      variance = sigma*sigma;
     }
-    double reducedPhi = ConstrainAngle(phi);
-    int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
-    int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-    double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
-
-    double lowerVal = _driftSpline[lowerPhiIndex].interpolate(ibin,t);
-    double upperVal = _driftSpline[upperPhiIndex].interpolate(ibin,t);
-    time = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
-
-    lowerVal = _driftSpline[lowerPhiIndex].derivative(ibin,t);
-    upperVal = _driftSpline[upperPhiIndex].derivative(ibin,t);
-    double inverse_speed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
-    instvel = 1.0/inverse_speed;
-
-    lowerVal = _driftResSpline[lowerPhiIndex].interpolate(ibin,t);
-    upperVal = _driftResSpline[upperPhiIndex].interpolate(ibin,t);
-    variance = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
   }
 
   double StrawResponse::driftDistanceToTime(StrawId strawId,
