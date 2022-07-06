@@ -235,7 +235,7 @@ namespace mu2e
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
       double flt0 = kalData.kalSeed->flt0();
-      auto kseg = kalData.kalSeed->nearestSegment(flt0);
+      auto kseg = kalData.kalSeed->nearestSegmentFlt(flt0);
       if(kseg->fmin() > kseg->localFlt(flt0) ||
           kseg->fmax() < kseg->localFlt(flt0) ){
         std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()

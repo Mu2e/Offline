@@ -7,6 +7,7 @@
 #include "KinKal/Detector/Hit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CSHU_updateHits.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "cetlib_except/exception.h"
