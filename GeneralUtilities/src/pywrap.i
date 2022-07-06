@@ -11,7 +11,7 @@
 
 %{
 #include <vector>
-#include "Offline/GeneralUtilities/inc/TwoDimSpline.hh"
+#include "Offline/GeneralUtilities/inc/SplineInterpolation.hh"
 %}
 
-%include "Offline/GeneralUtilities/inc/TwoDimSpline.hh"
+%include "Offline/GeneralUtilities/inc/SplineInterpolation.hh"
