@@ -55,10 +55,11 @@ namespace mu2e {
     std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
     std::vector<TrkStraw>     _straws; // straws interesected by this fit
     TrkCaloHitSeed        _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
+    std::vector<KalSegment>::const_iterator nearestSegment(float time)  const;
     //
     // deprecated BTrk legacy content, DO NOT write any new code which depends on these functions
-    // find the nearest segment to a given GLOBAL flightlength
-    std::vector<KalSegment>::const_iterator nearestSegment(float fltlen)  const;
+    // find the nearest segment to a given the time
+    std::vector<KalSegment>::const_iterator nearestSegmentFlt(float fltlen)  const;
     std::vector<KalSegment>::const_iterator nearestSegment(const XYZVectorF& pos)  const; // find nearest segment to a GLOBAL position
     Float_t flt0() const { return _flt0; }
     Float_t         _flt0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit

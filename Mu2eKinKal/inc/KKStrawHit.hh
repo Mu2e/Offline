@@ -20,7 +20,7 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
-//#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 // Other
 #include "cetlib_except/exception.h"
@@ -36,7 +36,7 @@ namespace mu2e {
   using KinKal::DVEC;
   using KinKal::CAHint;
   using RESIDCOL = std::array<Residual,2>; // should be a struct FIXME
-  class CombinatoricStrawHitUpdater;
+  //  class CombinatoricStrawHitUpdater;
 
   template <class KTRAJ> class KKStrawHit : public KinKal::ResidualHit<KTRAJ> {
     public:
@@ -189,11 +189,15 @@ namespace mu2e {
         // residual comes completely from StrawResponse in this case
         // Transldate DOCA to a drift time. ignore phi (Lorentz effects) for now: TODO
         double tdrift, vdrift, tvar;
-        sresponse_.driftInfoAtDistance(strawId(), fabs(ptca_.doca()),0.0, tdrift, vdrift, tvar);
+//        sresponse_.driftInfoAtDistance(strawId(), fabs(ptca_.doca()),0.0, tdrift, vdrift, tvar);
+        tvar = 27.0;          // temporary
+        vdrift = sresponse_.driftConstantSpeed();
+        tdrift = fabs(ptca_.doca())/vdrift;
         // residual itself MUST be computed WRT the reference parameters
         double dsign = whstate.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
         double dt = ptca_.deltaT()-tdrift*dsign;
         // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
+        // temporary fix
         DVEC dRdP = ptca_.dDdP()*dsign/vdrift - ptca_.dTdP();
         resids[tresid] = Residual(dt,tvar,0.0,true,dRdP);
         // distance residual isn't used when drift is
@@ -222,19 +226,22 @@ namespace mu2e {
             auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
             if(!cshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
             // Get drift properties at effective average null-hit DOCA
-            //            deff = cshu->meanNullDOCA();
-            deff = 0.8; // temporary hack FIXME
+            deff = cshu->meanNullDOCA();
+            // deff = 0.8; // temporary hack FIXME
           } else
             throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
           // get drift properties at this effective DOCA
           double tdrift, vdrift, tvar;
-          sresponse_.driftInfoAtDistance(strawId(),deff,0.0, tdrift, vdrift, tvar);
-          // distance variance is geometric
+//          sresponse_.driftInfoAtDistance(strawId(),deff,0.0, tdrift, vdrift, tvar);
+          tvar = 27.0;          // temporary
+          vdrift = sresponse_.driftConstantSpeed();
+          tdrift = fabs(ptca_.doca())/vdrift;
+          // distance variance is geometric, based on the effective distance
           ddvar =  (deff*deff)/12.0;
           // time residual is delta-T corrected for the average drift time
           dt = ptca_.deltaT() -tdrift;
           // time variance has 2 parts: intrinsic and residual drift
-          dtvar = tvar + ddvar/vdrift*vdrift;
+          dtvar = tvar + ddvar/(vdrift*vdrift);
         }
         resids[dresid] = Residual(dd,ddvar,0.0,true,dRdP);
         resids[tresid] = Residual(dt,dtvar,0.0,true,-ptca_.dTdP());
