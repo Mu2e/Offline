@@ -111,8 +111,8 @@ namespace mu2e
         Hep3Vector tperp = trjDir - trjDir.dot(straw().getDirection())*straw().getDirection();
         double phi = tperp.theta();   // This assumes B along z, FIXME!
         // translate the DOCA into a time
-        double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), doca, phi);
-        double vdrift = _strawResponse->driftInstantSpeed(_combohit.strawId(),doca, phi);
+        double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), doca, phi,true);
+        double vdrift = _strawResponse->driftInstantSpeed(_combohit.strawId(),doca, phi,true);
         t0._t0 = tdrift + _stime;
         t0._t0err = residerr/vdrift;// instantaneous velocity to translate the error on the residual
       } else {
@@ -138,7 +138,7 @@ namespace mu2e
    Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
    _phi = tperp.theta();
    _rdrift = _strawResponse->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
-   _vdriftinst = _strawResponse->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
+   _vdriftinst = _strawResponse->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi,true);
    double vdriftconst = _strawResponse->driftConstantSpeed();
    _rdrifterr = _strawResponse->driftDistanceError(_combohit.strawId(),fabs(poca().doca()),_phi);
 
