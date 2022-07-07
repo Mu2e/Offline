@@ -1,22 +1,23 @@
-#ifndef GeneralUtilities_TwoDimSpline_hh
-#define GeneralUtilities_TwoDimSpline_hh
+#ifndef GeneralUtilities_SplineInterpolation_hh
+#define GeneralUtilities_SplineInterpolation_hh
 
 #include <vector>
 
 // this spline will interpolate between xvals[0] and xvals[xvals.size()-1]
 // making sure that it agrees with yvals at each point
 // the spline arrays size will be xvals.size()-1
+// calculates cubic hermite spline, optionally enforcing montonicity
 
 namespace mu2e {
 
-  class TwoDimSpline{
+  class SplineInterpolation{
 
   public:
-    TwoDimSpline(std::vector<double> const& xvals, std::vector<double> const& yvals,bool extrapolate=false);
-    TwoDimSpline(std::vector<double> const& xvals, std::vector<double> const& splineA,
+    SplineInterpolation(std::vector<double> const& xvals, std::vector<double> const& yvals,bool extrapolate, bool monotonic);
+    SplineInterpolation(std::vector<double> const& xvals, std::vector<double> const& splineA,
         std::vector<double> const& splineB, std::vector<double> const& splineC,
-        std::vector<double> const& splineD, bool extrapolate=false);
-    ~TwoDimSpline(){};
+        std::vector<double> const& splineD, bool extrapolate);
+    ~SplineInterpolation(){};
 
     void getBin(double xval, int &ibin, double &t) const;
 

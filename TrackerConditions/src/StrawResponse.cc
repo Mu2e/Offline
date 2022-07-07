@@ -31,18 +31,20 @@ namespace mu2e {
     return phi;
   }
 
-  void StrawResponse::driftInfoAtDistance(StrawId strawId,
-      double ddist, double phi, double &time, double &instvel, double &variance) const {
-    int ibin;
-    double t;
-    _driftSpline[0].getBin(ddist,ibin,t);
+  StrawResponse::DriftInfo StrawResponse::driftInfoAtDistance(StrawId strawId,
+      double ddist, double phi, bool noSpline) const {
+    StrawResponse::DriftInfo info;
+    if (_useDriftSplines && !noSpline){
+      int ibin;
+      double t;
+      _driftSpline[0].getBin(ddist,ibin,t);
 
-    if (_driftIgnorePhi){
-      time = _driftSpline[0].interpolate(ibin,t);
-      instvel = 1.0/_driftSpline[0].derivative(ibin,t);
-      double sigma = _driftResSpline[0].interpolate(ibin,t);
-      variance = sigma*sigma;
-    } else {
+      if (_driftIgnorePhi){
+        info.time = _driftSpline[0].interpolate(ibin,t);
+        info.invSpeed = _driftSpline[0].derivative(ibin,t);
+        info.variance = pow(_driftResSpline[0].interpolate(ibin,t),2); //FIXME
+        return info;
+      }
       double reducedPhi = ConstrainAngle(phi);
       int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
       int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
@@ -50,23 +52,28 @@ namespace mu2e {
 
       double lowerVal = _driftSpline[lowerPhiIndex].interpolate(ibin,t);
       double upperVal = _driftSpline[upperPhiIndex].interpolate(ibin,t);
-      time = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+
+      info.time = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
 
       lowerVal = _driftSpline[lowerPhiIndex].derivative(ibin,t);
       upperVal = _driftSpline[upperPhiIndex].derivative(ibin,t);
-      double inverse_speed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
-      instvel = 1.0/inverse_speed;
+      info.invSpeed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
 
       lowerVal = _driftResSpline[lowerPhiIndex].interpolate(ibin,t);
       upperVal = _driftResSpline[upperPhiIndex].interpolate(ibin,t);
-      double sigma = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
-      variance = sigma*sigma;
+      info.variance = pow(lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal),2); //FIXME
+    }else{
+      //FIXME to be deprecated
+      info.time = driftDistanceToTime(strawId,ddist,phi,true);
+      info.invSpeed = 1.0/driftInstantSpeed(strawId,ddist,phi,true);
+      info.variance = pow(driftTimeError(strawId,ddist,phi,true),2);
     }
+    return info;
   }
 
   double StrawResponse::driftDistanceToTime(StrawId strawId,
-      double ddist, double phi) const {
-    if (_useDriftSplines){
+      double ddist, double phi, bool noSpline) const {
+    if (_useDriftSplines && !noSpline){
       if (_driftIgnorePhi)
         return _driftSpline[0].interpolate(ddist);
       double reducedPhi = ConstrainAngle(phi);
@@ -89,8 +96,9 @@ namespace mu2e {
   }
 
   double StrawResponse::driftTimeError(StrawId strawId,
-      double ddist, double phi) const {
-    if (_useDriftSplines){
+      double ddist, double phi, bool noSpline) const {
+//    return 5.;
+    if (_useDriftSplines && !noSpline){
       if (_driftIgnorePhi)
         return _driftResSpline[0].interpolate(ddist);
       double reducedPhi = ConstrainAngle(phi);
@@ -114,8 +122,8 @@ namespace mu2e {
   }
 
   double StrawResponse::driftInstantSpeed(StrawId strawId,
-      double ddist, double phi) const {
-    if (_useDriftSplines){
+      double ddist, double phi, bool noSpline) const {
+    if (_useDriftSplines && !noSpline){
       if (_driftIgnorePhi){
         double inverse_speed = _driftSpline[0].derivative(ddist);
         if (inverse_speed == 0)

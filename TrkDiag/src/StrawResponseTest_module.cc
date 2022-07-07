@@ -95,13 +95,12 @@ namespace mu2e {
       double dstep = rmax_/(nbins_-1);
       for (int ibin=0;ibin<nbins_; ++ibin){
         double dist = dstep*ibin;
-        double time, vinst, tvar;
-        sresponse->driftInfoAtDistance(sid,dist,0.0, time, vinst, tvar);
-        dist_ = dist; time_ = time; vinst_ = vinst; tvar_ = tvar;
+        auto dinfo = sresponse->driftInfoAtDistance(sid,dist,0.0);
+        dist_ = dist; time_ = dinfo.time; vinst_ = dinfo.invSpeed; tvar_ = dinfo.variance;
         srtest_->Fill();
-        d2t_->SetPoint(ibin,dist,time);
-        d2tvar_->SetPoint(ibin,dist,tvar);
-        d2v_->SetPoint(ibin,dist,vinst);
+        d2t_->SetPoint(ibin,dist,dinfo.time);
+        d2tvar_->SetPoint(ibin,dist,dinfo.variance);
+        d2v_->SetPoint(ibin,dist,dinfo.invSpeed);
       }
     }
   }

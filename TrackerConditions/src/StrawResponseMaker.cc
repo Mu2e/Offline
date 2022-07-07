@@ -7,7 +7,7 @@
 #include "cetlib_except/exception.h"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
-#include "Offline/GeneralUtilities/inc/TwoDimSpline.hh"
+#include "Offline/GeneralUtilities/inc/SplineInterpolation.hh"
 
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
@@ -96,8 +96,8 @@ namespace mu2e {
     }
 
     double deltaPhi = 0;
-    std::vector<TwoDimSpline> timesplines;
-    std::vector<TwoDimSpline> ressplines;
+    std::vector<SplineInterpolation> timesplines;
+    std::vector<SplineInterpolation> ressplines;
 
     if (_config.useDriftSplines()){
       std::vector<double> driftSplineDoca;
@@ -130,8 +130,8 @@ namespace mu2e {
           driftResSplineC.push_back(_config.driftResSplineC()[i*(_config.driftSplineDocaBins()-1) + j]);
           driftResSplineD.push_back(_config.driftResSplineD()[i*(_config.driftSplineDocaBins()-1) + j]);
         }
-        timesplines.push_back(TwoDimSpline(driftSplineDoca,driftSplineA,driftSplineB,driftSplineC,driftSplineD,true));
-        ressplines.push_back(TwoDimSpline(driftSplineDoca,driftResSplineA,driftResSplineB,driftResSplineC,driftResSplineD,false));
+        timesplines.push_back(SplineInterpolation(driftSplineDoca,driftSplineA,driftSplineB,driftSplineC,driftSplineD,true));
+        ressplines.push_back(SplineInterpolation(driftSplineDoca,driftResSplineA,driftResSplineB,driftResSplineC,driftResSplineD,false));
       }
     }
 
