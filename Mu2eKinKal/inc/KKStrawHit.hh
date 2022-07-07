@@ -95,6 +95,7 @@ namespace mu2e {
       StrawHitUpdaters::algorithm algo_; // most recent algorithm
       // utility functions
       void updateWHS(MetaIterConfig const& miconfig);
+      double minDOCA(MetaIterConfig const& miconfig) const;
   };
 
   // struct to sort hits by time
@@ -164,6 +165,21 @@ namespace mu2e {
     }
   }
 
+  template <class KTRAJ> double KKStrawHit<KTRAJ>::minDOCA(MetaIterConfig const& miconfig) const {
+    double dmin(0.0);
+    if(algo_ == StrawHitUpdaters::DOCA){
+      auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
+      if(!dshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+      dmin = dshu->minDOCA();
+    } else if(algo_ == StrawHitUpdaters::Combinatoric){
+      auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+      if(!cshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+      dmin = cshu->minDOCA();
+    } else
+      throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+    return dmin;
+  }
+
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
     // first iteration of a new meta-iteratin, update the wire hit state
     if(first)updateWHS(miconfig);
@@ -186,13 +202,13 @@ namespace mu2e {
     resids[tresid] = resids[dresid] = Residual();
     if(whstate.active()){
       if(whstate.useDrift()){
-        // residual comes completely from StrawResponse in this case
+        double dmin = minDOCA(miconfig);
         // Transldate DOCA to a drift time. ignore phi (Lorentz effects) for now: TODO
         double tdrift, vdrift, tvar;
-//        sresponse_.driftInfoAtDistance(strawId(), fabs(ptca_.doca()),0.0, tdrift, vdrift, tvar);
-        tvar = 27.0;          // temporary
-        vdrift = sresponse_.driftConstantSpeed();
-        tdrift = fabs(ptca_.doca())/vdrift;
+        sresponse_.driftInfoAtDistance(strawId(), std::max(dmin,fabs(ptca_.doca())),0.0, tdrift, vdrift, tvar);
+        //        tvar = 20.0;          // temporary
+        //        vdrift = sresponse_.driftConstantSpeed();
+        //        tdrift = fabs(ptca_.doca())/vdrift;
         // residual itself MUST be computed WRT the reference parameters
         double dsign = whstate.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
         double dt = ptca_.deltaT()-tdrift*dsign;
@@ -217,31 +233,19 @@ namespace mu2e {
           ddvar = nshu->distVariance(); // this should come from a prodition TODO
         } else {
           // other null updaters are based on an 'effective' DOCA
-          double deff;
-          if(algo_ == StrawHitUpdaters::DOCA){
-            auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
-            if(!dshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
-            deff = 0.5*dshu->minDOCA();
-          } else if(algo_ == StrawHitUpdaters::Combinatoric){
-            auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
-            if(!cshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
-            // Get drift properties at effective average null-hit DOCA
-            deff = cshu->meanNullDOCA();
-            // deff = 0.8; // temporary hack FIXME
-          } else
-            throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
+          double dmin = minDOCA(miconfig);
           // get drift properties at this effective DOCA
           double tdrift, vdrift, tvar;
-//          sresponse_.driftInfoAtDistance(strawId(),deff,0.0, tdrift, vdrift, tvar);
-          tvar = 27.0;          // temporary
-          vdrift = sresponse_.driftConstantSpeed();
-          tdrift = fabs(ptca_.doca())/vdrift;
+          sresponse_.driftInfoAtDistance(strawId(),dmin,0.0, tdrift, vdrift, tvar);
+//          tvar = 20.0;          // temporary
+//          vdrift = sresponse_.driftConstantSpeed();
+//          tdrift = 0.5*dmin/vdrift;
           // distance variance is geometric, based on the effective distance
-          ddvar =  (deff*deff)/12.0;
+          ddvar = dmin*dmin/3.0;
           // time residual is delta-T corrected for the average drift time
           dt = ptca_.deltaT() -tdrift;
           // time variance has 2 parts: intrinsic and residual drift
-          dtvar = tvar + ddvar/(vdrift*vdrift);
+          dtvar = tvar + 0.25*ddvar/(vdrift*vdrift);
         }
         resids[dresid] = Residual(dd,ddvar,0.0,true,dRdP);
         resids[tresid] = Residual(dt,dtvar,0.0,true,-ptca_.dTdP());
