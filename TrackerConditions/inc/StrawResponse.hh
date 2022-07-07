@@ -14,7 +14,7 @@
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 #include "Offline/TrackerConditions/inc/StrawPhysics.hh"
-#include "Offline/GeneralUtilities/inc/TwoDimSpline.hh"
+#include "Offline/GeneralUtilities/inc/SplineInterpolation.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 
@@ -28,6 +28,12 @@ namespace mu2e {
       typedef std::shared_ptr<StrawResponse> ptr_t;
       typedef std::shared_ptr<const StrawResponse> cptr_t;
       constexpr static const char* cxname = {"StrawResponse"};
+
+      struct DriftInfo {
+        double time;
+        double invSpeed;
+        double variance;
+      };
 
       explicit StrawResponse( StrawDrift::cptr_t strawDrift,
           StrawElectronics::cptr_t strawElectronics,
@@ -50,8 +56,8 @@ namespace mu2e {
           double vsat, double ADCped, double pmpEnergyScaleAvg,
           std::array<double, StrawId::_nustraws> strawHalfvp,
           bool useDriftSplines, bool driftIgnorePhi, double deltaPhi,
-          std::vector<TwoDimSpline> driftsplines,
-          std::vector<TwoDimSpline> driftressplines) :
+          std::vector<SplineInterpolation> driftsplines,
+          std::vector<SplineInterpolation> driftressplines) :
         ProditionsEntity(cxname),
         _strawDrift(strawDrift),
         _strawElectronics(strawElectronics),
@@ -81,11 +87,14 @@ namespace mu2e {
 
       virtual ~StrawResponse() {}
 
-      void driftInfoAtDistance(StrawId strawId,
-        double ddist, double phi, double &time, double &instvel, double &variance) const;
-      double driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
-      double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
-      double driftTimeError(StrawId strawId, double ddist, double phi) const;
+      DriftInfo driftInfoAtDistance(StrawId strawId, double ddist, double phi,
+          bool noSpline=false) const;
+      double driftDistanceToTime(StrawId strawId, double ddist, double phi,
+          bool noSpline=false) const;
+      double driftInstantSpeed(StrawId strawId, double ddist, double phi,
+          bool noSpline=false) const;
+      double driftTimeError(StrawId strawId, double ddist, double phi,
+          bool noSpline=false) const;
 
       bool wireDistance(Straw const& straw, double edep, double dt,
           double& wdist, double& wderr, double& halfpv) const;
@@ -202,8 +211,8 @@ namespace mu2e {
       bool _useDriftSplines;
       bool _driftIgnorePhi;
       double _driftSplineDeltaPhi;
-      std::vector<TwoDimSpline> _driftSpline;
-      std::vector<TwoDimSpline> _driftResSpline;
+      std::vector<SplineInterpolation> _driftSpline;
+      std::vector<SplineInterpolation> _driftResSpline;
   };
 }
 #endif
