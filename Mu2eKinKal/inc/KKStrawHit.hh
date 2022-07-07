@@ -227,8 +227,8 @@ namespace mu2e {
         if(algo_ == StrawHitUpdaters::null){
           auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
           if(!nshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
-          // use the combo-hit time to set the time residual
-          dt = ptca_.deltaT() - chit_.driftTime();
+          // use the combo-hit time to set the time residual; the correction should be calibrated out TODO
+          dt = ptca_.deltaT() - chit_.driftTime() - 0.85;
           dtvar = 50.0; // should come from ComboHit TODO
           ddvar = nshu->distVariance(); // this should come from a prodition TODO
         } else {
