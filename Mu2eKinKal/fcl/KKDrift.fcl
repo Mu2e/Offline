@@ -64,7 +64,9 @@ outputs : {
 
 
 #include "Production/JobConfig/reco/epilog.fcl"
-#include "Offline/TrackerConditions/fcl/driftSpline.fcl"
+
+services.ProditionsService.strawResponse.useDriftSplines : true
+
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
