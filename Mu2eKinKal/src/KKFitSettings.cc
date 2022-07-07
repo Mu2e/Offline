@@ -66,9 +66,9 @@ namespace mu2e {
           double inactivep = std::get<0>(chusetting);
           double nullambigp = std::get<1>(chusetting);
           double mindchi2 = std::get<2>(chusetting);
-          double nulldoca = std::get<3>(chusetting);
+          double mindoca = std::get<3>(chusetting);
           int diag = std::get<4>(chusetting);
-          CombinatoricStrawHitUpdater chupdater(inactivep,nullambigp,mindchi2,nulldoca,diag);
+          CombinatoricStrawHitUpdater chupdater(inactivep,nullambigp,mindchi2,mindoca,diag);
           miconfig.addUpdater(std::any(chupdater));
        } else {
           throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
