@@ -36,7 +36,7 @@ namespace mu2e {
     private:
       ProditionsHandle<Tracker> _alignedTracker_h;
       TTree*  srtest_;
-      float dist_, time_, tvar_, vinst_, vavg_;
+      float dist_, time_, tvar_, vinv_, vavg_;
       TGraph* d2t_, *d2tvar_, *d2v_;
       int plane_, panel_, straw_;
       int print_, diag_;
@@ -67,7 +67,7 @@ namespace mu2e {
 //      srtest_->Branch("phi",&phi_,"phi/F"); // add phi dependence TODO
       srtest_->Branch("time",&time_,"time/F");
       srtest_->Branch("tvar",&tvar_,"tvar/F");
-      srtest_->Branch("vinst",&vinst_,"vinst/F");
+      srtest_->Branch("vinv",&vinv_,"vinv/F");
       srtest_->Branch("vavg",&vavg_,"vavg/F");
       d2t_ = tfs->make<TGraph>(nbins_);
       d2t_->SetName("D2T");
@@ -79,7 +79,7 @@ namespace mu2e {
       gDirectory->Append(d2tvar_);
       d2v_ = tfs->make<TGraph>(nbins_);
       d2v_->SetName("D2V");
-      d2v_->SetTitle("Instantaneous Drift Velocity;Distance to Wire (mm);Drift Velocity (mm/ns)");
+      d2v_->SetTitle("Inverse Instantaneous Drift Velocity;Distance to Wire (mm);Invers Drift Velocity (ns/mm)");
       gDirectory->Append(d2v_);
     }
   }
@@ -96,7 +96,7 @@ namespace mu2e {
       for (int ibin=0;ibin<nbins_; ++ibin){
         double dist = dstep*ibin;
         auto dinfo = sresponse->driftInfoAtDistance(sid,dist,0.0);
-        dist_ = dist; time_ = dinfo.time; vinst_ = dinfo.invSpeed; tvar_ = dinfo.variance;
+        dist_ = dist; time_ = dinfo.time; vinv_ = dinfo.invSpeed; tvar_ = dinfo.variance;
         srtest_->Fill();
         d2t_->SetPoint(ibin,dist,dinfo.time);
         d2tvar_->SetPoint(ibin,dist,dinfo.variance);

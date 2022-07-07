@@ -202,20 +202,15 @@ namespace mu2e {
     resids[tresid] = resids[dresid] = Residual();
     if(whstate.active()){
       if(whstate.useDrift()){
-        double dmin = minDOCA(miconfig);
         // Transldate DOCA to a drift time. ignore phi (Lorentz effects) for now: TODO
-        double tdrift, vdrift, tvar;
-        sresponse_.driftInfoAtDistance(strawId(), std::max(dmin,fabs(ptca_.doca())),0.0, tdrift, vdrift, tvar);
-        //        tvar = 20.0;          // temporary
-        //        vdrift = sresponse_.driftConstantSpeed();
-        //        tdrift = fabs(ptca_.doca())/vdrift;
+        auto dinfo = sresponse_.driftInfoAtDistance(strawId(), fabs(ptca_.doca()), 0.0);
         // residual itself MUST be computed WRT the reference parameters
         double dsign = whstate.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
-        double dt = ptca_.deltaT()-tdrift*dsign;
+        double dt = ptca_.deltaT()-dinfo.time*dsign;
         // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
         // temporary fix
-        DVEC dRdP = ptca_.dDdP()*dsign/vdrift - ptca_.dTdP();
-        resids[tresid] = Residual(dt,tvar,0.0,true,dRdP);
+        DVEC dRdP = ptca_.dDdP()*dsign*dinfo.invSpeed - ptca_.dTdP();
+        resids[tresid] = Residual(dt,dinfo.variance,0.0,true,dRdP);
         // distance residual isn't used when drift is
       } else {
         // Null state. interpret DOCA and TOCA against the wire directly as a residuals.  We have to take the DOCA sign out of the derivatives
@@ -235,17 +230,14 @@ namespace mu2e {
           // other null updaters are based on an 'effective' DOCA
           double dmin = minDOCA(miconfig);
           // get drift properties at this effective DOCA
-          double tdrift, vdrift, tvar;
-          sresponse_.driftInfoAtDistance(strawId(),dmin,0.0, tdrift, vdrift, tvar);
-//          tvar = 20.0;          // temporary
-//          vdrift = sresponse_.driftConstantSpeed();
-//          tdrift = 0.5*dmin/vdrift;
+          auto dinfo = sresponse_.driftInfoAtDistance(strawId(),0.5*dmin,0.0);
           // distance variance is geometric, based on the effective distance
-          ddvar = dmin*dmin/3.0;
+          static double invthree(1.0/3.0);
+          ddvar = invthree*dmin*dmin;
           // time residual is delta-T corrected for the average drift time
-          dt = ptca_.deltaT() -tdrift;
+          dt = ptca_.deltaT() -dinfo.time;
           // time variance has 2 parts: intrinsic and residual drift
-          dtvar = tvar + 0.25*ddvar/(vdrift*vdrift);
+          dtvar = dinfo.variance + 0.25*ddvar*dinfo.invSpeed*dinfo.invSpeed;
         }
         resids[dresid] = Residual(dd,ddvar,0.0,true,dRdP);
         resids[tresid] = Residual(dt,dtvar,0.0,true,-ptca_.dTdP());
