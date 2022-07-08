@@ -21,7 +21,7 @@ namespace mu2e {
     Beamline*           fBeamline;
     BFieldConfig*       fBfc;
     BFieldManager*      fBmgr;
-    
+
   public:
     #ifndef __CINT__
     explicit TEveMu2eBField(){};

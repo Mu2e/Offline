@@ -34,8 +34,8 @@
 using namespace CLHEP;
 
 namespace mu2e{
-	class Data_Collections
-	{
+        class Data_Collections
+        {
     public:
       #ifndef __CINT__
       explicit Data_Collections(){};
@@ -62,7 +62,7 @@ namespace mu2e{
       virtual ~Data_Collections(){};
       #endif
     ClassDef(Data_Collections,0);
-	};
+        };
 
 }
 

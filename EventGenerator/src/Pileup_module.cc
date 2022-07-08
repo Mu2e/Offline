@@ -24,7 +24,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
@@ -66,7 +65,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
   private:
-    
+
     double muonLifeTime_;
     double decayFraction_;
 
@@ -77,7 +76,7 @@ namespace mu2e {
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandFlat randFlat_;
     CLHEP::RandExponential randExp_;
-  
+
     std::vector<std::unique_ptr<ParticleGeneratorTool>> muonDecayGenerators_;
     std::vector<std::unique_ptr<ParticleGeneratorTool>> muonCaptureGenerators_;
 
@@ -145,13 +144,13 @@ namespace mu2e {
           addParticles(output.get(), mustop, time, gen.get());
         }
       }
-      
+
     }
 
-    
+
     if(verbosity_ >= 9) {
       std::cout<<"Pileup output: "<<*output<<std::endl;
-      
+
     }
 
     event.put(std::move(output));

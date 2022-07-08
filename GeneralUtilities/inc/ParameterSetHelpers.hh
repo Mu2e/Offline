@@ -27,10 +27,10 @@ class Binning;
 namespace fhicl {
 
   // Converting list of strings into vector of art::InputTag's
-  template<> std::vector<art::InputTag> 
+  template<> std::vector<art::InputTag>
   ParameterSet::get<std::vector<art::InputTag>>(std::string const & key ) const;
 
-  template<> std::vector<art::InputTag> 
+  template<> std::vector<art::InputTag>
   ParameterSet::get<std::vector<art::InputTag>>(std::string const & key, std::vector<art::InputTag> const& default_value ) const;
 
   // Converting list of ints into set of ints
@@ -48,7 +48,7 @@ namespace fhicl {
   template<> bool ParameterSet::get_if_present<Binning>(std::string const & key, Binning& value) const;
 
   //the function below should became a template function
-  mu2e::PhiPrescalingParams getPhiPrescalerParams(fhicl::ParameterSet const&pset, std::string const& key);
+  mu2e::PhiPrescalingParams getPhiPrescalerParams(fhicl::ParameterSet const&config, std::string const& key);
 }
 
 #endif/*GeneralUtilities_inc_ParameterSetHelpers_hh*/

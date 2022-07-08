@@ -16,8 +16,8 @@
 //    In side event.put the following happens:
 //       a) Default construct a T owned by the event. Call this object t0.
 //       b) swap the contents of t and t0 using T::swap member function.
-//       c) 
-// 
+//       c)
+//
 
 // Forward reference
 class KalRep;

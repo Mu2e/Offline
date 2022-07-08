@@ -21,7 +21,7 @@ namespace mu2e {
       _origin(CLHEP::Hep3Vector()), _rotation(CLHEP::HepRotation()), _materialName("")
     {}
 
-    explicit TSSection(CLHEP::Hep3Vector origin, 
+    explicit TSSection(CLHEP::Hep3Vector origin,
                        CLHEP::HepRotation rotation = CLHEP::HepRotation(),
                        std::string materialName="") :
       _origin(origin),  _rotation(rotation),  _materialName(materialName)

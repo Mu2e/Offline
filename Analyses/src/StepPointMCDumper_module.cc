@@ -22,7 +22,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -126,10 +125,10 @@ namespace mu2e {
       fhicl::Atom<std::string> hits     {Name("hitsInputTag"     ), Comment("StepPointMC collection")};
       fhicl::OptionalSequence<std::string> tauCollections     {Name("tauHitCollections"), Comment("StepPointMC collections for proper time calculation")};
       fhicl::OptionalSequence<int> decayOffCodes     {Name("decayOffPDGCodes"), Comment("decayOffPDGCodes")};
-      fhicl::Atom<bool>	  writeVDHit  {Name("writeVDHit"),   Comment("Write VDHit format branch"), false};
-      fhicl::Atom<bool>	  writeParticleState  {Name("writeParticleState"),   Comment("Write ParticleState format branch"), false};
-      fhicl::Atom<bool>	  writeProperTime  {Name("writeProperTime"),   Comment("Write ProperTime format branch"), false};
-      fhicl::Atom<bool>	  detectorSystem  {Name("detectorSystem"),   Comment("Use DetectorSystem for position information for ParticleState"), false};
+      fhicl::Atom<bool>          writeVDHit  {Name("writeVDHit"),   Comment("Write VDHit format branch"), false};
+      fhicl::Atom<bool>          writeParticleState  {Name("writeParticleState"),   Comment("Write ParticleState format branch"), false};
+      fhicl::Atom<bool>          writeProperTime  {Name("writeProperTime"),   Comment("Write ProperTime format branch"), false};
+      fhicl::Atom<bool>          detectorSystem  {Name("detectorSystem"),   Comment("Use DetectorSystem for position information for ParticleState"), false};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 

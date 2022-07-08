@@ -19,7 +19,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
@@ -650,14 +649,14 @@ namespace mu2e {
 
       _recoDigiEnergy[i] = recoDigi->energyDep();
 
-      const CaloDigi&	caloDigi = *recoDigi->caloDigiPtr();
+      const CaloDigi&        caloDigi = *recoDigi->caloDigiPtr();
 
       pulse      = caloDigi.waveform();
       nWords     = pulse.size();
       //get the amplitude
       for (int j=0; j<nWords; ++j){
-	double content = pulse.at(j);
-	if (content > amplitude) amplitude = content;
+        double content = pulse.at(j);
+        if (content > amplitude) amplitude = content;
       }
       _recoDigiAmp     [i] = amplitude;
 
@@ -801,53 +800,53 @@ namespace mu2e {
       double   energyMax(0), eMeanTot(0), clusterTime(0), clusterMCMeanTime(0), clusterMeanTime(0), clusterMCTime(0), eDep, psd, crystalTime(0);
 
       for (int j=0; j<nCrystals; ++j){
-      	crystalHit	 = crystals->at(j).operator ->();
-      	recoDigi         = crystalHit->recoCaloDigis().at(0).operator ->();
+              crystalHit         = crystals->at(j).operator ->();
+              recoDigi         = crystalHit->recoCaloDigis().at(0).operator ->();
 
-      	indexMC          = 0;//caloDigi.index();
+              indexMC          = 0;//caloDigi.index();
 
-      	eDep             = crystalHit->energyDep();
-      	psd              = 0;//recoDigi  ->psd();
+              eDep             = crystalHit->energyDep();
+              psd              = 0;//recoDigi  ->psd();
 
-      	if (psd >= _psdThreshold){
-      	  crystalTime        =   crystalHit->time();
+              if (psd >= _psdThreshold){
+                crystalTime        =   crystalHit->time();
 
-      	  if (eDep> 10.){
-      	    eMeanTot          += eDep;
-      	    clusterMeanTime   += crystalTime*eDep;
-      	  }
+                if (eDep> 10.){
+                  eMeanTot          += eDep;
+                  clusterMeanTime   += crystalTime*eDep;
+                }
 
-      	  if (eDep > energyMax){
-      	    clusterTime       = crystalTime;
-      	    energyMax         = eDep;
+                if (eDep > energyMax){
+                  clusterTime       = crystalTime;
+                  energyMax         = eDep;
 
-	    if (nCaloHitMC > 0) {
-	      caloDigiMC        = &caloDigiMCCol->at(indexMC);
-	      clusterMCMeanTime = caloDigiMC->time();
-	      clusterMCTime     = caloDigiMC->time();
-	    }
-  	  }
-      	}
+            if (nCaloHitMC > 0) {
+              caloDigiMC        = &caloDigiMCCol->at(indexMC);
+              clusterMCMeanTime = caloDigiMC->time();
+              clusterMCTime     = caloDigiMC->time();
+            }
+            }
+              }
 
-	if (nCaloHitMC > 0) {
+        if (nCaloHitMC > 0) {
 
-	  for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
-	    sim =   caloDigiMC->energyDeposit(k).sim().operator ->();
-	    int        pdgId       = sim->pdgId();
-	    double     ceEnergy    = 104.9;
-	    double     startEnergy = sim->startMomentum().e();
-	    if ( (pdgId == 11) && (startEnergy>ceEnergy))
-	      {
-		isConversion = 1;
-	      }
-	    // if ( sim->fromGenerator() ){
-	    //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	    //   if ( gen->generatorId().isConversion() ){
-	    // 	isConversion = 1;
-	    //   }
-	    // }
-	  }//end loop on the particles inside the crystalHit
-	}
+          for (unsigned k=0; k<caloDigiMC->nParticles(); ++k){
+            sim =   caloDigiMC->energyDeposit(k).sim().operator ->();
+            int        pdgId       = sim->pdgId();
+            double     ceEnergy    = 104.9;
+            double     startEnergy = sim->startMomentum().e();
+            if ( (pdgId == 11) && (startEnergy>ceEnergy))
+              {
+                isConversion = 1;
+              }
+            // if ( sim->fromGenerator() ){
+            //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
+            //   if ( gen->generatorId().isConversion() ){
+            //         isConversion = 1;
+            //   }
+            // }
+          }//end loop on the particles inside the crystalHit
+        }
       }
       if (eMeanTot>0){
         clusterMeanTime /= eMeanTot;

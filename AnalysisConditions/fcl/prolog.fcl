@@ -1,16 +1,16 @@
 BEGIN_PROLOG
 
  TrkQualConfig : { trainName : "TrkQual"
-	       	   xmlFileName : "AnalysisConditions/weights/TrkQualNeg.weights.xml"
-		   calibrated : true
+                          xmlFileName : "Offline/AnalysisConditions/weights/TrkQualNeg.weights.xml"
+                   calibrated : true
  }
  TrkQualNegConfig : { trainName : "TrkQualNeg"
- 	       	      xmlFileName : "AnalysisConditions/weights/TrkQualNeg.weights.xml"
-		      calibrated : true
+                              xmlFileName : "Offline/AnalysisConditions/weights/TrkQualNeg.weights.xml"
+                      calibrated : true
  }
  TrkQualPosConfig : { trainName : "TrkQualPos"
- 	       	      xmlFileName : "AnalysisConditions/weights/TrkQualPos.weights.xml"
-		      calibrated : true
+                              xmlFileName : "Offline/AnalysisConditions/weights/TrkQualPos.weights.xml"
+                      calibrated : true
  }
 
   TrkQualCatalog : {

@@ -30,6 +30,8 @@ helper.make_plugins( [ mainlib,
                        'art_Utilities',
                        'canvas',
                        'boost_filesystem',
+                       'cetlib',
+                       'cetlib_except',
                        ] )
 
 # This tells emacs to view this file in python mode.

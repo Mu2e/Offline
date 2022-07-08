@@ -25,7 +25,7 @@ Double_t splitgaus(Double_t *x, Double_t *par) {
     tail = (1/par[2]-1/par[3]+par[4]/par[5])*exp(-0.5*pow((xval-par[1])/par[6],2));
   }
   retval = par[0]*0.398942*(core+tail);
-// add a tail Gaussian
+  // add a tail Gaussian
   return retval;
 }
 
@@ -37,7 +37,7 @@ void KalTest (TTree* trk) {
   TCanvas* kcan = new TCanvas("kcan","Kalman Fit",1200,800);
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(111111);
-  
+
   TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
   sgau->SetParName(0,"Norm");
   sgau->SetParName(1,"Mean");
@@ -46,7 +46,7 @@ void KalTest (TTree* trk) {
   sgau->SetParName(4,"TFH");
   sgau->SetParName(5,"TSigH");
   sgau->SetParName(6,"TSigL");
-  
+
   TH1F* t0 = new TH1F("t0","t0 resolution;nsec",100,-5,5);
   trk->Project("t0","t0-mcmid.t0","kalfail==0&&nactive>=20");
   TH1F* nh = new TH1F("nh","N hits",66,-0.5,65.5);
@@ -58,14 +58,14 @@ void KalTest (TTree* trk) {
   TH1F* fstat = new TH1F("fstat","fit status",22,-1.5,20.5);
   TH1F* momr = new TH1F("momr","momentum resolution at start of tracker;MeV",100,-2.5,2.5);
   TH2F* mom = new TH2F("mom","momentum at start of tracker;true momentum (MeV);fit momentum (MeV)",
-    100,90,107,100,90,107);
+      100,90,107,100,90,107);
   mom->SetStats(0);
   trk->Project("fstat","fit.status","mcent.mom>100");
   trk->Project("nh","nhits","kalfail==0");
   trk->Project("na","nactive","kalfail==0");
   trk->Project("nd","nhits-nactive","kalfail==0");
-//  trk->Project("momr","fit.mom-mcmom","kalfail==0");
-//  trk->Project("momr","fit.mom-mcmom","kalfail==0&&nactive>=20&&fit.mom>100&&t0err<1&&chisq/ndof<5&&fit.momerr<0.2");
+  //  trk->Project("momr","fit.mom-mcmom","kalfail==0");
+  //  trk->Project("momr","fit.mom-mcmom","kalfail==0&&nactive>=20&&fit.mom>100&&t0err<1&&chisq/ndof<5&&fit.momerr<0.2");
   trk->Project("momr","fit.mom-mcent.mom","mcent.mom>100&&kalfail==0");
   //"&&t0err<0.8&&fit.momerr<0.1&&chisq/ndof<2");
   kcan->Clear();
@@ -92,18 +92,18 @@ void KalTest (TTree* trk) {
   sgau->SetParLimits(6,1.0*momr->GetRMS(),1.0);
   sgau->SetParLimits(4,0.0,0.8);
   momr->Fit("sgau","L");
-  
+
   double keff = 0.5*momr->GetEntries()/fstat->GetEntries();
-  TPaveText* text = new TPaveText(0.1,0.7,0.4,0.8,"NDC");  
+  TPaveText* text = new TPaveText(0.1,0.7,0.4,0.8,"NDC");
   char line[40];
   sprintf(line,"P>100MeV/c Eff. = %3.2f",keff);
   text->AddText(line);
   text->Draw();
 
-  }  
-  void CircleTest (TTree* trk) {
-    gStyle->SetOptStat(111111);
-    gStyle->SetOptFit(111111);
+}
+void CircleTest (TTree* trk) {
+  gStyle->SetOptStat(111111);
+  gStyle->SetOptFit(111111);
 
   TCanvas* ccanxy = new TCanvas("ccanxy","Circle Fit",1200,800);
   TH2F* cx = new TH2F("cx","Circle X center;MC true (mm);Fit (mm)",100,-400,400,100,-400,400);
@@ -133,9 +133,9 @@ void KalTest (TTree* trk) {
   cyr->Fit("gaus");
   ccanxy->cd(6);
   crr->Fit("gaus");
-  
+
   TCanvas* ccanrz = new TCanvas("ccanrz","RZ parameters",1200,800);
-  
+
   TH2F* dfdz = new TH2F("dfdz","Helix pitch (d#phi/dZ);MC true (radians/mm);helix fit (radians/mm)",100,0.0035,0.0065,100,0.0035,0.0065);
   TH2F* fz0 = new TH2F("fz0","Heliz #phi intercept;MC true (radians); helix fit (radians)",100,-3.5,3.5,100,-3.5,3.5);
   TH1F* dfdzr = new TH1F("dfdzr","d#phi/dZ resolution;radians/mm",100,-0.0005,0.0005);
@@ -144,7 +144,7 @@ void KalTest (TTree* trk) {
   trk->Project("fz0r","hfz0-mcfz0",helix+mcsel);
   dfdz->SetStats(0);
   fz0->SetStats(0);
-  
+
   ccanrz->Clear();
   ccanrz->Divide(2,2);
   ccanrz->cd(1);
@@ -155,14 +155,14 @@ void KalTest (TTree* trk) {
   dfdzr->Fit("gaus");
   ccanrz->cd(4);
   fz0r->Fit("gaus");
- } 
+}
 
-  void HelixTest (TTree* trk) {
-    gStyle->SetOptStat(111111);
-    gStyle->SetOptFit(111111);
+void HelixTest (TTree* trk) {
+  gStyle->SetOptStat(111111);
+  gStyle->SetOptFit(111111);
 
   TCanvas* hpcan = new TCanvas("hpcan","Helix params",1200,800);
-  
+
   TH2F* d0 = new TH2F("d0","d0;MC true (mm);helix fit (mm)",50,-200,200,50,-200,200);
   TH2F* phi0 = new TH2F("phi0","#phi0;MC true (radians);helix fit (radians)",50,-3.5,3.5,50,-3.5,3.5);
   TH2F* om = new TH2F("om","#omega;MC true (1/mm);helix fit (1/mm)",50,0.002,0.005,50,0.002,0.005);
@@ -175,7 +175,7 @@ void KalTest (TTree* trk) {
   td->SetStats(0);
 
 
-  
+
   hpcan->Clear();
   hpcan->Divide(3,2);
   hpcan->cd(1);
@@ -189,9 +189,9 @@ void KalTest (TTree* trk) {
   hpcan->cd(5);
   trk->Draw("htd:mcmid.td>>td",helix+mcsel);
 
-  
+
   TCanvas* hprcan = new TCanvas("hprcan","Helix parameter Resolution",1200,800);
-  
+
   TH1F* d0r = new TH1F("d0r","seed d0 resolution;mm",100,-300,300);
   TH1F* phi0r = new TH1F("phi0r","seed #phi0 resolution;radians",100,-0.25,0.25);
   TH1F* omr = new TH1F("omr","seed #omega resolution;1/mm",100,-0.002,0.002);
@@ -203,7 +203,7 @@ void KalTest (TTree* trk) {
   trk->Project("omr","hom-mcmid.om",helix+mcsel);
   trk->Project("z0r","hz0-mcmid.z0",helix+mcsel);
   trk->Project("tdr","htd-mcmid.td",helix+mcsel);
-  
+
   hprcan->Clear();
   hprcan->Divide(3,2);
   hprcan->cd(1);
@@ -216,7 +216,7 @@ void KalTest (TTree* trk) {
   z0r->Fit("gaus");
   hprcan->cd(5);
   tdr->Fit("gaus");
- 
+
 
 }
 
@@ -224,12 +224,12 @@ void AntiMomRes(TTree* trk) {
   TCanvas* amcan = new TCanvas("amcan","Momentum",1200,800);
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(111111);
-    TCut tsel = mcsel +TCut("kalfail==0");
-// selection cuts
+  TCut tsel = mcsel +TCut("kalfail==0");
+  // selection cuts
 
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trk->Project("effnorm","mcent.mom",mcsel);
-  
+
   TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
   sgau->SetParName(0,"Norm");
   sgau->SetParName(1,"Mean");
@@ -238,9 +238,9 @@ void AntiMomRes(TTree* trk) {
   sgau->SetParName(4,"TFH");
   sgau->SetParName(5,"TSigH");
   sgau->SetParName(6,"TSigL");
-  
+
   TH1F* momres[4];
-// cuts for different tightness of selection
+  // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
   ncuts[0] = "nactive<20";
   ncuts[1] = "nactive<20";
@@ -277,7 +277,7 @@ void AntiMomRes(TTree* trk) {
       momres[ires]->Fit("sgau","L");
 
       double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
-      TPaveText* text = new TPaveText(0.1,0.4,0.4,0.8,"NDC");  
+      TPaveText* text = new TPaveText(0.1,0.4,0.4,0.8,"NDC");
       char line[40];
       sprintf(line,"%s",ncuts[ires].GetTitle());
       text->AddText(line);
@@ -293,7 +293,7 @@ void AntiMomRes(TTree* trk) {
       text->Draw();
     }
     amcan->cd(0);
-  }  
+  }
 
 }
 
@@ -302,12 +302,12 @@ void MomRes(TTree* trk) {
   TCanvas* mcan = new TCanvas("mcan","Momentum",1200,800);
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(111111);
-// should have pitch angle and generated hit cuts here, FIXME!!!
+  // should have pitch angle and generated hit cuts here, FIXME!!!
   TCut tsel = mcsel +TCut("kalfail==0");
-// selection cuts
+  // selection cuts
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
   trk->Project("effnorm","mcent.mom",mcsel);
-  
+
   TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
   sgau->SetParName(0,"Norm");
   sgau->SetParName(1,"Mean");
@@ -316,9 +316,9 @@ void MomRes(TTree* trk) {
   sgau->SetParName(4,"TFH");
   sgau->SetParName(5,"TSigH");
   sgau->SetParName(6,"TSigL");
-  
+
   TH1F* momres[4];
-// cuts for different tightness of selection
+  // cuts for different tightness of selection
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
   ncuts[0] = "nactive>=20";
   ncuts[1] = "nactive>=20";
@@ -353,7 +353,7 @@ void MomRes(TTree* trk) {
     momres[ires]->Fit("sgau","L");
 
     double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
-    TPaveText* text = new TPaveText(0.1,0.4,0.4,0.8,"NDC");  
+    TPaveText* text = new TPaveText(0.1,0.4,0.4,0.8,"NDC");
     char line[40];
     sprintf(line,"%s",ncuts[ires].GetTitle());
     text->AddText(line);
@@ -365,16 +365,16 @@ void MomRes(TTree* trk) {
     text->AddText(line);
     sprintf(line,"Eff=%3.2f",keff);
     text->AddText(line);
- 
+
     text->Draw();
-  } 
-  mcan->cd(0); 
+  }
+  mcan->cd(0);
 }
-  
+
 void SeedTest (TTree* trk) {
-  
+
   TCanvas* scan = new TCanvas("srcan","Seed parameter Resolution",1200,800);
-  
+
   TH1F* d0s = new TH1F("d0s","seed d0 resolution;mm",100,-100,100);
   TH1F* phi0s = new TH1F("phi0s","seed #phi0 resolution;radians",100,-0.07,0.07);
   TH1F* oms = new TH1F("oms","seed #omega resolution;1/mm",100,-0.0005,0.0005);
@@ -387,7 +387,7 @@ void SeedTest (TTree* trk) {
   trk->Project("oms","som-mcmid.om",seed+mcsel);
   trk->Project("z0s","sz0-mcmid.z0",seed+mcsel);
   trk->Project("tds","std-mcmid.td",seed+mcsel);
-  
+
   scan->Clear();
   scan->Divide(3,2);
   scan->cd(1);
@@ -400,5 +400,5 @@ void SeedTest (TTree* trk) {
   z0s->Fit("gaus");
   scan->cd(5);
   tds->Fit("gaus");
-  
+
 }

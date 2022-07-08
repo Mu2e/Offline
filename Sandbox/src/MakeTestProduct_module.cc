@@ -5,7 +5,6 @@
 //
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 
 using namespace std;
@@ -23,7 +22,7 @@ namespace mu2e {
 
   };
 
-  MakeTestProduct::MakeTestProduct(fhicl::ParameterSet const& pset): 
+  MakeTestProduct::MakeTestProduct(fhicl::ParameterSet const& pset):
     art::EDProducer{pset}
   {
     produces<int>();

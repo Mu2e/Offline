@@ -26,14 +26,14 @@ physics : {
 
    producers : {
       binaryOutput: {
-	 @table::DAQ.producers.binaryOutput
-	 generateTimestampTable : 1
+         @table::DAQ.producers.binaryOutput
+         generateTimestampTable : 1
       }
    }
    analyzers : {
    }
 
-   t1 : [ binaryOutput ] 
+   t1 : [ binaryOutput ]
    e1 : [ ]
 
    trigger_paths  : [t1]
@@ -43,4 +43,4 @@ physics : {
 
 physics.producers.binaryOutput.includeCrv : 1
 physics.producers.binaryOutput.outputFile : "DTC_packets_Crv.bin"
-services.TFileService.fileName : "generateBinaryFromCrvDigi_test.root" 
+services.TFileService.fileName : "generateBinaryFromCrvDigi_test.root"

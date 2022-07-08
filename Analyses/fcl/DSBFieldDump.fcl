@@ -9,8 +9,9 @@ process_name : DSField
 services : {
   message : @local::default_message
   GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
-    GeometryService	    : {
+    GeometryService            : {
       inputFile      : "Offline/Mu2eG4/geom/geom_common.txt"
+      bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
       simulatedDetector   : { tool_type: "Mu2e" }
     }
   TFileService: {
@@ -40,4 +41,3 @@ physics : {
   e1        : [BFieldPlotter]
   end_paths : [e1]
 }
-services.GeometryService.inputFile      : "Offline/Mu2eG4/geom/geom_common_reco.txt"

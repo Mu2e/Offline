@@ -26,7 +26,34 @@ mu2eg4DefaultPhysics: {
     setMuHadLateralDisplacement: true // improves accuracy of boundary
                                       // crossing for muons and common charged hadrons
 
+    useDensityEffectInIonizationLossCalc: false // improves accuracy of energy loss calculations;
+                                                // done for the materials listed below, for now
+                                                // to be used with Geant4 10.7.p03 and above
+
+    conductingMaterials : ["A1100","A95083","AL999Ni001","AluminumHoneycomb","BrassC360",
+      "BronzeC608","BronzeC642","BronzeC938","BronzeC943","BronzeC945",
+      "CollCu","CuW1090","DS1CoilMix","DS2CoilMix","G4_Al",
+      "G4_Al_Double","G4_Al_Half","G4_Al_Quarter","G4_Al_Standard","G4_Al_Triple",
+      "G4_As","G4_Au","G4_Be_Double","G4_Be_Half","G4_Be_Quarter",
+      "G4_Be_Standard","G4_Be_Triple","G4_Co","G4_Cr","G4_Cu",
+      "G4_Fe","G4_Li","G4_Mg","G4_Mn","G4_Mo",
+      "G4_Nb","G4_Ni","G4_Pb","G4_Sb","G4_Sn",
+      "G4_Ti","G4_W","G4_W_Hayman","G4_Zn","HRSBronze",
+      "Inconel718","MBSCalShieldRing","MBSSupportMix","NbTi","NbTiCu",
+      "ProductionTargetTungstenLa2_O3",
+      "RackSteel","StainlessSteel","StainlessSteel316","StainlessSteel316L","StoppingTarget_Al"]
+    // comma separated list used when the above is set to true
+    // e.g., ["StainlessSteel", "StainlessSteel316"]
+
     // mscModelTransitionEnergy: 115. // MeV uncomment to change the Geant4 deafult
+
+    // muonPreAssignedDecayProperTime: 200.0 // ns uncomment and set specific time,
+                                             // to activate seting muon fixed decay proper time
+
+    // muonMinPreAssignedDecayProperTime: 100.0 // ns uncomment and set the min proper time
+    // muonMaxPreAssignedDecayProperTime: 200.0 // ns uncomment and set the max proper time
+    // to activate seting muon random, fixed (from min up to the max value) decay proper time
+    // either the specific or one or both min, max options above can be activated at a time
 
     useEmOption4InTracker: false // to use that option in the tracker only if not using _EMZ;
                                  // does not seem to work all that well in geant4 10.4

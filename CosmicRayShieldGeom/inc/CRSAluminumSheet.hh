@@ -9,7 +9,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CRSAluminumSheet

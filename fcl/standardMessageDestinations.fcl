@@ -1,16 +1,16 @@
 #
-# Standage destinations for the message service -- 
-# for use by messageService.fcl, which defines standard configurations for 
+# Standage destinations for the message service --
+# for use by messageService.fcl, which defines standard configurations for
 # the message service.
 #
 #
-# Normally, users will use messageService.fcl which includes this file, 
+# Normally, users will use messageService.fcl which includes this file,
 # rather than dealing with this file directly.
 #
 # Usage - in a fcl configuration file
 #
 # 1 - Place the following near the start, among the PROLOGs:
-#     #include "fcl/standardMessageDestinations.fcl"
+#     #include "Offline/fcl/standardMessageDestinations.fcl"
 #
 # 2 - In a destinations entry in a block that will be part of the message
 #     service block, choose the selected standard destination configuration
@@ -28,9 +28,9 @@
 #     destinations : @local::mf_debugStats
 #
 # 3 - Customizations to configurations using these standard destinations
-#     are straightforward to make; see customizingMessageFacilityFcl.txt 
-#     for simple examples. 
- 
+#     are straightforward to make; see customizingMessageFacilityFcl.txt
+#     for simple examples.
+
 
 BEGIN_PROLOG
 
@@ -45,13 +45,13 @@ mf_null:
 
 mf_error:
 {
- type:      file	# Record the messages in a file.
+ type:      file        # Record the messages in a file.
  filename:  "error.log" # Name of the file in which to place the messages;
                         # quoted, because if contains a dot.
  threshold: ERROR       # Threshold of what level of messages to react to.
- append:    true        # Will append messages to named file if it exists   
- categories:            # A place to list named categories, if you want to 
-                        # specify the behavior for specific categories of 
+ append:    true        # Will append messages to named file if it exists
+ categories:            # A place to list named categories, if you want to
+                        # specify the behavior for specific categories of
                         # messages.
                         # For example, in LigInfo("suspiciousParticle") << p;
                         # the category of the message would be
@@ -59,56 +59,56 @@ mf_error:
  {
    default:             # Limits for any category not explicitly mentioned.
    {
-     limit : 100        # Output first 100 instances of messages in each 
+     limit : 100        # Output first 100 instances of messages in each
                         # category, then go to exponential backoff.
      timespan : 300     # If this many seconds elapse between messages of
-                        # one category being issued, reset the counting 
+                        # one category being issued, reset the counting
                         # toward the limit (in this case, output the next
                         # 100 instances, even if limit had been exceeded).
-   } 
+   }
  } # end categories
 } # end mf_error
-mf_errorStats : 
-{ 
+mf_errorStats :
+{
  type     : file
- filename : @local::mf_error.filename  # Because the filename matches that 
+ filename : @local::mf_error.filename  # Because the filename matches that
                                        # of a destination (if used with
-                                       # errorMsg), the statistics will be 
+                                       # errorMsg), the statistics will be
                                        # placed at the end of the output
                                        # to that destination.
 }
 
-mf_warning: 
-{ 
- type:      file       
+mf_warning:
+{
+ type:      file
  filename:  "warning.log"
- threshold: WARNING    # React to WARNING and ERROR message severities; 
+ threshold: WARNING    # React to WARNING and ERROR message severities;
                        # ignore messages issued via iLogInfo and LogDebug.
- categories: 
+ categories:
  {
-  default:             
+  default:
    {
      limit    : 100
-     timespan : 300        
-   } 
+     timespan : 300
+   }
  } # end categories
 } # end mf_warning
-mf_warningStats : 
-{ 
+mf_warningStats :
+{
  type     : file
- filename : @local::mf_warning.filename  
+ filename : @local::mf_warning.filename
 }
 
-mf_coutInfo: 
-{ 
+mf_coutInfo:
+{
   type:      cout       # type could be cout, cerr, archive, dds, or file.
-  threshold: INFO       # React to INFO, WARNING, and ERROR 
-                        # message severities; ignore LogDebug messages. 
- categories: 
+  threshold: INFO       # React to INFO, WARNING, and ERROR
+                        # message severities; ignore LogDebug messages.
+ categories:
  {
    ArtReport:           # ArtReport is a category of INFO messages that
-                        # the framework will generate to tell, for example, 
-                        # when a next event is started. 
+                        # the framework will generate to tell, for example,
+                        # when a next event is started.
    {
      reportEvery : 1    # start with every one
      limit       : 1    # start exponential backoff right away
@@ -117,13 +117,13 @@ mf_coutInfo:
    fileAction:
    {
      limit : -1
-   } 
-   default:             
+   }
+   default:
    {
      limit : 100
-   } 
+   }
    ArtSummary:  # allow the path and modules summaries (TrigReport)
-   { 
+   {
      limit : -1
    }
    RANDOM : { limit : 0 }
@@ -146,25 +146,25 @@ mf_coutInfo:
 mf_debug:
 {
  type:      file
- filename:  "debug.log"  
- append:    false        
+ filename:  "debug.log"
+ append:    false
  threshold: "DEBUG"     # No messages will be ignored due to this threshold.
-                        # However, unless debugModules in service.message 
-			# includes "*", messages from a module which is 
-			# not among the debug modules listed will still
-			# be suppressed.
+                        # However, unless debugModules in service.message
+                        # includes "*", messages from a module which is
+                        # not among the debug modules listed will still
+                        # be suppressed.
  categories:
- {             
-   default:              
+ {
+   default:
    {
-    limit:       -1     
+    limit:       -1
    }
  } # end categories
 } # end mf_debug
-mf_debugStats : 
-{ 
+mf_debugStats :
+{
  type     : file
- filename : @local::mf_debug.filename  
+ filename : @local::mf_debug.filename
 }
 
 END_PROLOG

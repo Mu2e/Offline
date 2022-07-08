@@ -274,6 +274,7 @@ namespace mu2e{
         // particle is stable
         pmanager->AddProcess(scp, ordInActive, ordInActive, ordDefault);
       } else {
+        adecayProcess->SetVerboseLevel(debug.steppingVerbosityLevel()-1);
         pmanager->AddProcess(scp, ordDefault, ordInActive, ordDefault);
       }
 

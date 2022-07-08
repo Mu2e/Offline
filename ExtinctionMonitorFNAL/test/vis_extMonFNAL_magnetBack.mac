@@ -20,7 +20,7 @@
 /vis/scene/add/trajectories
 /vis/sceneHandler/attach
 /vis/scene/endOfEventAction refresh
-/vis/enable 
+/vis/enable
 
 ################################################################
 # Viewer settings for the case top volume is ProtonBeamDumpShielding

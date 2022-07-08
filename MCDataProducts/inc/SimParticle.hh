@@ -85,8 +85,8 @@ namespace mu2e {
                  art::Ptr<GenParticle> const&   agenParticle,
                  const CLHEP::Hep3Vector&       aposition,
                  const CLHEP::HepLorentzVector& amomentum,
-                 float                         astartGlobalTime,
-                 float                         astartProperTime,
+                 float                          astartGlobalTime,
+                 float                          astartProperTime,
                  unsigned                       astartVolumeIndex,
                  unsigned                       astartG4Status,
                  ProcessCode                    acreationCode,
@@ -123,14 +123,14 @@ namespace mu2e {
 
     void addEndInfo( CLHEP::Hep3Vector       aendPosition,
                      CLHEP::HepLorentzVector aendMomentum,
-                     float                  aendGlobalTime,
-                     float                  aendProperTime,
+                     float                   aendGlobalTime,
+                     float                   aendProperTime,
                      unsigned                aendVolumeIndex,
                      unsigned                aendG4Status,
                      ProcessCode             astoppingCode,
                      float                   endKE,
                      int                     nSteps,
-                     float                  trackLength){
+                     float                   trackLength){
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
       _endGlobalTime   = aendGlobalTime;
@@ -190,36 +190,36 @@ namespace mu2e {
     // Information at the start of the track.
     CLHEP::Hep3Vector startPosition()       const { return GenVector::Hep3Vec(_startPosition);}
     CLHEP::HepLorentzVector startMomentum() const { return GenVector::HepLorentzVec(_startMomentum);}
-    XYZVectorD const& startPosXYZ() const { return _startPosition;}
+    XYZVectorD  const& startPosXYZ()  const { return _startPosition;}
     XYZTVectorF const& startMomXYZT() const { return _startMomentum;}
-    float      startGlobalTime()  const { return _startGlobalTime;}
-    float&     startGlobalTime()        { return _startGlobalTime;}
-    float      startProperTime()  const { return _startProperTime;}
-    unsigned    startVolumeIndex() const { return _startVolumeIndex;}
-    unsigned    startG4Status()    const { return _startG4Status;}
-    ProcessCode creationCode()     const { return _creationCode;   }
+    float       startGlobalTime()     const { return _startGlobalTime;}
+    float&      startGlobalTime()           { return _startGlobalTime;}
+    float       startProperTime()     const { return _startProperTime;}
+    unsigned    startVolumeIndex()    const { return _startVolumeIndex;}
+    unsigned    startG4Status()       const { return _startG4Status;}
+    ProcessCode creationCode()        const { return _creationCode;}
     bool isTruncated() const { return (_parentSim.isNull() && _creationCode != ProcessCode::mu2ePrimary); }
 
     // the following is for excited ions
     IonDetail const& ion()                      const { return _ion; }
-    float           startExcitationEnergy()    const { return _ion.excitationEnergy;}
+    float            startExcitationEnergy()    const { return _ion.excitationEnergy;}
     int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
     // Information at the end of the track.
-    CLHEP::Hep3Vector endPosition() const { return GenVector::Hep3Vec(_endPosition);}
+    CLHEP::Hep3Vector endPosition()  const { return GenVector::Hep3Vec(_endPosition);}
     CLHEP::HepLorentzVector endMomentum() const { return GenVector::HepLorentzVec(_endMomentum);}
-    XYZVectorD const& endPosXYZ() const { return _endPosition;}
-    XYZTVectorF const& endMomXYZT() const { return _endMomentum;}
-    float       endGlobalTime()  const { return _endGlobalTime; }
-    float&      endGlobalTime()        { return _endGlobalTime; }
-    float       endProperTime()  const { return _endProperTime; }
-    unsigned     endVolumeIndex() const { return _endVolumeIndex;}
-    unsigned     endG4Status()    const { return _endG4Status;   }
-    ProcessCode  stoppingCode()   const { return _stoppingCode;  }
+    XYZVectorD  const& endPosXYZ()   const { return _endPosition;}
+    XYZTVectorF const& endMomXYZT()  const { return _endMomentum;}
+    float       endGlobalTime()      const { return _endGlobalTime; }
+    float&      endGlobalTime()            { return _endGlobalTime; }
+    float       endProperTime()      const { return _endProperTime; }
+    unsigned    endVolumeIndex()     const { return _endVolumeIndex;}
+    unsigned    endG4Status()        const { return _endG4Status;   }
+    ProcessCode stoppingCode()       const { return _stoppingCode;  }
     float preLastStepKineticEnergy() const { return _preLastStepKE; }
-    float        endKineticEnergy() const { return _endKE; }
-    int          nSteps()         const { return _nSteps;        }
-    float       trackLength()    const { return _trackLength;   }
+    float       endKineticEnergy()   const { return _endKE; }
+    int         nSteps()             const { return _nSteps;        }
+    float       trackLength()        const { return _trackLength;   }
 
     // SimParticle daughters of this track.
     std::vector<art::Ptr<SimParticle> > const& daughters()   const { return _daughterSims; }
@@ -267,30 +267,30 @@ namespace mu2e {
     // PDG particle ID code.  See note 1.
     PDGCode::type _pdgId;
 
-    art::Ptr<GenParticle>  _genParticle;
+    art::Ptr<GenParticle> _genParticle;
 
     // Information at the start of the track.
-    XYZVectorD		    _startPosition;
-    XYZTVectorF             _startMomentum;
-    float		    _startGlobalTime;
-    float		    _startProperTime;
-    unsigned                _startVolumeIndex;
-    unsigned                _startG4Status;
-    ProcessCode             _creationCode;
-    IonDetail               _ion;
+    XYZVectorD             _startPosition;
+    XYZTVectorF            _startMomentum;
+    float                  _startGlobalTime;
+    float                  _startProperTime;
+    unsigned               _startVolumeIndex;
+    unsigned               _startG4Status;
+    ProcessCode            _creationCode;
+    IonDetail              _ion;
 
     // Information at the end of the track.
-    XYZVectorD              _endPosition;
-    XYZTVectorF		    _endMomentum;
+    XYZVectorD             _endPosition;
+    XYZTVectorF            _endMomentum;
     float                  _endGlobalTime;
     float                  _endProperTime;
-    unsigned                _endVolumeIndex;
-    unsigned                _endG4Status;
-    ProcessCode             _stoppingCode;
-    float		    _preLastStepKE;
-    float                   _endKE;
-    int                     _nSteps;
-    float                   _trackLength;
+    unsigned               _endVolumeIndex;
+    unsigned               _endG4Status;
+    ProcessCode            _stoppingCode;
+    float                  _preLastStepKE;
+    float                  _endKE;
+    int                    _nSteps;
+    float                  _trackLength;
 
     // SimParticle IDs of daughters of this track.
     std::vector<art::Ptr<SimParticle> > _daughterSims;

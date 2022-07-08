@@ -3,7 +3,7 @@
 
 //TS3 Pbar Absorber
 //Window
-int    pbar.version        = 4; 
+int    pbar.version        = 4;
 double pbar.halfLength     = 0.127;
 string pbar.materialName   = "A1100";
 //Support Structure
@@ -19,29 +19,29 @@ vector<double> pbarwedge.stripThicknesses = {0.127,0.127,0.127}; // mm (FULL THI
 vector<double> pbarwedge.stripHeights = {23, 69, 115}; // mm
 
 //Inner cryo shell radii
-double ts.ts1in.rOut       = 269.;  
-double ts.ts2in.rOut       = 269.;  
-double ts.ts3in.rOut       = 269.;  
-double ts.ts4in.rOut       = 269.;  
-double ts.ts5in.rOut       = 267.;  
-double ts.ts5.rVac         = 248.; //slightly smaller measured  
+double ts.ts1in.rOut       = 269.;
+double ts.ts2in.rOut       = 269.;
+double ts.ts3in.rOut       = 269.;
+double ts.ts4in.rOut       = 269.;
+double ts.ts5in.rOut       = 267.;
+double ts.ts5.rVac         = 248.; //slightly smaller measured
 
 //Outer cryo shell radii
-double ts.ts1out.rIn       = 705.0; 
-double ts.ts2out.rIn       = 793.45; 
-double ts.ts3out.rIn       = 793.45; 
-double ts.ts4out.rIn       = 793.45; 
-double ts.ts5out.rIn       = 793.45; 
+double ts.ts1out.rIn       = 705.0;
+double ts.ts2out.rIn       = 793.45;
+double ts.ts3out.rIn       = 793.45;
+double ts.ts4out.rIn       = 793.45;
+double ts.ts5out.rIn       = 793.45;
 
-double ts.ts1out.rOut      = 724.05; 
-double ts.ts2out.rOut      = 812.5; 
-double ts.ts3out.rOut      = 812.5; 
-double ts.ts4out.rOut      = 812.5; 
-double ts.ts5out.rOut      = 812.5; 
+double ts.ts1out.rOut      = 724.05;
+double ts.ts2out.rOut      = 812.5;
+double ts.ts3out.rOut      = 812.5;
+double ts.ts4out.rOut      = 812.5;
+double ts.ts5out.rOut      = 812.5;
 
 double ts.tsUendWall1.halfLength = 15.;
 
-double ts.tsUendWall2.rIn   = 725.; 
+double ts.tsUendWall2.rIn   = 725.;
 double ts.tsUendWall2.rOut  = 812.5.;
 double ts.tsUendWall2.halfLength = 15.;
 
@@ -59,20 +59,20 @@ double ts.coll.Flange.Radius2 = 294.0;
 int    ts.coll.Flange.version = 2;
 
 double ts.ts1.caLengthDiff = 125.; //distance from the inside edge of the top part of the TS end wall to end of cold mass
-vector<double> ts1.cas.radii = 
+vector<double> ts1.cas.radii =
   {
     449.78, 529.38,
     485.00, 570.00
   }; //TS1 CA is 1045 mm long, 125 mm reduction but maintain same angle --> 45 (40) mm  drop --> 39.6 (35.2) mm drop with respect to TS_v05
 double ts.ts5.caLengthDiff = 125.; //distance from the inside edge of the top part of the TS end wall to end of cold mass
-vector<double> ts5.cas.radii = 
+vector<double> ts5.cas.radii =
   {
     485.00, 570.00,
     435.50, 516.00
   }; //TS5 is 1250 mm long, 125 mm reduction in cold mass but maintain same angle --> 60 (55) mm  drop --> 54 (49.5) mm drop with respect to TS_v05
 
 //end wall of the TS
-double ts.tsDendWall.rIn        = 296.35; 
+double ts.tsDendWall.rIn        = 296.35;
 double ts.tsDendWall.halfLength = 9.5;
 bool   ts.tsDendWall2.build     = true; //lower radial portion of the plate
 vector<double> ts.tsDendWall2.rIn  = {270.01, 270.01, 270.01, 270.01};
@@ -162,7 +162,7 @@ bool   ts.tsudinterconnect.build = true;
 double ts.tsudinterconnect.xoffset = 40.8;
 double ts.tsudinterconnect.rIn = 940.; //1880 mm inner diameter
 double ts.tsudinterconnect.rOut = 955.875; //15.875 mm thick
-double ts.tsudinterconnect.halfLength = 206.6; 
+double ts.tsudinterconnect.halfLength = 206.6;
 string ts.tsudinterconnect.material = "StainlessSteel316";
 
 // This tells emacs to view this file in c++ mode.

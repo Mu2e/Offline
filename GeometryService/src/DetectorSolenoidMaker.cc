@@ -117,9 +117,9 @@ namespace mu2e {
     for ( int iBB = 0; iBB < nBlocks; iBB++ ) {
       CLHEP::Hep3Vector center(xBBCs[iBB],yBBCs[iBB],zBBCs[iBB]);
       if ( zBBCs[iBB]*CLHEP::mm > 8340.0 ) {
-	ds->_BBlockCenters3.push_back(center);
+        ds->_BBlockCenters3.push_back(center);
       } else {
-	ds->_BBlockCenters2.push_back(center);
+        ds->_BBlockCenters2.push_back(center);
       }
     }
     ds->_widthCoupler = c.getDouble("ds.widthCoupler",0.0);
@@ -144,65 +144,65 @@ namespace mu2e {
     if ( ds->_hasCableRunCal ) {
       ds->_cableRunVersion = c.getInt("ds.CableRun.version",1);
       if ( ds->_cableRunVersion > 1 ) {
-	ds->_upRInCableRunCal  = c.getDouble("ds.CableRunCal.UpRin");
-	ds->_upROutCableRunCal = c.getDouble("ds.CableRunCal.UpRout");
-	ds->_upHL1CableRunCal  = c.getDouble("ds.CableRunCal.UpHL1");
-	ds->_upHL2CableRunCal  = c.getDouble("ds.CableRunCal.UpHL2");
-	ds->_upZC1CableRunCal  = c.getDouble("ds.CableRunCal.UpZC1");
-	ds->_upZC2CableRunCal  = c.getDouble("ds.CableRunCal.UpZC2");
+        ds->_upRInCableRunCal  = c.getDouble("ds.CableRunCal.UpRin");
+        ds->_upROutCableRunCal = c.getDouble("ds.CableRunCal.UpRout");
+        ds->_upHL1CableRunCal  = c.getDouble("ds.CableRunCal.UpHL1");
+        ds->_upHL2CableRunCal  = c.getDouble("ds.CableRunCal.UpHL2");
+        ds->_upZC1CableRunCal  = c.getDouble("ds.CableRunCal.UpZC1");
+        ds->_upZC2CableRunCal  = c.getDouble("ds.CableRunCal.UpZC2");
       }
       if ( ds->_cableRunVersion > 2 ) {
-	//cable core parameters
+        //cable core parameters
         ds->_rCableRunCalCoreFract    = c.getDouble("ds.CableRunCalCore.RadiusFraction");
         ds->_rdCableRunCalCoreFract   = c.getDouble("ds.CableRunCalCore.dRadiusFraction");
         ds->_dPhiCableRunCalCoreFract = c.getDouble("ds.CableRunCalCore.dPhiFraction");
         ds->_materialCableRunCalCore  = c.getString("ds.CableRunCalCore.material");
 
-	//IFB cabling
-	ds->_calR1CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR1");
-	ds->_calR2CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR2");
-	ds->_calPhi0CableRunIFB  = c.getDouble("ds.CableRunIFB.CalPhi0");
-	ds->_calDPhiCableRunIFB  = c.getDouble("ds.CableRunIFB.CalDPhi");
-	ds->_calREndCableRunIFB  = c.getDouble("ds.CableRunIFB.CalREnd");
-	ds->_calEndWCableRunIFB  = c.getDouble("ds.CableRunIFB.CalEndW");
-	ds->_calPhiECableRunIFB  = c.getDouble("ds.CableRunIFB.CalPhiE");
-	//IFB patch panel
-	ds->_calPR1CableRunIFB   = c.getDouble("ds.CableRunIFB.CalPR1");
-	ds->_calPR2CableRunIFB   = c.getDouble("ds.CableRunIFB.CalPR2");
-	ds->_calPPhi0CableRunIFB = c.getDouble("ds.CableRunIFB.CalPPhi0");
-	ds->_calPDPhiCableRunIFB = c.getDouble("ds.CableRunIFB.CalPDPhi");
-	ds->_calPZInCableRunIFB  = c.getDouble("ds.CableRunIFB.CalPZIn");
-	ds->_calPZHLCableRunIFB  = c.getDouble("ds.CableRunIFB.CalPZHL");
-	ds->_calPZOutCableRunIFB = c.getDouble("ds.CableRunIFB.CalPZOut");
-	ds->_calPMatCableRunIFB  = c.getString("ds.CableRunIFB.CalPMat");
-	//cabling at bottom of IFB cabling
-	ds->_calBCXCableRunIFB   = c.getDouble("ds.CableRunIFB.CalBCX");
-	ds->_calBLCableRunIFB    = c.getDouble("ds.CableRunIFB.CalBL");
+        //IFB cabling
+        ds->_calR1CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR1");
+        ds->_calR2CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR2");
+        ds->_calPhi0CableRunIFB  = c.getDouble("ds.CableRunIFB.CalPhi0");
+        ds->_calDPhiCableRunIFB  = c.getDouble("ds.CableRunIFB.CalDPhi");
+        ds->_calREndCableRunIFB  = c.getDouble("ds.CableRunIFB.CalREnd");
+        ds->_calEndWCableRunIFB  = c.getDouble("ds.CableRunIFB.CalEndW");
+        ds->_calPhiECableRunIFB  = c.getDouble("ds.CableRunIFB.CalPhiE");
+        //IFB patch panel
+        ds->_calPR1CableRunIFB   = c.getDouble("ds.CableRunIFB.CalPR1");
+        ds->_calPR2CableRunIFB   = c.getDouble("ds.CableRunIFB.CalPR2");
+        ds->_calPPhi0CableRunIFB = c.getDouble("ds.CableRunIFB.CalPPhi0");
+        ds->_calPDPhiCableRunIFB = c.getDouble("ds.CableRunIFB.CalPDPhi");
+        ds->_calPZInCableRunIFB  = c.getDouble("ds.CableRunIFB.CalPZIn");
+        ds->_calPZHLCableRunIFB  = c.getDouble("ds.CableRunIFB.CalPZHL");
+        ds->_calPZOutCableRunIFB = c.getDouble("ds.CableRunIFB.CalPZOut");
+        ds->_calPMatCableRunIFB  = c.getString("ds.CableRunIFB.CalPMat");
+        //cabling at bottom of IFB cabling
+        ds->_calBCXCableRunIFB   = c.getDouble("ds.CableRunIFB.CalBCX");
+        ds->_calBLCableRunIFB    = c.getDouble("ds.CableRunIFB.CalBL");
 
-	ds->_trkR1CableRunIFB    = c.getDouble("ds.CableRunIFB.TrkR1");
-	ds->_trkR2CableRunIFB    = c.getDouble("ds.CableRunIFB.TrkR2");
-	ds->_trkPhi0CableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPhi0");
-	ds->_trkDPhiCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkDPhi");
-	ds->_trkREndCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkREnd");
-	ds->_trkEndWCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkEndW");
-	ds->_trkPhiECableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPhiE");
-	//IFB patch panel
-	ds->_trkPR1CableRunIFB   = c.getDouble("ds.CableRunIFB.TrkPR1");
-	ds->_trkPR2CableRunIFB   = c.getDouble("ds.CableRunIFB.TrkPR2");
-	ds->_trkPPhi0CableRunIFB = c.getDouble("ds.CableRunIFB.TrkPPhi0");
-	ds->_trkPDPhiCableRunIFB = c.getDouble("ds.CableRunIFB.TrkPDPhi");
-	ds->_trkPZInCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPZIn");
-	ds->_trkPZHLCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPZHL");
-	ds->_trkPZOutCableRunIFB = c.getDouble("ds.CableRunIFB.TrkPZOut");
-	ds->_trkPMatCableRunIFB  = c.getString("ds.CableRunIFB.TrkPMat");
-	//cabling at bottom of IFB cabling
-	ds->_trkBCXCableRunIFB   = c.getDouble("ds.CableRunIFB.TrkBCX");
-	ds->_trkBLCableRunIFB    = c.getDouble("ds.CableRunIFB.TrkBL");
+        ds->_trkR1CableRunIFB    = c.getDouble("ds.CableRunIFB.TrkR1");
+        ds->_trkR2CableRunIFB    = c.getDouble("ds.CableRunIFB.TrkR2");
+        ds->_trkPhi0CableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPhi0");
+        ds->_trkDPhiCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkDPhi");
+        ds->_trkREndCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkREnd");
+        ds->_trkEndWCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkEndW");
+        ds->_trkPhiECableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPhiE");
+        //IFB patch panel
+        ds->_trkPR1CableRunIFB   = c.getDouble("ds.CableRunIFB.TrkPR1");
+        ds->_trkPR2CableRunIFB   = c.getDouble("ds.CableRunIFB.TrkPR2");
+        ds->_trkPPhi0CableRunIFB = c.getDouble("ds.CableRunIFB.TrkPPhi0");
+        ds->_trkPDPhiCableRunIFB = c.getDouble("ds.CableRunIFB.TrkPDPhi");
+        ds->_trkPZInCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPZIn");
+        ds->_trkPZHLCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPZHL");
+        ds->_trkPZOutCableRunIFB = c.getDouble("ds.CableRunIFB.TrkPZOut");
+        ds->_trkPMatCableRunIFB  = c.getString("ds.CableRunIFB.TrkPMat");
+        //cabling at bottom of IFB cabling
+        ds->_trkBCXCableRunIFB   = c.getDouble("ds.CableRunIFB.TrkBCX");
+        ds->_trkBLCableRunIFB    = c.getDouble("ds.CableRunIFB.TrkBL");
 
-	ds->_zHLCableRunIFB      = c.getDouble("ds.CableRunIFB.ZHL");
-	ds->_materialCalCableRunIFB = c.getString("ds.CalCableRunIFB.Material");
-	ds->_materialTrkCableRunIFB = c.getString("ds.TrkCableRunIFB.Material");
-	ds->_zCCableRunIFB       = c.getDouble("ds.CableRunIFB.ZC");
+        ds->_zHLCableRunIFB      = c.getDouble("ds.CableRunIFB.ZHL");
+        ds->_materialCalCableRunIFB = c.getString("ds.CalCableRunIFB.Material");
+        ds->_materialTrkCableRunIFB = c.getString("ds.TrkCableRunIFB.Material");
+        ds->_zCCableRunIFB       = c.getDouble("ds.CableRunIFB.ZC");
       }
       ds->_lengthCableRunCal = c.getDouble("ds.CableRunCal.length");
       ds->_rInCableRunCal    = c.getDouble("ds.CableRunCal.Rin");
@@ -243,7 +243,7 @@ namespace mu2e {
       ds->_servicePipeZC = c.getDouble("ds.servicePipeZC");
       ds->_servicePipeYC = c.getDouble("ds.servicePipeYC");
       c.getVectorDouble("ds.servicePipeXCs",ds->_servicePipeXCs);
-    } 
+    }
 
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");

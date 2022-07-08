@@ -39,7 +39,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/SharedProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Utilities/Globals.h"
@@ -185,7 +184,7 @@ namespace mu2e {
       async<art::InEvent>();
 
       if (num_schedules>1) {
-	G4cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
+        G4cout << "Mu2eG4MT starting "<< num_schedules <<" threads" <<endl;
       }
     } // end Mu2eG4MT constructor
 

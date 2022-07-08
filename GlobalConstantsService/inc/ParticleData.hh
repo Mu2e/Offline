@@ -26,7 +26,7 @@ namespace mu2e {
   public:
 
     ParticleData(int id, const std::string& name, const std::string& codeName,
-                 double charge, double mass, double lifetime): 
+                 double charge, double mass, double lifetime):
       _id(id),_name(name),_codeName(codeName),_charge(charge),
       _mass(mass),_lifetime(lifetime) {}
 
@@ -51,7 +51,7 @@ namespace mu2e {
   };  // ParticleData
 
 
-  std::ostream& operator<<( std::ostream& output, 
+  std::ostream& operator<<( std::ostream& output,
                             const ParticleData& pd );
 
 

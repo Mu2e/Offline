@@ -37,9 +37,9 @@ void estraw(TTree* estraw,double nmicro) {
     epanel[istation]->SetStats(0);
     if(ipad - npad*floor(ipad/npad) == 0){
       if(ecan != 0){
-	char efcan[20];
-	snprintf(efcan,20,"ecan%i.png",ican);
-	ecan->SaveAs(efcan);
+        char efcan[20];
+        snprintf(efcan,20,"ecan%i.png",ican);
+        ecan->SaveAs(efcan);
       }
       ican++;
       char cnam[20];
@@ -187,7 +187,6 @@ void estraw_deadtime(TTree* estraw,double nmicro) {
   leg->AddEntry(ploge,"Protons","l");
   leg->AddEntry(gloge,"gammas","l");
   leg->AddEntry(nloge,"Neutrons","l");
-  leg->Draw(); 
+  leg->Draw();
 
 }
-

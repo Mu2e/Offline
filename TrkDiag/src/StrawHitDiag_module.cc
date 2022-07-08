@@ -11,7 +11,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 // conditions
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
@@ -51,7 +50,7 @@ namespace mu2e
       bool findData(const art::Event& e);
       // control flags
       bool _mcdiag, _digidiag, _useshfcol;
-  // data tags
+      // data tags
       art::InputTag _shTag;
       art::InputTag _chTag;
       art::InputTag _shfTag;
@@ -126,16 +125,16 @@ namespace mu2e
   {
     if(pset.get<bool>("TestStrawId",false)) {
       for(uint16_t plane = 0; plane < StrawId::_nplanes; ++plane){
-	StrawId sid(plane,0,0);
-	std::cout << "Plane StrawId " << sid.asUint16() << " plane " << sid.plane() << std::endl;
-	for(uint16_t panel = 0; panel < StrawId::_npanels; ++panel){
-	  StrawId sid(plane,panel,0);
-	  std::cout << "Panel StrawId " << sid.asUint16() << " panel " << sid.uniquePanel() << std::endl;
-	  for(uint16_t straw = 0; straw < StrawId::_nstraws; ++straw){
-	    StrawId sid(plane,panel,straw);
-	      std::cout << "Straw StrawId " << sid.asUint16() << " unique straw " << sid.uniqueStraw() << std::endl;
-	  }
-	}
+        StrawId sid(plane,0,0);
+        std::cout << "Plane StrawId " << sid.asUint16() << " plane " << sid.plane() << std::endl;
+        for(uint16_t panel = 0; panel < StrawId::_npanels; ++panel){
+          StrawId sid(plane,panel,0);
+          std::cout << "Panel StrawId " << sid.asUint16() << " panel " << sid.uniquePanel() << std::endl;
+          for(uint16_t straw = 0; straw < StrawId::_nstraws; ++straw){
+            StrawId sid(plane,panel,straw);
+            std::cout << "Straw StrawId " << sid.asUint16() << " unique straw " << sid.uniqueStraw() << std::endl;
+          }
+        }
       }
     }
   }
@@ -297,8 +296,8 @@ namespace mu2e
       _straw = straw.id().getStraw();
       _edep = ch.energyDep();
       for(size_t iend=0;iend<2;++iend){
-	_time[iend] = sh.time(_end[iend]);
-	_tot[iend] = sh.TOT(_end[iend]);
+        _time[iend] = sh.time(_end[iend]);
+        _tot[iend] = sh.TOT(_end[iend]);
       }
       _correcttime = ch.correctedTime();
       _ctime = ch.time();
@@ -364,9 +363,9 @@ namespace mu2e
         StrawEnd itdc;
         auto const& spmcp = mcdigi.strawGasStep(itdc);
         art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-	SimParticle const& osp = spp->originParticle();
-	Hep3Vector dprod = spmcp->position()-det->toDetector(osp.startPosition());
-	static Hep3Vector zdir(0.0,0.0,1.0);
+        SimParticle const& osp = spp->originParticle();
+        Hep3Vector dprod = spmcp->position()-det->toDetector(osp.startPosition());
+        static Hep3Vector zdir(0.0,0.0,1.0);
         _pdist = dprod.mag();
         _pperp = dprod.perp(zdir);
         _pmom = sqrt(spmcp->momentum().mag2());
@@ -380,30 +379,30 @@ namespace mu2e
         if(osp.genParticle().isNonnull())
           _mcgen = osp.genParticle()->generatorId().id();
         _mcsptime = _toff.timeWithOffsetsApplied(*spmcp) + _pbtmc;
-	for(size_t iend=0;iend<2; ++iend){
-	  _mcwt[iend] = mcdigi.wireEndTime(_end[iend]);
-	  _mcct[iend] = mcdigi.clusterPosition(_end[iend]).t();
+        for(size_t iend=0;iend<2; ++iend){
+          _mcwt[iend] = mcdigi.wireEndTime(_end[iend]);
+          _mcct[iend] = mcdigi.clusterPosition(_end[iend]).t();
           Hep3Vector cpos = mcdigi.clusterPosition(_end[iend]).vect();
           Hep3Vector cdir = (cpos-straw.getMidPoint());
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           _mccphi[iend] = cdir.theta();
           _mccd[iend] = min(cdir.perp(straw.getDirection()),tracker.strawProperties()._strawInnerRadius);
-	}
+        }
         _mcshp = spmcp->position();
         _mcop = det->toDetector(osp.startPosition());
         _mcoe = osp.startMomentum().e();
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
-	Hep3Vector mdir = GenVector::Hep3Vec(spmcp->momentum()).unit();
-	Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
+        Hep3Vector mdir = GenVector::Hep3Vec(spmcp->momentum()).unit();
+        Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
-	double scos = mdir.dot(straw.getDirection());
+        double scos = mdir.dot(straw.getDirection());
         _mcplen = 2.0*sqrt( (rstraw*rstraw -_mcshd*_mcshd)/(1.0-scos*scos) );
-	_mcsphi = atan2(tdir.perp(),tdir.z()); // 'azimuth' around the straw of the POCA
-	// immediate parent information
-	art::Ptr<SimParticle> psp = osp.parent();
-	if(psp.isNonnull()){
-	  SimParticle const& posp =psp->originParticle();
+        _mcsphi = atan2(tdir.perp(),tdir.z()); // 'azimuth' around the straw of the POCA
+        // immediate parent information
+        art::Ptr<SimParticle> psp = osp.parent();
+        if(psp.isNonnull()){
+          SimParticle const& posp =psp->originParticle();
           _mcppdg = posp.pdgId();
           _mcpproc = posp.creationCode();
           _mcptime = _toff.totalTimeOffset(psp) + psp->startGlobalTime();
@@ -411,11 +410,11 @@ namespace mu2e
           _mcpoe = posp.startMomentum().e();
           _mcpom = posp.startMomentum().vect().mag();
         }
-// generator information
+        // generator information
         if(spp.isNonnull()){
-	  _mcid = spp->id().asInt();
-	  art::Ptr<SimParticle> sp = spp;
-        // find the first parent which comes from a generator
+          _mcid = spp->id().asInt();
+          art::Ptr<SimParticle> sp = spp;
+          // find the first parent which comes from a generator
           while(sp->genParticle().isNull() && sp->parent().isNonnull()){
             sp = sp->parent();
           }
@@ -453,7 +452,7 @@ namespace mu2e
       }
       _shwres = _chcol->at(istr).posRes(ComboHit::wire);
       _shtres = _chcol->at(istr).posRes(ComboHit::trans);
-//  Info depending on stereo hits
+      //  Info depending on stereo hits
       _shdiag->Fill();
     }
   }

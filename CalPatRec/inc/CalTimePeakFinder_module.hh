@@ -67,19 +67,19 @@ namespace fhicl {
 
 namespace mu2e {
   using namespace CalTimePeakFinderTypes;
-  
+
   class Calorimeter;
   class Tracker;
-  class ModuleHistToolBase; 
-  
+  class ModuleHistToolBase;
+
   class CalTimePeakFinder: public art::EDFilter {
   protected:
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
     unsigned         _iev;
-					// configuration parameters
-    int              _diagLevel; 
+                                        // configuration parameters
+    int              _diagLevel;
     int              _debugLevel;
     int              _printfreq;
     int              _useAsFilter;      // allows to use the module as a produer or as a filter
@@ -96,22 +96,21 @@ namespace mu2e {
 
     double           _mindt;
     double           _maxdt;
-					// time spectrum parameters
+                                        // time spectrum parameters
     int              _minNHits;
 
-    double           _minClusterEnergy;	// min seed energy
+    double           _minClusterEnergy;        // min seed energy
     int              _minClusterSize;   // min size of the seeding cluster
-    double           _minClusterTime;   // min time of the seeding cluster
 
     double           _pitchAngle;
     double           _sinPitch;
     double           _beta;
-					// outlier cuts
+                                        // outlier cuts
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
     art::Handle<CaloClusterCollection>    _ccH; // data member, as used from different places
-    
+
     // const StrawHitCollection*             _shcol;
     // const StrawHitFlagCollection*         _shfcol;
     // const CaloClusterCollection*          _ccCollection;
@@ -123,7 +122,7 @@ namespace mu2e {
 
     const CaloCluster*                     cl;
 //-----------------------------------------------------------------------------
-// diagnostics 
+// diagnostics
 //-----------------------------------------------------------------------------
     Data_t                                 _data;
     std::unique_ptr<ModuleHistToolBase>    _hmanager;
@@ -134,7 +133,7 @@ namespace mu2e {
 
     explicit CalTimePeakFinder(const fhicl::ParameterSet& PSet);
     virtual ~CalTimePeakFinder();
-    
+
     virtual void beginJob ();
     virtual bool beginRun (art::Run&);
     virtual bool filter   (art::Event& e);
@@ -144,11 +143,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     bool findData         (const art::Event& e);
     void findTimePeaks    (//CalTimePeakCollection* TimePeakColl,
-			   TimeClusterCollection& OutSeeds);
+                           TimeClusterCollection& OutSeeds);
 
-    // void initTimeCluster  (TimeCluster &TrackSeed   , 
-    // 			   CalTimePeak &TPeak       ,
-    // 			   int         &ClusterIndex);
+    // void initTimeCluster  (TimeCluster &TrackSeed   ,
+    //                            CalTimePeak &TPeak       ,
+    //                            int         &ClusterIndex);
   };
 }
 #endif

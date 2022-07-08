@@ -28,15 +28,15 @@ namespace mu2e {
 
 
 
- 
+
   TrkExtProtonAbsorber::TrkExtProtonAbsorber() :
     TrkExtShape(0.001),
     TrkExtMaterial("PE")
-  {  
+  {
     valid = false;
   }
 
-  void TrkExtProtonAbsorber::initialize() 
+  void TrkExtProtonAbsorber::initialize()
   {
     // geometry is read from mu2e coordinate. therefore, it should be transformed to detector coordinate
     art::ServiceHandle<GeometryService> geom;
@@ -55,13 +55,13 @@ namespace mu2e {
     }
 
     int index;
-    if (pabs->isAvailable(0))  index = 0; 
+    if (pabs->isAvailable(0))  index = 0;
     else    index = 1;
     z0    = pabs->part(index).center().z() - pabs->part(index).halfLength();
     r0in  = pabs->part(index).innerRadiusAtStart();
     r0out = pabs->part(index).outerRadiusAtStart();
 
-    if (pabs->isAvailable(1)) index = 1; 
+    if (pabs->isAvailable(1)) index = 1;
     else    index = 0;
     z1    = pabs->part(index).center().z() + pabs->part(index).halfLength();
     r1in  = pabs->part(index).innerRadiusAtEnd();
@@ -80,7 +80,7 @@ namespace mu2e {
     cout << "  z    = [" << z0 << ", " << z1 << "]" << endl;
 
     valid = true;
-  
+
   }
 
   bool TrkExtProtonAbsorber::contains (Hep3Vector &xx) {

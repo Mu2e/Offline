@@ -11,12 +11,12 @@ use Fcntl qw(O_CREAT O_EXCL O_WRONLY);
 sub usage() {
     my $self = basename($0);
     return <<EOF
-Usage: 
-	$self \\
-	       --scanpar=name \\
-	       --npoints=int \\
-	       --start=float \\
-	   {--step=float|--factor=float}
+Usage:
+        $self \\
+               --scanpar=name \\
+               --npoints=int \\
+               --start=float \\
+           {--step=float|--factor=float}
 
 
 Where the {alternative1|alternative2} constructs denote mutually
@@ -33,8 +33,8 @@ sub makeFileName($) {
     my $pars = shift;
     my $res = "scan";
     foreach my $key (sort(keys %$pars)) {
-	#print $key, '=', $$pars{$key}, "\n";
-	$res .= "_$key$$pars{$key}";
+        #print $key, '=', $$pars{$key}, "\n";
+        $res .= "_$key$$pars{$key}";
     }
     return $res;
 }
@@ -80,14 +80,14 @@ my %pars = (
 my %opt = (help => 0,);
 
 # Process command line opts.
-GetOptions(\%opt, 
-	   "help",
-	   "scanpar=s",
-	   "npoints=i",
-	   "start=f",
-	   "step=f",
-	   "factor=f",
-	   ) 
+GetOptions(\%opt,
+           "help",
+           "scanpar=s",
+           "npoints=i",
+           "start=f",
+           "step=f",
+           "factor=f",
+           )
     or die "\nError processing command line options.\n";
 
 if($opt{'help'}) {
@@ -110,29 +110,29 @@ if(defined $opt{'step'}) {
     my $step = $opt{'step'};
 
     die "Error: --step and --factor are mutually exclusive.\n"
-	if defined $opt{'factor'};
+        if defined $opt{'factor'};
 
     my $count = 0;
     my $val = $start;
     while($count++ < $npoints) {
-	$pars{$scanpar} = $val;
-	writeConfig(\%pars);
-	$val += $step;
+        $pars{$scanpar} = $val;
+        writeConfig(\%pars);
+        $val += $step;
     }
 
 }
 else {
     die "Error: either --step or --factor must be specified.\n"
-	if !defined $opt{'factor'};
+        if !defined $opt{'factor'};
 
     my $factor = $opt{'factor'};
 
     my $count = 0;
     my $val = $start;
     while($count++ < $npoints) {
-	$pars{$scanpar} = $val;
-	writeConfig(\%pars);
-	$val *= $factor;
+        $pars{$scanpar} = $val;
+        writeConfig(\%pars);
+        $val *= $factor;
     }
 }
 

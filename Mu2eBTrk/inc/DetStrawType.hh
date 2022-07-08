@@ -36,5 +36,5 @@ class DetStrawType : public DetType {
     double _tol;
     double _rfrac;
   };
-}  
+}
 #endif

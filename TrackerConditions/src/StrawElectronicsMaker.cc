@@ -16,32 +16,33 @@ namespace mu2e {
 
   StrawElectronics::ptr_t StrawElectronicsMaker::fromFcl(EventTiming::cptr_t eventTiming) {
 
-    unsigned maxTDC = (0x1<<_config.numTDCbits())-1; 
+    unsigned maxTDC = (0x1<<_config.numTDCbits())-1;
 
     // creat this at the beginning since it must be used,
     // partially constructed, to complete the construction
-    auto ptr = std::make_shared<StrawElectronics>(_config.deadTimeAnalog(), 
-       _config.deadTimeDigital(), _config.saturationVoltage(), _config.strawNoise(), 
-       _config.ADCLSB(), _config.maxADC(), _config.nADCPackets(), _config.nADCPresamples(),
-       _config.ADCPeriod(), _config.ADCOffset(), 
-       _config.maxThreshTimeSeparation(),
-       _config.TDCLSB(), maxTDC, _config.TOTLSB(), 
-       _config.maxTOT(), _config.TDCResolution(), 
-       _config.electronicsTimeDelay(), _config.eventWindowMarkerROCJitter(), 
-       _config.digitizationStart(),
-       _config.digitizationEnd(),
-       _config.responseBins(), 
-       _config.sampleRate(), _config.saturationSampleFactor(), 
-       _config.preampPoles(), _config.preampZeros(), 
-       _config.ADCPoles(), _config.ADCZeros(), 
-       _config.preampToAdc1Poles(), _config.preampToAdc1Zeros(), 
-       _config.preampToAdc2Poles(), _config.preampToAdc2Zeros(), 
-       _config.wireDistances(), _config.currentMeans(), 
-       _config.currentNormalizations(), _config.currentSigmas(), 
-       _config.currentT0s(), _config.reflectionTimeShift(),
-       _config.reflectionVelocity(), _config.reflectionALength(),
-       _config.reflectionFrac(), _config.triggerHysteresis(),
-       _config.clusterLookbackTime());
+    auto ptr = std::make_shared<StrawElectronics>(
+        _config.overrideDbTimeOffsets(), _config.deadTimeAnalog(),
+        _config.deadTimeDigital(), _config.saturationVoltage(), _config.strawNoise(),
+        _config.ADCLSB(), _config.maxADC(), _config.nADCPackets(), _config.nADCPresamples(),
+        _config.ADCPeriod(), _config.ADCOffset(),
+        _config.maxThreshTimeSeparation(),
+        _config.TDCLSB(), maxTDC, _config.TOTLSB(),
+        _config.maxTOT(), _config.TDCResolution(),
+        _config.electronicsTimeDelay(), _config.eventWindowMarkerROCJitter(),
+        _config.digitizationStart(),
+        _config.digitizationEnd(),
+        _config.responseBins(),
+        _config.sampleRate(), _config.saturationSampleFactor(),
+        _config.preampPoles(), _config.preampZeros(),
+        _config.ADCPoles(), _config.ADCZeros(),
+        _config.preampToAdc1Poles(), _config.preampToAdc1Zeros(),
+        _config.preampToAdc2Poles(), _config.preampToAdc2Zeros(),
+        _config.wireDistances(), _config.currentMeans(),
+        _config.currentNormalizations(), _config.currentSigmas(),
+        _config.currentT0s(), _config.reflectionTimeShift(),
+        _config.reflectionVelocity(), _config.reflectionALength(),
+        _config.reflectionFrac(), _config.triggerHysteresis(),
+        _config.clusterLookbackTime());
 
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;
@@ -52,17 +53,17 @@ namespace mu2e {
       timeOffsetPanel.fill(0);
     }
     if (_config.timeOffsetStrawHV().size() > 0){
-    for(size_t i=0;i<timeOffsetStrawHV.size();i++){
-      timeOffsetStrawHV[i] = _config.timeOffsetStrawHV()[i];
-      timeOffsetStrawCal[i] = _config.timeOffsetStrawCal()[i];
-    }
+      for(size_t i=0;i<timeOffsetStrawHV.size();i++){
+        timeOffsetStrawHV[i] = _config.timeOffsetStrawHV()[i];
+        timeOffsetStrawCal[i] = _config.timeOffsetStrawCal()[i];
+      }
     }else{
       timeOffsetStrawHV.fill(0);
       timeOffsetStrawCal.fill(0);
     }
     ptr->setOffsets( timeOffsetPanel,
-		     timeOffsetStrawHV,
-		     timeOffsetStrawCal );
+        timeOffsetStrawHV,
+        timeOffsetStrawCal );
 
     std::array<std::array<double, StrawId::_nustraws>,StrawElectronics::npaths> dVdI;
     if(_config.thresholddVdI().size()>0) {
@@ -84,7 +85,7 @@ namespace mu2e {
     analognoise[StrawElectronics::thresh] = _config.thresholdAnalogNoise();
     analognoise[StrawElectronics::adc]    = _config.adcAnalogNoise();
     ptr->setAnalogNoise(analognoise);
-    
+
     std::array<double, StrawId::_nustrawends> vthresh;
     if(_config.discriminatorThreshold().size()>0) {
       for (size_t i=0;i<vthresh.size();i++)
@@ -119,7 +120,7 @@ namespace mu2e {
     auto preampToAdc2Response = std::vector<double>(responseBins,0);
 
     ptr->calculateResponse(_config.preampToAdc2Poles(),_config.preampToAdc2Zeros(),
-			   currentImpulse,preampToAdc2Response);
+        currentImpulse,preampToAdc2Response);
 
     ptr->setCurrentImpulse(currentImpulse);
 
@@ -130,39 +131,39 @@ namespace mu2e {
     std::vector<StrawElectronics::WireDistancePoint> wPoints;
     for (size_t ai=0;ai<_config.wireDistances().size();ai++){
       wPoints.emplace_back( _config.wireDistances()[ai],
-	       _config.currentMeans()[ai],  _config.currentNormalizations()[ai],
-               _config.currentSigmas()[ai], _config.currentT0s()[ai]);
+          _config.currentMeans()[ai],  _config.currentNormalizations()[ai],
+          _config.currentSigmas()[ai], _config.currentT0s()[ai]);
       wPoints[ai]._currentPulse = std::vector<double>(responseBins,0);
       double integral = 0;
       for (int i=0;i<responseBins;i++){
-	double t_gaus = (i-responseBins/2)/sampleRate;
-	double val_gaus = 1/sqrt(TMath::TwoPi()*wPoints[ai]._sigma*wPoints[ai]._sigma)*exp(-((t_gaus-wPoints[ai]._mean)*(t_gaus-wPoints[ai]._mean))/(2*wPoints[ai]._sigma*wPoints[ai]._sigma));
-	for (int j=0;j<responseBins-i;j++){
-	  double t_tail = j/sampleRate;
-	  double val = val_gaus / (t_tail + wPoints[ai]._t0);
-	  wPoints[ai]._currentPulse[i+j] += val;
-	  integral += val;
-	}
+        double t_gaus = (i-responseBins/2)/sampleRate;
+        double val_gaus = 1/sqrt(TMath::TwoPi()*wPoints[ai]._sigma*wPoints[ai]._sigma)*exp(-((t_gaus-wPoints[ai]._mean)*(t_gaus-wPoints[ai]._mean))/(2*wPoints[ai]._sigma*wPoints[ai]._sigma));
+        for (int j=0;j<responseBins-i;j++){
+          double t_tail = j/sampleRate;
+          double val = val_gaus / (t_tail + wPoints[ai]._t0);
+          wPoints[ai]._currentPulse[i+j] += val;
+          integral += val;
+        }
       }
       for (int i=0;i<responseBins;i++){
-	// correct for sampleRate so that calculateResponse peak is independent of it
-	// this combined with pC_per_uA_ns is the unit transform from pC to uA
-	wPoints[ai]._currentPulse[i] /= sampleRate * pC_per_uA_ns;
-	wPoints[ai]._currentPulse[i] /= integral_normalization; // normalization for 1/(t+t0)
-	wPoints[ai]._currentPulse[i] *= wPoints[ai]._normalization;
+        // correct for sampleRate so that calculateResponse peak is independent of it
+        // this combined with pC_per_uA_ns is the unit transform from pC to uA
+        wPoints[ai]._currentPulse[i] /= sampleRate * pC_per_uA_ns;
+        wPoints[ai]._currentPulse[i] /= integral_normalization; // normalization for 1/(t+t0)
+        wPoints[ai]._currentPulse[i] *= wPoints[ai]._normalization;
       }
-      
+
       // calculate parameters for transfer function
       wPoints[ai]._preampResponse = std::vector<double>(responseBins,0);
       wPoints[ai]._adcResponse = std::vector<double>(responseBins,0);
       wPoints[ai]._preampToAdc1Response = std::vector<double>(responseBins,0);
       ptr->calculateResponse(_config.preampPoles(),_config.preampZeros(),
-			wPoints[ai]._currentPulse,wPoints[ai]._preampResponse);
+          wPoints[ai]._currentPulse,wPoints[ai]._preampResponse);
       ptr->calculateResponse(_config.ADCPoles(),_config.ADCZeros(),
-			wPoints[ai]._currentPulse,wPoints[ai]._adcResponse);
+          wPoints[ai]._currentPulse,wPoints[ai]._adcResponse);
       ptr->calculateResponse(_config.preampToAdc1Poles(),_config.preampToAdc1Zeros(),
-			wPoints[ai]._currentPulse,wPoints[ai]._preampToAdc1Response);
-      
+          wPoints[ai]._currentPulse,wPoints[ai]._preampToAdc1Response);
+
       // now set other parameters
       double preampToAdc1Max = 0;
       double linmax_thresh = 0;
@@ -175,13 +176,13 @@ namespace mu2e {
           linmax_adc = wPoints[ai]._adcResponse[i];
         }
 
-	if (wPoints[ai]._preampToAdc1Response[i] > preampToAdc1Max)
-	  preampToAdc1Max = wPoints[ai]._preampToAdc1Response[i];
+        if (wPoints[ai]._preampToAdc1Response[i] > preampToAdc1Max)
+          preampToAdc1Max = wPoints[ai]._preampToAdc1Response[i];
       }
-      
+
       // normalize preampToAdc1Response to match preampResponse
       for (int i=0;i<responseBins;i++){
-	wPoints[ai]._preampToAdc1Response[i] *= linmax_thresh/preampToAdc1Max;
+        wPoints[ai]._preampToAdc1Response[i] *= linmax_thresh/preampToAdc1Max;
       }
     } // loop over wireDistances
 
@@ -189,14 +190,14 @@ namespace mu2e {
     // normalize preampToAdc2Response to match adcResponse
     std::vector<double> preampToAdc2test(responseBins,0);
     ptr->calculateResponse(_config.preampToAdc2Poles(),_config.preampToAdc2Zeros(),
-		      wPoints[0]._preampToAdc1Response,preampToAdc2test);
+        wPoints[0]._preampToAdc1Response,preampToAdc2test);
 
     ptr->setwPoints(wPoints);
 
     double preampToAdc2Max = 0;
     for (int i=0;i<responseBins;i++){
       if (preampToAdc2test[i] > preampToAdc2Max)
-	preampToAdc2Max = preampToAdc2test[i];
+        preampToAdc2Max = preampToAdc2test[i];
     }
 
     double linmax_adc = 0;
@@ -210,12 +211,12 @@ namespace mu2e {
       preampToAdc2Response[i] *= linmax_adc/preampToAdc2Max;
       preampToAdc2test[i] *= linmax_adc/preampToAdc2Max;
     }
-    
+
     ptr->setPreampToAdc2Response(preampToAdc2Response);
 
     GeomHandle<mu2e::Tracker> th;
     const Tracker* tracker = th.get();
-    
+
     for (size_t ipoint=0;ipoint<wPoints.size();ipoint++){
       for (size_t ipath=0;ipath<StrawElectronics::npaths;ipath++){
         for (size_t is=0;is<StrawId::_nstraws;is++){
@@ -239,17 +240,17 @@ namespace mu2e {
         }
       }
     }
-    
+
     ptr->setwPoints(wPoints);
     return ptr;
 
   } // end fromFcl
 
   StrawElectronics::ptr_t StrawElectronicsMaker::fromDb(
-				   TrkDelayPanel::cptr_t tdp,
-				   TrkDelayRStraw::cptr_t tdrs,
-				   TrkPreampStraw::cptr_t tps,
-                                   EventTiming::cptr_t eventTiming ) {
+      TrkDelayPanel::cptr_t tdp,
+      TrkDelayRStraw::cptr_t tdrs,
+      TrkPreampStraw::cptr_t tps,
+      EventTiming::cptr_t eventTiming ) {
     // initially fill from fcl to get all the constants
     auto ptr = fromFcl(eventTiming);
 
@@ -273,18 +274,29 @@ namespace mu2e {
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV;
     std::array<double, StrawId::_nustraws> timeOffsetStrawCal;
-    for(size_t i=0; i<StrawId::_nupanels; i++) {
-      timeOffsetPanel[i] = tdp->rowAt(i).delay();
-    }
-    for(size_t i=0; i<StrawId::_nustraws; i++) {
-      size_t istraw = i % StrawId::_nstraws;
-      timeOffsetStrawHV[i] = tdrs->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
-      timeOffsetStrawCal[i] = tdrs->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
+
+    if (ptr->overrideDbTimeOffsets()){
+      for(size_t i=0; i<StrawId::_nupanels; i++) {
+        timeOffsetPanel[i] = 0;
+      }
+      for(size_t i=0; i<StrawId::_nustraws; i++) {
+        timeOffsetStrawHV[i] = 0;
+        timeOffsetStrawCal[i] = 0;
+      }
+    }else{
+      for(size_t i=0; i<StrawId::_nupanels; i++) {
+        timeOffsetPanel[i] = tdp->rowAt(i).delay();
+      }
+      for(size_t i=0; i<StrawId::_nustraws; i++) {
+        size_t istraw = i % StrawId::_nstraws;
+        timeOffsetStrawHV[i] = tdrs->rowAt(istraw).delayHv() + tps->rowAt(i).delayHv();
+        timeOffsetStrawCal[i] = tdrs->rowAt(istraw).delayCal() + tps->rowAt(i).delayCal();
+      }
     }
 
     ptr->setOffsets( timeOffsetPanel,
-		     timeOffsetStrawHV,
-		     timeOffsetStrawCal );
+        timeOffsetStrawHV,
+        timeOffsetStrawCal );
 
     std::array<double, StrawId::_nustraws> adcdVdI;
     for (size_t i=0;i<StrawId::_nustraws;i++) {

@@ -16,7 +16,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
@@ -140,7 +139,7 @@ namespace mu2e {
       }
     }
 
-    sr.put(std::move(out));
+    sr.put(std::move(out), art::fullSubRun());
 
     mf::LogInfo("Summary")
       << "CompressPhysicalVolumes stats: passed "

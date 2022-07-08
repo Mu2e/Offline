@@ -24,13 +24,13 @@ source : {
     maxEvents   : 100
 
     inputCommands : ['keep *_*_*_*'
-#		     , 'drop *_muonTimeMap_*_*'
-#		     , 'drop *_protonTimeMap_*_*'
-#		     , 'drop mu2eStrawDigis_*_*_*'
-#		     , 'drop mu2eStrawHits_*_*_*'
-#		     , 'drop *_CaloReadoutHitsMaker_*_*'
-#		     , 'drop *_CaloCrystalHitsMaker_*_*'
-		     ]  
+#                     , 'drop *_muonTimeMap_*_*'
+#                     , 'drop *_protonTimeMap_*_*'
+#                     , 'drop mu2eStrawDigis_*_*_*'
+#                     , 'drop mu2eStrawHits_*_*_*'
+#                     , 'drop *_CaloReadoutHitsMaker_*_*'
+#                     , 'drop *_CaloCrystalHitsMaker_*_*'
+                     ]
 }
 #------------------------------------------------------------------------------
 # services
@@ -40,10 +40,10 @@ services : {
 
     # Adjust configuration of message logger:
     # Load the standard message logger configuration:
-    # Threshold=Info (from using mf_interactive). 
+    # Threshold=Info (from using mf_interactive).
     # Limit of 5 per category; then exponential backoff.
     #  message.destinations.log.default.limit : 5
-    
+
     TFileService : { fileName   : "mergePatRec.root" }
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
@@ -53,7 +53,7 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : @local::automaticSeeds
-} 
+}
 #------------------------------------------------------------------------------
 # physics
 #------------------------------------------------------------------------------
@@ -62,45 +62,45 @@ physics : {
 #------------------------------------------------------------------------------
 # MC event generation and simulation
 #------------------------------------------------------------------------------
-	generate             : @local::generate
-	g4run                : @local::g4run
-	protonTimeMap        : { module_type : GenerateProtonTimes }
-	muonTimeMap          : { module_type : GenerateMuonLife }
+        generate             : @local::generate
+        g4run                : @local::g4run
+        protonTimeMap        : { module_type : GenerateProtonTimes }
+        muonTimeMap          : { module_type : GenerateMuonLife }
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
-	makeSD               : @local::makeSD
-	makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
-	CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
+        makeSD               : @local::makeSD
+        makeSH               : @local::makeSHfromSD
+        CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+        CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
 #------------------------------------------------------------------------------
 # TrkPatRec modules
 #------------------------------------------------------------------------------
-	FSHPreStereo         : @local::FSHPreStereo
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDeM
+        FSHPreStereo         : @local::FSHPreStereo
+        MakeStereoHits       : @local::MakeStereoHits
+        FlagStrawHits        : @local::FlagStrawHits
+        FlagBkgHits          : @local::FlagBkgHits
+        TrkPatRec            : @local::TrkPatRecDeM
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloCluster
-	MakeStrawHitPositions: @local::MakeStrawHitPositions
-	CalPatRec            : @local::CalPatRec
-	MergePatRec          : @local::MergePatRec
+        MakeCaloCluster      : @local::MakeCaloCluster
+        MakeStrawHitPositions: @local::MakeStrawHitPositions
+        CalPatRec            : @local::CalPatRec
+        MergePatRec          : @local::MergePatRec
 #------------------------------------------------------------------------------
 #  tracker-calorimeter matching, high-level analysis
 #------------------------------------------------------------------------------
-	CaloMatching         : @local::TrackCaloMatching
-	TrkExtrapol          : @local::TrkExtrapol
-	ParticleID           : @local::ParticleID
+        CaloMatching         : @local::TrackCaloMatching
+        TrkExtrapol          : @local::TrkExtrapol
+        ParticleID           : @local::ParticleID
     }
 
-    filters : {  
+    filters : {
 #------------------------------------------------------------------------------
 # event display (defined in murat/mod package)
 #------------------------------------------------------------------------------
-	MuHitDisplay         : @local::MuHitDisplay
+        MuHitDisplay         : @local::MuHitDisplay
     }
 
     analyzers: {  }
@@ -108,29 +108,29 @@ physics : {
 # paths - remake hits, but not regenerate the events
 #------------------------------------------------------------------------------
     p1 : [
-# 	  generate, g4run, 
-#         protonTimeMap, muonTimeMap, 
+#           generate, g4run,
+#         protonTimeMap, muonTimeMap,
 #         makeSD, makeSH,
-#	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+#          CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 #
-	  FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
+          FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec,
 #
-#	  MakeCaloCluster, 
-          MakeStrawHitPositions, 
-          CalPatRec, 
-	  MergePatRec,
+#          MakeCaloCluster,
+          MakeStrawHitPositions,
+          CalPatRec,
+          MergePatRec,
 #
-	  TrkExtrapol, CaloMatching,
-	  ParticleID,
+          TrkExtrapol, CaloMatching,
+          ParticleID,
 #
-	  MuHitDisplay
-	 ]
+          MuHitDisplay
+         ]
 
     e1 : []
 
     trigger_paths  : [p1]
     end_paths      : [e1]
-    
+
 }
 #------------------------------------------------------------------------------
 # print per event timing for ::event entry points
@@ -140,7 +140,7 @@ physics : {
 # print timing summary
 #------------------------------------------------------------------------------
 services.scheduler.wantSummary             : true
-source.firstRun                            :  1 
+source.firstRun                            :  1
 services.SeedService.baseSeed         :  1
 services.SeedService.maxUniqueEngines :  20
 
@@ -151,7 +151,7 @@ physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMa
 physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel  : makeSH
 
 physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
-physics.producers.MakeCaloCluster.EclusterCut                    : 1.0  # MeV  
+physics.producers.MakeCaloCluster.EclusterCut                    : 1.0  # MeV
 
 physics.producers.CalPatRec.StrawHitCollectionLabel              : makeSH
 physics.producers.CalPatRec.StrawHitPositionCollectionLabel      : MakeStrawHitPositions

@@ -34,7 +34,7 @@ namespace mu2e {
     ConditionsHandle(const ConditionsHandle& other ) : _entity(other._entity) {}
     ConditionsHandle& operator=(const ConditionsHandle& other) {
       if(this != &other){
-	_entity = other._entity;
+        _entity = other._entity;
       }
       return *this;
     }

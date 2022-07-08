@@ -55,12 +55,12 @@ namespace mu2e {
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "tsda", "tsda");
 
-    bool const NAVisible           = geomOptions->isVisible("tsda"); 
-    bool const NASolid             = geomOptions->isSolid("tsda"); 
-    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("tsda"); 
-    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("tsda"); 
-    const bool placePV             = geomOptions->placePV("tsda");  
- 
+    bool const NAVisible           = geomOptions->isVisible("tsda");
+    bool const NASolid             = geomOptions->isSolid("tsda");
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("tsda");
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("tsda");
+    const bool placePV             = geomOptions->placePV("tsda");
+
     // Access to the Mu2eG4HelperService.
     Mu2eG4Helper* _helper = &(*(art::ServiceHandle<Mu2eG4Helper>()));
 
@@ -72,15 +72,15 @@ namespace mu2e {
 
     int version = atsd->version();
     if ( tmpRin < 1.0e-06 ) {  // just a check for zero
-      // TS5 outer radius 
+      // TS5 outer radius
       GeomHandle<Beamline> beamg;
       const StraightSection * ts5out = beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
-										  TransportSolenoid::TSRadialPart::IN );
+                                                                                  TransportSolenoid::TSRadialPart::IN );
       tmpRin = ts5out->rIn();
     }
     if ( verbosityLevel > 0) {
       cout << __func__ << " TSdA rin                      : "<< tmpRin << endl;
-      cout << __func__ << " TSdA rout			  : "<< atsd->r4() << endl;
+      cout << __func__ << " TSdA rout                          : "<< atsd->r4() << endl;
     }
 
     // we need to calculate where the DS2Vacuum volume is;
@@ -91,8 +91,8 @@ namespace mu2e {
 
     double const ds2FrontZ = ds->vac_zLocDs23Split() - 2.*ds->vac_halfLengthDs2();
     if ( verbosityLevel > 0) {
-      cout << __func__ << " DS2Vacuum extent               : [" 
-           << ds2FrontZ << " , " 
+      cout << __func__ << " DS2Vacuum extent               : ["
+           << ds2FrontZ << " , "
            << ds->vac_zLocDs23Split() << endl;
     }
 
@@ -112,7 +112,7 @@ namespace mu2e {
       cout << __func__ << " DS2VacuumInfo.centerInMu2e()  : " << ds2VacuumInfo.centerInMu2e() << endl;
       cout << __func__ << " DS3VacuumInfo.centerInMu2e()  : " << ds3VacuumInfo.centerInMu2e() << endl;
       cout << __func__ << " TSdA Offset                   : "  << ATSDOffset  << endl;
-      cout << __func__ << " TSdA Offset2	     	  : "  << ATSD4Offset  << endl;
+      cout << __func__ << " TSdA Offset2                       : "  << ATSD4Offset  << endl;
       cout << __func__ << " TSdA center  in Mu2e          : "  << (ds2VacuumInfo.centerInMu2e() + ATSDOffset ).z()  << endl;
       cout << __func__ << " TSdA center2 in Mu2e          : "  << (ds2VacuumInfo.centerInMu2e() + ATSD4Offset).z()  << endl;
     }

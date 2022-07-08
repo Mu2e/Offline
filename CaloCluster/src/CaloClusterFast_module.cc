@@ -1,7 +1,5 @@
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 
@@ -23,18 +21,19 @@ namespace mu2e {
 
   class CaloClusterFast : public art::EDProducer
   {
-     public:        
+     public:
         struct Config
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
             fhicl::Atom<art::InputTag>  caloHitCollection { Name("caloHitCollection"), Comment("Calo Hit collection")};
-            fhicl::Atom<double>         EminSeed          { Name("EminSeed"),          Comment("Minimum energy for a hit to be a cluster seed") }; 
-            fhicl::Atom<double>         EnoiseCut         { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") }; 
-            fhicl::Atom<double>         ExpandCut         { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") }; 
-            fhicl::Atom<double>         deltaTime         { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") }; 
-            fhicl::Atom<bool>           extendSearch      { Name("extendSearch"),      Comment("Search next-next neighbors for clustering") }; 
-            fhicl::Atom<int>            diagLevel         { Name("diagLevel"),         Comment("Diag level"),0 }; 
+            fhicl::Atom<double>         EminSeed          { Name("EminSeed"),          Comment("Minimum energy for a hit to be a cluster seed") };
+            fhicl::Atom<double>         EnoiseCut         { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") };
+            fhicl::Atom<double>         ExpandCut         { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") };
+            fhicl::Atom<double>         deltaTime         { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") };
+            fhicl::Atom<int>            minSiPMPerHit     { Name("minSiPMPerHit"),     Comment("Minimum number of SiPM contributing to the hit") };
+            fhicl::Atom<bool>           extendSearch      { Name("extendSearch"),      Comment("Search next-next neighbors for clustering") };
+            fhicl::Atom<int>            diagLevel         { Name("diagLevel"),         Comment("Diag level"),0 };
         };
 
         explicit CaloClusterFast(const art::EDProducer::Table<Config>& config) :
@@ -44,6 +43,7 @@ namespace mu2e {
           EnoiseCut_     (config().EnoiseCut()),
           ExpandCut_     (config().ExpandCut()),
           deltaTime_     (config().deltaTime()),
+          minSiPMPerHit_ (config().minSiPMPerHit()),
           extendSearch_  (config().extendSearch()),
           diagLevel_     (config().diagLevel())
         {
@@ -59,6 +59,7 @@ namespace mu2e {
         double            EnoiseCut_;
         double            ExpandCut_;
         double            deltaTime_;
+        int               minSiPMPerHit_;
         bool              extendSearch_;
         int               diagLevel_;
 
@@ -72,7 +73,7 @@ namespace mu2e {
   void CaloClusterFast::produce(art::Event& event)
   {
       art::Handle<CaloHitCollection> caloHitsHandle = event.getHandle<CaloHitCollection>(caloHitToken_);
-      
+
       auto caloClusters = std::make_unique<CaloClusterCollection>();
       makeClusters(*caloClusters,caloHitsHandle);
 
@@ -89,7 +90,7 @@ namespace mu2e {
 
       std::vector<int> hits;
       hits.reserve(caloHits.size());
-      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_) hits.emplace_back(i);      
+      for (unsigned i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minSiPMPerHit_) hits.emplace_back(i);
       auto functorTime = [&caloHits](int a, int b) {return caloHits[a].time() < caloHits[b].time();};
       std::sort(hits.begin(),hits.end(),functorTime);
 
@@ -105,11 +106,11 @@ namespace mu2e {
           auto iterStart(iterSeed), iterStop(iterSeed);
           while (iterStop  != hits.end()   && (*iterStop==-1  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
           while (iterStart != hits.begin() && (*iterStart==-1 || timeStart - caloHits[*iterStart].time() < deltaTime_)) --iterStart;
-          ++iterStart; 
+          ++iterStart;
 
           //start the clustering algorithm for the hits between iStart and iStop
           std::queue<int> crystalToVisit;
-          std::vector<bool> isVisited(cal.nCrystal()); 
+          std::vector<bool> isVisited(cal.nCrystal());
 
           //put the first hit in the cluster list
           std::vector<int> clusterList{*iterSeed};
@@ -119,7 +120,7 @@ namespace mu2e {
 
           // loop until all seeds are processed
           while (!crystalToVisit.empty())
-          {            
+          {
               int visitId = crystalToVisit.front();
               isVisited[visitId]=true;
 
@@ -142,7 +143,7 @@ namespace mu2e {
                       *it = -1;
                   }
                }
-               crystalToVisit.pop();                 
+               crystalToVisit.pop();
            }
 
            auto functorEnergy = [&caloHits](int a, int b) {return caloHits[a].energyDep() > caloHits[b].energyDep();};
@@ -151,24 +152,24 @@ namespace mu2e {
            fillCluster(cal, caloHitsHandle, caloHits, clusterList, caloClusters );
 
            ++iterSeed;
-        }      
+        }
    }
 
-   
+
   //----------------------------------------------------------------------------------------------------------
-  void CaloClusterFast::fillCluster(const Calorimeter& cal, const art::Handle<CaloHitCollection>& caloHitsHandle, 
-                                      const CaloHitCollection& caloHits, const std::vector<int>& clusterList, 
+  void CaloClusterFast::fillCluster(const Calorimeter& cal, const art::Handle<CaloHitCollection>& caloHitsHandle,
+                                      const CaloHitCollection& caloHits, const std::vector<int>& clusterList,
                                       CaloClusterCollection& caloClusters)
   {
       std::vector<art::Ptr<CaloHit>> caloHitsPtrs;
       double totalEnergy(0), xCOG(0), yCOG(0);
- 
-      for (auto idx : clusterList) 
+
+      for (auto idx : clusterList)
       {
           int crID        = caloHits[idx].crystalID();
           totalEnergy    += caloHits[idx].energyDep();
           xCOG           += cal.crystal(crID).localPosition().x()*caloHits[idx].energyDep();
-          yCOG           += cal.crystal(crID).localPosition().y()*caloHits[idx].energyDep(); 
+          yCOG           += cal.crystal(crID).localPosition().y()*caloHits[idx].energyDep();
           caloHitsPtrs.push_back(art::Ptr<CaloHit>(caloHitsHandle,idx));
       }
 
@@ -178,7 +179,7 @@ namespace mu2e {
       const CaloHit& seedHit = caloHits[clusterList[0]];
       double time            = seedHit.time();
       int    iDisk           = cal.crystal(seedHit.crystalID()).diskID();
- 
+
       caloClusters.emplace_back(CaloCluster(iDisk,time,0.0,totalEnergy,0.0,CLHEP::Hep3Vector(xCOG,yCOG,0),
                                             caloHitsPtrs,clusterList.size(),false));
 

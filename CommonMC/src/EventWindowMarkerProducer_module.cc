@@ -7,7 +7,6 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "fhiclcpp/ParameterSet.h"
@@ -59,7 +58,7 @@ namespace mu2e {
       CLHEP::RandGaussQ _randgauss;
       CLHEP::RandFlat _randflat;
 
-	
+
       ProditionsHandle<EventTiming> _eventTiming_h;
   };
 
@@ -73,12 +72,12 @@ namespace mu2e {
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randgauss( _engine ),
     _randflat( _engine )
-  {
-    _fixInitialPhase = config().initialPhaseShift(_initialPhaseShift);
-    produces<EventWindowMarker>();
-    produces<ProtonBunchTimeMC>();
-    produces<ProtonBunchTime>();
-  }
+    {
+      _fixInitialPhase = config().initialPhaseShift(_initialPhaseShift);
+      produces<EventWindowMarker>();
+      produces<ProtonBunchTimeMC>();
+      produces<ProtonBunchTime>();
+    }
 
   void EventWindowMarkerProducer::beginJob() {
     // Proton bunch is 0 to 25 ns before event window marker
@@ -91,53 +90,53 @@ namespace mu2e {
   }
 
   void EventWindowMarkerProducer::produce(art::Event& event) {
-      unique_ptr<EventWindowMarker> marker(new EventWindowMarker);
-      unique_ptr<ProtonBunchTimeMC> pbtmc(new ProtonBunchTimeMC);
-      unique_ptr<ProtonBunchTime> pbt(new ProtonBunchTime);
-      marker->_spillType = _spillType;
+    unique_ptr<EventWindowMarker> marker(new EventWindowMarker);
+    unique_ptr<ProtonBunchTimeMC> pbtmc(new ProtonBunchTimeMC);
+    unique_ptr<ProtonBunchTime> pbt(new ProtonBunchTime);
+    marker->_spillType = _spillType;
 
-      EventTiming const& eventTiming = _eventTiming_h.get(event.id());
+    EventTiming const& eventTiming = _eventTiming_h.get(event.id());
 
-      double period = (1/eventTiming.systemClockSpeed())*1000; // in ns
+    double period = (1/eventTiming.systemClockSpeed())*1000; // in ns
 
-      if (_spillType == EventWindowMarker::SpillType::offspill){
-        pbtmc->pbtime_ = 0;
-        pbt->pbtime_ = 0;
-        pbt->pbterr_ = 0;
-        marker->_eventLength = eventTiming.offSpillLength()*period;
+    if (_spillType == EventWindowMarker::SpillType::offspill){
+      pbtmc->pbtime_ = 0;
+      pbt->pbtime_ = 0;
+      pbt->pbterr_ = 0;
+      marker->_eventLength = eventTiming.offSpillLength()*period;
+    }else{
+      // calculate which bin we are in from event number
+      int bin = event.id().event() % eventTiming.onSpillBins();
+      // determine phase for this event
+      // each microbunch the proton bunch gets shifted back 5 ns from the event window
+      double shiftPer = -1*period/eventTiming.onSpillBins();
+      double phaseShift = (_initialPhaseShift*period + bin*shiftPer);
+      if (phaseShift < -1*period)
+        phaseShift += period;
+      // when phase shift would be > than one clock period by next microbunch
+      // the event window is one clock tick shorter
+      if (phaseShift < -1*period - shiftPer)
+        marker->_eventLength = (eventTiming.onSpillMaxLength()-1)*period;
+      else
+        marker->_eventLength = eventTiming.onSpillMaxLength()*period;
+
+      // we set pbtime to be the time of the proton bunch in terms of the DAQ clock
+      // t=0 (which is determined by the event window marker arrival time)
+      pbtmc->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() + phaseShift;
+      if (_recoFromMCTruth){
+        pbt->pbtime_ = pbtmc.get()->pbtime_;
+        if (_recoFromMCTruthErr > 0)
+          pbt->pbtime_ += _randgauss.fire(0,_recoFromMCTruthErr);
+        pbt->pbterr_ = _recoFromMCTruthErr;
       }else{
-        // calculate which bin we are in from event number
-        int bin = event.id().event() % eventTiming.onSpillBins();
-        // determine phase for this event
-        // each microbunch the proton bunch gets shifted back 5 ns from the event window
-        double shiftPer = -1*period/eventTiming.onSpillBins();
-        double phaseShift = (_initialPhaseShift*period + bin*shiftPer);
-        if (phaseShift < -1*period)
-          phaseShift += period;
-        // when phase shift would be > than one clock period by next microbunch
-        // the event window is one clock tick shorter
-        if (phaseShift < -1*period - shiftPer)
-          marker->_eventLength = (eventTiming.onSpillMaxLength()-1)*period;
-        else
-          marker->_eventLength = eventTiming.onSpillMaxLength()*period;
-
-        // we set pbtime to be the time of the proton bunch in terms of the DAQ clock
-        // t=0 (which is determined by the event window marker arrival time)
-        pbtmc->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() + phaseShift;
-        if (_recoFromMCTruth){
-          pbt->pbtime_ = pbtmc.get()->pbtime_;
-          if (_recoFromMCTruthErr > 0)
-            pbt->pbtime_ += _randgauss.fire(0,_recoFromMCTruthErr); 
-          pbt->pbterr_ = _recoFromMCTruthErr;
-        }else{
-          pbt->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() - period/2.;
-          pbt->pbterr_ = period/sqrt(12);
-        }
+        pbt->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() - period/2.;
+        pbt->pbterr_ = period/sqrt(12);
       }
+    }
 
-      event.put(std::move(marker));
-      event.put(std::move(pbtmc));
-      event.put(std::move(pbt));
+    event.put(std::move(marker));
+    event.put(std::move(pbtmc));
+    event.put(std::move(pbt));
   }
 }
 

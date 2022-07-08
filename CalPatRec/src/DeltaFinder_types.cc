@@ -7,11 +7,11 @@
 
 namespace mu2e {
   namespace DeltaFinderTypes {
-    
+
 //-----------------------------------------------------------------------------
     int findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result) {
       double x1, y1, x2, y2, nx1, ny1, nx2, ny2;
-    
+
       const CLHEP::Hep3Vector& p1 = Hd1->fHit->centerPosCLHEP();//fStraw->getMidPoint();
 
       x1 =  p1.x();
@@ -33,7 +33,7 @@ namespace mu2e {
       double r12n1 = (x1-x2)*nx1+(y1-y2)*ny1;
       double r12n2 = (x1-x2)*nx2+(y1-y2)*ny2;
       //-----------------------------------------------------------------------------
-      // t1 and t2 are distances to the intersection point from the centers of the 
+      // t1 and t2 are distances to the intersection point from the centers of the
       // corresponding wires
       //-----------------------------------------------------------------------------
       Result->t1 = (n1n2*r12n2-r12n1)/(1-n1n2*n1n2);

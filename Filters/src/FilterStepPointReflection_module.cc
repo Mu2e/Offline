@@ -15,7 +15,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
@@ -49,7 +48,7 @@ namespace mu2e {
   {
   // define the reflection plane as the front of the tracker
     refvids_.push_back(VirtualDetectorId::TT_FrontHollow);
-    refvids_.push_back(VirtualDetectorId::TT_FrontPA); 
+    refvids_.push_back(VirtualDetectorId::TT_FrontPA);
   }
 
   //================================================================
@@ -61,23 +60,23 @@ namespace mu2e {
     for(const auto& hit : *ih) {
     // find hits in the specified virtual detector above the rqeuired momentum
       if(find(refvids_.begin(),refvids_.end(), hit.volumeId()) != refvids_.end()
-	 && hit.momentum().mag() > cutMomentumMin_ ){
-	art::Ptr<SimParticle> sp = hit.simParticle();
-	if(hit.momentum().z() > 0.0){
-	  // downstream particle: look for upstream match
-	  if(upstream.find(sp) != upstream.end()){
-	    passed = true;
-	    break;
-	  } else // otherwise record this particle
-	    downstream.emplace(sp);
-	} else {
-	  // upstream particle: look for downstream match
-	  if(downstream.find(sp) != downstream.end()){
-	    passed = true;
-	    break;
-	  } else // otherwise record this particle
-	    upstream.emplace(sp);
-	}
+         && hit.momentum().mag() > cutMomentumMin_ ){
+        art::Ptr<SimParticle> sp = hit.simParticle();
+        if(hit.momentum().z() > 0.0){
+          // downstream particle: look for upstream match
+          if(upstream.find(sp) != upstream.end()){
+            passed = true;
+            break;
+          } else // otherwise record this particle
+            downstream.emplace(sp);
+        } else {
+          // upstream particle: look for downstream match
+          if(downstream.find(sp) != downstream.end()){
+            passed = true;
+            break;
+          } else // otherwise record this particle
+            upstream.emplace(sp);
+        }
       }
     }
 

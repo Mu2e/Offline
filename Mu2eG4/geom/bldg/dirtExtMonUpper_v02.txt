@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_extMon_upper.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.extMon.upper.xPositions = {
   -15657.8   // a0_to_S
 };
 
-vector<int>    dirt.extMon.upper.yreplace   = { 2, 3 }; 
+vector<int>    dirt.extMon.upper.yreplace   = { 2, 3 };
 vector<double> dirt.extMon.upper.yPositions = {
   -2590.54,   // a0
   -2518.25,   // a1

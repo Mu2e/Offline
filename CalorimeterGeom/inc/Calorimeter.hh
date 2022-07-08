@@ -19,35 +19,35 @@
 
 
 namespace mu2e {
-    
+
     class Calorimeter: virtual public Detector {
 
-	public:
+        public:
 
-	   //no constructor for this interface
-	   virtual ~Calorimeter(){};
+           //no constructor for this interface
+           virtual ~Calorimeter(){};
 
 
            // calo section
-	   virtual unsigned                      nDisk()     const = 0;  
-	   virtual const Disk&                   disk(int i) const = 0;  
+           virtual unsigned                      nDisk()     const = 0;
+           virtual const Disk&                   disk(int i) const = 0;
 
 
-  	   // crystal section - fast access
-           virtual int                           nCrystal()     const = 0; 
-           virtual const Crystal&                crystal(int i) const = 0; 
-           
-
-           // calorimeter geometry information 
-	   virtual const CaloInfo&               caloInfo()     const = 0;
-	   virtual const CaloIDMapper&           caloIDMapper() const = 0;
-	   virtual const CaloGeomUtil&           geomUtil()     const = 0; 
+             // crystal section - fast access
+           virtual int                           nCrystal()     const = 0;
+           virtual const Crystal&                crystal(int i) const = 0;
 
 
-  	   // neighbors, indexing 
+           // calorimeter geometry information
+           virtual const CaloInfo&               caloInfo()     const = 0;
+           virtual const CaloIDMapper&           caloIDMapper() const = 0;
+           virtual const CaloGeomUtil&           geomUtil()     const = 0;
+
+
+             // neighbors, indexing
            virtual const std::vector<int>&  neighbors(int crystalId, bool rawMap=false)                     const = 0;
            virtual const std::vector<int>&  nextNeighbors(int crystalId, bool rawMap=false)                 const = 0;
-           virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap = false) const = 0; 
+           virtual       std::vector<int>   neighborsByLevel(int crystalId, int level, bool rawMap = false) const = 0;
            virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector& pos)            const = 0;
            virtual int                      nearestIdxFromPosition(const CLHEP::Hep3Vector& pos)            const = 0;
 
@@ -57,4 +57,4 @@ namespace mu2e {
 
 }
 
-#endif 
+#endif

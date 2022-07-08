@@ -1,6 +1,6 @@
 // Original author David Norvil Brown, University of Louisville
 // Numbers based on Mu2e geometry 14 as of November 2014
-// Modified 02/09/2015 by Steve Boi - Moved east side TS shielding to proper 
+// Modified 02/09/2015 by Steve Boi - Moved east side TS shielding to proper
 //                                    location against building wall
 //                                  - Added and relocated north cap block
 
@@ -96,7 +96,7 @@ string ExtShieldUpstream.materialType14  = "BARITE_CB4_1P";
 vector<double> ExtShieldUpstream.centerType1Box1 = {812.5,-382,2535.2};//BRP152
 
 vector<double> ExtShieldUpstream.centerType13Box1 = {812.5,-382,-1829};//BRP152
-vector<double> ExtShieldUpstream.centerType13Box2 = {812.5,-382,-2997};// 5 
+vector<double> ExtShieldUpstream.centerType13Box2 = {812.5,-382,-2997};// 5
 
 vector<double> ExtShieldUpstream.centerType12Box1 = {1878.5,-382,-2550};//BRP152
 vector<double> ExtShieldUpstream.centerType12Box2 = {2411.5,-382,-2550};//BRP152

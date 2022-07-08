@@ -90,7 +90,7 @@ namespace mu2e {
                parent,
                0,
                G4Colour::Green(),
-	       "PS"
+               "PS"
                );
 
     VolumeInfo psVacVesselOuterInfo =
@@ -102,7 +102,7 @@ namespace mu2e {
                parent,
                0,
                G4Colour::Green(),
-	       "PS"
+               "PS"
                );
 
 
@@ -112,14 +112,14 @@ namespace mu2e {
     G4Material* ringMaterial = findMaterialOrThrow(psRing1Params.materialName());
     VolumeInfo psRing1Info =
       nestTubs("PSRing1", psRing1Params.getTubsParams(),
-	       ringMaterial, 0,
-	       psRing1Params.originInMu2e() - _hallOriginInMu2e,
-	       parent, 0, G4Colour::Blue(), "PS");
+               ringMaterial, 0,
+               psRing1Params.originInMu2e() - _hallOriginInMu2e,
+               parent, 0, G4Colour::Blue(), "PS");
     VolumeInfo psRing2Info =
       nestTubs("PSRing2", psRing2Params.getTubsParams(),
-	       ringMaterial, 0,
-	       psRing2Params.originInMu2e() - _hallOriginInMu2e,
-	       parent, 0, G4Colour::Blue(), "PS");
+               ringMaterial, 0,
+               psRing2Params.originInMu2e() - _hallOriginInMu2e,
+               parent, 0, G4Colour::Blue(), "PS");
 
     // two endplates
 
@@ -135,7 +135,7 @@ namespace mu2e {
                parent,
                0,
                G4Colour::Yellow(),
-	       "PS"
+               "PS"
                );
 
     VolumeInfo psVacVesselEndPlateUInfo
@@ -147,7 +147,7 @@ namespace mu2e {
                  parent,
                  0,
                  G4Colour::Red(),
-		 "PS"
+                 "PS"
                  );
 
 
@@ -159,12 +159,12 @@ namespace mu2e {
 
     VolumeInfo psVacuumVesselVacuumInfo
       = nestTubs ( "psVacuumVesselVacuum",
-		   TubsParams(vacRIn, vacROut, vacHalfLength),
-		   findMaterialOrThrow("PSVacuum"),
-		   0,
-		   psVacVesselOuterParams.originInMu2e() - _hallOriginInMu2e,
-		   parent, 0, G4Colour::White(),
-		   "PS" );
+                   TubsParams(vacRIn, vacROut, vacHalfLength),
+                   findMaterialOrThrow("PSVacuum"),
+                   0,
+                   psVacVesselOuterParams.originInMu2e() - _hallOriginInMu2e,
+                   parent, 0, G4Colour::White(),
+                   "PS" );
 
 
 
@@ -198,7 +198,7 @@ namespace mu2e {
                   psVacuumVesselVacuumInfo.logical,
                   0,
                   G4Colour::White(),
-		  "PS"
+                  "PS"
                   );
 
     // the superconducting Coils
@@ -218,7 +218,7 @@ namespace mu2e {
                                       psCoilShellInfo,
                                       0,
                                       G4Colour::Red(),
-				      "PS"
+                                      "PS"
                                       );
 
 
@@ -232,7 +232,7 @@ namespace mu2e {
                                       psCoilShellInfo,
                                       0,
                                       G4Colour::Red(),
-				      "PS"
+                                      "PS"
                                       );
 
 
@@ -246,7 +246,7 @@ namespace mu2e {
                                       psCoilShellInfo,
                                       0,
                                       G4Colour::Red(),
-				      "PS"
+                                      "PS"
                                       );
 
 
@@ -373,7 +373,7 @@ namespace mu2e {
         << targetPS_model
         << "\n";
     }
- 
+
    // FIXME: make unconditional
     if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {
       constructPSShield(psVacuumInfo, _config);

@@ -6,14 +6,13 @@
 
 #include <iostream>
 #include <iomanip>
-#include <vector> 
+#include <vector>
 #include <map>
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -84,7 +83,7 @@ namespace mu2e
       fhicl::ParameterSet _pset;
       bool _first;
       int _ks;
- 
+
       std::map<int, TVector3> _mapTrkIntersection;
       std::map<int, double>   _mapTrkDelta;
       std::map<int, TH2F*> _maph2YvsR;
@@ -193,7 +192,7 @@ namespace mu2e
   }
 
   int TSTrackAna::geth2Id(int ts, int i)
-  { 
+  {
     return ts*10000+i;
   }
 
@@ -224,7 +223,7 @@ namespace mu2e
     else if (ts == 3) delta = -1.0*(_cutX - x);
 
     if ((ts == 1 || ts ==3) && fabs(delta) > _deltaMax) return;
-    if (ts == 2 && (theta > TMath::PiOver2()+0.01 || theta < -0.01 || fabs(delta) > _deltaMax)) return;    
+    if (ts == 2 && (theta > TMath::PiOver2()+0.01 || theta < -0.01 || fabs(delta) > _deltaMax)) return;
 
     TVector3 dir(step.momentum().x(), step.momentum().y(), step.momentum().z());
     dir.SetMag(1.0);
@@ -273,11 +272,11 @@ namespace mu2e
       double r = _originTS2.Z();
       if (ts == 1)      r = localPos.X();
       else if (ts == 2) r = localPos.Mag();
-      else if (ts == 3) r = localPos.Z(); 
+      else if (ts == 3) r = localPos.Z();
       double y = i.second.Y();
       if (_verbosity >= 1) cout << "r=" << setw(_ks) << r << " y=" << setw(_ks) << y << endl;
       h2YvsR->Fill(r, y);
-    } 
+    }
     _mapTrkIntersection.clear();
     _mapTrkDelta.clear();
   }
@@ -321,7 +320,7 @@ namespace mu2e
         for(const auto& i : *ih) {
           if (_verbosity >= 2) {
             std::cout << "Theta step (" << setw(_ks) << i.position().x()
-              << ", "  << setw(_ks) << i.position().y() 
+              << ", "  << setw(_ks) << i.position().y()
               << ", "  << setw(_ks) << i.position().z() << ")"
               << std::endl;
           }

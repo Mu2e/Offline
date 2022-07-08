@@ -12,7 +12,6 @@
 #include <random>
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Modules/MixFilter.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -243,8 +242,8 @@ namespace mu2e {
       std::cout << "The following bkg events were mixed in (START)" << std::endl;
       int counter = 0;
       for (const auto& i_eid : seq) {
-	std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
-	++counter;
+        std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
+        ++counter;
       }
       totalBkgCount_ += counter;
       std::cout << "Bkg Event Count  (this microbunch) = " << counter << std::endl;

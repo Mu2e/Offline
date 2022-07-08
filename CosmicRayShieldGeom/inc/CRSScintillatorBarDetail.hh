@@ -12,7 +12,7 @@
 #include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e 
+namespace mu2e
 {
 
   class CRSScintillatorBarDetail
@@ -97,7 +97,7 @@ namespace mu2e
     CLHEP::Hep3Vector getSiPMPosition(int fiberNumber, int side, const CLHEP::Hep3Vector &barPosition) const;
 
     private:
- 
+
     double _fiberSeparation;
 
   };

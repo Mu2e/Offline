@@ -5,7 +5,7 @@
 #include "Offline/CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
-# Reject events with no hits from signal-like tracks in the detectors.  
+# Reject events with no hits from signal-like tracks in the detectors.
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
 CompressPhysicalVolumes : {
@@ -22,7 +22,7 @@ FilterStepPointMomentum : {
 }
 
 # throw when hits are outside their sensitive volumes
-VetoIncorrectHits: { 
+VetoIncorrectHits: {
     module_type          : VetoIncorrectHits
     g4ModuleLabel        : g4run
     diagLevel            : 0

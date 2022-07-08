@@ -19,7 +19,7 @@ void TimePeakTest (TTree* tp, char* page="hits" ) {
   TCut convhit("_mcgen==2");
   TCut nonconvhit("_mcgen!=2");
   TCut hittime("abs(_dt)<30.0");
-  
+
   if(spage == "hits") {
     gStyle->SetOptStat(0);
     TH1F* dtc = new TH1F("dtc","Peak hit #Delta t",100,-40.0,40.0);

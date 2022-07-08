@@ -10,18 +10,18 @@ source : { module_type : FromTrackerPrototypeData
  runNumber : 100000
 }
 services : @local::Services.SimAndReco # reco is needed for the trigger
-physics : { 
+physics : {
   producers : {
-    @table::Digitize.producers 
+    @table::Digitize.producers
   }
-  filters: { 
+  filters: {
   }
   analyzers: {  }
-  TriggerPath : [EWMProducer] 
+  TriggerPath : [EWMProducer]
   EndPath : [ Output ]
 }
 
-outputs : { 
+outputs : {
   Output: {
      module_type : RootOutput
      fileName    : @nil

@@ -1,5 +1,5 @@
-// TS downstream (neutron) Absorber 
-// based on what was originally called Internal Neutron Absorber 
+// TS downstream (neutron) Absorber
+// based on what was originally called Internal Neutron Absorber
 // (document draft dated 2010-07-16)
 // This version by David Norvil Brown, May 2015
 
@@ -10,7 +10,7 @@
 
 double TSdA.rFactorForVDs        = 650.; // Just for virtual detector build
 
-double tsda.r4		 = 525; // outer radius, inner radius is TS5
+double tsda.r4           = 525; // outer radius, inner radius is TS5
 double tsda.rin          = 240.0; // inner radius in newest spec.  shadow COL5
 double tsda.halfLength4  = 25.0;
 double tsda.z0           = 5871.; // Why this value?.  It is 4204 in Mu2e coords.  Apparently, this is zMu2e + 1667.  Hmmm.

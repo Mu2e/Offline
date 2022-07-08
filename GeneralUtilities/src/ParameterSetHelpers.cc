@@ -22,7 +22,7 @@ std::vector<art::InputTag> fhicl::ParameterSet::get<std::vector<art::InputTag>>(
 
   std::vector<std::string> stringset;
   const bool present = get_if_present<std::vector<std::string>>( key, stringset );
- 
+
   if ( !present ) throw fhicl::exception(cant_find, key);
 
   std::vector<art::InputTag> value;
@@ -40,7 +40,7 @@ std::vector<art::InputTag> fhicl::ParameterSet::get<std::vector<art::InputTag>>(
 
   std::vector<std::string> stringset;
   const bool present = get_if_present<std::vector<std::string>>( key, stringset );
-  
+
   if ( !present) return default_value;
 
   std::vector<art::InputTag> value;
@@ -58,12 +58,12 @@ std::set<int> fhicl::ParameterSet::get<std::set<int>>( std::string const & key )
 
   std::vector<int> intset;
   const bool present = get_if_present<std::vector<int>>( key, intset );
- 
+
   if ( !present ) throw fhicl::exception(cant_find, key);
 
   std::set<int> value;
   for ( const auto& is : intset ) {
-    if ( !value.insert( is ).second ) { 
+    if ( !value.insert( is ).second ) {
       std::ostringstream os;
       os << "Value << " << is << " >> is duplicated in input list for FHiCL parameter: << " << key << " >> !\n";
       throw std::runtime_error(os.str());
@@ -80,12 +80,12 @@ std::set<int> fhicl::ParameterSet::get<std::set<int>>( std::string const & key, 
 
   std::vector<int> intset;
   const bool present = get_if_present<std::vector<int>>( key, intset );
-  
+
   if ( !present) return default_value;
 
   std::set<int> value;
   for ( const auto& is : intset ) {
-    if ( !value.insert( is ).second ) { 
+    if ( !value.insert( is ).second ) {
       std::ostringstream os;
       os << "Value << " << is << " >> is duplicated in input list for FHiCL parameter: << " << key << " >> !\n";
       throw std::runtime_error(os.str());
@@ -130,6 +130,6 @@ mu2e::PhiPrescalingParams fhicl::getPhiPrescalerParams(fhicl::ParameterSet const
   float amplitude = scalerPset.get<float>("amplitude");
   float frequency = scalerPset.get<float>("frequency");
   float phase     = scalerPset.get<float>("phase"    );
-  
+
   return mu2e::PhiPrescalingParams(amplitude, frequency, phase);
 }

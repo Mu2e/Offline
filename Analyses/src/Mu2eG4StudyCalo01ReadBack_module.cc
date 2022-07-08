@@ -19,7 +19,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
@@ -171,7 +170,7 @@ namespace mu2e {
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
-    // Save in the particles ntuple only those particles, which die 
+    // Save in the particles ntuple only those particles, which die
     // after this time (in ns)
     double _timeCut;
 
@@ -301,7 +300,7 @@ namespace mu2e {
     event.getByLabel(_g4ModuleLabel, simParticles);
     bool haveSimPart = simParticles.isValid();
     if ( haveSimPart ) haveSimPart = !(simParticles->empty());
-    
+
     // Loop over all stepper points.
     if( points.isValid() ) for ( size_t i=0; i<points->size(); ++i ){
 
@@ -323,8 +322,8 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-      	  mass = pdt_.particle(pdgId).mass();
-	}
+                mass = pdt_.particle(pdgId).mass();
+        }
       }
 
       // Fill the ntuple.
@@ -354,7 +353,7 @@ namespace mu2e {
              << event.id().event() << " | "
              << point.volumeId()   << " | "
              << point.trackId().asInt() << " | "
-             << pdgId              << " , name: "  
+             << pdgId              << " , name: "
              << pdt_.particle(pdgId).name() << " | "
              << point.time()       << " "
              << pos                << " "
@@ -376,10 +375,10 @@ namespace mu2e {
       tstp.gtime  = point.properTime();
       tstp.x      = pos.x();
       tstp.y      = pos.y();
-      tstp.z      = pos.z();  
-      tstp.px     = mom.x(); 
-      tstp.py     = mom.y(); 
-      tstp.pz     = mom.z(); 
+      tstp.z      = pos.z();
+      tstp.px     = mom.x();
+      tstp.py     = mom.y();
+      tstp.pz     = mom.z();
       tstp.p      = mom.mag();
       tstp.ke     = sqrt(mom.mag2()+mass*mass)-mass;
       tstp.tedep  = point.totalEDep();
@@ -418,7 +417,7 @@ namespace mu2e {
         } else {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
-	  mass = pdt_.particle(pdgId).mass();
+          mass = pdt_.particle(pdgId).mass();
         }
       }
 
@@ -449,7 +448,7 @@ namespace mu2e {
              << event.id().event() << " | "
              << hit.volumeId()     << " | "
              << hit.trackId().asInt() << " | "
-             << pdgId              << " , name: "  
+             << pdgId              << " , name: "
              << pdt_.particle(pdgId).name() << " | "
              << hit.time()         << " "
              << pos                << " "
@@ -482,17 +481,17 @@ namespace mu2e {
 
         ttp.pdg = sim.pdgId();           // PDG id
 
-	// Calculate parent proper time
-	double gtime_parent = 0.0;
-	if( _add_proper_time ) {
-	  SimParticle const* sim_parent = &sim;
-	  while( sim_parent && sim_parent->hasParent() ) {
-	    sim_parent = simParticles->getOrNull(sim_parent->parentId());
-	    if( sim_parent && sim_parent->pdgId()==ttp.pdg && sim.endDefined() ) {
-	      gtime_parent += sim_parent->endProperTime();
-	    }
-	  }
-	}
+        // Calculate parent proper time
+        double gtime_parent = 0.0;
+        if( _add_proper_time ) {
+          SimParticle const* sim_parent = &sim;
+          while( sim_parent && sim_parent->hasParent() ) {
+            sim_parent = simParticles->getOrNull(sim_parent->parentId());
+            if( sim_parent && sim_parent->pdgId()==ttp.pdg && sim.endDefined() ) {
+              gtime_parent += sim_parent->endProperTime();
+            }
+          }
+        }
 
         // Save SimParticle other info
         ttp.time = sim.startGlobalTime(); // start time
