@@ -38,9 +38,9 @@ namespace mu2e {
       using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float>>;
       NullStrawHitUpdaterSettings nhuConfig{ Name("NullStrawHitUpdaterSettings"), Comment("NullStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit', 'Wire DOCA variance'") };
-      using DOCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float>>;
+      using DOCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,bool>>;
       DOCAStrawHitUpdaterSettings dhuConfig{ Name("DOCAStrawHitUpdaterSettings"), Comment("DOCAStrawHitUpdater settings, format: \n"
-          " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum DOCA to use L/R ambiguity'") };
+          " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum abs(Dt) to use a hit', 'Use Unbiased DOCA info?'") };
       using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
           " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference', 'minimum drift DOCA', 'diag level'") };
