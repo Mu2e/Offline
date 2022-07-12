@@ -5,7 +5,7 @@
 //
 #include "KinKal/Detector/ElementXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -49,7 +49,7 @@ namespace mu2e {
       KKStrawMaterial const& smat_;
       CA tpca_; // result of most recent TPOCA
       double toff_; // small time offset
-      KKStrawXingUpdater sxconfig_; // note this must come from an updater during processing
+      StrawXingUpdater sxconfig_; // note this must come from an updater during processing
   };
 
   template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(PCA const& pca, KKStrawMaterial const& smat, StrawId sid) :
@@ -78,7 +78,7 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
     if(first) {
       // search for an update to the xing configuration among this meta-iteration payload
-      auto sxconfig = miconfig.findUpdater<KKStrawXingUpdater>();
+      auto sxconfig = miconfig.findUpdater<StrawXingUpdater>();
       if(sxconfig != 0){
         sxconfig_ = *sxconfig;
       }

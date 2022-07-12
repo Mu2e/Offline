@@ -32,15 +32,23 @@ namespace mu2e {
 
   class CombinatoricStrawHitUpdater {
     public:
+      using CSHUConfig = std::tuple<float,float,float,float,int>;
       // struct to sort hit states by chisquared value
       struct ClusterScoreComp {
         bool operator()(ClusterScore const& a, ClusterScore const& b)  const {
           return a.chi2_.chisqPerNDOF() < b.chi2_.chisqPerNDOF();
         }
       };
-      CombinatoricStrawHitUpdater(double inactivep, double nullp, double mindchi2,double mindoca,int diag=0) :
-        inactivep_(inactivep), nullp_(nullp), mindchi2_(mindchi2), mindoca_(mindoca), diag_(diag),
-        allowed_{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right} {}
+      CombinatoricStrawHitUpdater(CSHUConfig const& cshuconfig) :
+        allowed_{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right}
+      {
+        inactivep_ = std::get<0>(cshuconfig);
+        nullp_ = std::get<1>(cshuconfig);
+        mindchi2_ = std::get<2>(cshuconfig);
+        mindoca_ = std::get<3>(cshuconfig);
+        diag_ = std::get<4>(cshuconfig);
+      }
+
       ClusterScore selectBest(ClusterScoreCOL& cscores) const; // find the best cluster configuration given the score for each
       double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
       auto inactivePenalty() const { return inactivep_;}

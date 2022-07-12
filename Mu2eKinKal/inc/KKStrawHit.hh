@@ -134,7 +134,6 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
-    // look for updaters; there must be exactly 1
     unsigned nupdaters(0);
     auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
     auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
@@ -155,10 +154,22 @@ namespace mu2e {
     // Combo updater sets WireHitState in StrawHitCluster; leave it unchanged here
     //  For locally-operating updaters, actually update the state
     if(StrawHitUpdaters::updateStrawHits(algo_)){
-      CA uca = unbiasedClosestApproach();
-      if(uca.usable() && insideStraw (uca)){
-        if(dshu) whstate_ = dshu->wireHitState(uca.tpData());
-        if(nshu) whstate_ = nshu->wireHitState(uca.tpData());
+      if(dshu){
+        if(dshu->useUnbiasedDOCA()){
+          CA uca = unbiasedClosestApproach();
+          if(uca.usable() && insideStraw(uca))
+            whstate_ = dshu->wireHitState(sresponse_,uca.tpData());
+          else
+            whstate_ = WireHitState::forcedinactive;
+        } else {
+          whstate_ = dshu->wireHitState(sresponse_,ptca_.tpData());
+        }
+      } else if(nshu){
+        CA uca = unbiasedClosestApproach(); // should be optional TODO
+        if(uca.usable() && insideStraw(uca))
+          whstate_ = nshu->wireHitState(uca.tpData());
+        else
+          whstate_ = WireHitState::forcedinactive;
       } else {
         whstate_ = WireHitState::forcedinactive;
       }
@@ -208,7 +219,6 @@ namespace mu2e {
         double dsign = whstate.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
         double dt = ptca_.deltaT()-dinfo.time*dsign;
         // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
-        // temporary fix
         DVEC dRdP = ptca_.dDdP()*dsign*dinfo.invSpeed - ptca_.dTdP();
         resids[tresid] = Residual(dt,dinfo.variance,0.0,true,dRdP);
         // distance residual isn't used when drift is
@@ -227,11 +237,11 @@ namespace mu2e {
           dtvar = 50.0; // should come from ComboHit TODO
           ddvar = nshu->distVariance(); // this should come from a prodition TODO
         } else {
-          // other null updaters are based on an 'effective' DOCA
+          // other null updaters are based on a minimum DOCA
           double dmin = minDOCA(miconfig);
           // get drift properties at this effective DOCA
           auto dinfo = sresponse_.driftInfoAtDistance(strawId(),0.5*dmin,0.0);
-          // distance variance is geometric, based on the effective distance
+         // distance variance is geometric, based on the effective distance
           static double invthree(1.0/3.0);
           ddvar = invthree*dmin*dmin;
           // time residual is delta-T corrected for the average drift time
