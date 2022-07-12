@@ -52,7 +52,7 @@ namespace mu2e {
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(flag), _ambig(ambig), _algo(-1),
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _ptoca(0),
-       _wdoca(wdoca), _wdocavar(-1.0), _wdt(0.0), _wtocavar(-1.0), _doca(0.0), _docavar(-1.0), _dt(0.0), _tocavar(-1.0),
+       _wdoca(wdoca), _wdocavar(rerr*rerr), _wdt(0.0), _wtocavar(0.0), _doca(wdoca), _docavar(rerr*rerr), _dt(0.0), _tocavar(0.0),
       _t0(t0), _trklen(trklen), _hitlen(hitlen), _rdrift(rdrift), _dtime(chit.driftTime()), _stime(stime), _rerr(rerr){}
 
     // accessors

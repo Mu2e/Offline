@@ -41,9 +41,9 @@ namespace mu2e {
       using DOCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,bool>>;
       DOCAStrawHitUpdaterSettings dhuConfig{ Name("DOCAStrawHitUpdaterSettings"), Comment("DOCAStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum abs(Dt) to use a hit', 'Use Unbiased DOCA info?'") };
-      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,int>>;
+      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
-          " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference', 'minimum drift DOCA', 'diag level'") };
+          " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference', 'minimum drift DOCA', 'allow Null ambiguity','Use Null Time residual', 'diag level'") };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
           " 'Maximum DOCA error to use unaveraged material', 'Maximum DOCA to use straw material', 'Maximum DOCA to use unaveraged material'") };

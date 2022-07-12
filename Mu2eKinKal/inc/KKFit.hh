@@ -486,11 +486,13 @@ namespace mu2e {
         tres = strawhit->refResidual(0);
         dres = strawhit->refResidual(1);
       }
+      // correct the state to correspond to the MC true LR ambiguity convention
+      int state = strawhit->hitState().state_;
+      if(abs(state)==1)state *= static_cast<int>(std::rint(2*(strawhit->hit().driftEnd()-0.5)));
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
      strawhit->closestApproach().tpData(),
           strawhit->unbiasedClosestApproach().tpData(),
-          tres, dres,
-          strawhit->hitState().state_, strawhit->updaterAlgorithm());
+          tres, dres, state, strawhit->updaterAlgorithm());
     }
     if(kktrk.caloHits().size() > 0){
       auto const& calohit = kktrk.caloHits().front(); // for now take the front: not sure if there will ever be >1 TODO
