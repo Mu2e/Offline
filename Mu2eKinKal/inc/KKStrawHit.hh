@@ -134,45 +134,21 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
-    unsigned nupdaters(0);
     auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
     auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
     auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
     if(cshu){
       algo_ = StrawHitUpdaters::Combinatoric;
-      nupdaters++;
-    }
-    if(dshu){
-      algo_ = dshu->algorithm();
-      nupdaters++;
-    }
-    if(nshu){
-      algo_ = nshu->algorithm();
-      nupdaters++;
-    }
-    if(nupdaters != 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: StrawHit updater count error" << std::endl;
-    // Combo updater sets WireHitState in StrawHitCluster; leave it unchanged here
-    //  For locally-operating updaters, actually update the state
-    if(StrawHitUpdaters::updateStrawHits(algo_)){
-      if(dshu){
-        if(dshu->useUnbiasedDOCA()){
-          CA uca = unbiasedClosestApproach();
-          if(uca.usable() && insideStraw(uca))
-            whstate_ = dshu->wireHitState(sresponse_,uca.tpData());
-          else
-            whstate_ = WireHitState::forcedinactive;
-        } else {
-          whstate_ = dshu->wireHitState(sresponse_,ptca_.tpData());
-        }
-      } else if(nshu){
-        CA uca = unbiasedClosestApproach(); // should be optional TODO
-        if(uca.usable() && insideStraw(uca))
-          whstate_ = nshu->wireHitState(uca.tpData());
-        else
-          whstate_ = WireHitState::forcedinactive;
-      } else {
+      // actual updating happens at the cluster level for this
+    } else if(dshu || nshu) {
+      algo_ = dshu ? dshu->algorithm() : nshu->algorithm();
+      bool unbiased = (dshu && dshu->useUnbiasedDOCA()) || nshu;
+      CA ca = unbiased ?  unbiasedClosestApproach() : ptca_;
+      if(ca.usable() && insideStraw(ca)){
+        if(dshu) whstate_ = dshu->wireHitState(sresponse_,ca.tpData());
+        if(nshu) whstate_ = nshu->wireHitState(ca.tpData());
+      } else
         whstate_ = WireHitState::forcedinactive;
-      }
     }
   }
 
