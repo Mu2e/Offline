@@ -47,12 +47,12 @@ namespace mu2e {
 
     //Legacy constructor for BTrk
     TrkStrawHitSeed(StrawHitIndex index, HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
-        Float_t stime,
+        Float_t stime, Float_t upos, Float_t dt,
         Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(flag), _ambig(ambig), _algo(-1),
-      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _ptoca(0),
-       _wdoca(wdoca), _wdocavar(rerr*rerr), _wdt(0.0), _wtocavar(0.0), _doca(wdoca), _docavar(rerr*rerr), _dt(0.0), _tocavar(0.0),
+      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _ptoca(t0._t0),
+       _wdoca(wdoca), _wdocavar(rerr*rerr), _wdt(dt), _wtocavar(t0._t0err*t0._t0err), _doca(wdoca), _docavar(rerr*rerr), _dt(dt), _tocavar(t0._t0err*t0._t0err),_upos(upos),
       _t0(t0), _trklen(trklen), _hitlen(hitlen), _rdrift(rdrift), _dtime(chit.driftTime()), _stime(stime), _rerr(rerr){}
 
     // accessors

@@ -32,7 +32,7 @@ namespace mu2e {
       fhicl::Atom<bool> ends { Name("ProcessEnds"), Comment("Process purely passive sites at the time range ends") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
 // Updater settings
-      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,size_t>>;
+      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,int>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
           " 'Temperature (dimensionless)', 'StrawHitUpdater algorithm'") };
       using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float>>;
