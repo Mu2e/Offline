@@ -26,15 +26,15 @@ namespace mu2e {
       config.ends_ = fitconfig.ends();
       config.tol_ = fitconfig.btol();
       // set the schedule for the meta-iterations
-      std::vector<size_t> shualg;
+      std::vector<int> shualg;
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig mconfig(std::get<0>(misetting));
         config.schedule_.push_back(mconfig);
         shualg.push_back(std::get<1>(misetting));
       }
       // create the updaters requested
-      unsigned ndoca, nnull, ncomb;
-      ndoca = nnull = ncomb = 0; // count how many updater configs have been seen
+      unsigned ndoca, nnull, ncomb, nnone;
+      ndoca = nnull = ncomb = nnone= 0; // count how many updater configs have been seen
       std::vector<NullStrawHitUpdater::NSHUConfig> nhusettings;
       std::vector<DOCAStrawHitUpdater::DSHUConfig> dshusettings;
       std::vector<CombinatoricStrawHitUpdater::CSHUConfig> chusettings;
@@ -54,6 +54,8 @@ namespace mu2e {
           miconfig.addUpdater(std::any(DOCAStrawHitUpdater(dshusettings.at(ndoca++))));
         } else if(ialg == StrawHitUpdaters::Combinatoric) {
           miconfig.addUpdater(std::any(CombinatoricStrawHitUpdater(chusettings.at(ncomb++))));
+        } else if(ialg == StrawHitUpdaters::none) {
+          ++nnone;
         } else {
           throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
         }
@@ -61,7 +63,7 @@ namespace mu2e {
         miconfig.addUpdater(std::any(StrawXingUpdater(sxusettings.at(imeta))));
       }
       // consistency test
-      if(config.schedule_.size() != ndoca+nnull+ncomb)
+      if(config.schedule_.size() != ndoca+nnull+ncomb+nnone)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent StrawHitUpdater config "<< std::endl;
       return config;
     }
