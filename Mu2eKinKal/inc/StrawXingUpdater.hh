@@ -5,17 +5,19 @@
 namespace mu2e {
   // simple struct to hold crossing calculation configuration parameters
   struct StrawXingUpdater {
-    using SXUConfig = std::tuple<float,float,float>;
+    using SXUConfig = std::tuple<float,float,float,bool>;
     WireHitState hitstate_; // associated hit state (inactive if no hit)
     double maxdocasig_; // maximum doca error to use non-averaged value
     double maxdoca_; // maximum DOCA to include this straw's material
     double maxddoca_; // maximum DOCA to use 'exact' calculation, otherwise average over all physical impact parameters
+    bool scalevar_; // scale variance or not
     // default constructor is functional but will always use the impact-parameter averaged material
-    StrawXingUpdater() : hitstate_(WireHitState::null), maxdocasig_(-1.0), maxdoca_(0.0), maxddoca_(0.0) {}
+    StrawXingUpdater() : hitstate_(WireHitState::null), maxdocasig_(-1.0), maxdoca_(0.0), maxddoca_(0.0), scalevar_(true) {}
     StrawXingUpdater(SXUConfig const& sxusetting) {
       maxdocasig_ = std::get<0>(sxusetting);
       maxdoca_ = std::get<1>(sxusetting);
       maxddoca_ = std::get<2>(sxusetting);
+      scalevar_ = std::get<3>(sxusetting);
     }
   };
 }
