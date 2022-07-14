@@ -20,11 +20,14 @@ namespace mu2e {
        mindoca_ = std::get<1>(dshusetting);
        maxdt_ = std::get<2>(dshusetting);
        uptca_ = std::get<3>(dshusetting);
+       static double invthree(1.0/3.0);
+       dvar_ = invthree*mindoca_*mindoca_;
      }
      // set the state based on the current DOCA value
       WireHitState wireHitState(StrawResponse const& sresponse, KinKal::ClosestApproachData const& tpdata) const;
       auto maxDOCA() const { return maxdoca_; }
       auto minDOCA() const { return mindoca_; }
+      auto distVariance() const { return dvar_; }
       auto maxDt() const { return maxdt_; }
       auto useUnbiasedDOCA() const { return uptca_; }
       StrawHitUpdaters::algorithm algorithm() const { return StrawHitUpdaters::DOCA; }
@@ -33,7 +36,7 @@ namespace mu2e {
       double mindoca_; // minimum DOCA to use drift information
       double maxdt_; // maximum dt to use drift information
       bool uptca_; // use unbiased DOCA info
-
+      double dvar_; // distance variance
   };
 }
 #endif

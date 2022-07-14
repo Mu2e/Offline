@@ -44,9 +44,9 @@ namespace mu2e {
       using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
           " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference', 'minimum drift DOCA', 'allow Null ambiguity','Use Null Time residual', 'diag level'") };
-      using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float>>;
+      using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
-          " 'Maximum DOCA error to use unaveraged material', 'Maximum DOCA to use straw material', 'Maximum DOCA to use unaveraged material'") };
+          " 'Maximum DOCA error to use unaveraged material', 'Maximum DOCA to use straw material', 'Maximum DOCA to use unaveraged material','scale variance with annealing temp'") };
       //NB: when new updaters are introduced their config must be added as a new tuple sequences
     };
     // function to convert fhicl configuration to KinKal Config object

@@ -93,9 +93,10 @@ namespace mu2e {
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
       StrawHitUpdaters::algorithm algo_; // most recent algorithm
+      double dvar_; // distance variance
+      double nulldoca_; // null doca for time hits
       // utility functions
       void updateWHS(MetaIterConfig const& miconfig);
-      double minDOCA(MetaIterConfig const& miconfig) const;
   };
 
   // struct to sort hits by time
@@ -110,7 +111,7 @@ namespace mu2e {
       ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) :
     bfield_(bfield), whstate_(WireHitState::null), wire_(ptca.sensorTraj()),
     ptca_(ptca.localTraj(),wire_,ptca.precision(),ptca.tpData(),ptca.dDdP(),ptca.dTdP()),
-    chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse), algo_(StrawHitUpdaters::none)
+    chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse), algo_(StrawHitUpdaters::none), dvar_(0.0), nulldoca_(0.0)
   {
     // make sure this is a single-straw based ComboHit
     if(chit_.mask().level() != StrawIdMask::uniquestraw)
@@ -139,9 +140,13 @@ namespace mu2e {
     auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
     if(cshu){
       algo_ = StrawHitUpdaters::Combinatoric;
-      // actual updating happens at the cluster level for this
+      dvar_ = cshu->distVariance();
+      nulldoca_ = cshu->minDOCA();
+     // actual updating happens at the cluster level for this
     } else if(dshu || nshu) {
       algo_ = dshu ? dshu->algorithm() : nshu->algorithm();
+      dvar_ = dshu ? dshu->distVariance() : nshu->distVariance();
+      if(dshu) nulldoca_ = dshu->minDOCA();
       bool unbiased = (dshu && dshu->useUnbiasedDOCA()) || nshu;
       CA ca = unbiased ?  unbiasedClosestApproach() : ptca_;
       if(ca.usable() && insideStraw(ca)){
@@ -150,21 +155,6 @@ namespace mu2e {
       } else
         whstate_ = WireHitState::forcedinactive;
     }
-  }
-
-  template <class KTRAJ> double KKStrawHit<KTRAJ>::minDOCA(MetaIterConfig const& miconfig) const {
-    double dmin(0.0);
-    if(algo_ == StrawHitUpdaters::DOCA){
-      auto dshu = miconfig.findUpdater<DOCAStrawHitUpdater>();
-      if(!dshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
-      dmin = dshu->minDOCA();
-    } else if(algo_ == StrawHitUpdaters::Combinatoric){
-      auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
-      if(!cshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
-      dmin = cshu->minDOCA();
-    } else
-      throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
-    return dmin;
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -204,28 +194,22 @@ namespace mu2e {
         // distance residual is always WRT the wire
         double dd = ptca_.doca();
         // variances and time residuals depend on the algorithm
-        double ddvar, dt, dtvar;
+        double dt, dtvar;
         if(algo_ == StrawHitUpdaters::null){
-          auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
-          if(!nshu)throw cet::exception("RECO")<<"mu2e::KKStrawHit: missing updater" << std::endl;
           // use the combo-hit time to set the time residual; the correction should be calibrated out TODO
-          dt = ptca_.deltaT() - chit_.driftTime() - 0.85;
+          dt = ptca_.deltaT() - chit_.driftTime() - 0.85; // kludged calibration
           dtvar = 50.0; // should come from ComboHit TODO
-          ddvar = nshu->distVariance(); // this should come from a prodition TODO
         } else {
           // other null updaters are based on a minimum DOCA
-          double dmin = minDOCA(miconfig);
           // get drift properties at this effective DOCA
-          auto dinfo = sresponse_.driftInfoAtDistance(strawId(),0.5*dmin,0.0);
-         // distance variance is geometric, based on the effective distance
-          static double invthree(1.0/3.0);
-          ddvar = invthree*dmin*dmin;
+          auto dinfo = sresponse_.driftInfoAtDistance(strawId(),0.5*nulldoca_,0.0); // this assumes constrant drift FIXME
+          // distance variance is geometric, based on the effective distance
           // time residual is delta-T corrected for the average drift time
           dt = ptca_.deltaT() -dinfo.time;
           // time variance has 2 parts: intrinsic and residual drift
-          dtvar = dinfo.variance + 0.25*ddvar*dinfo.invSpeed*dinfo.invSpeed;
+          dtvar = dinfo.variance + 0.25*dvar_*dinfo.invSpeed*dinfo.invSpeed;
         }
-        resids[dresid] = Residual(dd,ddvar,0.0,true,dRdP);
+        resids[dresid] = Residual(dd,dvar_,0.0,true,dRdP);
         resids[tresid] = Residual(dt,dtvar,0.0,true,-ptca_.dTdP());
         // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
       }

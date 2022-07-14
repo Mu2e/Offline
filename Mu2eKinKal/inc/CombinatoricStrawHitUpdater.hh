@@ -47,6 +47,8 @@ namespace mu2e {
         allownull_ = std::get<4>(cshuconfig);
         nulltime_ = std::get<5>(cshuconfig);
         diag_ = std::get<6>(cshuconfig);
+        static double invthree(1.0/3.0);
+        dvar_ = invthree*mindoca_*mindoca_;
         if(allownull_)
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right};
         else
@@ -62,6 +64,7 @@ namespace mu2e {
       auto minDOCA() const { return mindoca_; }
       auto allowNull() const { return allownull_; }
       auto nullTime() const { return nulltime_; }
+      auto distVariance() const { return dvar_; }
       StrawHitUpdaters::algorithm algorithm() const { return StrawHitUpdaters::Combinatoric; }
       // the work is done here
       template <class KTRAJ> void updateCluster(KKStrawHitCluster<KTRAJ>& cluster,KinKal::MetaIterConfig const& miconfig) const;
@@ -75,6 +78,7 @@ namespace mu2e {
       int diag_; // diag print level
       WHSCOL allowed_; // allowed states
       double wireHitRank(WHSCOL const& whscol) const; // rank wire hit states by 'conservativeness'
+      double dvar_; // distance variance
   };
   std::ostream& operator <<(std::ostream& os, ClusterScore const& cscore );
 }
