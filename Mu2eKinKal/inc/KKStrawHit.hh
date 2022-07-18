@@ -145,8 +145,6 @@ namespace mu2e {
      // actual updating happens at the cluster level for this
     } else if(dshu || nshu) {
       algo_ = dshu ? dshu->algorithm() : nshu->algorithm();
-      dvar_ = dshu ? dshu->distVariance() : nshu->distVariance();
-      if(dshu) nulldoca_ = dshu->minDOCA();
       bool unbiased = (dshu && dshu->useUnbiasedDOCA()) || nshu;
       CA ca = unbiased ?  unbiasedClosestApproach() : ptca_;
       if(ca.usable() && insideStraw(ca)){
@@ -155,6 +153,10 @@ namespace mu2e {
       } else
         whstate_ = WireHitState::forcedinactive;
     }
+    // also setup the null hit parameters according to the updaterr
+      dvar_ = dshu ? dshu->distVariance() : nshu->distVariance();
+      if(dshu) nulldoca_ = dshu->minDOCA();
+
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -201,13 +203,13 @@ namespace mu2e {
           dtvar = 50.0; // should come from ComboHit TODO
         } else {
           // other null updaters are based on a minimum DOCA
-          // get drift properties at this effective DOCA
-          auto dinfo = sresponse_.driftInfoAtDistance(strawId(),0.5*nulldoca_,0.0); // this assumes constrant drift FIXME
+          double speed = sresponse_.driftConstantSpeed();
           // distance variance is geometric, based on the effective distance
           // time residual is delta-T corrected for the average drift time
-          dt = ptca_.deltaT() -dinfo.time;
+          dt = ptca_.deltaT() - nulldoca_/speed;
           // time variance has 2 parts: intrinsic and residual drift
-          dtvar = dinfo.variance + 0.25*dvar_*dinfo.invSpeed*dinfo.invSpeed;
+          // use the average speed to estimate the drift part
+          dtvar = 0.25*dvar_/(speed*speed);
         }
         resids[dresid] = Residual(dd,dvar_,0.0,true,dRdP);
         resids[tresid] = Residual(dt,dtvar,0.0,true,-ptca_.dTdP());

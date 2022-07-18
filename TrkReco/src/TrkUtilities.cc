@@ -160,7 +160,8 @@ namespace mu2e {
         if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
         int state = tsh->ambig();
         if(!tsh->isActive())state = -2;
-        float upos = (tsh->wirePosition()-tsh->straw().wirePosition(0.0)).dot(tsh->straw().wireDirection());
+        CLHEP::Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen());
+        float upos = (hpos-tsh->straw().wirePosition(0.0)).dot(tsh->straw().wireDirection());
         float dt = tsh->signalTime() - tsh->driftTime()-tsh->hitT0()._t0;
         hitseeds.emplace_back(tsh->index(),
             tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),

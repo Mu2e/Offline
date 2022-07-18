@@ -42,7 +42,11 @@ namespace mu2e {
       _dresid(udresid.value()),_dresidmvar(udresid.measurementVariance()),_dresidpvar(udresid.parameterVariance()),
       _rdrift(0.0), _dtime(0.0), _stime(0.0), _rerr(0.0)
     {
-      _upos = refptca.sensorDirection().Dot(refptca.sensorPoca().Vect() - chit.centerPos());
+      // correct for end sign to return to Mu2e convention
+      double endsign = 2.0*(chit.driftEnd()-0.5);
+      _upos = -endsign*refptca.sensorDirection().Dot(refptca.sensorPoca().Vect() - chit.centerPos());
+      _doca *= endsign;
+      _wdoca *= endsign;
     }
 
     //Legacy constructor for BTrk
