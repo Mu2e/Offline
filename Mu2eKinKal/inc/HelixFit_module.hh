@@ -8,6 +8,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -51,6 +52,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
+#include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 // root
 #include "TH1F.h"
@@ -114,7 +116,8 @@ namespace mu2e {
     fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
     fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all helix segments associated with the fit"), false};
     fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices"), std::vector<float>()};
-  };
+    fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
+ };
 
   struct GlobalConfig {
     fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
@@ -153,9 +156,10 @@ namespace mu2e {
       DMAT seedcov_; // seed covariance matrix
       double mass_; // particle mass
       int charge_; // particle charge
-      std::unique_ptr<KKBField> kkbf_;
+      std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
+      bool fixedfield_; //
   };
 
   HelixFit::HelixFit(const GlobalSettings& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
@@ -172,7 +176,8 @@ namespace mu2e {
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
-    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings()))
+    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings())),
+    fixedfield_(false)
     {
       // test: only 1 of saveFull and zsave should be set
       if((savefull_ && zsave_.size() > 0) || ((!savefull_) && zsave_.size() == 0))
@@ -184,12 +189,17 @@ namespace mu2e {
       produces<KalHelixAssns>();
       // build the initial seed covariance
       auto const& seederrors = settings().modSettings().seederrors();
-      if(seederrors.size() != KinKal::NParams())
+ if(seederrors.size() != KinKal::NParams())
         throw cet::exception("RECO")<<"mu2e::HelixFit:Seed error configuration error"<< endl;
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
       if(print_ > 0) std::cout << "Fit " << config_ << "Extension " << exconfig_;
+      double bz(0.0);
+      if(settings().modSettings().fixedBField(bz)){
+        fixedfield_ = true;
+        kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
+      }
     }
 
   void HelixFit::beginRun(art::Run& run) {
@@ -198,9 +208,12 @@ namespace mu2e {
     mass_ = ptable->particle(kkfit_.fitParticle()).mass();
     charge_ = static_cast<int>(ptable->particle(kkfit_.fitParticle()).charge());
     // create KKBField
-    GeomHandle<BFieldManager> bfmgr;
-    GeomHandle<DetectorSystem> det;
-    kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
+    if(!fixedfield_){
+      GeomHandle<BFieldManager> bfmgr;
+      GeomHandle<DetectorSystem> det;
+      kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
+    }
+    if(print_ > 0) kkbf_->print(std::cout);
   }
 
   void HelixFit::produce(art::Event& event ) {
