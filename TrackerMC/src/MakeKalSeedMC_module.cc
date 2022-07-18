@@ -38,29 +38,29 @@ namespace mu2e {
         }
       };
       public:
-        using Name=fhicl::Name;
-        using Comment=fhicl::Comment;
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
 
-        struct Config {
-          fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
-          fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag Level"), 0};
-          fhicl::Atom<int> print{ Name("printLevel"), Comment("Print Level"), 0};
-          fhicl::Atom<int> pdg{ Name("pdgCode"), Comment("PDG code to use")};
-          fhicl::Atom<int> proc{ Name("processCode"), Comment("Process code to use")};
-          fhicl::Atom<size_t> mindigi{ Name("minStrawDigiMC"), Comment("Minimum number of StrawDigiMCs")};
-          fhicl::Atom<art::InputTag> strawDigiMCs { Name("StrawDigiMCs"), Comment("StrawDigiMC Collection")};
-        };
+      struct Config {
+        fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
+        fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag Level"), 0};
+        fhicl::Atom<int> print{ Name("printLevel"), Comment("Print Level"), 0};
+        fhicl::Atom<int> pdg{ Name("pdgCode"), Comment("PDG code to use")};
+        fhicl::Atom<int> proc{ Name("processCode"), Comment("Process code to use")};
+        fhicl::Atom<size_t> mindigi{ Name("minStrawDigiMC"), Comment("Minimum number of StrawDigiMCs")};
+        fhicl::Atom<art::InputTag> strawDigiMCs { Name("StrawDigiMCs"), Comment("StrawDigiMC Collection")};
+      };
 
-        using Parameters = art::EDProducer::Table<Config>;
-        explicit MakeKalSeedMC(const Parameters& config);
+      using Parameters = art::EDProducer::Table<Config>;
+      explicit MakeKalSeedMC(const Parameters& config);
 
       private:
-        void produce(art::Event& e) override;
-        int debug_, diag_, printLevel_;
-        int pdg_, proc_;
-        size_t mindigi_;
-        art::InputTag sdColTag_;
-        void makeSeeds(SDMCSimCol const& sdmcsim, KalSeedCollection& kseeds, KalSeedMCCollection& kseedmcs);
+      void produce(art::Event& e) override;
+      int debug_, diag_, printLevel_;
+      int pdg_, proc_;
+      size_t mindigi_;
+      art::InputTag sdColTag_;
+      void makeSeeds(SDMCSimCol const& sdmcsim, KalSeedCollection& kseeds, KalSeedMCCollection& kseedmcs);
     };
     MakeKalSeedMC::MakeKalSeedMC(const Parameters& config) :
       EDProducer(config),
@@ -96,11 +96,11 @@ namespace mu2e {
             break;
           }
         }
-        if(!found)sdmcsims.emplace_back(sdmc.simParticle(),index);
+        if(!found)sdmcsims.emplace_back(sdmc.earlyStrawGasStep()->simParticle(),index);
       }
       // find collections of StrawDigiMCs that meet requirements
       for(auto const& sdmcsim : sdmcsims) {
-        if(sdmcsim.simp_->pdgCode() == pdg_ && sdmcsim.simp_->processCode() == proc_  && sdmcsim.indices_.size() > mindigi_){
+        if(sdmcsim.simp_->pdgId() == pdg_ && sdmcsim.simp_->creationCode() == proc_  && sdmcsim.indices_.size() > mindigi_){
           makeSeeds(sdmcsim,*kseeds,*kseedmcs);
         }
       }
@@ -108,9 +108,9 @@ namespace mu2e {
       event.put(move(kseedmcs));
 
     }
-  }
-  void MakeKalSeedMC::makeSeeds(SDMCSimCol const& sdmcsim, KalSeedCollection& kseeds, KalSeedMCCollection& kseedmcs) {
+    void MakeKalSeedMC::makeSeeds(SDMCSimCol const& sdmcsim, KalSeedCollection& kseeds, KalSeedMCCollection& kseedmcs) {
 
+    }
   }
 
 }
