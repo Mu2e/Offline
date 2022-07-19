@@ -149,7 +149,7 @@ namespace mu2e {
       if(!shu->useStrawHitCluster()){ // only update the state if the updater doesn't operate on clusters
         CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
         if(ca.usable())
-          whstate_ = pshu->wireHitState(ca.tpData(),straw_);
+          whstate_ = shu->wireHitState(ca.tpData(),straw_);
         else
           whstate_ = WireHitState::forcedinactive;
       }
@@ -189,7 +189,7 @@ namespace mu2e {
         // distance residual isn't used when drift is
       } else {
         // Null state. interpret DOCA against the wire directly as a residual.  We have to take the DOCA sign out of the derivatives
-        resids[dresid] = Residual(fabs(ptca_.doca()),nhinfo_.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
+        resids[dresid] = Residual(ptca_.doca(),nhinfo_.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
         // optionally also constrain the time
         if(nhinfo_.usetime_){
           // time residual is deltaT
