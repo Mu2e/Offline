@@ -4,9 +4,7 @@
 #ifndef Mu2eKinKal_NullStrawHitUpdater_hh
 #define Mu2eKinKal_NullStrawHitUpdater_hh
 
-#include "KinKal/Trajectory/ClosestApproachData.hh"
-#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
-#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdater.hh"
 #include <tuple>
 
 namespace mu2e {
@@ -14,21 +12,29 @@ namespace mu2e {
   class ComboHit;
   class StrawResponse;
   // always set the wire hit state to null; used for seed fitting
-  class NullStrawHitUpdater {
+  class NullStrawHitUpdater : public StrawHitUpdater {
     public:
-      using NSHUConfig = std::tuple<float,float>;
+      using NSHUConfig = std::tuple<float,float,float,float,bool,bool>;
       NullStrawHitUpdater(NSHUConfig const& nsuconfig) {
         maxdoca_ = std::get<0>(nsuconfig);
         dvar_ = std::get<1>(nsuconfig);
+        dt_ = std::get<2>(nsuconfig);
+        tvar_ = std::get<3>(nsuconfig);
+        usetime_ = std::get<4>(nsuconfig);
+        uptca_ = std::get<5>(nsuconfig);
       }
-      WireHitState wireHitState(ClosestApproachData const& tpdata ) const;
-      void timeResid(ClosestApproachData const& tpdata, ComboHit const& chit,double& dt, double& dtvar) const;
-      auto maxDOCA() const { return maxdoca_; }
-      auto distVariance() const { return dvar_; }
-      StrawHitUpdaters::algorithm algorithm() const { return StrawHitUpdaters::null; }
-   private:
+      WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw ) const override;
+      NullHitInfo nullHitInfo(StrawResponse const& sresponse,Straw const& straw) const override;
+      StrawHitUpdaters::algorithm algorithm() const override { return StrawHitUpdaters::null; }
+      bool useUnbiasedClosestApproach() const override { return uptca_; }
+      bool useStrawHitCluster() const override { return false; }
+    private:
       double maxdoca_; // maximum DOCA to still use a hit
       double dvar_; // variance to assign to distance
+      double dt_; // residual combohit dt; should be calibrated out TODO
+      double tvar_; // time variance; should come from ComboHit
+      bool usetime_; // use time information
+      bool uptca_; // use unbiased PTCA info
   };
 }
 #endif

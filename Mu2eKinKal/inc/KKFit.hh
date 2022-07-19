@@ -12,7 +12,6 @@
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
-#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 // art includes
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Handle.h"

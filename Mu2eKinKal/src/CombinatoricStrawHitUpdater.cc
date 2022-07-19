@@ -1,7 +1,35 @@
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 #include <algorithm>
 #include <iostream>
 namespace mu2e {
+  NullHitInfo CombinatoricStrawHitUpdater::nullHitInfo(StrawResponse const& sresponse, Straw const& straw) const {
+    NullHitInfo nhinfo;
+    // compute time and distance parameters used for null ambiguity (wire constraint)
+    static bool first(true);
+    if(first){
+      // defer evaluation as StrawResponse is needed.  This should be a prodition FIXME
+      // scan the drift info and take the average
+      static const unsigned nscan(10);
+      static const double dstep = mindoca_/(nscan-1);
+      toff_ = tvar_ = 0.0;
+      for(unsigned iscan=0;iscan<nscan;++iscan){
+        double dist=iscan*dstep;
+        auto dinfo = sresponse.driftInfoAtDistance(straw.id(),dist,0.0);
+        toff_ += dinfo.time;
+        tvar_ += dinfo.variance;
+      }
+      toff_ /= nscan; tvar_ /= nscan;
+      first = false;
+    }
+    nhinfo.toff_ = toff_;
+    nhinfo.tvar_ = tvar_;
+    nhinfo.dvar_ = dvar_;
+    nhinfo.usetime_ = nulltime_;
+    return nhinfo;
+  }
+
 
   double CombinatoricStrawHitUpdater::penalty(WireHitState const& whstate) const {
     if(!whstate.active())

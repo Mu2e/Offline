@@ -8,8 +8,7 @@
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/General/Weights.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
-#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
-#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdater.hh"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -30,7 +29,7 @@ namespace mu2e {
   };
   using ClusterScoreCOL = std::vector<ClusterScore>;
 
-  class CombinatoricStrawHitUpdater {
+  class CombinatoricStrawHitUpdater : public StrawHitUpdater {
     public:
       using CSHUConfig = std::tuple<float,float,float,float,bool,bool,int>;
       // struct to sort hit states by chisquared value
@@ -53,7 +52,14 @@ namespace mu2e {
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right};
         else
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::right};
+        toff_ = tvar_ = 0.0;
       }
+      // base class interface: note the WireHitState function isn't used
+      WireHitState wireHitState(ClosestApproachData const& tpdata,Straw const& straw) const override { return WireHitState(WireHitState::inactive); }
+      NullHitInfo nullHitInfo(StrawResponse const& sresponse,Straw const& straw) const override;
+      StrawHitUpdaters::algorithm algorithm() const override { return StrawHitUpdaters::Combinatoric; }
+      bool useUnbiasedClosestApproach() const override { return false; }
+      bool useStrawHitCluster() const override { return true; }
 
       ClusterScore selectBest(ClusterScoreCOL& cscores) const; // find the best cluster configuration given the score for each
       double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
@@ -65,7 +71,6 @@ namespace mu2e {
       auto allowNull() const { return allownull_; }
       auto nullTime() const { return nulltime_; }
       auto distVariance() const { return dvar_; }
-      StrawHitUpdaters::algorithm algorithm() const { return StrawHitUpdaters::Combinatoric; }
       // the work is done here
       template <class KTRAJ> void updateCluster(KKStrawHitCluster<KTRAJ>& cluster,KinKal::MetaIterConfig const& miconfig) const;
     private:
@@ -78,7 +83,9 @@ namespace mu2e {
       int diag_; // diag print level
       WHSCOL allowed_; // allowed states
       double wireHitRank(WHSCOL const& whscol) const; // rank wire hit states by 'conservativeness'
-      double dvar_; // distance variance
+      double dvar_; // null hit distance variance
+      mutable double toff_; // null hit time offset cache
+      mutable double tvar_; // null hit time variance cache
   };
   std::ostream& operator <<(std::ostream& os, ClusterScore const& cscore );
 }

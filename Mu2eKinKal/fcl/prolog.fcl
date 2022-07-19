@@ -51,9 +51,9 @@ Mu2eKinKal : {
       [ 1.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 10.0, 2.8],
-      [ 8.0, 2.8 ],
-      [ 7.0, 2.8 ]
+      [ 10.0, 2.8, 0.85, 50.0, true ],
+      [ 8.0 , 2.8, 0.85, 50.0, true ],
+      [ 7.0 , 2.8, 0.85, 50.0, true ]
     ]
     StrawXingUpdaterSettings : [
       [-1.0, 10., 10.0 , true ],
@@ -78,7 +78,7 @@ Mu2eKinKal : {
       [ 0.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 6.0, 2.8 ]
+      [ 6.0, 2.8, 0.85, 50.0, true ]
     ]
     StrawXingUpdaterSettings : [
       [-1.0, 10.0, 10.0, true  ]
