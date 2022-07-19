@@ -1,6 +1,6 @@
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/DOCAStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/PTCAStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
@@ -36,7 +36,7 @@ namespace mu2e {
       unsigned ndoca, nnull, ncomb, nnone;
       ndoca = nnull = ncomb = nnone= 0; // count how many updater configs have been seen
       std::vector<NullStrawHitUpdater::NSHUConfig> nhusettings;
-      std::vector<DOCAStrawHitUpdater::DSHUConfig> dshusettings;
+      std::vector<PTCAStrawHitUpdater::DSHUConfig> dshusettings;
       std::vector<CombinatoricStrawHitUpdater::CSHUConfig> chusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
       nhusettings = fitconfig.nhuConfig().value_or(nhusettings);
@@ -50,8 +50,8 @@ namespace mu2e {
         auto& miconfig = config.schedule_[imeta];
         if(ialg == StrawHitUpdaters::null) {
           miconfig.addUpdater(std::any(NullStrawHitUpdater(nhusettings.at(nnull++))));
-        } else if(ialg == StrawHitUpdaters::DOCA) {
-          miconfig.addUpdater(std::any(DOCAStrawHitUpdater(dshusettings.at(ndoca++))));
+        } else if(ialg == StrawHitUpdaters::PTCA) {
+          miconfig.addUpdater(std::any(PTCAStrawHitUpdater(dshusettings.at(ndoca++))));
         } else if(ialg == StrawHitUpdaters::Combinatoric) {
           miconfig.addUpdater(std::any(CombinatoricStrawHitUpdater(chusettings.at(ncomb++))));
         } else if(ialg == StrawHitUpdaters::none) {

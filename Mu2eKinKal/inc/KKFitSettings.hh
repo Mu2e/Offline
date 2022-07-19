@@ -35,12 +35,12 @@ namespace mu2e {
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,int>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
           " 'Temperature (dimensionless)', 'StrawHitUpdater algorithm'") };
-      using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float>>;
+      using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool>>;
       NullStrawHitUpdaterSettings nhuConfig{ Name("NullStrawHitUpdaterSettings"), Comment("NullStrawHitUpdater settings, format: \n"
           " 'Maximum wire DOCA to use hit', 'Wire DOCA variance'") };
-      using DOCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,bool>>;
-      DOCAStrawHitUpdaterSettings dhuConfig{ Name("DOCAStrawHitUpdaterSettings"), Comment("DOCAStrawHitUpdater settings, format: \n"
-          " 'Maximum wire DOCA to use hit', 'Minimum DOCA to use L/R ambiguity', 'Maximum abs(Dt) to use a hit', 'Use Unbiased DOCA info?'") };
+      using PTCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool>>;
+      PTCAStrawHitUpdaterSettings dhuConfig{ Name("PTCAStrawHitUpdaterSettings"), Comment("PTCAStrawHitUpdater settings, format: \n"
+          " 'Minimum DOCA to use L/R ambiguity', 'Maximum wire DOCA to use hit', 'Minimum Dt to use L/R ambiguity', 'Maximum Dt to use a hit', 'Use Unbiased DOCA info?'") };
       using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
           " 'Inactive hit x^2 penalty', 'Null ambiguity x^2 penalty', 'Minimum significant x^2 difference', 'minimum drift DOCA', 'allow Null ambiguity','Use Null Time residual', 'diag level'") };
