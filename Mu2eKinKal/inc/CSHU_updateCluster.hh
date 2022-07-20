@@ -85,10 +85,13 @@ namespace mu2e {
             if(resid.active() && (whstate.useDrift() || (iresid==KKSTRAWHIT::dresid || nulltime_))){
              // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
-              double pvar = fabs(ROOT::Math::Similarity(resid.dRdP(),cparams.covariance()));
+              double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());
 //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
-              if(diag_ > 0 && pvar<0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
-                << " determinant = " << determinant << std::endl;
+              if(pvar<0){
+                if(diag_ > 0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
+                  << " determinant = " << determinant << std::endl;
+                pvar = resid.parameterVariance();
+              }
               Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
               chisq += uresid.chisq();
               ++ndof;

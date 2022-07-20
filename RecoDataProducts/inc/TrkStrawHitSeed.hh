@@ -15,14 +15,14 @@
 #include <functional>
 namespace mu2e {
   struct TrkStrawHitSeed {
-    TrkStrawHitSeed() : _index(0), _ambig(0), _algo(-1), _edep(0),  _htime(0), _wdist(0), _werr(0),
-    _ptoca(0),
+    TrkStrawHitSeed() : _index(0), _ambig(0), _algo(-1), _edep(0),  _htime(0), _wdist(0), _werr(0), _dtime(0),
+    _ptoca(0),_stoca(0),
     _wdoca(0), _wdocavar(0), _wdt(0), _wtocavar(0),
     _doca(0.0), _docavar(0), _dt(0), _tocavar(0),
     _upos(0),
     _tresid(0), _tresidmvar(0), _tresidpvar(0),
     _dresid(0), _dresidmvar(0), _dresidpvar(0),
-    _trklen(0), _hitlen(0), _rdrift(0), _dtime(0), _stime(0), _rerr(0)    {}
+    _trklen(0), _hitlen(0), _rdrift(0), _stime(0), _rerr(0)    {}
 
     //KinKal constructor
     TrkStrawHitSeed(StrawHitIndex index, ComboHit const& chit,
@@ -32,15 +32,15 @@ namespace mu2e {
         int whstate, int algo) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(chit.flag()), _ambig(whstate), _algo(algo),
-      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()),_werr(chit.wireRes()),
-      _ptoca(refptca.particleToca()),
+      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()),_werr(chit.wireRes()), _dtime(chit.driftTime()),
+      _ptoca(refptca.particleToca()),_stoca(refptca.sensorToca()),
       _wdoca(refptca.doca()),_wdocavar(refptca.docaVar()),
       _wdt(refptca.deltaT()), _wtocavar(refptca.tocaVar()),
       _doca(fitptca.doca()),_docavar(fitptca.docaVar()),
       _dt(fitptca.deltaT()), _tocavar(fitptca.tocaVar()),
       _tresid(utresid.value()),_tresidmvar(utresid.measurementVariance()),_tresidpvar(utresid.parameterVariance()),
       _dresid(udresid.value()),_dresidmvar(udresid.measurementVariance()),_dresidpvar(udresid.parameterVariance()),
-      _rdrift(0.0), _dtime(0.0), _stime(0.0), _rerr(0.0)
+      _rdrift(0.0), _stime(0.0), _rerr(0.0)
     {
       // correct for end sign to return to Mu2e convention
       double endsign = 2.0*(chit.driftEnd()-0.5);
@@ -55,9 +55,11 @@ namespace mu2e {
         Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(flag), _ambig(ambig), _algo(-1),
-      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _ptoca(t0._t0),
+      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()),
+      _dtime(chit.driftTime()),
+      _ptoca(t0._t0),_stoca(chit.time()-stime),
        _wdoca(wdoca), _wdocavar(rerr*rerr), _wdt(dt), _wtocavar(t0._t0err*t0._t0err), _doca(wdoca), _docavar(rerr*rerr), _dt(dt), _tocavar(t0._t0err*t0._t0err),_upos(upos),
-      _t0(t0), _trklen(trklen), _hitlen(hitlen), _rdrift(rdrift), _dtime(chit.driftTime()), _stime(stime), _rerr(rerr){}
+      _t0(t0), _trklen(trklen), _hitlen(hitlen), _rdrift(rdrift), _stime(stime), _rerr(rerr){}
 
     // accessors
     auto index() const { return _index; }
@@ -70,7 +72,9 @@ namespace mu2e {
     auto const& driftEnd() const { return _end; }
     auto wireDist() const { return _wdist; }
     auto wireRes() const { return _werr; }
+    auto TOTDriftTime() const { return _dtime; }
     auto particleTOCA() const { return _ptoca; }
+    auto sensorTOCA() const { return _stoca; }
     auto fitDOCA() const { return _doca; }
     auto fitDOCAVar() const { return _docavar; }
     auto fitDt() const { return _dt; }
@@ -93,7 +97,6 @@ namespace mu2e {
     Float_t hitLen() const { return _hitlen; }
     Float_t driftRadius() const { return _rdrift; }
     Float_t signalTime() const { return _stime; }
-    Float_t TOTDriftTime() const { return _dtime; }
     Float_t radialErr() const { return _rerr; }
     Float_t wireDOCA() const { return _wdoca; }
     Int_t ambig() const { return _ambig; }
@@ -110,7 +113,9 @@ namespace mu2e {
     Float_t         _htime;   // raw hit time
     Float_t         _wdist;       // raw hit U position
     Float_t         _werr;    // raw hit U position error estimate
+    Float_t         _dtime;   // drift time from TOT for this hit
     float_t         _ptoca;    // reference particle time of closest approach (TOCA)
+    float_t         _stoca;    // reference sensor time of closest approach (TOCA)
     Float_t         _wdoca, _wdocavar;   // reference (biased) DOCA from the track to the wire, signed by the angular momentum WRT the wire and the measurement end (and variance)
     Float_t         _wdt, _wtocavar;   // reference (biased) time difference (and variance) at POCA
     Float_t         _doca, _docavar; // unbiaed DOCA (and variance)
@@ -124,7 +129,6 @@ namespace mu2e {
     float_t     _trklen;    // track flightlength
     float_t     _hitlen;    // hit flightlength
     Float_t     _rdrift;  // drift radius for this hit
-    Float_t     _dtime;   // drift time from TOT for this hit
     Float_t     _stime;   // signal propagation time for this hit, to the nearest end
     Float_t     _rerr;    // intrinsic radial error
   };
