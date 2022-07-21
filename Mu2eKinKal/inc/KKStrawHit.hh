@@ -207,7 +207,6 @@ namespace mu2e {
     return resids_[ires];
   }
 
-
   template<class KTRAJ> void KKStrawHit<KTRAJ>::print(std::ostream& ost, int detail) const {
     ost << " KKStrawHit time " << this->time();
     switch(whstate_.state_) {
