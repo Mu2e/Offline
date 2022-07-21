@@ -7,10 +7,8 @@ namespace mu2e {
   NullHitInfo CombinatoricStrawHitUpdater::nullHitInfo(StrawResponse const& sresponse, Straw const& straw) const {
     NullHitInfo nhinfo;
     // compute time and distance parameters used for null ambiguity (wire constraint)
-    static bool first(true);
-    if(first){
-      // defer evaluation as StrawResponse is needed.  This should be a prodition FIXME
-      // scan the drift info and take the average
+    // scan the drift info and take the average.  This should be in StrawResponse  FIXME
+    if(tvar_ <= 0.0){
       static const unsigned nscan(10);
       static const double dstep = mindoca_/(nscan-1);
       toff_ = tvar_ = 0.0;
@@ -21,7 +19,6 @@ namespace mu2e {
         tvar_ += dinfo.variance;
       }
       toff_ /= nscan; tvar_ /= nscan;
-      first = false;
     }
     nhinfo.toff_ = toff_;
     nhinfo.tvar_ = tvar_;

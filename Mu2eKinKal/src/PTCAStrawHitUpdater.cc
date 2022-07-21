@@ -22,8 +22,7 @@ namespace mu2e {
   NullHitInfo PTCAStrawHitUpdater::nullHitInfo(StrawResponse const& sresponse, Straw const& straw) const {
     NullHitInfo nhinfo;
     // compute time and distance parameters used for null ambiguity (wire constraint)
-    static bool first(true);
-    if(first){
+    if(tvar_ <= 0.0){
       // defer evaluation as StrawResponse is needed.  This should be a prodition FIXME
       // scan the drift info and take the average
       static const unsigned nscan(10);
@@ -36,7 +35,6 @@ namespace mu2e {
         tvar_ += dinfo.variance;
       }
       toff_ /= nscan; tvar_ /= nscan;
-      first = false;
     }
     nhinfo.toff_ = toff_;
     nhinfo.tvar_ = tvar_;
