@@ -22,7 +22,7 @@ fi
 
 # Learn if the extra products needed for the trigger are active.
 # Use mu2e_artdaq_core as a proxy for the ensemble.
-if [ "`ups active | grep mu2e_artdaq_core`" != "" ]; then
+if [ "`ups active | grep artdaq_core_mu2e`" != "" ]; then
    haveTrigger=".trig"
 else
    haveTrigger=""
