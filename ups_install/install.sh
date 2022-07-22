@@ -11,7 +11,7 @@ export ${MU2E_SETUP_BUILDOPTS}
 export DEBUG_LEVEL=${MUSE_BUILD}
 export PACKAGE_NAME=offline
 export PACKAGE_SOURCE=${MUSE_WORK_DIR}/Offline
-export PACKAGE_VERSION=d10_10_01
+export PACKAGE_VERSION=d10_17_00
 
 # Check that the installation directoy has been defined.
 if [ "${PRODUCTS_INSTALL}" = '' ];then
