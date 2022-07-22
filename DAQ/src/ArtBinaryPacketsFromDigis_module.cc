@@ -28,10 +28,10 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
-// mu2e-artdaq-core includes
-#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
-#include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
-#include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
+// artdaq-core-mu2e includes
+#include "artdaq-core-mu2e/Overlays/CRVFragment.hh"
+#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
 
 // pci_linux_kernel_module includes
 #include "dtcInterfaceLib/DTC_Packets.h"
