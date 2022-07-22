@@ -53,10 +53,10 @@ Common:
   Action = setup
     prodDir()
     setupEnv()
-    envSet (OFFLINE_INC, \${OFFLINE_DIR}/include/Offline )
+    envSet (OFFLINE_INC, \${OFFLINE_DIR}/include )
     envSet (MU2E_BASE_RELEASE, \${OFFLINE_DIR} )
-    envSet (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/config/Offline:\${MU2E_DATA_PATH} )
-    envSet (FHICL_FILE_PATH, \${OFFLINE_DIR}/config/Offline:\${OFFLINE_DIR}/config/Offline/fcl )
+    envSet (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/config:\${MU2E_DATA_PATH}:/cvmfs/mu2e.opensciencegrid.org/DataFiles )
+    envSet (FHICL_FILE_PATH, \${OFFLINE_DIR}/config:\${OFFLINE_DIR}/config/Offline/fcl )
     envSet (OFFLINE_VERSION, \${UPS_PROD_VERSION} )
     pathAppend( ROOT_INCLUDE_PATH, \${OFFLINE_INC})
 
