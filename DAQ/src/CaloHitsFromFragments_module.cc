@@ -10,9 +10,9 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
-#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
-#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
+#include "artdaq-core-mu2e/Overlays/Mu2eEventFragment.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
