@@ -103,25 +103,35 @@ Mu2eKinKal : {
       [ 2.0, 1 ],
       [ 1.0, 1 ],
       [ 0.5, 1 ],
+      [ 0.0, 1 ],
+      [ 0.0, 1 ],
+      [ 0.0, 1 ],
+      [ 0.0, 1 ],
       [ 0.0, 1 ]
-      #      [ 0.5, 10 ],
-      # [ 0.0, 10 ]
     ]
     NullStrawHitUpdaterSettings : [
       [ 5.0, 2.1, 0.85, 50.0, true , false ]
     ]
     PTCAStrawHitUpdaterSettings : [
-      [ 0.5, 5.0, 5.0, 50.0, true, true ],
-      [ 0.5, 4.5, 5.0, 50.0, true, true ],
-      [ 0.5, 4.0, 5.0, 50.0, true, true ],
-      [ 0.5, 4.0, 5.0, 50.0, true, true ]
+      [ 0.5, 5.0, 6.0, 50.0, true, true ],
+      [ 0.5, 5.0, 6.0, 50.0, true, true ],
+      [ 0.5, 5.0, 6.0, 50.0, true, true ],
+      [ 0.5, 5.0, 6.0, 50.0, true, true ],
+      [ 0.4, 5.0, 6.0, 50.0, true, true ],
+      [ 0.3, 5.0, 6.0, 50.0, true, true ],
+      [ 0.2, 5.0, 6.0, 50.0, true, true ],
+      [ 0.1, 5.0, 6.0, 50.0, true, true ]
     ]
     StrawXingUpdaterSettings : [
-      [1.0, 5.0, 5.0, true ],
-      [0.5, 4.0, 4.0, true ],
-      [0.4, 3.0, 4.0, true ],
-      [0.3, 3.0, 4.0, true ],
-      [0.3, 3.0, 4.0, true ]
+      [1.0, 5.0, 5.0 , false ],
+      [0.5, 4.0, 4.0 , false ],
+      [0.4, 3.0, 4.0 , false ],
+      [0.3, 3.0, 4.0 , false ],
+      [0.3, 3.0, 4.0 , false ],
+      [0.3, 3.0, 4.0 , false ],
+      [0.3, 3.0, 4.0,  false ],
+      [0.3, 3.0, 4.0,  false ],
+      [0.3, 3.0, 4.0 , false ]
     ]
     #    CombinatoricStrawHitUpdaterSettings : [
       #     [25.0, 2.0, 0.5, 0.5, 0],
@@ -192,6 +202,12 @@ Mu2eKinKal : {
     # drift fits, with BField corrections
     KKDePDriftFit: @local::Mu2eKinKal.KKDriftFit
     KKDeMDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKUePDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKUeMDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKDmuPDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKDmuMDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKUmuPDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKUmuMDriftFit: @local::Mu2eKinKal.KKDriftFit
 
   }
   filters : {
@@ -207,5 +223,17 @@ Mu2eKinKal.producers.KKDeMDriftFit.Mu2eSettings.FitParticle : 11
 Mu2eKinKal.producers.KKDeMDriftFit.Mu2eSettings.FitDirection : 0
 Mu2eKinKal.producers.KKDePDriftFit.Mu2eSettings.FitParticle : -11
 Mu2eKinKal.producers.KKDePDriftFit.Mu2eSettings.FitDirection : 0
+Mu2eKinKal.producers.KKUeMDriftFit.Mu2eSettings.FitParticle : 11
+Mu2eKinKal.producers.KKUeMDriftFit.Mu2eSettings.FitDirection : 1
+Mu2eKinKal.producers.KKUePDriftFit.Mu2eSettings.FitParticle : -11
+Mu2eKinKal.producers.KKUePDriftFit.Mu2eSettings.FitDirection : 1
+Mu2eKinKal.producers.KKDmuMDriftFit.Mu2eSettings.FitParticle : 13
+Mu2eKinKal.producers.KKDmuMDriftFit.Mu2eSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDmuPDriftFit.Mu2eSettings.FitParticle : -13
+Mu2eKinKal.producers.KKDmuPDriftFit.Mu2eSettings.FitDirection : 0
+Mu2eKinKal.producers.KKUmuMDriftFit.Mu2eSettings.FitParticle : 13
+Mu2eKinKal.producers.KKUmuMDriftFit.Mu2eSettings.FitDirection : 1
+Mu2eKinKal.producers.KKUmuPDriftFit.Mu2eSettings.FitParticle : -13
+Mu2eKinKal.producers.KKUmuPDriftFit.Mu2eSettings.FitDirection : 1
 
 END_PROLOG
