@@ -263,9 +263,9 @@ namespace mu2e {
             adcs.push_back(adc[0]);
           }
 
-          // Create the STMDigi and put it in the vent
+          // Create the STMDigi and put it in the event
           STMTrigType trigType(trigger_header[0].getTriggerMode(), channel_, STMDataType::kUnsuppressed);
-          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigType, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, trigger_header[0].getNDroppedPackets(), adcs);
+          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigType, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, 0, STMDigiFlag::kOK, adcs);
           outputSTMDigis->push_back(stm_digi);
         }
         else { return false; }
