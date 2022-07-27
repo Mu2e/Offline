@@ -81,7 +81,9 @@ namespace mu2e {
       for (int i_peak = 0; i_peak < peaks->npeaks; ++i_peak) {
         std::vector<int16_t> mwd_adcs;
         mwd_adcs.push_back(peaks->peak_heights.at(i_peak));
-        STMDigi stm_digi(digi.trigNum(), STMTrigType(digi.trigType().mode(), digi.trigType().channel(), STMDataType::kMWD), digi.trigTime()+(peaks->peak_times.at(i_peak))*1e3, 0, baseline.at(0), baseline.at(1), STMDigiFlag::kOK, mwd_adcs);
+
+        uint32_t extra = ((uint32_t)baseline.at(1) << 16) | ((uint32_t)baseline.at(0)); // RMS << Mean
+        STMDigi stm_digi(digi.trigNum(), STMTrigType(digi.trigType().mode(), digi.trigType().channel(), STMDataType::kMWD), digi.trigTime()+(peaks->peak_times.at(i_peak))*1e3, 0, extra, STMDigiFlag::kOK, mwd_adcs);
         outputSTMDigis->push_back(stm_digi);
       }
     }
