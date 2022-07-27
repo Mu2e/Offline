@@ -2,6 +2,10 @@
 #define RecoDataProducts_STMDigi_hh
 //
 // Data product that represents the digitized signal coming from the STM
+// The idea is that we will use the same data product for all of:
+// - unsuppressed digis,
+// - zero-suppressed digis, and
+// - processed digis (i.e. MWD and pulse-quality)
 //
 
 // C++ includes
