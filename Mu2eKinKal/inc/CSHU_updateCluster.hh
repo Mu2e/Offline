@@ -82,7 +82,7 @@ namespace mu2e {
           shptr->setResiduals(miconfig,whstate,resids);
           for(size_t iresid= 0; iresid < resids.size(); ++iresid) {
             auto const& resid = resids[iresid];
-            if(resid.active() && (whstate.useDrift() || (iresid==KKSTRAWHIT::dresid || nulltime_))){
+            if(resid.active() && (whstate.useDrift() || (iresid==Mu2eKinKal::dresid || nulltime_))){
              // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
               double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());

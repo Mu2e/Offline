@@ -53,6 +53,7 @@ namespace mu2e {
         else
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::right};
         toff_ = tvar_ = 0.0;
+        std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << mindoca_ << " " << allownull_ << " " << nulltime_ << std::endl;
       }
       // base class interface: note the WireHitState function isn't used
       WireHitState wireHitState(ClosestApproachData const& tpdata,Straw const& straw) const override { return WireHitState(WireHitState::inactive); }

@@ -470,25 +470,18 @@ namespace mu2e {
       Residual tres, dres;
       if(kktrk.fitStatus().usable()) {
         // compute unbiased residuals
-        tres = strawhit->residual(0);
-        // if this hit used drift information, force the computation of distance residual
-        if(strawhit->hitState().useDrift()){
-          static WireHitState null(WireHitState::null);
-          RESIDCOL resids;
-          auto const& miconfig = kktrk.config().schedule().back();
-          strawhit->setResiduals(miconfig,null,resids);
-          dres = resids[1];
-        } else {
-          dres = strawhit->residual(1);
-        }
+        dres = strawhit->residual(Mu2eKinKal::dresid);
+        if(strawhit->refResidual(Mu2eKinKal::tresid).active())
+          tres = strawhit->residual(Mu2eKinKal::tresid);
       } else {
-        tres = strawhit->refResidual(0);
-        dres = strawhit->refResidual(1);
+        tres = strawhit->refResidual(Mu2eKinKal::tresid);
+        dres = strawhit->refResidual(Mu2eKinKal::dresid);
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
           strawhit->closestApproach().tpData(),
           strawhit->unbiasedClosestApproach().tpData(),
-          tres, dres, strawhit->hitState().state_, strawhit->updaterAlgorithm());
+          tres, dres, strawhit->driftInfo(),
+          strawhit->hitState().state_, strawhit->updaterAlgorithm());
     }
     if(kktrk.caloHits().size() > 0){
       auto const& calohit = kktrk.caloHits().front(); // for now take the front: not sure if there will ever be >1 TODO

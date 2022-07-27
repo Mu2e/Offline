@@ -11,6 +11,7 @@
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "KinKal/Detector/Residual.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
+#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 #include <Rtypes.h>
 #include <functional>
 namespace mu2e {
@@ -19,16 +20,17 @@ namespace mu2e {
     _ptoca(0),_stoca(0),
     _wdoca(0), _wdocavar(0), _wdt(0), _wtocavar(0),
     _doca(0.0), _docavar(0), _dt(0), _tocavar(0),
-    _upos(0),
+    _upos(0),_rdrift(0),_rerr(0), _dvel(0), _lang(0),
     _tresid(0), _tresidmvar(0), _tresidpvar(0),
     _dresid(0), _dresidmvar(0), _dresidpvar(0),
-    _trklen(0), _hitlen(0), _rdrift(0), _stime(0), _rerr(0)    {}
+    _trklen(0), _hitlen(0), _stime(0)    {}
 
     //KinKal constructor
     TrkStrawHitSeed(StrawHitIndex index, ComboHit const& chit,
         KinKal::ClosestApproachData const& refptca,
         KinKal::ClosestApproachData const& fitptca,
         KinKal::Residual utresid, KinKal::Residual udresid,
+        DriftInfo const& dinfo,
         int whstate, int algo) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(chit.flag()), _ambig(whstate), _algo(algo),
@@ -38,9 +40,10 @@ namespace mu2e {
       _wdt(refptca.deltaT()), _wtocavar(refptca.tocaVar()),
       _doca(fitptca.doca()),_docavar(fitptca.docaVar()),
       _dt(fitptca.deltaT()), _tocavar(fitptca.tocaVar()),
+      _rdrift(dinfo.driftDistance_),_rerr(dinfo.driftDistanceError_), _dvel(dinfo.driftVelocity_),_lang(dinfo.LorentzAngle_),
       _tresid(utresid.value()),_tresidmvar(utresid.measurementVariance()),_tresidpvar(utresid.parameterVariance()),
       _dresid(udresid.value()),_dresidmvar(udresid.measurementVariance()),_dresidpvar(udresid.parameterVariance()),
-      _rdrift(0.0), _stime(0.0), _rerr(0.0)
+      _stime(0.0)
     {
       // correct for end sign to return to Mu2e convention
       double endsign = 2.0*(chit.driftEnd()-0.5);
@@ -58,8 +61,9 @@ namespace mu2e {
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()),
       _dtime(chit.driftTime()),
       _ptoca(t0._t0),_stoca(chit.time()-stime),
-       _wdoca(wdoca), _wdocavar(rerr*rerr), _wdt(dt), _wtocavar(t0._t0err*t0._t0err), _doca(wdoca), _docavar(rerr*rerr), _dt(dt), _tocavar(t0._t0err*t0._t0err),_upos(upos),
-      _t0(t0), _trklen(trklen), _hitlen(hitlen), _rdrift(rdrift), _stime(stime), _rerr(rerr){}
+      _wdoca(wdoca), _wdocavar(rerr*rerr), _wdt(dt), _wtocavar(t0._t0err*t0._t0err), _doca(wdoca), _docavar(rerr*rerr), _dt(dt), _tocavar(t0._t0err*t0._t0err),_upos(upos),
+      _rdrift(rdrift), _rerr(rerr), _dvel(0), _lang(0),
+      _t0(t0), _trklen(trklen), _hitlen(hitlen),  _stime(stime){}
 
     // accessors
     auto index() const { return _index; }
@@ -90,14 +94,14 @@ namespace mu2e {
     auto distResidual() const { return _dresid; }
     auto distResidMeasurementVariance() const { return _dresidmvar; }
     auto distResidParameterVariance() const { return _dresidpvar; }
+    auto driftRadius() const { return _rdrift; }
+    auto radialErr() const { return _rerr; }
 
     // legacy BTrk interface
     HitT0 const&  t0() const { return _t0; }
     Float_t trkLen() const { return _trklen; }
     Float_t hitLen() const { return _hitlen; }
-    Float_t driftRadius() const { return _rdrift; }
     Float_t signalTime() const { return _stime; }
-    Float_t radialErr() const { return _rerr; }
     Float_t wireDOCA() const { return _wdoca; }
     Int_t ambig() const { return _ambig; }
     //
@@ -121,6 +125,10 @@ namespace mu2e {
     Float_t         _doca, _docavar; // unbiaed DOCA (and variance)
     Float_t         _dt, _tocavar;   // fit (unbiased) dt and variance
     Float_t         _upos; // POCA position along the straw WRT the straw middle
+    Float_t         _rdrift;  // drift radius for this hit
+    Float_t         _rerr;    // intrinsic radial error
+    Float_t         _dvel;  // instantaneous drift velocity
+    Float_t         _lang; // Lorentz angle for EXB effects
     Float_t         _tresid, _tresidmvar, _tresidpvar; // unbiased time residual and associated measurement and parameter variances
     Float_t         _dresid, _dresidmvar, _dresidpvar; // unbiased distance residual and associated measurement and parameter variances
 
@@ -128,9 +136,7 @@ namespace mu2e {
     HitT0       _t0;     // time origin for this hit = track t0 + particle propagation time to this straw
     float_t     _trklen;    // track flightlength
     float_t     _hitlen;    // hit flightlength
-    Float_t     _rdrift;  // drift radius for this hit
     Float_t     _stime;   // signal propagation time for this hit, to the nearest end
-    Float_t     _rerr;    // intrinsic radial error
   };
   // binary functor to sort TrkStrawHits by StrawHit index
   struct indexcompseed : public std::binary_function<TrkStrawHitSeed,TrkStrawHitSeed, bool> {

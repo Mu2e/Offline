@@ -6,6 +6,7 @@
 #define Mu2eKinKal_PTCAStrawHitUpdater_hh
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdater.hh"
 #include <tuple>
+#include <iostream>
 
 namespace mu2e {
   // Update based just on PTCA to the wire
@@ -24,6 +25,7 @@ namespace mu2e {
         static double invthree(1.0/3.0);
         dvar_ = invthree*mindoca_*mindoca_;
         toff_ = tvar_ = 0.0; // set in update
+        std::cout << "PTCAStrawHitUpdater " << mindoca_ << " " << maxdoca_ << " " << mindt_ << " " << maxdt_ << " " << uptca_ << " " << nulltime_ << std::endl;
       }
       // set the state based on the current PTCA value
       WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw) const override;
