@@ -14,5 +14,9 @@ namespace mu2e {
     bool inDetector(KinKal::VEC3 const& point) {
       return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker FIXME!
     }
+    double LorentzAngle(KinKal::ClosestApproachData const& ptca, KinKal::VEC3 const& bdir) {
+      auto tperp = ptca.particleDirection() - ptca.particleDirection().Dot(ptca.sensorDirection())*ptca.sensorDirection();
+      return acos(tperp.Dot(bdir));
+    }
   }
 }

@@ -23,6 +23,8 @@
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/NullHitInfo.hh"
+#include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 // Other
 #include "cetlib_except/exception.h"
 #include <memory>
@@ -37,7 +39,6 @@ namespace mu2e {
   using KinKal::DVEC;
   using KinKal::CAHint;
   using RESIDCOL = std::array<Residual,2>; // should be a struct FIXME
-  //  class CombinatoricStrawHitUpdater;
 
   template <class KTRAJ> class KKStrawHit : public KinKal::ResidualHit<KTRAJ> {
     public:
@@ -47,16 +48,15 @@ namespace mu2e {
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using CA = KinKal::ClosestApproach<KTRAJ,Line>;
-      enum Dimension { tresid=0, dresid=1};  // residual dimensions; should be defined outside this class FIXME
       KKStrawHit(BFieldMap const& bfield, PTCA const& ptca,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
       unsigned nResid() const override { return 2; } // potentially 2 residuals
-      Residual const& refResidual(unsigned ires=tresid) const override;
+      Residual const& refResidual(unsigned ires=Mu2eKinKal::tresid) const override;
       auto const& refResiduals() const { return resids_; }
-      auto const& timeResidual() const { return resids_[tresid];}
-      auto const& distResidual() const { return resids_[dresid];}
+      auto const& timeResidual() const { return resids_[Mu2eKinKal::tresid];}
+      auto const& distResidual() const { return resids_[Mu2eKinKal::dresid];}
       double time() const override { return ptca_.particleToca(); }
       void updateReference(KTRAJPTR const& ktrajptr) override;
       KTRAJPTR const& refTrajPtr() const override { return ptca_.particleTrajPtr(); }
@@ -78,7 +78,8 @@ namespace mu2e {
       CA unbiasedClosestApproach() const;
       auto updater() const { return algo_; }
       void setState(MetaIterConfig const& miconfig,WireHitState const& whstate);
-    private:
+      DriftInfo driftInfo() const;
+   private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
       Line wire_; // local linear approximation to the wire of this hit, encoding all (local) position and time information.
@@ -173,37 +174,41 @@ namespace mu2e {
     this->updateWeight(miconfig);
   }
 
+  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::driftInfo() const {
+    DriftInfo dinfo;
+    dinfo.LorentzAngle_ = Mu2eKinKal::LorentzAngle(ptca_.tpData(),ptca_.particleTraj().bnom().Unit());
+    dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
+    dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_);
+    dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_,true);
+    return dinfo;
+  }
+
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
     // reset the residuals
-    resids[tresid] = resids[dresid] = Residual();
+    resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
     if(whstate.active()){
       if(whstate.useDrift()){
-        // Transldate DOCA to a drift time. ignore phi (Lorentz effects) for now: TODO
-        auto dinfo = sresponse_.driftInfoAtDistance(strawId(), fabs(ptca_.doca()), 0.0);
-        // residual itself MUST be computed WRT the reference parameters
-        double dsign = whstate.lrSign()*ptca_.lSign(); // overall sign is the product of assigned ambiguity and doca (angular momentum) sign
-        double dt = ptca_.deltaT()-dinfo.time*dsign;
-        // time differnce affects the residual both through the drift distance (DOCA) and the particle arrival time at the wire (TOCA)
-        DVEC dRdP = ptca_.dDdP()*dsign*dinfo.invSpeed - ptca_.dTdP();
-        resids[tresid] = Residual(dt,dinfo.variance,0.0,true,dRdP);
-        // distance residual isn't used when drift is
+        DriftInfo dinfo = driftInfo();
+        double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
+        double dr = whstate.lrSign()*dinfo.driftDistance_ - ptca_.doca();
+        DVEC dRdP = ptca_.lSign()*ptca_.dDdP() - whstate.lrSign()*dinfo.driftVelocity_*ptca_.dTdP();
+        resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
       } else {
         // Null state. interpret DOCA against the wire directly as a residual.  We have to take the DOCA sign out of the derivatives
-        resids[dresid] = Residual(ptca_.doca(),nhinfo_.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
+        resids[Mu2eKinKal::dresid] = Residual(ptca_.doca(),nhinfo_.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
         // optionally also constrain the time
         if(nhinfo_.usetime_){
           // time residual is deltaT
           double dt = ptca_.deltaT() - nhinfo_.toff_;
           if(algo_ == StrawHitUpdaters::null)dt -= chit_.driftTime();  // Null updater uses combo hit time
-          resids[tresid] = Residual(dt,nhinfo_.tvar_,0.0,true,-ptca_.dTdP());
+          resids[Mu2eKinKal::tresid] = Residual(dt,nhinfo_.tvar_,0.0,true,-ptca_.dTdP());
         }
-        // Note there is no correlation between distance and time residuals; the former is just from the wire position, the latter from the time measurement
       }
     }
   }
 
   template <class KTRAJ> Residual const& KKStrawHit<KTRAJ>::refResidual(unsigned ires) const {
-    if(ires >dresid)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
+    if(ires >Mu2eKinKal::tresid)throw cet::exception("RECO")<<"mu2e::KKStrawHit: Invalid residual" << std::endl;
     return resids_[ires];
   }
 
@@ -224,10 +229,10 @@ namespace mu2e {
         break;
     }
     if(detail > 0){
-      if(resids_[tresid].active())
-        ost << " Active Time " << resids_[tresid];
-      if(resids_[dresid].active())
-        ost << " Active Dist " << resids_[dresid];
+      if(resids_[Mu2eKinKal::tresid].active())
+        ost << " Active Time " << resids_[Mu2eKinKal::tresid];
+      if(resids_[Mu2eKinKal::dresid].active())
+        ost << " Active Dist " << resids_[Mu2eKinKal::dresid];
       ost << std::endl;
     }
     if(detail > 1) {
