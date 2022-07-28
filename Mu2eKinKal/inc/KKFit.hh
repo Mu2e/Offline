@@ -467,20 +467,19 @@ namespace mu2e {
     // loop over track components and store them
     fseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
-      Residual tres, dres;
+      Residual utres, udres;
       if(kktrk.fitStatus().usable()) {
         // compute unbiased residuals
-        dres = strawhit->residual(Mu2eKinKal::dresid);
-        if(strawhit->refResidual(Mu2eKinKal::tresid).active())
-          tres = strawhit->residual(Mu2eKinKal::tresid);
-      } else {
-        tres = strawhit->refResidual(Mu2eKinKal::tresid);
-        dres = strawhit->refResidual(Mu2eKinKal::dresid);
+        udres = strawhit->residual(Mu2eKinKal::dresid);
+        if(strawhit->refResidual(Mu2eKinKal::tresid).active()) utres = strawhit->residual(Mu2eKinKal::tresid);
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
           strawhit->closestApproach().tpData(),
           strawhit->unbiasedClosestApproach().tpData(),
-          tres, dres, strawhit->driftInfo(),
+          utres, udres,
+          strawhit->refResidual(Mu2eKinKal::tresid),
+          strawhit->refResidual(Mu2eKinKal::dresid),
+          strawhit->driftInfo(),
           strawhit->hitState().state_, strawhit->updaterAlgorithm());
     }
     if(kktrk.caloHits().size() > 0){

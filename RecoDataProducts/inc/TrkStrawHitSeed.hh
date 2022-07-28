@@ -1,6 +1,6 @@
 //
 //  Persistent representation of a TrkStrawHit, used in the
-//  persistent representation of the BTrk Kalman Fit
+//  persistent representation of Kalman Fit
 //  Original author: Dave Brown (LBNL) 31 Aug 2016
 //
 #ifndef RecoDataProducts_TrkStrawHitSeed_HH
@@ -21,15 +21,18 @@ namespace mu2e {
     _wdoca(0), _wdocavar(0), _wdt(0), _wtocavar(0),
     _doca(0.0), _docavar(0), _dt(0), _tocavar(0),
     _upos(0),_rdrift(0),_rerr(0), _dvel(0), _lang(0),
-    _tresid(0), _tresidmvar(0), _tresidpvar(0),
-    _dresid(0), _dresidmvar(0), _dresidpvar(0),
+    _utresid(0), _utresidmvar(0), _utresidpvar(0),
+    _udresid(0), _udresidmvar(0), _udresidpvar(0),
+    _rtresid(0), _rtresidmvar(0), _rtresidpvar(0),
+    _rdresid(0), _rdresidmvar(0), _rdresidpvar(0),
     _trklen(0), _hitlen(0), _stime(0)    {}
 
     //KinKal constructor
     TrkStrawHitSeed(StrawHitIndex index, ComboHit const& chit,
         KinKal::ClosestApproachData const& refptca,
         KinKal::ClosestApproachData const& fitptca,
-        KinKal::Residual utresid, KinKal::Residual udresid,
+        KinKal::Residual const& utresid, KinKal::Residual const& udresid,
+        KinKal::Residual const& rtresid, KinKal::Residual const& rdresid,
         DriftInfo const& dinfo,
         int whstate, int algo) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
@@ -41,9 +44,11 @@ namespace mu2e {
       _doca(fitptca.doca()),_docavar(fitptca.docaVar()),
       _dt(fitptca.deltaT()), _tocavar(fitptca.tocaVar()),
       _rdrift(dinfo.driftDistance_),_rerr(dinfo.driftDistanceError_), _dvel(dinfo.driftVelocity_),_lang(dinfo.LorentzAngle_),
-      _tresid(utresid.value()),_tresidmvar(utresid.measurementVariance()),_tresidpvar(utresid.parameterVariance()),
-      _dresid(udresid.value()),_dresidmvar(udresid.measurementVariance()),_dresidpvar(udresid.parameterVariance()),
-      _stime(0.0)
+      _utresid(utresid.value()),_utresidmvar(utresid.measurementVariance()),_utresidpvar(utresid.parameterVariance()),
+      _udresid(udresid.value()),_udresidmvar(udresid.measurementVariance()),_udresidpvar(udresid.parameterVariance()),
+      _rtresid(rtresid.value()),_rtresidmvar(rtresid.measurementVariance()),_rtresidpvar(rtresid.parameterVariance()),
+      _rdresid(rdresid.value()),_rdresidmvar(rdresid.measurementVariance()),_rdresidpvar(rdresid.parameterVariance()),
+      _trklen(0),_hitlen(0),_stime(0.0)
     {
       // correct for end sign to return to Mu2e convention
       double endsign = 2.0*(chit.driftEnd()-0.5);
@@ -65,7 +70,8 @@ namespace mu2e {
       _rdrift(rdrift), _rerr(rerr), _dvel(0), _lang(0),
       _t0(t0), _trklen(trklen), _hitlen(hitlen),  _stime(stime){}
 
-    // accessors
+
+    // legacy interface
     auto index() const { return _index; }
     auto const&  strawId() const { return _sid; }
     auto const& flag() const { return _flag; }
@@ -88,16 +94,8 @@ namespace mu2e {
     auto refDt() const { return _wdt; }
     auto reTOCAVar() const { return _wtocavar; }
     auto refPOCA_Upos() const { return _upos; }
-    auto timeResidual() const { return _tresid; }
-    auto timeResidMeasurementVariance() const { return _tresidmvar; }
-    auto timeResidParameterVariance() const { return _tresidpvar; }
-    auto distResidual() const { return _dresid; }
-    auto distResidMeasurementVariance() const { return _dresidmvar; }
-    auto distResidParameterVariance() const { return _dresidpvar; }
     auto driftRadius() const { return _rdrift; }
     auto radialErr() const { return _rerr; }
-
-    // legacy BTrk interface
     HitT0 const&  t0() const { return _t0; }
     Float_t trkLen() const { return _trklen; }
     Float_t hitLen() const { return _hitlen; }
@@ -129,8 +127,10 @@ namespace mu2e {
     Float_t         _rerr;    // intrinsic radial error
     Float_t         _dvel;  // instantaneous drift velocity
     Float_t         _lang; // Lorentz angle for EXB effects
-    Float_t         _tresid, _tresidmvar, _tresidpvar; // unbiased time residual and associated measurement and parameter variances
-    Float_t         _dresid, _dresidmvar, _dresidpvar; // unbiased distance residual and associated measurement and parameter variances
+    Float_t         _utresid, _utresidmvar, _utresidpvar; // unbiased time residual and associated measurement and parameter variances
+    Float_t         _udresid, _udresidmvar, _udresidpvar; // unbiased distance residual and associated measurement and parameter variances
+    Float_t         _rtresid, _rtresidmvar, _rtresidpvar; // reference time residual and associated measurement and parameter variances
+    Float_t         _rdresid, _rdresidmvar, _rdresidpvar; // reference distance residual and associated measurement and parameter variances
 
     // BTrk legacy payload
     HitT0       _t0;     // time origin for this hit = track t0 + particle propagation time to this straw
