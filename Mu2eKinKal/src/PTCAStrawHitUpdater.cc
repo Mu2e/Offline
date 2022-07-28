@@ -23,8 +23,8 @@ namespace mu2e {
     NullHitInfo nhinfo;
     // compute time and distance parameters used for null ambiguity (wire constraint)
     double vdriftinst = sresponse.driftInstantSpeed(straw.id(),mindoca_,0.0,true);
-    nhinfo.toff_ = 0.5*mindoca_/vdriftinst;
-    nhinfo.tvar_ = 0.25*dvar_/(vdriftinst*vdriftinst);
+    nhinfo.toff_ = 0.5*mindoca_/vdriftinst + 7.0; // temporary kludge, should be a calibration FIXME
+    nhinfo.tvar_ = dvar_/(vdriftinst*vdriftinst);
     nhinfo.dvar_ = dvar_;
     nhinfo.usetime_ = nulltime_;
     return nhinfo;
