@@ -5,17 +5,17 @@ source : { module_type : FromSTMTestBeamData
 verbosityLevel : 0
 }
 services : @local::Services.Core
-physics : { 
+physics : {
   producers : {
   }
-  filters: { 
+  filters: {
   }
   analyzers: {  }
-  TriggerPath : [ ] 
+  TriggerPath : [ ]
   EndPath : [ Output ]
 }
 
-outputs : { 
+outputs : {
   Output: {
      module_type : RootOutput
      fileName    : @nil
