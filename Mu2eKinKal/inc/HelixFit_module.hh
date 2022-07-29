@@ -304,7 +304,7 @@ namespace mu2e {
     } else {
       for(auto zpos : zsave_ ) {
         // compute the time the trajectory crosses this plane
-        double tz = kkfit_.zTime(fittraj,zpos);
+        double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
         // find the explicit trajectory piece at this time, and store the midpoint time.  This enforces uniqueness (no duplicates)
         auto const& zpiece = fittraj.nearestPiece(tz);
         savetimes.insert(zpiece.range().mid());
