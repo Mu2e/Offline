@@ -109,9 +109,9 @@ namespace mu2e {
       else
         sxconfig_.hitstate_ = WireHitState::inactive;
       if(sxconfig_.scalevar_)
-        varscale_ = miconfig.varianceScale();
+        varscale_ = sxconfig_.varscale_*miconfig.varianceScale();
       else
-        varscale_ = 1.0;
+        varscale_ = sxconfig_.varscale_;
     }
     // find the material xings from gas, straw wall, and wire
     smat_.findXings(tpca_.tpData(),sxconfig_,mxings_);

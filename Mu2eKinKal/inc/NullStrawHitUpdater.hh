@@ -20,8 +20,8 @@ namespace mu2e {
         dvar_ = std::get<1>(nsuconfig);
         dt_ = std::get<2>(nsuconfig);
         tvar_ = std::get<3>(nsuconfig);
-        usetime_ = std::get<4>(nsuconfig);
-        uptca_ = std::get<5>(nsuconfig);
+        uptca_ = std::get<4>(nsuconfig);
+        usetime_ = std::get<5>(nsuconfig);
       }
       WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw ) const override;
       NullHitInfo nullHitInfo(StrawResponse const& sresponse,Straw const& straw) const override;

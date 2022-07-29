@@ -52,14 +52,14 @@ Mu2eKinKal : {
     ]
     # maxdoca, dvar, toff, tvar, usetime, unbiased
     NullStrawHitUpdaterSettings : [
-      [ 100.0 , 2.8, 0.85, 50.0, true , false ],
-      [ 100.0 , 2.8, 0.85, 50.0, true , false ],
-      [ 100.0 , 2.8, 0.85, 50.0, true , false ]
+      [ 100.0 , 1.5, -3.15, 30.0, true , true ],
+      [  50.0 , 1.5, -3.15, 30.0, true , true ],
+      [  10.0 , 1.5, -3.15, 30.0, true , true ]
     ]
     StrawXingUpdaterSettings : [
-      [-1.0, 10., 10.0 , true ],
-      [-1.0, 10., 10.0 , true ],
-      [-1.0, 10., 10.0 , true ]
+      [10.0, -1.0, -1.0, 1.0, true ],
+      [10.0, -1.0, -1.0, 1.0, true ],
+      [10.0, -1.0, -1.0, 1.0, true ]
     ]
   }
 
@@ -76,13 +76,19 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      [ 2.0, 0 ],
+      [ 1.0, 0 ],
       [ 0.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 10.0, 2.8, 0.85, 50.0, true , false ]
+      [ 10.0 , 1.5, -3.15, 30.0, true , true ],
+      [  5.0 , 1.5, -3.15, 30.0, true , true ],
+      [  5.0 , 1.5, -3.15, 30.0, true , true ]
     ]
     StrawXingUpdaterSettings : [
-      [-1.0, 10.0, 10.0, true  ]
+      [10.0, -1.0, -1.0, 1.0, true ],
+      [10.0, -1.0, -1.0, 1.0, true ],
+      [10.0, -1.0, -1.0, 1.0, true ]
     ]
   }
 
@@ -99,45 +105,36 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      [ 2.0, 0 ],
       [ 1.0, 0 ],
+      [ 0.0, 0 ],
       [ 2.0, 1 ],
       [ 1.0, 1 ],
-      [ 0.5, 1 ],
-      [ 0.0, 1 ],
-      [ 0.0, 1 ],
-      [ 0.0, 1 ],
-      [ 0.0, 1 ],
       [ 0.0, 1 ]
     ]
     NullStrawHitUpdaterSettings : [
-      [ 5.0, 2.1, 0.85, 50.0, true , false ]
+      [ 10.0 , 1.5, -3.15, 30.0, true , true ],
+      [  5.0 , 1.5, -3.15, 30.0, true , true ],
+      [  5.0 , 1.5, -3.15, 30.0, true , true ]
     ]
     PTCAStrawHitUpdaterSettings : [
-      [ 0.5, 5.0, 6.0, 50.0, true, true ],
-      [ 0.5, 5.0, 6.0, 50.0, true, true ],
-      [ 0.5, 5.0, 6.0, 50.0, true, true ],
-      [ 0.5, 5.0, 6.0, 50.0, true, true ],
-      [ 0.4, 5.0, 6.0, 50.0, true, true ],
-      [ 0.3, 5.0, 6.0, 50.0, true, true ],
-      [ 0.2, 5.0, 6.0, 50.0, true, true ],
-      [ 0.1, 5.0, 6.0, 50.0, true, true ]
+      [ 0.1, 5.0, -10.0, 50.0, true, true ],
+      [ 0.1, 5.0, -10.0, 50.0, true, true ],
+      [ 0.1, 5.0, -10.0, 50.0, true, true ]
     ]
     StrawXingUpdaterSettings : [
-      [1.0, 5.0, 5.0 , false ],
-      [0.5, 4.0, 4.0 , false ],
-      [0.4, 3.0, 4.0 , false ],
-      [0.3, 3.0, 4.0 , false ],
-      [0.3, 3.0, 4.0 , false ],
-      [0.3, 3.0, 4.0 , false ],
-      [0.3, 3.0, 4.0,  false ],
-      [0.3, 3.0, 4.0,  false ],
-      [0.3, 3.0, 4.0 , false ]
+      [5.0, 3.0, 0.5, 2.0, true ],
+      [5.0, 3.0, 0.5, 2.0, true ],
+      [5.0, 3.0, 0.5, 2.0, true ],
+      [5.0, 3.0, 0.5, 2.0, true ],
+      [5.0, 3.0, 0.5, 2.0, true ],
+      [5.0, 3.0, 0.5, 2.0, true ]
     ]
     #    CombinatoricStrawHitUpdaterSettings : [
-      #     [25.0, 2.0, 0.5, 0.5, 0],
-      #     [25.0, 2.0, 0.5, 0.5, 0]
-      #    ]
- }
+    #     [25.0, 2.0, 0.5, 0.5, 0],
+    #     [25.0, 2.0, 0.5, 0.5, 0]
+    #    ]
+  }
 
   KKLOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)

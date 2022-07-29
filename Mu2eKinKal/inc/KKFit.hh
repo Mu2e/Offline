@@ -92,7 +92,6 @@ namespace mu2e {
           KKTRK& kktrk) const;
       KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& tsave) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
-      double zTime(PKTRAJ const& trak, double zpos) const; // find the time the trajectory crosses the plane perp to z at the given z position.  Note this can have multiple solutions if the track reflects in z, FIXME
       bool useCalo() const { return usecalo_; }
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
@@ -191,7 +190,7 @@ namespace mu2e {
     // create the Line trajectory from this information: signal goes towards the sipm
     Line caxis(sipmcog,ffcog,cluster->time()+caloDt_,caloPropSpeed_);
     // find the time the seed traj passes the middle of the crystal
-    double zt = zTime(ptraj,0.5*(sipmcog.Z()+ffcog.Z()));
+    double zt = Mu2eKinKal::zTime(ptraj,0.5*(sipmcog.Z()+ffcog.Z()),cluster->time());
     CAHint hint( zt, caxis.t0());
     // compute a preliminary PTCA between the seed trajectory and the cluster axis
     PTCA ptca(ptraj, caxis, hint, tprec_ );
@@ -240,7 +239,7 @@ namespace mu2e {
       if(oldhits.find(ich)==oldhits.end()){      // make sure this hit wasn't already found
         ComboHit const& strawhit = chcol[ich];
         if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_))){
-          double zt = zTime(ftraj,strawhit.pos().Z());
+          double zt = Mu2eKinKal::zTime(ftraj,strawhit.pos().Z(),strawhit.correctedTime());
           if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
             const Straw& straw = tracker.getStraw(strawhit.strawId());
             auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
@@ -281,7 +280,7 @@ namespace mu2e {
       if(tracker.planeExists(plane.id())) {
         double plz = plane.origin().z();
         // find the track position in at this plane's central z.
-        double zt = zTime(ftraj,plz);
+        double zt = Mu2eKinKal::zTime(ftraj,plz,ftraj.range().begin());
         auto plpos = ftraj.position3(zt);
         // rough check on the point radius
         double rho = plpos.Rho();
@@ -346,7 +345,7 @@ namespace mu2e {
       // test at both faces; if the track is in the right area, test the clusters on this disk
       bool test(false);
       for(int iface=0; iface<2; ++iface){
-        double zt = zTime(ftraj,ffpos.z()+iface*crystalLength);
+        double zt = Mu2eKinKal::zTime(ftraj,ffpos.z()+iface*crystalLength,ftraj.range().end());
         auto tpos = ftraj.position3(zt);
         double rho = tpos.Rho();
         if ( rho > rmin && rho < rmax ){
@@ -389,42 +388,6 @@ namespace mu2e {
     needstrackerinfo_= false;
   }
 
-  // this finds the first time at which the traj crosses the given z value, or the nearest
-  template <class KTRAJ> double KKFit<KTRAJ>::zTime(PKTRAJ const& ptraj, double zpos) const {
-    // bootstrap to find a nearby piece
-    auto bvz = ptraj.front().velocity(ptraj.front().range().begin()).Z();
-    auto evz = ptraj.back().velocity(ptraj.back().range().end()).Z();
-    auto bz = ptraj.front().position3(ptraj.front().range().begin()).Z();
-    auto ez = ptraj.back().position3(ptraj.back().range().end()).Z();
-    // test for outside the ramge.  If so, just extrapolate
-    double ztime(0.);
-    if((zpos-bz)*bvz <0.0){
-      ztime = ptraj.range().begin()-(bz-zpos)/bvz;
-    } else if((ez-zpos)*evz<0.0) {
-      ztime = ptraj.range().end()+(zpos-ez)/evz;
-    } else {
-      // if the traj is monotonic estimate the start.  Otherwise start at the beginning
-      bool monotonic = bvz*evz > 0.0;
-      double vz = monotonic ? 0.5*(bvz+evz) : bvz;
-      double zmid = monotonic ? 0.5*(bz+ez) : bz;
-      // assume linear transit to get an initial estimate
-      ztime = ptraj.range().mid() + (zpos-zmid)/vz;
-      auto zindex = ptraj.nearestIndex(ztime);
-      size_t oldzindex;
-      auto const& traj = ptraj.piece(zindex);
-      unsigned ntries(0);
-      static const unsigned maxntries(10);// this usually converges in 1 iteration, but it can oscillate with bad fits
-      do {
-        oldzindex = zindex;
-        zmid = traj.position3(traj.range().mid()).Z();
-        vz = ptraj.velocity(ptraj.range().mid()).Z();
-        ztime = traj.range().mid() + (zpos-zmid)/vz;
-        zindex = ptraj.nearestIndex(ztime);
-        ++ntries;
-      } while (ntries < maxntries && zindex != oldzindex);
-    }
-    return ztime;
-  }
 
   template <class KTRAJ> TimeRange KKFit<KTRAJ>::range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const{
     double tmin = std::numeric_limits<float>::max();
@@ -452,7 +415,7 @@ namespace mu2e {
     if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
-    double tz0 = zTime(fittraj,0.0);
+    double tz0 = Mu2eKinKal::zTime(fittraj,0.0,fittraj.range().begin());
     auto const& t0piece = fittraj.nearestPiece(tz0);
     double t0val = t0piece.paramVal(KTRAJ::t0_);
 //    double t0sig = sqrt(t0piece.paramVar(KTRAJ::t0_)); Temporary FIXME

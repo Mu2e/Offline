@@ -131,30 +131,40 @@ namespace mu2e {
     // otherwise use the time at the center of the wire
     CAHint tphint = ptca_.usable() ?  ptca_.hint() : CAHint(wire_.range().mid(),wire_.range().mid());
     ptca_ = CA(ktrajptr,wire_,tphint,precision());
-    if(!ptca_.usable()) throw cet::exception("RECO")<<"mu2e::KKStrawHit: WireHit TPOCA failure" << std::endl;
+    // check that we're on the right branch: we can move off if t0 changes a lot between iterations
+    double dz = straw().origin().z() - ptca_.particlePoca().Z();
+    if(fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
+      tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.range().mid()), wire_.range().mid());
+      ptca_ = CA(ktrajptr,wire_,tphint,precision());
+      dz = straw().origin().z() - ptca_.particlePoca().Z();
+      if(fabs(dz) >  100) whstate_ = WireHitState::forcedinactive;
+   }
+    if(!ptca_.usable())whstate_ = WireHitState::forcedinactive;
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
-    unsigned nupdaters(0);
-    auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
-    auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
-    auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
-    StrawHitUpdater const* shu(0);
-    if(cshu){ shu = cshu; ++nupdaters; }
-    if(pshu){ shu = pshu; ++nupdaters; }
-    if(nshu){ shu = nshu; ++nupdaters; }
-    if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
-    if(shu != 0){
-      algo_ = shu->algorithm();
-      nhinfo_ = shu->nullHitInfo(sresponse_,straw_);
-      if(!shu->useStrawHitCluster()){ // only update the state if the updater doesn't operate on clusters
-        CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
-        if(ca.usable())
-          whstate_ = shu->wireHitState(ca.tpData(),straw_);
-        else
-          whstate_ = WireHitState::forcedinactive;
-      }
-    } // no updater means don't change the state
+    if(whstate_ != WireHitState::forcedinactive){
+      unsigned nupdaters(0);
+      auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+      auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
+      auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
+      StrawHitUpdater const* shu(0);
+      if(cshu){ shu = cshu; ++nupdaters; }
+      if(pshu){ shu = pshu; ++nupdaters; }
+      if(nshu){ shu = nshu; ++nupdaters; }
+      if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
+      if(shu != 0){
+        algo_ = shu->algorithm();
+        nhinfo_ = shu->nullHitInfo(sresponse_,straw_);
+        if(!shu->useStrawHitCluster()){ // only update the state if the updater doesn't operate on clusters
+          CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
+          if(ca.usable())
+            whstate_ = shu->wireHitState(ca.tpData(),straw_);
+          else
+            whstate_ = WireHitState::forcedinactive;
+        }
+      } // no updater means don't change the state
+    }
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
