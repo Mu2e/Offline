@@ -118,17 +118,17 @@ Mu2eKinKal : {
       [  5.0 , 1.5, -3.15, 30.0, true , true ]
     ]
     PTCAStrawHitUpdaterSettings : [
-      [ 0.1, 5.0, -10.0, 50.0, true, true ],
-      [ 0.1, 5.0, -10.0, 50.0, true, true ],
-      [ 0.1, 5.0, -10.0, 50.0, true, true ]
+      [ 0.1, 5.0, -10.0, 50.0, true, false ],
+      [ 0.1, 5.0, -10.0, 50.0, true, false ],
+      [ 0.1, 5.0, -10.0, 50.0, true, false ]
     ]
     StrawXingUpdaterSettings : [
-      [5.0, 3.0, 0.5, 2.0, true ],
-      [5.0, 3.0, 0.5, 2.0, true ],
-      [5.0, 3.0, 0.5, 2.0, true ],
-      [5.0, 3.0, 0.5, 2.0, true ],
-      [5.0, 3.0, 0.5, 2.0, true ],
-      [5.0, 3.0, 0.5, 2.0, true ]
+      [5.0, 3.0, 0.5, 1.0, true ],
+      [5.0, 3.0, 0.5, 1.0, true ],
+      [5.0, 3.0, 0.5, 1.0, true ],
+      [5.0, 3.0, 0.5, 1.0, true ],
+      [5.0, 3.0, 0.5, 1.0, true ],
+      [5.0, 3.0, 0.5, 1.0, true ]
     ]
     #    CombinatoricStrawHitUpdaterSettings : [
     #     [25.0, 2.0, 0.5, 0.5, 0],
