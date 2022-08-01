@@ -99,11 +99,11 @@ namespace mu2e {
       auto const& strawHitClusterer() const { return shclusterer_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
-       void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
+      void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits) const;
       void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWHITCOL const& addhits, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
-     PDGCode::type tpart_;
+      PDGCode::type tpart_;
       TrkFitDirection tdir_;
       bool addmat_, usecalo_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
@@ -171,9 +171,9 @@ namespace mu2e {
       CAHint hint(ptime,htime);
       // compute PTCA between the seed trajectory and this straw
       PTCA ptca(ptraj, wline, hint, tprec_ );
-       // create the hit
+      // create the hit
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, ptca, combohit, straw, strawidx, strawresponse));
-     // create the material crossing, including this reference
+      // create the material crossing, including this reference
       if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
     }
   }
@@ -210,9 +210,9 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::extendTrack(Config const& exconfig, BFieldMap const& kkbf, Tracker const& tracker,
-          StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
-          Calorimeter const& calo, CCHandle const& cchandle,
-          KKTRK& kktrk) const {
+      StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
+      Calorimeter const& calo, CCHandle const& cchandle,
+      KKTRK& kktrk) const {
     KKSTRAWHITCOL addstrawhits;
     KKCALOHITCOL addcalohits;
     KKSTRAWXINGCOL addstrawxings;
@@ -399,7 +399,7 @@ namespace mu2e {
     for( auto const& calohit : calohits) {
       tmin = std::min(tmin,calohit->time());
       tmax = std::max(tmax,calohit->time());
-  }
+    }
     for( auto const& strawxing : strawxings) {
       tmin = std::min(tmin,strawxing->time());
       tmax = std::max(tmax,strawxing->time());
@@ -418,7 +418,7 @@ namespace mu2e {
     double tz0 = Mu2eKinKal::zTime(fittraj,0.0,fittraj.range().begin());
     auto const& t0piece = fittraj.nearestPiece(tz0);
     double t0val = t0piece.paramVal(KTRAJ::t0_);
-//    double t0sig = sqrt(t0piece.paramVar(KTRAJ::t0_)); Temporary FIXME
+    //    double t0sig = sqrt(t0piece.paramVar(KTRAJ::t0_)); Temporary FIXME
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
     HitT0 t0(t0val,t0sig);
     // create the shell for the output.  Note the (obsolete) flight length is given as t0

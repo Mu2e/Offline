@@ -19,7 +19,7 @@ Mu2eKinKal : {
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
     StrawHitClusterLevel : "uniquepanel"
-    CaloTrackerTimeOffset : -5 #ns
+    CaloTrackerTimeOffset : -2.5 #ns
     CaloPositionResolution : 15.0 #mm
     CaloPropagationSpeed : 200.0 #mm/ns
     MinCaloClusterEnergy : 10.0 #MeV
@@ -46,17 +46,19 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      # annealing temp, strawhit updater algorithm
       [ 5.0, 0 ],
       [ 2.0, 0 ],
       [ 1.0, 0 ]
     ]
-    # maxdoca, dvar, toff, tvar, usetime, unbiased
     NullStrawHitUpdaterSettings : [
+      # maxdoca, drift variance, time offset , time variance, unbiased DOCA? constrain time?
       [ 100.0 , 1.5, -3.15, 30.0, true , true ],
       [  50.0 , 1.5, -3.15, 30.0, true , true ],
       [  10.0 , 1.5, -3.15, 30.0, true , true ]
     ]
     StrawXingUpdaterSettings : [
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
       [10.0, -1.0, -1.0, 1.0, true ],
       [10.0, -1.0, -1.0, 1.0, true ],
       [10.0, -1.0, -1.0, 1.0, true ]
@@ -76,16 +78,19 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      # annealing temp, strawhit updater algorithm
       [ 2.0, 0 ],
       [ 1.0, 0 ],
       [ 0.0, 0 ]
     ]
     NullStrawHitUpdaterSettings : [
+      # maxdoca, drift variance, time offset , time variance, unbiased DOCA? constrain time?
       [ 10.0 , 1.5, -3.15, 30.0, true , true ],
       [  5.0 , 1.5, -3.15, 30.0, true , true ],
       [  5.0 , 1.5, -3.15, 30.0, true , true ]
     ]
     StrawXingUpdaterSettings : [
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
       [10.0, -1.0, -1.0, 1.0, true ],
       [10.0, -1.0, -1.0, 1.0, true ],
       [10.0, -1.0, -1.0, 1.0, true ]
@@ -105,6 +110,7 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
+      # annealing temp, strawhit updater algorithm
       [ 2.0, 0 ],
       [ 1.0, 0 ],
       [ 0.0, 0 ],
@@ -113,16 +119,19 @@ Mu2eKinKal : {
       [ 0.0, 1 ]
     ]
     NullStrawHitUpdaterSettings : [
+      # maxdoca, drift variance, time offset , time variance, unbiased DOCA? constrain time?
       [ 10.0 , 1.5, -3.15, 30.0, true , true ],
       [  5.0 , 1.5, -3.15, 30.0, true , true ],
       [  5.0 , 1.5, -3.15, 30.0, true , true ]
     ]
     PTCAStrawHitUpdaterSettings : [
+      # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, constrain null time?
       [ 0.1, 5.0, -10.0, 50.0, true, false ],
       [ 0.1, 5.0, -10.0, 50.0, true, false ],
       [ 0.1, 5.0, -10.0, 50.0, true, false ]
     ]
     StrawXingUpdaterSettings : [
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
       [5.0, 3.0, 0.5, 1.0, true ],
       [5.0, 3.0, 0.5, 1.0, true ],
       [5.0, 3.0, 0.5, 1.0, true ],
@@ -130,10 +139,10 @@ Mu2eKinKal : {
       [5.0, 3.0, 0.5, 1.0, true ],
       [5.0, 3.0, 0.5, 1.0, true ]
     ]
-    #    CombinatoricStrawHitUpdaterSettings : [
-    #     [25.0, 2.0, 0.5, 0.5, 0],
-    #     [25.0, 2.0, 0.5, 0.5, 0]
-    #    ]
+    # CombinatoricStrawHitUpdaterSettings : [
+    # inactive penalty, null penalty, min dchi2, null doca, allownull?, nulltime?, diaglevel
+    # [50.0, 10.0, 0.0, 0.4, true, false, 0]
+    # ]
   }
 
   KKLOOPHELIX : {
