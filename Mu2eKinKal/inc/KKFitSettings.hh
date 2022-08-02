@@ -41,9 +41,9 @@ namespace mu2e {
       using PTCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool>>;
       PTCAStrawHitUpdaterSettings dhuConfig{ Name("PTCAStrawHitUpdaterSettings"), Comment("PTCAStrawHitUpdater settings, format: \n"
           " Minimum DOCA to use L/R ambiguity, Maximum wire DOCA to use hit, Minimum Dt to use L/R ambiguity, Maximum Dt to use a hit, Use Unbiased DOCA?,Use Null hit time constraint?") };
-      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool,int>>;
+      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,bool,bool,bool,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
-          " Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allow Null ambiguity?,Use Null Time residual?, diag level") };
+          "Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allow Null ambiguity?,Use Null Time residual?, freeze disambiguated clusters, diag level") };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,float,bool>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
           " Maximum DOCA to use straw material, Maximum DOCA to use unaveraged material,Maximum DOCA error to use unaveraged material, variance scale, scale variance with annealing temp?") };

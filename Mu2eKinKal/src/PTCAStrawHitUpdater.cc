@@ -7,14 +7,14 @@ namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
   WireHitState PTCAStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata, Straw const& straw ) const {
-    WireHitState whstate(WireHitState::inactive);
+    WireHitState whstate(WireHitState::inactive,StrawHitUpdaters::PTCA);
     double doca = tpdata.doca();
     double absdoca = fabs(doca);
     if( absdoca < maxdoca_ && absdoca > mindoca_
         && tpdata.deltaT() < maxdt_ && tpdata.deltaT() > mindt_){  // in the sweet spot: use the DOCA to sign the ambiguity
-      whstate = doca > 0.0 ? WireHitState::right : WireHitState::left;
+      whstate.state_ = doca > 0.0 ? WireHitState::right : WireHitState::left;
     } else if(absdoca < mindoca_ || tpdata.deltaT() < mindt_) {
-      whstate = WireHitState::null;
+      whstate.state_ = WireHitState::null;
     }
     return whstate;
   }
