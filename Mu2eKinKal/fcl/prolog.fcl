@@ -140,8 +140,8 @@ Mu2eKinKal : {
       [5.0, 3.0, 0.5, 1.0, true ]
     ]
     # CombinatoricStrawHitUpdaterSettings : [
-    # inactive penalty, null penalty, min dchi2, null doca, allownull?, nulltime?, diaglevel
-    # [50.0, 10.0, 0.0, 0.4, true, false, 0]
+    # mincsize, inactivep, nullp, mindchi2, mindoca, allownull, nulltime, diag
+    # [1, 50.0, 10.0, 0.0, 0.4, true, false, 0]
     # ]
   }
 

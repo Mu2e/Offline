@@ -119,16 +119,14 @@ namespace mu2e {
   }
 
   template<class KTRAJ> double KKStrawHitCluster<KTRAJ>::time() const {
-    // return time just past the last hit's time.  This insures hit clusters are updated after individual hits
-    // that shouldn't matter, but...
-    double maxtime(-std::numeric_limits<float>::max());
-    unsigned nactive(0);
+    // return time just past the last hit's time.  This insures hit clusters are updated before individual hits
+    // This is important as the cluster only updates the hit state, not its residuals (which is done in the hit)
+    double mintime(std::numeric_limits<float>::max());
     for(auto const& hit : hits_){
-      if(hit && hit->active())++nactive;
-      maxtime = std::max(hit->time(),maxtime);
+      mintime = std::min(hit->time(),mintime);
     }
-    static double epsilon(1e-6);
-    return maxtime + epsilon;
+    static double epsilon(1e-6); // small time
+    return mintime - epsilon;
   }
 
   template<class KTRAJ> KinKal::TimeRange KKStrawHitCluster<KTRAJ>::timeRange() const {
@@ -152,6 +150,7 @@ namespace mu2e {
         cshu->updateCluster<KTRAJ>(*this,miconfig);
       }
     }
+    // on subsequent iterations the cluster is left unchanged (but the residuals still are updated)
   }
 
   template<class KTRAJ> void KKStrawHitCluster<KTRAJ>::print(std::ostream& ost, int detail) const {

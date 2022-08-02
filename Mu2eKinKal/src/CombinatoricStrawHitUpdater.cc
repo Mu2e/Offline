@@ -7,8 +7,8 @@ namespace mu2e {
   NullHitInfo CombinatoricStrawHitUpdater::nullHitInfo(StrawResponse const& sresponse, Straw const& straw) const {
     NullHitInfo nhinfo;
     // compute time and distance parameters used for null ambiguity (wire constraint)
-    double vdriftinst = sresponse.driftInstantSpeed(straw.id(),mindoca_,0.0,true);
-    nhinfo.toff_ = 0.5*mindoca_/vdriftinst;
+    double vdriftinst = sresponse.driftInstantSpeed(straw.id(),nulldoca_,0.0,true);
+    nhinfo.toff_ = 0.5*nulldoca_/vdriftinst;
     nhinfo.tvar_ = 0.25*dvar_/(vdriftinst*vdriftinst);
     nhinfo.dvar_ = dvar_;
     nhinfo.usetime_ = nulltime_;
@@ -28,32 +28,25 @@ namespace mu2e {
   ClusterScore CombinatoricStrawHitUpdater::selectBest(ClusterScoreCOL& cscores) const {
     // sort the results by chisquared
     std::sort(cscores.begin(),cscores.end(), ClusterScoreComp());
-    // Test if the best solutions are nearly degenerate, choose the most conservative option
+    // merge the configurationis that have nearly degenerate scores; this takes the most conservative option
     auto best = cscores.front();
-    double bestrank = wireHitRank(best.hitstates_);
-
     auto test=cscores.begin(); ++test;
-    while(test != cscores.end() &&
-        test->chi2_.chisqPerNDOF() - cscores.front().chi2_.chisqPerNDOF() < minDeltaChi2()){
-      if(allownull_){
-        double testrank = wireHitRank(test->hitstates_);
-        if(testrank > bestrank){
-          if(diag_ > 0) std::cout << "Replacing " << best << " with " << *test << std::endl;
-          best = *test;
-          bestrank = testrank;
-        }
-        ++test;
-      } else {
-        // if we didn't explicitly assign null hits, assign them now if the difference between left and right is small
-        while(test != cscores.end() &&
-            test->chi2_.chisqPerNDOF() - cscores.front().chi2_.chisqPerNDOF() < minDeltaChi2()){
-          for(size_t ihit=0;ihit<best.hitstates_.size();++ihit){
-            // if this hit flips without appreciably changing chisquared, set it null
-            if(best.hitstates_[ihit].state_*test->hitstates_[ihit].state_ == WireHitState::left){
-              if(diag_ > 0) std::cout << "Nulling hit  " << ihit
-                << " dchisq " << test->chi2_.chisqPerNDOF() - cscores.front().chi2_.chisqPerNDOF() <<std::endl;
-              best.hitstates_[ihit] = WireHitState::null;
-            }
+    while(test != cscores.end() && test->chi2_.chisqPerNDOF() - cscores.front().chi2_.chisqPerNDOF() < minDeltaChi2()){
+      best.merge(*test);
+      ++test;
+    }
+    // set the algorithm
+    for(auto& whs : best.hitstates_)whs.algo_ = StrawHitUpdaters::Combinatoric;
+    // optionally freeze unambiguous states
+    if(freeze_){
+      // look for pairs of unambiguous (opposite drift) hits, and freeze their state
+      for( size_t ihit=0;ihit < best.hitstates_.size();++ihit){
+        auto& hit1 = best.hitstates_[ihit];
+        for( size_t jhit=ihit+1;jhit < best.hitstates_.size();++jhit){
+          auto& hit2 = best.hitstates_[jhit];
+          if(hit1.useDrift() && hit2.useDrift() && hit1 != hit2){
+            hit1.frozen_ = true;
+            hit2.frozen_ = true;
           }
         }
       }
@@ -61,21 +54,17 @@ namespace mu2e {
     return best;
   }
 
-  double CombinatoricStrawHitUpdater::wireHitRank(WHSCOL const& hitstates) const {
-    double rank(0.0);
-    for(auto const& whs : hitstates){
-      switch (whs.state_) {
-        case WireHitState::inactive:
-          rank += 2.0;
-          break;
-        case WireHitState::null:
-          rank += 1.0;
-          break;
-        default:
-          break;
+  void ClusterScore::merge(ClusterScore const& other) {
+    for( size_t ihit=0;ihit < hitstates_.size();++ihit){
+      auto& myhit = hitstates_[ihit];
+      auto const& otherhit = other.hitstates_[ihit];
+      if(myhit != otherhit){
+        if(myhit.isInactive() || otherhit.isInactive()) // one is inactive: deactivate
+          myhit.state_ = WireHitState::inactive;
+        else // every other case, set to null
+          myhit.state_ = WireHitState::null;
       }
     }
-    return rank;
   }
 
   std::ostream& operator <<(std::ostream& os, ClusterScore const& cscore ) {
@@ -84,6 +73,5 @@ namespace mu2e {
     std::cout << std::endl;
     return os;
   }
-
 
 }

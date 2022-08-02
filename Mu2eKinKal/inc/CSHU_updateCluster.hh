@@ -12,55 +12,34 @@ namespace mu2e {
     using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
     using KKSTRAWHIT = KKStrawHit<KTRAJ>;
     using SHCOL = std::vector<std::shared_ptr<KKSTRAWHIT>>;
-    // leave alone hits that were forced inactive
+    // only act on clusters with a minimum # of hits
+    // dont act on hits that are unusable or frozen
     SHCOL hits;
     hits.reserve(shcluster.strawHits().size());
     for(auto& shptr : shcluster.strawHits())
-      if(shptr->hitState().usable())
-        hits.push_back(shptr);
+      if(shptr->hitState().usable_ && (!shptr->hitState().frozen_))hits.push_back(shptr);
     //
-    if(hits.size() == 0)return;
+    if(hits.size() < csize_)return;
     // sort the hit ptrs by time
     std::sort(hits.begin(),hits.end(),StrawHitTimeSort<KTRAJ>());
-    Parameters uparams;
-    Weights uweights;
-    // Find the first active hit
-    auto early = hits.end();
-    for(auto ish=hits.begin(); ish != hits.end(); ++ish){
-      if((*ish)->active()){
-        early = ish;
-        break;
-      }
+    // get the reference weight as starting point for the unbiased weight + parameters
+    Weights uweights = Weights(hits.front()->referenceParameters());
+    // subtract the weight of eacth active hits from this reference; this removes the bias of those hits
+    for (auto const& sh : hits) {
+      if(sh->active()) uweights -= sh->weight();
+      // subtract the material TODO
     }
-    if(early != hits.end()){
-      uweights = Weights((*early)->referenceParameters());
-      for (auto const& sh : hits) {
-        if(sh->active()) uweights -= sh->weight();
-      }
-      uparams = Parameters(uweights);
-      // subtract the material; this requires obtaining the covariance from the
-      // xing, which needs some restructuring TODO
-    } else {
-      uparams = hits.front()->referenceParameters();
-    }
-    uweights = Weights(uparams);
-   // check determinant
+    // invert to get unbiased parameters
+    Parameters uparams = Parameters(uweights);
+    // in marginal fits removing even a few hits can leave the fit underconstrained, resulting in a zero determinant.  For now, do nothing
+    // with these clusters
     double determinant;
     if(!uparams.covariance().Det(determinant) || determinant < std::numeric_limits<float>::min()){
       if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
-      // without these hits the fit is underconstrained so the algorithm fails
-      // for now, do nothing
-      //      for(size_t ihit=0;ihit < hits.size(); ++ihit) {
-      //        static WireHitState nullstate(WireHitState::null);
-      //        auto const& shptr = hits[ihit];
-      //        shptr->setState(nullstate);
-      //      }
-      //      TODO: try a more careful weight subtraction including material effects.
-      //      Or, revert to a hit-by-hit update of this cluster
       return;
     }
 
-    // iterate over all possible states of each hit, and compute the total chisquared for that
+    // iterate over all possible states of each hit, and incrementally compute the total chisquared for all the hits in the cluster WRT the unbiased parameters
     WHSIterator whsiter(hits.size(),allowed());
     size_t ncombo = whsiter.nCombo();
     ClusterScoreCOL cscores(0);
@@ -83,15 +62,17 @@ namespace mu2e {
           for(size_t iresid= 0; iresid < resids.size(); ++iresid) {
             auto const& resid = resids[iresid];
             if(resid.active() && (whstate.useDrift() || (iresid==Mu2eKinKal::dresid || nulltime_))){
-             // update residuals to refer to unbiased parameters
+              // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
               double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());
-//              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
+              //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
               if(pvar<0){
+                // another symptom of under-constrained clusters is negative variances.  I need a better strategy for these TODO
                 if(diag_ > 0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
                   << " determinant = " << determinant << std::endl;
                 pvar = resid.parameterVariance();
               }
+              // Use the unbiased residual to compute the chisq
               Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
               chisq += uresid.chisq();
               ++ndof;
@@ -108,7 +89,7 @@ namespace mu2e {
             cparams = Parameters(cweights);
           }
         } else {
-        // add penalty
+          // add penalty
           chisq += inactivep_;
           ++ndof; // count this as a DOF
         }
@@ -134,7 +115,7 @@ namespace mu2e {
     }
     // assign the individual hit states according to this, and update their fit info
     for(size_t ihit=0;ihit < hits.size(); ++ihit) {
-      hits[ihit]->setState(miconfig,best.hitstates_[ihit]);
+      hits[ihit]->setState(best.hitstates_[ihit]);
     }
   }
 }

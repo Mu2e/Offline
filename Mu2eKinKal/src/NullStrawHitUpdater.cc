@@ -5,9 +5,9 @@ namespace mu2e {
   WireHitState NullStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata,Straw const& straw ) const {
     // for now very simple: could check if inside straw longitudinally, etc.
     if(fabs(tpdata.doca()) > maxdoca_)
-      return WireHitState(WireHitState::inactive);
+      return WireHitState(WireHitState::inactive,StrawHitUpdaters::null);
     else
-      return WireHitState(WireHitState::null);
+      return WireHitState(WireHitState::null,StrawHitUpdaters::null);
   }
   NullHitInfo NullStrawHitUpdater::nullHitInfo(StrawResponse const& sresponse,Straw const& straw) const {
     NullHitInfo nhinfo;
@@ -15,6 +15,7 @@ namespace mu2e {
     nhinfo.dvar_ = dvar_;
     nhinfo.tvar_ = tvar_;
     nhinfo.usetime_ = usetime_;
+    nhinfo.useComboDriftTime_ = true;
     return nhinfo;
   }
 }

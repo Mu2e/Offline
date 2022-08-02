@@ -71,13 +71,11 @@ namespace mu2e {
       auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
       auto const& strawHitIndex() const { return shindex_; }
-      auto updaterAlgorithm() const { return algo_; }
       // Functions used in updating
       void setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
-      void updateResiduals(MetaIterConfig const& miconfig);
       CA unbiasedClosestApproach() const;
-      auto updater() const { return algo_; }
-      void setState(MetaIterConfig const& miconfig,WireHitState const& whstate);
+      auto updater() const { return whstate_.algo_; }
+      void setState(WireHitState const& whstate); // allow cluster updaters to set the state directly
       DriftInfo driftInfo() const;
    private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
@@ -93,7 +91,6 @@ namespace mu2e {
       StrawHitIndex shindex_; // index to the StrawHit
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
-      StrawHitUpdaters::algorithm algo_; // most recent algorithm
       NullHitInfo nhinfo_; // parameters for treating null hits
       // utility functions
       void updateWHS(MetaIterConfig const& miconfig);
@@ -111,7 +108,7 @@ namespace mu2e {
       ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) :
     bfield_(bfield), whstate_(WireHitState::null), wire_(ptca.sensorTraj()),
     ptca_(ptca.localTraj(),wire_,ptca.precision(),ptca.tpData(),ptca.dDdP(),ptca.dTdP()),
-    chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse), algo_(StrawHitUpdaters::none)
+    chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
   {
     // make sure this is a single-straw based ComboHit
     if(chit_.mask().level() != StrawIdMask::uniquestraw)
@@ -137,13 +134,19 @@ namespace mu2e {
       tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.range().mid()), wire_.range().mid());
       ptca_ = CA(ktrajptr,wire_,tphint,precision());
       dz = straw().origin().z() - ptca_.particlePoca().Z();
-      if(fabs(dz) >  100) whstate_ = WireHitState::forcedinactive;
-   }
-    if(!ptca_.usable())whstate_ = WireHitState::forcedinactive;
+      if(fabs(dz) >  100){
+        whstate_.state_ = WireHitState::inactive;
+        whstate_.usable_ = false; // failed to find the right branch: disable this hit for now, but we should do an explicit search TODO
+      }
+    }
+    if(!ptca_.usable()){
+      whstate_.state_ = WireHitState::inactive;
+      whstate_.usable_ = false;
+    }
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
-    if(whstate_ != WireHitState::forcedinactive){
+    if(!whstate_.frozen_){
       unsigned nupdaters(0);
       auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
       auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
@@ -154,34 +157,31 @@ namespace mu2e {
       if(nshu){ shu = nshu; ++nupdaters; }
       if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
       if(shu != 0){
-        algo_ = shu->algorithm();
+        // always get the null hit info from the updater
         nhinfo_ = shu->nullHitInfo(sresponse_,straw_);
         if(!shu->useStrawHitCluster()){ // only update the state if the updater doesn't operate on clusters
+          whstate_.algo_ = shu->algorithm();
           CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
-          if(ca.usable())
+          whstate_.usable_ = ca.usable();
+          if(whstate_.usable_)
             whstate_ = shu->wireHitState(ca.tpData(),straw_);
           else
-            whstate_ = WireHitState::forcedinactive;
+            whstate_.state_ = WireHitState::inactive;
         }
       } // no updater means don't change the state
     }
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
-    // first iteration of a new meta-iteratin, update the wire hit state
+    // first iteration of a new meta-iteration, update the wire hit state
     if(first)updateWHS(miconfig);
-    // update residuals and weights if the algorithm operates directly on StrawHits
-    if(StrawHitUpdaters::updateStrawHits(algo_))updateResiduals(miconfig);
-  }
-
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(MetaIterConfig const& miconfig, WireHitState const& whstate) {
-    whstate_ = whstate;
-    updateResiduals(miconfig);
-  }
-
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateResiduals(MetaIterConfig const& miconfig) {
+    // update residuals and weights every iteration, regardless of updater algorithm
     setResiduals(miconfig, whstate_, resids_);
     this->updateWeight(miconfig);
+  }
+
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::setState(WireHitState const& whstate) {
+    whstate_ = whstate;
   }
 
   template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::driftInfo() const {
@@ -210,7 +210,7 @@ namespace mu2e {
         if(nhinfo_.usetime_){
           // time residual is deltaT
           double dt = ptca_.deltaT() - nhinfo_.toff_;
-          if(algo_ == StrawHitUpdaters::null)dt -= chit_.driftTime();  // Null updater uses combo hit time
+          if(nhinfo_.useComboDriftTime_)dt -= chit_.driftTime();  // Null updater uses combo hit time
           resids[Mu2eKinKal::tresid] = Residual(dt,nhinfo_.tvar_,0.0,true,-ptca_.dTdP());
         }
       }
