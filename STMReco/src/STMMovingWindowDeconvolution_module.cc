@@ -31,7 +31,7 @@ using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
 
-  class STMMowingWindowDeconvolution : public art::EDProducer {
+  class STMMovingWindowDeconvolution : public art::EDProducer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -39,7 +39,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
       };
       using Parameters = art::EDProducer::Table<Config>;
-      explicit STMMowingWindowDeconvolution(const Parameters& conf);
+      explicit STMMovingWindowDeconvolution(const Parameters& conf);
 
     private:
     void beginJob() override;
@@ -49,7 +49,7 @@ namespace mu2e {
     mu2e::MWDAlg _mwd;
   };
 
-  STMMowingWindowDeconvolution::STMMowingWindowDeconvolution(const Parameters& config )  :
+  STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& config )  :
     art::EDProducer{config}
     ,_stmDigisTag(config().stmDigisTag())
     ,_mwd()
@@ -58,9 +58,9 @@ namespace mu2e {
     produces<STMDigiCollection>();
   }
 
-  void STMMowingWindowDeconvolution::beginJob() {
+  void STMMovingWindowDeconvolution::beginJob() {
   }
-    void STMMowingWindowDeconvolution::produce(art::Event& event) {
+    void STMMovingWindowDeconvolution::produce(art::Event& event) {
     // create output
     unique_ptr<STMDigiCollection> outputSTMDigis(new STMDigiCollection);
     auto digisHandle = event.getValidHandle<STMDigiCollection>(_stmDigisTag);
@@ -92,4 +92,4 @@ namespace mu2e {
   }
 }
 
-DEFINE_ART_MODULE(mu2e::STMMowingWindowDeconvolution)
+DEFINE_ART_MODULE(mu2e::STMMovingWindowDeconvolution)
