@@ -23,8 +23,8 @@ mainlib = helper.make_mainlib ( [ 'art_Persistency_Provenance',
                                   'canvas',
                                   'cetlib',
                                   'cetlib_except',
-				  'CLHEP',
-				  rootlibs,
+                                  'CLHEP',
+                                  rootlibs,
                                   rootlibs
                                 ] )
 
@@ -53,11 +53,11 @@ helper.make_plugins( [ mainlib,
                        'tbb',
                        'cetlib',
                        'cetlib_except',
-		       'BTrk_BField',
-		       'CLHEP',
-		       'boost_filesystem',
-		       rootlibs,
-		       'pthread'
+                       'BTrk_BField',
+                       'CLHEP',
+                       'boost_filesystem',
+                       rootlibs,
+                       'pthread'
                      ] )
 
 # helper.make_dict_and_map( [
