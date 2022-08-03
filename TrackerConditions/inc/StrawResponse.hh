@@ -30,8 +30,8 @@ namespace mu2e {
       constexpr static const char* cxname = {"StrawResponse"};
 
       struct DriftInfo {
-        double time;
-        double invSpeed;
+        double distance;
+        double speed;
         double variance;
       };
 
@@ -55,9 +55,12 @@ namespace mu2e {
           std::array<double,StrawElectronics::npaths> dVdI,
           double vsat, double ADCped, double pmpEnergyScaleAvg,
           std::array<double, StrawId::_nustraws> strawHalfvp,
-          bool useDriftSplines, bool driftIgnorePhi, double deltaPhi,
-          std::vector<SplineInterpolation> driftsplines,
-          std::vector<SplineInterpolation> driftressplines) :
+          bool useDriftSplines, bool driftIgnorePhi,
+          SplineInterpolation driftresspline,
+          double driftSplineDeltaPhi,
+          std::vector<double> d2t_x, std::vector<std::vector<double> > d2t_2d,
+          std::vector<std::vector<double> > d2t_2dv,
+          std::vector<double> t2d_x, std::vector<std::vector<double> > t2d_2d) :
         ProditionsEntity(cxname),
         _strawDrift(strawDrift),
         _strawElectronics(strawElectronics),
@@ -81,13 +84,14 @@ namespace mu2e {
         _strawHalfvp(strawHalfvp),
         _useDriftSplines(useDriftSplines),
         _driftIgnorePhi(driftIgnorePhi),
-        _driftSplineDeltaPhi(deltaPhi),
-        _driftSpline(driftsplines),
-        _driftResSpline(driftressplines){}
+        _driftResSpline(driftresspline),
+        _driftSplineDeltaPhi(driftSplineDeltaPhi),
+        _d2t_x(d2t_x), _d2t_2d(d2t_2d), _d2t_2dv(d2t_2dv),
+        _t2d_x(t2d_x), _t2d_2d(t2d_2d){}
 
       virtual ~StrawResponse() {}
 
-      DriftInfo driftInfoAtDistance(StrawId strawId, double ddist, double phi,
+      DriftInfo driftInfoAtDistance(StrawId strawId, double ddist, double dtime, double phi,
           bool noSpline=false) const;
       double driftDistanceToTime(StrawId strawId, double ddist, double phi,
           bool noSpline=false) const;
@@ -114,9 +118,9 @@ namespace mu2e {
         _timeOffsetStrawCal = timeOffsetStrawCal;
       }
 
-      double driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
+      double driftTimeToDistance(StrawId strawId, double dtime, double phi, bool noSpline=false) const;
       double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
-      double driftDistanceError(StrawId strawId, double doca, double phi) const;
+      double driftDistanceError(StrawId strawId, double ddist, double phi, bool noSpline=false) const;
       double driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
       double driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 
@@ -210,9 +214,13 @@ namespace mu2e {
       std::array<double, StrawId::_nustraws> _strawHalfvp;
       bool _useDriftSplines;
       bool _driftIgnorePhi;
+      SplineInterpolation _driftResSpline;
       double _driftSplineDeltaPhi;
-      std::vector<SplineInterpolation> _driftSpline;
-      std::vector<SplineInterpolation> _driftResSpline;
+      std::vector<double> _d2t_x;
+      std::vector<std::vector<double> > _d2t_2d;
+      std::vector<std::vector<double> > _d2t_2dv;
+      std::vector<double> _t2d_x;
+      std::vector<std::vector<double> > _t2d_2d;
   };
 }
 #endif

@@ -32,41 +32,17 @@ namespace mu2e {
   }
 
   StrawResponse::DriftInfo StrawResponse::driftInfoAtDistance(StrawId strawId,
-      double ddist, double phi, bool noSpline) const {
+      double ddist, double dtime, double phi, bool noSpline) const {
     StrawResponse::DriftInfo info;
     if (_useDriftSplines && !noSpline){
-      int ibin;
-      double t;
-      _driftSpline[0].getBin(ddist,ibin,t);
-
-      if (_driftIgnorePhi){
-        info.time = _driftSpline[0].interpolate(ibin,t);
-        info.invSpeed = _driftSpline[0].derivative(ibin,t);
-        info.variance = pow(_driftResSpline[0].interpolate(ibin,t),2); //FIXME
-        return info;
-      }
-      double reducedPhi = ConstrainAngle(phi);
-      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
-      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
-
-      double lowerVal = _driftSpline[lowerPhiIndex].interpolate(ibin,t);
-      double upperVal = _driftSpline[upperPhiIndex].interpolate(ibin,t);
-
-      info.time = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
-
-      lowerVal = _driftSpline[lowerPhiIndex].derivative(ibin,t);
-      upperVal = _driftSpline[upperPhiIndex].derivative(ibin,t);
-      info.invSpeed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
-
-      lowerVal = _driftResSpline[lowerPhiIndex].interpolate(ibin,t);
-      upperVal = _driftResSpline[upperPhiIndex].interpolate(ibin,t);
-      info.variance = pow(lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal),2); //FIXME
+      info.distance = driftTimeToDistance(strawId,dtime,phi,noSpline);
+      info.speed = driftInstantSpeed(strawId,ddist,phi,noSpline);
+      info.variance = pow(driftDistanceError(strawId,ddist,phi,noSpline),2);
     }else{
       //FIXME to be deprecated
-      info.time = driftDistanceToTime(strawId,ddist,phi,true);
-      info.invSpeed = 1.0/driftInstantSpeed(strawId,ddist,phi,true);
-      info.variance = pow(driftTimeError(strawId,ddist,phi,true),2);
+      info.distance = driftTimeToDistance(strawId,dtime,phi,true);
+      info.speed = driftInstantSpeed(strawId,ddist,phi,true);
+      info.variance = pow(driftDistanceError(strawId,ddist,phi,true),2);
     }
     return info;
   }
@@ -75,14 +51,16 @@ namespace mu2e {
       double ddist, double phi, bool noSpline) const {
     if (_useDriftSplines && !noSpline){
       if (_driftIgnorePhi)
-        return _driftSpline[0].interpolate(ddist);
+        return PieceLine(_d2t_x,_d2t_2d[0],ddist);
+
       double reducedPhi = ConstrainAngle(phi);
       int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
       int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-      double lowerVal = _driftSpline[lowerPhiIndex].interpolate(ddist);
-      double upperVal = _driftSpline[upperPhiIndex].interpolate(ddist);
-
       double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
+
+      double upperVal = PieceLine(_d2t_x,_d2t_2d[upperPhiIndex],ddist);
+      double lowerVal = PieceLine(_d2t_x,_d2t_2d[lowerPhiIndex],ddist);
+
       return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
     }else{
       //FIXME to be deprecated
@@ -97,18 +75,10 @@ namespace mu2e {
 
   double StrawResponse::driftTimeError(StrawId strawId,
       double ddist, double phi, bool noSpline) const {
-//    return 5.;
     if (_useDriftSplines && !noSpline){
-      if (_driftIgnorePhi)
-        return _driftResSpline[0].interpolate(ddist);
-      double reducedPhi = ConstrainAngle(phi);
-      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
-      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-      double lowerVal = _driftResSpline[lowerPhiIndex].interpolate(ddist);
-      double upperVal = _driftResSpline[upperPhiIndex].interpolate(ddist);
-
-      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
-      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+      double distance_error = driftDistanceError(strawId,ddist,phi,noSpline);
+      double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,noSpline);
+      return distance_error/speed_at_ddist;
     }else{
       //FIXME to be deprecated
       if (useParameterizedDriftError()){
@@ -116,7 +86,7 @@ namespace mu2e {
           ddist = 2.5;
         return PieceLine(_parDriftDocas, _parDriftRes, ddist);
       }else{
-        return driftDistanceError(strawId, ddist, phi) / _lindriftvel;
+        return driftDistanceError(strawId, ddist, phi, noSpline) / _lindriftvel;
       }
     }
   }
@@ -124,23 +94,18 @@ namespace mu2e {
   double StrawResponse::driftInstantSpeed(StrawId strawId,
       double ddist, double phi, bool noSpline) const {
     if (_useDriftSplines && !noSpline){
-      if (_driftIgnorePhi){
-        double inverse_speed = _driftSpline[0].derivative(ddist);
-        if (inverse_speed == 0)
-          return 1e8;
-        return 1.0/inverse_speed;
-      }
+      if (_driftIgnorePhi)
+        return PieceLine(_d2t_x,_d2t_2dv[0],ddist);
+
       double reducedPhi = ConstrainAngle(phi);
       int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
       int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-      double lowerVal = _driftSpline[lowerPhiIndex].derivative(ddist);
-      double upperVal = _driftSpline[upperPhiIndex].derivative(ddist);
-
       double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
-      double inverse_speed = lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
-      if (inverse_speed == 0)
-        return 1e8;
-      return 1.0/inverse_speed;
+
+      double upperVal = PieceLine(_d2t_x,_d2t_2dv[upperPhiIndex],ddist);
+      double lowerVal = PieceLine(_d2t_x,_d2t_2dv[lowerPhiIndex],ddist);
+
+      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
     }else{
       // FIXME to be deprecated
       if(_usenonlindrift){
@@ -151,25 +116,43 @@ namespace mu2e {
     }
   }
 
-  // FIXME to be deprecated
   double StrawResponse::driftTimeToDistance(StrawId strawId,
-      double dtime, double phi) const {
-    if(_usenonlindrift){
-      return _strawDrift->T2D(dtime,phi);
-    }
-    else{
-      return dtime*_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
+      double dtime, double phi, bool noSpline) const {
+    if (_useDriftSplines && !noSpline){
+      if (_driftIgnorePhi)
+        return PieceLine(_t2d_x,_t2d_2d[0],dtime);
+
+      double reducedPhi = ConstrainAngle(phi);
+      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
+      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
+      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
+
+      double upperVal = PieceLine(_t2d_x,_t2d_2d[upperPhiIndex],dtime);
+      double lowerVal = PieceLine(_t2d_x,_t2d_2d[lowerPhiIndex],dtime);
+
+      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+    }else{
+      if(_usenonlindrift){
+        return _strawDrift->T2D(dtime,phi);
+      }
+      else{
+        return dtime*_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
+      }
     }
   }
 
-  // FIXME to be deprecated
   double StrawResponse::driftDistanceError(StrawId strawId,
-      double doca, double phi) const {
-    // maximum drift is the straw radius.  should come from conditions FIXME!
-    static double rstraw(2.5);
-    doca = std::min(fabs(doca),rstraw);
-    size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(doca/rstraw))));
-    return _derr[idoca];
+      double ddist, double phi, bool noSpline) const {
+    if (_useDriftSplines && !noSpline){
+      return _driftResSpline.interpolate(ddist);
+      //FIXME PHI?
+    }else{
+      // maximum drift is the straw radius.  should come from conditions FIXME!
+      static double rstraw(2.5);
+      ddist = std::min(fabs(ddist),rstraw);
+      size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(ddist/rstraw))));
+      return _derr[idoca];
+    }
   }
 
   // FIXME to be deprecated
