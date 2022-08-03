@@ -28,15 +28,15 @@ namespace mu2e {
   ClusterScore CombinatoricStrawHitUpdater::selectBest(ClusterScoreCOL& cscores) const {
     // sort the results by chisquared
     std::sort(cscores.begin(),cscores.end(), ClusterScoreComp());
-    // merge the configurationis that have nearly degenerate scores; this takes the most conservative option
     auto best = cscores.front();
+    // set the algorithm
+    for(auto& whs : best.hitstates_)whs.algo_ = StrawHitUpdaters::Combinatoric;
+    // merge the configurations that have nearly degenerate scores; this takes the most conservative option
     auto test=cscores.begin(); ++test;
     while(test != cscores.end() && test->chi2_.chisqPerNDOF() - cscores.front().chi2_.chisqPerNDOF() < minDeltaChi2()){
       best.merge(*test);
       ++test;
     }
-    // set the algorithm
-    for(auto& whs : best.hitstates_)whs.algo_ = StrawHitUpdaters::Combinatoric;
     // optionally freeze unambiguous states
     if(freeze_){
       // look for pairs of unambiguous (opposite drift) hits, and freeze their state
@@ -50,6 +50,9 @@ namespace mu2e {
           }
         }
       }
+      //      for(auto& whs : best.hitstates_) {
+      //        whs.frozen_ = whs.useDrift();
+      //      }
     }
     return best;
   }
