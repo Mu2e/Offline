@@ -37,6 +37,14 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
+        fhicl::Atom<double> M{ Name("M"), Comment("Input tag for number of channels")};
+        fhicl::Atom<double> L{ Name("L"), Comment("Input tage for the L parameter")};
+        fhicl::Atom<double> tau{ Name("tau"), Comment("Input tag for the RC time constant")};
+        fhicl::Atom<double> nsigma_cut{ Name("nsigma_cut"), Comment("Input tag for the the nsigma cut parameter")};
+        fhicl::Atom<double> thresholdgrad{ Name("thresholdgrad"), Comment("Input tag for the threshold gradient")};
+        fhicl::Atom<double> fADC{ Name("fADC"), Comment("Input tag for the ADC frequency")};
+        fhicl::Atom<int> cut_mode{ Name("cut_mode"), Comment("Input tag for the cut mode")};
+        fhicl::Atom<double> fixed_cut_parameter{ Name("fixed_cut_parameter"), Comment("Input tag for the fixed cut parameter")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit STMMowingWindowDeconvolution(const Parameters& conf);
@@ -52,7 +60,7 @@ namespace mu2e {
   STMMowingWindowDeconvolution::STMMowingWindowDeconvolution(const Parameters& config )  :
     art::EDProducer{config}
     ,_stmDigisTag(config().stmDigisTag())
-    ,_mwd()
+    ,_mwd(config().M(),config().L(),config().tau(),config().nsigma_cut(),config().thresholdgrad(),config().fADC(),config().cut_mode(),config().fixed_cut_parameter())
   {
     consumes<STMDigiCollection>(_stmDigisTag);
     produces<STMDigiCollection>();
@@ -74,7 +82,7 @@ namespace mu2e {
       _mwd.mwd_algorithm(&dat);
       //      _mwd.mwd_algorithm(&digi.adcs()[0], digi.adcs().size());
       std::vector<double> baseline =  _mwd.calculate_baseline();
-      //      std::cout << "AE: baseline = " << baseline.at(0) << ", sigma = " << baseline.at(1) << std::endl;
+            std::cout << "AE: baseline = " << baseline.at(0) << ", sigma = " << baseline.at(1) << std::endl;
 
       auto peaks = _mwd.find_peaks(baseline.at(0), baseline.at(1), 0);
 

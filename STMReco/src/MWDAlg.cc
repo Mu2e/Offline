@@ -3,7 +3,7 @@
 #include <thread>
 
 namespace mu2e {
-
+  /*
   MWDAlg::MWDAlg(){
     M = 1000;
     L = 500;
@@ -14,7 +14,7 @@ namespace mu2e {
     cut_mode = 1;
     fixed_cut_parameter = -1000.0;
   }
-
+  */
   MWDAlg::MWDAlg(double _M, double _L, double _tau, double _nsigma_cut, double _thresholdgrad, double _fADC, int _cut_mode, double _fixed_cut_parameter){
     M = _M;
     L = _L;
@@ -124,7 +124,7 @@ namespace mu2e {
     //Remove peaks and calculate MWDAlg baseline mean
     while (k < n){
       gradient[k] = l[k+1] - l[k];
-      //      std::cout << "AE: grad[" << k << "] = " << gradient[k] << ", l[" <<  k << "] = " << l[k] << std::endl;
+      //std::cout << "AE: grad[" << k << "] = " << gradient[k] << ", l[" <<  k << "] = " << l[k] << std::endl;
       if(gradient[k] < thresholdgrad){
         k = k + (M+2*L);
         continue;
@@ -154,8 +154,8 @@ namespace mu2e {
   void MWDAlg::mwd_algorithm(data* adc_values){  // This fill the double[l] array ie sets the private l*
     int n = adc_values->nadc;
     nadc = n;
-    //std::cout << "adc_values .... " << adc_values->adc[0] << " " << adc_values->adc[1] << " " << adc_values->adc[2] << std::endl;
-
+    std::cout << "adc_values .... " << adc_values->adc[0] << " " << adc_values->adc[1] << " " << adc_values->adc[2] << std::endl;
+    std::cout << "n = " << n << std::endl;
     const double T0 = (1000.0/fADC); // in ns
 
     ////////////////////////////////     MWD Algorithm   //////////////////////////////////////////////////
