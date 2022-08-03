@@ -63,7 +63,8 @@ namespace mu2e {
         std::vector<double> const& splineD, bool extrapolate) :
     _xvals(xvals), _splineA(splineA), _splineB(splineB), _splineC(splineC), _splineD(splineD), _extrapolate(extrapolate)
   {
-    _deltax = (xvals.back()-xvals.front())/(xvals.size()-1);
+    if (xvals.size() > 1)
+      _deltax = (xvals.back()-xvals.front())/(xvals.size()-1);
   }
 
   void SplineInterpolation::getBin(double xval, int &ibin, double &t) const {

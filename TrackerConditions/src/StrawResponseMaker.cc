@@ -95,46 +95,117 @@ namespace mu2e {
       _parDriftRes.push_back(stddev);
     }
 
-    double deltaPhi = 0;
-    std::vector<SplineInterpolation> timesplines;
-    std::vector<SplineInterpolation> ressplines;
 
     if (_config.useDriftSplines()){
-      std::vector<double> driftSplineDoca;
-      for (int i=0;i<_config.driftSplineDocaBins();i++){
-        driftSplineDoca.push_back(i*2.5/(_config.driftSplineDocaBins()-1));
-      }
-      deltaPhi = (TMath::Pi()/2.0)/(_config.driftSplinePhiBins()-1);
-      if ((int) _config.driftSplineA().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
-          (int) _config.driftSplineB().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
-          (int) _config.driftSplineC().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
-          (int) _config.driftSplineD().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
-          (int) _config.driftResSplineA().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
-          (int) _config.driftResSplineB().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
-          (int) _config.driftResSplineC().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins() ||
-          (int) _config.driftResSplineD().size() != (_config.driftSplineDocaBins()-1)*_config.driftSplinePhiBins()){
+      if (_config.driftSplineA().size() != (_config.driftSplineBins().size()-1) ||
+          _config.driftSplineB().size() != (_config.driftSplineBins().size()-1) ||
+          _config.driftSplineC().size() != (_config.driftSplineBins().size()-1) ||
+          _config.driftSplineD().size() != (_config.driftSplineBins().size()-1) ||
+          _config.driftResSplineA().size() != (_config.driftResSplineBins().size()-1) ||
+          _config.driftResSplineB().size() != (_config.driftResSplineBins().size()-1) ||
+          _config.driftResSplineC().size() != (_config.driftResSplineBins().size()-1) ||
+          _config.driftResSplineD().size() != (_config.driftResSplineBins().size()-1)) {
         throw cet::exception("BADCONFIG")
           << "StrawResponse drift spline vector lengths incorrect" << "\n";
       }
-
-      for (int i=0;i<_config.driftSplinePhiBins();i++){
-        std::vector<double> driftSplineA, driftSplineB, driftSplineC, driftSplineD;
-        std::vector<double> driftResSplineA, driftResSplineB, driftResSplineC, driftResSplineD;
-        for (int j=0;j<_config.driftSplineDocaBins()-1;j++){
-          driftSplineA.push_back(_config.driftSplineA()[i*(_config.driftSplineDocaBins()-1) + j]);
-          driftSplineB.push_back(_config.driftSplineB()[i*(_config.driftSplineDocaBins()-1) + j]);
-          driftSplineC.push_back(_config.driftSplineC()[i*(_config.driftSplineDocaBins()-1) + j]);
-          driftSplineD.push_back(_config.driftSplineD()[i*(_config.driftSplineDocaBins()-1) + j]);
-          driftResSplineA.push_back(_config.driftResSplineA()[i*(_config.driftSplineDocaBins()-1) + j]);
-          driftResSplineB.push_back(_config.driftResSplineB()[i*(_config.driftSplineDocaBins()-1) + j]);
-          driftResSplineC.push_back(_config.driftResSplineC()[i*(_config.driftSplineDocaBins()-1) + j]);
-          driftResSplineD.push_back(_config.driftResSplineD()[i*(_config.driftSplineDocaBins()-1) + j]);
+    }
+    SplineInterpolation driftspline(_config.driftSplineBins(),_config.driftSplineA(),_config.driftSplineB(),_config.driftSplineC(),_config.driftSplineD(),true);
+    SplineInterpolation resspline(_config.driftResSplineBins(),_config.driftResSplineA(),_config.driftResSplineB(),_config.driftResSplineC(),_config.driftResSplineD(),false);
+    std::vector<double> d2t_x;
+    std::vector<double> d2t_y;
+    std::vector<std::vector<double> > d2t_2d(_config.driftSplineNumPhiBins(), std::vector<double> ());
+    std::vector<double> t2d_x;
+    std::vector<std::vector<double> > t2d_2d(_config.driftSplineNumPhiBins(), std::vector<double> ());
+    size_t pieceLineBins = 5001.;
+    double tolerance = 1e-5;
+    double startingVelocity = 1.0;
+    if (_config.splineIsD2T()){
+      double deltad = (_config.driftSplineBins().back()-_config.driftSplineBins().front())/(pieceLineBins - 1);
+      d2t_x.push_back(-1*deltad);
+      d2t_y.push_back(0);
+      for (size_t i=0;i<pieceLineBins;i++){
+        double dist = deltad*i;
+        d2t_x.push_back(dist);
+        d2t_y.push_back(driftspline.interpolate(dist));
+      }
+      startingVelocity = 1.0/driftspline.derivative(_config.driftSplineBins().front());
+    }else{
+      double deltad = (driftspline.interpolate(_config.driftSplineBins().back())-driftspline.interpolate(_config.driftSplineBins().front()))/(pieceLineBins - 1);
+      d2t_x.push_back(-1*deltad);
+      d2t_y.push_back(0);
+      for (size_t i=0;i<pieceLineBins;i++){
+        double dist = deltad*i;
+        double t0 = 0;
+        double t1 = 100;
+        while (fabs(t0-t1) > tolerance){
+          double t2 = (t0+t1)/2.;
+          double d2 = driftspline.interpolate(t2);
+          if (d2 > dist){
+            t1 = t2;
+          }else{
+            t0 =t2;
+          }
         }
-        timesplines.push_back(SplineInterpolation(driftSplineDoca,driftSplineA,driftSplineB,driftSplineC,driftSplineD,true));
-        ressplines.push_back(SplineInterpolation(driftSplineDoca,driftResSplineA,driftResSplineB,driftResSplineC,driftResSplineD,false));
+        d2t_x.push_back(dist);
+        d2t_y.push_back((t0+t1)/2.);
+      }
+      startingVelocity = driftspline.derivative(_config.driftSplineBins().front());
+    }
+
+    double deltaPhi = (TMath::Pi()/2.0)/(_config.driftSplineNumPhiBins()-1);
+    double min_t = 999;
+    double max_t = -999;
+    for (int i=0;i<_config.driftSplineNumPhiBins();i++){
+      d2t_2d[i].push_back(0);
+      double phi = deltaPhi*i;
+      for (size_t j=1;j<d2t_x.size();j++){
+        d2t_2d[i].push_back(d2t_y[j] + (strawDrift->D2T(d2t_x[j],phi)-strawDrift->D2T(d2t_x[j],0))*_config.driftSplinePhiScaling());
+        if (d2t_2d[i][j] > max_t){
+          max_t = d2t_2d[i][j];
+        }
+        if (d2t_2d[i][j] < min_t){
+          min_t = d2t_2d[i][j];
+        }
+      }
+    }
+    double deltat = (max_t-min_t)/(pieceLineBins-1);
+    t2d_x.push_back(min_t - deltat);
+    for (size_t i=0;i<pieceLineBins;i++){
+      double time = min_t + deltat*i;
+      t2d_x.push_back(time);
+    }
+    for (int i=0;i<_config.driftSplineNumPhiBins();i++){
+      t2d_2d[i].push_back(0);
+      size_t current_index = 2;
+      for (size_t j=0;j<pieceLineBins;j++){
+        double time = t2d_x[j+1];
+        while (current_index < pieceLineBins-1 && d2t_2d[i][current_index] < time){
+          current_index++;
+        }
+        double d0 = d2t_x[current_index-1];
+        double d1 = d2t_x[current_index];
+        double t0 = d2t_2d[i][current_index-1];
+        double t1 = d2t_2d[i][current_index];
+        t2d_2d[i].push_back(d0 + (d1-d0)*(time-t0)/(t1-t0));
       }
     }
 
+    std::vector<std::vector<double> > d2t_2dv(_config.driftSplineNumPhiBins(), std::vector<double> ());
+    for (int i=0;i<_config.driftSplineNumPhiBins();i++){
+      d2t_2dv[i].push_back(startingVelocity);
+      for (size_t j=0;j<pieceLineBins;j++){
+        if (j < pieceLineBins-1){
+          d2t_2dv[i].push_back((d2t_x[j+1]-d2t_x[j])/(d2t_2d[i][j+1]-d2t_2d[i][j]));
+        }else{
+          d2t_2dv[i].push_back(d2t_2dv[i][d2t_2dv[i].size()-1]);
+        }
+      }
+    }
+
+    for (int i=0;i<_config.driftSplineNumPhiBins();i++){
+      t2d_2d[i][0] = t2d_2d[i][1] - startingVelocity*deltat;
+      d2t_2d[i][0] = d2t_2d[i][1] - 1/startingVelocity*(d2t_x[1]-d2t_x[0]);
+    }
     std::vector<double> edep;
     for (int i=0;i<_config.eBins();i++)
       edep.push_back(_config.eBinWidth()*i);
@@ -184,7 +255,9 @@ namespace mu2e {
         gasGain, analognoise, dVdI, vsat, ADCped,
         pmpEnergyScaleAvg, strawHalfPropVelocity,
         _config.useDriftSplines(), _config.driftIgnorePhi(),
-        deltaPhi,timesplines,ressplines);
+        resspline,
+        deltaPhi,
+        d2t_x, d2t_2d, d2t_2dv, t2d_x, t2d_2d);
 
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;
