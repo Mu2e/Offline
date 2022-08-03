@@ -12,11 +12,12 @@
 #include "KinKal/Detector/Residual.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include <Rtypes.h>
 #include <functional>
 namespace mu2e {
   struct TrkStrawHitSeed {
-    TrkStrawHitSeed() : _index(0), _ambig(0), _algo(-1), _edep(0),  _htime(0), _wdist(0), _werr(0), _dtime(0),
+    TrkStrawHitSeed() : _index(0), _ambig(0), _algo(-1), _frozen(false), _edep(0),  _htime(0), _wdist(0), _werr(0), _dtime(0),
     _ptoca(0),_stoca(0),
     _wdoca(0), _wdocavar(0), _wdt(0), _wtocavar(0),
     _doca(0.0), _docavar(0), _dt(0), _tocavar(0),
@@ -33,10 +34,10 @@ namespace mu2e {
         KinKal::ClosestApproachData const& fitptca,
         KinKal::Residual const& utresid, KinKal::Residual const& udresid,
         KinKal::Residual const& rtresid, KinKal::Residual const& rdresid,
-        DriftInfo const& dinfo,
-        int whstate, int algo) :
+        DriftInfo const& dinfo, WireHitState const& whs) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
-      _flag(chit.flag()), _ambig(whstate), _algo(algo),
+      _flag(chit.flag()),
+      _ambig(whs.state_), _algo(whs.algo_), _frozen(whs.frozen_),
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()),_werr(chit.wireRes()), _dtime(chit.driftTime()),
       _ptoca(refptca.particleToca()),_stoca(refptca.sensorToca()),
       _wdoca(refptca.doca()),_wdocavar(refptca.docaVar()),
@@ -62,7 +63,7 @@ namespace mu2e {
         Float_t stime, Float_t upos, Float_t dt,
         Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
-      _flag(flag), _ambig(ambig), _algo(-1),
+      _flag(flag), _ambig(ambig), _algo(-10), _frozen(false),
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()),
       _dtime(chit.driftTime()),
       _ptoca(t0._t0),_stoca(chit.time()-stime),
@@ -111,6 +112,7 @@ namespace mu2e {
     StrawHitFlag    _flag;    // flag describing the status of this hit (active, ....)
     Int_t           _ambig;   // hit state, including LR ambiguity
     Int_t           _algo;     // hit updater algorithm
+    Bool_t          _frozen; // hit state was frozen
     Float_t         _edep;        // reco energy deposition
     Float_t         _htime;   // raw hit time
     Float_t         _wdist;       // raw hit U position
