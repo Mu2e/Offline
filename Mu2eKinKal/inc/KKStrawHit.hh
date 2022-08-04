@@ -22,7 +22,6 @@
 #include "Offline/Mu2eKinKal/inc/PTCAStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
-#include "Offline/Mu2eKinKal/inc/NullHitInfo.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 // Other
@@ -71,6 +70,7 @@ namespace mu2e {
       auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
       auto const& strawHitIndex() const { return shindex_; }
+      auto const& strawResponse() const { return sresponse_; }
       // Functions used in updating
       void setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const; // compute residuals WRT current reference given the state
       CA unbiasedClosestApproach() const;
@@ -91,7 +91,6 @@ namespace mu2e {
       StrawHitIndex shindex_; // index to the StrawHit
       Straw const& straw_; // reference to straw of this hit
       StrawResponse const& sresponse_; // straw calibration information
-      NullHitInfo nhinfo_; // parameters for treating null hits
       // utility functions
       void updateWHS(MetaIterConfig const& miconfig);
   };
@@ -148,26 +147,21 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
     if(!whstate_.frozen_){
       unsigned nupdaters(0);
-      auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+      // only search for updaters that work directly on StrawHits (not StrawHitClusters)
       auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
       auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
       StrawHitUpdater const* shu(0);
-      if(cshu){ shu = cshu; ++nupdaters; }
       if(pshu){ shu = pshu; ++nupdaters; }
       if(nshu){ shu = nshu; ++nupdaters; }
       if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
       if(shu != 0){
-        // always get the null hit info from the updater
-        nhinfo_ = shu->nullHitInfo(sresponse_,straw_);
-        if(!shu->useStrawHitCluster()){ // only update the state if the updater doesn't operate on clusters
-          whstate_.algo_ = shu->algorithm();
-          CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
-          whstate_.usable_ = ca.usable();
-          if(whstate_.usable_)
-            whstate_ = shu->wireHitState(ca.tpData(),straw_);
-          else
-            whstate_.state_ = WireHitState::inactive;
-        }
+        whstate_.algo_ = shu->algorithm();
+        CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
+        whstate_.usable_ = ca.usable();
+        if(whstate_.usable_)
+          whstate_ = shu->wireHitState(ca.tpData(),straw_,sresponse_);
+        else
+          whstate_.state_ = WireHitState::inactive;
       } // no updater means don't change the state
     }
   }
@@ -196,6 +190,7 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
     // reset the residuals
     resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
+    auto const& nhinfo = whstate.nhinfo_;
     if(whstate.active()){
       if(whstate.useDrift()){
         DriftInfo dinfo = driftInfo();
@@ -205,13 +200,13 @@ namespace mu2e {
         resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
       } else {
         // Null state. interpret DOCA against the wire directly as a residual.  We have to take the DOCA sign out of the derivatives
-        resids[Mu2eKinKal::dresid] = Residual(ptca_.doca(),nhinfo_.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
+        resids[Mu2eKinKal::dresid] = Residual(ptca_.doca(),nhinfo.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
         // optionally also constrain the time
-        if(nhinfo_.usetime_){
+        if(nhinfo.usetime_){
           // time residual is deltaT
-          double dt = ptca_.deltaT() - nhinfo_.toff_;
-          if(nhinfo_.useComboDriftTime_)dt -= chit_.driftTime();  // Null updater uses combo hit time
-          resids[Mu2eKinKal::tresid] = Residual(dt,nhinfo_.tvar_,0.0,true,-ptca_.dTdP());
+          double dt = ptca_.deltaT() - nhinfo.toff_;
+          if(nhinfo.useComboDriftTime_)dt -= chit_.driftTime();  // Null updater uses combo hit time
+          resids[Mu2eKinKal::tresid] = Residual(dt,nhinfo.tvar_,0.0,true,-ptca_.dTdP());
         }
       }
     }

@@ -2,20 +2,14 @@
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
-  WireHitState NullStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata,Straw const& straw ) const {
+  WireHitState NullStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata,Straw const& straw, StrawResponse const& sresponse ) const {
     // for now very simple: could check if inside straw longitudinally, etc.
+    WireHitState whs;
     if(fabs(tpdata.doca()) > maxdoca_)
-      return WireHitState(WireHitState::inactive,StrawHitUpdaters::null);
+      whs = WireHitState(WireHitState::inactive,StrawHitUpdaters::null);
     else
-      return WireHitState(WireHitState::null,StrawHitUpdaters::null);
-  }
-  NullHitInfo NullStrawHitUpdater::nullHitInfo(StrawResponse const& sresponse,Straw const& straw) const {
-    NullHitInfo nhinfo;
-    nhinfo.toff_ = dt_;
-    nhinfo.dvar_ = dvar_;
-    nhinfo.tvar_ = tvar_;
-    nhinfo.usetime_ = usetime_;
-    nhinfo.useComboDriftTime_ = true;
-    return nhinfo;
+      whs = WireHitState(WireHitState::null,StrawHitUpdaters::null);
+    whs.nhinfo_ = NullHitInfo(dt_,tvar_,dvar_,usetime_,true);
+    return whs;
   }
 }

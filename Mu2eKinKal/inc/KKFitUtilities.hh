@@ -44,6 +44,7 @@ namespace mu2e {
 //      if(ntries == maxntries) throw cet::exception("RECO")<<"mu2e::KKFitUtilities: zTime failure" << std::endl;
       return ztime;
     }
+    bool insideStraw(KinKal::ClosestApproachData const& tpdata,Straw const& straw,double tolerance=0.0);
 
   }
 }

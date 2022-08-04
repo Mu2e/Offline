@@ -4,6 +4,7 @@
 #ifndef Mu2eKinKal_CSHU_updateCluster_hh
 #define Mu2eKinKal_CSHU_updateCluster_hh
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 namespace mu2e {
   template<class KTRAJ> void CombinatoricStrawHitUpdater::updateCluster(
@@ -38,9 +39,18 @@ namespace mu2e {
       if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
       return;
     }
-
+    // set the null hit configuration in the allowed states.  This depends on conditions so can't be pre-computed
+    auto const& hit = hits.front();
+    double vdriftinst = hit->strawResponse().driftInstantSpeed(hit->strawId(),nulldoca_,0.0,true);
+    NullHitInfo nhinfo;
+    nhinfo.toff_ = 0.5*nulldoca_/vdriftinst;
+    nhinfo.tvar_ = 0.25*dvar_/(vdriftinst*vdriftinst);
+    nhinfo.dvar_ = dvar_;
+    nhinfo.usetime_ = nulltime_;
+    auto allowed = allowed_;
+    for(auto& whs : allowed)whs.nhinfo_ = nhinfo;
     // iterate over all possible states of each hit, and incrementally compute the total chisquared for all the hits in the cluster WRT the unbiased parameters
-    WHSIterator whsiter(hits.size(),allowed());
+    WHSIterator whsiter(hits.size(),allowed);
     size_t ncombo = whsiter.nCombo();
     ClusterScoreCOL cscores(0);
     cscores.reserve(ncombo);
