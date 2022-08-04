@@ -8,7 +8,6 @@
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/General/Weights.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
-#include "Offline/Mu2eKinKal/inc/StrawHitUpdater.hh"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -31,7 +30,7 @@ namespace mu2e {
   };
   using ClusterScoreCOL = std::vector<ClusterScore>;
 
-  class CombinatoricStrawHitUpdater : public StrawHitUpdater {
+  class CombinatoricStrawHitUpdater {
     public:
       using CSHUConfig = std::tuple<unsigned,float,float,float,float,bool,bool,bool,int>;
       // struct to sort hit states by chisquared value
@@ -56,16 +55,11 @@ namespace mu2e {
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right};
         else
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::right};
+        // set the algorithm; this propagates to the StrawHits
+        for(auto& whs : allowed_)whs.algo_ = StrawHitUpdaters::Combinatoric;
         toff_ = tvar_ = 0.0;
         std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " " << allownull_ << " " << nulltime_ << std::endl;
       }
-      // base class interface: note the WireHitState function isn't used
-      WireHitState wireHitState(ClosestApproachData const& tpdata,Straw const& straw) const override { return WireHitState(WireHitState::inactive); }
-      NullHitInfo nullHitInfo(StrawResponse const& sresponse,Straw const& straw) const override;
-      StrawHitUpdaters::algorithm algorithm() const override { return StrawHitUpdaters::Combinatoric; }
-      bool useUnbiasedClosestApproach() const override { return false; }
-      bool useStrawHitCluster() const override { return true; }
-
       ClusterScore selectBest(ClusterScoreCOL& cscores) const; // find the best cluster configuration given the score for each
       double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
       auto inactivePenalty() const { return inactivep_;}

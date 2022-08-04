@@ -1,6 +1,7 @@
 #ifndef Mu2eKinKal_WireHitState_hh
 #define Mu2eKinKal_WireHitState_hh
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/Mu2eKinKal/inc/NullHitInfo.hh"
 #include <stdexcept>
 #include <iostream>
 
@@ -10,6 +11,7 @@ namespace mu2e {
     enum State { inactive=-2, left=-1, null=0, right=1};  // state description
     State state_;
     StrawHitUpdaters::algorithm algo_; // algorithm used to set this state
+    NullHitInfo nhinfo_; // Info associated with null hits for this state
     bool frozen_; // if set, state not allowed to change
     bool usable_; // can the hit be used in any way?
     bool useDrift() const { return state_ == left || state_ == right; }

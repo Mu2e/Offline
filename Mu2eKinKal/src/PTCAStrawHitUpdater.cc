@@ -6,7 +6,7 @@
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
-  WireHitState PTCAStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata, Straw const& straw ) const {
+  WireHitState PTCAStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata, Straw const& straw, StrawResponse const& sresponse ) const {
     WireHitState whstate(WireHitState::inactive,StrawHitUpdaters::PTCA);
     double doca = tpdata.doca();
     double absdoca = fabs(doca);
@@ -16,26 +16,23 @@ namespace mu2e {
     } else if(absdoca < mindoca_ || tpdata.deltaT() < mindt_) {
       whstate.state_ = WireHitState::null;
     }
+    // compute time and distance parameters used for null ambiguity (wire constraint)
+    auto& nhinfo = whstate.nhinfo_;
+    nhinfo.dvar_ = dvar_;
+    double vdrift = sresponse.driftConstantSpeed(); // use average speed for now
+    if(nulltime_ == usecombo){
+      nhinfo.usetime_ = true;
+      nhinfo.toff_ =  -0.6; // should come from calibration FIXME
+      nhinfo.useComboDriftTime_ = true;
+      nhinfo.tvar_ = 30.0; // should come from calibration FIXME
+    } else if(nulltime_ == usedoca){
+      nhinfo.usetime_ = true;
+      nhinfo.toff_ = 0.5*mindoca_/vdrift; // this calculation is unreliable currently
+      nhinfo.useComboDriftTime_ = false;
+      nhinfo.tvar_ = dvar_/(vdrift*vdrift);
+    } else {
+      nhinfo.usetime_ = false;
+    }
     return whstate;
   }
-
-  NullHitInfo PTCAStrawHitUpdater::nullHitInfo(StrawResponse const& sresponse, Straw const& straw) const {
-    NullHitInfo nhinfo;
-    // compute time and distance parameters used for null ambiguity (wire constraint)
-    double vdriftinst = sresponse.driftInstantSpeed(straw.id(),mindoca_,0.0,true);
-    nhinfo.toff_ = 0.5*mindoca_/vdriftinst + 3.0; // temporary kludge, should be a calibration FIXME
-    nhinfo.tvar_ = dvar_/(vdriftinst*vdriftinst);
-    nhinfo.dvar_ = dvar_;
-    nhinfo.usetime_ = nulltime_;
-    return nhinfo;
-  }
-
-  bool PTCAStrawHitUpdater::insideStraw(KinKal::ClosestApproachData const& ca,Straw const& straw) const {
-    static const double ubuffer(10.0); // should be a parameter FIXME
-    // compute the position along the wire and compare to the 1/2 length
-    // have to translate from CLHEP, should be native to Straw FIXME
-    double upos = VEC3(straw.wireDirection()).Dot((ca.sensorPoca().Vect() - VEC3(straw.origin())));
-    return fabs(upos) < straw.halfLength() + ubuffer;
-  }
-
 }

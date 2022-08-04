@@ -18,5 +18,11 @@ namespace mu2e {
       auto tperp = ptca.particleDirection() - ptca.particleDirection().Dot(ptca.sensorDirection())*ptca.sensorDirection();
       return acos(tperp.Dot(bdir));
     }
+    bool insideStraw(KinKal::ClosestApproachData const& ca,Straw const& straw,double ubuffer)  {
+      // compute the position along the wire and compare to the 1/2 length
+      // have to translate from CLHEP, should be native to Straw FIXME
+      double upos = KinKal::VEC3(straw.wireDirection()).Dot((ca.sensorPoca().Vect() - KinKal::VEC3(straw.origin())));
+      return fabs(upos) < straw.halfLength() + ubuffer;
+    }
   }
 }

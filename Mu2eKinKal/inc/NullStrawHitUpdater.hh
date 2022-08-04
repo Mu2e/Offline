@@ -23,11 +23,9 @@ namespace mu2e {
         uptca_ = std::get<4>(nsuconfig);
         usetime_ = std::get<5>(nsuconfig);
       }
-      WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw ) const override;
-      NullHitInfo nullHitInfo(StrawResponse const& sresponse,Straw const& straw) const override;
+      WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw, StrawResponse const& sresponse ) const override;
       StrawHitUpdaters::algorithm algorithm() const override { return StrawHitUpdaters::null; }
       bool useUnbiasedClosestApproach() const override { return uptca_; }
-      bool useStrawHitCluster() const override { return false; }
     private:
       double maxdoca_; // maximum DOCA to still use a hit
       double dvar_; // variance to assign to distance

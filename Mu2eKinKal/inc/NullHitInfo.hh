@@ -4,6 +4,8 @@ namespace mu2e {
   // struct describing null ambiguity hit (wire constraint) properties
   struct NullHitInfo {
     NullHitInfo() : toff_(0.0), tvar_(0.0), dvar_(0.0), usetime_(false), useComboDriftTime_(false) {}
+    NullHitInfo(double toff, double tvar, double dvar, bool usetime, bool useComboDriftTime) :
+      toff_(toff), tvar_(tvar), dvar_(dvar), usetime_(usetime), useComboDriftTime_(useComboDriftTime) {}
     double toff_; // time offset
     double tvar_; // variance on drift time
     double dvar_; // variance on drift distance
