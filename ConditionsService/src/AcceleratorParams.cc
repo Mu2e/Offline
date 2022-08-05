@@ -18,7 +18,7 @@ namespace mu2e {
 //    intrinsicExtinction = config.getDouble("acceleratorParams.intrinsicExt"      );
     limitingHalfWidth   = config.getDouble("acceleratorParams.limitingHalfWidth" );
 
-    potPulse  = config.getString("acceleratorParams.potPulse" );  
+    potPulse  = config.getString("acceleratorParams.potPulse" );
     acDipole  = config.getString("acceleratorParams.acDipole" );
 
   }

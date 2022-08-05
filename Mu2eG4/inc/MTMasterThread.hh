@@ -36,7 +36,6 @@ namespace mu2e {
 
     void beginRun() const;
     void endRun() const;
-    void stopThread();
     void storeRunNumber(int art_runnumber);
     void readRunData(PhysicalVolumeHelper* phys_vol_help) const;
 
@@ -65,6 +64,10 @@ namespace mu2e {
     mutable bool m_stopped;
 
     int run_number;
+
+    void storeCleanUp();
+    void stopThread();
+
 
   };
 

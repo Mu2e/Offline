@@ -49,9 +49,9 @@ namespace mu2e {
 
     return weight;
   }
-  
 
-  double CzarneckiSpectrum::interpolate (const double E, 
+
+  double CzarneckiSpectrum::interpolate (const double E,
                                          const TableRow<2>& row_after,
                                          const TableRow<2>& row,
                                          const TableRow<2>& row_before ) const {
@@ -59,22 +59,22 @@ namespace mu2e {
     const double e1(  row_after.first );  const double p1(  row_after.second.at(0) );
     const double e2(        row.first );  const double p2(        row.second.at(0) );
     const double e3( row_before.first );  const double p3( row_before.second.at(0) );
-    
+
     const double discr = e1*e1*e2 + e1*e3*e3 + e2*e2*e3 - e3*e3*e2 - e1*e1*e3 - e1*e2*e2;
-    
+
     const double A = (p1*e2 + p3*e1 + p2*e3 - p3*e2 - p1*e3 - p2*e1) / discr;
-    
+
     const double B = (e1*e1*p2 + e3*e3*p1 + e2*e2*p3 - e3*e3*p2 - e1*e1*p3 - e2*e2*p1) / discr;
-    
+
     const double C = (e1*e1*e2*p3 + e3*e3*e1*p2 + e2*e2*e3*p1 -
                       e3*e3*e2*p1 - e1*e1*e3*p2 - e2*e2*e1*p3) / discr;
-    
+
     return (A*E*E + B*E + C);
 
   }
-  
+
   double CzarneckiSpectrum::interpolateE5(double E, TableRow<2> val ) const {
-    
+
     GlobalConstantsHandle<PhysicsParams> phy;
 
     const double energy = val.first;

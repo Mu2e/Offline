@@ -26,7 +26,7 @@ namespace mu2e {
   // This is the entry point called by G4.
   void Mu2eG4DSGradientMagneticField::GetFieldValue(const G4double Point[4],
                                       G4double *Bfield) const {
-      
+
 //      cout << "calling Mu2eG4DSGradientMagneticField::GetFieldValue()" << endl;
 
 
@@ -40,7 +40,7 @@ namespace mu2e {
     //Bfield[0] = (point.x()-_mapOrigin.x())/r*Br;
     Bfield[0] = -(point.x()-_mapOrigin.x())*_gradient/2.0;
     Bfield[1] = -(point.y()-_mapOrigin.y())*_gradient/2.0;
-      
+
 //      cout << "Mu2eGlobalField map, "
 //      << " point=("<<point.x()<<","<<point.y()<<","<<point.z()<<")"
 //      << " field=("<<Bfield[0]<<","<<Bfield[1]<<","<<Bfield[2]<<")"

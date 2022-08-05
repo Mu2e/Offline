@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_hatch_block.ccl
 
@@ -7,10 +7,10 @@ string building.psArea.hatch.block.name     = "psAreaHatchBlock";
 string building.psArea.hatch.block.material = "CONCRETE_MARS";
 
 double building.psArea.hatch.block.offsetFromMu2eOrigin.x   = 947.4;
-double building.psArea.hatch.block.offsetFromFloorSurface.y = 8534.4; 
+double building.psArea.hatch.block.offsetFromFloorSurface.y = 8534.4;
 double building.psArea.hatch.block.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.psArea.hatch.block.yHalfThickness           = 2743.2; 
+double building.psArea.hatch.block.yHalfThickness           = 2743.2;
 
 vector<double> building.psArea.hatch.block.xPositions = {
   -4750.7,   // R0

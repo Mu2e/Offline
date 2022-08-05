@@ -22,7 +22,7 @@ namespace mu2e {
     TrkExtTrajPoint() ;
     TrkExtTrajPoint(int id, CLHEP::Hep3Vector & x, CLHEP::Hep3Vector & p, CLHEP::HepMatrix & cov, int volid, double fl, double ft) ;
     TrkExtTrajPoint(int id, CLHEP::HepVector & r, int volid, double fl, double ft);
-    ~TrkExtTrajPoint() ; 
+    ~TrkExtTrajPoint() ;
     TrkExtTrajPoint (const TrkExtTrajPoint & dt);
     TrkExtTrajPoint & operator = (const TrkExtTrajPoint & dt);
 

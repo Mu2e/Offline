@@ -29,11 +29,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -59,7 +57,7 @@ namespace mu2e
     public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
-    struct Config 
+    struct Config
     {
       fhicl::Atom<int> debug{ Name("debugLevel"),Comment("Debug Level"), 0};
       fhicl::Sequence<std::string> moduleLabels{ Name("crvStepModuleLabels"), Comment("CrvStepModule labels")};
@@ -68,17 +66,17 @@ namespace mu2e
       fhicl::Sequence<int> reflectors{ Name("reflectors"), Comment("location of reflectors at Crv sectors")};
       fhicl::Sequence<std::string> lookupTableFileNames{ Name("lookupTableFileNames"), Comment("lookup tables for Crv sectors")};
       fhicl::Sequence<double> scintillationYields{ Name("scintillationYields"), Comment("scintillation yields at Crv sectors")};
-      fhicl::Atom<double> scintillationYieldScaleFactor{ Name("scintillationYieldScaleFactor"), 
+      fhicl::Atom<double> scintillationYieldScaleFactor{ Name("scintillationYieldScaleFactor"),
                                                         Comment("scale factor for scintillation yield")};
-      fhicl::Atom<double> scintillationYieldVariation{ Name("scintillationYieldVariation"), 
+      fhicl::Atom<double> scintillationYieldVariation{ Name("scintillationYieldVariation"),
                                                       Comment("sigma of gaussian variation of scintillation yield")};
-      fhicl::Atom<double> scintillationYieldVariationCutoffLow{ Name("scintillationYieldVariationCutoffLow"), 
+      fhicl::Atom<double> scintillationYieldVariationCutoffLow{ Name("scintillationYieldVariationCutoffLow"),
                                                                Comment("lower cutoff at scintillation yield variation")};
-      fhicl::Atom<double> scintillationYieldVariationCutoffHigh{ Name("scintillationYieldVariationCutoffHigh"), 
+      fhicl::Atom<double> scintillationYieldVariationCutoffHigh{ Name("scintillationYieldVariationCutoffHigh"),
                                                                 Comment("upper cutoff at scintillation yield variation")};
       fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization")};
       fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization")};
-      fhicl::Atom<double> digitizationStartMargin{ Name("digitizationStartMargin"), 
+      fhicl::Atom<double> digitizationStartMargin{ Name("digitizationStartMargin"),
                                Comment("time window before digitization starts to account for photon travel time and electronics response.")};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{ Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
@@ -109,13 +107,13 @@ namespace mu2e
     double      _scintillationYieldVariationCutoffHigh;
 
     //On-spill
-    //-Digitization window 
-    //---needs to start about 100ns before the tracker digitization 
+    //-Digitization window
+    //---needs to start about 100ns before the tracker digitization
     //   to catch cosmic ray muons which may cause signals in the tracker.
     //---nominal: 400ns ... 1750ns (in proton time frame)
     //---gets adjusted for jitter
     //-CrvSteps
-    //---start recording CrvSteps 50ns before digitzation window (i.e. at 350ns) 
+    //---start recording CrvSteps 50ns before digitzation window (i.e. at 350ns)
     //   to account for photon travel time and electroncs response time.
     //---stop recording CrvSteps at end of digitization window (i.e. at 1750ns).
     //---these digitization windows are repeated with the microbunch period (1695ns).
@@ -127,7 +125,7 @@ namespace mu2e
     //-CrvPhotons
     //---photons get time wrapped modulus microbunch period (1695ns).
     //---photons before the blind time (digitization end - microbunch period = 55ns)
-    //   get move the to the time interval between the end of the microbunch 
+    //   get move the to the time interval between the end of the microbunch
     //   period (1695ns) and the end the of the digitization period (1750ns).
     //---all other photons before digitization start will be removed.
     //
@@ -210,7 +208,7 @@ namespace mu2e
         {
            tableLoaded=true;
            _makeCrvPhotons.emplace_back(_makeCrvPhotons[j]);
-	   if(_debug>0) std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
+           if(_debug>0) std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
            break;
         }
       }
@@ -370,15 +368,15 @@ namespace mu2e
               if(spillType==EventWindowMarker::SpillType::onspill)
               {
                 timeTmp = fmod(timeTmp,_microBunchPeriod);
-                //photons before the digitization start get removed except photons 
-                //in the first 55ns (digitization end - microbunch period) which get 
-                //moved to the interval between the end of the microbunch period and 
+                //photons before the digitization start get removed except photons
+                //in the first 55ns (digitization end - microbunch period) which get
+                //moved to the interval between the end of the microbunch period and
                 //the end of the digitization window.
-                if(timeTmp<digitizationEnd-_microBunchPeriod) timeTmp+=_microBunchPeriod;  
+                if(timeTmp<digitizationEnd-_microBunchPeriod) timeTmp+=_microBunchPeriod;
                 if(timeTmp<digitizationStart-_digitizationStartMargin) continue;
               }
               else
-              {              
+              {
                 //photons outside the eventWindow get removed
                 if(timeTmp<eventWindowStart-_digitizationStartMargin || timeTmp>eventWindowEnd) continue;
               }

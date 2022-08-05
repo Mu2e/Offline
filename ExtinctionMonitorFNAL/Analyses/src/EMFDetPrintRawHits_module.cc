@@ -4,7 +4,6 @@
 
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 
-#include "art/Framework/Core/ModuleMacros.h"
 
 #include "Offline/ExtinctionMonitorFNAL/Analyses/inc/GenericCollectionPrinter.hh"
 

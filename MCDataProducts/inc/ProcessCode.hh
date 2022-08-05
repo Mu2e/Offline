@@ -85,8 +85,8 @@ namespace mu2e {
       truncated,       mu2eMuonCaptureAtRest,  mu2eMuonDecayAtRest,       mu2eCeMinusEndpoint, // 167
       mu2eCeMinusLeadingLog,   mu2eCePlusEndpoint,  mu2eDIOLeadingLog, mu2eInternalRMC,  // 171
       mu2eExternalRMC,         mu2eFlateMinus,      mu2eFlatePlus, mu2eFlatPhoton, // 175
-      mu2eCePlusLeadingLog, mu2ePionCaptureAtRest, mu2eExternalRPC, mu2eInternalRPC, 
-      mu2eunused5, mu2eunused6, mu2eunused7, mu2eunused8, 
+      mu2eCePlusLeadingLog, mu2ePionCaptureAtRest, mu2eExternalRPC, mu2eInternalRPC,
+      mu2eCaloCalib, mu2eunused6, mu2eunused7, mu2eunused8,
       uninitialized, NoProcess,
       lastEnum,
       // An alias for backward compatibility
@@ -141,8 +141,8 @@ namespace mu2e {
     "truncated", "mu2eMuonCaptureAtRest", "mu2eMuonDecayAtRest",  "mu2eCeMinusEndpoint", \
     "mu2eCeMinusLeadingLog", "mu2eCePlusEndpoint",  "mu2eDIOLeadingLog", "mu2eInternalRMC", \
     "mu2eExternalRMC",  "mu2eFlateMinus",      "mu2eFlatePlus", "mu2eFlatPhoton", \
-    "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eExternalRPC", "mu2eInternalRPC", \
-    "mu2eunused5", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
+  "mu2eCePlusLeadingLog", "mu2ePionCaptureAtRest", "mu2eExternalRPC", "mu2eInternalRPC", \
+    "mu2eCaloCalib", "mu2eunused6", "mu2eunused7", "mu2eunused8", \
     "uninitialized", "NoProcess"
 #endif
 

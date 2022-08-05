@@ -4,7 +4,6 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 
 namespace mu2e {
-  using StrawMaterial = KinKal::StrawMaterial;
   using MatDBInfo = MatEnv::MatDBInfo;
 
   KKMaterial::KKMaterial(KKMaterial::Config const& matconfig) :
@@ -15,13 +14,13 @@ namespace mu2e {
     eloss_((MatEnv::DetMaterial::energylossmode)matconfig.eloss()),
     matdbinfo_(0) {}
 
-  StrawMaterial const& KKMaterial::strawMaterial() const {
+  KKStrawMaterial const& KKMaterial::strawMaterial() const {
     if(matdbinfo_ == 0){
       matdbinfo_ = new MatDBInfo(filefinder_,eloss_);
       Tracker const & tracker = *(GeomHandle<Tracker>());
       auto const& sprop = tracker.strawProperties();
-      smat_ = std::make_unique<StrawMaterial>(
-          sprop._strawOuterRadius, sprop._strawWallThickness, sprop._wireRadius,
+      smat_ = std::make_unique<KKStrawMaterial>(
+          sprop,
           matdbinfo_->findDetMaterial(wallmatname_),
           matdbinfo_->findDetMaterial(gasmatname_),
           matdbinfo_->findDetMaterial(wirematname_));

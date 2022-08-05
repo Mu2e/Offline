@@ -4,11 +4,11 @@ namespace mu2e {
   namespace TrkHitReco {
 
     std::vector<std::string> PeakFitParams::_pnames { "earlyCharge",
-						      "pedestal",
-						      "time",
-						      "charge",
-						      "width",
-						      "lateShift",
-						      "lateCharge" };
+      "pedestal",
+      "time",
+      "charge",
+      "width",
+      "lateShift",
+      "lateCharge" };
   }
 }

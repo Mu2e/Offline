@@ -41,7 +41,7 @@ class SaveDialogManager
     return(to_return);
   }
 
-  static bool animatedImage(std::string &f, bool &isRootFile) //only gif and Root TTrees 
+  static bool animatedImage(std::string &f, bool &isRootFile) //only gif and Root TTrees
                                                                //(which store multiple frames of one event)
   {
     const char *fileTypes[]={"GIF files","*.gif",

@@ -22,7 +22,6 @@ Original author Giovanni Onorato
 // Framework includes
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
@@ -40,7 +39,7 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   //
-        
+
   class FilterEmptyEvents : public art::EDFilter {
   public:
       explicit FilterEmptyEvents(fhicl::ParameterSet const& pset);
@@ -62,7 +61,7 @@ namespace mu2e {
     bool _hasTHits;
     bool _hasCHits;
   };
-                  
+
   //constructor
   FilterEmptyEvents::FilterEmptyEvents(fhicl::ParameterSet const& pset)
     : EDFilter{pset},
@@ -74,7 +73,7 @@ namespace mu2e {
     _minTHits(pset.get<unsigned>("MinTrackerHits",0)),
     _minCHits(pset.get<unsigned>("MinCaloHits",0))
     {}
-                  
+
   bool FilterEmptyEvents::filter(art::Event& e ) {
 
     if (_keepTrackOrCalo < 0 || _keepTrackOrCalo>2) {

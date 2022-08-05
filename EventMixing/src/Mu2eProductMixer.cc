@@ -53,7 +53,7 @@ namespace mu2e {
 
     for(const auto& e: conf.genParticleMixer().mixingMap()) {
       helper.declareMixOp
-	      (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
+              (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixGenParticles, *this);
     }
 
     for(const auto& e: conf.simParticleMixer().mixingMap()) {
@@ -186,14 +186,14 @@ namespace mu2e {
         (*col)[stage].insert(subrunVolumes_[stage].begin(), subrunVolumes_[stage].end());
       }
 
-      sr.put(std::move(col), subrunVolInstanceName_);
+      sr.put(std::move(col), subrunVolInstanceName_, art::fullSubRun());
     }
     if (mixCosmicLivetimes_) {
       if(generatedEvents_ == 0)throw cet::exception("BADINPUT")<<"Mu2eProductMixer: generated event count =0; was the mixin file opened correctly?" << std::endl;
       float scaling = resampledEvents_ / generatedEvents_;
       auto livetime = std::make_unique<CosmicLivetime>(totalPrimaries_ * scaling,
                                                        area_, lowE_, highE_, fluxConstant_, livetime_ * scaling);
-      sr.put(std::move(livetime), subrunLivetimeInstanceName_);
+      sr.put(std::move(livetime), subrunLivetimeInstanceName_, art::fullSubRun());
     }
   }
 
@@ -296,24 +296,24 @@ namespace mu2e {
     for(std::vector<MCTrajectoryCollection const*>::size_type ieIndex = 0; ieIndex < in.size(); ++ieIndex) {
       if (in[ieIndex] != nullptr) {
         for(const auto & orig : *in[ieIndex]) {
-	  if(!applyTimeOffset_) {
-	    res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
-		  MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]), orig.second.points())));
-	  } else {
-	    // make a deep copy of the points with shifted time
-	    std::vector<MCTrajectoryPoint> newpoints;
-	    newpoints.reserve(orig.second.points().size());
-	    for(auto const& mcpt : orig.second.points())
-	      newpoints.emplace_back(mcpt.pos(),mcpt.t()+stoff_.timeOffset_,mcpt.kineticEnergy());
-	    res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
-		  MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]), newpoints)));
-	  }
-	  if(!res.second) {
-	    throw cet::exception("BUG")<<"mixMCTrajectories(): failed to insert an entry, ieIndex="<<ieIndex
-	      <<", orig ptr = "<<orig.first
-	      <<std::endl;
-	  }
-	}
+          if(!applyTimeOffset_) {
+            res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
+                  MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]), orig.second.points())));
+          } else {
+            // make a deep copy of the points with shifted time
+            std::vector<MCTrajectoryPoint> newpoints;
+            newpoints.reserve(orig.second.points().size());
+            for(auto const& mcpt : orig.second.points())
+              newpoints.emplace_back(mcpt.pos(),mcpt.t()+stoff_.timeOffset_,mcpt.kineticEnergy());
+            res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
+                  MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]), newpoints)));
+          }
+          if(!res.second) {
+            throw cet::exception("BUG")<<"mixMCTrajectories(): failed to insert an entry, ieIndex="<<ieIndex
+              <<", orig ptr = "<<orig.first
+              <<std::endl;
+          }
+        }
       }
     }
 

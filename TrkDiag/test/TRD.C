@@ -13,17 +13,17 @@ void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   mtbk->SetLineColor(kBlue);
   TrkRecoDiag trdce(mtce,nsig);
   trdce.Loop();
-//  trdce.drawHistos();
+  //  trdce.drawHistos();
   TrkRecoDiag trdbk(mtbk,mtbk->GetEntries());
   trdbk.Loop();
-//  trdbk.drawHistos();
+  //  trdbk.drawHistos();
   TCanvas* acc = new TCanvas("acc","Acceptance",1000,1000);
   acc->Divide(1,2);
   acc->cd(1);
   trdce._acc->SetMaximum(1.0); // why is this necessary???
   trdce._acc->SetLabelSize(0.075);
   trdce._acc->SetMarkerSize(2.0);
-  
+
   trdce._acc->Draw("PETEXT0");
   acc->cd(2);
   gPad->SetLogy();
@@ -31,13 +31,13 @@ void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   trdbk._acc->SetMarkerSize(2.0);
   trdbk._acc->Draw("PETEXT0");
 
-// helix plots
+  // helix plots
   TLegend* hleg = new TLegend(0.6,0.7,0.8,0.9);
   hleg->AddEntry(trdce._hn,"Helix Fit","L");
   hleg->AddEntry(trdce._shn,"Chisq Fit","L");
   hleg->AddEntry(trdce._fhn,"Kalman Fit","L");
   hleg->AddEntry(trdce._phn,"Physics Sel","L");
-//
+  //
   TCanvas* hel1 = new TCanvas("hel1","Helix 1",1000,1000);
   hel1->Divide(4,2);
   hel1->cd(1);
@@ -61,7 +61,7 @@ void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   trdce._shrmax->Draw("same");
   trdce._fhrmax->Draw("same");
   trdce._phrmax->Draw("same");
-//
+  //
   hel1->cd(5);
   gPad->SetLogy();
   trdbk._hn->Draw();
@@ -86,7 +86,7 @@ void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   trdbk._shrmax->Draw("same");
   trdbk._fhrmax->Draw("same");
   trdbk._phrmax->Draw("same");
-//
+  //
   TCanvas* hel2 = new TCanvas("hel2","Helix 2",1000,1000);
   hel2->Divide(4,2);
   hel2->cd(1);
@@ -104,7 +104,7 @@ void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   trdce._shmom->Draw("same");
   trdce._fhmom->Draw("same");
   trdce._phmom->Draw("same");
-//
+  //
   hel2->cd(5);
   gPad->SetLogy();
   trdbk._hrad->Draw();
@@ -123,7 +123,7 @@ void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   trdbk._shmom->Draw("same");
   trdbk._fhmom->Draw("same");
   trdbk._phmom->Draw("same");
-// seed fit plots
+  // seed fit plots
   TLegend* sleg = new TLegend(0.6,0.7,0.8,0.9);
   sleg->AddEntry(trdce._ssna,"Chisq Fit","L");
   sleg->AddEntry(trdce._fsna,"Kalman Fit","L");
@@ -147,7 +147,7 @@ void TRD(const char* sigfiles,unsigned nsig, const char* bkgfiles) {
   trdce._sschisq->Draw("same");
   trdce._fschisq->Draw("same");
   trdce._pschisq->Draw("same");
-//
+  //
   seed->cd(5);
   gPad->SetLogy();
   trdbk._ssna->Draw();

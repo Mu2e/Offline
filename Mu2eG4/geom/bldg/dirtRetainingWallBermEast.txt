@@ -13,11 +13,11 @@ double dirt.retaining.Wall.berm.east.yHalfThickness           = 1600.2; //top of
 //trapezoid vertices
 vector<double> dirt.retaining.Wall.berm.east.xPositions = {
   -14605.,  // P1
-  -14605.,  // 
+  -14605.,  //
   -2000.,   // P0
   -2000.,
   -14605.,  // P1
-  -14605.,   // 
+  -14605.,   //
   -2000.,   // P0
   -2000.
 };

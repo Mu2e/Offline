@@ -1,5 +1,5 @@
 #
-# Simple visualization of the clusters distribution 
+# Simple visualization of the clusters distribution
 # on each vane with time and energy distribution
 #
 #
@@ -8,22 +8,22 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 
-# Give this job a name.  
+# Give this job a name.
 process_name : ReadCaloCluster
 
 #Start form a data source
-source : 
-{ 
-  module_type : RootInput 
+source :
+{
+  module_type : RootInput
   fileNames   : [ "data_03.root" ]
   maxEvents : -1
 }
 
-services : 
+services :
 {
-  message : @local::default_message 
+  message : @local::default_message
 
-  TFileService : 
+  TFileService :
   {
     #fileName : "CaloClusterOut.root"
   }
@@ -33,12 +33,12 @@ services :
   GeometryService :
   {
     inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }  
+  }
 
   ConditionsService :
   {
     conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }  
+  }
 
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
@@ -69,7 +69,7 @@ physics :
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
-   
+
   }
 
   analyzers:
@@ -90,7 +90,7 @@ physics :
      maxFullPrint           : 201
     }
 
-  } 
+  }
 
   p1 : [  ]
   e1 : [

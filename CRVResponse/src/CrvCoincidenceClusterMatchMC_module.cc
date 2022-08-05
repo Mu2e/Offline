@@ -1,7 +1,7 @@
 //
 // A module to find the MC information for the clusters of coincidences of CRV pulses
 //
-// 
+//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -22,11 +22,9 @@
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 
@@ -35,9 +33,9 @@
 #include <TMath.h>
 #include <TH2D.h>
 
-namespace mu2e 
+namespace mu2e
 {
-  class CrvCoincidenceClusterMatchMC : public art::EDProducer 
+  class CrvCoincidenceClusterMatchMC : public art::EDProducer
   {
     public:
     explicit CrvCoincidenceClusterMatchMC(fhicl::ParameterSet const& pset);
@@ -49,7 +47,7 @@ namespace mu2e
     private:
     std::string _crvCoincidenceClusterFinderModuleLabel;  //module label of the CrvCoincidenceClusterFinder module
                                                           //it is possible to have more than one instance of the CrvCoincidenceClusterFinder module
-    std::string _crvWaveformsModuleLabel;  //module label of the CrvWaveform module. 
+    std::string _crvWaveformsModuleLabel;  //module label of the CrvWaveform module.
                                            //this is optional. only needed, if MC information is required
     SimParticleTimeOffset _timeOffsets;
   };
@@ -75,7 +73,7 @@ namespace mu2e
   {
   }
 
-  void CrvCoincidenceClusterMatchMC::produce(art::Event& event) 
+  void CrvCoincidenceClusterMatchMC::produce(art::Event& event)
   {
     _timeOffsets.updateMap(event);
 
@@ -118,21 +116,24 @@ namespace mu2e
           CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, steps);
 
           //get the sim particle and deposited energy of this reco pulse
-          CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, _timeOffsets, 
-                                             visibleEnergyDepositedThisPulse, 
+          CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, _timeOffsets,
+                                             visibleEnergyDepositedThisPulse,
                                              earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
         }
 
         //add the MC information (sim particle, dep. energy) of this reco pulse to the collection of pulses
-        pulses.emplace_back(simParticleThisPulse,visibleEnergyDepositedThisPulse);
+        //unless the reco pulse was caused by a noise hit (and doesn't have an associated simParticle)
+        if(simParticleThisPulse.isAvailable()) pulses.emplace_back(simParticleThisPulse,visibleEnergyDepositedThisPulse);
       }//loop over reco pulses
 
       //based on all step points, get the most likely sim particle, total energy, etc.
-      CrvHelper::GetInfoFromStepPoints(steps, _timeOffsets, 
+      CrvHelper::GetInfoFromStepPoints(steps, _timeOffsets,
                                        visibleEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
-      crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, visibleEnergyDeposited, earliestHitTime, earliestHitPos);
+      //unless the reco pulse was caused by a noise hit (and doesn't have an associated simParticle)
+      if(simParticle.isAvailable()) crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle,
+                                                                                    visibleEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 
     event.put(std::move(crvCoincidenceClusterMCCollection));

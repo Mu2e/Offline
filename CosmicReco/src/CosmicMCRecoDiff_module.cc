@@ -30,6 +30,8 @@
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
+#include "Offline/Mu2eUtilities/inc/CosmicTrackUtils.hh"
+#include "Offline/Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 // Mu2e diagnostics
 #include "Offline/TrkDiag/inc/ComboHitInfo.hh"
@@ -41,7 +43,6 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 // ROOT incldues
@@ -55,7 +56,7 @@ using namespace std;
 
 namespace mu2e
 {
-	class CosmicMCRecoDiff : public art::EDAnalyzer {
+        class CosmicMCRecoDiff : public art::EDAnalyzer {
     public:
       struct Config{
         using Name=fhicl::Name;
@@ -97,7 +98,7 @@ namespace mu2e
       Float_t _RecoA1;
       Float_t _RecoB1;
       Float_t _RecoB0;
-      
+
       Float_t _Recod0;
       Float_t _Recoz0;
       Float_t _RecoPhi0;
@@ -117,19 +118,19 @@ namespace mu2e
       Float_t _TrueErrorA1;
       Float_t _TrueErrorB1;
       Float_t _TrueErrorB0;
-      
+
       Float_t _Trued0;
       Float_t _Truez0;
       Float_t _TruePhi0;
       Float_t _TrueCosT;
-      
+
       Float_t _Diffd0;
       Float_t _Diffz0;
       Float_t _DiffPhi0;
       Float_t _DiffCosT;
 
       Int_t _evt;
-       
+
       ProditionsHandle<Tracker> _alignedTracker_h;
       ProditionsHandle<StrawResponse> _strawResponse_h;
       Int_t _strawid;
@@ -161,7 +162,7 @@ namespace mu2e
       _cosmic_tree->Branch("RecoA1",&_RecoA1,"RecoA1/F");
       _cosmic_tree->Branch("RecoB0",&_RecoA0,"RecoB0/F");
       _cosmic_tree->Branch("RecoB1",&_RecoA1,"RecoB1/F");
-      
+
       _cosmic_tree->Branch("Recod0",&_Recod0,"Recod0/F");
       _cosmic_tree->Branch("Recoz0",&_Recoz0,"Recoz0/F");
       _cosmic_tree->Branch("RecoPhi0",&_RecoPhi0,"RecoPhi0/F");
@@ -181,12 +182,12 @@ namespace mu2e
       _cosmic_tree->Branch("Truez0",&_Truez0,"Truez0/F");
       _cosmic_tree->Branch("TruePhi0",&_TruePhi0,"TruePhi0/F");
       _cosmic_tree->Branch("TrueCosT",&_TrueCosT,"TrueCosT/F");
-      
+
       _cosmic_tree->Branch("TrueErrorA0",&_RecoErrorA0,"TrueErrorA0/F");
       _cosmic_tree->Branch("TrueErrorA1",&_RecoErrorA1,"TrueErrorA1/F");
       _cosmic_tree->Branch("TrueErrorB0",&_RecoErrorA0,"TrueErrorB0/F");
       _cosmic_tree->Branch("TrueErrorB1",&_RecoErrorA1,"TrueErrorB1/F");
-      
+
       _cosmic_tree->Branch("Diffd0",&_Diffd0,"Diffd0/F");
       _cosmic_tree->Branch("Diffz0",&_Diffz0,"Diffz0/F");
       _cosmic_tree->Branch("DiffPhi0",&_DiffPhi0,"DiffPhi0/F");
@@ -197,7 +198,7 @@ namespace mu2e
 
       void CosmicMCRecoDiff::analyze(const art::Event& event) {
 
-      
+
       _evt = event.id().event();
 
       if(!findData(event))
@@ -217,9 +218,9 @@ namespace mu2e
         _RecoA1=(st.MinuitParams.A1);
         _RecoB1=(st.MinuitParams.B1);
         _RecoB0=(st.MinuitParams.B0);
-        
+
         // Get KinKal:
-        std::tuple <double, double, double, double, double, double> KinKalParams = st.KinKalTrackParams();
+        std::tuple <double, double, double, double, double, double> KinKalParams = KinKalTrackParams(st);
         _Recod0 = get<0>(KinKalParams);
         _Recoz0 = get<2>(KinKalParams);
         _RecoCosT = get<3>(KinKalParams);
@@ -229,16 +230,16 @@ namespace mu2e
         _RecoErrorA1=(st.MinuitParams.deltaA1);
         _RecoErrorB1=(st.MinuitParams.deltaB1);
         _RecoErrorB0=(st.MinuitParams.deltaB0);
-       
-	      //StrawDigiMC hitP1;
-	      //StrawDigiMC first = (*_mcdigis)[0];
 
-	      XYZVectorF zpos(0.,0.,0);
+              //StrawDigiMC hitP1;
+              //StrawDigiMC first = (*_mcdigis)[0];
+
+              XYZVectorF zpos(0.,0.,0);
         XYZVectorF  zdir(0.,0.,1.);
         std::tuple <double,double, double, double, double> info = GetMCTrack(event, *_mcdigis);
-	      XYZVectorF pos0(get<0>(info),0, get<2>(info));//a0,0,b0
-	      XYZVectorF dir(get<1>(info), -1, get<3>(info));//a1,-1,b1
-       
+              XYZVectorF pos0(get<0>(info),0, get<2>(info));//a0,0,b0
+              XYZVectorF dir(get<1>(info), -1, get<3>(info));//a1,-1,b1
+
         TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(pos0, dir, zpos, zdir);
         XYZVectorF POCA = PCA.point1()-PCA.point2();
         double DOCA = PCA.dca();
@@ -248,7 +249,7 @@ namespace mu2e
         _TrueA1 = get<1>(info);
         _TrueB0 = get<2>(info);
         _TrueB1 = get<3>(info);
-        
+
         _Trued0 = amsign*DOCA;
         _Truez0 = PCA.point1().Z();
         _TrueCosT = dir.Z();
@@ -260,11 +261,11 @@ namespace mu2e
         _DiffPhi0 =  _RecoPhi0 - _TruePhi0;
 
         _cosmic_tree->Fill();
- 
+
       }
 
     }
-    
+
  std::tuple <double,double, double, double, double> CosmicMCRecoDiff::GetMCTrack(const art::Event& event, const StrawDigiMCCollection& mccol) {
     // get all possible directions
     double _mca0 = 0;
@@ -279,14 +280,14 @@ namespace mu2e
     //StrawResponse const& srep = _strawResponse_h.get(event.id());
 
     for (size_t i=0;i<mccol.size();i++){
-      StrawDigiMC mcdigi = mccol[i]; 
+      StrawDigiMC mcdigi = mccol[i];
       auto const& sgsptr = mcdigi.earlyStrawGasStep();
       auto const& sgs = *sgsptr;
       auto const& sp = *sgs.simParticle();
       auto posi = GenVector::Hep3Vec(sgs.startPosition());
       if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
         for (size_t j=i+1; j<mccol.size();j++){
-          StrawDigiMC jmcdigi = mccol[j]; 
+          StrawDigiMC jmcdigi = mccol[j];
           auto const& jsgsptr = jmcdigi.earlyStrawGasStep();
           auto const& jsgs = *jsgsptr;
           auto const& jsp = *jsgs.simParticle();
@@ -294,7 +295,7 @@ namespace mu2e
           if ((jsp.pdgId() == 13 || jsp.pdgId() == -13) && jsp.creationCode() == 56){
             pppos.push_back(posi);
             ppdir.push_back((posi-posj).unit());
-          } 
+          }
         }
       }
     }
@@ -307,7 +308,7 @@ namespace mu2e
       CLHEP::Hep3Vector ppintercept(0,0,0);
       CLHEP::Hep3Vector ppdirection(0,1,0);
       for (size_t i=0;i<mccol.size();i++){
-        StrawDigiMC mcdigi = mccol[i]; 
+        StrawDigiMC mcdigi = mccol[i];
 
         const Straw& straw = tracker->getStraw( mcdigi.strawId() );
         auto const& sgsptr = mcdigi.earlyStrawGasStep();
@@ -317,12 +318,12 @@ namespace mu2e
         if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
               GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
-          double true_doca = pca.dca(); 
+          double true_doca = pca.dca();
 
           TwoLinePCA pca2( straw.getMidPoint(), straw.getDirection(),
               pppos[j], ppdir[j]);
 
-          double mctrack_doca = pca2.dca(); 
+          double mctrack_doca = pca2.dca();
           if (fabs(true_doca - mctrack_doca) < 0.5){
             count++;
             ppintercept = pppos[j] - ppdir[j]*pppos[j].y()/ppdir[j].y();
@@ -362,11 +363,11 @@ namespace mu2e
     void CosmicMCRecoDiff::endJob() {}
 
     bool CosmicMCRecoDiff::findData(const art::Event& evt){
-   
+
       _coscol = 0;
       auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_costag);
       _coscol =stH.product();
-      
+
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
       _mcdigis = mcdH.product();
       _toff.updateMap(evt);

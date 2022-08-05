@@ -23,7 +23,7 @@
 namespace mu2e {
   class Plane{
     using PanelCollection = std::array<const Panel*,StrawId::_npanels>;
-    using TrackerPanelCollection = std::array<Panel,StrawId::_nupanels>; 
+    using TrackerPanelCollection = std::array<Panel,StrawId::_nupanels>;
     using xyzVec = CLHEP::Hep3Vector;
 
     public:

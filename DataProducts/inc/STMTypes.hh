@@ -21,6 +21,8 @@ namespace mu2e {
   private:
     uint16_t _data;
   };
+
+  enum STMDigiFlag : uint16_t { kUnknown = 0, kOK = 1 };
 }
 
 #endif

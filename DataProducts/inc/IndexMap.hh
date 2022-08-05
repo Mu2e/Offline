@@ -15,7 +15,7 @@ namespace mu2e {
   typedef uint16_t CondensedIndex;
 
   class IndexMap{
-    
+
   public:
     IndexMap() { };
     IndexMap(IndexMap const& other) : _theMap(other._theMap) { };
@@ -31,10 +31,10 @@ namespace mu2e {
 
     bool checkInMap(const FullIndex& full) {
       if (_theMap.find(full) != _theMap.end()) {
-	return true;
+        return true;
       }
       else {
-	return false;
+        return false;
       }
     }
 
@@ -43,10 +43,10 @@ namespace mu2e {
 
       ost << "IndexMap: " << std::endl;
       for (const auto& element : _theMap) {
-	ost << element.first << " --> " << element.second << std::endl;
-      }      
+        ost << element.first << " --> " << element.second << std::endl;
+      }
       if ( doEndl ){
-	ost << std::endl;
+        ost << std::endl;
       }
     }
 
@@ -57,7 +57,7 @@ namespace mu2e {
 
 
   inline std::ostream& operator<<( std::ostream& ost,
-				     IndexMap const& map){
+                                     IndexMap const& map){
     map.print(ost,false);
     return ost;
   }

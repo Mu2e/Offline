@@ -23,7 +23,7 @@ physics :
     TrkRecoDiag : @local::TrkRecoDiag
     TrkTriggerDiag : {
       module_type : TrkTriggerDiag
-#      debugLevel : 1
+      #      debugLevel : 1
     }
   }
 }

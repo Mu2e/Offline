@@ -1,0 +1,2 @@
+physics.filters.cprHelixDePTCFilter.requireCaloCluster : false
+physics.filters.cprHelixDePTCFilter.minNHits : 10.0

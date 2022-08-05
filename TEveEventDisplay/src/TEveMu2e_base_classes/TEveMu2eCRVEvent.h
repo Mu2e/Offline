@@ -30,7 +30,7 @@ namespace mu2e {
       Int_t mColor_ = kBlue;
       Int_t mSize_ = 1;
       bool AddErrorBar_ = true;
-     
+
       std::tuple<CLHEP::Hep3Vector, CLHEP::Hep3Vector> DrawSciBar();
       void DrawHit2DXY(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list2DXY);
       void DrawHit2DYZ(const std::string &pstr, Int_t b,CLHEP::Hep3Vector HitPos, TEveElementList *list2DYZ);

@@ -12,7 +12,7 @@ cat <<EOF
    run the root overlap check, return error code if the process failed
    or if overlaps were detected.
    if GDMLFILE argument is not proesent, look in the Muse standard location
-   \$MUSE_BUILD_DIR/Offline/gen/gdml/muse.gdml. 
+   \$MUSE_BUILD_DIR/Offline/gen/gdml/muse.gdml.
 
    -q don't print the full output, only errors
 
@@ -27,12 +27,14 @@ NEXPECTED=17
 
 QUIET=
 BUILD=
+REPORT=
 
-while getopts hqb OPTION ; do
+while getopts hqbr OPTION ; do
     case $OPTION in
         h) usage; exit 0 ;;
         q) QUIET=yes ;;
         b) BUILD=yes ;;
+        r) REPORT=yes ;;
         *) usage; exit 1 ;;
     esac
 done
@@ -65,6 +67,15 @@ NERROR=$( echo "$LL" | grep -ci error )
 
 NILLEGAL=$( echo "$LL" | grep "illegal" | awk '{print $NF}' )
 [ -z "$NILLEGAL" ] && NILLEGAL=0
+
+if [ -n "$REPORT" ]; then
+    TOTALS=$( echo "$LL" | grep "in Geometry imported from GDML" | \
+        awk '{for(i=4;i<9;i++) printf "%s ", $i }')
+    echo "Overlaps result: $TOTALS, $NILLEGAL illegal"
+    if [ $NILLEGAL -gt 0 ]; then
+       echo "$LL" | awk 'BEGIN{flag=0;}{if(flag==1) print $0; if($1=="===") flag=1; }'
+    fi
+fi
 
 RC=0
 if [ $RRC -ne 0 ]; then

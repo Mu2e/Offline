@@ -23,7 +23,7 @@ namespace mu2e{
     addTrkExtTrajs_(conf.addTrkExtTrajs()),
     RecoOnly_(conf.RecoOnly()),
     FillAll_(conf.FillAll()),
-    addMCTraj_(conf.addMCTraj()), 
+    addMCTraj_(conf.addMCTraj()),
     MCOnly_(conf.MCOnly())
   {}
 #endif
@@ -36,19 +36,19 @@ namespace mu2e{
     ss << value;
     return ss.str();
   }
-  
-  
+
+
   /*------------Function to fill RecoDataProduct lists:-------------*/
   void Collection_Filler::FillRecoCollections(const art::Event& evt, Data_Collections &data, RecoDataProductName CollectionName){
-    if(FillAll_ or RecoOnly_ or (addHits_ and CollectionName == ComboHits)){ 
+    if(FillAll_ or RecoOnly_ or (addHits_ and CollectionName == ComboHits)){
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
       data.chcol = chH.product();
     }
-    if(FillAll_ or RecoOnly_ or (addTimeClusters_ and CollectionName == TimeClusters)){ 
+    if(FillAll_ or RecoOnly_ or (addTimeClusters_ and CollectionName == TimeClusters)){
       auto chH = evt.getValidHandle<mu2e::TimeClusterCollection>(tcTag_);
       data.tccol = chH.product();
     }
-    if(FillAll_ or RecoOnly_ or (addTrkHits_ and CollectionName == ComboHits)){ 
+    if(FillAll_ or RecoOnly_ or (addTrkHits_ and CollectionName == ComboHits)){
       auto chH = evt.getValidHandle<mu2e::ComboHitCollection>(chTag_);
       data.chcol = chH.product();
     }
@@ -69,7 +69,7 @@ namespace mu2e{
       data.hseedcol = chH.product();
     }
     if(FillAll_ or RecoOnly_ or (addTracks_ and CollectionName==KalSeeds)){
-          
+
           for(const auto &tag : kalseedTag_){
             auto chH = evt.getValidHandle<mu2e::KalSeedCollection>(tag);
             data.kalseedcol = chH.product();
@@ -78,7 +78,7 @@ namespace mu2e{
             std::string name = TurnNameToString(tag);
             std::cout<<"Plotting KalSeed Instance: "<<name<<std::endl;
             data.track_labels.push_back(name);
-            
+
           }
           data.track_tuple = std::make_tuple(data.track_labels,data.track_list);
     }
@@ -94,8 +94,10 @@ namespace mu2e{
 
   /*------------Function to fill MCDataProduct lists:-------------*/
   void Collection_Filler::FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName CollectionName){
-    if(FillAll_ or MCOnly_ or (addMCTraj_ and CollectionName == MCTrajectories)){ 
+    if(FillAll_ or MCOnly_ or (addMCTraj_ and CollectionName == MCTrajectories)){
       auto chH = evt.getValidHandle<mu2e::MCTrajectoryCollection>(mctrajTag_);
+      std::string name = TurnNameToString(mctrajTag_);
+      std::cout<<"Plotting MCtraj Instance: "<<name<<std::endl;
       data.mctrajcol = chH.product();
     }
   }

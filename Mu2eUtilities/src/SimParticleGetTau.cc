@@ -10,13 +10,13 @@
 #include "Offline/Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 namespace mu2e {
-  
+
   //==========================================================================
   double SimParticleGetTau::calculate( const art::Ptr<SimParticle>& p,
                                        const VspMC& hitColls,
                                        const std::vector<int>& decayOffCodes,
                                        const PhysicsParams& gc ){
-    
+
     double tau = p->endProperTime() / gc.getParticleLifetime(p->pdgId());
     tau += getMultiStageTau( p, hitColls, decayOffCodes, gc );
     return tau;
@@ -28,7 +28,7 @@ namespace mu2e {
                                        const VspMC& hitColls,
                                        const std::vector<int>& decayOffCodes,
                                        const PhysicsParams& gc ){
-    
+
     double tau = sp.properTime() / gc.getParticleLifetime(sp.simParticle()->pdgId());
     tau += getMultiStageTau( sp.simParticle(), hitColls, decayOffCodes, gc );
     return tau;
@@ -37,8 +37,8 @@ namespace mu2e {
 
   //==========================================================================
   double SimParticleGetTau::getMultiStageTau( const art::Ptr<SimParticle>& p,
-                                              const VspMC& hitColls,  
-                                              const std::vector<int>& decayOffCodes, 
+                                              const VspMC& hitColls,
+                                              const std::vector<int>& decayOffCodes,
                                               const PhysicsParams& gc ) {
 
     double tau(0.);
@@ -84,12 +84,12 @@ namespace mu2e {
         // See if proper time of its ancestor should be included.
         part = part->parent();
         if ( std::binary_search( decayOffCodes.begin(), decayOffCodes.end(), int(part->pdgId()) ) ) {
-          tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId()); 
+          tau += part->endProperTime() / gc.getParticleLifetime(part->pdgId());
         }
       }
     } // loop up to the primary
-    
+
     return tau;
   }
-  
+
 } // namespace mu2e

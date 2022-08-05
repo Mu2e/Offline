@@ -18,7 +18,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
@@ -63,7 +62,7 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-  
+
     std::unique_ptr<ParticleGeneratorTool> Generator_;
 
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
@@ -89,7 +88,7 @@ namespace mu2e {
     const auto pset = conf().decayProducts.get<fhicl::ParameterSet>();
     Generator_ = art::make_tool<ParticleGeneratorTool>(pset);
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
-    
+
   }
 
   //================================================================

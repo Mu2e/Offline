@@ -10,11 +10,11 @@
 
 namespace mu2e {
 
-// count use of the same StrawHitis in different tracks
+  // count use of the same StrawHitis in different tracks
   unsigned TrkComp::nOverlap(const KalRep* k1, const KalRep* k2){
     unsigned nover(0);
-  // count shared StrawHits.  Note this currently requires a downcast, it should
-  // be supported by the TrkHit base class, FIXME!
+    // count shared StrawHits.  Note this currently requires a downcast, it should
+    // be supported by the TrkHit base class, FIXME!
     TrkStrawHitVector tshv1;
     convert(k1->hitVector(),tshv1);
     TrkStrawHitVector tshv2;
@@ -32,31 +32,31 @@ namespace mu2e {
     while(itsh1 != tshv1.end() && itsh2 != tshv2.end()){
       // check for overlap
       if((*itsh1)->index() == (*itsh2)->index()) {
-	// same straw hit: increment overlap and both iterators
-	++nover; ++itsh1; ++itsh2;
-      	while(itsh1 != tshv1.end() && !(*itsh1)->isActive() )++itsh1;
-	while(itsh2 != tshv2.end() && !(*itsh2)->isActive() )++itsh2;
+        // same straw hit: increment overlap and both iterators
+        ++nover; ++itsh1; ++itsh2;
+        while(itsh1 != tshv1.end() && !(*itsh1)->isActive() )++itsh1;
+        while(itsh2 != tshv2.end() && !(*itsh2)->isActive() )++itsh2;
       } else if((*itsh1)->index() < (*itsh2)->index()) {
-      // move to next potential overlap
-	while(itsh1 != tshv1.end() && (*itsh1)->index() < (*itsh2)->index() ){
-	  ++itsh1;
-	  while(itsh1 != tshv1.end() && !(*itsh1)->isActive() )++itsh1;
-	}
+        // move to next potential overlap
+        while(itsh1 != tshv1.end() && (*itsh1)->index() < (*itsh2)->index() ){
+          ++itsh1;
+          while(itsh1 != tshv1.end() && !(*itsh1)->isActive() )++itsh1;
+        }
       } else {
-	while(itsh2 != tshv2.end() && (*itsh2)->index() < (*itsh1)->index() ){
-	  ++itsh2;
-	  while(itsh2 != tshv2.end() && !(*itsh2)->isActive() )++itsh2;
-	}
+        while(itsh2 != tshv2.end() && (*itsh2)->index() < (*itsh1)->index() ){
+          ++itsh2;
+          while(itsh2 != tshv2.end() && !(*itsh2)->isActive() )++itsh2;
+        }
       }
     }
     return nover;
   }
 
-// count use of the same StrawHitis in different tracks
+  // count use of the same StrawHitis in different tracks
   unsigned TrkComp::nOverlap(const KalSeed& k1, const KalSeed& k2){
     unsigned nover(0);
-  // count shared StrawHits.  Note this currently requires a downcast, it should
-  // be supported by the TrkHit base class, FIXME!
+    // count shared StrawHits.  Note this currently requires a downcast, it should
+    // be supported by the TrkHit base class, FIXME!
     std::vector<TrkStrawHitSeed> tshv1 = k1.hits();
     std::vector<TrkStrawHitSeed> tshv2 = k2.hits();
     // sort these by StrawHit index, which is unique
@@ -73,21 +73,21 @@ namespace mu2e {
     while(itsh1 != tshv1.end() && itsh2 != tshv2.end()){
       // check for overlap
       if(itsh1->index() == itsh2->index()) {
-	// same straw hit: increment overlap and both iterators
-	++nover; ++itsh1; ++itsh2;
-      	while(itsh1 != tshv1.end() && !itsh1->flag().hasAllProperties(active) )++itsh1;
-	while(itsh2 != tshv2.end() && !itsh2->flag().hasAllProperties(active) )++itsh2;
+        // same straw hit: increment overlap and both iterators
+        ++nover; ++itsh1; ++itsh2;
+        while(itsh1 != tshv1.end() && !itsh1->flag().hasAllProperties(active) )++itsh1;
+        while(itsh2 != tshv2.end() && !itsh2->flag().hasAllProperties(active) )++itsh2;
       } else if(itsh1->index() < itsh2->index()) {
-      // move to next potential overlap
-	while(itsh1 != tshv1.end() && itsh1->index() < itsh2->index() ){
-	  ++itsh1;
-	  while(itsh1 != tshv1.end() && !itsh1->flag().hasAllProperties(active) )++itsh1;
-	}
+        // move to next potential overlap
+        while(itsh1 != tshv1.end() && itsh1->index() < itsh2->index() ){
+          ++itsh1;
+          while(itsh1 != tshv1.end() && !itsh1->flag().hasAllProperties(active) )++itsh1;
+        }
       } else {
-	while(itsh2 != tshv2.end() && itsh2->index() < itsh1->index() ){
-	  ++itsh2;
-	  while(itsh2 != tshv2.end() && !itsh2->flag().hasAllProperties(active) )++itsh2;
-	}
+        while(itsh2 != tshv2.end() && itsh2->index() < itsh1->index() ){
+          ++itsh2;
+          while(itsh2 != tshv2.end() && !itsh2->flag().hasAllProperties(active) )++itsh2;
+        }
       }
     }
     return nover;

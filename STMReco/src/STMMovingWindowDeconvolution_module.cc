@@ -31,7 +31,7 @@ using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
 
-  class STMMowingWindowDeconvolution : public art::EDProducer {
+  class STMMovingWindowDeconvolution : public art::EDProducer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -47,7 +47,7 @@ namespace mu2e {
         fhicl::Atom<double> fixed_cut_parameter{ Name("fixed_cut_parameter"), Comment("Input tag for the fixed cut parameter")};
       };
       using Parameters = art::EDProducer::Table<Config>;
-      explicit STMMowingWindowDeconvolution(const Parameters& conf);
+      explicit STMMovingWindowDeconvolution(const Parameters& conf);
 
     private:
     void beginJob() override;
@@ -57,7 +57,7 @@ namespace mu2e {
     mu2e::MWDAlg _mwd;
   };
 
-  STMMowingWindowDeconvolution::STMMowingWindowDeconvolution(const Parameters& config )  :
+  STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& config )  :
     art::EDProducer{config}
     ,_stmDigisTag(config().stmDigisTag())
     ,_mwd(config().M(),config().L(),config().tau(),config().nsigma_cut(),config().thresholdgrad(),config().fADC(),config().cut_mode(),config().fixed_cut_parameter())
@@ -66,9 +66,9 @@ namespace mu2e {
     produces<STMDigiCollection>();
   }
 
-  void STMMowingWindowDeconvolution::beginJob() {
+  void STMMovingWindowDeconvolution::beginJob() {
   }
-    void STMMowingWindowDeconvolution::produce(art::Event& event) {
+    void STMMovingWindowDeconvolution::produce(art::Event& event) {
     // create output
     unique_ptr<STMDigiCollection> outputSTMDigis(new STMDigiCollection);
     auto digisHandle = event.getValidHandle<STMDigiCollection>(_stmDigisTag);
@@ -89,7 +89,9 @@ namespace mu2e {
       for (int i_peak = 0; i_peak < peaks->npeaks; ++i_peak) {
         std::vector<int16_t> mwd_adcs;
         mwd_adcs.push_back(peaks->peak_heights.at(i_peak));
-STMDigi stm_digi(digi.trigNum(), STMTrigType(digi.trigType().mode(), digi.trigType().channel(), STMDataType::kMWD), digi.trigTime()+(peaks->peak_times.at(i_peak))*1e3, 0, baseline.at(0), baseline.at(1), 0, mwd_adcs);
+
+        uint32_t extra = ((uint32_t)baseline.at(1) << 16) | ((uint32_t)baseline.at(0)); // RMS << Mean
+        STMDigi stm_digi(digi.trigNum(), STMTrigType(digi.trigType().mode(), digi.trigType().channel(), STMDataType::kMWD), digi.trigTime()+(peaks->peak_times.at(i_peak))*1e3, 0, extra, STMDigiFlag::kOK, mwd_adcs);
         outputSTMDigis->push_back(stm_digi);
       }
     }
@@ -98,4 +100,4 @@ STMDigi stm_digi(digi.trigNum(), STMTrigType(digi.trigType().mode(), digi.trigTy
   }
 }
 
-DEFINE_ART_MODULE(mu2e::STMMowingWindowDeconvolution)
+DEFINE_ART_MODULE(mu2e::STMMovingWindowDeconvolution)

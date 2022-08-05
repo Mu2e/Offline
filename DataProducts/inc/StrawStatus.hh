@@ -2,7 +2,7 @@
 #define DataProducts_StrawStatus_hh
 //
 // Class to describe flag bits used for defining straw (or panel or plane) status
-// 
+//
 // Original author David Brown (7/2020)
 //
 // Mu2e includes
@@ -13,8 +13,8 @@
 #include <map>
 namespace mu2e {
 
-struct StrawStatusDetail {
-// I need 32 bits for this class
+  struct StrawStatusDetail {
+    // I need 32 bits for this class
     typedef unsigned mask_type;
     enum bit_type {
       absent=0, // straw (mylar + wire + gas) or panel or plane is physically absent
@@ -34,7 +34,7 @@ struct StrawStatusDetail {
       suppress=14, // suppress signals from this straw for unspecified reasons
     };
 
-// functions needed for the BitMap template
+    // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();
     static mask_type bit_to_mask( bit_type b){ return 1<<b; }

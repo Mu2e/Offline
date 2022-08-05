@@ -9,7 +9,7 @@ double DAQParams.t0 = 700.;
 // Accelerator parameters
 double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
 //double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1  No longer used!  comes from pulses below
-double acceleratorParams.limitingHalfWidth = 125.  ; // ns, "" 
+double acceleratorParams.limitingHalfWidth = 125.  ; // ns, ""
 
 string acceleratorParams.potPulse  = "Offline/ConditionsService/data/potTimingDistribution_20160511.txt";
 string acceleratorParams.acDipole  = "Offline/ConditionsService/data/acDipoleTransmissionFunction_20160511.txt";
@@ -24,8 +24,8 @@ double extMonFNAL.biasVoltage = -150; // Volts
 
 //Calorimeter calibration information
 
-// Longitudinal non-uniformity response, see Mu2e doc ... 
-double CrystalNonUniformity_0 = 1.05; 
+// Longitudinal non-uniformity response, see Mu2e doc ...
+double CrystalNonUniformity_0 = 1.05;
 
 //Birks correction for neutrons
 double BirkCorrHadron = 4.0;
@@ -62,7 +62,7 @@ string calorimeter.propagHistName = "h_zposTime";
 //CRV digi parameters
 double crv.digitizationPeriod = 12.55; //ns
 
-//CRV calibration parameters 
+//CRV calibration parameters
 //This is only a placeholder. In the future, these values need to be a function of time and SiPM number.
 double crv.pedestal           = 100;    //ADC
 double crv.calibrationFactor  = 394.6;  //ADC*ns/PE

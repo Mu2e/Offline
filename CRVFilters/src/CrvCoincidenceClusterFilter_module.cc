@@ -22,7 +22,6 @@
 
 // #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/EDFilter.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -51,17 +50,17 @@ namespace mu2e {
 
 
   class CrvCoincidenceClusterFilter : public art::EDFilter {
-     
+
   public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
       fhicl::Atom<int> diag{ Name("diagLevel"),
-	Comment("Diagnostic Level"), 0};
+        Comment("Diagnostic Level"), 0};
       fhicl::Atom<art::InputTag> CRVCCF{ Name("CrvCoincidenceClusterFinder"),
-	Comment("CrvCoincidenceClusterFinder producer")};
+        Comment("CrvCoincidenceClusterFinder producer")};
       fhicl::Atom<size_t> minNCC{ Name("MinNCC"),
-	Comment("Minimum number of cluster of coincidences")};
+        Comment("Minimum number of cluster of coincidences")};
     };
 
     virtual ~CrvCoincidenceClusterFilter() { }
@@ -75,7 +74,7 @@ namespace mu2e {
     explicit CrvCoincidenceClusterFilter(const Parameters& conf);
 
   private:
-       
+
     int                     _diagLevel;
     int                     _nProcess;
     int                     _nPass;
@@ -86,9 +85,9 @@ namespace mu2e {
 
   CrvCoincidenceClusterFilter::CrvCoincidenceClusterFilter(const Parameters& config) :
     art::EDFilter{config},
-    _diagLevel                   (config().diag()),  
-    _nProcess                    (0),		     
-    _nPass                       (0),		     
+    _diagLevel                   (config().diag()),
+    _nProcess                    (0),
+    _nPass                       (0),
     _clTag                       (config().CRVCCF()),
     _minNCC                      (config().minNCC()){
     produces<TriggerInfo>();
@@ -104,7 +103,7 @@ namespace mu2e {
     }
     return true;
   }
-  
+
   //--------------------------------------------------------------------------------
   // Follow the body of the Filter logic
   //--------------------------------------------------------------------------------
@@ -112,7 +111,7 @@ namespace mu2e {
 
     ++_nProcess;
     if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CrvCoincidenceClusterFilter =  "<<_nProcess  <<std::endl;
-   
+
     unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     bool   retval(false);
 
@@ -121,11 +120,11 @@ namespace mu2e {
     const CrvCoincidenceClusterCollection*  crvCoincidenceClusters = clH.product();
 
     if (crvCoincidenceClusters->size() > _minNCC) retval = true;
-    
+
     event.put(std::move(triginfo));
     return retval;
   }
- 
+
 }  // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::CrvCoincidenceClusterFilter);

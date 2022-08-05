@@ -21,15 +21,15 @@ namespace mu2e {
     CLHEP::HepSymMatrix cov(5,1);
     for(size_t ipar=0; ipar <5; ipar++){
       for(size_t jpar=0; jpar <=ipar; jpar++){
-	// stupid fotran-like interface
-	cov.fast(ipar+1,jpar+1) = kkcov(ipar,jpar);
+        // stupid fotran-like interface
+        cov.fast(ipar+1,jpar+1) = kkcov(ipar,jpar);
       }
     }
     return HelixCov(cov);
   }
 
 
-  void KalSegment::mom(double flt, XYZVectorF& momvec) const { 
+  void KalSegment::mom(double flt, XYZVectorF& momvec) const {
     auto chel = centralHelix();
     // momentum at the time corresponding to this flight
     auto momv = chel.momentum3(fltToTime(flt));
@@ -50,7 +50,7 @@ namespace mu2e {
   HitT0 KalSegment::t0() const {
   // convert to LoopHelix.  In that parameterization, t0 is defined WRT z=0
     auto lhelix = loopHelix();
-    return HitT0(lhelix.params().parameters()(KinKal::LoopHelix::t0_), 
-	sqrt(lhelix.params().covariance()(KinKal::LoopHelix::t0_,KinKal::LoopHelix::t0_)));
+    return HitT0(lhelix.params().parameters()(KinKal::LoopHelix::t0_),
+        sqrt(lhelix.params().covariance()(KinKal::LoopHelix::t0_,KinKal::LoopHelix::t0_)));
   }
 }

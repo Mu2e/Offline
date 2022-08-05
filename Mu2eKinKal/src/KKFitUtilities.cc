@@ -7,12 +7,12 @@ namespace mu2e {
     KinKal::Line hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse) {
       double sprop = 2*strawresponse.halfPropV(ch.strawId(),ch.energyDep());
       // construct a kinematic line trajectory from this straw. the measurement point is the signal end
-      auto p0 = straw.wireEnd(ch.driftEnd());
-      auto p1 = straw.wireEnd(StrawEnd(ch.driftEnd().otherEnd()));
-      // Straw should provide this data in the native type TODO
-      KinKal::VEC3 vp0(p0.x(),p0.y(),p0.z());
-      KinKal::VEC3 vp1(p1.x(),p1.y(),p1.z());
+      KinKal::VEC3 vp0(straw.wireEnd(ch.driftEnd()));
+      KinKal::VEC3 vp1(straw.wireEnd(StrawEnd(ch.driftEnd().otherEnd())));
       return KinKal::Line(vp0,vp1,ch.time(),sprop);
+    }
+    bool inDetector(KinKal::VEC3 const& point) {
+      return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker FIXME!
     }
   }
 }

@@ -14,9 +14,9 @@ namespace mu2e {
     using Comment=fhicl::Comment;
 
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
 
     fhicl::Atom<double> systemClockSpeed {
       Name("SystemClockSpeed"), Comment("Detector clock speed in MHz")};

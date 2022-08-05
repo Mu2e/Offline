@@ -2,6 +2,10 @@
 #define RecoDataProducts_STMDigi_hh
 //
 // Data product that represents the digitized signal coming from the STM
+// The idea is that we will use the same data product for all of:
+// - unsuppressed digis,
+// - zero-suppressed digis, and
+// - processed digis (i.e. MWD and pulse-quality)
 //
 
 // C++ includes
@@ -16,20 +20,45 @@ namespace mu2e {
 
   class STMDigi {
   public:
-    STMDigi() : _trigNum(0), _trigType(STMTrigType(0, 0, 0)), _trigTime(0), _trigTimeOffset(0), _baselineMean(0), _baselineRMS(0), _nDrop(0), _adcs(std::vector<int16_t>()){};
+    STMDigi() : _trigNum(0), _trigType(STMTrigType(0, 0, 0)), _trigTime(0), _trigTimeOffset(0), _extra(0), _flag(STMDigiFlag::kUnknown), _adcs(std::vector<int16_t>()){};
 
-    STMDigi(uint32_t trigNum, STMTrigType trigType, uint64_t trigTime, uint32_t trigTimeOffset, uint16_t baselineMean, uint16_t baselineRMS, uint16_t nDrop, std::vector<int16_t> adcs) : _trigNum(trigNum), _trigType(trigType), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _baselineMean(baselineMean), _baselineRMS(baselineRMS), _nDrop(nDrop), _adcs(adcs) {};
+    STMDigi(uint32_t trigNum, STMTrigType trigType, uint64_t trigTime, uint32_t trigTimeOffset, uint32_t extra, STMDigiFlag flag, std::vector<int16_t> adcs) : _trigNum(trigNum), _trigType(trigType), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _extra(extra), _flag(flag), _adcs(adcs) {};
 
     // Simpler constructor for the simulation
     STMDigi(int channel, int tdc, std::vector<int16_t> adcs) : _trigType(STMTrigType(0, channel, 0)), _trigTime(tdc), _adcs(adcs) { }
 
     uint32_t trigNum() const { return _trigNum; }
+
     STMTrigType trigType() const { return _trigType; }
+    STMTriggerMode mode() const { return _trigType.mode(); }
+    STMChannel channel() const { return _trigType.channel(); }
+    STMDataType type() const { return _trigType.type(); }
+
+
     uint64_t trigTime() const { return _trigTime; }
     uint32_t trigTimeOffset() const { return _trigTimeOffset; }
-    uint16_t baselineMean() const { return _baselineMean; }
-    uint16_t baselineRMS() const { return _baselineRMS; }
-    uint16_t nDrop() const { return _nDrop; }
+
+    // information stored in extra is type-dependent
+    uint16_t baselineMean() const {
+      if (type() == STMDataType::kMWD) {
+        return (_extra & 0xFFFF);
+      }
+      else {
+        throw cet::exception("STMDataError") << "Trying to call baselineMean() on a digi that is not STMDataType::kMWD" << std::endl;
+      }
+    }
+
+    uint16_t baselineRMS() const {
+      if (type() == STMDataType::kMWD) {
+        return (_extra & 0xFFFF0000);
+      }
+      else {
+        throw cet::exception("STMDataError") << "Trying to call baselineRMS() on a digi that is not STMDataType::kMWD" << std::endl;
+      }
+    }
+
+
+    STMDigiFlag flag() const { return _flag; }
     const std::vector<int16_t>& adcs() const { return _adcs; }
 
   private:
@@ -39,9 +68,8 @@ namespace mu2e {
                            // data type (unsuppressed, zero-suppressed, MWD etc.
     uint64_t _trigTime; // trigger time [ct]
     uint32_t _trigTimeOffset; // time offset from trigger to first ADC value [ct]
-    uint16_t _baselineMean;   // mean baseline (calculated by MWD algorithm)
-    uint16_t _baselineRMS;    // RMS of baseline (calculated by MWD algorithm)
-    uint16_t _nDrop;    // number of dropped packets
+    uint32_t _extra;  // type-dependent (i.e. for MWD digis will be mean and RMS of baseline,for PQ digis would be quality)
+    STMDigiFlag _flag;    // various error flags
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
   };
 

@@ -49,7 +49,7 @@ physics.BkgTriggerPath  : [
   @sequence::EventMixing.CD3Mixers,
   @sequence::EventMixing.TimeMaps,
   @sequence::TrackerMC.DigiSim,
-  @sequence::TrkHitReco.PrepareHits   
+  @sequence::TrkHitReco.PrepareHits
 ]
 
 physics.producers.FlagBkgHits.SaveBkgClusters : true

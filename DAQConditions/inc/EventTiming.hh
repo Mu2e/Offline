@@ -2,7 +2,7 @@
 #define DAQConditions_EventTiming_hh
 
 //
-// StrawElectronics collects the electronics response behavior 
+// StrawElectronics collects the electronics response behavior
 // of a Mu2e straw in several functions and parameters
 //
 
@@ -32,9 +32,9 @@ namespace mu2e {
     // construct with constants, then some values are computed and filled below
     EventTiming( double systemClockSpeed,
                  double timeFromProtonsToDRMarker,
-                 unsigned offSpillLength, 
+                 unsigned offSpillLength,
                  int onSpillBins,
-                 int onSpillMaxLength) : 
+                 int onSpillMaxLength) :
       ProditionsEntity(cxname),
       _systemClockSpeed(systemClockSpeed),
       _timeFromProtonsToDRMarker(timeFromProtonsToDRMarker),
@@ -49,7 +49,7 @@ namespace mu2e {
     unsigned offSpillLength() const { return _offSpillLength; }
     int onSpillBins() const { return _onSpillBins; }
     int onSpillMaxLength() const { return _onSpillMaxLength; }
-    
+
     void print(std::ostream& os) const;
 
   private:
@@ -61,7 +61,7 @@ namespace mu2e {
     int _onSpillMaxLength;
 
   };
-  
+
 }
 
 #endif

@@ -1,190 +1,209 @@
 BEGIN_PROLOG
 Mu2eKinKal : {
-# general configuration
-# configuration for seed fits (no drift)
-  KKSeedFit : {
-    module_type : LoopHelixFit
-    MaterialSettings : {
-      elements  : "Offline/TrackerConditions/data/ElementsList.data"
-      isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
-      materials : "Offline/TrackerConditions/data/MaterialsList.data"
-      strawGasMaterialName  : "straw-gas"
-      strawWallMaterialName : "straw-wall"
-      strawWireMaterialName : "straw-wire"
-      dahlLynchScatteringFraction : 0.995
-    }
-    
-  
-    KKFitSettings: {
-      PrintLevel : 0
-      TimeBuffer : 0.1 # ns
-      TPOCAPrecision : 1e-4 # mm
-      NullHitDimension : 2 # constrain position or position+time
-      NullHitVarianceScale : 1.0
-      TimeBuffer : 0.1 # ns
-      UseCaloCluster : true
-      AddMaterial : true
-      CaloTrackerTimeOffset : -1.35 #ns
-      CaloPositionResolution : 15.0 #mm 
-      CaloPropagationSpeed : 200.0 #mm/ns
-      MinCaloClusterEnergy : 10.0 #MeV
-      MaxCaloClusterDt : 5.0 # ns
-      MaxCaloClusterDOCA : 50.0 # mm
-      AddHitSelect : []
-      AddHitReject : ["Dead"]
-      MaxStrawHitDOCA : 4.0 # mm
-      MaxStrawHitDt : 5.0 # ns
-      MaxStrawHitChi : 4.0
-      StrawBuffer : 1 #
-      MaxStrawDOCA : 2.5 # mm
-    }
-    
-    KinKalFitSettings : {
-      PrintLevel : 0
-      MinNDOF : 5
-      MaxNIter : 10
-      Deweight : 1.0e6
-      DeltaParams : 1e4 # chisquared
-      TimeBuffer : 0.1 # ns
-      BFieldCorrection : 0
-      BCorrTolerance : 0.01 # mm
-      MetaIterationSettings : [ 
-        [ 10.0, 1.0, 10.0 ],
-        [ 2.0, 0.5, 10.0 ],
-        [ 0.0, 0.2, 20.0]]
-
-      KKStrawHitUpdaterSettings : [
-        [100.0, 3.0, 10.0, 2, 2]
-      ]
-    }
-    KinKalExtensionSettings : {
-      PrintLevel : 0
-      MinNDOF : 5
-      MaxNIter : 10
-      Deweight : 1.0e6
-      DeltaParams : 1e4 # chisquared
-      TimeBuffer : 0.1 # ns
-      BFieldCorrection : 0
-      BCorrTolerance : 0.01 # mm
-      MetaIterationSettings : [ 
-        [ 0.0, 0.2, 20.0 ]]
-      KKStrawHitUpdaterSettings : [
-      ]
-    }
-  
-    ModuleSettings : {
-      SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 25.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
-      HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
-      SaveFullFit : true
-#      ZSavePositions : [-1520., 0.0, 1520.0 ]
-    }
+  # general configuration
+  #
+  KKMAT: {
+    elements  : "Offline/TrackerConditions/data/ElementsList.data"
+    isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
+    materials : "Offline/TrackerConditions/data/MaterialsList.data"
+    strawGasMaterialName  : "straw-gas"
+    strawWallMaterialName : "straw-wall"
+    strawWireMaterialName : "straw-wire"
+    dahlLynchScatteringFraction : 0.995
+  }
+  KKMU2E: {
+    PrintLevel : 0
+    TPOCAPrecision : 1e-4 # mm
+    UseCaloCluster : true
+    AddMaterial : true
+    StrawHitClusterDeltaStraw : 3 # straw index space
+    StrawHitClusterDeltaT : 1.0 # ns
+    StrawHitClusterLevel : "uniquepanel"
+    CaloTrackerTimeOffset : -1.1 #ns
+    CaloPositionResolution : 15.0 #mm
+    CaloPropagationSpeed : 200.0 #mm/ns
+    MinCaloClusterEnergy : 10.0 #MeV
+    MaxCaloClusterDt : 5.0 # ns
+    MaxCaloClusterDOCA : 50.0 # mm
+    AddHitSelect : []
+    AddHitReject : ["Dead"]
+    MaxStrawHitDOCA : 10.0 # mm
+    MaxStrawHitDt : 20.0 # ns
+    StrawBuffer : 2 #
+    MaxStrawDOCA : 3.0 # mm
   }
 
+  KKSEEDFIT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : false
+    ProcessEnds : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      [ 5.0, 0 ],
+      [ 2.0, 0 ],
+      [ 1.0, 0 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 10.0],
+      [ 10.0 ],
+      [ 10.0 ]
+    ]
+    StrawXingUpdaterSettings : [
+      [-1.0, 10., 10.0 ],
+      [-1.0, 10., 10.0 ],
+      [-1.0, 10., 10.0 ]
+    ]
+  }
 
-KKLineSeedFit : {
+  KKSEEDEXT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : false
+    ProcessEnds : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      [ 1.0, 0 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 10.0 ]
+    ]
+    StrawXingUpdaterSettings : [
+      [-1.0, 10.0, 10.0 ]
+    ]
+  }
+
+  KKDRIFTEXT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 1.0
+    DivergenceDeltaChisq : 50.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : true
+    ProcessEnds : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : [
+      [ 1.0, 0 ],
+      [ 2.0, 1 ],
+      [ 1.0, 1 ],
+      [ 0.5, 1 ],
+      [ 0.5, 2 ],
+      [ 0.0, 2 ]
+    ]
+    NullStrawHitUpdaterSettings : [
+      [ 5.0 ]
+    ]
+    DOCAStrawHitUpdaterSettings : [
+      [ 6.0, 0.5, 5.0 ],
+      [ 6.0, 0.5, 5.0 ],
+      [ 6.0, 0.5, 5.0 ]
+    ]
+    StrawXingUpdaterSettings : [
+      [1.0, 5.0, 5.0 ],
+      [0.5, 4.0, 4.0 ],
+      [0.4, 3.0, 4.0 ],
+      [0.3, 3.0, 4.0 ],
+      [0.3, 3.0, 4.0 ],
+      [0.3, 3.0, 4.0 ]
+    ]
+    CombinatoricStrawHitUpdaterSettings : [
+      [25.0, 2.0, 0.5, 0],
+      [25.0, 2.0, 0.5, 0]
+    ]
+ }
+
+  KKLOOPHELIX : {
+    SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
+    HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
+    SaveFullFit : true
+    Extend : true
+    #    ZSavePositions : [-1522.0,0.0,1522.0]
+  }
+  KKKINEMATICLINE : {
+    SeedErrors : [36, 0.025,600, 1.0, 25.0,1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,cost_ = 3,t0_ = 4,mom_ = 5,
+    CosmicTrackSeedCollections : ["CosmicTrackFinderTimeFit"]
+    ComboHitCollection : "makeSH"
+    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+    LineFlags : [ "HelixOK" ]
+    SaveFullFit : true
+    #    ZSavePositions : [-1522.0,0.0,1522.0]
+  }
+
+}
+Mu2eKinKal : {
+  @table::Mu2eKinKal
+
+  KKSeedFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : @local::Mu2eKinKal.KKMAT
+    Mu2eSettings: @local::Mu2eKinKal.KKMU2E
+    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
+    KinKalExtensionSettings : @local::Mu2eKinKal.KKSEEDEXT
+    ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
+  }
+
+  KKDriftFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : @local::Mu2eKinKal.KKMAT
+    Mu2eSettings: @local::Mu2eKinKal.KKMU2E
+    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
+    KinKalExtensionSettings : @local::Mu2eKinKal.KKDRIFTEXT
+    ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
+  }
+
+  KKLineSeedFit : {
     module_type : KinematicLineFit
-    MaterialSettings : {
-      elements  : "TrackerConditions/data/ElementsList.data"
-      isotopes  : "TrackerConditions/data/IsotopesList.data"
-      materials : "TrackerConditions/data/MaterialsList.data"
-      strawGasMaterialName  : "straw-gas"
-      strawWallMaterialName : "straw-wall"
-      strawWireMaterialName : "straw-wire"
-      dahlLynchScatteringFraction : 0.995
-    }
-    
-    KKFitSettings: {
-      PrintLevel : 3
-      TimeBuffer : 0.1 # ns
-      TPOCAPrecision : 1e-4 # mm
-      NullHitDimension : 2 # constrain position or position+time
-      NullHitVarianceScale : 1.0
-      FitParticle : 13
-      FitDirection : 0
-      TimeBuffer : 0.1 # ns
-      UseCaloCluster : true
-      AddMaterial : true
-      CaloTrackerTimeOffset : -1.35 #ns
-      CaloPositionResolution : 15.0 #mm 
-      CaloPropagationSpeed : 200.0 #mm/ns
-      MinCaloClusterEnergy : 10.0 #MeV
-      MaxCaloClusterDt : 5.0 # ns
-      MaxCaloClusterDOCA : 50.0 # mm
-      AddHitSelect : []
-      AddHitReject : ["Dead"]
-      MaxStrawHitDOCA : 4.0 # mm
-      MaxStrawHitDt : 5.0 # ns
-      MaxStrawHitChi : 4.0
-      StrawBuffer : 1 #
-      MaxStrawDOCA : 2.5 # mm
-    }
-    
-    KinKalFitSettings : {
-      PrintLevel : 3
-      MinNDOF : 5
-      MaxNIter : 10
-      Deweight : 1.0e6
-      DeltaParams : 1e4 # chisquared
-      TimeBuffer : 0.1 # ns
-      BFieldCorrection : 0
-      BCorrTolerance : 0.01 # mm
-      MetaIterationSettings : [ 
-        [ 10.0, 1.0, 10.0 ],
-        [ 2.0, 0.5, 10.0 ],
-        [ 0.0, 0.2, 20.0]]
+    MaterialSettings : @local::Mu2eKinKal.KKMAT
+    Mu2eSettings: @local::Mu2eKinKal.KKMU2E
+    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
+    KinKalExtensionSettings : @local::Mu2eKinKal.KKSEEDEXT
+    ModuleSettings : @local::Mu2eKinKal.KKKINEMATICLINE
+  }
 
-      KKStrawHitUpdaterSettings : [
-        [100.0, 3.0, 10.0, 2, 2]
-      ]
-    }
-    KinKalExtensionSettings : {
-      PrintLevel : 3
-      MinNDOF : 5
-      MaxNIter : 10
-      Deweight : 1.0e6
-      DeltaParams : 1e4 # chisquared
-      TimeBuffer : 0.1 # ns
-      BFieldCorrection : 0
-      BCorrTolerance : 0.01 # mm
-      MetaIterationSettings : [ 
-        [ 0.0, 0.2, 20.0 ]]
-      KKStrawHitUpdaterSettings : [
-      ]
-    }
-  
-  
-    ModuleSettings : {
-      SeedErrors : [36, 0.025,600, 1.0, 25.0,1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,cost_ = 3,t0_ = 4,mom_ = 5,
-      CosmicTrackSeedCollections : ["CosmicTrackFinderTimeFit"]
-      ComboHitCollection : "makeSH"
-      StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-      LineFlags : [ "HelixOK" ] //should work for cosmics too (I think)
-      
-      ZSavePositions : [-1522.0,0.0,1522.0]
-    }
-    
-  }//KKLine end
-  
   CosmicFilter : {
     module_type : CosmicTrackFinderTimeFit
   }
-
 }
 
 Mu2eKinKal : {
   @table::Mu2eKinKal
   producers : {
+    # seed fits: these don't use drift information or BField corrections
     KKDePSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
+    # drift fits, with BField corrections
+    KKDePDriftFit: @local::Mu2eKinKal.KKDriftFit
+    KKDeMDriftFit: @local::Mu2eKinKal.KKDriftFit
+
   }
   filters : {
     CosmicFilter: @local::Mu2eKinKal.CosmicFilter
   }
 }
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitParticle : 11
-Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings.FitDirection : 0
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitParticle : -11
-Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDePSeedFit.Mu2eSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePSeedFit.Mu2eSettings.FitDirection : 0
 
-END_PROLOG 
+Mu2eKinKal.producers.KKDeMDriftFit.Mu2eSettings.FitParticle : 11
+Mu2eKinKal.producers.KKDeMDriftFit.Mu2eSettings.FitDirection : 0
+Mu2eKinKal.producers.KKDePDriftFit.Mu2eSettings.FitParticle : -11
+Mu2eKinKal.producers.KKDePDriftFit.Mu2eSettings.FitDirection : 0
+
+END_PROLOG

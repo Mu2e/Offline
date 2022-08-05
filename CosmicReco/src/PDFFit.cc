@@ -303,38 +303,103 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
   double const&b0 = x[1];
   double const&a1 = x[2];
   double const&b1 = x[3];
-  double const&t0 = x[4];
+  double t0 = x[4];
   long double llike = 0;
 
   CLHEP::Hep3Vector intercept(a0, 0, b0);
   CLHEP::Hep3Vector dir(a1, -1, b1);
   dir = dir.unit();
 
+  std::vector<double> times(this->shs.size(),0);
+  std::vector<double> tres(this->shs.size(),0);
+  double average_time = 0;
+  size_t count = 0;
+
   for (size_t i = 0; i < this->shs.size(); i++) {
-    if (excludeHit == (int)i){
-      continue;
-    }
+
     Straw const& straw = tracker->getStraw(this->shs[i].strawId());
     TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
 
+    if (constrainToStraw && pca.dca() > 2.5){
+      llike += pow((pca.dca()-2.5)/0.1,2);
+    }
+
+    if (excludeHit == (int)i){
+      continue;
+    }
+    count++;
+
     double longdist = (pca.point2() - straw.getMidPoint()).dot(straw.getDirection());
-    double longres = srep.wpRes(this->shs[i].energyDep() * 1000., fabs(longdist));
+    if (fabs(longdist) > straw.halfLength()){
+      llike += pow((fabs(longdist)-straw.halfLength()),2);
+      longdist = std::copysign(straw.halfLength(),longdist);
+    }
+//    double longres = srep.wpRes(this->shs[i].energyDep() * 1000., fabs(longdist));
+    double longres = srep.wpRes(this->shs[i].energyDep()*1000., this->shs[i].wireDist());
 
     llike += pow(longdist - this->shs[i].wireDist(), 2) / pow(longres, 2);
 
-    double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0) + 
+    double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0) +
               srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca());
 
     double drift_res = srep.driftTimeError(this->shs[i].strawId(), 0, 0, pca.dca());
 
     double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
     double hit_t0 = this->shs[i].time() - this->shs[i].propTime() - traj_time - drift_time;
-    llike += pow((t0 - hit_t0) / drift_res, 2);
+    //llike += pow((t0 - hit_t0) / drift_res, 2);
+    average_time += hit_t0;
+    times[i] = hit_t0;
+    tres[i] = drift_res;
+
   }
-  //  std::cout << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << "  =>  " <<
+
+  if (fixedT0){
+    t0 = average_time/(int) count;
+  }
+  for (size_t i=0;i<this->shs.size();i++){
+    if (excludeHit == (int)i){
+      continue;
+    }
+    double drift_res = tres[i];
+    if (fixedDriftRes)
+      drift_res = driftRes;
+    llike += pow((t0 - times[i]) / drift_res, 2);
+  }
+  //  std::cout << excludeHit << " " << fixedT0 << " " << t0 << " " << x[0] << " " << x[1] << " " << x[2] << " " << x[3] << " " << x[4] << "  =>  " <<
   //  llike << std::endl;
 
   return (double)llike;
+}
+
+double GaussianDriftFit::averageT0(const std::vector<double>& x) const {
+  double const&a0 = x[0];
+  double const&b0 = x[1];
+  double const&a1 = x[2];
+  double const&b1 = x[3];
+
+  CLHEP::Hep3Vector intercept(a0, 0, b0);
+  CLHEP::Hep3Vector dir(a1, -1, b1);
+  dir = dir.unit();
+
+  double average_time = 0;
+  size_t count = 0;
+
+  for (size_t i = 0; i < this->shs.size(); i++) {
+    if (excludeHit == (int)i){
+      continue;
+    }
+    count++;
+    Straw const& straw = tracker->getStraw(this->shs[i].strawId());
+    TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
+
+    double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0) +
+      srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca());
+
+    double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
+    double hit_t0 = this->shs[i].time() - this->shs[i].propTime() - traj_time - drift_time;
+    average_time += hit_t0;
+  }
+  return average_time/(int) count;
 }
 
 double GaussianDriftFit::DOCAresidual(ComboHit const& sh, const std::vector<double>& x) const {
@@ -405,13 +470,13 @@ int GaussianDriftFit::HitAmbiguity(ComboHit const& sh, const std::vector<double>
 
   return (dperp > 0 ? -1 : 1);
 }
- 
+
 double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<double>& x) const {
-  double const& a0 = x[0];
-  double const& b0 = x[1];
-  double const& a1 = x[2];
-  double const& b1 = x[3];
-  double const& t0 = x[4];
+  double const&a0 = x[0];
+  double const&b0 = x[1];
+  double const&a1 = x[2];
+  double const&b1 = x[3];
+  double t0 = x[4];
 
   CLHEP::Hep3Vector intercept(a0, 0, b0);
   CLHEP::Hep3Vector dir(a1, -1, b1);
@@ -420,18 +485,12 @@ double GaussianDriftFit::TimeResidual(ComboHit const& sh, const std::vector<doub
   Straw const& straw = tracker->getStraw(sh.strawId());
   TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
 
+  double drift_time = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) +
+    srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
+
   double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
-  double hit_t0 = t0 + traj_time + srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
-  
-  // We don't need to sign DOCA here because D2T(DOCA) = D2T(-DOCA) and
-  // the drift time is the same whether or not the track passed on the left or right
-  // of the wire.
-  double predictedTime = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0) + sh.propTime() + hit_t0;
-  double measuredTime = sh.time();
-
-  double resid = predictedTime - measuredTime;
-
-  return resid;
+  double hit_t0 = sh.time() - sh.propTime() - traj_time - drift_time;
+  return t0 - hit_t0;
 }
 
 double GaussianDriftFit::DOCAresidualError(ComboHit const& sh, const std::vector<double>& x,

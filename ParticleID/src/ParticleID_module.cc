@@ -16,7 +16,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -153,10 +152,10 @@ int findlowhist(float d){
     TTree *       _pidtree;
     TCanvas*      _plotCanvas;
 
-    bool calculateSlope(std::vector<double>vresd,std::vector<double>vflt, 
-			std::vector<double>evresd,std::vector<double>evflt,  
-			double * slope, 
-			double * eslope);
+    bool calculateSlope(std::vector<double>vresd,std::vector<double>vflt,
+                        std::vector<double>evresd,std::vector<double>evflt,
+                        double * slope,
+                        double * eslope);
 
     double calculateProb(std::vector<double>gaspaths, std::vector<double>edeps, TH1D** templates);
 

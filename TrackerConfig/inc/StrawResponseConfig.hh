@@ -14,21 +14,29 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
     fhicl::Atom<double> eBins {
       Name("eBins"), Comment("Number of energy bins")};
     fhicl::Atom<double> eBinWidth {
       Name("eBinWidth"), Comment("Width of energy bins (KeV)")};
-    fhicl::Sequence<double> halfPropVelocity {
-      Name("halfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Sequence<double> ehalfPVScale {
+      Name("eHalfPVScale"), Comment(" fraction of nominal ")};
     fhicl::Atom<double> centralWirePos {
       Name("centralWirePos"), Comment(" mm ")};
     fhicl::Sequence<double> tdCentralRes {
       Name("tdCentralRes"), Comment(" tdCentralRes ")};
     fhicl::Sequence<double> tdResSlope {
       Name("tdResSlope"), Comment(" tdResSlope ")};
+    fhicl::Sequence<double> strawHalfPropVelocity {
+      Name("strawHalfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Atom<double> defaultHalfPropVelocity {
+      Name("defaultHalfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Atom<bool> truncateLongitudinal {
+      Name("truncateLongitudinal"), Comment("truncate reco longitudinal at straw end")};
+    fhicl::Atom<bool> rmsLongErrors {
+      Name("rmsLongErrors"), Comment("Use errors tuned from residual profile rms")};
     fhicl::Atom<int> totTBins {
       Name("totTBins"), Comment("TOT drift time t bins")};
     fhicl::Atom<double> totTBinWidth {

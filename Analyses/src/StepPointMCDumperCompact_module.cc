@@ -22,7 +22,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -72,7 +71,7 @@ namespace mu2e {
   //================================================================
   class StepPointMCDumperCompact : public art::EDAnalyzer {
     typedef std::vector<art::InputTag> InputTags;
-    InputTags stepInputs_; 
+    InputTags stepInputs_;
 
     typedef vector<int> Vint;
     // List of particles of interest for the particles ntuple

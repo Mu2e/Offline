@@ -7,7 +7,7 @@
 
 namespace mu2e {
   class EventTimingCache : public ProditionsCache {
-  public: 
+  public:
     EventTimingCache(EventTimingConfig const& config):
       ProditionsCache(EventTiming::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}

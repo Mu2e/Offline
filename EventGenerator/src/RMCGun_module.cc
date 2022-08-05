@@ -19,7 +19,6 @@
 
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -87,7 +86,7 @@ namespace mu2e {
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
-    TH1F* _hy;				// splitting function
+    TH1F* _hy;                                // splitting function
 
   public:
     explicit RMCGun(const fhicl::ParameterSet& pset);
