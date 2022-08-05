@@ -20,14 +20,12 @@ namespace mu2e {
 
   class STMDigi {
   public:
-    STMDigi() : _trigNum(0), _trigType(STMTrigType(0, 0, 0)), _trigTime(0), _trigTimeOffset(0), _extra(0), _flag(STMDigiFlag::kUnknown), _adcs(std::vector<int16_t>()){};
+    STMDigi() : _trigType(STMTrigType(0, 0, 0)), _trigTime(0), _trigTimeOffset(0), _extra(0), _flag(STMDigiFlag::kUnknown), _adcs(std::vector<int16_t>()){};
 
-    STMDigi(uint32_t trigNum, STMTrigType trigType, uint64_t trigTime, uint32_t trigTimeOffset, uint32_t extra, STMDigiFlag flag, std::vector<int16_t> adcs) : _trigNum(trigNum), _trigType(trigType), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _extra(extra), _flag(flag), _adcs(adcs) {};
+    STMDigi(STMTrigType trigType, uint64_t trigTime, uint32_t trigTimeOffset, uint32_t extra, STMDigiFlag flag, std::vector<int16_t> adcs) : _trigType(trigType), _trigTime(trigTime), _trigTimeOffset(trigTimeOffset), _extra(extra), _flag(flag), _adcs(adcs) {};
 
     // Simpler constructor for the simulation
     STMDigi(int channel, int tdc, std::vector<int16_t> adcs) : _trigType(STMTrigType(0, channel, 0)), _trigTime(tdc), _adcs(adcs) { }
-
-    uint32_t trigNum() const { return _trigNum; }
 
     STMTrigType trigType() const { return _trigType; }
     STMTriggerMode mode() const { return _trigType.mode(); }
@@ -62,7 +60,6 @@ namespace mu2e {
     const std::vector<int16_t>& adcs() const { return _adcs; }
 
   private:
-    uint32_t _trigNum;  // trigger number
     STMTrigType _trigType; // combination of: trigger mode (external (beam) or internal (source)),
                            // channel (HPGe or LaBr), and
                            // data type (unsuppressed, zero-suppressed, MWD etc.

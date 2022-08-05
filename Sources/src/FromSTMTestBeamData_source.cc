@@ -222,6 +222,9 @@ namespace mu2e {
     if(currentFile_->read((char *) &trigger_header[0], sizeof(STMTestBeam::TriggerHeader))) {
       managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
 
+      if (currentEventNumber_ != trigger_header[0].getTriggerNumber()) {
+        throw cet::exception("FromSTMTestBeamData")  << "Current event number (" << currentEventNumber_ << ") is not the same as the trigger number in the header (" << trigger_header[0].getTriggerNumber() << ")" << std::endl;
+      }
       if(verbosityLevel_ > 0) {
         std::cout << trigger_header[0] << std::endl;
       }
@@ -265,7 +268,7 @@ namespace mu2e {
 
           // Create the STMDigi and put it in the event
           STMTrigType trigType(trigger_header[0].getTriggerMode(), channel_, STMDataType::kUnsuppressed);
-          STMDigi stm_digi(trigger_header[0].getTriggerNumber(), trigType, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, STMDigiFlag::kOK, adcs);
+          STMDigi stm_digi(trigType, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, STMDigiFlag::kOK, adcs);
           outputSTMDigis->push_back(stm_digi);
         }
         else { return false; }
