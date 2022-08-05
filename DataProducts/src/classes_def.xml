@@ -50,6 +50,7 @@
 
 <!--  ********* STM  ********* -->
  <class name="mu2e::STMTrigType" />
+ <enum name="mu2e::STMDigiFlag"/>
 
 
 </lcgdict>
