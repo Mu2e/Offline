@@ -7,7 +7,7 @@
 namespace mu2e {
   enum STMTriggerMode { kInternal=0, kExternal=1 };
   enum STMChannel { kHPGe=0, kLaBr=1 };
-  enum STMDataType { kUnsuppressed=0, kZeroSuppressed=1, kMWD=2};
+  enum STMDataType { kUnsuppressed=0, kZeroSuppressed=1, kMWD=2, kPQ=3};
 
   struct STMTrigType {
   public:
