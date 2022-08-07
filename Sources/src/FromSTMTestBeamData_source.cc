@@ -114,7 +114,8 @@ namespace mu2e {
     , verbosityLevel_(conf().verbosityLevel())
     , binaryFileVersion_(0)
   {
-    rh.reconstitutes<mu2e::STMDigiCollection,art::InEvent>(myModuleLabel_);
+    rh.reconstitutes<mu2e::STMDigiCollection,art::InEvent>(myModuleLabel_, "HPGe");
+    rh.reconstitutes<mu2e::STMDigiCollection,art::InEvent>(myModuleLabel_, "LaBr");
 
     currentSubRunNumber_ = 0;
     currentEventNumber_ = 0;
@@ -215,7 +216,8 @@ namespace mu2e {
     }
 
     // Create the STMDigiCollection that we will write to the art event
-    std::unique_ptr<mu2e::STMDigiCollection> outputSTMDigis(new mu2e::STMDigiCollection);
+    std::unique_ptr<mu2e::STMDigiCollection> outputHPGeDigis(new mu2e::STMDigiCollection);
+    std::unique_ptr<mu2e::STMDigiCollection> outputLaBrDigis(new mu2e::STMDigiCollection);
 
     // Read the trigger header
     STMTestBeam::TriggerHeader trigger_header[1];
@@ -269,14 +271,23 @@ namespace mu2e {
           // Create the STMDigi and put it in the event
           STMTrigType trigType(trigger_header[0].getTriggerMode(), channel_, STMDataType::kUnsuppressed);
           STMDigi stm_digi(trigType, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, STMDigiFlag::kOK, adcs);
-          outputSTMDigis->push_back(stm_digi);
+          if (channel_ == STMChannel::kHPGe) {
+            outputHPGeDigis->push_back(stm_digi);
+          }
+          else if (channel_ == STMChannel::kLaBr) {
+            outputLaBrDigis->push_back(stm_digi);
+          }
+          else {
+            throw cet::exception("FromSTMTestBeamData") << "Trying to create a digi with an invalid STMChannel (" << channel_ << ")" << std::endl;
+          }
         }
         else { return false; }
       }
     }
     else { return false; }
 
-    art::put_product_in_principal(std::move(outputSTMDigis), *outE, myModuleLabel_);
+    art::put_product_in_principal(std::move(outputHPGeDigis), *outE, myModuleLabel_, "HPGe");
+    art::put_product_in_principal(std::move(outputLaBrDigis), *outE, myModuleLabel_, "LaBr");
 
     ++currentEventNumber_;
 
