@@ -67,16 +67,29 @@ namespace mu2e {
     for (const auto& digi : *digisHandle) {
       float baselineMean = digi.baselineMean();
       _baselineMean->Fill(baselineMean);
-      TString fname(Form("digiSpectrum_%d_%d", event.event(), j));
+      TString fname;
+      if(digi.trigType().mode() == STMTriggerMode::kExternal)
+        {
+           fname = Form("digiSpectrum_%d_%d_On", event.event(), j);
+        }
+      else
+        {
+           fname = Form("digiSpectrum_%d_%d_Off", event.event(), j);
+        }
       // Create a histogram
-      TH1D* hWaveform = tfs->make<TH1D>(fname, "Digi Spectrum", digi.adcs().size(), 0, digi.adcs().size());
+      TH1D* hWaveform = tfs->make<TH1D>(fname, "Digi Spectrum Beam On;Time [ns];Samples", digi.adcs().size(), digi.trigTime()+digi.trigTimeOffset(), digi.trigTime() + digi.trigTimeOffset() + digi.adcs().size()*3.125);
+      // TH1D* hWaveformOff = tfs->make<TH1D>(fnameOff, "Digi Spectrum Beam Off;Time [ns];Samples", digi.adcs().size(), digi.trigTime()+digi.trigTimeOffset(), digi.trigTime() + digi.trigTimeOffset() + digi.adcs().size()*3.125);
       // Loop through the adcs
       int i_bin = 1;
+      // Separate into beam on and beam off histograms
+      std::cout << "Trig type = " << digi.trigType().data() << std::endl;
+      std::cout << "Mode = " << digi.trigType().mode() << std::endl;
+      std::cout << "Trig time = " << digi.trigTime() << std::endl;
       for (const auto& sample : digi.adcs())
-         {
-           hWaveform->SetBinContent(i_bin, sample);
-           i_bin++;
-         }
+        {
+          hWaveform->SetBinContent(i_bin, sample);
+          i_bin++;
+        }
       j++;
     }
   }

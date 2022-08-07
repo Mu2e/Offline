@@ -12,9 +12,9 @@ namespace mu2e {
   struct STMTrigType {
   public:
     STMTrigType(uint16_t mode, uint16_t channel, uint16_t type) {
-      _data = (mode << 12) | (channel << 10) | type;
+      _data = (mode) | (channel << 10) | type;
     }
-
+    uint16_t data() const { return _data; }
     STMTriggerMode mode() const { return STMTriggerMode((_data & 0xF000) >> 12); }
     STMChannel channel() const { return STMChannel((_data & 0xC00) >> 10); }
     STMDataType type() const { return STMDataType((_data & 0x3FF)); }
