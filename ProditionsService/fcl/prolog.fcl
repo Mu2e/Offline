@@ -1,4 +1,5 @@
 #include "Offline/DAQConditions/fcl/prolog.fcl"
+#include "Offline/STMConditions/fcl/prolog.fcl"
 #include "Offline/TrackerConditions/fcl/prolog.fcl"
 #include "Offline/AnalysisConditions/fcl/prolog.fcl"
 #include "Offline/SimulationConditions/fcl/prolog.fcl"
@@ -8,6 +9,7 @@ BEGIN_PROLOG
 
 Proditions : {
    eventTiming : @local::EventTiming
+   stmEnergyCalib : @local::STMEnergyCalib
    fullReadoutStraw : @local::FullReadoutStraw
    trackerStatus : @local::TrackerStatus
    strawDrift : @local::StrawDrift
