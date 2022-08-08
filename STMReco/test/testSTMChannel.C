@@ -21,65 +21,38 @@ void testSTMChannel() {
 
   std::cout << std::endl;
 
-  mu2e::STMChannel ch_HPGe(mu2e::STMChannel::HPGe);
-  std::cout << "This should be \"HPGe\": " << ch_HPGe << " : ";
-  if (ch_HPGe.name().find("HPGe") != std::string::npos) {
-    std::cout << "OK" << std::endl;
-  }
-  else {
-    std::cout << "FAILED" << std::endl;
-    return -1;
-  }
-  std::cout << "and isValid() should be true: isValid() = " << std::boolalpha << ch_HPGe.isValid() << " : ";
-  if (ch_HPGe.isValid() == true) {
-    std::cout << "OK" << std::endl;
-  }
-  else {
-    std::cout << "FAILED" << std::endl;
-    return -1;
-  }
+  // Test findByName()
+  const int n_channels = 4;
+  std::string names[n_channels] = {"HPGe", "LaBr", "unknown", "a channel that does not exist"};
+  mu2e::STMChannel expectedChannels[n_channels] = {mu2e::STMChannel::HPGe, mu2e::STMChannel::LaBr, mu2e::STMChannel::unknown, mu2e::STMChannel::unknown};
+  bool expectedValids[n_channels] = {true, true, false, false};
+  for (int i_channel = 0; i_channel < n_channels; ++i_channel) {
+    std::string name = names[i_channel];
+    mu2e::STMChannel expectedChannel = expectedChannels[i_channel];
+    bool expectedValid = expectedValids[i_channel];
 
-  std::cout << std::endl;
+    std::cout << "Looking for \"" << name << "\"... " << std::endl;
+    mu2e::STMChannel ch = mu2e::STMChannel::findByName(name);
+    std::cout << "Expecting to find " << expectedChannel << " and found: " << ch << " : ";
+    if (ch == expectedChannel) {
+      std::cout << "OK" << std::endl;
+    }
+    else {
+      std::cout << "FAILED" << std::endl;
+      return -1;
+    }
 
-  mu2e::STMChannel ch_LaBr(mu2e::STMChannel::LaBr);
-  std::cout << "This should be \"LaBr\": " << ch_LaBr << " : ";
-  if (ch_LaBr.name().find("LaBr") != std::string::npos) {
-    std::cout << "OK" << std::endl;
-  }
-  else {
-    std::cout << "FAILED" << std::endl;
-    return -1;
-  }
-  std::cout << "and isValid() should be true: isValid() = " << std::boolalpha << ch_LaBr.isValid() << " : ";
-  if (ch_LaBr.isValid() == true) {
-    std::cout << "OK" << std::endl;
-  }
-  else {
-    std::cout << "FAILED" << std::endl;
-    return -1;
-  }
+    std::cout << "isValid() should be " << std::boolalpha << expectedValid << ": isValid() = " << ch.isValid() << " : ";
+    if (ch.isValid() == expectedValid) {
+      std::cout << "OK" << std::endl;
+    }
+    else {
+      std::cout << "FAILED" << std::endl;
+      return -1;
+    }
 
-  std::cout << std::endl;
-
-  mu2e::STMChannel ch_unknown(mu2e::STMChannel::unknown);
-  std::cout << "This should be \"unknown\": " << ch_unknown << " : ";
-  if (ch_unknown.name().find("unknown") != std::string::npos) {
-    std::cout << "OK" << std::endl;
+    std::cout << std::endl;
   }
-  else {
-    std::cout << "FAILED" << std::endl;
-    return -1;
-  }
-  std::cout << "and isValid() should be false: isValid() = " << std::boolalpha << ch_unknown.isValid() << " : ";
-  if (ch_unknown.isValid() == false) {
-    std::cout << "OK" << std::endl;
-  }
-  else {
-    std::cout << "FAILED" << std::endl;
-    return -1;
-  }
-
-  std::cout << std::endl;
 
   std::cout << "All tests passed" << std::endl;
 }
