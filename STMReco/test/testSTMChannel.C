@@ -54,5 +54,20 @@ void testSTMChannel() {
     std::cout << std::endl;
   }
 
+  std::string expected_all_printed = "List of STM channels: \n 0 HPGe\n 1 LaBr\n 2 unknown\n";
+  std::stringstream all_printed;
+  mu2e::STMChannel::printAll(all_printed);
+  std::cout << "Output of printAll(): " << std::endl;
+  std::cout << all_printed.str();
+  std::cout << "Is it what we expected? : ";
+  if (all_printed.str().compare(expected_all_printed) == 0) {
+    std::cout << "YES" << std::endl;
+  }
+  else {
+    std::cout << "NO" << std::endl;
+    return -1;
+  }
+  std::cout << std::endl;
+
   std::cout << "All tests passed" << std::endl;
 }
