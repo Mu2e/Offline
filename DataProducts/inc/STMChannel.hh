@@ -73,8 +73,8 @@ namespace mu2e {
 
     // Check validity of an Id. Unknown is defined to be valid.
     static bool isValid( enum_type id){
-      if ( id <  unknown  ) return false;
-      if ( id >= lastEnum ) return false;
+      if ( id <  0  ) return false;
+      if ( id >= unknown ) return false;
       return true;
     }
 
