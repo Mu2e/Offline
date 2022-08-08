@@ -17,8 +17,8 @@ namespace mu2e {
   public:
 
     // Need to keep the enum and the _name member in sync.
-    // Also, restrict to 8-bits because we will never need that many
-    // and this may be in every STMDigi
+    // Note 1. Unknown has a non-standard numerica value since we start channel numbering at 0
+    // Note 2. We restrict to 8-bits because this may be in every STMDigi
     enum enum_type : int8_t { HPGe, LaBr, unknown, lastEnum };
 
 #ifndef SWIG
@@ -72,6 +72,7 @@ namespace mu2e {
     }
 
     // Check validity of an Id. Unknown is defined to be valid.
+    // Unknown has a non-standard numeric value
     static bool isValid( enum_type id){
       if ( id <  0  ) return false;
       if ( id >= unknown ) return false;
