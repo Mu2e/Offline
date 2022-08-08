@@ -1,5 +1,5 @@
 //
-// An enum-matched-to-names class for generator Id's.
+// An enum-matched-to-names class for STM channels
 // based on GenId.cc
 #include <iomanip>
 #include <iostream>

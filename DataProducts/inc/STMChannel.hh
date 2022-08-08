@@ -1,7 +1,7 @@
 #ifndef DataProducts_STMChannel_hh
 #define DataProducts_STMChannel_hh
 //
-// An enum-matched-to-names class for generator Id's.
+// An enum-matched-to-names class for STM channels
 // based on GenId.hh
 //
 
