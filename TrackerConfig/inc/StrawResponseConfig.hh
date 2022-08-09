@@ -47,31 +47,39 @@ namespace mu2e {
       Name("totEBinWidth"), Comment("TOT drift time e bin width")};
     fhicl::Sequence<double>  totDriftTime {
       Name("totDriftTime"), Comment(" totDriftTime ")};
+    fhicl::Sequence<double>  totDriftError {
+      Name("totDriftError"), Comment(" totDriftError ")};
 
     fhicl::Atom<bool> useDriftSplines {
       Name("useDriftSplines"), Comment("Use calibrated drift spline")};
-    fhicl::Atom<int> driftSplineDocaBins {
-      Name("driftSplineDocaBins"), Comment("Number of bins from 0 to 2.5 inclusive")};
-    fhicl::Atom<int> driftSplinePhiBins {
-      Name("driftSplinePhiBins"), Comment("Number of bins from 0 to pi/2")};
+    fhicl::Atom<bool> splineIsD2T {
+      Name("splineIsD2T"), Comment("True if spline gives D2T, false if gives T2D")};
+    fhicl::Sequence<double> driftSplineBins {
+      Name("driftSplineBins"), Comment("points at which spline is defined (effective drift time in ns or doca in mm)")};
+    fhicl::Sequence<double> driftResSplineBins {
+      Name("driftResSplineBins"), Comment("points at which spline is defined (doca in mm)")};
     fhicl::Atom<bool> driftIgnorePhi {
       Name("driftIgnorePhi"), Comment("Ignore phi for no field reco")};
+    fhicl::Atom<int> driftSplineNumPhiBins {
+      Name("driftSplineNumPhiBins"), Comment("number of phi bins")};
+    fhicl::Atom<double> driftSplinePhiScaling {
+      Name("driftSplinePhiScaling"), Comment("calibration scaling sim expected phi dependence")};
     fhicl::Sequence<double> driftSplineA {
-      Name("driftSplineA"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftSplineA"), Comment("Drift spline vector, length is (docabins-1)")};
     fhicl::Sequence<double> driftSplineB {
-      Name("driftSplineB"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftSplineB"), Comment("Drift spline vector, length is (docabins-1)")};
     fhicl::Sequence<double> driftSplineC {
-      Name("driftSplineC"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftSplineC"), Comment("Drift spline vector, length is (docabins-1)")};
     fhicl::Sequence<double> driftSplineD {
-      Name("driftSplineD"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftSplineD"), Comment("Drift spline vector, length is (docabins-1)")};
     fhicl::Sequence<double> driftResSplineA {
-      Name("driftResSplineA"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftResSplineA"), Comment("Drift spline vector, length is (docabins-1)")};
     fhicl::Sequence<double> driftResSplineB {
-      Name("driftResSplineB"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftResSplineB"), Comment("Drift spline vector, length is (docabins-1)")};
     fhicl::Sequence<double> driftResSplineC {
-      Name("driftResSplineC"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftResSplineC"), Comment("Drift spline vector, length is (docabins-1)")};
     fhicl::Sequence<double> driftResSplineD {
-      Name("driftResSplineD"), Comment("Drift spline vector, length is (docabins-1) x phibins")};
+      Name("driftResSplineD"), Comment("Drift spline vector, length is (docabins-1)")};
 
 
 
