@@ -47,6 +47,8 @@ namespace mu2e {
       Name("totEBinWidth"), Comment("TOT drift time e bin width")};
     fhicl::Sequence<double>  totDriftTime {
       Name("totDriftTime"), Comment(" totDriftTime ")};
+    fhicl::Sequence<double>  totDriftError {
+      Name("totDriftError"), Comment(" totDriftError ")};
 
     fhicl::Atom<bool> useDriftSplines {
       Name("useDriftSplines"), Comment("Use calibrated drift spline")};

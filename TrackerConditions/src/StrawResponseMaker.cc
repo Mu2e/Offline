@@ -244,6 +244,7 @@ namespace mu2e {
         _config.tdResSlope(), _config.truncateLongitudinal(),
         _config.rmsLongErrors(), _config.totTBins(), _config.totTBinWidth(),
         _config.totEBins(), _config.totEBinWidth(), _config.totDriftTime(),
+        _config.totDriftError(),
         _config.driftErrorParameters(),
         _config.useParameterizedDriftErrors(), _parDriftDocas, _parDriftOffsets, _parDriftRes,
         _config.wireLengthBuffer(), _config.strawLengthFactor(),

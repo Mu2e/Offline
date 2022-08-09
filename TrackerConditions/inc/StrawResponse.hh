@@ -44,6 +44,7 @@ namespace mu2e {
           std::vector<double> resslope, bool truncateLongitudinal,
           bool rmsLongErrors, int totTBins, double totTBinWidth,
           int totEBins, double totEBinWidth, std::vector<double> totdtime,
+          std::vector<double> totderror,
           std::vector<double> derr,
           bool usepderr, std::vector<double> parDriftDocas,
           std::vector<double> parDriftOffsets, std::vector<double> parDriftRes,
@@ -71,6 +72,7 @@ namespace mu2e {
         _rmsLongErrors(rmsLongErrors), _totTBins(totTBins), _totTBinWidth(totTBinWidth),
         _totEBins(totEBins), _totEBinWidth(totEBinWidth),
         _totdtime(totdtime),
+        _totderror(totderror),
         _derr(derr), _usepderr(usepderr), _parDriftDocas(parDriftDocas),
         _parDriftOffsets(parDriftOffsets), _parDriftRes(parDriftRes),
         _wbuf(wbuf), _slfac(slfac), _errfac(errfac),
@@ -136,7 +138,8 @@ namespace mu2e {
       // removes channel to channel delays and overall electronics time delay
       void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
       // approximate drift distatnce from ToT value
-      double driftTime(Straw const& straw, double tot, double edep) const;
+      double TOTdriftTime(Straw const& straw, double tot, double edep) const;
+      double TOTdriftTimeError(Straw const& straw, double tot, double edep) const;
       double pathLength(Straw const& straw, double tot) const;
       //      double pathLength(StrawHit const& strawhit, double theta) const;
 
@@ -187,6 +190,7 @@ namespace mu2e {
       size_t _totEBins;
       double _totEBinWidth;
       std::vector<double> _totdtime;
+      std::vector<double> _totderror;
       std::vector<double> _derr; // parameters describing the drift error function
       bool _usepderr; // flag to use calculated version of drift error calculation
       std::vector<double> _parDriftDocas;

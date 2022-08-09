@@ -233,12 +233,19 @@ namespace mu2e {
       return _vsat;
   }
 
-  double StrawResponse::driftTime(Straw const& straw,
+  double StrawResponse::TOTdriftTime(Straw const& straw,
       double tot, double edep) const {
     // straw is present in case of eventual calibration
     size_t totbin = min(_totTBins-1,static_cast<size_t>(tot/_totTBinWidth));
     size_t ebin = min(_totEBins-1,static_cast<size_t>(edep/_totEBinWidth));
     return _totdtime[totbin*_totEBins+ebin];
+  }
+
+  double StrawResponse::TOTdriftTimeError(Straw const& straw,
+      double tot, double edep) const {
+    size_t totbin = min(_totTBins-1,static_cast<size_t>(tot/_totTBinWidth));
+    size_t ebin = min(_totEBins-1,static_cast<size_t>(edep/_totEBinWidth));
+    return _totderror[totbin*_totEBins+ebin];
   }
 
   double StrawResponse::pathLength(Straw const& straw, double tot) const {
