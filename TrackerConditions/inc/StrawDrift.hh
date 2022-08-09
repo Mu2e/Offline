@@ -32,15 +32,17 @@ namespace mu2e {
       typedef std::shared_ptr<const StrawDrift> cptr_t;
       constexpr static const char* cxname = {"StrawDrift"};
 
-      StrawDrift( int phiBins, double deltaD, std::vector<double> distances_dbins, std::vector<double> instantSpeed_dbins, std::vector<double> times_dbins,
+      StrawDrift(double cc, int phiBins, double deltaD, std::vector<double> distances_dbins, std::vector<double> instantSpeed_dbins, std::vector<double> times_dbins,
           double deltaT, std::vector<double> distances_tbins, std::vector<double> times_tbins) :
         ProditionsEntity(cxname),
+        _cc(cc),
         _phiBins(phiBins), _deltaD(deltaD), _distances_dbins(distances_dbins),
         _instantSpeed_dbins(instantSpeed_dbins), _times_dbins(times_dbins),
         _deltaT(deltaT), _distances_tbins(distances_tbins), _times_tbins(times_tbins) {}
 
       virtual ~StrawDrift() {}
 
+      double GetCC() const { return _cc;};
       double GetAverageSpeed(double dist) const; // avg nom. drift speed (phi = 0)
       double GetInstantSpeedFromT(double time) const; // (at phi = 0)
       double GetInstantSpeedFromD(double dist) const; // (at phi = 0)
@@ -55,6 +57,7 @@ namespace mu2e {
       // has x-z and y-z plane symmetry
       double ConstrainAngle(double phi) const;
 
+      double _cc;
       size_t _phiBins;
 
       double _deltaD;
