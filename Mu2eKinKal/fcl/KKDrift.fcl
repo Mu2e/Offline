@@ -65,7 +65,7 @@ outputs : {
 
 #include "Production/JobConfig/reco/epilog.fcl"
 
-services.ProditionsService.strawResponse.useDriftSplines : true
+services.ProditionsService.strawResponse.useDriftSplines : false
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
