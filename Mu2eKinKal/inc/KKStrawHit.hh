@@ -181,8 +181,10 @@ namespace mu2e {
     DriftInfo dinfo;
     dinfo.LorentzAngle_ = Mu2eKinKal::LorentzAngle(ptca_.tpData(),ptca_.particleTraj().bnom().Unit());
     dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
-    dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_);
-    dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_,true);
+//    dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_);
+//    dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_,true);
+    dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_);
+    dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_,true);
     return dinfo;
   }
 
