@@ -102,8 +102,8 @@ Mu2eKinKal : {
     MinNDOF : 1
     MaxNIter : 10
     Deweight : 1.0e6
-    ConvergenceDeltaChisq : 1.0
-    DivergenceDeltaChisq : 50.0
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
     BFieldCorrection : true
@@ -120,9 +120,9 @@ Mu2eKinKal : {
     ]
     NullStrawHitUpdaterSettings : [
       # maxdoca, drift variance, time offset , time variance, unbiased DOCA? constrain time?
-      [ 10.0 , 1.5, -0.6, 30.0, true , true ],
-      [  5.0 , 1.5, -0.6, 30.0, true , true ],
-      [  5.0 , 1.5, -0.6, 30.0, true , true ]
+      [ 10.0 , 2.1, 0.0, 50.0, false, true ],
+      [  5.0 , 2.1, 0.0, 50.0, false, true ],
+      [  5.0 , 2.1, 0.0, 50.0, false, true ]
     ]
     PTCAStrawHitUpdaterSettings : [
       # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, constrain null time?

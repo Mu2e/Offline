@@ -155,7 +155,6 @@ namespace mu2e {
       if(nshu){ shu = nshu; ++nupdaters; }
       if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
       if(shu != 0){
-        whstate_.algo_ = shu->algorithm();
         CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
         whstate_.usable_ = ca.usable();
         if(whstate_.usable_)
