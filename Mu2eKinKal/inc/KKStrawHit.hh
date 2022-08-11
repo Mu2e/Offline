@@ -203,10 +203,10 @@ namespace mu2e {
         // Null state. interpret DOCA against the wire directly as a residual.  We have to take the DOCA sign out of the derivatives
         resids[Mu2eKinKal::dresid] = Residual(ptca_.doca(),nhinfo.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
         // optionally also constrain the time
-        if(nhinfo.usetime_){
+        if(nhinfo.useTime()){
           // time residual is deltaT
           double dt = ptca_.deltaT() - nhinfo.toff_;
-          if(nhinfo.useComboDriftTime_)dt -= chit_.driftTime();  // Null updater uses combo hit time
+          if(nhinfo.useComboDriftTime())dt -= chit_.driftTime();  // Null updater uses combo hit time
           resids[Mu2eKinKal::tresid] = Residual(dt,nhinfo.tvar_,0.0,true,-ptca_.dTdP());
         }
       }

@@ -32,7 +32,7 @@ namespace mu2e {
 
   class CombinatoricStrawHitUpdater {
     public:
-      using CSHUConfig = std::tuple<unsigned,float,float,float,float,bool,bool,bool,int>;
+      using CSHUConfig = std::tuple<unsigned,float,float,float,float,bool,int,bool,int>;
       // struct to sort hit states by chisquared value
       struct ClusterScoreComp {
         bool operator()(ClusterScore const& a, ClusterScore const& b)  const {
@@ -46,7 +46,7 @@ namespace mu2e {
         mindchi2_ = std::get<3>(cshuconfig);
         nulldoca_ = std::get<4>(cshuconfig);
         allownull_ = std::get<5>(cshuconfig);
-        nulltime_ = std::get<6>(cshuconfig);
+        nhtmode_ = static_cast<NullHitInfo::nullTimeMode>(std::get<6>(cshuconfig));
         freeze_ = std::get<7>(cshuconfig);
         diag_ = std::get<8>(cshuconfig);
         static double invthree(1.0/3.0);
@@ -57,8 +57,7 @@ namespace mu2e {
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::right};
         // set the algorithm; this propagates to the StrawHits
         for(auto& whs : allowed_)whs.algo_ = StrawHitUpdaters::Combinatoric;
-        toff_ = tvar_ = 0.0;
-        std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " " << allownull_ << " " << nulltime_ << std::endl;
+        std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " " << allownull_ << " " << nhtmode_ << std::endl;
       }
       ClusterScore selectBest(ClusterScoreCOL& cscores) const; // find the best cluster configuration given the score for each
       double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
@@ -68,7 +67,6 @@ namespace mu2e {
       auto minDeltaChi2() const { return mindchi2_; }
       auto nullDOCA() const { return nulldoca_; }
       auto allowNull() const { return allownull_; }
-      auto nullTime() const { return nulltime_; }
       auto distVariance() const { return dvar_; }
       // the work is done here
       template <class KTRAJ> void updateCluster(KKStrawHitCluster<KTRAJ>& cluster,KinKal::MetaIterConfig const& miconfig) const;
@@ -79,14 +77,12 @@ namespace mu2e {
       double mindchi2_; // minimum chisquared separation to consider 'significant'
       double nulldoca_; // DOCA used to set null hit variance
       bool allownull_; // allow null ambiguity assignment
-      bool nulltime_; // use time residual in null hit chisquared
+      NullHitInfo::nullTimeMode nhtmode_; // use time constraint in null hits
       bool freeze_; // freeze disambiguated clusters
       int diag_; // diag print level
       WHSCOL allowed_; // allowed states
       double wireHitRank(WHSCOL const& whscol) const; // rank wire hit states by 'conservativeness'
       double dvar_; // null hit distance variance
-      mutable double toff_; // null hit time offset cache
-      mutable double tvar_; // null hit time variance cache
   };
   std::ostream& operator <<(std::ostream& os, ClusterScore const& cscore );
 }

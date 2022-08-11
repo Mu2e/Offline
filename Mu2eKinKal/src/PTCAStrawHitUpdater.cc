@@ -18,21 +18,16 @@ namespace mu2e {
     }
     // compute time and distance parameters used for null ambiguity (wire constraint)
     auto& nhinfo = whstate.nhinfo_;
-    if(nulltime_ == usecombo){
-      nhinfo.usetime_ = true;
+    nhinfo.tmode_ = nhtmode_;
+    if(nhtmode_ == NullHitInfo::usecombo){
       nhinfo.toff_ =  0.0;
-      nhinfo.useComboDriftTime_ = true;
       nhinfo.tvar_ = 50.0; // should come from ComboHit FIXME
       nhinfo.dvar_ = 2.1;
-    } else if(nulltime_ == usedoca){
+    } else if(nhtmode_ == NullHitInfo::usedoca){
       double vdrift = sresponse.driftConstantSpeed(); // use average speed for now
-      nhinfo.usetime_ = true;
       nhinfo.toff_ = 0.5*mindoca_/vdrift; // this calculation is unreliable currently
-      nhinfo.useComboDriftTime_ = false;
       nhinfo.dvar_ = dvar_;
       nhinfo.tvar_ = dvar_/(vdrift*vdrift);
-    } else {
-      nhinfo.usetime_ = false;
     }
     return whstate;
   }

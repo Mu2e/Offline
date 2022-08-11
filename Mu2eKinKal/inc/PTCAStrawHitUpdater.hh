@@ -5,6 +5,7 @@
 #ifndef Mu2eKinKal_PTCAStrawHitUpdater_hh
 #define Mu2eKinKal_PTCAStrawHitUpdater_hh
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/NullHitInfo.hh"
 #include <tuple>
 #include <iostream>
 
@@ -12,19 +13,18 @@ namespace mu2e {
   // Update based just on PTCA to the wire
   class PTCAStrawHitUpdater : public StrawHitUpdater {
     public:
-      enum nullTimeMode{none=0,usedoca,usecombo};
       using DSHUConfig = std::tuple<float,float,float,float,bool,int>;
-      PTCAStrawHitUpdater() : mindoca_(0), maxdoca_(0), mindt_(0), maxdt_(0), uptca_(false), nulltime_(none), dvar_(0) {}
+      PTCAStrawHitUpdater() : mindoca_(0), maxdoca_(0), mindt_(0), maxdt_(0), uptca_(false), nhtmode_(NullHitInfo::none), dvar_(0) {}
       PTCAStrawHitUpdater(DSHUConfig const& dshusetting) {
         mindoca_ = std::get<0>(dshusetting);
         maxdoca_ = std::get<1>(dshusetting);
         mindt_ = std::get<2>(dshusetting);
         maxdt_ = std::get<3>(dshusetting);
         uptca_ = std::get<4>(dshusetting);
-        nulltime_ = static_cast<nullTimeMode>(std::get<5>(dshusetting));
+        nhtmode_ = static_cast<NullHitInfo::nullTimeMode>(std::get<5>(dshusetting));
         static double invthree(1.0/3.0);
         dvar_ = invthree*mindoca_*mindoca_;
-        std::cout << "PTCAStrawHitUpdater " << mindoca_ << " " << maxdoca_ << " " << mindt_ << " " << maxdt_ << " " << uptca_ << " " << nulltime_ << std::endl;
+        std::cout << "PTCAStrawHitUpdater " << mindoca_ << " " << maxdoca_ << " " << mindt_ << " " << maxdt_ << " " << uptca_ << " " << nhtmode_ << std::endl;
       }
       // set the state based on the current PTCA value
       WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw, StrawResponse const& sresponse) const override;
@@ -43,7 +43,7 @@ namespace mu2e {
       double mindt_; // maximum dt to use drift information
       double maxdt_; // maximum dt to use drift information
       bool uptca_; // use unbiased DOCA info
-      nullTimeMode nulltime_; // use time constraint in null hits
+      NullHitInfo::nullTimeMode nhtmode_; // use time constraint in null hits
       double dvar_; // null hit distance variance
   };
 }
