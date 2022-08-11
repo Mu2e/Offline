@@ -35,15 +35,15 @@ namespace mu2e {
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,int>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
           " Temperature (dimensionless), StrawHitUpdater algorithm") };
-      using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,bool>>;
+      using NullStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,bool>>;
       NullStrawHitUpdaterSettings nhuConfig{ Name("NullStrawHitUpdaterSettings"), Comment("NullStrawHitUpdater settings, format: \n"
           " Maximum wire DOCA to use hit, Wire DOCA variance, time offset, time variance, Use unbiased DOCA?, Constraint time?") };
       using PTCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,int>>;
       PTCAStrawHitUpdaterSettings dhuConfig{ Name("PTCAStrawHitUpdaterSettings"), Comment("PTCAStrawHitUpdater settings, format: \n"
           " Minimum DOCA to use L/R ambiguity, Maximum wire DOCA to use hit, Minimum Dt to use L/R ambiguity, Maximum Dt to use a hit, Use Unbiased DOCA?,Null hit time mode") };
-      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,bool,bool,bool,int>>;
+      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,bool,int,bool,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
-          "Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allow Null ambiguity?,Use Null Time residual?, freeze disambiguated clusters, diag level") };
+          "Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allow Null ambiguity?,Null Time residual mode, freeze disambiguated clusters, diag level") };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,float,bool>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
           " Maximum DOCA to use straw material, Maximum DOCA to use unaveraged material,Maximum DOCA error to use unaveraged material, variance scale, scale variance with annealing temp?") };

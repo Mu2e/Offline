@@ -9,7 +9,7 @@ namespace mu2e {
       whs = WireHitState(WireHitState::inactive,StrawHitUpdaters::null);
     else
       whs = WireHitState(WireHitState::null,StrawHitUpdaters::null);
-    whs.nhinfo_ = NullHitInfo(dt_,tvar_,dvar_,usetime_,true);
+    whs.nhinfo_ = NullHitInfo(0.0,tvar_,dvar_,NullHitInfo::usecombo);
     return whs;
   }
 }

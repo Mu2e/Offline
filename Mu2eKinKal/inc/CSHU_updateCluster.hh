@@ -41,12 +41,18 @@ namespace mu2e {
     }
     // set the null hit configuration in the allowed states.  This depends on conditions so can't be pre-computed
     auto const& hit = hits.front();
-    double vdriftinst = hit->strawResponse().driftInstantSpeed(hit->strawId(),nulldoca_,0.0,true);
     NullHitInfo nhinfo;
-    nhinfo.toff_ = 0.5*nulldoca_/vdriftinst;
-    nhinfo.tvar_ = 0.25*dvar_/(vdriftinst*vdriftinst);
-    nhinfo.dvar_ = dvar_;
-    nhinfo.usetime_ = nulltime_;
+    nhinfo.tmode_ = nhtmode_;
+    if(nhinfo.tmode_ == NullHitInfo::usecombo){
+      nhinfo.toff_ =  0.0;
+      nhinfo.tvar_ = 50.0; // should come from ComboHit FIXME
+      nhinfo.dvar_ = 2.1;
+    } else if(nhinfo.tmode_ == NullHitInfo::usedoca){
+     double vdrift = hit->strawResponse().driftInstantSpeed(hit->strawId(),nulldoca_,0.0,true);
+     nhinfo.toff_ = 0.5*nulldoca_/vdrift; // this calculation is unreliable currently
+      nhinfo.dvar_ = dvar_;
+      nhinfo.tvar_ = dvar_/(vdrift*vdrift);
+    }
     auto allowed = allowed_;
     for(auto& whs : allowed)whs.nhinfo_ = nhinfo;
     // iterate over all possible states of each hit, and incrementally compute the total chisquared for all the hits in the cluster WRT the unbiased parameters
@@ -71,7 +77,7 @@ namespace mu2e {
           shptr->setResiduals(miconfig,whstate,resids);
           for(size_t iresid= 0; iresid < resids.size(); ++iresid) {
             auto const& resid = resids[iresid];
-            if(resid.active() && (whstate.useDrift() || (iresid==Mu2eKinKal::dresid || nulltime_))){
+            if(resid.active() && (whstate.useDrift() || (iresid==Mu2eKinKal::dresid || nhtmode_ > NullHitInfo::none))){
               // update residuals to refer to unbiased parameters
               double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
               double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());
