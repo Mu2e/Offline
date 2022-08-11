@@ -11,7 +11,7 @@ export ${MU2E_SETUP_BUILDOPTS}
 export DEBUG_LEVEL=${MUSE_BUILD}
 export PACKAGE_NAME=offline
 export PACKAGE_SOURCE=${MUSE_WORK_DIR}/Offline
-export PACKAGE_VERSION=d10_10_01
+export PACKAGE_VERSION=d10_17_00
 
 # Check that the installation directoy has been defined.
 if [ "${PRODUCTS_INSTALL}" = '' ];then
@@ -22,7 +22,7 @@ fi
 
 # Learn if the extra products needed for the trigger are active.
 # Use mu2e_artdaq_core as a proxy for the ensemble.
-if [ "`ups active | grep mu2e_artdaq_core`" != "" ]; then
+if [ "`ups active | grep artdaq_core_mu2e`" != "" ]; then
    haveTrigger=".trig"
 else
    haveTrigger=""
