@@ -144,7 +144,9 @@ namespace mu2e {
   double StrawResponse::driftDistanceError(StrawId strawId,
       double ddist, double phi, bool noSpline) const {
     if (_useDriftSplines && !noSpline){
-      return _driftResSpline.interpolate(ddist);
+      double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,noSpline);
+      double time_error = _driftResSpline.interpolate(ddist);
+      return time_error*speed_at_ddist;
       //FIXME PHI?
     }else{
       // maximum drift is the straw radius.  should come from conditions FIXME!

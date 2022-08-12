@@ -19,7 +19,7 @@ Mu2eKinKal : {
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
     StrawHitClusterLevel : "uniquepanel"
-    CaloTrackerTimeOffset : -2.5 #ns
+    CaloTrackerTimeOffset : -0.9 #ns
     CaloPositionResolution : 15.0 #mm
     CaloPropagationSpeed : 200.0 #mm/ns
     MinCaloClusterEnergy : 10.0 #MeV
