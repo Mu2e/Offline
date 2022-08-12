@@ -37,6 +37,7 @@ namespace mu2e {
       ProditionsHandle<Tracker> _alignedTracker_h;
       TTree*  srtest_;
       float dist_, time_, tvar_, vinv_, vavg_;
+      float derr_, rdrift_;
       TGraph* d2t_, *d2tvar_, *d2v_;
       int plane_, panel_, straw_;
       int print_, diag_;
@@ -59,7 +60,7 @@ namespace mu2e {
   void StrawResponseTest::beginJob(){
     if(diag_ > 0){
       art::ServiceHandle<art::TFileService> tfs;
-      srtest_=tfs->make<TTree>("strawtest","strawtest");
+      srtest_=tfs->make<TTree>("SRT","SRT");
 //      srtest_->Branch("plane",&splane_,"plane/I");  Eventually add straw dependence TODO
 //      srtest_->Branch("panel",&spanel_,"panel/I");
 //      srtest_->Branch("straw",&straw_,"straw/I");
@@ -69,6 +70,8 @@ namespace mu2e {
       srtest_->Branch("tvar",&tvar_,"tvar/F");
       srtest_->Branch("vinv",&vinv_,"vinv/F");
       srtest_->Branch("vavg",&vavg_,"vavg/F");
+      srtest_->Branch("rdrift",&rdrift_,"rdrift/F");
+      srtest_->Branch("derr",&derr_,"derr/F");
       d2t_ = tfs->make<TGraph>(nbins_);
       d2t_->SetName("D2T");
       d2t_->SetTitle("Distance to Time;Distance to Wire (mm);Mean Drift Time (ns)");
@@ -99,6 +102,8 @@ namespace mu2e {
 //        double t2d = sresponse->driftTimeToDistance(sid,d2t,0.0);
         auto dinfo = sresponse->driftInfoAtDistance(sid,dist,d2t,0.0);
         dist_ = dinfo.distance; time_ = d2t; vinv_ = 1.0/dinfo.speed; tvar_ = dinfo.variance;
+        derr_ = sresponse->driftDistanceError(sid,dist,0.0);
+        rdrift_ = sresponse->driftTimeToDistance(sid,time_,0.0);
         srtest_->Fill();
         d2t_->SetPoint(ibin,dist,d2t);
         d2tvar_->SetPoint(ibin,dist,dinfo.variance);
