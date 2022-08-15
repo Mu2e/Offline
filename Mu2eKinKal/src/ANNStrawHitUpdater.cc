@@ -10,10 +10,10 @@ namespace mu2e {
   WireHitState ANNStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     std::vector<Float_t> pars(4,0.0);
     // this order is given by the training
-    pars[0] = tpdata.doca();
+    pars[0] = abs(tpdata.doca());
     pars[1] = dinfo.driftDistance_;
     pars[2] = chit.driftTime();
-    pars[3] = chit.energyDep();
+    pars[3] = 1000.0*chit.energyDep();
     float mvaout = mva_->evalMVA(pars);
     WireHitState whstate(WireHitState::inactive,StrawHitUpdaters::ANN);
     if(mvaout > mvacut_){
