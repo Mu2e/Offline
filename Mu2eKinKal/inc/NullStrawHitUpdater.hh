@@ -21,7 +21,7 @@ namespace mu2e {
         tvar_ = std::get<2>(nsuconfig);
         uptca_ = std::get<3>(nsuconfig);
       }
-      WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw, StrawResponse const& sresponse ) const override;
+      WireHitState wireHitState(ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const override;
       StrawHitUpdaters::algorithm algorithm() const override { return StrawHitUpdaters::null; }
       bool useUnbiasedClosestApproach() const override { return uptca_; }
     private:

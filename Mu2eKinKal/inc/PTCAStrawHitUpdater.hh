@@ -13,21 +13,19 @@ namespace mu2e {
   // Update based just on PTCA to the wire
   class PTCAStrawHitUpdater : public StrawHitUpdater {
     public:
-      using DSHUConfig = std::tuple<float,float,float,float,bool,int>;
-      PTCAStrawHitUpdater() : mindoca_(0), maxdoca_(0), mindt_(0), maxdt_(0), uptca_(false), nhtmode_(NullHitInfo::none), dvar_(0) {}
-      PTCAStrawHitUpdater(DSHUConfig const& dshusetting) {
-        mindoca_ = std::get<0>(dshusetting);
-        maxdoca_ = std::get<1>(dshusetting);
-        mindt_ = std::get<2>(dshusetting);
-        maxdt_ = std::get<3>(dshusetting);
-        uptca_ = std::get<4>(dshusetting);
-        nhtmode_ = static_cast<NullHitInfo::nullTimeMode>(std::get<5>(dshusetting));
-        static double invthree(1.0/3.0);
-        dvar_ = invthree*mindoca_*mindoca_;
+      using PSHUConfig = std::tuple<float,float,float,float,bool,int>;
+      PTCAStrawHitUpdater() : mindoca_(0), maxdoca_(0), mindt_(0), maxdt_(0), uptca_(false), nhtmode_(NullHitInfo::none) {}
+      PTCAStrawHitUpdater(PSHUConfig const& ptcashuconfig) {
+        mindoca_ = std::get<0>(ptcashuconfig);
+        maxdoca_ = std::get<1>(ptcashuconfig);
+        mindt_ = std::get<2>(ptcashuconfig);
+        maxdt_ = std::get<3>(ptcashuconfig);
+        uptca_ = std::get<4>(ptcashuconfig);
+        nhtmode_ = static_cast<NullHitInfo::nullTimeMode>(std::get<5>(ptcashuconfig));
         std::cout << "PTCAStrawHitUpdater " << mindoca_ << " " << maxdoca_ << " " << mindt_ << " " << maxdt_ << " " << uptca_ << " " << nhtmode_ << std::endl;
       }
       // set the state based on the current PTCA value
-      WireHitState wireHitState(ClosestApproachData const& tpdata, Straw const& straw, StrawResponse const& sresponse) const override;
+      WireHitState wireHitState(ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const override;
       // unassigned hit properties
       StrawHitUpdaters::algorithm algorithm() const override{ return StrawHitUpdaters::PTCA; }
       // accessors
@@ -44,7 +42,6 @@ namespace mu2e {
       double maxdt_; // maximum dt to use drift information
       bool uptca_; // use unbiased DOCA info
       NullHitInfo::nullTimeMode nhtmode_; // use time constraint in null hits
-      double dvar_; // null hit distance variance
   };
 }
 #endif

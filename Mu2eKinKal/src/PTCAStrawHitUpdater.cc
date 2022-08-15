@@ -1,12 +1,13 @@
 #include "Offline/Mu2eKinKal/inc/PTCAStrawHitUpdater.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include <cmath>
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
-  WireHitState PTCAStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata, Straw const& straw, StrawResponse const& sresponse ) const {
+  WireHitState PTCAStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate(WireHitState::inactive,StrawHitUpdaters::PTCA);
     double doca = tpdata.doca();
     double absdoca = fabs(doca);
@@ -24,10 +25,11 @@ namespace mu2e {
       nhinfo.tvar_ = 50.0; // should come from ComboHit FIXME
       nhinfo.dvar_ = 2.1;
     } else if(nhtmode_ == NullHitInfo::usedoca){
-      double vdrift = sresponse.driftConstantSpeed(); // use average speed for now
+      double vdrift = dinfo.driftVelocity_;
       nhinfo.toff_ = 0.5*mindoca_/vdrift; // this calculation is unreliable currently
-      nhinfo.dvar_ = dvar_;
-      nhinfo.tvar_ = dvar_/(vdrift*vdrift);
+      static double invthree(1.0/3.0);
+      nhinfo.dvar_ = invthree*mindoca_*mindoca_;
+      nhinfo.tvar_ = nhinfo.dvar_/(vdrift*vdrift);
     }
     return whstate;
   }

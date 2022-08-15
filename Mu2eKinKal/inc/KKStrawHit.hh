@@ -157,9 +157,10 @@ namespace mu2e {
       if(shu != 0){
         CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
         whstate_.usable_ = ca.usable();
-        if(whstate_.usable_)
-          whstate_ = shu->wireHitState(ca.tpData(),straw_,sresponse_);
-        else
+        if(whstate_.usable_){
+          auto dinfo = DriftInfo();
+          whstate_ = shu->wireHitState(ca.tpData(),dinfo,chit_);
+        }else
           whstate_.state_ = WireHitState::inactive;
       } // no updater means don't change the state
     }
