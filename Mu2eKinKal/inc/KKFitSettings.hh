@@ -39,8 +39,11 @@ namespace mu2e {
       NullStrawHitUpdaterSettings nhuConfig{ Name("NullStrawHitUpdaterSettings"), Comment("NullStrawHitUpdater settings, format: \n"
           " Maximum wire DOCA to use hit, Wire DOCA variance, time offset, time variance, Use unbiased DOCA?, Constraint time?") };
       using PTCAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,bool,int>>;
-      PTCAStrawHitUpdaterSettings dhuConfig{ Name("PTCAStrawHitUpdaterSettings"), Comment("PTCAStrawHitUpdater settings, format: \n"
+      PTCAStrawHitUpdaterSettings pshuConfig{ Name("PTCAStrawHitUpdaterSettings"), Comment("PTCAStrawHitUpdater settings, format: \n"
           " Minimum DOCA to use L/R ambiguity, Maximum wire DOCA to use hit, Minimum Dt to use L/R ambiguity, Maximum Dt to use a hit, Use Unbiased DOCA?,Null hit time mode") };
+      using ANNStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,bool,int,float>>;
+      ANNStrawHitUpdaterSettings annshuConfig{ Name("ANNStrawHitUpdaterSettings"), Comment("ANNStrawHitUpdater settings, format: \n"
+          " Weight file, ann cut,  Use Unbiased DOCA?, Null hit time mode, null hit distance variance") };
       using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,bool,int,bool,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
           "Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allow Null ambiguity?,Null Time residual mode, freeze disambiguated clusters, diag level") };
