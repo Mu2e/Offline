@@ -13,6 +13,7 @@ namespace mu2e {
   class SplineInterpolation{
 
   public:
+    SplineInterpolation() {}
     SplineInterpolation(std::vector<double> const& xvals, std::vector<double> const& yvals,bool extrapolate, bool monotonic);
     SplineInterpolation(std::vector<double> const& xvals, std::vector<double> const& splineA,
         std::vector<double> const& splineB, std::vector<double> const& splineC,

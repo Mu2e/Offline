@@ -184,10 +184,10 @@ namespace mu2e {
   template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo() const {
     DriftInfo dinfo;
     dinfo.LorentzAngle_ = Mu2eKinKal::LorentzAngle(ptca_.tpData(),ptca_.particleTraj().bnom().Unit());
-//    dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
+    dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
 // temporary kludge!!!!
-    double draw = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
-    dinfo.driftDistance_ =  sqrt((pow(draw +0.04,2) -0.0985)/0.982);
+//    double draw = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
+//    dinfo.driftDistance_ =  sqrt((pow(draw +0.04,2) -0.0985)/0.982);
 
 //    dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_);
 //    dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_,true);
