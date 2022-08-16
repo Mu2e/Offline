@@ -56,6 +56,9 @@ namespace mu2e {
       _upos = -endsign*refptca.sensorDirection().Dot(refptca.sensorPoca().Vect() - chit.centerPos());
       _doca *= endsign;
       _wdoca *= endsign;
+      // correct flag
+      _flag.merge(StrawHitFlag::track);
+      if(whs.active())_flag.merge(StrawHitFlag::active);
     }
 
     //Legacy constructor for BTrk
