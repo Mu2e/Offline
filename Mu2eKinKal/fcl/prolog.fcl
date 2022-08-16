@@ -53,9 +53,9 @@ Mu2eKinKal : {
     ]
     NullStrawHitUpdaterSettings : [
       # maxdoca, drift variance, time variance, unbiased DOCA?
-      [ 100.0 , 2.1,  50.0, false ],
-      [  50.0 , 2.1,  50.0, false ],
-      [  10.0 , 2.1,  50.0, false ]
+      [ 100.0 , 1.5,  50.0, false ],
+      [  50.0 , 1.5,  50.0, false ],
+      [  10.0 , 1.5,  50.0, false ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
@@ -85,9 +85,9 @@ Mu2eKinKal : {
     ]
     NullStrawHitUpdaterSettings : [
       # maxdoca, drift variance, time variance, unbiased DOCA?
-      [ 10.0 , 2.1, 50.0, false],
-      [  5.0 , 2.1, 50.0, false],
-      [  5.0 , 2.1, 50.0, false]
+      [ 10.0 , 1.5, 50.0, false],
+      [  5.0 , 1.5, 50.0, false],
+      [  5.0 , 1.5, 50.0, false]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
@@ -120,9 +120,9 @@ Mu2eKinKal : {
     ]
     NullStrawHitUpdaterSettings : [
       # maxdoca, drift variance, time variance, unbiased DOCA?
-      [ 10.0 , 2.1, 50.0, false],
-      [  5.0 , 2.1, 50.0, false],
-      [  5.0 , 2.1, 50.0, false]
+      [ 10.0 , 1.5, 50.0, false],
+      [  5.0 , 1.5, 50.0, false],
+      [  5.0 , 1.5, 50.0, false]
     ]
     PTCAStrawHitUpdaterSettings : [
       # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, constrain null time?
