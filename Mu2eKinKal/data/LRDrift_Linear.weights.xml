@@ -4,11 +4,11 @@
     <Info name="TMVA Release" value="4.2.1 [262657]"/>
     <Info name="ROOT Release" value="6.24/06 [399366]"/>
     <Info name="Creator" value="brownd"/>
-    <Info name="Date" value="Tue Aug 16 17:26:41 2022"/>
+    <Info name="Date" value="Tue Aug 16 17:55:01 2022"/>
     <Info name="Host" value="Darwin macitois19.dyndns.cern.ch 19.6.0 Darwin Kernel Version 19.6.0: Tue Nov 10 00:10:30 PST 2020; root:xnu-6153.141.10~1/RELEASE_X86_64 x86_64"/>
     <Info name="Dir" value="/Users/brownd/mu2e/MDC2020"/>
     <Info name="Training events" value="20000"/>
-    <Info name="TrainingTime" value="4.24230928e+01"/>
+    <Info name="TrainingTime" value="4.25032110e+01"/>
     <Info name="AnalysisType" value="Classification"/>
   </GeneralInfo>
   <Options>
