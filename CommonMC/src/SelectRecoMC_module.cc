@@ -23,6 +23,7 @@
 #include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -72,6 +73,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> SDMCC          { Name("StrawDigiMCCollection"),          Comment("StrawDigiMCCollection")};
         fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),                  Comment("CrvDigiCollection")};
         fhicl::Atom<art::InputTag> CRVDMCC        { Name("CrvDigiMCCollection"),                  Comment("CrvDigiMCCollection")};
+        fhicl::Atom<art::InputTag> PBTMC          { Name("PBTMC"),                  Comment("ProtonBunchTimeMC")};
         fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),                  Comment("KalSeedCollections")};
         fhicl::Sequence<std::string> HelixSeeds   { Name("HelixSeedCollections"),                  Comment("HelixSeedCollections")};
         fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
@@ -97,12 +99,13 @@ namespace mu2e {
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,PrimaryParticle const& pp, RecoCount& nrec);
       int _debug;
       bool _saveallenergy, _saveunused, _saveallunused;
-      art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc;
+      art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
       std::vector<std::string> _kscs, _hscs;
       SimParticleTimeOffset _toff;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
+      double _pbtimemc; // mc true proton bunch time
       ProditionsHandle<StrawResponse> _strawResponse_h;
   };
 
@@ -122,6 +125,7 @@ namespace mu2e {
     _sdmcc(config().SDMCC()),
     _crvdc(config().CRVDC()),
     _crvdmcc(config().CRVDMCC()),
+    _pbtmc(config().PBTMC()),
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
     _hscs(config().HelixSeeds()),
@@ -140,6 +144,7 @@ namespace mu2e {
       consumes<PrimaryParticle>(_pp);
       consumes<StrawDigiMCCollection>(_sdmcc);
       consumes<CrvDigiMCCollection>(_crvdmcc);
+      consumes<ProtonBunchTimeMC>(_pbtmc);
       produces <IndexMap>("StrawDigiMap");
       produces <IndexMap>("CrvDigiMap");
       produces <KalSeedMCCollection>();
@@ -169,6 +174,8 @@ namespace mu2e {
     _toff.updateMap(event);
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
+    auto pbtmc = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
+    _pbtimemc = pbtmc->pbtime_;
 
     std::unique_ptr<RecoCount> nrec(new RecoCount);
     std::set<art::Ptr<CaloCluster> > ccptrs;
@@ -236,7 +243,7 @@ namespace mu2e {
       auto const& straw = tracker.straw(sdmc.strawId());
       double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
       tshmc._tprop = pdist/vprop;
-      tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop;
+      tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc;
       tshmc._strawId = sdmc.strawId();
       tshmc._earlyend = sdmc.earlyEnd();
       mcseed._tshmcs.push_back(tshmc);
