@@ -403,7 +403,8 @@ namespace mu2e
             // see if there's a TrkCaloHit
             const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
             if(tch != 0){
-              TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+              auto tmom = krep->momentum(tch->fltLen());
+              TrkUtilities::fillCaloHitSeed(tch,tmom,fseed._chit);
               // set the Ptr using the helix: this could be more direct FIXME!
               fseed._chit._cluster = ccPtr;
               // create a helix segment at the TrkCaloHit

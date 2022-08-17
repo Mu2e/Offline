@@ -25,15 +25,15 @@ namespace mu2e {
       _wdoca(wdoca), _rerr(rerr), _ambig(ambig),
       _edep(chit.energyDep()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _end(chit.driftEnd()),
       _flag(flag)  {}
-    TrkStrawHitSeed(StrawHitIndex index, TrkT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
-        Float_t stime,
-        Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :
-      _index(index), _sid(chit.strawId()), _t0(t0), _trklen(trklen),
-      _hitlen(hitlen), _rdrift(rdrift),
-      _dtime(chit.driftTime()), _stime(stime),_htime(chit.time()),
-      _wdoca(wdoca), _rerr(rerr), _ambig(ambig),
-      _edep(chit.energyDep()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _end(chit.driftEnd()),
-      _flag(flag)  {}
+//    TrkStrawHitSeed(StrawHitIndex index, TrkT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
+//        Float_t stime,
+//        Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :
+//      _index(index), _sid(chit.strawId()), _t0(t0), _trklen(trklen),
+//      _hitlen(hitlen), _rdrift(rdrift),
+//      _dtime(chit.driftTime()), _stime(stime),_htime(chit.time()),
+//      _wdoca(wdoca), _rerr(rerr), _ambig(ambig),
+//      _edep(chit.energyDep()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _end(chit.driftEnd()),
+//      _flag(flag)  {}
     // accessors
     StrawHitIndex index() const { return _index; }
     StrawId const&  strawId() const { return _sid; }

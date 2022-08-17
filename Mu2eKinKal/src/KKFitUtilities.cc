@@ -11,5 +11,8 @@ namespace mu2e {
       KinKal::VEC3 vp1(straw.wireEnd(StrawEnd(ch.driftEnd().otherEnd())));
       return KinKal::Line(vp0,vp1,ch.time(),sprop);
     }
+    bool inDetector(KinKal::VEC3 const& point) {
+      return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker FIXME!
+    }
   }
 }

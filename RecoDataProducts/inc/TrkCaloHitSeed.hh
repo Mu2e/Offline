@@ -8,6 +8,7 @@
 #include "Offline/RecoDataProducts/inc/HitT0.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <Rtypes.h>
 namespace mu2e {
@@ -15,8 +16,9 @@ namespace mu2e {
     TrkCaloHitSeed() :  _trklen(0), _hitlen(0), _cdoca(0),_rerr(0)  {}
     // construct from the information
     TrkCaloHitSeed(HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t cdoca, Float_t rerr,
-    Float_t time, Float_t terr, StrawHitFlag const& flag) :
-      _t0(t0), _trklen(trklen), _hitlen(hitlen), _cdoca(cdoca), _rerr(rerr), _time(time), _terr(terr), _flag(flag)
+    Float_t time, Float_t terr, XYZVectorF const& cpos, XYZVectorF const& tmom, StrawHitFlag const& flag) :
+      _t0(t0), _trklen(trklen), _hitlen(hitlen), _cdoca(cdoca), _rerr(rerr), _time(time), _terr(terr),
+      _cpos(cpos), _tmom(tmom), _flag(flag)
     {}
     // accessors
     art::Ptr<CaloCluster> const& caloCluster() const { return _cluster; }
@@ -27,6 +29,8 @@ namespace mu2e {
     Float_t        transverseErr() const { return _rerr; }
     Float_t        time() const { return _time; }
     Float_t        timeErr() const { return _terr; }
+    auto const&    clusterPosition() const { return _cpos; }
+    auto const&    trackMomentum() const { return _tmom; }
     StrawHitFlag const& flag() const { return _flag; }
     //
     art::Ptr<CaloCluster> _cluster; // cluster this hit is based on
@@ -37,6 +41,8 @@ namespace mu2e {
     Float_t            _rerr;          // intrinsic radial error
     Float_t            _time;          // time of this hit, = cluster time at the SIPM
     Float_t            _terr;          // time error assigned to this hit
+    XYZVectorF         _cpos;       // cluster position at POCA
+    XYZVectorF         _tmom;       // track momentum at POCA
     StrawHitFlag    _flag;          // flag describing the status of this hit (active, ....)
   };
 }
