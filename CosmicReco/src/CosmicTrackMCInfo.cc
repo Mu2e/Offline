@@ -1,5 +1,7 @@
 #include "Offline/CosmicReco/inc/CosmicTrackMCInfo.hh"
 
+namespace mu2e {
+
 CosmicTrackMCInfo::CosmicTrackMCInfo(){
 
      TrueFitEquation.Pos.SetXYZ(0,0,0);
@@ -14,4 +16,4 @@ CosmicTrackMCInfo::CosmicTrackMCInfo(){
 
 }
 
-
+}

@@ -17,8 +17,8 @@ namespace mu2e {
     typedef unsigned mask_type;
     enum bit_type {hitsOK=0,circleOK,phizOK,helixOK,seedOK,kalmanOK,circleInit,phizInit,
     circleConverged,phizConverged,helixConverged,seedConverged,kalmanConverged,
-    MatCorr, BFCorr1, BFCorr2,
-    KSF=16, KFF, TPRHelix, CPRHelix, Straight, KKLoopHelix,KKLine};
+    MatCorr, BFCorr, FitOK,
+    KSF=16, KFF, TPRHelix, CPRHelix, Straight, KKLoopHelix,KKCentralHelix,KKLine};
 
     // functions needed for the BitMap template
     static std::string const& typeName();

@@ -65,6 +65,7 @@ namespace mu2e{
       proposedStep = 0.;
     }
     if (verboseLevel>0) {
+      G4int prec = G4cout.precision(15);
       G4cout << __func__ << " : "
              << GetProcessName()
              << " : current step "
@@ -72,8 +73,9 @@ namespace mu2e{
              << ", max step limit "
              << static_cast<G4int>(mu2elimits_.maxStepsPerTrack())
              << ", proposed step "
-             << proposedStep
+             << std::setw(24) << std::scientific << proposedStep << std::defaultfloat
              << G4endl;
+      G4cout.precision(prec);
     }
     return proposedStep;
 
@@ -123,6 +125,7 @@ namespace mu2e{
       proposedStep = std::numeric_limits<double>::min();
     }
     if (verboseLevel>0) {
+      G4int prec = G4cout.precision(15);
       G4cout << __func__ << " : "
              << GetProcessName()
              << " : current step "
@@ -130,8 +133,9 @@ namespace mu2e{
              << ", max step limit "
              << static_cast<G4int>(mu2elimits_.maxStepsPerTrack())
              << ", proposed step "
-             << proposedStep
+             << std::setw(24) << std::scientific << proposedStep << std::defaultfloat
              << G4endl;
+      G4cout.precision(prec);
     }
     return proposedStep;
   }
