@@ -81,6 +81,7 @@ namespace mu2e {
     float _energySum; // sum of all MC true energy deposited by trigger particles
     float _time; // time of trigger StepPoint with time maps applied, wrapped to the beam
     float _tdrift; // true drift time (from particle crossing to threshold-crossing signal reaching wire)
+    float _rdrift; // true drift radius, given the above (using single-cluster time-to-distance)
     float _tprop; // signal propagation time of from the wire crossing point to the nearest end
     XYZVectorF _cpos; // trigger cluster position in detector coordinates
     XYZVectorF _mom; // momentum of particle at point where digi created
