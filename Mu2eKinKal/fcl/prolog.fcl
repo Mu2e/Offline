@@ -125,10 +125,10 @@ Mu2eKinKal : {
       [  5.0 , 1.5, 50.0, false]
     ]
     PTCAStrawHitUpdaterSettings : [
-      # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, constrain null time?
-      [ 0.1, 5.0, -10.0, 50.0, true, false ],
-      [ 0.1, 5.0, -10.0, 50.0, true, false ],
-      [ 0.1, 5.0, -10.0, 50.0, true, false ]
+       # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, null time mode
+      [ 0.1, 5.0, -10.0, 50.0, true, 2 ],
+      [ 0.1, 5.0, -10.0, 50.0, true, 2 ],
+      [ 0.1, 5.0, -10.0, 50.0, true, 2 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?

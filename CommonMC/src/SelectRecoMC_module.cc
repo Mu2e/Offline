@@ -13,6 +13,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/DataProducts/inc/IndexMap.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
@@ -89,7 +90,7 @@ namespace mu2e {
       typedef std::set<StrawHitIndex> SHIS;
       // utility functions
       void fillTSHMC         (KalSeed const& seed, SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
-      void fillUnusedTSHMC   (SPCC const& spcc, StrawDigiMCCollection const& sdmcc, KalSeedMC& mcseed);
+      void fillUnusedTSHMC   (SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
       void fillVDSP          (GeomHandle<DetectorSystem>const& det, art::Ptr<SimParticle> const& psp, StepPointMCCollection const& vdspc, KalSeedMC& mcseed);
       void fillSPStubs       (SPCC const& spcc, PrimaryParticle const& pp, KalSeedMC& mcseed);
       void fillSDMCI         (KalSeedMC const& mcseed,SHIS& shindices);
@@ -238,20 +239,27 @@ namespace mu2e {
       tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
       tshmc._mom = mcstep.momentum();
       tshmc._time = fmod(mcstep.time(),_mbtime);
-// compute the signal propagation time
+      tshmc._strawId = sdmc.strawId();
+      tshmc._earlyend = sdmc.earlyEnd();
+      // compute the signal propagation time and drift time
       double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*hit.energyDep());
       auto const& straw = tracker.straw(sdmc.strawId());
       double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
       tshmc._tprop = pdist/vprop;
       tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc;
-      tshmc._strawId = sdmc.strawId();
-      tshmc._earlyend = sdmc.earlyEnd();
+      // mc true drift radius, given this drift time
+      auto wdir = XYZVectorF(straw.wireDirection());
+      auto tdir = mcstep.momentum().Unit();
+      auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
+      const static XYZVectorF bdir(0.0,0.0,1.0);// assumes B along Z
+      double phi = acos(tperp.Dot(bdir)); // Lorentz angle
+      tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
       mcseed._tshmcs.push_back(tshmc);
     }
   }
 
-  void SelectRecoMC::fillUnusedTSHMC( SPCC const& spcc,
-      StrawDigiMCCollection const& sdmcc,
+  void SelectRecoMC::fillUnusedTSHMC( SPCC const& spcc, StrawDigiMCCollection const& sdmcc,
+      Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep,
       KalSeedMC& mcseed) {
     // either keep hits only from the primary or from all contributing
     size_t ispmax = _saveallunused? spcc.size() : 1;
@@ -279,6 +287,19 @@ namespace mu2e {
             tshmc._mom = mcstep.momentum();
             tshmc._time = sdmc.clusterTime(sdmc.earlyEnd());
             tshmc._strawId = sdmc.strawId();
+            tshmc._earlyend = sdmc.earlyEnd();
+           // compute the signal propagation time and drift time
+            double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
+            auto const& straw = tracker.straw(sdmc.strawId());
+            double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
+            tshmc._tprop = pdist/vprop;
+            tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc;
+            auto wdir = XYZVectorF(straw.wireDirection());
+            auto tdir = mcstep.momentum().Unit();
+            auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
+            const static XYZVectorF bdir(0.0,0.0,1.0);
+            double phi = acos(tperp.Dot(bdir)); // Lorentz angle
+            tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
             mcseed._tshmcs.push_back(tshmc);
           }
         }
@@ -388,7 +409,7 @@ namespace mu2e {
           fillSPStubs(spcc,pp,mcseed);
           fillTSHMC(seed,spcc,sdmcc,tracker,srep,mcseed);
           // add DigiMCs not used in the track but from true particles used in the track
-          if(_saveunused)fillUnusedTSHMC(spcc,sdmcc,mcseed);
+          if(_saveunused)fillUnusedTSHMC(spcc,sdmcc,tracker,srep,mcseed);
           if(spcc.size() > 0 && vdspch.isValid()){
             auto const& vdspc = *vdspch;
             fillVDSP(det,spcc.front()._spp,vdspc,mcseed);
