@@ -31,13 +31,41 @@ namespace mu2e {
     return phi;
   }
 
+  double StrawResponse::calibrateDriftDistanceToT2D(double ddist) const {
+    if (ddist < 0)
+      return _dc[0] + ddist*_dc[2]/(_dc[2]+_dc[0]);
+
+    return sqrt(pow(_dc[1]*ddist+_dc[2],2.0)+_dc[0]*(_dc[0]+2*_dc[2]))-_dc[2];
+  }
+
+  double StrawResponse::calibrateT2DToDriftDistance(double t2d) const {
+    if (t2d <= _dc[0]){
+      return (t2d-_dc[0])*(_dc[2]+_dc[0])/_dc[2];
+    }
+    return (sqrt(4*pow(_dc[1]*_dc[2],2.0)-4*pow(_dc[1],2.0)*(pow(_dc[0],2.0)+2*_dc[0]*_dc[2]-2*_dc[2]*t2d-pow(t2d,2.0)))-2*_dc[1]*_dc[2])/(2*pow(_dc[1],2.0));
+  }
+
+  double StrawResponse::calibrateDriftDistanceToT2DDerivative(double ddist) const {
+    if (ddist < 0)
+      return _dc[2]/(_dc[2]+_dc[0]);
+    return _dc[1]*(_dc[1]*ddist+_dc[2])/sqrt(pow(_dc[0],2)+2*_dc[0]*_dc[2]+pow(_dc[1]*ddist+_dc[2],2));
+  }
+
+  double StrawResponse::calibrateT2DToDriftDistanceDerivative(double t2d) const {
+    if (t2d <= _dc[0]){
+      return (_dc[2]+_dc[0])/_dc[2];
+    }
+    return (_dc[2] + t2d)/sqrt(pow(_dc[1],2)-(-1*pow(_dc[0],2)-2*_dc[0]*_dc[2]+pow(_dc[2]+t2d,2)));
+  }
+
   StrawResponse::DriftInfo StrawResponse::driftInfoAtDistance(StrawId strawId,
-      double ddist, double dtime, double phi, bool noSpline) const {
+      double ddist, double dtime, double phi, bool forceOld) const {
     StrawResponse::DriftInfo info;
-    if (_useDriftSplines && !noSpline){
-      info.distance = driftTimeToDistance(strawId,dtime,phi,noSpline);
-      info.speed = driftInstantSpeed(strawId,ddist,phi,noSpline);
-      info.variance = pow(driftDistanceError(strawId,ddist,phi,noSpline),2);
+    if (!_useOldDrift && !forceOld){
+      //FIXME
+      info.distance = driftTimeToDistance(strawId,dtime,phi,forceOld);
+      info.speed = driftInstantSpeed(strawId,ddist,phi,forceOld);
+      info.variance = pow(driftDistanceError(strawId,ddist,phi,forceOld),2);
     }else{
       //FIXME to be deprecated
       info.distance = driftTimeToDistance(strawId,dtime,phi,true);
@@ -48,20 +76,13 @@ namespace mu2e {
   }
 
   double StrawResponse::driftDistanceToTime(StrawId strawId,
-      double ddist, double phi, bool noSpline) const {
-    if (_useDriftSplines && !noSpline){
+      double ddist, double phi, bool forceOld) const {
+    if (!_useOldDrift && !forceOld){
       if (_driftIgnorePhi)
-        return PieceLine(_d2t_x,_d2t_2d[0],ddist);
-
-      double reducedPhi = ConstrainAngle(phi);
-      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
-      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
-
-      double upperVal = PieceLine(_d2t_x,_d2t_2d[upperPhiIndex],ddist);
-      double lowerVal = PieceLine(_d2t_x,_d2t_2d[lowerPhiIndex],ddist);
-
-      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+        phi = 0;
+      double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
+      double dtime = _strawDrift->D2T(calibrated_ddist,phi);
+      return dtime;
     }else{
       //FIXME to be deprecated
       if(_usenonlindrift){
@@ -74,11 +95,17 @@ namespace mu2e {
   }
 
   double StrawResponse::driftTimeError(StrawId strawId,
-      double ddist, double phi, bool noSpline) const {
-    if (_useDriftSplines && !noSpline){
-      double distance_error = driftDistanceError(strawId,ddist,phi,noSpline);
-      double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,noSpline);
-      return distance_error/speed_at_ddist;
+      double ddist, double phi, bool forceOld) const {
+    if (!_useOldDrift && !forceOld){
+      if (_driftResIsTime){
+        if (ddist > 2.5)
+          ddist = 2.5;
+        return PieceLine(_parDriftDocas, _parDriftRes, ddist);
+      }else{
+        double distance_error = driftDistanceError(strawId,ddist,phi,forceOld);
+        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
+        return distance_error/speed_at_ddist;
+      }
     }else{
       //FIXME to be deprecated
       if (useParameterizedDriftError()){
@@ -86,26 +113,18 @@ namespace mu2e {
           ddist = 2.5;
         return PieceLine(_parDriftDocas, _parDriftRes, ddist);
       }else{
-        return driftDistanceError(strawId, ddist, phi, noSpline) / _lindriftvel;
+        return driftDistanceError(strawId, ddist, phi, forceOld) / _lindriftvel;
       }
     }
   }
 
   double StrawResponse::driftInstantSpeed(StrawId strawId,
-      double ddist, double phi, bool noSpline) const {
-    if (_useDriftSplines && !noSpline){
+      double ddist, double phi, bool forceOld) const {
+    if (!_useOldDrift && !forceOld){
       if (_driftIgnorePhi)
-        return PieceLine(_d2t_x,_d2t_2dv[0],ddist);
-
-      double reducedPhi = ConstrainAngle(phi);
-      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
-      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
-
-      double upperVal = PieceLine(_d2t_x,_d2t_2dv[upperPhiIndex],ddist);
-      double lowerVal = PieceLine(_d2t_x,_d2t_2dv[lowerPhiIndex],ddist);
-
-      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+        phi = 0;
+      double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
+      return _strawDrift->GetInstantSpeedFromD(calibrated_ddist)/calibrateDriftDistanceToT2DDerivative(ddist);
     }else{
       // FIXME to be deprecated
       if(_usenonlindrift){
@@ -117,20 +136,13 @@ namespace mu2e {
   }
 
   double StrawResponse::driftTimeToDistance(StrawId strawId,
-      double dtime, double phi, bool noSpline) const {
-    if (_useDriftSplines && !noSpline){
+      double dtime, double phi, bool forceOld) const {
+    if (!_useOldDrift && !forceOld){
       if (_driftIgnorePhi)
-        return PieceLine(_t2d_x,_t2d_2d[0],dtime);
-
-      double reducedPhi = ConstrainAngle(phi);
-      int upperPhiIndex = ceil(reducedPhi/_driftSplineDeltaPhi);
-      int lowerPhiIndex = floor(reducedPhi/_driftSplineDeltaPhi);
-      double lowerPhi = lowerPhiIndex*_driftSplineDeltaPhi;
-
-      double upperVal = PieceLine(_t2d_x,_t2d_2d[upperPhiIndex],dtime);
-      double lowerVal = PieceLine(_t2d_x,_t2d_2d[lowerPhiIndex],dtime);
-
-      return lowerVal + (reducedPhi - lowerPhi)/_driftSplineDeltaPhi * (upperVal - lowerVal);
+        phi = 0;
+      double t2d_driftonly = _strawDrift->T2D(dtime,phi,false);
+      double ddist = calibrateT2DToDriftDistance(t2d_driftonly);
+      return ddist;
     }else{
       if(_usenonlindrift){
         return _strawDrift->T2D(dtime,phi);
@@ -142,12 +154,19 @@ namespace mu2e {
   }
 
   double StrawResponse::driftDistanceError(StrawId strawId,
-      double ddist, double phi, bool noSpline) const {
-    if (_useDriftSplines && !noSpline){
-      double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,noSpline);
-      double time_error = _driftResSpline.interpolate(ddist);
-      return time_error*speed_at_ddist;
-      //FIXME PHI?
+      double ddist, double phi, bool forceOld) const {
+    if (!_useOldDrift && !forceOld){
+      if (_driftIgnorePhi)
+        phi = 0;
+      if (_driftResIsTime){
+        double time_error = driftTimeError(strawId,ddist,phi,forceOld);
+        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
+        return time_error*speed_at_ddist;
+      }else{
+        if (ddist > 2.5)
+          ddist = 2.5;
+        return PieceLine(_parDriftDocas, _parDriftRes, ddist);
+      }
     }else{
       // maximum drift is the straw radius.  should come from conditions FIXME!
       static double rstraw(2.5);
@@ -164,7 +183,7 @@ namespace mu2e {
 
   // FIXME to be deprecated
   double StrawResponse::driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
-    if (_useDriftSplines){
+    if (!_useOldDrift){
       return 0;
     }else{
       return PieceLine(_parDriftDocas, _parDriftOffsets, DOCA);
