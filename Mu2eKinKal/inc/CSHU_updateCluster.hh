@@ -17,17 +17,25 @@ namespace mu2e {
     // dont act on hits that are unusable or frozen
     SHCOL hits;
     hits.reserve(shcluster.strawHits().size());
-    for(auto& shptr : shcluster.strawHits())
-      if(shptr->hitState().usable_ && (!shptr->hitState().frozen_))hits.push_back(shptr);
-    //
-    if(hits.size() < csize_)return;
+    std::vector<bool> frozen;
+    frozen.reserve(shcluster.strawHits().size());
+    unsigned nfree(0);
+    for(auto& shptr : shcluster.strawHits()){
+      if(shptr->hitState().usable()){
+        hits.push_back(shptr);
+        frozen.push_back(shptr->hitState().frozen());
+        if(!shptr->hitState().updateable())++nfree;
+      }
+    }
+    // make sure this cluster meets the requirements for updating
+    if(hits.size() < csize_ || nfree == 0)return;
     // sort the hit ptrs by time
     std::sort(hits.begin(),hits.end(),StrawHitTimeSort<KTRAJ>());
     // get the reference weight as starting point for the unbiased weight + parameters
     Weights uweights = Weights(hits.front()->referenceParameters());
-    // subtract the weight of eacth active hits from this reference; this removes the bias of those hits
+    // subtract the weight of active, unfrozen hits from this reference; this removes the bias of those hits from the reference
     for (auto const& sh : hits) {
-      if(sh->active()) uweights -= sh->weight();
+      if(sh->active() && !sh->hitState().frozen()) uweights -= sh->weight();
       // subtract the material TODO
     }
     // invert to get unbiased parameters
