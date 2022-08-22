@@ -8,13 +8,16 @@ namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
   WireHitState ANNStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
-    std::vector<Float_t> pars(5,0.0);
+    std::vector<Float_t> pars(8,0.0);
     // this order is given by the training
     pars[0] = abs(tpdata.doca());
     pars[1] = dinfo.driftDistance_;
     pars[2] = chit.driftTime();
     pars[3] = 1000.0*chit.energyDep();
     pars[4] = tpdata.docaVar();
+    pars[5] = tpdata.dirDot();
+    pars[6] = tpdata.particlePoca().Vect().Rho();
+    pars[7] = tpdata.particlePoca().Vect().Z();
     float mvaout = mva_->evalMVA(pars);
     WireHitState whstate(WireHitState::inactive,StrawHitUpdaters::ANN);
     if(mvaout > mvacut_){
