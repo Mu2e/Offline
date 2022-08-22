@@ -125,23 +125,16 @@ namespace mu2e {
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
-    // otherwise use the time at the center of the wire
-    CAHint tphint = ptca_.usable() ?  ptca_.hint() : CAHint(wire_.range().mid(),wire_.range().mid());
+    // otherwise use the time at the center of the wire, corrected for drift
+    CAHint tphint = ptca_.usable() ?  ptca_.hint() : CAHint(wire_.range().mid()-chit_.driftTime(),wire_.range().mid());
     ptca_ = CA(ktrajptr,wire_,tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
     double dz = straw().origin().z() - ptca_.particlePoca().Z();
-    if(fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
+    if((!ptca_.usable()) || fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
       tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.range().mid()), wire_.range().mid());
       ptca_ = CA(ktrajptr,wire_,tphint,precision());
       dz = straw().origin().z() - ptca_.particlePoca().Z();
-      if(fabs(dz) >  100){
-        whstate_.state_ = WireHitState::inactive;
-        whstate_.usable_ = false; // failed to find the right branch: disable this hit for now, but we should do an explicit search TODO
-      }
-    }
-    if(!ptca_.usable()){
-      whstate_.state_ = WireHitState::inactive;
-      whstate_.usable_ = false;
+      if((!ptca_.usable()) || fabs(dz) >  100) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
     }
   }
 
@@ -159,12 +152,11 @@ namespace mu2e {
       if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
       if(shu != 0){
         CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
-        whstate_.usable_ = ca.usable();
-        if(whstate_.usable_){
+        if(!ca.usable())whstate_.state_ = WireHitState::unusable;
+        if(whstate_.updateable()){
           auto dinfo = fillDriftInfo();
           whstate_ = shu->wireHitState(ca.tpData(),dinfo,chit_);
-        }else
-          whstate_.state_ = WireHitState::inactive;
+        }
       } // no updater means don't change the state
     }
   }
