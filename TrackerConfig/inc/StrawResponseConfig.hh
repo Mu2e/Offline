@@ -49,37 +49,19 @@ namespace mu2e {
       Name("totDriftTime"), Comment(" totDriftTime ")};
     fhicl::Sequence<double>  totDriftError {
       Name("totDriftError"), Comment(" totDriftError ")};
+    fhicl::Sequence<double> driftFit {
+      Name("driftFit"), Comment("Drift fit")};
+    fhicl::Sequence<double> driftResBins {
+      Name("driftResBins"), Comment("Drift res bins (doca in mm)")};
+    fhicl::Sequence<double> driftRes {
+      Name("driftRes"), Comment("Drift res (time in ns or doca in mm)")};
+    fhicl::Atom<bool> driftResIsTime {
+      Name("driftResIsTime"), Comment("Drift res is given in units of time (ns)")};
 
-    fhicl::Atom<bool> useDriftSplines {
-      Name("useDriftSplines"), Comment("Use calibrated drift spline")};
-    fhicl::Atom<bool> splineIsD2T {
-      Name("splineIsD2T"), Comment("True if spline gives D2T, false if gives T2D")};
-    fhicl::Sequence<double> driftSplineBins {
-      Name("driftSplineBins"), Comment("points at which spline is defined (effective drift time in ns or doca in mm)")};
-    fhicl::Sequence<double> driftResSplineBins {
-      Name("driftResSplineBins"), Comment("points at which spline is defined (doca in mm)")};
+    fhicl::Atom<bool> useOldDrift {
+      Name("useOldDrift"), Comment("Use old drift calibration (for backwards compatibility)")};
     fhicl::Atom<bool> driftIgnorePhi {
       Name("driftIgnorePhi"), Comment("Ignore phi for no field reco")};
-    fhicl::Atom<int> driftSplineNumPhiBins {
-      Name("driftSplineNumPhiBins"), Comment("number of phi bins")};
-    fhicl::Atom<double> driftSplinePhiScaling {
-      Name("driftSplinePhiScaling"), Comment("calibration scaling sim expected phi dependence")};
-    fhicl::Sequence<double> driftSplineA {
-      Name("driftSplineA"), Comment("Drift spline vector, length is (docabins-1)")};
-    fhicl::Sequence<double> driftSplineB {
-      Name("driftSplineB"), Comment("Drift spline vector, length is (docabins-1)")};
-    fhicl::Sequence<double> driftSplineC {
-      Name("driftSplineC"), Comment("Drift spline vector, length is (docabins-1)")};
-    fhicl::Sequence<double> driftSplineD {
-      Name("driftSplineD"), Comment("Drift spline vector, length is (docabins-1)")};
-    fhicl::Sequence<double> driftResSplineA {
-      Name("driftResSplineA"), Comment("Drift spline vector, length is (docabins-1)")};
-    fhicl::Sequence<double> driftResSplineB {
-      Name("driftResSplineB"), Comment("Drift spline vector, length is (docabins-1)")};
-    fhicl::Sequence<double> driftResSplineC {
-      Name("driftResSplineC"), Comment("Drift spline vector, length is (docabins-1)")};
-    fhicl::Sequence<double> driftResSplineD {
-      Name("driftResSplineD"), Comment("Drift spline vector, length is (docabins-1)")};
 
 
 
@@ -87,8 +69,6 @@ namespace mu2e {
       Name("driftErrorParameters"), Comment(" driftErrorParameters ")};
     fhicl::Atom<bool>  useParameterizedDriftErrors {
       Name("useParameterizedDriftErrors"), Comment(" use errors calculated from formula instead of numbers from fcl ")};
-    fhicl::Atom<int> parameterizedDriftBins {
-      Name("parameterizedDriftBins"), Comment(" number of bins for calculating error and drift offset ")};
     fhicl::Atom<double> parameterizedDriftSigma {
       Name("parameterizedDriftSigma"), Comment(" sigma for calculating drift error and offset ")};
     fhicl::Atom<double> parameterizedDriftTau {

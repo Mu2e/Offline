@@ -47,7 +47,7 @@ namespace mu2e {
       double GetInstantSpeedFromT(double time) const; // (at phi = 0)
       double GetInstantSpeedFromD(double dist) const; // (at phi = 0)
       double D2T(double dist, double phi) const;
-      double T2D(double time, double phi) const;
+      double T2D(double time, double phi, bool nonnegative=true) const;
 
       void print(std::ostream& os) const;
 
