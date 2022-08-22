@@ -246,7 +246,7 @@ namespace mu2e {
       auto const& straw = tracker.straw(sdmc.strawId());
       double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
       tshmc._tprop = pdist/vprop;
-      tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc;
+      tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge FIXME!
       // mc true drift radius, given this drift time
       auto wdir = XYZVectorF(straw.wireDirection());
       auto tdir = mcstep.momentum().Unit();
@@ -293,7 +293,7 @@ namespace mu2e {
             auto const& straw = tracker.straw(sdmc.strawId());
             double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
             tshmc._tprop = pdist/vprop;
-            tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc;
+            tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge FIXME!
             auto wdir = XYZVectorF(straw.wireDirection());
             auto tdir = mcstep.momentum().Unit();
             auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
