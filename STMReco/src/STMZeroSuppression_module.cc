@@ -82,7 +82,7 @@ namespace mu2e {
         auto start = starts.at(i);
         auto end = ends.at(i);
         std::vector<int16_t> zp_adcs(digi.adcs().begin()+start, digi.adcs().begin()+end);
-        STMDigi stm_digi(digi.trigNum(), STMTrigType(digi.trigType().mode(), digi.trigType().channel(), STMDataType::kZeroSuppressed), digi.trigTime()+_ctPerNs*start, 0, 0, STMDigiFlag::kOK, zp_adcs);
+        STMDigi stm_digi(STMTrigType(digi.trigType().mode(), digi.trigType().channel(), STMDataType::kZeroSuppressed), digi.trigTime()+_ctPerNs*start, 0, 0, STMDigiFlag::kOK, zp_adcs);
         outputSTMDigis->push_back(stm_digi);
       }
     }
