@@ -52,7 +52,7 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
-services.ProditionsService.strawResponse.useDriftSplines : false
+services.ProditionsService.strawResponse.useOldDrift : true
 #include "Production/JobConfig/reco/epilog.fcl"
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
