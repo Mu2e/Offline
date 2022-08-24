@@ -3,8 +3,9 @@
 //
 #ifndef Mu2eKinKal_NullStrawHitUpdater_hh
 #define Mu2eKinKal_NullStrawHitUpdater_hh
-
-#include "Offline/Mu2eKinKal/inc/StrawHitUpdater.hh"
+#include "KinKal/Trajectory/ClosestApproachData.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include <tuple>
 
 namespace mu2e {
@@ -12,23 +13,15 @@ namespace mu2e {
   class ComboHit;
   class StrawResponse;
   // always set the wire hit state to null; used for seed fitting
-  class NullStrawHitUpdater : public StrawHitUpdater {
+  class NullStrawHitUpdater {
     public:
-      using NSHUConfig = std::tuple<float,float,float,bool>;
+      using NSHUConfig = std::tuple<float>;
       NullStrawHitUpdater(NSHUConfig const& nsuconfig) {
         maxdoca_ = std::get<0>(nsuconfig);
-        dvar_ = std::get<1>(nsuconfig);
-        tvar_ = std::get<2>(nsuconfig);
-        uptca_ = std::get<3>(nsuconfig);
       }
-      WireHitState wireHitState(ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const override;
-      StrawHitUpdaters::algorithm algorithm() const override { return StrawHitUpdaters::null; }
-      bool useUnbiasedClosestApproach() const override { return uptca_; }
+      WireHitState wireHitState(ClosestApproachData const& tpdata) const;
     private:
       double maxdoca_; // maximum DOCA to still use a hit
-      double dvar_; // variance to assign to distance
-      double tvar_; // time variance; should come from ComboHit
-      bool uptca_; // use unbiased PTCA info
   };
 }
 #endif
