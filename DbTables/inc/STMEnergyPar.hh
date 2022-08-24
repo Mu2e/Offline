@@ -59,6 +59,11 @@ class STMEnergyPar : public DbTable {
     _rows.emplace_back(channel, std::stof(columns[1]), std::stof(columns[2]),
                        std::stof(columns[3]));
     // add this channel to the map index
+    if (_chanIndex.find(channel)!=_chanIndex.end()) {
+      throw cet::exception("STMENERGYPAR_DUP_CHANNEL")
+          << "STMEnergyPar::addRow called with duplicate channel name: "
+          << columns[0] << "\n";
+    }
     _chanIndex[channel] = _rows.size() - 1;
   }
 
