@@ -131,7 +131,8 @@ BEGIN_PROLOG
     {
       module_type               : CrvRecoPulsesFinder
       crvDigiModuleLabel        : "CrvDigi"
-      minADCdifference          : 5     //minimum ADC difference above pedestal to be considered for reconstruction
+      minADCdifference          : 40    //minimum ADC difference above pedestal to be considered for reconstruction
+                                        //corresponds to 3.5 PEs
       defaultBeta               : 19.0  //19.0ns for regular pulses
                                         //12.6ns for dark noise pulses used for calibration
                                         //used for initialization of fit function
@@ -146,10 +147,12 @@ BEGIN_PROLOG
                                         //e.g. 0.985 for a leading edge at 50% pulse height
                                         //e.g. 1.385 for a leading edge at 20% pulse height
                                         //e.g. 1.587 for a leading edge at 10% pulse height
-      allowDoubleGumbel         : false //tries fitting with two Gumbel functions (needs a very small "minPulseHeightRatio", e.g. 0.01)
-      doubleGumbelThreshold     : 2.0   //Chi2/#ADCsamples (based on a single Gumble fit)
-                                        //at which a fit with two Gumbel functions should be attempted
-      minPEs                    : 0     //0 PEs
+      pulseThreshold            : 0.5   //50% of ADC peak value above pedestal
+                                        //threshold used to determine the pulse time interval for the no-fit option
+      pulseAreaThreshold        : 5     //5 ADC above pedestal
+                                        //threshold used to determine the pulse area for the no-fit option
+      doublePulseSeparation     : 0.25  //25% of both ADC peaks of the double pulse
+                                        //threshold at which double pulses can be separated in the no-fit option
     }
     CrvCoincidenceClusterFinder:
     {

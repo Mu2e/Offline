@@ -144,7 +144,8 @@ namespace mu2e
     };
 
     void clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
-                           std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection);
+                           std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection,
+                           const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection);
     void filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered);
     void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters,
                       double clusterMaxTimeDifference, double clusterMinOverlapTime);
@@ -257,6 +258,8 @@ namespace mu2e
     {
       const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
 
+      if(_usePulseOverlaps && crvRecoPulse->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::duplicateNoFitPulse)) continue;
+
       //get information about the counter
       const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
       int sectorNumber, moduleNumber, layerNumber, barNumber;
@@ -339,7 +342,7 @@ namespace mu2e
       std::vector<std::vector<CrvHit> > coincidenceClusters;
       findClusters(coincidenceHits, coincidenceClusters, _clusterMaxTimeDifference, _clusterMinOverlapTime);
 
-      clusterProperties(crvSectorType, coincidenceClusters, crvCoincidenceClusterCollection);
+      clusterProperties(crvSectorType, coincidenceClusters, crvCoincidenceClusterCollection, crvRecoPulseCollection);
     }//loop over all sector types
 
     ++_totalEvents;
@@ -356,7 +359,8 @@ namespace mu2e
 
 
   void CrvCoincidenceFinder::clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
-                                               std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection)
+                                               std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection,
+                                               const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection)
   {
     //loop through all clusters
     for(size_t iCluster=0; iCluster<clusters.size(); ++iCluster)
@@ -382,6 +386,17 @@ namespace mu2e
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         crvRecoPulses.push_back(hit->_crvRecoPulse);
+        if(_usePulseOverlaps)
+        {
+          //duplicate nofit pulses are removed in the usePulseOverlap option, but should be included in the list of reco pulses
+          for(size_t recoPulseIndex=hit->_crvRecoPulse.key()+1; recoPulseIndex<crvRecoPulseCollection->size(); ++recoPulseIndex)
+          {
+            const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
+            if(!crvRecoPulse->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::duplicateNoFitPulse)) break;
+            crvRecoPulses.push_back(crvRecoPulse);
+          }
+        }
+
         PEs+=hit->_PEs;
         avgCounterPos+=hit->_pos*hit->_PEs;
         layerSet.insert(hit->_layer);
