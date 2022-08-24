@@ -141,23 +141,27 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
     if(!whstate_.frozen_){
       unsigned nupdaters(0);
-      // only search for updaters that work directly on StrawHits (not StrawHitClusters)
+      // search for updaters that work directly on StrawHits (not StrawHitClusters)
       auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
       auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
       auto annshu = miconfig.findUpdater<ANNStrawHitUpdater>();
-      StrawHitUpdater const* shu(0);
-      if(pshu){ shu = pshu; ++nupdaters; }
-      if(nshu){ shu = nshu; ++nupdaters; }
-      if(annshu){ shu = annshu; ++nupdaters; }
-      if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
-      if(shu != 0){
-        CA ca = shu->useUnbiasedClosestApproach() ? unbiasedClosestApproach() : ptca_;
-        if(!ca.usable())whstate_.state_ = WireHitState::unusable;
-        if(whstate_.updateable()){
-          auto dinfo = fillDriftInfo();
-          whstate_ = shu->wireHitState(ca.tpData(),dinfo,chit_);
+      if(pshu || nshu || annshu) {
+        CA ca = unbiasedClosestApproach();
+        if(nshu){
+          whstate_ = nshu->wireHitState(ca.tpData());
+          ++nupdaters;
         }
-      } // no updater means don't change the state
+        if(pshu){
+          whstate_ = pshu->wireHitState(ca.tpData());
+          ++nupdaters;
+        }
+        if(annshu){
+          auto dinfo = fillDriftInfo();
+          whstate_ = annshu->wireHitState(ca.tpData(),dinfo,chit_);
+          ++nupdaters;
+        }
+        if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
+      }
     }
   }
 
@@ -177,12 +181,6 @@ namespace mu2e {
     DriftInfo dinfo;
     dinfo.LorentzAngle_ = Mu2eKinKal::LorentzAngle(ptca_.tpData(),ptca_.particleTraj().bnom().Unit());
     dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
-// temporary kludge!!!!
-//    double draw = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
-//    dinfo.driftDistance_ =  sqrt((pow(draw +0.04,2) -0.0985)/0.982);
-
-//    dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_);
-//    dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(ptca_.doca()),dinfo.LorentzAngle_,true);
     dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_);
     dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_,true);
     return dinfo;
@@ -191,24 +189,21 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
     // reset the residuals
     resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
-    auto const& nhinfo = whstate.nhinfo_;
-    if(whstate.active()){
-      if(whstate.useDrift()){
-        DriftInfo dinfo = fillDriftInfo();
-        double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
-        double dr = whstate.lrSign()*dinfo.driftDistance_ - ptca_.doca();
-        DVEC dRdP = ptca_.lSign()*ptca_.dDdP() - whstate.lrSign()*dinfo.driftVelocity_*ptca_.dTdP();
-        resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
-      } else {
-        // Null state. interpret DOCA against the wire directly as a residual.  We have to take the DOCA sign out of the derivatives
-        resids[Mu2eKinKal::dresid] = Residual(ptca_.doca(),nhinfo.dvar_,0.0,true,-ptca_.lSign()*ptca_.dDdP());
-        // optionally also constrain the time
-        if(nhinfo.useTime()){
-          // time residual is deltaT
-          double dt = ptca_.deltaT() - nhinfo.toff_;
-          if(nhinfo.useComboDriftTime())dt -= chit_.driftTime();  // Null updater uses combo hit time
-          resids[Mu2eKinKal::tresid] = Residual(dt,nhinfo.tvar_,0.0,true,-ptca_.dTdP());
-        }
+    if(whstate.useDrift()){
+      auto dinfo = fillDriftInfo();
+      double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
+      double dr = whstate.lrSign()*dinfo.driftDistance_ - ptca_.doca();
+      DVEC dRdP = ptca_.lSign()*ptca_.dDdP() - whstate.lrSign()*dinfo.driftVelocity_*ptca_.dTdP();
+      resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
+    } else if(whstate.active()){
+      // Null state. interpret DOCA against the wire directly as a residual.  We have to take the DOCA sign out of the derivatives
+      // variance can be either the straw radius or the drift
+      resids[Mu2eKinKal::dresid] = Residual(ptca_.doca(),whstate.distanceVariance(),0.0,true,-ptca_.lSign()*ptca_.dDdP());
+      if(whstate.nhmode_ == WireHitState::combo) { // use TOT drift time to constrain time
+        double tdres = chit_.driftTimeRes();
+        double tvar = tdres*tdres;
+        double dt = ptca_.deltaT() - chit_.driftTime();
+        resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ptca_.dTdP());
       }
     }
   }

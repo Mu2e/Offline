@@ -46,18 +46,17 @@ namespace mu2e {
         mindchi2_ = std::get<3>(cshuconfig);
         nulldoca_ = std::get<4>(cshuconfig);
         allownull_ = std::get<5>(cshuconfig);
-        nhtmode_ = static_cast<NullHitInfo::nullTimeMode>(std::get<6>(cshuconfig));
+        nhmode_ = static_cast<WireHitState::NHMode>(std::get<6>(cshuconfig));
         freeze_ = std::get<7>(cshuconfig);
         diag_ = std::get<8>(cshuconfig);
-        static double invthree(1.0/3.0);
-        dvar_ = invthree*nulldoca_*nulldoca_;
+        dvar_ = nulldoca_*nulldoca_/3.0;
         if(allownull_)
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right};
         else
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::right};
         // set the algorithm; this propagates to the StrawHits
         for(auto& whs : allowed_)whs.algo_ = StrawHitUpdaters::Combinatoric;
-        std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " " << allownull_ << " " << nhtmode_ << std::endl;
+        std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " " << allownull_ << " " << nhmode_ << std::endl;
       }
       ClusterScore selectBest(ClusterScoreCOL& cscores) const; // find the best cluster configuration given the score for each
       double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
@@ -77,7 +76,7 @@ namespace mu2e {
       double mindchi2_; // minimum chisquared separation to consider 'significant'
       double nulldoca_; // DOCA used to set null hit variance
       bool allownull_; // allow null ambiguity assignment
-      NullHitInfo::nullTimeMode nhtmode_; // use time constraint in null hits
+      WireHitState::NHMode nhmode_; // null hit mode
       bool freeze_; // freeze disambiguated clusters
       int diag_; // diag print level
       WHSCOL allowed_; // allowed states

@@ -9,16 +9,20 @@ namespace mu2e {
   // struct describing wire hit internal state
   struct WireHitState {
     enum State { unusable=-3, inactive=-2, left=-1, null=0, right=1};  // state description
+    enum NHMode{none=-1,combo=0,doca};
     State state_;
+    NHMode nhmode_;
     StrawHitUpdaters::algorithm algo_; // algorithm used to set this state
-    NullHitInfo nhinfo_; // Info associated with null hits for this state
-    bool frozen_; // if set, state not allowed to change
+    double dvar_; // distance variance for null hits
+    bool frozen_; // if set, state not allowed to change during update
+// convenience functions
     bool frozen() const { return frozen_; }
     bool useDrift() const { return state_ == left || state_ == right; }
     bool isInactive() const { return state_ == inactive; }
     bool active() const { return state_ > inactive; }
     bool usable() const { return state_ > unusable; }
     bool updateable() const { return usable() && !frozen_; }
+    double distanceVariance() const { return dvar_; }
     bool operator == (WireHitState const& whstate) const { return state_ == whstate.state_; }
     bool operator != (WireHitState const& whstate) const { return state_ != whstate.state_; }
     bool operator == (WireHitState::State state) const { return state_ == state; }
@@ -33,7 +37,7 @@ namespace mu2e {
           return 0.0;
       }
     }
-    WireHitState(State state = inactive,StrawHitUpdaters::algorithm algo=StrawHitUpdaters::none) : state_(state), algo_(algo), frozen_(false) {}
+    WireHitState(State state = inactive,StrawHitUpdaters::algorithm algo=StrawHitUpdaters::none) : state_(state), algo_(algo), dvar_(0.0), frozen_(false) {}
   };
   std::ostream& operator <<(std::ostream& ost, WireHitState const& whs);
 }

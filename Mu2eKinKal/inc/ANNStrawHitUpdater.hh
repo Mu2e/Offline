@@ -4,41 +4,37 @@
 //
 #ifndef Mu2eKinKal_ANNStrawHitUpdater_hh
 #define Mu2eKinKal_ANNStrawHitUpdater_hh
-#include "Offline/Mu2eKinKal/inc/StrawHitUpdater.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
-#include "Offline/Mu2eKinKal/inc/NullHitInfo.hh"
+#include "KinKal/Trajectory/ClosestApproachData.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include <tuple>
 #include <string>
 #include <iostream>
 
 namespace mu2e {
-  // Update based just on ANN to the wire
-  class ANNStrawHitUpdater : public StrawHitUpdater {
+  class ComboHit;
+ // Update based just on ANN to the wire
+  class ANNStrawHitUpdater {
     public:
-      using ANNSHUConfig = std::tuple<std::string,float,bool,int,float>;
-      ANNStrawHitUpdater() : mva_(0), mvacut_(0.0), uptca_(false), nhtmode_(NullHitInfo::none), dvar_(0) {}
+      using ANNSHUConfig = std::tuple<std::string,float,int,float>;
+      ANNStrawHitUpdater() : mva_(0), mvacut_(0.0), nhmode_(WireHitState::none), dvar_(0) {}
       ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig) {
         mva_  = new MVATools(std::get<0>(annshuconfig));
         mvacut_ = std::get<1>(annshuconfig);
-        uptca_ = std::get<2>(annshuconfig);
-        nhtmode_ = static_cast<NullHitInfo::nullTimeMode>(std::get<3>(annshuconfig));
-        dvar_ = std::get<4>(annshuconfig);
-        std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null dvar, mode" << dvar_ << nhtmode_ << std::endl;
+        nhmode_ = static_cast<WireHitState::NHMode>(std::get<2>(annshuconfig));
+        dvar_ = std::get<3>(annshuconfig);
+        std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null dvar, mode" << dvar_ << nhmode_ << std::endl;
         mva_->initMVA();
         mva_->showMVA();
       }
       // set the state based on the current ANN value
-      WireHitState wireHitState(ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const override;
-      // unassigned hit properties
-      StrawHitUpdaters::algorithm algorithm() const override{ return StrawHitUpdaters::ANN; }
-      // accessors
-      // use biased or unbiased ANN estimate
-      bool useUnbiasedClosestApproach() const override { return uptca_; }
+      WireHitState wireHitState(KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
       MVATools* mva_; // neural net calculator
       double mvacut_; // cut value to decide if drift information is usable
-      bool uptca_; // use unbiased DOCA info
-      NullHitInfo::nullTimeMode nhtmode_; // Null hit mode
+      WireHitState::NHMode nhmode_; // Null hit mode
       double dvar_; // null hit distance variance
   };
 }

@@ -22,21 +22,15 @@ namespace mu2e {
     WireHitState whstate(WireHitState::inactive,StrawHitUpdaters::ANN);
     if(mvaout > mvacut_){
       whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-    } else { //  Need a way to decide to disable the hit as well TODO
+    } else {
       whstate.state_ = WireHitState::null;
-    }
-    // compute time and distance parameters used for null ambiguity (wire constraint)
-    auto& nhinfo = whstate.nhinfo_;
-    nhinfo.tmode_ = nhtmode_;
-    if(nhtmode_ == NullHitInfo::usecombo){
-      nhinfo.toff_ =  0.0;
-      nhinfo.tvar_ = 50.0; // should come from ComboHit FIXME
-      nhinfo.dvar_ = dvar_;
-    } else if(nhtmode_ == NullHitInfo::usedoca){
-      double vdrift = dinfo.driftVelocity_;
-      nhinfo.toff_ = std::max(0.0,dinfo.driftDistance_)/vdrift; // this calculation is unreliable currently
-      nhinfo.dvar_ = dvar_;
-      nhinfo.tvar_ = dvar_/(vdrift*vdrift);
+      whstate.nhmode_ = nhmode_;
+      // compute time and distance parameters used for null ambiguity (wire constraint)
+      if(nhmode_ == WireHitState::combo){
+        whstate.dvar_ =  2.0833; // (2*rstraw)^2/12   Should come from TrackerGeom TODO
+      } else {
+        whstate.dvar_ = dvar_;
+      }
     }
     return whstate;
   }
