@@ -23,14 +23,14 @@ namespace mu2e {
       // compare the delta-t based U position with the fit U position
       double endsign = 2.0*(chit.driftEnd()-0.5);
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
-      pars[8] = fabs(chit.wireDist()-upos);
+      pars[8] = fabs(chit.wireDist()-upos)/chit.wireRes();
       pars[9] = chit.wireRes();
       pars[10] = dinfo.LorentzAngle_;
       float mvaout = mva_->evalMVA(pars);
       if(mvaout < mvacut_){
-       whstate.algo_  = StrawHitUpdaters::Bkg;
-       whstate.state_ = WireHitState::inactive;
-       whstate.frozen_ = freeze_;
+        whstate.algo_  = StrawHitUpdaters::Bkg;
+        whstate.state_ = WireHitState::inactive;
+        whstate.frozen_ = freeze_;
       }
     }
     return whstate;
