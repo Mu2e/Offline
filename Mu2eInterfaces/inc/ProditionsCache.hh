@@ -7,6 +7,7 @@
 #include <shared_mutex>
 #include <mutex>
 #include <chrono>
+#include <iostream>
 
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "Offline/DbTables/inc/DbIoV.hh"

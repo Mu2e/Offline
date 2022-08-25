@@ -63,6 +63,10 @@ namespace mu2e {
       return ( _id != g._id );
     }
 
+    bool operator<(const STMChannel g) const{
+      return ( _id < g._id );
+    }
+
     // Accessor for the version.
     static int version() { return _version; }
 
