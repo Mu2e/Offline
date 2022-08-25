@@ -111,14 +111,6 @@ Qualifiers = "${qualifiers_value}:trig:${MUSE_BUILD}"
 EOG
 )
 
-echo
-echo '****************************************************************'
-echo
-echo "GROUP_DEFINITIONS variable is: ${GROUP_DEFINITIONS}"
-echo
-echo '****************************************************************'
-echo
-
 echo "$GROUP_DEFINITIONS"|sed -i "/Group:/r /dev/stdin" ${destination_file}
 
 unset art_ver
