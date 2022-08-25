@@ -1,7 +1,6 @@
 #ifndef Mu2eKinKal_WireHitState_hh
 #define Mu2eKinKal_WireHitState_hh
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
-#include "Offline/Mu2eKinKal/inc/NullHitInfo.hh"
 #include <stdexcept>
 #include <iostream>
 

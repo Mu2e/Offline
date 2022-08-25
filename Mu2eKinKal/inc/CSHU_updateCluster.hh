@@ -17,26 +17,16 @@ namespace mu2e {
     // dont act on hits that are unusable or frozen
     SHCOL hits;
     hits.reserve(shcluster.strawHits().size());
-    std::vector<bool> frozen;
-    frozen.reserve(shcluster.strawHits().size());
-    unsigned nfree(0);
     for(auto& shptr : shcluster.strawHits()){
-      if(shptr->hitState().usable()){
-        hits.push_back(shptr);
-        frozen.push_back(shptr->hitState().frozen());
-        if(!shptr->hitState().updateable())++nfree;
-      }
+      if(shptr->hitState().updateable()) hits.push_back(shptr);
     }
     // make sure this cluster meets the requirements for updating
-    if(hits.size() < csize_ || nfree == 0)return;
-    // sort the hit ptrs by time
-    std::sort(hits.begin(),hits.end(),StrawHitTimeSort<KTRAJ>());
+    if(hits.size() < csize_ )return;
     // get the reference weight as starting point for the unbiased weight + parameters
     Weights uweights = Weights(hits.front()->referenceParameters());
     // subtract the weight of active, unfrozen hits from this reference; this removes the bias of those hits from the reference
     for (auto const& sh : hits) {
       if(sh->active() && !sh->hitState().frozen()) uweights -= sh->weight();
-      // subtract the material TODO
     }
     // invert to get unbiased parameters
     Parameters uparams = Parameters(uweights);
@@ -47,21 +37,15 @@ namespace mu2e {
       if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
       return;
     }
-    // set the null hit configuration in the allowed states.  This depends on conditions so can't be pre-computed
-    auto allowed = allowed_;
-    for(auto& whs : allowed){
-      whs.nhmode_ = nhmode_;
-      whs.dvar_ = dvar_;
-    }
-    // iterate over all possible states of each hit, and incrementally compute the total chisquared for all the hits in the cluster WRT the unbiased parameters
-    WHSIterator whsiter(hits.size(),allowed);
-    size_t ncombo = whsiter.nCombo();
-    ClusterScoreCOL cscores(0);
-    cscores.reserve(ncombo);
+    // iterate over allowed states of each hit, and incrementally compute the total chisquared for all the hits in the cluster WRT the unbiased parameters
+    WHSIterator whsiter(hits.size(),allowed_);
+    size_t nstates = whsiter.nStates();
+    ClusterStateCOL cstates(0);
+    cstates.reserve(nstates);
     do {
       auto cparams = uparams;
       auto cweights = uweights;
-      // loop over hits in order and compute their residuals
+      // loop over hits and compute their residuals
       double chisq(0.0);
       unsigned ndof(0);
       for(size_t ihit=0;ihit < hits.size(); ++ihit) {
@@ -108,25 +92,15 @@ namespace mu2e {
           ++ndof; // count this as a DOF
         }
       }
-      if(diag_ > 1){
-        std::cout << "chi2 " << chisq << " ndof " << ndof << " States ";
-        for(auto whstate : whsiter.current()) std::cout << "  " << whstate.state_;
-        std::cout << std::endl;
-      }
       // record this chisq with the state of all the hits
-      cscores.emplace_back(Chisq(chisq,ndof),whsiter.current());
+      cstates.emplace_back(Chisq(chisq,ndof),whsiter.current());
     } while(whsiter.increment());
     // test
-    if(cscores.size() != ncombo){
+    if(cstates.size() != nstates){
       throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: incomplete chisquared combinatorics" << std::endl;
     }
-    // choose the best cluster score
-    auto best = selectBest(cscores);
-    if(diag_ > 0){
-      std::cout << "Best Combo chi2 " << best.chi2_ << " states ";
-      for(auto whs : best.hitstates_)std::cout << "  " << whs.state_;
-      std::cout << std::endl;
-    }
+    // choose the best cluster state
+    auto best = selectBest(cstates);
     // assign the individual hit states according to this, and update their fit info
     for(size_t ihit=0;ihit < hits.size(); ++ihit) {
       hits[ihit]->setState(best.hitstates_[ihit]);

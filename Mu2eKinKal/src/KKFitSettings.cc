@@ -2,6 +2,7 @@
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/PTCAStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
@@ -34,16 +35,18 @@ namespace mu2e {
         shualg.push_back(std::get<1>(misetting));
       }
       // create the updaters requested
-      unsigned nptca, nnull, nann, ncomb, nnone;
-      nptca = nnull = nann = ncomb = nnone= 0; // count how many updater configs have been seen
+      unsigned nptca, nnull, nann, nbkg, ncomb, nnone;
+      nptca = nnull = nann = nbkg = ncomb = nnone= 0; // count how many updater configs have been seen
       std::vector<NullStrawHitUpdater::NSHUConfig> nhusettings;
       std::vector<PTCAStrawHitUpdater::PSHUConfig> pshusettings;
       std::vector<ANNStrawHitUpdater::ANNSHUConfig> annshusettings;
+      std::vector<BkgStrawHitUpdater::BkgSHUConfig> bkgshusettings;
       std::vector<CombinatoricStrawHitUpdater::CSHUConfig> chusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
       nhusettings = fitconfig.nhuConfig().value_or(nhusettings);
       pshusettings = fitconfig.pshuConfig().value_or(pshusettings);
       annshusettings = fitconfig.annshuConfig().value_or(annshusettings);
+      bkgshusettings = fitconfig.bkgshuConfig().value_or(bkgshusettings);
       chusettings = fitconfig.chuConfig().value_or(chusettings);
       auto const& sxusettings = fitconfig.sxuConfig();
       if(config.schedule_.size() != sxusettings.size())
@@ -57,6 +60,8 @@ namespace mu2e {
           miconfig.addUpdater(std::any(PTCAStrawHitUpdater(pshusettings.at(nptca++))));
         } else if(ialg == StrawHitUpdaters::ANN) {
           miconfig.addUpdater(std::any(ANNStrawHitUpdater(annshusettings.at(nann++))));
+        } else if(ialg == StrawHitUpdaters::Bkg) {
+          miconfig.addUpdater(std::any(BkgStrawHitUpdater(bkgshusettings.at(nbkg++))));
         } else if(ialg == StrawHitUpdaters::Combinatoric) {
           miconfig.addUpdater(std::any(CombinatoricStrawHitUpdater(chusettings.at(ncomb++))));
         } else if(ialg == StrawHitUpdaters::none) {
@@ -68,7 +73,7 @@ namespace mu2e {
         miconfig.addUpdater(std::any(StrawXingUpdater(sxusettings.at(imeta))));
       }
       // consistency test
-      if(config.schedule_.size() != nptca+nnull+nann+ncomb+nnone)
+      if(config.schedule_.size() != nptca+nnull+nann+nbkg+ncomb+nnone)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent StrawHitUpdater config "<< std::endl;
       return config;
     }

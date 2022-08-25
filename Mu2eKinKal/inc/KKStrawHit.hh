@@ -21,6 +21,7 @@
 #include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/PTCAStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
@@ -139,28 +140,36 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
-    if(!whstate_.frozen_){
-      unsigned nupdaters(0);
-      // search for updaters that work directly on StrawHits (not StrawHitClusters)
-      auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
-      auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
-      auto annshu = miconfig.findUpdater<ANNStrawHitUpdater>();
-      if(pshu || nshu || annshu) {
-        CA ca = unbiasedClosestApproach();
+    unsigned nupdaters(0);
+    // search for updaters that work directly on StrawHits (not StrawHitClusters)
+    auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
+    auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
+    auto annshu = miconfig.findUpdater<ANNStrawHitUpdater>();
+    auto bkgshu = miconfig.findUpdater<BkgStrawHitUpdater>();
+    if(pshu || nshu || annshu || bkgshu) {
+      CA ca = unbiasedClosestApproach();
+      if(ca.usable()){
         if(nshu){
-          whstate_ = nshu->wireHitState(ca.tpData());
+          whstate_ = nshu->wireHitState(whstate_,ca.tpData());
           ++nupdaters;
         }
         if(pshu){
-          whstate_ = pshu->wireHitState(ca.tpData());
+          whstate_ = pshu->wireHitState(whstate_,ca.tpData());
           ++nupdaters;
         }
         if(annshu){
           auto dinfo = fillDriftInfo();
-          whstate_ = annshu->wireHitState(ca.tpData(),dinfo,chit_);
+          whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+          ++nupdaters;
+        }
+        if(bkgshu){
+          auto dinfo = fillDriftInfo();
+          whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
           ++nupdaters;
         }
         if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
+      } else {
+        whstate_.state_ = WireHitState::unusable;
       }
     }
   }

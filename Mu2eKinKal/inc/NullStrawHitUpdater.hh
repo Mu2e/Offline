@@ -19,7 +19,7 @@ namespace mu2e {
       NullStrawHitUpdater(NSHUConfig const& nsuconfig) {
         maxdoca_ = std::get<0>(nsuconfig);
       }
-      WireHitState wireHitState(ClosestApproachData const& tpdata) const;
+      WireHitState wireHitState(WireHitState const& input,ClosestApproachData const& tpdata) const;
     private:
       double maxdoca_; // maximum DOCA to still use a hit
   };
