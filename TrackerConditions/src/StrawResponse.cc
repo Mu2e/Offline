@@ -32,30 +32,40 @@ namespace mu2e {
   }
 
   double StrawResponse::calibrateDriftDistanceToT2D(double ddist) const {
-    if (ddist < 0)
-      return _dc[0] + ddist*_dc[2]/(_dc[2]+_dc[0]);
+    if (ddist <= 0)
+      return _dc[0] + ddist*calibrateDriftDistanceToT2DDerivative(ddist);
 
     return sqrt(pow(_dc[1]*ddist+_dc[2],2.0)+_dc[0]*(_dc[0]+2*_dc[2]))-_dc[2];
   }
 
   double StrawResponse::calibrateT2DToDriftDistance(double t2d) const {
-    if (t2d <= _dc[0]){
-      return (t2d-_dc[0])*(_dc[2]+_dc[0])/_dc[2];
-    }
+    if (t2d <= _dc[0])
+      return (t2d-_dc[0])*calibrateT2DToDriftDistanceDerivative(t2d);
+
     return (sqrt(4*pow(_dc[1]*_dc[2],2.0)-4*pow(_dc[1],2.0)*(pow(_dc[0],2.0)+2*_dc[0]*_dc[2]-2*_dc[2]*t2d-pow(t2d,2.0)))-2*_dc[1]*_dc[2])/(2*pow(_dc[1],2.0));
   }
 
   double StrawResponse::calibrateDriftDistanceToT2DDerivative(double ddist) const {
-    if (ddist < 0)
-      return _dc[2]/(_dc[2]+_dc[0]);
+    if (ddist <= 0){
+      if (_dc[2] + _dc[0] == 0)
+        return 1.0;
+      else
+        return _dc[1]*_dc[2]/(_dc[2]+_dc[0]);
+    }
+
     return _dc[1]*(_dc[1]*ddist+_dc[2])/sqrt(pow(_dc[0],2)+2*_dc[0]*_dc[2]+pow(_dc[1]*ddist+_dc[2],2));
   }
 
   double StrawResponse::calibrateT2DToDriftDistanceDerivative(double t2d) const {
     if (t2d <= _dc[0]){
-      return (_dc[2]+_dc[0])/_dc[2];
+      if (_dc[2] == 0 && _dc[0] == 0)
+        return 1.0;
+      else if (_dc[2]== 0)
+        return 1.0e8;
+      else
+        return (_dc[2]+_dc[0])/(_dc[1]*_dc[2]);
     }
-    return (_dc[2] + t2d)/sqrt(pow(_dc[1],2)-(-1*pow(_dc[0],2)-2*_dc[0]*_dc[2]+pow(_dc[2]+t2d,2)));
+    return (_dc[2] + t2d)/sqrt(pow(_dc[1],2)*(-1*pow(_dc[0],2)-2*_dc[0]*_dc[2]+pow(_dc[2]+t2d,2)));
   }
 
   StrawResponse::DriftInfo StrawResponse::driftInfoAtDistance(StrawId strawId,
