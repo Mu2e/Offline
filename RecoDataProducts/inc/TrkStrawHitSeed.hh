@@ -17,11 +17,11 @@
 #include <functional>
 namespace mu2e {
   struct TrkStrawHitSeed {
-    TrkStrawHitSeed() : _index(0), _ambig(0), _algo(-1), _frozen(false), _edep(0),  _htime(0), _wdist(0), _werr(0), _dtime(0),
+    TrkStrawHitSeed() : _index(0), _ambig(0), _algo(-1), _frozen(false), _edep(0),  _htime(0), _wdist(0), _werr(0), _tottdrift(0),
     _ptoca(0),_stoca(0),
-    _wdoca(0), _wdocavar(0), _wdt(0), _wtocavar(0),
-    _doca(0.0), _docavar(0), _dt(0), _tocavar(0),
-    _upos(0),_rdrift(0),_rerr(0), _dvel(0), _lang(0),
+    _rdoca(0), _rdocavar(0), _rdt(0), _rtocavar(0),
+    _udoca(0.0), _udocavar(0), _udt(0), _utocavar(0),
+    _rupos(0),_uupos(0),_rdrift(0),_rerr(0), _dvel(0), _lang(0),
     _utresid(0), _utresidmvar(0), _utresidpvar(0),
     _udresid(0), _udresidmvar(0), _udresidpvar(0),
     _rtresid(0), _rtresidmvar(0), _rtresidpvar(0),
@@ -30,20 +30,20 @@ namespace mu2e {
 
     //KinKal constructor
     TrkStrawHitSeed(StrawHitIndex index, ComboHit const& chit,
-        KinKal::ClosestApproachData const& refptca,
-        KinKal::ClosestApproachData const& fitptca,
+        KinKal::ClosestApproachData const& rptca,
+        KinKal::ClosestApproachData const& uptca,
         KinKal::Residual const& utresid, KinKal::Residual const& udresid,
         KinKal::Residual const& rtresid, KinKal::Residual const& rdresid,
         DriftInfo const& dinfo, WireHitState const& whs) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(chit.flag()),
       _ambig(whs.state_), _algo(whs.algo_), _frozen(whs.frozen_),
-      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()),_werr(chit.wireRes()), _dtime(chit.driftTime()),
-      _ptoca(refptca.particleToca()),_stoca(refptca.sensorToca()),
-      _wdoca(refptca.doca()),_wdocavar(refptca.docaVar()),
-      _wdt(refptca.deltaT()), _wtocavar(refptca.tocaVar()),
-      _doca(fitptca.doca()),_docavar(fitptca.docaVar()),
-      _dt(fitptca.deltaT()), _tocavar(fitptca.tocaVar()),
+      _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()),_werr(chit.wireRes()), _tottdrift(chit.driftTime()),
+      _ptoca(rptca.particleToca()),_stoca(rptca.sensorToca()),
+      _rdoca(rptca.doca()),_rdocavar(rptca.docaVar()),
+      _rdt(rptca.deltaT()), _rtocavar(rptca.tocaVar()),
+      _udoca(uptca.doca()),_udocavar(uptca.docaVar()),
+      _udt(uptca.deltaT()), _utocavar(uptca.tocaVar()),
       _rdrift(dinfo.driftDistance_),_rerr(dinfo.driftDistanceError_), _dvel(dinfo.driftVelocity_),_lang(dinfo.LorentzAngle_),
       _utresid(utresid.value()),_utresidmvar(utresid.measurementVariance()),_utresidpvar(utresid.parameterVariance()),
       _udresid(udresid.value()),_udresidmvar(udresid.measurementVariance()),_udresidpvar(udresid.parameterVariance()),
@@ -53,9 +53,10 @@ namespace mu2e {
     {
       // correct for end sign to return to Mu2e convention
       double endsign = 2.0*(chit.driftEnd()-0.5);
-      _upos = -endsign*refptca.sensorDirection().Dot(refptca.sensorPoca().Vect() - chit.centerPos());
-      _doca *= endsign;
-      _wdoca *= endsign;
+      _rupos = -endsign*rptca.sensorDirection().Dot(rptca.sensorPoca().Vect() - chit.centerPos());
+      _uupos = -endsign*uptca.sensorDirection().Dot(uptca.sensorPoca().Vect() - chit.centerPos());
+      _udoca *= endsign;
+      _rdoca *= endsign;
       // correct flag
       _flag.merge(StrawHitFlag::track);
       if(whs.active())_flag.merge(StrawHitFlag::active);
@@ -68,9 +69,10 @@ namespace mu2e {
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(flag), _ambig(ambig), _algo(-10), _frozen(false),
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()),
-      _dtime(chit.driftTime()),
+      _tottdrift(chit.driftTime()),
       _ptoca(t0._t0),_stoca(chit.time()-stime),
-      _wdoca(wdoca), _wdocavar(rerr*rerr), _wdt(dt), _wtocavar(t0._t0err*t0._t0err), _doca(wdoca), _docavar(rerr*rerr), _dt(dt), _tocavar(t0._t0err*t0._t0err),_upos(upos),
+      _rdoca(wdoca), _rdocavar(rerr*rerr), _rdt(dt), _rtocavar(t0._t0err*t0._t0err), _udoca(wdoca), _udocavar(rerr*rerr), _udt(dt), _utocavar(t0._t0err*t0._t0err),
+      _rupos(upos),_uupos(upos),
       _rdrift(rdrift), _rerr(rerr), _dvel(0), _lang(0),
       _t0(t0), _trklen(trklen), _hitlen(hitlen),  _stime(stime){}
 
@@ -86,25 +88,25 @@ namespace mu2e {
     auto const& driftEnd() const { return _end; }
     auto wireDist() const { return _wdist; }
     auto wireRes() const { return _werr; }
-    auto TOTDriftTime() const { return _dtime; }
+    auto TOTDriftTime() const { return _tottdrift; }
     auto particleTOCA() const { return _ptoca; }
     auto sensorTOCA() const { return _stoca; }
-    auto fitDOCA() const { return _doca; }
-    auto fitDOCAVar() const { return _docavar; }
-    auto fitDt() const { return _dt; }
-    auto fitTOCAVar() const { return _tocavar; }
-    auto refDOCA() const { return _wdoca; }
-    auto refDOCAVar() const { return _wdocavar; }
-    auto refDt() const { return _wdt; }
-    auto reTOCAVar() const { return _wtocavar; }
-    auto refPOCA_Upos() const { return _upos; }
+    auto fitDOCA() const { return _udoca; }
+    auto fitDOCAVar() const { return _udocavar; }
+    auto fitDt() const { return _udt; }
+    auto fitTOCAVar() const { return _utocavar; }
+    auto refDOCA() const { return _rdoca; }
+    auto refDOCAVar() const { return _rdocavar; }
+    auto refDt() const { return _rdt; }
+    auto reTOCAVar() const { return _rtocavar; }
+    auto refPOCA_Upos() const { return _rupos; }
     auto driftRadius() const { return _rdrift; }
     auto radialErr() const { return _rerr; }
     HitT0 const&  t0() const { return _t0; }
     Float_t trkLen() const { return _trklen; }
     Float_t hitLen() const { return _hitlen; }
     Float_t signalTime() const { return _stime; }
-    Float_t wireDOCA() const { return _wdoca; }
+    Float_t wireDOCA() const { return _rdoca; }
     Int_t ambig() const { return _ambig; }
     //
     //  Payload
@@ -120,14 +122,15 @@ namespace mu2e {
     Float_t         _htime;   // raw hit time
     Float_t         _wdist;       // raw hit U position
     Float_t         _werr;    // raw hit U position error estimate
-    Float_t         _dtime;   // drift time from TOT for this hit
+    Float_t         _tottdrift;   // drift time from TOT for this hit
     float_t         _ptoca;    // reference particle time of closest approach (TOCA)
     float_t         _stoca;    // reference sensor time of closest approach (TOCA)
-    Float_t         _wdoca, _wdocavar;   // reference (biased) DOCA from the track to the wire, signed by the angular momentum WRT the wire and the measurement end (and variance)
-    Float_t         _wdt, _wtocavar;   // reference (biased) time difference (and variance) at POCA
-    Float_t         _doca, _docavar; // unbiaed DOCA (and variance)
-    Float_t         _dt, _tocavar;   // fit (unbiased) dt and variance
-    Float_t         _upos; // POCA position along the straw WRT the straw middle
+    Float_t         _rdoca, _rdocavar;   // reference (biased) DOCA from the track to the wire, signed by the angular momentum WRT the wire and the measurement end (and variance)
+    Float_t         _rdt, _rtocavar;   // reference (biased) time difference (and variance) at POCA
+    Float_t         _udoca, _udocavar; // unbiaed DOCA (and variance)
+    Float_t         _udt, _utocavar;   //unbiased dt and variance
+    Float_t         _rupos; // reference POCA position along the straw WRT the straw middle
+    Float_t         _uupos; // unbiased POCA position along the straw WRT the straw middle
     Float_t         _rdrift;  // drift radius for this hit
     Float_t         _rerr;    // intrinsic radial error
     Float_t         _dvel;  // instantaneous drift velocity
