@@ -3,17 +3,17 @@
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
-  WireHitState NullStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata) const {
-    // for now very simple: could check if inside straw longitudinally, etc.
-    WireHitState whs(WireHitState::inactive,StrawHitUpdaters::null);
-    if(tpdata.usable()){
+  WireHitState NullStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata) const {
+    WireHitState whstate = input;
+    if(input.updateable()){
+      whstate.algo_ = StrawHitUpdaters::null;
       if(fabs(tpdata.doca()) < maxdoca_){
-        whs.state_ = WireHitState::null;
-        whs.nhmode_ = WireHitState::combo;
-        whs.dvar_ =  2.0833; // (2*rstraw)^2/12   Should come from TrackerGeom TODO
-      }
-    } else
-      whs.state_ = WireHitState::unusable;
-    return whs;
+        whstate.state_ = WireHitState::null;
+        whstate.nhmode_ = WireHitState::combo;
+        whstate.dvar_ =  2.0833; // (2*rstraw)^2/12   Should come from TrackerGeom TODO
+      } else
+        whstate.state_ = WireHitState::inactive;
+    }
+    return whstate;
   }
 }

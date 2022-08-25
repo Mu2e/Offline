@@ -20,22 +20,22 @@ namespace mu2e {
   using KinKal::Weights;
   using WHSCOL = std::vector<WireHitState>;
   template<class KTRAJ> class KKStrawHitCluster;
-  struct ClusterScore{
-    ClusterScore(Chisq const& chi2, WHSCOL const& hitstates) : chi2_(chi2), hitstates_(hitstates) {}
-    ClusterScore() {}
+  struct ClusterState{
+    ClusterState(Chisq const& chi2, WHSCOL const& hitstates) : chi2_(chi2), hitstates_(hitstates) {}
+    ClusterState() {}
     Chisq chi2_; // total chisquared for this cluster
     WHSCOL hitstates_; // states for all hits in the cluster
     // merge with another score
-    void merge(ClusterScore const& other);
+    void merge(ClusterState const& other);
   };
-  using ClusterScoreCOL = std::vector<ClusterScore>;
+  using ClusterStateCOL = std::vector<ClusterState>;
 
   class CombinatoricStrawHitUpdater {
     public:
       using CSHUConfig = std::tuple<unsigned,float,float,float,float,bool,int,bool,int>;
       // struct to sort hit states by chisquared value
-      struct ClusterScoreComp {
-        bool operator()(ClusterScore const& a, ClusterScore const& b)  const {
+      struct ClusterStateComp {
+        bool operator()(ClusterState const& a, ClusterState const& b)  const {
           return a.chi2_.chisqPerNDOF() < b.chi2_.chisqPerNDOF();
         }
       };
@@ -54,12 +54,15 @@ namespace mu2e {
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::null, WireHitState::right};
         else
           allowed_ = WHSCOL{WireHitState::inactive, WireHitState::left, WireHitState::right};
-        // set the algorithm; this propagates to the StrawHits
-        for(auto& whs : allowed_)whs.algo_ = StrawHitUpdaters::Combinatoric;
+        // set the state parameters: these propagate to the output
+        for(auto& whs : allowed_){
+          whs.algo_ = StrawHitUpdaters::Combinatoric;
+          whs.nhmode_ = nhmode_;
+          whs.dvar_ = dvar_;
+        }
         std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " " << allownull_ << " " << nhmode_ << std::endl;
       }
-      ClusterScore selectBest(ClusterScoreCOL& cscores) const; // find the best cluster configuration given the score for each
-      double penalty(WireHitState const& whs) const; // compute the penalty for each hit in a given state
+      ClusterState selectBest(ClusterStateCOL& cscores) const; // find the best cluster configuration given the score for each
       auto inactivePenalty() const { return inactivep_;}
       auto nullPenalty() const { return nullp_;}
       auto const& allowed() const { return allowed_; }
@@ -77,12 +80,11 @@ namespace mu2e {
       double nulldoca_; // DOCA used to set null hit variance
       bool allownull_; // allow null ambiguity assignment
       WireHitState::NHMode nhmode_; // null hit mode
-      bool freeze_; // freeze disambiguated clusters
+      bool freeze_; // freeze disambiguated hits in the cluster
       int diag_; // diag print level
       WHSCOL allowed_; // allowed states
-      double wireHitRank(WHSCOL const& whscol) const; // rank wire hit states by 'conservativeness'
       double dvar_; // null hit distance variance
   };
-  std::ostream& operator <<(std::ostream& os, ClusterScore const& cscore );
+  std::ostream& operator <<(std::ostream& os, ClusterState const& cscore );
 }
 #endif

@@ -4,61 +4,56 @@
 #include <algorithm>
 #include <iostream>
 namespace mu2e {
-  double CombinatoricStrawHitUpdater::penalty(WireHitState const& whstate) const {
-    if(!whstate.active())
-      return inactivep_;
-    else if(!whstate.useDrift())
-      return nullp_;
-    else
-      return 0.0;
-  }
-
-  ClusterScore CombinatoricStrawHitUpdater::selectBest(ClusterScoreCOL& cscores) const {
+  // set the state of unambiguous hits to their drift value.
+  ClusterState CombinatoricStrawHitUpdater::selectBest(ClusterStateCOL& cstates) const {
     // sort the results by chisquared
-    std::sort(cscores.begin(),cscores.end(), ClusterScoreComp());
-    auto best = cscores.front();
-    // merge the configurations that have nearly degenerate scores; this takes the most conservative option
-    auto test=cscores.begin(); ++test;
-    while(test != cscores.end() && test->chi2_.chisqPerNDOF() - cscores.front().chi2_.chisqPerNDOF() < minDeltaChi2()){
+   std::sort(cstates.begin(),cstates.end(), ClusterStateComp());
+
+    auto best = cstates.front();
+    // merge the configurations that have nearly degenerate states; this takes the most conservative option
+    auto test=cstates.begin(); ++test;
+    while(test != cstates.end() && test->chi2_.chisq() - cstates.front().chi2_.chisq() < minDeltaChi2()){
       best.merge(*test);
       ++test;
     }
-    // optionally freeze unambiguous states
+    // optionally freeze unambiguous drift states
     if(freeze_){
-//      // look for pairs of unambiguous (opposite drift) hits, and freeze their state
-//      for( size_t ihit=0;ihit < best.hitstates_.size();++ihit){
-//        auto& hit1 = best.hitstates_[ihit];
-//        for( size_t jhit=ihit+1;jhit < best.hitstates_.size();++jhit){
-//          auto& hit2 = best.hitstates_[jhit];
-//          if(hit1.useDrift() && hit2.useDrift() && hit1 != hit2){
-//            hit1.frozen_ = true;
-//            hit2.frozen_ = true;
-//          }
-//        }
-//      }
       for(auto& whs : best.hitstates_) {
         whs.frozen_ = whs.useDrift();
       }
     }
+    if(diag_ > 0){
+      std::cout << "Best Cluster " << best.chi2_ << " hit states ";
+      for(auto whs : best.hitstates_)std::cout << "  " << whs.state_;
+      std::cout << std::endl;
+    }
+    if(diag_ > 1){
+      for(auto const&  cstate: cstates) {
+        std::cout << "Combi " << cstate.chi2_ << " hit states ";
+        for(auto whstate : cstate.hitstates_) std::cout << "  " << whstate.state_;
+        std::cout << std::endl;
+      }
+    }
+
     return best;
   }
 
-  void ClusterScore::merge(ClusterScore const& other) {
+  void ClusterState::merge(ClusterState const& other) {
     for( size_t ihit=0;ihit < hitstates_.size();++ihit){
-      auto& myhit = hitstates_[ihit];
-      auto const& otherhit = other.hitstates_[ihit];
-      if(myhit != otherhit){
-        if(myhit.isInactive() || otherhit.isInactive()) // one is inactive: deactivate
-          myhit.state_ = WireHitState::inactive;
+      auto& mystate = hitstates_[ihit];
+      auto const& otherstate = other.hitstates_[ihit];
+      if(mystate != otherstate){
+        if(mystate.isInactive() || otherstate.isInactive()) // one is inactive: deactivate
+          mystate.state_ = WireHitState::inactive;
         else // every other case, set to null
-          myhit.state_ = WireHitState::null;
+          mystate.state_ = WireHitState::null;
       }
     }
   }
 
-  std::ostream& operator <<(std::ostream& os, ClusterScore const& cscore ) {
-    os << "ClusterScore " << cscore.chi2_ << " states: ";
-    for(auto whstate : cscore.hitstates_) std::cout << "  " << whstate.state_;
+  std::ostream& operator <<(std::ostream& os, ClusterState const& cstate ) {
+    os << "ClusterState " << cstate.chi2_ << " states: ";
+    for(auto whstate : cstate.hitstates_) std::cout << "  " << whstate.state_;
     std::cout << std::endl;
     return os;
   }

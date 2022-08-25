@@ -26,7 +26,7 @@ namespace mu2e {
        std::cout << "PTCAStrawHitUpdater " << mindoca_ << " " << maxdoca_ << " " << mindt_ << " " << maxdt_ << " " << nhmode_ << std::endl;
       }
       // set the state based on the current PTCA value
-      WireHitState wireHitState(KinKal::ClosestApproachData const& tpdata) const;
+      WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata) const;
       // accessors
       auto minDOCA() const { return mindoca_; }
       auto maxDOCA() const { return maxdoca_; }

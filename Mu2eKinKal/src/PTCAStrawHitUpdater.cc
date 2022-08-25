@@ -4,9 +4,10 @@
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
-  WireHitState PTCAStrawHitUpdater::wireHitState(ClosestApproachData const& tpdata) const {
-    WireHitState whstate(WireHitState::inactive,StrawHitUpdaters::PTCA);
-    if(tpdata.usable()){
+  WireHitState PTCAStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata) const {
+    WireHitState whstate = input;
+    if(input.updateable()){
+      whstate.algo_ = StrawHitUpdaters::PTCA;
       double doca = tpdata.doca();
       double absdoca = fabs(doca);
       if( absdoca < maxdoca_ && absdoca > mindoca_
@@ -20,9 +21,9 @@ namespace mu2e {
         } else {
           whstate.dvar_ = dvar_;
         }
+      } else {
+        whstate.state_ = WireHitState::inactive;
       }
-    } else {
-      whstate.state_ = WireHitState::unusable;
     }
     return whstate;
   }

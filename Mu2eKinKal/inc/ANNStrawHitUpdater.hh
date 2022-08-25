@@ -1,6 +1,5 @@
 //
-// ANN-based StrawHits based on Position and Time Of Closest Approach (ANN)
-// Currently this defines useable hits using a box cut, an MVA would be an improvement TODO
+// ANN-based  ambiguity updater.  This assigns LR ambiguity based on the predicted accuracy of the DOCA sign
 //
 #ifndef Mu2eKinKal_ANNStrawHitUpdater_hh
 #define Mu2eKinKal_ANNStrawHitUpdater_hh
@@ -18,24 +17,25 @@ namespace mu2e {
  // Update based just on ANN to the wire
   class ANNStrawHitUpdater {
     public:
-      using ANNSHUConfig = std::tuple<std::string,float,int,float>;
-      ANNStrawHitUpdater() : mva_(0), mvacut_(0.0), nhmode_(WireHitState::none), dvar_(0) {}
+      using ANNSHUConfig = std::tuple<std::string,float,int,float,bool>;
+      ANNStrawHitUpdater() : mva_(0), mvacut_(0.0), nhmode_(WireHitState::none), dvar_(0), freeze_(false) {}
       ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig) {
         mva_  = new MVATools(std::get<0>(annshuconfig));
         mvacut_ = std::get<1>(annshuconfig);
         nhmode_ = static_cast<WireHitState::NHMode>(std::get<2>(annshuconfig));
         dvar_ = std::get<3>(annshuconfig);
-        std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null dvar, mode" << dvar_ << nhmode_ << std::endl;
+        freeze_ = std::get<4>(annshuconfig);
+        std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null dvar, mode" << dvar_ << nhmode_ << " freeze " << freeze_ << std::endl;
         mva_->initMVA();
         mva_->showMVA();
       }
-      // set the state based on the current ANN value
-      WireHitState wireHitState(KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
+      WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
       MVATools* mva_; // neural net calculator
       double mvacut_; // cut value to decide if drift information is usable
       WireHitState::NHMode nhmode_; // Null hit mode
       double dvar_; // null hit distance variance
+      bool freeze_; // freeze drift states
   };
 }
 #endif
