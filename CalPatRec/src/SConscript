@@ -17,8 +17,7 @@ extrarootlibs = ['TMVA' , 'Minuit' , 'XMLIO' ]
 helper=mu2e_helper(env);
 # helper=calpatrec_helper();
 
-mainlib = helper.make_mainlib( [ 'mu2e_TrkDiag',
-                                 'mu2e_CaloCluster',
+mainlib = helper.make_mainlib( [ 'mu2e_CaloCluster',
                                  'mu2e_TrkReco',
                                  'mu2e_BTrkData',
                                  'mu2e_Mu2eBTrk',
@@ -56,7 +55,6 @@ mainlib = helper.make_mainlib( [ 'mu2e_TrkDiag',
                                  ] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_TrkDiag',
                        'mu2e_TrkReco',
                        'mu2e_BTrkData',
                        'mu2e_Mu2eBTrk',
