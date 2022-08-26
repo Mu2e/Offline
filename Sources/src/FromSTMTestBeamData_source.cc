@@ -153,10 +153,10 @@ namespace mu2e {
     // Get the channel from the configuration field
     std::string configuration = tokens.at(3);
     if (configuration.find("HPGe") != std::string::npos) {
-      channel_ = STMChannel::kHPGe;
+      channel_ = STMChannel::HPGe;
     }
     else if (configuration.find("LaBr") != std::string::npos) {
-      channel_ = STMChannel::kLaBr;
+      channel_ = STMChannel::LaBr;
     }
     else {
       throw cet::exception("FromSTMTestBeamData") << "Cannot determine the channel from the configuration field (" << configuration << "). This should contain either \"HPGe\" or \"LaBr\"" << std::endl;
@@ -271,10 +271,10 @@ namespace mu2e {
           // Create the STMDigi and put it in the event
           STMTrigType trigType(trigger_header[0].getTriggerMode(), channel_, STMDataType::kUnsuppressed);
           STMDigi stm_digi(trigType, trigger_header[0].getTriggerTime(), trigger_header[0].getTriggerOffset(), 0, STMDigiFlag::kOK, adcs);
-          if (channel_ == STMChannel::kHPGe) {
+          if (channel_ == STMChannel::HPGe) {
             outputHPGeDigis->push_back(stm_digi);
           }
-          else if (channel_ == STMChannel::kLaBr) {
+          else if (channel_ == STMChannel::LaBr) {
             outputLaBrDigis->push_back(stm_digi);
           }
           else {
