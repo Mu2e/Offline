@@ -19,6 +19,8 @@
 #include "TLegend.h"
 #include "TTree.h"
 
+#include <cmath>
+
 using namespace std;
 
 namespace mu2e
@@ -78,7 +80,7 @@ namespace mu2e
                 _EnergyErr->GetXaxis()->SetTitle("EDepErr");
                 _TimeErr= tfs->make<TH1F>("TimeErr","TimeErr" ,50,0,50);
                 _TimeErr->GetXaxis()->SetTitle("TimeErr");
-                _Angle= tfs->make<TH1F>("Angle","Angle " ,50,-3.1415, 3.1415);
+                _Angle= tfs->make<TH1F>("Angle","Angle " ,50,-M_PI, M_PI);
                 _Angle->GetXaxis()->SetTitle("Angle");
                 _PosX= tfs->make<TH1F>("PosX","Pos X" ,50,-650,650);
                 _PosX->GetXaxis()->SetTitle("X Pos");
