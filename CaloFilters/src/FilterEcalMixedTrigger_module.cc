@@ -47,6 +47,7 @@
 
 // C++ includes
 #include <vector>
+#include <cmath>
 
 //using namespace std;
 
@@ -490,9 +491,9 @@ namespace mu2e {
             // ANGULAR VELOCITY SELECTION (ANGLES AT THE CIRCUMFERENCE)
             alphastraw=atan2(ystraw,xstraw);
             dalpha=2.*(alphastraw-alphapeak);
-            if (dalpha>0) dalpha-=6.2832;
-            n2pi=(int)((dalpha-DAPAR0-DAPAR1*zstraw)/6.2832+1.5);
-            dalpha-=6.2832*(float)(n2pi-1);
+            if (dalpha>0) dalpha-=(2.0*M_PI);
+            n2pi=(int)((dalpha-DAPAR0-DAPAR1*zstraw)/(2.0*M_PI)+1.5);
+            dalpha-=(2.0*M_PI)*(float)(n2pi-1);
             //
             dz=zstraw-zpeak;
             dalphadz=dalpha/dz;
@@ -604,9 +605,9 @@ namespace mu2e {
           zstraw=shit.z;
           phistraw=atan2(ystraw-ymax,xstraw-xmax);
           dphi=phistraw-phipeak;
-          if (dphi>0) dphi-=6.2832;
-          n2pi=(int)((dphi-DAPAR0-dalphadzbest*zstraw)/6.2832+1.5);
-          dphi-=6.2832*(float)(n2pi-1);
+          if (dphi>0) dphi-=(2.0*M_PI);
+          n2pi=(int)((dphi-DAPAR0-dalphadzbest*zstraw)/(2.0*M_PI)+1.5);
+          dphi-=(2.0*M_PI)*(float)(n2pi-1);
           dz=zstraw-zpeak;
           dphidz=dphi/dz;
           dfdzbin=(int)((dphidz-0.003)/dfdzbinwidth);
@@ -671,11 +672,11 @@ namespace mu2e {
         rstraw=sqrt(xstraw*xstraw+ystraw*ystraw);
         zstraw=shit.z;
         dphipeak=(dphidz-dphidzbest)*(zstraw-zpeak);
-        if (dphipeak<-3.1416) dphipeak+=3.1416;
-        if (dphipeak>3.1416) dphipeak-=3.1416;
+        if (dphipeak<-M_PI) dphipeak+=M_PI;
+        if (dphipeak>M_PI) dphipeak-=M_PI;
         dphi=dphidz*(zstraw-zpeak);
-        n2pi=(int)(dphi/6.2832+7.5);
-        dphi-=6.2832*(float)(n2pi-7);
+        n2pi=(int)(dphi/(2.0*M_PI)+7.5);
+        dphi-=(2.0*M_PI)*(float)(n2pi-7);
         if (abs(dphipeak)< 0.08){
           ndphicpeak++;
         }

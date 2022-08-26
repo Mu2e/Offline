@@ -18,6 +18,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
+#include <cmath>
 #include <iostream>
 #include <map>
 #include <set>
@@ -222,10 +223,10 @@ mu2e::CosmicMuonInfo::CosmicMuonInfo(fhicl::ParameterSet const& pset):
 
   art::ServiceHandle<art::TFileService> tfs;
 
-  _phiMC          = tfs->make<TH1D>( "#phi_{MC}",   "Angle #phi_{MC} of Muon MC tracks All",  100, -3.141529,      3.141529 );
-  _thetaMC        = tfs->make<TH1D>( "#theta_{MC}",   "Angle #theta_{MC} of Muon MC tracks All",  20, 0,      3.141529 );
-  _phiMCcuts          = tfs->make<TH1D>( "#phi_after_cuts_{MC}",   "Angle #phi_{MC} of Muon MC tracks after MC cuts",  100, -3.141529,      3.141529 );
-  _thetaMCcuts        = tfs->make<TH1D>( "#theta_after_cuts{MC}",   "Angle #theta_{MC} of Muon MC tracks aft MC cuts",  20, 0,      3.141529 );
+  _phiMC          = tfs->make<TH1D>( "#phi_{MC}",   "Angle #phi_{MC} of Muon MC tracks All",  100, -M_PI,      M_PI );
+  _thetaMC        = tfs->make<TH1D>( "#theta_{MC}",   "Angle #theta_{MC} of Muon MC tracks All",  20, 0,      M_PI );
+  _phiMCcuts          = tfs->make<TH1D>( "#phi_after_cuts_{MC}",   "Angle #phi_{MC} of Muon MC tracks after MC cuts",  100, -M_PI,      M_PI );
+  _thetaMCcuts        = tfs->make<TH1D>( "#theta_after_cuts{MC}",   "Angle #theta_{MC} of Muon MC tracks aft MC cuts",  20, 0,      M_PI );
   _hNStrawHits    = tfs->make<TH1D>( "hNStrawHits",   "Number of Straw Hits",         100,  0.,       100. );
   _hNPanelHits    = tfs->make<TH1D>( "hNPanelHits",   "Number of Panel Hits",         100,  0.,       100. );
   _hUniquePanel   = tfs->make<TH1D>( "hUniquePanel",  "Unique Panel ID",              216,  0.,       216. );
