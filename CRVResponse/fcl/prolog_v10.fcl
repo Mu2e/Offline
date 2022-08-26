@@ -376,7 +376,7 @@ BEGIN_PROLOG
         }
       ]
       #coincidence settings for overlap option
-      usePulseOverlaps                 : true
+      usePulseOverlaps                 : true   //automatically uses noFitReco option
       minOverlapTimeAdjacentPulses     : 30  //30ns (=at least 3 ADC samples)
       minOverlapTime                   : 30  //30ns (=at least 3 ADC samples)
       #other settings

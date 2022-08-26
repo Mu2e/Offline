@@ -292,6 +292,7 @@ namespace mu2e
       if(_usePEsPulseHeight) PEs=crvRecoPulse->GetPEsPulseHeight();
       if(_useNoFitReco) PEs=crvRecoPulse->GetPEsNoFit();
       if(_useNoFitReco) time=crvRecoPulse->GetPulseTimeNoFit();
+      if(_usePulseOverlaps) PEs=crvRecoPulse->GetPEsNoFit();
 
       //don't split counter sides for the purpose of finding clusters
       sectorTypeMap[sector.sectorType].emplace_back(crvRecoPulse, crvCounterPos,
