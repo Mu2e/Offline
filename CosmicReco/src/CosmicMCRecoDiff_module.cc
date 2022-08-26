@@ -2,7 +2,6 @@
 //Date:  2021
 //Purpose: For getting seed cov estimates
 
-#define _USE_MATH_DEFINES
 #include <iostream>
 #include <string>
 #include <cmath>
