@@ -359,7 +359,7 @@ namespace mu2e {
             if (verbosityLevel_ > 2)
             {
                 double espace          = thisDisk->estimateEmptySpace();
-                double diskVolume    = 3.1415926*(thisDisk->outerRadius()*thisDisk->outerRadius()-thisDisk->innerRadius()*thisDisk->innerRadius());
+                double diskVolume    = M_PI*(thisDisk->outerRadius()*thisDisk->outerRadius()-thisDisk->innerRadius()*thisDisk->innerRadius());
                 double crystalVolume = 3.4641016*crystalCellRadius*crystalCellRadius*thisDisk->nCrystals();
 
                 std::cout<<"Estimated empty space between the disks and the crystals "<<std::endl;

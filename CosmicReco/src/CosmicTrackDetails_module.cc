@@ -2,7 +2,6 @@
 //Date: Oct 2019
 //Purpose: An improved analyzer for Cosmics
 
-#define _USE_MATH_DEFINES
 #include <iostream>
 #include <string>
 #include <cmath>
