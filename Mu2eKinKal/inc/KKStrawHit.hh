@@ -45,11 +45,10 @@ namespace mu2e {
     public:
       using HIT = KinKal::Hit<KTRAJ>;
       using RESIDHIT = KinKal::ResidualHit<KTRAJ>;
-      using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
-      using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using CA = KinKal::ClosestApproach<KTRAJ,Line>;
-      KKStrawHit(BFieldMap const& bfield, PTCA const& ptca,
+      KKStrawHit(BFieldMap const& bfield, PCA const& pca,
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // Hit interface implementations
       void updateState(MetaIterConfig const& config,bool first) override;
@@ -58,16 +57,16 @@ namespace mu2e {
       auto const& refResiduals() const { return resids_; }
       auto const& timeResidual() const { return resids_[Mu2eKinKal::tresid];}
       auto const& distResidual() const { return resids_[Mu2eKinKal::dresid];}
-      double time() const override { return ptca_.particleToca(); }
+      double time() const override { return ca_.particleToca(); }
       void updateReference(KTRAJPTR const& ktrajptr) override;
-      KTRAJPTR const& refTrajPtr() const override { return ptca_.particleTrajPtr(); }
+      KTRAJPTR const& refTrajPtr() const override { return ca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // accessors
-      auto const& closestApproach() const { return ptca_; }
+      auto const& closestApproach() const { return ca_; }
       auto const& hitState() const { return whstate_; }
       auto const& wire() const { return wire_; }
       auto const& bfield() const { return bfield_; }
-      auto precision() const { return ptca_.precision(); }
+      auto precision() const { return ca_.precision(); }
       auto const& hit() const { return chit_; }
       auto const& straw() const { return straw_; }
       auto const& strawId() const { return straw_.id(); }
@@ -87,7 +86,7 @@ namespace mu2e {
       // the physical source of the signal (particle) to the measurement recording location (electronics), the direction magnitude
       // is the effective signal propagation velocity along the wire, and the time range describes the active wire length
       // (when multiplied by the propagation velocity).
-      CA ptca_; // reference time and position of closest approach to the wire; this is generally biased by the hit
+      CA ca_; // reference time and position of closest approach to the wire; this is generally biased by the hit
       RESIDCOL resids_; // residuals WRT most recent reference
       ComboHit const& chit_; // reference to hit
       StrawHitIndex shindex_; // index to the StrawHit
@@ -105,10 +104,10 @@ namespace mu2e {
       return hit1->time() < hit2->time(); }
   };
 
-  template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PTCA const& ptca,
+  template <class KTRAJ> KKStrawHit<KTRAJ>::KKStrawHit(BFieldMap const& bfield, PCA const& pca,
       ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse) :
-    bfield_(bfield), whstate_(WireHitState::null), wire_(ptca.sensorTraj()),
-    ptca_(ptca.localTraj(),wire_,ptca.precision(),ptca.tpData(),ptca.dDdP(),ptca.dTdP()),
+    bfield_(bfield), whstate_(WireHitState::null), wire_(pca.sensorTraj()),
+    ca_(pca.localTraj(),wire_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()),
     chit_(chit), shindex_(shindex), straw_(straw), sresponse_(sresponse)
   {
     // make sure this is a single-straw based ComboHit
@@ -127,15 +126,15 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
-    CAHint tphint = ptca_.usable() ?  ptca_.hint() : CAHint(wire_.range().mid()-chit_.driftTime(),wire_.range().mid());
-    ptca_ = CA(ktrajptr,wire_,tphint,precision());
+    CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(wire_.range().mid()-chit_.driftTime(),wire_.range().mid());
+    ca_ = CA(ktrajptr,wire_,tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
-    double dz = straw().origin().z() - ptca_.particlePoca().Z();
-    if((!ptca_.usable()) || fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
+    double dz = straw().origin().z() - ca_.particlePoca().Z();
+    if((!ca_.usable()) || fabs(dz) >  100) { // need a better absolute scale; should come from KTRAJ FIXME
       tphint = CAHint(Mu2eKinKal::zTime(*ktrajptr,straw().origin().z(),wire_.range().mid()), wire_.range().mid());
-      ptca_ = CA(ktrajptr,wire_,tphint,precision());
-      dz = straw().origin().z() - ptca_.particlePoca().Z();
-      if((!ptca_.usable()) || fabs(dz) >  100) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
+      ca_ = CA(ktrajptr,wire_,tphint,precision());
+      dz = straw().origin().z() - ca_.particlePoca().Z();
+      if((!ca_.usable()) || fabs(dz) >  100) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
     }
   }
 
@@ -188,8 +187,8 @@ namespace mu2e {
 
   template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo() const {
     DriftInfo dinfo;
-    dinfo.LorentzAngle_ = Mu2eKinKal::LorentzAngle(ptca_.tpData(),ptca_.particleTraj().bnom().Unit());
-    dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ptca_.deltaT(),dinfo.LorentzAngle_);
+    dinfo.LorentzAngle_ = Mu2eKinKal::LorentzAngle(ca_.tpData(),ca_.particleTraj().bnom().Unit());
+    dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ca_.deltaT(),dinfo.LorentzAngle_);
     dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_);
     dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_,true);
     return dinfo;
@@ -198,21 +197,22 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
     // reset the residuals
     resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
-    if(whstate.useDrift()){
-      auto dinfo = fillDriftInfo();
-      double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
-      double dr = whstate.lrSign()*dinfo.driftDistance_ - ptca_.doca();
-      DVEC dRdP = ptca_.lSign()*ptca_.dDdP() - whstate.lrSign()*dinfo.driftVelocity_*ptca_.dTdP();
-      resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
-    } else if(whstate.active()){
-      // Null state. interpret DOCA against the wire directly as a residual.  We have to take the DOCA sign out of the derivatives
-      // variance can be either the straw radius or the drift
-      resids[Mu2eKinKal::dresid] = Residual(ptca_.doca(),whstate.distanceVariance(),0.0,true,-ptca_.lSign()*ptca_.dDdP());
-      if(whstate.nhmode_ == WireHitState::combo) { // use TOT drift time to constrain time
-        double tdres = chit_.driftTimeRes();
-        double tvar = tdres*tdres;
-        double dt = ptca_.deltaT() - chit_.driftTime();
-        resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ptca_.dTdP());
+    if(whstate.active()){
+      // always constrain time using the ComboHit
+      double tdres = chit_.driftTimeRes();
+      double tvar = tdres*tdres;
+      double dt = ca_.deltaT() - chit_.driftTime();
+      resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ca_.dTdP());
+      if(whstate.useDrift()){
+        auto dinfo = fillDriftInfo();
+        double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
+        double dr = whstate.lrSign()*dinfo.driftDistance_ - ca_.doca();
+        // pca dDdP from KinKal is missing LR sign: patch that here: also sign convention in KinKal on dDdP and dTdP are opposite FIXME
+        DVEC dRdP = ca_.lSign()*ca_.dDdP() - whstate.lrSign()*dinfo.driftVelocity_*ca_.dTdP();
+        resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
+      } else {
+        // Null state. interpret DOCA against the wire directly as a residual.
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.distanceVariance(),0.0,true,-ca_.lSign()*ca_.dDdP());
       }
     }
   }
@@ -246,7 +246,7 @@ namespace mu2e {
       ost << std::endl;
     }
     if(detail > 1) {
-      ost << "Propagation speed " << wire_.speed() << " TPOCA " << ptca_.tpData() << std::endl;
+      ost << "Propagation speed " << wire_.speed() << " Ref " << ca_.tpData() << std::endl;
     }
     if(detail > 0)chit_.print(ost,true);
   }

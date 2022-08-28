@@ -42,24 +42,24 @@ namespace mu2e {
     if (t2d <= _dc[0])
       return (t2d-_dc[0])*calibrateT2DToDriftDistanceDerivative(t2d);
 
-    return (sqrt(4*pow(_dc[1]*_dc[2],2.0)-4*pow(_dc[1],2.0)*(pow(_dc[0],2.0)+2*_dc[0]*_dc[2]-2*_dc[2]*t2d-pow(t2d,2.0)))-2*_dc[1]*_dc[2])/(2*pow(_dc[1],2.0));
+    return (sqrt( pow(t2d+_dc[2],2) - _dc[0]*(_dc[0]+2*_dc[2]))-_dc[2])/_dc[1];
   }
 
   double StrawResponse::calibrateDriftDistanceToT2DDerivative(double ddist) const {
     if (ddist <= 0){
       if (_dc[2] + _dc[0] == 0)
-        return 1.0;
+        return _dc[1];
       else
         return _dc[1]*_dc[2]/(_dc[2]+_dc[0]);
     }
 
-    return _dc[1]*(_dc[1]*ddist+_dc[2])/sqrt(pow(_dc[0],2)+2*_dc[0]*_dc[2]+pow(_dc[1]*ddist+_dc[2],2));
+    return _dc[1]*(_dc[1]*ddist+_dc[2])/sqrt(pow(_dc[1]*ddist+_dc[2],2.0)+_dc[0]*(_dc[0]+2*_dc[2]));
   }
 
   double StrawResponse::calibrateT2DToDriftDistanceDerivative(double t2d) const {
     if (t2d <= _dc[0]){
       if (_dc[2] == 0 && _dc[0] == 0)
-        return 1.0;
+        return 1.0/_dc[1];
       else if (_dc[2]== 0)
         return 1.0e8;
       else

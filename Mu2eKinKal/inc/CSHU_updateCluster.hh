@@ -57,24 +57,23 @@ namespace mu2e {
           // compute residuals using this state (still WRT the reference parameters)
           DVEC dpvec = cparams.parameters() - shptr->referenceParameters().parameters();
           shptr->setResiduals(miconfig,whstate,resids);
-          for(size_t iresid= 0; iresid < resids.size(); ++iresid) {
-            auto const& resid = resids[iresid];
-            if(resid.active() && (whstate.useDrift() || (iresid==Mu2eKinKal::dresid || nhmode_ > WireHitState::none))){
-              // update residuals to refer to unbiased parameters
-              double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
-              double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());
-              //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
-              if(pvar<0){
-                // another symptom of under-constrained clusters is negative variances.  I need a better strategy for these TODO
-                if(diag_ > 0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
-                  << " determinant = " << determinant << std::endl;
-                pvar = resid.parameterVariance();
-              }
-              // Use the unbiased residual to compute the chisq
-              Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
-              chisq += uresid.chisq();
-              ++ndof;
+          // only use distance residual
+          auto const& resid = resids[Mu2eKinKal::dresid];
+          if(resid.active()) {
+            // update residuals to refer to unbiased parameters
+            double uresidval = resid.value() - ROOT::Math::Dot(dpvec,resid.dRdP());
+            double pvar = ROOT::Math::Similarity(resid.dRdP(),cparams.covariance());
+            //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
+            if(pvar<0){
+              // another symptom of under-constrained clusters is negative variances.  I need a better strategy for these TODO
+              if(diag_ > 0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
+                << " determinant = " << determinant << std::endl;
+              pvar = resid.parameterVariance();
             }
+            // Use the unbiased residual to compute the chisq
+            Residual uresid(uresidval,resid.variance(),pvar,resid.active(),resid.dRdP());
+            chisq += uresid.chisq();
+            ++ndof;
           }
           // add null penalty
           if(whstate == WireHitState::null) chisq += nullp_;
