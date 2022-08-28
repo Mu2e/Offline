@@ -18,8 +18,7 @@
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
-#include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/PTCAStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CAStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
@@ -78,7 +77,7 @@ namespace mu2e {
       auto updater() const { return whstate_.algo_; }
       void setState(WireHitState const& whstate); // allow cluster updaters to set the state directly
       DriftInfo fillDriftInfo() const;
-   private:
+    private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
       Line wire_; // local linear approximation to the wire of this hit, encoding all (local) position and time information.
@@ -141,19 +140,14 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
     unsigned nupdaters(0);
     // search for updaters that work directly on StrawHits (not StrawHitClusters)
-    auto pshu = miconfig.findUpdater<PTCAStrawHitUpdater>();
-    auto nshu = miconfig.findUpdater<NullStrawHitUpdater>();
+    auto cashu = miconfig.findUpdater<CAStrawHitUpdater>();
     auto annshu = miconfig.findUpdater<ANNStrawHitUpdater>();
     auto bkgshu = miconfig.findUpdater<BkgStrawHitUpdater>();
-    if(pshu || nshu || annshu || bkgshu) {
+    if(cashu || annshu || bkgshu) {
       CA ca = unbiasedClosestApproach();
       if(ca.usable()){
-        if(nshu){
-          whstate_ = nshu->wireHitState(whstate_,ca.tpData());
-          ++nupdaters;
-        }
-        if(pshu){
-          whstate_ = pshu->wireHitState(whstate_,ca.tpData());
+        if(cashu){
+          whstate_ = cashu->wireHitState(whstate_,ca.tpData());
           ++nupdaters;
         }
         if(annshu){
@@ -212,7 +206,7 @@ namespace mu2e {
         resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
       } else {
         // Null state. interpret DOCA against the wire directly as a residual.
-        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.distanceVariance(),0.0,true,-ca_.lSign()*ca_.dDdP());
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.nullDistanceVariance(),0.0,true,-ca_.lSign()*ca_.dDdP());
       }
     }
   }

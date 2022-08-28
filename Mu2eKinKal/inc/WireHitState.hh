@@ -1,18 +1,17 @@
 #ifndef Mu2eKinKal_WireHitState_hh
 #define Mu2eKinKal_WireHitState_hh
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/Mu2eKinKal/inc/WHSMask.hh"
 #include <stdexcept>
 #include <iostream>
 
 namespace mu2e {
   // struct describing wire hit internal state
   struct WireHitState {
-    enum State { unusable=-3, inactive=-2, left=-1, null=0, right=1};  // state description
-    enum NHMode{none=-1,combo=0,doca};
+    enum State { unusable=-3, inactive=-2, left=-1, null=0, right=1};  // state description; split null into baddrift and digital
     State state_;
-    NHMode nhmode_;
     StrawHitUpdaters::algorithm algo_; // algorithm used to set this state
-    double dvar_; // distance variance for null hits
+    double nulldoca_; // effective DOCA for null hits, used to compute variance
     bool frozen_; // if set, state not allowed to change during update
 // convenience functions
     bool frozen() const { return frozen_; }
@@ -21,7 +20,7 @@ namespace mu2e {
     bool active() const { return state_ > inactive; }
     bool usable() const { return state_ > unusable; }
     bool updateable() const { return usable() && !frozen_; }
-    double distanceVariance() const { return dvar_; }
+    double nullDistanceVariance() const { return nulldoca_*nulldoca_/3.0; } // assumes a flat distribution over [-nulldoca_,nulldoca_]
     bool operator == (WireHitState const& whstate) const { return state_ == whstate.state_; }
     bool operator != (WireHitState const& whstate) const { return state_ != whstate.state_; }
     bool operator == (WireHitState::State state) const { return state_ == state; }
@@ -36,7 +35,8 @@ namespace mu2e {
           return 0.0;
       }
     }
-    WireHitState(State state = inactive,StrawHitUpdaters::algorithm algo=StrawHitUpdaters::none) : state_(state), algo_(algo), dvar_(0.0), frozen_(false) {}
+    bool isIn(WHSMask const& whsmask) const;
+    WireHitState(State state = inactive,StrawHitUpdaters::algorithm algo=StrawHitUpdaters::none,double nulldoca=2.5) : state_(state), algo_(algo), nulldoca_(nulldoca), frozen_(false) {}
   };
   std::ostream& operator <<(std::ostream& ost, WireHitState const& whs);
 }

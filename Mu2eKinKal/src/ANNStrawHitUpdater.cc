@@ -7,10 +7,21 @@
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
+  ANNStrawHitUpdater::ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig) {
+    mva_  = new MVATools(std::get<0>(annshuconfig));
+    mvacut_ = std::get<1>(annshuconfig);
+    nulldoca_ = std::get<2>(annshuconfig);
+    std::string freeze = std::get<3>(annshuconfig);
+    freeze_ = WHSMask(freeze);
+    std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null doca" << nulldoca_ << " freezeing " << freeze_ << std::endl;
+    mva_->initMVA();
+    mva_->showMVA();
+  }
+
   WireHitState ANNStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable()){
-     std::vector<Float_t> pars(8,0.0);
+      std::vector<Float_t> pars(8,0.0);
       // this order is given by the training
       pars[0] = fabs(tpdata.doca());
       pars[1] = dinfo.driftDistance_;
@@ -22,19 +33,13 @@ namespace mu2e {
       pars[7] = tpdata.particlePoca().Vect().Rho();
       float mvaout = mva_->evalMVA(pars);
       whstate.algo_ = StrawHitUpdaters::ANN;
+      whstate.nulldoca_ = nulldoca_;
       if(mvaout > mvacut_){
         whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-        whstate.frozen_ = freeze_;
       } else {
         whstate.state_ = WireHitState::null;
-        whstate.nhmode_ = nhmode_;
-        // compute time and distance parameters used for null ambiguity (wire constraint)
-        if(nhmode_ == WireHitState::combo){
-          whstate.dvar_ =  2.0833; // (2*rstraw)^2/12   Should come from TrackerGeom TODO
-        } else {
-          whstate.dvar_ = dvar_;
-        }
-      }
+      } // add MVA for inactivating hits TODO
+      whstate.frozen_ = whstate.isIn(freeze_);
     }
     return whstate;
   }
