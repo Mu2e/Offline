@@ -47,15 +47,15 @@ Mu2eKinKal : {
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
-      [ 5.0, 0 ],
-      [ 2.0, 0 ],
-      [ 1.0, 0 ]
+      [ 5.0, 1 ],
+      [ 2.0, 1 ],
+      [ 1.0, 1 ]
     ]
-    NullStrawHitUpdaterSettings : [
-      # maxdoca, drift variance, time variance, unbiased DOCA?
-      [ 100.0  ],
-      [  50.0  ],
-      [  10.0  ]
+     CAStrawHitUpdaterSettings : [
+       # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, null time mode
+      [ 100.0, 100.0, -5.0, 50.0, "" ],
+      [ 100.0, 50.0, -5.0, 50.0, "" ],
+      [ 100.0, 10.0, -5.0, 50.0, "" ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
@@ -79,15 +79,15 @@ Mu2eKinKal : {
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
-      [ 2.0, 0 ],
-      [ 1.0, 0 ],
-      [ 0.0, 0 ]
+      [ 2.0, 1 ],
+      [ 1.0, 1 ],
+      [ 0.0, 1 ]
     ]
-    NullStrawHitUpdaterSettings : [
-      # maxdoca, drift variance, time variance, unbiased DOCA?
-      [ 10.0 ],
-      [  5.0 ],
-      [  5.0 ]
+     CAStrawHitUpdaterSettings : [
+       # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, null time mode
+      [ 10.0, 10.0, -5.0, 50.0, "" ],
+      [ 5.0, 5.0, -2.0, 50.0, "" ],
+      [ 5.0, 5.0, -2.0, 50.0, "Inactive" ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
@@ -111,24 +111,21 @@ Mu2eKinKal : {
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
-      [ 2.0, 0 ],
-      [ 1.0, 0 ],
-      [ 0.0, 0 ],
+      [ 2.0, 1 ],
+      [ 1.0, 1 ],
+      [ 0.0, 1 ],
       [ 2.0, 1 ],
       [ 1.0, 1 ],
       [ 0.0, 1 ]
     ]
-    NullStrawHitUpdaterSettings : [
-      # maxdoca, drift variance, time variance, unbiased DOCA?
-      [ 10.0 ],
-      [  5.0 ],
-      [  5.0 ]
-    ]
-    PTCAStrawHitUpdaterSettings : [
+     CAStrawHitUpdaterSettings : [
        # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, null time mode
-      [ 0.1, 5.0, -10.0, 50.0, 1 ],
-      [ 0.1, 5.0, -10.0, 50.0, 1 ],
-      [ 0.1, 5.0, -10.0, 50.0, 1 ]
+      [ 10.0, 10.0, -5.0, 48.0, "" ],
+      [ 5.0, 5.0, -5.0, 48.0, "" ],
+      [ 5.0, 5.0, -5.0, 48.0, ""],
+      [ 0.1, 5.0, -5.0, 48.0, "" ],
+      [ 0.1, 5.0, -5.0, 48.0, "" ],
+      [ 0.1, 5.0, -5.0, 48.0, "Inactive" ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
@@ -140,10 +137,14 @@ Mu2eKinKal : {
       [5.0, 3.0, 0.5, 1.0, true ]
     ]
     # CombinatoricStrawHitUpdaterSettings : [
-    # mincsize, inactivep, nullp, mindchi2, mindoca, allownull, nulltime, diag
-    # [1, 50.0, 10.0, 0.0, 0.4, true, false, 0]
+    # mincsize, inactivep, nullp, mindchi2, nulldoca, allowedstates, freezestates, diag
+    # [1, 50.0, 10.0, 0.0, 0.4, "DriftNull", "Drift", 0]
     # ]
   }
+    #      [ 100.0  ],
+    #      [  50.0  ],
+    #      [  10.0  ]
+    #    ]
 
   KKLOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)

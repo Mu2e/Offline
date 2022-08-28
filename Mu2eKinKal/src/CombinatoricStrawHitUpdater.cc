@@ -4,6 +4,28 @@
 #include <algorithm>
 #include <iostream>
 namespace mu2e {
+
+  CombinatoricStrawHitUpdater::CombinatoricStrawHitUpdater(CSHUConfig const& cshuconfig) {
+    csize_ = std::get<0>(cshuconfig);
+    inactivep_ = std::get<1>(cshuconfig);
+    nullp_ = std::get<2>(cshuconfig);
+    mindchi2_ = std::get<3>(cshuconfig);
+    nulldoca_ = std::get<4>(cshuconfig);
+    std::string states = std::get<5>(cshuconfig);
+    auto allowed = WHSMask(states);
+    std::string freeze = std::get<6>(cshuconfig);
+    freeze_ = WHSMask(freeze);
+    diag_ = std::get<7>(cshuconfig);
+    if(allowed.hasAnyProperty(WHSMask::inactive)) allowed_.emplace_back(WireHitState::inactive,StrawHitUpdaters::Combinatoric,nulldoca_);
+    if(allowed.hasAnyProperty(WHSMask::null)) allowed_.emplace_back(WireHitState::null,StrawHitUpdaters::Combinatoric,nulldoca_);
+    if(allowed.hasAnyProperty(WHSMask::drift)){
+      allowed_.emplace_back(WireHitState::left,StrawHitUpdaters::Combinatoric,nulldoca_);
+      allowed_.emplace_back(WireHitState::right,StrawHitUpdaters::Combinatoric,nulldoca_);
+    }
+    std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " allowed states" << allowed << " states to freeze " << freeze_ << std::endl;
+  }
+
+
   // set the state of unambiguous hits to their drift value.
   ClusterState CombinatoricStrawHitUpdater::selectBest(ClusterStateCOL& cstates) const {
     // sort the results by chisquared
@@ -16,12 +38,7 @@ namespace mu2e {
       best.merge(*test);
       ++test;
     }
-    // optionally freeze unambiguous drift states
-    if(freeze_){
-      for(auto& whs : best.hitstates_) {
-        whs.frozen_ = whs.useDrift();
-      }
-    }
+    for(auto& whs : best.hitstates_) whs.frozen_ =  whs.isIn(freeze_);
     if(diag_ > 0){
       std::cout << "Best Cluster " << best.chi2_ << " hit states ";
       for(auto whs : best.hitstates_)std::cout << "  " << whs.state_;

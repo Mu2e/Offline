@@ -1,6 +1,5 @@
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
-#include "Offline/Mu2eKinKal/inc/NullStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/PTCAStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CAStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
@@ -37,14 +36,12 @@ namespace mu2e {
       // create the updaters requested
       unsigned nptca, nnull, nann, nbkg, ncomb, nnone;
       nptca = nnull = nann = nbkg = ncomb = nnone= 0; // count how many updater configs have been seen
-      std::vector<NullStrawHitUpdater::NSHUConfig> nhusettings;
-      std::vector<PTCAStrawHitUpdater::PSHUConfig> pshusettings;
+      std::vector<CAStrawHitUpdater::CASHUConfig> cashusettings;
       std::vector<ANNStrawHitUpdater::ANNSHUConfig> annshusettings;
       std::vector<BkgStrawHitUpdater::BkgSHUConfig> bkgshusettings;
       std::vector<CombinatoricStrawHitUpdater::CSHUConfig> chusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
-      nhusettings = fitconfig.nhuConfig().value_or(nhusettings);
-      pshusettings = fitconfig.pshuConfig().value_or(pshusettings);
+      cashusettings = fitconfig.cashuConfig().value_or(cashusettings);
       annshusettings = fitconfig.annshuConfig().value_or(annshusettings);
       bkgshusettings = fitconfig.bkgshuConfig().value_or(bkgshusettings);
       chusettings = fitconfig.chuConfig().value_or(chusettings);
@@ -54,10 +51,8 @@ namespace mu2e {
       for( size_t imeta=0; imeta < config.schedule_.size(); ++imeta) {
         auto ialg = shualg[imeta];
         auto& miconfig = config.schedule_[imeta];
-        if(ialg == StrawHitUpdaters::null) {
-          miconfig.addUpdater(std::any(NullStrawHitUpdater(nhusettings.at(nnull++))));
-        } else if(ialg == StrawHitUpdaters::PTCA) {
-          miconfig.addUpdater(std::any(PTCAStrawHitUpdater(pshusettings.at(nptca++))));
+        if(ialg == StrawHitUpdaters::CA) {
+          miconfig.addUpdater(std::any(CAStrawHitUpdater(cashusettings.at(nptca++))));
         } else if(ialg == StrawHitUpdaters::ANN) {
           miconfig.addUpdater(std::any(ANNStrawHitUpdater(annshusettings.at(nann++))));
         } else if(ialg == StrawHitUpdaters::Bkg) {
