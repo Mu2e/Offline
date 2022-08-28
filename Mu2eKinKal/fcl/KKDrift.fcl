@@ -65,7 +65,9 @@ outputs : {
 
 #include "Production/JobConfig/reco/epilog.fcl"
 
-services.ProditionsService.strawResponse.useOldDrift : true
+#services.ProditionsService.strawResponse.useOldDrift : true
+services.ProditionsService.strawResponse.useOldDrift: false
+services.ProditionsService.strawResponse.driftFit : [0.0,0.94,0.001]
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
