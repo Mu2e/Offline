@@ -11,7 +11,7 @@ namespace mu2e {
     enum State { unusable=-3, inactive=-2, left=-1, null=0, right=1};  // state description; split null into baddrift and digital
     State state_;
     StrawHitUpdaters::algorithm algo_; // algorithm used to set this state
-    double nulldoca_; // effective DOCA for null hits, used to compute variance
+    double nulldvar_; // distance variance for null hits
     bool frozen_; // if set, state not allowed to change during update
 // convenience functions
     bool frozen() const { return frozen_; }
@@ -20,7 +20,7 @@ namespace mu2e {
     bool active() const { return state_ > inactive; }
     bool usable() const { return state_ > unusable; }
     bool updateable() const { return usable() && !frozen_; }
-    double nullDistanceVariance() const { return nulldoca_*nulldoca_/3.0; } // assumes a flat distribution over [-nulldoca_,nulldoca_]
+    double nullDistanceVariance() const { return nulldvar_; }
     bool operator == (WireHitState const& whstate) const { return state_ == whstate.state_; }
     bool operator != (WireHitState const& whstate) const { return state_ != whstate.state_; }
     bool operator == (WireHitState::State state) const { return state_ == state; }
@@ -36,7 +36,7 @@ namespace mu2e {
       }
     }
     bool isIn(WHSMask const& whsmask) const;
-    WireHitState(State state = inactive,StrawHitUpdaters::algorithm algo=StrawHitUpdaters::none,double nulldoca=2.5) : state_(state), algo_(algo), nulldoca_(nulldoca), frozen_(false) {}
+    WireHitState(State state = inactive,StrawHitUpdaters::algorithm algo=StrawHitUpdaters::none,double nulldvar=1.92) : state_(state), algo_(algo), nulldvar_(nulldvar), frozen_(false) {}
   };
   std::ostream& operator <<(std::ostream& ost, WireHitState const& whs);
 }
