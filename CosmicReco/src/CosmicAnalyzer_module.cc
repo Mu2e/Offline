@@ -2,7 +2,6 @@
 //Date: April 2019
 //Purpose: (DEPRECATED - Almost!) Not very nice analyzer for Cosmics. Would be better to use the CosmicTrackDetails. This will be removed soon but might be useful for comparison with old code.
 
-#define _USE_MATH_DEFINES
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -315,10 +314,10 @@ namespace mu2e
                 _trueb1XYZ->SetStats();
 
 
-                _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.141529,3.141529);
+                _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-M_PI,M_PI);
                 _mc_phi_angle->GetXaxis()->SetTitle("#phi_{true, fit} [rad]");
 
-                _mc_theta_angle = tfs->make<TH1F>("#theta_{true, fit}","#theta_{true, fit}" ,20,0,3.141529);
+                _mc_theta_angle = tfs->make<TH1F>("#theta_{true, fit}","#theta_{true, fit}" ,20,0,M_PI);
                 _mc_theta_angle->GetXaxis()->SetTitle("#theta_{true, fit} [rad]");
 
                 _AMBIG = tfs->make<TH2F>("True v Reco", "True v Reco", 2,-2,2,2,-2,2);
@@ -333,19 +332,19 @@ namespace mu2e
                 _TrueTimeResiduals->GetXaxis()->SetTitle("True Time Res [ns]");
                 _TrueTimeResiduals->SetStats();
 
-                _A0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{0} v #theta_{true,fit}  ","Seed Parameter Pull A_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+                _A0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{0} v #theta_{true,fit}  ","Seed Parameter Pull A_{0} v #theta_{true,fit} ",100,0,M_PI,-200,200);
                 _A0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
                 _A0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{0}");
 
-                _B0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{0} v #theta_{true,fit}  ","Seed Parameter Pull B_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+                _B0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{0} v #theta_{true,fit}  ","Seed Parameter Pull B_{0} v #theta_{true,fit} ",100,0,M_PI,-200,200);
                 _B0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
                 _B0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{0}");
 
-                _A1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{1} v #theta_{true,fit}  ","Seed Parameter Pull A_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+                _A1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{1} v #theta_{true,fit}  ","Seed Parameter Pull A_{1} v #theta_{true,fit} ",100,0,M_PI,-10,10);
                 _A1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
                 _A1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{1}");
 
-                _B1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{1} v #theta_{true,fit}  ","Seed Parameter Pull B_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+                _B1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{1} v #theta_{true,fit}  ","Seed Parameter Pull B_{1} v #theta_{true,fit} ",100,0,M_PI,-10,10);
                 _B1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
                 _B1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{1}");
 
@@ -397,7 +396,7 @@ namespace mu2e
                 _seedDeltaB1_v_minuitB1->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
                 _seedDeltaB1_v_minuitB1->GetYaxis()->SetTitle("B^{straw}_{1}");
         }
-        _reco_phi_angle = tfs->make<TH1F>("#phi Angle of Reconstructred Track","#phi_{reco} Angle of Tracl " ,20,0,3.141529);
+        _reco_phi_angle = tfs->make<TH1F>("#phi Angle of Reconstructred Track","#phi_{reco} Angle of Tracl " ,20,0,M_PI);
         _reco_phi_angle->GetXaxis()->SetTitle("#phi_{reco} [rad]");
         _reco_phi_angle->SetStats();
 

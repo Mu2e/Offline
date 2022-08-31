@@ -10,9 +10,9 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
-#include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
-#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
+#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Overlays/Mu2eEventFragment.hh"
 
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
