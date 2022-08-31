@@ -979,7 +979,7 @@ namespace mu2e {
         double tanDip = sqrt( 1. - tCosDip*tCosDip)/tCosDip;
 
 
-        double angleWrtZ = acos(trkMomentum.z()/trkMomentum.mag())*(180/3.14159);
+        double angleWrtZ = acos(trkMomentum.z()/trkMomentum.mag())*(180/M_PI);
 
         std::cout << "delta time = " << _cluTime[bestCluster[trackNumber]] << " " << trkArrivalTime << " " << deltaTime << std::endl;
         //        if (deltaTime > -4){break;}

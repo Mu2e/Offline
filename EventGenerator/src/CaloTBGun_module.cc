@@ -24,6 +24,8 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
+#include <cmath>
+
 namespace mu2e {
 
   //================================================================
@@ -60,7 +62,7 @@ namespace mu2e {
   {
        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
 
-       double                  angleRad = angle_*3.1415926/180;
+       double                  angleRad = angle_*M_PI/180;
        double                  Zbuffer  = cal.disk(0).crystal(400).position().z()-cal.disk(0).geomInfo().origin().z()+cal.disk(0).geomInfo().size().z()/2.0+1;
        double                  dz       = (frontVD_)? Zbuffer : 0;
        CLHEP::Hep3Vector       pos      = cal.disk(0).crystal(400).position() - CLHEP::Hep3Vector(tan(angleRad)*dz,0,dz);

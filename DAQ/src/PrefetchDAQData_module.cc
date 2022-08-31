@@ -10,8 +10,8 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 // DAQ data
-//#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
-//#include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
+//#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
+//#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 

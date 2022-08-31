@@ -1,0 +1,8 @@
+BEGIN_PROLOG
+
+STMEnergyCalib : {
+   useDb : false
+   verbose : 0
+}
+
+END_PROLOG

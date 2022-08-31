@@ -88,18 +88,14 @@ int mu2e::DbTool::refresh() {
 int mu2e::DbTool::printContent() {
   int rc = 0;
 
-  std::string name;
-  std::string user;
-  std::vector<int> cids;
-
   map_ss args;
   args["name"] = "";
   args["user"] = "";
   args["cid"] = "";
   if ((rc = getArgs(args))) return rc;
-  if (name.empty()) name = args["name"];
-  if (user.empty()) user = args["user"];
-  if (cids.empty()) cids = intList(args["cid"]);
+  std::string name = args["name"];
+  std::string user = args["user"];
+  std::vector<int> cids = intList(args["cid"]);
 
   // if this is a val table, just dump it and exit
   if (name.substr(0, 3) == "Val") {
@@ -121,6 +117,11 @@ int mu2e::DbTool::printContent() {
       // get TID for this table name
       for (auto const& tt : _valcache.valTables().rows()) {
         if (tt.name() == name) tid = tt.tid();
+      }
+      if (tid < 0) {
+        std::cout << "ERROR - print-content did not find table name "
+                  << name << std::endl;
+        return 1;
       }
     }
     for (auto const& cc : _valcache.valCalibrations().rows()) {
@@ -162,19 +163,15 @@ int mu2e::DbTool::printContent() {
 int mu2e::DbTool::printCalibration() {
   int rc = 0;
 
-  std::string name;
-  std::string user;
-  std::vector<int> cids;
-
   map_ss args;
   args["name"] = "";
   args["user"] = "";
   args["cid"] = "";
   args["ctime"] = "";
   if ((rc = getArgs(args))) return rc;
-  if (name.empty()) name = args["name"];
-  if (user.empty()) user = args["user"];
-  if (cids.empty()) cids = intList(args["cid"]);
+  std::string name = args["name"];
+  std::string user = args["user"];
+  std::vector<int>  cids = intList(args["cid"]);
   timeInterval tint = parseInterval(args["ctime"]);
 
   // if this is a val table, just exit - there is no summary line
@@ -192,6 +189,11 @@ int mu2e::DbTool::printCalibration() {
       // get TID for this table name
       for (auto const& tt : _valcache.valTables().rows()) {
         if (tt.name() == name) tid = tt.tid();
+      }
+      if (tid < 0) {
+        std::cout << "ERROR - print-calibration did not find table name "
+                  << name << std::endl;
+        return 1;
       }
     }
     for (auto const& cc : _valcache.valCalibrations().rows()) {

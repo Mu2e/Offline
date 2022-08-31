@@ -35,6 +35,7 @@ namespace mu2e{
     ProcessCode  code()    const { return _code; }
     ProcessCode  muCapCode() const { return _muCapCode; }
 
+    //  See more comments next to the data members
     //  Returns the normalized direction of the momentum
     const G4ThreeVector& GetMomentumDirection() const {return _momDirection;}
 
@@ -51,6 +52,30 @@ namespace mu2e{
       _kinEnergy = kEnergy;
     }
 
+    //  Returns the global time
+    G4double GetGlobalTime() const {return _globalTime;};
+
+    //  Sets the global time
+    void SetGlobalTime(G4double gTime) {
+      _globalTime = gTime;
+    }
+
+    //  Returns the proper time
+    G4double GetProperTime() const {return _properTime;};
+
+    //  Sets the proper time
+    void SetProperTime(G4double pTime) {
+      _properTime = pTime;
+    }
+
+    // Returns the position
+    const G4ThreeVector& GetPosition() const {return _position;}
+
+    // Sets the position
+    void SetPosition(const G4ThreeVector &aPosition) {
+      _position = aPosition;
+    }
+
     virtual void Print() const;
 
   private:
@@ -65,12 +90,14 @@ namespace mu2e{
 
     ProcessCode _muCapCode;
 
-    // quantities recorded by a mu2e special process before geant4
-    // poststepdoits acted
+    // quantities recorded by a Mu2e special recorder process before Geant4
+    // post step doits acted
 
     G4ThreeVector _momDirection;
     G4double _kinEnergy;
-
+    G4double _globalTime;
+    G4double _properTime;
+    G4ThreeVector _position;
   };
 
 } // end namespace mu2e

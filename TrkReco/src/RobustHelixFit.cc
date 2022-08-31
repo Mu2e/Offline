@@ -769,7 +769,7 @@ void RobustHelixFit::findHistPeaks(std::vector<int>&hist_sum, int binWidth,
   int    bin_index(0);
 
   for (int ipeak=0; ipeak<_initFZFrequencyNMaxPeaks; ++ipeak){
-    //      if (ipeak>0) bin_index = (xmp[ipeak-1] + 0.4*lambda[ipeak-1]*6.28 - start_dz)/bin_size;//shifting the starting pos 1/2 pitch from the previous peak
+    //      if (ipeak>0) bin_index = (xmp[ipeak-1] + 0.4*lambda[ipeak-1]*(2.0*M_PI) - start_dz)/bin_size;//shifting the starting pos 1/2 pitch from the previous peak
     if (ipeak>0) bin_index = (xmp[ipeak-1] + _initFZFrequencyNSigma*sigma[ipeak-1])/binWidth;//shifting the starting pos 1/2 pitch from the previous peak
 
     if (bin_index >= _initFZFrequencyArraySize-_initFZFrequencyBinsToIntegrate)       break;
@@ -790,9 +790,9 @@ void RobustHelixFit::findHistPeaks(std::vector<int>&hist_sum, int binWidth,
         xmp[ipeak]  += shift_dz;
         indexPeak[ipeak] = ix;
         // if (ipeak ==0 )
-        //   lambda[ipeak] = xmp[ipeak]/(6.28*(peaks_found+1));//ipeak!=0 ? xmp[ipeak]/(6.28*(ipeak)) : xmp[ipeak]/(6.28);
+        //   lambda[ipeak] = xmp[ipeak]/((2.0*M_PI)*(peaks_found+1));//ipeak!=0 ? xmp[ipeak]/((2.0*M_PI)*(ipeak)) : xmp[ipeak]/(2.0*M_PI);
         // else {
-        //   lambda[ipeak] = (xmp[ipeak] - xmp[ipeak-1])/6.28;
+        //   lambda[ipeak] = (xmp[ipeak] - xmp[ipeak-1])/(2.0*M_PI);
         // }
         swmax[ipeak] = sw;
       }
@@ -892,14 +892,14 @@ bool RobustHelixFit::initFZ_from_dzFrequency(RobustHelixFinderData& HelixData, i
     if (swmax[i]>minNCounts){
       if ( (xmp[i] - _initFZFrequencyNSigma*sigma[i]>0) && (xmp[i-1] - _initFZFrequencyNSigma*sigma[i-1]>0)){
         double   wg = sqrt(swmax[i]*swmax[i-1]);
-        weight_lambda += wg*(xmp[i] - xmp[i-1])/6.28;//(lambda[i]*swmax[i]);
+        weight_lambda += wg*(xmp[i] - xmp[i-1])/(2.0*M_PI);//(lambda[i]*swmax[i]);
         total_wg   += wg;
       }
     }
   }
   weight_lambda /= total_wg;
 
-  if (peaks_found == 1) weight_lambda = xmp[first_peak]/6.28;
+  if (peaks_found == 1) weight_lambda = xmp[first_peak]/(2.0*M_PI);
 
   float lambda_final = weight_lambda*dzdphisign;
 
