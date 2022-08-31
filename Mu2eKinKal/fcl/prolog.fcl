@@ -58,10 +58,10 @@ Mu2eKinKal : {
       [ 100.0, 10.0, -5.0, 50.0, "" ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
-      [10.0, -1.0, -1.0, 1.0, true ],
-      [10.0, -1.0, -1.0, 1.0, true ],
-      [10.0, -1.0, -1.0, 1.0, true ]
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
+      [10.0, -1.0, -1.0, true ],
+      [10.0, -1.0, -1.0, true ],
+      [10.0, -1.0, -1.0, true ]
     ]
   }
 
@@ -91,9 +91,9 @@ Mu2eKinKal : {
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
-      [10.0, -1.0, -1.0, 1.0, true ],
-      [10.0, -1.0, -1.0, 1.0, true ],
-      [10.0, -1.0, -1.0, 1.0, true ]
+      [10.0, -1.0, -1.0, true ],
+      [10.0, -1.0, -1.0, true ],
+      [10.0, -1.0, -1.0, true ]
     ]
   }
 
@@ -129,12 +129,12 @@ Mu2eKinKal : {
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
-      [5.0, 3.0, 0.5, 1.0, true ],
-      [5.0, 3.0, 0.5, 1.0, true ],
-      [5.0, 3.0, 0.5, 1.0, true ],
-      [5.0, 3.0, 0.5, 1.0, true ],
-      [5.0, 3.0, 0.5, 1.0, true ],
-      [5.0, 3.0, 0.5, 1.0, true ]
+      [5.0, 3.0, 0.5, true ],
+      [5.0, 3.0, 0.5, true ],
+      [5.0, 3.0, 0.5, true ],
+      [5.0, 3.0, 0.5, true ],
+      [5.0, 3.0, 0.5, true ],
+      [5.0, 3.0, 0.5, true ]
     ]
     # CombinatoricStrawHitUpdaterSettings : [
     # mincsize, inactivep, nullp, mindchi2, nulldoca, allowedstates, freezestates, diag

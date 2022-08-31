@@ -19,7 +19,8 @@ namespace mu2e {
     WireHitState whstate = input;
     if(input.updateable()){
       whstate.algo_ = StrawHitUpdaters::CA;
-      whstate.nulldoca_ = std::min(mindoca_,2.4); // limit to the effective straw radius
+      double ddoca = std::min(mindoca_,2.4); // limit to the effective straw radius
+      whstate.nulldvar_ = ddoca*ddoca/3.0;
       double absdoca = fabs(tpdata.doca());
       if(tpdata.deltaT() < maxdt_ && tpdata.deltaT() > mindt_) {
         if( absdoca < maxdoca_ && absdoca > mindoca_){  // in the sweet spot: use the DOCA to sign the ambiguity

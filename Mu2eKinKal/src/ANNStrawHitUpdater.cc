@@ -33,7 +33,11 @@ namespace mu2e {
       pars[7] = tpdata.particlePoca().Vect().Rho();
       float mvaout = mva_->evalMVA(pars);
       whstate.algo_ = StrawHitUpdaters::ANN;
-      whstate.nulldoca_ = nulldoca_;
+      if(nulldoca_ > 0.0)
+        whstate.nulldvar_ = nulldoca_*nulldoca_/3.0; // assumes a flat distribution over [-nulldoca_,nulldoca_]
+      else
+        // interpret negative nulldoca as the minimum drift distance
+        whstate.nulldvar_ = std::max(nulldoca_*nulldoca_,dinfo.driftDistance_*dinfo.driftDistance_)/3.0;
       if(mvaout > mvacut_){
         whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
       } else {
