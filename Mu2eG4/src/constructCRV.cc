@@ -40,7 +40,7 @@
 
 #include "Geant4/G4SDManager.hh"
 
-#include "TROOT.h"
+#include <sstream>
 
 using namespace std;
 
@@ -170,11 +170,14 @@ namespace mu2e
 
       //construct the mother solid for the CRV sector
       //by combining the solids of each layer using G4UnionSolids
+      ostringstream oss;
       G4VSolid *motherSolid=nullptr;
       for(size_t l=0; l<motherCenterInMu2e.size(); ++l)
       {
         //solid of one l-th layers of the CRV sector
-        G4VSolid *motherSolidPart=new G4Box(Form("%s_%s_%lu","CRSmotherSolidPart",CRVsectorName.c_str(),l),
+        oss.str("");
+        oss << "CRSmotherSolidPart_"<<CRVsectorName<<"_"<<l;
+        G4VSolid *motherSolidPart=new G4Box(oss.str(),
                                             motherHalfLengths[l][0],
                                             motherHalfLengths[l][1],
                                             motherHalfLengths[l][2]);
@@ -202,12 +205,16 @@ namespace mu2e
             }
           }
           //overlap solid that overlaps the l-th and (l+1)-th layer
-          G4VSolid *motherSolidOverlap=new G4Box(Form("%s_%s_%lu","CRSmotherSolidOverlap",CRVsectorName.c_str(),l),
+          oss.str("");
+          oss << "CRSmotherSolidOverlap_"<<CRVsectorName<<"_"<<l;
+          G4VSolid *motherSolidOverlap=new G4Box(oss.str(),
                                                  halfLengths[0],
                                                  halfLengths[1],
                                                  halfLengths[2]);
           //union of the solid of the l-th layer and the overlap solid
-          G4UnionSolid *motherSolidUnion=new G4UnionSolid(Form("%s_%s_%lu","CRSmotherSolidOverlapUnion",CRVsectorName.c_str(),l),
+          oss.str("");
+          oss << "CRSmotherSolidOverlapUnion_"<<CRVsectorName<<"_"<<l;
+          G4UnionSolid *motherSolidUnion=new G4UnionSolid(oss.str(),
                                                           motherSolidPart,motherSolidOverlap,nullptr,
                                                           centerInMu2e-motherCenterInMu2e[l]);
           motherSolidPart = motherSolidUnion;
@@ -218,7 +225,9 @@ namespace mu2e
           //union of the total mother solid and
           //-either the newly created union of the solid of the l-th layer and the overlap solid
           //-or the solid of the last layer
-          G4UnionSolid *motherSolidUnion=new G4UnionSolid(Form("%s_%s_%lu","CRSmotherSolidUnion",CRVsectorName.c_str(),l),
+          oss.str("");
+          oss << "CRSmotherSolidUnion_"<<CRVsectorName<<"_"<<l;
+          G4UnionSolid *motherSolidUnion=new G4UnionSolid(oss.str(),
                                                           motherSolid,motherSolidPart,nullptr,
                                                           motherCenterInMu2e[l]-motherCenterInMu2e[0]);
           motherSolidPart = motherSolidUnion;
@@ -252,7 +261,9 @@ namespace mu2e
       std::vector<G4LogicalVolume*> motherLayersLogical;
       for(size_t l=0; l<motherCenterInMu2e.size(); ++l)
       {
-        G4VSolid *motherLayerSolid=new G4Box(Form("%s_%s_%lu","CRSmotherLayer",CRVsectorName.c_str(),l),
+        oss.str("");
+        oss << "CRSmotherLayer_"<<CRVsectorName<<"_"<<l;
+        G4VSolid *motherLayerSolid=new G4Box(oss.str(),
                                              motherHalfLengths[l][0],
                                              motherHalfLengths[l][1],
                                              motherHalfLengths[l][2]);
