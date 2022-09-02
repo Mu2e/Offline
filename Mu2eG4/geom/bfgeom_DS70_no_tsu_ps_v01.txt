@@ -23,6 +23,7 @@ vector<string> bfield.innerMaps = {
   "BFieldMaps/Mau13/DSExtension.header"
 };
 
+double bfield.scaleFactor = 0.7;
 
 //
 // This tells emacs to view this file in c++ mode.
