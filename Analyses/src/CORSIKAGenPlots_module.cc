@@ -240,6 +240,8 @@ void mu2e::CORSIKAGenPlots::analyze(art::Event const & e)
         _hPtypeKE->Fill(mom4.e(), 6); break;
       case PDGCode::K0: // k0
         _hPtypeKE->Fill(mom4.e(), 6); break;
+      case PDGCode::anti_K0: // anti k0
+        _hPtypeKE->Fill(mom4.e(), 6); break;
       case PDGCode::K_plus: // k+
         _hPtypeKE->Fill(mom4.e(), 6); break;
       case PDGCode::K_minus: // k-
