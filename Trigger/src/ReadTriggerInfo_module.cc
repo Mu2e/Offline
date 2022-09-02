@@ -47,6 +47,7 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
@@ -935,10 +936,10 @@ namespace mu2e {
           int   pdg = step->simParticle()->pdgId();
           float p   = step->momentum().mag();
 
-          if ( (pdg == 11) && (p>=pCEleCuts[0]) && (p<=pCEleCuts[1])){
+          if ( (pdg == PDGCode::e_minus) && (p>=pCEleCuts[0]) && (p<=pCEleCuts[1])){
             _sumHist._hTrigInfo[18]->Fill(_nPOT);
             break;
-          }else if ( (pdg == -11) && (p>=pCPosCuts[0]) && (p<=pCPosCuts[1])){
+          }else if ( (pdg == PDGCode::e_plus) && (p>=pCPosCuts[0]) && (p<=pCPosCuts[1])){
             _sumHist._hTrigInfo[18]->Fill(_nPOT);
             break;
           }
@@ -1438,7 +1439,7 @@ namespace mu2e {
 
         int   indexMother(-1);
 
-        if (pdgM == 13){ //negative muon
+        if (pdgM == PDGCode::mu_minus){ //negative muon
           XYZVectorF  mother_origin;
           mother_origin.SetX(mother->startPosition().x()+3904);
           mother_origin.SetY(mother->startPosition().y());
@@ -1456,17 +1457,17 @@ namespace mu2e {
           }else{//case 2: negative cosmic muon
             indexMother = 20;
           }
-        }else if (pdgM == -13){//case 3: positive muon
+        }else if (pdgM == PDGCode::mu_plus){//case 3: positive muon
           indexMother = 30;
-        }else if (pdgM == 22){//case 4: photon
+        }else if (pdgM == PDGCode::gamma){//case 4: photon
           indexMother = 50;
-        }else if (pdgM == 2212){//case 5: proton
+        }else if (pdgM == PDGCode::proton){//case 5: proton
           indexMother = 60;
-        }else if (pdgM == 2112){ //case 6: neutron
+        }else if (pdgM == PDGCode::n0){ //case 6: neutron
           indexMother = 70;
-        }else if (pdgM == -211){ //case 7: pi minus
+        }else if (pdgM == PDGCode::pi_minus){ //case 7: pi minus
           indexMother = 80;
-        }else if (pdgM == 211){ //case 8: pi plus
+        }else if (pdgM == PDGCode::pi_plus){ //case 8: pi plus
           indexMother = 90;
         }else if (pdgM == PDGCode::e_minus){ //case 9: electrons
           indexMother = 100;

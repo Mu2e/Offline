@@ -528,8 +528,8 @@ namespace mu2e {
             // very unfortunately implementation dependent: how many stages
             //
             // set these now, write them and initial proton momentum vector later
-            if (p.id().asInt() == 2000001 && p.pdgId() == -2212){
-              //              if (p.pdgId() == -2212){
+            if (p.id().asInt() == 2000001 && p.pdgId() == PDGCode::anti_proton){
+              //              if (p.pdgId() == PDGCode::anti_proton){
               _xStart = p.startPosition().x();
               _yStart = p.startPosition().y();
               _zStart = p.startPosition().z();
@@ -539,7 +539,7 @@ namespace mu2e {
               _endGlobalTime = p.endGlobalTime();
             }
 
-            if (_diagLevel > 2 && p.id().asInt() == 1000001 && p.pdgId() == -2212){
+            if (_diagLevel > 2 && p.id().asInt() == 1000001 && p.pdgId() == PDGCode::anti_proton){
               std::cout<<" id = "<<p.id()
                        <<", parent="<<p.parentId()
                        <<", pdgId="<<p.pdgId()
@@ -577,7 +577,7 @@ namespace mu2e {
 
          //
         // if reading from file, the gen particle has the incoming pbar info. Use the fake z to distinguish.
-        if (iGen.pdgId() == -2212 && !_writeVertexFile && iGen.position().z() > 1000. ){
+        if (iGen.pdgId() == PDGCode::anti_proton && !_writeVertexFile && iGen.position().z() > 1000. ){
           _xStart = iGen.position().x();
           _yStart = iGen.position().y();
           _zStart = iGen.position().z();
@@ -589,7 +589,7 @@ namespace mu2e {
             std::cout << "initial pbar mom at stopping target = " << _pxStart << " " << _pyStart << " " << _pzStart << std::endl;
           }
         }
-        if (iGen.pdgId() == -2212 && iGen.position().z() < 1000.){
+        if (iGen.pdgId() == PDGCode::anti_proton && iGen.position().z() < 1000.){
           initialAntiProtonFourMomentum = iGen.momentum();
           _pxInitialAntiProton = iGen.momentum().x();
           _pyInitialAntiProton = iGen.momentum().y();
