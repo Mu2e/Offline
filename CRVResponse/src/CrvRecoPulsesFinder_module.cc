@@ -47,7 +47,7 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
-      fhicl::Atom<float> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //5.0
+      fhicl::Atom<float> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //40
       fhicl::Atom<float> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
       fhicl::Atom<float> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
       fhicl::Atom<float> maxBeta{Name("maxBeta"), Comment("largest accepted beta for valid fit [ns]")}; //50.0ns
@@ -55,9 +55,9 @@ namespace mu2e
       fhicl::Atom<float> minPulseHeightRatio{Name("minPulseHeightRatio"), Comment("smallest accepted ratio between largest ADC value and fitted peak")}; //0.7
       fhicl::Atom<float> maxPulseHeightRatio{Name("maxPulseHeightRatio"), Comment("largest accepted ratio between largest ADC value and fitted peak")}; //1.5
       fhicl::Atom<float> LEtimeFactor{Name("LEtimeFactor"), Comment("time of leading edge is peakTime-LEtimeFactor*beta (0.985,1.385,1.587 for a leading edge of 0.5,0.2,0.1 pulse height")};
-      fhicl::Atom<bool> allowDoubleGumbel{Name("allowDoubleGumbel"), Comment("tries fitting with two Gumbel functions")};
-      fhicl::Atom<float> doubleGumbelThreshold{Name("doubleGumbelThreshold"), Comment("Chi2/#ADCsamples (based on single Gumbel fit) at which a fit with two Gumbel functions should be attempted")};
-      fhicl::Atom<float> minPEs{Name("minPEs"), Comment("minimum number of PEs")}; //0
+      fhicl::Atom<float> pulseThreshold{Name("pulseThreshold"), Comment("fraction of ADC peak used as threshold to determine the pulse time interval for the no-fit option")}; //0.5
+      fhicl::Atom<float> pulseAreaThreshold{Name("pulseAreaThreshold"), Comment("threshold to determine the pulse area for the the no-fit option")}; //5
+      fhicl::Atom<float> doublePulseSeparation{Name("doublePulseSeparation"), Comment("fraction of both peaks at which double pulses can be separated in the no-fit option")}; //0.25
       fhicl::Atom<art::InputTag> protonBunchTimeTag{ Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer" };
     };
 
@@ -73,7 +73,6 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvDigiModuleLabel;
-    float       _minPEs;
     float       _digitizationPeriod;
     float       _pedestal;           //100 ADC
     float       _calibrationFactor;  //394.6 ADC*ns/PE
@@ -85,7 +84,6 @@ namespace mu2e
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(const Parameters& conf) :
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
-    _minPEs(conf().minPEs()),
     _protonBunchTimeTag(conf().protonBunchTimeTag())
   {
     produces<CrvRecoPulseCollection>();
@@ -97,8 +95,9 @@ namespace mu2e
                                                                                                     conf().minPulseHeightRatio(),
                                                                                                     conf().maxPulseHeightRatio(),
                                                                                                     conf().LEtimeFactor(),
-                                                                                                    conf().allowDoubleGumbel(),
-                                                                                                    conf().doubleGumbelThreshold()));
+                                                                                                    conf().pulseThreshold(),
+                                                                                                    conf().pulseAreaThreshold(),
+                                                                                                    conf().doublePulseSeparation()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -136,7 +135,7 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = digi.GetScintillatorBarIndex();
       int SiPM = digi.GetSiPMNumber();
       unsigned int startTDC = digi.GetStartTDC();
-      std::vector<unsigned int> ADCs;
+      std::vector<unsigned int> ADCs;  //FIXME
       std::vector<size_t> waveformIndices;
       for(size_t i=0; i<CrvDigi::NSamples; ++i) ADCs.push_back(digi.GetADCs()[i]);
       waveformIndices.push_back(waveformIndex);
@@ -169,15 +168,18 @@ namespace mu2e
         float  pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2s().at(j);
 
         bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
+        bool   duplicateNoFitPulse    = _makeCrvRecoPulses->GetDuplicateNoFitPulses().at(j);
+        bool   separatedDoublePulse   = _makeCrvRecoPulses->GetSeparatedDoublePulses().at(j);
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
+        if(duplicateNoFitPulse)    flags.set(CrvRecoPulseFlagEnums::duplicateNoFitPulse);
+        if(separatedDoublePulse)   flags.set(CrvRecoPulseFlagEnums::separatedDoublePulse);
 
         float  PEsNoFit          = _makeCrvRecoPulses->GetPEsNoFit().at(j);
         double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time;
         double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time;
         double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time;
 
-        if(PEs<_minPEs) continue;
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
                                              PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
                                              waveformIndices, barIndex, SiPM);
