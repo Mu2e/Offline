@@ -62,6 +62,7 @@
 #include <cmath>
 // #include <iostream>
 #include <string>
+#include <sstream>
 // #include <map>
 #include <vector>
 
@@ -967,7 +968,9 @@ namespace mu2e {
     }
 
     //get the TriggerResult
-    art::InputTag const tag{Form("TriggerResults::%s", _processName.c_str())};
+    std::ostringstream oss;
+    oss << "TriggerResults::"<<_processName;
+    art::InputTag const tag{oss.str()};
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
     TriggerResultsNavigator   trigNavig(trigResults);
