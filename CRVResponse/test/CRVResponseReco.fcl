@@ -15,11 +15,12 @@ source :
 
 services :
 {
-  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
-  GeometryService        : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }
-  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
-  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
-  SeedService            : @local::automaticSeeds
+#  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
+#  GeometryService        : { inputFile : "Offline/Mu2eG4/geom/geom_common.txt" }
+#  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
+#  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+#  SeedService            : @local::automaticSeeds
+  @table::Services.SimAndReco
 }
 
 physics :
@@ -48,6 +49,7 @@ outputs:
 }
 
 physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets  : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+physics.producers.CrvRecoPulses.crvDigiModuleLabel        : "SelectRecoMC"
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
