@@ -20,6 +20,7 @@
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 using namespace std;
 
@@ -597,7 +598,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // set 1: electrons
 //-----------------------------------------------------------------------------
-      if (mc->fPdgID == 11) {
+      if (mc->fPdgID == PDGCode::e_minus) {
         fillMcHistograms(_hist.fMc[1],mc);
 
         if (mc->Time() > 550) {
@@ -760,7 +761,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // count CE hits
 //-----------------------------------------------------------------------------
-            if ((mc->fPdgID == 11) && (mc->fStartMom > 95) && (mc->fStartMom <110)) {
+            if ((mc->fPdgID == PDGCode::e_minus) && (mc->fStartMom > 95) && (mc->fStartMom <110)) {
               seed->fNHitsCE += 1;
               if (seed->fDeltaIndex >= 0) {
                 DeltaCandidate* dc = &_data->deltaCandidateHolder[seed->fDeltaIndex];
@@ -863,7 +864,7 @@ namespace mu2e {
         if (hit->fDeltaIndex >= 0) mc->fNHitsDelta += 1;
       }
 
-      if (mc->fPdgID == 11) {
+      if (mc->fPdgID == PDGCode::e_minus) {
         float mom = mc->Momentum();
         if (mom < 20) {
           _nDeltaHitsTot  += mc->NHits();
@@ -1017,7 +1018,7 @@ namespace mu2e {
       for (int i=0; i<nmc; i++) {
         McPart_t* mc = _list_of_mc_particles.at(i);
 
-        if ((mc->fPdgID     == 11                     ) &&
+        if ((mc->fPdgID     == PDGCode::e_minus       ) &&
             (mc->Time()     > 550                     ) &&
             (mc->Momentum() >  _printElectronsMinMom  ) &&
             (mc->Momentum() <  _printElectronsMaxMom  ) &&

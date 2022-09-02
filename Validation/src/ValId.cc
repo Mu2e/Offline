@@ -1,5 +1,5 @@
-
 #include "Offline/Validation/inc/ValId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 int mu2e::ValId::declare(const art::TFileDirectory& tfs, std::string name,
                          std::string title) {
@@ -26,21 +26,21 @@ int mu2e::ValId::compress(int id) {
   int sign = (aid == 0 ? 1 : id / aid);
   if (aid < 30) {
     code = id;
-  } else if (aid == 111) {  // pi0
+  } else if (aid == PDGCode::pi0) {
     code = 30;
-  } else if (aid == 211) {  // pi+/-
+  } else if (aid == PDGCode::pi_plus) {
     code = sign * 31;
-  } else if (aid == 130) {  // K_L^0
+  } else if (aid == PDGCode::K_L0) {
     code = sign * 32;
-  } else if (aid == 310) {  // K_S^0
+  } else if (aid == PDGCode::K_S0) {
     code = sign * 33;
-  } else if (aid == 321) {  // K+/-
+  } else if (aid == PDGCode::K_plus) {
     code = sign * 34;
-  } else if (aid == 2112) {  // n
+  } else if (aid == PDGCode::n0) {
     code = 40;
-  } else if (aid == 2212) {  // p+/-
+  } else if (aid == PDGCode::proton) {
     code = sign * 41;
-  } else if (aid > 1000000000) {  // excited nuclei
+  } else if (aid > PDGCode::G4Threshold) {  // excited nuclei
     code = sign * 51;
   } else if (q1 > 0 && q2 > 0 && q3 == 0 && rr < 1000) {  // meson
     int i = q2;

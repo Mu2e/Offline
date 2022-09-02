@@ -303,7 +303,7 @@ namespace mu2e {
 
     if(verbosityLevel_ > 2) std::cout << "pos " << pos_new << " mom " << mom_new << std::endl;
 
-    PDGCode::type pdgId = static_cast<PDGCode::type>(-2212);
+    PDGCode::type pdgId = PDGCode::anti_proton;
     const double mass = GlobalConstantsHandle<ParticleDataList>()->particle(pdgId).mass();
     const double energy = sqrt(mom_new.mag2() + mass*mass);
     CLHEP::HepLorentzVector fourmom(mom_new, energy);

@@ -20,6 +20,7 @@
 
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -119,7 +120,7 @@ namespace mu2e {
     auto particles = event.getValidHandle<SimParticleCollection>(particlesTag_);
     for(const auto& it: *particles) {
       const SimParticle& p = it.second;
-      if(p.pdgId() == -2212) {
+      if(p.pdgId() == PDGCode::anti_proton) {
         ++pbarCount;
 
         const CLHEP::Hep3Vector& mom = mu2eToTarget_momentum(p.startMomentum());
