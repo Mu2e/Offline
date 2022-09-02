@@ -52,7 +52,7 @@ Mu2eKinKal : {
       [ 1.0, 1 ]
     ]
      CAStrawHitUpdaterSettings : [
-       # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, null time mode
+       # mindoca, maxdoca, mindt, maxdt,tofreeze
       [ 100.0, 100.0, -5.0, 50.0, "" ],
       [ 100.0, 50.0, -5.0, 50.0, "" ],
       [ 100.0, 10.0, -5.0, 50.0, "" ]
@@ -84,16 +84,16 @@ Mu2eKinKal : {
       [ 0.0, 1 ]
     ]
      CAStrawHitUpdaterSettings : [
-       # mindoca, maxdoca, mindt, maxdt, unbiased DOCA?, null time mode
+       # mindoca, maxdoca, mindt, maxdt,tofreeze
       [ 10.0, 10.0, -5.0, 50.0, "" ],
       [ 5.0, 5.0, -2.0, 50.0, "" ],
       [ 5.0, 5.0, -2.0, 50.0, "Inactive" ]
     ]
     StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  variance scale, scale with temp?
+      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
       [10.0, -1.0, -1.0, true ],
-      [10.0, -1.0, -1.0, true ],
-      [10.0, -1.0, -1.0, true ]
+      [5.0, -1.0, -1.0, true ],
+      [3.0, 3.0, -1.0, true ]
     ]
   }
 
