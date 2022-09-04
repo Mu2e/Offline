@@ -21,16 +21,17 @@ namespace mu2e {
   WireHitState ANNStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable()){
-      std::vector<Float_t> pars(8,0.0);
+      std::vector<Float_t> pars(9,0.0);
       // this order is given by the training
       pars[0] = fabs(tpdata.doca());
       pars[1] = dinfo.driftDistance_;
       pars[2] = chit.driftTime();
       pars[3] = 1000.0*chit.energyDep();
-      pars[4] = tpdata.docaVar();
-      pars[5] = fabs(tpdata.dirDot());
-      pars[6] = fabs(tpdata.particlePoca().Vect().Z());
-      pars[7] = tpdata.particlePoca().Vect().Rho();
+      pars[4] = dinfo.driftDistance_-fabs(tpdata.doca());
+      pars[5] = sqrt(tpdata.docaVar());
+      pars[6] = fabs(tpdata.dirDot());
+      pars[7] = fabs(tpdata.particlePoca().Vect().Z());
+      pars[8] = tpdata.particlePoca().Vect().Rho();
       float mvaout = mva_->evalMVA(pars);
       whstate.algo_ = StrawHitUpdaters::ANN;
       if(nulldoca_ > 0.0)
