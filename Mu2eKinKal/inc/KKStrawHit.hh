@@ -147,7 +147,8 @@ namespace mu2e {
       CA ca = unbiasedClosestApproach();
       if(ca.usable()){
         if(cashu){
-          whstate_ = cashu->wireHitState(whstate_,ca.tpData());
+          auto dinfo = fillDriftInfo();
+          whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
           ++nupdaters;
         }
         if(annshu){

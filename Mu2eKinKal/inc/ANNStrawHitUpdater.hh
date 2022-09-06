@@ -27,6 +27,8 @@ namespace mu2e {
       double mvacut_; // cut value to decide if drift information is usable
       double nulldoca_; // null hit doca
       WHSMask freeze_; // states to freeze
+      double mintdrift_,maxtdrift_, maxdoca_; // outlier cuts
+      double maxresidpull_;
   };
 }
 #endif
