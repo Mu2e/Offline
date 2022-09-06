@@ -43,4 +43,8 @@ namespace mu2e {
     }
     return whstate;
   }
+  std::string const& BkgStrawHitUpdater::configDescription() {
+    static std::string descrip( " Weight file, ANN cut, states to freeze");
+    return descrip;
+  }
 }

@@ -33,6 +33,7 @@ namespace mu2e {
   class CombinatoricStrawHitUpdater {
     public:
       using CSHUConfig = std::tuple<unsigned,float,float,float,float,std::string,std::string,int>;
+      static std::string const& configDescription(); // description of the variables
       // struct to sort hit states by chisquared value
       struct ClusterStateComp {
         bool operator()(ClusterState const& a, ClusterState const& b)  const {

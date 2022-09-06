@@ -19,6 +19,7 @@ namespace mu2e {
   class BkgStrawHitUpdater {
     public:
       using BkgSHUConfig = std::tuple<std::string,float,std::string>;
+      static std::string const& configDescription(); // description of the variables
       BkgStrawHitUpdater() : mva_(0), mvacut_(0.0) {}
       BkgStrawHitUpdater(BkgSHUConfig const& bkgshuconfig);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;

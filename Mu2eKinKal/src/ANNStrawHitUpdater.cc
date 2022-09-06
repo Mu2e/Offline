@@ -7,11 +7,11 @@
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
-  ANNStrawHitUpdater::ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig) {
-    mva_  = new MVATools(std::get<0>(annshuconfig));
-    mvacut_ = std::get<1>(annshuconfig);
-    nulldoca_ = std::get<2>(annshuconfig);
-    std::string freeze = std::get<3>(annshuconfig);
+  ANNStrawHitUpdater::ANNStrawHitUpdater(ANNSHUConfig const& annshutuple) {
+    mva_  = new MVATools(std::get<0>(annshutuple));
+    mvacut_ = std::get<1>(annshutuple);
+    nulldoca_ = std::get<2>(annshutuple);
+    std::string freeze = std::get<3>(annshutuple);
     freeze_ = WHSMask(freeze);
     std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null doca" << nulldoca_ << " freezeing " << freeze_ << std::endl;
     mva_->initMVA();
@@ -21,6 +21,11 @@ namespace mu2e {
     maxtdrift_ = 48.0;
     maxdoca_ = 5.0;
     maxresidpull_ = 10.0;
+  }
+
+  std::string const& ANNStrawHitUpdater::configDescription() {
+    static std::string descrip( "Weight file, ANN cut, null hit doca, states to freeze");
+    return descrip;
   }
 
   WireHitState ANNStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {

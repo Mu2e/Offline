@@ -19,8 +19,9 @@ namespace mu2e {
   class ANNStrawHitUpdater {
     public:
       using ANNSHUConfig = std::tuple<std::string,float,float,std::string>;
+      static std::string const& configDescription(); // description of the variables
       ANNStrawHitUpdater() : mva_(0), mvacut_(0.0), nulldoca_(2.5) {}
-      ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig);
+      ANNStrawHitUpdater(ANNSHUConfig const& annshutuple);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
       MVATools* mva_; // neural net calculator
