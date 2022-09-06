@@ -12,6 +12,12 @@
 #include "KinKal/Fit/MetaIterConfig.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
+// updaters
+#include "Offline/Mu2eKinKal/inc/CAStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
 
@@ -31,26 +37,19 @@ namespace mu2e {
       fhicl::Atom<bool> bfieldCorr { Name("BFieldCorrection"), Comment("Apply correction for BField inhomogeneity") };
       fhicl::Atom<bool> ends { Name("ProcessEnds"), Comment("Process purely passive sites at the time range ends") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
-// Updater settings
-      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,int>>;
-      MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("MetaIteration sequence configuration parameters, format: \n"
-          " Temperature (dimensionless), StrawHitUpdater algorithm") };
-      using CAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string>>;
-      CAStrawHitUpdaterSettings cashuConfig{ Name("CAStrawHitUpdaterSettings"), Comment("CAStrawHitUpdater settings, format: \n"
-          " Minimum DOCA to use L/R ambiguity, Maximum wire DOCA to use hit, Minimum Dt to use hit, Maximum Dt to use a hit, States to freeze") };
+      // Updater settings
+      using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
+      MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
+      using CAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,std::string>>;
+      CAStrawHitUpdaterSettings cashuConfig{ Name("CAStrawHitUpdaterSettings"), Comment(CAStrawHitUpdater::configDescription()) };
       using ANNStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string>>;
-      ANNStrawHitUpdaterSettings annshuConfig{ Name("ANNStrawHitUpdaterSettings"), Comment("ANNStrawHitUpdater settings, format: \n"
-          " Weight file, ann cut,  hit mode, null hit doca, states to freeze") };
+      ANNStrawHitUpdaterSettings annshuConfig{ Name("ANNStrawHitUpdaterSettings"), Comment(ANNStrawHitUpdater::configDescription()) };
       using BkgStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string>>;
-      BkgStrawHitUpdaterSettings bkgshuConfig{ Name("BkgStrawHitUpdaterSettings"), Comment("BkgStrawHitUpdater settings, format: \n"
-          " Weight file, ann cut, states to freeze") };
+      BkgStrawHitUpdaterSettings bkgshuConfig{ Name("BkgStrawHitUpdaterSettings"), Comment(BkgStrawHitUpdater::configDescription()) };
       using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,std::string,std::string,int>>;
-      CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment("CombinatoricStrawHitUpdater settings, format: \n"
-          "Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allowed states, states to freeze, diag level") };
+      CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment(CombinatoricStrawHitUpdater::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool>>;
-      StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment("StrawXingUpdater settings, format: \n"
-          " Maximum DOCA to use straw material, Maximum DOCA to use unaveraged material,Maximum DOCA error to use unaveraged material, scale variance with annealing temp?") };
-      //NB: when new updaters are introduced their config must be added as a new tuple sequences
+      StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
     // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
@@ -78,7 +77,7 @@ namespace mu2e {
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
       fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
-   };
+    };
   }
 }
 #endif

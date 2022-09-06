@@ -1,11 +1,6 @@
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
-#include "Offline/Mu2eKinKal/inc/CAStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
-#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include <iostream>
 
 namespace mu2e {
@@ -31,7 +26,7 @@ namespace mu2e {
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig mconfig(std::get<0>(misetting));
         config.schedule_.push_back(mconfig);
-        shualg.push_back(std::get<1>(misetting));
+        shualg.push_back(static_cast<int>(StrawHitUpdaters::algo(std::get<1>(misetting))));
       }
       // create the updaters requested
       unsigned nptca, nnull, nann, nbkg, ncomb, nnone;
@@ -49,20 +44,20 @@ namespace mu2e {
       if(config.schedule_.size() != sxusettings.size())
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of KKStrawXing updaters" <<  std::endl;
       for( size_t imeta=0; imeta < config.schedule_.size(); ++imeta) {
-        auto ialg = shualg[imeta];
+        auto alg = shualg[imeta];
         auto& miconfig = config.schedule_[imeta];
-        if(ialg == StrawHitUpdaters::CA) {
+        if(alg == StrawHitUpdaters::CA) {
           miconfig.addUpdater(std::any(CAStrawHitUpdater(cashusettings.at(nptca++))));
-        } else if(ialg == StrawHitUpdaters::ANN) {
+        } else if(alg == StrawHitUpdaters::ANN) {
           miconfig.addUpdater(std::any(ANNStrawHitUpdater(annshusettings.at(nann++))));
-        } else if(ialg == StrawHitUpdaters::Bkg) {
+        } else if(alg == StrawHitUpdaters::Bkg) {
           miconfig.addUpdater(std::any(BkgStrawHitUpdater(bkgshusettings.at(nbkg++))));
-        } else if(ialg == StrawHitUpdaters::Combinatoric) {
+        } else if(alg == StrawHitUpdaters::Combinatoric) {
           miconfig.addUpdater(std::any(CombinatoricStrawHitUpdater(chusettings.at(ncomb++))));
-        } else if(ialg == StrawHitUpdaters::none) {
+        } else if(alg == StrawHitUpdaters::none) {
           ++nnone;
         } else {
-          throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown updater " << ialg << std::endl;
+          throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << alg << std::endl;
         }
         //StrawXing updater too; these must always be present
         miconfig.addUpdater(std::any(StrawXingUpdater(sxusettings.at(imeta))));

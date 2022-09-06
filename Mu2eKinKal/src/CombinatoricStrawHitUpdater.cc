@@ -75,4 +75,10 @@ namespace mu2e {
     return os;
   }
 
-}
+  std::string const& CombinatoricStrawHitUpdater::configDescription() {
+    static std::string descrip("Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allowed states, states to freeze, diag level");
+
+    return descrip;
+  }
+
+          }
