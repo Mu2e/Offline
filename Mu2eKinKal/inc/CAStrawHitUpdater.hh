@@ -6,6 +6,7 @@
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/WHSMask.hh"
+#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include <tuple>
 #include <string>
@@ -16,20 +17,15 @@ namespace mu2e {
   class CAStrawHitUpdater {
     public:
       using CASHUConfig = std::tuple<float,float,float,float,std::string>;
-      CAStrawHitUpdater() : mindoca_(0), maxdoca_(0), mindt_(0), maxdt_(0) {}
+      CAStrawHitUpdater() : mindoca_(0), maxdoca_(0), minrdrift_(0), maxrdrift_(0) {}
       CAStrawHitUpdater(CASHUConfig const& cashuconfig);
       // set the state based on the current PTCA value
-      WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata) const;
-      // accessors
-      auto minDOCA() const { return mindoca_; }
-      auto maxDOCA() const { return maxdoca_; }
-      auto minDt() const { return maxdt_; }
-      auto maxDt() const { return maxdt_; }
+      WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata,DriftInfo const& dinfo) const;
     private:
       double mindoca_; // minimum DOCA to use drift information
       double maxdoca_; // maximum DOCA to still use a hit; beyond this it is forced inactive
-      double mindt_; // maximum dt to use drift information
-      double maxdt_; // maximum dt to use drift information
+      double minrdrift_; // minimum rdrift to use drift information
+      double maxrdrift_; // maximum rdrift to use drift information
       WHSMask freeze_; // states to freeze
   };
 }
