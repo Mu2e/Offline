@@ -4,7 +4,7 @@
 # services.DbService.purpose: MDC2020_perfect
 # services.DbService.version: v1_0
 #
-# To conver the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
+# To convert the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
 # physics.producers.KKDeMDriftFit.module_type : CentralHelixFit
 
 #include "Offline/fcl/minimalMessageService.fcl"
