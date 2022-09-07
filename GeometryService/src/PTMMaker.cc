@@ -18,6 +18,8 @@
 using namespace std;
 namespace mu2e {
   std::unique_ptr<PTM> PTMMaker::make(SimpleConfig const& _config) {
+    int version = _config.getInt("PTM.version");
+
     double xPosInMu2e = _config.getDouble("PTM.positionX");
     double yPosInMu2e = _config.getDouble("PTM.positionY");
     double zPosInMu2e = _config.getDouble("PTM.positionZ");
@@ -188,7 +190,7 @@ namespace mu2e {
     wedgeVertices.push_back(CLHEP::Hep2Vector(0.5*wedgeLength, wedgeMinHeight-(0.5*wedgeMaxHeight)));
     // top left
     wedgeVertices.push_back(CLHEP::Hep2Vector(-0.5*wedgeLength, 0.5*wedgeMaxHeight));
-    
+
     // position of wedge is right under the "head"
     // TODO: once you have the right position for this, put it in the config file and have it be independent of the other things
     double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg)) - wedgeShiftDown;
@@ -235,7 +237,7 @@ namespace mu2e {
           columnRotations,
           columnMaterialName,
           wedgeMaterialName));
-    std::unique_ptr<PTM> ptmon(new PTM(originInMu2e, rotationInMu2e, ptmStand, ptmHead));
+    std::unique_ptr<PTM> ptmon(new PTM(version, originInMu2e, rotationInMu2e, ptmStand, ptmHead));
     return ptmon;
   } // PTMMaker::make()
 
