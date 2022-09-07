@@ -4,15 +4,19 @@
 // Original author D. Brown (LBNL) 11/18/20
 //
 #include "KinKal/Trajectory/CentralHelix.hh"
+#include "KinKal/General/Parameters.hh"
+#include "KinKal/General/Vectors.hh"
 using KTRAJ= KinKal::CentralHelix; // this must come before HelixFit
 #include "Offline/Mu2eKinKal/inc/HelixFit_module.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 
 namespace mu2e {
+  using KinKal::DVEC;
+  using KinKal::VEC3;
   class CentralHelixFit : public HelixFit {
     public:
-      explicit CentralHelixFit(const GlobalSettings& settings) :
+      explicit CentralHelixFit(const Parameters& settings) :
         HelixFit(settings,TrkFitFlag::KKCentralHelix) {}
       // parameter-specific functions
       KTRAJ makeSeedTraj(HelixSeed const& hseed) const override;
@@ -63,7 +67,7 @@ namespace mu2e {
     pars[KTRAJ::z0_] = dphi*pars[KTRAJ::tanDip_]/pars[KTRAJ::omega_];
     pars[KTRAJ::t0_] = hseed.t0().t0();
     // create the initial trajectory
-    Parameters kkpars(pars,seedcov_);
+    KinKal::Parameters kkpars(pars,seedcov_);
     //  construct the seed trajectory (infinite initial time range)
     return KTRAJ(kkpars, mass_, charge_, bcent.Z(), TimeRange(tmin,tmax));
   }

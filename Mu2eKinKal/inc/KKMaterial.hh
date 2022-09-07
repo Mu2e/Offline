@@ -4,7 +4,6 @@
 //  build KinKal fit configuration objects from art parameter configuration
 //
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
 // KinKal
