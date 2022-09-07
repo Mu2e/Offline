@@ -21,6 +21,8 @@ namespace mu2e {
 
   public:
     static std::unique_ptr<PTM> make(SimpleConfig const& config);
+    static std::unique_ptr<PTM> makeWithBasicStand(SimpleConfig const& config);
+    static std::unique_ptr<PTM> makeFloatingPWCs(SimpleConfig const& config);
   };
 
 } // namespace mu2e
