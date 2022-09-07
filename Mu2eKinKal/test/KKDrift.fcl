@@ -64,7 +64,6 @@ outputs : {
 
 
 #include "Production/JobConfig/reco/epilog.fcl"
-
 services.ProditionsService.strawResponse.useOldDrift: false
 services.ProditionsService.strawResponse.driftFit : [0.0,1.0,0.001]
 services.ProditionsService.strawResponse.driftResIsTime : false

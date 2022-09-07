@@ -10,7 +10,7 @@ namespace mu2e {
     maxrdrift_ = std::get<2>(cashuconfig);
     std::string freeze = std::get<3>(cashuconfig);
     freeze_ = WHSMask(freeze);
-    std::cout << "CAStrawHitUpdater max doca" << maxdoca_ << " rdrift range [" << minrdrift_ << "," << maxrdrift_ << "] Freezing " << freeze_ << std::endl;
+    std::cout << "CAStrawHitUpdater max doca " << maxdoca_ << " rdrift range [" << minrdrift_ << "," << maxrdrift_ << "] Freezing " << freeze_ << std::endl;
   }
 
   WireHitState CAStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata,DriftInfo const& dinfo) const {

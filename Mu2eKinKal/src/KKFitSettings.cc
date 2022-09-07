@@ -26,7 +26,10 @@ namespace mu2e {
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig mconfig(std::get<0>(misetting));
         config.schedule_.push_back(mconfig);
-        shualg.push_back(static_cast<int>(StrawHitUpdaters::algo(std::get<1>(misetting))));
+        auto alg = StrawHitUpdaters::algo(std::get<1>(misetting));
+        if(alg == StrawHitUpdaters::unknown)
+          throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << std::get<1>(misetting) << std::endl;
+        shualg.push_back(static_cast<int>(alg));
       }
       // create the updaters requested
       unsigned nptca, nnull, nann, nbkg, ncomb, nnone;

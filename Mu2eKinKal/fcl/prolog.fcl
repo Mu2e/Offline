@@ -114,61 +114,52 @@ Mu2eKinKal : {
       [ 2.0, "ClosestApproach" ],
       [ 1.0, "ClosestApproach" ],
       [ 0.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 0.5, "ClosestApproach" ],
-      [ 0.0, "ClosestApproach" ]
+      [ 0.6, "ANN" ],
+      [ 0.6, "Combinatoric" ],
+      [ 0.6, "Combinatoric" ],
+      [ 0.6, "Combinatoric" ],
+      [ 0.6, "Combinatoric" ],
+      [ 0.6, "Combinatoric" ],
+      [ 0.6, "ClosestApproach" ],
+      [ 0.6, "Combinatoric" ],
+      [ 0.6, "Combinatoric" ]
     ]
     CAStrawHitUpdaterSettings : [
       # maxdoca, minrdrift, maxrdrift,tofreeze
       [ 10.0, 5.0, 5.0, "" ],
-      [ 10.0, 5.0, 4.0, "" ],
-      [ 10.0, 5.0, 3.0, "" ],
-      [ 10.0, 2.0, 3.0, "" ],
-      [ 8.0, 1.5, 3.0, "" ],
-      [ 8.0, 1.0, 3.0, "" ],
-      [ 8.0, 0.5, 3.0, "" ],
-      [ 8.0, 0.4, 3.0, "" ],
-      [ 8.0, 0.3, 2.8, "" ],
-      [ 8.0, 0.2, 2.8, "" ],
-      [ 5.0, 0.1, 2.8, "" ],
-      [ 5.0, 0.05, 2.8, "" ],
-      [ 5.0, 0.05, 2.8, "" ],
-      [ 5.0, 0.05, 2.8, "" ]
+      [ 10.0, 5.0, 5.0, "" ],
+      [ 10.0, 5.0, 3.0, "Inactive" ],
+      [ 8.0, 0.5, 3.0, "Inactive" ]
+    ]
+    ANNStrawHitUpdaterSettings : [
+      [ "Offline/Mu2eKinKal/data/LR_constant_Seed.weights.xml",0.95,1.5,"Drift"]
+    ]
+    CombinatoricStrawHitUpdaterSettings : [
+      # mincsize, inactivep, nullp, mindchi2, mindoca, allow, freeze, diag
+      [ 2, 25.0, 3.0, 3.0, 1.5, "Drift:Null:Inactive", "Drift", 0 ],
+      [ 1, 25.0, 3.0, 3.0, 1.5, "Drift:Null:Inactive", "", 0 ],
+      [ 1, 25.0, 3.0, 3.0, 0.8, "Drift:Null:Inactive", "", 0 ],
+      [ 1, 25.0, 3.0, 2.0, 0.6, "Drift:Null:Inactive", "", 0 ],
+      [ 1, 25.0, 3.0, 1.0, 0.4, "Drift:Null:Inactive", "Drift", 0 ],
+      [ 1, 50.0, 5.0, 1.0, 0.25, "Drift:Inactive", "", 0 ],
+      [ 1, 50.0, 5.0, 1.0, 0.1, "Drift:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [10.0, -1.0, -1.0, true ],
-      [5.0, -1.0, -1.0, true ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ],
-      [3.0, 2.5, 1.0,  false ]
+      [ 10.0, -1.0, -1.0, true ],
+      [ 5.0, -1.0, -1.0, true ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ],
+      [ 3.0, 2.5, 1.0,  false ]
     ]
-    # CombinatoricStrawHitUpdaterSettings : [
-    # mincsize, inactivep, nullp, mindchi2, nulldoca, allowedstates, freezestates, diag
-    # [1, 50.0, 10.0, 0.0, 0.4, "DriftNull", "Drift", 0]
-    # ]
   }
-  #      [ 100.0  ],
-  #      [  50.0  ],
-  #      [  10.0  ]
-  #    ]
 
   KKLOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
@@ -186,8 +177,8 @@ Mu2eKinKal : {
     SaveFullFit : true
     #    ZSavePositions : [-1522.0,0.0,1522.0]
   }
-
 }
+
 Mu2eKinKal : {
   @table::Mu2eKinKal
 
