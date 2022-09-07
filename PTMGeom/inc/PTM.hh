@@ -21,11 +21,14 @@ namespace mu2e {
   class PTM : virtual public Detector {
 
   public:
-    PTM(CLHEP::Hep3Vector const& originInMu2e,
+    PTM(int version,
+          CLHEP::Hep3Vector const& originInMu2e,
           CLHEP::HepRotation const& rotationInMu2e,
           std::shared_ptr<PTMStand> ptmStand,
           std::shared_ptr<PTMHead> ptmHead);
     PTM() {}
+
+    int version() const { return _version; }
 
     CLHEP::Hep3Vector const &  originInMu2e()   const { return _originInMu2e; }
     CLHEP::HepRotation const & rotationInMu2e() const { return _rotationInMu2e; }
@@ -41,6 +44,8 @@ namespace mu2e {
 
 
   private:
+    int _version;
+
     CLHEP::Hep3Vector _originInMu2e;
     CLHEP::HepRotation _rotationInMu2e;
 
