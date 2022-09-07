@@ -13,7 +13,7 @@ namespace mu2e {
     nulldoca_ = std::get<2>(annshutuple);
     std::string freeze = std::get<3>(annshutuple);
     freeze_ = WHSMask(freeze);
-    std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null doca" << nulldoca_ << " freezeing " << freeze_ << std::endl;
+    std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null doca " << nulldoca_ << " freezeing " << freeze_ << std::endl;
     mva_->initMVA();
     mva_->showMVA();
     // outlier cuts: for now hardcode.  These should come from a central source FIXME

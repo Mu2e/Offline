@@ -5,10 +5,10 @@ namespace mu2e {
     return names_[static_cast<size_t>(alg)];
   }
   StrawHitUpdaters::algorithm StrawHitUpdaters::algo(std::string const& name) {
-    for(size_t alg=1; alg < StrawHitUpdaters::nalgos;++alg){
+    for(size_t alg=0; alg < StrawHitUpdaters::nalgos;++alg){
       if(names_[alg].compare(name)==0)
         return static_cast<StrawHitUpdaters::algorithm>(alg);
     }
-    return StrawHitUpdaters::none;
+    return StrawHitUpdaters::unknown;
   }
 }
