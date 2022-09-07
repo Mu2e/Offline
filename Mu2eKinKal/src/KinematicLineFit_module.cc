@@ -83,7 +83,6 @@ namespace mu2e {
   using EXINGCOL = std::vector<EXINGPTR>;
   using KKFIT = mu2e::KKFit<KTRAJ>;
   using KinKal::DVEC;
-  using KinKal::Parameters;
   using KinKal::VEC3;
   using KinKal::TimeRange;
   using KinKal::DMAT;
@@ -123,10 +122,10 @@ namespace mu2e {
       //      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
       //      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
     };
-    using GlobalSettings = art::EDProducer::Table<GlobalConfig>;
 
     public:
-    explicit KinematicLineFit(const GlobalSettings& settings);
+    using Parameters = art::EDProducer::Table<GlobalConfig>;
+    explicit KinematicLineFit(const Parameters& settings);
     virtual ~KinematicLineFit();
     void beginRun(art::Run& run) override;
     void produce(art::Event& event) override;
@@ -154,7 +153,7 @@ namespace mu2e {
     Config exconfig_; // extension configuration object
   };
 
-  KinematicLineFit::KinematicLineFit(const GlobalSettings& settings) : art::EDProducer{settings},
+  KinematicLineFit::KinematicLineFit(const Parameters& settings) : art::EDProducer{settings},
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
     goodline_(settings().modSettings().lineFlags()),
@@ -314,7 +313,7 @@ namespace mu2e {
     pars[KTRAJ::mom_] = get<5>(info); //TODO
 
     // create the initial trajectory
-    Parameters kkpars(pars,seedcov_); //TODO seedcov
+    KinKal::Parameters kkpars(pars,seedcov_); //TODO seedcov
     //  construct the seed trajectory
     return KTRAJ(kkpars, mass_, charge_, bnom, TimeRange()); //TODO: better constructor
   }

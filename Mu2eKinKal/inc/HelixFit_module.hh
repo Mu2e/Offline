@@ -41,7 +41,6 @@
 #include "KinKal/Fit/Config.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "KinKal/General/Parameters.hh"
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
@@ -74,25 +73,12 @@ namespace mu2e {
   using KKSTRAWXING = KKStrawXing<KTRAJ>;
   using KKSTRAWXINGPTR = std::shared_ptr<KKSTRAWXING>;
   using KKSTRAWXINGCOL = std::vector<KKSTRAWXINGPTR>;
-  using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
-  using KKSTRAWHITCLUSTERPTR = std::shared_ptr<KKSTRAWHITCLUSTER>;
-  using KKSTRAWHITCLUSTERCOL = std::vector<KKSTRAWHITCLUSTERPTR>;
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
-  using MEAS = KinKal::Hit<KTRAJ>;
-  using MEASPTR = std::shared_ptr<MEAS>;
-  using MEASCOL = std::vector<MEASPTR>;
-  using EXING = KinKal::ElementXing<KTRAJ>;
-  using EXINGPTR = std::shared_ptr<EXING>;
-  using EXINGCOL = std::vector<EXINGPTR>;
   using KKFIT = KKFit<KTRAJ>;
-  using KinKal::DVEC;
-  using KinKal::Parameters;
   using KinKal::VEC3;
-  using KinKal::TimeRange;
   using KinKal::DMAT;
-  using KinKal::Status;
   using HPtr = art::Ptr<HelixSeed>;
   using CCPtr = art::Ptr<CaloCluster>;
   using CCHandle = art::ValidHandle<CaloClusterCollection>;
@@ -129,8 +115,8 @@ namespace mu2e {
 
   class HelixFit : public art::EDProducer {
     public:
-      using GlobalSettings = art::EDProducer::Table<GlobalConfig>;
-      explicit HelixFit(const GlobalSettings& settings,TrkFitFlag fitflag);
+      using Parameters = art::EDProducer::Table<GlobalConfig>;
+      explicit HelixFit(const Parameters& settings,TrkFitFlag fitflag);
       virtual ~HelixFit() {}
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
@@ -162,7 +148,7 @@ namespace mu2e {
       bool fixedfield_; //
   };
 
-  HelixFit::HelixFit(const GlobalSettings& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
+  HelixFit::HelixFit(const Parameters& settings,TrkFitFlag fitflag) : art::EDProducer{settings},
     fitflag_(fitflag),
     chcol_T_(consumes<ComboHitCollection>(settings().modSettings().comboHitCollection())),
     cccol_T_(mayConsume<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),

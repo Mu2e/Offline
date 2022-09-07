@@ -6,7 +6,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalSequence.h"
-#include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "KinKal/Fit/Config.hh"
 #include "KinKal/Fit/MetaIterConfig.hh"
