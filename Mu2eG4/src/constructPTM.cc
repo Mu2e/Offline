@@ -24,6 +24,7 @@
 #include "Offline/PTMGeom/inc/PTM.hh"
 #include "Offline/PTMGeom/inc/PTMPWC.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
+#include "Offline/Mu2eG4/inc/constructPTM.hh"
 
 // G4 inludes
 #include "G4Material.hh"
@@ -45,6 +46,16 @@
 using namespace std;
 
 namespace mu2e {
+
+  void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config) {
+    if (_config.getInt("PTM.version") == 1) {
+        constructPTMFloatingPWCs(parent, _config);
+    } else if (_config.getInt("PTM.version") == 2) {
+        constructPTMWithBasicStand(parent, _config);
+    } else {
+        throw cet::exception("GEOM") << " illegal PTM version specified = " << _config.getInt("PTM.version")  << std::endl;
+    }
+  }
 
   void insertOuterFrame(VolumeInfo const& container,
                         const PTMPWC* pwc) {
@@ -715,7 +726,7 @@ namespace mu2e {
   }
 
 
-  void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config) {
+  void constructPTMWithBasicStand(VolumeInfo const& parent, SimpleConfig const& _config) {
 
     GeomHandle<PTM> ptmon;
     // collect geomOptions
@@ -799,6 +810,49 @@ namespace mu2e {
                           _config);
 
     constructStand(pTargetMonMain, ptmon->ptmStand(), _config);
+
+  } // constructWithBasicStand
+
+
+  void constructPTMFloatingPWCs(VolumeInfo const& parent, SimpleConfig const& _config) {
+
+    GeomHandle<PTM> ptmon;
+
+    // create and place the mother volume first
+    AntiLeakRegistry& reg = art::ServiceHandle<Mu2eG4Helper>()->antiLeakRegistry();
+    G4ThreeVector parentPosition = parent.centerInMu2e();
+    G4RotationMatrix* parentRotation = parent.physical->GetObjectRotation();
+    G4ThreeVector motherPosition = ptmon->originInMu2e() - parentPosition;
+    // try making the rotation matrix object first, then doing the
+    // main rotation, then un-rotating by whatever the parent's rotation is
+    G4RotationMatrix* motherRotation;
+    if (parentRotation->isIdentity()) {
+      motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
+    } else {
+      motherRotation = reg.add(new G4RotationMatrix(ptmon->rotationInMu2e()));
+      motherRotation->transform(parentRotation->inverse());
+    }
+
+    G4Material* motherMaterial = parent.logical->GetMaterial();
+    std::vector<double> motherHalfDims;
+    motherHalfDims.push_back(ptmon->totalWidth()/2.);
+    motherHalfDims.push_back(ptmon->totalHeight()/2.);
+    motherHalfDims.push_back(ptmon->totalLength()/2.);
+
+    VolumeInfo pTargetMonContainer = nestBox("PTMMother",
+                motherHalfDims,
+                motherMaterial,
+                motherRotation,
+                motherPosition,
+                parent,
+                0,
+                G4Colour::Green(),
+                "PTM");
+
+    // add the first PWC to the mother volume
+    constructTargetHallPWC(pTargetMonContainer, ptmon->nearPWC(), VirtualDetectorId::PTM_1_In, _config);
+    // and the second PWC
+    constructTargetHallPWC(pTargetMonContainer, ptmon->farPWC(), VirtualDetectorId::PTM_2_In, _config);
 
   } // constructPTM
 
