@@ -21,7 +21,12 @@ namespace mu2e {
       using ANNSHUConfig = std::tuple<std::string,float,float,std::string>;
       static std::string const& configDescription(); // description of the variables
       ANNStrawHitUpdater() : mva_(0), mvacut_(0.0), nulldoca_(2.5) {}
-      ANNStrawHitUpdater(ANNSHUConfig const& annshutuple);
+      ANNStrawHitUpdater(ANNStrawHitUpdater const& other) : mva_(0), mvacut_(other.mvacut_), nulldoca_(other.nulldoca_), freeze_(other.freeze_),
+      mintdrift_(other.mintdrift_), maxtdrift_(other.maxtdrift_), maxdoca_(other.maxdoca_), maxresidpull_(other.maxresidpull_) {
+        if(other.mva_) mva_ = new MVATools(*other.mva_);
+      }
+      ~ANNStrawHitUpdater() { delete mva_; }
+      ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
       MVATools* mva_; // neural net calculator

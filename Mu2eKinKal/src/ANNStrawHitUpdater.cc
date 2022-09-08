@@ -7,11 +7,11 @@
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
-  ANNStrawHitUpdater::ANNStrawHitUpdater(ANNSHUConfig const& annshutuple) {
-    mva_  = new MVATools(std::get<0>(annshutuple));
-    mvacut_ = std::get<1>(annshutuple);
-    nulldoca_ = std::get<2>(annshutuple);
-    std::string freeze = std::get<3>(annshutuple);
+  ANNStrawHitUpdater::ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig) {
+    mva_  = new MVATools(std::get<0>(annshuconfig));
+    mvacut_ = std::get<1>(annshuconfig);
+    nulldoca_ = std::get<2>(annshuconfig);
+    std::string freeze = std::get<3>(annshuconfig);
     freeze_ = WHSMask(freeze);
     std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null doca " << nulldoca_ << " freezeing " << freeze_ << std::endl;
     mva_->initMVA();
