@@ -3,8 +3,7 @@
 //
 //
 
-//#include "Offline/Mu2eG4/geom/geom_common_current.txt" # DO NOT COMMIT
-#include "Offline/Mu2eG4/geom/geom_common.txt" # DO NOT COMMIT
+#include "Offline/Mu2eG4/geom/geom_common_current.txt"
 
 
 bool g4.doSurfaceCheck    = true;
