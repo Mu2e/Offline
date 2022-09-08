@@ -5,7 +5,6 @@
 
 #include "Offline/Mu2eG4/geom/geom_common_current.txt"
 
-
 bool g4.doSurfaceCheck    = true;
 
 // number of random points on the volume surface
