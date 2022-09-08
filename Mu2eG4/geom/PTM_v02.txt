@@ -41,7 +41,7 @@ int PTM.framesInDetector = 13;
 int PTM.outerPlatesInDetector = 2;
 
 // Window / conducting plane positions:
-// The following position values are in units of frame thicknesses from the 
+// The following position values are in units of frame thicknesses from the
 // center of the detector. Each window is epoxied to the downstream side of its
 // frame. The detector is centered on the middle FRAME, not the middle window.
 // This means these window positions are all integer + 0.5 from the center.
