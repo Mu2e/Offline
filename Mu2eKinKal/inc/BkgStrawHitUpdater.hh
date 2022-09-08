@@ -21,6 +21,10 @@ namespace mu2e {
       using BkgSHUConfig = std::tuple<std::string,float,std::string>;
       static std::string const& configDescription(); // description of the variables
       BkgStrawHitUpdater() : mva_(0), mvacut_(0.0) {}
+      BkgStrawHitUpdater(BkgStrawHitUpdater const& other) : mva_(0), mvacut_(0.0) {
+        if(other.mva_) mva_ = new MVATools(*other.mva_);
+      }
+      ~BkgStrawHitUpdater() { delete mva_; }
       BkgStrawHitUpdater(BkgSHUConfig const& bkgshuconfig);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
