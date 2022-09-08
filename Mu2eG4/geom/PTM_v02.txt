@@ -90,7 +90,6 @@ double PTM.bracketWedgeHeight = 52.7;
 // The PTM holder is made of aluminum extrusions
 string PTM.holder.extrusionMaterial = "A6105SmallExtrusion";
 double PTM.holder.extrusionWidth = 38.1;
-// double PTM.holder.extrusionDensityFrac = 0.51; // overall density, considering the spaces in the extrusion
 // The holder consists of 4 separators that hold the PWC's the correct distance
 // apart, attached to the PWC's at the corners.
 // The separators are supported by 4 short support beams, which form a square
@@ -115,7 +114,6 @@ string PTM.handleMaterial = "A1100";
 // the stand is made of 3 aluminum extrusions standing up together
 double PTM.stand.extrusionHeight = 75.3655;
 double PTM.stand.extrusionWidth = 75.3655;
-// double PTM.stand.extrusionDensityFrac = 0.39; // overall density, considering the spaces in the extrusion
 double PTM.stand.mainColumnHeight = 2209.8;
 int PTM.stand.numColumnExtrusions = 3;
 double PTM.stand.extrusionPositionAngle = 120.0; // degrees
@@ -145,11 +143,6 @@ double PTM.wedge.cutoutPositionX = -244.48; // from x=0 at middle of wedge; G4Ex
 double PTM.wedge.cutoutPositionZ = -177.8;
 double PTM.wedge.cutoutRelRotY = 90.0; //degrees
 double PTM.wedge.shiftDown = 23.0; // to avoid overlaps
-
-
-
-
-// TODO support blocks,  ground supports
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
