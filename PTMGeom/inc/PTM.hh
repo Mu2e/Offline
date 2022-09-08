@@ -25,7 +25,10 @@ namespace mu2e {
           CLHEP::Hep3Vector const& originInMu2e,
           CLHEP::HepRotation const& rotationInMu2e,
           std::shared_ptr<PTMStand> ptmStand,
-          std::shared_ptr<PTMHead> ptmHead);
+          std::shared_ptr<PTMHead> ptmHead,
+          double totalLength,
+          double totalWidth,
+          double totalHeight);
     PTM(int version,
           CLHEP::Hep3Vector const& originInMu2e,
           CLHEP::HepRotation const& rotationInMu2e,
@@ -65,11 +68,9 @@ namespace mu2e {
     std::shared_ptr<PTMPWC> _nearPWC;
     std::shared_ptr<PTMPWC> _farPWC;
 
-    double _totalHeight;
-    double _totalLength; // Z dimension in its own coordinates
+    double _totalLength;
     double _totalWidth;
-
-
+    double _totalHeight;
 
   }; // class PTM
 

@@ -37,6 +37,9 @@ namespace mu2e {
     double yPosInMu2e = _config.getDouble("PTM.positionY");
     double zPosInMu2e = _config.getDouble("PTM.positionZ");
     CLHEP::Hep3Vector originInMu2e = CLHEP::Hep3Vector(xPosInMu2e, yPosInMu2e, zPosInMu2e);
+    double ptmTotalLength = _config.getDouble("PTM.totalLength");
+    double ptmTotalWidth = _config.getDouble("PTM.totalWidth");
+    double ptmTotalHeight = _config.getDouble("PTM.totalHeight");
 
     double yRotInMu2e = _config.getDouble("PTM.rotY");
     double xRotInMu2e = _config.getDouble("PTM.rotX");
@@ -128,6 +131,8 @@ namespace mu2e {
     double columnHeight = _config.getDouble("PTM.stand.mainColumnHeight");
     double columnExtrusionWidth = _config.getDouble("PTM.stand.extrusionWidth");
     std::string columnMaterialName = _config.getString("PTM.stand.extrusionMaterial");
+    double columnExtrusionPositionAngle = _config.getDouble("PTM.stand.extrusionPositionAngle");
+    double columnExtrusionRotation = _config.getDouble("PTM.stand.extrusionRotation");
 
 
     // First, the "head" portion: the PWC's and their holder
@@ -218,10 +223,10 @@ namespace mu2e {
     double distFromLocalCenter = 0.5*columnExtrusionWidth*tan(30*CLHEP::deg) + 0.5*columnExtrusionWidth;
     CLHEP::Hep3Vector columnExtrusionPos1 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter) + columnLocalCenter;
     CLHEP::Hep3Vector columnExtrusionPos2 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter);
-    columnExtrusionPos2.rotateY(120.*CLHEP::deg);
+    columnExtrusionPos2.rotateY(columnExtrusionPositionAngle*CLHEP::deg);
     columnExtrusionPos2 += columnLocalCenter;
     CLHEP::Hep3Vector columnExtrusionPos3 = CLHEP::Hep3Vector(0.0, 0.0, distFromLocalCenter);
-    columnExtrusionPos3.rotateY(240.*CLHEP::deg);
+    columnExtrusionPos3.rotateY(2*columnExtrusionPositionAngle*CLHEP::deg);
     columnExtrusionPos3 += columnLocalCenter;
     std::vector<CLHEP::Hep3Vector> columnPositions;
     columnPositions.push_back(columnExtrusionPos1);
@@ -230,9 +235,9 @@ namespace mu2e {
     // rotations of the columns, so they're all "facing" the center
     CLHEP::HepRotation columnRotation1 = CLHEP::HepRotation();
     CLHEP::HepRotation columnRotation2 = CLHEP::HepRotation();
-    columnRotation2.rotateY(60*CLHEP::deg); // was 120
+    columnRotation2.rotateY(columnExtrusionRotation *CLHEP::deg);
     CLHEP::HepRotation columnRotation3 = CLHEP::HepRotation();
-    columnRotation3.rotateY(-60*CLHEP::deg); // was 240
+    columnRotation3.rotateY(-1*columnExtrusionRotation *CLHEP::deg);
     std::vector<CLHEP::HepRotation> columnRotations;
     columnRotations.push_back(columnRotation1);
     columnRotations.push_back(columnRotation2);
@@ -250,7 +255,7 @@ namespace mu2e {
           columnRotations,
           columnMaterialName,
           wedgeMaterialName));
-    std::unique_ptr<PTM> ptmon(new PTM(version, originInMu2e, rotationInMu2e, ptmStand, ptmHead));
+    std::unique_ptr<PTM> ptmon(new PTM(version, originInMu2e, rotationInMu2e, ptmStand, ptmHead, ptmTotalLength, ptmTotalWidth, ptmTotalHeight));
     return ptmon;
   } // PTMMaker::makeWithBasicStand()
 
