@@ -124,15 +124,15 @@ namespace mu2e {
     HV1Info.logical = windowLogical;
     HV1Info.name = "PTMHV1"+pwc->nameSuffix();
     finishNesting(HV1Info,
-                  windowMaterial, // probably unnecessary, since we made the logical already
+                  windowMaterial,
                   nullptr, // no rotation
                   G4ThreeVector(0, 0, pwc->hv1Z()),
                   container.logical,
                   0,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -141,15 +141,15 @@ namespace mu2e {
     HV2Info.logical = windowLogical;
     HV2Info.name = "PTMHV2"+pwc->nameSuffix();
     finishNesting(HV2Info,
-                  windowMaterial, // probably unnecessary, since we made the logical already
+                  windowMaterial,
                   nullptr, // no rotation
                   G4ThreeVector(0, 0, pwc->hv2Z()),
                   container.logical,
                   0,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -158,15 +158,15 @@ namespace mu2e {
     HV3Info.logical = windowLogical;
     HV3Info.name = "PTMHV3"+pwc->nameSuffix();
     finishNesting(HV3Info,
-                  windowMaterial, // probably unnecessary, since we made the logical already
+                  windowMaterial,
                   nullptr, // no rotation
                   G4ThreeVector(0, 0, pwc->hv3Z()),
                   container.logical,
                   0,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -181,10 +181,10 @@ namespace mu2e {
                   G4ThreeVector(0, 0, pwc->ground2Z()),
                   container.logical,
                   0,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -271,10 +271,10 @@ namespace mu2e {
                     G4ThreeVector(0.0, gasY2, pwc->vertWireZ()),
                     container.logical,
                     wireNum,
-                    visible, // visible
+                    visible,
                     G4Colour::Blue(),
-                    forceSolid, // forceSolid
-                    forceAuxEdgeVisible, // forceAuxEdgeVisible
+                    forceSolid,
+                    forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck,
                     verbosity>0);
@@ -322,10 +322,10 @@ namespace mu2e {
                     G4ThreeVector(gasX3, 0.0, pwc->horizWireZ()),
                     container.logical,
                     wireNum,
-                    visible, // visible
+                    visible,
                     G4Colour::Blue(),
-                    forceSolid, // forceSolid
-                    forceAuxEdgeVisible, // forceAuxEdgeVisible
+                    forceSolid,
+                    forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck,
                     verbosity>0);
@@ -426,15 +426,15 @@ namespace mu2e {
     longBarInfo1.logical = longBarLogical;
     longBarInfo1.name = longBarName+"01";
     finishNesting(longBarInfo1,
-                  holderMaterial, // probably unnecessary, since we made the logical already
+                  holderMaterial,
                   nullptr, // no rotation
                   G4ThreeVector(bar1X, bar1Y, 0),
                   motherVolume.logical,
                   1,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -445,15 +445,15 @@ namespace mu2e {
     longBarInfo2.logical = longBarLogical;
     longBarInfo2.name = longBarName+"02";
     finishNesting(longBarInfo2,
-                  holderMaterial, // probably unnecessary, since we made the logical already
+                  holderMaterial,
                   nullptr, // no rotation
                   G4ThreeVector(bar2X, bar2Y, 0),
                   motherVolume.logical,
                   2,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -464,15 +464,15 @@ namespace mu2e {
     longBarInfo3.logical = longBarLogical;
     longBarInfo3.name = longBarName+"03";
     finishNesting(longBarInfo3,
-                  holderMaterial, // probably unnecessary, since we made the logical already
+                  holderMaterial,
                   nullptr, // no rotation
                   G4ThreeVector(bar3X, bar3Y, 0),
                   motherVolume.logical,
                   3,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -483,15 +483,15 @@ namespace mu2e {
     longBarInfo4.logical = longBarLogical;
     longBarInfo4.name = longBarName+"04";
     finishNesting(longBarInfo4,
-                  holderMaterial, // probably unnecessary, since we made the logical already
+                  holderMaterial,
                   nullptr, // no rotation
                   G4ThreeVector(bar4X, bar4Y, 0),
                   motherVolume.logical,
                   4,
-                  visible, // visible
+                  visible,
                   G4Colour::Blue(),
-                  forceSolid, // forceSolid
-                  forceAuxEdgeVisible, // forceAuxEdgeVisible
+                  forceSolid,
+                  forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck,
                   verbosity>0);
@@ -663,11 +663,11 @@ namespace mu2e {
                      1,
                      G4TwoVector(0.0, 0.0),
                      1);
-    //G4Box *cutout = new G4Box("PTMWedgeCutout", ptmStand->wedgeCutout()->getXhalfLength(), ptmStand->wedgeCutout()->getYhalfLength(), ptmStand->wedgeCutout()->getZhalfLength());
+
     G4EllipticalTube *cutout = new G4EllipticalTube("PTMWedgeCutout",
                 ptmStand->wedgeCutoutSemiMinor(),
                 ptmStand->wedgeCutoutSemiMajor(),
-                ptmStand->topWedge()->getYhalfThickness()); // overkill, but will do the job
+                ptmStand->topWedge()->getYhalfThickness());
     G4RotationMatrix* wedgeRotation;
     wedgeRotation = reg.add(new G4RotationMatrix());
     wedgeRotation->rotateY(-90*CLHEP::deg); // so the long side points along z
@@ -702,7 +702,7 @@ namespace mu2e {
     int columnCopyNum = 0;
     for (auto columnPosition : ptmStand->columnOriginsInMu2e()) {
       G4RotationMatrix* columnRotation;
-      columnRotation = reg.add(new G4RotationMatrix(ptmStand->columnRotations().at(columnCopyNum))); // TODO do this differently
+      columnRotation = reg.add(new G4RotationMatrix(ptmStand->columnRotations().at(columnCopyNum)));
       VolumeInfo columnInfo;
       columnInfo.name = columnExtrusionName + std::to_string(columnCopyNum);
       columnInfo.logical = columnLogical;
@@ -730,7 +730,7 @@ namespace mu2e {
 
     GeomHandle<PTM> ptmon;
     // collect geomOptions
-    //const int verbosity = _config.getInt("PTM.verbosityLevel",1);
+    const int verbosity = _config.getInt("PTM.verbosityLevel",1);
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "PTM", "PTM" );
     const bool visible = geomOptions->isVisible("PTM");

@@ -9,14 +9,10 @@
 #include "Offline/GeomPrimitives/inc/ExtrudedSolid.hh"
 #include "Offline/GeomPrimitives/inc/Box.hh"
 
-// ProductionTarget Monitor Stand (PTM) 
+// ProductionTarget Monitor Stand (PTM)
 //
 // Author: Helenka Casler
 //
-
-// TODO: ADD THE FOLLOWING:
-// - aluminum base that splays out from the center column
-// - support blocks on the center column
 
 namespace mu2e {
 

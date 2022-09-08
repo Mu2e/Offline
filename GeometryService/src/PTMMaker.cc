@@ -140,11 +140,9 @@ namespace mu2e {
     // the PTM is made of two identical PWC's, placed such that their center
     // lines match up.
     // Y-position of the PWC's inside the mother volume, which also includes the holder and handle
-    //double pwcY = -0.5*(handleHeight + (0.5*motherMargin) + (0.5*containerMargin));
-    double headTotalHeight = holderLongExtrusionSep + handleHeight + motherMargin;// + containerMargin;
+    double headTotalHeight = holderLongExtrusionSep + handleHeight + motherMargin;
     double bottomOfHeadVolume = -0.5*headTotalHeight;
     double holderHeight = holderLongExtrusionSep + holderExtrusionWidth;
-    //double pwcHeight = frameHeight + containerMargin;
     double pwcY = bottomOfHeadVolume + (0.5*holderHeight);
 
     // "Near" PWC -- the more upstream of the two.
@@ -210,7 +208,6 @@ namespace mu2e {
     wedgeVertices.push_back(CLHEP::Hep2Vector(-0.5*wedgeLength, 0.5*wedgeMaxHeight));
 
     // position of wedge is right under the "head"
-    // TODO: once you have the right position for this, put it in the config file and have it be independent of the other things
     double wedgeY = headVolumeOriginInMu2e.y() - (0.5 * ptmHead->totalHeight()) - (0.5*wedgeMaxHeight) - (ptmHead->totalLength() * tan(xRotInMu2eHead*CLHEP::deg)) - wedgeShiftDown;
     CLHEP::Hep3Vector wedgeOriginInMu2e = CLHEP::Hep3Vector(headVolumeOriginInMu2e.x(), wedgeY, headVolumeOriginInMu2e.z());
     std::shared_ptr<ExtrudedSolid> topWedge(new ExtrudedSolid("PTMStandWedge", wedgeMaterialName, wedgeOriginInMu2e, 0.5*wedgeWidth, wedgeVertices));

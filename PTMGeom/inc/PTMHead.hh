@@ -13,19 +13,14 @@
 // Author: Helenka Casler
 //
 
-// TODO: ADD THE FOLLOWING:
-// - aluminum frame holding the PWCs apart
-// - handle on top of the frame
-// - brackets that let it sit on the top of the stand
-
 namespace mu2e {
 
   class PTMHead{
 
   public:
-    PTMHead(CLHEP::Hep3Vector const& originInMu2e, 
-          CLHEP::HepRotation const& rotationInMu2e, 
-          std::shared_ptr<PTMPWC> nearPWC, 
+    PTMHead(CLHEP::Hep3Vector const& originInMu2e,
+          CLHEP::HepRotation const& rotationInMu2e,
+          std::shared_ptr<PTMPWC> nearPWC,
           std::shared_ptr<PTMPWC> farPWC,
           double pwcSeparation,
           std::shared_ptr<Box> holderExtrusionLong,
@@ -35,12 +30,12 @@ namespace mu2e {
           double holderExtrusionShortPos,
           std::shared_ptr<Box> handleBase,
           std::string handleMaterialName,
-          double handleHoleSemiMajor, 
+          double handleHoleSemiMajor,
           double handleHoleSemiMinor,
           CLHEP::Hep3Vector handleHoleCenter,
           double handleCornerCutSide,
           double motherMargin,
-          CLHEP::Hep3Vector const& parentOriginInMu2e, 
+          CLHEP::Hep3Vector const& parentOriginInMu2e,
           CLHEP::HepRotation const& parentRotationInMu2e);
     PTMHead() {}
 

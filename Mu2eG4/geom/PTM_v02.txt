@@ -5,7 +5,6 @@
 int PTM.version = 2;
 
 int PTM.verbosityLevel = 0;
-//bool PTM.doSurfaceCheck = true;
 bool PTM.placePV = true;
 bool PTM.visible = true;
 bool PTM.solid = true;
