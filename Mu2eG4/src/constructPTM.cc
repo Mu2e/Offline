@@ -730,7 +730,6 @@ namespace mu2e {
 
     GeomHandle<PTM> ptmon;
     // collect geomOptions
-    const int verbosity = _config.getInt("PTM.verbosityLevel",1);
     const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "PTM", "PTM" );
     const bool visible = geomOptions->isVisible("PTM");
