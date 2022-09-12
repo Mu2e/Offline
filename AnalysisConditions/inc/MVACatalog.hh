@@ -66,7 +66,7 @@ namespace mu2e {
 
     MVATools _mvaTool;
     MVAMask _mvaMask;
-    std::map<Float_t, Float_t> _effCalib;
+    std::map<float, float> _effCalib;
   };
 
   template <class T>

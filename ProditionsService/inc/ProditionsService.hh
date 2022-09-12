@@ -6,23 +6,13 @@
 // database-backed conditions quantities
 //
 
-#include <string>
-
-#include "art/Framework/Services/Registry/ActivityRegistry.h"
-#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "cetlib_except/exception.h"
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/OptionalAtom.h"
-#include "fhiclcpp/types/OptionalSequence.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/types/Table.h"
-
-#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
-
+#include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
 #include "Offline/DAQConfig/inc/EventTimingConfig.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/STMConfig/inc/STMEnergyCalibConfig.hh"
+#include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
 #include "Offline/TrackerConfig/inc/AlignedTrackerConfig.hh"
 #include "Offline/TrackerConfig/inc/FullReadoutStrawConfig.hh"
 #include "Offline/TrackerConfig/inc/Mu2eDetectorConfig.hh"
@@ -32,10 +22,16 @@
 #include "Offline/TrackerConfig/inc/StrawPhysicsConfig.hh"
 #include "Offline/TrackerConfig/inc/StrawResponseConfig.hh"
 #include "Offline/TrackerConfig/inc/TrackerStatusConfig.hh"
-
-#include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
-
-#include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
+#include "art/Framework/Services/Registry/ActivityRegistry.h"
+#include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "cetlib_except/exception.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/OptionalSequence.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+#include <string>
 
 namespace mu2e {
 
@@ -47,6 +43,9 @@ class ProditionsService {
     fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity 0 or 1"), 0};
     fhicl::Table<EventTimingConfig> eventTiming{
         Name("eventTiming"), Comment("Event timing configuration")};
+    fhicl::Table<STMEnergyCalibConfig> stmEnergyCalib{
+        Name("stmEnergyCalib"),
+        Comment("STM energy calibration configuration")};
     fhicl::Table<FullReadoutStrawConfig> fullReadoutStraw{
         Name("fullReadoutStraw"),
         Comment("Straws with no time window in readout")};

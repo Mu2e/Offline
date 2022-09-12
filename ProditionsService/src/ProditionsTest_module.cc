@@ -15,6 +15,7 @@
 #include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 
 namespace mu2e {
@@ -41,15 +42,21 @@ class ProditionsTest : public art::EDAnalyzer {
  private:
   Config _conf;
 
-  ProditionsHandle<StrawResponse> _srh;
+  // ProditionsHandle<StrawResponse> _testh;
+  ProditionsHandle<STMEnergyCalib> _testh;
 };
 
 //-----------------------------------------------------------------------------
 void ProditionsTest::analyze(const art::Event& event) {
   std::cout << "ProditionsTest::analyze  " << event.id() << std::endl;
 
-  _srh.get(event.id());
+  auto const& tab = _testh.get(event.id());
+  auto channel = STMChannel(STMChannel::enum_type::LaBr);
+  auto const& r = tab.calib(channel);
+  std::cout << channel.name() << " " << r.p0 << " " << r.p1 << " " << r.p2
+            << "\n";
 }
-};  // namespace mu2e
+
+}  // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::ProditionsTest);

@@ -18,77 +18,72 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include <utility>
 #include <algorithm>
-
+#include <numeric>
 // root
 #include "TH1F.h"
 #include "TF1.h"
 
 #include "Offline/DataProducts/inc/STMTypes.hh"
 #include "Offline/RecoDataProducts/inc/STMDigi.hh"
-#include "Offline/RecoDataProducts/inc/STMHit.hh"
-#include "Offline/STMReco/inc/ZPAlg.hh"
+#include "Offline/STMReco/inc/PQAlg.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
 
-  class STMZeroSuppression : public art::EDProducer {
+  class STMPulseQuality : public art::EDProducer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
-        fhicl::Atom<double> samplingFrequency{ Name("samplingFrequency"), Comment("Sampling Frequency of ADC [MHz]")};
-        fhicl::Atom<double> tbefore{ Name("tbefore"), Comment("Store this time before the trigger [ns]")};
-        fhicl::Atom<double> tafter{ Name("tafter"), Comment("Store this time after the trigger [ns]")};
-        fhicl::Atom<double> threshold{ Name("threshold"), Comment("Threshold to define the trigger [ADC/ct]")};
       };
       using Parameters = art::EDProducer::Table<Config>;
-      explicit STMZeroSuppression(const Parameters& conf);
+      explicit STMPulseQuality(const Parameters& conf);
 
     private:
     void beginJob() override;
-      void produce(art::Event& e) override;
+    void produce(art::Event& e) override;
 
     art::InputTag _stmDigisTag;
-    ZPAlg _zpAlg;
-    double _ctPerNs;
+    mu2e::PQAlg _pqAlg;
   };
 
-  STMZeroSuppression::STMZeroSuppression(const Parameters& config )  :
+  STMPulseQuality::STMPulseQuality(const Parameters& config )  :
     art::EDProducer{config}
     ,_stmDigisTag(config().stmDigisTag())
-    ,_zpAlg(config().samplingFrequency(), config().tbefore(), config().tafter(), config().threshold())
-    ,_ctPerNs(1.0/(config().samplingFrequency()*1e-3))
+    ,_pqAlg()
   {
     consumes<STMDigiCollection>(_stmDigisTag);
     produces<STMDigiCollection>();
   }
 
-  void STMZeroSuppression::beginJob() {
+  void STMPulseQuality::beginJob() {
   }
-    void STMZeroSuppression::produce(art::Event& event) {
+    void STMPulseQuality::produce(art::Event& event) {
     // create output
     unique_ptr<STMDigiCollection> outputSTMDigis(new STMDigiCollection);
     auto digisHandle = event.getValidHandle<STMDigiCollection>(_stmDigisTag);
 
+    //    double threshold = -100;
+    int count = 0;
     for (const auto& digi : *digisHandle) {
-      std::cout << "Number of elements in unsuppressed file = " << digi.adcs().size() << std::endl;
-      std::vector<size_t> starts;
-      std::vector<size_t> ends;
-      _zpAlg.ZeroSuppress(&digi.adcs()[0], digi.adcs().size(), starts, ends);
-      for (size_t i = 0; i < starts.size(); ++i) {
+      //      double pedestal = std::reduce(digi.adcs().begin(), digi.adcs().begin()+100) / 100.0;
+      _pqAlg.process_pulse(digi);
+      size_t n_found_pulses = _pqAlg.getNFound();
 
-        auto start = starts.at(i);
-        auto end = ends.at(i);
-        std::vector<int16_t> zp_adcs(digi.adcs().begin()+start, digi.adcs().begin()+end);
-        STMDigi stm_digi(STMTrigType(digi.trigType().mode(), digi.trigType().channel().id(), STMDataType::kZeroSuppressed), digi.trigTime()+_ctPerNs*start, 0, 0, STMDigiFlag::kOK, zp_adcs);
+      for (size_t i_pulse = 0; i_pulse < n_found_pulses; ++i_pulse) {
+        std::vector<int16_t> pq_adcs;
+        pq_adcs.push_back(_pqAlg.getEnergy(i_pulse));
+        uint32_t extra(0);
+        STMDigi stm_digi(STMTrigType(digi.trigType().mode(), digi.trigType().channel().id(), STMDataType::kPQ), digi.trigTime()*1e3, 0, extra, STMDigiFlag::kOK, pq_adcs);
         outputSTMDigis->push_back(stm_digi);
       }
+      ++count;
     }
-
+    std::cout << "AE: No. PQ Digis = " << outputSTMDigis->size() << std::endl;
     event.put(std::move(outputSTMDigis));
   }
 }
 
-DEFINE_ART_MODULE(mu2e::STMZeroSuppression)
+DEFINE_ART_MODULE(mu2e::STMPulseQuality)

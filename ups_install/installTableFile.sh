@@ -16,7 +16,7 @@ art_ver=`ups active | awk '$1 == "art" {print $2}'`
 btrk_ver=`ups active | awk '$1 == "BTrk" {print $2}'`
 kinkal_ver=`ups active | awk '$1 == "KinKal" {print $2}'`
 xerces_ver=`ups active | awk '$1 == "xerces_c" {print $2}'`
-mu2e_artdaq_core_ver=`ups active | awk '$1 == "mu2e_artdaq_core" {print $2}'`
+artdaq_core_mu2e_ver=`ups active | awk '$1 == "artdaq_core_mu2e" {print $2}'`
 
 # A table file needs the qualifiers string in three formats:
 #   - colon delimited
@@ -53,10 +53,10 @@ Common:
   Action = setup
     prodDir()
     setupEnv()
-    envSet (OFFLINE_INC, \${OFFLINE_DIR}/include/Offline )
+    envSet (OFFLINE_INC, \${OFFLINE_DIR}/include )
     envSet (MU2E_BASE_RELEASE, \${OFFLINE_DIR} )
-    envSet (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/config/Offline:\${MU2E_DATA_PATH} )
-    envSet (FHICL_FILE_PATH, \${OFFLINE_DIR}/config/Offline:\${OFFLINE_DIR}/config/Offline/fcl )
+    envSet (MU2E_SEARCH_PATH, \${OFFLINE_DIR}/config:\${MU2E_DATA_PATH}:/cvmfs/mu2e.opensciencegrid.org/DataFiles )
+    envSet (FHICL_FILE_PATH, \${OFFLINE_DIR}/config:\${OFFLINE_DIR}/config/Offline/fcl )
     envSet (OFFLINE_VERSION, \${UPS_PROD_VERSION} )
     pathAppend( ROOT_INCLUDE_PATH, \${OFFLINE_INC})
 
@@ -106,7 +106,7 @@ Qualifiers = "${qualifiers_value}:trig:${MUSE_BUILD}"
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD}:+$MUSE_PYTHON )
       setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD}:+$MUSE_PYTHON )
       setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD} )
-      setupRequired( mu2e_artdaq_core ${mu2e_artdaq_core_ver} -q ${mu2e_ups_qualifiers}:+${MUSE_ART}:+${MUSE_BUILD} )
+      setupRequired( artdaq_core_mu2e ${artdaq_core_mu2e_ver} -q ${mu2e_ups_qualifiers}:+${MUSE_ART}:+${MUSE_BUILD} )
 
 EOG
 )
@@ -125,7 +125,7 @@ unset art_ver
 unset btrk_ver
 unset kinkal_ver
 unset xerces_ver
-unset mu2e_artdaq_core_ver
+unset artdaq_core_mu2e_ver
 unset qualifiers_value
 unset offline_fq_value
 unset mu2e_ups_qualifiers

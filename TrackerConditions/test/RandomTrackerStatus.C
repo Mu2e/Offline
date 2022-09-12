@@ -118,4 +118,3 @@ void RandomTrackerStatus(unsigned seed, unsigned ndeadplanes, unsigned ndeadpane
     }
   }
 }
-
