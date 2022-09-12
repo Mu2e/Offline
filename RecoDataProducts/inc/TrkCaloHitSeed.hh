@@ -15,7 +15,7 @@
 #include <Rtypes.h>
 namespace mu2e {
   struct TrkCaloHitSeed {
-    TrkCaloHitSeed() :  _cdepth(0), _cdoca(0), _ctoca(0), _ctocavar(0), _dt(0), _tresid(0), _tresidmvar(0), _tresidpvar(0), _trklen(0), _hitlen(0),  _time(0), _terr(0), _rerr(0) {}
+    TrkCaloHitSeed() {} // initialization on declaration
 
     // KinKal constructor
     TrkCaloHitSeed(art::Ptr<CaloCluster>const& cluster, StrawHitFlag const& flag,
@@ -26,8 +26,8 @@ namespace mu2e {
     _cdoca(ptca.doca()), _ctoca(ptca.sensorPoca().T()), _ctocavar(ptca.tocaVar()), _dt(ptca.deltaT()),
     _tresid(tresid.value()), _tresidmvar(tresid.measurementVariance()), _tresidpvar(tresid.parameterVariance()),
     _cpos(ptca.sensorPoca().Vect()), _tmom(tmom*ptca.particleDirection()), _trklen(0), _hitlen(0),  _time(0), _terr(0), _rerr(0)
-
     {}
+
     // Legacy constructor for BTrk
     TrkCaloHitSeed(HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t cdoca, Float_t rerr,
         Float_t time, Float_t terr, XYZVectorF const& cpos, XYZVectorF const& tmom, StrawHitFlag const& flag) :
@@ -62,23 +62,23 @@ namespace mu2e {
     //
     art::Ptr<CaloCluster> _cluster; // cluster this hit is based on
     StrawHitFlag          _flag;          // flag describing the status of this hit (active, ....)
-    Float_t               _cdepth;   // depth along the particle from the disk front face
-    Float_t               _cdoca;          // DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
-    Float_t               _ctoca;          // cluster TOCA at POCA
-    Float_t               _ctocavar;      // variance on TOCA
-    Float_t               _dt;          // Delta T at POCA
-    Float_t               _tresid, _tresidmvar, _tresidpvar; // unbiased time residual and associated measurement and parameter variances
+    Float_t               _cdepth =0;   // depth along the particle from the disk front face
+    Float_t               _cdoca =0;          // DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
+    Float_t               _ctoca =0;          // cluster TOCA at POCA
+    Float_t               _ctocavar =0;      // variance on TOCA
+    Float_t               _dt =0;          // Delta T at POCA
+    Float_t               _tresid =0, _tresidmvar=0, _tresidpvar =0; // unbiased time residual and associated measurement and parameter variances
     XYZVectorF            _cpos;       // cluster position at POCA
     XYZVectorF            _tmom;       // track momentum at POCA
     //
     // legacy payload
     //
-    Float_t               _trklen;          // track Length from the front face to the POCA of this hit
-    Float_t               _hitlen;          // Length along the cluster axis to the POCA of this hit
-    Float_t               _time;          // time of this hit, = cluster time at the SIPM
-    Float_t               _terr;          // time error assigned to this hit
+    Float_t               _trklen =0;          // track Length from the front face to the POCA of this hit
+    Float_t               _hitlen =0;          // Length along the cluster axis to the POCA of this hit
+    Float_t               _time =0;          // time of this hit, = cluster time at the SIPM
+    Float_t               _terr =0;          // time error assigned to this hit
     HitT0                 _t0;          // time origin for this hit
-    Float_t               _rerr;        // intrinsic radial error
+    Float_t               _rerr =0;        // intrinsic radial error
   };
 }
 #endif

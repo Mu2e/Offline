@@ -18,7 +18,7 @@ namespace mu2e {
     SHCOL hits;
     hits.reserve(shcluster.strawHits().size());
     for(auto& shptr : shcluster.strawHits()){
-      if(shptr->hitState().updateable()) hits.push_back(shptr);
+      if(shptr->active() && (unfreeze_ || !shptr->hitState().frozen())) hits.push_back(shptr);
     }
     // make sure this cluster meets the requirements for updating
     if(hits.size() < csize_ )return;
@@ -26,7 +26,7 @@ namespace mu2e {
     Weights uweights = Weights(hits.front()->referenceParameters());
     // subtract the weight of active, unfrozen hits from this reference; this removes the bias of those hits from the reference
     for (auto const& sh : hits) {
-      if(sh->active() && !sh->hitState().frozen()) uweights -= sh->weight();
+      if(sh->active() && (unfreeze_ || !sh->hitState().frozen())) uweights -= sh->weight();
     }
     // invert to get unbiased parameters
     Parameters uparams = Parameters(uweights);
