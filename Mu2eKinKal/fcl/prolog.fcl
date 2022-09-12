@@ -114,15 +114,15 @@ Mu2eKinKal : {
       [ 2.0, "ClosestApproach" ],
       [ 1.0, "ClosestApproach" ],
       [ 0.0, "ClosestApproach" ],
-      [ 0.6, "ANN" ],
-      [ 0.6, "Combinatoric" ],
-      [ 0.6, "Combinatoric" ],
-      [ 0.6, "Combinatoric" ],
-      [ 0.6, "Combinatoric" ],
-      [ 0.6, "Combinatoric" ],
-      [ 0.6, "ClosestApproach" ],
-      [ 0.6, "Combinatoric" ],
-      [ 0.6, "Combinatoric" ]
+      [ 0.0, "ANN" ],
+      [ 0.0, "Combinatoric" ],
+      [ 0.0, "Combinatoric" ],
+      [ 0.0, "Combinatoric" ],
+      [ 0.0, "Combinatoric" ],
+      [ 0.0, "Combinatoric" ],
+      [ 0.0, "ClosestApproach" ],
+      [ 0.0, "Combinatoric" ],
+      [ 0.0, "Combinatoric" ]
     ]
     CAStrawHitUpdaterSettings : [
       # maxdoca, minrdrift, maxrdrift,tofreeze
@@ -135,14 +135,14 @@ Mu2eKinKal : {
       [ "Offline/Mu2eKinKal/data/LR_constant_Seed.weights.xml",0.95,1.5,"Drift"]
     ]
     CombinatoricStrawHitUpdaterSettings : [
-      # mincsize, inactivep, nullp, mindchi2, mindoca, allow, freeze, diag
-      [ 2, 25.0, 3.0, 3.0, 1.5, "Drift:Null:Inactive", "Drift", 0 ],
-      [ 1, 25.0, 3.0, 3.0, 1.5, "Drift:Null:Inactive", "", 0 ],
-      [ 1, 25.0, 3.0, 3.0, 0.8, "Drift:Null:Inactive", "", 0 ],
-      [ 1, 25.0, 3.0, 2.0, 0.6, "Drift:Null:Inactive", "", 0 ],
-      [ 1, 25.0, 3.0, 1.0, 0.4, "Drift:Null:Inactive", "Drift", 0 ],
-      [ 1, 50.0, 5.0, 1.0, 0.25, "Drift:Inactive", "", 0 ],
-      [ 1, 50.0, 5.0, 1.0, 0.1, "Drift:Inactive", "", 0 ]
+      # mincsize, inactivep, nullp, mindchi2, mindoca, allow, freeze, unfreeze, diag
+      [ 2, 25.0, 3.0, 3.0, 1.5, "Drift:Null:Inactive", "Drift", false, 0 ],
+      [ 1, 25.0, 3.0, 3.0, 1.5, "Drift:Null:Inactive", "", false, 0 ],
+      [ 1, 25.0, 3.0, 3.0, 0.8, "Drift:Null:Inactive", "", false, 0 ],
+      [ 1, 25.0, 3.0, 2.0, 0.6, "Drift:Null:Inactive", "", false, 0 ],
+      [ 1, 25.0, 3.0, 1.0, 0.4, "Drift:Null:Inactive", "Drift", false, 0 ],
+      [ 1, 50.0, 5.0, 0.8, 0.3, "Drift:Inactive", "", false, 0 ],
+      [ 1, 50.0, 5.0, 0.5, 0.2, "Drift:Inactive", "", false, 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?

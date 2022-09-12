@@ -15,14 +15,15 @@ namespace mu2e {
     auto allowed = WHSMask(states);
     std::string freeze = std::get<6>(cshuconfig);
     freeze_ = WHSMask(freeze);
-    diag_ = std::get<7>(cshuconfig);
+    unfreeze_ = std::get<7>(cshuconfig);
+    diag_ = std::get<8>(cshuconfig);
     if(allowed.hasAnyProperty(WHSMask::inactive)) allowed_.emplace_back(WireHitState::inactive,StrawHitUpdaters::Combinatoric,nulldoca_);
     if(allowed.hasAnyProperty(WHSMask::null)) allowed_.emplace_back(WireHitState::null,StrawHitUpdaters::Combinatoric,nulldoca_);
     if(allowed.hasAnyProperty(WHSMask::drift)){
       allowed_.emplace_back(WireHitState::left,StrawHitUpdaters::Combinatoric,nulldoca_);
       allowed_.emplace_back(WireHitState::right,StrawHitUpdaters::Combinatoric,nulldoca_);
     }
-    std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " allowed states" << allowed << " states to freeze " << freeze_ << std::endl;
+    std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " allowed states" << allowed << " states to freeze " << freeze_  << " unfreeze input? " << unfreeze_ << std::endl;
   }
 
 
@@ -76,7 +77,7 @@ namespace mu2e {
   }
 
   std::string const& CombinatoricStrawHitUpdater::configDescription() {
-    static std::string descrip("Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allowed states, states to freeze, diag level");
+    static std::string descrip("Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allowed states, states to freeze, unfreeze input, diag level");
 
     return descrip;
   }

@@ -8,7 +8,7 @@
 #include "Offline/RecoDataProducts/inc/TrkStrawHitCluster.hh"
 #include <functional>
 namespace mu2e {
-  struct TrkStrawHitClusterSeedSeed {
+  struct TrkStrawHitClusterSeed {
   };
 }
 #

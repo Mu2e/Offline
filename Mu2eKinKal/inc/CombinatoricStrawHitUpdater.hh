@@ -32,7 +32,7 @@ namespace mu2e {
 
   class CombinatoricStrawHitUpdater {
     public:
-      using CSHUConfig = std::tuple<unsigned,float,float,float,float,std::string,std::string,int>;
+      using CSHUConfig = std::tuple<unsigned,float,float,float,float,std::string,std::string,bool,int>;
       static std::string const& configDescription(); // description of the variables
       // struct to sort hit states by chisquared value
       struct ClusterStateComp {
@@ -56,6 +56,7 @@ namespace mu2e {
       double mindchi2_; // minimum chisquared separation to consider 'significant'
       double nulldoca_; // DOCA used to set null hit variance
       WHSMask freeze_; // states to freeze
+      bool unfreeze_; // ignore freeze state on input
       int diag_; // diag print level
       WHSCOL allowed_; // allowed states
   };

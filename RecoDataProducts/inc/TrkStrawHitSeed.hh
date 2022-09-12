@@ -9,6 +9,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "KinKal/Detector/Residual.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
@@ -17,17 +18,8 @@
 #include <functional>
 namespace mu2e {
   struct TrkStrawHitSeed {
-    TrkStrawHitSeed() : _index(0), _ambig(0), _algo(-1), _frozen(false), _edep(0),  _htime(0), _wdist(0), _werr(0), _tottdrift(0),
-    _ptoca(0),_stoca(0),
-    _rdoca(0), _rdocavar(0), _rdt(0), _rtocavar(0),
-    _udoca(0.0), _udocavar(0), _udt(0), _utocavar(0),
-    _rupos(0),_uupos(0),_rdrift(0),_rerr(0), _dvel(0), _lang(0),
-    _utresid(0), _utresidmvar(0), _utresidpvar(0),
-    _udresid(0), _udresidmvar(0), _udresidpvar(0),
-    _rtresid(0), _rtresidmvar(0), _rtresidpvar(0),
-    _rdresid(0), _rdresidmvar(0), _rdresidpvar(0),
-    _trklen(0), _hitlen(0), _stime(0)    {}
-
+    // default constructor: initialization on declaration
+    TrkStrawHitSeed() {}
     //KinKal constructor
     TrkStrawHitSeed(StrawHitIndex index, ComboHit const& chit,
         KinKal::ClosestApproachData const& rptca,
@@ -76,7 +68,6 @@ namespace mu2e {
       _rdrift(rdrift), _rerr(rerr), _dvel(0), _lang(0),
       _t0(t0), _trklen(trklen), _hitlen(hitlen),  _stime(stime){}
 
-
     // legacy interface
     auto index() const { return _index; }
     auto const&  strawId() const { return _sid; }
@@ -111,40 +102,40 @@ namespace mu2e {
     //
     //  Payload
     //
-    StrawHitIndex   _index;       // index to the original straw (Combo) hit, and (for MC) MCDigi
+    StrawHitIndex   _index =0;       // index to the original straw (Combo) hit, and (for MC) MCDigi
     StrawId         _sid;   // which straw has the hit
     StrawEnd        _end;         // straw end used for hit time measurement
     StrawHitFlag    _flag;    // flag describing the status of this hit (active, ....)
-    Int_t           _ambig;   // hit state, including LR ambiguity
-    Int_t           _algo;     // hit updater algorithm
-    Bool_t          _frozen; // hit state was frozen
-    Float_t         _edep;        // reco energy deposition
-    Float_t         _htime;   // raw hit time
-    Float_t         _wdist;       // raw hit U position
-    Float_t         _werr;    // raw hit U position error estimate
-    Float_t         _tottdrift;   // drift time from TOT for this hit
-    float_t         _ptoca;    // reference particle time of closest approach (TOCA)
-    float_t         _stoca;    // reference sensor time of closest approach (TOCA)
-    Float_t         _rdoca, _rdocavar;   // reference (biased) DOCA from the track to the wire, signed by the angular momentum WRT the wire and the measurement end (and variance)
-    Float_t         _rdt, _rtocavar;   // reference (biased) time difference (and variance) at POCA
-    Float_t         _udoca, _udocavar; // unbiaed DOCA (and variance)
-    Float_t         _udt, _utocavar;   //unbiased dt and variance
-    Float_t         _rupos; // reference POCA position along the straw WRT the straw middle
-    Float_t         _uupos; // unbiased POCA position along the straw WRT the straw middle
-    Float_t         _rdrift;  // drift radius for this hit
-    Float_t         _rerr;    // intrinsic radial error
-    Float_t         _dvel;  // instantaneous drift velocity
-    Float_t         _lang; // Lorentz angle for EXB effects
-    Float_t         _utresid, _utresidmvar, _utresidpvar; // unbiased time residual and associated measurement and parameter variances
-    Float_t         _udresid, _udresidmvar, _udresidpvar; // unbiased distance residual and associated measurement and parameter variances
-    Float_t         _rtresid, _rtresidmvar, _rtresidpvar; // reference time residual and associated measurement and parameter variances
-    Float_t         _rdresid, _rdresidmvar, _rdresidpvar; // reference distance residual and associated measurement and parameter variances
+    Int_t           _ambig =0;   // hit state, including LR ambiguity
+    Int_t           _algo =0;     // hit updater algorithm
+    Bool_t          _frozen =0; // hit state was frozen
+    Float_t         _edep =0;        // reco energy deposition
+    Float_t         _htime =0;   // raw hit time
+    Float_t         _wdist =0;       // raw hit U position
+    Float_t         _werr =0;    // raw hit U position error estimate
+    Float_t         _tottdrift =0;   // drift time from TOT for this hit
+    float_t         _ptoca =0;    // reference particle time of closest approach (TOCA)
+    float_t         _stoca =0;    // reference sensor time of closest approach (TOCA)
+    Float_t         _rdoca, _rdocavar =0;   // reference (biased) DOCA from the track to the wire, signed by the angular momentum WRT the wire and the measurement end (and variance)
+    Float_t         _rdt, _rtocavar =0;   // reference (biased) time difference (and variance) at POCA
+    Float_t         _udoca, _udocavar =0; // unbiaed DOCA (and variance)
+    Float_t         _udt, _utocavar =0;   //unbiased dt and variance
+    Float_t         _rupos =0; // reference POCA position along the straw WRT the straw middle
+    Float_t         _uupos =0; // unbiased POCA position along the straw WRT the straw middle
+    Float_t         _rdrift =0;  // drift radius for this hit
+    Float_t         _rerr =0;    // intrinsic radial error
+    Float_t         _dvel =0;  // instantaneous drift velocity
+    Float_t         _lang =0; // Lorentz angle for EXB effects
+    Float_t         _utresid=0, _utresidmvar=0, _utresidpvar =0; // unbiased time residual and associated measurement and parameter variances
+    Float_t         _udresid=0, _udresidmvar=0, _udresidpvar =0; // unbiased distance residual and associated measurement and parameter variances
+    Float_t         _rtresid=0, _rtresidmvar=0, _rtresidpvar =0; // reference time residual and associated measurement and parameter variances
+    Float_t         _rdresid=0, _rdresidmvar=0, _rdresidpvar =0; // reference distance residual and associated measurement and parameter variances
 
     // BTrk legacy payload
     HitT0       _t0;     // time origin for this hit = track t0 + particle propagation time to this straw
-    float_t     _trklen;    // track flightlength
-    float_t     _hitlen;    // hit flightlength
-    Float_t     _stime;   // signal propagation time for this hit, to the nearest end
+    float_t     _trklen =0;    // track flightlength
+    float_t     _hitlen =0;    // hit flightlength
+    Float_t     _stime =0;   // signal propagation time for this hit, to the nearest end
   };
   // binary functor to sort TrkStrawHits by StrawHit index
   struct indexcompseed : public std::binary_function<TrkStrawHitSeed,TrkStrawHitSeed, bool> {
