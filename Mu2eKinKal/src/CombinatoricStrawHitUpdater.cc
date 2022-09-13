@@ -23,9 +23,8 @@ namespace mu2e {
       allowed_.emplace_back(WireHitState::left,StrawHitUpdaters::Combinatoric,nulldoca_);
       allowed_.emplace_back(WireHitState::right,StrawHitUpdaters::Combinatoric,nulldoca_);
     }
-    std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " allowed states" << allowed << " states to freeze " << freeze_  << " unfreeze input? " << unfreeze_ << std::endl;
+    if(diag_ > 0)std::cout << "CombinatoricStrawHitUpdater " << inactivep_ << " " << nullp_ << " " << mindchi2_ << " " << nulldoca_ << " allowed states" << allowed << " states to freeze " << freeze_  << " unfreeze input? " << unfreeze_ << std::endl;
   }
-
 
   // set the state of unambiguous hits to their drift value.
   ClusterState CombinatoricStrawHitUpdater::selectBest(ClusterStateCOL& cstates) const {
@@ -40,12 +39,12 @@ namespace mu2e {
       ++test;
     }
     for(auto& whs : best.hitstates_) whs.frozen_ =  whs.isIn(freeze_);
-    if(diag_ > 0){
+    if(diag_ > 1){
       std::cout << "Best Cluster " << best.chi2_ << " hit states ";
       for(auto whs : best.hitstates_)std::cout << "  " << whs.state_;
       std::cout << std::endl;
     }
-    if(diag_ > 1){
+    if(diag_ > 2){
       for(auto const&  cstate: cstates) {
         std::cout << "Combi " << cstate.chi2_ << " hit states ";
         for(auto whstate : cstate.hitstates_) std::cout << "  " << whstate.state_;

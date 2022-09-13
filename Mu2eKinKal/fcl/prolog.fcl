@@ -53,15 +53,15 @@ Mu2eKinKal : {
     ]
     CAStrawHitUpdaterSettings : [
       # maxdoca, minrdfirt, maxrdrift,tofreeze
-      [ 20.0, 5.0, 5.0, "" ],
-      [ 10.0, 5.0, 4.0, "" ],
-      [ 10.0, 5.0, 3.0, "" ]
+      [ 20.0, 5.0, 5.0, "", 0 ],
+      [ 10.0, 5.0, 4.0, "", 0 ],
+      [ 10.0, 5.0, 3.0, "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [10.0, -1.0, -1.0, true ],
-      [10.0, -1.0, -1.0, true ],
-      [10.0, -1.0, -1.0, true ]
+      [10.0, -1.0, -1.0, true, 0 ],
+      [10.0, -1.0, -1.0, true, 0 ],
+      [10.0, -1.0, -1.0, true, 0 ]
     ]
   }
 
@@ -81,19 +81,19 @@ Mu2eKinKal : {
       # annealing temp, strawhit updater algorithm
       [ 2.0, "ClosestApproach" ],
       [ 1.0, "ClosestApproach" ],
-      [ 0.0, "ClosestApproach" ]
+      [ 0.3, "ClosestApproach" ]
     ]
     CAStrawHitUpdaterSettings : [
       # maxdoca, minrdrift, maxrdrift,tofreeze
-      [ 10.0, 5.0, 5.0, "" ],
-      [ 10.0, 5.0, 4.0, "" ],
-      [ 10.0, 5.0, 3.0, "" ]
+      [ 10.0, 5.0, 5.0, "", 0 ],
+      [ 10.0, 5.0, 4.0, "", 0 ],
+      [ 10.0, 5.0, 3.0, "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [10.0, -1.0, -1.0, true ],
-      [5.0, -1.0, -1.0, true ],
-      [3.0, 3.0, -1.0, true ]
+      [10.0, -1.0, -1.0, true, 0 ],
+      [5.0, -1.0, -1.0, true, 0 ],
+      [3.0, 3.0, -1.0, true, 0 ]
     ]
   }
 
@@ -125,14 +125,14 @@ Mu2eKinKal : {
       [ 0.0, "Combinatoric" ]
     ]
     CAStrawHitUpdaterSettings : [
-      # maxdoca, minrdrift, maxrdrift,tofreeze
-      [ 10.0, 5.0, 5.0, "" ],
-      [ 10.0, 5.0, 5.0, "" ],
-      [ 10.0, 5.0, 3.0, "Inactive" ],
-      [ 8.0, 0.5, 3.0, "Inactive" ]
+      # maxdoca, minrdrift, maxrdrift,tofreeze, diag
+      [ 10.0, 5.0, 5.0, "", 0 ],
+      [ 10.0, 5.0, 5.0, "", 0 ],
+      [ 10.0, 5.0, 3.0, "Inactive", 0 ],
+      [ 8.0, 0.5, 3.0, "Inactive", 0 ]
     ]
     ANNStrawHitUpdaterSettings : [
-      [ "Offline/Mu2eKinKal/data/LR_constant_Seed.weights.xml",0.95,1.5,"Drift"]
+      [ "Offline/Mu2eKinKal/data/LR_constant_Seed.weights.xml",0.95,1.5,"Drift", 0]
     ]
     CombinatoricStrawHitUpdaterSettings : [
       # mincsize, inactivep, nullp, mindchi2, mindoca, allow, freeze, unfreeze, diag
@@ -146,18 +146,18 @@ Mu2eKinKal : {
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [ 10.0, -1.0, -1.0, true ],
-      [ 5.0, -1.0, -1.0, true ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ],
-      [ 3.0, 2.5, 1.0,  false ]
+      [ 10.0, -1.0, -1.0, true, 0 ],
+      [ 5.0,  -1.0, -1.0, true, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ],
+      [ 3.0,   2.5, 1.0,  false, 0 ]
     ]
   }
 

@@ -9,18 +9,15 @@ namespace mu2e {
   using KinKal::VEC3;
   ANNStrawHitUpdater::ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig) {
     mva_  = new MVATools(std::get<0>(annshuconfig));
+    mva_->initMVA();
     mvacut_ = std::get<1>(annshuconfig);
     nulldoca_ = std::get<2>(annshuconfig);
     std::string freeze = std::get<3>(annshuconfig);
     freeze_ = WHSMask(freeze);
-    std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null doca " << nulldoca_ << " freezeing " << freeze_ << std::endl;
-    mva_->initMVA();
-    mva_->showMVA();
-    // outlier cuts: for now hardcode.  These should come from a central source FIXME
-    mintdrift_ = -2.0;
-    maxtdrift_ = 48.0;
-    maxdoca_ = 5.0;
-    maxresidpull_ = 10.0;
+    diag_ = std::get<4>(annshuconfig);
+    if(diag_ > 0)
+      std::cout << "ANNStrawHitUpdater " << " anncut " << mvacut_ << " null doca " << nulldoca_ << " freezeing " << freeze_ << std::endl;
+    if(diag_ > 1)mva_->showMVA();
   }
 
   std::string const& ANNStrawHitUpdater::configDescription() {
