@@ -158,12 +158,15 @@ namespace mu2e {
         StrawHitFlag hflag = chit.flag();
         if(tsh->isActive())hflag.merge(StrawHitFlag::active);
         if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-        // fill the seed.  I have to protect the class from TrkStrawHit to avoid a circular dependency, FIXME!
-        TrkStrawHitSeed seedhit(tsh->index(),
+        int state = tsh->ambig();
+        if(!tsh->isActive())state = -2;
+        CLHEP::Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen());
+        float upos = (hpos-tsh->straw().wirePosition(0.0)).dot(tsh->straw().wireDirection());
+        float dt = tsh->signalTime() - tsh->driftTime()-tsh->hitT0()._t0;
+        hitseeds.emplace_back(tsh->index(),
             tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-            tsh->driftRadius(), tsh->signalTime(),
-            tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
-        hitseeds.push_back(seedhit);
+            tsh->driftRadius(), tsh->signalTime(), upos, dt,
+            tsh->poca().doca(), state, tsh->driftRadiusErr(), hflag, chit);
       }
     }
 

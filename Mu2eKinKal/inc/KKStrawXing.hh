@@ -5,13 +5,21 @@
 //
 #include "KinKal/Detector/ElementXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
+  using KinKal::SVEC3;
+  using KinKal::DVEC;
+  using KinKal::CAHint;
+  using KinKal::TimeDir;
+  using KinKal::DPDV;
+  using KinKal::MomBasis;
+  using KinKal::NParams;
+  using KinKal::Line;
   template <class KTRAJ> class KKStrawXing : public KinKal::ElementXing<KTRAJ> {
     public:
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
@@ -30,6 +38,8 @@ namespace mu2e {
       // ElementXing interface
       void updateReference(KTRAJPTR const& ktrajptr) override;
       void updateState(MetaIterConfig const& config,bool first) override;
+      Parameters parameters(TimeDir tdir) const override;
+      std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
       // offset time WRT TOCA to avoid exact overlapp with the wire hit.  Note: the offset must be POSITIVE to insure
       // Xing is updated after the associated hit
       double time() const override { return tpca_.particleToca() + toff_; }
@@ -45,11 +55,14 @@ namespace mu2e {
     private:
       StrawId sid_; // StrawId
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
-      KinKal::Line axis_; // straw axis, expressed as a timeline
+      Line axis_; // straw axis, expressed as a timeline
       KKStrawMaterial const& smat_;
       CA tpca_; // result of most recent TPOCA
       double toff_; // small time offset
-      KKStrawXingUpdater sxconfig_; // note this must come from an updater during processing
+      StrawXingUpdater sxconfig_; // note this must come from an updater during processing
+      std::vector<MaterialXing> mxings_;
+      Parameters fparams_; // parameter change for forwards time
+      double varscale_; // variance scale
   };
 
   template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(PCA const& pca, KKStrawMaterial const& smat, StrawId sid) :
@@ -57,7 +70,8 @@ namespace mu2e {
     axis_(pca.sensorTraj()),
     smat_(smat),
     tpca_(pca.localTraj(),axis_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()),
-    toff_(smat.wireRadius()/pca.particleTraj().speed(pca.particleToca())) // locate the effect to 1 side of the wire to avoid overlap with hits
+    toff_(smat.wireRadius()/pca.particleTraj().speed(pca.particleToca())), // locate the effect to 1 side of the wire to avoid overlap with hits
+    varscale_(1.0)
   {}
 
   template <class KTRAJ> KKStrawXing<KTRAJ>::KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat) :
@@ -70,15 +84,22 @@ namespace mu2e {
   {}
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
-    KinKal::CAHint tphint = tpca_.usable() ?  tpca_.hint() : KinKal::CAHint(axis_.range().mid(),axis_.range().mid());
+    CAHint tphint = tpca_.usable() ?  tpca_.hint() : CAHint(axis_.range().mid(),axis_.range().mid());
     tpca_ = CA(ktrajptr,axis_,tphint,precision());
     if(!tpca_.usable())throw cet::exception("RECO")<<"mu2e::KKStrawXing: TPOCA failure" << std::endl;
  }
 
+  template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::parameters(TimeDir tdir) const {
+    if(tdir == TimeDir::forwards)
+      return fparams_;
+    else
+      return Parameters(-fparams_.parameters(),fparams_.covariance());
+  }
+
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
     if(first) {
       // search for an update to the xing configuration among this meta-iteration payload
-      auto sxconfig = miconfig.findUpdater<KKStrawXingUpdater>();
+      auto sxconfig = miconfig.findUpdater<StrawXingUpdater>();
       if(sxconfig != 0){
         sxconfig_ = *sxconfig;
       }
@@ -87,9 +108,37 @@ namespace mu2e {
         sxconfig_.hitstate_ = shptr_->hitState();
       else
         sxconfig_.hitstate_ = WireHitState::inactive;
+      if(sxconfig_.scalevar_)
+        varscale_ = miconfig.varianceScale();
     }
     // find the material xings from gas, straw wall, and wire
-    smat_.findXings(tpca_.tpData(),sxconfig_,EXING::matXings());
+    smat_.findXings(tpca_.tpData(),sxconfig_,mxings_);
+    // reset
+    fparams_ = Parameters();
+    if(mxings_.size() > 0){
+      // compute the parameter effect for forwards time
+      std::array<double,3> dmom = {0.0,0.0,0.0}, momvar = {0.0,0.0,0.0};
+      this->materialEffects(TimeDir::forwards, dmom, momvar);
+      // get the parameter derivative WRT momentum
+      DPDV dPdM = referenceTrajectory().dPardM(time());
+      double mommag = referenceTrajectory().momentum(time());
+      // loop over the momentum change basis directions, adding up the effects on parameters from each
+      for(int idir=0;idir<MomBasis::ndir; idir++) {
+        auto mdir = static_cast<MomBasis::Direction>(idir);
+        auto dir = referenceTrajectory().direction(time(),mdir);
+        // project the momentum derivatives onto this direction
+        DVEC pder = mommag*(dPdM*SVEC3(dir.X(), dir.Y(), dir.Z()));
+        // convert derivative vector to a Nx1 matrix
+        ROOT::Math::SMatrix<double,NParams(),1> dPdm;
+        dPdm.Place_in_col(pder,0,0);
+        // update the transport for this effect; Forward time propagation corresponds to energy loss
+        fparams_.parameters() += pder*dmom[idir];
+        // now the variance: this doesn't depend on time direction
+        ROOT::Math::SMatrix<double, 1,1, ROOT::Math::MatRepSym<double,1>> MVar;
+        MVar(0,0) = momvar[idir]*varscale_;
+        fparams_.covariance() += ROOT::Math::Similarity(dPdm,MVar);
+      }
+    }
   }
 
   template <class KTRAJ> double KKStrawXing<KTRAJ>::transitTime() const {
@@ -99,7 +148,7 @@ namespace mu2e {
   template <class KTRAJ> void KKStrawXing<KTRAJ>::print(std::ostream& ost,int detail) const {
     ost <<"KKStraw Xing time " << this->time();
     if(detail > 0){
-      for(auto const& mxing : this->matXings()){
+      for(auto const& mxing : mxings_){
         ost << " " << mxing.dmat_.name() << " pathLen " << mxing.plen_;
       }
     }

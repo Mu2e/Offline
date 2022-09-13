@@ -30,6 +30,7 @@ CommonMC: {
 
   SelectRecoMC : {
     module_type : SelectRecoMC
+    PBTMC : EWMProducer
     debugLevel : 0
   }
   DigiSim : [ EWMProducer  ]

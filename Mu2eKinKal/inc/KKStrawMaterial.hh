@@ -9,7 +9,7 @@
 #include "KinKal/MatEnv/MatDBInfo.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/TrackerGeom/inc/StrawProperties.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
@@ -25,11 +25,11 @@ namespace mu2e {
       KKStrawMaterial(MatEnv::MatDBInfo const& matdbinfo,StrawProperties const& sprops,
       const char* wallmat="straw-wall", const char* gasmat="straw-gas", const char* wiremat="straw-wire");
       // pathlength through straw components, given closest approach
-      void pathLengths(ClosestApproachData const& cadata,KKStrawXingUpdater const& caconfig, double& wallpath, double& gaspath, double& wirepath) const;
+      void pathLengths(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, double& wallpath, double& gaspath, double& wirepath) const;
       // transit length given closest approach
       double transitLength(ClosestApproachData const& cadata) const;
       // find the material crossings given doca and error on doca.  Should allow for straw and wire to have different axes TODO
-      void findXings(ClosestApproachData const& cadata,KKStrawXingUpdater const& caconfig, std::vector<MaterialXing>& mxings) const;
+      void findXings(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, std::vector<MaterialXing>& mxings) const;
       double gasRadius() const { return sprops_.strawInnerRadius(); }
       double strawRadius() const { return sprops_.strawOuterRadius(); }
       double wallThickness() const { return sprops_.strawWallThickness(); }
