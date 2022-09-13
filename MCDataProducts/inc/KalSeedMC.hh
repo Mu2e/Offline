@@ -8,6 +8,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -76,8 +77,12 @@ namespace mu2e {
     StrawHitIndex _sdmcindex; // index into the original StrawDigiMC collection
     StrawHitIndex _spindex; // index into the associated SimPartStub of this DigiMC
     StrawId _strawId; // the ID of the straw that was hit
+    StrawEnd _earlyend; // end with the earliest MC true signal above threshold
     float _energySum; // sum of all MC true energy deposited by trigger particles
     float _time; // time of trigger StepPoint with time maps applied, wrapped to the beam
+    float _tdrift; // true drift time (from particle crossing to threshold-crossing signal reaching wire)
+    float _rdrift; // true drift radius, given the above (using single-cluster time-to-distance)
+    float _tprop; // signal propagation time of from the wire crossing point to the nearest end
     XYZVectorF _cpos; // trigger cluster position in detector coordinates
     XYZVectorF _mom; // momentum of particle at point where digi created
   };

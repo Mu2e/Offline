@@ -4,7 +4,7 @@
 # services.DbService.purpose: MDC2020_perfect
 # services.DbService.version: v1_0
 #
-# To conver the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
+# To convert the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
 # physics.producers.KKDeMDriftFit.module_type : CentralHelixFit
 
 #include "Offline/fcl/minimalMessageService.fcl"
@@ -61,7 +61,15 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
+
+
 #include "Production/JobConfig/reco/epilog.fcl"
+services.ProditionsService.strawResponse.useOldDrift: false
+services.ProditionsService.strawResponse.driftFit : [0.0,1.0,0.001]
+services.ProditionsService.strawResponse.driftResIsTime : false
+services.ProditionsService.strawResponse.driftResBins : [0.0,0.5,1.0,1.5,2.0,2.5]
+services.ProditionsService.strawResponse.driftRes : [0.5,0.45,0.4,0.25,0.2,0.15]
+
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
@@ -83,8 +91,10 @@ physics.producers.KKDeMDriftFit.KinKalFitSettings.PrintLevel : 0
 services.TFileService.fileName: "KKDrift.root"
 #
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
+physics.analyzers.TAKK.candidate.options.fillBestCrv : false
 physics.analyzers.TAKK.diagLevel : 2
 physics.analyzers.TAKK.FillMCInfo : true
+physics.analyzers.TAKK.FillCRV : false
 physics.analyzers.TAKK.FillTrkQualInfo : false
 physics.analyzers.TAKK.FillTrkPIDInfo : false
 physics.analyzers.TAKK.FillHitInfo : true

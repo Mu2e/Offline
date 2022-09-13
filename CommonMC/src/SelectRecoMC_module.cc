@@ -13,6 +13,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
+#include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/DataProducts/inc/IndexMap.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
@@ -23,6 +24,7 @@
 #include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -34,6 +36,10 @@
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"
 // Utilities
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -68,6 +74,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> SDMCC          { Name("StrawDigiMCCollection"),          Comment("StrawDigiMCCollection")};
         fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),                  Comment("CrvDigiCollection")};
         fhicl::Atom<art::InputTag> CRVDMCC        { Name("CrvDigiMCCollection"),                  Comment("CrvDigiMCCollection")};
+        fhicl::Atom<art::InputTag> PBTMC          { Name("PBTMC"),                  Comment("ProtonBunchTimeMC")};
         fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),                  Comment("KalSeedCollections")};
         fhicl::Sequence<std::string> HelixSeeds   { Name("HelixSeedCollections"),                  Comment("HelixSeedCollections")};
         fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
@@ -82,8 +89,8 @@ namespace mu2e {
       typedef std::vector<TrkMCTools::spcount>SPCC;
       typedef std::set<StrawHitIndex> SHIS;
       // utility functions
-      void fillTSHMC         (KalSeed const& seed, SPCC const& spcc, StrawDigiMCCollection const& sdmcc,KalSeedMC& mcseed);
-      void fillUnusedTSHMC   (SPCC const& spcc, StrawDigiMCCollection const& sdmcc, KalSeedMC& mcseed);
+      void fillTSHMC         (KalSeed const& seed, SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
+      void fillUnusedTSHMC   (SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
       void fillVDSP          (GeomHandle<DetectorSystem>const& det, art::Ptr<SimParticle> const& psp, StepPointMCCollection const& vdspc, KalSeedMC& mcseed);
       void fillSPStubs       (SPCC const& spcc, PrimaryParticle const& pp, KalSeedMC& mcseed);
       void fillSDMCI         (KalSeedMC const& mcseed,SHIS& shindices);
@@ -93,13 +100,14 @@ namespace mu2e {
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,PrimaryParticle const& pp, RecoCount& nrec);
       int _debug;
       bool _saveallenergy, _saveunused, _saveallunused;
-      art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc;
+      art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
       std::vector<std::string> _kscs, _hscs;
       SimParticleTimeOffset _toff;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
-
+      double _pbtimemc; // mc true proton bunch time
+      ProditionsHandle<StrawResponse> _strawResponse_h;
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  :
@@ -118,6 +126,7 @@ namespace mu2e {
     _sdmcc(config().SDMCC()),
     _crvdc(config().CRVDC()),
     _crvdmcc(config().CRVDMCC()),
+    _pbtmc(config().PBTMC()),
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
     _hscs(config().HelixSeeds()),
@@ -136,6 +145,7 @@ namespace mu2e {
       consumes<PrimaryParticle>(_pp);
       consumes<StrawDigiMCCollection>(_sdmcc);
       consumes<CrvDigiMCCollection>(_crvdmcc);
+      consumes<ProtonBunchTimeMC>(_pbtmc);
       produces <IndexMap>("StrawDigiMap");
       produces <IndexMap>("CrvDigiMap");
       produces <KalSeedMCCollection>();
@@ -163,9 +173,10 @@ namespace mu2e {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
     _toff.updateMap(event);
-
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
+    auto pbtmc = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
+    _pbtimemc = pbtmc->pbtime_;
 
     std::unique_ptr<RecoCount> nrec(new RecoCount);
     std::set<art::Ptr<CaloCluster> > ccptrs;
@@ -205,7 +216,7 @@ namespace mu2e {
   }
 
   void SelectRecoMC::fillTSHMC(KalSeed const& seed, SPCC const& spcc,
-      StrawDigiMCCollection const& sdmcc, KalSeedMC& mcseed) {
+      StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed) {
     for(auto const& hit : seed.hits() ) {
       // create a TrkStrawHitMC for each hit on the seed
       TrkStrawHitMC tshmc;
@@ -229,12 +240,26 @@ namespace mu2e {
       tshmc._mom = mcstep.momentum();
       tshmc._time = fmod(mcstep.time(),_mbtime);
       tshmc._strawId = sdmc.strawId();
+      tshmc._earlyend = sdmc.earlyEnd();
+      // compute the signal propagation time and drift time
+      double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*hit.energyDep());
+      auto const& straw = tracker.straw(sdmc.strawId());
+      double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
+      tshmc._tprop = pdist/vprop;
+      tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge FIXME!
+      // mc true drift radius, given this drift time
+      auto wdir = XYZVectorF(straw.wireDirection());
+      auto tdir = mcstep.momentum().Unit();
+      auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
+      const static XYZVectorF bdir(0.0,0.0,1.0);// assumes B along Z
+      double phi = acos(tperp.Dot(bdir)); // Lorentz angle
+      tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
       mcseed._tshmcs.push_back(tshmc);
     }
   }
 
-  void SelectRecoMC::fillUnusedTSHMC( SPCC const& spcc,
-      StrawDigiMCCollection const& sdmcc,
+  void SelectRecoMC::fillUnusedTSHMC( SPCC const& spcc, StrawDigiMCCollection const& sdmcc,
+      Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep,
       KalSeedMC& mcseed) {
     // either keep hits only from the primary or from all contributing
     size_t ispmax = _saveallunused? spcc.size() : 1;
@@ -262,6 +287,19 @@ namespace mu2e {
             tshmc._mom = mcstep.momentum();
             tshmc._time = sdmc.clusterTime(sdmc.earlyEnd());
             tshmc._strawId = sdmc.strawId();
+            tshmc._earlyend = sdmc.earlyEnd();
+           // compute the signal propagation time and drift time
+            double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
+            auto const& straw = tracker.straw(sdmc.strawId());
+            double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
+            tshmc._tprop = pdist/vprop;
+            tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
+            auto wdir = XYZVectorF(straw.wireDirection());
+            auto tdir = mcstep.momentum().Unit();
+            auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
+            const static XYZVectorF bdir(0.0,0.0,1.0);
+            double phi = acos(tperp.Dot(bdir)); // Lorentz angle
+            tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
             mcseed._tshmcs.push_back(tshmc);
           }
         }
@@ -313,6 +351,9 @@ namespace mu2e {
   void SelectRecoMC::fillTrk( art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,
       PrimaryParticle const& pp, RecoCount& nrec) {
     GeomHandle<DetectorSystem> det;
+    auto srep = _strawResponse_h.getPtr(event.id());
+    Tracker const & tracker = *(GeomHandle<Tracker>());
+
     // Tracker-reated data products
     auto sdch = event.getValidHandle<StrawDigiCollection>(_sdc);
     auto const& sdc = *sdch;
@@ -366,9 +407,9 @@ namespace mu2e {
           // create the KalSeedMC for this reco seed and fill the parts
           KalSeedMC mcseed;
           fillSPStubs(spcc,pp,mcseed);
-          fillTSHMC(seed,spcc,sdmcc,mcseed);
+          fillTSHMC(seed,spcc,sdmcc,tracker,srep,mcseed);
           // add DigiMCs not used in the track but from true particles used in the track
-          if(_saveunused)fillUnusedTSHMC(spcc,sdmcc,mcseed);
+          if(_saveunused)fillUnusedTSHMC(spcc,sdmcc,tracker,srep,mcseed);
           if(spcc.size() > 0 && vdspch.isValid()){
             auto const& vdspc = *vdspch;
             fillVDSP(det,spcc.front()._spp,vdspc,mcseed);

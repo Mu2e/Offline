@@ -3,11 +3,17 @@
 //
 #ifndef Mu2eKinKal_StrawHitUpdaters_hh
 #define Mu2eKinKal_StrawHitUpdaters_hh
+#include <string>
+#include <vector>
 
 namespace mu2e {
-  // types of updaters: these need to be extended if new updaters are defined
-  namespace StrawHitUpdaters {
-    enum algorithm: int {none=-1, null=0, DOCA=1, Combinatoric=2 };
-  }
+  // straw hit updater algorithms: this needs to be extended if new updaters are defined
+  struct StrawHitUpdaters {
+    enum algorithm: int {unknown=-1,none=0, CA=1, ANN=2, Bkg=3, Combinatoric=10, nalgos };
+    // translate from algo to name
+    static std::string const& name(algorithm alg);
+    static algorithm algo(std::string const& name);
+    static std::vector<std::string> names_;
+  };
 }
 #endif

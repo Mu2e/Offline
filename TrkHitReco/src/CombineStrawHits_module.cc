@@ -181,7 +181,7 @@ namespace mu2e {
     combohit._mask = _mask;
     combohit._flag.merge(StrawHitFlag::panelcombo);
 
-    float eacc(0),tacc(0),dtacc(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
+    float eacc(0),tacc(0),dtacc(0),dtweights(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
     XYZVectorF midpos;
     combohit._nsh = 0;
     if (_debug > 2) std::cout << "Combining " << combohit.nCombo() << " hits: ";
@@ -199,6 +199,7 @@ namespace mu2e {
       eacc += ch.energyDep();
       tacc += ch.time();// time is an unweighted average
       dtacc += ch.driftTime();
+      dtweights += 1.0/(ch.driftTimeRes()*ch.driftTimeRes());
       ptacc += ch.propTime();
       placc += ch.pathLength();
       werracc += ch.wireRes();
@@ -218,6 +219,7 @@ namespace mu2e {
     combohit._edep       = eacc/float(combohit.nCombo());
     combohit._time       = tacc/float(combohit.nCombo());
     combohit._dtime      = dtacc/float(combohit.nCombo());
+    combohit._dtimeres   = sqrt(1.0/dtweights);
     combohit._ptime      = ptacc/float(combohit.nCombo());
     combohit._pathlength = placc/float(combohit.nCombo());
     combohit._wdist      = wacc/weights;

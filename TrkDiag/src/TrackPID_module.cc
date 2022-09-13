@@ -97,7 +97,7 @@ namespace mu2e {
           auto const& tchs = kseed.caloHit();
           auto const& cc = tchs.caloCluster();
           XYZVectorF trkmom;
-          auto ikseg = kseed.nearestSegment(tchs.trkLen());
+          auto ikseg = kseed.nearestSegment(tchs.clusterAxisTOCA());
           if(ikseg != kseed.segments().end())
             ikseg->mom(ikseg->localFlt(tchs.trkLen()),trkmom);
           else

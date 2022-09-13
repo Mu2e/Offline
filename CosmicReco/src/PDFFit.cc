@@ -342,7 +342,7 @@ double GaussianDriftFit::operator()(const std::vector<double>& x) const {
     double drift_time = srep.driftDistanceToTime(this->shs[i].strawId(), pca.dca(), 0) +
               srep.driftTimeOffset(this->shs[i].strawId(), 0, 0, pca.dca());
 
-    double drift_res = srep.driftTimeError(this->shs[i].strawId(), 0, 0, pca.dca());
+    double drift_res = srep.driftTimeError(this->shs[i].strawId(), pca.dca(), 0);
 
     double traj_time = ((pca.point1() - intercept).dot(dir)) / 299.9;
     double hit_t0 = this->shs[i].time() - this->shs[i].propTime() - traj_time - drift_time;
@@ -445,7 +445,7 @@ double GaussianDriftFit::reduced_chisq(const std::vector<double>& x) {
     Straw const& straw = tracker->getStraw(shs[i].strawId());
     TwoLinePCA pca(intercept, dir, straw.getMidPoint(), straw.getDirection());
 
-    double drift_res = srep.driftTimeError(shs[i].strawId(), 0, 0, pca.dca());
+    double drift_res = srep.driftTimeError(shs[i].strawId(), pca.dca(), 0);
     chi_sq += pow(TimeResidual(shs[i], x) / drift_res, 2);
   }
 

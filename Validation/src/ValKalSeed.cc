@@ -1,6 +1,7 @@
 #include "Offline/Validation/inc/ValKalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include <cmath>
 
 int mu2e::ValKalSeed::declare(const art::TFileDirectory& tfs) {
@@ -38,7 +39,7 @@ int mu2e::ValKalSeed::declare(const art::TFileDirectory& tfs) {
       tfs.make<TH1D>("CCtlen", "Calo POCA Track Length", 100, 1000.0, 5000.0);
   _hHDrift = tfs.make<TH1D>("HDrift", "Hit Drift Radius;drift radius (mm)", 100,
                             0.0, 3.0);
-  _hHDOCA = tfs.make<TH1D>("HDOCA", "Hit Wire DOCA;DOCA (mm)", 100, -3.0, 3.0);
+  _hHDOCA = tfs.make<TH1D>("HDOCA", "Hit Wire DOCA;DOCA (mm)", 100, -5.0, 5.0);
   _hHEDep =
       tfs.make<TH1D>("HEDep", "Hit Energy Deposition;EDep (KeV)", 100, 0, 5.0);
   _hHPanel = tfs.make<TH1D>("HPanel", "Hit Unique Panel", 216, -0.5, 215.5);
@@ -65,7 +66,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection& coll,
                            art::Event const& event) {
   // increment this by 1 any time the defnitions of the histograms or the
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(5.0);
+  _hVer->Fill(6.0);
 
   // p of highest momentum electron SimParticle with good tanDip
   double p_mc = mcTrkP(event);
@@ -164,7 +165,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection& coll,
     }
     // Assocated TrkStrawHit info
     for (auto const& tshs : ks.hits()) {
-      if (tshs.flag().hasAllProperties(StrawHitFlag::active)) {
+      if (tshs.strawHitState()>WireHitState::inactive) {
         _hHDrift->Fill(tshs.driftRadius());
         _hHDOCA->Fill(tshs.wireDOCA());
         _hHEDep->Fill(1000 * tshs.energyDep());

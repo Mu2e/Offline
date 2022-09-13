@@ -61,7 +61,7 @@ namespace mu2e {
       void convertTypes( KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings,KKCALOHITCOL const& calohits,
           MEASCOL& hits, EXINGCOL& exings);
       // add hits to clusters
-      void addHitClusters(KKSTRAWHITCOL const& strawhits,MEASCOL& hits);
+      void addHitClusters(KKSTRAWHITCOL const& strawhits,KKSTRAWXINGCOL const& strawxings, MEASCOL& hits);
   };
 
   template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart,
@@ -76,7 +76,7 @@ namespace mu2e {
       MEASCOL hits; // polymorphic container of hits
       EXINGCOL exings; // polymorphic container of detector element crossings
       // add the hits to clusters, as required
-      addHitClusters(strawhits_,hits);
+      addHitClusters(strawhits_,strawxings_,hits);
       if(this->config().plevel_ > 0){
         std::cout << "created " << strawhitclusters_.size() << " StrawHitClusters " << std::endl;
         for (auto const& shcluster : strawhitclusters_) {
@@ -87,7 +87,7 @@ namespace mu2e {
       this->fit(hits,exings);
     }
 
-  template <class KTRAJ> void KKTrack<KTRAJ>::addHitClusters(KKSTRAWHITCOL const& strawhits,MEASCOL& hits) {
+  template <class KTRAJ> void KKTrack<KTRAJ>::addHitClusters(KKSTRAWHITCOL const& strawhits,KKSTRAWXINGCOL const& strawxings,MEASCOL& hits) {
     if(shclusterer_.clusterLevel() != StrawIdMask::none){
       for(auto const& strawhitptr : strawhits){
         bool added(false);
@@ -101,6 +101,23 @@ namespace mu2e {
         if(!added){
           strawhitclusters_.emplace_back(std::make_shared<KKSTRAWHITCLUSTER>(strawhitptr));
           hits.emplace_back(std::static_pointer_cast<MEAS>(strawhitclusters_.back()));
+        }
+      }
+      // now add material between clusters
+      for(auto& shclusterptr : strawhitclusters_) {
+        if(shclusterptr->strawHits().size()>1){
+          auto trange = shclusterptr->timeRange();
+          for(auto const& sxing : strawxings ) {
+            if(trange.inRange(sxing->time())){
+              shclusterptr->addXing(sxing);
+            }
+          }
+          // also check existing material
+          for(auto const& sxing : strawxings_ ) {
+            if(trange.inRange(sxing->time())){
+              shclusterptr->addXing(sxing);
+            }
+          }
         }
       }
     }
@@ -123,7 +140,7 @@ namespace mu2e {
     // convert the hits and Xings to generic types and extend the track
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings
-    addHitClusters(strawhits,hits);
+    addHitClusters(strawhits,strawxings,hits);
     if(strawhits.size() > 0 && this->config().plevel_ > 0){
       unsigned nhit(0);
       std::cout << "extended " << strawhits.size() << " hits into " << strawhitclusters_.size() << " StrawHitClusters " << std::endl;
@@ -158,6 +175,7 @@ namespace mu2e {
       for(auto const& strawhit : strawhits_) strawhit->print(std::cout,2);
       for(auto const& calohit : calohits_) calohit->print(std::cout,2);
       for(auto const& strawxing :strawxings_) strawxing->print(std::cout,2);
+      for(auto const& strawhitcluster :strawhitclusters_) strawhitcluster->print(std::cout,2);
     }
   }
 

@@ -67,8 +67,8 @@ namespace mu2e {
   }
 
   //T2D for reco
-  double StrawDrift::T2D(double time, double phi) const {
-    if (time < 0)
+  double StrawDrift::T2D(double time, double phi, bool nonnegative) const {
+    if (time < 0 && nonnegative)
       return 0;
     float phiSliceWidth = (TMath::Pi()/2.0)/float(_phiBins-1);
     //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
