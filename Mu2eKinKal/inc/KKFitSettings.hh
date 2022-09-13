@@ -39,15 +39,15 @@ namespace mu2e {
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
-      using CAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,std::string>>;
+      using CAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,std::string,int>>;
       CAStrawHitUpdaterSettings cashuConfig{ Name("CAStrawHitUpdaterSettings"), Comment(CAStrawHitUpdater::configDescription()) };
-      using ANNStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string>>;
+      using ANNStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,int>>;
       ANNStrawHitUpdaterSettings annshuConfig{ Name("ANNStrawHitUpdaterSettings"), Comment(ANNStrawHitUpdater::configDescription()) };
-      using BkgStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string>>;
+      using BkgStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
       BkgStrawHitUpdaterSettings bkgshuConfig{ Name("BkgStrawHitUpdaterSettings"), Comment(BkgStrawHitUpdater::configDescription()) };
       using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,std::string,std::string,bool,int>>;
       CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment(CombinatoricStrawHitUpdater::configDescription()) };
-      using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool>>;
+      using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
     // function to convert fhicl configuration to KinKal Config object

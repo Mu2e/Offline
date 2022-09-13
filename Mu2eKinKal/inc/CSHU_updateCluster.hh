@@ -34,7 +34,7 @@ namespace mu2e {
     // with these clusters
     double determinant;
     if(!uparams.covariance().Det(determinant) || determinant < std::numeric_limits<float>::min()){
-      if(diag_ > 0)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
+      if(diag_ > 2)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
       return;
     }
     // iterate over allowed states of each hit, and incrementally compute the total chisquared for all the hits in the cluster WRT the unbiased parameters
@@ -66,7 +66,7 @@ namespace mu2e {
             //              if(pvar<0) throw cet::exception("RECO")<<"mu2e::KKStrawHitCluster: negative variance " << pvar << std::endl;
             if(pvar<0){
               // another symptom of under-constrained clusters is negative variances.  I need a better strategy for these TODO
-              if(diag_ > 0) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
+              if(diag_ > 2) std::cout <<"mu2e::KKStrawHitCluster: negative variance " << pvar
                 << " determinant = " << determinant << std::endl;
               pvar = resid.parameterVariance();
             }
