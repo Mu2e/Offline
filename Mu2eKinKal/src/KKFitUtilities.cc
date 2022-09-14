@@ -12,7 +12,7 @@ namespace mu2e {
       return KinKal::Line(vp0,vp1,ch.time(),sprop);
     }
     bool inDetector(KinKal::VEC3 const& point) {
-      return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker FIXME!
+      return point.Rho() < 900.0 && fabs(point.Z()) < 1800; // numbers should come from Tracker TODO
     }
     double LorentzAngle(KinKal::ClosestApproachData const& ptca, KinKal::VEC3 const& bdir) {
       auto tperp = (ptca.particleDirection() - ptca.particleDirection().Dot(ptca.sensorDirection())*ptca.sensorDirection()).unit();
@@ -20,8 +20,8 @@ namespace mu2e {
     }
     bool insideStraw(KinKal::ClosestApproachData const& ca,Straw const& straw,double ubuffer)  {
       // compute the position along the wire and compare to the 1/2 length
-      // have to translate from CLHEP, should be native to Straw FIXME
-      double upos = KinKal::VEC3(straw.wireDirection()).Dot((ca.sensorPoca().Vect() - KinKal::VEC3(straw.origin())));
+      // have to translate from CLHEP, should be native to Straw TODO
+      double upos = ca.sensorDirection().Dot((ca.sensorPoca().Vect() - KinKal::VEC3(straw.origin())));
       return fabs(upos) < straw.halfLength() + ubuffer;
     }
   }
