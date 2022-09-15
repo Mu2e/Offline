@@ -17,12 +17,10 @@
 // Art include files
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "art/Persistency/Provenance/ModuleContext.h"
 #include "art/Persistency/Provenance/ModuleDescription.h"
-#include "art/Persistency/Provenance/ScheduleContext.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 
 // Supporting library include files
@@ -90,7 +88,6 @@ namespace mu2e {
     iRegistry.sPostModuleConstruction.watch (this, &SeedService::postModuleConstruction );
     iRegistry.sPreModuleBeginRun.watch      (this, &SeedService::preModuleBeginRun      );
     iRegistry.sPostModuleBeginRun.watch     (this, &SeedService::postModuleBeginRun     );
-    iRegistry.sPostProcessEvent.watch       (this, &SeedService::postEvent              );
     iRegistry.sPostEndJob.watch             (this, &SeedService::postEndJob             );
 
     if ( verbosity_ > 0 ) {
@@ -318,12 +315,6 @@ namespace mu2e {
 
   void SeedService::postModuleBeginRun( art::ModuleContext const&){
     state_.clear();
-  }
-
-  void SeedService::postEvent             (art::Event const& ev, art::ScheduleContext context) {
-    if(verbosity_ > 1) {
-      std::cout << "SeedService postEvent Event " << ev.id() << " current seed " << currentSeed_ << std::endl;
-    }
   }
 
   void SeedService::postEndJob(){
