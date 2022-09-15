@@ -12,6 +12,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <cstddef>
 
 namespace mu2e {
   class ComboHit;
@@ -28,7 +29,7 @@ namespace mu2e {
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
       static std::string const& configDescription(); // description of the variables
     private:
-      MVATools* mva_ =0; // neural net calculator
+      MVATools* mva_ = nullptr; // neural net calculator
       double mvacut_ =0; // cut value to decide if drift information is usable
       double nulldoca_ =2.5; // null hit doca
       WHSMask freeze_; // states to freeze
