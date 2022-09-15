@@ -91,6 +91,7 @@ namespace mu2e {
       // utility functions
       void fillTSHMC         (KalSeed const& seed, SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
       void fillUnusedTSHMC   (SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
+      void fillTSHMC        (TrkStrawHitMC& tshmc, size_t isdmc, size_t isp,StrawDigiMC const& sdmc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep );
       void fillVDSP          (GeomHandle<DetectorSystem>const& det, art::Ptr<SimParticle> const& psp, StepPointMCCollection const& vdspc, KalSeedMC& mcseed);
       void fillSPStubs       (SPCC const& spcc, PrimaryParticle const& pp, KalSeedMC& mcseed);
       void fillSDMCI         (KalSeedMC const& mcseed,SHIS& shindices);
@@ -219,8 +220,6 @@ namespace mu2e {
       StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed) {
     for(auto const& hit : seed.hits() ) {
       // create a TrkStrawHitMC for each hit on the seed
-      TrkStrawHitMC tshmc;
-      tshmc._sdmcindex = hit.index();
       // find the referenced sim particle
       int spref(-1);
       auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
@@ -232,28 +231,8 @@ namespace mu2e {
         }
       }
       if(spref < 0)throw cet::exception("Reco")<<"mu2e::SelectRecoMC: missing index"<< std::endl;
-      tshmc._spindex = spref;
-      // fill other info directly from the StrawDigiMC
-      tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
-      const auto& mcstep = *(sdmc.earlyStrawGasStep());
-      tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
-      tshmc._mom = mcstep.momentum();
-      tshmc._time = fmod(mcstep.time(),_mbtime);
-      tshmc._strawId = sdmc.strawId();
-      tshmc._earlyend = sdmc.earlyEnd();
-      // compute the signal propagation time and drift time
-      double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*hit.energyDep());
-      auto const& straw = tracker.straw(sdmc.strawId());
-      double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
-      tshmc._tprop = pdist/vprop;
-      tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge FIXME!
-      // mc true drift radius, given this drift time
-      auto wdir = XYZVectorF(straw.wireDirection());
-      auto tdir = mcstep.momentum().Unit();
-      auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
-      const static XYZVectorF bdir(0.0,0.0,1.0);// assumes B along Z
-      double phi = acos(tperp.Dot(bdir)); // Lorentz angle
-      tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
+      TrkStrawHitMC tshmc;
+      fillTSHMC(tshmc,hit.index(),spref,sdmc,tracker,srep);
       mcseed._tshmcs.push_back(tshmc);
     }
   }
@@ -278,33 +257,38 @@ namespace mu2e {
             }
           }
           if(!used){
-            // record the reference
             TrkStrawHitMC tshmc;
-            tshmc._sdmcindex = isdmc;
-            tshmc._spindex = isp;
-            tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
-            tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
-            tshmc._mom = mcstep.momentum();
-            tshmc._time = sdmc.clusterTime(sdmc.earlyEnd());
-            tshmc._strawId = sdmc.strawId();
-            tshmc._earlyend = sdmc.earlyEnd();
-           // compute the signal propagation time and drift time
-            double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
-            auto const& straw = tracker.straw(sdmc.strawId());
-            double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
-            tshmc._tprop = pdist/vprop;
-            tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
-            auto wdir = XYZVectorF(straw.wireDirection());
-            auto tdir = mcstep.momentum().Unit();
-            auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
-            const static XYZVectorF bdir(0.0,0.0,1.0);
-            double phi = acos(tperp.Dot(bdir)); // Lorentz angle
-            tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
+            fillTSHMC(tshmc,isdmc,isp,sdmc,tracker,srep);
             mcseed._tshmcs.push_back(tshmc);
           }
         }
       }
     }
+  }
+
+  void SelectRecoMC::fillTSHMC(TrkStrawHitMC& tshmc, size_t isdmc, size_t isp,StrawDigiMC const& sdmc,
+      Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep ) {
+    tshmc._sdmcindex = isdmc;
+    tshmc._spindex = isp;
+    tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
+    const auto& mcstep = *(sdmc.earlyStrawGasStep());
+    tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
+    tshmc._mom = mcstep.momentum();
+    tshmc._time = fmod(mcstep.time(),_mbtime);
+    tshmc._strawId = sdmc.strawId();
+    tshmc._earlyend = sdmc.earlyEnd();
+    // compute the signal propagation time and drift time
+    double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
+    auto const& straw = tracker.straw(sdmc.strawId());
+    double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
+    tshmc._tprop = pdist/vprop;
+    tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
+    auto wdir = XYZVectorF(straw.wireDirection());
+    auto tdir = mcstep.momentum().Unit();
+    auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
+    const static XYZVectorF bdir(0.0,0.0,1.0);
+    double phi = acos(tperp.Dot(bdir)); // Lorentz angle
+    tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
   }
 
   void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SHIS& shindices) {
