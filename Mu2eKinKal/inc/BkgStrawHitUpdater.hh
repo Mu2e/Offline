@@ -12,6 +12,7 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <cstddef>
 
 namespace mu2e {
   class ComboHit;
@@ -27,7 +28,7 @@ namespace mu2e {
       ~BkgStrawHitUpdater() { delete mva_; }
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
-      MVATools* mva_ =0; // neural net calculator
+      MVATools* mva_ =nullptr; // neural net calculator
       double mvacut_ =0; // cut value to decide if drift information is usable
       WHSMask freeze_; // states to freeze
       int diag_ =0; // diag print level
