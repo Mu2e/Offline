@@ -24,6 +24,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/GeneralUtilities/inc/compressPdgId.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "TH1F.h"
@@ -185,46 +186,8 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
     _hTime->Fill(p.time());
     _hPyOverPmag->Fill(mom4.py() / mom3.mag());
 
-    switch (p.pdgId()) {
-      case PDGCode::mu_minus: // mu-
-        _hPtypeKE->Fill(mom4.e(), 0); break;
-      case PDGCode::mu_plus: // mu+
-        _hPtypeKE->Fill(mom4.e(), 0); break;
-      case PDGCode::gamma: // photon
-        _hPtypeKE->Fill(mom4.e(), 1); break;
-      case PDGCode::e_plus: // e+
-        _hPtypeKE->Fill(mom4.e(), 2); break;
-      case PDGCode::e_minus: // e-
-        _hPtypeKE->Fill(mom4.e(), 2); break;
-      case PDGCode::n0: // neutron
-        _hPtypeKE->Fill(mom4.e(), 3); break;
-      case PDGCode::anti_n0: // neutron
-        _hPtypeKE->Fill(mom4.e(), 3); break;
-      case PDGCode::p_plus: // proton
-        _hPtypeKE->Fill(mom4.e(), 4); break;
-      case PDGCode::anti_p_minus: // proton
-        _hPtypeKE->Fill(mom4.e(), 4); break;
-      case PDGCode::pi0: // pi0
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case PDGCode::pi_plus: // pi+
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case PDGCode::pi_minus: // pi-
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case PDGCode::K_L0: // k0 L
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case PDGCode::K_S0: // k0 S
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case PDGCode::K0: // k0
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case PDGCode::anti_K0: // anti k0
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case PDGCode::K_plus: // k+
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case PDGCode::K_minus: // k-
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      default: // others
-        _hPtypeKE->Fill(mom4.e(), 7); break;
-    }
+    int pbin = compressPdgIdCosmic(p.pdgId());
+    _hPtypeKE->Fill(mom4.e(), pbin);
 
   }
 
