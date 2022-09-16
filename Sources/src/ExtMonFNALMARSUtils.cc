@@ -84,8 +84,8 @@ namespace mu2e {
         table[7] = PDGCode::mu_plus; // mu+
         table[8] = PDGCode::mu_minus; // mu-
         table[9] = PDGCode::gamma; // gamma
-        table[10] = PDGCode::e_plus; // e-
-        table[11] = PDGCode::e_minus; // e+
+        table[10] = PDGCode::e_minus; // e-
+        table[11] = PDGCode::e_plus; // e+
         table[12] = PDGCode::anti_proton; // p- (antiproton)
         table[13] = PDGCode::pi0; // pi0
         table[14] = PDGCode::deuteron; // deutron
