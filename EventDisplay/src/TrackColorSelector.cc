@@ -1,9 +1,9 @@
 using namespace std;
 #include "Offline/EventDisplay/src/TrackColorSelector.h"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 namespace mu2e_eventdisplay
 {
-
 void TrackColorSelector::setupTrackLegend()
 {
   for(int i=0; i<30; i++)
@@ -112,13 +112,13 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
   {
       case 1: switch(particleid)
               {
-                case   11:
-                case  -11: color=2; break;   //e+,e-
-                case   13:
-                case  -13: color=3; break;   //mu+,mu-
-                case   22: color=4; break;   //gamma
-                case 2112: color=5; break;   //n0
-                case 2212: color=6; break;   //protons
+                case  mu2e::PDGCode::e_minus:
+                case  mu2e::PDGCode::e_plus: color=2; break;   //e+,e-
+                case  mu2e::PDGCode::mu_minus:
+                case  mu2e::PDGCode::mu_plus: color=3; break;   //mu+,mu-
+                case  mu2e::PDGCode::gamma: color=4; break;   //gamma
+                case  mu2e::PDGCode::n0: color=5; break;   //n0
+                case  mu2e::PDGCode::proton: color=6; break;   //protons
                 default  : color=_whiteBackground?28:25;
               };
               break;
@@ -127,12 +127,12 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=2; break;   //e+,e-
-                  case   13:
-                  case  -13: color=3; break;   //mu+,mu-
-                  case   22: color=4; break;   //gamma
-                  case 2112: color=5; break;   //n0
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=2; break;   //e+,e-
+                  case  mu2e::PDGCode::mu_minus:
+                  case  mu2e::PDGCode::mu_plus: color=3; break;   //mu+,mu-
+                  case  mu2e::PDGCode::gamma: color=4; break;   //gamma
+                  case  mu2e::PDGCode::n0: color=5; break;   //n0
                   default  : color=_whiteBackground?28:25;
                 };
               }
@@ -141,12 +141,12 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=7; break;   //e+,e-
-                  case   13:
-                  case  -13: color=6; break;   //mu+,mu-
-                  case   22: color=8; break;  //gamma
-                  case 2112: color=9; break;  //n0
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=7; break;   //e+,e-
+                  case  mu2e::PDGCode::mu_minus:
+                  case  mu2e::PDGCode::mu_plus: color=6; break;   //mu+,mu-
+                  case  mu2e::PDGCode::gamma: color=8; break;  //gamma
+                  case  mu2e::PDGCode::n0: color=9; break;  //n0
                   default  : color=46;
                 };
               }
@@ -156,10 +156,10 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=2; break;   //e+,e-
-                  case   13:
-                  case  -13: color=3; break;   //mu+,mu-
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=2; break;   //e+,e-
+                  case  mu2e::PDGCode::mu_minus:
+                  case  mu2e::PDGCode::mu_plus: color=3; break;   //mu+,mu-
                   default  : color=_whiteBackground?28:25;
                 };
               }
@@ -168,10 +168,10 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=4; break;   //e+,e-
-                  case   13:
-                  case  -13: color=5; break;   //mu+,mu-
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=4; break;   //e+,e-
+                  case  mu2e::PDGCode::mu_minus:
+                  case  mu2e::PDGCode::mu_plus: color=5; break;   //mu+,mu-
                   default  : color=46;
                 };
               }
@@ -180,10 +180,10 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=7; break;   //e+,e-
-                  case   13:
-                  case  -13: color=6; break;   //mu+,mu-
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=7; break;   //e+,e-
+                  case  mu2e::PDGCode::mu_minus:
+                  case  mu2e::PDGCode::mu_plus: color=6; break;   //mu+,mu-
                   default  : color=9;
                 };
               }
@@ -193,8 +193,8 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=2; break;   //e+,e-
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=2; break;   //e+,e-
                   default  : color=_whiteBackground?28:25;
                 };
               }
@@ -203,8 +203,8 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=5; break;   //e+,e-
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=5; break;   //e+,e-
                   default  : color=46;
                 };
               }
@@ -213,8 +213,8 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=3; break;   //e+,e-
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=3; break;   //e+,e-
                   default  : color=8;
                 };
               }
@@ -223,8 +223,8 @@ int TrackColorSelector::getColor(boost::shared_ptr<Track> track)
               {
                 switch(particleid)
                 {
-                  case   11:
-                  case  -11: color=4; break;   //e+,e-
+                  case  mu2e::PDGCode::e_minus:
+                  case  mu2e::PDGCode::e_plus: color=4; break;   //e+,e-
                   default  : color=9;
                 };
               }

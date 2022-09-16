@@ -35,6 +35,7 @@
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 // Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
@@ -492,7 +493,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // set 1: electrons
 //-----------------------------------------------------------------------------
-      if (sim->pdgId() == 11) {
+      if (sim->pdgId() == PDGCode::e_minus) {
         fillMcHistograms(_hist.fMc[1],mc);
         if (mc->Time() > 550) {
           fillMcHistograms(_hist.fMc[2],mc);
@@ -609,8 +610,8 @@ namespace mu2e {
 
       int pdg_id = mc->fSim->pdgId();
 
-      if      (pdg_id == 2212)   mc_hit_info->fType = 0;
-      else if (pdg_id == 11  ) {
+      if      (pdg_id == PDGCode::proton)   mc_hit_info->fType = 0;
+      else if (pdg_id == PDGCode::e_minus ) {
         float mom = mc->Momentum();
         if      (mom <  20)      {
           mc_hit_info->fType = 1;
@@ -658,7 +659,7 @@ namespace mu2e {
 
       int pdg_id = mc->fSim->pdgId();
 
-      if (pdg_id == 11  ) {
+      if (pdg_id == PDGCode::e_minus  ) {
         float mom = mc->Momentum();
         if (mom < 20)      {
 //-----------------------------------------------------------------------------
@@ -733,7 +734,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
         McPart_t* mc = _list_of_mc_particles.at(i);
         const SimParticle* sim = mc->fSim;
 
-        if ((sim->pdgId() == 11) && (mc->Time() > 550) && (mc->NHits()  >= _printElectronsMinNHits)) {
+        if ((sim->pdgId() == PDGCode::e_minus) && (mc->Time() > 550) && (mc->NHits()  >= _printElectronsMinNHits)) {
 
           float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
 
