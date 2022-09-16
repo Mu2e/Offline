@@ -24,6 +24,7 @@
 #include "Offline/ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "Offline/Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "Offline/Mu2eUtilities/inc/SimParticleParentGetter.hh"
@@ -135,7 +136,7 @@ namespace mu2e {
 
       for(SimParticleCollection::const_iterator i=inparticles.begin(); i!=inparticles.end(); ++i) {
         const SimParticle& sp = i->second;
-        if(std::abs(sp.pdgId())==13) {
+        if(std::abs(sp.pdgId())==PDGCode::mu_minus) {
           const double eKine = sp.endMomentum().e() - sp.endMomentum().m();
           if(eKine < cutEKineAtStop_) {
 

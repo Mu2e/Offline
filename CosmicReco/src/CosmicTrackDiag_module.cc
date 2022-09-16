@@ -10,6 +10,7 @@
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/CosmicReco/inc/PDFFit.hh"
 #include "Offline/CosmicReco/inc/MinuitDriftFitter.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 //Mu2e Data Prods:
 //
@@ -433,7 +434,7 @@ namespace mu2e
         double drift_time = srep.driftDistanceToTime(sh.strawId(), pca.dca(), 0);
         drift_time += srep.driftTimeOffset(sh.strawId(), 0, 0, pca.dca());
 
-        double drift_res = srep.driftTimeError(sh.strawId(), 0, 0, pca.dca());
+        double drift_res = srep.driftTimeError(sh.strawId(), pca.dca(), 0);
 
         double traj_time = ((pca.point2() - minuitpos).dot(minuitdir))/299.9;
         double hit_t0 = sh.time() - sh.propTime() - traj_time - drift_time;
@@ -514,14 +515,14 @@ namespace mu2e
       auto const& sgs = *sgsptr;
       auto const& sp = *sgs.simParticle();
       auto posi = GenVector::Hep3Vec(sgs.startPosition());
-      if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
+      if ((sp.pdgId() == PDGCode::mu_minus || sp.pdgId() == PDGCode::mu_plus) && sp.creationCode() == 56){
         for (size_t j=i+1;j<mccol.size();j++){
           StrawDigiMC jmcdigi = mccol[j];
           auto const& jsgsptr = jmcdigi.earlyStrawGasStep();
           auto const& jsgs = *jsgsptr;
           auto const& jsp = *jsgs.simParticle();
           auto posj = GenVector::Hep3Vec(jsgs.startPosition());
-          if ((jsp.pdgId() == 13 || jsp.pdgId() == -13) && jsp.creationCode() == 56){
+          if ((jsp.pdgId() == PDGCode::mu_minus || jsp.pdgId() == PDGCode::mu_plus) && jsp.creationCode() == 56){
             pppos.push_back(posi);
             ppdir.push_back((posi-posj).unit());
           }
@@ -544,7 +545,7 @@ namespace mu2e
         auto const& sgs = *sgsptr;
         auto const& sp = *sgs.simParticle();
 
-        if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
+        if ((sp.pdgId() == PDGCode::mu_minus || sp.pdgId() == PDGCode::mu_plus) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
               GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
           double true_doca = pca.dca();
@@ -603,7 +604,7 @@ namespace mu2e
         auto const& sgsptr = mcdigi.earlyStrawGasStep();
         auto const& sgs = *sgsptr;
         auto const& sp = *sgs.simParticle();
-        if ((sp.pdgId() == 13 || sp.pdgId() == -13) && sp.creationCode() == 56){
+        if ((sp.pdgId() == PDGCode::mu_minus || sp.pdgId() == PDGCode::mu_plus) && sp.creationCode() == 56){
           TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
               GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
           double true_doca = pca.dca();
@@ -801,7 +802,7 @@ namespace mu2e
         _hitdrifttime = srep.driftDistanceToTime(sh.strawId(), pca3.dca(), 0);
         _hitdrifttimeoffset = srep.driftTimeOffset(sh.strawId(), 0, 0, pca3.dca());
         _hittrajtime = ((pca3.point2() - minuitpos).dot(minuitdir))/299.9;
-        _hittresidrms = srep.driftTimeError(sh.strawId(), 0, 0, pca3.dca());
+        _hittresidrms = srep.driftTimeError(sh.strawId(), pca3.dca(), 0);
 
         //double hit_t0 = sh.time() - sh.propTime() - _hittrajtime - _hitdrifttime - _hitdrifttimeoffset;
 
@@ -865,7 +866,7 @@ namespace mu2e
             double uhitdrifttime = srep.driftDistanceToTime(sh.strawId(), ubpca.dca(), 0);
             double uhitdrifttimeoffset = srep.driftTimeOffset(sh.strawId(), 0, 0, ubpca.dca());
             double uhittrajtime = ((ubpca.point2() - temppos).dot(tempdir))/299.9;
-            _hitubtresidrms = srep.driftTimeError(sh.strawId(), 0, 0, ubpca.dca());
+            _hitubtresidrms = srep.driftTimeError(sh.strawId(), ubpca.dca(), 0);
             double uhit_t0 = sh.time() - sh.propTime() - uhittrajtime - uhitdrifttime - uhitdrifttimeoffset;
             _hitubtresid = uhit_t0-_hitubt0;
           }

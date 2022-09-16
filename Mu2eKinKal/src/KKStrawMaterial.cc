@@ -1,5 +1,5 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawXingUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include <cmath>
 #include <algorithm>
 #include "cetlib_except/exception.h"
@@ -24,7 +24,7 @@ namespace mu2e {
         matdbinfo.findDetMaterial(gasmat),
         matdbinfo.findDetMaterial(wiremat)) {}
 
-  void KKStrawMaterial::pathLengths(ClosestApproachData const& cadata,KKStrawXingUpdater const& caconfig,
+  void KKStrawMaterial::pathLengths(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig,
       double& wallpath, double& gaspath, double& wirepath) const {
     wallpath = gaspath = wirepath = 0.0;
     double adoca = fabs(cadata.doca());
@@ -66,7 +66,7 @@ namespace mu2e {
     return 1.0/sqrt(sin2);
   }
 
-  void KKStrawMaterial::findXings(ClosestApproachData const& cadata,KKStrawXingUpdater const& caconfig, std::vector<MaterialXing>& mxings) const {
+  void KKStrawMaterial::findXings(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, std::vector<MaterialXing>& mxings) const {
     mxings.clear();
     double wallpath, gaspath, wirepath;
     pathLengths(cadata,caconfig,wallpath, gaspath, wirepath);

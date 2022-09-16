@@ -25,6 +25,7 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/GeneralUtilities/inc/compressPdgId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"

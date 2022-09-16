@@ -153,7 +153,8 @@ namespace mu2e {
     ch._time = time;
     ch._edep = energy;
     ch._sid = straw.id();
-    ch._dtime = srep.driftTime(straw,selected_tot,energy);
+    ch._dtime = srep.TOTdriftTime(straw,selected_tot,energy);
+    ch._dtimeres = srep.TOTdriftTimeError(straw,selected_tot,energy);
     ch._ptime = propd/(2*halfpv);
     ch._pathlength = srep.pathLength(straw,selected_tot);
     ch.addIndex(isd);
