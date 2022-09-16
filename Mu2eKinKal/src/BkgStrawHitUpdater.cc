@@ -7,12 +7,13 @@ namespace mu2e {
   using KinKal::VEC3;
   BkgStrawHitUpdater::BkgStrawHitUpdater(BkgSHUConfig const& bkgshuconfig) {
     mva_  = new MVATools(std::get<0>(bkgshuconfig));
+    mva_->initMVA();
     mvacut_ = std::get<1>(bkgshuconfig);
     std::string freeze = std::get<2>(bkgshuconfig);
+    diag_ = std::get<3>(bkgshuconfig);
     freeze_ = WHSMask(freeze);
-    std::cout << "BkgStrawHitUpdater " << " bkgcut " << mvacut_ << " freeze " << freeze_ << std::endl;
-    mva_->initMVA();
-    mva_->showMVA();
+    if(diag_ > 0)std::cout << "BkgStrawHitUpdater " << " bkgcut " << mvacut_ << " freeze " << freeze_ << std::endl;
+    if(diag_ > 1)mva_->showMVA();
   }
 
   WireHitState BkgStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {

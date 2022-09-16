@@ -12,25 +12,26 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <cstddef>
 
 namespace mu2e {
   class ComboHit;
  // Update based just on Bkg to the wire
   class BkgStrawHitUpdater {
     public:
-      using BkgSHUConfig = std::tuple<std::string,float,std::string>;
+      using BkgSHUConfig = std::tuple<std::string,float,std::string,int>;
       static std::string const& configDescription(); // description of the variables
-      BkgStrawHitUpdater() : mva_(0), mvacut_(0.0) {}
-      BkgStrawHitUpdater(BkgStrawHitUpdater const& other) : mva_(0), mvacut_(0.0) {
+      BkgStrawHitUpdater(BkgSHUConfig const& bkgshuconfig);
+      BkgStrawHitUpdater(BkgStrawHitUpdater const& other) :  mvacut_(other.mvacut_), freeze_(other.freeze_), diag_(other.diag_) {
         if(other.mva_) mva_ = new MVATools(*other.mva_);
       }
       ~BkgStrawHitUpdater() { delete mva_; }
-      BkgStrawHitUpdater(BkgSHUConfig const& bkgshuconfig);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
-      MVATools* mva_; // neural net calculator
-      double mvacut_; // cut value to decide if drift information is usable
+      MVATools* mva_ =nullptr; // neural net calculator
+      double mvacut_ =0; // cut value to decide if drift information is usable
       WHSMask freeze_; // states to freeze
+      int diag_ =0; // diag print level
   };
 }
 #endif
