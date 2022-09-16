@@ -50,14 +50,14 @@ namespace mu2e {
       // the work is done here
       template <class KTRAJ> void updateCluster(KKStrawHitCluster<KTRAJ>& cluster,KinKal::MetaIterConfig const& miconfig) const;
     private:
-      unsigned csize_; // minimum cluster size to update
-      double inactivep_; // chisquared penalty for inactive hits
-      double nullp_; // chisquared penalty for null hits
-      double mindchi2_; // minimum chisquared separation to consider 'significant'
-      double nulldoca_; // DOCA used to set null hit variance
+      unsigned csize_ =0; // minimum cluster size to update
+      double inactivep_ =0; // chisquared penalty for inactive hits
+      double nullp_ =0; // chisquared penalty for null hits
+      double mindchi2_ =0; // minimum chisquared separation to consider 'significant'
+      double nulldoca_ =0; // DOCA used to set null hit variance
       WHSMask freeze_; // states to freeze
-      bool unfreeze_; // ignore freeze state on input
-      int diag_; // diag print level
+      bool unfreeze_ =false; // ignore freeze state on input
+      int diag_ =0; // diag print level
       WHSCOL allowed_; // allowed states
   };
   std::ostream& operator <<(std::ostream& os, ClusterState const& cscore );

@@ -112,6 +112,7 @@ namespace art {
   class ModuleDescription;
   class Run;
   class SubRun;
+  class Event;
 }
 
 // The master list of all the policies
@@ -163,6 +164,7 @@ namespace mu2e {
     void postModuleConstruction(art::ModuleDescription const& md);
     void preModuleBeginRun     (art::ModuleContext const& md);
     void postModuleBeginRun    (art::ModuleContext const& md);
+    void postEvent             (art::Event const& ev, art::ScheduleContext);
     void postEndJob();
 
     // Control the level of information messages.

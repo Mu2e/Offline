@@ -12,29 +12,29 @@
 #include <tuple>
 #include <string>
 #include <iostream>
+#include <cstddef>
 
 namespace mu2e {
   class ComboHit;
   // Update based just on ANN to the wire
   class ANNStrawHitUpdater {
     public:
-      using ANNSHUConfig = std::tuple<std::string,float,float,std::string>;
-      static std::string const& configDescription(); // description of the variables
-      ANNStrawHitUpdater() : mva_(0), mvacut_(0.0), nulldoca_(2.5) {}
-      ANNStrawHitUpdater(ANNStrawHitUpdater const& other) : mva_(0), mvacut_(other.mvacut_), nulldoca_(other.nulldoca_), freeze_(other.freeze_),
+      using ANNSHUConfig = std::tuple<std::string,float,float,std::string,int>;
+      ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig);
+      ANNStrawHitUpdater(ANNStrawHitUpdater const& other) : mvacut_(other.mvacut_), nulldoca_(other.nulldoca_), freeze_(other.freeze_),
       mintdrift_(other.mintdrift_), maxtdrift_(other.maxtdrift_), maxdoca_(other.maxdoca_), maxresidpull_(other.maxresidpull_) {
         if(other.mva_) mva_ = new MVATools(*other.mva_);
       }
       ~ANNStrawHitUpdater() { delete mva_; }
-      ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
+      static std::string const& configDescription(); // description of the variables
     private:
-      MVATools* mva_; // neural net calculator
-      double mvacut_; // cut value to decide if drift information is usable
-      double nulldoca_; // null hit doca
+      MVATools* mva_ = nullptr; // neural net calculator
+      double mvacut_ =0; // cut value to decide if drift information is usable
+      double nulldoca_ =2.5; // null hit doca
       WHSMask freeze_; // states to freeze
-      double mintdrift_,maxtdrift_, maxdoca_; // outlier cuts
-      double maxresidpull_;
+      double mintdrift_ = -2.0, maxtdrift_ = 48.0, maxdoca_ = 5.0, maxresidpull_ =10.0; // outlier cuts; should come from central config TODO
+      int diag_; // diag print level
   };
 }
 #endif

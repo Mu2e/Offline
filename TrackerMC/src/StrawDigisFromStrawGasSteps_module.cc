@@ -29,7 +29,6 @@
 #include "BTrk/BField/BField.hh"
 // utiliities
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 // persistent data
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
@@ -38,6 +37,7 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/MCDataProducts/inc/SimParticle.hh"
 // temporary MC structures
 #include "Offline/TrackerMC/inc/StrawClusterSequencePair.hh"
 #include "Offline/TrackerMC/inc/StrawWaveform.hh"
@@ -113,7 +113,6 @@ namespace mu2e {
           fhicl::Atom<int> diagpath{ Name("DiagPath"), Comment("Digitization Path for waveform diagnostics") ,0 };
           fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
           fhicl::Atom<string> spmodule { Name("StrawGasStepModule"), Comment("StrawGasStep Module name"),""};
-          fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps")};
 
         };
 
@@ -174,7 +173,6 @@ namespace mu2e {
         ProditionsHandle<StrawPhysics> _strawphys_h;
         ProditionsHandle<StrawElectronics> _strawele_h;
         art::Selector _selector;
-        SimParticleTimeOffset _toff; // time offsets
         double _rstraw; // cache
         // diagnostics
         TTree* _swdiag;
@@ -303,8 +301,7 @@ namespace mu2e {
       _messageCategory("HITS"),
       _firstEvent(true),      // Control some information messages.
       // This selector will select only data products with the given instance name.
-      _selector{ art::ProductInstanceNameSelector(config().spinstance())},
-      _toff(config().SPTO())
+      _selector{ art::ProductInstanceNameSelector(config().spinstance())}
       {
         if (config().spmodule() != ""){
           _selector = art::Selector(_selector && art::ModuleLabelSelector(config().spmodule()));
@@ -437,7 +434,6 @@ namespace mu2e {
       StrawPhysics const& strawphys = _strawphys_h.get(event.id());
       StrawElectronics const& strawele = _strawele_h.get(event.id());
       const Tracker& tracker = *GeomHandle<Tracker>();
-      _toff.updateMap(event);
       _mbtime = accPar->deBuncherPeriod;
       art::Handle<EventWindowMarker> ewMarkerHandle;
       event.getByLabel(_ewMarkerTag, ewMarkerHandle);
@@ -577,7 +573,7 @@ namespace mu2e {
       auto const& sgs = *sgsptr;
       StrawId sid = sgs.strawId();
       // apply time offsets, and take module with MB
-      double ctime  = microbunchTime(strawele,sgs.time() + _toff.totalTimeOffset(sgs.simParticle()));
+      double ctime  = microbunchTime(strawele,sgs.time());
       // test if this step point is roughly in the digitization window
       if( (ctime > strawele.digitizationStartFromMarker() - strawele.electronicsTimeDelay() - _steptimebuf
             && ctime <  max(_mbtime,_digitizationEndFromMarker) - strawele.electronicsTimeDelay() + _steptimebuf) || readAll(sid)) {
@@ -837,7 +833,7 @@ namespace mu2e {
       //  sums voltages from both waveforms for ADC
       ADCVoltages wf[2];
       // add the jitter in the EventWindowMarker time for this Panel (constant for a whole microbunch, same for both sides)
-      double dt = _ewMarkerROCdt[sid.getPanel()];
+      double dt = _ewMarkerROCdt[sid.uniquePanel()];
       // loop over the associated crossings
       for(size_t iend = 0;iend<2; ++iend){
         WFX const& wfx = xpair[iend];
@@ -1179,7 +1175,7 @@ namespace mu2e {
       _mcthreshpdg = _mcthreshproc = _mcnstep = 0;
       auto const& sgsptr = mcdigi.earlyStrawGasStep();
       auto const& sgs = *sgsptr;
-      _mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle()) + _pbtimemc;
+      _mctime = sgs.time() + _pbtimemc;
       // compute the doca for this step
       TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
           GenVector::Hep3Vec(sgs.startPosition()), GenVector::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
@@ -1213,7 +1209,7 @@ namespace mu2e {
         StrawGasStep const& sgs) {
       _steplen = sgs.stepLength();
       _stepE = sgs.ionizingEdep();
-      _steptime = microbunchTime(strawele,sgs.time()+ _toff.totalTimeOffset(sgs.simParticle()));
+      _steptime = microbunchTime(strawele,sgs.time());
       _stype = sgs.stepType()._stype;
       _partP = sqrt(sgs.momentum().mag2());
       _partPDG = sgs.simParticle()->pdgId();
