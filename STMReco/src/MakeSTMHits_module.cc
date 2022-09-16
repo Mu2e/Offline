@@ -13,8 +13,9 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
 
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include <utility>
 // root
 #include "TH1F.h"
@@ -31,30 +32,32 @@ using CLHEP::Hep3Vector;
 namespace mu2e {
 
   class MakeSTMHits : public art::EDProducer {
-    public:
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
-      struct Config {
-       fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
-       fhicl::Atom<art::InputTag> adcNorm{ Name("adcNorm"), Comment("Normalization for the adc values")};
-      };
-      using Parameters = art::EDProducer::Table<Config>;
-      explicit MakeSTMHits(const Parameters& conf);
+  public:
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+    struct Config {
+      fhicl::Atom<art::InputTag> stmDigisTag{ Name("stmDigisTag"), Comment("InputTag for STMDigiCollection")};
+      //       fhicl::Atom<art::InputTag> adcNorm{ Name("adcNorm"), Comment("Normalization for the adc values")};
+    };
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit MakeSTMHits(const Parameters& conf);
 
-    private:
-      void produce(art::Event& e) override;
+  private:
+    void produce(art::Event& e) override;
 
     art::InputTag _stmDigisTag;
-    art::InputTag _adcNorm;
+    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
+    //    art::InputTag _adcNorm;
   };
 
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config},
     _stmDigisTag(config().stmDigisTag()),
-    _adcNorm(config().adcNorm())
+    _stmEnergyCalib_h()
+    //    _adcNorm(config().adcNorm())
     {
-    consumes<STMDigiCollection>(_stmDigisTag);
-    produces<STMHitCollection>();
+      consumes<STMDigiCollection>(_stmDigisTag);
+      produces<STMHitCollection>();
     }
 
     void MakeSTMHits::produce(art::Event& event) {
@@ -62,13 +65,23 @@ namespace mu2e {
     unique_ptr<STMHitCollection> outputSTMHits(new STMHitCollection);
     auto digisHandle = event.getValidHandle<STMDigiCollection>(_stmDigisTag);
 
-    for (const auto& digi : *digisHandle) {
-      int tdc = digi.trigTime();
-      const std::vector<short int>& adc = digi.adcs();
-      float time = tdc;
-      float energy = *std::max_element(adc.begin(), adc.end()) / 10000.0;// _adcNorm;
-      STMHit stm_hit(time,energy);
-      outputSTMHits->push_back(stm_hit);
+    if (digisHandle->size() > 0) {
+      STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get calibration
+
+      // Peek at first digi to get the channel since all digis in the same collection should be from the same detector
+      STMChannel ch = digisHandle->at(0).channel();
+      const auto& pars = stmEnergyCalib.calib(ch);
+      //      std::cout << ch.name() << ": p0 = " << pars.p0 << ", p1 = " << pars.p1 << ", p2 = " << pars.p2 << std::endl;
+
+      for (const auto& digi : *digisHandle) {
+        int tdc = digi.trigTime();
+        const std::vector<short int>& adc = digi.adcs();
+        float time = tdc;
+        auto uncalib_energy = *std::max_element(adc.begin(), adc.end());
+        float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
+        STMHit stm_hit(time,energy);
+        outputSTMHits->push_back(stm_hit);
+      }
     }
 
     event.put(std::move(outputSTMHits));
