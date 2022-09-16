@@ -11,6 +11,7 @@
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/CRVResponse/inc/CrvHelper.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
@@ -110,7 +111,7 @@ namespace mu2e
         const CRSScintillatorBarId &CRVCounterId = CRS->getBar(crvStepCollection->at(i).barIndex()).id();
         int layer = CRVCounterId.getLayerNumber();
         int pdgId = crvStepCollection->at(i).simParticle()->pdgId();
-        if(abs(pdgId)==13)
+        if(abs(pdgId)==PDGCode::mu_minus)
           totalStep[layer] = totalStep[layer] + crvStepCollection->at(i).pathLength();
 
         // Save info from the first step in the CRV
@@ -141,7 +142,7 @@ namespace mu2e
       for(trajectoryIter=mcTrajectoryCollection->begin(); trajectoryIter!=mcTrajectoryCollection->end(); trajectoryIter++)
       {
         const art::Ptr<SimParticle> &trajectorySimParticle = trajectoryIter->first;
-        if(abs(trajectorySimParticle->pdgId())!=13) continue;
+        if(abs(trajectorySimParticle->pdgId())!=PDGCode::mu_minus) continue;
         const art::Ptr<SimParticle> &trajectoryPrimaryParticle = FindPrimaryParticle(trajectorySimParticle);
         GenId genId = trajectoryPrimaryParticle->genParticle()->generatorId();
         if(genId==GenId::cosmicToy || genId==GenId::cosmicDYB || genId==GenId::cosmic || genId==GenId::cosmicCRY)
