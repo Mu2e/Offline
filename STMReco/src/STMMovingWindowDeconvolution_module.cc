@@ -82,7 +82,7 @@ namespace mu2e {
       _mwd.mwd_algorithm(&dat);
       //      _mwd.mwd_algorithm(&digi.adcs()[0], digi.adcs().size());
       std::vector<double> baseline =  _mwd.calculate_baseline();
-            std::cout << "AE: baseline = " << baseline.at(0) << ", sigma = " << baseline.at(1) << std::endl;
+      //std::cout << "AE: baseline = " << baseline.at(0) << ", sigma = " << baseline.at(1) << std::endl;
 
       auto peaks = _mwd.find_peaks(baseline.at(0), baseline.at(1), 0);
 
