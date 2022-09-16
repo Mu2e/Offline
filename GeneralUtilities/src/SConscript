@@ -25,6 +25,8 @@ mainlib = helper.make_mainlib ( [ 'art_Persistency_Common',
                                 ]
                               )
 
+# turn pywrap.i into a python interface
+helper.make_pywrap ()
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

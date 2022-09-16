@@ -31,6 +31,7 @@
 #include "Offline/MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Matrix.h"
@@ -541,8 +542,8 @@ namespace mu2e
       TrkExtMCHits mcvd(evt, _g4ModuleLabel, "virtualdetector", simid);
       int hepid = sim.pdgId();
       int sign;
-      if (hepid == 11 || hepid == 13 || hepid == -211 || hepid == -321 || hepid == -2212) sign = 1;
-      else if (hepid == -11 || hepid == -13 || hepid == 211 || hepid == 321 || hepid == 2212) sign = -1;
+      if (hepid == PDGCode::e_minus || hepid == PDGCode::mu_minus || hepid == PDGCode::pi_minus || hepid == PDGCode::K_minus || hepid == PDGCode::anti_proton) sign = 1;
+      else if (hepid == PDGCode::e_plus || hepid == PDGCode::mu_plus || hepid == PDGCode::pi_plus || hepid == PDGCode::K_plus || hepid == PDGCode::proton) sign = -1;
       else sign = 0;
       for (i = 0 ; i <mcvd.getNClusters() ; ++i) {
         const StepPointMC & firsthit = (mcvd.getCluster(i))[0];
@@ -798,8 +799,8 @@ namespace mu2e
     _extvdtb.clear();
     int hepid = trkext.hepid();
     int sign;
-    if (hepid == 11 || hepid == 13 || hepid == -211 || hepid == -321 || hepid == -2212) sign = 1;
-    else if (hepid == -11 || hepid == -13 || hepid == 211 || hepid == 321 || hepid == 2212) sign = -1;
+    if (hepid == PDGCode::e_minus || hepid == PDGCode::mu_minus || hepid == PDGCode::pi_minus || hepid == PDGCode::K_minus || hepid == PDGCode::anti_proton) sign = 1;
+    else if (hepid == PDGCode::e_plus || hepid == PDGCode::mu_plus || hepid == PDGCode::pi_plus || hepid == PDGCode::K_plus || hepid == PDGCode::proton) sign = -1;
     else sign = 0;
 
     std::vector<TrkExtTrajPoint> vdsihits = trkext.getPointsAtZ(_vdzsi);

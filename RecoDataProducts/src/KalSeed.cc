@@ -18,11 +18,11 @@ namespace mu2e {
     return retval;
   }
 
-  std::vector<KalSegment>::const_iterator KalSeed::nearestSegment(float fltlen)  const {
+  std::vector<KalSegment>::const_iterator KalSeed::nearestSegmentFlt(float fltlen)  const {
     auto retval = segments().end();
     float dmin(std::numeric_limits<float>::max());
     for(auto ikseg = segments().begin(); ikseg !=segments().end(); ikseg++) {
-    // limits are kept in LOCAL flight legnth
+      // limits are kept in LOCAL flight legnth
       float lflt = ikseg->localFlt(fltlen);
       if(ikseg->fmin() < lflt && ikseg->fmax() > lflt) {
         retval = ikseg;
@@ -37,19 +37,24 @@ namespace mu2e {
     return retval;
   }
 
+  std::vector<KalSegment>::const_iterator KalSeed::nearestSegment(float time)  const {
+    auto retval = segments().end();
+    double tmin(std::numeric_limits<float>::max());
+    for(auto ikseg = segments().begin(); ikseg !=segments().end(); ikseg++) {
+      double dt = fabs(time - 0.5*(ikseg->tmin()+ikseg->tmax()));
+      if(dt < tmin){
+        tmin = dt;
+        retval = ikseg;
+      }
+    }
+    return retval;
+  }
+
   std::vector<KalSegment>::const_iterator KalSeed::nearestSegment(const XYZVectorF& pos)  const {
     auto retval = segments().end();
-    float dmin(std::numeric_limits<float>::max());
+    double dmin(std::numeric_limits<float>::max());
     for(auto ikseg = segments().begin(); ikseg !=segments().end(); ikseg++) {
-      // limits are kept in LOCAL flight legnth
-      float fltlen = 0.0;
-      ikseg->helix().position(pos, fltlen); // calculate the fltlen from pos
-      float lflt = ikseg->localFlt(fltlen);
-      if(ikseg->fmin() < lflt && ikseg->fmax() > lflt) {
-        retval = ikseg;
-        break;
-      }
-      float dist = std::min(fabs(ikseg->fmin()-lflt),fabs(ikseg->fmax()-lflt));
+      double dist = fabs(ikseg->position3().Z()-pos.Z());
       if(dist < dmin){
         dmin = dist;
         retval = ikseg;

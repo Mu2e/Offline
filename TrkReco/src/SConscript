@@ -45,6 +45,7 @@ mainlib = helper.make_mainlib ( [
   'cetlib',
   'cetlib_except',
   'KinKal_Trajectory',
+  'KinKal_Detector',
   'KinKal_General',
   rootlibs,
   'CLHEP',

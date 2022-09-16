@@ -97,9 +97,9 @@ namespace mu2e {
         fhicl::Atom<float>                      tbin                   {Name("Tbin"),                   Comment("Time histogram bin width") };
         fhicl::Atom<float>                      pitch                  {Name("AveragePitch"),           Comment("Average helix pitch (= dz/dflight, =sin(lambda)") };
         fhicl::Atom<float>                      ymin                   {Name("Ymin"),                   Comment("Minimum hit in time histo bin for peak") };
-        fhicl::Atom<bool>                       recover                {Name("RefineClusters"),         Comment("Apply hit refining algorithm") };
-        fhicl::Atom<bool>                       refine                 {Name("PrefilterCluster"),       Comment("Apply hit pre-filtering algorithm") };
-        fhicl::Atom<bool>                       preFilter              {Name("RecoverHits"),            Comment("Apply hit recovery algorithm") };
+        fhicl::Atom<bool>                       refine                 {Name("RefineClusters"),         Comment("Apply hit refining algorithm") };
+        fhicl::Atom<bool>                       preFilter              {Name("PrefilterCluster"),       Comment("Apply hit pre-filtering algorithm") };
+        fhicl::Atom<bool>                       recover                {Name("RecoverHits"),            Comment("Apply hit recovery algorithm") };
         fhicl::Atom<int>                        npeak                  {Name("PeakWidth"),              Comment("Time Peak Width") };
         fhicl::Atom<int>                        printfreq              {Name("printFrequency"),         Comment("Print frequency"), 100 };
         fhicl::Atom<int>                        debugLevel             {Name("debugLevel"),             Comment("Debut Level"), 0 };

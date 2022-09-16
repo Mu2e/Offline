@@ -1,12 +1,14 @@
 #ifndef Mu2eKinKal_DriftInfo_hh
 #define Mu2eKinKal_DriftInfo_hh
+
 namespace mu2e {
-// struct describing local drift info
+  // struct describing drift information
   struct DriftInfo {
-    DriftInfo() : tdrift_(0.0), tdriftvar_(0.0), vdrift_(0.0) {}
-    double tdrift_; // drift time
-    double tdriftvar_; // variance on drift time
-    double vdrift_; // instantanious drift speed
+    double LorentzAngle_; // angle for EXB effects
+    double driftDistance_; // drift distance, calculated from drift time
+    double driftDistanceError_; // estimated variance on drift distance
+    double driftVelocity_; // instantaneous drift velocity
+    double driftDistanceVar() const { return driftDistanceError_*driftDistanceError_; }
   };
 }
 #endif

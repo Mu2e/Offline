@@ -13,9 +13,9 @@
 //geometry
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 // conditions
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
@@ -235,7 +235,7 @@ namespace mu2e
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
       double flt0 = kalData.kalSeed->flt0();
-      auto kseg = kalData.kalSeed->nearestSegment(flt0);
+      auto kseg = kalData.kalSeed->nearestSegmentFlt(flt0);
       if(kseg->fmin() > kseg->localFlt(flt0) ||
           kseg->fmax() < kseg->localFlt(flt0) ){
         std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()
@@ -994,14 +994,18 @@ namespace mu2e
   BField const&
     KalFit::bField() const {
       if(_bfield == 0){
-        GeomHandle<BFieldConfig> bfconf;
         if(_fieldcorr){
           // create a wrapper around the mu2e field
           _bfield = new BaBarMu2eField();
         } else {
-          // create a fixed field using the nominal value
-          GeomHandle<BFieldConfig> bfconf;
-          _bfield=new BFieldFixed(bfconf->getDSUniformValue());
+          // create a fixed field using the field at the tracker origin
+          GeomHandle<BFieldManager> bfmgr;
+          GeomHandle<DetectorSystem> det;
+          // change coordinates to mu2e
+          CLHEP::Hep3Vector vpoint(0,0,0);
+          CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
+          CLHEP::Hep3Vector field = bfmgr->getBField(vpoint_mu2e);
+          _bfield=new BFieldFixed(CLHEP::Hep3Vector(0.0,0.0,field.z()));
           assert(_bfield != 0);
         }
       }
