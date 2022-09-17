@@ -29,6 +29,8 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
+#include "Offline/Sources/inc/ExtMonFNALMARSUtils.hh"
+
 #include "Offline/SeedService/inc/SeedService.hh"
 //#include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/MTwistEngine.h"
@@ -40,53 +42,6 @@
 
 namespace mu2e {
 
-  //================================================================
-  // relevant information from a single line of the mars text file
-  struct MARSParticle {
-    unsigned protonNumber;
-    int pid;
-    double kineticEnergy;
-    double weight;
-    double x, y, z;
-    double dcx, dcy, dcz;
-    double tof;
-    MARSParticle() : protonNumber(-1U), pid(), kineticEnergy(), weight(), x(), y(), z(), dcx(), dcy(), dcz(), tof() {}
-  };
-
-  std::ostream& operator<<(std::ostream& os, const MARSParticle& mp) {
-    return os<<"MARSParticle("<<mp.protonNumber
-             <<", pid="<<mp.pid
-             <<", kE="<<mp.kineticEnergy
-             <<", w="<<mp.weight
-             <<", tof="<<mp.tof
-             <<")";
-  }
-
-  bool readMARSLine(std::istream& file, MARSParticle& res) {
-    std::string line;
-    std::getline(file, line);
-
-    AGDEBUG("readMARSLine(): got "<<line);
-
-    if(line.empty()) {
-      res.protonNumber = -1U;
-      return false;
-    }
-    else {
-      std::istringstream is(line);
-
-      if(!(is>>res.protonNumber
-           >>res.pid>>res.kineticEnergy>>res.weight
-           >>res.x>>res.y>>res.z
-           >>res.dcx>>res.dcy>>res.dcz
-           >>res.tof)
-         ) {
-
-        throw cet::exception("BADINPUT")<<" parseMARSLine(): error processing line: "<<line<<"\n";
-      }
-      return true;
-    }
-  }
 
   //================================================================
   struct HelperEventEntry {
@@ -99,72 +54,6 @@ namespace mu2e {
 
   struct HelperEvent : public std::vector<HelperEventEntry> {};
 
-  CLHEP::Hep3Vector marsToMu2ePosition(double x, double y, double z) {
-    // Apply the offsets and convert cm to mm
-    return CLHEP::Hep3Vector(10*(x+390.4), 10*(y+0), 10*(z-906.8));
-  }
-
-  double marsToMu2eTime(double t) {
-    // seconds to ns
-    return t*1.e9;
-  }
-
-  double marsToMu2eEnergy(double ke) {
-    // GeV to MeV
-    return ke * 1.e3;
-  }
-
-  // returns pdgId
-  int marsToMu2eParticleCode(int marsPID) {
-    static std::map<int,int> table;
-    if(table.empty()) {
-      table[1] = PDGCode::proton; // proton
-      table[2] = PDGCode::n0; // neutron
-      table[3] = PDGCode::pi_plus; // pi+
-      table[4] = PDGCode::pi_minus; // pi-
-      table[5] = PDGCode::K_plus; // K+
-      table[6] = PDGCode::K_minus; // K-
-      table[7] = PDGCode::mu_plus; // mu+
-      table[8] = PDGCode::mu_minus; // mu-
-      table[9] = PDGCode::gamma; // gamma
-      table[10] = PDGCode::e_plus; // e-
-      table[11] = PDGCode::e_minus; // e+
-      table[12] = PDGCode::anti_proton; // p- (antiproton)
-      table[13] = PDGCode::pi0; // pi0
-      table[14] = PDGCode::deuteron; // deutron
-      table[15] = PDGCode::tritium; // H3
-      table[16] = PDGCode::He3; // He3
-      table[17] = PDGCode::alpha; // He4
-      table[18] = PDGCode::nu_mu; // numu
-      table[19] = PDGCode::anti_nu_mu; // numubar
-      table[20] = PDGCode::nu_e; // nue
-      table[21] = PDGCode::anti_nu_e; // nuebar
-      table[22] = PDGCode::K_L0; // K0L
-      table[23] = PDGCode::K_S0; // K0S
-      //table[24] = ; // K0
-      //table[25] = ; // K0bar
-      table[26] = PDGCode::Lambda0; // Lambda
-      table[27] = PDGCode::anti_Lambda0; // Lambdabar
-      table[28] = PDGCode::Sigma_plus; // Sigma+
-      table[29] = PDGCode::Sigma0; // Sigma0
-      table[30] = PDGCode::Sigma_minus; // Sigma-
-      table[31] = PDGCode::anti_n0; // nbar
-      table[32] = PDGCode::Xi0; // Xi0
-      table[33] = PDGCode::Xi_minus; // Xi-
-      table[34] = PDGCode::Omega_minus; // Omega-
-      table[35] = PDGCode::anti_Sigma_minus; // anti-Sigma-
-      table[36] = PDGCode::anti_Sigma0; // anti-Sigma0
-      table[37] = PDGCode::anti_Sigma_plus; // anti-Sigma+
-      table[38] = PDGCode::anti_Xi0; // anti-Xi0
-      table[39] = PDGCode::anti_Xi_plus; // anti-Xi+
-      table[40] = PDGCode::anti_Omega_plus; // anti-Omega+
-    }
-    std::map<int,int>::const_iterator ip = table.find(marsPID);
-    if(ip == table.end()) {
-      throw cet::exception("BADINPUT")<<" marsToMu2eParticleCode(): unknonw MARS particle code "<<marsPID<<"\n";
-    }
-    return ip->second;
-  }
 
   //================================================================
   class ExtMonFNALMARSDetail : private boost::noncopyable {
@@ -189,7 +78,7 @@ namespace mu2e {
     // The var is pre-filled by readFile() then by readNext(), so
     // it is non-empty at the beginning of readNext() - unless we
     // ran out of data in the current file.
-    MARSParticle currentLine_;
+    ExtMonFNAL::MARSParticle currentLine_;
 
     // Non-empty at readNext() if the previous readNext() got weight>1
     HelperEvent he_;
@@ -201,7 +90,10 @@ namespace mu2e {
     //CLHEP::RandFlat random_;
     CLHEP::MTwistEngine random_;
 
-    HelperEventEntry marsToMu2eParticle(const MARSParticle& mp);
+    HelperEventEntry marsToMu2eParticle(const ExtMonFNAL::MARSParticle& mp);
+
+    // convert particle ID, energy, time units
+    ExtMonFNAL::MARSMu2eConverter marsMu2eConverter_;
 
     //----------------------------------------------------------------
 
@@ -268,7 +160,7 @@ namespace mu2e {
     currentFile_.open(filename.c_str());
     fb = new art::FileBlock(art::FileFormatVersion(1, "ExtMonFNALMARSinput"), currentFileName_);
 
-    readMARSLine(currentFile_, currentLine_);
+    ExtMonFNAL::readMARSLine(currentFile_, currentLine_);
   }
 
   //----------------------------------------------------------------
@@ -310,7 +202,7 @@ namespace mu2e {
         const unsigned nj = currentLine_.protonNumber;
         he_.push_back(HelperEventEntry(marsToMu2eParticle(currentLine_)));
         AGDEBUG("Added "<<he_.back().particle);
-        while(readMARSLine(currentFile_, currentLine_)) {
+        while(ExtMonFNAL::readMARSLine(currentFile_, currentLine_)) {
           if(currentLine_.protonNumber == nj) {
             he_.push_back(HelperEventEntry(marsToMu2eParticle(currentLine_)));
             AGDEBUG("Added "<<he_.back().particle);
@@ -373,12 +265,12 @@ namespace mu2e {
   } // readNext()
 
   //----------------------------------------------------------------
-  HelperEventEntry ExtMonFNALMARSDetail::marsToMu2eParticle(const MARSParticle& mp) {
-    const int pdgId = marsToMu2eParticleCode(mp.pid);
+  HelperEventEntry ExtMonFNALMARSDetail::marsToMu2eParticle(const ExtMonFNAL::MARSParticle& mp) {
+    const int pdgId = marsMu2eConverter_.marsToMu2eParticleCode(mp.pid);
 
     const double mass = pdt_->particle(pdgId).mass();
 
-    const double energy = mass + marsToMu2eEnergy(mp.kineticEnergy);
+    const double energy = mass + marsMu2eConverter_.marsToMu2eEnergy(mp.kineticEnergy);
     const double p3mag = sqrt((energy-mass)*(energy+mass));
 
     const CLHEP::HepLorentzVector p4(mp.dcx * p3mag,
@@ -390,9 +282,9 @@ namespace mu2e {
     HelperEventEntry res(mp.weight,
                          GenParticle(PDGCode::type(pdgId),
                                      GenId::MARS,
-                                     marsToMu2ePosition(mp.x, mp.y, mp.z),
+                                     marsMu2eConverter_.marsToMu2ePosition(mp.x, mp.y, mp.z),
                                      p4,
-                                     marsToMu2eTime(mp.tof)
+                                     marsMu2eConverter_.marsToMu2eTime(mp.tof)
                                      )
                          );
 
