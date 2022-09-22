@@ -15,17 +15,8 @@ namespace mu2e {
 
   Tracker::Tracker(StrawCollection const& straws, StrawProperties const& sprops,
       const TrackerG4InfoPtr& g4tracker, PEType const& pexists) :
-    ProditionsEntity(cxname), _strawprops(sprops), _straws(straws) , _strawindex{},
+    ProditionsEntity(cxname), _strawprops(sprops), _straws(straws),
     _planeExists(pexists), _g4tracker(g4tracker) {
-      // create the fast lookup map
-      for(uint16_t plane=0; plane < StrawId::_nplanes; plane++){
-        for(uint16_t panel = 0;panel < StrawId::_npanels; panel++){
-          for(uint16_t straw = 0; straw < StrawId::_nstraws; straw++){
-            StrawId sid(plane,panel,straw);
-            _strawindex[sid.asUint16()] = sid.uniqueStraw();
-          }
-        }
-      }
       // build the panels from the straws
       for(uint16_t plane=0; plane < StrawId::_nplanes; plane++){
         for(uint16_t panel = 0;panel < StrawId::_npanels; panel++){
