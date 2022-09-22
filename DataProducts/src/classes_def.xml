@@ -48,5 +48,9 @@
 
  <class name="HepGeom::Transform3D"/>
 
+<!--  ********* STM  ********* -->
+ <class name="mu2e::STMChannel" />
+ <class name="mu2e::STMTestBeamEventInfo" />
+ <class name="art::Wrapper<mu2e::STMTestBeamEventInfo>" />
 
 </lcgdict>

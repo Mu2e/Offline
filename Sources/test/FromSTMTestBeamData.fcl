@@ -1,0 +1,36 @@
+#
+# File for running on STM test beam data
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: STMTestBeamData
+source : {
+  module_type : FromSTMTestBeamData
+  verbosityLevel : 0 # or 1
+}
+
+services : @local::Services.Core
+
+physics : {
+  producers : {
+  }
+  filters: {
+  }
+  analyzers: {  }
+  TriggerPath : [ ]
+  EndPath : [ Output ]
+}
+
+outputs : {
+  Output: {
+     module_type : RootOutput
+     fileName    : @nil
+     outputCommands : [ "keep *_*_*_*"]
+  }
+}
+
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+outputs.Output.fileName: "dig.owner.description.version.sequencer.art"
+# no histogram output
+services.TFileService.fileName : "/dev/null"
