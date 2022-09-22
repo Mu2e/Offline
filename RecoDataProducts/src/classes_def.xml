@@ -375,4 +375,10 @@
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
 
+<!--  ********* STM ********* -->
+ <class name="mu2e::STMWaveform"/>
+ <class name="std::vector<mu2e::STMWaveform>"/>
+ <class name="mu2e::STMWaveformCollection"/>
+ <class name="art::Wrapper<mu2e::STMWaveformCollection>"/>
+
 </lcgdict>
