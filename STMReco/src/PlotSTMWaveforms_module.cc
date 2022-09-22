@@ -56,7 +56,6 @@ namespace mu2e {
     for (const auto& waveform : waveformsHandle->waveforms()) {
       histname.str("");
       histname << "evt" << event.event() << "_waveform" << count;
-      std::cout << histname.str() << std::endl;
       TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), "", waveform.adcs().size(),0,waveform.adcs().size());
       int i_bin = 1;
       for (const auto& adc : waveform.adcs()) {
