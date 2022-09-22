@@ -859,16 +859,32 @@ namespace mu2e {
       if ( c.getBool("hasPTM",false) ) {
         GeomHandle<PTM> ptMon;
         // Want these vd's to report a hit at position (0,0,0) when a particle hits the plane in the center
-        // first wire chamber vd position within production target monitor
-        CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
-        double groundInZ = ptMon->nearPWC()->upstreamWindowSurfaceZ();
-        pwcPos1.setZ(pwcPos1.z()+groundInZ);
-        vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
+        // first wire chamber vd position within production target monitor.
+        // There are different versions of this geometry, which are organized in different ways.
+        if (ptMon->version() == 1) {
+          // floating PWCs with no stand structure
+          CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
+          double groundInZ = ptMon->nearPWC()->upstreamWindowSurfaceZ();
+          pwcPos1.setZ(pwcPos1.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
 
-        CLHEP::Hep3Vector pwcPos2 = ptMon->farPWC()->originInParent();
-        groundInZ = ptMon->farPWC()->upstreamWindowSurfaceZ();
-        pwcPos2.setZ(pwcPos2.z()+groundInZ);
-        vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
+          CLHEP::Hep3Vector pwcPos2 = ptMon->farPWC()->originInParent();
+          groundInZ = ptMon->farPWC()->upstreamWindowSurfaceZ();
+          pwcPos2.setZ(pwcPos2.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
+        } else if (ptMon->version() == 2) {
+          // includes basic stand structure
+          CLHEP::Hep3Vector pwcPos1 = ptMon->ptmHead()->nearPWC()->originInParent();
+          double groundInZ = ptMon->ptmHead()->nearPWC()->upstreamWindowSurfaceZ();
+          pwcPos1.setZ(pwcPos1.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->ptmHead()->originInMu2e(), &(ptMon->ptmHead()->rotationInMu2e()), pwcPos1);
+
+          CLHEP::Hep3Vector pwcPos2 = ptMon->ptmHead()->farPWC()->originInParent();
+          groundInZ = ptMon->ptmHead()->farPWC()->upstreamWindowSurfaceZ();
+          pwcPos2.setZ(pwcPos2.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->ptmHead()->originInMu2e(), &(ptMon->ptmHead()->rotationInMu2e()), pwcPos2);
+        } // if (version == )
+
       } // if ( c.getBool("hasPTM",false) )
 
     } // if(hasVirtualDetector)
