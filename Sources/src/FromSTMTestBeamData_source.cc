@@ -252,7 +252,7 @@ namespace mu2e {
       }
 
       // Set the event information
-      outputEvtInfo->trigType(trigger_header[0].getTriggerMode());
+      outputEvtInfo->triggerType(trigger_header[0].getTriggerMode());
       outputEvtInfo->triggerTime(trigger_header[0].getTriggerTime());
 
       // Get the number of slices in this trigger
