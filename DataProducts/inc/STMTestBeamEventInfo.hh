@@ -4,17 +4,17 @@
 namespace mu2e {
   class STMTestBeamEventInfo {
   public:
-    enum TrigType { unknown=-1, internal=0, external=1 };
-    STMTestBeamEventInfo() : _trigType(TrigType::unknown), _triggerTime(0) { }
+    enum TriggerType { unknown=-1, internal=0, external=1 };
+    STMTestBeamEventInfo() : _triggerType(TriggerType::unknown), _triggerTime(0) { }
 
-    void trigType(uint16_t type) { _trigType = TrigType(type);}
+    void triggerType(uint16_t type) { _triggerType = TriggerType(type);}
     void triggerTime(uint64_t time) { _triggerTime = time;}
 
-    TrigType trigType() const { return _trigType;}
+    TriggerType triggerType() const { return _triggerType;}
     uint64_t triggerTime() const { return _triggerTime;}
 
   private:
-    TrigType _trigType;
+    TriggerType _triggerType;
     uint64_t _triggerTime;
   };
 }
