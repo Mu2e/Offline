@@ -270,6 +270,7 @@ namespace mu2e {
 
           // Read the ADC samples into a vector for later
           std::vector<int16_t> adcs;
+          adcs.reserve(n_adc_samples);
           int16_t adc[1];
           for (unsigned long int i_adc_sample = 0; i_adc_sample < n_adc_samples; ++i_adc_sample) {
             currentFile_->read((char *) &adc[0], sizeof(int16_t));
