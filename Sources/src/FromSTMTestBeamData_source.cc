@@ -219,9 +219,6 @@ namespace mu2e {
     //    detector was connected at a time so one of these collections will be empty
     std::unique_ptr<mu2e::STMWaveformCollection> outputHPGeWaveforms(new mu2e::STMWaveformCollection(STMChannel::HPGe));
     std::unique_ptr<mu2e::STMWaveformCollection> outputLaBrWaveforms(new mu2e::STMWaveformCollection(STMChannel::LaBr));
-      // Get event information for this trigger
-      std::unique_ptr<mu2e::STMTestBeamEventInfo> outputEvtInfo(new mu2e::STMTestBeamEventInfo());
-
 
     // Read the trigger header
     STMTestBeam::TriggerHeader trigger_header[1];
@@ -251,9 +248,9 @@ namespace mu2e {
         }
       }
 
-      // Set the event information
-      outputEvtInfo->triggerType(trigger_header[0].getTriggerMode());
-      outputEvtInfo->triggerTime(trigger_header[0].getTriggerTime());
+      // Get event information for this trigger and put in the event
+      std::unique_ptr<mu2e::STMTestBeamEventInfo> outputEvtInfo(new mu2e::STMTestBeamEventInfo(trigger_header[0].getTriggerMode(), trigger_header[0].getTriggerTime()));
+      art::put_product_in_principal(std::move(outputEvtInfo), *outE, myModuleLabel_);
 
       // Get the number of slices in this trigger
       int n_slices = trigger_header[0].getNSlices();
@@ -296,7 +293,6 @@ namespace mu2e {
 
     art::put_product_in_principal(std::move(outputHPGeWaveforms), *outE, myModuleLabel_, "HPGe");
     art::put_product_in_principal(std::move(outputLaBrWaveforms), *outE, myModuleLabel_, "LaBr");
-    art::put_product_in_principal(std::move(outputEvtInfo), *outE, myModuleLabel_);
 
     ++currentEventNumber_;
 
