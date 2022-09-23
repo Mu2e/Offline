@@ -8,7 +8,6 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include <Rtypes.h>
 #include <ctime>
 #include <iomanip>
 
