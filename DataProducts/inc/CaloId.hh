@@ -4,7 +4,7 @@
 // Identifier of one crystal in calorimeter
 // Original author Rob Kutschke
 // Re-implemented as integer bitfields by Dave Brown (LBNL)
-//
+// Edits by S. Middleton (2022)
 #include <iosfwd>
 #include <string>
 #include <math.h>
@@ -15,6 +15,11 @@ namespace mu2e {
 
     // define the bit field shifts and masks
   public:
+    constexpr static uint16_t _channelmsk = 0x7F;
+    constexpr static uint16_t _crystalmsk = 0x7F;
+    constexpr static uint16_t _diskmsk = 0x7F;
+    constexpr static uint16_t _crystalchannelmsk = 0x7F;
+
     constexpr static uint16_t _nDIRAC          = 136;
     constexpr static uint16_t _nChPerDIRAC     = 20;
     constexpr static uint16_t _nCrystalPerDisk = 674;
@@ -25,12 +30,42 @@ namespace mu2e {
     constexpr static uint16_t _nTotChannel     = _nChPerDIRAC*_nDIRAC;
     constexpr static uint16_t _nCrystalChannel = _nCrystalPerDisk*_nSiPMPerCrystal; //total number of readout channels associated to the CsI and CAPHRI crystals
     // check that values make sense:
-    static bool validChannel(uint16_t ichannel) { return ichannel < _nChPerDIRAC; }
-    static bool validCrystal (uint16_t icrystal) { return icrystal < _nCrystalPerDisk; }
-    static bool validDisk(uint16_t idisk) { return idisk < _nDisk; }
-    static bool validCrystalChannel(uint16_t icrych) { return icrych < _nCrystalChannel; }
+    static bool validChannel(uint16_t ichannel) { return ichannel < _nChPerDIRAC;}
+    static bool validCrystal (uint16_t icrystal) { return icrystal < _nCrystalPerDisk;}
+    static bool validDisk(uint16_t idisk) { return idisk < _nDisk;}
+    static bool validCrystalChannel(uint16_t icrych) { return icrych < _nCrystalChannel;}
+    bool valid() const { return validChannel(getChannel()) && validCrystal(getCrystal()) && validDisk(getDisk()) && validCrystalChannel(getCrystalChannel());}
+
+    CaloId( uint16_t channel,
+      uint16_t crystal,
+      uint16_t disk,
+      uint16_t crychanel);
+
+    explicit CaloId(){}
+
+    uint16_t getChannel() const{
+      return channel();
+    }
+
+    uint16_t getCrystal() const{
+      return crystal();
+    }
+
+    uint16_t getDisk() const{
+      return disk();
+    }
       
-    CaloId(){}
+    uint16_t getCrystalChannel() const{
+      return crystalchannel();
+    }
+
+   private:
+      // fill fields
+      void setChannel(uint16_t ich);
+      void setCrystal(uint16_t icry);
+      void setDisk(uint16_t id);
+      void setCrystalChannel(uint16_t icc);
+
     
   };
 
