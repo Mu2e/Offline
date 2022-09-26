@@ -1,0 +1,1265 @@
+On branch CaloDB
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+	modified:   .muse
+	modified:   Analyses/fcl/DSBFieldDump.fcl
+	modified:   Analyses/fcl/DSField.fcl
+	modified:   Analyses/src/BFieldPlotter_module.cc
+	modified:   Analyses/src/CORSIKAGenPlots_module.cc
+	modified:   Analyses/src/CRYGenPlots_module.cc
+	new file:   Analyses/src/CaloCalibAna_module.cc
+	modified:   Analyses/src/CaloCalib_module.cc
+	modified:   Analyses/src/CaloClusterCompare_module.cc
+	modified:   Analyses/src/CaloDigiAna_module.cc
+	modified:   Analyses/src/CaloHitFinderInspect_module.cc
+	modified:   Analyses/src/CaloTrackMatchExample_module.cc
+	modified:   Analyses/src/CollectionSizeAnalyzer_module.cc
+	modified:   Analyses/src/CompressionCheck0_module.cc
+	modified:   Analyses/src/CosmicAnalysis_module.cc
+	modified:   Analyses/src/CosmicFilter_module.cc
+	modified:   Analyses/src/CountPionDecays_module.cc
+	modified:   Analyses/src/DiskCal00_module.cc
+	modified:   Analyses/src/EMFCSimpleDumper_module.cc
+	modified:   Analyses/src/EventIDSequencePrinter_module.cc
+	modified:   Analyses/src/EventLister_module.cc
+	modified:   Analyses/src/ExtremeHitTimes_module.cc
+	modified:   Analyses/src/FilterEmptyEvents_module.cc
+	modified:   Analyses/src/FilterVDHits_module.cc
+	modified:   Analyses/src/G4ReactionAnalyzer_module.cc
+	modified:   Analyses/src/GenParticlesAnalyzer_module.cc
+	modified:   Analyses/src/GeomVis_module.cc
+	modified:   Analyses/src/Histforpabs_module.cc
+	modified:   Analyses/src/InteractiveRoot_module.cc
+	modified:   Analyses/src/KineticFracAnalysis_module.cc
+	modified:   Analyses/src/MTVerification_module.cc
+	modified:   Analyses/src/Mu2eG4StudyCalo01ReadBack_module.cc
+	modified:   Analyses/src/Mu2eG4StudyReadBack_module.cc
+	modified:   Analyses/src/ParticleIDScan_module.cc
+	modified:   Analyses/src/PbarAnalysis2_module.cc
+	modified:   Analyses/src/PionMomentumAnalyzer_module.cc
+	modified:   Analyses/src/PointerCheck_module.cc
+	modified:   Analyses/src/PrimaryProtonEnergyDumper_module.cc
+	modified:   Analyses/src/PrintGenParticles_module.cc
+	modified:   Analyses/src/PrintSTMGeom_module.cc
+	modified:   Analyses/src/PrintStrawHits_module.cc
+	modified:   Analyses/src/PrintTrackerGeom_module.cc
+	modified:   Analyses/src/ProtonBunchIntensityAnalyzer_module.cc
+	modified:   Analyses/src/PtrTest0_module.cc
+	modified:   Analyses/src/PtrTest_module.cc
+	modified:   Analyses/src/ReadAntiProtonSteps_module.cc
+	modified:   Analyses/src/ReadBack0_module.cc
+	modified:   Analyses/src/ReadBack_module.cc
+	modified:   Analyses/src/ReadCaloDigi_module.cc
+	modified:   Analyses/src/ReadMCTrajectories_module.cc
+	modified:   Analyses/src/ReadPSVacuum_module.cc
+	modified:   Analyses/src/ReadPTM_module.cc
+	modified:   Analyses/src/ReadPtr_module.cc
+	modified:   Analyses/src/ReadStrawDigiReco_module.cc
+	modified:   Analyses/src/ReadStrawHitReco_module.cc
+	modified:   Analyses/src/ReadTrackCaloMatchingMVA_module.cc
+	modified:   Analyses/src/ReadTrackCaloMatching_module.cc
+	modified:   Analyses/src/ReadTrackerSteps_module.cc
+	modified:   Analyses/src/ReadTrkExtrapolMVA_module.cc
+	modified:   Analyses/src/ReadTrkExtrapol_module.cc
+	modified:   Analyses/src/ReadVirtualDetector_module.cc
+	modified:   Analyses/src/SelectPiMinusAtTS5_module.cc
+	modified:   Analyses/src/SelectiveStepPtPrinter_module.cc
+	modified:   Analyses/src/SensitiveTargetEnergyDumper_module.cc
+	modified:   Analyses/src/SimParticleAnalyzer_module.cc
+	modified:   Analyses/src/SimParticleCheck00_module.cc
+	modified:   Analyses/src/SimParticleDumperCompact_module.cc
+	modified:   Analyses/src/SimParticleTimeMapAnalyzer_module.cc
+	modified:   Analyses/src/SimParticlesPrinter_module.cc
+	modified:   Analyses/src/StatusG4Analyzer_module.cc
+	modified:   Analyses/src/StepPointMC1stHitDumper_module.cc
+	modified:   Analyses/src/StepPointMCDumperCalo_module.cc
+	modified:   Analyses/src/StepPointMCDumperCompact_module.cc
+	modified:   Analyses/src/StepPointMCDumper_module.cc
+	modified:   Analyses/src/StepPointsPrinter_module.cc
+	modified:   Analyses/src/StoppedParticlesDumper_module.cc
+	modified:   Analyses/src/StoppedParticlesPrinter_module.cc
+	modified:   Analyses/src/TSTrackAna_module.cc
+	modified:   Analyses/src/TVirtDebug_module.cc
+	deleted:    Analyses/src/TestKalRepProvenanceHelpers_module.cc
+	modified:   Analyses/src/TrackSummaryDataAnalyzer_module.cc
+	modified:   Analyses/src/TrackSummaryMCAnalyzer_module.cc
+	modified:   Analyses/src/TrackSummaryMaker_module.cc
+	modified:   Analyses/src/TrackSummaryTruthMaker_module.cc
+	modified:   Analyses/src/TrackSummaryTruthRFSelector_module.cc
+	modified:   Analyses/src/VMMonitor_module.cc
+	modified:   Analyses/src/ViewAllProvenances_module.cc
+	modified:   Analyses/src/ViewProvenance_module.cc
+	modified:   Analyses/src/materailsPropStudy_module.cc
+	modified:   Analyses/src/pbars1hist_module.cc
+	modified:   AnalysisConditions/fcl/prolog.fcl
+	modified:   BFieldTest/src/BFieldSymmetry_module.cc
+	modified:   BFieldTest/src/BFieldTest_module.cc
+	modified:   CRVAnalysis/src/CRVAnalysis.cc
+	modified:   CRVFilters/src/CrvCoincidenceClusterFilter_module.cc
+	modified:   CRVResponse/fcl/prolog_v10.fcl
+	modified:   CRVResponse/src/CRVTest_module.cc
+	modified:   CRVResponse/src/CrvCoincidenceCheck_module.cc
+	modified:   CRVResponse/src/CrvCoincidenceClusterFinder_module.cc
+	modified:   CRVResponse/src/CrvCoincidenceClusterMatchMC_module.cc
+	modified:   CRVResponse/src/CrvCoincidenceFinder_module.cc
+	modified:   CRVResponse/src/CrvDigitizer_module.cc
+	modified:   CRVResponse/src/CrvPhotonGenerator_module.cc
+	modified:   CRVResponse/src/CrvPlot_module.cc
+	modified:   CRVResponse/src/CrvRecoPulsesFinder_module.cc
+	modified:   CRVResponse/src/CrvSiPMChargeGenerator_module.cc
+	modified:   CRVResponse/src/CrvStepsFromStepPointMCs_module.cc
+	modified:   CRVResponse/src/CrvWaveformsGenerator_module.cc
+	modified:   CalPatRec/fcl/prolog.fcl
+	modified:   CalPatRec/fcl/prolog_trigger.fcl
+	modified:   CalPatRec/inc/CalTimePeakFinder_module.hh
+	modified:   CalPatRec/src/CalHelixFinder_module.cc
+	modified:   CalPatRec/src/CalTimePeakFinder_module.cc
+	modified:   CalPatRec/src/DeltaFinder2_module.cc
+	modified:   CalPatRec/src/DeltaFinderAna_module.cc
+	modified:   CalPatRec/src/DeltaFinder_module.cc
+	modified:   CalPatRec/src/MergeHelixFinder_module.cc
+	modified:   CalPatRec/src/PrefetchData_module.cc
+	modified:   CaloCluster/fcl/prolog.fcl
+	modified:   CaloCluster/fcl/prolog_trigger.fcl
+	modified:   CaloCluster/src/CaloClusterFast_module.cc
+	modified:   CaloCluster/src/CaloClusterMaker_module.cc
+	modified:   CaloCluster/src/CaloProtoClusterMaker_module.cc
+	modified:   CaloCluster/src/CaloTrigger_module.cc
+	modified:   CaloConditions/src/SConscript
+	modified:   CaloDiag/src/CaloClusterCheck_module.cc
+	modified:   CaloDiag/src/CaloExample_module.cc
+	modified:   CaloDiag/src/CaloMCInspector_module.cc
+	modified:   CaloDiag/src/CaloNNDiag_module.cc
+	modified:   CaloDiag/src/CaloNeutron_module.cc
+	modified:   CaloFilters/fcl/prolog_trigger.fcl
+	modified:   CaloFilters/src/CaloClusterCounterFilter_module.cc
+	modified:   CaloFilters/src/CaloCosmicCalib_module.cc
+	modified:   CaloFilters/src/CaloLikelihood_module.cc
+	modified:   CaloFilters/src/EcalTriggerPreselect_module.cc
+	modified:   CaloFilters/src/FilterEcalMVATrigger_module.cc
+	modified:   CaloFilters/src/FilterEcalMixedTrigger_module.cc
+	modified:   CaloFilters/src/FilterEcalNNTrigger_module.cc
+	new file:   CaloMC/fcl/RunCaloCalibGun.fcl
+	modified:   CaloMC/fcl/common.fcl
+	modified:   CaloMC/fcl/prolog.fcl
+	modified:   CaloMC/src/CaloClusterTruthMatch_module.cc
+	modified:   CaloMC/src/CaloDigiMaker_module.cc
+	modified:   CaloMC/src/CaloHitTruthMatch_module.cc
+	modified:   CaloMC/src/CaloShowerROMaker_module.cc
+	modified:   CaloMC/src/CaloShowerStepMaker_module.cc
+	modified:   CaloMC/src/CaloShowerUpdater_module.cc
+	modified:   CaloReco/fcl/prolog_trigger.fcl
+	modified:   CaloReco/src/CaloHitMakerFast_module.cc
+	modified:   CaloReco/src/CaloHitMaker_module.cc
+	modified:   CaloReco/src/CaloRecoDigiMaker_module.cc
+	modified:   CaloReco/src/SConscript
+	modified:   CommonMC/fcl/prolog.fcl
+	modified:   CommonMC/src/CosmicTimeOffset_module.cc
+	modified:   CommonMC/src/EventWindowMarkerProducer_module.cc
+	modified:   CommonMC/src/FindMCPrimary_module.cc
+	modified:   CommonMC/src/GenEventCountReader_module.cc
+	modified:   CommonMC/src/GenerateCosmicTimes_module.cc
+	modified:   CommonMC/src/GenerateMuonLife_module.cc
+	modified:   CommonMC/src/GenerateProtonTimes_module.cc
+	modified:   CommonMC/src/InFlightStepDumper_module.cc
+	modified:   CommonMC/src/NullMCPrimary_module.cc
+	modified:   CommonMC/src/ProtonTimeOffset_module.cc
+	modified:   CommonMC/src/SConscript
+	modified:   CommonMC/src/SelectRecoMC_module.cc
+	modified:   CommonMC/src/SimParticleDaughterSelector_module.cc
+	modified:   CommonMC/src/StoppedParticlesFinder_module.cc
+	modified:   Compression/src/CompressDetStepMCs_module.cc
+	modified:   Compression/src/CompressDigiMCsCheck_module.cc
+	modified:   Compression/src/CompressDigiMCs_module.cc
+	modified:   CosmicReco/fcl/prolog_trigger.fcl
+	modified:   CosmicReco/src/CosmicAnalyzer_module.cc
+	modified:   CosmicReco/src/CosmicFitDisplay_module.cc
+	modified:   CosmicReco/src/CosmicMCRecoDiff_module.cc
+	modified:   CosmicReco/src/CosmicMuonInfo_module.cc
+	modified:   CosmicReco/src/CosmicSeedFilter_module.cc
+	modified:   CosmicReco/src/CosmicTrackDetails_module.cc
+	modified:   CosmicReco/src/CosmicTrackDiag_module.cc
+	modified:   CosmicReco/src/CosmicTrackFinder_module.cc
+	modified:   CosmicReco/src/LineFinder_module.cc
+	modified:   CosmicReco/src/SimpleTimeCluster_module.cc
+	modified:   DAQ/fcl/prolog_trigger.fcl
+	modified:   DAQ/src/ArtBinaryPacketsFromDigis_module.cc
+	modified:   DAQ/src/CaloHitsFromFragments_module.cc
+	modified:   DAQ/src/CaloRecoFromFragments_module.cc
+	modified:   DAQ/src/CrvDigisFromFragments_module.cc
+	modified:   DAQ/src/FragmentAna_module.cc
+	modified:   DAQ/src/PrefetchDAQData_module.cc
+	modified:   DAQ/src/StrawAndCaloDigisFromFragments_module.cc
+	modified:   DAQ/src/StrawHitRecoFromFragments_module.cc
+	modified:   DAQ/src/StrawRecoFromFragments_module.cc
+	modified:   DAQConditions/src/SConscript
+	modified:   DataProducts/inc/StrawStatus.hh
+	modified:   DataProducts/src/SConscript
+	new file:   DataProducts/src/pywrap.i
+	new file:   DbService/.clang-format
+	modified:   DbService/data/connections.txt
+	modified:   DbService/inc/DbCurl.hh
+	modified:   DbService/inc/DbEngine.hh
+	modified:   DbService/inc/DbHandle.hh
+	modified:   DbService/inc/DbIdList.hh
+	modified:   DbService/inc/DbReader.hh
+	modified:   DbService/inc/DbService.hh
+	modified:   DbService/inc/DbSql.hh
+	modified:   DbService/inc/DbTool.hh
+	modified:   DbService/inc/DbValTool.hh
+	modified:   DbService/src/DbEngine.cc
+	modified:   DbService/src/DbIdList.cc
+	modified:   DbService/src/DbReader.cc
+	modified:   DbService/src/DbServiceTest_module.cc
+	modified:   DbService/src/DbService_service.cc
+	modified:   DbService/src/DbSql.cc
+	modified:   DbService/src/DbTool.cc
+	modified:   DbService/src/DbValTool.cc
+	modified:   DbService/src/dbTool_main.cc
+	modified:   DbService/test/dbBin_main.cc
+	modified:   DbService/test/dbServiceTest.fcl
+	new file:   DbTables/.clang-format
+	modified:   DbTables/inc/AnaTrkQualDb.hh
+	modified:   DbTables/inc/CalRoIDMapDIRACToOffline.hh
+	modified:   DbTables/inc/CalRoIDMapOfflineToDIRAC.hh
+	modified:   DbTables/inc/DbCache.hh
+	modified:   DbTables/inc/DbId.hh
+	modified:   DbTables/inc/DbIoV.hh
+	modified:   DbTables/inc/DbLiveTable.hh
+	modified:   DbTables/inc/DbSet.hh
+	modified:   DbTables/inc/DbTable.hh
+	modified:   DbTables/inc/DbTableCollection.hh
+	modified:   DbTables/inc/DbTableFactory.hh
+	modified:   DbTables/inc/DbUtil.hh
+	modified:   DbTables/inc/DbValCache.hh
+	modified:   DbTables/inc/DbVersion.hh
+	modified:   DbTables/inc/MVAToolDb.hh
+	modified:   DbTables/inc/SimEfficiencies.hh
+	modified:   DbTables/inc/SimEfficiencies2.hh
+	modified:   DbTables/inc/TrkAlignElement.hh
+	modified:   DbTables/inc/TrkAlignParams.hh
+	modified:   DbTables/inc/TrkAlignStraw.hh
+	modified:   DbTables/inc/TrkDelayPanel.hh
+	modified:   DbTables/inc/TrkDelayRStraw.hh
+	modified:   DbTables/inc/TrkElementStatus.hh
+	modified:   DbTables/inc/TrkPreampRStraw.hh
+	modified:   DbTables/inc/TrkPreampStraw.hh
+	modified:   DbTables/inc/TrkStrawEndAlign.hh
+	modified:   DbTables/inc/TrkThresholdRStraw.hh
+	modified:   DbTables/inc/TstCalib1.hh
+	modified:   DbTables/inc/TstCalib2.hh
+	modified:   DbTables/inc/TstCalib3.hh
+	modified:   DbTables/inc/ValCalibrations.hh
+	modified:   DbTables/inc/ValExtensionLists.hh
+	modified:   DbTables/inc/ValExtensions.hh
+	modified:   DbTables/inc/ValGroupLists.hh
+	modified:   DbTables/inc/ValGroups.hh
+	modified:   DbTables/inc/ValIovs.hh
+	modified:   DbTables/inc/ValLists.hh
+	modified:   DbTables/inc/ValPurposes.hh
+	modified:   DbTables/inc/ValTableLists.hh
+	modified:   DbTables/inc/ValTables.hh
+	modified:   DbTables/inc/ValVersions.hh
+	modified:   DbTables/src/DbCache.cc
+	modified:   DbTables/src/DbIoV.cc
+	modified:   DbTables/src/DbSet.cc
+	modified:   DbTables/src/DbTable.cc
+	modified:   DbTables/src/DbTableFactory.cc
+	modified:   DbTables/src/DbUtil.cc
+	modified:   DbTables/src/DbValCache.cc
+	modified:   EventDisplay/src/DataInterface.cc
+	modified:   EventDisplay/src/EventDisplay_module.cc
+	modified:   EventGenerator/fcl/prolog.fcl
+	deleted:    EventGenerator/inc/CaloCalibGun.hh
+	modified:   EventGenerator/src/AntiProtonGun_module.cc
+	modified:   EventGenerator/src/CORSIKAEventGenerator_module.cc
+	modified:   EventGenerator/src/CRYEventGenerator_module.cc
+	deleted:    EventGenerator/src/CaloCalibGun.cc
+	new file:   EventGenerator/src/CaloCalibGun_module.cc
+	modified:   EventGenerator/src/CaloTBGun_module.cc
+	modified:   EventGenerator/src/CeEndpoint_module.cc
+	modified:   EventGenerator/src/CosmicCRY.cc
+	modified:   EventGenerator/src/CryResampler_module.cc
+	modified:   EventGenerator/src/DecayInOrbitWeight_module.cc
+	modified:   EventGenerator/src/EplusFromStoppedPion_module.cc
+	modified:   EventGenerator/src/EventGenerator_module.cc
+	modified:   EventGenerator/src/ExtMonFNALBoxGenerator_module.cc
+	modified:   EventGenerator/src/ExtMonFNALGun_module.cc
+	modified:   EventGenerator/src/ExtMonFNALRoomGenerator_module.cc
+	modified:   EventGenerator/src/FlatMuonDaughterGenerator_module.cc
+	modified:   EventGenerator/src/FromAsciiMomentumAndPosition_module.cc
+	modified:   EventGenerator/src/FromSimParticleCompact_module.cc
+	modified:   EventGenerator/src/FromStepPointMCsRotateTarget_module.cc
+	modified:   EventGenerator/src/FromStepPointMCs_module.cc
+	modified:   EventGenerator/src/G4BeamlineGenerator_module.cc
+	modified:   EventGenerator/src/GenEventCounter_module.cc
+	modified:   EventGenerator/src/GeneratorPlots_module.cc
+	modified:   EventGenerator/src/InFlightParticleSampler_module.cc
+	modified:   EventGenerator/src/LeadingLog_module.cc
+	modified:   EventGenerator/src/MuStopProductsGun_module.cc
+	modified:   EventGenerator/src/PBIWeight_module.cc
+	modified:   EventGenerator/src/Pileup_module.cc
+	modified:   EventGenerator/src/PrimaryAntiProtonGun_module.cc
+	modified:   EventGenerator/src/PrimaryProtonGun_module.cc
+	modified:   EventGenerator/src/RMCGun_module.cc
+	modified:   EventGenerator/src/RPCGun_module.cc
+	modified:   EventGenerator/src/RanTest_module.cc
+	modified:   EventGenerator/src/SConscript
+	modified:   EventGenerator/src/SingleProcessGenerator_module.cc
+	modified:   EventGenerator/src/StoppedMuonRMCGun_module.cc
+	modified:   EventGenerator/src/StoppedMuonXRayGammaRayGun_module.cc
+	modified:   EventGenerator/src/StoppedMuplusDecayGun_module.cc
+	modified:   EventGenerator/src/StoppedParticleG4Gun_module.cc
+	modified:   EventGenerator/src/StoppedParticleReactionGun_module.cc
+	modified:   EventMixing/src/MixBackgroundFrames_module.cc
+	modified:   EventMixing/src/Mu2eProductMixer.cc
+	modified:   EventMixing/src/ProtonBunchIntensityFlat_module.cc
+	modified:   EventMixing/src/ProtonBunchIntensityLogNormal_module.cc
+	modified:   EventMixing/src/ResamplingMixer_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFBoxFluxAnalyzer_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFBoxMuonAnalyzer_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetHistPatRec_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetHistRawHits_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetHistRecoClusters_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetHistSimHits_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetMCHistPatRec_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetPrintRawClusters_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetPrintRawHitTruth_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetPrintRawHits_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetPrintRecoClusterTruth_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetPrintRecoClusters_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDetPrintSim_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFDigiTuning_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFRawHitsValidator_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/EMFRoomFluxAnalyzer_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/MARSGenParticleDumper_module.cc
+	modified:   ExtinctionMonitorFNAL/Analyses/src/MARSGenParticleHist_module.cc
+	modified:   ExtinctionMonitorFNAL/ComponentTests/src/PixelIdConverterTest_module.cc
+	modified:   ExtinctionMonitorFNAL/ComponentTests/src/TrackExtrapolatorTest2_module.cc
+	modified:   ExtinctionMonitorFNAL/ComponentTests/src/TrackExtrapolatorTest_module.cc
+	modified:   ExtinctionMonitorFNAL/Digitization/src/ExtMonFNALHitMaker_module.cc
+	modified:   ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh
+	modified:   ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh
+	modified:   ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh
+	modified:   ExtinctionMonitorFNAL/Reconstruction/src/EMFPatRecFromTracklets_module.cc
+	modified:   ExtinctionMonitorFNAL/Reconstruction/src/EMFTrackClusterArbiter_module.cc
+	modified:   ExtinctionMonitorFNAL/Reconstruction/src/ExtMonFNALRawClusterization_module.cc
+	modified:   ExtinctionMonitorFNAL/Reconstruction/src/ExtMonFNALRecoClusterization_module.cc
+	modified:   ExtinctionMonitorFNAL/TruthAlgs/src/PatRecTruthMaker_module.cc
+	modified:   ExtinctionMonitorFNAL/TruthAlgs/src/RecoClusterTruthMaker_module.cc
+	modified:   ExtinctionMonitorFNAL/TruthAlgs/src/SimParticleMARSAssnsMaker_module.cc
+	modified:   ExtinctionMonitorFNAL/fcl/prolog.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp00.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp01.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp02.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp03.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp04.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp05.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp06.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp07.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp08.fcl
+	modified:   ExtinctionMonitorFNAL/test/20121004-grid-config/g4s2_emfMARSBoxp09.fcl
+	modified:   ExtinctionMonitorFNAL/test/EMFBoxFluxAnalyzer.fcl
+	modified:   ExtinctionMonitorFNAL/test/EMFRoomFluxAnalyzer.fcl
+	modified:   ExtinctionMonitorFNAL/test/digiG4forChipSim.fcl
+	modified:   ExtinctionMonitorFNAL/test/emfRecoTrackAnalysis.fcl
+	modified:   ExtinctionMonitorFNAL/test/g4detectorDefsCommon.fcl
+	modified:   ExtinctionMonitorFNAL/test/g4detectorMicrobunch.fcl
+	modified:   ExtinctionMonitorFNAL/test/marsInputs_monfnal3w1.fcl
+	modified:   ExtinctionMonitorFNAL/test/recoDefsCommon.fcl
+	modified:   ExtinctionMonitorFNAL/test/trajectoryIn.fcl
+	modified:   Filters/src/BunchIntensityFilter_module.cc
+	modified:   Filters/src/CaloShowerSimFilter_module.cc
+	modified:   Filters/src/ChooseTrackFilter_module.cc
+	modified:   Filters/src/CompressPhysicalVolumes_module.cc
+	modified:   Filters/src/CompressStepPointMCs_module.cc
+	modified:   Filters/src/DetectorStepFilter_module.cc
+	modified:   Filters/src/EMFBoxHitsFilter_module.cc
+	modified:   Filters/src/EMFPixelHitsFilter_module.cc
+	modified:   Filters/src/EMFPixelSimFilter_module.cc
+	modified:   Filters/src/FilterCosmicsStage1_module.cc
+	modified:   Filters/src/FilterG4Out_module.cc
+	modified:   Filters/src/FilterStatusG4_module.cc
+	modified:   Filters/src/FilterStepPointAngleVsTarget_module.cc
+	modified:   Filters/src/FilterStepPointKinEnPDG_module.cc
+	modified:   Filters/src/FilterStepPointMomentum_module.cc
+	modified:   Filters/src/FilterStepPointPDG_module.cc
+	modified:   Filters/src/FilterStepPointPositionMomentum_module.cc
+	modified:   Filters/src/FilterStepPointPzVsTarget_module.cc
+	modified:   Filters/src/FilterStepPointReflection_module.cc
+	modified:   Filters/src/GenParticleMomFilter_module.cc
+	modified:   Filters/src/KilledEventFilter_module.cc
+	modified:   Filters/src/ParticleCodeFilter_module.cc
+	modified:   Filters/src/RandomPrescaleFilter_module.cc
+	modified:   Filters/src/RecoMomFilter_module.cc
+	modified:   Filters/src/SelectEvents_module.cc
+	modified:   Filters/src/SelectStepPointsByTime_module.cc
+	modified:   Filters/src/SimParticleTimeMapUpdater_module.cc
+	modified:   Filters/src/StepPointFilter_module.cc
+	modified:   Filters/src/StepPointMCCollectionUpdater_module.cc
+	modified:   Filters/src/StepPointsInDigis_module.cc
+	modified:   Filters/src/StrawDigiMCFilter_module.cc
+	modified:   Filters/src/TrackSummaryTruthUpdater_module.cc
+	modified:   Filters/src/TrackerStepPointFilter_module.cc
+	modified:   Filters/src/TriggerResultsFilter_module.cc
+	modified:   Filters/src/TrkPatRecFilter_module.cc
+	modified:   Filters/src/TrkQualFilter_module.cc
+	modified:   Filters/src/VetoIncorrectHits_module.cc
+	modified:   Filters/src/WeightSamplingFilter_module.cc
+	modified:   GeneralUtilities/inc/ParameterSetHelpers.hh
+	modified:   GeneralUtilities/inc/PhiPrescalingParams.hh
+	modified:   GeometryService/inc/GeometryService.hh
+	modified:   GeometryService/src/DiskCalorimeterMaker.cc
+	deleted:    GeometryService/src/GeometryRecorder_module.cc
+	modified:   GeometryService/src/GeometryService_service.cc
+	modified:   GlobalConstantsService/src/SConscript
+	modified:   HelloWorld/src/HelloProducer_module.cc
+	modified:   HelloWorld/src/HelloWorld2_module.cc
+	modified:   HelloWorld/src/HelloWorld_module.cc
+	modified:   MCDataProducts/inc/ProcessCode.hh
+	modified:   Mu2e/src/mu2e_main.cc
+	modified:   Mu2eG4/fcl/prolog.fcl
+	modified:   Mu2eG4/fcl/surfaceCheck.fcl
+	new file:   Mu2eG4/geom/RotatedColl3.txt
+	new file:   Mu2eG4/geom/bfgeom_DS50_no_ds_v01.txt
+	new file:   Mu2eG4/geom/bfgeom_DS50_no_tsu_ps_v01.txt
+	new file:   Mu2eG4/geom/bfgeom_DS50_reco_v01.txt
+	new file:   Mu2eG4/geom/bfgeom_DS50_v01.txt
+	modified:   Mu2eG4/geom/bfgeom_no_ds_v01.txt
+	modified:   Mu2eG4/geom/bfgeom_no_field.txt
+	modified:   Mu2eG4/geom/bfgeom_no_tsu_ps_v01.txt
+	modified:   Mu2eG4/geom/bfgeom_reco_v01.txt
+	modified:   Mu2eG4/geom/bfgeom_v01.txt
+	modified:   Mu2eG4/geom/calorimeter_CsI.txt
+	modified:   Mu2eG4/geom/geom_2021_PhaseI_v02.txt
+	modified:   Mu2eG4/geom/geom_SurfaceCheck.txt
+	modified:   Mu2eG4/geom/geom_SurfaceCheck_Select.txt
+	modified:   Mu2eG4/geom/geom_common_extracted.txt
+	renamed:    Mu2eG4/geom/geom_common_no_field.txt -> Mu2eG4/geom/geom_common_muplus.txt
+	deleted:    Mu2eG4/geom/geom_common_no_ds.txt
+	deleted:    Mu2eG4/geom/geom_common_no_tsu_ps.txt
+	deleted:    Mu2eG4/geom/geom_common_reco.txt
+	modified:   Mu2eG4/inc/ConstructMaterials.hh
+	modified:   Mu2eG4/inc/Mu2eG4Config.hh
+	modified:   Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh
+	modified:   Mu2eG4/inc/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.hh
+	modified:   Mu2eG4/inc/Mu2eG4Inputs.hh
+	modified:   Mu2eG4/inc/Mu2eG4MinDEDXPhysicsConstructor.hh
+	modified:   Mu2eG4/inc/Mu2eG4MinimalModularPhysicsList.hh
+	new file:   Mu2eG4/inc/Mu2eG4MinimalPhysicsConstructor.hh
+	modified:   Mu2eG4/inc/Mu2eG4StepLimiterPhysicsConstructor.hh
+	modified:   Mu2eG4/inc/Mu2eG4SteppingAction.hh
+	modified:   Mu2eG4/inc/Mu2eG4TrackingAction.hh
+	modified:   Mu2eG4/src/ConstructMaterials.cc
+	modified:   Mu2eG4/src/IonProducer_module.cc
+	modified:   Mu2eG4/src/Mu2eG4CustomizationPhysicsConstructor.cc
+	modified:   Mu2eG4/src/Mu2eG4DecayMuonsWithSpinPhysicsConstructor.cc
+	modified:   Mu2eG4/src/Mu2eG4EventAction.cc
+	modified:   Mu2eG4/src/Mu2eG4Inputs.cc
+	modified:   Mu2eG4/src/Mu2eG4MT_module.cc
+	modified:   Mu2eG4/src/Mu2eG4MinDEDXPhysicsConstructor.cc
+	modified:   Mu2eG4/src/Mu2eG4MinimalModularPhysicsList.cc
+	new file:   Mu2eG4/src/Mu2eG4MinimalPhysicsConstructor.cc
+	modified:   Mu2eG4/src/Mu2eG4StepLimiterPhysicsConstructor.cc
+	modified:   Mu2eG4/src/Mu2eG4SteppingAction.cc
+	modified:   Mu2eG4/src/Mu2eG4TrackingAction.cc
+	modified:   Mu2eG4/src/Mu2eG4_module.cc
+	modified:   Mu2eG4/src/Mu2eStudyWorld.cc
+	modified:   Mu2eG4/src/PhysicalVolumeHelper.cc
+	modified:   Mu2eG4/src/SimParticleHelper.cc
+	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+	modified:   Mu2eG4/src/writePhysicalVolumes.cc
+	deleted:    Mu2eG4/test/genconfig_calocalib.txt
+	modified:   Mu2eKinKal/fcl/prolog.fcl
+	modified:   Mu2eKinKal/inc/KKBField.hh
+	modified:   Mu2eKinKal/inc/KKFit.hh
+	modified:   Mu2eKinKal/inc/KKFitSettings.hh
+	modified:   Mu2eKinKal/inc/KKFitUtilities.hh
+	modified:   Mu2eKinKal/inc/KKPanelHit.hh
+	modified:   Mu2eKinKal/inc/KKStrawHit.hh
+	modified:   Mu2eKinKal/inc/KKStrawHitUpdater.hh
+	modified:   Mu2eKinKal/src/CosmicTrackSeedFilter_module.cc
+	modified:   Mu2eKinKal/src/KKBField.cc
+	modified:   Mu2eKinKal/src/KKFitSettings.cc
+	modified:   Mu2eKinKal/src/KinematicLineFit_module.cc
+	modified:   Mu2eKinKal/src/LoopHelixFit_module.cc
+	modified:   Mu2eKinKal/src/SConscript
+	modified:   Mu2eKinKal/test/SeedTest.fcl
+	modified:   Mu2eUtilities/inc/BinnedSpectrumWeightPhys.hh
+	deleted:    Mu2eUtilities/inc/KalRepCollectionInfo.hh
+	modified:   Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh
+	modified:   Mu2eUtilities/inc/RMCPhys.hh
+	deleted:    Mu2eUtilities/inc/decodeTrackPatRecType.hh
+	modified:   Mu2eUtilities/src/CaloPulseShape.cc
+	deleted:    Mu2eUtilities/src/KalRepCollectionInfo.cc
+	modified:   Mu2eUtilities/src/PhysicalVolumeMultiHelper.cc
+	deleted:    Mu2eUtilities/src/decodeTrackPatRecType.cc
+	modified:   ParticleID/src/AvikPIDNew_module.cc
+	modified:   ParticleID/src/AvikPID_module.cc
+	modified:   ParticleID/src/ParticleIDRead_module.cc
+	modified:   ParticleID/src/ParticleID_module.cc
+	new file:   Print/.clang-format
+	modified:   Print/artProductSizes/Arguments.cc
+	modified:   Print/artProductSizes/Arguments.hh
+	modified:   Print/artProductSizes/RootSizeOnDisk.cc
+	modified:   Print/artProductSizes/RootSizeOnDisk.hh
+	modified:   Print/artProductSizes/artProductSizes_main.cc
+	modified:   Print/artProductSizes/rootFileSizeTools.cc
+	modified:   Print/artProductSizes/rootFileSizeTools.hh
+	modified:   Print/deps/deps_main.cc
+	modified:   Print/eventCount/Arguments.cc
+	modified:   Print/eventCount/Arguments.hh
+	modified:   Print/eventCount/FileInfo.cc
+	modified:   Print/eventCount/FileInfo.hh
+	modified:   Print/eventCount/eventCount_main.cc
+	modified:   Print/fcl/print.fcl
+	modified:   Print/fcl/printGenParticle.fcl
+	modified:   Print/fcl/printLong.fcl
+	modified:   Print/fcl/printMCTrajectory.fcl
+	modified:   Print/fcl/printPrimaryParticle.fcl
+	modified:   Print/fcl/printSimParticle.fcl
+	modified:   Print/inc/BkgClusterPrinter.hh
+	modified:   Print/inc/BkgQualPrinter.hh
+	modified:   Print/inc/CaloClusterMCPrinter.hh
+	modified:   Print/inc/CaloClusterPrinter.hh
+	modified:   Print/inc/CaloDigiPrinter.hh
+	modified:   Print/inc/CaloHitMCPrinter.hh
+	modified:   Print/inc/CaloHitPrinter.hh
+	modified:   Print/inc/CaloRecoDigiPrinter.hh
+	modified:   Print/inc/CaloShowerStepPrinter.hh
+	modified:   Print/inc/ComboHitPrinter.hh
+	modified:   Print/inc/CosmicLivetimePrinter.hh
+	modified:   Print/inc/CrvCoincidenceClusterPrinter.hh
+	modified:   Print/inc/CrvDigiMCPrinter.hh
+	modified:   Print/inc/CrvDigiPrinter.hh
+	modified:   Print/inc/CrvRecoPulsePrinter.hh
+	modified:   Print/inc/CrvStepPrinter.hh
+	modified:   Print/inc/EventWindowMarkerPrinter.hh
+	modified:   Print/inc/GenParticlePrinter.hh
+	modified:   Print/inc/KalRepPrinter.hh
+	modified:   Print/inc/KalSeedPrinter.hh
+	modified:   Print/inc/MCTrajectoryPrinter.hh
+	modified:   Print/inc/PhysicalVolumePrinter.hh
+	modified:   Print/inc/PrimaryParticlePrinter.hh
+	modified:   Print/inc/ProductPrinter.hh
+	modified:   Print/inc/ProtonBunchIntensityPrinter.hh
+	modified:   Print/inc/ProtonBunchTimeMCPrinter.hh
+	modified:   Print/inc/ProtonBunchTimePrinter.hh
+	modified:   Print/inc/SimParticlePrinter.hh
+	modified:   Print/inc/SimParticlePtrPrinter.hh
+	modified:   Print/inc/SimParticleTimeMapPrinter.hh
+	modified:   Print/inc/StatusG4Printer.hh
+	modified:   Print/inc/StepPointMCPrinter.hh
+	modified:   Print/inc/StrawDigiADCWaveformPrinter.hh
+	modified:   Print/inc/StrawDigiMCPrinter.hh
+	modified:   Print/inc/StrawDigiPrinter.hh
+	modified:   Print/inc/StrawGasStepPrinter.hh
+	modified:   Print/inc/StrawHitFlagPrinter.hh
+	modified:   Print/inc/StrawHitPrinter.hh
+	modified:   Print/inc/TimeClusterPrinter.hh
+	modified:   Print/inc/TrackClusterMatchPrinter.hh
+	modified:   Print/inc/TrackSummaryPrinter.hh
+	modified:   Print/inc/TriggerInfoPrinter.hh
+	modified:   Print/inc/TriggerResultsPrinter.hh
+	modified:   Print/inc/TrkCaloIntersectPrinter.hh
+	modified:   Print/src/BkgClusterPrinter.cc
+	modified:   Print/src/BkgQualPrinter.cc
+	modified:   Print/src/CaloClusterMCPrinter.cc
+	modified:   Print/src/CaloClusterPrinter.cc
+	modified:   Print/src/CaloDigiPrinter.cc
+	modified:   Print/src/CaloHitMCPrinter.cc
+	modified:   Print/src/CaloHitPrinter.cc
+	modified:   Print/src/CaloRecoDigiPrinter.cc
+	modified:   Print/src/CaloShowerStepPrinter.cc
+	modified:   Print/src/ComboHitPrinter.cc
+	modified:   Print/src/CosmicLivetimePrinter.cc
+	modified:   Print/src/CrvCoincidenceClusterPrinter.cc
+	modified:   Print/src/CrvDigiMCPrinter.cc
+	modified:   Print/src/CrvDigiPrinter.cc
+	modified:   Print/src/CrvRecoPulsePrinter.cc
+	modified:   Print/src/CrvStepPrinter.cc
+	modified:   Print/src/DataProductDump_module.cc
+	modified:   Print/src/EventWindowMarkerPrinter.cc
+	modified:   Print/src/GenParticlePrinter.cc
+	modified:   Print/src/KalRepPrinter.cc
+	modified:   Print/src/KalSeedPrinter.cc
+	modified:   Print/src/MCTrajectoryPrinter.cc
+	modified:   Print/src/PhysicalVolumePrinter.cc
+	modified:   Print/src/PrimaryParticlePrinter.cc
+	modified:   Print/src/PrintModule_module.cc
+	modified:   Print/src/ProtonBunchIntensityPrinter.cc
+	modified:   Print/src/ProtonBunchTimeMCPrinter.cc
+	modified:   Print/src/ProtonBunchTimePrinter.cc
+	modified:   Print/src/RunEventSubRun_module.cc
+	modified:   Print/src/SimParticlePrinter.cc
+	modified:   Print/src/SimParticlePtrPrinter.cc
+	modified:   Print/src/SimParticleTimeMapPrinter.cc
+	modified:   Print/src/StatusG4Printer.cc
+	modified:   Print/src/StepPointMCPrinter.cc
+	modified:   Print/src/StrawDigiADCWaveformPrinter.cc
+	modified:   Print/src/StrawDigiMCPrinter.cc
+	modified:   Print/src/StrawDigiPrinter.cc
+	modified:   Print/src/StrawGasStepPrinter.cc
+	modified:   Print/src/StrawHitFlagPrinter.cc
+	modified:   Print/src/StrawHitPrinter.cc
+	modified:   Print/src/TimeClusterPrinter.cc
+	modified:   Print/src/TrackClusterMatchPrinter.cc
+	modified:   Print/src/TrackSummaryPrinter.cc
+	modified:   Print/src/TriggerInfoPrinter.cc
+	modified:   Print/src/TriggerResultsPrinter.cc
+	modified:   Print/src/TrkCaloIntersectPrinter.cc
+	new file:   ProditionsService/.clang-format
+	modified:   ProditionsService/inc/ProditionsHandle.hh
+	modified:   ProditionsService/inc/ProditionsService.hh
+	modified:   ProditionsService/src/ProditionsService_service.cc
+	modified:   ProditionsService/src/ProditionsTest_module.cc
+	modified:   ProditionsService/test/proditionsTest.fcl
+	modified:   RecoDataProducts/inc/StrawHitFlag.hh
+	modified:   RecoDataProducts/src/StrawHitFlag.cc
+	modified:   Sandbox/src/BarTest_module.cc
+	modified:   Sandbox/src/FHICLTest00_module.cc
+	modified:   Sandbox/src/FooTest_module.cc
+	modified:   Sandbox/src/HelperA_module.cc
+	modified:   Sandbox/src/HelperB_module.cc
+	modified:   Sandbox/src/Leak_module.cc
+	modified:   Sandbox/src/MakeTestInputFile_module.cc
+	modified:   Sandbox/src/MakeTestProduct_module.cc
+	modified:   Sandbox/src/MakeTracerProduct00_module.cc
+	modified:   Sandbox/src/MakeTracerProductCollection_module.cc
+	modified:   Sandbox/src/MakeTransientProduct00_module.cc
+	modified:   Sandbox/src/MakeVectorTracerProduct00_module.cc
+	modified:   Sandbox/src/ModifyTestProduct_module.cc
+	modified:   Sandbox/src/MoveAwareTest00_module.cc
+	modified:   Sandbox/src/PSetViewer_module.cc
+	modified:   Sandbox/src/Random01_module.cc
+	modified:   Sandbox/src/Random02_module.cc
+	modified:   Sandbox/src/Random10_module.cc
+	modified:   Sandbox/src/RangedFor_module.cc
+	modified:   Sandbox/src/ReadSourceTest_module.cc
+	modified:   Sandbox/src/ReadTestProduct_module.cc
+	modified:   Sandbox/src/ReadTracerProduct00_module.cc
+	modified:   Sandbox/src/ReadTracerProductCollection_module.cc
+	modified:   Sandbox/src/ReadTransientProduct00_module.cc
+	modified:   Sandbox/src/ReadVectorTracerProduct00_module.cc
+	modified:   Sandbox/src/SConscript
+	modified:   Sandbox/src/StandAloneParameterSet_module.cc
+	modified:   Sandbox/src/XBarTest_module.cc
+	modified:   Sandbox/src/malloc_module.cc
+	modified:   SeedService/src/SeedTest01_module.cc
+	modified:   Sources/inc/CosmicCORSIKA.hh
+	modified:   Sources/src/FromCorsikaBinary_source.cc
+	modified:   Sources/src/FromTrackerPrototypeData_source.cc
+	modified:   Sources/src/PBISequence_source.cc
+	modified:   TEveEventDisplay/CallerFclExamples/helix_example.fcl
+	modified:   TEveEventDisplay/fcl/prolog.fcl
+	modified:   TEveEventDisplay/src/Collection_Filler.cc
+	modified:   TEveEventDisplay/src/TEveEventDisplay_module.cc
+	modified:   TEveEventDisplay/src/TEveGDMLTest_module.cc
+	modified:   TEveEventDisplay/src/TEveMu2eHit.cc
+	modified:   TEveEventDisplay/src/TEveMu2eMCInterface.cc
+	modified:   TEveEventDisplay/src/TEveMu2e_base_classes/TEveMu2eMCInterface.h
+	modified:   TEveEventDisplay/src/TEveNonGDMLTest_module.cc
+	modified:   TrackCaloMatching/src/TrackCaloIntersectionMVA_module.cc
+	modified:   TrackCaloMatching/src/TrackCaloIntersection_module.cc
+	modified:   TrackCaloMatching/src/TrackCaloMatchingExtend_module.cc
+	modified:   TrackCaloMatching/src/TrackCaloMatchingMVA_module.cc
+	modified:   TrackCaloMatching/src/TrackCaloMatching_module.cc
+	modified:   TrackCaloMatching/src/TrkExtrapol_module.cc
+	modified:   TrackerConditions/data/MisalignTracker.txt
+	modified:   TrackerConditions/fcl/prolog.fcl
+	modified:   TrackerConditions/fcl/testProditions.fcl
+	renamed:    TrkDiag/fcl/testAlign.fcl -> TrackerConditions/fcl/testTrackerAlignment.fcl
+	new file:   TrackerConditions/fcl/testTrackerStatus.fcl
+	modified:   TrackerConditions/inc/AlignedTrackerCache.hh
+	modified:   TrackerConditions/inc/AlignedTrackerMaker.hh
+	modified:   TrackerConditions/inc/FullReadoutStraw.hh
+	modified:   TrackerConditions/inc/FullReadoutStrawCache.hh
+	modified:   TrackerConditions/inc/FullReadoutStrawMaker.hh
+	modified:   TrackerConditions/inc/Mu2eDetector.hh
+	modified:   TrackerConditions/inc/Mu2eDetectorCache.hh
+	modified:   TrackerConditions/inc/Mu2eDetectorMaker.hh
+	modified:   TrackerConditions/inc/Mu2eMaterial.hh
+	modified:   TrackerConditions/inc/Mu2eMaterialCache.hh
+	modified:   TrackerConditions/inc/Mu2eMaterialMaker.hh
+	modified:   TrackerConditions/inc/StrawDrift.hh
+	modified:   TrackerConditions/inc/StrawDriftCache.hh
+	modified:   TrackerConditions/inc/StrawDriftMaker.hh
+	modified:   TrackerConditions/inc/StrawElectronics.hh
+	modified:   TrackerConditions/inc/StrawElectronicsCache.hh
+	modified:   TrackerConditions/inc/StrawElectronicsMaker.hh
+	modified:   TrackerConditions/inc/StrawPhysics.hh
+	modified:   TrackerConditions/inc/StrawPhysicsCache.hh
+	modified:   TrackerConditions/inc/StrawPhysicsMaker.hh
+	modified:   TrackerConditions/inc/StrawResponse.hh
+	modified:   TrackerConditions/inc/StrawResponseCache.hh
+	modified:   TrackerConditions/inc/StrawResponseMaker.hh
+	modified:   TrackerConditions/inc/StrawTension.hh
+	modified:   TrackerConditions/inc/TrackerStatus.hh
+	modified:   TrackerConditions/inc/TrackerStatusCache.hh
+	modified:   TrackerConditions/inc/TrackerStatusMaker.hh
+	modified:   TrackerConditions/src/AlignedTrackerMaker.cc
+	modified:   TrackerConditions/src/FullReadoutStraw.cc
+	modified:   TrackerConditions/src/FullReadoutStrawMaker.cc
+	modified:   TrackerConditions/src/Mu2eDetector.cc
+	modified:   TrackerConditions/src/Mu2eDetectorMaker.cc
+	modified:   TrackerConditions/src/Mu2eMaterial.cc
+	modified:   TrackerConditions/src/Mu2eMaterialMaker.cc
+	modified:   TrackerConditions/src/SConscript
+	modified:   TrackerConditions/src/StrawDrift.cc
+	modified:   TrackerConditions/src/StrawDriftMaker.cc
+	modified:   TrackerConditions/src/StrawElectronics.cc
+	modified:   TrackerConditions/src/StrawElectronicsMaker.cc
+	modified:   TrackerConditions/src/StrawPhysics.cc
+	modified:   TrackerConditions/src/StrawPhysicsMaker.cc
+	modified:   TrackerConditions/src/StrawResponse.cc
+	modified:   TrackerConditions/src/StrawResponseMaker.cc
+	modified:   TrackerConditions/src/TrackerStatus.cc
+	modified:   TrackerConditions/src/TrackerStatusMaker.cc
+	modified:   TrackerConditions/test/MisalignTracker.C
+	modified:   TrackerConditions/test/NoMisalignTracker.C
+	new file:   TrackerConditions/test/RandomTrackerStatus.C
+	modified:   TrackerConditions/test/TrkPreampStrawRandomize.py
+	modified:   TrackerConfig/inc/StrawElectronicsConfig.hh
+	modified:   TrackerGeom/inc/Manifold.hh
+	modified:   TrackerGeom/inc/ManifoldId.hh
+	modified:   TrackerGeom/inc/Panel.hh
+	modified:   TrackerGeom/inc/Straw.hh
+	modified:   TrackerGeom/inc/Support.hh
+	modified:   TrackerGeom/inc/SupportModel.hh
+	modified:   TrackerGeom/inc/SupportStructure.hh
+	modified:   TrackerGeom/inc/TrackerG4Info.hh
+	modified:   TrackerGeom/src/Manifold.cc
+	modified:   TrackerGeom/src/Panel.cc
+	modified:   TrackerGeom/src/Plane.cc
+	modified:   TrackerGeom/src/SConscript
+	modified:   TrackerGeom/src/Straw.cc
+	modified:   TrackerGeom/src/SupportStructure.cc
+	modified:   TrackerGeom/src/Tracker.cc
+	modified:   TrackerMC/fcl/prolog.fcl
+	modified:   TrackerMC/inc/IonCluster.hh
+	modified:   TrackerMC/inc/StrawCluster.hh
+	modified:   TrackerMC/inc/StrawClusterSequence.hh
+	modified:   TrackerMC/inc/StrawClusterSequencePair.hh
+	modified:   TrackerMC/inc/StrawWaveform.hh
+	modified:   TrackerMC/src/MakeStrawGasSteps_module.cc
+	modified:   TrackerMC/src/SConscript
+	modified:   TrackerMC/src/StrawCluster.cc
+	modified:   TrackerMC/src/StrawClusterSequence.cc
+	modified:   TrackerMC/src/StrawClusterSequencePair.cc
+	modified:   TrackerMC/src/StrawDigisFromStrawGasSteps_module.cc
+	modified:   TrackerMC/src/StrawWaveform.cc
+	modified:   TrackerMC/src/classes_def.xml
+	modified:   TrackerMC/test/PlotWaveforms.C
+	modified:   TrackerMC/test/RandomDeadStraws.C
+	modified:   TrackerMC/test/SDTest.C
+	modified:   TrackerMC/test/STest.C
+	modified:   TrackerMC/test/SWTest.C
+	modified:   Trigger/data/ExtrPosTrigMenu.config
+	modified:   Trigger/data/OffSpillTrigMenu.config
+	modified:   Trigger/data/OnSpillTrigMenu.config
+	deleted:    Trigger/data/caloCalibCosmic/main_caloCalibCosmicCDCountFilter.fcl
+	deleted:    Trigger/data/caloCalibCosmic/main_caloCalibCosmicEventPrescale.fcl
+	deleted:    Trigger/data/caloCalibCosmic/main_caloCalibCosmicFilter.fcl
+	new file:   Trigger/data/caloFast_cosmic/main_caloFast_cosmic_eventPrescale.fcl
+	new file:   Trigger/data/caloFast_cosmic/main_caloFast_cosmic_filter.fcl
+	new file:   Trigger/data/caloFast_mvaLHCE/main_caloFast_mvaLHCE_eventPrescale.fcl
+	new file:   Trigger/data/caloFast_mvaLHCE/main_caloFast_mvaLHCE_filter.fcl
+	renamed:    Trigger/data/caloLHCE/main_caloLHCECDCountFilter.fcl -> Trigger/data/caloFast_mvaLHCE/main_caloLHCECDCountFilter.fcl
+	new file:   Trigger/data/caloFast_mvaNNCE/main_caloFast_mvaNNCE_eventPrescale.fcl
+	new file:   Trigger/data/caloFast_mvaNNCE/main_caloFast_mvaNNCE_filter.fcl
+	new file:   Trigger/data/caloFast_photon/main_caloFast_photon_cdCountFilter.fcl
+	new file:   Trigger/data/caloFast_photon/main_caloFast_photon_eventPrescale.fcl
+	new file:   Trigger/data/caloFast_photon/main_caloFast_photon_filter.fcl
+	deleted:    Trigger/data/caloLHCE/main_caloLHCEEventPrescale.fcl
+	deleted:    Trigger/data/caloLHCE/main_caloLHCEFilter.fcl
+	deleted:    Trigger/data/caloMVANNCE/main_caloMVANNCEEventPrescale.fcl
+	deleted:    Trigger/data/caloMVANNCE/main_caloMVANNCEFilter.fcl
+	deleted:    Trigger/data/caloPhoton/main_caloPhotonCDCountFilter.fcl
+	deleted:    Trigger/data/caloPhoton/main_caloPhotonEventPrescale.fcl
+	deleted:    Trigger/data/caloPhoton/main_caloPhotonFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeM/main_cprCosmicHelixDeMEventPrescale.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeM/main_cprCosmicHelixDeMHSFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeM/main_cprCosmicHelixDeMSDCountFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeM/main_cprCosmicHelixDeMTCFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeP/main_cprCosmicHelixDePEventPrescale.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeP/main_cprCosmicHelixDePHSFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeP/main_cprCosmicHelixDePSDCountFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixDeP/main_cprCosmicHelixDePTCFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeM/main_cprCosmicHelixUeMEventPrescale.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeM/main_cprCosmicHelixUeMHSFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeM/main_cprCosmicHelixUeMSDCountFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeM/main_cprCosmicHelixUeMTCFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeP/main_cprCosmicHelixUePEventPrescale.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeP/main_cprCosmicHelixUePHSFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeP/main_cprCosmicHelixUePSDCountFilter.fcl
+	deleted:    Trigger/data/cprCosmicHelixUeP/main_cprCosmicHelixUePTCFilter.fcl
+	modified:   Trigger/data/cprCosmicSeedDeM/main_cprCosmicSeedDeMHSFilter.fcl
+	modified:   Trigger/data/cprCosmicSeedDeM/main_cprCosmicSeedDeMTSFilter.fcl
+	modified:   Trigger/data/cprCosmicSeedDeP/main_cprCosmicSeedDePHSFilter.fcl
+	modified:   Trigger/data/cprCosmicSeedDeP/main_cprCosmicSeedDePTSFilter.fcl
+	new file:   Trigger/data/cprDeM_highP_stopTarg/main_cprDeM_highP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/cprDeM_highP_stopTarg/main_cprDeM_highP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/cprDeM_highP_stopTarg/main_cprDeM_highP_stopTarg_sdCountFilter.fcl
+	new file:   Trigger/data/cprDeM_highP_stopTarg/main_cprDeM_highP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/cprDeM_highP_stopTarg/main_cprDeM_highP_stopTarg_tsFilter.fcl
+	new file:   Trigger/data/cprDeM_lowP_stopTarg/main_cprDeM_lowP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/cprDeM_lowP_stopTarg/main_cprDeM_lowP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/cprDeM_lowP_stopTarg/main_cprDeM_lowP_stopTarg_sdCountFilter.fcl
+	new file:   Trigger/data/cprDeM_lowP_stopTarg/main_cprDeM_lowP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/cprDeM_lowP_stopTarg/main_cprDeM_lowP_stopTarg_tsFilter.fcl
+	new file:   Trigger/data/cprDeP_highP_stopTarg/main_cprDeP_highP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/cprDeP_highP_stopTarg/main_cprDeP_highP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/cprDeP_highP_stopTarg/main_cprDeP_highP_stopTarg_sdCountFilter.fcl
+	new file:   Trigger/data/cprDeP_highP_stopTarg/main_cprDeP_highP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/cprDeP_highP_stopTarg/main_cprDeP_highP_stopTarg_tsFilter.fcl
+	new file:   Trigger/data/cprDeP_lowP_stopTarg/main_cprDeP_lowP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/cprDeP_lowP_stopTarg/main_cprDeP_lowP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/cprDeP_lowP_stopTarg/main_cprDeP_lowP_stopTarg_sdCountFilter.fcl
+	new file:   Trigger/data/cprDeP_lowP_stopTarg/main_cprDeP_lowP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/cprDeP_lowP_stopTarg/main_cprDeP_lowP_stopTarg_tsFilter.fcl
+	new file:   Trigger/data/cprHelixDeM/main_cprHelixDeM_eventPrescale.fcl
+	new file:   Trigger/data/cprHelixDeM/main_cprHelixDeM_hsFilter.fcl
+	new file:   Trigger/data/cprHelixDeM/main_cprHelixDeM_sdCountFilter.fcl
+	new file:   Trigger/data/cprHelixDeM/main_cprHelixDeM_tcFilter.fcl
+	new file:   Trigger/data/cprHelixDeP/main_cprHelixDeP_eventPrescale.fcl
+	new file:   Trigger/data/cprHelixDeP/main_cprHelixDeP_hsFilter.fcl
+	new file:   Trigger/data/cprHelixDeP/main_cprHelixDeP_sdCountFilter.fcl
+	new file:   Trigger/data/cprHelixDeP/main_cprHelixDeP_tcFilter.fcl
+	new file:   Trigger/data/cprHelixUeM/main_cprHelixUeM_eventPrescale.fcl
+	new file:   Trigger/data/cprHelixUeM/main_cprHelixUeM_hsFilter.fcl
+	new file:   Trigger/data/cprHelixUeM/main_cprHelixUeM_sdCountFilter.fcl
+	new file:   Trigger/data/cprHelixUeM/main_cprHelixUeM_tcFilter.fcl
+	new file:   Trigger/data/cprHelixUeP/main_cprHelixUeP_eventPrescale.fcl
+	new file:   Trigger/data/cprHelixUeP/main_cprHelixUeP_hsFilter.fcl
+	new file:   Trigger/data/cprHelixUeP/main_cprHelixUeP_sdCountFilter.fcl
+	new file:   Trigger/data/cprHelixUeP/main_cprHelixUeP_tcFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeM/main_cprLowPSeedDeMEventPrescale.fcl
+	deleted:    Trigger/data/cprLowPSeedDeM/main_cprLowPSeedDeMHSFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeM/main_cprLowPSeedDeMSDCountFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeM/main_cprLowPSeedDeMTCFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeM/main_cprLowPSeedDeMTSFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeP/main_cprLowPSeedDePEventPrescale.fcl
+	deleted:    Trigger/data/cprLowPSeedDeP/main_cprLowPSeedDePHSFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeP/main_cprLowPSeedDePSDCountFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeP/main_cprLowPSeedDePTCFilter.fcl
+	deleted:    Trigger/data/cprLowPSeedDeP/main_cprLowPSeedDePTSFilter.fcl
+	deleted:    Trigger/data/cprSeedDeM/main_cprSeedDeMEventPrescale.fcl
+	deleted:    Trigger/data/cprSeedDeM/main_cprSeedDeMHSFilter.fcl
+	deleted:    Trigger/data/cprSeedDeM/main_cprSeedDeMSDCountFilter.fcl
+	deleted:    Trigger/data/cprSeedDeM/main_cprSeedDeMTCFilter.fcl
+	deleted:    Trigger/data/cprSeedDeM/main_cprSeedDeMTSFilter.fcl
+	deleted:    Trigger/data/cprSeedDeP/main_cprSeedDePEventPrescale.fcl
+	deleted:    Trigger/data/cprSeedDeP/main_cprSeedDePHSFilter.fcl
+	deleted:    Trigger/data/cprSeedDeP/main_cprSeedDePSDCountFilter.fcl
+	deleted:    Trigger/data/cprSeedDeP/main_cprSeedDePTCFilter.fcl
+	deleted:    Trigger/data/cprSeedDeP/main_cprSeedDePTSFilter.fcl
+	new file:   Trigger/data/cst/main_cst_eventPrescale.fcl
+	new file:   Trigger/data/cst/main_cst_sdCountFilter.fcl
+	new file:   Trigger/data/cst/main_cst_tcFilter.fcl
+	new file:   Trigger/data/cst/main_cst_tsFilter.fcl
+	deleted:    Trigger/data/cstSeed/main_cstSeedEventPrescale.fcl
+	deleted:    Trigger/data/cstSeed/main_cstSeedSDCountFilter.fcl
+	deleted:    Trigger/data/cstSeed/main_cstSeedTCFilter.fcl
+	deleted:    Trigger/data/cstSeed/main_cstSeedTSFilter.fcl
+	renamed:    Trigger/data/cstTimeCluster/main_cstTimeClusterEventPrescale.fcl -> Trigger/data/cstTimeCluster/main_cstTimeCluster_eventPrescale.fcl
+	renamed:    Trigger/data/cstTimeCluster/main_cstTimeClusterSDCountFilter.fcl -> Trigger/data/cstTimeCluster/main_cstTimeCluster_sdCountFilter.fcl
+	renamed:    Trigger/data/cstTimeCluster/main_cstTimeClusterTCFilter.fcl -> Trigger/data/cstTimeCluster/main_cstTimeCluster_tcFilter.fcl
+	new file:   Trigger/data/minBias_sdCount/main_minBias_sdCount_eventPrescale.fcl
+	new file:   Trigger/data/minBias_sdCount/main_minBias_sdCount_filter.fcl
+	deleted:    Trigger/data/minimumbiasSDCount/main_minimumbiasSDCountEventPrescale.fcl
+	deleted:    Trigger/data/minimumbiasSDCount/main_minimumbiasSDCountFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeM/main_tprCosmicHelixDeMEventPrescale.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeM/main_tprCosmicHelixDeMHSFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeM/main_tprCosmicHelixDeMSDCountFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeM/main_tprCosmicHelixDeMTCFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeP/main_tprCosmicHelixDePEventPrescale.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeP/main_tprCosmicHelixDePHSFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeP/main_tprCosmicHelixDePSDCountFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixDeP/main_tprCosmicHelixDePTCFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeM/main_tprCosmicHelixUeMEventPrescale.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeM/main_tprCosmicHelixUeMHSFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeM/main_tprCosmicHelixUeMSDCountFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeM/main_tprCosmicHelixUeMTCFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeP/main_tprCosmicHelixUePEventPrescale.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeP/main_tprCosmicHelixUePHSFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeP/main_tprCosmicHelixUePSDCountFilter.fcl
+	deleted:    Trigger/data/tprCosmicHelixUeP/main_tprCosmicHelixUePTCFilter.fcl
+	modified:   Trigger/data/tprCosmicSeedDeM/main_tprCosmicSeedDeMHSFilter.fcl
+	modified:   Trigger/data/tprCosmicSeedDeM/main_tprCosmicSeedDeMTSFilter.fcl
+	modified:   Trigger/data/tprCosmicSeedDeP/main_tprCosmicSeedDePHSFilter.fcl
+	modified:   Trigger/data/tprCosmicSeedDeP/main_tprCosmicSeedDePTSFilter.fcl
+	new file:   Trigger/data/tprDeM_highP_stopTarg/main_tprDeM_highP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/tprDeM_highP_stopTarg/main_tprDeM_highP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/tprDeM_highP_stopTarg/main_tprDeM_highP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/tprDeM_highP_stopTarg/main_tprDeM_highP_stopTarg_tsFilter.fcl
+	new file:   Trigger/data/tprDeM_lowP_stopTarg/main_tprDeM_lowP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/tprDeM_lowP_stopTarg/main_tprDeM_lowP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/tprDeM_lowP_stopTarg/main_tprDeM_lowP_stopTarg_sdCountFilter.fcl
+	new file:   Trigger/data/tprDeM_lowP_stopTarg/main_tprDeM_lowP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/tprDeM_lowP_stopTarg/main_tprDeM_lowP_stopTarg_tsFilter.fcl
+	new file:   Trigger/data/tprDeP_highP_stopTarg/main_tprDeP_highP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/tprDeP_highP_stopTarg/main_tprDeP_highP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/tprDeP_highP_stopTarg/main_tprDeP_highP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/tprDeP_highP_stopTarg/main_tprDeP_highP_stopTarg_tsFilter.fcl
+	new file:   Trigger/data/tprDeP_lowP_stopTarg/main_tprDeP_lowP_stopTarg_eventPrescale.fcl
+	new file:   Trigger/data/tprDeP_lowP_stopTarg/main_tprDeP_lowP_stopTarg_hsFilter.fcl
+	new file:   Trigger/data/tprDeP_lowP_stopTarg/main_tprDeP_lowP_stopTarg_sdCountFilter.fcl
+	new file:   Trigger/data/tprDeP_lowP_stopTarg/main_tprDeP_lowP_stopTarg_tcFilter.fcl
+	new file:   Trigger/data/tprDeP_lowP_stopTarg/main_tprDeP_lowP_stopTarg_tsFilter.fcl
+	deleted:    Trigger/data/tprHelixCalibIPADeM/main_tprHelixCalibIPADeMEventPrescale.fcl
+	deleted:    Trigger/data/tprHelixCalibIPADeM/main_tprHelixCalibIPADeMHSFilter.fcl
+	deleted:    Trigger/data/tprHelixCalibIPADeM/main_tprHelixCalibIPADeMSDCountFilter.fcl
+	deleted:    Trigger/data/tprHelixCalibIPADeM/main_tprHelixCalibIPADeMTCFilter.fcl
+	new file:   Trigger/data/tprHelixDeM/main_tprHelixDeM_eventPrescale.fcl
+	new file:   Trigger/data/tprHelixDeM/main_tprHelixDeM_hsFilter.fcl
+	new file:   Trigger/data/tprHelixDeM/main_tprHelixDeM_sdCountFilter.fcl
+	new file:   Trigger/data/tprHelixDeM/main_tprHelixDeM_tcFilter.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa/main_tprHelixDeM_ipa_eventPrescale.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa/main_tprHelixDeM_ipa_hsFilter.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa/main_tprHelixDeM_ipa_sdCountFilter.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa/main_tprHelixDeM_ipa_tcFilter.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa_phiScaled/main_tprHelixDeM_ipa_phiScaled_eventPrescale.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa_phiScaled/main_tprHelixDeM_ipa_phiScaled_hsFilter.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa_phiScaled/main_tprHelixDeM_ipa_phiScaled_sdCountFilter.fcl
+	new file:   Trigger/data/tprHelixDeM_ipa_phiScaled/main_tprHelixDeM_ipa_phiScaled_tcFilter.fcl
+	new file:   Trigger/data/tprHelixDeP/main_tprHelixDeP_eventPrescale.fcl
+	new file:   Trigger/data/tprHelixDeP/main_tprHelixDeP_hsFilter.fcl
+	new file:   Trigger/data/tprHelixDeP/main_tprHelixDeP_sdCountFilter.fcl
+	new file:   Trigger/data/tprHelixDeP/main_tprHelixDeP_tcFilter.fcl
+	deleted:    Trigger/data/tprHelixIPADeM/main_tprHelixIPADeMEventPrescale.fcl
+	deleted:    Trigger/data/tprHelixIPADeM/main_tprHelixIPADeMHSFilter.fcl
+	deleted:    Trigger/data/tprHelixIPADeM/main_tprHelixIPADeMSDCountFilter.fcl
+	deleted:    Trigger/data/tprHelixIPADeM/main_tprHelixIPADeMTCFilter.fcl
+	new file:   Trigger/data/tprHelixUeM/main_tprHelixUeM_eventPrescale.fcl
+	new file:   Trigger/data/tprHelixUeM/main_tprHelixUeM_hsFilter.fcl
+	new file:   Trigger/data/tprHelixUeM/main_tprHelixUeM_sdCountFilter.fcl
+	new file:   Trigger/data/tprHelixUeM/main_tprHelixUeM_tcFilter.fcl
+	new file:   Trigger/data/tprHelixUeP/main_tprHelixUeP_eventPrescale.fcl
+	new file:   Trigger/data/tprHelixUeP/main_tprHelixUeP_hsFilter.fcl
+	new file:   Trigger/data/tprHelixUeP/main_tprHelixUeP_sdCountFilter.fcl
+	new file:   Trigger/data/tprHelixUeP/main_tprHelixUeP_tcFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeM/main_tprLowPSeedDeMEventPrescale.fcl
+	deleted:    Trigger/data/tprLowPSeedDeM/main_tprLowPSeedDeMHSFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeM/main_tprLowPSeedDeMSDCountFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeM/main_tprLowPSeedDeMTCFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeM/main_tprLowPSeedDeMTSFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeP/main_tprLowPSeedDePEventPrescale.fcl
+	deleted:    Trigger/data/tprLowPSeedDeP/main_tprLowPSeedDePHSFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeP/main_tprLowPSeedDePSDCountFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeP/main_tprLowPSeedDePTCFilter.fcl
+	deleted:    Trigger/data/tprLowPSeedDeP/main_tprLowPSeedDePTSFilter.fcl
+	deleted:    Trigger/data/tprSeedDeM/main_tprSeedDeMEventPrescale.fcl
+	deleted:    Trigger/data/tprSeedDeM/main_tprSeedDeMHSFilter.fcl
+	deleted:    Trigger/data/tprSeedDeM/main_tprSeedDeMSDCountFilter.fcl
+	deleted:    Trigger/data/tprSeedDeM/main_tprSeedDeMTCFilter.fcl
+	deleted:    Trigger/data/tprSeedDeM/main_tprSeedDeMTSFilter.fcl
+	deleted:    Trigger/data/tprSeedDeP/main_tprSeedDePEventPrescale.fcl
+	deleted:    Trigger/data/tprSeedDeP/main_tprSeedDePHSFilter.fcl
+	deleted:    Trigger/data/tprSeedDeP/main_tprSeedDePSDCountFilter.fcl
+	deleted:    Trigger/data/tprSeedDeP/main_tprSeedDePTCFilter.fcl
+	deleted:    Trigger/data/tprSeedDeP/main_tprSeedDePTSFilter.fcl
+	modified:   Trigger/fcl/prolog_trigger.fcl
+	modified:   Trigger/python/genTriggerFcl.py
+	modified:   Trigger/src/DigiFilter_module.cc
+	modified:   Trigger/src/MergeTriggerInfo_module.cc
+	modified:   Trigger/src/PrescaleEvent_module.cc
+	modified:   Trigger/src/ReadTriggerInfo_module.cc
+	modified:   TrkDiag/fcl/KalDiag.fcl
+	modified:   TrkDiag/fcl/prolog.fcl
+	modified:   TrkDiag/inc/BkgHitInfo.hh
+	modified:   TrkDiag/inc/ComboHitInfo.hh
+	modified:   TrkDiag/inc/MCEvtData.hh
+	modified:   TrkDiag/inc/TimeClusterInfo.hh
+	modified:   TrkDiag/inc/TrkCaloDiag.hh
+	modified:   TrkDiag/inc/TrkCaloInfo.hh
+	modified:   TrkDiag/inc/TrkComp.hh
+	modified:   TrkDiag/inc/TrkMCTools.hh
+	modified:   TrkDiag/inc/WeightModule.hh
+	modified:   TrkDiag/src/BinnedSpectrumWeight_module.cc
+	modified:   TrkDiag/src/BkgDiag_module.cc
+	modified:   TrkDiag/src/ComboHitDiag_module.cc
+	modified:   TrkDiag/src/HelixDiag_module.cc
+	modified:   TrkDiag/src/ProtonBunchTimeDiag_module.cc
+	modified:   TrkDiag/src/RMCWeight_module.cc
+	modified:   TrkDiag/src/SConscript
+	modified:   TrkDiag/src/StrawHitDiag_module.cc
+	modified:   TrkDiag/src/TimeClusterDiag_module.cc
+	modified:   TrkDiag/src/TrackPID_module.cc
+	modified:   TrkDiag/src/TrackQuality_module.cc
+	modified:   TrkDiag/src/TrkCaloDiag.cc
+	modified:   TrkDiag/src/TrkComp.cc
+	modified:   TrkDiag/src/TrkGeomTest_module.cc
+	modified:   TrkDiag/src/TrkMCTools.cc
+	modified:   TrkDiag/src/TrkRecoDiag_module.cc
+	modified:   TrkDiag/src/classes_def.xml
+	modified:   TrkDiag/test/BkgDiag.C
+	modified:   TrkDiag/test/CDRfigs.C
+	modified:   TrkDiag/test/EPSeparation.C
+	modified:   TrkDiag/test/Fe55.C
+	modified:   TrkDiag/test/Fe55.h
+	modified:   TrkDiag/test/FitHitErrors.C
+	modified:   TrkDiag/test/FitTest.C
+	modified:   TrkDiag/test/HelixDiag.C
+	modified:   TrkDiag/test/HitAmbigQual.C
+	modified:   TrkDiag/test/HitAmbigQual.h
+	modified:   TrkDiag/test/KalFit.C
+	deleted:    TrkDiag/test/MisalignTracker.C
+	modified:   TrkDiag/test/PBT.C
+	modified:   TrkDiag/test/PBT_SHD.C
+	modified:   TrkDiag/test/PlotHelices.C
+	modified:   TrkDiag/test/PlotTimeSpectra.C
+	modified:   TrkDiag/test/PlotTimeSpectra2D.C
+	modified:   TrkDiag/test/RunTrainPID.C
+	modified:   TrkDiag/test/SHCombo.C
+	modified:   TrkDiag/test/SHCombo.h
+	modified:   TrkDiag/test/StereoTest.C
+	modified:   TrkDiag/test/StrawHitTest.C
+	modified:   TrkDiag/test/TDCalib.C
+	modified:   TrkDiag/test/TDCalib.h
+	modified:   TrkDiag/test/TDTest.C
+	modified:   TrkDiag/test/TRD.C
+	modified:   TrkDiag/test/TimeClusterDiag.C
+	modified:   TrkDiag/test/TimePeakTest.C
+	modified:   TrkDiag/test/Timing.C
+	modified:   TrkDiag/test/TrainBkgMVA.C
+	modified:   TrkDiag/test/TrainHelixMVA.C
+	modified:   TrkDiag/test/TrainPID.C
+	modified:   TrkDiag/test/TrainStereoMVA.C
+	modified:   TrkDiag/test/TrainTimeClusterMVA.C
+	modified:   TrkDiag/test/TrkAnaLoop.C
+	modified:   TrkDiag/test/TrkAnaPlots.C
+	modified:   TrkDiag/test/TrkFitDiag.C
+	modified:   TrkDiag/test/TrkRecoDiag.C
+	modified:   TrkDiag/test/TrkRecoDiag.h
+	modified:   TrkDiag/test/Wpull.C
+	modified:   TrkDiag/test/Wpull.h
+	modified:   TrkDiag/test/kalSeedToTrkQualTree.fcl
+	modified:   TrkDiag/test/kalSeedToTrkQualTree_noFilter.fcl
+	modified:   TrkDiag/test/mmAlg2.C
+	modified:   TrkDiag/test/mmAlg2.h
+	modified:   TrkDiag/test/timeCluAna.C
+	modified:   TrkDiag/test/timeCluParameter.C
+	modified:   TrkExt/inc/TrkExtDetectors.hh
+	modified:   TrkExt/inc/TrkExtDiag.hh
+	modified:   TrkExt/inc/TrkExtInstanceName.hh
+	modified:   TrkExt/inc/TrkExtMCHits.hh
+	modified:   TrkExt/inc/TrkExtMaterial.hh
+	modified:   TrkExt/inc/TrkExtProtonAbsorber.hh
+	modified:   TrkExt/inc/TrkExtShape.hh
+	modified:   TrkExt/inc/TrkExtStoppingTarget.hh
+	modified:   TrkExt/inc/TrkExtToyDS.hh
+	modified:   TrkExt/src/SConscript
+	modified:   TrkExt/src/TrkExtDetectors.cc
+	modified:   TrkExt/src/TrkExtDiag.cc
+	modified:   TrkExt/src/TrkExtInstanceName.cc
+	modified:   TrkExt/src/TrkExtMCHits.cc
+	modified:   TrkExt/src/TrkExtMaterial.cc
+	modified:   TrkExt/src/TrkExtProtonAbsorber.cc
+	modified:   TrkExt/src/TrkExtShape.cc
+	modified:   TrkExt/src/TrkExtStoppingTarget.cc
+	modified:   TrkExt/src/TrkExtToyDS.cc
+	modified:   TrkExt/src/TrkExt_module.cc
+	modified:   TrkExt/test/TrkExt.fcl
+	modified:   TrkFilters/fcl/ReadDigis.fcl
+	modified:   TrkFilters/fcl/ReadDigisCalo.fcl
+	modified:   TrkFilters/fcl/TTDigis.fcl
+	modified:   TrkFilters/fcl/TTRead.fcl
+	modified:   TrkFilters/fcl/prolog_trigger.fcl
+	modified:   TrkFilters/src/HelixFilter_module.cc
+	modified:   TrkFilters/src/SConscript
+	modified:   TrkFilters/src/SeedFilter_module.cc
+	modified:   TrkFilters/src/TimeClusterFilter_module.cc
+	modified:   TrkFilters/test/PlotTimes.C
+	modified:   TrkFilters/test/ProcessSQL.sh
+	modified:   TrkHitReco/fcl/prolog.fcl
+	modified:   TrkHitReco/fcl/prolog_trigger.fcl
+	modified:   TrkHitReco/inc/ComboPeakFitRoot.hh
+	modified:   TrkHitReco/inc/PeakFit.hh
+	modified:   TrkHitReco/inc/PeakFitFunction.hh
+	modified:   TrkHitReco/inc/PeakFitParams.hh
+	modified:   TrkHitReco/inc/PeakFitRoot.hh
+	modified:   TrkHitReco/inc/StrawHitRecoUtils.hh
+	modified:   TrkHitReco/src/CombineStrawHits_module.cc
+	modified:   TrkHitReco/src/ComboPeakFitRoot.cc
+	modified:   TrkHitReco/src/FlagBkgHits_module.cc
+	modified:   TrkHitReco/src/MakeStereoHits_module.cc
+	modified:   TrkHitReco/src/PeakFit.cc
+	modified:   TrkHitReco/src/PeakFitFunction.cc
+	modified:   TrkHitReco/src/PeakFitParams.cc
+	modified:   TrkHitReco/src/PeakFitRoot.cc
+	modified:   TrkHitReco/src/ProtonBunchTimeFromStrawDigis_module.cc
+	modified:   TrkHitReco/src/ReadStrawDigi_module.cc
+	modified:   TrkHitReco/src/SConscript
+	modified:   TrkHitReco/src/StrawHitRecoUtils.cc
+	modified:   TrkHitReco/src/StrawHitReco_module.cc
+	modified:   TrkHitReco/test/StereoMVA.weights.xml
+	modified:   TrkHitReco/test/plotEnergyCompMultiplePeaks.C
+	modified:   TrkHitReco/test/plotEnergyCompSum.C
+	modified:   TrkHitReco/test/plotEnergyComparison.C
+	modified:   TrkHitReco/test/plotMcenergyVsComputedEnergy.C
+	modified:   TrkHitReco/test/plotRejectionRate.C
+	modified:   TrkHitReco/test/testMultiplePeak.C
+	modified:   TrkHitReco/test/testSampleData.C
+	modified:   TrkPatRec/fcl/AmbigResolver.fcl
+	modified:   TrkPatRec/fcl/DoubletAmbigResolver.fcl
+	modified:   TrkPatRec/fcl/PanelAmbigResolver.fcl
+	modified:   TrkPatRec/fcl/prolog.fcl
+	modified:   TrkPatRec/fcl/prolog_trigger.fcl
+	modified:   TrkPatRec/inc/KalFinalFit_types.hh
+	modified:   TrkPatRec/inc/KalSeedFit_types.hh
+	modified:   TrkPatRec/inc/RobustHelixFinder_types.hh
+	modified:   TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh
+	modified:   TrkPatRec/src/KalFinalFitDiag_tool.cc
+	modified:   TrkPatRec/src/KalFinalFit_module.cc
+	modified:   TrkPatRec/src/KalSeedFitDiag_tool.cc
+	modified:   TrkPatRec/src/KalSeedFit_module.cc
+	modified:   TrkPatRec/src/RobustHelixFinderDiag_tool.cc
+	modified:   TrkPatRec/src/RobustHelixFinder_module.cc
+	modified:   TrkPatRec/src/SConscript
+	modified:   TrkPatRec/src/TimeAndPhiClusterFinderDiag_tool.cc
+	modified:   TrkPatRec/src/TimeAndPhiClusterFinder_module.cc
+	modified:   TrkPatRec/src/TimeClusterFinder_module.cc
+	modified:   TrkReco/fcl/prolog.fcl
+	modified:   TrkReco/fcl/prolog_trigger.fcl
+	modified:   TrkReco/inc/AmbigResolver.hh
+	modified:   TrkReco/inc/BkgClusterer.hh
+	modified:   TrkReco/inc/DoubletAmbigResolver.hh
+	modified:   TrkReco/inc/FixedAmbigResolver.hh
+	modified:   TrkReco/inc/KalFit.hh
+	modified:   TrkReco/inc/KalFitData.hh
+	modified:   TrkReco/inc/PanelAmbigResolver.hh
+	modified:   TrkReco/inc/PanelAmbigStructs.hh
+	modified:   TrkReco/inc/PanelStateIterator.hh
+	modified:   TrkReco/inc/RobustHelixFinderData.hh
+	modified:   TrkReco/inc/RobustHelixFit.hh
+	modified:   TrkReco/inc/ScanClusterer.hh
+	modified:   TrkReco/inc/TNTClusterer.hh
+	modified:   TrkReco/inc/TrkDef.hh
+	modified:   TrkReco/inc/TrkFaceData.hh
+	modified:   TrkReco/inc/TrkPrintUtils.hh
+	modified:   TrkReco/inc/TrkTimeCalculator.hh
+	modified:   TrkReco/inc/TrkUtilities.hh
+	modified:   TrkReco/src/AmbigResolver.cc
+	modified:   TrkReco/src/DoubletAmbigResolver.cc
+	modified:   TrkReco/src/FixedAmbigResolver.cc
+	modified:   TrkReco/src/KalFit.cc
+	modified:   TrkReco/src/KalFitData.cc
+	modified:   TrkReco/src/MergeHelices_module.cc
+	modified:   TrkReco/src/PanelAmbigResolver.cc
+	modified:   TrkReco/src/PanelAmbigStructs.cc
+	modified:   TrkReco/src/PanelStateIterator.cc
+	modified:   TrkReco/src/RobustHelixFinderData.cc
+	modified:   TrkReco/src/RobustHelixFit.cc
+	modified:   TrkReco/src/SConscript
+	modified:   TrkReco/src/ScanClusterer.cc
+	modified:   TrkReco/src/TNTClusterer.cc
+	modified:   TrkReco/src/TrkDef.cc
+	modified:   TrkReco/src/TrkPrintUtils.cc
+	modified:   TrkReco/src/TrkRecoMcUtils_tool.cc
+	modified:   TrkReco/src/TrkTimeCalculator.cc
+	modified:   TrkReco/src/TrkUtilities.cc
+	modified:   TrkReco/src/classes_def.xml
+	modified:   UtilityModules/src/ModifyTrackSPM_module.cc
+	modified:   UtilityModules/src/NullProducer_module.cc
+	modified:   UtilityModules/src/ReadTrackSPM_module.cc
+	new file:   Validation/.clang-format
+	modified:   Validation/fcl/val.fcl
+	modified:   Validation/inc/TValCompare.hh
+	modified:   Validation/inc/TValHist.hh
+	modified:   Validation/inc/TValHist2.hh
+	modified:   Validation/inc/TValHistE.hh
+	modified:   Validation/inc/TValHistH.hh
+	modified:   Validation/inc/TValHistP.hh
+	modified:   Validation/inc/TValPar.hh
+	modified:   Validation/inc/ValBkgCluster.hh
+	modified:   Validation/inc/ValBkgQual.hh
+	modified:   Validation/inc/ValCaloCluster.hh
+	modified:   Validation/inc/ValCaloDigi.hh
+	modified:   Validation/inc/ValCaloHit.hh
+	modified:   Validation/inc/ValCaloRecoDigi.hh
+	modified:   Validation/inc/ValCaloShowerStep.hh
+	modified:   Validation/inc/ValComboHit.hh
+	modified:   Validation/inc/ValCrvCoincidenceCluster.hh
+	modified:   Validation/inc/ValCrvDigi.hh
+	modified:   Validation/inc/ValCrvDigiMC.hh
+	modified:   Validation/inc/ValCrvRecoPulse.hh
+	modified:   Validation/inc/ValCrvStep.hh
+	modified:   Validation/inc/ValEventWindowMarker.hh
+	modified:   Validation/inc/ValGenParticle.hh
+	modified:   Validation/inc/ValHelixSeed.hh
+	modified:   Validation/inc/ValId.hh
+	modified:   Validation/inc/ValKalSeed.hh
+	modified:   Validation/inc/ValProtonBunchIntensity.hh
+	modified:   Validation/inc/ValProtonBunchTime.hh
+	modified:   Validation/inc/ValProtonBunchTimeMC.hh
+	modified:   Validation/inc/ValSimParticle.hh
+	modified:   Validation/inc/ValSimParticleTimeMap.hh
+	modified:   Validation/inc/ValStatusG4.hh
+	modified:   Validation/inc/ValStepPointMC.hh
+	modified:   Validation/inc/ValStrawDigi.hh
+	modified:   Validation/inc/ValStrawDigiADCWaveform.hh
+	modified:   Validation/inc/ValStrawDigiMC.hh
+	modified:   Validation/inc/ValStrawGasStep.hh
+	modified:   Validation/inc/ValStrawHit.hh
+	modified:   Validation/inc/ValStrawHitFlag.hh
+	modified:   Validation/inc/ValTimeCluster.hh
+	modified:   Validation/inc/ValTrackClusterMatch.hh
+	modified:   Validation/inc/ValTrackSummary.hh
+	modified:   Validation/inc/ValTriggerInfo.hh
+	modified:   Validation/inc/ValTriggerResults.hh
+	modified:   Validation/root/TValCompare.cc
+	modified:   Validation/root/TValHist.cc
+	modified:   Validation/root/TValHist2.cc
+	modified:   Validation/root/TValHistE.cc
+	modified:   Validation/root/TValHistH.cc
+	modified:   Validation/root/TValHistP.cc
+	modified:   Validation/root/TValPar.cc
+	modified:   Validation/src/ValBkgCluster.cc
+	modified:   Validation/src/ValBkgQual.cc
+	modified:   Validation/src/ValCaloCluster.cc
+	modified:   Validation/src/ValCaloDigi.cc
+	modified:   Validation/src/ValCaloHit.cc
+	modified:   Validation/src/ValCaloRecoDigi.cc
+	modified:   Validation/src/ValCaloShowerStep.cc
+	modified:   Validation/src/ValComboHit.cc
+	modified:   Validation/src/ValCrvCoincidenceCluster.cc
+	modified:   Validation/src/ValCrvDigi.cc
+	modified:   Validation/src/ValCrvDigiMC.cc
+	modified:   Validation/src/ValCrvRecoPulse.cc
+	modified:   Validation/src/ValCrvStep.cc
+	modified:   Validation/src/ValEventWindowMarker.cc
+	modified:   Validation/src/ValGenParticle.cc
+	modified:   Validation/src/ValHelixSeed.cc
+	modified:   Validation/src/ValId.cc
+	modified:   Validation/src/ValKalSeed.cc
+	modified:   Validation/src/ValProtonBunchIntensity.cc
+	modified:   Validation/src/ValProtonBunchTime.cc
+	modified:   Validation/src/ValProtonBunchTimeMC.cc
+	modified:   Validation/src/ValSimParticle.cc
+	modified:   Validation/src/ValSimParticleTimeMap.cc
+	modified:   Validation/src/ValStatusG4.cc
+	modified:   Validation/src/ValStepPointMC.cc
+	modified:   Validation/src/ValStrawDigi.cc
+	modified:   Validation/src/ValStrawDigiADCWaveform.cc
+	modified:   Validation/src/ValStrawDigiMC.cc
+	modified:   Validation/src/ValStrawGasStep.cc
+	modified:   Validation/src/ValStrawHit.cc
+	modified:   Validation/src/ValStrawHitFlag.cc
+	modified:   Validation/src/ValTimeCluster.cc
+	modified:   Validation/src/ValTrackClusterMatch.cc
+	modified:   Validation/src/ValTrackSummary.cc
+	modified:   Validation/src/ValTriggerInfo.cc
+	modified:   Validation/src/ValTriggerResults.cc
+	modified:   Validation/src/Validation_module.cc
+	modified:   Validation/src/valCompare_main.cc
+	modified:   fcl/TrkCaloDt.fcl
+	modified:   fcl/messageService.fcl
+	modified:   fcl/standardMessageDestinations.fcl
+	modified:   fcl/standardServices.fcl
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	status.txt
+
