@@ -1,0 +1,35 @@
+#
+# Plot STMWaveforms
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: PlotSTMSpectrum
+
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Reco
+physics: {
+  producers : {
+  }
+  filters : {
+  }
+  analyzers : {
+    plotHPGeWaveforms : {
+      module_type : PlotSTMWaveforms
+      stmWaveformsTag : "FromSTMTestBeamData:HPGe"
+    }
+    plotLaBrWaveforms : {
+      module_type : PlotSTMWaveforms
+      stmWaveformsTag : "FromSTMTestBeamData:LaBr"
+    }
+  }
+  # setup paths
+  trigger_paths: [  ]
+  anaPath : [ plotHPGeWaveforms, plotLaBrWaveforms ]
+  end_paths: [anaPath]
+}
+
+services.TFileService.fileName : "stmWaveforms.root"
