@@ -18,6 +18,11 @@ vector<int> physicsParams.freeLifePDGId = { 211, 312 };
 // in Mu2e units (ns), per PDG 2013 partial update
 vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 };
 
+// parameters for RMC spectrum shape
+double physicsParams.RMCbindingEnergyFit = 0.464;
+double physicsParams.RMCrecoilEnergyFit  = 0.220;
+double physicsParams.RMCdeltaMassFit     = 3.121;
+
 // Available stopping target materials
 vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au","C","IPA"};
 

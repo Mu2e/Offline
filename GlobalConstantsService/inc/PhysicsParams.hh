@@ -47,6 +47,11 @@ namespace mu2e
     // here because values coming from other sources are not accurate
     double getParticleLifetime(PDGCode::type pdgId) const;
 
+    // RMC spectrum parameters
+    double getRMCbindingEnergyFit()  const { return _RMCbindingEnergyFit; }
+    double getRMCrecoilEnergyFit() const { return _RMCrecoilEnergyFit; }
+    double getRMCdeltaMassFit() const { return _RMCdeltaMassFit; }
+
     // Muon parameters
     double   getDecayTime     (targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
@@ -158,6 +163,10 @@ namespace mu2e
 
     typedef std::map<PDGCode::type, double> FreeLifeMap;
     FreeLifeMap freeLifetime_;
+
+    double _RMCbindingEnergyFit;
+    double _RMCrecoilEnergyFit;
+    double _RMCdeltaMassFit;
 
     std::map<targetMat,double>   _decayTime;
     std::map<targetMat,double>   _decayFraction;
