@@ -19,7 +19,7 @@
 #include "TF1.h"
 #include "TGraph.h"
 
-#include "Offline/RecoDataProducts/inc/STMWaveform.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveformCollection.hh"
 
 namespace mu2e {
 
