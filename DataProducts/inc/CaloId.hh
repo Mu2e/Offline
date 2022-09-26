@@ -44,22 +44,24 @@ namespace mu2e {
     explicit CaloId(){}
 
     uint16_t getChannel() const{
-      return channel();
+      return (_sid & _channelmsk);
     }
 
     uint16_t getCrystal() const{
-      return crystal();
+      return (_sid & _crystalmsk);
     }
 
     uint16_t getDisk() const{
-      return disk();
+      return (_sid & _diskmsk);
     }
       
     uint16_t getCrystalChannel() const{
-      return crystalchannel();
+      return (_sid & _crystalchannelmsk);
     }
 
    private:
+      //  data member is a short
+      uint16_t _sid;
       // fill fields
       void setChannel(uint16_t ich);
       void setCrystal(uint16_t icry);
