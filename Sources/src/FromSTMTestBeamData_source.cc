@@ -31,7 +31,7 @@
 
 #include "Offline/DataProducts/inc/STMTestBeamHeaders.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
-#include "Offline/RecoDataProducts/inc/STMWaveform.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveformCollection.hh"
 
 
 using namespace std;
