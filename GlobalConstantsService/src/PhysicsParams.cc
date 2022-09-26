@@ -55,6 +55,10 @@ namespace mu2e {
       freeLifetime_[PDGCode::type(-tmpPDGId[i])] = tmpLifetime[i];
     }
 
+    _RMCbindingEnergyFit = config.getDouble("physicsParams.RMCbindingEnergyFit");
+    _RMCrecoilEnergyFit  = config.getDouble("physicsParams.RMCrecoilEnergyFit");
+    _RMCdeltaMassFit     = config.getDouble("physicsParams.RMCdeltaMassFit");
+
     // Specify chosen stopping target; default is "Al"
     _chosenStoppingTargetMaterial = config.getString("physicsParams.chosenStoppingTargetMaterial","Al");
 
