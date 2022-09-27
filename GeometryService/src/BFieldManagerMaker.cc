@@ -413,7 +413,6 @@ namespace mu2e {
         parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset, extendYFound);
 
         // Create an empty map.
-        BFInterpolationStyle meco(BFInterpolationStyle::meco);
         auto dsmap =
             _bfmgr->addBFGridMap(mapContainer, key, dim[0], X0[0], dX[0], dim[1], X0[1], dX[1],
                                  dim[2], X0[2], dX[2], BFMapType::G4BL, scaleFactor, interpStyle);
