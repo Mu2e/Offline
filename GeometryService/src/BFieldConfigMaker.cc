@@ -84,13 +84,6 @@ namespace mu2e {
             }
         }
 
-        if (format == "GMC" && style != BFInterpolationStyle::meco) {
-            throw cet::exception("GEOM")
-                << "The GMC magnetic field model must use the meco style interpolation: "
-                << " The specified interpolation style is " << bfconf_->interpolationStyle()
-                << "\n";
-        }
-
         if (format == "GMC") {
             // These maps require torus radius of 2926 mm
             const double requiredTorusRadius = 2926.0 * CLHEP::mm;
