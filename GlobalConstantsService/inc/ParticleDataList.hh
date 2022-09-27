@@ -27,9 +27,12 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <vector>
+#include <array>
 
 #include "Offline/Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleData.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 namespace mu2e {
 
@@ -45,6 +48,14 @@ namespace mu2e {
     const ParticleData& particle( int id ) const;
     // lookup by name - the display name, code name or alias
     const ParticleData& particle( std::string const& name ) const;
+
+    // name to ID conversions
+    PDGCode::type pdgId( std::string const& name) const;
+    std::vector<PDGCode::type>
+           pdgId( std::vector<std::string> const& names) const;
+    template<std::size_t N> std::array<PDGCode::type,N>
+           pdgId( std::array<std::string,N> const& names) const;
+
 
     // the entire table as a map with pdgID as key
     std::map<int,ParticleData> const& list() const { return _list;}

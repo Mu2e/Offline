@@ -127,6 +127,7 @@ namespace mu2e {
   class ReadVirtualDetector : public art::EDAnalyzer {
 
     typedef vector<int> Vint;
+    typedef vector<string> Sint;
     typedef SimParticleCollection::key_type key_type;
 
     // Name of the VD and TVD StepPoint collections
@@ -198,6 +199,8 @@ namespace mu2e {
     // real parent, navigating through the staged SimParticles
     bool _navigate_to_parent;
 
+    GlobalConstantsHandle<ParticleDataList> pdt;
+
   public:
 
     explicit ReadVirtualDetector(fhicl::ParameterSet const& pset);
@@ -247,12 +250,13 @@ namespace mu2e {
     if (_debugout > 1){
       std::cout << "_vd_required = " << _vd_required << std::endl;
     }
-    Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
+    Sint const & pdg_names = pset.get<Sint>("savePDG", Sint());
+    vector<PDGCode::type> const & pdg_ids = pdt->pdgId(pdg_names);
     if( pdg_ids.size()>0 ) {
       cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
       for( size_t i=0; i<pdg_ids.size(); ++i ) {
         pdg_save.insert(pdg_ids[i]);
-        cout << pdg_ids[i] << ", ";
+        cout << pdg_names[i] << "("<<pdg_ids[i]<<"), ";
       }
       cout << endl;
     }
@@ -423,7 +427,6 @@ namespace mu2e {
     }
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
-    GlobalConstantsHandle<ParticleDataList> pdt;
 
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;

@@ -8,7 +8,6 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
-#include "Offline/DataProducts/inc/PDGCode.hh"
 
 
 namespace mu2e {
@@ -109,6 +108,34 @@ namespace mu2e {
     }
     return particle(it->second);
 
+  }
+
+  // *************************************************************
+
+  PDGCode::type ParticleDataList::pdgId( std::string const& name) const {
+    return PDGCode::type(particle(name).id());
+  }
+
+  // *************************************************************
+
+  std::vector<PDGCode::type>
+  ParticleDataList::pdgId( std::vector<std::string> const& names) const {
+    std::vector<PDGCode::type> vv;
+    for(auto const& name : names) {
+      vv.emplace_back(PDGCode::type(particle(name).id()));
+    }
+    return vv;
+  }
+
+  // *************************************************************
+
+  template<std::size_t N> std::array<PDGCode::type,N>
+  ParticleDataList::pdgId( std::array<std::string,N> const& names) const {
+    std::array<PDGCode::type,N> aa;
+    for(std::size_t i=0; i<N; i++) {
+      aa[i] = PDGCode::type(particle(names[i]).id());
+    }
+    return aa;
   }
 
   // *************************************************************
