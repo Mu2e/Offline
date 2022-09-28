@@ -12,40 +12,42 @@ namespace mu2e {
     std::string freeze = std::get<2>(bkgshuconfig);
     diag_ = std::get<3>(bkgshuconfig);
     freeze_ = WHSMask(freeze);
-    if(diag_ > 0)std::cout << "BkgStrawHitUpdater " << " bkgcut " << mvacut_ << " freeze " << freeze_ << std::endl;
+    if(diag_ > 0)std::cout << "BkgStrawHitUpdater weights " << std::get<0>(bkgshuconfig) << " cut " << mvacut_ << " freeze " << freeze_ << std::endl;
     if(diag_ > 1)mva_->showMVA();
   }
 
   WireHitState BkgStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable()){
-      std::vector<Float_t> pars(11,0.0);
+      std::vector<Float_t> pars(8,0.0);
       // this order is given by the training
       pars[0] = fabs(tpdata.doca());
       pars[1] = dinfo.driftDistance_;
-      pars[2] = chit.driftTime();
-      pars[3] = 1000.0*chit.energyDep();
-      pars[4] = tpdata.docaVar();
-      pars[5] = fabs(tpdata.dirDot());
-      pars[6] = fabs(tpdata.particlePoca().Vect().Z());
-      pars[7] = tpdata.particlePoca().Vect().Rho();
-      // compare the delta-t based U position with the fit U position
+      pars[2] = (dinfo.driftDistance_ -fabs(tpdata.doca()))/sqrt(tpdata.docaVar() + pow(dinfo.driftDistanceError_,2));
+      pars[3] = chit.driftTime();
+      pars[4] = 1000.0*chit.energyDep();
+      // compare the delta-t based U position with the fit U position; requires relative end
       double endsign = 2.0*(chit.driftEnd()-0.5);
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
-      pars[8] = fabs(chit.wireDist()-upos)/chit.wireRes();
-      pars[9] = chit.wireRes();
-      pars[10] = dinfo.LorentzAngle_;
+      pars[5] = fabs(chit.wireDist()-upos)/chit.wireRes();
+      pars[6] = chit.wireRes();
+      pars[7] = tpdata.particlePoca().Vect().Rho();
       float mvaout = mva_->evalMVA(pars);
+      if(diag_ > 2){
+        whstate.algo_  = StrawHitUpdaters::Bkg;
+        whstate.quality_ = mvaout;
+      }
       if(mvaout < mvacut_){
         whstate.algo_  = StrawHitUpdaters::Bkg;
         whstate.state_ = WireHitState::inactive;
         whstate.frozen_ = whstate.isIn(freeze_);
+        whstate.quality_ = mvaout;
       }
     }
     return whstate;
   }
   std::string const& BkgStrawHitUpdater::configDescription() {
-    static std::string descrip( " Weight file, ANN cut, states to freeze");
+    static std::string descrip( "Weight file, ANN cut, states to freeze, diag level");
     return descrip;
   }
 }

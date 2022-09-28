@@ -21,8 +21,7 @@ namespace mu2e {
     public:
       using ANNSHUConfig = std::tuple<std::string,float,float,std::string,int>;
       ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig);
-      ANNStrawHitUpdater(ANNStrawHitUpdater const& other) : mvacut_(other.mvacut_), nulldoca_(other.nulldoca_), freeze_(other.freeze_),
-      mintdrift_(other.mintdrift_), maxtdrift_(other.maxtdrift_), maxdoca_(other.maxdoca_), maxresidpull_(other.maxresidpull_) {
+      ANNStrawHitUpdater(ANNStrawHitUpdater const& other) : mvacut_(other.mvacut_), nulldoca_(other.nulldoca_), freeze_(other.freeze_) {
         if(other.mva_) mva_ = new MVATools(*other.mva_);
       }
       ~ANNStrawHitUpdater() { delete mva_; }
@@ -33,7 +32,6 @@ namespace mu2e {
       double mvacut_ =0; // cut value to decide if drift information is usable
       double nulldoca_ =2.5; // null hit doca
       WHSMask freeze_; // states to freeze
-      double mintdrift_ = -2.0, maxtdrift_ = 48.0, maxdoca_ = 5.0, maxresidpull_ =10.0; // outlier cuts; should come from central config TODO
       int diag_; // diag print level
   };
 }

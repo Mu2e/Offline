@@ -1,6 +1,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/GeneralUtilities/inc/splitLine.hh"
 #include <iostream>
 
 namespace mu2e {
@@ -26,10 +27,14 @@ namespace mu2e {
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig mconfig(std::get<0>(misetting));
         config.schedule_.push_back(mconfig);
-        auto alg = StrawHitUpdaters::algo(std::get<1>(misetting));
-        if(alg == StrawHitUpdaters::unknown)
-          throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << std::get<1>(misetting) << std::endl;
-        shualg.push_back(static_cast<int>(alg));
+        std::vector<std::string> anames;
+        splitLine( std::get<1>(misetting), ":", anames);
+        for(auto const& aname : anames) {
+          auto alg = StrawHitUpdaters::algo(aname);
+          if(alg == StrawHitUpdaters::unknown)
+            throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << aname << std::endl;
+          shualg.push_back(static_cast<int>(alg));
+        }
       }
       // create the updaters requested
       unsigned nptca, nnull, nann, nbkg, ncomb, nnone;

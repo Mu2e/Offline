@@ -73,14 +73,16 @@ namespace mu2e {
     }
     // test that the trajectory is inside the DS.  This requires sampling along the traj.  This is crude
     // and should be replace by a try/catch block, but that requires changes to KinKal TODO
-    static unsigned ntimes(100);
-    double dt = ktrk.fitTraj().range().range()/(ntimes-1);
-    for(unsigned it=0;it< ntimes; ++it) {
-      double ttest = ktrk.fitTraj().range().begin() + it*dt;
-      auto tpos = ktrk.fitTraj().position3(ttest);
-      if(tpos.Rho() > 800.0 || tpos.Z() < -7000 || tpos.Z() > 2600){ // numbers should come from DS map TODO
-        retval = false;
-        break;
+    if(retval){
+      static unsigned ntimes(100);
+      double dt = ktrk.fitTraj().range().range()/(ntimes-1);
+      for(unsigned it=0;it< ntimes; ++it) {
+        double ttest = ktrk.fitTraj().range().begin() + it*dt;
+        auto tpos = ktrk.fitTraj().position3(ttest);
+        if(tpos.Rho() > 800.0 || tpos.Z() < -7000 || tpos.Z() > 4400){ // numbers should come from DS map TODO
+          retval = false;
+          break;
+        }
       }
     }
     return retval;
