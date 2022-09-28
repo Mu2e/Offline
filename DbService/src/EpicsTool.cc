@@ -101,6 +101,11 @@ EpicsVar::EpicsVec EpicsTool::get(std::string const& name,
     return ev;
   }
 
+  // if no constraints, return the whole list
+  if ( time.empty() && daysAgo<=0.0 ) {
+    return ev;
+  }
+
   EpicsVar::EpicsVec evt;
   if (time.find('/') != std::string::npos) {
     // time interval

@@ -37,7 +37,6 @@ namespace mu2e {
     using PlaneCollection = std::array<Plane,StrawId::_nplanes>;
     using PanelCollection = std::array<Panel,StrawId::_nupanels>;
     using StrawCollection = std::array<Straw,StrawId::_nustraws>;
-    using StrawIndexMap = std::array<uint16_t,StrawId::_maxval>;
 
     using PEType = std::array<bool,StrawId::_nplanes>;
 
@@ -61,11 +60,10 @@ namespace mu2e {
     PlaneCollection const& planes() const { return _planes; }
     PanelCollection const& panels() const{ return _panels; }
     StrawCollection const& straws() const{ return _straws; }
-    // fast indexed lookup by StrawId through indirect map
-    uint16_t strawIndex(const StrawId& id) const { return _strawindex.at(id.asUint16()); }
+
     const Plane& plane( const StrawId& id ) const{ return _planes.at(id.getPlane()); }
     const Panel& panel( const StrawId& id ) const{ return _panels.at(id.uniquePanel()); }
-    const Straw& straw( const StrawId& id) const{ return _straws[strawIndex(id)]; }
+    const Straw& straw( const StrawId& id) const{ return _straws[id.uniqueStraw()]; }
 
     // access the TrackerG4Info
     TrackerG4Info const* g4Tracker() const { return _g4tracker.get(); }
@@ -76,8 +74,8 @@ namespace mu2e {
     const Plane& getPlane( uint16_t n ) const{ return _planes.at(n); }
     PlaneCollection const& getPlanes() const { return _planes; }
     const Panel& getPanel( const StrawId& id ) const{ return _panels.at(id.uniquePanel()); }
-    const Straw& getStraw( const StrawId& id) const{ return _straws[strawIndex(id)]; }
-    Straw& getStraw( const StrawId& id) { return _straws[strawIndex(id)]; }
+    const Straw& getStraw( const StrawId& id) const{ return _straws[id.uniqueStraw()]; }
+    Straw& getStraw( const StrawId& id) { return _straws[id.uniqueStraw()]; }
     StrawCollection const& getStraws() const{ return _straws; }
     // the following are deprecated: access should be through StrawProperties
     double strawInnerRadius() const{ return _strawprops._strawInnerRadius; }
@@ -102,8 +100,6 @@ namespace mu2e {
     PanelCollection _panels;
     // fundamental geometric content is in the following
     StrawCollection _straws;
-    // indirection from StrawId, for efficient lookup
-    StrawIndexMap _strawindex;
     // plane existence: use cases of this should switch to using TrackerStatus and this should be removed FIXME!!
     PEType _planeExists;
     // g4 content

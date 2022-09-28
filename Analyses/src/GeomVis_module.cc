@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
@@ -150,9 +151,9 @@ namespace mu2e
     float dr = 1;
 
     int color = 1;
-    if (pdg==-2212 || pdg==211) color = 2;
-    else if (pdg==-211 || pdg==13) color = 4;
-    else if (pdg==2112) color = 3;
+    if (pdg==PDGCode::anti_proton || pdg==PDGCode::pi_plus) color = 2;
+    else if (pdg==PDGCode::pi_minus || pdg==PDGCode::mu_minus) color = 4;
+    else if (pdg==PDGCode::p_plus) color = 3;
     color = _trk%10;
 
     TGeoVolume* top = _geom->GetTopVolume();
@@ -241,7 +242,7 @@ namespace mu2e
         momentum.SetMag(1.0);
         TVector3 posEnd = posBegin + momentum*stepLength;
 
-        int pdg = -2212;
+        int pdg = PDGCode::anti_proton;
         int evt = event.id().event();
         drawLine(posBegin*0.1, posEnd*0.1, pdg, evt);
       }
