@@ -68,7 +68,7 @@ services.ProditionsService.strawResponse.useOldDrift: false
 services.ProditionsService.strawResponse.driftFit : [0.0,1.0,0.001]
 services.ProditionsService.strawResponse.driftResIsTime : false
 services.ProditionsService.strawResponse.driftResBins : [0.0,0.5,1.0,1.5,2.0,2.5]
-services.ProditionsService.strawResponse.driftRes : [0.5,0.45,0.4,0.25,0.2,0.15]
+services.ProditionsService.strawResponse.driftRes : [0.4,0.4,0.4,0.2,0.2,0.15]
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"

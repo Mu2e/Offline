@@ -138,33 +138,27 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
-    unsigned nupdaters(0);
     // search for updaters that work directly on StrawHits (not StrawHitClusters)
     auto cashu = miconfig.findUpdater<CAStrawHitUpdater>();
     auto annshu = miconfig.findUpdater<ANNStrawHitUpdater>();
     auto bkgshu = miconfig.findUpdater<BkgStrawHitUpdater>();
-    if(cashu || annshu || bkgshu) {
-      CA ca = unbiasedClosestApproach();
-      if(ca.usable()){
-        if(cashu){
-          auto dinfo = fillDriftInfo();
-          whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
-          ++nupdaters;
-        }
-        if(annshu){
-          auto dinfo = fillDriftInfo();
-          whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
-          ++nupdaters;
-        }
-        if(bkgshu){
-          auto dinfo = fillDriftInfo();
-          whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
-          ++nupdaters;
-        }
-        if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
-      } else {
-        whstate_.state_ = WireHitState::unusable;
+    CA ca = unbiasedClosestApproach();
+    if(ca.usable()){
+      if(bkgshu){
+        auto dinfo = fillDriftInfo();
+        whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       }
+      if(cashu){
+        auto dinfo = fillDriftInfo();
+        whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
+      }
+      if(annshu){
+        auto dinfo = fillDriftInfo();
+        whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+      }
+    } else {
+      whstate_.algo_ = StrawHitUpdaters::unknown;
+      whstate_.state_ = WireHitState::unusable;
     }
   }
 

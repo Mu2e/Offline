@@ -37,7 +37,7 @@ namespace mu2e {
   }
 
   std::string const& CAStrawHitUpdater::configDescription() {
-    static std::string descrip( "Maximum DOCA to use hit, Minimum rdrift to set LR ambiguity, Maximum rdrift to use hit, States to freeze");
+    static std::string descrip( "Maximum DOCA to use hit, Minimum rdrift to set LR ambiguity, Maximum rdrift to use hit, States to freeze, diag level");
     return descrip;
   }
 

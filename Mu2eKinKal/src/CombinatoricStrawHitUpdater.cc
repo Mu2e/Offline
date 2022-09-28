@@ -29,16 +29,22 @@ namespace mu2e {
   // set the state of unambiguous hits to their drift value.
   ClusterState CombinatoricStrawHitUpdater::selectBest(ClusterStateCOL& cstates) const {
     // sort the results by chisquared
-   std::sort(cstates.begin(),cstates.end(), ClusterStateComp());
+    std::sort(cstates.begin(),cstates.end(), ClusterStateComp());
 
     auto best = cstates.front();
+    double quality(-1.0);
+    if(cstates.size() > 1)quality = cstates[1].chi2_.chisq() - cstates[0].chi2_.chisq();
+
     // merge the configurations that have nearly degenerate states; this takes the most conservative option
     auto test=cstates.begin(); ++test;
     while(test != cstates.end() && test->chi2_.chisq() - cstates.front().chi2_.chisq() < minDeltaChi2()){
       best.merge(*test);
       ++test;
     }
-    for(auto& whs : best.hitstates_) whs.frozen_ =  whs.isIn(freeze_);
+    for(auto& whs : best.hitstates_){
+      whs.frozen_ =  whs.isIn(freeze_);
+      whs.quality_ = quality;
+    }
     if(diag_ > 1){
       std::cout << "Best Cluster " << best.chi2_ << " hit states ";
       for(auto whs : best.hitstates_)std::cout << "  " << whs.state_;
@@ -51,7 +57,7 @@ namespace mu2e {
         std::cout << std::endl;
       }
     }
-
+    // define the quality as the difference between the best and the next-best assignment
     return best;
   }
 
@@ -81,4 +87,4 @@ namespace mu2e {
     return descrip;
   }
 
-          }
+}

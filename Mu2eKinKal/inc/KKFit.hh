@@ -418,7 +418,6 @@ namespace mu2e {
     double tz0 = Mu2eKinKal::zTime(fittraj,0.0,fittraj.range().begin());
     auto const& t0piece = fittraj.nearestPiece(tz0);
     double t0val = t0piece.paramVal(KTRAJ::t0_);
-    //    double t0sig = sqrt(t0piece.paramVar(KTRAJ::t0_)); Temporary FIXME
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
     HitT0 t0(t0val,t0sig);
     // create the shell for the output.  Note the (obsolete) flight length is given as t0
