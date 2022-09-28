@@ -75,7 +75,7 @@ namespace mu2e {
         BFMapType mapType_;
         std::vector<BFMapType> mapTypeList_;
 
-        // Linear, MECO style quadratic or possible future types.
+        // method for interpolation between field grid points
         BFInterpolationStyle interpStyle_;
 
         FileSequenceType innerMapFiles_;

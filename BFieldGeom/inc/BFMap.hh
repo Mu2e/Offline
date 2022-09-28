@@ -11,7 +11,6 @@
 // Rewritten again by Brian Pollack to become pure-virtual base class for all types of BFMaps
 //
 
-//#include <iosfwd>
 #include <ostream>
 #include <string>
 #include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
@@ -85,8 +84,6 @@ namespace mu2e {
         // A scale factor applied overall.
         double _scaleFactor;
 
-        // Choose between meco style quadratic interpolation and G4bl style linear, or others
-        // yet to be defined.
     };
 
 }  // end namespace mu2e

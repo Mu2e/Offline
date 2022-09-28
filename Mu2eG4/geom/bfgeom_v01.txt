@@ -42,7 +42,7 @@ double toyDS.gradient      = 0.0; // Tesla/m
 // This is recommended field map. See geom_mecofield.txt to use the meco field.
 string bfield.format  = "G4BL";
 
-// The other option is "meco"
+// method for interpolation between field grid points
 string bfield.interpolationStyle = trilinear;
 
 int  bfield.verbosityLevel =  0;
