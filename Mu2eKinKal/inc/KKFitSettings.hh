@@ -46,7 +46,7 @@ namespace mu2e {
       using BkgStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
       BkgStrawHitUpdaterSettings bkgshuConfig{ Name("BkgStrawHitUpdaterSettings"), Comment(BkgStrawHitUpdater::configDescription()) };
       using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,std::string,std::string,bool,int>>;
-      CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment(CombinatoricStrawHitUpdater::configDescription()) };
+      CombinatoricStrawHitUpdaterSettings combishuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment(CombinatoricStrawHitUpdater::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
