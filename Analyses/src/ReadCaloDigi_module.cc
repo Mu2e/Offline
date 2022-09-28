@@ -835,7 +835,7 @@ namespace mu2e {
             int        pdgId       = sim->pdgId();
             double     ceEnergy    = 104.9;
             double     startEnergy = sim->startMomentum().e();
-            if ( (pdgId == 11) && (startEnergy>ceEnergy))
+            if ( (pdgId == PDGCode::e_minus) && (startEnergy>ceEnergy))
               {
                 isConversion = 1;
               }

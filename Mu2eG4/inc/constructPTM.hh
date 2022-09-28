@@ -18,6 +18,9 @@ namespace mu2e {
 
     void constructPTM(VolumeInfo const& parent, SimpleConfig const& _config);
 
+    void constructPTMWithBasicStand(VolumeInfo const& parent, SimpleConfig const& _config);
+    void constructPTMFloatingPWCs(VolumeInfo const& parent, SimpleConfig const& _config);
+
     // helper methods
 
     void constructTargetHallPWC(VolumeInfo const& motherVolume,

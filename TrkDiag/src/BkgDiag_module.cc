@@ -27,6 +27,7 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/TrkDiag/inc/BkgHitInfo.hh"
 /// Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -347,7 +348,7 @@ namespace mu2e
             _ngconv += ch.nStrawHits();
           }
         }
-        if(bkghinfo._mcpdg == 2212)_nprot += ch.nStrawHits();
+        if(bkghinfo._mcpdg == PDGCode::proton)_nprot += ch.nStrawHits();
         _bkghinfo.push_back(bkghinfo);
       }
       _bdiag->Fill();

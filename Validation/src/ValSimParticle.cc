@@ -160,7 +160,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection& coll,
     // stopped muons
     if (part.endMomentum().v().mag2() <=
             std::numeric_limits<double>::epsilon() &&
-        part.pdgId() == 13) {  // mu-
+        part.pdgId() == PDGCode::mu_minus) {  // mu-
       _htx->Fill(part.endPosition().x());
       _hty->Fill(part.endPosition().y());
       _htz->Fill(part.endPosition().z());
