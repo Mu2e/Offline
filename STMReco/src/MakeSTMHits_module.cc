@@ -71,14 +71,15 @@ namespace mu2e {
       // Peek at first digi to get the channel since all digis in the same collection should be from the same detector
       STMChannel ch = digisHandle->at(0).channel();
       const auto& pars = stmEnergyCalib.calib(ch);
-      //      std::cout << ch.name() << ": p0 = " << pars.p0 << ", p1 = " << pars.p1 << ", p2 = " << pars.p2 << std::endl;
+            std::cout << ch.name() << ": p0 = " << pars.p0 << ", p1 = " << pars.p1 << ", p2 = " << pars.p2 << std::endl;
 
       for (const auto& digi : *digisHandle) {
         int tdc = digi.trigTime();
         const std::vector<short int>& adc = digi.adcs();
         float time = tdc;
-        auto uncalib_energy = *std::max_element(adc.begin(), adc.end());
+        auto uncalib_energy = std::fabs(*std::max_element(adc.begin(), adc.end()));
         float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
+        std::cout << "Calibrated energy: " << energy << ", uncalibrated: " << uncalib_energy << std::endl;
         STMHit stm_hit(time,energy);
         outputSTMHits->push_back(stm_hit);
       }

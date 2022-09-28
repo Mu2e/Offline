@@ -154,17 +154,38 @@ namespace mu2e {
   void MWDAlg::mwd_algorithm(data* adc_values){  // This fill the double[l] array ie sets the private l*
     int n = adc_values->nadc;
     nadc = n;
-    std::cout << "adc_values .... " << adc_values->adc[0] << " " << adc_values->adc[1] << " " << adc_values->adc[2] << std::endl;
-    std::cout << "n = " << n << std::endl;
+    //std::cout << "adc_values .... " << adc_values->adc[0] << " " << adc_values->adc[1] << " " << adc_values->adc[2] << std::endl;
+    //std::cout << "n = " << n << std::endl;
     const double T0 = (1000.0/fADC); // in ns
 
     ////////////////////////////////     MWD Algorithm   //////////////////////////////////////////////////
-
+    /*
+    std::ofstream out1, out2, out3, out4;
+    out1.open("MWDStepDecon.log", std::ios::out | std::ios::trunc);
+    out1 << "Index_i," << "a_i" << std::endl;
+    out2.open("MWDStepDiff.log", std::ios::out | std::ios::trunc);
+    out2 << "Index_i," << "D_i" << std::endl;
+    out3.open("MWDStepAvg.log", std::ios::out | std::ios::trunc);
+    out3 << "Index_i," << "l_i" << std::endl;
+    out4.open("MWDStepWaveform.log", std::ios::out | std::ios::trunc);
+    out4 << "Index_i," << "adc_i" << std::endl;
+    for (int i = 1; i < n; ++i)
+      {
+        out4 << i << ", " << adc_values->adc[i] << std::endl;
+      }
+    */
     //Deconvolution
     double* a = new double[n];
+    double pedestal_sum = 0;
+    for (int i = 0; i < 100; ++i)
+      {
+        pedestal_sum += adc_values->adc[i];
+      }
+    double pedestal = pedestal_sum/100;
     a[0] = adc_values->adc[0];
     for(int i=1; i<n; i++){
-      a[i] = adc_values->adc[i]-(1-(T0/tau))*adc_values->adc[i-1] + a[i-1];
+      a[i] = (adc_values->adc[i]-pedestal)-(1-(T0/tau))*(adc_values->adc[i-1]-pedestal) + a[i-1];
+      //out1 << i << ", " << a[i] << std::endl;
     }
     //std::cout << "adc_values .... " << adc_values->adc[0] << " " << adc_values->adc[1] << " " << adc_values->adc[2] << std::endl;
     //std::cout << "a values .... " << a[0] << " " << a[1] << " " << a[2] << std::endl;
@@ -176,6 +197,12 @@ namespace mu2e {
     for (int i = M; i < n; ++i) {
       D[i] = a[i] - a[i-M];
     }
+    /*
+    for(int i = 0; i < n; ++i)
+      {
+         out2 << i << ", " << D[i] << std::endl;
+      }
+    */
     //std::cout << "adc_values .... " << adc_values->adc[0] << " " << adc_values->adc[1] << " " << adc_values->adc[2] << std::endl;
     //std::cout << "D values[0..2] .... " << D[0] << " " << D[1] << " " << D[2] << std::endl;
     //std::cout << "D values[M..M+2].... " << D[M] << " " << D[M+1] << " " << D[M+2] << std::endl;
@@ -204,6 +231,12 @@ namespace mu2e {
       sum += D[i]-D[i-L];
       l[i] = sum/L;
     }
+    /*
+    for (int i = 0; i < n; ++i)
+      {
+        out3 << i << ", " << l[i] << std::endl;
+      }
+    */
     //std::cout << " sum = " << sum << std::endl;
     //for (int i = 0; i < 10; i++) {
     //  std::cout << "l[" << i << "] = " << l[i] << std::endl;
