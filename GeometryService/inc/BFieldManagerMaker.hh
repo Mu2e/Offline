@@ -27,7 +27,6 @@ namespace mu2e {
 
     class BFieldManagerMaker {
        public:
-        friend class BFieldManagerMakerMaker;
 
         explicit BFieldManagerMaker(const BFieldConfig& config);
 
@@ -71,13 +70,6 @@ namespace mu2e {
                       double scaleFactor,
                       BFInterpolationStyle interpStyle);
 
-        // Create and fill a new magnetic field map
-        void readGMCMap(const std::string& mapKey,
-                        const std::string& resolvedFileName,
-                        const std::vector<int>& dim,
-                        double scaleFactor,
-                        BFInterpolationStyle interpStyle);
-
         // Read a G4BL text format map.
         void readG4BLMap(const std::string& filename, BFGridMap& bfmap, CLHEP::Hep3Vector offset);
 
@@ -89,10 +81,6 @@ namespace mu2e {
 
         // Write an existing BFMap in binary format.
         void writeG4BLBinary(const BFGridMap& bf, const std::string& outputfile);
-
-        // Compute the size of the array needed to hold the raw data of the field map.
-        int computeArraySize(int fd, const std::string& filename);
-
         void flipMap(BFGridMap& bf);
 
     };  // end class BFieldManagerMaker
