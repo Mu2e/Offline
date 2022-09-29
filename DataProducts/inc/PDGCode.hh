@@ -2,11 +2,11 @@
 #define DataProducts_PDGCode_hh
 
 //
-// A convenience class to allow compile time access
+// A enum-matched-string class to allow compile time access
 // to the PDG identifier codes for various particles.
 // It has been extended to include a subset of the G4 nuclei codes.
 //
-// This file was initially taken directly from BaBar's pdt/PdtPdg.hh
+// The enum was initially taken directly from BaBar's pdt/PdtPdg.hh
 //
 // For correct usage see any of the event generators or
 // Mu2eG4/src/PrimaryGeneratorAction.cc.
@@ -20,12 +20,18 @@
 // PDGCode::type pid = static_cast<PDGCode::type>(iGamma);
 //
 //
+
+#include <map>
+#include <string>
+
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
+
 namespace mu2e {
 
-  class PDGCode
+  class PDGCodeDetail
   {
   public:
-    enum type
+    enum enum_type
       {
         d = 1 ,
         anti_d = -1 ,
@@ -455,6 +461,9 @@ namespace mu2e {
         He3 =      1000020030,
         null = 0,
 
+        // Needed for EnumToStringSparse
+        unknown = 0,
+
         // Codes above or equal to this value are defined by G4.
         G4Threshold = 999999999,
 
@@ -588,7 +597,13 @@ namespace mu2e {
         Zr91_0_0  = 1000400910
 
       };  // end enum PDGCode_type
-  };      // end class PDGCode
+
+    static std::string const& typeName();
+    static std::map<enum_type,std::string> const& names();
+
+  }; // end class PDGCodeDetail
+
+  typedef EnumToStringSparse<PDGCodeDetail> PDGCode;
 
 } // end namespace mu2e.
 
