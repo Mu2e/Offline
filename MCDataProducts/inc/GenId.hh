@@ -72,6 +72,12 @@ namespace mu2e {
       _id(id)
     {}
 
+    // c'tor from a string.
+    // If the name is not recognzied it returns the value "unknown"
+    GenId( std::string const& name){
+      _id = findByName(name).id();
+    }
+
     enum_type id() const { return _id;}
 
     const std::string name() const {
