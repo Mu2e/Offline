@@ -19,7 +19,7 @@
 #include "TF1.h"
 #include "TGraph.h"
 
-#include "Offline/RecoDataProducts/inc/STMWaveformCollection.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveform.hh"
 
 namespace mu2e {
 
@@ -53,7 +53,7 @@ namespace mu2e {
 
     std::stringstream histname;
     int count = 0;
-    for (const auto& waveform : waveformsHandle->waveforms()) {
+    for (const auto& waveform : *waveformsHandle) {
       histname.str("");
       histname << "evt" << event.event() << "_waveform" << count;
       TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), "", waveform.adcs().size(),0,waveform.adcs().size());

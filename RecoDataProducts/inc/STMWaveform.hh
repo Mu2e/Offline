@@ -29,5 +29,7 @@ namespace mu2e {
     uint32_t _trigTimeOffset; // time offset from EWT? to first ADC value [ct]
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
   };
+
+  typedef std::vector<STMWaveform> STMWaveformCollection;
 }
 #endif

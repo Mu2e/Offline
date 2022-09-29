@@ -31,7 +31,7 @@
 
 #include "Offline/DataProducts/inc/STMTestBeamHeaders.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
-#include "Offline/RecoDataProducts/inc/STMWaveformCollection.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveform.hh"
 
 
 using namespace std;
@@ -217,8 +217,8 @@ namespace mu2e {
     // Create the STMWaveformCollection that we will write to the art event
     // NB although we are creating one collection for each detector, in the test beam only one
     //    detector was connected at a time so one of these collections will be empty
-    std::unique_ptr<mu2e::STMWaveformCollection> outputHPGeWaveforms(new mu2e::STMWaveformCollection(STMChannel::HPGe));
-    std::unique_ptr<mu2e::STMWaveformCollection> outputLaBrWaveforms(new mu2e::STMWaveformCollection(STMChannel::LaBr));
+    std::unique_ptr<mu2e::STMWaveformCollection> outputHPGeWaveforms(new mu2e::STMWaveformCollection());
+    std::unique_ptr<mu2e::STMWaveformCollection> outputLaBrWaveforms(new mu2e::STMWaveformCollection());
 
     // Read the trigger header
     STMTestBeam::TriggerHeader trigger_header[1];
