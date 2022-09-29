@@ -27,11 +27,11 @@ namespace mu2e {
 
     class BFMapType {
        public:
-        enum enum_type { unknown, GMC, G4BL, PARAM, lastEnum };
+        enum enum_type { unknown, unused, G4BL, PARAM, lastEnum };
 
         // Must keep this in sync with the enum above.  Used in BFMapType.cc
         // There is no lastEnum in this list.
-#define BFMAPTYPE_NAMES "unknown", "GMC", "G4BL", "PARAM"
+#define BFMAPTYPE_NAMES "unknown", "unused", "G4BL", "PARAM"
 
        public:
         // The most important c'tor and accessor methods are first.

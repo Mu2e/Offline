@@ -45,14 +45,9 @@ namespace mu2e {
         if (point.z() < _zmin || point.z() > _zmax) {
             return false;
         }
-        if (_type == BFMapType::GMC) {
-            return isGMCValid(point);
-        }
+
         return true;
     }
-
-    // Some extra checks for GMC format maps - dummy implementation for now.
-    bool BFGridMap::isGMCValid(CLHEP::Hep3Vector const& point) const { return true; }
 
     CLHEP::Hep3Vector BFGridMap::cellFraction(const CLHEP::Hep3Vector& pos,
                                               const GridPoint& ipos) const {

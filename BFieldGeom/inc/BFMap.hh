@@ -78,7 +78,7 @@ namespace mu2e {
         // Min and Max values.
         double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;
 
-        // GMC, G4BL, PM, or possible future types.
+        // G4BL, PM, or possible future types.
         BFMapType _type;
 
         // A scale factor applied overall.
