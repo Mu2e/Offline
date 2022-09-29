@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "canvas/Utilities/InputTag.h"
+
 namespace mu2e {
 
   class STMChannel {
@@ -105,6 +107,19 @@ namespace mu2e {
     // Number of valid codes, not including lastEnum, but including "unknown".
     static std::size_t size(){
       return lastEnum;
+    }
+
+    // Want to take an input tag and return an STMChannel
+    static STMChannel getChannel(art::InputTag const& tag) {
+      if (tag.instance() != "") {
+        // If we use instance name, it will only contain the channel name
+        return STMChannel(findByName(tag.instance()));
+      }
+      else {
+        std::string label = tag.label();
+        // Look at last four characeters of module label to decide channel
+        return STMChannel(findByName(label.substr(label.length()-4,4)));
+      }
     }
 
   private:

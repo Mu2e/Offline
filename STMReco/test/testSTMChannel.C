@@ -1,4 +1,5 @@
 #include "DataProducts/inc/STMChannel.hh"
+#include "canvas/Utilities/InputTag.h"
 
 void testSTMChannel() {
   mu2e::STMChannel ch_default;
@@ -68,6 +69,43 @@ void testSTMChannel() {
     return -1;
   }
   std::cout << std::endl;
+
+  art::InputTag hpgeInstance("", "HPGe");
+  std::cout << "Testing STMChannel::getChannel() with art::InputTag " << hpgeInstance << ": ";
+  if (mu2e::STMChannel::getChannel(hpgeInstance) == mu2e::STMChannel::HPGe) {
+    std::cout << "PASSED" << std::endl;
+  }
+  else {
+    std::cout << "FAILED" << std::endl;
+    return -1;
+  }
+  art::InputTag labrInstance("", "LaBr");
+  std::cout << "Testing STMChannel::getChannel() with art::InputTag " << labrInstance << ": ";
+  if (mu2e::STMChannel::getChannel(labrInstance) == mu2e::STMChannel::LaBr) {
+    std::cout << "PASSED" << std::endl;
+  }
+  else {
+    std::cout << "FAILED" << std::endl;
+    return -1;
+  }
+  art::InputTag hpgeLabel("labelledHPGe", "");
+  std::cout << "Testing STMChannel::getChannel() with art::InputTag " << hpgeLabel << ": ";
+  if (mu2e::STMChannel::getChannel(hpgeLabel) == mu2e::STMChannel::HPGe) {
+    std::cout << "PASSED" << std::endl;
+  }
+  else {
+    std::cout << "FAILED" << std::endl;
+    return -1;
+  }
+  art::InputTag labrLabel("labelledLaBr", "");
+  std::cout << "Testing STMChannel::getChannel() with art::InputTag " << labrLabel << ": ";
+  if (mu2e::STMChannel::getChannel(labrLabel) == mu2e::STMChannel::LaBr) {
+    std::cout << "PASSED" << std::endl;
+  }
+  else {
+    std::cout << "FAILED" << std::endl;
+    return -1;
+  }
 
   std::cout << "All tests passed" << std::endl;
 }
