@@ -23,7 +23,7 @@ namespace mu2e {
         // be obtained from the maker
         friend class BFieldConfigMaker;
 
-        // G4BL vs GMC vs PARAM maps
+        // G4BL vs PARAM maps
         BFMapType mapType() const { return mapType_; }
         std::vector<BFMapType> mapTypeList() const { return mapTypeList_; }
 
@@ -37,9 +37,6 @@ namespace mu2e {
         typedef std::vector<std::string> FileSequenceType;
         const FileSequenceType& innerMapFiles() const { return innerMapFiles_; }
         const FileSequenceType& outerMapFiles() const { return outerMapFiles_; }
-
-        typedef std::vector<std::vector<int> > GMCDimSequence;
-        const GMCDimSequence& gmcDimensions() const { return gmcDimensions_; }
 
         double scaleFactor() const { return scaleFactor_; }
 
@@ -71,7 +68,7 @@ namespace mu2e {
         BFieldConfig()
             : scaleFactor_(1.), writeBinaries_(false), verbosityLevel_(1), flipBFieldMaps_(false) {}
 
-        // GMC, G4BL or possible future types.
+        // G4BL, PARAM or possible future types.
         BFMapType mapType_;
         std::vector<BFMapType> mapTypeList_;
 
@@ -80,9 +77,6 @@ namespace mu2e {
 
         FileSequenceType innerMapFiles_;
         FileSequenceType outerMapFiles_;
-
-        // Extra info is needed to interpred GMC maps
-        GMCDimSequence gmcDimensions_;
 
         double scaleFactor_;
 

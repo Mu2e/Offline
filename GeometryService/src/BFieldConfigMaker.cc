@@ -60,7 +60,7 @@ namespace mu2e {
         BFInterpolationStyle style(config.getString("bfield.interpolationStyle", "trilinear"));
         bfconf_->interpStyle_ = style;
 
-        const string format = config.getString("bfield.format", "GMC");
+        const string format = config.getString("bfield.format","G4BL");
 
         // Load in the optional formatList, if you're mixing parametric and G4BL
         vector<string> mapTypeList;
@@ -84,23 +84,7 @@ namespace mu2e {
             }
         }
 
-        if (format == "GMC") {
-            // These maps require torus radius of 2926 mm
-            const double requiredTorusRadius = 2926.0 * CLHEP::mm;
-            if (fabs(beamg.getTS().torusRadius() - requiredTorusRadius) > 0.1) {
-                throw cet::exception("GEOM")
-                    << "The GMC magnetic field files require torus radius of 2926 mm."
-                    << " The value used by geometry is " << beamg.getTS().torusRadius()
-                    << " Maps are not loaded.\n";
-            }
-            bfconf_->mapType_ = BFMapType::GMC;
-
-            // Add the DS, TS and PS field maps.
-            addGMC(config, bfconf_.get(), "bfield.dsFile", "bfield.dsDimensions");
-            addGMC(config, bfconf_.get(), "bfield.tsFile", "bfield.tsDimensions");
-            addGMC(config, bfconf_.get(), "bfield.psFile", "bfield.psDimensions");
-
-        } else if (format == "G4BL") {
+        if (format == "G4BL") {
             // These maps require torus radius of 2929 mm
             const double requiredTorusRadius = 2929.0 * CLHEP::mm;
             if (fabs(beamg.getTS().torusRadius() - requiredTorusRadius) > 0.1) {
@@ -150,26 +134,5 @@ namespace mu2e {
         }
     }
 
-    // Parse the config file to learn about one magnetic field map.
-    // Create an empty map and call the code to load the map from the file.
-    void BFieldConfigMaker::addGMC(const SimpleConfig& config,
-                                   BFieldConfig* bfconf,
-                                   const std::string& fileKey,
-                                   const std::string& dimensionKey) {
-        if (!config.hasName(fileKey)) {
-            cout << "No magnetic field file specified for: " << fileKey << "   Hope that's OK."
-                 << endl;
-            return;
-        }
-
-        // Get filename and expected dimensions.
-        string filename = config.getString(fileKey);
-        vector<int> dim;
-        config.getVectorInt(dimensionKey, dim, 3);
-
-        // FIXME: can we use inner maps?
-        bfconf->outerMapFiles_.push_back(filename);
-        bfconf->gmcDimensions_.push_back(dim);
-    }
 
 }  // namespace mu2e
