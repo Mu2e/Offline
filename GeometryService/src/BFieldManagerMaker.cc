@@ -32,7 +32,6 @@
 #include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
 #include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "Offline/BFieldGeom/inc/DiskRecord.hh"
 #include "Offline/GeneralUtilities/inc/MinMax.hh"
 #include "Offline/GeometryService/inc/BFieldManagerMaker.hh"
 
@@ -96,15 +95,7 @@ namespace mu2e {
                                        config.mapTypeList().end());
         }
 
-        if (config.mapType() == BFMapType::GMC) {
-            // Add the field maps.
-            for (unsigned i = 0; i < config.gmcDimensions().size(); ++i) {
-                readGMCMap(basename(config.outerMapFiles()[i]),
-                           _resolveFullPath(config.outerMapFiles()[i]), config.gmcDimensions()[i],
-                           config.scaleFactor(), config.interpolationStyle());
-            }
-
-        } else if (config.mapType() == BFMapType::G4BL) {
+        if (config.mapType() == BFMapType::G4BL) {
             loadG4BL(&_bfmgr->innerMaps_, config.innerMapFiles(), config.scaleFactor(),
                      config.interpolationStyle());
             loadG4BL(&_bfmgr->outerMaps_, config.outerMapFiles(), config.scaleFactor(),
@@ -425,150 +416,6 @@ namespace mu2e {
         }
     }
 
-    //
-    // Read one magnetic field map file in MECO GMC format.
-    //
-    // This does a 2 pass operation"
-    // 1) Pass 1:
-    //      Read the input file into a temporary image in memory.
-    //      Find the min and max values of the grid points.
-    //      A the end of this pass, compute the grid spacing.
-    // 2) Pass 2:
-    //      Fill the 3D array from the image in memory.
-    //
-
-    void BFieldManagerMaker::readGMCMap(const std::string& mapKey,
-                                        const std::string& filename,
-                                        const std::vector<int>& dim,
-                                        double scaleFactor,
-                                        BFInterpolationStyle interpStyle) {
-        assert(dim.size() == 3);
-
-        // Open the input file.
-        int fd = open(filename.c_str(), O_RDONLY);
-        if (!fd) {
-            throw cet::exception("GEOM")
-                << "Could not open file containing the magnetic filed map for: " << mapKey << "\n"
-                << "Filename: " << filename << "\n";
-        }
-
-        // Compute number of records in the input file.
-        const int nrecords = computeArraySize(fd, filename);
-
-        // Image of the file in memory.
-        vector<DiskRecord> data(nrecords, DiskRecord());
-
-        // Read file into memory.
-        const int nbytes = nrecords * sizeof(DiskRecord);
-        ssize_t s = read(fd, &data[0], nbytes);
-        if (s != nbytes) {
-            if (s == -1) {
-                throw cet::exception("GEOM")
-                    << "Error reading magnetic field map: " << mapKey << "\n"
-                    << "Filename: " << filename << "\n";
-            } else {
-                throw cet::exception("GEOM")
-                    << "Wrong number of bytes read from magnetic field map: " << mapKey << "\n"
-                    << "Filename: " << filename << "\n";
-            }
-        }
-
-        // Tool to find min and max values of grid points.
-        MinMax mmX, mmY, mmZ;
-
-        // Collect distinct values of (X,Y,Z) on the grid points.
-        set<float> X, Y, Z;
-
-        // Multiply by this factor to convert from kilogauss to tesla.
-        double ratio = CLHEP::kilogauss / CLHEP::tesla;
-
-        // For the image in memory:
-        //   1) Transform into the correct set of units.
-        //   2) Find min/max of each dimension.
-        //   3) Collect unique values of (X,Y,Z) of the grid points.
-        for (vector<DiskRecord>::iterator i = data.begin(); i != data.end(); ++i) {
-            // Modify in place.
-            DiskRecord& r = *i;
-
-            // Unit conversion: from (cm, kG) to (mm,T).
-            r.x *= CLHEP::cm;
-            r.y *= CLHEP::cm;
-            r.z *= CLHEP::cm;
-            r.bx *= ratio;
-            r.by *= ratio;
-            r.bz *= ratio;
-
-            // The one check I can do.
-            if (r.head != r.tail) {
-                throw cet::exception("GEOM")
-                    << "Error reading magnetic field map.  "
-                    << "Mismatched head and tail byte counts at record: " << data.size() << "\n"
-                    << "Could not open file containing the magnetic filed map for: " << mapKey
-                    << "\n"
-                    << "Filename: " << filename << "\n";
-            }
-
-            // Update min/max information.
-            mmX.accumulate(r.x);
-            mmY.accumulate(r.y);
-            mmZ.accumulate(r.z);
-
-            // Populate the set of all unique grid values.
-            X.insert(r.x);
-            Y.insert(r.y);
-            Z.insert(r.z);
-        }
-
-        // Expected grid dimentsions.
-        const size_t nx = dim[0];
-        const size_t ny = dim[1];
-        const size_t nz = dim[2];
-
-        // Cross-check that the grid read from the file has the size we expected.
-        // This is not really a perfect check since there could be round off error
-        // in the computation of the grid points.  But the MECO GMC files were written
-        // in a way that this test works.
-        if (X.size() != nx || Y.size() != ny || Z.size() != nz) {
-            throw cet::exception("GEOM")
-                << "Mismatch in expected and observed number of grid points for BField map: "
-                << mapKey << "\n"
-                << "From file: " << filename << "\n"
-                << "Expected/Observed x: " << nx << " " << X.size() << "\n"
-                << "Expected/Observed y: " << ny << " " << Y.size() << "\n"
-                << "Expected/Observed z: " << nz << " " << Z.size() << "\n";
-        }
-
-        // Cross-check that we did not find more data than we have room for.
-        if (data.size() > nx * ny * nz - 1) {
-            throw cet::exception("GEOM")
-                << "Too many values read into the field map: " << mapKey << "\n"
-                << "From file: " << filename << "\n"
-                << "Expected/Observed size: " << nx * ny * nz << " " << data.size() << "\n";
-        }
-
-        // Create an empty map.
-        auto bfmap = _bfmgr->addBFGridMap(
-            &_bfmgr->outerMaps_, mapKey, nx, mmX.min(), (mmX.max() - mmX.min()) / (nx - 1), ny,
-            mmY.min(), (mmY.max() - mmY.min()) / (ny - 1), nz, mmZ.min(),
-            (mmZ.max() - mmZ.min()) / (nz - 1), BFMapType::GMC, scaleFactor, interpStyle);
-
-        // Store grid points and field values into 3D arrays
-        for (vector<DiskRecord>::const_iterator i = data.begin(), e = data.end(); i != e; ++i) {
-            DiskRecord const& r(*i);
-
-            // Find indices corresponding to this grid point.
-            // By construction the indices must be in bounds ( we set the limits above ).
-            std::size_t ix = bfmap->iX(r.x);
-            std::size_t iy = bfmap->iY(r.y);
-            std::size_t iz = bfmap->iZ(r.z);
-
-            // Store the information into the 3d arrays.
-            bfmap->_field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx, r.by, r.bz));
-            bfmap->_isDefined.set(ix, iy, iz, true);
-        }
-
-        return;
-    }
 
     //
     // Read one magnetic field map file in G4BL (TD) format.
@@ -922,32 +769,6 @@ namespace mu2e {
 
     }  // end BFieldManagerMaker::writeG4BLBinary
 
-    // Compute the size of the array needed to hold the raw data of the field map.
-    int BFieldManagerMaker::computeArraySize(int fd, const string& filename) {
-        // Get the file size, in bytes, ( info.st_size ).
-        struct stat info;
-        if (fstat(fd, &info)) {
-            int errsave = errno;
-            char* errmsg = strerror(errsave);
-            throw cet::exception("GEOM")
-                << "BFieldManagerMaker::computeArraySize(): Error doing fstat() on " << filename
-                << "  errno: " << errsave << " " << errmsg << "\n";
-        }
-
-        // Check that an integral number of records fits in the file.
-        int remainder = info.st_size % sizeof(DiskRecord);
-        if (remainder != 0) {
-            throw cet::exception("GEOM")
-                << "Field map file does not hold an integral number of records: \n"
-                << "Filename:  " << filename << "\n"
-                << "Size:      " << info.st_size << "\n"
-                << "Remainder: " << remainder << "\n";
-        }
-
-        // Compute number of records.
-        int nrecords = info.st_size / sizeof(DiskRecord);
-        return nrecords;
-    }
 
     void BFieldManagerMaker::flipMap(BFGridMap& bf) {
         std::cout << "Flipping B field vector in map " << bf.getKey() << std::endl;

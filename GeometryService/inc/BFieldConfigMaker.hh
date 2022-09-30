@@ -30,7 +30,6 @@ namespace mu2e {
     // Hold the object while we are creating it. The GeometryService will take ownership.
     std::unique_ptr<BFieldConfig> bfconf_;
 
-    void addGMC(const SimpleConfig& config, BFieldConfig* bfconf, const std::string& configFNKey, const std::string& configDimKey);
   };
 
 } // namespace mu2e

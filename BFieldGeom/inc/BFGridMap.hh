@@ -77,9 +77,6 @@ namespace mu2e {
             return _field.isValid(ipoint.ix, ipoint.iy, ipoint.iz);
         }
 
-        // Some extra checks for GMC format maps.
-        bool isGMCValid(CLHEP::Hep3Vector const& point) const;
-
         int nx() const { return _nx; }
         int ny() const { return _ny; }
         int nz() const { return _nz; }
