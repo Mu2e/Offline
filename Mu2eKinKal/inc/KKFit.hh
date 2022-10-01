@@ -225,8 +225,7 @@ namespace mu2e {
         << addcalohits.size() << " CaloHits and "
         << addstrawxings.size() << " Straw Xings" << std::endl;
     }
-    if(addstrawhits.size() > 0 || addstrawxings.size() > 0 || addcalohits.size() > 0)
-      kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
+    kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
