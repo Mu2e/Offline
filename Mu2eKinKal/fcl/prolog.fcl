@@ -171,7 +171,6 @@ Mu2eKinKal : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
     SaveFullFit : true
-    Extend : true
     #    ZSavePositions : [-1522.0,0.0,1522.0]
   }
   KKKINEMATICLINE : {

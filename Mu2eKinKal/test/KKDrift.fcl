@@ -85,7 +85,6 @@ physics.producers.KKDeMDriftFit.ModuleSettings.CaloClusterCollection : "CaloClus
 physics.producers.KKDeMDriftFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDeMDriftFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMDriftFit.ModuleSettings.SaveAllFits : true
-physics.producers.KKDeMDriftFit.ModuleSettings.Extend : true
 physics.producers.KKDeMDriftFit.KinKalFitSettings.PrintLevel : 0
 
 services.TFileService.fileName: "KKDrift.root"

@@ -82,7 +82,6 @@ physics.producers.KKDeMSeedFit.ModuleSettings.CaloClusterCollection : "CaloClust
 physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMSeedFit.ModuleSettings.SaveAllFits : true
-physics.producers.KKDeMSeedFit.ModuleSettings.Extend : true
 
 
 services.TFileService.fileName: "KKSeed.root"
