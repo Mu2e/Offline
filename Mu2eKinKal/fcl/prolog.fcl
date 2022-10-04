@@ -24,7 +24,7 @@ Mu2eKinKal : {
     CaloPropagationSpeed : 200.0 #mm/ns
     MinCaloClusterEnergy : 10.0 #MeV
     MaxCaloClusterDt : 5.0 # ns
-    MaxCaloClusterDOCA : 50.0 # mm
+    MaxCaloClusterDOCA : 100.0 # mm
     AddHitSelect : []
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 10.0 # mm

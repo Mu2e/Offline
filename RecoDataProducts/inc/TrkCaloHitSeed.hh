@@ -20,35 +20,29 @@ namespace mu2e {
     // KinKal constructor
     TrkCaloHitSeed(art::Ptr<CaloCluster>const& cluster, StrawHitFlag const& flag,
         Float_t cdepth,
-        KinKal::ClosestApproachData const& ptca, KinKal::Residual const& tresid,
-        double tmom) : _cluster(cluster),_flag(flag),
+        KinKal::ClosestApproachData const& rptca,
+        KinKal::ClosestApproachData const& uptca,
+        KinKal::Residual const& tresid,
+        KinKal::VEC3 const& tmom) : _cluster(cluster),_flag(flag),
     _cdepth(cdepth),
-    _cdoca(ptca.doca()), _ctoca(ptca.sensorPoca().T()), _ctocavar(ptca.tocaVar()), _dt(ptca.deltaT()),
+    _rdoca(rptca.doca()), _rptoca(rptca.particlePoca().T()), _rtocavar(rptca.tocaVar()), _rdt(rptca.deltaT()),
+    _udoca(uptca.doca()), _uptoca(uptca.particlePoca().T()), _utocavar(uptca.tocaVar()), _udt(uptca.deltaT()),
     _tresid(tresid.value()), _tresidmvar(tresid.measurementVariance()), _tresidpvar(tresid.parameterVariance()),
-    _cpos(ptca.sensorPoca().Vect()), _tmom(tmom*ptca.particleDirection()), _trklen(0), _hitlen(0),  _time(0), _terr(0), _rerr(0)
+    _cpos(rptca.sensorPoca().Vect()), _tmom(tmom), _trklen(0), _hitlen(0),  _time(0), _terr(0), _rerr(0)
     {}
 
     // Legacy constructor for BTrk
     TrkCaloHitSeed(HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t cdoca, Float_t rerr,
         Float_t time, Float_t terr, XYZVectorF const& cpos, XYZVectorF const& tmom, StrawHitFlag const& flag) :
-      _flag(flag), _cdepth(0), _cdoca(cdoca), _ctoca(0), _ctocavar(0), _dt(0),
+      _flag(flag), _cdepth(0),
+      _rdoca(cdoca), _rptoca(0), _rtocavar(0), _rdt(0),
+      _udoca(cdoca), _uptoca(0), _utocavar(0), _udt(0),
       _tresid(0), _tresidmvar(0), _tresidpvar(0),
       _cpos(cpos), _tmom(tmom), _trklen(trklen), _hitlen(hitlen), _time(time), _terr(terr),
       _t0(t0), _rerr(rerr)
     {}
     // accessors
     art::Ptr<CaloCluster> const& caloCluster() const { return _cluster; }
-    auto clusterDepth() const { return _cdepth; }
-    auto clusterAxisDOCA() const { return _cdoca; }
-    auto clusterAxisTOCA() const { return _ctoca; }
-    auto clusterAxisTOCAVar() const { return _ctocavar; }
-    auto clusterAxisPOCADeltaT() const { return _dt; }
-    auto timeResidual() const { return _tresid; }
-    auto timeResidMeasurementVariance() const { return _tresidmvar; }
-    auto timeResidParameterVariance() const { return _tresidpvar; }
-    auto const&    clusterPosition() const { return _cpos; }
-    auto const&    trackMomentum() const { return _tmom; }
-    auto const& flag() const { return _flag; }
 
     // legacy functions
     HitT0 const&  t0() const { return _t0; }
@@ -57,16 +51,20 @@ namespace mu2e {
     Float_t        time() const { return _time; }
     Float_t        timeErr() const { return _terr; }
     Float_t        transverseErr() const { return _rerr; }
-   //
+    //
     // Payload
     //
     art::Ptr<CaloCluster> _cluster; // cluster this hit is based on
     StrawHitFlag          _flag;          // flag describing the status of this hit (active, ....)
     Float_t               _cdepth =0;   // depth along the particle from the disk front face
-    Float_t               _cdoca =0;          // DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
-    Float_t               _ctoca =0;          // cluster TOCA at POCA
-    Float_t               _ctocavar =0;      // variance on TOCA
-    Float_t               _dt =0;          // Delta T at POCA
+    Float_t               _rdoca =0;          // reference  DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
+    Float_t               _rptoca =0;          // reference  particle TOCA at POCA
+    Float_t               _rtocavar =0;      // reference  variance on TOCA
+    Float_t               _rdt =0;          // reference  Delta T (=cluster TOCA - particle TOCA)
+    Float_t               _udoca =0;          // unbiased  DOCA from the track to the cluster axis, signed by the angular momentum WRT the wire
+    Float_t               _uptoca =0;          // unbiased  particle TOCA at POCA
+    Float_t               _utocavar =0;      // unbiased  variance on TOCA
+    Float_t               _udt =0;          // unbiased  Delta T at POCA
     Float_t               _tresid =0, _tresidmvar=0, _tresidpvar =0; // unbiased time residual and associated measurement and parameter variances
     XYZVectorF            _cpos;       // cluster position at POCA
     XYZVectorF            _tmom;       // track momentum at POCA
