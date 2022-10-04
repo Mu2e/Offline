@@ -119,7 +119,7 @@ namespace mu2e {
     auto const& ca = this->closestApproach();
     auto uparams = HIT::unbiasedParameters();
     KTRAJ utraj(uparams,ca.particleTraj());
-    return CA(utraj,this->wire(),ca.hint(),ca.precision());
+    return CA(utraj,wire_,ca.hint(),ca.precision());
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
