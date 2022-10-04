@@ -132,7 +132,7 @@ Mu2eKinKal : {
       [ 8.0, 0.5, 3.0, "Inactive", 0 ]
     ]
     ANNStrawHitUpdaterSettings : [
-      [ "Offline/Mu2eKinKal/data/LR_constant_Seed.weights.xml",0.95,1.5,"Drift", 0]
+      [ "Offline/Mu2eKinKal/data/LRDrift_constant_Seed.weights.xml",0.95,1.5,"Drift", 0]
     ]
     CombinatoricStrawHitUpdaterSettings : [
       # mincsize, inactivep, nullp, mindchi2, mindoca, allow, freeze, unfreeze, diag
