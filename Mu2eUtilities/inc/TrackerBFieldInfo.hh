@@ -13,8 +13,8 @@
 //
 // To use this to look at limits of a map:
 // TrackerBFieldInfo info
-//  cout << info.xmin() << " " << info.xmax() << endl;  // and so on
-//  cout << info.getKey() << endl;                      // name of the map that was selected
+//  cout << info.map().xmin() << " " << info.map().xmax() << endl;  // and so on
+//  cout << info.map().getKey() << endl;                            // name of the map that was selected
 //
 // Original author Rob Kutschke
 //
