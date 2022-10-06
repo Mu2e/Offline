@@ -28,6 +28,8 @@ namespace mu2e {
     class BFieldManagerMaker {
        public:
 
+        typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
+
         explicit BFieldManagerMaker(const BFieldConfig& config);
 
         // Transfer ownership of the BFManager.
@@ -45,30 +47,33 @@ namespace mu2e {
         std::vector<BFMapType> _outerTypes;
 
         // Load a series of parametric magnetic field maps.
-        void loadParam(BFieldManager::MapContainerType* whichMap,
+        void loadParam(MapContainerType& whichMap,
                        const BFieldConfig::FileSequenceType& files,
                        std::vector<BFMapType> mapTypeList,
                        BFInterpolationStyle interpStyle,
-                       double scaleFactor);
+                       double scaleFactor,
+                       bool flipBFieldMap);
 
         // Create a new parametric magnetic field map, get information from config file.
-        void loadParam(BFieldManager::MapContainerType* whichMap,
+        void loadParam(MapContainerType& whichMap,
                        const std::string& key,
                        const std::string& resolvedFileName,
                        double scaleFactor);
 
         // Load a series of G4BL magnetic field maps.
-        void loadG4BL(BFieldManager::MapContainerType* whichMap,
+        void loadG4BL(MapContainerType& whichMap,
                       const BFieldConfig::FileSequenceType& files,
                       double scaleFactor,
-                      BFInterpolationStyle interpStyle);
+                      BFInterpolationStyle interpStyle,
+                      bool flipBFieldMap);
 
         // Create a new magnetic field map, get information from config file.
-        void loadG4BL(BFieldManager::MapContainerType* whichMap,
+        void loadG4BL(MapContainerType& whichMap,
                       const std::string& key,
                       const std::string& resolvedFileName,
                       double scaleFactor,
-                      BFInterpolationStyle interpStyle);
+                      BFInterpolationStyle interpStyle,
+                      bool flipBFieldMap);
 
         // Read a G4BL text format map.
         void readG4BLMap(const std::string& filename, BFGridMap& bfmap, CLHEP::Hep3Vector offset);
