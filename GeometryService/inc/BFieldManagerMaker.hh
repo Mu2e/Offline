@@ -42,41 +42,28 @@ namespace mu2e {
         // Hold the object while we are creating it. The GeometryService will take ownership.
         std::unique_ptr<BFieldManager> _bfmgr;
 
-        // Hold the types of the inner and outer maps (if they differ)
-        std::vector<BFMapType> _innerTypes;
-        std::vector<BFMapType> _outerTypes;
-
-        // Load a series of parametric magnetic field maps.
-        void loadParam(MapContainerType& whichMap,
+        // Load a series of G4BL or parametric magnetic field maps.
+        void loadMaps(MapContainerType& whichMap,
                        const BFieldConfig::FileSequenceType& files,
                        std::vector<BFMapType> mapTypeList,
-                       BFInterpolationStyle interpStyle,
-                       double scaleFactor,
-                       bool flipBFieldMap);
+                      const BFieldConfig& config);
+
 
         // Create a new parametric magnetic field map, get information from config file.
         void loadParam(MapContainerType& whichMap,
                        const std::string& key,
                        const std::string& resolvedFileName,
-                       double scaleFactor);
-
-        // Load a series of G4BL magnetic field maps.
-        void loadG4BL(MapContainerType& whichMap,
-                      const BFieldConfig::FileSequenceType& files,
-                      double scaleFactor,
-                      BFInterpolationStyle interpStyle,
-                      bool flipBFieldMap);
+                       const BFieldConfig& config);
 
         // Create a new magnetic field map, get information from config file.
         void loadG4BL(MapContainerType& whichMap,
                       const std::string& key,
                       const std::string& resolvedFileName,
-                      double scaleFactor,
-                      BFInterpolationStyle interpStyle,
-                      bool flipBFieldMap);
+                      const BFieldConfig& config);
 
         // Read a G4BL text format map.
-        void readG4BLMap(const std::string& filename, BFGridMap& bfmap, CLHEP::Hep3Vector offset);
+        void readG4BLMap(const std::string& filename, BFGridMap& bfmap,
+                         CLHEP::Hep3Vector offset);
 
         // Read a G4BL map that was stored using writeG4BLBinary.
         void readG4BLBinary(const std::string& headerFilename, BFGridMap& bfmap);
