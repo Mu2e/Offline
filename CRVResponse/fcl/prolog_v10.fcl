@@ -403,6 +403,17 @@ BEGIN_PROLOG
       timeStart                      : 500
       timeEnd                        : 1600
     }
+    CrvPedestalFinder:
+    {
+      module_type               : CrvPedestalFinder
+      crvDigiModuleLabel        : "CrvDigi"
+      maxADCspread              : 5
+    }
+    CrvCalibration:
+    {
+      module_type               : CrvCalibration
+      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+    }
 
 CrvDAQPackage :
 {
