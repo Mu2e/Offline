@@ -19,19 +19,25 @@ namespace mu2e {
   WireHitState BkgStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable()){
-      std::vector<Float_t> pars(8,0.0);
+      std::vector<Float_t> pars(10,0.0);
       // this order is given by the training
-      pars[0] = fabs(tpdata.doca());
+      double derr = sqrt(std::max(tpdata.docaVar(),0.0) + dinfo.driftDistanceError_*dinfo.driftDistanceError_);
+      double dvar = derr*derr;
+      double totvar = dvar + tpdata.docaVar();
+      double udoca = fabs(tpdata.doca());
+      pars[0] = udoca;
       pars[1] = dinfo.driftDistance_;
-      pars[2] = (dinfo.driftDistance_ -fabs(tpdata.doca()))/sqrt(tpdata.docaVar() + pow(dinfo.driftDistanceError_,2));
+      pars[2] = (dinfo.driftDistance_ - udoca)/sqrt(totvar);
       pars[3] = chit.driftTime();
       pars[4] = 1000.0*chit.energyDep();
+      pars[5] = derr;
+      pars[6] =4.0*dinfo.driftDistance_*udoca/totvar;
       // compare the delta-t based U position with the fit U position; requires relative end
       double endsign = 2.0*(chit.driftEnd()-0.5);
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
-      pars[5] = fabs(chit.wireDist()-upos)/chit.wireRes();
-      pars[6] = chit.wireRes();
-      pars[7] = tpdata.particlePoca().Vect().Rho();
+      pars[7] = fabs(chit.wireDist()-upos)/chit.wireRes();
+      pars[8] = chit.wireRes();
+      pars[9] = tpdata.particlePoca().Vect().Rho();
       float mvaout = mva_->evalMVA(pars);
       if(diag_ > 2){
         whstate.algo_  = StrawHitUpdaters::Bkg;

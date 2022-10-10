@@ -36,13 +36,19 @@ namespace mu2e {
         whstate.nulldvar_ = std::max(nulldoca_*nulldoca_,dinfo.driftDistance_*dinfo.driftDistance_)/3.0;
 
       // invoke the ANN
-      std::vector<Float_t> pars(5,0.0);
+      std::vector<Float_t> pars(7,0.0);
       // this order is given by the training
-      pars[0] = fabs(tpdata.doca());
+      double derr = sqrt(std::max(tpdata.docaVar(),0.0) + dinfo.driftDistanceError_*dinfo.driftDistanceError_);
+      double dvar = derr*derr;
+      double totvar = dvar + tpdata.docaVar();
+      double udoca = fabs(tpdata.doca());
+      pars[0] = udoca;
       pars[1] = dinfo.driftDistance_;
-      pars[2] = (dinfo.driftDistance_ -fabs(tpdata.doca()))/sqrt(tpdata.docaVar() + pow(dinfo.driftDistanceError_,2));
+      pars[2] = (dinfo.driftDistance_ - udoca)/sqrt(totvar);
       pars[3] = chit.driftTime();
       pars[4] = 1000.0*chit.energyDep();
+      pars[5] = derr;
+      pars[6] =4.0*dinfo.driftDistance_*udoca/totvar;
       float mvaout = mva_->evalMVA(pars);
       whstate.quality_ = mvaout;
       if(mvaout > mvacut_){
