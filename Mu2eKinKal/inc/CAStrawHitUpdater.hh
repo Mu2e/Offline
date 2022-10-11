@@ -16,13 +16,14 @@ namespace mu2e {
   // Update based just on PTCA to the wire
   class CAStrawHitUpdater {
     public:
-      using CASHUConfig = std::tuple<float,float,float,std::string,std::string,int>;
+      using CASHUConfig = std::tuple<float,float,float,float,std::string,std::string,int>;
       CAStrawHitUpdater(CASHUConfig const& cashuconfig);
       static std::string const& configDescription(); // description of the variables
       // set the state based on the current PTCA value
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata,DriftInfo const& dinfo) const;
     private:
       double maxdoca_ =0; // maximum DOCA to use hit
+      double maxdvar_ =0; // maximum DOCA variance to use hit
       double minrdrift_ =0; // minimum rdrift to use drift information
       double maxrdrift_ =0; // maximum rdrift to use hit
       WHSMask allowed_; // allowed states

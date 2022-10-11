@@ -119,8 +119,9 @@ namespace mu2e {
   }
 
   template<class KTRAJ> double KKStrawHitCluster<KTRAJ>::time() const {
-    // return time just past the last hit's time.  This insures hit clusters are updated before individual hits
-    // This is important as the cluster only updates the hit state, not its residuals (which is done in the hit)
+    // return time just before the first hit's time.  This insures hit clusters are updated before individual hits
+    // This insures the weights subtracted correspond to the reference fit, and that any changes made to the
+    // hits in the cluster get propagated to the residuals and weights before the next fit
     double mintime(std::numeric_limits<float>::max());
     for(auto const& hit : hits_){
       mintime = std::min(hit->time(),mintime);
