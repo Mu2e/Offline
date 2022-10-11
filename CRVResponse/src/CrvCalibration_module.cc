@@ -4,6 +4,8 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 
 #include "art_root_io/TFileDirectory.h"
@@ -38,12 +40,11 @@ namespace mu2e
 
     explicit CrvCalibration(const Parameters& config);
     void analyze(const art::Event& e);
-    void endJob();
+    void beginRun(const art::Run&);
 
     private:
-    std::string _crvRecoPulsesModuleLabel;
-
-    std::map<std::pair<int,int>,TH1F*> _calibHists;
+    std::string        _crvRecoPulsesModuleLabel;
+    std::vector<TH1F*> _calibHists;
   };
 
 
@@ -53,8 +54,24 @@ namespace mu2e
   {
   }
 
-  void CrvCalibration::endJob()
+  void CrvCalibration::beginRun(const art::Run&)
   {
+    GeomHandle<CosmicRayShield> CRS;
+    const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
+    _calibHists.reserve(counters.size()*4);
+
+    art::ServiceHandle<art::TFileService> tfs;
+    for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
+    {
+      for(size_t SiPM=0; SiPM<4; ++SiPM)
+      {
+        //produce histograms also for non-existing channels to get a continuously running index
+        size_t channelIndex=barIndex*4 + SiPM;
+        _calibHists.emplace_back(tfs->make<TH1F>(Form("crvCalibrationHist_%lu",channelIndex),
+                                                 Form("crvCalibrationHist_%lu",channelIndex),
+                                                 150,0,3000));
+      }
+    }
   }
 
   void CrvCalibration::analyze(const art::Event& event)
@@ -62,19 +79,14 @@ namespace mu2e
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     if(!event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection)) return;
 
-    art::ServiceHandle<art::TFileService> tfs;
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
+      if(!iter->GetRecoPulseFlags().none()) continue;
+
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();
-      auto histIter = _calibHists.find(std::make_pair(barIndex,SiPM));
-      if(histIter==_calibHists.end())
-      {
-        histIter = _calibHists.emplace(std::make_pair(barIndex,SiPM),tfs->make<TH1F>(Form("crvCalibrationHist_%i_%i",barIndex,SiPM),
-                                                                                     Form("crvCalibrationHist_%i_%i",barIndex,SiPM),
-                                                                                     150,0,3000)).first;
-      }
-      if(iter->GetRecoPulseFlags().none()) histIter->second->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
+      int channelIndex=barIndex*4+SiPM;
+      _calibHists.at(channelIndex)->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
     }
   }
 

@@ -1,4 +1,5 @@
 #include "Offline/CRVResponse/inc/MakeCrvRecoPulses.hh"
+#include "canvas/Utilities/Exception.h"
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TMath.h>
@@ -65,8 +66,8 @@ void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<unsigned int> &w
 
 void MakeCrvRecoPulses::RangeFinder(const std::vector<unsigned int> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end)
 {
-  assert(peakStart>0);
-  assert(peakEnd<waveform.size()-1);
+  if(peakStart<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakStart<1"<<std::endl;
+  if(peakEnd+1>=waveform.size()) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakEnd+1>=waveform.size()"<<std::endl;
 
   //select a range of up to 4 points before and after the peak
   //-find up to 5 points before and after the peak for which the waveform is stricly decreasing
@@ -176,7 +177,7 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, c
       {
         doublePulseThisPeak=false;
         doublePulseNextPeak=true;
-        assert(i>0);
+        if(i<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::NoFitOption: peakStart<1"<<std::endl;
         --i; //the shared trough point gets added to both pulses
       }
 
