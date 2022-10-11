@@ -47,11 +47,11 @@ Mu2eKinKal : {
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
-      [ 5.0, "ClosestApproach" ],
-      [ 2.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ]
+      [ 5.0, "CADSHU" ],
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU" ]
     ]
-    CAStrawHitUpdaterSettings : [
+    CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, allowed, freeze, diag
       [ 20.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 0 ],
       [ 15.0, 15.0, 5.0, 4.0, "Null:Inactive", "", 0 ],
@@ -79,11 +79,11 @@ Mu2eKinKal : {
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
-      [ 2.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 0.3, "ClosestApproach" ]
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU" ],
+      [ 0.3, "CADSHU" ]
     ]
-    CAStrawHitUpdaterSettings : [
+    CADSHUSettings : [
       # maxdoca, maderr, minrdrift, maxrdrift, allow, tofreeze, diag
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
@@ -110,17 +110,17 @@ Mu2eKinKal : {
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
-      # annealing temp, strawhit updater algorithm
-      [ 2.0, "ClosestApproach" ],
-      [ 1.0, "ClosestApproach" ],
-      [ 0.0, "ClosestApproach" ],
-      [ 0.0, "ClosestApproach:Background" ],
-      [ 0.0, "ClosestApproach:ANN" ],
-      [ 0.0, "ClosestApproach:ANN" ],
-      [ 0.0, "ClosestApproach:ANN" ],
-      [ 0.0, "ClosestApproach:ANN" ]
+      # annealing temp, strawhit updater algorithms
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU" ],
+      [ 0.0, "CADSHU" ],
+      [ 0.0, "CADSHU:BkgANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ]
     ]
-    CAStrawHitUpdaterSettings : [
+    CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
@@ -132,17 +132,17 @@ Mu2eKinKal : {
       [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ]
     ]
 
-    BkgStrawHitUpdaterSettings : [
+    BkgANNSHUSettings : [
       [ "Offline/Mu2eKinKal/data/Bkg_constant_Seed.weights.xml",0.9,"Inactive",1]
     ]
 
-    ANNStrawHitUpdaterSettings : [
+    DriftANNSHUSettings : [
       [ "Offline/Mu2eKinKal/data/LRDrift_constant_Seed.weights.xml",0.4,-0.5,"Null:Drift","", 1],
       [ "Offline/Mu2eKinKal/data/LRDrift_constant_Mid.weights.xml",0.6,-0.5,"Null:Drift","", 1],
       [ "Offline/Mu2eKinKal/data/LRDrift_constant_Final.weights.xml",0.6,-0.5,"Null:Drift","", 1],
       [ "Offline/Mu2eKinKal/data/LRDrift_constant_Final2.weights.xml",0.5,-0.5,"Null:Drift","", 1]
     ]
-    CombinatoricStrawHitUpdaterSettings : [
+    Chi2SHUSettings : [
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?

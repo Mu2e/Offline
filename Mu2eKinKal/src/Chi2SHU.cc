@@ -1,35 +1,35 @@
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include <algorithm>
 #include <iostream>
 namespace mu2e {
 
-  CombinatoricStrawHitUpdater::CombinatoricStrawHitUpdater(CSHUConfig const& cshuconfig) {
-    csize_ = std::get<0>(cshuconfig);
-    inactivep_ = std::get<1>(cshuconfig);
-    nullp_ = std::get<2>(cshuconfig);
-    mindchi2_ = std::get<3>(cshuconfig);
-    double nulldoca = std::get<4>(cshuconfig);
+  Chi2SHU::Chi2SHU(Config const& config) {
+    csize_ = std::get<0>(config);
+    inactivep_ = std::get<1>(config);
+    nullp_ = std::get<2>(config);
+    mindchi2_ = std::get<3>(config);
+    double nulldoca = std::get<4>(config);
     nulldvar_ = nulldoca*nulldoca/3.0; // assumes a flat distribution [-nulldoca,nulldoca]
-    std::string states = std::get<5>(cshuconfig);
+    std::string states = std::get<5>(config);
     WHSMask allowed(states);
-    std::string freeze = std::get<6>(cshuconfig);
+    std::string freeze = std::get<6>(config);
     freeze_ = WHSMask(freeze);
-    std::string unfreeze = std::get<7>(cshuconfig);
+    std::string unfreeze = std::get<7>(config);
     unfreeze_ = WHSMask(unfreeze);
-    diag_ = std::get<8>(cshuconfig);
-    if(allowed.hasAnyProperty(WHSMask::inactive)) allowed_.emplace_back(WireHitState::inactive,StrawHitUpdaters::Combinatoric,nulldvar_);
-    if(allowed.hasAnyProperty(WHSMask::null)) allowed_.emplace_back(WireHitState::null,StrawHitUpdaters::Combinatoric,nulldvar_);
+    diag_ = std::get<8>(config);
+    if(allowed.hasAnyProperty(WHSMask::inactive)) allowed_.emplace_back(WireHitState::inactive,StrawHitUpdaters::Chi2,nulldvar_);
+    if(allowed.hasAnyProperty(WHSMask::null)) allowed_.emplace_back(WireHitState::null,StrawHitUpdaters::Chi2,nulldvar_);
     if(allowed.hasAnyProperty(WHSMask::drift)){
-      allowed_.emplace_back(WireHitState::left,StrawHitUpdaters::Combinatoric,nulldvar_);
-      allowed_.emplace_back(WireHitState::right,StrawHitUpdaters::Combinatoric,nulldvar_);
+      allowed_.emplace_back(WireHitState::left,StrawHitUpdaters::Chi2,nulldvar_);
+      allowed_.emplace_back(WireHitState::right,StrawHitUpdaters::Chi2,nulldvar_);
     }
-    if(diag_ > 0)std::cout << "CombinatoricStrawHitUpdater, inactive penalty " << inactivep_ << " null penalty " << nullp_ << " min dchi2 " << mindchi2_ << " null doca " << nulldoca << " allowed states" << allowed << " states to freeze " << freeze_  << " states to unfreeze" << unfreeze_ << std::endl;
+    if(diag_ > 0)std::cout << "Chi2SHU, inactive penalty " << inactivep_ << " null penalty " << nullp_ << " min dchi2 " << mindchi2_ << " null doca " << nulldoca << " allowed states" << allowed << " states to freeze " << freeze_  << " states to unfreeze" << unfreeze_ << std::endl;
   }
 
   // set the state of unambiguous hits to their drift value.
-  ClusterState CombinatoricStrawHitUpdater::selectBest(ClusterStateCOL& cstates) const {
+  ClusterState Chi2SHU::selectBest(ClusterStateCOL& cstates) const {
     // sort the results by chisquared
     std::sort(cstates.begin(),cstates.end(), ClusterStateComp());
 
@@ -84,7 +84,7 @@ namespace mu2e {
     return os;
   }
 
-  std::string const& CombinatoricStrawHitUpdater::configDescription() {
+  std::string const& Chi2SHU::configDescription() {
     static std::string descrip("Min Cluster Size, Inactive hit x^2 penalty, Null ambiguity x^2 penalty, Minimum significant x^2 difference, minimum drift DOCA, allowed states, states to freeze, states to unfreeze, diag level");
 
     return descrip;

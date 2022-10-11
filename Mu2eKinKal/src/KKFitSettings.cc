@@ -23,15 +23,15 @@ namespace mu2e {
       config.ends_ = fitconfig.ends();
       config.tol_ = fitconfig.btol();
       // create the updaters requested
-      std::vector<CAStrawHitUpdater::CASHUConfig> cashusettings;
-      std::vector<ANNStrawHitUpdater::ANNSHUConfig> annshusettings;
-      std::vector<BkgStrawHitUpdater::BkgSHUConfig> bkgshusettings;
-      std::vector<CombinatoricStrawHitUpdater::CSHUConfig> combishusettings;
+      std::vector<CADSHU::Config> cadshusettings;
+      std::vector<DriftANNSHU::Config> driftannshusettings;
+      std::vector<BkgANNSHU::Config> bkgannshusettings;
+      std::vector<Chi2SHU::Config> chi2shusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
-      cashusettings = fitconfig.cashuConfig().value_or(cashusettings);
-      annshusettings = fitconfig.annshuConfig().value_or(annshusettings);
-      bkgshusettings = fitconfig.bkgshuConfig().value_or(bkgshusettings);
-      combishusettings = fitconfig.combishuConfig().value_or(combishusettings);
+      cadshusettings = fitconfig.cashuConfig().value_or(cadshusettings);
+      driftannshusettings = fitconfig.annshuConfig().value_or(driftannshusettings);
+      bkgannshusettings = fitconfig.bkgshuConfig().value_or(bkgannshusettings);
+      chi2shusettings = fitconfig.combishuConfig().value_or(chi2shusettings);
       // straw material updater must always be here
       auto const& sxusettings = fitconfig.sxuConfig();
       // set the schedule for the meta-iterations
@@ -43,14 +43,14 @@ namespace mu2e {
         splitLine( std::get<1>(misetting), ":", anames);
         for(auto const& aname : anames) {
           auto alg = StrawHitUpdaters::algo(aname);
-          if(alg == StrawHitUpdaters::CA) {
-            miconfig.addUpdater(std::any(CAStrawHitUpdater(cashusettings.at(ncashu++))));
-          } else if(alg == StrawHitUpdaters::ANN) {
-            miconfig.addUpdater(std::any(ANNStrawHitUpdater(annshusettings.at(nann++))));
-          } else if(alg == StrawHitUpdaters::Bkg) {
-            miconfig.addUpdater(std::any(BkgStrawHitUpdater(bkgshusettings.at(nbkg++))));
-          } else if(alg == StrawHitUpdaters::Combinatoric) {
-            miconfig.addUpdater(std::any(CombinatoricStrawHitUpdater(combishusettings.at(ncomb++))));
+          if(alg == StrawHitUpdaters::CAD) {
+            miconfig.addUpdater(std::any(CADSHU(cadshusettings.at(ncashu++))));
+          } else if(alg == StrawHitUpdaters::DriftANN) {
+            miconfig.addUpdater(std::any(DriftANNSHU(driftannshusettings.at(nann++))));
+          } else if(alg == StrawHitUpdaters::BkgANN) {
+            miconfig.addUpdater(std::any(BkgANNSHU(bkgannshusettings.at(nbkg++))));
+          } else if(alg == StrawHitUpdaters::Chi2) {
+            miconfig.addUpdater(std::any(Chi2SHU(chi2shusettings.at(ncomb++))));
           } else if(alg == StrawHitUpdaters::none) {
             ++nnone;
           } else {
@@ -63,13 +63,13 @@ namespace mu2e {
         config.schedule_.push_back(miconfig);
       }
       // consistency checks
-      if(cashusettings.size() != ncashu)
+      if(cadshusettings.size() != ncashu)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of CA StrawHit updaters" <<  std::endl;
-      if(annshusettings.size() != nann)
+      if(driftannshusettings.size() != nann)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of ANN StrawHit updaters" <<  std::endl;
-      if(bkgshusettings.size() != nbkg)
+      if(bkgannshusettings.size() != nbkg)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of Bkg StrawHit updaters" <<  std::endl;
-      if(combishusettings.size() != ncomb)
+      if(chi2shusettings.size() != ncomb)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of Combi StrawHit updaters" <<  std::endl;
       return config;
     }

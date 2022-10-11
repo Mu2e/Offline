@@ -7,9 +7,8 @@
 #include "KinKal/Detector/Hit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/CSHU_updateCluster.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
+#include "Offline/Mu2eKinKal/inc/Chi2SHU_updateCluster.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "cetlib_except/exception.h"
 #include <vector>
@@ -146,7 +145,7 @@ namespace mu2e {
     if(first){
       // look for an updater; if it's there, update the state
       // Extend this logic if new StrawHitCluster updaters are introduced
-      auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+      auto cshu = miconfig.findUpdater<Chi2SHU>();
       if(cshu != 0){
         cshu->updateCluster<KTRAJ>(*this,miconfig);
       }

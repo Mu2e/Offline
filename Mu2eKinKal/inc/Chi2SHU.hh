@@ -1,7 +1,7 @@
-#ifndef Mu2eKinKal_CombinatoricStrawHitUpdater_hh
-#define Mu2eKinKal_CombinatoricStrawHitUpdater_hh
+#ifndef Mu2eKinKal_Chi2SHU_hh
+#define Mu2eKinKal_Chi2SHU_hh
 //
-//  StrawHitCluster updating using an exhaustive combinatoric algorithm, following the BTrk PanelAmbigResolver algorithm
+// Coherently update a cluster of StrawHits by minimizing the chisquared of every possible hit state combination through exhaustive search
 //
 #include "KinKal/General/Chisq.hh"
 #include "KinKal/Fit/MetaIterConfig.hh"
@@ -30,9 +30,9 @@ namespace mu2e {
   };
   using ClusterStateCOL = std::vector<ClusterState>;
 
-  class CombinatoricStrawHitUpdater {
+  class Chi2SHU {
     public:
-      using CSHUConfig = std::tuple<unsigned,float,float,float,float,std::string,std::string,std::string,int>;
+      using Config = std::tuple<unsigned,float,float,float,float,std::string,std::string,std::string,int>;
       static std::string const& configDescription(); // description of the variables
       // struct to sort hit states by chisquared value
       struct ClusterStateComp {
@@ -40,7 +40,7 @@ namespace mu2e {
           return a.chi2_.chisqPerNDOF() < b.chi2_.chisqPerNDOF();
         }
       };
-      CombinatoricStrawHitUpdater(CSHUConfig const& cshuconfig);
+      Chi2SHU(Config const& config);
       ClusterState selectBest(ClusterStateCOL& cscores) const; // find the best cluster configuration given the score for each
       // the work is done here
       template <class KTRAJ> void updateCluster(KKStrawHitCluster<KTRAJ>& cluster,KinKal::MetaIterConfig const& miconfig) const;
