@@ -18,7 +18,7 @@ namespace mu2e {
 
   WireHitState BkgStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
-    if(input.updateable()){
+    if(input.updateable(StrawHitUpdaters::Bkg)){
       std::vector<Float_t> pars(10,0.0);
       // this order is given by the training
       double derr = sqrt(std::max(tpdata.docaVar(),0.0) + dinfo.driftDistanceError_*dinfo.driftDistanceError_);

@@ -27,7 +27,7 @@ namespace mu2e {
 
   WireHitState ANNStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
-    if(input.updateable()){
+    if(input.updateable(StrawHitUpdaters::ANN)){
       whstate.algo_ = StrawHitUpdaters::ANN;
       if(nulldoca_ > 0.0)
         whstate.nulldvar_ = nulldoca_*nulldoca_/3.0; // assumes a flat distribution over [-nulldoca_,nulldoca_]

@@ -20,7 +20,7 @@ namespace mu2e {
     bool isInactive() const { return state_ == inactive; }
     bool active() const { return state_ > inactive; }
     bool usable() const { return state_ > unusable; }
-    bool updateable() const { return usable() && !frozen_; }
+    bool updateable(StrawHitUpdaters::algorithm algo) const { return usable() && (!frozen_ || algo_ == algo); } // allow algorithms to update themselves, even if frozen
     double nullDistanceVariance() const { return nulldvar_; }
     bool operator == (WireHitState const& whstate) const { return state_ == whstate.state_; }
     bool operator != (WireHitState const& whstate) const { return state_ != whstate.state_; }
