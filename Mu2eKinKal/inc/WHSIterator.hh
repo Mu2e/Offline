@@ -8,7 +8,7 @@
 //
 namespace mu2e {
   using WHSCOL = std::vector<WireHitState>;
-  class WHSIterator {
+ class WHSIterator {
     public:
       WHSIterator(size_t nhits, WHSCOL const& allowed) : nhits_(nhits),allowed_(allowed), current_(nhits, allowed_.front()),
       indices_(nhits_,0){}

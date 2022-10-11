@@ -1,5 +1,5 @@
 //
-// Simple updater of StrawHits based on box cuts of Closest Approach (CA) information.  This mimics BTrk
+// Simple updater of StrawHits based on box cuts of Closest Approach (CA) and drift information
 //
 #ifndef Mu2eKinKal_CAStrawHitUpdater_hh
 #define Mu2eKinKal_CAStrawHitUpdater_hh
@@ -16,7 +16,7 @@ namespace mu2e {
   // Update based just on PTCA to the wire
   class CAStrawHitUpdater {
     public:
-      using CASHUConfig = std::tuple<float,float,float,std::string,int>;
+      using CASHUConfig = std::tuple<float,float,float,std::string,std::string,int>;
       CAStrawHitUpdater(CASHUConfig const& cashuconfig);
       static std::string const& configDescription(); // description of the variables
       // set the state based on the current PTCA value
@@ -25,7 +25,9 @@ namespace mu2e {
       double maxdoca_ =0; // maximum DOCA to use hit
       double minrdrift_ =0; // minimum rdrift to use drift information
       double maxrdrift_ =0; // maximum rdrift to use hit
+      WHSMask allowed_; // allowed states
       WHSMask freeze_; // states to freeze
+      double nulldvar_;
       int diag_ =0; // diag print level
   };
 }
