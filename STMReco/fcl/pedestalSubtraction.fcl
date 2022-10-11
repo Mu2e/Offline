@@ -1,0 +1,50 @@
+#
+# Apply pedestal subtraction to unsuppressed STMWaveforms
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: STMPedestalSubtraction
+
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Reco
+physics: {
+  producers : {
+    pedestalSubtractHPGe : {
+      module_type : STMPedestalSubtraction
+      stmWaveformsTag : "FromSTMTestBeamData:HPGe"
+      verbosityLevel : 1
+      pedestal : 3800 # TODO: get correct number
+    }
+
+    pedestalSubtractLaBr : {
+      module_type : STMPedestalSubtraction
+      stmWaveformsTag : "FromSTMTestBeamData:LaBr"
+      verbosityLevel : 1
+      pedestal : 3800 # TODO: get correct number
+    }
+  }
+  filters : {
+  }
+  analyzers : {
+  }
+  # setup paths
+  HPGePath : [ pedestalSubtractHPGe ]
+  LaBrPath : [ pedestalSubtractLaBr ]
+  trigger_paths: [ HPGePath, LaBrPath ]
+  outPath : [ STMOutput ]
+  end_paths: [outPath]
+}
+
+outputs: {
+
+  STMOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "keep *_*_*_*" ]
+    SelectEvents: [ HPGePath, LaBrPath ]
+    fileName : "dig.owner.PedSubWaveforms.version.sequencer.art"
+  }
+}
