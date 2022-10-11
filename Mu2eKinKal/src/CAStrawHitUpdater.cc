@@ -6,24 +6,27 @@ namespace mu2e {
   using KinKal::VEC3;
   CAStrawHitUpdater::    CAStrawHitUpdater(CASHUConfig const& cashuconfig) {
     maxdoca_ = std::get<0>(cashuconfig);
-    minrdrift_ = std::get<1>(cashuconfig);
-    maxrdrift_ = std::get<2>(cashuconfig);
-    std::string allowed = std::get<3>(cashuconfig);
+    double maxdocaerr = std::get<1>(cashuconfig);
+    maxdvar_ = maxdocaerr*maxdocaerr;
+    minrdrift_ = std::get<2>(cashuconfig);
+    maxrdrift_ = std::get<3>(cashuconfig);
+    std::string allowed = std::get<4>(cashuconfig);
     allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<4>(cashuconfig);
+    std::string freeze = std::get<5>(cashuconfig);
     freeze_ = WHSMask(freeze);
     // set the null hit variance
     double rd = std::min(minrdrift_,2.4); // limit to the effective straw radius. this value should be configurable TODO
     nulldvar_ = rd*rd/3.0;
-    diag_ = std::get<5>(cashuconfig);
-    if(diag_ > 0)std::cout << "CAStrawHitUpdater max doca " << maxdoca_ << " rdrift range [" << minrdrift_ << "," << maxrdrift_ << "] Allowing " << allowed_ << " Freezing " << freeze_ << std::endl;
+    diag_ = std::get<6>(cashuconfig);
+    if(diag_ > 0)std::cout << "CAStrawHitUpdater max doca, doca error " << maxdoca_ << " " << maxdocaerr
+      << " rdrift range [" << minrdrift_ << "," << maxrdrift_ << "] Allowing " << allowed_ << " Freezing " << freeze_ << std::endl;
   }
 
   WireHitState CAStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata,DriftInfo const& dinfo) const {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::CA)){
       double absdoca = fabs(tpdata.doca());
-      if(dinfo.driftDistance_ < maxrdrift_ && absdoca < maxdoca_){
+      if(dinfo.driftDistance_ < maxrdrift_ && absdoca < maxdoca_ && tpdata.docaVar() > 0.0 && tpdata.docaVar() < maxdvar_ ){
         if(dinfo.driftDistance_ > minrdrift_){
           // in the sweet spot: use the DOCA to sign the ambiguity
           if(allowed_.hasAnyProperty(WHSMask::drift)) {
@@ -45,7 +48,7 @@ namespace mu2e {
   }
 
   std::string const& CAStrawHitUpdater::configDescription() {
-    static std::string descrip( "Maximum DOCA to use hit, Minimum rdrift to set LR ambiguity, Maximum rdrift to use hit, allowed states, States to freeze, diag level");
+    static std::string descrip( "Maximum DOCA to use hit, Maximum DOCA error to use hit, Minimum rdrift to set LR ambiguity, Maximum rdrift to use hit, allowed states, States to freeze, diag level");
     return descrip;
   }
 

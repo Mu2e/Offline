@@ -57,12 +57,12 @@ namespace mu2e {
             throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << alg << std::endl;
           }
         }
-        miconfig.addUpdater(std::any(StrawXingUpdater(sxusettings.at(nsxu++))));
+        // pad straw xing updaters if necessary
+        miconfig.addUpdater(std::any(StrawXingUpdater(sxusettings.at(nsxu))));
+        if(sxusettings.size()> nsxu+1)nsxu++;
         config.schedule_.push_back(miconfig);
       }
       // consistency checks
-      if(config.schedule_.size() != sxusettings.size())
-        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of KKStrawXing updaters" <<  std::endl;
       if(cashusettings.size() != ncashu)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of CA StrawHit updaters" <<  std::endl;
       if(annshusettings.size() != nann)

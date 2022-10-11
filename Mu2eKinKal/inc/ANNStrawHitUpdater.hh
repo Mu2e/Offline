@@ -19,9 +19,10 @@ namespace mu2e {
   // Update based just on ANN to the wire
   class ANNStrawHitUpdater {
     public:
-      using ANNSHUConfig = std::tuple<std::string,float,float,std::string,int>;
+      using ANNSHUConfig = std::tuple<std::string,float,float,std::string,std::string,int>;
       ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig);
-      ANNStrawHitUpdater(ANNStrawHitUpdater const& other) : mvacut_(other.mvacut_), nulldoca_(other.nulldoca_), freeze_(other.freeze_) {
+      ANNStrawHitUpdater(ANNStrawHitUpdater const& other) : mvacut_(other.mvacut_), nulldoca_(other.nulldoca_),
+      allowed_(other.allowed_), freeze_(other.freeze_), diag_(other.diag_) {
         if(other.mva_) mva_ = new MVATools(*other.mva_);
       }
       ~ANNStrawHitUpdater() { delete mva_; }
@@ -30,7 +31,8 @@ namespace mu2e {
     private:
       MVATools* mva_ = nullptr; // neural net calculator
       double mvacut_ =0; // cut value to decide if drift information is usable
-      double nulldoca_ =2.5; // null hit doca
+      double nulldoca_ =2.4; // null hit doca
+      WHSMask allowed_; // allowed states
       WHSMask freeze_; // states to freeze
       int diag_; // diag print level
   };

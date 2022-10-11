@@ -39,9 +39,9 @@ namespace mu2e {
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
-      using CAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,std::string,std::string,int>>;
+      using CAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,int>>;
       CAStrawHitUpdaterSettings cashuConfig{ Name("CAStrawHitUpdaterSettings"), Comment(CAStrawHitUpdater::configDescription()) };
-      using ANNStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,int>>;
+      using ANNStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,std::string,int>>;
       ANNStrawHitUpdaterSettings annshuConfig{ Name("ANNStrawHitUpdaterSettings"), Comment(ANNStrawHitUpdater::configDescription()) };
       using BkgStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
       BkgStrawHitUpdaterSettings bkgshuConfig{ Name("BkgStrawHitUpdaterSettings"), Comment(BkgStrawHitUpdater::configDescription()) };
