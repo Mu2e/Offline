@@ -1,4 +1,4 @@
-#include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -7,30 +7,30 @@
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
-  ANNStrawHitUpdater::ANNStrawHitUpdater(ANNSHUConfig const& annshuconfig) {
-    mva_  = new MVATools(std::get<0>(annshuconfig));
+  DriftANNSHU::DriftANNSHU(Config const& config) {
+    mva_  = new MVATools(std::get<0>(config));
     mva_->initMVA();
-    mvacut_ = std::get<1>(annshuconfig);
-    nulldoca_ = std::get<2>(annshuconfig);
-    std::string allowed = std::get<3>(annshuconfig);
+    mvacut_ = std::get<1>(config);
+    nulldoca_ = std::get<2>(config);
+    std::string allowed = std::get<3>(config);
     allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<4>(annshuconfig);
+    std::string freeze = std::get<4>(config);
     freeze_ = WHSMask(freeze);
-    diag_ = std::get<5>(annshuconfig);
+    diag_ = std::get<5>(config);
     if(diag_ > 0)
-      std::cout << "ANNStrawHitUpdater weighs" << std::get<0>(annshuconfig) << " cut " << mvacut_ << " null doca " << nulldoca_
+      std::cout << "DriftANNSHU weights" << std::get<0>(config) << " cut " << mvacut_ << " null doca " << nulldoca_
         << " allowing " << allowed_ << " freezing " << freeze_ << std::endl;
     if(diag_ > 1)mva_->showMVA();
   }
 
-  std::string const& ANNStrawHitUpdater::configDescription() {
+  std::string const& DriftANNSHU::configDescription() {
     static std::string descrip( "Weight file, ANN cut, null hit doca, allowed states, states to freeze, diag level");
     return descrip;
   }
 
-  WireHitState ANNStrawHitUpdater::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
+  WireHitState DriftANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
-    if(input.updateable(StrawHitUpdaters::ANN)){
+    if(input.updateable(StrawHitUpdaters::DriftANN)){
       // invoke the ANN
       std::vector<Float_t> pars(7,0.0);
       // this order is given by the training
@@ -50,12 +50,12 @@ namespace mu2e {
       if(mvaout > mvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
           whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-          whstate.algo_ = StrawHitUpdaters::ANN;
+          whstate.algo_ = StrawHitUpdaters::DriftANN;
         }
       } else {
         if(allowed_.hasAnyProperty(WHSMask::null)){
           whstate.state_ = WireHitState::null;
-          whstate.algo_ = StrawHitUpdaters::ANN;
+          whstate.algo_ = StrawHitUpdaters::DriftANN;
           if(nulldoca_ > 0.0)
             whstate.nulldvar_ = nulldoca_*nulldoca_/3.0; // assumes a flat distribution over [-nulldoca_,nulldoca_]
           else
@@ -63,7 +63,7 @@ namespace mu2e {
             whstate.nulldvar_ = std::max(nulldoca_*nulldoca_,dinfo.driftDistance_*dinfo.driftDistance_)/3.0;
         }
       }
-      if(whstate.algo_ == StrawHitUpdaters::ANN)whstate.frozen_ = whstate.isIn(freeze_);
+      if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);
     }
     return whstate;
   }

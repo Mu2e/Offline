@@ -18,10 +18,10 @@
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
-#include "Offline/Mu2eKinKal/inc/CAStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CADSHU.hh"
+#include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
+#include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
+#include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
@@ -139,9 +139,9 @@ namespace mu2e {
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
     // search for updaters that work directly on StrawHits (not StrawHitClusters)
-    auto cashu = miconfig.findUpdater<CAStrawHitUpdater>();
-    auto annshu = miconfig.findUpdater<ANNStrawHitUpdater>();
-    auto bkgshu = miconfig.findUpdater<BkgStrawHitUpdater>();
+    auto cashu = miconfig.findUpdater<CADSHU>();
+    auto annshu = miconfig.findUpdater<DriftANNSHU>();
+    auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
       auto dinfo = fillDriftInfo(false); // update using raw (uncalibrated) drift info, to avoid feedback loop with the calibration

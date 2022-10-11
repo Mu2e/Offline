@@ -1,8 +1,8 @@
 //
 // Bkg-based updater to disable background hits
 //
-#ifndef Mu2eKinKal_BkgStrawHitUpdater_hh
-#define Mu2eKinKal_BkgStrawHitUpdater_hh
+#ifndef Mu2eKinKal_BkgANNSHU_hh
+#define Mu2eKinKal_BkgANNSHU_hh
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
@@ -17,15 +17,15 @@
 namespace mu2e {
   class ComboHit;
  // Update based just on Bkg to the wire
-  class BkgStrawHitUpdater {
+  class BkgANNSHU {
     public:
-      using BkgSHUConfig = std::tuple<std::string,float,std::string,int>;
+      using Config = std::tuple<std::string,float,std::string,int>;
       static std::string const& configDescription(); // description of the variables
-      BkgStrawHitUpdater(BkgSHUConfig const& bkgshuconfig);
-      BkgStrawHitUpdater(BkgStrawHitUpdater const& other) :  mvacut_(other.mvacut_), freeze_(other.freeze_), diag_(other.diag_) {
+      BkgANNSHU(Config const& config);
+      BkgANNSHU(BkgANNSHU const& other) :  mvacut_(other.mvacut_), freeze_(other.freeze_), diag_(other.diag_) {
         if(other.mva_) mva_ = new MVATools(*other.mva_);
       }
-      ~BkgStrawHitUpdater() { delete mva_; }
+      ~BkgANNSHU() { delete mva_; }
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
       MVATools* mva_ =nullptr; // neural net calculator

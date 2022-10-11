@@ -1,13 +1,13 @@
 //
-//  Implementation of the hit updater function for CombinatoricStrawHitUpdater
+//  Implementation of the hit updater function for Chi2SHU
 //
-#ifndef Mu2eKinKal_CSHU_updateCluster_hh
-#define Mu2eKinKal_CSHU_updateCluster_hh
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#ifndef Mu2eKinKal_Chi2SHU_updateCluster_hh
+#define Mu2eKinKal_Chi2SHU_updateCluster_hh
+#include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 namespace mu2e {
-  template<class KTRAJ> void CombinatoricStrawHitUpdater::updateCluster(
+  template<class KTRAJ> void Chi2SHU::updateCluster(
       KKStrawHitCluster<KTRAJ>& shcluster,
       KinKal::MetaIterConfig const& miconfig) const {
     using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
@@ -18,7 +18,7 @@ namespace mu2e {
     SHCOL hits;
     hits.reserve(shcluster.strawHits().size());
     for(auto& shptr : shcluster.strawHits()){
-      if(shptr->hitState().updateable(StrawHitUpdaters::Combinatoric) || ( shptr->hitState().usable() && shptr->hitState().isIn(unfreeze_))) hits.push_back(shptr);
+      if(shptr->hitState().updateable(StrawHitUpdaters::Chi2) || ( shptr->hitState().usable() && shptr->hitState().isIn(unfreeze_))) hits.push_back(shptr);
     }
     // make sure this cluster meets the requirements for updating
     if(hits.size() < csize_ )return;
