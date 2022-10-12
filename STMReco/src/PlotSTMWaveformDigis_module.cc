@@ -19,37 +19,37 @@
 #include "TF1.h"
 #include "TGraph.h"
 
-#include "Offline/RecoDataProducts/inc/STMWaveform.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 
 namespace mu2e {
 
-  class PlotSTMWaveforms : public art::EDAnalyzer {
+  class PlotSTMWaveformDigis : public art::EDAnalyzer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> stmWaveformsTag{ Name("stmWaveformsTag"), Comment("InputTag for STMWaveformCollection")};
+        fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
-      explicit PlotSTMWaveforms(const Parameters& conf);
+      explicit PlotSTMWaveformDigis(const Parameters& conf);
 
     private:
     void analyze(const art::Event& e) override;
 
-    art::InputTag _stmWaveformsTag;
+    art::InputTag _stmWaveformDigisTag;
   };
 
-  PlotSTMWaveforms::PlotSTMWaveforms(const Parameters& config )  :
+  PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
     art::EDAnalyzer{config},
-    _stmWaveformsTag(config().stmWaveformsTag())
+    _stmWaveformDigisTag(config().stmWaveformDigisTag())
   {
-    consumes<STMWaveformCollection>(_stmWaveformsTag);
+    consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
   }
 
-  void PlotSTMWaveforms::analyze(const art::Event& event) {
+  void PlotSTMWaveformDigis::analyze(const art::Event& event) {
 
     art::ServiceHandle<art::TFileService> tfs;
-    auto waveformsHandle = event.getValidHandle<STMWaveformCollection>(_stmWaveformsTag);
+    auto waveformsHandle = event.getValidHandle<STMWaveformDigiCollection>(_stmWaveformDigisTag);
 
     std::stringstream histname;
     int count = 0;
@@ -67,4 +67,4 @@ namespace mu2e {
   }
 }
 
-DEFINE_ART_MODULE(mu2e::PlotSTMWaveforms)
+DEFINE_ART_MODULE(mu2e::PlotSTMWaveformDigis)
