@@ -44,17 +44,26 @@ class ProditionsTest : public art::EDAnalyzer {
 
   // ProditionsHandle<StrawResponse> _testh;
   ProditionsHandle<STMEnergyCalib> _testh;
+
 };
 
 //-----------------------------------------------------------------------------
 void ProditionsTest::analyze(const art::Event& event) {
   std::cout << "ProditionsTest::analyze  " << event.id() << std::endl;
 
-  auto const& tab = _testh.get(event.id());
-  auto channel = STMChannel(STMChannel::enum_type::LaBr);
-  auto const& r = tab.calib(channel);
-  std::cout << channel.name() << " " << r.p0 << " " << r.p1 << " " << r.p2
-            << "\n";
+  auto const& stm = _testh.get(event.id());
+  auto cl = STMChannel(STMChannel::enum_type::LaBr);
+  auto ch = STMChannel(STMChannel::enum_type::HPGe);
+
+  auto r = stm.calib(cl);
+  std::cout << cl.name() << " " << r.p0 << " " << r.p1 << " " << r.p2 << "\n";
+  r = stm.calib(ch);
+  std::cout << ch.name() << " " << r.p0 << " " << r.p1 << " " << r.p2 << "\n";
+
+  float pl = stm.pedestal(cl);
+  float ph = stm.pedestal(ch);
+  std::cout << "pedestals l,h "<< pl << " " <<ph << "\n";
+
 }
 
 }  // namespace mu2e

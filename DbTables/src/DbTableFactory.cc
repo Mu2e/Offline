@@ -3,6 +3,7 @@
 #include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
 #include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 #include "Offline/DbTables/inc/STMEnergyPar.hh"
+#include "Offline/DbTables/inc/STMPedestals.hh"
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
 #include "Offline/DbTables/inc/SimEfficiencies2.hh"
 #include "Offline/DbTables/inc/TrkAlignElement.hh"
@@ -57,6 +58,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());
   } else if (name == "STMEnergyPar") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::STMEnergyPar());
+  } else if (name == "STMPedestals") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::STMPedestals());
   } else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
         << "DbTableFactory::newTable call with bad table name: " + name + "\n";
