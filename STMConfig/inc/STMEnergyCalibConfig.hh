@@ -5,6 +5,7 @@
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Tuple.h"
 #include <string>
 
 namespace mu2e {
@@ -15,6 +16,9 @@ struct STMEnergyCalibConfig {
 
   fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity: 0 or 1")};
   fhicl::Atom<bool> useDb{Name("useDb"), Comment("use database or fcl")};
+  fhicl::Sequence<fhicl::Tuple<std::string, float>, 2> pedestals{
+      Name("pedestals"),
+      Comment("sequence of tuples of channel_name and value")};
 };
 
 }  // namespace mu2e

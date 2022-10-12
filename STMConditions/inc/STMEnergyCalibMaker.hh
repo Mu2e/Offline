@@ -7,6 +7,7 @@
 //
 
 #include "Offline/DbTables/inc/STMEnergyPar.hh"
+#include "Offline/DbTables/inc/STMPedestals.hh"
 #include "Offline/STMConditions/inc/STMEnergyCalib.hh"
 #include "Offline/STMConfig/inc/STMEnergyCalibConfig.hh"
 
@@ -17,7 +18,8 @@ class STMEnergyCalibMaker {
   STMEnergyCalibMaker(STMEnergyCalibConfig const& config) : _config(config) {}
 
   STMEnergyCalib::ptr_t fromFcl();
-  STMEnergyCalib::ptr_t fromDb(STMEnergyPar::cptr_t sep_p);
+  STMEnergyCalib::ptr_t fromDb(STMEnergyPar::cptr_t sep_p,
+                               STMPedestals::cptr_t ped_p);
 
  private:
   // this object needs to be thread safe,
