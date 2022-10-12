@@ -1,5 +1,5 @@
-#ifndef RecoDataProducts_STMWaveform_hh
-#define RecoDataProducts_STMWaveform_hh
+#ifndef RecoDataProducts_STMWaveformDigi_hh
+#define RecoDataProducts_STMWaveformDigi_hh
 //
 // Data product that represents the digitized waveforms coming from the STM detectors
 // This is used for both unsuppressed and zero-suppressed waveforms
@@ -15,11 +15,11 @@
 
 namespace mu2e {
 
-  class STMWaveform {
+  class STMWaveformDigi {
   public:
-    STMWaveform() : _trigTimeOffset(0), _adcs(std::vector<int16_t>()){};
+    STMWaveformDigi() : _trigTimeOffset(0), _adcs(std::vector<int16_t>()){};
 
-    STMWaveform(uint32_t trigTimeOffset, std::vector<int16_t> adcs) : _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
+    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> adcs) : _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
 
     uint32_t trigTimeOffset() const { return _trigTimeOffset; }
@@ -30,6 +30,6 @@ namespace mu2e {
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
   };
 
-  typedef std::vector<STMWaveform> STMWaveformCollection;
+  typedef std::vector<STMWaveformDigi> STMWaveformDigiCollection;
 }
 #endif

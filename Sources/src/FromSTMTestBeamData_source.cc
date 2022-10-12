@@ -31,7 +31,7 @@
 
 #include "Offline/DataProducts/inc/STMTestBeamHeaders.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
-#include "Offline/RecoDataProducts/inc/STMWaveform.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 
 
 using namespace std;
@@ -112,8 +112,8 @@ namespace mu2e {
     , verbosityLevel_(conf().verbosityLevel())
     , binaryFileVersion_(0)
   {
-    rh.reconstitutes<mu2e::STMWaveformCollection,art::InEvent>(myModuleLabel_, "HPGe");
-    rh.reconstitutes<mu2e::STMWaveformCollection,art::InEvent>(myModuleLabel_, "LaBr");
+    rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "HPGe");
+    rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "LaBr");
     rh.reconstitutes<mu2e::STMTestBeamEventInfo,art::InEvent>(myModuleLabel_);
 
     currentSubRunNumber_ = 0;
@@ -214,11 +214,11 @@ namespace mu2e {
       return false;
     }
 
-    // Create the STMWaveformCollection that we will write to the art event
+    // Create the STMWaveformDigiCollection that we will write to the art event
     // NB although we are creating one collection for each detector, in the test beam only one
     //    detector was connected at a time so one of these collections will be empty
-    std::unique_ptr<mu2e::STMWaveformCollection> outputHPGeWaveforms(new mu2e::STMWaveformCollection());
-    std::unique_ptr<mu2e::STMWaveformCollection> outputLaBrWaveforms(new mu2e::STMWaveformCollection());
+    std::unique_ptr<mu2e::STMWaveformDigiCollection> outputHPGeWaveformDigis(new mu2e::STMWaveformDigiCollection());
+    std::unique_ptr<mu2e::STMWaveformDigiCollection> outputLaBrWaveformDigis(new mu2e::STMWaveformDigiCollection());
 
     // Read the trigger header
     STMTestBeam::TriggerHeader trigger_header[1];
@@ -274,13 +274,13 @@ namespace mu2e {
             adcs.push_back(adc[0]);
           }
 
-          // Create the STMWaveform and put it in the event
-          STMWaveform stm_waveform(trigger_header[0].getTriggerOffset(), adcs);
+          // Create the STMWaveformDigi and put it in the event
+          STMWaveformDigi stm_waveform(trigger_header[0].getTriggerOffset(), adcs);
           if (channel_ == STMChannel::HPGe) {
-            outputHPGeWaveforms->push_back(stm_waveform);
+            outputHPGeWaveformDigis->push_back(stm_waveform);
           }
           else if (channel_ == STMChannel::LaBr) {
-            outputLaBrWaveforms->push_back(stm_waveform);
+            outputLaBrWaveformDigis->push_back(stm_waveform);
           }
           else {
             throw cet::exception("FromSTMTestBeamData") << "Trying to create a waveform with an invalid STMChannel (" << channel_ << ")" << std::endl;
@@ -291,8 +291,8 @@ namespace mu2e {
     }
     else { return false; }
 
-    art::put_product_in_principal(std::move(outputHPGeWaveforms), *outE, myModuleLabel_, "HPGe");
-    art::put_product_in_principal(std::move(outputLaBrWaveforms), *outE, myModuleLabel_, "LaBr");
+    art::put_product_in_principal(std::move(outputHPGeWaveformDigis), *outE, myModuleLabel_, "HPGe");
+    art::put_product_in_principal(std::move(outputLaBrWaveformDigis), *outE, myModuleLabel_, "LaBr");
 
     ++currentEventNumber_;
 
