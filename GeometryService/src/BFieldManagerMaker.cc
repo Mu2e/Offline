@@ -4,10 +4,10 @@
 //
 
 // Includes from C++
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <set>
 
 // Includes from C ( needed for block IO ).
 #include <errno.h>
@@ -80,64 +80,71 @@ namespace mu2e {
     }
 
     BFieldManagerMaker::BFieldManagerMaker(const BFieldConfig& config)
-        : _resolveFullPath(), _bfmgr(new BFieldManager()) {
+        : _resolveFullPath() {
         bfieldVerbosityLevel = config.verbosityLevel();
 
         // break potential mapTypeList into two vectors... kind of ugly right now.
         // Maybe config should just have two mapTypeLists for inner and outer.
         // Eventually, each map file should just be paired with a mapType.
+        // Hold the types of the inner and outer maps (if they differ)
+        std::vector<BFMapType> innerTypes;
+        std::vector<BFMapType> outerTypes;
+
         if (!config.mapTypeList().empty()) {
-            _innerTypes = std::vector<BFMapType>(
+            innerTypes = std::vector<BFMapType>(
                 config.mapTypeList().begin(),
                 config.mapTypeList().begin() + config.innerMapFiles().size());
-            _outerTypes =
-                std::vector<BFMapType>(config.mapTypeList().begin() + config.innerMapFiles().size(),
+            outerTypes =
+                std::vector<BFMapType>(config.mapTypeList().begin()
+                                       + config.innerMapFiles().size(),
                                        config.mapTypeList().end());
+        } else { // only one type
+          innerTypes = std::vector<BFMapType>(config.innerMapFiles().size(),
+                                               config.mapType());
+          outerTypes = std::vector<BFMapType>(config.outerMapFiles().size(),
+                                               config.mapType());
         }
 
-        if (config.mapType() == BFMapType::G4BL) {
-            loadG4BL(&_bfmgr->innerMaps_, config.innerMapFiles(), config.scaleFactor(),
-                     config.interpolationStyle());
-            loadG4BL(&_bfmgr->outerMaps_, config.outerMapFiles(), config.scaleFactor(),
-                     config.interpolationStyle());
+        MapContainerType innerMaps,outerMaps;
 
-        } else if (config.mapType() == BFMapType::PARAM) {
-            loadParam(&_bfmgr->innerMaps_, config.innerMapFiles(), _innerTypes,
-                      config.interpolationStyle(), config.scaleFactor());
-            loadParam(&_bfmgr->outerMaps_, config.outerMapFiles(), _outerTypes,
-                      config.interpolationStyle(), config.scaleFactor());
+        loadMaps(innerMaps, config.innerMapFiles(), innerTypes, config);
+        loadMaps(outerMaps, config.outerMapFiles(), outerTypes, config);
 
-        } else {
-            throw cet::exception("GEOM")
-                << "Unknown format of file with magnetic field maps: " << config.mapType() << "\n";
+
+        // check for duplicate keys
+        auto allMaps = innerMaps;
+        allMaps.insert(allMaps.end(),outerMaps.begin(),outerMaps.end());
+        std::vector<std::string> keys;
+        for(auto const& bmap : allMaps) {
+          keys.emplace_back(bmap->getKey());
+        }
+        std::sort(keys.begin(),keys.end());
+        auto dp = std::adjacent_find(keys.begin(),keys.end());
+
+        if (dp != keys.end()) {
+          throw cet::exception("GEOM")
+            << "Trying to add a new magnetic field when the named field map already exists: "
+            << *dp << "\n";
         }
 
-        _bfmgr->cm_.setMaps((const MapContainerType&)_bfmgr->innerMaps_,
-                            (const MapContainerType&)_bfmgr->outerMaps_);
-
-        // The field manager is fully initialized.
-        // Some extra stuff that is convenient to do here:
-        if (config.flipBFieldMaps()) {
-            for (BFieldManager::MapContainerType::iterator i = _bfmgr->getInnerMaps().begin();
-                 i != _bfmgr->getInnerMaps().end(); ++i) {
-                flipMap(dynamic_cast<BFGridMap&>(**i));
-            }
-
-            for (BFieldManager::MapContainerType::iterator i = _bfmgr->getOuterMaps().begin();
-                 i != _bfmgr->getOuterMaps().end(); ++i) {
-                flipMap(dynamic_cast<BFGridMap&>(**i));
-            }
+        //copy non-const to const before giving maps to new BFieldManager
+        BFieldManager::MapContainerType constInnerMaps,constOuterMaps;
+        for(auto mapptr : innerMaps) {
+          constInnerMaps.emplace_back(mapptr);
         }
+        for(auto mapptr : outerMaps) {
+          constOuterMaps.emplace_back(mapptr);
+        }
+
+        _bfmgr = std::unique_ptr<BFieldManager>(new BFieldManager(constInnerMaps,constOuterMaps));
 
         if (config.writeBinaries()) {
-            for (BFieldManager::MapContainerType::const_iterator i = _bfmgr->getInnerMaps().begin();
-                 i != _bfmgr->getInnerMaps().end(); ++i) {
-                writeG4BLBinary(dynamic_cast<const BFGridMap&>(**i), (*i)->getKey() + ".bin");
+          for (auto mapptr : innerMaps ) {
+                writeG4BLBinary(dynamic_cast<const BFGridMap&>(*mapptr), mapptr->getKey() + ".bin");
             }
 
-            for (BFieldManager::MapContainerType::const_iterator i = _bfmgr->getOuterMaps().begin();
-                 i != _bfmgr->getOuterMaps().end(); ++i) {
-                writeG4BLBinary(dynamic_cast<const BFGridMap&>(**i), (*i)->getKey() + ".bin");
+          for (auto mapptr : outerMaps) {
+                writeG4BLBinary(dynamic_cast<const BFGridMap&>(*mapptr), mapptr->getKey() + ".bin");
             }
         }
 
@@ -331,70 +338,45 @@ namespace mu2e {
     }  // end anonymous namespace
 
     // Loads a sequence of Parametric files
-    void BFieldManagerMaker::loadParam(BFieldManager::MapContainerType* mapContainer,
+    void BFieldManagerMaker::loadMaps(MapContainerType& mapContainer,
                                        const BFieldConfig::FileSequenceType& files,
                                        std::vector<BFMapType> mapTypeList,
-                                       BFInterpolationStyle interpStyle,
-                                       double scaleFactor) {
-        // typedef BFieldConfig::FileSequenceType::const_iterator Iter;
+                                      const BFieldConfig& config) {
 
-        // for (Iter i = files.begin(); i != files.end(); ++i) {
         for (unsigned i = 0; i < files.size(); ++i) {
             if (bfieldVerbosityLevel > 0) {
                 cout << "Reading " << files[i] << endl;
             }
             const std::string mapkey = basename(files[i]);
-            BFMapType indivMapType(BFMapType::PARAM);
-            if (!mapTypeList.empty())
-                indivMapType = mapTypeList[i];
-            if (indivMapType == BFMapType::PARAM) {
-                loadParam(mapContainer, mapkey, _resolveFullPath(files[i]), scaleFactor);
+            if ( mapTypeList[i] == BFMapType::PARAM) {
+                loadParam(mapContainer, mapkey, _resolveFullPath(files[i]), config);
             } else {
-                loadG4BL(mapContainer, mapkey, _resolveFullPath(files[i]), scaleFactor,
-                         interpStyle);
+                loadG4BL(mapContainer, mapkey, _resolveFullPath(files[i]), config);
             }
         }
     }
 
-    // Loads a sequence of G4BL files
-
-    void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType* mapContainer,
-                                      const BFieldConfig::FileSequenceType& files,
-                                      double scaleFactor,
-                                      BFInterpolationStyle interpStyle) {
-        typedef BFieldConfig::FileSequenceType::const_iterator Iter;
-
-        for (Iter i = files.begin(); i != files.end(); ++i) {
-            if (bfieldVerbosityLevel > 0) {
-                cout << "Reading " << *i << endl;
-            }
-
-            const std::string mapkey = basename(*i);
-
-            loadG4BL(mapContainer, mapkey, _resolveFullPath(*i), scaleFactor, interpStyle);
-        }
-    }
 
     // Parse the config file to learn about one magnetic field map.
     // Create an empty map and call the code to load the map from the file.
-    void BFieldManagerMaker::loadParam(BFieldManager::MapContainerType* mapContainer,
+    void BFieldManagerMaker::loadParam(MapContainerType& mapContainer,
                                        const std::string& key,
                                        const std::string& resolvedFileName,
-                                       double scaleFactor) {
+                                       const BFieldConfig& config) {
         // Create an empty map.
-        auto dsmap = _bfmgr->addBFParamMap(mapContainer, key, -4696, -3096, -800, 800, 3500, 14000,
-                                           BFMapType::PARAM, scaleFactor);
-        // Fill the map from the disk file.
-        readParamFile(resolvedFileName, *dsmap);
+      auto dsmap = std::make_shared<BFParamMap>(key, -4696, -3096, -800, 800, 3500, 14000,
+                                                BFMapType::PARAM, config.scaleFactor());
+      // Fill the map from the disk file.
+      readParamFile(resolvedFileName, *dsmap);
     }
 
     // Parse the config file to learn about one magnetic field map.
     // Create an empty map and call the code to load the map from the file.
-    void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType* mapContainer,
+    void BFieldManagerMaker::loadG4BL(MapContainerType& mapContainer,
                                       const std::string& key,
                                       const std::string& resolvedFileName,
-                                      double scaleFactor,
-                                      BFInterpolationStyle interpStyle) {
+                                      const BFieldConfig& config) {
+
         // Extract information from the header.
         vector<double> X0;
         vector<int> dim;
@@ -404,15 +386,26 @@ namespace mu2e {
         parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset, extendYFound);
 
         // Create an empty map.
-        auto dsmap =
-            _bfmgr->addBFGridMap(mapContainer, key, dim[0], X0[0], dX[0], dim[1], X0[1], dX[1],
-                                 dim[2], X0[2], dX[2], BFMapType::G4BL, scaleFactor, interpStyle);
+        auto dsmap = std::make_shared<BFGridMap>(key, dim[0], X0[0], dX[0],
+                                                 dim[1], X0[1], dX[1],
+                                                 dim[2], X0[2], dX[2],
+                                                 BFMapType::G4BL,
+                                                 config.scaleFactor(),
+                                                 config.interpolationStyle());
         dsmap->_flipy = extendYFound;
         // Fill the map from the disk file.
         if (resolvedFileName.find(".header") != string::npos) {
             readG4BLBinary(resolvedFileName, *dsmap);
         } else {
             readG4BLMap(resolvedFileName, *dsmap, G4BL_offset);
+        }
+
+        if(config.flipBFieldMaps()) flipMap(*dsmap);
+
+        mapContainer.emplace_back(dsmap);
+
+        if (config.writeBinaries()) {
+          writeG4BLBinary(*dsmap, key + ".bin");
         }
     }
 

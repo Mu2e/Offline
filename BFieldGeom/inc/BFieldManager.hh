@@ -36,7 +36,7 @@ namespace mu2e {
         friend class BFieldManagerMaker;
 
         // Maps for various parts of the detector.
-        typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
+        typedef std::vector<std::shared_ptr<const BFMap>> MapContainerType;
 
         // Get field at an arbitrary point.
         bool getBFieldWithStatus(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
@@ -84,7 +84,8 @@ namespace mu2e {
        private:
         // Private ctr.  An instance of BFieldManager should be obtained
         // via the BFieldManagerMaker class.
-        BFieldManager() {}
+        BFieldManager(MapContainerType const& innerMaps,
+                      MapContainerType const& outerMaps);
 
         // This class could support copying but it is not really needed and
         // I would like to prevent unintended copies ( people forgetting to
@@ -92,39 +93,9 @@ namespace mu2e {
         BFieldManager(const BFieldManager&);
         BFieldManager& operator=(const BFieldManager&);
 
-        // Make sure map names are unique on the union of inner and outer maps
-        std::set<std::string> mapKeys_;
-
         MapContainerType innerMaps_;
         MapContainerType outerMaps_;
 
-        // Add an empty grid-like map to the list.  Used by BFieldManagerMaker.
-        std::shared_ptr<BFGridMap> addBFGridMap(MapContainerType* whichMap,
-                                                const std::string& key,
-                                                int nx,
-                                                double xmin,
-                                                double dx,
-                                                int ny,
-                                                double ymin,
-                                                double dy,
-                                                int nz,
-                                                double zmin,
-                                                double dz,
-                                                BFMapType::enum_type type,
-                                                double scaleFactor,
-                                                BFInterpolationStyle interpStyle);
-
-        // Add an empty parametric map to the list.  Used by BFieldManagerMaker.
-        std::shared_ptr<BFParamMap> addBFParamMap(MapContainerType* whichMap,
-                                                  const std::string& key,
-                                                  double xmin,
-                                                  double xmax,
-                                                  double ymin,
-                                                  double ymax,
-                                                  double zmin,
-                                                  double zmax,
-                                                  BFMapType::enum_type type,
-                                                  double scaleFactor);
 
         // Handles caching and overlap resolution logic
         BFCacheManager cm_;
