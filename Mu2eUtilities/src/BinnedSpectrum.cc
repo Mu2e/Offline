@@ -73,9 +73,9 @@ namespace mu2e {
       double res = psphys.get<double>("spectrumResolution");
       bool kMaxUserSet = psphys.get<bool>  ("kMaxUserSet",false);
       double kMaxUser = psphys.get<double>("kMaxUser",0);
-      const double bindingEnergyFit = GlobalConstantsHandle<PhysicsParams>()->getRMCbindingEnergyFit();
-      const double recoilEnergyFit  = GlobalConstantsHandle<PhysicsParams>()->getRMCrecoilEnergyFit();
-      const double deltaMassFit     = GlobalConstantsHandle<PhysicsParams>()->getRMCdeltaMassFit();
+      const double bindingEnergyFit = GlobalConstantsHandle<PhysicsParams>()->getRMCbindingEnergyFit("Al");
+      const double recoilEnergyFit  = GlobalConstantsHandle<PhysicsParams>()->getRMCrecoilEnergyFit("Al");
+      const double deltaMassFit     = GlobalConstantsHandle<PhysicsParams>()->getRMCdeltaMassFit("Al");
       const double mmu = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
       const double kMaxMax =mmu - bindingEnergyFit - recoilEnergyFit - deltaMassFit;
       this->initialize<MuonCaptureSpectrum>(elow, ehi, res, kMaxUserSet, kMaxUser, kMaxMax);

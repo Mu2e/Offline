@@ -47,11 +47,6 @@ namespace mu2e
     // here because values coming from other sources are not accurate
     double getParticleLifetime(PDGCode::type pdgId) const;
 
-    // RMC spectrum parameters
-    double getRMCbindingEnergyFit()  const { return _RMCbindingEnergyFit; }
-    double getRMCrecoilEnergyFit() const { return _RMCrecoilEnergyFit; }
-    double getRMCdeltaMassFit() const { return _RMCdeltaMassFit; }
-
     // Muon parameters
     double   getDecayTime     (targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
@@ -93,11 +88,6 @@ namespace mu2e
       return _endpointEnergy.find(allowedMaterial)->second;
     }
 
-    double   getePlusEndpointEnergy(targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _ePlusEndpointEnergy.find(allowedMaterial)->second;
-    }
-
     targetMat getStoppingTargetMaterial() const {
       return _chosenStoppingTargetMaterial;
     }
@@ -110,7 +100,12 @@ namespace mu2e
 
     const std::vector<double>& getCzarneckiCoefficients(targetMat material = "") const {
       const std::string allowedMaterial = checkMaterial( material );
-      return _czarneckiCoefficients.find(allowedMaterial)->second;
+      auto it = _czarneckiCoefficients.find(allowedMaterial);
+      if(it == _czarneckiCoefficients.end()) {
+        throw cet::exception("PHYSICSPARAMS_MISSING_COEF")
+          <<"PhysicsParams: request for missing Czarnecki coefficients for material "<<material<< "\n";
+      }
+      return it->second;
     }
 
     std::size_t getShankerNcoeffs() const { return _shankerNcoeffs; }
@@ -119,29 +114,37 @@ namespace mu2e
     const std::vector<double>& getShankerFcoefficients() const { return _shankerFcoefficients; }
 
     double   getCaptureProtonRate     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _captureProtonRate.find(allowedMaterial)->second;
+      return doubleOrThrow(_captureProtonRate,material,"captureProtonRate");
     }
     double   getCaptureDeuteronRate     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _captureDeuteronRate.find(allowedMaterial)->second;
+      return doubleOrThrow(_captureDeuteronRate,material,"captureDeuteronRate");
     }
     double   getCaptureNeutronRate     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _captureNeutronRate.find(allowedMaterial)->second;
+      return doubleOrThrow(_captureNeutronRate,material,"captureNeutronRate");
     }
     double   getCapturePhotonRate     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _capturePhotonRate.find(allowedMaterial)->second;
+      return doubleOrThrow(_capturePhotonRate,material,"capturePhotonRate");
     }
 
     double   get1809keVGammaEnergy     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _1809keVGammaEnergy.find(allowedMaterial)->second;
+      return doubleOrThrow(_1809keVGammaEnergy,material,"1809keVGammaEnergy");
     }
     double   get1809keVGammaIntensity     (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _1809keVGammaIntensity.find(allowedMaterial)->second;
+      return doubleOrThrow(_1809keVGammaIntensity,material,"1809keVGammaIntensity");
+    }
+
+    double   getePlusEndpointEnergy(targetMat material = "") const {
+      return doubleOrThrow(_ePlusEndpointEnergy,material,"ePlusEndpointEnergy");
+    }
+
+    double getRMCbindingEnergyFit(targetMat material = "")  const {
+      return doubleOrThrow(_RMCbindingEnergyFit,material,"RMCbindingEnergyFit");
+    }
+    double getRMCrecoilEnergyFit(targetMat material = "") const {
+      return doubleOrThrow(_RMCrecoilEnergyFit,material,"RMCrecoilEnergyFit");
+    }
+    double getRMCdeltaMassFit(targetMat material = "") const {
+      return doubleOrThrow(_RMCdeltaMassFit,material,"RMCdeltaMassFit");
     }
 
     PhysicsParams( SimpleConfig const& config );
@@ -163,10 +166,6 @@ namespace mu2e
 
     typedef std::map<PDGCode::type, double> FreeLifeMap;
     FreeLifeMap freeLifetime_;
-
-    double _RMCbindingEnergyFit;
-    double _RMCrecoilEnergyFit;
-    double _RMCdeltaMassFit;
 
     std::map<targetMat,double>   _decayTime;
     std::map<targetMat,double>   _decayFraction;
@@ -194,6 +193,11 @@ namespace mu2e
     std::map<targetMat, double> _1809keVGammaEnergy;
     std::map<targetMat, double> _1809keVGammaIntensity;
 
+    std::map<targetMat, double> _RMCbindingEnergyFit;
+    std::map<targetMat, double> _RMCrecoilEnergyFit;
+    std::map<targetMat, double> _RMCdeltaMassFit;
+
+
     inline targetMat checkMaterial( const targetMat& material ) const {
       if ( material.empty() ) return _chosenStoppingTargetMaterial;
 
@@ -206,6 +210,10 @@ namespace mu2e
 
       else return material;
     }
+
+    // check if parameter is available for this material, throw if not
+    double doubleOrThrow(std::map<targetMat, double> const& tmap,
+                         targetMat const& material, std::string const& parameter) const;
 
   };
 
