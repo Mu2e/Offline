@@ -14,7 +14,7 @@ namespace mu2e {
 
     class BFInterpolationStyleDetail {
        public:
-        enum enum_type { unknown, meco, trilinear, fit };
+        enum enum_type { unknown, unused, trilinear, fit };
 
         static std::string const& typeName();
 

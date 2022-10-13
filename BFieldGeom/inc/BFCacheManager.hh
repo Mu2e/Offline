@@ -28,9 +28,9 @@ namespace mu2e {
     //
 
     class BFCacheManager {
-        // typedef std::vector<const BFMap*> SequenceType;
-        // typedef std::vector<std::shared_ptr<const BFMap>> SequenceType;
-        typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
+
+        typedef std::vector<std::shared_ptr<const BFMap>> MapContainerType;
+
         struct MapList : public MapContainerType {
             // return the first matching map or 0
             std::shared_ptr<const BFMap> findMap(const CLHEP::Hep3Vector& x) const {

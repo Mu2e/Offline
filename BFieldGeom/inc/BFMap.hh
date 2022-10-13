@@ -11,7 +11,6 @@
 // Rewritten again by Brian Pollack to become pure-virtual base class for all types of BFMaps
 //
 
-//#include <iosfwd>
 #include <ostream>
 #include <string>
 #include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
@@ -79,14 +78,12 @@ namespace mu2e {
         // Min and Max values.
         double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax;
 
-        // GMC, G4BL, PM, or possible future types.
+        // G4BL, PM, or possible future types.
         BFMapType _type;
 
         // A scale factor applied overall.
         double _scaleFactor;
 
-        // Choose between meco style quadratic interpolation and G4bl style linear, or others
-        // yet to be defined.
     };
 
 }  // end namespace mu2e

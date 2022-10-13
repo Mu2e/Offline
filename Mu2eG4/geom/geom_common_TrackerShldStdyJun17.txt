@@ -107,10 +107,10 @@ double toyDS.bz            = 1.0;
 // of detSolFieldForm=1 or detSolFieldForm=2.
 double toyDS.gradient      = 0.0; // Tesla/m
 
-// This is recommended field map. See geom_mecofield.txt to use the meco field.
+// This is recommended field map.
 string bfield.format  = "G4BL";
 
-// The other option is "meco"
+// method for interpolation between field grid points
 string bfield.interpolationStyle = trilinear;
 
 int  bfield.verbosityLevel =  0;
