@@ -42,61 +42,12 @@ namespace mu2e {
     }
 
 
-    std::shared_ptr<BFGridMap> BFieldManager::addBFGridMap(MapContainerType* mapContainer,
-                                                           const std::string& key,
-                                                           int nx,
-                                                           double xmin,
-                                                           double dx,
-                                                           int ny,
-                                                           double ymin,
-                                                           double dy,
-                                                           int nz,
-                                                           double zmin,
-                                                           double dz,
-                                                           BFMapType::enum_type type,
-                                                           double scaleFactor,
-                                                           BFInterpolationStyle interpStyle) {
-        // If there already was another Map with the same key, then it is a hard error.
-        if (!mapKeys_.insert(key).second) {
-            throw cet::exception("GEOM")
-                << "Trying to add a new magnetic field when the named field map already exists: "
-                << key << "\n";
-        }
+  BFieldManager::BFieldManager(MapContainerType const& innerMaps,
+                               MapContainerType const& outerMaps):
+    innerMaps_(innerMaps),outerMaps_(outerMaps) {
+    cm_.setMaps(innerMaps, outerMaps);
 
-        // Add an empty BFMap.
-        auto new_map = std::make_shared<BFGridMap>(key, nx, xmin, dx, ny, ymin, dy, nz, zmin, dz,
-                                                   type, scaleFactor, interpStyle);
-        mapContainer->push_back(new_map);
-
-        return new_map;
-    }
-
-    // Create a new BFGridMap in the container of BFMaps.
-    std::shared_ptr<BFParamMap> BFieldManager::addBFParamMap(MapContainerType* mapContainer,
-                                                             const std::string& key,
-                                                             double xmin,
-                                                             double xmax,
-                                                             double ymin,
-                                                             double ymax,
-                                                             double zmin,
-                                                             double zmax,
-                                                             BFMapType::enum_type type,
-                                                             double scaleFactor) {
-        // If there already was another Map with the same key, then it is a hard error.
-        if (!mapKeys_.insert(key).second) {
-            throw cet::exception("GEOM")
-                << "Trying to add a new magnetic field when the named field map already exists: "
-                << key << "\n";
-        }
-
-        // Add an empty BFMap.
-        auto new_map = std::make_shared<BFParamMap>(key, xmin, xmax, ymin, ymax, zmin, zmax, type,
-                                                    scaleFactor);
-        mapContainer->push_back(new_map);
-
-        return new_map;
-    }
-
+  }
     void BFieldManager::print(ostream& out) const {
         out << "================ BFieldManager: innerMaps ================\n";
         for (auto i = innerMaps_.begin(); i != innerMaps_.end(); ++i) {

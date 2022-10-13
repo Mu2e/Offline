@@ -77,9 +77,6 @@ namespace mu2e {
             return _field.isValid(ipoint.ix, ipoint.iy, ipoint.iz);
         }
 
-        // Some extra checks for GMC format maps.
-        bool isGMCValid(CLHEP::Hep3Vector const& point) const;
-
         int nx() const { return _nx; }
         int ny() const { return _ny; }
         int nz() const { return _nz; }
@@ -121,8 +118,7 @@ namespace mu2e {
         // Flag to flip Y component for maps that assume XZ-plane symmetry.
         bool _flipy = true;
 
-        // Choose between meco style quadratic interpolation and G4bl style linear, or others
-        // yet to be defined.
+        // method for interpolation between field grid points
         BFInterpolationStyle _interpStyle;
 
         // Functions used internally and by the code that populates the maps.
@@ -145,7 +141,7 @@ namespace mu2e {
         std::size_t iZ(double z) const { return static_cast<int>((z - _zmin) / _dz + 0.5); }
 
         bool interpolateTriLinear(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
-        bool interpolateQuadratic(const CLHEP::Hep3Vector&, CLHEP::Hep3Vector&) const;
+
     };
 
     inline BFGridMap::GridPoint BFGridMap::point2grid(const CLHEP::Hep3Vector& pos) const {

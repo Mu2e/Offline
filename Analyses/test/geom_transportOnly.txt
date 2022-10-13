@@ -8,7 +8,7 @@
 string g4.physicsListName = "Minimal";
 
 // Choose BField interpolation method (no longer needed, only to be sure that the desired interpolation method is used)
-string bfield.interpolationStyle = trilinear; //meco;
+string bfield.interpolationStyle = trilinear;
 
 //
 // This tells emacs to view this file in c++ mode.
