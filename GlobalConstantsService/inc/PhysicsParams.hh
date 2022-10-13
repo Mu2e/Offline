@@ -74,8 +74,7 @@ namespace mu2e
     }
 
     double   getEb            (targetMat material = "") const {
-      const std::string allowedMaterial = checkMaterial( material );
-      return _bindingEnergy.find(allowedMaterial)->second;
+      return doubleOrThrow(_bindingEnergy,material,"BindingEnergy");
     }
 
     double   getMuonEnergy    (targetMat material = "") const {
