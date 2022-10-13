@@ -18,13 +18,10 @@ vector<int> physicsParams.freeLifePDGId = { 211, 312 };
 // in Mu2e units (ns), per PDG 2013 partial update
 vector<double> physicsParams.freeLifetime =  { 26.033, 12.38 };
 
-// parameters for RMC spectrum shape
-double physicsParams.RMCbindingEnergyFit = 0.464;
-double physicsParams.RMCrecoilEnergyFit  = 0.220;
-double physicsParams.RMCdeltaMassFit     = 3.121;
-
 // Available stopping target materials
 vector<string> physicsParams.stoppingTargets = {"Al","Ti","Cu","Se","Sb","Au","C","IPA"};
+
+// the first set of target material info is coded as required for each material
 
 // Atomic information
 // - Times in ns - Phys. Rev. C 35, 2212 (1987)
@@ -69,13 +66,6 @@ double physicsParams.Au.atomicMass     = 196.96657; // NIST value as of ""
 double physicsParams.C.atomicMass      = 12.0107; // NIST value as of ""
 double physicsParams.IPA.atomicMass    = 12.0107; // NIST value as of ""
 
-// Energy info (rel. for DIOs/CEs)
-// - m_muon - E_binding
-double physicsParams.Al.muonEnergy     = 105.194; // Phys. Rev. D 84, 013006 (2011)
-double physicsParams.Ti.muonEnergy     = 104.394; // ""
-double physicsParams.C.muonEnergy      = 105.059;  //From Julian Heeck et al
-double physicsParams.IPA.muonEnergy    = 105.059; //From Julian Heeck et al
-
 // Czarnecki coefficients - Phys. Rev. D 84, 013006 (2011)
 // - Poly. 5 approximation
 double physicsParams.Al.czarneckiCoefficient = 8.98e-17;
@@ -87,6 +77,15 @@ double physicsParams.Au.czarneckiCoefficient = 4.69e-15;
 double physicsParams.C.czarneckiCoefficient  =  3.55e-18; //From Julian Heeck et al
 double physicsParams.IPA.czarneckiCoefficient  =  3.55e-18;  //From Julian Heeck et al
 
+// the following target material info is coded as optional for a material
+
+// Energy info (rel. for DIOs/CEs)
+// - m_muon - E_binding
+double physicsParams.Al.muonEnergy     = 105.194; // Phys. Rev. D 84, 013006 (2011)
+double physicsParams.Ti.muonEnergy     = 104.394; // ""
+double physicsParams.C.muonEnergy      = 105.059;  //From Julian Heeck et al
+double physicsParams.IPA.muonEnergy    = 105.059; //From Julian Heeck et al
+
 // - Poly. 5-8 approximation
 vector<double> physicsParams.Al.czarneckiCoefficients =
   {
@@ -96,6 +95,24 @@ vector<double> physicsParams.Ti.czarneckiCoefficients =
   {
     4.44278e-16, 9.06648e-17, -4.26245e-18, 8.19300e-19
   };
+
+// Capture product emission rates
+double physicsParams.Al.capture.protonRate = 0.05;
+double physicsParams.Al.capture.deuteronRate = 0.025;
+double physicsParams.Al.capture.neutronRate = 1.2;
+double physicsParams.Al.capture.photonRate = 2.0;
+double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
+double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
+
+//Ce+ endpoint energy
+double physicsParams.Al.ePlusEndpointEnergy = 92.32;
+
+// parameters for RMC spectrum shape
+double physicsParams.Al.RMCbindingEnergyFit = 0.464;
+double physicsParams.Al.RMCrecoilEnergyFit  = 0.220;
+double physicsParams.Al.RMCdeltaMassFit     = 3.121;
+
+
 
 // Shanker interpolation coefficients - Phys. Rev. D 25, 1847 (1982)
 // - The Shanker formula includes one D, E and F coefficient for a
@@ -115,16 +132,6 @@ vector<double> physicsParams.shankerFcoefficients =
     -6.7013, 1.9329, -0.165584, 5.41126e-3
   };
 
-// Capture product emission rates
-double physicsParams.Al.capture.protonRate = 0.05;
-double physicsParams.Al.capture.deuteronRate = 0.025;
-double physicsParams.Al.capture.neutronRate = 1.2;
-double physicsParams.Al.capture.photonRate = 2.0;
-double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
-double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
-
-//Ce+ endpoint energy
-double physicsParams.Al.ePlusEndpointEnergy = 92.32;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
