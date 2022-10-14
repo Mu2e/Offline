@@ -27,11 +27,10 @@ namespace mu2e {
       using EXING = KinKal::ElementXing<KTRAJ>;
       using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using CA = KinKal::ClosestApproach<KTRAJ,Line>;
-      using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
       using KKSTRAWHIT = KKStrawHit<KTRAJ>;
       using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
       // construct without an associated StrawHit
-      KKStrawXing(PTCA const& ptca, KKStrawMaterial const& smat, StrawId sid);
+      KKStrawXing(PCA const& ptca, KKStrawMaterial const& smat, StrawId sid);
       // construct with an associated StrawHit
       KKStrawXing(KKSTRAWHITPTR const& strawhit, KKStrawMaterial const& smat);
       virtual ~KKStrawXing() {}
@@ -42,22 +41,22 @@ namespace mu2e {
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
       // offset time WRT TOCA to avoid exact overlapp with the wire hit.  Note: the offset must be POSITIVE to insure
       // Xing is updated after the associated hit
-      double time() const override { return tpca_.particleToca() + toff_; }
+      double time() const override { return ca_.particleToca() + toff_; }
       double transitTime() const override; // time to cross this element
-      KTRAJ const& referenceTrajectory() const override { return tpca_.particleTraj(); }
+      KTRAJ const& referenceTrajectory() const override { return ca_.particleTraj(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // accessors
-      auto const& closestApproach() const { return tpca_; }
+      auto const& closestApproach() const { return ca_; }
       auto const& strawMaterial() const { return smat_; }
       auto const& config() const { return sxconfig_; }
-      auto precision() const { return tpca_.precision(); }
+      auto precision() const { return ca_.precision(); }
       auto const& strawId() const { return sid_; }
     private:
       StrawId sid_; // StrawId
       KKSTRAWHITPTR shptr_; // reference to associated StrawHit
       Line axis_; // straw axis, expressed as a timeline
       KKStrawMaterial const& smat_;
-      CA tpca_; // result of most recent TPOCA
+      CA ca_; // result of most recent TPOCA
       double toff_; // small time offset
       StrawXingUpdater sxconfig_; // note this must come from an updater during processing
       std::vector<MaterialXing> mxings_;
@@ -69,7 +68,7 @@ namespace mu2e {
     sid_(sid),
     axis_(pca.sensorTraj()),
     smat_(smat),
-    tpca_(pca.localTraj(),axis_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()),
+    ca_(pca.localTraj(),axis_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()),
     toff_(smat.wireRadius()/pca.particleTraj().speed(pca.particleToca())), // locate the effect to 1 side of the wire to avoid overlap with hits
     varscale_(1.0)
   {}
@@ -79,14 +78,18 @@ namespace mu2e {
     shptr_(strawhit),
     axis_(strawhit->closestApproach().sensorTraj()),
     smat_(smat),
-    tpca_(strawhit->closestApproach().particleTraj(),axis_,strawhit->closestApproach().hint(),strawhit->closestApproach().precision()),
+    ca_(strawhit->closestApproach()),
     toff_(smat.wireRadius()/strawhit->closestApproach().particleTraj().speed(strawhit->closestApproach().particleToca()))
   {}
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
-    CAHint tphint = tpca_.usable() ?  tpca_.hint() : CAHint(axis_.range().mid(),axis_.range().mid());
-    tpca_ = CA(ktrajptr,axis_,tphint,precision());
-    if(!tpca_.usable())throw cet::exception("RECO")<<"mu2e::KKStrawXing: TPOCA failure" << std::endl;
+    if(shptr_){
+     ca_ = shptr_->closestApproach();
+    } else {
+      CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.range().mid(),axis_.range().mid());
+      ca_ = CA(ktrajptr,axis_,tphint,precision());
+      if(!ca_.usable())throw cet::exception("RECO")<<"mu2e::KKStrawXing: TPOCA failure" << std::endl;
+    }
  }
 
   template <class KTRAJ> Parameters KKStrawXing<KTRAJ>::parameters(TimeDir tdir) const {
@@ -110,9 +113,18 @@ namespace mu2e {
         sxconfig_.hitstate_ = WireHitState::inactive;
       if(sxconfig_.scalevar_)
         varscale_ = miconfig.varianceScale();
+      else
+        varscale_ = 1.0;
+      // find the material xings from gas, straw wall, and wire
+      auto cad = ca_.tpData();
+      if(shptr_ && shptr_->hitState().active()){
+        // if we have an associated hit, overwrite the DOCA and DOCAVAR using the drift info, which is much more accurate
+        auto dinfo = shptr_->fillDriftInfo(false);
+        cad.doca_ = dinfo.driftDistance_;
+        cad.docavar_ = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
+      }
+      smat_.findXings(cad,sxconfig_,mxings_);
     }
-    // find the material xings from gas, straw wall, and wire
-    smat_.findXings(tpca_.tpData(),sxconfig_,mxings_);
     // reset
     fparams_ = Parameters();
     if(mxings_.size() > 0){
@@ -142,7 +154,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> double KKStrawXing<KTRAJ>::transitTime() const {
-    return smat_.transitLength(tpca_.tpData())/tpca_.particleTraj().speed(tpca_.particleToca());
+    return smat_.transitLength(ca_.tpData())/ca_.particleTraj().speed(ca_.particleToca());
   }
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::print(std::ostream& ost,int detail) const {

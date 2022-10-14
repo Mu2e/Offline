@@ -111,6 +111,7 @@ namespace mu2e {
       // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions FIXME!
       double caloPosRes_; // calo cluster transverse position resolution; should come from proditions or CaloCluster FIXME!
+      double caloTimeRes_; // calo cluster time resolution; should come from proditions or CaloCluster FIXME!
       double caloPropSpeed_; // effective light propagation speed in a crystal (including reflections).  Should come from prodtions FIXME
       double minCaloEnergy_; // minimum CaloCluster energy
       double maxCaloDt_; // maximum track-calo time difference
@@ -137,6 +138,7 @@ namespace mu2e {
     shclusterer_(StrawIdMask(fitconfig.strawHitClusterLevel()),fitconfig.strawHitClusterDeltaStraw(),fitconfig.strawHitClusterDeltaT()),
     caloDt_(fitconfig.caloDt()),
     caloPosRes_(fitconfig.caloPosRes()),
+    caloTimeRes_(fitconfig.caloTimeRes()),
     caloPropSpeed_(fitconfig.caloPropSpeed()),
     minCaloEnergy_(fitconfig.minCaloEnergy()),
     maxCaloDt_(fitconfig.maxCaloDt()),
@@ -205,7 +207,8 @@ namespace mu2e {
       // check that CA is within the active volume of the calorimeter
       double dz = pca.sensorPoca().Z() - caxis.position3(caxis.t0()).Z();
       if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
-        double tvar = cluster->timeErr()*cluster->timeErr();
+//        double tvar = cluster->timeErr()*cluster->timeErr(); the returned value seems unphysically smalL, ~70 ps.
+        double tvar = caloTimeRes_*caloTimeRes_; // temporary kludge, this number comes from MDC2020 sim studies.  FIXME
         double wvar = caloPosRes_*caloPosRes_;
         hits.push_back(std::make_shared<KKCALOHIT>(cluster,pca,tvar,wvar));
         retval = true;
@@ -373,7 +376,8 @@ namespace mu2e {
           double dz = pca.sensorPoca().Z() - caxis.position3(caxis.t0()).Z();
           if( dz > -caxis.length() -maxCaloDoca_ && dz < maxCaloDoca_) {
             art::Ptr<CaloCluster> ccPtr = art::Ptr<CaloCluster>(cchandle,icc);
-            double tvar = cc.timeErr()*cc.timeErr();
+//            double tvar = cc.timeErr()*cc.timeErr();
+            double tvar = caloTimeRes_*caloTimeRes_;
             double wvar = caloPosRes_*caloPosRes_;
             chitptr = std::make_shared<KKCALOHIT>(ccPtr,pca,tvar,wvar);
             edep = cc.energyDep();

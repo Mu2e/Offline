@@ -96,8 +96,8 @@ namespace mu2e {
     }
     // residual is just delta-T at CA.
     // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
-    double dd2 = tpca_.dirDot()*tpca_.dirDot();
-    double totvar = tvar_ + wvar_*dd2/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
+    double dd2 = std::max(0.0001,tpca_.dirDot()*tpca_.dirDot());
+    double totvar = tvar_ + wvar_/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
     rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,-tpca_.dTdP());
     // finally update the weight
     this->updateWeight(miconfig);

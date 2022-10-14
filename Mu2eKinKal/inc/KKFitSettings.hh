@@ -66,6 +66,7 @@ namespace mu2e {
       fhicl::Atom<std::string> strawHitClusterLevel { Name("StrawHitClusterLevel"), Comment("Level for selecting StrawHitClusters (see StrawIdMask for details") };
       fhicl::Atom<float> caloDt{ Name("CaloTrackerTimeOffset"), Comment("Time offset of calorimeter data WRT tracker (ns)") }; // this should come from the database FIXME
       fhicl::Atom<float> caloPosRes{ Name("CaloPositionResolution"), Comment("Transverse resolution of CaloCluster position (mm)") }; // this should come from the CaloCluster FIXME!
+      fhicl::Atom<float> caloTimeRes{ Name("CaloTimeResolution"), Comment("Effective resolution of CaloCluster time (ns)") }; // this should come from the CaloCluster FIXME!
       fhicl::Atom<float> caloPropSpeed{ Name("CaloPropagationSpeed"), Comment("Axial speed of light in a crystal (mm/ns)") }; // see doc 25320.  this should come from the CaloCluster FIXME!
       fhicl::Atom<float> minCaloEnergy{ Name("MinCaloClusterEnergy"), Comment("Minimum CaloCluster energy to use as a KKCaloHit (MeV)") };
       fhicl::Atom<float> maxCaloDt{ Name("MaxCaloClusterDt"), Comment("Maximum CaloCluster time - track extrapolation time (ns)") };

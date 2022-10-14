@@ -87,8 +87,6 @@ physics.producers.KKDeMDriftFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMDriftFit.ModuleSettings.SaveAllFits : true
 physics.producers.KKDeMDriftFit.KinKalFitSettings.PrintLevel : 0
 
-services.TFileService.fileName: "KKDrift.root"
-#
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.candidate.options.fillBestCrv : false
 physics.analyzers.TAKK.diagLevel : 2
