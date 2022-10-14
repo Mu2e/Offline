@@ -98,7 +98,6 @@ namespace mu2e {
     fhicl::Sequence<std::string> helixFlags { Name("HelixFlags"), Comment("Flags required to be present to convert a helix seed to a KinKal track") };
     fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level"), 0 };
     fhicl::Sequence<float> seederrors { Name("SeedErrors"), Comment("Initial value of seed parameter errors (rms, various units)") };
-    fhicl::Atom<bool> extend { Name("Extend"), Comment("Extend fit with hits and materials found after initial fit"),false };
     fhicl::Atom<bool> saveAll { Name("SaveAllFits"), Comment("Save all fits, whether they suceed or not"),false };
     fhicl::Atom<bool> saveFull { Name("SaveFullFit"), Comment("Save all helix segments associated with the fit"), false};
     fhicl::Sequence<float> zsave { Name("ZSavePositions"), Comment("Z positions to sample and save the fit result helices"), std::vector<float>()};
@@ -132,7 +131,7 @@ namespace mu2e {
       art::ProductToken<CaloClusterCollection> cccol_T_;
       art::ProductToken<StrawHitFlagCollection> shfcol_T_;
       TrkFitFlag goodhelix_;
-      bool extend_, saveall_, savefull_;
+      bool saveall_, savefull_;
       std::vector<float> zsave_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
@@ -154,7 +153,6 @@ namespace mu2e {
     cccol_T_(mayConsume<CaloClusterCollection>(settings().modSettings().caloClusterCollection())),
     shfcol_T_(mayConsume<StrawHitFlagCollection>(settings().modSettings().strawHitFlagCollection())),
     goodhelix_(settings().modSettings().helixFlags()),
-    extend_(settings().modSettings().extend()),
     saveall_(settings().modSettings().saveAll()),
     savefull_(settings().modSettings().saveFull()),
     zsave_(settings().modSettings().zsave()),
@@ -253,7 +251,8 @@ namespace mu2e {
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,kkfit_.fitParticle(),kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
           // Check the fit
           auto goodfit = goodFit(*kktrk);
-          if(goodfit && extend_) {
+          // if we have an extension schedule, extend.
+          if(goodfit && exconfig_.schedule().size() > 0) {
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
             goodfit = goodFit(*kktrk);
           }

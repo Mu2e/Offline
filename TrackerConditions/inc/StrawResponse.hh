@@ -161,6 +161,9 @@ namespace mu2e {
       inline double ionizationEnergy(double q) const { return _strawPhysics->ionizationEnergy(q); }
 
       double wpRes(double kedep, double wdist) const;
+
+      // access raw drift information
+      auto const& strawDrift() const { return *_strawDrift; }
     private:
 
       // helper functions

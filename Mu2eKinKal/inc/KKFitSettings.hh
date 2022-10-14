@@ -12,10 +12,10 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 // updaters
-#include "Offline/Mu2eKinKal/inc/CAStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CADSHU.hh"
+#include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
+#include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
+#include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
@@ -39,14 +39,14 @@ namespace mu2e {
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
-      using CAStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,std::string,int>>;
-      CAStrawHitUpdaterSettings cashuConfig{ Name("CAStrawHitUpdaterSettings"), Comment(CAStrawHitUpdater::configDescription()) };
-      using ANNStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,int>>;
-      ANNStrawHitUpdaterSettings annshuConfig{ Name("ANNStrawHitUpdaterSettings"), Comment(ANNStrawHitUpdater::configDescription()) };
-      using BkgStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
-      BkgStrawHitUpdaterSettings bkgshuConfig{ Name("BkgStrawHitUpdaterSettings"), Comment(BkgStrawHitUpdater::configDescription()) };
-      using CombinatoricStrawHitUpdaterSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,std::string,std::string,bool,int>>;
-      CombinatoricStrawHitUpdaterSettings chuConfig{ Name("CombinatoricStrawHitUpdaterSettings"), Comment(CombinatoricStrawHitUpdater::configDescription()) };
+      using CADSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,int>>;
+      CADSHUSettings cashuConfig{ Name("CADSHUSettings"), Comment(CADSHU::configDescription()) };
+      using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,std::string,int>>;
+      DriftANNSHUSettings annshuConfig{ Name("DriftANNSHUSettings"), Comment(DriftANNSHU::configDescription()) };
+      using BkgANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
+      BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
+      using Chi2SHUSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,std::string,std::string,std::string,int>>;
+      Chi2SHUSettings combishuConfig{ Name("Chi2SHUSettings"), Comment(Chi2SHU::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
@@ -66,6 +66,7 @@ namespace mu2e {
       fhicl::Atom<std::string> strawHitClusterLevel { Name("StrawHitClusterLevel"), Comment("Level for selecting StrawHitClusters (see StrawIdMask for details") };
       fhicl::Atom<float> caloDt{ Name("CaloTrackerTimeOffset"), Comment("Time offset of calorimeter data WRT tracker (ns)") }; // this should come from the database FIXME
       fhicl::Atom<float> caloPosRes{ Name("CaloPositionResolution"), Comment("Transverse resolution of CaloCluster position (mm)") }; // this should come from the CaloCluster FIXME!
+      fhicl::Atom<float> caloTimeRes{ Name("CaloTimeResolution"), Comment("Effective resolution of CaloCluster time (ns)") }; // this should come from the CaloCluster FIXME!
       fhicl::Atom<float> caloPropSpeed{ Name("CaloPropagationSpeed"), Comment("Axial speed of light in a crystal (mm/ns)") }; // see doc 25320.  this should come from the CaloCluster FIXME!
       fhicl::Atom<float> minCaloEnergy{ Name("MinCaloClusterEnergy"), Comment("Minimum CaloCluster energy to use as a KKCaloHit (MeV)") };
       fhicl::Atom<float> maxCaloDt{ Name("MaxCaloClusterDt"), Comment("Maximum CaloCluster time - track extrapolation time (ns)") };

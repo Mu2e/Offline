@@ -1,6 +1,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/GeneralUtilities/inc/splitLine.hh"
 #include <iostream>
 
 namespace mu2e {
@@ -21,53 +22,55 @@ namespace mu2e {
       config.bfcorr_ = fitconfig.bfieldCorr();
       config.ends_ = fitconfig.ends();
       config.tol_ = fitconfig.btol();
-      // set the schedule for the meta-iterations
-      std::vector<int> shualg;
-      for(auto const& misetting : fitconfig.miConfig()) {
-        MetaIterConfig mconfig(std::get<0>(misetting));
-        config.schedule_.push_back(mconfig);
-        auto alg = StrawHitUpdaters::algo(std::get<1>(misetting));
-        if(alg == StrawHitUpdaters::unknown)
-          throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << std::get<1>(misetting) << std::endl;
-        shualg.push_back(static_cast<int>(alg));
-      }
       // create the updaters requested
-      unsigned nptca, nnull, nann, nbkg, ncomb, nnone;
-      nptca = nnull = nann = nbkg = ncomb = nnone= 0; // count how many updater configs have been seen
-      std::vector<CAStrawHitUpdater::CASHUConfig> cashusettings;
-      std::vector<ANNStrawHitUpdater::ANNSHUConfig> annshusettings;
-      std::vector<BkgStrawHitUpdater::BkgSHUConfig> bkgshusettings;
-      std::vector<CombinatoricStrawHitUpdater::CSHUConfig> chusettings;
+      std::vector<CADSHU::Config> cadshusettings;
+      std::vector<DriftANNSHU::Config> driftannshusettings;
+      std::vector<BkgANNSHU::Config> bkgannshusettings;
+      std::vector<Chi2SHU::Config> chi2shusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
-      cashusettings = fitconfig.cashuConfig().value_or(cashusettings);
-      annshusettings = fitconfig.annshuConfig().value_or(annshusettings);
-      bkgshusettings = fitconfig.bkgshuConfig().value_or(bkgshusettings);
-      chusettings = fitconfig.chuConfig().value_or(chusettings);
+      cadshusettings = fitconfig.cashuConfig().value_or(cadshusettings);
+      driftannshusettings = fitconfig.annshuConfig().value_or(driftannshusettings);
+      bkgannshusettings = fitconfig.bkgshuConfig().value_or(bkgannshusettings);
+      chi2shusettings = fitconfig.combishuConfig().value_or(chi2shusettings);
+      // straw material updater must always be here
       auto const& sxusettings = fitconfig.sxuConfig();
-      if(config.schedule_.size() != sxusettings.size())
-        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of KKStrawXing updaters" <<  std::endl;
-      for( size_t imeta=0; imeta < config.schedule_.size(); ++imeta) {
-        auto alg = shualg[imeta];
-        auto& miconfig = config.schedule_[imeta];
-        if(alg == StrawHitUpdaters::CA) {
-          miconfig.addUpdater(std::any(CAStrawHitUpdater(cashusettings.at(nptca++))));
-        } else if(alg == StrawHitUpdaters::ANN) {
-          miconfig.addUpdater(std::any(ANNStrawHitUpdater(annshusettings.at(nann++))));
-        } else if(alg == StrawHitUpdaters::Bkg) {
-          miconfig.addUpdater(std::any(BkgStrawHitUpdater(bkgshusettings.at(nbkg++))));
-        } else if(alg == StrawHitUpdaters::Combinatoric) {
-          miconfig.addUpdater(std::any(CombinatoricStrawHitUpdater(chusettings.at(ncomb++))));
-        } else if(alg == StrawHitUpdaters::none) {
-          ++nnone;
-        } else {
-          throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << alg << std::endl;
+      // set the schedule for the meta-iterations
+      unsigned ncashu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0);
+      for(auto const& misetting : fitconfig.miConfig()) {
+        MetaIterConfig miconfig(std::get<0>(misetting));
+        // parse StrawHit updaters, and add to the config of this meta-iteraion
+        std::vector<std::string> anames;
+        splitLine( std::get<1>(misetting), ":", anames);
+        for(auto const& aname : anames) {
+          auto alg = StrawHitUpdaters::algo(aname);
+          if(alg == StrawHitUpdaters::CAD) {
+            miconfig.addUpdater(std::any(CADSHU(cadshusettings.at(ncashu++))));
+          } else if(alg == StrawHitUpdaters::DriftANN) {
+            miconfig.addUpdater(std::any(DriftANNSHU(driftannshusettings.at(nann++))));
+          } else if(alg == StrawHitUpdaters::BkgANN) {
+            miconfig.addUpdater(std::any(BkgANNSHU(bkgannshusettings.at(nbkg++))));
+          } else if(alg == StrawHitUpdaters::Chi2) {
+            miconfig.addUpdater(std::any(Chi2SHU(chi2shusettings.at(ncomb++))));
+          } else if(alg == StrawHitUpdaters::none) {
+            ++nnone;
+          } else {
+            throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown StrawHitUpdater " << alg << std::endl;
+          }
         }
-        //StrawXing updater too; these must always be present
-        miconfig.addUpdater(std::any(StrawXingUpdater(sxusettings.at(imeta))));
+        // pad straw xing updaters if necessary
+        miconfig.addUpdater(std::any(StrawXingUpdater(sxusettings.at(nsxu))));
+        if(sxusettings.size()> nsxu+1)nsxu++;
+        config.schedule_.push_back(miconfig);
       }
-      // consistency test
-      if(config.schedule_.size() != nptca+nnull+nann+nbkg+ncomb+nnone)
-        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent StrawHitUpdater config "<< std::endl;
+      // consistency checks
+      if(cadshusettings.size() != ncashu)
+        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of CA StrawHit updaters" <<  std::endl;
+      if(driftannshusettings.size() != nann)
+        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of ANN StrawHit updaters" <<  std::endl;
+      if(bkgannshusettings.size() != nbkg)
+        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of Bkg StrawHit updaters" <<  std::endl;
+      if(chi2shusettings.size() != ncomb)
+        throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of Combi StrawHit updaters" <<  std::endl;
       return config;
     }
   }
