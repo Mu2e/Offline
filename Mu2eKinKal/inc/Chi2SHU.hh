@@ -1,7 +1,7 @@
-#ifndef Mu2eKinKal_CombinatoricStrawHitUpdater_hh
-#define Mu2eKinKal_CombinatoricStrawHitUpdater_hh
+#ifndef Mu2eKinKal_Chi2SHU_hh
+#define Mu2eKinKal_Chi2SHU_hh
 //
-//  StrawHitCluster updating using an exhaustive combinatoric algorithm, following the BTrk PanelAmbigResolver algorithm
+// Coherently update a cluster of StrawHits by minimizing the chisquared of every possible hit state combination through exhaustive search
 //
 #include "KinKal/General/Chisq.hh"
 #include "KinKal/Fit/MetaIterConfig.hh"
@@ -30,9 +30,9 @@ namespace mu2e {
   };
   using ClusterStateCOL = std::vector<ClusterState>;
 
-  class CombinatoricStrawHitUpdater {
+  class Chi2SHU {
     public:
-      using CSHUConfig = std::tuple<unsigned,float,float,float,float,std::string,std::string,bool,int>;
+      using Config = std::tuple<unsigned,float,float,float,float,std::string,std::string,std::string,int>;
       static std::string const& configDescription(); // description of the variables
       // struct to sort hit states by chisquared value
       struct ClusterStateComp {
@@ -40,13 +40,8 @@ namespace mu2e {
           return a.chi2_.chisqPerNDOF() < b.chi2_.chisqPerNDOF();
         }
       };
-      CombinatoricStrawHitUpdater(CSHUConfig const& cshuconfig);
+      Chi2SHU(Config const& config);
       ClusterState selectBest(ClusterStateCOL& cscores) const; // find the best cluster configuration given the score for each
-      auto inactivePenalty() const { return inactivep_;}
-      auto nullPenalty() const { return nullp_;}
-      auto const& allowed() const { return allowed_; }
-      auto minDeltaChi2() const { return mindchi2_; }
-      auto nullDOCA() const { return nulldoca_; }
       // the work is done here
       template <class KTRAJ> void updateCluster(KKStrawHitCluster<KTRAJ>& cluster,KinKal::MetaIterConfig const& miconfig) const;
     private:
@@ -54,11 +49,11 @@ namespace mu2e {
       double inactivep_ =0; // chisquared penalty for inactive hits
       double nullp_ =0; // chisquared penalty for null hits
       double mindchi2_ =0; // minimum chisquared separation to consider 'significant'
-      double nulldoca_ =0; // DOCA used to set null hit variance
+      double nulldvar_ =0; // null hit variance
+      WHSCOL allowed_; // states to allow
       WHSMask freeze_; // states to freeze
-      bool unfreeze_ =false; // ignore freeze state on input
+      WHSMask unfreeze_; // states to unfreeze
       int diag_ =0; // diag print level
-      WHSCOL allowed_; // allowed states
   };
   std::ostream& operator <<(std::ostream& os, ClusterState const& cscore );
 }

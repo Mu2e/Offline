@@ -29,7 +29,7 @@ namespace mu2e {
         DriftInfo const& dinfo, WireHitState const& whs) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(chit.flag()),
-      _ambig(whs.state_), _algo(whs.algo_), _frozen(whs.frozen_),
+      _ambig(whs.state_), _algo(whs.algo_), _frozen(whs.frozen_), _quality(whs.quality_),
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()),_werr(chit.wireRes()), _tottdrift(chit.driftTime()),
       _ptoca(rptca.particleToca()),_stoca(rptca.sensorToca()),
       _rdoca(rptca.doca()),_rdocavar(rptca.docaVar()),
@@ -109,6 +109,7 @@ namespace mu2e {
     Int_t           _ambig =0;   // hit state, including LR ambiguity
     Int_t           _algo =0;     // hit updater algorithm
     Bool_t          _frozen =0; // hit state was frozen
+    Float_t         _quality =0; // hit state assignment quality
     Float_t         _edep =0;        // reco energy deposition
     Float_t         _htime =0;   // raw hit time
     Float_t         _wdist =0;       // raw hit U position

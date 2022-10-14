@@ -61,18 +61,12 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
+physics.producers.KKDeMSeedFit.Mu2eSettings.UseCaloCluster : true
 services.ProditionsService.strawResponse.useOldDrift: false
 services.ProditionsService.strawResponse.driftFit : [0.0,1.0,0.001]
 services.ProditionsService.strawResponse.driftResIsTime : false
 services.ProditionsService.strawResponse.driftResBins : [0.0, 2.5]
-services.ProditionsService.strawResponse.driftRes : [0.13, 0.13]
-
-physics.producers.KKDeMSeedFit.Mu2eSettings.UseCaloCluster : false
-services.ProditionsService.strawResponse.useOldDrift: false
-services.ProditionsService.strawResponse.driftFit : [0.0,1.0,0.001]
-services.ProditionsService.strawResponse.driftResIsTime : false
-services.ProditionsService.strawResponse.driftResBins : [0.0, 2.5]
-services.ProditionsService.strawResponse.driftRes : [0.13, 0.13]
+services.ProditionsService.strawResponse.driftRes : [0.2,0.2]
 
 #include "Production/JobConfig/reco/epilog.fcl"
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
@@ -88,7 +82,6 @@ physics.producers.KKDeMSeedFit.ModuleSettings.CaloClusterCollection : "CaloClust
 physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMSeedFit.ModuleSettings.SaveAllFits : true
-physics.producers.KKDeMSeedFit.ModuleSettings.Extend : true
 
 
 services.TFileService.fileName: "KKSeed.root"

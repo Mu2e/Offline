@@ -7,9 +7,8 @@
 #include "KinKal/Detector/Hit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/CSHU_updateCluster.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
+#include "Offline/Mu2eKinKal/inc/Chi2SHU_updateCluster.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "cetlib_except/exception.h"
 #include <vector>
@@ -119,8 +118,9 @@ namespace mu2e {
   }
 
   template<class KTRAJ> double KKStrawHitCluster<KTRAJ>::time() const {
-    // return time just past the last hit's time.  This insures hit clusters are updated before individual hits
-    // This is important as the cluster only updates the hit state, not its residuals (which is done in the hit)
+    // return time just before the first hit's time.  This insures hit clusters are updated before individual hits
+    // This insures the weights subtracted correspond to the reference fit, and that any changes made to the
+    // hits in the cluster get propagated to the residuals and weights before the next fit
     double mintime(std::numeric_limits<float>::max());
     for(auto const& hit : hits_){
       mintime = std::min(hit->time(),mintime);
@@ -145,7 +145,7 @@ namespace mu2e {
     if(first){
       // look for an updater; if it's there, update the state
       // Extend this logic if new StrawHitCluster updaters are introduced
-      auto cshu = miconfig.findUpdater<CombinatoricStrawHitUpdater>();
+      auto cshu = miconfig.findUpdater<Chi2SHU>();
       if(cshu != 0){
         cshu->updateCluster<KTRAJ>(*this,miconfig);
       }

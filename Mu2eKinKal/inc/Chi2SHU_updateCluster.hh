@@ -1,13 +1,13 @@
 //
-//  Implementation of the hit updater function for CombinatoricStrawHitUpdater
+//  Implementation of the hit updater function for Chi2SHU
 //
-#ifndef Mu2eKinKal_CSHU_updateCluster_hh
-#define Mu2eKinKal_CSHU_updateCluster_hh
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#ifndef Mu2eKinKal_Chi2SHU_updateCluster_hh
+#define Mu2eKinKal_Chi2SHU_updateCluster_hh
+#include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 namespace mu2e {
-  template<class KTRAJ> void CombinatoricStrawHitUpdater::updateCluster(
+  template<class KTRAJ> void Chi2SHU::updateCluster(
       KKStrawHitCluster<KTRAJ>& shcluster,
       KinKal::MetaIterConfig const& miconfig) const {
     using KKSTRAWHITCLUSTER = KKStrawHitCluster<KTRAJ>;
@@ -18,15 +18,15 @@ namespace mu2e {
     SHCOL hits;
     hits.reserve(shcluster.strawHits().size());
     for(auto& shptr : shcluster.strawHits()){
-      if(shptr->active() && (unfreeze_ || !shptr->hitState().frozen())) hits.push_back(shptr);
+      if(shptr->hitState().updateable(StrawHitUpdaters::Chi2) || ( shptr->hitState().usable() && shptr->hitState().isIn(unfreeze_))) hits.push_back(shptr);
     }
     // make sure this cluster meets the requirements for updating
     if(hits.size() < csize_ )return;
     // get the reference weight as starting point for the unbiased weight + parameters
     Weights uweights = Weights(hits.front()->referenceParameters());
-    // subtract the weight of active, unfrozen hits from this reference; this removes the bias of those hits from the reference
+    // subtract the weight of active hits from this reference; this removes their bias from the reference
     for (auto const& sh : hits) {
-      if(sh->active() && (unfreeze_ || !sh->hitState().frozen())) uweights -= sh->weight();
+      if(sh->active()) uweights -= sh->weight();
     }
     // invert to get unbiased parameters
     Parameters uparams = Parameters(uweights);
@@ -39,6 +39,7 @@ namespace mu2e {
     }
     // iterate over allowed states of each hit, and incrementally compute the total chisquared for all the hits in the cluster WRT the unbiased parameters
     WHSIterator whsiter(hits.size(),allowed_);
+    // set the null hit docas: it can't be done in the
     size_t nstates = whsiter.nStates();
     ClusterStateCOL cstates(0);
     cstates.reserve(nstates);
@@ -102,7 +103,8 @@ namespace mu2e {
     auto best = selectBest(cstates);
     // assign the individual hit states according to this, and update their fit info
     for(size_t ihit=0;ihit < hits.size(); ++ihit) {
-      hits[ihit]->setState(best.hitstates_[ihit]);
+      auto& whs = best.hitstates_[ihit];
+      hits[ihit]->setState(whs);
     }
   }
 }

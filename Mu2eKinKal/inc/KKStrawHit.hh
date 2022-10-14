@@ -18,10 +18,10 @@
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
-#include "Offline/Mu2eKinKal/inc/CAStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/ANNStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/BkgStrawHitUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/CombinatoricStrawHitUpdater.hh"
+#include "Offline/Mu2eKinKal/inc/CADSHU.hh"
+#include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
+#include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
+#include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
@@ -76,7 +76,7 @@ namespace mu2e {
       CA unbiasedClosestApproach() const;
       auto updater() const { return whstate_.algo_; }
       void setState(WireHitState const& whstate); // allow cluster updaters to set the state directly
-      DriftInfo fillDriftInfo() const;
+      DriftInfo fillDriftInfo(bool calibrated) const;
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
@@ -119,7 +119,7 @@ namespace mu2e {
     auto const& ca = this->closestApproach();
     auto uparams = HIT::unbiasedParameters();
     KTRAJ utraj(uparams,ca.particleTraj());
-    return CA(utraj,this->wire(),ca.hint(),ca.precision());
+    return CA(utraj,wire_,ca.hint(),ca.precision());
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
@@ -138,33 +138,20 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::updateWHS(MetaIterConfig const& miconfig) {
-    unsigned nupdaters(0);
     // search for updaters that work directly on StrawHits (not StrawHitClusters)
-    auto cashu = miconfig.findUpdater<CAStrawHitUpdater>();
-    auto annshu = miconfig.findUpdater<ANNStrawHitUpdater>();
-    auto bkgshu = miconfig.findUpdater<BkgStrawHitUpdater>();
-    if(cashu || annshu || bkgshu) {
-      CA ca = unbiasedClosestApproach();
-      if(ca.usable()){
-        if(cashu){
-          auto dinfo = fillDriftInfo();
-          whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
-          ++nupdaters;
-        }
-        if(annshu){
-          auto dinfo = fillDriftInfo();
-          whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
-          ++nupdaters;
-        }
-        if(bkgshu){
-          auto dinfo = fillDriftInfo();
-          whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
-          ++nupdaters;
-        }
-        if(nupdaters > 1)throw cet::exception("RECO")<<"mu2e::KKStrawHit: multiple updaters" << std::endl;
-      } else {
-        whstate_.state_ = WireHitState::unusable;
-      }
+    auto cashu = miconfig.findUpdater<CADSHU>();
+    auto annshu = miconfig.findUpdater<DriftANNSHU>();
+    auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
+    CA ca = unbiasedClosestApproach();
+    if(ca.usable()){
+      auto dinfo = fillDriftInfo(false); // update using raw (uncalibrated) drift info, to avoid feedback loop with the calibration
+      // there can be multiple updaters: apply them all
+      if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+      if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
+      if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
+    } else {
+      whstate_.algo_ = StrawHitUpdaters::unknown;
+      whstate_.state_ = WireHitState::unusable;
     }
   }
 
@@ -180,12 +167,19 @@ namespace mu2e {
     whstate_ = whstate;
   }
 
-  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo() const {
+  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo(bool calibrated) const {
     DriftInfo dinfo;
     dinfo.LorentzAngle_ = Mu2eKinKal::LorentzAngle(ca_.tpData(),ca_.particleTraj().bnom().Unit());
-    dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ca_.deltaT(),dinfo.LorentzAngle_);
-    dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_);
-    dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),fabs(dinfo.driftDistance_),dinfo.LorentzAngle_,true);
+    if(calibrated){
+      dinfo.driftDistance_ = sresponse_.driftTimeToDistance(strawId(),ca_.deltaT(),dinfo.LorentzAngle_);
+      dinfo.driftDistanceError_ = sresponse_.driftDistanceError(strawId(),dinfo.driftDistance_,dinfo.LorentzAngle_);
+      dinfo.driftVelocity_ = sresponse_.driftInstantSpeed(strawId(),dinfo.driftDistance_,dinfo.LorentzAngle_,false);
+    } else {
+      dinfo.driftDistance_  = sresponse_.strawDrift().T2D(ca_.deltaT(),dinfo.LorentzAngle_,false);
+      dinfo.driftVelocity_ = sresponse_.strawDrift().GetInstantSpeedFromD(dinfo.driftDistance_);
+      static double terr(2.0); // Just an estimate, this should come from StrawDrift TODO
+      dinfo.driftDistanceError_ =  dinfo.driftVelocity_*terr;
+    }
     return dinfo;
   }
 
@@ -199,7 +193,7 @@ namespace mu2e {
       double dt = ca_.deltaT() - chit_.driftTime();
       resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ca_.dTdP());
       if(whstate.useDrift()){
-        auto dinfo = fillDriftInfo();
+        auto dinfo = fillDriftInfo(true); // calibrated drift info
         double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
         double dr = whstate.lrSign()*dinfo.driftDistance_ - ca_.doca();
         // pca dDdP from KinKal is missing LR sign: patch that here: also sign convention in KinKal on dDdP and dTdP are opposite FIXME
