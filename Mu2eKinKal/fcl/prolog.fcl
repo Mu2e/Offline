@@ -126,11 +126,11 @@ Mu2eKinKal : {
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  6.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ]
+      [ 6.0,  6.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 4.0,  2.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 4.0,  2.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
     ]
 
     BkgANNSHUSettings : [
