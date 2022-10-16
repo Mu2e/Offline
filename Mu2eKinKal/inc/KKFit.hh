@@ -452,10 +452,14 @@ namespace mu2e {
     fseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
       Residual utres, udres;
+      // compute unbiased residuals; this can fail if the track has marginal coverage
       if(kktrk.fitStatus().usable()) {
-        // compute unbiased residuals
-        udres = strawhit->residual(Mu2eKinKal::dresid);
-        if(strawhit->refResidual(Mu2eKinKal::tresid).active()) utres = strawhit->residual(Mu2eKinKal::tresid);
+        try {
+          udres = strawhit->residual(Mu2eKinKal::dresid);
+          utres = strawhit->residual(Mu2eKinKal::tresid);
+        } catch (std::exception const& error) {
+          std::cout << "Unbiased residual calculation failure, nDOF = " << fstatus.chisq_.nDOF();
+        }
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
           strawhit->closestApproach().tpData(),

@@ -37,10 +37,17 @@ namespace mu2e {
     return (end-start)/dt;
   }
   bool KKBField::inRange(VEC3 const& position) const {
+    // clumsy conversion to CLHEP
     CLHEP::Hep3Vector vpoint(position.x(),position.y(),position.z());
     CLHEP::Hep3Vector vpoint_mu2e = det_.toMu2e(vpoint);
-    CLHEP::Hep3Vector field;
-    return bfmgr_.getBFieldWithStatus(vpoint_mu2e,field); // there doesn't seem to be a way to test validity except to ask for the field FIXME
+    bool retval (false);
+    for(auto const& bfmap : bfmgr_.getInnerMaps()){
+      retval |=
+        vpoint_mu2e.x() > bfmap->xmin() && vpoint_mu2e.x() < bfmap->xmax() &&
+        vpoint_mu2e.y() > bfmap->ymin() && vpoint_mu2e.y() < bfmap->ymax() &&
+        vpoint_mu2e.z() > bfmap->zmin() && vpoint_mu2e.z() < bfmap->zmax();
+    }
+    return retval;
   }
 
   void KKBField::print(std::ostream& os) const {
