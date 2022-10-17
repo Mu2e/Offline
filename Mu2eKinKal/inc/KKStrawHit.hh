@@ -191,13 +191,13 @@ namespace mu2e {
       double tdres = chit_.driftTimeRes();
       double tvar = tdres*tdres;
       double dt = ca_.deltaT() - chit_.driftTime();
-      resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ca_.dTdP());
+      resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ca_.dTdP()); // sign convention on dTdP is strange FIXME
       if(whstate.useDrift()){
         auto dinfo = fillDriftInfo(true); // calibrated drift info
         double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
         double dr = whstate.lrSign()*dinfo.driftDistance_ - ca_.doca();
-        // pca dDdP from KinKal is missing LR sign: patch that here: also sign convention in KinKal on dDdP and dTdP are opposite FIXME
-        DVEC dRdP = ca_.lSign()*ca_.dDdP() - whstate.lrSign()*dinfo.driftVelocity_*ca_.dTdP();
+        // pca dDdP from ClosestApproach is missing LR sign: patch that here: FIXME
+        DVEC dRdP = ca_.lSign()*ca_.dDdP();
         resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
       } else {
         // Null state. interpret DOCA against the wire directly as a residual.
