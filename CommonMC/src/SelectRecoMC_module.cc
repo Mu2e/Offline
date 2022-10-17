@@ -61,6 +61,7 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<int>  debug                   { Name("debugLevel"),                     Comment("Debug Level"), 0};
+        fhicl::Atom<bool> trkOnly                 { Name("TrkOnly"), Comment("Ignore cal and crv"), false};
         fhicl::Atom<bool> saveEnergySteps         { Name("SaveEnergySteps"),                  Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
         fhicl::Atom<bool> saveUnused              { Name("SaveUnusedDigiMCs"),                  Comment("Save StrawDigiMCs from particles used in any fit"), true};
         fhicl::Atom<bool> saveAllUnused           { Name("SaveAllUnusedDigiMCs"),                  Comment("Save all StrawDigiMCs from particles used in any fit"), false};
@@ -100,6 +101,7 @@ namespace mu2e {
       void fillCrv           (art::Event& event, PrimaryParticle const& pp, RecoCount& nrec);
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,PrimaryParticle const& pp, RecoCount& nrec);
       int _debug;
+      bool _trkonly;
       bool _saveallenergy, _saveunused, _saveallunused;
       art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
       std::vector<std::string> _kscs, _hscs;
@@ -114,6 +116,7 @@ namespace mu2e {
   SelectRecoMC::SelectRecoMC(const Parameters& config )  :
     art::EDProducer{config},
     _debug(config().debug()),
+    _trkonly(config().trkOnly()),
     _saveallenergy(config().saveEnergySteps()),
     _saveunused(config().saveUnused()),
     _saveallunused(config().saveAllUnused()),
@@ -148,16 +151,18 @@ namespace mu2e {
       consumes<CrvDigiMCCollection>(_crvdmcc);
       consumes<ProtonBunchTimeMC>(_pbtmc);
       produces <IndexMap>("StrawDigiMap");
-      produces <IndexMap>("CrvDigiMap");
+      if (!_trkonly){
+        produces <IndexMap>("CrvDigiMap");
+        produces <CaloDigiCollection>();
+        produces <CrvDigiCollection>();
+        produces <CrvRecoPulseCollection>();
+        produces <CrvCoincidenceClusterCollection>();
+      }
       produces <KalSeedMCCollection>();
       produces <KalSeedMCAssns>();
-      produces <CaloDigiCollection>();
       produces <StrawDigiCollection>();
       produces <StrawDigiADCWaveformCollection>();
       produces <StrawHitFlagCollection>();
-      produces <CrvDigiCollection>();
-      produces <CrvRecoPulseCollection>();
-      produces <CrvCoincidenceClusterCollection>();
       produces <RecoCount>();
 
       if (_debug > 0)
@@ -182,8 +187,10 @@ namespace mu2e {
     std::unique_ptr<RecoCount> nrec(new RecoCount);
     std::set<art::Ptr<CaloCluster> > ccptrs;
     fillTrk(event,ccptrs,pp,*nrec.get());
-    fillCrv(event, pp, *nrec.get());
-    fillCalo(event, ccptrs, pp, *nrec.get());
+    if (!_trkonly){
+      fillCrv(event, pp, *nrec.get());
+      fillCalo(event, ccptrs, pp, *nrec.get());
+    }
 
     event.put(std::move(nrec));
   }
