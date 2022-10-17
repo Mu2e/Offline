@@ -68,6 +68,23 @@ Mu2eKinKal : {
     ]
   }
 
+  KKNOEXT: {
+    PrintLevel : 0
+    MinNDOF : 1
+    MaxNIter : 10
+    Deweight : 1.0e6
+    ConvergenceDeltaChisq : 0.1
+    DivergenceDeltaChisq : 10.0
+    DivergenceDeltaParams : 1e6
+    DivergenceGap : 10 # mm
+    BFieldCorrection : false
+    ProcessEnds : false
+    BCorrTolerance : 1e-4 # momemntum fraction
+    MetaIterationSettings : []
+    CAStrawHitUpdaterSettings : []
+    StrawXingUpdaterSettings : []
+  }
+
   KKSEEDEXT: {
     PrintLevel : 0
     MinNDOF : 1
@@ -173,9 +190,12 @@ Mu2eKinKal : {
     #    ZSavePositions : [-1522.0,0.0,1522.0]
   }
   KKKINEMATICLINE : {
+    SeedMomentum : 2000.0
     SeedErrors : [36, 0.025,600, 1.0, 25.0,1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,cost_ = 3,t0_ = 4,mom_ = 5,
+    ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,1e-4]
     CosmicTrackSeedCollections : ["CosmicTrackFinderTimeFit"]
     ComboHitCollection : "makeSH"
+    CaloClusterCollection : "CaloClusterFast"
     StrawHitFlagCollection : "FlagBkgHits:StrawHits"
     LineFlags : [ "HelixOK" ]
     SaveFullFit : true
@@ -213,6 +233,15 @@ Mu2eKinKal : {
     ModuleSettings : @local::Mu2eKinKal.KKKINEMATICLINE
   }
 
+  KKLineDriftFit : {
+    module_type : KinematicLineFit
+    MaterialSettings : @local::Mu2eKinKal.KKMAT
+    Mu2eSettings: @local::Mu2eKinKal.KKMU2E
+    KinKalFitSettings : @local::Mu2eKinKal.KKDRIFTEXT
+    KinKalExtensionSettings : @local::Mu2eKinKal.KKNOEXT
+    ModuleSettings : @local::Mu2eKinKal.KKKINEMATICLINE
+  }
+
   CosmicFilter : {
     module_type : CosmicTrackFinderTimeFit
   }
@@ -226,6 +255,7 @@ Mu2eKinKal : {
     KKDeMSeedFit: @local::Mu2eKinKal.KKSeedFit
     KKLineSeedFit: @local::Mu2eKinKal.KKLineSeedFit
     # drift fits, with BField corrections
+    KKLineDriftFit: @local::Mu2eKinKal.KKLineDriftFit
     KKDePDriftFit: @local::Mu2eKinKal.KKDriftFit
     KKDeMDriftFit: @local::Mu2eKinKal.KKDriftFit
     KKUePDriftFit: @local::Mu2eKinKal.KKDriftFit
@@ -240,6 +270,12 @@ Mu2eKinKal : {
     CosmicFilter: @local::Mu2eKinKal.CosmicFilter
   }
 }
+
+Mu2eKinKal.producers.KKLineSeedFit.Mu2eSettings.FitParticle : 13
+Mu2eKinKal.producers.KKLineSeedFit.Mu2eSettings.FitDirection : 1
+Mu2eKinKal.producers.KKLineDriftFit.Mu2eSettings.FitParticle : 13
+Mu2eKinKal.producers.KKLineDriftFit.Mu2eSettings.FitDirection : 1
+
 Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings.FitParticle : 11
 Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings.FitDirection : 0
 Mu2eKinKal.producers.KKDePSeedFit.Mu2eSettings.FitParticle : -11
