@@ -15,6 +15,8 @@ Mu2eKinKal : {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
     UseCaloCluster : true
+    MaterialCorrection : true
+    AddHits : true
     AddMaterial : true
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
@@ -82,19 +84,24 @@ Mu2eKinKal : {
       # annealing temp, strawhit updater algorithm
       [ 2.0, "CADSHU" ],
       [ 1.0, "CADSHU" ],
-      [ 0.3, "CADSHU" ]
+      [ 0.3, "CADSHU" ],
+      [ 0.0, "CADSHU:BkgANNSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maderr, minrdrift, maxrdrift, allow, tofreeze, diag
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ]
+      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
+      [ 6.0,  6.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
       [10.0, -1.0, -1.0, true, 0 ],
       [5.0, -1.0, -1.0, true, 0 ],
       [3.0, 3.0, -1.0, true, 0 ]
+    ]
+    BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/Bkg_stage1.weights.xml",0.9,"Inactive",1]
     ]
   }
 
