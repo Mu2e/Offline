@@ -59,7 +59,9 @@ namespace mu2e {
       fhicl::Atom<float> tpocaPrec { Name("TPOCAPrecision"), Comment("TPOCA calculation precision (ns)") };
       fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ...")};
       fhicl::Atom<int> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either upstream or downstream") };
-      fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add material effects to the fit") };
+      fhicl::Atom<bool> matCorr { Name("MaterialCorrection"), Comment("Correct the fit fo material effects") };
+      fhicl::Atom<bool> addHits { Name("AddHits"), Comment("Add hits to the fit") };
+      fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add materials to the fit") };
       fhicl::Atom<bool> useCaloCluster { Name("UseCaloCluster"), Comment("Use CaloCluster in the fit") };
       fhicl::Atom<size_t> strawHitClusterDeltaStraw { Name("StrawHitClusterDeltaStraw"), Comment("Maximum straw index difference between StrawHits in StrawHitClusters") };
       fhicl::Atom<float> strawHitClusterDeltaT { Name("StrawHitClusterDeltaT"), Comment("Maximum time difference between StrawHits in StrawHitClusters") };
