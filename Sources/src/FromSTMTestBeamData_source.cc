@@ -29,7 +29,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
-#include "Offline/DataProducts/inc/STMTestBeamHeaders.hh"
+#include "Offline/Sources/inc/STMTestBeamHeaders.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 
