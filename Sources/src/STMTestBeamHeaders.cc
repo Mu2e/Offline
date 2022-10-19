@@ -3,7 +3,7 @@
 //
 
 // C++ includes
-#include "Offline/DataProducts/inc/STMTestBeamHeaders.hh"
+#include "Offline/Sources/inc/STMTestBeamHeaders.hh"
 
 namespace mu2e {
 
