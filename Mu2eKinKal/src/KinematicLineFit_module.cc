@@ -169,6 +169,7 @@ namespace mu2e {
     savefull_(settings().modSettings().saveFull()),
     zsave_(settings().modSettings().zsave()),
     print_(settings().modSettings().printLevel()),
+    seedmom_(settings().modSettings().seedmom()),
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
