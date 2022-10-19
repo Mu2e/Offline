@@ -1,4 +1,5 @@
 #include "Offline/CRVResponse/inc/MakeCrvRecoPulses.hh"
+#include "canvas/Utilities/Exception.h"
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TMath.h>
@@ -65,21 +66,28 @@ void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<unsigned int> &w
 
 void MakeCrvRecoPulses::RangeFinder(const std::vector<unsigned int> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end)
 {
-  assert(peakStart>0);
-  assert(peakEnd<waveform.size()-1);
+  if(peakStart<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakStart<1"<<std::endl;
+  if(peakEnd+1>=waveform.size()) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakEnd+1>=waveform.size()"<<std::endl;
 
+  //select a range of up to 4 points before and after the peak
+  //-find up to 5 points before and after the peak for which the waveform is stricly decreasing
+  //-remove 1 point on each side. this removes potentially "bad points" belonging to a second pulse (i.e. in double pulses)
   end=peakEnd+1;
-  for(size_t i=peakEnd; i<waveform.size()-1 && i<peakEnd+4; ++i)
-  {
-    if(waveform[i+1]<=waveform[i]) end=i+1;
-    else break;
-  }
   start=peakStart-1;
-  for(size_t i=peakStart; i>0  && i+4>peakStart; --i)
+  for(size_t i=peakStart-1; i+5>=peakStart; --i)
   {
-    if(waveform[i-1]<=waveform[i]) start=i-1;
+    if(waveform[i]<=waveform[i+1]) start=i;
+    else break;
+    if(i==0) break;
+  }
+  for(size_t i=peakEnd+1; i<waveform.size() && i<=peakEnd+5; ++i)
+  {
+    if(waveform[i-1]>=waveform[i]) end=i;
     else break;
   }
+  if(peakStart-start>1) start++;
+  if(end-peakEnd>1) end--;
+
 }
 
 bool MakeCrvRecoPulses::FailedFit(TFitResultPtr fr)
@@ -140,14 +148,14 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, c
       pulseFound=true;
       pulseEnd=i;
     }
-    if(find(troughs.begin(),troughs.end(),i)!=troughs.end() && aboveAreaThreshold) //found the lowest point between the peaks of a double pulse
+    if(find(troughs.begin(),troughs.end(),i)!=troughs.end() && aboveAreaThreshold && !doublePulseNextPeak) //found the lowest point between the peaks of a double pulse
     {
       aboveAreaThreshold=false;
       pulseFound=true;
       pulseEnd=i;
       doublePulseThisPeak=true;
     }
-    if(pulseFound)  //a full waveform section about min threshold has been found
+    if(pulseFound)  //a full waveform section above area threshold has been found
     {
       std::vector<float> peaksInCurrentPulse;
       for(auto ipeak=peaks.begin(); ipeak!=peaks.end(); ++ipeak)
@@ -169,7 +177,8 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, c
       {
         doublePulseThisPeak=false;
         doublePulseNextPeak=true;
-        sum=ADC; //the shared trough point gets added to both pulses
+        if(i<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::NoFitOption: peakStart<1"<<std::endl;
+        --i; //the shared trough point gets added to both pulses
       }
 
       if(peaksInCurrentPulse.empty()) continue;
@@ -182,19 +191,17 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, c
       size_t pulseRangeEnd=pulseEnd;
       for(size_t j=pulseStart; j<=pulseEnd; ++j)
       {
-//        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeStart=j; break;}
-        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeStart=(j>pulseStart?j-1:j); break;}  //include point before it crosses the threshold
+        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeStart=j; break;}
       }
       for(size_t j=pulseEnd; j>=pulseStart; --j)
       {
-//        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeEnd=j; break;}
-        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeEnd=(j<pulseEnd?j+1:j); break;}  //include point after it crosses the threshold
+        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeEnd=j; break;}
         if(j==0) break;
       }
       for(size_t j=0; j<peaksInCurrentPulse.size(); ++j)
       {
-        _pulseStart.push_back((startTDC+pulseRangeStart)*digitizationPeriod);
-        _pulseEnd.push_back((startTDC+pulseRangeEnd)*digitizationPeriod);
+        _pulseStart.push_back((startTDC+pulseRangeStart-1)*digitizationPeriod);
+        _pulseEnd.push_back((startTDC+pulseRangeEnd+1)*digitizationPeriod);
         _duplicateNoFitPulses.push_back(j==0?false:true);
       }
     }

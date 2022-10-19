@@ -378,7 +378,6 @@ namespace mu2e
       }
       double PEs=0;
       CLHEP::Hep3Vector avgCounterPos;  //PE-weighted average position
-      int nHits=cluster.size();
       std::set<int> layerSet;
       double sumX =0;
       double sumY =0;
@@ -401,10 +400,10 @@ namespace mu2e
         PEs+=hit->_PEs;
         avgCounterPos+=hit->_pos*hit->_PEs;
         layerSet.insert(hit->_layer);
-        sumX +=hit->_x;
-        sumY +=hit->_y;
-        sumYY+=hit->_y*hit->_y;
-        sumXY+=hit->_x*hit->_y;
+        sumX +=hit->_PEs*hit->_x;
+        sumY +=hit->_PEs*hit->_y;
+        sumYY+=hit->_PEs*hit->_y*hit->_y;
+        sumXY+=hit->_PEs*hit->_x*hit->_y;
         if(_usePulseOverlaps)
         {
           if(startTime>hit->_timePulseStart) startTime=hit->_timePulseStart;
@@ -422,7 +421,7 @@ namespace mu2e
 
       //average counter position (PE weighted), slope, layers
       avgCounterPos/=PEs;
-      double slope=(nHits*sumXY-sumX*sumY)/(nHits*sumYY-sumY*sumY);
+      double slope=(PEs*sumXY-sumX*sumY)/(PEs*sumYY-sumY*sumY);
       std::vector<int> layers(layerSet.begin(), layerSet.end());
 
       //insert the cluster information into the vector of the crv coincidence clusters
