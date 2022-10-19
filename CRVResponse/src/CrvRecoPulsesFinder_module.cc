@@ -1,5 +1,5 @@
 //
-// A module to extract leading edge times, pulse heights, integrals and number of photons from the CRV waveforms
+// A module to find the times and PEs of Crv pulses
 //
 //
 // Original Author: Ralf Ehrlich
