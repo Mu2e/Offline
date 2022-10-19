@@ -377,7 +377,6 @@
 
 <!--  ********* STM ********* -->
  <class name="mu2e::STMWaveformDigi"/>
- <class name="std::vector<mu2e::STMWaveformDigi>"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMWaveformDigiCollection>"/>
 
