@@ -15,6 +15,7 @@ class STMEnergyCalibCache : public ProditionsCache {
   void initialize() {
     if (_useDb) {
       _sep_p = std::make_unique<DbHandle<STMEnergyPar>>();
+      _ped_p = std::make_unique<DbHandle<STMPedestals>>();
     }
   }
 
@@ -22,7 +23,9 @@ class STMEnergyCalibCache : public ProditionsCache {
     ProditionsEntity::set_t cids;
     if (_useDb) {
       _sep_p->get(eid);
+      _ped_p->get(eid);
       cids.insert(_sep_p->cid());
+      cids.insert(_ped_p->cid());
     }
     return cids;
   }
@@ -31,14 +34,17 @@ class STMEnergyCalibCache : public ProditionsCache {
     DbIoV iov;
     iov.setMax();
     if (_useDb) {
+      _sep_p->get(eid);
+      _ped_p->get(eid);
       iov.overlap(_sep_p->iov());
+      iov.overlap(_ped_p->iov());
     }
     return iov;
   }
 
   ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
     if (_useDb) {
-      return _maker.fromDb(_sep_p->getPtr(eid));
+      return _maker.fromDb(_sep_p->getPtr(eid), _ped_p->getPtr(eid));
     } else {
       return _maker.fromFcl();
     }
@@ -51,6 +57,7 @@ class STMEnergyCalibCache : public ProditionsCache {
   // these handles are not default constructed
   // so the db can be completely turned off
   std::unique_ptr<DbHandle<STMEnergyPar>> _sep_p;
+  std::unique_ptr<DbHandle<STMPedestals>> _ped_p;
 };
 
 }  // namespace mu2e
