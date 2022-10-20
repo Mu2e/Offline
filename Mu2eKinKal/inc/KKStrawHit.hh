@@ -191,17 +191,15 @@ namespace mu2e {
       double tdres = chit_.driftTimeRes();
       double tvar = tdres*tdres;
       double dt = ca_.deltaT() - chit_.driftTime();
-      resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ca_.dTdP()); // sign convention on dTdP is strange FIXME
+      resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
       if(whstate.useDrift()){
         auto dinfo = fillDriftInfo(true); // calibrated drift info
         double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
         double dr = whstate.lrSign()*dinfo.driftDistance_ - ca_.doca();
-        // pca dDdP from ClosestApproach is missing LR sign: patch that here: FIXME
-        DVEC dRdP = ca_.lSign()*ca_.dDdP();
-        resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
+        resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,-ca_.dDdP());
       } else {
-        // Null state. interpret DOCA against the wire directly as a residual.
-        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.nullDistanceVariance(),0.0,true,-ca_.lSign()*ca_.dDdP());
+        // Null state. interpret DOCA against the wire directly as a residual (ie resid = 0 -doca);
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.nullDistanceVariance(),0.0,true,ca_.dDdP());
       }
     }
   }
