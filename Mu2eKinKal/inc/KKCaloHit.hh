@@ -98,7 +98,7 @@ namespace mu2e {
       // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
       double dd2 = std::max(0.0001,tpca_.dirDot()*tpca_.dirDot());
       double totvar = tvar_ + wvar_/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
-      rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,-tpca_.dTdP());
+      rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,tpca_.dTdP());
     } else {
       rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
     }
