@@ -135,7 +135,13 @@ public:
 
 private:
 
-  Config _conf;
+  art::InputTag _strawGasStepTag;
+  art::InputTag _caloShowerStepTag;
+  art::InputTag _crvStepTag;
+  std::vector<art::InputTag> _stepPointMCTags;
+  std::vector<art::InputTag> _simParticleTags;
+  art::InputTag _mcTrajectoryTag;
+
   mu2e::CompressionLevel _strawGasStepCompressionLevel;
   mu2e::CompressionLevel _caloShowerStepCompressionLevel;
   mu2e::CompressionLevel _crvStepCompressionLevel;
@@ -173,24 +179,40 @@ private:
   std::map<art::ProductID, mu2e::SimParticleSet> _simParticlesToKeep;
   std::map<art::ProductID, mu2e::SimParticleSet> _simParticlesToTruncate;
   SimParticleRemapping _simPtrRemap;
+
+  // if the map::at fails, produce a useful error message
+  inline art::Ptr<SimParticle>& safeRemapRef(art::Ptr<SimParticle> const& key, int line) {
+    auto it = _simPtrRemap.find(key);
+    if(it == _simPtrRemap.end()) {
+      throw cet::exception("CompressDetStepMCs::safeRemapRef")
+        << "_simPtrRemap key "<< key.id()<<" not found at line " << line << "\n";
+    }
+    return it->second;
+  }
+
 };
 
 
 mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   : art::EDProducer(conf),
-    _conf(conf()),
-    _strawGasStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().strawGasStepCompressionLevel())),
-    _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().caloShowerStepCompressionLevel())),
-    _crvStepCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().crvStepCompressionLevel())),
-    _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().simParticleCompressionLevel())),
-  _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().stepPointMCCompressionLevel())),
-  _keepNGenerations(_conf.compressionOptions().keepNGenerations()),
-  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(_conf.compressionOptions().mcTrajectoryCompressionLevel())),
-  _debugLevel(_conf.debugLevel()),
-  _strawGasStepToken{mayConsume<mu2e::StrawGasStepCollection>(_conf.strawGasStepTag())},
-  _caloShowerStepToken{mayConsume<mu2e::CaloShowerStepCollection>(_conf.caloShowerStepTag())},
-  _crvStepToken{mayConsume<mu2e::CrvStepCollection>(_conf.crvStepTag())},
-  _mcTrajectoryToken{mayConsume<mu2e::MCTrajectoryCollection>(_conf.mcTrajectoryTag())}
+    _strawGasStepTag(conf().strawGasStepTag()),
+    _caloShowerStepTag(conf().caloShowerStepTag()),
+    _crvStepTag(conf().crvStepTag()),
+    _stepPointMCTags(conf().stepPointMCTags()),
+    _simParticleTags(conf().simParticleTags()),
+    _mcTrajectoryTag(conf().mcTrajectoryTag()),
+    _strawGasStepCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().strawGasStepCompressionLevel())),
+    _caloShowerStepCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().caloShowerStepCompressionLevel())),
+    _crvStepCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().crvStepCompressionLevel())),
+    _simParticleCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().simParticleCompressionLevel())),
+  _stepPointMCCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().stepPointMCCompressionLevel())),
+  _keepNGenerations(conf().compressionOptions().keepNGenerations()),
+  _mcTrajectoryCompressionLevel(mu2e::CompressionLevel::findByName(conf().compressionOptions().mcTrajectoryCompressionLevel())),
+  _debugLevel(conf().debugLevel()),
+  _strawGasStepToken{mayConsume<mu2e::StrawGasStepCollection>(conf().strawGasStepTag())},
+  _caloShowerStepToken{mayConsume<mu2e::CaloShowerStepCollection>(conf().caloShowerStepTag())},
+  _crvStepToken{mayConsume<mu2e::CrvStepCollection>(conf().crvStepTag())},
+  _mcTrajectoryToken{mayConsume<mu2e::MCTrajectoryCollection>(conf().mcTrajectoryTag())}
 {
   // Check that we have valid compression levels for this module
   checkCompressionLevels();
@@ -198,7 +220,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   // Call appropriate produces<>() functions here.
   produces<GenParticleCollection>();
   produces<SimParticleCollection>();
-  for (const auto& i_tag : _conf.simParticleTags()) {
+  for (const auto& i_tag : _simParticleTags) {
     consumes<SimParticleCollection>(i_tag);
   }
 
@@ -206,7 +228,7 @@ mu2e::CompressDetStepMCs::CompressDetStepMCs(const Parameters& conf)
   produces<CaloShowerStepCollection>();
   produces<CrvStepCollection>();
 
-  for (const auto& i_tag : _conf.stepPointMCTags()) {
+  for (const auto& i_tag : _stepPointMCTags) {
     consumes<StepPointMCCollection>(i_tag);
     produces<StepPointMCCollection>( i_tag.instance() );
   }
@@ -219,7 +241,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
   _newCrvSteps = std::unique_ptr<CrvStepCollection>(new CrvStepCollection);
 
-  for (const auto& i_tag : _conf.stepPointMCTags()) {
+  for (const auto& i_tag : _stepPointMCTags) {
     _newStepPointMCs[i_tag.instance()] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
   }
 
@@ -238,15 +260,15 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   _simPtrRemap.clear();
 
   // Compress detector steps and record which SimParticles we want to keep
-  if (_conf.strawGasStepTag() != "") { compressStrawGasSteps(event); }
-  if (_conf.caloShowerStepTag() != "") { compressCaloShowerSteps(event); }
-  if (_conf.crvStepTag() != "") { compressCrvSteps(event); }
+  if (_strawGasStepTag != "") { compressStrawGasSteps(event); }
+  if (_caloShowerStepTag != "") { compressCaloShowerSteps(event); }
+  if (_crvStepTag != "") { compressCrvSteps(event); }
   if (_stepPointMCCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
     // if we are not compressing StepPointMCs, then
     // we want to make sure we record all their SimParticles
     compressStepPointMCs(event);
   }
-  if (_conf.mcTrajectoryTag() != "") {
+  if (_mcTrajectoryTag != "") {
     if (_mcTrajectoryCompressionLevel == mu2e::CompressionLevel::kNoCompression) {
       // if we are not compressing MCTrajectories, then
       // we want to make sure we record all their SimParticles
@@ -265,7 +287,7 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
     // then compressStepPointMCs now
     compressStepPointMCs(event);
   }
-  if (_conf.mcTrajectoryTag() != "") {
+  if (_mcTrajectoryTag != "") {
     if (_mcTrajectoryCompressionLevel == mu2e::CompressionLevel::kSimParticleCompression) {
       // if we are compressing MCTrajectories based on the SimParticles we are keeping,
       // then compress MCTrajectories now
@@ -274,17 +296,17 @@ void mu2e::CompressDetStepMCs::produce(art::Event & event)
   }
 
   // Update all the data products so that their SimParticlePtrs point to the new collection
-  if (_conf.strawGasStepTag() != "") { updateStrawGasSteps(); }
-  if (_conf.caloShowerStepTag() != "") { updateCaloShowerSteps(); }
-  if (_conf.crvStepTag() != "") { updateCrvSteps(); }
+  if (_strawGasStepTag != "") { updateStrawGasSteps(); }
+  if (_caloShowerStepTag != "") { updateCaloShowerSteps(); }
+  if (_crvStepTag != "") { updateCrvSteps(); }
   updateStepPointMCs();
-  if (_conf.mcTrajectoryTag() != "") { updateMCTrajectories(); }
+  if (_mcTrajectoryTag != "") { updateMCTrajectories(); }
 
   // Now add everything to the event
   event.put(std::move(_newStrawGasSteps));
   event.put(std::move(_newCaloShowerSteps));
   event.put(std::move(_newCrvSteps));
-  for (const auto& i_tag : _conf.stepPointMCTags()) {
+  for (const auto& i_tag : _stepPointMCTags) {
     event.put(std::move(_newStepPointMCs.at(i_tag.instance())), i_tag.instance());
   }
   event.put(std::move(_newSimParticles));
@@ -296,7 +318,7 @@ void mu2e::CompressDetStepMCs::compressStrawGasSteps(const art::Event& event) {
   const auto& strawGasStepsHandle = event.getValidHandle(_strawGasStepToken);
   const auto& strawGasSteps = *strawGasStepsHandle;
   if(_debugLevel>0 && strawGasSteps.size()>0) {
-    std::cout << "Compressing StrawGasSteps from " << _conf.strawGasStepTag() << std::endl;
+    std::cout << "Compressing StrawGasSteps from " << _strawGasStepTag << std::endl;
   }
   for (const auto& i_strawGasStep : strawGasSteps) {
     if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
@@ -316,7 +338,7 @@ void mu2e::CompressDetStepMCs::compressCaloShowerSteps(const art::Event& event) 
   const auto& caloShowerStepsHandle = event.getValidHandle(_caloShowerStepToken);
   const auto& caloShowerSteps = *caloShowerStepsHandle;
   if(_debugLevel>0 && caloShowerSteps.size()>0) {
-    std::cout << "Compressing CaloShowerSteps from " << _conf.caloShowerStepTag() << std::endl;
+    std::cout << "Compressing CaloShowerSteps from " << _caloShowerStepTag << std::endl;
   }
   for (const auto& i_caloShowerStep : caloShowerSteps) {
     if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
@@ -336,7 +358,7 @@ void mu2e::CompressDetStepMCs::compressCrvSteps(const art::Event& event) {
   const auto& crvStepsHandle = event.getValidHandle(_crvStepToken);
   const auto& crvSteps = *crvStepsHandle;
   if(_debugLevel>0 && crvSteps.size()>0) {
-    std::cout << "Compressing CrvSteps from " << _conf.crvStepTag() << std::endl;
+    std::cout << "Compressing CrvSteps from " << _crvStepTag << std::endl;
   }
   for (const auto& i_crvStep : crvSteps) {
     if (_simParticleCompressionLevel == mu2e::CompressionLevel::kFullCompression) {
@@ -355,7 +377,7 @@ void mu2e::CompressDetStepMCs::compressCrvSteps(const art::Event& event) {
 void mu2e::CompressDetStepMCs::updateStrawGasSteps() {
   for (auto& i_strawGasStep : *_newStrawGasSteps) {
     const auto& oldSimPtr = i_strawGasStep.simParticle();
-    art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
+    art::Ptr<mu2e::SimParticle> newSimPtr = safeRemapRef( oldSimPtr, __LINE__);
     if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in StrawGasStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
@@ -367,7 +389,7 @@ void mu2e::CompressDetStepMCs::updateStrawGasSteps() {
 void mu2e::CompressDetStepMCs::updateCaloShowerSteps() {
   for (auto& i_caloShowerStep : *_newCaloShowerSteps) {
     const auto& oldSimPtr = i_caloShowerStep.simParticle();
-    art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
+    art::Ptr<mu2e::SimParticle> newSimPtr = safeRemapRef( oldSimPtr, __LINE__);;
     if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in CaloShowerStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
@@ -379,7 +401,7 @@ void mu2e::CompressDetStepMCs::updateCaloShowerSteps() {
 void mu2e::CompressDetStepMCs::updateCrvSteps() {
   for (auto& i_crvStep : *_newCrvSteps) {
     const auto& oldSimPtr = i_crvStep.simParticle();
-    art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
+    art::Ptr<mu2e::SimParticle> newSimPtr = safeRemapRef( oldSimPtr, __LINE__);
     if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in CrvStep from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
@@ -392,11 +414,11 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
   // Now compress the SimParticleCollections into their new collections
   KeyRemap* keyRemap = new KeyRemap; // if we have multiple SimParticleCollections, we will need to rekey the SimParticles
   bool rekeySimParticleCollection = false;
-  if (_conf.simParticleTags().size() > 1) {
+  if (_simParticleTags.size() > 1) {
     rekeySimParticleCollection = true;
   }
   unsigned int keep_size = 0;
-  for (const auto& i_tag : _conf.simParticleTags()) {
+  for (const auto& i_tag : _simParticleTags) {
     keyRemap->clear();
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(i_tag);
     art::ProductID i_product_id = oldSimParticles.id();
@@ -423,11 +445,16 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
       cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
       cet::map_vector_key newKey = oldKey;
       if (rekeySimParticleCollection) {
-        newKey = keyRemap->at(oldKey);
+        auto it = keyRemap->find(oldKey);
+        if(it == keyRemap->end()) {
+          throw cet::exception("CompressDetStepMCs::compressSimParticles") << "Failed to find key "
+                                        << oldKey.asUint() << " at line "<< __LINE__  << "\n";
+        }
+        newKey = it->second;
       }
       _simPtrRemap[i_keptSimPart] = art::Ptr<mu2e::SimParticle>(_newSimParticlesPID, newKey.asUint(), _newSimParticleGetter);
       if (_debugLevel>0) {
-        std::cout << "Compressing SimParticle " << i_keptSimPart << " --> " << _simPtrRemap.at(i_keptSimPart) << std::endl;
+        std::cout << "Compressing SimParticle " << i_keptSimPart << " --> " << safeRemapRef( i_keptSimPart, __LINE__) << std::endl;
       }
     }
     if (keep_size != _newSimParticles->size()) {
@@ -460,7 +487,7 @@ void mu2e::CompressDetStepMCs::compressSimParticles(const art::Event& event) {
           else {
             // this parent is in the output collection so
             if (_debugLevel>0) {
-              std::cout << "SimParticle " << i_parentPtr << " is in the output collection as " << _simPtrRemap.at(i_parentPtr) << std::endl;
+              std::cout << "SimParticle " << i_parentPtr << " is in the output collection as " << safeRemapRef( i_parentPtr, __LINE__) << std::endl;
             }
           }
           i_childPtr = i_parentPtr;
@@ -537,7 +564,7 @@ void mu2e::CompressDetStepMCs::compressGenParticles() {
 
 void mu2e::CompressDetStepMCs::compressStepPointMCs(const art::Event& event) {
 
-  for (const auto& i_tag : _conf.stepPointMCTags()) {
+  for (const auto& i_tag : _stepPointMCTags) {
     const auto& stepPointMCs = event.getValidHandle<StepPointMCCollection>(i_tag);
     if(_debugLevel>0 && stepPointMCs->size()>0) {
       std::cout << "Compressing StepPointMCs from " << i_tag << std::endl;
@@ -573,7 +600,7 @@ void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
 
   const auto& mcTrajectories = event.getValidHandle(_mcTrajectoryToken);
   if(_debugLevel>0 && mcTrajectories->size()>0) {
-    std::cout << "Compressing MCTrajectories from " << _conf.mcTrajectoryTag() << " (size = " << mcTrajectories->size() << ")" << std::endl;
+    std::cout << "Compressing MCTrajectories from " << _mcTrajectoryTag << " (size = " << mcTrajectories->size() << ")" << std::endl;
   }
   for (const auto& mcTrajectory : *mcTrajectories) {
     if (_mcTrajectoryCompressionLevel == mu2e::CompressionLevel::kSimParticleCompression) {
@@ -603,10 +630,10 @@ void mu2e::CompressDetStepMCs::compressMCTrajectories(const art::Event& event) {
 }
 
 void mu2e::CompressDetStepMCs::updateStepPointMCs() {
-  for (const auto& i_tag : _conf.stepPointMCTags()) {
+  for (const auto& i_tag : _stepPointMCTags) {
     for (auto& i_stepPointMC : *(_newStepPointMCs.at(i_tag.instance()))) {
       const auto& oldSimPtr = i_stepPointMC.simParticle();
-      art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
+      art::Ptr<mu2e::SimParticle> newSimPtr = safeRemapRef( oldSimPtr, __LINE__);
       if(_debugLevel>0) {
         std::cout << "Updating SimParticlePtr in StepPointMC from " << oldSimPtr << " to " << newSimPtr << std::endl;
       }
@@ -618,7 +645,7 @@ void mu2e::CompressDetStepMCs::updateStepPointMCs() {
 void mu2e::CompressDetStepMCs::updateMCTrajectories() {
   for (auto& i_mcTrajectory : _newMCTrajs) {
     const auto& oldSimPtr = i_mcTrajectory.sim();
-    art::Ptr<mu2e::SimParticle> newSimPtr = _simPtrRemap.at(oldSimPtr);
+    art::Ptr<mu2e::SimParticle> newSimPtr = safeRemapRef( oldSimPtr, __LINE__);
     if(_debugLevel>0) {
       std::cout << "Updating SimParticlePtr in MCTrajectory from " << oldSimPtr << " to " << newSimPtr << std::endl;
     }
