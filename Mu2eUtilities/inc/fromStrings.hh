@@ -2,13 +2,14 @@
 #define Mu2eUtilities_fromStrings_hh
 //
 // A free function template that translates from std::vector<string>
-// to a std::vector of an enum type specified as the template type argument.
+// to a std::vector of an enum-matched-to-string type specified as the template type argument.
 //
-// Additional functions to support the ParticleDataList concepts of display name
-// code name and alias.
+// An additional function for PDGCode needed temporarily for backward compatibility.
 //
 // Original Author Rob Kutschke
 //
+
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include <string>
 #include <vector>
@@ -27,32 +28,10 @@ namespace mu2e {
     return r;
   }
 
-  // The functions below assume familiarly with GlobalConstantsService/inc/ParticleDataList.hh
-  //
-  // The above function template will allow you to specify particles using its "code name".
-  // The functions belows will allow you to specify PDGCodes using the name or the alias.
+  // A special case for the class PDGCode, return the enum_type, not the class tupe.
+  // Needed for backwards compatibiltiy.
+  std::vector<mu2e::PDGCode::type> fromStrings_type( std::vector<std::string> const& v );
 
-  // Optimization to avoid repeated creatation of Handles to ParticleDataList
-  mu2e::PDGCode::type PDGCodefromString( std::string const& s, mu2e::ParticleDataList const& pdt ){
-    mu2e::ParticleData const& p = pdt.particle(s);
-    return (static_cast<mu2e::PDGCode::type>(p.id()));
-  }
-
-  mu2e::PDGCode::type PDGCodefromString( std::string const& s ){
-    mu2e::GlobalConstantsHandle<mu2e::ParticleDataList> pdt;
-    return PDGCodefromString( s, *pdt);
-  }
-
-  // Specialziation of the templated function fromStrings for PDGCode::type.
-  // Cannot do this PDGCode without maintenance on that class.
-  std::vector<mu2e::PDGCode::type> PDGCodesfromStrings( std::vector<std::string> const& v){
-    mu2e::GlobalConstantsHandle<mu2e::ParticleDataList> pdt;
-    std::vector<mu2e::PDGCode::type> r;
-    for ( auto const& s : v){
-      r.emplace_back( PDGCodefromString( s, *pdt) );
-    }
-    return r;
-  }
 
 } // end namespace mu2e
 
