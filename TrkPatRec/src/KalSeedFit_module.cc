@@ -258,7 +258,7 @@ namespace mu2e
       TrkParticle tpart(_tpart);
       if(_helicity != hseed.helix().helicity()) {
         if(_checkhelicity) throw cet::exception("RECO")<<"mu2e::KalSeedFit: helicity doesn't match configuration" << endl;
-        TrkParticle::type t = (TrkParticle::type) (-(int) _tpart.particleType());
+        TrkParticle::type t = (TrkParticle::type) (-int(_tpart.particleType()));
         tpart = TrkParticle(t);
       }
 
@@ -320,7 +320,7 @@ namespace mu2e
         if(htraj != 0){
           KalSegment kseg;
           // sample the momentum at this point
-          TrkUtilities::fillSegment(*htraj,0.0,0.0,hseed.t0(),tpart.mass(),(int)tpart.charge(),_kfit.bField(),kseg);
+          TrkUtilities::fillSegment(*htraj,0.0,0.0,hseed.t0(),tpart.mass(),int(tpart.charge()),_kfit.bField(),kseg);
           kf._segments.push_back(kseg);
         } else {
           throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
@@ -376,7 +376,7 @@ namespace mu2e
             KalSegment kseg;
             // sample the momentum at this point
             BbrVectorErr momerr = _result.krep->momentumErr(_result.krep->flt0());
-            TrkUtilities::fillSegment(*htraj,locflt,_result.krep->flt0(),_result.krep->t0(),tpart.mass(),(int)tpart.charge(),_kfit.bField(),kseg);
+            TrkUtilities::fillSegment(*htraj,locflt,_result.krep->flt0(),_result.krep->t0(),tpart.mass(),int(tpart.charge()),_kfit.bField(),kseg);
             // extend the segment
             double upflt(0.0), downflt(0.0);
             TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
