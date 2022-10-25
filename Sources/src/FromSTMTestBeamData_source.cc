@@ -71,8 +71,6 @@ namespace mu2e {
     uint16_t channel_; // the channel (HPGe or LaBr) will be different for each file
     int binaryFileVersion_ = 0;
 
-    int printAtEvent;
-
     // A helper function used to manage the principals.
     // This is boilerplate that does not change if you change the data products.
     void managePrincipals ( int runNumber,
@@ -110,9 +108,6 @@ namespace mu2e {
     rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "HPGe");
     rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "LaBr");
     rh.reconstitutes<mu2e::STMTestBeamEventInfo,art::InEvent>(myModuleLabel_);
-
-    printAtEvent = 0;
-
   }
 
 
