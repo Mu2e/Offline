@@ -225,9 +225,6 @@ namespace mu2e {
     if(currentFile_->read((char *) &trigger_header[0], sizeof(STMTestBeam::TriggerHeader))) {
       managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
 
-      if (currentEventNumber_ != trigger_header[0].getTriggerNumber()) {
-        throw cet::exception("FromSTMTestBeamData")  << "Current event number (" << currentEventNumber_ << ") is not the same as the trigger number in the header (" << trigger_header[0].getTriggerNumber() << ")" << std::endl;
-      }
       if(verbosityLevel_ > 0) {
         std::cout << trigger_header[0] << std::endl;
       }
