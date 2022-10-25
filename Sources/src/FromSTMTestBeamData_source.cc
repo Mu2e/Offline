@@ -129,7 +129,7 @@ namespace mu2e {
     currentSubRunNumber_ = decoder.extractSubRunNumber();
     currentEventNumber_ = 1;
 
-    fb = new art::FileBlock(art::FileFormatVersion(1, "STMTestBeamDataInput"), currentFileName_);
+    fb = new art::FileBlock(art::FileFormatVersion(1, "STMTestBeamDataInput"), currentFileName_); // art takes ownership
   }
 
   //----------------------------------------------------------------
