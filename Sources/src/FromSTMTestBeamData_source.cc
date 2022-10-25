@@ -56,20 +56,20 @@ namespace mu2e {
   class STMTestBeamDataDetail : private boost::noncopyable {
     std::string myModuleLabel_;
     art::SourceHelper const& pm_;
-    unsigned runNumber_; // from file name
+    unsigned runNumber_ = 0; // from file name
     art::SubRunID lastSubRunID_;
     std::set<art::SubRunID> seenSRIDs_;
 
-    unsigned currentFileNumber_;
-    std::string currentFileName_;
+    unsigned currentFileNumber_ = 0;
+    std::string currentFileName_ = "";
     std::ifstream* currentFile_ = nullptr;
 
-    unsigned currentSubRunNumber_; // from file
-    unsigned currentEventNumber_;
-    unsigned maxEvents_;
-    int verbosityLevel_;
+    unsigned currentSubRunNumber_ = -1U; // from file
+    unsigned currentEventNumber_ = 0;
+    unsigned maxEvents_ = 0;
+    int verbosityLevel_ = 0;
     uint16_t channel_; // the channel (HPGe or LaBr) will be different for each file
-    int binaryFileVersion_;
+    int binaryFileVersion_ = 0;
 
     int printAtEvent;
 
@@ -104,20 +104,12 @@ namespace mu2e {
       const art::SourceHelper& pm)
     : myModuleLabel_("FromSTMTestBeamData")
     , pm_(pm)
-    , runNumber_(0)
-    , currentFileNumber_(0)
-    , currentSubRunNumber_(-1U)
-    , currentEventNumber_(0)
     , maxEvents_(conf().maxEvents())
     , verbosityLevel_(conf().verbosityLevel())
-    , binaryFileVersion_(0)
   {
     rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "HPGe");
     rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "LaBr");
     rh.reconstitutes<mu2e::STMTestBeamEventInfo,art::InEvent>(myModuleLabel_);
-
-    currentSubRunNumber_ = 0;
-    currentEventNumber_ = 0;
 
     printAtEvent = 0;
 
