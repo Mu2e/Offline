@@ -221,15 +221,15 @@ namespace mu2e {
     std::unique_ptr<mu2e::STMWaveformDigiCollection> outputLaBrWaveformDigis(new mu2e::STMWaveformDigiCollection());
 
     // Read the trigger header
-    STMTestBeam::TriggerHeader trigger_header[1];
-    if(currentFile_->read((char *) &trigger_header[0], sizeof(STMTestBeam::TriggerHeader))) {
+    STMTestBeam::TriggerHeader trigger_header;
+    if(currentFile_->read((char *) &trigger_header, sizeof(STMTestBeam::TriggerHeader))) {
       managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
 
       if(verbosityLevel_ > 0) {
-        std::cout << trigger_header[0] << std::endl;
+        std::cout << trigger_header << std::endl;
       }
-      if (!trigger_header[0].checkFixedHeader()) {
-        throw cet::exception("FromSTMTestBeamData") << "Fixed header word (0x" << std::setfill('0') << std::setw(8) << std::hex << (trigger_header[0].getFixedHeader()) << ") != 0xDEADBEEF" << std::endl;
+      if (!trigger_header.checkFixedHeader()) {
+        throw cet::exception("FromSTMTestBeamData") << "Fixed header word (0x" << std::setfill('0') << std::setw(8) << std::hex << (trigger_header.getFixedHeader()) << ") != 0xDEADBEEF" << std::endl;
       }
 
       // binary file version 2 now contains the unix time stamp
@@ -246,11 +246,11 @@ namespace mu2e {
       }
 
       // Get event information for this trigger and put in the event
-      std::unique_ptr<mu2e::STMTestBeamEventInfo> outputEvtInfo(new mu2e::STMTestBeamEventInfo(trigger_header[0].getTriggerMode(), trigger_header[0].getTriggerTime()));
+      std::unique_ptr<mu2e::STMTestBeamEventInfo> outputEvtInfo(new mu2e::STMTestBeamEventInfo(trigger_header.getTriggerMode(), trigger_header.getTriggerTime()));
       art::put_product_in_principal(std::move(outputEvtInfo), *outE, myModuleLabel_);
 
       // Get the number of slices in this trigger
-      int n_slices = trigger_header[0].getNSlices();
+      int n_slices = trigger_header.getNSlices();
       for (int i_slice = 0; i_slice < n_slices; ++i_slice) {
         STMTestBeam::SliceHeader slice_header[1];
         // Read the slice header
@@ -272,7 +272,7 @@ namespace mu2e {
           }
 
           // Create the STMWaveformDigi and put it in the event
-          STMWaveformDigi stm_waveform(trigger_header[0].getTriggerOffset(), adcs);
+          STMWaveformDigi stm_waveform(trigger_header.getTriggerOffset(), adcs);
           if (channel_ == STMChannel::HPGe) {
             outputHPGeWaveformDigis->push_back(stm_waveform);
           }
