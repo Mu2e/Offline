@@ -30,6 +30,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "Offline/Sources/inc/STMTestBeamHeaders.hh"
+#include "Offline/Sources/inc/STMTestBeamFileNameDecoder.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 
@@ -68,7 +69,7 @@ namespace mu2e {
     unsigned currentEventNumber_ = 0;
     unsigned maxEvents_ = 0;
     int verbosityLevel_ = 0;
-    uint16_t channel_; // the channel (HPGe or LaBr) will be different for each file
+    mu2e::STMChannel channel_; // the channel (HPGe or LaBr) will be different for each file
     int binaryFileVersion_ = 0;
 
     // A helper function used to manage the principals.
@@ -94,8 +95,6 @@ namespace mu2e {
         art::EventPrincipal*& outE);
 
     void closeCurrentFile();
-
-    void extractInfoFromFileName();
   };
 
   //----------------------------------------------------------------
@@ -123,7 +122,13 @@ namespace mu2e {
       throw cet::exception("FromSTMTestBeamData") << "A problem opening binary file " << currentFileName_ << std::endl;
     }
 
-    extractInfoFromFileName();
+    mu2e::STMTestBeam::FileNameDecoder decoder(currentFileName_);
+    channel_ = decoder.extractSTMChannel();
+    runNumber_ = decoder.extractRunNumber();
+    binaryFileVersion_ = decoder.extractBinaryFileVersion(runNumber_);
+    currentSubRunNumber_ = decoder.extractSubRunNumber();
+    currentEventNumber_ = 1;
+
     fb = new art::FileBlock(art::FileFormatVersion(1, "STMTestBeamDataInput"), currentFileName_);
   }
 
@@ -257,70 +262,6 @@ namespace mu2e {
 
   } // managePrincipals()
   //----------------------------------------------------------------
-
-
-  // Extract information like run number, subrun number etc. from the
-  // the file name of the binary file
-  void STMTestBeamDataDetail::extractInfoFromFileName() {
-    // Extract the run number and subrun number from the file name
-    std::string delimeter = ".";
-    size_t currentPos = 0;
-    size_t previousPos = currentPos;
-    std::vector<std::string> tokens;
-    while ( (currentPos = currentFileName_.find(delimeter, previousPos)) != std::string::npos) {
-      tokens.push_back(currentFileName_.substr(previousPos, currentPos-previousPos));
-      previousPos = currentPos+1;
-    }
-    tokens.push_back(currentFileName_.substr(previousPos, currentPos-previousPos)); // add the final token which gets missed in the above loop
-    unsigned int n_expected_fields = 6;
-    if (tokens.size() != n_expected_fields) {
-      throw cet::exception("FromSTMTestBeamData") << "Number of fields in filename (" << tokens.size() << ") is not the same number we expected (" << n_expected_fields << "). Filename = " << currentFileName_ << std::endl;
-    }
-
-    // Get the channel from the configuration field
-    std::string configuration = tokens.at(3);
-    if (configuration.find("HPGe") != std::string::npos) {
-      channel_ = STMChannel::HPGe;
-    }
-    else if (configuration.find("LaBr") != std::string::npos) {
-      channel_ = STMChannel::LaBr;
-    }
-    else {
-      throw cet::exception("FromSTMTestBeamData") << "Cannot determine the channel from the configuration field (" << configuration << "). This should contain either \"HPGe\" or \"LaBr\"" << std::endl;
-    }
-
-    // Get the run and subrun numbers from the sequencer
-    std::string sequencer = tokens.at(4);
-    std::string runNo = sequencer.substr(0, 6); // sequencer always has 6 characters for run
-    runNumber_ = std::stoi(runNo);
-
-    if(!art::RunID(runNumber_).isValid()) {
-      throw cet::exception("BADCONFIG", " FromSTMTestBeamData: ")
-        << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber_<<"\n";
-    }
-
-    if(runNumber_ < 101000 || runNumber_ > 101999) {
-      throw cet::exception("FromSTMTestBeamData") << "Run number is outside of our reserved run range (101000 -- 101999)" << std::endl;
-    }
-
-    // There are two different versions of the binary file:
-    //  - v2 contains a unix timestamp after the trigger header
-    //  - v1 does not
-    // For the time being, just hardcode which runs belong to which (ideally would be in a DB?)
-    if (runNumber_ == 101001) {
-      binaryFileVersion_ = 2;
-    }
-    else if (runNumber_ >= 101002 && runNumber_<=101014) {
-      binaryFileVersion_ = 1;
-    }
-    else {
-      binaryFileVersion_ = 2;
-    }
-
-    std::string subrunNo = sequencer.substr(7, 7+8); // sequencer always has 6 characters for run followed by an underscore and then 8 characters for the sub run
-    currentSubRunNumber_ = std::stoi(subrunNo);
-    currentEventNumber_ = 1;
-  }
 
 } // namespace mu2e
 
