@@ -63,7 +63,7 @@ namespace mu2e {
 
     unsigned currentFileNumber_ = 0;
     std::string currentFileName_ = "";
-    std::ifstream* currentFile_ = nullptr;
+    std::unique_ptr<std::ifstream> currentFile_ = nullptr;
 
     unsigned currentSubRunNumber_ = -1U; // from file
     unsigned currentEventNumber_ = 0;
@@ -117,7 +117,7 @@ namespace mu2e {
 
     // Open the input file
     currentFileName_ = filename;
-    currentFile_ = new std::ifstream(currentFileName_.c_str(), std::ios::in | std::ios::binary);
+    currentFile_ = std::make_unique<std::ifstream>(currentFileName_.c_str(), std::ios::in | std::ios::binary);
     if (!currentFile_->is_open()) {
       throw cet::exception("FromSTMTestBeamData") << "A problem opening binary file " << currentFileName_ << std::endl;
     }
@@ -135,9 +135,6 @@ namespace mu2e {
   //----------------------------------------------------------------
   void STMTestBeamDataDetail::closeCurrentFile() {
     currentFileName_ = "";
-    currentFile_->close();
-    delete currentFile_;
-    currentFile_ = nullptr;
   }
 
   //----------------------------------------------------------------
