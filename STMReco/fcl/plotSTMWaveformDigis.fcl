@@ -4,18 +4,20 @@
 
 #include "Offline/fcl/standardServices.fcl"
 
-process_name: PlotSTMSpectrum
+process_name: PlotSTMWaveformDigis
 
 source : {
   module_type : RootInput
 }
 
-services : @local::Services.Reco
+services : {
+  message : @local::Services.Core.message
+  TFileService : { }
+}
+
 physics: {
-  producers : {
-  }
-  filters : {
-  }
+  producers : {  }
+  filters : {  }
   analyzers : {
     plotHPGeWaveformDigis : {
       module_type : PlotSTMWaveformDigis
