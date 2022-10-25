@@ -54,7 +54,7 @@ namespace mu2e {
 
   //================================================================
   class STMTestBeamDataDetail : private boost::noncopyable {
-    std::string myModuleLabel_;
+    std::string myModuleType_;
     art::SourceHelper const& pm_;
     unsigned runNumber_ = 0; // from file name
     art::SubRunID lastSubRunID_;
@@ -100,14 +100,14 @@ namespace mu2e {
   STMTestBeamDataDetail::STMTestBeamDataDetail(const Parameters& conf,
       art::ProductRegistryHelper& rh,
       const art::SourceHelper& pm)
-    : myModuleLabel_("FromSTMTestBeamData")
+    : myModuleType_(conf().module_type())
     , pm_(pm)
     , maxEvents_(conf().maxEvents())
     , verbosityLevel_(conf().verbosityLevel())
   {
-    rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "HPGe");
-    rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleLabel_, "LaBr");
-    rh.reconstitutes<mu2e::STMTestBeamEventInfo,art::InEvent>(myModuleLabel_);
+    rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleType_, "HPGe");
+    rh.reconstitutes<mu2e::STMWaveformDigiCollection,art::InEvent>(myModuleType_, "LaBr");
+    rh.reconstitutes<mu2e::STMTestBeamEventInfo,art::InEvent>(myModuleType_);
   }
 
 
@@ -234,7 +234,7 @@ namespace mu2e {
 
       // Get event information for this trigger and put in the event
       std::unique_ptr<mu2e::STMTestBeamEventInfo> outputEvtInfo(new mu2e::STMTestBeamEventInfo(trigger_header.getTriggerMode(), trigger_header.getTriggerTime()));
-      art::put_product_in_principal(std::move(outputEvtInfo), *outE, myModuleLabel_);
+      art::put_product_in_principal(std::move(outputEvtInfo), *outE, myModuleType_);
 
       // Get the number of slices in this trigger
       int n_slices = trigger_header.getNSlices();
@@ -275,8 +275,8 @@ namespace mu2e {
     }
     else { return false; }
 
-    art::put_product_in_principal(std::move(outputHPGeWaveformDigis), *outE, myModuleLabel_, "HPGe");
-    art::put_product_in_principal(std::move(outputLaBrWaveformDigis), *outE, myModuleLabel_, "LaBr");
+    art::put_product_in_principal(std::move(outputHPGeWaveformDigis), *outE, myModuleType_, "HPGe");
+    art::put_product_in_principal(std::move(outputLaBrWaveformDigis), *outE, myModuleType_, "LaBr");
 
     ++currentEventNumber_;
 
