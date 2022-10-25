@@ -51,12 +51,14 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     auto waveformsHandle = event.getValidHandle<STMWaveformDigiCollection>(_stmWaveformDigisTag);
 
-    std::stringstream histname;
+    std::stringstream histname, histtitle;
     int count = 0;
     for (const auto& waveform : *waveformsHandle) {
       histname.str("");
       histname << "evt" << event.event() << "_waveform" << count;
-      TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), "", waveform.adcs().size(),0,waveform.adcs().size());
+      histtitle.str("");
+      histtitle << "Event " << event.event() << " Waveform " << count;
+      TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), waveform.adcs().size(),0,waveform.adcs().size());
       int i_bin = 1;
       for (const auto& adc : waveform.adcs()) {
         _hWaveform->SetBinContent(i_bin, adc);
