@@ -7,16 +7,16 @@
 process_name: STMTestBeamData
 source : {
   module_type : FromSTMTestBeamData
-  verbosityLevel : 0 # or 1
+  verbosityLevel : 0
 }
 
-services : @local::Services.Core
+services : {
+  message : @local::Services.Core.message
+}
 
 physics : {
-  producers : {
-  }
-  filters: {
-  }
+  producers : {  }
+  filters: {  }
   analyzers: {  }
   TriggerPath : [ ]
   EndPath : [ Output ]
@@ -32,5 +32,3 @@ outputs : {
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 outputs.Output.fileName: "dig.owner.description.version.sequencer.art"
-# no histogram output
-services.TFileService.fileName : "/dev/null"
