@@ -57,7 +57,7 @@ namespace mu2e {
       }
 
       bool checkFixedHeader() const {
-        return (this->getFixedHeader() == (uint32_t) 0xDEADBEEF);
+        return (this->getFixedHeader() == uint32_t(0xDEADBEEF));
       }
     };
 
