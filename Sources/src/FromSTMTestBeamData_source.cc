@@ -236,7 +236,7 @@ namespace mu2e {
       if (binaryFileVersion_ == 2) {
         uint16_t unixtime[4];
         currentFile_->read((char *) &unixtime[0], sizeof(unixtime));
-        uint64_t time = ((uint64_t) unixtime[3] << 48) | ((uint64_t) unixtime[2] << 32) | ((uint64_t) unixtime[1] << 16) | ((uint64_t) unixtime[0]);
+        uint64_t time = (uint64_t(unixtime[3]) << 48) | (uint64_t(unixtime[2]) << 32) | (uint64_t(unixtime[1]) << 16) | (uint64_t(unixtime[0]));
         if (verbosityLevel_ > 0) {
           using time_point = std::chrono::system_clock::time_point;
           time_point header_timepoint(std::chrono::duration_cast<time_point::duration>(std::chrono::milliseconds(time)));
