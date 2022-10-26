@@ -135,6 +135,7 @@ namespace mu2e {
   //----------------------------------------------------------------
   void STMTestBeamDataDetail::closeCurrentFile() {
     currentFileName_ = "";
+    currentFile_.reset();
   }
 
   //----------------------------------------------------------------
