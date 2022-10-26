@@ -63,7 +63,7 @@ namespace mu2e {
       histtitle.str("");
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
       TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), waveform.adcs().size(),0,waveform.adcs().size());
-      for (int i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc) {
+      for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc) {
         const auto adc = waveform.adcs().at(i_adc);
         _hWaveform->SetBinContent(i_adc+1, adc); // bins start numbering at 1
       }
