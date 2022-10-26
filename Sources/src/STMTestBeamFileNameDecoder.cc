@@ -51,6 +51,8 @@ namespace mu2e {
           << " fhicl::ParameterSet specifies an invalid runNumber = "<<runNumber<<"\n";
       }
 
+      // We need to restrict the number to our reserved run range
+      // as of writing, this is defined in the Mu2e wiki
       if(runNumber < 101000 || runNumber > 101999) {
         throw cet::exception("FromSTMTestBeamData") << "Run number (" << runNumber << ") is outside of our reserved run range (101000 -- 101999)" << std::endl;
       }
