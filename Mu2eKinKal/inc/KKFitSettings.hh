@@ -41,7 +41,7 @@ namespace mu2e {
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
       using CADSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,int>>;
       CADSHUSettings cashuConfig{ Name("CADSHUSettings"), Comment(CADSHU::configDescription()) };
-      using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,std::string,int>>;
+      using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,std::string,int,int>>;
       DriftANNSHUSettings annshuConfig{ Name("DriftANNSHUSettings"), Comment(DriftANNSHU::configDescription()) };
       using BkgANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
       BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
