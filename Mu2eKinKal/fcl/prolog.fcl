@@ -145,10 +145,10 @@ Mu2eKinKal : {
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4,-0.5,"Null:Drift","", 2, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6,-0.5,"Null:Drift","", 2, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6,-0.5,"Null:Drift","", 2, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.5,-0.5,"Null:Drift","", 2, 1]
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4,-0.5,"Null:Drift","", 3, 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.5,-0.5,"Null:Drift","", 3, 1]
     ]
     Chi2SHUSettings : [
     ]

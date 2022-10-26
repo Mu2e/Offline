@@ -9,7 +9,7 @@ namespace mu2e {
   // struct describing wire hit internal state
   struct WireHitState {
     enum State { unusable=-3, inactive=-2, left=-1, null=0, right=1};  // drift state
-    enum TOTUse { unused=0, nullonly=1, all=2}; // how to use TOT time constraint
+    enum TOTUse { unused=0, nullonly=1, driftonly=2, all=3}; // how to use TOT time constraint
     State state_;
     StrawHitUpdaters::algorithm algo_; // algorithm used to set this state
     double nulldvar_; // distance variance for null hits
@@ -18,7 +18,8 @@ namespace mu2e {
     double quality_ = -1.0; // algorithm-dependent, dimensionless quality of this state assignment
 // convenience functions
     bool frozen() const { return frozen_; }
-    bool useDrift() const { return state_ == left || state_ == right; }
+    bool wireConstraint() const { return state_ == null; }
+    bool driftConstraint() const { return state_ == left || state_ == right; }
     bool isInactive() const { return state_ == inactive; }
     bool active() const { return state_ > inactive; }
     bool usable() const { return state_ > unusable; }
