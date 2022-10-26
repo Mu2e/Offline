@@ -189,14 +189,15 @@ namespace mu2e {
     if(whstate.active()){
       // optionally constrain DeltaT using the ComboHit
       if(whstate.totuse_ == WireHitState::all ||
-        (whstate.state_ == WireHitState::null && whstate.totuse_ == WireHitState::nullonly) ){
+        (whstate.wireConstraint() && whstate.totuse_ == WireHitState::nullonly) ||
+        (whstate.driftConstraint() && whstate.totuse_ == WireHitState::driftonly) ){
         double tdres = chit_.driftTimeRes();
         double tvar = tdres*tdres;
         double dt = ca_.deltaT() - chit_.driftTime();
         resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
       }
       // distance residual
-      if(whstate.useDrift()){
+      if(whstate.driftConstraint()){
         auto dinfo = fillDriftInfo(true); // use calibrated drift info
         double dr = whstate.lrSign()*dinfo.driftDistance_ - ca_.doca();
         DVEC dRdP = whstate.lrSign()*dinfo.driftVelocity_*ca_.dTdP() -ca_.dDdP();

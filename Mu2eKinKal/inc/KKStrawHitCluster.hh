@@ -157,7 +157,7 @@ namespace mu2e {
     unsigned nactive(0), ndrift(0);
     for(auto const& hit : hits_){
       if(hit->active()) ++nactive;
-      if(hit->hitState().useDrift()) ++ndrift;
+      if(hit->hitState().driftConstraint()) ++ndrift;
     }
     ost << " KKStrawHitCluster with " << nactive << " active hits with " << ndrift  << " using drift information among " << hits_.size() << " total" << std::endl;
     if(detail > 0){
