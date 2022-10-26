@@ -6,6 +6,8 @@
 // Original author Rob Kutschke
 #include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
 
 #include "Offline/MCDataProducts/inc/GenId.hh"
 
@@ -26,17 +28,25 @@ namespace mu2e {
     }
   }
 
-  GenId GenId::findByName ( std::string const& name){
+  GenId GenId::findByName ( std::string const& name, bool throwIfUnknown, bool throwIfUndefined ){
 
     // Size must be at least 2 (for unknown and lastEnum).
     for ( size_t i=0; i<size(); ++i ){
       if ( _name[i] == name ){
+        if ( throwIfUnknown && enum_type(i) == unknown ){
+          throw std::out_of_range( "GenId::unknown is not allowed at this time" );
+        }
         return GenId(enum_type(i));
       }
     }
+
+    if ( throwIfUndefined ){
+      std::ostringstream os;
+      os << "GenId::findByName invalid enum name : " << name;
+      throw std::out_of_range( os.str() );
+    }
     return GenId(unknown);
   }
-
 
 }
 

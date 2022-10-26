@@ -8,6 +8,9 @@
 #include "boost/array.hpp"
 #include <vector>
 
+// PDG
+#include "Offline/DataProducts/inc/PDGCode.hh"
+
 // straws
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
