@@ -109,19 +109,6 @@ namespace mu2e {
       return lastEnum;
     }
 
-    // Want to take an input tag and return an STMChannel
-    static STMChannel getChannel(art::InputTag const& tag) {
-      if (tag.instance() != "") {
-        // If we use instance name, it will only contain the channel name
-        return STMChannel(findByName(tag.instance()));
-      }
-      else {
-        std::string label = tag.label();
-        // Look at last four characeters of module label to decide channel
-        return STMChannel(findByName(label.substr(label.length()-4,4)));
-      }
-    }
-
   private:
 
     // The one and only per-instance member datum.

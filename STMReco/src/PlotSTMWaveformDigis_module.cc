@@ -20,6 +20,8 @@
 #include "TGraph.h"
 
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
+#include "Offline/DataProducts/inc/STMChannel.hh"
+#include "Offline/Mu2eUtilities/inc/STMUtils.hh"
 
 namespace mu2e {
 
@@ -37,6 +39,7 @@ namespace mu2e {
     void analyze(const art::Event& e) override;
 
     art::InputTag _stmWaveformDigisTag;
+    STMChannel _channel;
   };
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
@@ -44,6 +47,7 @@ namespace mu2e {
     _stmWaveformDigisTag(config().stmWaveformDigisTag())
   {
     consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
+    _channel = STMUtils::getChannel(_stmWaveformDigisTag);
   }
 
   void PlotSTMWaveformDigis::analyze(const art::Event& event) {
@@ -57,7 +61,7 @@ namespace mu2e {
       histname.str("");
       histname << "evt" << event.event() << "_waveform" << count;
       histtitle.str("");
-      histtitle << "Event " << event.event() << " Waveform " << count;
+      histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
       TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), waveform.adcs().size(),0,waveform.adcs().size());
       int i_bin = 1;
       for (const auto& adc : waveform.adcs()) {
