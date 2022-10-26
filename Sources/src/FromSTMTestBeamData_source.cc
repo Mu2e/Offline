@@ -156,7 +156,7 @@ namespace mu2e {
 
     // Read the trigger header
     STMTestBeam::TriggerHeader trigger_header;
-    if(currentFile_->read((char *) &trigger_header, sizeof(STMTestBeam::TriggerHeader))) {
+    if(currentFile_->read(reinterpret_cast<char *>(&trigger_header), sizeof(STMTestBeam::TriggerHeader))) {
       managePrincipals(runNumber_, currentSubRunNumber_, currentEventNumber_, outR, outSR, outE);
 
       if(verbosityLevel_ > 0) {
@@ -169,7 +169,7 @@ namespace mu2e {
       // binary file version 2 now contains the unix time stamp
       if (binaryFileVersion_ == 2) {
         uint16_t unixtime[4];
-        currentFile_->read((char *) &unixtime[0], sizeof(unixtime));
+        currentFile_->read(reinterpret_cast<char *>(&unixtime[0]), sizeof(unixtime));
         uint64_t time = (uint64_t(unixtime[3]) << 48) | (uint64_t(unixtime[2]) << 32) | (uint64_t(unixtime[1]) << 16) | (uint64_t(unixtime[0]));
         if (verbosityLevel_ > 0) {
           using time_point = std::chrono::system_clock::time_point;
@@ -188,7 +188,7 @@ namespace mu2e {
       for (int i_slice = 0; i_slice < n_slices; ++i_slice) {
         STMTestBeam::SliceHeader slice_header[1];
         // Read the slice header
-        if(currentFile_->read((char *) &slice_header[0], sizeof(STMTestBeam::SliceHeader))) {
+        if(currentFile_->read(reinterpret_cast<char *>(&slice_header[0]), sizeof(STMTestBeam::SliceHeader))) {
           if(verbosityLevel_ > 0) {
             std::cout << slice_header[0] << std::endl;
           }
@@ -201,7 +201,7 @@ namespace mu2e {
           adcs.reserve(n_adc_samples);
           int16_t adc[1];
           for (unsigned long int i_adc_sample = 0; i_adc_sample < n_adc_samples; ++i_adc_sample) {
-            currentFile_->read((char *) &adc[0], sizeof(int16_t));
+            currentFile_->read(reinterpret_cast<char *>(&adc[0]), sizeof(int16_t));
             adcs.push_back(adc[0]);
           }
 
