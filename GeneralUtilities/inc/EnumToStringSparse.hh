@@ -51,6 +51,7 @@ namespace mu2e {
   public:
 
     typedef typename Detail::enum_type                       enum_type;
+    typedef typename Detail::enum_type                       type;
     typedef std::map<typename Detail::enum_type,std::string> map_type;
 
     // See note 1.
