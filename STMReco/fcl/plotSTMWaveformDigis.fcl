@@ -12,7 +12,7 @@ source : {
 
 services : {
   message : @local::Services.Core.message
-  TFileService : { }
+  TFileService : { fileName : "stmWaveformDigis.root" }
 }
 
 physics: {
@@ -33,5 +33,3 @@ physics: {
   anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis ]
   end_paths: [anaPath]
 }
-
-services.TFileService.fileName : "stmWaveformDigis.root"
