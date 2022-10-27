@@ -41,6 +41,7 @@ helper.make_plugins( [ mainlib,
                        'cetlib_except',
                        'mu2e_Mu2eUtilities',
                        'mu2e_DataProducts',
+                       'mu2e_DbTables',
                        rootlibs
                      ] )
 

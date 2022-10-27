@@ -11,8 +11,12 @@ source : {
 }
 
 services : {
-  message : @local::Services.Core.message
+  message : { @table::Services.Core.message }
   TFileService : { fileName : "stmWaveformDigis.root" }
+  GeometryService : { @table::Services.Core.GeometryService }
+  GlobalConstantsService : { @table::Services.Core.GlobalConstantsService }
+  DbService : { @table::Services.Core.DbService }
+  ProditionsService : { @table::Services.Core.ProditionsService }
 }
 
 physics: {
@@ -22,10 +26,14 @@ physics: {
     plotHPGeWaveformDigis : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
+      subtractPedestal : false
+      verbosityLevel : 0
     }
     plotLaBrWaveformDigis : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
     }
   }
   # setup paths
@@ -33,3 +41,6 @@ physics: {
   anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis ]
   end_paths: [anaPath]
 }
+
+# Can define pedestals in fcl like the commented line below
+# services.ProditionsService.stmEnergyCalib.pedestals : [ ["HPGe",100.0], ["LaBr",2000.0] ]
