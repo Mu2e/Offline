@@ -6,7 +6,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-
+#include "Offline/DataProducts/inc/GenVector.hh"
 // #include "TrackerGeom/inc/Straw.hh"
 // #include "RecoDataProducts/inc/StrawHit.hh"
 
@@ -40,9 +40,11 @@ namespace mu2e {
 
     virtual const SimParticle* getSimParticle(const art::Event* Event, int IHit);
 
+    virtual const XYZVectorF* getMom(const art::Event* Event, int HitIndex) { return NULL; }
     virtual int   getID      (const SimParticle* Sim) { return -1;  }
     virtual int   getPdgID   (const SimParticle* Sim) { return -1;  }
     virtual float getStartMom(const SimParticle* Sim) { return -1.; }
+
   };
 }
 
