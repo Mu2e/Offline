@@ -65,13 +65,13 @@ physics.analyzers.readvd.saveVD           : [1,2,5]
 // cross the required VD. If not specified, save all particles.
 physics.analyzers.readvd.requireVD        : 5
 // Save only listed types of particles in the main ntuple
-physics.analyzers.readvd.savePDG          : [ 11, -11 ]
+physics.analyzers.readvd.savePDG          : [ e_minus, e_plus ]
 // Save only those particles in the ntuple, which survive until timeCut (ns)
 physics.analyzers.readvd.timeCut          : 0
 // Save only particles with p>minMomentum (MeV/c) in the main ntuple
 physics.analyzers.readvd.minMomentum             : 90
 // Drop listed types of particles in the time vd ntuple
-physics.analyzers.readvd.tvdDropPDG       : [ 2112 ]
+physics.analyzers.readvd.tvdDropPDG       : [ n0 ]
 physics.analyzers.readvd.maxPrint         : 10
 // Source of data. Using standard Art tags.
 physics.analyzers.readvd.simParticleColl  : "muonBeamFilter"
