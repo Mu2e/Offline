@@ -62,7 +62,7 @@ physics : {
     readvd: {
       module_type      : ReadVirtualDetector
       vdStepPoints     : "g4run:virtualdetector"
-      savePDG          : [11]
+      savePDG          : [e_minus]
       maxPrint         : 201
     }
 
