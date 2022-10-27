@@ -1,0 +1,35 @@
+#
+# Plot STMWaveformDigis
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: PlotSTMWaveformDigis
+
+source : {
+  module_type : RootInput
+}
+
+services : {
+  message : @local::Services.Core.message
+  TFileService : { fileName : "stmWaveformDigis.root" }
+}
+
+physics: {
+  producers : {  }
+  filters : {  }
+  analyzers : {
+    plotHPGeWaveformDigis : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
+    }
+    plotLaBrWaveformDigis : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
+    }
+  }
+  # setup paths
+  trigger_paths: [  ]
+  anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis ]
+  end_paths: [anaPath]
+}

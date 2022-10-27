@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "canvas/Utilities/InputTag.h"
+
 namespace mu2e {
 
   class STMChannel {
