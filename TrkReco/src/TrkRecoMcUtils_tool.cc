@@ -37,7 +37,7 @@ namespace mu2e {
       const ComboHitCollection*     _chColl;
       std::string                   _strawDigiMCCollTag;
       const StrawDigiMCCollection*  _mcdigis;
-      unsigned int                  _lastEvent;
+      art::EventID                  _lastEvent;
       //    SimParticleTimeOffset*       _timeOffsets;
       double                        _mbtime;
 
@@ -77,7 +77,7 @@ namespace mu2e {
     _comboHitCollTag   { PSet.get<std::string>("comboHitCollTag"   ) },
     _strawDigiMCCollTag{ PSet.get<std::string>("strawDigiMCCollTag") }
   {
-    _lastEvent   = -1;
+    _lastEvent   = art::EventID(0,0,0);
     _mcdigis     = nullptr;
     _chColl      = nullptr;
     _mbtime      = -1;
@@ -104,7 +104,7 @@ namespace mu2e {
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       _mbtime      = accPar->deBuncherPeriod;
     }
-    _lastEvent = Event->event();
+    _lastEvent = Event->id();
 
     return 0;
   }
@@ -113,7 +113,7 @@ namespace mu2e {
   // returns ID of the SimParticle corresponding to straw hit 'Index'
   //-----------------------------------------------------------------------------
   int TrkRecoMcUtils::strawHitSimId(const art::Event* Event, int HitIndex) {
-    if (Event->event() != _lastEvent) initEvent(Event);
+    if (Event->id() != _lastEvent) initEvent(Event);
     return (*_mcdigis)[HitIndex].earlyStrawGasStep()->simParticle()->id().asInt();
   }
   //-----------------------------------------------------------------------------
@@ -124,7 +124,7 @@ namespace mu2e {
 
     double mcdoca(-99.0);
 
-    if (Event->event() != _lastEvent) initEvent(Event);
+    if (Event->id() != _lastEvent) initEvent(Event);
 
     const ComboHit* ch    = &StrawHit->comboHit();
     const Straw*    straw = &StrawHit->straw();
@@ -164,7 +164,7 @@ namespace mu2e {
   // //-----------------------------------------------------------------------------
   // // update if new event
   // //-----------------------------------------------------------------------------
-  //     if (Event->event() != _lastEvent) initEvent(Event);
+  //     if (Event->id() != _lastEvent) initEvent(Event);
 
   //     if (_mcdigis == NULL) return -1;
 
@@ -213,7 +213,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   const SimParticle* TrkRecoMcUtils::getSimParticle(const art::Event* Event, int HitIndex) {
 
-    if (Event->event() != _lastEvent) initEvent(Event);
+    if (Event->id() != _lastEvent) initEvent(Event);
 
     return (*_mcdigis)[HitIndex].earlyStrawGasStep()->simParticle().get();
   }
@@ -221,7 +221,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   const XYZVectorF* TrkRecoMcUtils::getMom(const art::Event* Event, int HitIndex) {
 
-    if (Event->event() != _lastEvent) initEvent(Event);
+    if (Event->id() != _lastEvent) initEvent(Event);
 
     return &(*_mcdigis)[HitIndex].earlyStrawGasStep()->momentum();
   }
