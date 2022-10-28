@@ -11,12 +11,8 @@ source : {
 }
 
 services : {
-  message : { @table::Services.Core.message }
+  @table::Services.Core
   TFileService : { fileName : "stmWaveformDigis.root" }
-  GeometryService : { @table::Services.Core.GeometryService }
-  GlobalConstantsService : { @table::Services.Core.GlobalConstantsService }
-  DbService : { @table::Services.Core.DbService }
-  ProditionsService : { @table::Services.Core.ProditionsService }
 }
 
 physics: {
