@@ -53,8 +53,7 @@ namespace mu2e {
     art::EDAnalyzer{config},
     _stmWaveformDigisTag(config().stmWaveformDigisTag()),
     _subtractPedestal(config().subtractPedestal()),
-    _verbosityLevel(config().verbosityLevel()),
-    _stmEnergyCalib_h()
+    _verbosityLevel(config().verbosityLevel())
   {
     consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     _channel = STMUtils::getChannel(_stmWaveformDigisTag);
