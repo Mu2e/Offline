@@ -308,7 +308,7 @@ namespace mu2e {
     pars[KTRAJ::d0_] = get<0>(info);
     pars[KTRAJ::phi0_] = get<1>(info);
     pars[KTRAJ::z0_] = get<2>(info);
-    pars[KTRAJ::cost_] = get<3>(info);
+    pars[KTRAJ::theta_] = get<3>(info);
     pars[KTRAJ::t0_] = get<4>(info); //TODO
     pars[KTRAJ::mom_] = get<5>(info); //TODO
 

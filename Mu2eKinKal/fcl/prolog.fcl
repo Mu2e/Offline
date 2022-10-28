@@ -15,11 +15,13 @@ Mu2eKinKal : {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
     UseCaloCluster : true
+    MaterialCorrection : true
+    AddHits : true
     AddMaterial : true
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
     StrawHitClusterLevel : "uniquepanel"
-    CaloTrackerTimeOffset : -0.8 #ns
+    CaloTrackerTimeOffset : -1.2 #ns
     CaloPositionResolution : 9.0 #mm
     CaloTimeResolution : 0.5 #ns
     CaloPropagationSpeed : 200.0 #mm/ns
@@ -82,19 +84,24 @@ Mu2eKinKal : {
       # annealing temp, strawhit updater algorithm
       [ 2.0, "CADSHU" ],
       [ 1.0, "CADSHU" ],
-      [ 0.3, "CADSHU" ]
+      [ 0.3, "CADSHU" ],
+      [ 0.0, "CADSHU:BkgANNSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maderr, minrdrift, maxrdrift, allow, tofreeze, diag
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ]
+      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
+      [ 6.0,  6.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
       [10.0, -1.0, -1.0, true, 0 ],
       [5.0, -1.0, -1.0, true, 0 ],
       [3.0, 3.0, -1.0, true, 0 ]
+    ]
+    BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/Bkg_stage1.weights.xml",0.9,"Inactive",1]
     ]
   }
 
@@ -126,11 +133,11 @@ Mu2eKinKal : {
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
       [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  6.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ]
+      [ 6.0,  6.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 4.0,  2.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 4.0,  2.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
     ]
 
     BkgANNSHUSettings : [
@@ -138,10 +145,10 @@ Mu2eKinKal : {
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4,-0.5,"Null:Drift","", 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6,-0.5,"Null:Drift","", 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6,-0.5,"Null:Drift","", 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.4,-0.5,"Null:Drift","", 1]
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4,-0.5,"Null:Drift","", 3, 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.5,-0.5,"Null:Drift","", 3, 1]
     ]
     Chi2SHUSettings : [
     ]

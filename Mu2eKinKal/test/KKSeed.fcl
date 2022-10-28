@@ -13,7 +13,7 @@
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 
-process_name: Reconstruct
+process_name: KKSeed
 source : { module_type : RootInput }
 services : @local::Services.Reco
 physics :
@@ -61,12 +61,6 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
-physics.producers.KKDeMSeedFit.Mu2eSettings.UseCaloCluster : true
-services.ProditionsService.strawResponse.useOldDrift: false
-services.ProditionsService.strawResponse.driftFit : [0.0,1.0,0.001]
-services.ProditionsService.strawResponse.driftResIsTime : false
-services.ProditionsService.strawResponse.driftResBins : [0.0, 2.5]
-services.ProditionsService.strawResponse.driftRes : [0.2,0.2]
 
 #include "Production/JobConfig/reco/epilog.fcl"
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
@@ -83,9 +77,6 @@ physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgH
 physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
 physics.producers.KKDeMSeedFit.ModuleSettings.SaveAllFits : true
 
-
-services.TFileService.fileName: "KKSeed.root"
-#
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.candidate.options.fillBestCrv : false
 physics.analyzers.TAKK.diagLevel : 2
@@ -101,4 +92,6 @@ physics.analyzers.TAKK.candidate.suffix : "DeMSeedFit"
 physics.analyzers.TAKK.candidate.options.fillHits : true
 physics.analyzers.TAKK.supplements : []
 
+physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.TimeTracker.printSummary: true
+services.TFileService.fileName: "nts.owner.KKSeed.version.sequence.root"

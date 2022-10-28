@@ -10,6 +10,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "KinKal/Detector/Residual.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
@@ -31,6 +32,7 @@ namespace mu2e {
       _flag(chit.flag()),
       _ambig(whs.state_), _algo(whs.algo_), _frozen(whs.frozen_), _quality(whs.quality_),
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()),_werr(chit.wireRes()), _tottdrift(chit.driftTime()),
+      _tot(chit.TOTs()),
       _ptoca(rptca.particleToca()),_stoca(rptca.sensorToca()),
       _rdoca(rptca.doca()),_rdocavar(rptca.docaVar()),
       _rdt(rptca.deltaT()), _rtocavar(rptca.tocaVar()),
@@ -61,7 +63,7 @@ namespace mu2e {
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(flag), _ambig(ambig), _algo(-10), _frozen(false),
       _edep(chit.energyDep()),_htime(chit.time()),_wdist(chit.wireDist()), _werr(chit.wireRes()),
-      _tottdrift(chit.driftTime()),
+      _tottdrift(chit.driftTime()), _tot{0.0,0.0},
       _ptoca(t0._t0),_stoca(chit.time()-stime),
       _rdoca(wdoca), _rdocavar(rerr*rerr), _rdt(dt), _rtocavar(t0._t0err*t0._t0err), _udoca(wdoca), _udocavar(rerr*rerr), _udt(dt), _utocavar(t0._t0err*t0._t0err),
       _rupos(upos),_uupos(upos),
@@ -115,6 +117,7 @@ namespace mu2e {
     Float_t         _wdist =0;       // raw hit U position
     Float_t         _werr =0;    // raw hit U position error estimate
     Float_t         _tottdrift =0;   // drift time from TOT for this hit
+    TrkTypes::TOTTimes _tot;   // TOT times in ns from each end
     float_t         _ptoca =0;    // reference particle time of closest approach (TOCA)
     float_t         _stoca =0;    // reference sensor time of closest approach (TOCA)
     Float_t         _rdoca, _rdocavar =0;   // reference (biased) DOCA from the track to the wire, signed by the angular momentum WRT the wire and the measurement end (and variance)

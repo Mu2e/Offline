@@ -16,15 +16,16 @@ namespace mu2e {
     allowed_ = WHSMask(allowed);
     std::string freeze = std::get<4>(config);
     freeze_ = WHSMask(freeze);
-    diag_ = std::get<5>(config);
+    totuse_ = (WireHitState::TOTUse)std::get<5>(config);
+    diag_ = std::get<6>(config);
     if(diag_ > 0)
       std::cout << "DriftANNSHU weights" << std::get<0>(config) << " cut " << mvacut_ << " null doca " << nulldoca_
-        << " allowing " << allowed_ << " freezing " << freeze_ << std::endl;
+        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse_ << std::endl;
     if(diag_ > 1)mva_->showMVA();
   }
 
   std::string const& DriftANNSHU::configDescription() {
-    static std::string descrip( "Weight file, ANN cut, null hit doca, allowed states, states to freeze, diag level");
+    static std::string descrip( "Weight file, ANN cut, null hit doca, allowed states, TOT use, states to freeze, diag level");
     return descrip;
   }
 
@@ -51,11 +52,13 @@ namespace mu2e {
         if(allowed_.hasAnyProperty(WHSMask::drift)){
           whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
+          whstate.totuse_ = totuse_;
         }
       } else {
         if(allowed_.hasAnyProperty(WHSMask::null)){
           whstate.state_ = WireHitState::null;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
+          whstate.totuse_ = totuse_;
           if(nulldoca_ > 0.0)
             whstate.nulldvar_ = nulldoca_*nulldoca_/3.0; // assumes a flat distribution over [-nulldoca_,nulldoca_]
           else
