@@ -77,7 +77,7 @@ namespace mu2e {
     _comboHitCollTag   { PSet.get<std::string>("comboHitCollTag"   ) },
     _strawDigiMCCollTag{ PSet.get<std::string>("strawDigiMCCollTag") }
   {
-    _lastEvent   = art::EventID(0,0,0);
+    _lastEvent   = art::EventID();
     _mcdigis     = nullptr;
     _chColl      = nullptr;
     _mbtime      = -1;
