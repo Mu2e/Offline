@@ -101,8 +101,8 @@ CaloFilters : {
     caloFastMVALHCEFilter : {
         module_type            : CaloLikelihood
         CaloClusterModuleLabel : CaloClusterFast
-        SignalTemplates        : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root"
-        BackgroundTemplates    : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root"
+        SignalTemplates        : "OfflineData/CaloFilters/v7_1_5/caloLH_ce.root"
+        BackgroundTemplates    : "OfflineData/CaloFilters/v7_1_5/caloLH_bkg.root"
         DropSecondDisk         : false
         MinClusterEnergy       : 50.   # MeV
         ClusterEnergyStep      : 10.   # MeV
@@ -115,8 +115,8 @@ CaloFilters : {
     caloFastPhotonFilter : {
         module_type            : CaloLikelihood
         CaloClusterModuleLabel : CaloClusterFast
-        SignalTemplates        : "Offline/CaloFilters/data/v7_1_5/caloLH_ce.root"
-        BackgroundTemplates    : "Offline/CaloFilters/data/v7_1_5/caloLH_bkg.root"
+        SignalTemplates        : "OfflineData/CaloFilters/v7_1_5/caloLH_ce.root"
+        BackgroundTemplates    : "OfflineData/CaloFilters/v7_1_5/caloLH_bkg.root"
         DropSecondDisk         : false
         MinClusterEnergy       : 50.   # MeV
         ClusterEnergyStep      : 10.   # MeV
