@@ -30,6 +30,7 @@
 #include "Offline/Validation/inc/ValSimParticleTimeMap.hh"
 #include "Offline/Validation/inc/ValStatusG4.hh"
 #include "Offline/Validation/inc/ValStepPointMC.hh"
+#include "Offline/Validation/inc/ValSTMWaveformDigi.hh"
 #include "Offline/Validation/inc/ValStrawDigi.hh"
 #include "Offline/Validation/inc/ValStrawDigiADCWaveform.hh"
 #include "Offline/Validation/inc/ValStrawDigiMC.hh"
@@ -90,6 +91,7 @@ class Validation : public art::EDAnalyzer {
   std::vector<std::shared_ptr<ValCrvDigiMC>> _cmdg;
   std::vector<std::shared_ptr<ValCrvRecoPulse>> _cvrp;
   std::vector<std::shared_ptr<ValCrvCoincidenceCluster>> _cvcc;
+  std::vector<std::shared_ptr<ValSTMWaveformDigi>> _stmw;
   std::vector<std::shared_ptr<ValStrawGasStep>> _stgs;
   std::vector<std::shared_ptr<ValStrawDigi>> _stdg;
   std::vector<std::shared_ptr<ValStrawDigiADCWaveform>> _stdw;
@@ -163,6 +165,7 @@ void mu2e::Validation::analyze(art::Event const& event) {
   analyzeProduct<TrackSummaryCollection, ValTrackSummary>(_trks, event);
   analyzeProduct<TrackClusterMatchCollection, ValTrackClusterMatch>(_mtch,
                                                                     event);
+  analyzeProduct<STMWaveformDigiCollection, ValSTMWaveformDigi>(_stmw, event);
   analyzeProduct<art::TriggerResults, ValTriggerResults>(_trrs, event);
   analyzeProduct<TriggerInfo, ValTriggerInfo>(_tris, event);
 }
