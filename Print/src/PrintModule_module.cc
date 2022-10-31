@@ -39,6 +39,7 @@
 #include "Offline/Print/inc/SimParticleTimeMapPrinter.hh"
 #include "Offline/Print/inc/StatusG4Printer.hh"
 #include "Offline/Print/inc/StepPointMCPrinter.hh"
+#include "Offline/Print/inc/STMWaveformDigiPrinter.hh"
 #include "Offline/Print/inc/StrawDigiADCWaveformPrinter.hh"
 #include "Offline/Print/inc/StrawDigiMCPrinter.hh"
 #include "Offline/Print/inc/StrawDigiPrinter.hh"
@@ -138,6 +139,8 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("timeClusterPrinter")};
     fhicl::Table<ProductPrinter::Config> kalSeedPrinter{
         fhicl::Name("kalSeedPrinter")};
+    fhicl::Table<ProductPrinter::Config> stmWaveformDigiPrinter{
+        fhicl::Name("stmWaveformDigiPrinter")};
     fhicl::Table<ProductPrinter::Config> physicalVolumePrinter{
         fhicl::Name("physicalVolumePrinter")};
     fhicl::Table<ProductPrinter::Config> triggerResultsPrinter{
@@ -233,6 +236,8 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf) {
   _printers.push_back(
       make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
   _printers.push_back(make_unique<KalSeedPrinter>(conf().kalSeedPrinter()));
+  _printers.push_back(make_unique<STMWaveformDigiPrinter>(
+      conf().stmWaveformDigiPrinter()));
   _printers.push_back(
       make_unique<PhysicalVolumePrinter>(conf().physicalVolumePrinter()));
   _printers.push_back(
