@@ -51,11 +51,9 @@ double calorimeter.criticalEnergyPosCsI = 11.17; //MeV
 double calorimeter.criticalEnergyNegCsI = 10.80; //MeV
 double calorimeter.densityCsI           = 4.51; // gm/cc
 
-//string calorimeter.pulseFileName = "/nfs/home/echenard/Experiments/Mu2e/Simulation/Offline/ConditionsService/data/CsI-waveform-2016-07-12.root";
-//string calorimeter.pulseFileName = "Offline/ConditionsService/data/CsI-waveform-2016-07-12.root";
-string calorimeter.pulseFileName = "Offline/ConditionsService/data/CsI-waveform-2020-02-12.root";
+string calorimeter.pulseFileName = "OfflineData/ConditionsService/CsI-waveform-2020-02-12.root";
 string calorimeter.pulseHistName = "h_waveform";
-string calorimeter.propagFileName = "Offline/ConditionsService/data/CsI-propag-2020-07-29.root";
+string calorimeter.propagFileName = "OfflineData/ConditionsService/CsI-propag-2020-07-29.root";
 string calorimeter.propagHistName = "h_zposTime";
 
 
