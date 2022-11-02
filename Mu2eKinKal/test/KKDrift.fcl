@@ -13,7 +13,7 @@
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 
-process_name: R
+process_name: KKDrift
 source : { module_type : RootInput }
 services : @local::Services.Reco
 physics :
@@ -62,13 +62,7 @@ outputs : {
   }
 }
 
-
 #include "Production/JobConfig/reco/epilog.fcl"
-services.ProditionsService.strawResponse.useOldDrift: false
-services.ProditionsService.strawResponse.driftFit : [0.0,1.0,0.001]
-services.ProditionsService.strawResponse.driftResIsTime : false
-services.ProditionsService.strawResponse.driftResBins : [0.0,2.5]
-services.ProditionsService.strawResponse.driftRes : [0.3,0.3]
 
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
@@ -76,8 +70,6 @@ physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "
 physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeMDriftFit"]
 physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
 physics.producers.SelectRecoMC.debugLevel : 0
-
-physics.end_paths : [ EndPath ] # needed for generate_fcl
 
 physics.producers.KKDeMDriftFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
 physics.producers.KKDeMDriftFit.ModuleSettings.ComboHitCollection : "makeSH"
@@ -98,7 +90,9 @@ physics.analyzers.TAKK.FillHitInfo : true
 physics.analyzers.TAKK.FillTriggerInfo : false
 physics.analyzers.TAKK.candidate.input : "KK"
 physics.analyzers.TAKK.candidate.suffix : "DeMDriftFit"
+physics.analyzers.TAKK.candidate.options.fillHits : true
 physics.analyzers.TAKK.supplements : []
 
+physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.TimeTracker.printSummary: true
 services.TFileService.fileName: "nts.owner.KKDrift.version.sequence.root"

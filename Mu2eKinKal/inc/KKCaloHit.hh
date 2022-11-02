@@ -71,7 +71,7 @@ namespace mu2e {
     // from which it's impossible to ever get back to the correct one.  Active loop checking might be useful eventually too TODO
     //    if(tpca_.usable()) tphint = CAHint(tpca_.particleToca(),tpca_.sensorToca());
     tpca_ = CA(ktrajptr,saxis_,tphint,tpca_.precision());
-    if(!tpca_.usable())throw cet::exception("RECO")<<"mu2e::KKCaloHit: TPOCA failure" << std::endl;
+    if(!tpca_.usable())rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
   }
 
   template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
@@ -92,13 +92,16 @@ namespace mu2e {
       auto tphint = tpca_.hint();
       tphint.particleToca_ -= sdist/sspeed;
       tpca_ = CA(tpca_.particleTrajPtr(),saxis_,tphint,precision());
-      // should check if this is still unphysical and disable the hit if so FIXME
     }
-    // residual is just delta-T at CA.
-    // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
-    double dd2 = std::max(0.0001,tpca_.dirDot()*tpca_.dirDot());
-    double totvar = tvar_ + wvar_/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
-    rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,-tpca_.dTdP());
+    if(tpca_.usable()){
+      // residual is just delta-T at CA.
+      // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
+      double dd2 = std::max(0.0001,tpca_.dirDot()*tpca_.dirDot());
+      double totvar = tvar_ + wvar_/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
+      rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,tpca_.dTdP());
+    } else {
+      rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
+    }
     // finally update the weight
     this->updateWeight(miconfig);
   }

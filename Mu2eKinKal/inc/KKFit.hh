@@ -96,7 +96,9 @@ namespace mu2e {
       bool useCalo() const { return usecalo_; }
       PDGCode::type fitParticle() const { return tpart_;}
       TrkFitDirection fitDirection() const { return tdir_;}
+      bool correctMaterial() const { return matcorr_; }
       bool addMaterial() const { return addmat_; }
+      bool addHits() const { return addhits_; }
       auto const& strawHitClusterer() const { return shclusterer_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
@@ -106,7 +108,7 @@ namespace mu2e {
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
       PDGCode::type tpart_;
       TrkFitDirection tdir_;
-      bool addmat_, usecalo_; // flags
+      bool matcorr_, addhits_, addmat_, usecalo_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions FIXME!
@@ -133,6 +135,8 @@ namespace mu2e {
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(Mu2eConfig const& fitconfig) :
     tpart_(static_cast<PDGCode::type>(fitconfig.fitParticle())),
     tdir_(static_cast<TrkFitDirection::FitDirection>(fitconfig.fitDirection())),
+    matcorr_(fitconfig.matCorr()),
+    addhits_(fitconfig.addHits()),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
     shclusterer_(StrawIdMask(fitconfig.strawHitClusterLevel()),fitconfig.strawHitClusterDeltaStraw(),fitconfig.strawHitClusterDeltaT()),
@@ -177,7 +181,7 @@ namespace mu2e {
       // create the hit
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, strawidx, strawresponse));
       // create the material crossing, including this reference
-      if(addmat_) exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
+      if(matcorr_) exings.push_back(std::make_shared<KKSTRAWXING>(hits.back(),smat));
     }
   }
 
@@ -224,9 +228,9 @@ namespace mu2e {
     KKSTRAWHITCOL addstrawhits;
     KKCALOHITCOL addcalohits;
     KKSTRAWXINGCOL addstrawxings;
-    addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits );
-    if(addMaterial())addStraws(tracker, smat, kktrk, addstrawhits, addstrawxings);
-    if(useCalo()&&kktrk.caloHits().size()==0)addCaloHit(calo, kktrk, cchandle, addcalohits);
+    if(addhits_)addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits );
+    if(matcorr_ && addmat_)addStraws(tracker, smat, kktrk, addstrawhits, addstrawxings);
+    if(addhits_ && usecalo_ && kktrk.caloHits().size()==0)addCaloHit(calo, kktrk, cchandle, addcalohits);
     if(printLevel_ > 1){
       std::cout << "KKTrk extension adding "
         << addstrawhits.size() << " StrawHits and "
@@ -433,7 +437,7 @@ namespace mu2e {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
     if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
-    if(addmat_)fflag.merge(TrkFitFlag::MatCorr);
+    if(matcorr_)fflag.merge(TrkFitFlag::MatCorr);
     if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece
     auto const& fittraj = kktrk.fitTraj();
@@ -452,10 +456,14 @@ namespace mu2e {
     fseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {
       Residual utres, udres;
+      // compute unbiased residuals; this can fail if the track has marginal coverage
       if(kktrk.fitStatus().usable()) {
-        // compute unbiased residuals
-        udres = strawhit->residual(Mu2eKinKal::dresid);
-        if(strawhit->refResidual(Mu2eKinKal::tresid).active()) utres = strawhit->residual(Mu2eKinKal::tresid);
+        try {
+          udres = strawhit->residual(Mu2eKinKal::dresid);
+          utres = strawhit->residual(Mu2eKinKal::tresid);
+        } catch (std::exception const& error) {
+          std::cout << "Unbiased residual calculation failure, nDOF = " << fstatus.chisq_.nDOF();
+        }
       }
       fseed._hits.emplace_back(strawhit->strawHitIndex(),strawhit->hit(),
           strawhit->closestApproach().tpData(),

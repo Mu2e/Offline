@@ -11,6 +11,7 @@
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include <stdint.h>
@@ -62,6 +63,8 @@ namespace mu2e {
     Float_t transErr2() const { return _tres*_tres; }
     Float_t wireErr2() const { return _wres*_wres; }
     Float_t wireDist() const { return _wdist; }
+    Float_t  TOT(StrawEnd end=StrawEnd::cal)       const { return _tot[end];}
+    auto const& TOTs() const { return _tot; }
     uint16_t nCombo() const { return _ncombo; }
     uint16_t nStrawHits() const { return _nsh; }
     StrawIdMask const& mask() const { return _mask;}
@@ -79,6 +82,7 @@ namespace mu2e {
     Float_t _time, _edep, _qual; // derived StrawHit (agregate) info
     Float_t _dtime; // TOT based drift time estimate
     Float_t _dtimeres; // resolution of TOT drift time
+    TrkTypes::TOTTimes  _tot;   // TOT times in ns from each end
     Float_t _ptime; // prop time estimate
     Float_t _pathlength; // path length estimate
     Float_t _hphi; // azimuth relative to a helix center
