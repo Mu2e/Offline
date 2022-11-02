@@ -10,6 +10,7 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/Mu2eUtilities/inc/fromStrings.hh"
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
@@ -127,6 +128,7 @@ namespace mu2e {
   class ReadVirtualDetector : public art::EDAnalyzer {
 
     typedef vector<int> Vint;
+    typedef vector<string> Vstr;
     typedef SimParticleCollection::key_type key_type;
 
     // Name of the VD and TVD StepPoint collections
@@ -247,22 +249,24 @@ namespace mu2e {
     if (_debugout > 1){
       std::cout << "_vd_required = " << _vd_required << std::endl;
     }
-    Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
-    if( pdg_ids.size()>0 ) {
+    Vstr const & pdg_names = pset.get<Vstr>("savePDG", Vstr());
+    if( pdg_names.size()>0 ) {
       cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
-      for( size_t i=0; i<pdg_ids.size(); ++i ) {
-        pdg_save.insert(pdg_ids[i]);
-        cout << pdg_ids[i] << ", ";
+      for( size_t i=0; i<pdg_names.size(); ++i ) {
+        PDGCode::enum_type id = PDGCode(pdg_names[i]);
+        pdg_save.insert(int(id));
+        cout << pdg_names[i] << " ("<<id<<"), ";
       }
       cout << endl;
     }
 
-    Vint const & tvd_drop_ids = pset.get<Vint>("tvdDropPDG", Vint());
-    if( tvd_drop_ids.size()>0 ) {
+    Vstr const & tvd_drop_names = pset.get<Vstr>("tvdDropPDG", Vstr());
+    if( tvd_drop_names.size()>0 ) {
       cout << "ReadVirtualDetector: drop following particle types from time VD ntuple: ";
-      for( size_t i=0; i<tvd_drop_ids.size(); ++i ) {
-        tvd_drop_pdg.insert(tvd_drop_ids[i]);
-        cout << tvd_drop_ids[i] << ", ";
+      for( size_t i=0; i<tvd_drop_names.size(); ++i ) {
+        PDGCode::enum_type id = PDGCode(tvd_drop_names[i]);
+        tvd_drop_pdg.insert(int(id));
+        cout << tvd_drop_names[i] << "("<<id<<"), ";
       }
       cout << endl;
     }

@@ -50,7 +50,7 @@ VirtualDetectorDefaults: {
     saveStopped : false
     saveAllPDG : false
     // Save only listed types of particles in the main ntuple
-    savePDG    : [11,-11]  // electrons and positrons
+    savePDG    : [e_minus,e_plus]  // electrons and positrons
     // Drop listed types of particles in the time vd ntuple
     tvdDropPDG : []
     // List of virtual detectors to save in ntuple

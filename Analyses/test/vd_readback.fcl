@@ -5,6 +5,7 @@
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 #include "Offline/Analyses/fcl/prolog.fcl"
 
@@ -19,27 +20,8 @@ source :
   maxEvents : -1
 }
 
-services :
-{
-  message : @local::default_message
-
-  TFileService :
-  {
-    fileName : "vd_readback.root"
-  }
-
-  GeometryService :
-  {
-    inputFile : "Offline/Mu2eG4/geom/geom_common.txt"
-  }
-
-  ConditionsService :
-  {
-    conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"
-  }
-
-  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
-
+services : {
+   @table::Services.Core
 }
 
 physics :
@@ -63,5 +45,6 @@ physics :
 }
 
 physics.analyzers.readvd.debugOutput : 0
-physics.analyzers.readvd.savePDG     : [11, -11, 13, -13, 22, 111, 211, -211, 321, -321, 2112, 2212, -2212]
+physics.analyzers.readvd.savePDG     : [e_minus, e_plus, mu_minus, mu_plus, gamma, pi0, pi_plus, pi_minus, K_plus, K_minus, n0, proton, anti_proton]
 physics.analyzers.readvd.maxPrint    : 10
+services.TFileService.fileName  : "vd_readback.root"

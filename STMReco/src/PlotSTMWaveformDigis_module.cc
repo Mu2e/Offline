@@ -22,6 +22,8 @@
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/DataProducts/inc/STMChannel.hh"
 #include "Offline/Mu2eUtilities/inc/STMUtils.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
 
 namespace mu2e {
 
@@ -31,6 +33,8 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
+        fhicl::Atom<bool> subtractPedestal{ Name("subtractPedestal"), Comment("True/False whether to subtract the pedestal before plotting")};
+        fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity level")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMWaveformDigis(const Parameters& conf);
@@ -39,12 +43,17 @@ namespace mu2e {
     void analyze(const art::Event& e) override;
 
     art::InputTag _stmWaveformDigisTag;
+    bool _subtractPedestal;
+    int _verbosityLevel;
+    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
     STMChannel _channel;
   };
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
     art::EDAnalyzer{config},
-    _stmWaveformDigisTag(config().stmWaveformDigisTag())
+    _stmWaveformDigisTag(config().stmWaveformDigisTag()),
+    _subtractPedestal(config().subtractPedestal()),
+    _verbosityLevel(config().verbosityLevel())
   {
     consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     _channel = STMUtils::getChannel(_stmWaveformDigisTag);
@@ -57,6 +66,12 @@ namespace mu2e {
 
     std::stringstream histname, histtitle;
     int count = 0;
+    STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get prodition
+    const auto pedestal = stmEnergyCalib.pedestal(_channel);
+    if (_verbosityLevel > 0) {
+      std::cout << _channel.name() << " Pedestal = " << pedestal << std::endl;
+    }
+
     for (const auto& waveform : *waveformsHandle) {
       histname.str("");
       histname << "evt" << event.event() << "_waveform" << count;
@@ -65,7 +80,13 @@ namespace mu2e {
       TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), waveform.adcs().size(),0,waveform.adcs().size());
       for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc) {
         const auto adc = waveform.adcs().at(i_adc);
-        _hWaveform->SetBinContent(i_adc+1, adc); // bins start numbering at 1
+
+        auto content = adc;
+        if (_subtractPedestal) {
+          content -= pedestal;
+        }
+
+        _hWaveform->SetBinContent(i_adc+1, content); // bins start numbering at 1
       }
       ++count;
     }

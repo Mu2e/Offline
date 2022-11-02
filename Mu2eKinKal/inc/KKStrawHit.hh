@@ -187,21 +187,25 @@ namespace mu2e {
     // reset the residuals
     resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
     if(whstate.active()){
-      // always constrain time using the ComboHit
-      double tdres = chit_.driftTimeRes();
-      double tvar = tdres*tdres;
-      double dt = ca_.deltaT() - chit_.driftTime();
-      resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,-ca_.dTdP());
-      if(whstate.useDrift()){
-        auto dinfo = fillDriftInfo(true); // calibrated drift info
-        double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
+      // optionally constrain DeltaT using the ComboHit
+      if(whstate.totuse_ == WireHitState::all ||
+        (whstate.wireConstraint() && whstate.totuse_ == WireHitState::nullonly) ||
+        (whstate.driftConstraint() && whstate.totuse_ == WireHitState::driftonly) ){
+        double tdres = chit_.driftTimeRes();
+        double tvar = tdres*tdres;
+        double dt = ca_.deltaT() - chit_.driftTime();
+        resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
+      }
+      // distance residual
+      if(whstate.driftConstraint()){
+        auto dinfo = fillDriftInfo(true); // use calibrated drift info
         double dr = whstate.lrSign()*dinfo.driftDistance_ - ca_.doca();
-        // pca dDdP from KinKal is missing LR sign: patch that here: also sign convention in KinKal on dDdP and dTdP are opposite FIXME
-        DVEC dRdP = ca_.lSign()*ca_.dDdP() - whstate.lrSign()*dinfo.driftVelocity_*ca_.dTdP();
+        DVEC dRdP = whstate.lrSign()*dinfo.driftVelocity_*ca_.dTdP() -ca_.dDdP();
+        double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
         resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
       } else {
-        // Null state. interpret DOCA against the wire directly as a residual.
-        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.nullDistanceVariance(),0.0,true,-ca_.lSign()*ca_.dDdP());
+        // Null state. interpret DOCA against the wire directly as a residual (ie resid = 0 -doca);
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.nullDistanceVariance(),0.0,true,ca_.dDdP());
       }
     }
   }
