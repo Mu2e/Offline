@@ -35,13 +35,14 @@ namespace mu2e {
     KinKal::VEC3 velocity() const { return _pstate.velocity(); }
     KinKal::VEC3 position3() const { return _pstate.position3(); }
     // convert content to a LoopHelix
-    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
+    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, KKbnom(),timeRange()); }
     // convert to a CentralHelix
-    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
+    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, KKbnom(),timeRange()); }
     // convert to a KinematicLine
-    KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, KKbnom(),KinKal::TimeRange(tmin(),tmax())); }
+    KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, KKbnom(),timeRange()); }
     Float_t tmin() const { return _tmin; }
     Float_t tmax() const { return _tmax; }
+    KinKal::TimeRange timeRange() const { return KinKal::TimeRange(_tmin,_tmax); }
     auto tref() const { return _pstate.time(); }
     // t0 = time (and error) for when particle goes through z=0;
     HitT0 t0() const;
