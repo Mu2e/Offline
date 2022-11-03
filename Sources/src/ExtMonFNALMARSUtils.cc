@@ -109,12 +109,12 @@ namespace mu2e {
         table[32] = PDGCode::Xi0; // Xi0
         table[33] = PDGCode::Xi_minus; // Xi-
         table[34] = PDGCode::Omega_minus; // Omega-
-        table[35] = PDGCode::anti_Sigma_plus; // anti-Sigma-
+        table[35] = PDGCode::anti_Sigma_minus; // anti-Sigma-
         table[36] = PDGCode::anti_Sigma0; // anti-Sigma0
-        table[37] = PDGCode::anti_Sigma_minus; // anti-Sigma+
+        table[37] = PDGCode::anti_Sigma_plus; // anti-Sigma+
         table[38] = PDGCode::anti_Xi0; // anti-Xi0
-        table[39] = PDGCode::anti_Xi_minus; // anti-Xi+
-        table[40] = PDGCode::anti_Omega_minus; // anti-Omega+
+        table[39] = PDGCode::anti_Xi_plus; // anti-Xi+
+        table[40] = PDGCode::anti_Omega_plus; // anti-Omega+
       }
       std::map<int,int>::const_iterator ip = table.find(marsPID);
       if(ip == table.end()) {
