@@ -435,7 +435,10 @@ namespace mu2e {
 
   template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& savetimes) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
-    if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
+    if(kktrk.fitStatus().usable()){
+      fflag.merge(TrkFitFlag::kalmanOK);
+      fflag.merge(TrkFitFlag::seedOK);
+    }
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(matcorr_)fflag.merge(TrkFitFlag::MatCorr);
     if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
