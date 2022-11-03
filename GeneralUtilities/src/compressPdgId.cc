@@ -21,9 +21,9 @@ namespace mu2e {
       ind = 3; break;
     case PDGCode::anti_n0: // neutron
       ind = 3; break;
-    case PDGCode::p_plus: // proton
+    case PDGCode::proton: // proton
       ind = 4; break;
-    case PDGCode::anti_p_minus: // proton
+    case PDGCode::anti_proton: // proton
       ind = 4; break;
     case PDGCode::pi0: // pi0
       ind = 5; break;
