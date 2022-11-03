@@ -21,10 +21,9 @@
 namespace mu2e {
   class CaloCluster;
   struct KalSeed {
-    KalSeed() :  _chisq(-1.0), _fitcon(-1.0), _flt0(0)  {}
+    KalSeed() {}
     KalSeed(PDGCode::type tpart,TrkFitDirection fdir, TrkFitFlag const& status, double flt0=0.0 ) :
-      _tpart(tpart), _fdir(fdir), _status(status),
-      _chisq(-1.0), _fitcon(-1.0), _nseg(0), _flt0(static_cast<Float_t>(flt0)){}
+      _tpart(tpart), _fdir(fdir), _status(status), _flt0(static_cast<Float_t>(flt0)){}
 
     PDGCode::type particle() const { return _tpart; }
     TrkFitDirection const& fitDirection() const { return _fdir; }
@@ -42,12 +41,14 @@ namespace mu2e {
     std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
 
     // global information about the track
-    PDGCode::type       _tpart; // particle assumed for this fit
-    TrkFitDirection             _fdir; // direction in which this particle was fit
-    TrkFitFlag          _status; // status of this fit: includes alglorithm information
-    Float_t         _chisq; // fit chisquared value
-    Float_t         _fitcon; // fit consistency
-    UInt_t          _nseg; // # of fit trajectory segments
+    PDGCode::type     _tpart = PDGCode::unknown; // particle assumed for this fit
+    TrkFitDirection   _fdir = TrkFitDirection::downstream; // direction in which this particle was fit
+    TrkFitFlag        _status; // status of this fit: includes alglorithm information
+    Float_t           _chisq = -1; // fit chisquared value
+    Float_t           _fitcon = -1; // fit consistency
+    UInt_t            _nseg = 0; // # of fit trajectory segments
+    Float_t           _maxgap = 0;
+    Float_t           _avggap = 0; // information about trajectory gaps
     //
     // contained content substructure.
     //
@@ -62,7 +63,7 @@ namespace mu2e {
     std::vector<KalSegment>::const_iterator nearestSegmentFlt(float fltlen)  const;
     std::vector<KalSegment>::const_iterator nearestSegment(const XYZVectorF& pos)  const; // find nearest segment to a GLOBAL position
     Float_t flt0() const { return _flt0; }
-    Float_t         _flt0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
+    Float_t         _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
 }
