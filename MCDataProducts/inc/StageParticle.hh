@@ -49,7 +49,7 @@ namespace mu2e {
   private:
     art::Ptr<SimParticle> parent_;
     ProcessCode creationCode_;
-    PDGCode::type pdgId_ = PDGCode::null;
+    PDGCode::type pdgId_ = PDGCode::unknown;
     CLHEP::Hep3Vector position_;
     CLHEP::HepLorentzVector momentum_;
     double time_ = 0;

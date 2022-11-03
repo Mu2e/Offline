@@ -84,7 +84,7 @@ namespace mu2e {
 
     // the nuclear excitation level
     int exc = id%10;
-    double protonMass = particle(PDGCode::p_plus).mass();
+    double protonMass = particle(PDGCode::proton).mass();
     double mass = (pA+exc)*protonMass;
 
     std::ostringstream pName;

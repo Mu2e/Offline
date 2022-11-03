@@ -153,7 +153,7 @@ namespace mu2e
     int color = 1;
     if (pdg==PDGCode::anti_proton || pdg==PDGCode::pi_plus) color = 2;
     else if (pdg==PDGCode::pi_minus || pdg==PDGCode::mu_minus) color = 4;
-    else if (pdg==PDGCode::p_plus) color = 3;
+    else if (pdg==PDGCode::proton) color = 3;
     color = _trk%10;
 
     TGeoVolume* top = _geom->GetTopVolume();
