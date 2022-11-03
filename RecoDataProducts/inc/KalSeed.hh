@@ -14,13 +14,24 @@
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
+#include "KinKal/Trajectory/PiecewiseTrajectory.hh"
+#include "KinKal/Trajectory/KinematicLine.hh"
+#include "KinKal/Trajectory/CentralHelix.hh"
+#include "KinKal/Trajectory/LoopHelix.hh"
 // Root
 #include <Rtypes.h>
 // C++
 #include <vector>
+#include <memory>
 namespace mu2e {
   class CaloCluster;
   struct KalSeed {
+    using LHPT = KinKal::PiecewiseTrajectory<KinKal::LoopHelix>;
+    using CHPT = KinKal::PiecewiseTrajectory<KinKal::CentralHelix>;
+    using KLPT = KinKal::PiecewiseTrajectory<KinKal::KinematicLine>;
+    using LHPTPtr = std::unique_ptr<LHPT>;
+    using CHPTPtr = std::unique_ptr<CHPT>;
+    using KLPTPtr = std::unique_ptr<KLPT>;
     KalSeed() {}
     KalSeed(PDGCode::type tpart,TrkFitDirection fdir, TrkFitFlag const& status, double flt0=0.0 ) :
       _tpart(tpart), _fdir(fdir), _status(status), _flt0(static_cast<Float_t>(flt0)){}
@@ -39,6 +50,17 @@ namespace mu2e {
     bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     std::vector<KalSegment>::const_iterator nearestSeg(double time)  const;
+    bool loopHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKLoopHelix); }
+    bool centralHelixFit() const { return _status.hasAllProperties(TrkFitFlag::KKCentralHelix); }
+    bool kinematicLineFit() const { return _status.hasAllProperties(TrkFitFlag::KKLine); }
+    bool seedBTrkFit() const { return _status.hasAllProperties(TrkFitFlag::KSF); }
+    bool finalBTrkFit() const { return _status.hasAllProperties(TrkFitFlag::KFF); }
+    // reconstitute (as best as possible) the fit trajectory.  The ptr will be null if the fit wasn't based on the requested trajector type
+    // Note these return by value
+    // Note that the returned piecetraj may have large gaps, unless the full fit trajectory was stored in the seed.
+    LHPTPtr loopHelixFitTrajectory() const;
+    CHPTPtr centralHelixFitTrajectory() const;
+    KLPTPtr kinematicLineFitTrajectory() const;
 
     // global information about the track
     PDGCode::type     _tpart = PDGCode::unknown; // particle assumed for this fit
