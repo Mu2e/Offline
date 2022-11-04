@@ -1,5 +1,5 @@
 #include "Offline/Mu2eUtilities/inc/compressPdgId.hh"
-#include <iostream>
+
 namespace mu2e {
 
   CompressedPDGCode::enum_type compressPDGCode(PDGCode::enum_type pdgId) {
@@ -83,7 +83,6 @@ namespace mu2e {
     TH1D hh(name.c_str(),title.c_str(),nbin,low,hgh);
 
     int rootBin = 0;
-      std::cout << CompressedPDGCode::minBin << " " << CompressedPDGCode::maxBin << "\n";
     for(int ibin=CompressedPDGCode::minBin;
         ibin<=CompressedPDGCode::maxBin; ibin++) {
       rootBin++;

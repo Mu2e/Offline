@@ -2,15 +2,15 @@
 #define DataProducts_CompressedPDGCode_hh
 //
 // Enum-matched-to-String class defining an enum of compressed PDG codes.
-// This is mostly used to fill histograms with all PDG ids,
+// This is typically used to fill histograms with all PDG ids,
 // but compressed to a few categories
 // If the list is modified, update the min and max values
 // used to create histograms
 //
-#include <map>
-#include <string>
 
 #include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
+#include <map>
+#include <string>
 
 namespace mu2e {
 

@@ -1,12 +1,3 @@
-//
-// Enum-matched-to-String class defining an enum of compressed PDG codes.
-// This is typically used to fill histograms with all PDG ids,
-// but compressed to a few categories
-//
-
-#include <type_traits>
-#include <utility>
-
 #include "Offline/DataProducts/inc/CompressedPDGCode.hh"
 
 namespace mu2e {
