@@ -35,7 +35,7 @@ namespace mu2e {
     _gunOrigin(GeomHandle<ProductionTarget>()->targetPositionByVersion()
                + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->targetHalfLengthByVersion())),
 
-    _proton_mass(GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::p_plus).mass()),
+    _proton_mass(GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::proton).mass()),
 
     // Parameters from the run time configuration.
     _config(config),
@@ -108,7 +108,7 @@ namespace mu2e {
 
 
     // Add the proton to the list of generated particles.
-    genParts.push_back( GenParticle( PDGCode::p_plus, GenId::primaryProtonGun,
+    genParts.push_back( GenParticle( PDGCode::proton, GenId::primaryProtonGun,
                                      // Convert position to Mu2e coordinates
                                      _gunRotation*pos + _gunOrigin,
                                      // Convert momentum to Mu2e coordinates

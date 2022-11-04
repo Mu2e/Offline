@@ -56,12 +56,12 @@ mu2e::ParticleInfo::getParticle( TrkParticle::type id ) const{
     }
 
     case TrkParticle::anti_p_minus: {
-      p = &pdt_->particle(PDGCode::anti_p_minus);
+      p = &pdt_->particle(PDGCode::anti_proton);
       break;
     }
 
     case TrkParticle::p_plus: {
-      p = &pdt_->particle(PDGCode::p_plus);
+      p = &pdt_->particle(PDGCode::proton);
       break;
     }
 
