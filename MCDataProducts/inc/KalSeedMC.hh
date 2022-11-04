@@ -37,7 +37,7 @@ namespace mu2e {
     cet::map_vector_key _spkey; // key to the SimParticle
     // construct a Ptr from Handle and key
     SPPtr simParticle(SPCH spcH) const { return SPPtr(spcH,_spkey.asUint()); }
-    SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0) {}
+    SimPartStub() : _pdg(PDGCode::unknown), _nhits(0), _nactive(0) {}
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _gid(GenId::unknown), _rel(MCRelationship::none),

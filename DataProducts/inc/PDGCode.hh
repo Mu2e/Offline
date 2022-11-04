@@ -111,8 +111,8 @@ namespace mu2e {
         pi_minus = -211 ,
         pi_diffr_plus = 210 ,
         pi_diffr_minus = -210 ,
-        proton = 2212,
-        anti_proton = -2212,
+        proton = 2212 ,
+        anti_proton = -2212 ,
         pi_2S0 = 20111 ,
         pi_2S_plus = 20211 ,
         pi_2S_minus = -20211 ,
@@ -305,8 +305,6 @@ namespace mu2e {
         anti_Delta0 = -2114 ,
         p_diffr_plus = 2210 ,
         anti_p_diffr_minus = -2210 ,
-        p_plus = 2212 ,
-        anti_p_minus = -2212 ,
         Delta_plus = 2214 ,
         anti_Delta_minus = -2214 ,
         Delta_plus_plus = 2224 ,
@@ -459,7 +457,6 @@ namespace mu2e {
         tritium =  1000010030,
         alpha =    1000020040,
         He3 =      1000020030,
-        null = 0,
 
         // Needed for EnumToStringSparse
         unknown = 0,

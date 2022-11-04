@@ -11,7 +11,7 @@ namespace mu2e {
   MassCache::MassCache ():
     cache_(),
     lastMass_(0.),
-    lastId_(PDGCode::null){
+    lastId_(PDGCode::unknown){
   }
 
   double MassCache::mass( id_type id ){

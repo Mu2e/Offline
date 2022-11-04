@@ -74,20 +74,20 @@ namespace mu2e {
       double sampleVal = 0;
       if (spectrumVariable_ == TOTAL_ENERGY){
         for ( const auto& i: *genColl ) {
-          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
+          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::unknown) && i.generatorId() == genId_ ) {
             sampleVal += i.momentum().e();
           }
         }
       }else if (spectrumVariable_ == KINETIC_ENERGY){
         for ( const auto& i: *genColl ) {
-          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
+          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::unknown) && i.generatorId() == genId_ ) {
             sampleVal += i.momentum().e() - i.momentum().restMass();
           }
         }
       }else{
         CLHEP::Hep3Vector mom(0,0,0);
         for ( const auto& i: *genColl ) {
-          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
+          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::unknown) && i.generatorId() == genId_ ) {
             mom += i.momentum().vect();
           }
         }
