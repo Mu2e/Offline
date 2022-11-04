@@ -8,10 +8,11 @@
 
 namespace mu2e {
 
-  // compress all PDGId's into about 17 categories,
-  // usefule for histogramming (see also next)
+  // compress all PDGId's into 27 categories,
+  // useful for histogramming (see also next)
   CompressedPDGCode::enum_type compressPDGCode(PDGCode::enum_type pdgId);
-  // a histogram with text labels, ready for use with compressedPDGCode
+
+  // a histogram with text labels, ready for use with CompressedPDGCode
   TH1D compressPDGCodeHisto(std::string name="compPdgId",
                             std::string title="Compressed PDG ID");
 
