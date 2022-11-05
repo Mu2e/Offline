@@ -16,6 +16,7 @@ CaloClusterFast:
    deltaTime              : 10
    minSiPMPerHit          : 2
    extendSearch           : true
+   timeOffset             : -61 #ns
    diagLevel              : 0
 }
 
