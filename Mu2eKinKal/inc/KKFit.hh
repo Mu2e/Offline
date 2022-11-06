@@ -435,7 +435,10 @@ namespace mu2e {
 
   template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, std::set<double> const& savetimes) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
-    if(kktrk.fitStatus().usable())fflag.merge(TrkFitFlag::kalmanOK);
+    if(kktrk.fitStatus().usable()){
+      fflag.merge(TrkFitFlag::kalmanOK);
+      fflag.merge(TrkFitFlag::seedOK);
+    }
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(matcorr_)fflag.merge(TrkFitFlag::MatCorr);
     if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
@@ -446,12 +449,17 @@ namespace mu2e {
     double t0val = t0piece.paramVal(KTRAJ::t0_);
     double t0sig = sqrt(t0piece.params().covariance()(KTRAJ::t0_,KTRAJ::t0_));
     HitT0 t0(t0val,t0sig);
-    // create the shell for the output.  Note the (obsolete) flight length is given as t0
-    KalSeed fseed(tpart_,tdir_,fflag,t0.t0());
+    // create the shell for the output.
+    KalSeed fseed(tpart_,tdir_,fflag);
     auto const& fstatus = kktrk.fitStatus();
     fseed._chisq = fstatus.chisq_.chisq();
     fseed._fitcon = fstatus.chisq_.probability();
     fseed._nseg = fittraj.pieces().size();
+    size_t igap;
+    double maxgap,avggap;
+    fittraj.gaps(maxgap,igap,avggap);
+    fseed._maxgap = maxgap;
+    fseed._avggap = avggap;
     // loop over track components and store them
     fseed._hits.reserve(kktrk.strawHits().size());
     for(auto const& strawhit : kktrk.strawHits() ) {

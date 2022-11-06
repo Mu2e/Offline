@@ -1,6 +1,50 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include <limits>
 namespace mu2e {
+
+  KalSeed::LHPTPtr KalSeed::loopHelixFitTrajectory() const {
+    if(loopHelixFit() && segments().size() > 0){
+      // initialize the piecewise trajectory with the front segment
+      LHPTPtr ptraj(new KalSeed::LHPT(segments().front().loopHelix()));
+      auto iseg = segments().begin(); ++iseg;
+      while(iseg != segments().end()){
+        if(!iseg->timeRange().null())ptraj->append(iseg->loopHelix());
+        ++iseg;
+      }
+      return ptraj;
+    } else
+      return LHPTPtr();
+  }
+
+  KalSeed::CHPTPtr KalSeed::centralHelixFitTrajectory() const {
+    if(centralHelixFit() && segments().size() > 0){
+      // initialize the piecewise trajectory with the front segment
+      CHPTPtr ptraj(new KalSeed::CHPT(segments().front().centralHelix()));
+      auto iseg = segments().begin(); ++iseg;
+      while(iseg != segments().end()){
+        if(!iseg->timeRange().null())ptraj->append(iseg->centralHelix());
+        ++iseg;
+      }
+      return ptraj;
+    } else
+      return CHPTPtr();
+  }
+
+  KalSeed::KLPTPtr KalSeed::kinematicLineFitTrajectory() const {
+    if(kinematicLineFit() && segments().size() > 0){
+      // initialize the piecewise trajectory with the front segment
+      KLPTPtr ptraj(new KalSeed::KLPT(segments().front().kinematicLine()));
+      auto iseg = segments().begin(); ++iseg;
+      while(iseg != segments().end()){
+        if(!iseg->timeRange().null())ptraj->append(iseg->kinematicLine());
+        ++iseg;
+      }
+      return ptraj;
+    } else
+      return KLPTPtr();
+  }
+
+
   std::vector<KalSegment>::const_iterator KalSeed::nearestSeg(double time)  const {
     auto retval = segments().end();
     float dmin(std::numeric_limits<float>::max());
