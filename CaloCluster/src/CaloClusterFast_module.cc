@@ -31,6 +31,7 @@ namespace mu2e {
             fhicl::Atom<double>         EnoiseCut         { Name("EnoiseCut"),         Comment("Minimum energy for a hit to be in a cluster") };
             fhicl::Atom<double>         ExpandCut         { Name("ExpandCut"),         Comment("Minimum energy for a hit to expand cluster") };
             fhicl::Atom<double>         deltaTime         { Name("deltaTime"),         Comment("Maximum time difference between seed and hit in cluster") };
+            fhicl::Atom<double>         timeOffset        { Name("timeOffset"),        Comment("Time offset to add to base cluster time") };
             fhicl::Atom<int>            minSiPMPerHit     { Name("minSiPMPerHit"),     Comment("Minimum number of SiPM contributing to the hit") };
             fhicl::Atom<bool>           extendSearch      { Name("extendSearch"),      Comment("Search next-next neighbors for clustering") };
             fhicl::Atom<int>            diagLevel         { Name("diagLevel"),         Comment("Diag level"),0 };
@@ -43,6 +44,7 @@ namespace mu2e {
           EnoiseCut_     (config().EnoiseCut()),
           ExpandCut_     (config().ExpandCut()),
           deltaTime_     (config().deltaTime()),
+          timeOffset_     (config().timeOffset()),
           minSiPMPerHit_ (config().minSiPMPerHit()),
           extendSearch_  (config().extendSearch()),
           diagLevel_     (config().diagLevel())
@@ -59,6 +61,7 @@ namespace mu2e {
         double            EnoiseCut_;
         double            ExpandCut_;
         double            deltaTime_;
+        double            timeOffset_;
         int               minSiPMPerHit_;
         bool              extendSearch_;
         int               diagLevel_;
@@ -177,7 +180,7 @@ namespace mu2e {
       yCOG /= totalEnergy;
 
       const CaloHit& seedHit = caloHits[clusterList[0]];
-      double time            = seedHit.time();
+      double time            = seedHit.time() + timeOffset_;
       int    iDisk           = cal.crystal(seedHit.crystalID()).diskID();
 
       caloClusters.emplace_back(CaloCluster(iDisk,time,0.0,totalEnergy,0.0,CLHEP::Hep3Vector(xCOG,yCOG,0),
