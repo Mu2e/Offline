@@ -56,9 +56,9 @@ Mu2eKinKal : {
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, allowed, freeze, diag
-      [ 20.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 0 ],
-      [ 15.0, 15.0, 5.0, 4.0, "Null:Inactive", "", 0 ],
-      [ 10.0, 10.0, 5.0, 3.0, "Null:Inactive", "", 0 ]
+      [ 40.0, 80.0, 5.0, 5.0, "Null:Inactive", "", 0 ],
+      [ 20.0, 40.0, 5.0, 4.0, "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 3.0, "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
@@ -77,9 +77,9 @@ Mu2eKinKal : {
     DivergenceDeltaChisq : 10.0
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
-    BFieldCorrection : false
+    BFieldCorrection : true
     ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
+    BCorrTolerance : 1e-2 # relative momemntum precision
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
       [ 2.0, "CADSHU" ],
@@ -89,10 +89,10 @@ Mu2eKinKal : {
     ]
     CADSHUSettings : [
       # maxdoca, maderr, minrdrift, maxrdrift, allow, tofreeze, diag
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  6.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
+      [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
+      [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
+      [ 6.0,  12.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
@@ -130,14 +130,14 @@ Mu2eKinKal : {
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  6.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
+      [ 10.0, 20.0, 5.0, 4.0, "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
+      [ 6.0,  12.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
       [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
+      [ 4.0,  8.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
+      [ 4.0,  8.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
     ]
 
     BkgANNSHUSettings : [
