@@ -2,6 +2,9 @@
 //
 //
 #include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
+#include "Offline/CRVConditions/inc/CRVCalibCache.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
+#include "Offline/CRVConditions/inc/CRVStatusCache.hh"
 #include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
 #include "Offline/DbService/inc/DbService.hh"
@@ -34,6 +37,12 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   // and then Geometry
   art::ServiceHandle<GeometryService> g;
 
+  auto cor = std::make_shared<mu2e::CRVOrdinalCache>(_config.crvOrdinal());
+  _caches[cor->name()] = cor;
+  auto cst = std::make_shared<mu2e::CRVStatusCache>(_config.crvStatus());
+  _caches[cst->name()] = cst;
+  auto cca = std::make_shared<mu2e::CRVCalibCache>(_config.crvCalib());
+  _caches[cca->name()] = cca;
   auto etc = std::make_shared<mu2e::EventTimingCache>(_config.eventTiming());
   _caches[etc->name()] = etc;
   auto sep =

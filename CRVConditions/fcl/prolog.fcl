@@ -1,0 +1,27 @@
+BEGIN_PROLOG
+
+CRVOrdinal : {
+   useDb : false
+   verbose : 0
+}
+
+CRVStatus : {
+   useDb : false
+   verbose : 0
+
+   #example sytnax list of [channel, flag ]: [ [22,2], [33,4] ]
+   status : [ ]
+}
+
+CRVCalib : {
+   useDb : false
+   verbose : 0
+
+   # these apply to all channels
+   pedestal : 0.0
+   height : 0.0
+   area : 0.0
+   time : 0.0
+}
+
+END_PROLOG
