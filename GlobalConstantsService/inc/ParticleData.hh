@@ -6,6 +6,7 @@
 // the content is
 //  - PDG ID
 //  - displayname (includes special chars like +-*)
+//  - geant4 name, the same as display name, with exceptions
 //  - progamming name (includes only alphanumeric and _)
 //        this should be the same as  DataProducts/inc/PDGCode.hh
 //  - charge (units of proton charge)
@@ -25,13 +26,15 @@ namespace mu2e {
 
   public:
 
-    ParticleData(int id, const std::string& name, const std::string& codeName,
+    ParticleData(int id, const std::string& name, const std::string& gname,
+                 const std::string& codeName,
                  double charge, double mass, double lifetime):
-      _id(id),_name(name),_codeName(codeName),_charge(charge),
+      _id(id),_name(name),_gname(gname),_codeName(codeName),_charge(charge),
       _mass(mass),_lifetime(lifetime) {}
 
     int id() const { return _id; }
     const std::string& name() const { return _name; }
+    const std::string& geant4Name() const { return _gname; }
     const std::string& displayName() const { return _name; }
     const std::string& codeName() const { return _codeName; }
     double charge() const { return _charge; }
@@ -43,6 +46,7 @@ namespace mu2e {
   private:
     int _id;
     std::string _name;
+    std::string _gname;
     std::string _codeName;
     double _charge;
     double _mass;
