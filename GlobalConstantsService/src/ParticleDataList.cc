@@ -1,4 +1,3 @@
-
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -34,7 +33,7 @@ namespace mu2e {
     }
 
     // input text file words on a row
-    constexpr size_t nWords = 7;
+    constexpr size_t nWords = 8;
 
     std::string line;
     std::string str;
@@ -52,11 +51,14 @@ namespace mu2e {
           << line << "\n";
       }
       int id = std::stoi(words[0]);
-      _list.try_emplace(id, id, words[1], words[2],
-         std::stod(words[4]), std::stod(words[5]), std::stod(words[6]) );
+      //if geant4 name is "same" then copy display name
+      if(words[2]=="same") words[2] = words[1];
+      _list.try_emplace(id, id, words[1], words[2], words[3],
+         std::stod(words[5]), std::stod(words[6]), std::stod(words[7]) );
       _names.try_emplace(words[1],id);
-      if( words[2] != "none" ) _names.try_emplace(words[2],id);
+      // geant name is not in name lookup because it will disagree on pdgid
       if( words[3] != "none" ) _names.try_emplace(words[3],id);
+      if( words[4] != "none" ) _names.try_emplace(words[4],id);
       words.clear();
     }
 
@@ -91,7 +93,7 @@ namespace mu2e {
     pName << "Mu2e_" << id;
     std::string name = pName.str();
 
-    _list.try_emplace(id,id, name, name, double(pZ), mass, 0.0);
+    _list.try_emplace(id,id, name, name, name, double(pZ), mass, 0.0);
 
     return _list.at(id);
 
