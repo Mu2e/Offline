@@ -31,7 +31,9 @@ class CRVCalib : virtual public ProditionsEntity {
   }
   float height(std::size_t channel) const { return _cvec.at(channel).height(); }
   float area(std::size_t channel) const { return _cvec.at(channel).area(); }
-  float time(std::size_t channel) const { return _cvec.at(channel).time(); }
+  float timeOffset(std::size_t channel) const {
+    return _cvec.at(channel).timeOffset();
+  }
 
  private:
   // a vector of CRVCalibPar indexed by channel

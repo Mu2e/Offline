@@ -21,7 +21,7 @@ CRVCalib : {
    pedestal : 0.0
    height : 0.0
    area : 0.0
-   time : 0.0
+   timeOffset : 0.0
 }
 
 END_PROLOG

@@ -59,7 +59,7 @@ void ProditionsTest::analyze(const art::Event& event) {
   std::cout << "Test Ordinal\n";
   CRVROC rr = ordinal.online(1010);
   std::cout << " channel " << 1010 << " online: " << rr.ROC() << " " << rr.FEB()
-            << " " << rr.subchannel() << "\n";
+            << " " << rr.FEBchannel() << "\n";
   std::cout << "online 2 2 2   offline " << ordinal.offline(CRVROC(2, 2, 2))
             << "\n";
 
@@ -72,12 +72,14 @@ void ProditionsTest::analyze(const art::Event& event) {
   std::size_t channel;
   channel = 11;
   std::cout << "channel " << channel << " ped: " << calib.pedestal(channel)
-            << "   height " << calib.height(channel) << " area "
-            << calib.area(channel) << "\n";
+            << "   height " << calib.height(channel)
+            << "   area "   << calib.area(channel)
+            << "   timeOffset " << calib.timeOffset(channel) << "\n";
   channel = 20111;
   std::cout << "channel " << channel << " ped: " << calib.pedestal(channel)
-            << "   height " << calib.height(channel) << " area "
-            << calib.area(channel) << "\n";
+            << "   height " << calib.height(channel)
+            << "   area " << calib.area(channel)
+            << "   timeOffset " << calib.timeOffset(channel) << "\n";
 }
 
 }  // namespace mu2e

@@ -20,8 +20,8 @@ struct CRVCalibConfig {
   fhicl::Atom<float> pedestal{Name("pedestal"), Comment("universal pedestal")};
   fhicl::Atom<float> height{Name("height"), Comment("universal height")};
   fhicl::Atom<float> area{Name("area"), Comment("universal area")};
-  fhicl::Atom<float> time{Name("time"), Comment("universal time")};
-
+  fhicl::Atom<float> timeOffset{Name("timeOffset"),
+                                Comment("universal timeOffset")};
 };
 
 }  // namespace mu2e
