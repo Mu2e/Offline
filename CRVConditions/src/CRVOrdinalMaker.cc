@@ -28,11 +28,11 @@ CRVOrdinal::ptr_t CRVOrdinalMaker::fromFcl() {
   // and these are not handled
   // TODO this will need to be updated
   for (std::size_t channel = 0; channel < CRVId::nChannels; channel++) {
-    std::size_t subchannel = channel % CRVId::nChanPerFEB;
+    std::size_t FEBchannel = channel % CRVId::nChanPerFEB;
     std::size_t FEB = (channel / CRVId::nChanPerFEB) % CRVId::nFEBPerROC;
     std::size_t ROC = (channel / CRVId::nChanPerFEB / CRVId::nFEBPerROC);
-    onMap.at(channel) = CRVROC(ROC, FEB, subchannel);
-    offMap.at(ROC).at(FEB).at(subchannel) = channel;
+    onMap.at(channel) = CRVROC(ROC, FEB, FEBchannel);
+    offMap.at(ROC).at(FEB).at(FEBchannel) = channel;
   }
 
   auto ptr = std::make_shared<CRVOrdinal>(onMap, offMap);

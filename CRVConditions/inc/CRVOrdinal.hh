@@ -21,7 +21,7 @@ class CRVOrdinal : virtual public ProditionsEntity {
 
   // online numbers for each offline number
   typedef std::vector<CRVROC> OnlineMap;
-  // this is a 3-dim array: offline number = x[ROC][FEB][subchan]
+  // this is a 3-dim array: offline number = x[ROC][FEB][FEBchan]
   typedef std::array<std::array<std::array<std::size_t, CRVId::nChanPerFEB>,
                                 CRVId::nFEBPerROC>,
                      CRVId::nROC>
@@ -32,7 +32,7 @@ class CRVOrdinal : virtual public ProditionsEntity {
 
   // online numbering triplet for an offline channel number
   const CRVROC& online(std::size_t channel) const {
-    if (_onMap.at(channel).subchannel() >= CRVId::nChanPerFEB) {
+    if (_onMap.at(channel).FEBchannel() >= CRVId::nChanPerFEB) {
       throw cet::exception("CRVORDINAL_BAD_OFFLINE_CHANNEL")
           << "CRVOrdinal::online bad channel requested: "
           << " channel=" << channel << "\n";
@@ -43,12 +43,12 @@ class CRVOrdinal : virtual public ProditionsEntity {
   // offline channel number for online numbering triplet
   const std::size_t offline(const CRVROC& online) const {
     std::size_t offline =
-        _offMap.at(online.ROC()).at(online.FEB()).at(online.subchannel());
+        _offMap.at(online.ROC()).at(online.FEB()).at(online.FEBchannel());
     if (offline >= CRVId::nChannels) {
       throw cet::exception("CRVORDINAL_BAD_ONLINE_CHANNEL")
           << "CRVOrdinal::offline bad channel requested: "
           << " ROC=" << online.ROC() << " FEB=" << online.FEB()
-          << " subchannel=" << online.subchannel() << "\n";
+          << " FEBchannel=" << online.FEBchannel() << "\n";
     }
     return offline;
   }

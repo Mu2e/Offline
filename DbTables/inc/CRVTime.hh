@@ -18,18 +18,19 @@ class CRVTime : public DbTable {
 
   class Row {
    public:
-    Row(std::size_t channel, float time) : _channel(channel), _time(time) {}
+    Row(std::size_t channel, float timeOffset) :
+        _channel(channel), _timeOffset(timeOffset) {}
     std::size_t channel() const { return _channel; }
-    float time() const { return _time; }
+    float timeOffset() const { return _timeOffset; }
 
    private:
     std::size_t _channel;
-    float _time;
+    float _timeOffset;
   };
 
   constexpr static const char* cxname = "CRVTime";
 
-  CRVTime() : DbTable(cxname, "crv.time", "channel,time") {}
+  CRVTime() : DbTable(cxname, "crv.time", "channel,timeOffset") {}
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
   const Row& row(std::size_t channel) const { return _rows.at(channel); }
   std::vector<Row> const& rows() const { return _rows; }
@@ -55,7 +56,7 @@ class CRVTime : public DbTable {
     Row const& r = _rows.at(irow);
     sstream << r.channel() << ",";
     sstream << std::fixed << std::setprecision(3);
-    sstream << r.time();
+    sstream << r.timeOffset();
   }
 
   virtual void clear() override {
