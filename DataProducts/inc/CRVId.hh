@@ -19,6 +19,7 @@ namespace mu2e {
     constexpr static std::size_t nBars = 5504;
     // some bars have only 2 SiPMs so this is a little sparse
     constexpr static std::size_t nChannels = nBars*4;
+    constexpr static std::size_t nChanPerBar = 4;
     constexpr static std::size_t nChanPerFEB = 64;
     constexpr static std::size_t nFEBPerROC = 24;
     constexpr static std::size_t nROC = nChannels/nFEBPerROC/nChanPerFEB + 1;
