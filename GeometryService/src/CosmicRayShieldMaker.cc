@@ -371,10 +371,10 @@ namespace mu2e
               localToWorld, _nModules[isector], _nCountersPerModule[isector]);
     }
 
-    if(_crs->getAllCRSScintillatorBars().size() != CRVId::nBars) {
+    if(_crs->getAllCRSScintillatorBars().size() > CRVId::nBars) {
       throw cet::exception("CRV_GEOM_COUNT")
-        << " Unexpected number of bars created in geometry "
-        << CRVId::nBars << " expected, "
+        << " More CRV bars created in geometry than static arrays can handle, "
+        << CRVId::nBars << " max "
         << _crs->getAllCRSScintillatorBars().size() << " created\n";
     }
 
