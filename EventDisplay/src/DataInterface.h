@@ -91,6 +91,7 @@ class DataInterface
   bool _showNeutrons;
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
+  double _kalStepSize;
 
   std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
@@ -114,7 +115,7 @@ class DataInterface
   };
 
   public:
-  DataInterface(EventDisplayFrame *mainframe);
+  DataInterface(EventDisplayFrame *mainframe, double kalStepSize);
   virtual ~DataInterface();
 
   void startComponents();
