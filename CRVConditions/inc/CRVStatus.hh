@@ -7,6 +7,7 @@
 
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include <cstdint>
 #include <map>
 
 namespace mu2e {
@@ -17,12 +18,12 @@ class CRVStatus : virtual public ProditionsEntity {
   typedef std::shared_ptr<const CRVStatus> cptr_t;
   constexpr static const char* cxname = {"CRVStatus"};
 
-  typedef std::map<std::size_t, int> StatusMap;
+  typedef std::map<std::uint16_t, int> StatusMap;
 
   CRVStatus(const StatusMap& smap) : ProditionsEntity(cxname), _smap(smap) {}
 
   // return status flag word for an offline channel
-  int status(std::size_t channel) {
+  int status(std::uint16_t channel) {
     auto it = _smap.find(channel);
     if (it == _smap.end()) {
       return 0;

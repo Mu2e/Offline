@@ -16,6 +16,7 @@ struct CRVOrdinalConfig {
 
   fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity: 0 or 1")};
   fhicl::Atom<bool> useDb{Name("useDb"), Comment("use database or fcl")};
+  fhicl::Atom<std::string> filePath{Name("filePath"), Comment("data path to files containing online numbering")};
 
 };
 

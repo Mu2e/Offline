@@ -21,8 +21,6 @@ class CRVCalibMaker {
   CRVCalib::ptr_t fromDb(CRVSiPM::cptr_t sip_p, CRVTime::cptr_t tim_p);
 
  private:
-  std::size_t nChannels() const;
-
   // this object needs to be thread safe,
   // _config should only be initialized once
   const CRVCalibConfig _config;

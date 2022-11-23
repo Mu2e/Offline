@@ -9,6 +9,8 @@
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "cetlib_except/exception.h"
+#include <cstdint>
+#include <array>
 #include <vector>
 
 namespace mu2e {
@@ -22,7 +24,7 @@ class CRVOrdinal : virtual public ProditionsEntity {
   // online numbers for each offline number
   typedef std::vector<CRVROC> OnlineMap;
   // this is a 3-dim array: offline number = x[ROC][FEB][FEBchan]
-  typedef std::array<std::array<std::array<std::size_t, CRVId::nChanPerFEB>,
+  typedef std::array<std::array<std::array<std::uint16_t, CRVId::nChanPerFEB>,
                                 CRVId::nFEBPerROC>,
                      CRVId::nROC>
       OfflineMap;
@@ -31,7 +33,7 @@ class CRVOrdinal : virtual public ProditionsEntity {
       ProditionsEntity(cxname), _onMap(onMap), _offMap(offMap) {}
 
   // online numbering triplet for an offline channel number
-  const CRVROC& online(std::size_t channel) const {
+  const CRVROC& online(std::uint16_t channel) const {
     if (_onMap.at(channel).FEBchannel() >= CRVId::nChanPerFEB) {
       throw cet::exception("CRVORDINAL_BAD_OFFLINE_CHANNEL")
           << "CRVOrdinal::online bad channel requested: "
@@ -41,8 +43,8 @@ class CRVOrdinal : virtual public ProditionsEntity {
   }
 
   // offline channel number for online numbering triplet
-  const std::size_t offline(const CRVROC& online) const {
-    std::size_t offline =
+  const std::uint16_t offline(const CRVROC& online) const {
+    std::uint16_t offline =
         _offMap.at(online.ROC()).at(online.FEB()).at(online.FEBchannel());
     if (offline >= CRVId::nChannels) {
       throw cet::exception("CRVORDINAL_BAD_ONLINE_CHANNEL")

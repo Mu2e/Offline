@@ -2,11 +2,10 @@
 #define DataProducts_CRVId_hh
 //
 // Currenlty, CRV bar count is determined in the process
-// of building the geometry.  This is a constant
+// of building the geometry.  This constant
 // which should equal the generated count.
-// It is used in the conditions where the count shouldn't be dynamic
-// TODO
-// When the CRV geometry is final, this number will have to change
+// It is used in the conditions where the count can't be dynamic
+// TODO  When the CRV geometry is final, this number will have to change
 
 #include <cstddef>
 
@@ -17,12 +16,14 @@ namespace mu2e {
 
     // taken from dynamic geometry
     constexpr static std::size_t nBars = 5504;
-    // some bars have only 2 SiPMs so this is a little sparse
-    constexpr static std::size_t nChannels = nBars*4;
     constexpr static std::size_t nChanPerBar = 4;
+    // some bars have only 2 SiPMs so this count is sparse
+    constexpr static std::size_t nChannels = nBars*nChanPerBar;
+    // not all the implied possible channels below are active
+    // these are the dimensions of sparse containers
     constexpr static std::size_t nChanPerFEB = 64;
-    constexpr static std::size_t nFEBPerROC = 24;
-    constexpr static std::size_t nROC = nChannels/nFEBPerROC/nChanPerFEB + 1;
+    constexpr static std::size_t nFEBPerROC = 25;
+    constexpr static std::size_t nROC = 18;
 
   };
 }

@@ -8,7 +8,7 @@
 #include "Offline/CRVConditions/inc/CRVCalibPar.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include <map>
+#include <cstdint>
 #include <vector>
 
 namespace mu2e {
@@ -23,15 +23,19 @@ class CRVCalib : virtual public ProditionsEntity {
 
   CRVCalib(const CalibVec& cvec) : ProditionsEntity(cxname), _cvec(cvec) {}
 
-  const CRVCalibPar& calib(std::size_t channel) const {
+  const CRVCalibPar& calib(std::uint16_t channel) const {
     return _cvec.at(channel);
   }
-  float pedestal(std::size_t channel) const {
+  float pedestal(std::uint16_t channel) const {
     return _cvec.at(channel).pedestal();
   }
-  float height(std::size_t channel) const { return _cvec.at(channel).height(); }
-  float area(std::size_t channel) const { return _cvec.at(channel).area(); }
-  float timeOffset(std::size_t channel) const {
+  float pulseHeight(std::uint16_t channel) const {
+    return _cvec.at(channel).pulseHeight();
+  }
+  float pulseArea(std::uint16_t channel) const {
+    return _cvec.at(channel).pulseArea();
+  }
+  float timeOffset(std::uint16_t channel) const {
     return _cvec.at(channel).timeOffset();
   }
 
