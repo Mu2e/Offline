@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <numeric>
 
 namespace {
 // comparison functor for sorting by t
@@ -42,29 +43,19 @@ public:
     using Comment = fhicl::Comment;
     fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"), 0};
     fhicl::Atom<int> minnsh{Name("minNStrawHits"), Comment("minimum number of straw hits "), 5};
-    fhicl::Atom<int> minnpanels{Name("minNStrawHits"), Comment("minimum number of panels "), 0};
-    fhicl::OptionalAtom<int> maxnsh{Name("maxNStrawHits"),
-                                    Comment("maximum number of straw hits ")};
+    fhicl::Atom<int> minnpanels{Name("minNPanels"), Comment("minimum number of panels "), 0};
+    fhicl::OptionalAtom<int> maxnsh{Name("maxNStrawHits"), Comment("maximum number of straw hits ")};
     fhicl::Atom<int> timewindow{Name("TimeWindow"), Comment("Width of time window in ns"), 100};
     fhicl::Atom<bool> usetimewindow{Name("useTimeWindow"), Comment("Use timewindow cut"), false};
-    fhicl::Atom<int> timestep{Name("TimeStep"), Comment("Width of timestep between hits in ns"),
-                              20};
+    fhicl::Atom<int> timestep{Name("TimeStep"), Comment("Width of timestep between hits in ns"), 20};
     fhicl::Atom<bool> usetimestep{Name("useTimeStep"), Comment("Use timestep cut"), true};
     fhicl::Atom<bool> testflag{Name("TestFlag"), Comment("Test StrawHitFlags")};
-    fhicl::Atom<bool> useonepanel{Name("UseOnlyOnePanel"), Comment("Use hits from one panel only"),
-                                  false};
-    fhicl::Atom<bool> useoneplane{Name("UseOnlyOnePlane"), Comment("Use hits from one plane only"),
-                                  false};
-    fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),
-                                       Comment("tag for combo hit collection")};
-    fhicl::Atom<art::InputTag> shfToken{Name("StrawHitFlagCollection"),
-                                        Comment("tag for StrawHitFlag collection")};
-    fhicl::Sequence<std::string> hsel{Name("HitSelectionBits"),
-                                      Comment("Required flags if TestFlag is set"),
-                                      std::vector<std::string>{"EnergySelection", "TimeSelection"}};
-    fhicl::Sequence<std::string> hbkg{Name("HitBackgroundBits"),
-                                      Comment("Excluded flags if TestFlag is set"),
-                                      std::vector<std::string>{}};
+    fhicl::Atom<bool> useonepanel{Name("UseOnlyOnePanel"), Comment("Use hits from one panel only"), false};
+    fhicl::Atom<bool> useoneplane{Name("UseOnlyOnePlane"), Comment("Use hits from one plane only"), false};
+    fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"), Comment("tag for combo hit collection")};
+    fhicl::Atom<art::InputTag> shfToken{Name("StrawHitFlagCollection"), Comment("tag for StrawHitFlag collection")};
+    fhicl::Sequence<std::string> hsel{Name("HitSelectionBits"), Comment("Required flags if TestFlag is set"), std::vector<std::string>{"EnergySelection", "TimeSelection"}};
+    fhicl::Sequence<std::string> hbkg{Name("HitBackgroundBits"), Comment("Excluded flags if TestFlag is set"), std::vector<std::string>{}};
   };
   typedef art::EDProducer::Table<Config> Parameters;
   explicit SimpleTimeCluster(const Parameters& conf);
@@ -95,11 +86,23 @@ private:
 };
 
 SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
-    art::EDProducer(conf), _debug(conf().debug()), _minnsh(conf().minnsh()),
-    _minnpanels(conf().minnpanels()), _hasmaxnsh(false), _maxnsh(0),
-    _timeWindow(conf().timewindow()), _timeStep(conf().timestep()), _testflag(conf().testflag()),
-    _useonepanel(conf().useonepanel()), _chToken(conf().chToken()), _shfToken(conf().shfToken()),
-    _hsel(conf().hsel()), _hbkg(conf().hbkg()) {
+    art::EDProducer(conf),
+    _debug(conf().debug()),
+    _minnsh(conf().minnsh()),
+    _minnpanels(conf().minnpanels()),
+    _hasmaxnsh(false),
+    _maxnsh(0),
+    _timeWindow(conf().timewindow()),
+    _timeStep(conf().timestep()),
+    _testflag(conf().testflag()),
+    _useonepanel(conf().useonepanel()),
+    _useoneplane(conf().useoneplane()),
+    _chToken(conf().chToken()),
+    _shfToken(conf().shfToken()),
+    _hsel(conf().hsel()),
+    _hbkg(conf().hbkg())
+{
+  _hasmaxnsh = conf().maxnsh(_maxnsh);
   produces<TimeClusterCollection>();
 }
 
@@ -119,7 +122,7 @@ void SimpleTimeCluster::produce(art::Event& event) {
   if (_debug > 1) {
     for (auto const& tc : *tccol) {
       std::cout << "Time Cluster time = " << tc.t0().t0() << " +- " << tc.t0().t0Err()
-                << " position = " << tc._pos << std::endl;
+                << " position = " << tc._pos << " nhits = " << tc.hits().size() << std::endl;
       if (_debug > 3) {
         for (auto shi : tc._strawHitIdxs) {
           std::cout << "Time Cluster hit at index " << shi << std::endl;
@@ -190,8 +193,8 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
   if (peakHits.size() == 0)
     return;
 
-  std::vector<size_t> max_panels;
-  std::vector<size_t> max_planes;
+  std::vector<size_t> max_panels(peakHits.size(),-1);
+  std::vector<size_t> max_planes(peakHits.size(),-1);
   for (size_t n = 0; n < peakHits.size(); n++) {
     std::vector<int> hits_in_panel(StrawId::_nupanels, 0);
     std::vector<int> hits_in_plane(StrawId::_nplanes, 0);
@@ -214,10 +217,8 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
     }
     if (_minnpanels > 0 && npanels < _minnpanels)
       continue;
-    max_panels.push_back(std::distance(
-        hits_in_panel.begin(), std::max_element(hits_in_panel.begin(), hits_in_panel.end())));
-    max_planes.push_back(std::distance(
-        hits_in_plane.begin(), std::max_element(hits_in_plane.begin(), hits_in_plane.end())));
+    max_panels[n] = std::distance(hits_in_panel.begin(), std::max_element(hits_in_panel.begin(), hits_in_panel.end()));
+    max_planes[n] = std::distance(hits_in_plane.begin(), std::max_element(hits_in_plane.begin(), hits_in_plane.end()));
   }
 
   // Record TimeCluster info
@@ -225,6 +226,7 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
   double avg = 0;
   int chCount;
   for (size_t n = 0; n < nClust; n++) {
+    std::vector<int> hits_in_panel(StrawId::_nupanels, 0);
     TimeCluster tclust;
     tclust._nsh = peakHits[n];
     avg = 0;
@@ -241,14 +243,16 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
         continue;
       if (_useoneplane && (_chcol->at(i).strawId().plane() != max_planes[n]))
         continue;
+      hits_in_panel[_chcol->at(i).strawId().uniquePanel()] = 1;
       avg += _chcol->at(i).correctedTime();
       tclust._strawHitIdxs.push_back(i);
       chCount++;
     }
+    int npanels = std::accumulate(hits_in_panel.begin(),hits_in_panel.end(),0);
+    if (_minnpanels > 0 && npanels < _minnpanels)
+      continue;
 
-    tclust._t0 =
-        TrkT0(avg / chCount,
-              (ordChCol[peakEnd[n]].correctedTime() - ordChCol[peakStart[n]].correctedTime()) / 2.);
+    tclust._t0 = TrkT0(avg / chCount, (ordChCol[peakEnd[n]].correctedTime() - ordChCol[peakStart[n]].correctedTime()) / 2.);
     tccol.push_back(tclust);
   }
 }

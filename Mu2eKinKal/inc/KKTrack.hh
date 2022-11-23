@@ -4,6 +4,7 @@
 // subclass of KinKal Track specialized for Mu2e
 //
 #include "KinKal/Fit/Track.hh"
+#include "KinKal/Detector/ParameterHit.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
@@ -38,7 +39,7 @@ namespace mu2e {
       using TRACK = KinKal::Track<KTRAJ>;
       // construct from configuration, fit environment, and hits and materials
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITCLUSTERER const& shclusterer,
-          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits );
+          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits, std::array<double, KinKal::NParams()> constraints = {0});
       // extend the track according to new configuration, hits, and/or exings
       void extendTrack(Config const& config,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits );
@@ -68,7 +69,8 @@ namespace mu2e {
       KKSTRAWHITCLUSTERER const& shclusterer,
       KKSTRAWHITCOL const& strawhits,
       KKSTRAWXINGCOL const& strawxings,
-      KKCALOHITCOL const& calohits) :
+      KKCALOHITCOL const& calohits,
+      std::array<double, KinKal::NParams()> constraints) :
     KinKal::Track<KTRAJ>(config,bfield,seedtraj), tpart_(tpart), shclusterer_(shclusterer),
     strawhits_(strawhits),
     strawxings_(strawxings),
@@ -84,6 +86,31 @@ namespace mu2e {
         }
       }
       convertTypes(strawhits_, strawxings_, calohits_,  hits,exings);
+
+      std::array<bool,KinKal::NParams()> mask = {false};
+      bool constraining = false;
+      for (size_t i=0;i<KinKal::NParams();i++){
+        if (constraints[i] > 0){
+          mask[i] = true;
+          constraining = true;
+        }
+      }
+      if (constraining){
+        KinKal::Parameters cparams = seedtraj.params();
+        for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+          for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
+            cparams.covariance()[ipar][jpar] = 0.0;
+          }
+        }
+        for(size_t ipar=0; ipar < KinKal::NParams(); ipar++){
+          if (mask[ipar])
+            cparams.covariance()[ipar][ipar] = constraints[ipar]*constraints[ipar];
+          else
+            cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
+        }
+        hits.push_back(std::make_shared<KinKal::ParameterHit<KTRAJ>>(seedtraj.range().mid(),seedtraj,cparams,mask));
+      }
+
       this->fit(hits,exings);
     }
 

@@ -211,6 +211,12 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
     }
   }
 
+  // get pos and direction into Z alignment
+  if (seedDir.y() != 0){
+    seedDir /= -1*seedDir.y();
+    seedInt -= seedDir*seedInt.y()/seedDir.y();
+  }
+
   double avg_t0 = 0;
   int good_hits = 0;
   for (size_t k=0;k<shC.size();k++){
@@ -230,17 +236,16 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
 
   tseed._t0._t0 = avg_t0-_t0offset;
 
-  // get pos and direction into Z alignment
-  if (seedDir.y() != 0){
-    seedDir /= -1*seedDir.y();
-    seedInt -= seedDir*seedInt.y()/seedDir.y();
-  }
-
   tseed._track.FitParams.T0 = tseed._t0._t0;
   tseed._track.FitParams.A0 = seedInt.x();
   tseed._track.FitParams.B0 = seedInt.z();
   tseed._track.FitParams.A1 = seedDir.x();
   tseed._track.FitParams.B1 = seedDir.z();
+  tseed._track.MinuitParams.T0 = tseed._t0._t0;
+  tseed._track.MinuitParams.A0 = seedInt.x();
+  tseed._track.MinuitParams.B0 = seedInt.z();
+  tseed._track.MinuitParams.A1 = seedDir.x();
+  tseed._track.MinuitParams.B1 = seedDir.z();
   XYZVectorF X(1,0,0);
   XYZVectorF Y(0,1,0);
   XYZVectorF Z(0,0,1);
@@ -251,6 +256,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
   XYZVectorF xyzdir(seedDir);
   TrackEquation XYZTrack(xyzint,xyzdir);
   tseed._track.SetFitEquation(XYZTrack);
+  tseed._track.SetMinuitEquation(XYZTrack);
 
   // For compatibility FIXME
   for(size_t ich= 0; ich<tseed._straw_chits.size(); ich++){
