@@ -4,10 +4,11 @@
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DbTables/inc/DbTable.hh"
 #include "cetlib_except/exception.h"
+#include <cstdint>
 #include <iomanip>
-#include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace mu2e {
 
@@ -18,32 +19,37 @@ class CRVSiPM : public DbTable {
 
   class Row {
    public:
-    Row(std::size_t channel, float pedestal, float height, float area) :
-        _channel(channel), _pedestal(pedestal), _height(height), _area(area) {}
-    std::size_t channel() const { return _channel; }
+    Row(std::uint16_t channel, float pedestal, float pulseHeight,
+        float pulseArea) :
+        _channel(channel),
+        _pedestal(pedestal), _pulseHeight(pulseHeight), _pulseArea(pulseArea) {}
+    std::uint16_t channel() const { return _channel; }
     float pedestal() const { return _pedestal; }
-    float height() const { return _height; }
-    float area() const { return _area; }
+    float pulseHeight() const { return _pulseHeight; }
+    float pulseArea() const { return _pulseArea; }
 
    private:
-    std::size_t _channel;
+    std::uint16_t _channel;
     float _pedestal;
-    float _height;
-    float _area;
+    float _pulseHeight;
+    float _pulseArea;
   };
 
   constexpr static const char* cxname = "CRVSiPM";
 
-  CRVSiPM() : DbTable(cxname, "crv.sipm", "channel,pedestal,height,area") {}
+  CRVSiPM() :
+      DbTable(cxname, "crv.sipm", "channel,pedestal,pulseheight,pulsearea") {}
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
-  const Row& row(std::size_t channel) const { return _rows.at(channel); }
+  const Row& row(std::uint16_t channel) const { return _rows.at(channel); }
   std::vector<Row> const& rows() const { return _rows; }
   std::size_t nrow() const override { return _rows.size(); };
-  size_t size() const override { return baseSize() + nrow() * sizeof(Row); };
+  std::size_t size() const override {
+    return baseSize() + nrow() * sizeof(Row);
+  };
   const std::string orderBy() const override { return std::string("channel"); }
 
   void addRow(const std::vector<std::string>& columns) override {
-    std::size_t channel = std::stoul(columns[0]);
+    std::uint16_t channel = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
     if (channel >= CRVId::nChannels || channel != _rows.size()) {
       throw cet::exception("CRVSIPM_BAD_CHANNEL")
@@ -59,8 +65,8 @@ class CRVSiPM : public DbTable {
     sstream << r.channel() << ",";
     sstream << std::fixed << std::setprecision(3);
     sstream << r.pedestal();
-    sstream << r.height();
-    sstream << r.area();
+    sstream << r.pulseHeight();
+    sstream << r.pulseArea();
   }
 
   virtual void clear() override {

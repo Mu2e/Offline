@@ -4,8 +4,9 @@
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DbTables/inc/DbTable.hh"
 #include "cetlib_except/exception.h"
+#include <cstdint>
 #include <iomanip>
-#include <map>
+#include <vector>
 #include <sstream>
 #include <string>
 
@@ -18,13 +19,13 @@ class CRVTime : public DbTable {
 
   class Row {
    public:
-    Row(std::size_t channel, float timeOffset) :
+    Row(std::uint16_t channel, float timeOffset) :
         _channel(channel), _timeOffset(timeOffset) {}
-    std::size_t channel() const { return _channel; }
+    std::uint16_t channel() const { return _channel; }
     float timeOffset() const { return _timeOffset; }
 
    private:
-    std::size_t _channel;
+    std::uint16_t _channel;
     float _timeOffset;
   };
 
@@ -32,16 +33,14 @@ class CRVTime : public DbTable {
 
   CRVTime() : DbTable(cxname, "crv.time", "channel,timeOffset") {}
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
-  const Row& row(std::size_t channel) const { return _rows.at(channel); }
+  const Row& row(std::uint16_t channel) const { return _rows.at(channel); }
   std::vector<Row> const& rows() const { return _rows; }
   std::size_t nrow() const override { return _rows.size(); };
-  std::size_t size() const override {
-    return baseSize() + nrow() * sizeof(Row);
-  };
+  std::size_t size() const override { return baseSize() + nrow() * sizeof(Row); };
   const std::string orderBy() const override { return std::string("channel"); }
 
   void addRow(const std::vector<std::string>& columns) override {
-    std::size_t channel = std::stoul(columns[0]);
+    std::uint16_t channel = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
     if (channel >= CRVId::nChannels || channel != _rows.size()) {
       throw cet::exception("CRVTIME_BAD_CHANNEL")

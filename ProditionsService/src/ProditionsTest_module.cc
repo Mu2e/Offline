@@ -72,13 +72,13 @@ void ProditionsTest::analyze(const art::Event& event) {
   std::size_t channel;
   channel = 11;
   std::cout << "channel " << channel << " ped: " << calib.pedestal(channel)
-            << "   height " << calib.height(channel)
-            << "   area "   << calib.area(channel)
+            << "   height " << calib.pulseHeight(channel)
+            << "   area "   << calib.pulseArea(channel)
             << "   timeOffset " << calib.timeOffset(channel) << "\n";
   channel = 20111;
   std::cout << "channel " << channel << " ped: " << calib.pedestal(channel)
-            << "   height " << calib.height(channel)
-            << "   area " << calib.area(channel)
+            << "   height " << calib.pulseHeight(channel)
+            << "   area " << calib.pulseArea(channel)
             << "   timeOffset " << calib.timeOffset(channel) << "\n";
 }
 

@@ -3,22 +3,25 @@
 
 //
 // a little container for CRV SiPM calibrations
+//
 
 namespace mu2e {
 
 class CRVCalibPar {
  public:
-  CRVCalibPar(float pedestal, float height, float area, float timeOffset) :
-      _pedestal(pedestal), _height(height), _area(area),
+  CRVCalibPar(float pedestal, float pulseHeight, float pulseArea,
+              float timeOffset) :
+      _pedestal(pedestal),
+      _pulseHeight(pulseHeight), _pulseArea(pulseArea),
       _timeOffset(timeOffset) {}
   float pedestal() const { return _pedestal; }
-  float height() const { return _height; }
-  float area() const { return _area; }
+  float pulseHeight() const { return _pulseHeight; }
+  float pulseArea() const { return _pulseArea; }
   float timeOffset() const { return _timeOffset; }
 
   float _pedestal;
-  float _height;
-  float _area;
+  float _pulseHeight;
+  float _pulseArea;
   float _timeOffset;
 };
 

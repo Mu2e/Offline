@@ -3,10 +3,11 @@
 
 #include "Offline/DbTables/inc/DbTable.hh"
 #include "cetlib_except/exception.h"
+#include <cstdint>
 #include <iomanip>
-#include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace mu2e {
 
@@ -17,12 +18,13 @@ class CRVBadChan : public DbTable {
 
   class Row {
    public:
-    Row(std::size_t channel, int status) : _channel(channel), _status(status) {}
-    std::size_t channel() const { return _channel; }
+    Row(std::uint16_t channel, int status) :
+        _channel(channel), _status(status) {}
+    std::uint16_t channel() const { return _channel; }
     int status() const { return _status; }
 
    private:
-    std::size_t _channel;
+    std::uint16_t _channel;
     int _status;
   };
 

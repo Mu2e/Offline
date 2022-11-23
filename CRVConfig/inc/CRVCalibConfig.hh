@@ -18,10 +18,12 @@ struct CRVCalibConfig {
   fhicl::Atom<bool> useDb{Name("useDb"), Comment("use database or fcl")};
 
   fhicl::Atom<float> pedestal{Name("pedestal"), Comment("universal pedestal")};
-  fhicl::Atom<float> height{Name("height"), Comment("universal height")};
-  fhicl::Atom<float> area{Name("area"), Comment("universal area")};
+  fhicl::Atom<float> pulseHeight{Name("pulseHeight"),
+                                 Comment("universal pulse height correction")};
+  fhicl::Atom<float> pulseArea{Name("pulseArea"),
+                               Comment("universal pulse area correction")};
   fhicl::Atom<float> timeOffset{Name("timeOffset"),
-                                Comment("universal timeOffset")};
+                                Comment("universal time offset")};
 };
 
 }  // namespace mu2e
