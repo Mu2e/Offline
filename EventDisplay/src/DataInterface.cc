@@ -62,8 +62,8 @@ using namespace CLHEP;
 namespace mu2e_eventdisplay
 {
 
-DataInterface::DataInterface(EventDisplayFrame *mainframe):
-              _geometrymanager(nullptr),_topvolume(nullptr),_mainframe(mainframe)
+DataInterface::DataInterface(EventDisplayFrame *mainframe, double kalStepSize):
+              _geometrymanager(nullptr),_topvolume(nullptr),_mainframe(mainframe),_kalStepSize(kalStepSize)
 {
     _minPoints=0;
     _minTime=NAN;
@@ -787,20 +787,16 @@ template<class KTRAJ> void DataInterface::fillKalSeedTrajectory(std::unique_ptr<
   double t1=trajectory->range().begin();
   double t2=trajectory->range().end();
 
-  double x1=trajectory->position3(t1).x();
-  double y1=trajectory->position3(t1).y();
-  double z1=trajectory->position3(t1).z();
-  double x2=trajectory->position3(t2).x();
-  double y2=trajectory->position3(t2).y();
-  double z2=trajectory->position3(t2).z();
+  const auto &pos1=trajectory->position3(t1);
+  const auto &pos2=trajectory->position3(t2);
 
-  boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
+  boost::shared_ptr<Track> track(new Track(pos1.x(),pos1.y(),pos1.z(),t1, pos2.x(),pos2.y(),pos2.z(),t2,
                                            particleid, trackclass, trackclassindex, p1,
                                            _geometrymanager, _topvolume, _mainframe, info, false));
   _components.push_back(track);
   _tracks.push_back(track);
 
-  for(double t=t1; t<=t2; t+=0.1)
+  for(double t=t1; t<=t2; t+=_kalStepSize)
   {
     const auto &p = trajectory->position3(t);
     findBoundaryT(_tracksTimeMinmax, t);
