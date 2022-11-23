@@ -777,6 +777,38 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
   if(std::isnan(m.maxz) || z>m.maxz) m.maxz=z;
 }
 
+using LHPT = KinKal::PiecewiseTrajectory<KinKal::LoopHelix>;
+using CHPT = KinKal::PiecewiseTrajectory<KinKal::CentralHelix>;
+using KLPT = KinKal::PiecewiseTrajectory<KinKal::KinematicLine>;
+template<class KTRAJ> void DataInterface::fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
+                                                                int particleid, int trackclass, int trackclassindex, double p1,
+                                                                boost::shared_ptr<ComponentInfo> info)
+{
+  double t1=trajectory->range().begin();
+  double t2=trajectory->range().end();
+
+  double x1=trajectory->position3(t1).x();
+  double y1=trajectory->position3(t1).y();
+  double z1=trajectory->position3(t1).z();
+  double x2=trajectory->position3(t2).x();
+  double y2=trajectory->position3(t2).y();
+  double z2=trajectory->position3(t2).z();
+
+  boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
+                                           particleid, trackclass, trackclassindex, p1,
+                                           _geometrymanager, _topvolume, _mainframe, info, false));
+  _components.push_back(track);
+  _tracks.push_back(track);
+
+  for(double t=t1; t<=t2; t+=0.1)
+  {
+    const auto &p = trajectory->position3(t);
+    findBoundaryT(_tracksTimeMinmax, t);
+    findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
+    track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
+  }
+}
+
 void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets)
 {
   auto const& ptable = mu2e::GlobalConstantsHandle<mu2e::ParticleDataList>();
@@ -1361,65 +1393,90 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double p1=mu2e::GenVector::Hep3Vec(momvec1).mag();
       double p2=mu2e::GenVector::Hep3Vec(momvec2).mag();
 
-      double t0   = kalseed.t0().t0();
-      double flt0 = kalseed.flt0();
-      double mass = ptable->particle(kalseed.particle()).mass();
-      double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
-
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("KalSeed Track %lu  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
       info->setName(c.c_str());
       info->setText(0,c.c_str());
       info->setText(1,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
 
-      for(size_t k=0; k<nSegments; k++)
+      if(kalseed.loopHelixFit())
       {
-        const mu2e::KalSegment &segment = segments.at(k);
+        info->setText(2,"Loop Helix Fit");
+        auto trajectory=kalseed.loopHelixFitTrajectory();
+        fillKalSeedTrajectory<LHPT>(trajectory, particleid, trackclass, trackclassindex, p1, info);
+      }
+      else if(kalseed.centralHelixFit())
+      {
+        info->setText(2,"Central Helix Fit");
+        auto trajectory=kalseed.centralHelixFitTrajectory();
+        fillKalSeedTrajectory<CHPT>(trajectory, particleid, trackclass, trackclassindex, p1, info);
+      }
+      else if(kalseed.kinematicLineFit())
+      {
+        info->setText(2,"Kinematic Line Fit");
+        auto trajectory=kalseed.kinematicLineFitTrajectory();
+        fillKalSeedTrajectory<KLPT>(trajectory, particleid, trackclass, trackclassindex, p1, info);
+      }
+      else
+      {
+//old KalSeed
+        info->setText(2,"Old KalSeed using Segments");
 
-        fltLMin=segment.fmin();
-        fltLMax=segment.fmax();
+        double t0   = kalseed.t0().t0();
+        double flt0 = kalseed.flt0();
+        double mass = ptable->particle(kalseed.particle()).mass();
+        double v  = mu2e::TrkUtilities::beta(mass,(p1+p2)/2.0)*CLHEP::c_light;
+
+        for(size_t k=0; k<nSegments; k++)
+        {
+          const mu2e::KalSegment &segment = segments.at(k);
+
+          fltLMin=segment.fmin();
+          fltLMax=segment.fmax();
+
 /*
 //interpolation between segments doesn't seem to work anymore
-        if(k>0)
-        {
-          double fltLMaxPrev=segments.at(k-1).fmax();
-          fltLMin=(fltLMin+fltLMaxPrev)/2.0;
-        }
-        if(k+1<nSegments)
-        {
-          double fltLMinNext=segments.at(k+1).fmin();
-          fltLMax=(fltLMax+fltLMinNext)/2.0;
-        }
+          if(k>0)
+          {
+            double fltLMaxPrev=segments.at(k-1).fmax();
+            fltLMin=(fltLMin+fltLMaxPrev)/2.0;
+          }
+          if(k+1<nSegments)
+          {
+            double fltLMinNext=segments.at(k+1).fmin();
+            fltLMax=(fltLMax+fltLMinNext)/2.0;
+          }
 */
 
-        XYZVectorF pos1, pos2;
-        segment.helix().position(fltLMin,pos1);
-        segment.helix().position(fltLMax,pos2);
-        double x1=mu2e::GenVector::Hep3Vec(pos1).x();
-        double y1=mu2e::GenVector::Hep3Vec(pos1).y();
-        double z1=mu2e::GenVector::Hep3Vec(pos1).z();
-        double x2=mu2e::GenVector::Hep3Vec(pos2).x();
-        double y2=mu2e::GenVector::Hep3Vec(pos2).y();
-        double z2=mu2e::GenVector::Hep3Vec(pos2).z();
-        double t1=t0+(fltLMin-flt0)/v;
-        double t2=t0+(fltLMax-flt0)/v;
-        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
-                                                 particleid, trackclass, trackclassindex, p1,
-                                                 _geometrymanager, _topvolume, _mainframe, info, false));
-        _components.push_back(track);
-        _tracks.push_back(track);
+          XYZVectorF pos1, pos2;
+          segment.helix().position(fltLMin,pos1);
+          segment.helix().position(fltLMax,pos2);
+          double x1=mu2e::GenVector::Hep3Vec(pos1).x();
+          double y1=mu2e::GenVector::Hep3Vec(pos1).y();
+          double z1=mu2e::GenVector::Hep3Vec(pos1).z();
+          double x2=mu2e::GenVector::Hep3Vec(pos2).x();
+          double y2=mu2e::GenVector::Hep3Vec(pos2).y();
+          double z2=mu2e::GenVector::Hep3Vec(pos2).z();
+          double t1=t0+(fltLMin-flt0)/v;
+          double t2=t0+(fltLMax-flt0)/v;
+          boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
+                                                   particleid, trackclass, trackclassindex, p1,
+                                                   _geometrymanager, _topvolume, _mainframe, info, false));
+          _components.push_back(track);
+          _tracks.push_back(track);
 
-        for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
-        {
-          double t=t0+(fltL-flt0)/v;
-          XYZVectorF pos;
-          segment.helix().position(fltL,pos);
-          CLHEP::Hep3Vector p = mu2e::GenVector::Hep3Vec(pos);
-          findBoundaryT(_tracksTimeMinmax, t);
-          findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
-          track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
-        }
-      }
+          for(double fltL=fltLMin; fltL<=fltLMax; fltL+=1.0)
+          {
+            double t=t0+(fltL-flt0)/v;
+            XYZVectorF pos;
+            segment.helix().position(fltL,pos);
+            CLHEP::Hep3Vector p = mu2e::GenVector::Hep3Vec(pos);
+            findBoundaryT(_tracksTimeMinmax, t);
+            findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
+            track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
+          }
+        } //segments
+      } //old KalSeed
     }
   }
 

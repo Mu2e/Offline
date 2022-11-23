@@ -120,6 +120,9 @@ class DataInterface
   void startComponents();
   void updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector);
   void fillGeometry();
+  template<class KTRAJ> void fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
+                                                   int particleid, int trackclass, int trackclassindex, double p1,
+                                                   boost::shared_ptr<ComponentInfo> info);
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
