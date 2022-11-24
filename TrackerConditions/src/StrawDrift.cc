@@ -1,4 +1,6 @@
-
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -6,10 +8,6 @@
 #include <cmath>
 #include <algorithm>
 #include "TMath.h"
-
-#include "Offline/TrackerConditions/inc/StrawDrift.hh"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
 
 using namespace std;
@@ -55,6 +53,10 @@ namespace mu2e {
     //for interpolation, define a high and a low index
     int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
     int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
+    if(upperPhiIndex > (int)_phiBins || lowerPhiIndex < 0)
+      std::cout << "Out-of-range phi bin, lower " << lowerPhiIndex << " upper " << upperPhiIndex << std::endl;
+    lowerPhiIndex = std::max(0,lowerPhiIndex);
+    upperPhiIndex =std::min((int)_phiBins-1,upperPhiIndex);
 
     int index = min(int(_distances_dbins.size())-2,max(0,int(floor(distance/_deltaD))));
     double lowerTime = _times_dbins[index*_phiBins+lowerPhiIndex] + (distance - _distances_dbins[index])/(_deltaD) * (_times_dbins[(index+1)*_phiBins+lowerPhiIndex] - _times_dbins[index*_phiBins+lowerPhiIndex]);
@@ -72,17 +74,21 @@ namespace mu2e {
       return 0;
     float phiSliceWidth = (TMath::Pi()/2.0)/float(_phiBins-1);
     //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
-    float reducedPhi = ConstrainAngle(phi);
+    double reducedPhi = ConstrainAngle(phi);
     //for interpolation, define a high and a low index
     int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
     int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
 
     int index = min(int(_times_tbins.size())-2,max(0,int(floor(time/_deltaT))));
-    double lowerDist = _distances_tbins[index*_phiBins+lowerPhiIndex] + (time - _times_tbins[index])/(_deltaT) * (_distances_tbins[(index+1)*_phiBins+lowerPhiIndex] - _distances_tbins[index*_phiBins+lowerPhiIndex]);
-    double upperDist = _distances_tbins[index*_phiBins+upperPhiIndex] + (time - _times_tbins[index])/(_deltaT) * (_distances_tbins[(index+1)*_phiBins+upperPhiIndex] - _distances_tbins[index*_phiBins+upperPhiIndex]);
+
+    int lobin = index*_phiBins+lowerPhiIndex;
+    int lobinplus = (index+1)*_phiBins+lowerPhiIndex;
+    double lowerDist = _distances_tbins[lobin] + (time - _times_tbins[index])/(_deltaT) * (_distances_tbins[lobinplus] - _distances_tbins[lobin]);
     if (phi == 0)
       return lowerDist;
-
+    int upbin = index*_phiBins+upperPhiIndex;
+    int upbinplus = (index+1)*_phiBins+upperPhiIndex;
+    double upperDist = _distances_tbins[upbin] + (time - _times_tbins[index])/(_deltaT) * (_distances_tbins[upbinplus] - _distances_tbins[upbin]);
     double lowerPhi = lowerPhiIndex * phiSliceWidth;
     return lowerDist + (reducedPhi - lowerPhi)/phiSliceWidth * (upperDist - lowerDist);
   }
@@ -91,10 +97,9 @@ namespace mu2e {
     if (phi < 0) {
       phi = -1.0*phi;
     }
+    static const double halfpi = 0.5*TMath::Pi();
     phi = fmod(phi,TMath::Pi());
-    if (phi > TMath::Pi()/2.0) {
-      phi = phi - 2.0*fmod(phi,TMath::Pi()/2.0);
-    }
+    if (phi > halfpi) phi -= 2.0*fmod(phi,halfpi);
     return phi;
   }
 
