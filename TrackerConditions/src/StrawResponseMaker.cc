@@ -62,34 +62,11 @@ namespace mu2e {
     pmpEnergyScaleAvg /= (double) pmpEnergyScale.size();
 
     //FIXME deprecated
-    double sigma = _config.parameterizedDriftSigma();
-    double tau = _config.parameterizedDriftTau();
-    std::vector<double> _parDriftOffsets;
-    _parDriftOffsets.reserve(_config.driftResBins().size());
+//    double sigma = _config.parameterizedDriftSigma();
+//    double tau = _config.parameterizedDriftTau();
 
-    for (size_t i=0;i<_config.driftResBins().size();i++){
-      double doca = _config.driftResBins()[i];
-      double hypotenuse = sqrt(pow(doca,2) + pow(tau*_config.linearDriftVelocity(),2));
-      double tau_eff = hypotenuse/_config.linearDriftVelocity() - doca/_config.linearDriftVelocity();
-
-      double sumw = 0;
-      double sumwx = 0;
-//      double sumwx2 = 0;
-      double tresid = -20.005;
-      for (int it=0;it<10000;it++){
-        double weight = exp(sigma*sigma/(2*tau_eff*tau_eff)-tresid/tau_eff)*(1-TMath::Erf((sigma*sigma-tau_eff*tresid)/(sqrt(2)*sigma*tau_eff)));
-        sumw += weight;
-        sumwx += weight*tresid;
-//        sumwx2 += weight*tresid*tresid;
-        tresid += 0.01;
-      }
-      double mean = sumwx/sumw;
-//      double stddev = sqrt(sumwx2/sumw-mean*mean);
-
-      _parDriftOffsets.push_back(mean);
-    }
-
-    if (_config.driftResBins().size() != _config.driftRes().size()){
+    if (_config.driftResOffset().size() != _config.driftResRMS().size()
+        || _config.driftResBins().size() != 2){
       throw cet::exception("BADCONFIG")
         << "StrawResponse drift res vector lengths incorrect" << "\n";
     }
@@ -134,7 +111,8 @@ namespace mu2e {
         _config.totEBins(), _config.totEBinWidth(), _config.totDriftTime(),
         _config.totDriftError(),
         _config.driftErrorParameters(),
-        _config.useParameterizedDriftErrors(), _config.driftResBins(), _parDriftOffsets, _config.driftRes(),
+        _config.useParameterizedDriftErrors(),
+        _config.driftResBins(),_config.driftResOffset(), _config.driftResRMS(),
         _config.driftResIsTime(),
         _config.wireLengthBuffer(), _config.strawLengthFactor(),
         _config.errorFactor(), _config.useNonLinearDrift(),

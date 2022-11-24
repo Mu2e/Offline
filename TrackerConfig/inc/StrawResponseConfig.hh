@@ -52,9 +52,11 @@ namespace mu2e {
     fhicl::Sequence<double> driftFit {
       Name("driftFit"), Comment("Drift fit")};
     fhicl::Sequence<double> driftResBins {
-      Name("driftResBins"), Comment("Drift res bins (doca in mm)")};
-    fhicl::Sequence<double> driftRes {
-      Name("driftRes"), Comment("Drift res (time in ns or doca in mm)")};
+      Name("driftResBins"), Comment("Drift response Bin edges (time in ns or doca in mm)")};
+    fhicl::Sequence<double> driftResRMS {
+      Name("driftResRMS"), Comment("Drift response RMS (time in ns or doca in mm)")};
+    fhicl::Sequence<double> driftResOffset {
+      Name("driftResOffset"), Comment("Drift response Offset (ns or mm)")};
     fhicl::Atom<bool> driftResIsTime {
       Name("driftResIsTime"), Comment("Drift res is given in units of time (ns)")};
 
@@ -62,7 +64,6 @@ namespace mu2e {
       Name("useOldDrift"), Comment("Use old drift calibration (for backwards compatibility)")};
     fhicl::Atom<bool> driftIgnorePhi {
       Name("driftIgnorePhi"), Comment("Ignore phi for no field reco")};
-
 
 
     fhicl::Sequence<double> driftErrorParameters {

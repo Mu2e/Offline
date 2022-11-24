@@ -1,4 +1,3 @@
-
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "TMath.h"
 #include <cmath>
@@ -9,14 +8,32 @@ using namespace std;
 namespace mu2e {
 
   // simple line interpolation, this should be a utility function, FIXME!
+  // This only works if the bins are uniform, should be rewritten FIXME
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
     int imax = int(xvals.size()-2);
     double xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
     int ibin = min(imax,max(0,int(floor((xval-xvals.front())/xbin))));
     double yval = yvals[ibin];
-    int jbin = ibin+1;
-    double slope = (yvals[jbin]-yvals[ibin])/(xvals[jbin]-xvals[ibin]);
+    auto jbin = ibin+1;
+    double slope = (yvals[jbin]-yvals[ibin])/xbin;
     yval += (xval-xvals[ibin])*slope;
+    return yval;
+  }
+
+  double StrawResponse::PieceLineDrift(std::vector<double> const& bins,std::vector<double> const& yvals, double xval){
+    int imax = yvals.size()-1;
+    double xbin = (bins[1]-bins[0])/yvals.size();
+    int ibin = min(imax,max(0,int(floor((xval-bins[0])/xbin))));
+    double yval = yvals[ibin];
+    double slope;
+    if(ibin < imax) {
+      auto jbin = ibin+1;
+      slope = (yvals[jbin]-yvals[ibin])/xbin;
+    } else {
+      auto jbin = ibin-1;
+      slope = (yvals[ibin]-yvals[jbin])/xbin;
+    }
+    yval += (xval-(ibin+0.5)*xbin)*slope;
     return yval;
   }
 
@@ -108,9 +125,8 @@ namespace mu2e {
       double ddist, double phi, bool forceOld) const {
     if (!_useOldDrift && !forceOld){
       if (_driftResIsTime){
-        if (ddist > 2.5)
-          ddist = 2.5;
-        return PieceLine(_parDriftDocas, _parDriftRes, ddist);
+        ddist = std::max(0.0,std::min(2.5,ddist));
+        return PieceLineDrift(_driftResBins, _driftResRMS, ddist);
       }else{
         double distance_error = driftDistanceError(strawId,ddist,phi,forceOld);
         double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
@@ -119,9 +135,8 @@ namespace mu2e {
     }else{
       //FIXME to be deprecated
       if (useParameterizedDriftError()){
-        if (ddist > 2.5)
-          ddist = 2.5;
-        return PieceLine(_parDriftDocas, _parDriftRes, ddist);
+        ddist = std::max(0.0,std::min(2.5,ddist));
+        return PieceLineDrift(_driftResBins, _driftResRMS, ddist);
       }else{
         return driftDistanceError(strawId, ddist, phi, forceOld) / _lindriftvel;
       }
@@ -150,8 +165,9 @@ namespace mu2e {
     if (!_useOldDrift && !forceOld){
       if (_driftIgnorePhi)
         phi = 0;
-      double t2d_driftonly = _strawDrift->T2D(dtime,phi,false);
-      double ddist = calibrateT2DToDriftDistance(t2d_driftonly);
+      double ddist = _strawDrift->T2D(dtime,phi,false);
+//      double ddist = calibrateT2DToDriftDistance(t2d_driftonly);
+      ddist -= driftDistanceOffset(ddist);
       return ddist;
     }else{
       if(_usenonlindrift){
@@ -173,9 +189,8 @@ namespace mu2e {
         double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
         return time_error*speed_at_ddist;
       }else{
-        if (ddist > 2.5)
-          ddist = 2.5;
-        return PieceLine(_parDriftDocas, _parDriftRes, ddist);
+        ddist = std::max(0.0,std::min(2.5,ddist));
+        return PieceLineDrift(_driftResBins,_driftResRMS, ddist);
       }
     }else{
       // maximum drift is the straw radius.  should come from conditions FIXME!
@@ -186,21 +201,19 @@ namespace mu2e {
     }
   }
 
-  // FIXME to be deprecated
-  double StrawResponse::driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
-    return 0;
+  double StrawResponse::driftDistanceOffset(double ddist) const {
+    if(_driftResIsTime)
+      return 0;
+    else{
+      ddist = std::max(0.0,std::min(2.5,ddist));
+      return PieceLineDrift(_driftResBins,_driftResOffset, ddist);
+    }
   }
 
   // FIXME to be deprecated
   double StrawResponse::driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
-    if (!_useOldDrift){
-      return 0;
-    }else{
-      return PieceLine(_parDriftDocas, _parDriftOffsets, DOCA);
-    }
+    return 0;
   }
-
-
 
   bool StrawResponse::wireDistance(Straw const& straw, double edep,
       double dt, double& wdist, double& wderr, double &halfpv) const {
