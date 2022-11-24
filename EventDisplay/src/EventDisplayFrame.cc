@@ -49,6 +49,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
+  _kalStepSize(pset.get<double>("kalSeedStepSize")),
   _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
 {
   SetCleanup(kDeepCleanup);
@@ -431,7 +432,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   }
 
   _mainPad->cd();
-  _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this));
+  _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this,_kalStepSize));
   _rootFileManager = boost::shared_ptr<RootFileManager>(new RootFileManager);
   _rootFileManagerAnim = boost::shared_ptr<RootFileManager>(new RootFileManager);
 

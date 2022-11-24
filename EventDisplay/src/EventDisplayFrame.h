@@ -127,6 +127,7 @@ namespace mu2e_eventdisplay
     TBox                *_legendBox[30];
     TPolyLine           *_legendParticleLine[30];
     std::string         _g4ModuleLabel, _physicalVolumesMultiLabel, _protonBunchTimeLabel;
+    double              _kalStepSize;
 
     mu2e::SimParticleTimeOffset _timeOffsets;
 
