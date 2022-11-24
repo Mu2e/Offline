@@ -91,6 +91,7 @@ class DataInterface
   bool _showNeutrons;
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
+  double _kalStepSize;
 
   std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
@@ -114,12 +115,15 @@ class DataInterface
   };
 
   public:
-  DataInterface(EventDisplayFrame *mainframe);
+  DataInterface(EventDisplayFrame *mainframe, double kalStepSize);
   virtual ~DataInterface();
 
   void startComponents();
   void updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector);
   void fillGeometry();
+  template<class KTRAJ> void fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
+                                                   int particleid, int trackclass, int trackclassindex, double p1,
+                                                   boost::shared_ptr<ComponentInfo> info);
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
