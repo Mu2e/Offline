@@ -1,0 +1,18 @@
+---
+Language:        Cpp
+BasedOnStyle:  google
+BreakConstructorInitializers: AfterColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+IncludeCategories:
+  - Regex:           '^".*\.hh"'
+    Priority:        1
+  - Regex:           '^"[^T].*\.h"'
+    Priority:        2
+  - Regex:           '^"T.*\.h"'
+    Priority:        3
+  - Regex:           '^<.*'
+    Priority:        4
+  - Regex:           '^<.*\.h>'
+    Priority:        5
+  - Regex:           '.*'
+    Priority:        6
