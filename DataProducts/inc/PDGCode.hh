@@ -377,7 +377,7 @@ namespace mu2e {
         anti_Sigma_b_star0 = -5214 ,
         Sigma_b_plus = 5222 ,
         anti_Sigma_b_minus = -5222 ,
-        Sigma_star_ = 5224 ,
+        Sigma_b_star_plus = 5224 ,
         anti_Sigma_b_star_minus = -5224 ,
         Xi_b0 = 5232 ,
         anti_Xi_b0 = -5232 ,
