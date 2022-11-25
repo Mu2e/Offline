@@ -290,6 +290,98 @@ namespace mu2e{
   }
 
 
+using LHPT = KinKal::PiecewiseTrajectory<KinKal::LoopHelix>;
+using CHPT = KinKal::PiecewiseTrajectory<KinKal::CentralHelix>;
+using KLPT = KinKal::PiecewiseTrajectory<KinKal::KinematicLine>;
+template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::unique_ptr<KTRAJ> &trajectory, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ){
+  double t1=trajectory->range().begin();
+  double t2=trajectory->range().end();
+
+  double x1=trajectory->position3(t1).x();
+  double y1=trajectory->position3(t1).y();
+  double z1=trajectory->position3(t1).z();
+  
+  line->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
+  line_twoDXY->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
+  line_twoDXZ->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
+  for(double t=t1; t<=t2; t+=0.1)
+  {
+    const auto &p = trajectory->position3(t);
+    double xt=p.x();
+    double yt=p.y();
+    double zt=p.z();
+    line->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt) , pointmmTocm(zt));
+    line_twoDXY->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt), pointmmTocm(zt));
+    line_twoDXZ->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt), pointmmTocm(zt));
+   // CLHEP::Hep3Vector p = GenVector::Hep3Vec(pos);
+    //          CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
+         
+    
+  }
+}
+
+void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  std::cout<<"[REveMu2eDataInterface] AddKinKalTracks  "<<std::endl;
+  std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
+  std::vector<std::string> names = std::get<0>(track_tuple);
+  std::vector<int> colour;
+  
+  for(unsigned int j=0; j< track_list.size(); j++){
+    const KalSeedCollection* seedcol = track_list[j];
+    colour.push_back(j+3);
+    if(seedcol!=0){  
+     for(unsigned int k = 0; k < seedcol->size(); k = k + 20){ 
+        mu2e::KalSeed kseed = (*seedcol)[k];
+        std::cout<<" is loop "<<kseed.loopHelixFit()<<std::endl;
+        TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
+        TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
+        TEveMu2eCustomHelix *line_twoDXZ = new TEveMu2eCustomHelix();
+        line->fKalSeed_ = kseed;
+        line->SetSeedInfo(kseed);
+             
+        if(kseed.loopHelixFit())
+        {
+          auto trajectory=kseed.loopHelixFitTrajectory();
+          AddKinKalTrajectory<LHPT>(trajectory,line, line_twoDXY,line_twoDXZ);
+        }
+        else if(kseed.centralHelixFit())
+        {
+          auto trajectory=kseed.centralHelixFitTrajectory();
+          AddKinKalTrajectory<CHPT>(trajectory,line,line_twoDXY,line_twoDXZ);
+        }
+        else if(kseed.kinematicLineFit())
+        {
+          auto trajectory=kseed.kinematicLineFitTrajectory();
+          AddKinKalTrajectory<KLPT>(trajectory,line,line_twoDXY,line_twoDXZ);
+        }
+      
+      
+      line_twoDXY->SetLineColor(kOrange);
+      line_twoDXY->SetLineWidth(3);
+      fTrackList2DXY->AddElement(line_twoDXY);
+
+      line_twoDXZ->SetLineColor(kOrange);
+      line_twoDXZ->SetLineWidth(3);
+      fTrackList2DXZ->AddElement(line_twoDXZ);
+
+      line->SetPickable(kTRUE);
+      line->SetLineColor(kOrange);
+      line->SetLineWidth(3);
+      fTrackList3D->AddElement(line);
+      }
+
+      /*TXYMgr->ImportElements(fTrackList2D, scene1);
+      TRZMgr->ImportElements(fTrackList2D, scene2);*/
+      tracker2Dproj->fXYMgr->ImportElements(fTrackList2DXY, tracker2Dproj->fEvtXYScene);
+      tracker2Dproj->fRZMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtRZScene);
+      gEve->AddElement(fTrackList3D);
+      gEve->Redraw3D(kTRUE);
+      }
+      }
+
+    }
+
+
 
   /*------------Function to color code the Tracker hits in 3D and 2D displays:-------------*/
   void TEveMu2eDataInterface::AddTrkHits(bool firstloop, const ComboHitCollection *chcol,std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj,
