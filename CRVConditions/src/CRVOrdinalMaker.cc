@@ -39,10 +39,11 @@ CRVOrdinal::ptr_t CRVOrdinalMaker::fromFcl() {
   }
   CRVOrdinal::OnlineMap onMap(nChan, CRVROC(0, 0, CRVId::nChanPerFEB));
 
-  // load the nominal online numbering
-  // TODO load the online numbering based on the CRV geometry name
+  // load the online-to-offline numbering
+  // chose the file based on the CRV geometry name
+  std::string fileStub = _config.filePath() + "/" +
+                         GeomHandle<CosmicRayShield>()->getName() + ".txt";
 
-  std::string fileStub = _config.filePath() + "/nominal.txt";
   ConfigFileLookupPolicy configFile;
   std::string fileSpec = configFile(fileStub);
   if (_config.verbose()) {
@@ -61,7 +62,7 @@ CRVOrdinal::ptr_t CRVOrdinalMaker::fromFcl() {
   // read the header line
   std::getline(ordFile, line);
 
-  size_t nRead = 0;
+  size_t nRead = 0, maxChan = 0;
   std::vector<std::string> words;
   while (std::getline(ordFile, line)) {
     boost::split(words, line, boost::is_any_of(" \t"),
@@ -77,10 +78,12 @@ CRVOrdinal::ptr_t CRVOrdinalMaker::fromFcl() {
     onMap.at(channel) = CRVROC(ROC, FEB, FEBchannel);
     offMap.at(ROC).at(FEB).at(FEBchannel) = channel;
     nRead++;
+    if (channel > maxChan) maxChan = channel;
   }
 
   if (_config.verbose()) {
-    cout << "CRVOrdinalMaker::fromFcl read " << nRead << " channels\n";
+    cout << "CRVOrdinalMaker::fromFcl channels read: " << nRead
+         << "  max: " << maxChan << "  geom: "  << nChan << "\n";
   }
 
   auto ptr = make_shared<CRVOrdinal>(onMap, offMap);
