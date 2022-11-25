@@ -300,8 +300,11 @@ template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::uniq
   double x1=trajectory->position3(t1).x();
   double y1=trajectory->position3(t1).y();
   double z1=trajectory->position3(t1).z();
-  
-  line->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
+  GeomHandle<DetectorSystem> det;
+  XYZVectorF pos(x1,y1,z1);
+  CLHEP::Hep3Vector p = GenVector::Hep3Vec(pos);
+  CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
+  line->SetPoint(0,pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()) , pointmmTocm(InMu2e.z()));
   line_twoDXY->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
   line_twoDXZ->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
   for(double t=t1; t<=t2; t+=0.1)
@@ -310,7 +313,10 @@ template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::uniq
     double xt=p.x();
     double yt=p.y();
     double zt=p.z();
-    line->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt) , pointmmTocm(zt));
+    XYZVectorF pos(x1,y1,z1);
+    CLHEP::Hep3Vector pmu2e = GenVector::Hep3Vec(pos);
+    CLHEP::Hep3Vector InMu2e = det->toMu2e(pmu2e);
+    line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()) , pointmmTocm(InMu2e.z()));
     line_twoDXY->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt), pointmmTocm(zt));
     line_twoDXZ->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt), pointmmTocm(zt));
    // CLHEP::Hep3Vector p = GenVector::Hep3Vec(pos);
@@ -332,7 +338,7 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
     if(seedcol!=0){  
      for(unsigned int k = 0; k < seedcol->size(); k = k + 20){ 
         mu2e::KalSeed kseed = (*seedcol)[k];
-        std::cout<<" is loop "<<kseed.loopHelixFit()<<std::endl;
+        
         TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
         TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
         TEveMu2eCustomHelix *line_twoDXZ = new TEveMu2eCustomHelix();

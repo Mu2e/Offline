@@ -26,6 +26,7 @@ physics.analyzers.TEveEventDisplayHelix.filler.addCrvHits : false
 physics.analyzers.TEveEventDisplayHelix.filler.addCosmicSeedFit : false
 physics.analyzers.TEveEventDisplayHelix.filler.addClusters : false
 physics.analyzers.TEveEventDisplayHelix.filler.addMCTraj : false
+physics.analyzers.TEveEventDisplayHelix.filler.addKKTracks : true
 physics.analyzers.TEveEventDisplayHelix.show.showCRV : false
 physics.EndPath  : [ @sequence::TEveDis.seqHelix]
 

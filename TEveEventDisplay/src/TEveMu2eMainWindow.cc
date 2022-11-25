@@ -902,10 +902,9 @@ namespace mu2e{
 
       if (DrawOpts.addCryHits) pass_data->AddCrystalHits(firstLoop, data.cryHitcol, calo2Dproj, ftimemin, ftimemax, false, _accumulate, CfXYMgr, CfRZMgr, proj0, proj1);
 
-      if (DrawOpts.addTracks){
-        pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
-        pass_data->FillKinKalTrajectory(firstLoop, data.track_tuple, tracker2Dproj,  TfXYMgr, TfRZMgr, proj2, proj3);
-      }
+      if (DrawOpts.addTracks) pass_data->AddHelixPieceWise3D(firstLoop, data.track_tuple, tracker2Dproj,  ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
+      if (DrawOpts.addTracks) pass_data->FillKinKalTrajectory(firstLoop, data.track_tuple, tracker2Dproj,  TfXYMgr, TfRZMgr, proj2, proj3);
+      
 
       if(DrawOpts.addCosmicTracks) pass_data->AddCosmicTrack(firstLoop, data.cosmiccol, tracker2Dproj, ftimemin, ftimemax, false, _accumulate, TfXYMgr, TfRZMgr, proj2, proj3);
 
