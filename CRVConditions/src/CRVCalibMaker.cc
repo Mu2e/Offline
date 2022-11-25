@@ -27,9 +27,9 @@ CRVCalib::ptr_t CRVCalibMaker::fromFcl() {
   if (_config.verbose()) {
     cout << "CRVCalibMaker::fromFcl filling " << nChan << " channels\n";
     cout << "CRVCalibMaker::fromFcl nominal " << fixed << setprecision(3)
-         << setw(8) << nominal.pedestal() << setprecision(3) << setw(8)
-         << nominal.pulseHeight() << setprecision(3) << setw(8)
-         << nominal.pulseArea() << setprecision(3) << setw(8)
+         << setw(10) << nominal.pedestal() << setprecision(3) << setw(10)
+         << nominal.pulseHeight() << setprecision(3) << setw(10)
+         << nominal.pulseArea() << setprecision(3) << setw(10)
          << nominal.timeOffset() << "\n";
   }
 
@@ -53,7 +53,7 @@ CRVCalib::ptr_t CRVCalibMaker::fromDb(CRVSiPM::cptr_t sip_p,
       CRVId::nChanPerBar;
 
   if (_config.verbose()) {
-    cout << "CRVCalibMaker::fromDb expecting " << nChan << " channels\n";
+    cout << "CRVCalibMaker::fromDb checking for " << nChan << " channels\n";
   }
 
   // require the db tables are the same length as geometry
@@ -73,10 +73,10 @@ CRVCalib::ptr_t CRVCalibMaker::fromDb(CRVSiPM::cptr_t sip_p,
     if (_config.verbose()) {
       if (_config.verbose() > 1 || row.channel() < 5 ||
           CRVId::nChannels - row.channel() <= 5) {
-        cout << setw(10) << row.channel() << fixed << setprecision(3) << setw(8)
-             << row.pedestal() << setprecision(3) << setw(8)
-             << row.pulseHeight() << setprecision(3) << setw(8)
-             << row.pulseArea() << setprecision(3) << setw(8) << timeOffset
+        cout << setw(10) << row.channel() << fixed << setprecision(3)
+             << setw(10) << row.pedestal() << setprecision(3) << setw(10)
+             << row.pulseHeight() << setprecision(3) << setw(10)
+             << row.pulseArea() << setprecision(3) << setw(10) << timeOffset
              << "\n";
       }
     }
