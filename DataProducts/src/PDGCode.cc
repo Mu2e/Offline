@@ -383,7 +383,7 @@ namespace mu2e {
       {PDGCodeDetail::anti_Sigma_b_star0            , "anti_Sigma_b_star0" },
       {PDGCodeDetail::Sigma_b_plus                  , "Sigma_b_plus" },
       {PDGCodeDetail::anti_Sigma_b_minus            , "anti_Sigma_b_minus" },
-      {PDGCodeDetail::Sigma_star_                   , "Sigma_star_" },
+      {PDGCodeDetail::Sigma_b_star_plus             , "Sigma_b_star_plus" },
       {PDGCodeDetail::anti_Sigma_b_star_minus       , "anti_Sigma_b_star_minus" },
       {PDGCodeDetail::Xi_b0                         , "Xi_b0" },
       {PDGCodeDetail::anti_Xi_b0                    , "anti_Xi_b0" },
