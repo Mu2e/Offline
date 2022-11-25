@@ -53,8 +53,6 @@ namespace mu2e {
     //for interpolation, define a high and a low index
     int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
     int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
-    if(upperPhiIndex > (int)_phiBins || lowerPhiIndex < 0)
-      std::cout << "Out-of-range phi bin, lower " << lowerPhiIndex << " upper " << upperPhiIndex << std::endl;
     lowerPhiIndex = std::max(0,lowerPhiIndex);
     upperPhiIndex =std::min((int)_phiBins-1,upperPhiIndex);
 
