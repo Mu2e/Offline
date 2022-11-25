@@ -21,7 +21,7 @@ TEveEventDisplayBase : {
       CaloClusterCollection     :  "CaloClusterMaker"
       CaloHitCollection  :  NULL
       HelixSeedCollection       :  "HelixFinderDe:Negative"
-      KalSeedCollection         :  ["KKDeM"]
+      KalSeedCollection         :  ["KFFDeM"]
       TrkExtTrajCollection      :  NULL
       MCTrajectoryCollection    :  "compressRecoMCs"
       addHits                   : true
