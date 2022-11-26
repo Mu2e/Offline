@@ -50,12 +50,15 @@ namespace mu2e
     if( ! config.getBool("hasCosmicRayShield",false) ) return;
 
     parseConfig(config);
+    _crs->_name = _name;
     makeCRVSectors();
     makeCRVSupportStructures();
   }
 
   void CosmicRayShieldMaker::parseConfig( SimpleConfig const & config )
   {
+
+    _name      = config.getString("crs.name");
     _diagLevel = config.getInt("crs.verbosityLevel",0);
     _nSectors  = config.getInt("crs.nSectors");
     _nLayers   = config.getInt("crs.nLayers");

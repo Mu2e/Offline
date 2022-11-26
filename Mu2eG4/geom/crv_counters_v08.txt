@@ -2,6 +2,7 @@
 //Therefore, this geometry is backward compatible with files that were simulated using v07 (except the coincidence data products).
 //This geometry requires the use of CRVResponse/fcl/prolog_v09.fcl.
 
+string crs.name = "nominal"; // final detector, to coordinate with conditions
 
 int   crs.nSectors = 23;
 int   crs.nLayers  = 4;
@@ -406,3 +407,8 @@ bool crs.forMARS = false;
 
 //FIXME: this is temporary until the GDML issue is fixed
 bool crs.hideCRVCMBs = true;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
