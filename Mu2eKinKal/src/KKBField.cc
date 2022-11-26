@@ -13,9 +13,9 @@ namespace mu2e {
     if(bfmgr_.getBFieldWithStatus(vpoint_mu2e,field))
       return VEC3(field);
     else
-      return VEC3(0,0,0);
+//      return VEC3(0,0,0);
     //FIXME bfield failure for extracted nofield
-//      throw cet::exception("RECO")<<"mu2e::KKBfield: out-of-range access point "<< vpoint_mu2e << endl;
+      throw cet::exception("RECO")<<"mu2e::KKBfield: out-of-range access point "<< vpoint_mu2e << endl;
   }
 
   Grad KKBField::fieldGrad(VEC3 const& position) const {
