@@ -130,14 +130,14 @@ Mu2eKinKal : {
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
-      [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 10.0, 20.0, 5.0, 4.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  16.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  12.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 4.0,  8.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 4.0,  8.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
+      [ 10.0, 20.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 1 ],
+      [ 10.0, 20.0, 5.0, 4.0, "All", "StrawRadius", "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 6.0,  12.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 5.0,   8.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 4.0,   8.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 4.0,   8.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ]
     ]
 
     BkgANNSHUSettings : [
@@ -145,10 +145,10 @@ Mu2eKinKal : {
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4, "RDrift" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6, "RDrift" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6, "RDrift" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.5, "RDrift" ,"Null:Drift","", "All", 1]
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.5, "DriftRadius" ,"Null:Drift","", "All", 1]
     ]
     Chi2SHUSettings : [
     ]
