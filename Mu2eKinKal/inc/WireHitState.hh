@@ -25,6 +25,11 @@ namespace mu2e {
     bool active() const { return state_ > inactive; }
     bool usable() const { return state_ > unusable; }
     bool updateable(StrawHitUpdaters::algorithm algo) const { return usable() && (!frozen_ || algo_ == algo); } // allow algorithms to update themselves, even if frozen
+    bool constrainTOT() const {
+      return totuse_ == all ||
+        (wireConstraint() && totuse_ == nullonly) ||
+        (driftConstraint() && totuse_ == WireHitState::driftonly);
+    }
     bool operator == (WireHitState const& whstate) const { return state_ == whstate.state_; }
     bool operator != (WireHitState const& whstate) const { return state_ != whstate.state_; }
     bool operator == (WireHitState::State state) const { return state_ == state; }
