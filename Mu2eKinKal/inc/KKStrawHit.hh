@@ -187,7 +187,7 @@ namespace mu2e {
     // reset the residuals
     resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
     if(whstate.active()){
-      // optionally constrain DeltaT using the ComboHit
+      // optionally constrain DeltaT using the ComboHit TOT drift time
       if(whstate.totuse_ == WireHitState::all ||
         (whstate.wireConstraint() && whstate.totuse_ == WireHitState::nullonly) ||
         (whstate.driftConstraint() && whstate.totuse_ == WireHitState::driftonly) ){
@@ -204,8 +204,17 @@ namespace mu2e {
         double rvar = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
         resids[Mu2eKinKal::dresid] = Residual(dr,rvar,0.0,true,dRdP);
       } else {
-        // Null state. interpret DOCA against the wire directly as a residual (ie resid = 0 -doca);
-        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.nullDistanceVariance(),0.0,true,ca_.dDdP());
+        // Null LR ambiguity. interpret DOCA against the wire directly as a residual (ie resid = 0 -doca);
+        // Compute variance on the wire constraint
+        static const double rstrawdvar = 2.4*2.4/3.0; // should be a parameter TODO
+        double ndvar = rstrawdvar;
+        if(whstate.nulldvar_ == WireHitState::rdrift){
+          // use the drift distance to set the variance
+          auto dinfo = fillDriftInfo(true); // use calibrated drift info
+          ndvar = std::max(dinfo.driftDistance_*dinfo.driftDistance_/3.0,
+              dinfo.driftDistanceError_*dinfo.driftDistanceError_);
+        }
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),ndvar,0.0,true,ca_.dDdP());
       }
     }
   }
