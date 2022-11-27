@@ -28,7 +28,7 @@ namespace mu2e {
 
   WireHitState::TOTUse WireHitState::totUse(std::string const& totuse){
     for (size_t index=0;index < TOTUseNames_.size(); ++index){
-      if(TOTUseNames_[index].compare(totuse)){
+      if(TOTUseNames_[index].compare(totuse) == 0){
         return static_cast<TOTUse>(index);
       }
     }
@@ -37,7 +37,7 @@ namespace mu2e {
 
   WireHitState::NullDistVar WireHitState::nullDistVar(std::string const& ndvar){
     for (size_t index=0;index < NullDistVarNames_.size(); ++index){
-      if(NullDistVarNames_[index].compare(ndvar)){
+      if(NullDistVarNames_[index].compare(ndvar) == 0){
         return static_cast<NullDistVar>(index);
       }
     }
