@@ -10,7 +10,7 @@ namespace mu2e {
     double driftVelocity_; // instantaneous drift velocity
     double driftDistanceVar() const { return driftDistanceError_*driftDistanceError_; }
     double nullDistanceVar() const { return
-      std::max(driftDistance_*driftDistance_/3.0,driftDistanceVar()); }
+      std::max(driftDistance_*driftDistance_,driftDistanceVar()); }
   };
 }
 #endif
