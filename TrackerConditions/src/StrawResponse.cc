@@ -250,12 +250,13 @@ namespace mu2e {
         double wslope = PieceLine(_edep,_resslope,kedep);
         tdres += (wlen-_central)*wslope;
       }
-      return tdres;
     }else{
       double wslope = PieceLine(_edep,_resslope,kedep);
-
-      return tdres + wslope*wlen*wlen;
+      tdres += wslope*wlen*wlen;
     }
+    // insure a minimum value
+    tdres = std::max(30.0,tdres);
+    return tdres;
   }
 
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc,
