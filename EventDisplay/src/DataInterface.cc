@@ -1087,7 +1087,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
   double digitizationPeriod = crvPar->digitizationPeriod;
-  double recoPulsePedestal  = crvPar->pedestal;
 
   double TDC0time = contentSelector->getTDC0time();
   const std::vector<art::Handle<mu2e::CrvDigiCollection> > &crvDigisVector = contentSelector->getSelectedCrvDigiCollection();
@@ -1143,6 +1142,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int    sipm  = recoPulse.GetSiPMNumber();
       double time  = recoPulse.GetPulseTime();
       int    PEs   = recoPulse.GetPEs();
+
+      size_t channel  = index*4 + sipm;
+      double recoPulsePedestal = _calib->pedestal(channel);
 
       std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
       if(crvbar!=_crvscintillatorbars.end() && !std::isnan(time))

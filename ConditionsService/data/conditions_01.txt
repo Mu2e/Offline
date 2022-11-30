@@ -60,13 +60,6 @@ string calorimeter.propagHistName = "h_zposTime";
 //CRV digi parameters
 double crv.digitizationPeriod = 12.55; //ns
 
-//CRV calibration parameters
-//This is only a placeholder. In the future, these values need to be a function of time and SiPM number.
-double crv.pedestal           = 100;    //ADC
-double crv.calibrationFactor  = 394.6;  //ADC*ns/PE
-double crv.calibrationFactorPulseHeight  = 11.4;  //ADC/PE (calibration factor using pulse height)
-
-
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

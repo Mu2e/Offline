@@ -192,7 +192,6 @@ namespace mu2e
 
      mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
      double _digitizationPeriod  = crvPar->digitizationPeriod;
-     double _recoPulsePedestal  = crvPar->pedestal;
      GeomHandle<CosmicRayShield> CRS;
 
      // Create SiPM map to extract sequantial SiPM IDs
@@ -228,7 +227,7 @@ namespace mu2e
          int SiPMId = sipm_map.find(barIndex.asInt()*4 + SiPM)->second;
          CLHEP::Hep3Vector HitPos = CrvHelper::GetCrvCounterPos(CRS, barIndex);
          recoInfo.emplace_back(HitPos, barIndex.asInt(), sectorNumber, SiPMId,
-                               crvRecoPulse->GetPEs(), crvRecoPulse->GetPEsPulseHeight(), crvRecoPulse->GetPulseHeight()+_recoPulsePedestal,
+                               crvRecoPulse->GetPEs(), crvRecoPulse->GetPEsPulseHeight(), crvRecoPulse->GetPulseHeight(),
                                crvRecoPulse->GetPulseBeta(), crvRecoPulse->GetPulseFitChi2(), crvRecoPulse->GetPulseTime());
 
          //MCtruth pulses information

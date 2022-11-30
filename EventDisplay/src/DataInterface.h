@@ -9,6 +9,7 @@
 #define EventDisplay_src_DataInterface_h
 
 #include "CLHEP/Vector/ThreeVector.h"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/EventDisplay/src/ContentSelector.h"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -125,6 +126,7 @@ class DataInterface
                                                    int particleid, int trackclass, int trackclassindex, double p1,
                                                    boost::shared_ptr<ComponentInfo> info);
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
+  void setCRVCalib(const mu2e::CRVCalib &calib) {_calib=&calib;}
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
   void makeCrvScintillatorBarsVisible(bool visible);
@@ -153,6 +155,8 @@ class DataInterface
   spaceminmax getCalorimeterBoundary() {return _calorimeterMinmax;}
   spaceminmax getTracksBoundary() {return _tracksMinmax;}
   spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks);
+
+  const mu2e::CRVCalib  *_calib;
 };
 
 }
