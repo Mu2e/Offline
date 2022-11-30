@@ -1,5 +1,7 @@
 #include "Offline/CRVResponse/inc/MakeCrvRecoPulses.hh"
+#ifndef CRVStandalone
 #include "canvas/Utilities/Exception.h"
+#endif
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TMath.h>
@@ -66,8 +68,13 @@ void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<unsigned int> &w
 
 void MakeCrvRecoPulses::RangeFinder(const std::vector<unsigned int> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end)
 {
+#ifndef CRVStandalone
   if(peakStart<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakStart<1"<<std::endl;
   if(peakEnd+1>=waveform.size()) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakEnd+1>=waveform.size()"<<std::endl;
+#else
+  if(peakStart<1) throw std::logic_error("MakeCrvRecoPulse::RangeFinder: peakStart<1");
+  if(peakEnd+1>=waveform.size()) throw std::logic_error("MakeCrvRecoPulse::RangeFinder: peakEnd+1>=waveform.size()");
+#endif
 
   //select a range of up to 4 points before and after the peak
   //-find up to 5 points before and after the peak for which the waveform is stricly decreasing
@@ -177,7 +184,11 @@ void MakeCrvRecoPulses::NoFitOption(const std::vector<unsigned int> &waveform, c
       {
         doublePulseThisPeak=false;
         doublePulseNextPeak=true;
+#ifndef CRVStandalone
         if(i<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::NoFitOption: peakStart<1"<<std::endl;
+#else
+        if(i<1) throw std::logic_error("MakeCrvRecoPulse::NoFitOption: peakStart<1");
+#endif
         --i; //the shared trough point gets added to both pulses
       }
 

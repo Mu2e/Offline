@@ -22,13 +22,6 @@ namespace mu2e
     // CRV digi parameters
     double digitizationPeriod;     //ns
 
-    // CRV calibration parameters
-    // This is only a placeholder.
-    // In the future, these values need to be a function of time and SiPM number.
-    double pedestal;               //ADC
-    double calibrationFactor;      //ADC*ns/PE
-    double calibrationFactorPulseHeight; //ADC/PE  (for calibrations using the pulse height)
-
     CrvParams ( SimpleConfig const& config );
 
     // Accept compiler generated:
@@ -46,9 +39,6 @@ namespace mu2e
                                   const CrvParams& lw ){
     ost << "( "
         << lw.digitizationPeriod <<"ns, "
-        << lw.pedestal <<"ADC, "
-        << lw.calibrationFactor <<"ADC*ns/PE, "
-        << lw.calibrationFactorPulseHeight <<"ADC/PE"
         << " )";
 
     return ost;

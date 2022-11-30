@@ -10,11 +10,13 @@
 #include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/MCDataProducts/inc/CrvPhotons.hh"
 #include "Offline/MCDataProducts/inc/CrvSiPMCharges.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 
@@ -56,10 +58,11 @@ namespace mu2e
     std::string _crvDigiModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     double      _timeStart, _timeEnd;
-    double      _recoPulsePedestal;
 
     double      _microBunchPeriod;
     double      _digitizationPeriod;
+
+    ProditionsHandle<CRVCalib> _calib_h;
 
     std::map<std::pair<int,int>, TCanvas*> _canvas;
   };
@@ -102,7 +105,6 @@ namespace mu2e
 
     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
     _digitizationPeriod  = crvPar->digitizationPeriod;
-    _recoPulsePedestal   = crvPar->pedestal;
   }
 
   void CrvPlot::analyze(const art::Event& event)
@@ -124,6 +126,8 @@ namespace mu2e
 
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
+
+    auto const& calib = _calib_h.get(event.id());
 
     GeomHandle<CosmicRayShield> CRS;
     for(size_t bi=0; bi<_crvBarIndices.size(); ++bi)
@@ -306,6 +310,9 @@ namespace mu2e
           if(isnan(scale[SiPM])) continue; //don't draw anything, if there are no digis
           _canvas[eventBarIndex]->cd(SiPM+1);
 
+          size_t channel  = barIndex.asUint()*4 + SiPM;
+          double pedestal = calib.pedestal(channel);
+
           double fitParam0 = recoPulse->GetPulseHeight()*TMath::E();
           double fitParam1 = recoPulse->GetPulseTime();
           double fitParam2 = recoPulse->GetPulseBeta();
@@ -319,7 +326,7 @@ namespace mu2e
           {
             tF[iF] = tF1 + iF*1.0;
             vF[iF] = fitParam0*TMath::Exp(-(tF[iF]-fitParam1)/fitParam2-TMath::Exp(-(tF[iF]-fitParam1)/fitParam2));
-            vF[iF]+=_recoPulsePedestal;
+            vF[iF]+= pedestal;
             vF[iF]*=scale[SiPM];
             if(isnan(vF[iF])) nF=0;
           }
