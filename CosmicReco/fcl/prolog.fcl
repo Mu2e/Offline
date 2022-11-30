@@ -43,12 +43,12 @@ LineFinder : {
     module_type : LineFinder
     ComboHitCollection : "makePH"
     TimeClusterCollection : "SimpleTimeCluster"
-    NSteps : 2
-    NTSteps : 1
+    NSteps: 0
+    NTSteps: 0
     StepSize : 0.5
     t0offset : 0
-    maxDOCA : 3
-    minPeak : 3
+    maxDOCA : 10
+    minPeak : 10
 }
 
 CosmicDriftFit : {
