@@ -257,7 +257,7 @@ void LookupBin::Read(std::ifstream &lookupfile, const unsigned int &i)
 
   _LC.Read(lookupfile);
   if(_LC.version1!=6) throw std::logic_error("This version of Offline expects a lookup table version 6.x.");
-  if(_LC.reflector!=0 && _LC.reflector!=1) throw std::logic_error("Lookup tables can have either no reflector, or a reflector on the +z side.");
+  if(_LC.reflector!=0 && _LC.reflector!=1 && _LC.reflector!=2) throw std::logic_error("Lookup tables can have either no reflector/absorber, or a reflector/absorber on the +z side.");
 
   _LCerenkov.Read(lookupfile);
   _LBD.Read(lookupfile);
@@ -293,8 +293,7 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
                                                         //is needed for the Cerenkov photons
                           int    reflector)
 {
-  if(_LC.reflector!=0 && reflector==0) throw std::logic_error("Expected a lookup table without reflector.");
-  if(_LC.reflector==0 && reflector==1) throw std::logic_error("Expected a lookup table with reflector.");
+  if(_LC.reflector!=std::abs(reflector)) throw std::logic_error("Expected reflector/absorber doesn't match lookup table.");
 
   for(int SiPM=0; SiPM<4; SiPM++) _arrivalTimes[SiPM].clear();
 
@@ -307,7 +306,7 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
   {
     stepStart[SiPM] = stepStartTmp;
     stepEnd[SiPM]   = stepEndTmp;
-    if(reflector==-1)
+    if(reflector==-1 || reflector==-2)
     {
       stepStart[SiPM].setZ(-stepStart[SiPM].z());
       stepEnd[SiPM].setZ(-stepEnd[SiPM].z());
@@ -414,7 +413,7 @@ nPCerenkov+=nPhotonsCerenkov;
           //add additional time delay due to the photons bouncing around
           arrivalTime+=GetRandomTime(theBin);
 
-          if(reflector!=-1) _arrivalTimes[SiPM].push_back(arrivalTime);
+          if(reflector!=-1 && reflector!=-2) _arrivalTimes[SiPM].push_back(arrivalTime);
           else _arrivalTimes[SiPM+1].push_back(arrivalTime);
 
         }// if a photon was created

@@ -33,6 +33,7 @@ using namespace std;
 #include "Offline/EventDisplay/src/dict_classes/ComponentInfoContainer.h"
 #include "Offline/EventDisplay/src/dict_classes/HistDraw.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 
 #include "TGGC.h"
 #include "TGFont.h"
@@ -596,13 +597,15 @@ void EventDisplayFrame::fillGeometry()
   _mainPad->Update();
 }
 
-void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
+void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop, const mu2e::CRVCalib &calib)
 {
   _timeOffsets.updateMap(event);
 
   _eventNumber=event.id().event();
   _subrunNumber=event.id().subRun();
   _runNumber=event.id().run();
+
+  _dataInterface->setCRVCalib(calib);
 
   _contentSelector->setAvailableCollections(event);
   if(firstLoop) _contentSelector->firstLoop();
