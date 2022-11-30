@@ -149,7 +149,7 @@
        990                pomeron                    same                             pomeron       none          0            0            0
      -1103       anti_dd1_diquark                    same                           anti_dd_1       none   0.666667       771.33            0
       1103            dd1_diquark                    same                                dd_1       none  -0.666667       771.33            0
-     -1114            anti_delta-                    same                     anti_Delta_plus       none          1         1232  5.57807e-24
+     -1114            anti_delta+             anti_delta-                     anti_Delta_plus       none          1         1232  5.57807e-24
       1114                 delta-                    same                         Delta_minus       none         -1         1232  5.57807e-24
      -2101       anti_ud0_diquark                    same                           anti_ud_0       none  -0.333333       579.33            0
       2101            ud0_diquark                    same                                ud_0       none   0.333333       579.33            0
@@ -163,17 +163,17 @@
       2203            uu1_diquark                    same                                uu_1       none    1.33333       771.33            0
      -2212            anti_proton                    same                         anti_proton       pbar         -1    938.27203            0
       2212                 proton                    same                              proton          p          1    938.27203            0
-     -2214            anti_delta+                    same                    anti_Delta_minus       none         -1         1232  5.57807e-24
+     -2214            anti_delta-             anti_delta+                    anti_Delta_minus       none         -1         1232  5.57807e-24
       2214                 delta+                    same                          Delta_plus       none          1         1232  5.57807e-24
-     -2224           anti_delta++                    same              anti_Delta_minus_minus       none         -2         1232  5.57807e-24
+     -2224           anti_delta--            anti_delta++              anti_Delta_minus_minus       none         -2         1232  5.57807e-24
       2224                delta++                    same                     Delta_plus_plus       none          2         1232  5.57807e-24
      -3101       anti_sd0_diquark                    same                           anti_sd_0       none   0.666667       804.73            0
       3101            sd0_diquark                    same                                sd_0       none  -0.666667       804.73            0
      -3103       anti_sd1_diquark                    same                           anti_sd_1       none   0.666667       929.53            0
       3103            sd1_diquark                    same                                sd_1       none  -0.666667       929.53            0
-     -3112            anti_sigma-                    same                     anti_Sigma_plus       none          1      1197.45  1.46922e-10
+     -3112            anti_sigma+             anti_sigma-                     anti_Sigma_plus       none          1      1197.45  1.46922e-10
       3112                 sigma-                    same                         Sigma_minus       none         -1      1197.45  1.46922e-10
-     -3114      anti_sigma(1385)-                    same                anti_Sigma_star_plus       none          1       1387.2  1.67059e-23
+     -3114      anti_sigma(1385)+        anti_sigma(1385)-               anti_Sigma_star_plus       none          1       1387.2  1.67059e-23
       3114           sigma(1385)-                    same                    Sigma_star_minus       none         -1       1387.2  1.67059e-23
      -3122            anti_lambda                    same                        anti_Lambda0       none          0      1115.68  2.61403e-10
       3122                 lambda                    same                             Lambda0       none          0      1115.68  2.61403e-10
@@ -185,21 +185,21 @@
       3212                 sigma0                    same                              Sigma0       none          0      1192.64  7.31347e-20
      -3214      anti_sigma(1385)0                    same                    anti_Sigma_star0       none          0       1383.7  1.82837e-23
       3214           sigma(1385)0                    same                         Sigma_star0       none          0       1383.7  1.82837e-23
-     -3222            anti_sigma+                    same                    anti_Sigma_minus       none         -1      1189.37  7.96481e-11
+     -3222            anti_sigma-             anti_sigma+                    anti_Sigma_minus       none         -1      1189.37  7.96481e-11
       3222                 sigma+                    same                          Sigma_plus       none          1      1189.37  7.96481e-11
-     -3224      anti_sigma(1385)+                    same               anti_Sigma_star_minus       none         -1       1382.8  1.83858e-23
+     -3224      anti_sigma(1385)-       anti_sigma(1385)+               anti_Sigma_star_minus       none         -1       1382.8  1.83858e-23
       3224           sigma(1385)+                    same                     Sigma_star_plus       none          1       1382.8  1.83858e-23
      -3303       anti_ss1_diquark                    same                           anti_ss_1       none   0.666667      1093.61            0
       3303            ss1_diquark                    same                                ss_1       none  -0.666667      1093.61            0
-     -3312               anti_xi-                    same                        anti_Xi_plus       none          1      1321.71  1.62924e-10
+     -3312               anti_xi+                anti_xi-                        anti_Xi_plus       none          1      1321.71  1.62924e-10
       3312                    xi-                    same                            Xi_minus       none         -1      1321.71  1.62924e-10
-     -3314         anti_xi(1530)-                    same                   anti_Xi_star_plus       none          1         1535   6.6486e-23
+     -3314         anti_xi(1530)+          anti_xi(1530)-                   anti_Xi_star_plus       none          1         1535   6.6486e-23
       3314              xi(1530)-                    same                       Xi_star_minus       none         -1         1535   6.6486e-23
      -3322               anti_xi0                    same                            anti_Xi0       none          0      1314.86  2.88689e-10
       3322                    xi0                    same                                 Xi0       none          0      1314.86  2.88689e-10
      -3324         anti_xi(1530)0                    same                       anti_Xi_star0       none          0       1531.8   7.2331e-23
       3324              xi(1530)0                    same                            Xi_star0       none          0       1531.8   7.2331e-23
-     -3334            anti_omega-                    same                     anti_Omega_plus       none          1      1672.45  8.15628e-11
+     -3334            anti_omega+             anti_omega-                     anti_Omega_plus       none          1      1672.45  8.15628e-11
       3334                 omega-                    same                         Omega_minus       none         -1      1672.45  8.15628e-11
      -4101       anti_cd0_diquark                    same                           anti_cd_0       none  -0.333333      1969.08            0
       4101            cd0_diquark                    same                                cd_0       none   0.333333      1969.08            0
@@ -209,7 +209,7 @@
       4112               sigma_c0                    same                            Sigma_c0       none          0      2453.76  2.99187e-22
      -4114         anti_Sigma*_c0                    same                  anti_Sigma_c_star0       none          0         2518  4.08827e-23
       4114              Sigma*_c0                    same                       Sigma_c_star0       none          0         2518  4.08827e-23
-     -4122         anti_lambda_c+                    same                 anti_Lambda_c_minus       none         -1      2286.46  1.98257e-13
+     -4122         anti_lambda_c-          anti_lambda_c+                 anti_Lambda_c_minus       none         -1      2286.46  1.98257e-13
       4122              lambda_c+                    same                       Lambda_c_plus       none          1      2286.46  1.98257e-13
      -4132             anti_xi_c0                    same                          anti_Xi_c0       none          0         2471  1.11561e-13
       4132                  xi_c0                    same                               Xi_c0       none          0         2471  1.11561e-13
@@ -217,15 +217,15 @@
       4201            cu0_diquark                    same                                cu_0       none    1.33333      1969.08            0
      -4203       anti_cu1_diquark                    same                           anti_cu_1       none   -1.33333      2008.08            0
       4203            cu1_diquark                    same                                cu_1       none    1.33333      2008.08            0
-     -4212          anti_sigma_c+                    same                  anti_Sigma_c_minus       none         -1       2452.9            0
+     -4212          anti_sigma_c-           anti_sigma_c+                  anti_Sigma_c_minus       none         -1       2452.9            0
       4212               sigma_c+                    same                        Sigma_c_plus       none          1       2452.9            0
      -4214         anti_Sigma*_c-                    same             anti_Sigma_c_star_minus       none         -1       2517.5            0
       4214              Sigma*_c+                    same                   Sigma_c_star_plus       none          1       2517.5            0
-     -4222         anti_sigma_c++                    same            anti_Sigma_c_minus_minus       none         -2      2454.02  2.95162e-22
+     -4222         anti_sigma_c--          anti_sigma_c++            anti_Sigma_c_minus_minus       none         -2      2454.02  2.95162e-22
       4222              sigma_c++                    same                   Sigma_c_plus_plus       none          2      2454.02  2.95162e-22
      -4224        anti_Sigma*_c--                    same       anti_Sigma_c_star_minus_minus       none         -2       2518.4  4.41753e-23
       4224             Sigma*_c++                    same              Sigma_c_star_plus_plus       none          2       2518.4  4.41753e-23
-     -4232             anti_xi_c+                    same               Xi_primeanti__c_minus       none         -1       2467.9  4.38808e-13
+     -4232             anti_xi_c-              anti_xi_c+               Xi_primeanti__c_minus       none         -1       2467.9  4.38808e-13
       4232                  xi_c+                    same                     Xi_prime_c_plus       none          1       2467.9  4.38808e-13
      -4301       anti_cs0_diquark                    same                           anti_cs_0       none  -0.333333      2154.32            0
       4301            cs0_diquark                    same                                cs_0       none   0.333333      2154.32            0
@@ -263,13 +263,13 @@
       5101            bd0_diquark                    same                                bd_0       none  -0.666667      5388.97            0
      -5103       anti_bd1_diquark                    same                           anti_bd_1       none   0.666667      5401.45            0
       5103            bd1_diquark                    same                                bd_1       none  -0.666667      5401.45            0
-     -5112          anti_sigma_b-                    same                   anti_Sigma_b_plus       none          1       5815.2            0
+     -5112          anti_sigma_b+           anti_sigma_b-                   anti_Sigma_b_plus       none          1       5815.2            0
       5112               sigma_b-                    same                       Sigma_b_minus       none         -1       5815.2            0
      -5114         anti_Sigma*_b+                    same              anti_Sigma_b_star_plus       none          1       5836.4            0
       5114              Sigma*_b-                    same                  Sigma_b_star_minus       none         -1       5836.4            0
      -5122          anti_lambda_b                    same                      anti_Lambda_b0       none          0       5620.2  1.37414e-12
       5122               lambda_b                    same                           Lambda_b0       none          0       5620.2  1.37414e-12
-     -5132             anti_xi_b-                    same                      anti_Xi_b_plus       none          1       5792.4  1.40045e-12
+     -5132             anti_xi_b+              anti_xi_b-                      anti_Xi_b_plus       none          1       5792.4  1.40045e-12
       5132                  xi_b-                    same                          Xi_b_minus       none         -1       5792.4  1.40045e-12
      -5142            anti_Xi_bc0                    same                         anti_Xi_bc0       none          0      7005.75        0.387
       5142                 Xi_bc0                    same                              Xi_bc0       none          0      7005.75        0.387
@@ -281,10 +281,10 @@
       5212               sigma_b0                    same                            Sigma_b0       none          0       5807.8            0
      -5214         anti_Sigma*_b0                    same                  anti_Sigma_b_star0       none          0         5829            0
       5214              Sigma*_b0                    same                       Sigma_b_star0       none          0         5829            0
-     -5222          anti_sigma_b+                    same                  anti_Sigma_b_minus       none         -1       5807.8            0
+     -5222          anti_sigma_b-           anti_sigma_b+                  anti_Sigma_b_minus       none         -1       5807.8            0
       5222               sigma_b+                    same                        Sigma_b_plus       none          1       5807.8            0
      -5224         anti_Sigma*_b-                    same             anti_Sigma_b_star_minus       none         -1         5829            0
-      5224              Sigma*_b+                    same                         Sigma_star_       none          1         5829            0
+      5224              Sigma*_b+                    same                   Sigma_b_star_plus       none          1         5829            0
      -5232             anti_xi_b0                    same                          anti_Xi_b0       none          0       5792.4  4.63529e-10
       5232                  xi_b0                    same                               Xi_b0       none          0       5792.4  4.63529e-10
      -5242            anti_Xi_bc-                    same                    anti_Xi_bc_minus       none         -1      7005.75        0.387
@@ -301,7 +301,7 @@
       5322                 Xi'_b0                    same                         Xi_prime_b0       none          0         5960            0
      -5324            anti_Xi*_b0                    same                     anti_Xi_b_star0       none          0         5970            0
       5324                 Xi*_b0                    same                          Xi_b_star0       none          0         5970            0
-     -5332          anti_omega_b-                    same                   anti_Omega_b_plus       none          1         6120        0.387
+     -5332          anti_omega_b+           anti_omega_b-                   anti_Omega_b_plus       none          1         6120        0.387
       5332               omega_b-                    same                       Omega_b_minus       none         -1         6120        0.387
      -5334         anti_Omega*_b+                    same              anti_Omega_b_star_plus       none          1         6130            0
       5334              Omega*_b-                    same                  Omega_b_star_minus       none         -1         6130            0

@@ -88,7 +88,8 @@ namespace mu2e {
     } else {
       CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.range().mid(),axis_.range().mid());
       ca_ = CA(ktrajptr,axis_,tphint,precision());
-      if(!ca_.usable())throw cet::exception("RECO")<<"mu2e::KKStrawXing: TPOCA failure" << std::endl;
+      if(!ca_.usable())
+        sxconfig_.hitstate_ = WireHitState::inactive;
     }
  }
 

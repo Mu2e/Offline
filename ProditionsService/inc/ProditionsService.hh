@@ -7,6 +7,9 @@
 //
 
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
+#include "Offline/CRVConfig/inc/CRVCalibConfig.hh"
+#include "Offline/CRVConfig/inc/CRVOrdinalConfig.hh"
+#include "Offline/CRVConfig/inc/CRVStatusConfig.hh"
 #include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
 #include "Offline/DAQConfig/inc/EventTimingConfig.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
@@ -41,6 +44,13 @@ class ProditionsService {
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
     fhicl::Atom<int> verbose{Name("verbose"), Comment("verbosity 0 or 1"), 0};
+    fhicl::Table<CRVOrdinalConfig> crvOrdinal{
+        Name("crvOrdinal"),
+        Comment("CRV online-offline numbering configuration")};
+    fhicl::Table<CRVStatusConfig> crvStatus{
+        Name("crvStatus"), Comment("CRV bad channels configuration")};
+    fhicl::Table<CRVCalibConfig> crvCalib{
+        Name("crvCalib"), Comment("CRV SiPM calibration configuration")};
     fhicl::Table<EventTimingConfig> eventTiming{
         Name("eventTiming"), Comment("Event timing configuration")};
     fhicl::Table<STMEnergyCalibConfig> stmEnergyCalib{

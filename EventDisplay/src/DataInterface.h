@@ -9,6 +9,7 @@
 #define EventDisplay_src_DataInterface_h
 
 #include "CLHEP/Vector/ThreeVector.h"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/EventDisplay/src/ContentSelector.h"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -91,6 +92,7 @@ class DataInterface
   bool _showNeutrons;
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
+  double _kalStepSize;
 
   std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
@@ -114,13 +116,17 @@ class DataInterface
   };
 
   public:
-  DataInterface(EventDisplayFrame *mainframe);
+  DataInterface(EventDisplayFrame *mainframe, double kalStepSize);
   virtual ~DataInterface();
 
   void startComponents();
   void updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector);
   void fillGeometry();
+  template<class KTRAJ> void fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
+                                                   int particleid, int trackclass, int trackclassindex, double p1,
+                                                   boost::shared_ptr<ComponentInfo> info);
   void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
+  void setCRVCalib(const mu2e::CRVCalib &calib) {_calib=&calib;}
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
   void makeCrvScintillatorBarsVisible(bool visible);
@@ -149,6 +155,8 @@ class DataInterface
   spaceminmax getCalorimeterBoundary() {return _calorimeterMinmax;}
   spaceminmax getTracksBoundary() {return _tracksMinmax;}
   spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks);
+
+  const mu2e::CRVCalib  *_calib;
 };
 
 }

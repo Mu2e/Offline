@@ -13,6 +13,7 @@
 #include <string>
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include <cmath>
 
 
 namespace mu2e {
@@ -32,11 +33,12 @@ namespace mu2e {
       typedef std::shared_ptr<const StrawDrift> cptr_t;
       constexpr static const char* cxname = {"StrawDrift"};
 
-      StrawDrift(double cc, int phiBins, double deltaD, std::vector<double> distances_dbins, std::vector<double> instantSpeed_dbins, std::vector<double> times_dbins,
+      StrawDrift(double cc, size_t phiBins, double deltaD, std::vector<double> distances_dbins, std::vector<double> instantSpeed_dbins, std::vector<double> times_dbins,
           double deltaT, std::vector<double> distances_tbins, std::vector<double> times_tbins) :
         ProditionsEntity(cxname),
         _cc(cc),
-        _phiBins(phiBins), _deltaD(deltaD), _distances_dbins(distances_dbins),
+        _phiBins(phiBins),   _deltaPhi(M_PI_2/static_cast<double>(_phiBins-1)),
+        _deltaD(deltaD), _distances_dbins(distances_dbins),
         _instantSpeed_dbins(instantSpeed_dbins), _times_dbins(times_dbins),
         _deltaT(deltaT), _distances_tbins(distances_tbins), _times_tbins(times_tbins) {}
 
@@ -55,10 +57,15 @@ namespace mu2e {
 
       // fold into first quadrant assuming the function
       // has x-z and y-z plane symmetry
-      double ConstrainAngle(double phi) const;
+      double foldPhi(double phi) const;
+      void phiRange(double phi, size_t prange[2]) const;
+      size_t timeIndex(double time) const;
+      size_t distIndex(double dist) const;
+      void indexRange(double time, double phi, size_t irange[2]) const;
 
       double _cc;
       size_t _phiBins;
+      double _deltaPhi;
 
       double _deltaD;
       std::vector<double> _distances_dbins; // distances between points in the model
@@ -73,4 +80,3 @@ namespace mu2e {
   };
 }
 #endif
-

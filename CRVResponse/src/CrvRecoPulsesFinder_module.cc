@@ -11,9 +11,11 @@
 
 #include "Offline/ConditionsService/inc/CrvParams.hh"
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
@@ -74,10 +76,9 @@ namespace mu2e
 
     std::string _crvDigiModuleLabel;
     float       _digitizationPeriod;
-    float       _pedestal;           //100 ADC
-    float       _calibrationFactor;  //394.6 ADC*ns/PE
-    float       _calibrationFactorPulseHeight;  //11.4 ADC/PE
     art::InputTag _protonBunchTimeTag;
+
+    ProditionsHandle<CRVCalib> _calib_h;
   };
 
 
@@ -112,9 +113,6 @@ namespace mu2e
   {
     mu2e::ConditionsHandle<mu2e::CrvParams> crvPar("ignored");
     _digitizationPeriod = crvPar->digitizationPeriod;
-    _pedestal           = crvPar->pedestal;
-    _calibrationFactor  = crvPar->calibrationFactor;
-    _calibrationFactorPulseHeight  = crvPar->calibrationFactorPulseHeight;
   }
 
   void CrvRecoPulsesFinder::produce(art::Event& event)
@@ -127,6 +125,8 @@ namespace mu2e
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
+
+    auto const& calib = _calib_h.get(event.id());
 
     size_t waveformIndex = 0;
     while(waveformIndex<crvDigiCollection->size())
@@ -152,15 +152,21 @@ namespace mu2e
         waveformIndices.push_back(waveformIndex);
       }
 
-      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, _pedestal, _calibrationFactor, _calibrationFactorPulseHeight);
+      size_t channel = barIndex.asUint()*4 + SiPM;
+      double pedestal = calib.pedestal(channel);
+      double calibPulseArea = calib.pulseArea(channel);
+      double calibPulseHeight = calib.pulseHeight(channel);
+      double timeOffset = calib.timeOffset(channel);
+
+      _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, _digitizationPeriod, pedestal, calibPulseArea, calibPulseHeight);
 
       size_t n = _makeCrvRecoPulses->GetPEs().size();
       for(size_t j=0; j<n; ++j)
       {
         //the TDC times were recorded with respect to the event window start.
         //need to shift the times back to the original time scale (i.e. microbunch time)
-        double pulseTime   = _makeCrvRecoPulses->GetPulseTimes().at(j) + TDC0time;
-        double LEtime      = _makeCrvRecoPulses->GetLEtimes().at(j) + TDC0time;
+        double pulseTime   = _makeCrvRecoPulses->GetPulseTimes().at(j) + TDC0time + timeOffset;
+        double LEtime      = _makeCrvRecoPulses->GetLEtimes().at(j) + TDC0time + timeOffset;
         float  PEs         = _makeCrvRecoPulses->GetPEs().at(j);
         float  PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight().at(j);
         float  pulseHeight = _makeCrvRecoPulses->GetPulseHeights().at(j);
@@ -176,9 +182,9 @@ namespace mu2e
         if(separatedDoublePulse)   flags.set(CrvRecoPulseFlagEnums::separatedDoublePulse);
 
         float  PEsNoFit          = _makeCrvRecoPulses->GetPEsNoFit().at(j);
-        double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time;
-        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time;
-        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time;
+        double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time + timeOffset;
+        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time + timeOffset;
+        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time + timeOffset;
 
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
                                              PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,

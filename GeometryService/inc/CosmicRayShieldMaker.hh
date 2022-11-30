@@ -44,6 +44,7 @@ namespace mu2e
 
     std::unique_ptr<CosmicRayShield> _crs;
 
+    std::string _name;
     int  _diagLevel;
 
     double  _counterThickness, _counterWidth;
