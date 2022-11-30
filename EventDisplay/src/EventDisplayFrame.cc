@@ -33,6 +33,7 @@ using namespace std;
 #include "Offline/EventDisplay/src/dict_classes/ComponentInfoContainer.h"
 #include "Offline/EventDisplay/src/dict_classes/HistDraw.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 
 #include "TGGC.h"
 #include "TGFont.h"
@@ -49,6 +50,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
   _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
+  _kalStepSize(pset.get<double>("kalSeedStepSize")),
   _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
 {
   SetCleanup(kDeepCleanup);
@@ -431,7 +433,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   }
 
   _mainPad->cd();
-  _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this));
+  _dataInterface = boost::shared_ptr<DataInterface>(new DataInterface(this,_kalStepSize));
   _rootFileManager = boost::shared_ptr<RootFileManager>(new RootFileManager);
   _rootFileManagerAnim = boost::shared_ptr<RootFileManager>(new RootFileManager);
 
@@ -595,13 +597,15 @@ void EventDisplayFrame::fillGeometry()
   _mainPad->Update();
 }
 
-void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
+void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop, const mu2e::CRVCalib &calib)
 {
   _timeOffsets.updateMap(event);
 
   _eventNumber=event.id().event();
   _subrunNumber=event.id().subRun();
   _runNumber=event.id().run();
+
+  _dataInterface->setCRVCalib(calib);
 
   _contentSelector->setAvailableCollections(event);
   if(firstLoop) _contentSelector->firstLoop();

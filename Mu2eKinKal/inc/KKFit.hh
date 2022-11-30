@@ -174,7 +174,9 @@ namespace mu2e {
       auto hpos = wline.position3(htime);
       auto ppos = ptraj.position3(htime);
       auto vel = ptraj.velocity(htime);
-      double ptime = htime + (hpos.Z()-ppos.Z())/vel.Z();
+      double ptime = htime;
+      if (vel.Z() != 0)
+        ptime += (hpos.Z()-ppos.Z())/vel.Z();
       CAHint hint(ptime,htime);
       // compute PCA between the seed trajectory and this straw
       PCA pca(ptraj, wline, hint, tprec_ );

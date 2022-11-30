@@ -80,7 +80,11 @@ namespace mu2e
 
     std::vector<CRSSupportStructure> const & getSupportStructures() const {return _supportStructures;}
 
+    const std::string& getName() const { return _name; }
+
     private:
+
+    std::string _name;  // name of loaded geometry to coordinate with conditions
 
     std::vector<CRSScintillatorShield>                _scintillatorShields;    //Every "shield" holds a vector of modules.
                                                                                //Every module hold a vector of layers.

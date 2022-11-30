@@ -1,5 +1,7 @@
 //CRV module geometry in the extracted detector geometry
 
+string crs.name = "extracted"; // to coordinate with conditions
+
 int   crs.nSectors = 3;
 int   crs.nLayers  = 4;
 
