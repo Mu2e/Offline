@@ -133,7 +133,7 @@ Mu2eKinKal : {
     DivergenceGap : 10 # mm
     BFieldCorrection : true
     ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
+    BCorrTolerance : 1e-2 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
@@ -176,63 +176,6 @@ Mu2eKinKal : {
       [ 3.0,   2.5, 1.0,  false, 0 ]
     ]
   }
-
-  KKLINEDRIFTEXT: {
-    PrintLevel : 0
-    MinNDOF : 1
-    MaxNIter : 10
-    Deweight : 1.0e6
-    ConvergenceDeltaChisq : 0.1
-    DivergenceDeltaChisq : 10.0
-    DivergenceDeltaParams : 1e6
-    DivergenceGap : 10 # mm
-    BFieldCorrection : false
-    ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
-    MetaIterationSettings : [
-      # annealing temp, strawhit updater algorithms
-      [ 2.0, "CADSHU" ],
-      [ 1.0, "CADSHU" ],
-      [ 0.0, "CADSHU" ],
-      [ 0.0, "CADSHU:BkgANNSHU" ],
-      [ 1.0, "CADSHU:DriftANNSHU" ],
-      [ 0.5, "CADSHU:DriftANNSHU" ],
-      [ 0.2, "CADSHU:DriftANNSHU" ],
-      [ 0.0, "CADSHU:DriftANNSHU" ]
-    ]
-    CADSHUSettings : [
-      # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  6.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ]
-    ]
-
-    BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/Bkg_stage1.weights.xml",0.9,"Inactive",1]
-    ]
-
-    DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.4,-0.5,"Null:Drift","", 3, 1]
-    ]
-    Chi2SHUSettings : [
-    ]
-    StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [ 10.0, -1.0, -1.0, true, 0 ],
-      [ 5.0,  -1.0, -1.0, true, 0 ],
-      [ 3.0,   2.5, 1.0,  false, 0 ]
-    ]
-  }
-
-
 
   KKPrecursors : {
     ComboHitCollection : "makeSH"
@@ -296,7 +239,21 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.KKMAT
     Mu2eSettings: @local::Mu2eKinKal.KKMU2E
     KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKal.KKLINEDRIFTEXT
+    KinKalExtensionSettings : {
+      @table::Mu2eKinKal.KKDRIFTEXT
+      BFieldCorrection : false
+      MetaIterationSettings : [
+        # annealing temp, strawhit updater algorithms
+        [ 2.0, "CADSHU" ],
+        [ 1.0, "CADSHU" ],
+        [ 0.0, "CADSHU" ],
+        [ 0.0, "CADSHU:BkgANNSHU" ],
+        [ 1.0, "CADSHU:DriftANNSHU" ],
+        [ 0.5, "CADSHU:DriftANNSHU" ],
+        [ 0.2, "CADSHU:DriftANNSHU" ],
+        [ 0.0, "CADSHU:DriftANNSHU" ]
+      ]
+    }
     ModuleSettings : @local::Mu2eKinKal.KKKINEMATICLINE
   }
 
