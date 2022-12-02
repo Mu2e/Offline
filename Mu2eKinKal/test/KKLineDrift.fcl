@@ -26,9 +26,13 @@ physics :
     @table::Reconstruction.producers
     @table::TrkAnaReco.producers
     @table::Mu2eKinKal.producers
+    BestCrvLine : {
+      module_type : BestCrvHitDeltaT
+      crvCoincidenceTag : "SelectRecoMC"
+      kalSeedTag : "KKLine"
+    }
   }
   filters : {
-    @table::CalPatRec.filters
     RecoFilter : {
       module_type   : RecoMomFilter
       KalFinalTagRoot : ""
@@ -37,12 +41,8 @@ physics :
    }
   }
   RecoPath : [
-    #    @sequence::Reconstruction.LineRecoMCPath
-    @sequence::Reconstruction.CaloReco,
-    @sequence::Reconstruction.TrkReco,
-    @sequence::Reconstruction.CrvReco,
-    @sequence::Reconstruction.LineReco,
-    @sequence::Reconstruction.MCReco
+    @sequence::Reconstruction.LineRecoMCPath,
+    BestCrvLine
   ]
   analyzers : {
     TAKK : {
@@ -57,12 +57,16 @@ physics :
           fillTrkQual : false
           fillTrkPID : false
           genealogyDepth : 5
-          fillBestCrv : false
+          fillBestCrv : true
+          bestCrvModules : [ "BestCrv" ]
+          bestCrvInstances : [ "first" ]
+          bestCrvBranches : [ "bestcrv" ]
         }
       }
       diagLevel : 2
       FillMCInfo : true
-      FillCRV : false
+      FillCRV : true
+
       FillTrkQualInfo : false
       FillTrkPIDInfo : false
       FillHitInfo : true
@@ -79,12 +83,6 @@ physics :
     }
   }
   EndPath : [TAKK]
-}
-outputs : {
-  Output : {
-    @table::Reconstruction.Output
-    SelectEvents : [ "RecoPath" ]
-  }
 }
 
 #include "Production/JobConfig/reco/epilog.fcl"
