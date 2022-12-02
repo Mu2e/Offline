@@ -149,7 +149,8 @@ namespace mu2e {
     // Calculate the chi-sq of the helices
     findchisq(evt,h2,chih2xy,chih2zphi);
     // overlapping helices: decide which is best
-    if(nover >= _minnover && nover/float(minh) > _minoverfrac) {
+    // if(nover >= _minnover && nover/float(minh) > _minoverfrac) {
+    if(nover/float(minh) > _minoverfrac) {
       if(h1.caloCluster().isNonnull() && h2.caloCluster().isNull())
         retval = first;
       // Pick the one with a CaloCluster first
