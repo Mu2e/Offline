@@ -373,7 +373,6 @@ void DataInterface::fillGeometry()
     double FPCoolPipeRadius         = calo->caloInfo().getDouble("FPCoolPipeRadius");
     double pipeRadius               = calo->caloInfo().getDouble("pipeRadius");
     double frontPanelHalfThick      = (2.0*FPCarbonDZ+2.0*FPFoamDZ-pipeRadius+FPCoolPipeRadius)/2.0;
-    double holeDZ                   = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
 
     double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
     double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;
@@ -382,11 +381,22 @@ void DataInterface::fillGeometry()
     double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
     double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
 
+    double FEEDZ                = calo->caloInfo().getDouble("FEEZLength")/2.0;
+    double FEEBoxThickness      = calo->caloInfo().getDouble("FEEBoxThickness");
+    double FEEBoxDZ             = FEEDZ + 2*FEEBoxThickness;
+    double BPPipeRadiusHigh     = calo->caloInfo().getDouble("BPPipeRadiusHigh");
+    double BPPipeDZOffset       = calo->caloInfo().getDouble("BPPipeZOffset")/2.0;
+    double BPFEEDZ              = FEEBoxDZ + BPPipeDZOffset + BPPipeRadiusHigh;
+    double holeDZ               = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
+    double zHalfBP              = BPFEEDZ+holeDZ;
+
+    double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
+
     int icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
     {
       CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
-      diskPos += CLHEP::Hep3Vector(0.0, 0.0, -holeDZ+frontPanelHalfThick);
+      diskPos += CLHEP::Hep3Vector(0.0, 0.0, crystalDiskLogOffset);
 
       findBoundaryP(_calorimeterMinmax, diskPos.x()+diskOuterRailOut, diskPos.y()+diskOuterRailOut, diskPos.z()+diskCaseDZLength);
       findBoundaryP(_calorimeterMinmax, diskPos.x()-diskOuterRailOut, diskPos.y()-diskOuterRailOut, diskPos.z()-diskCaseDZLength);
@@ -1038,22 +1048,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   }
 
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
-  art::ServiceHandle<mu2e::GeometryService> geoservice;
-  if(calohits!=nullptr && (geoservice->hasElement<mu2e::DiskCalorimeter>()))
+  if(calohits!=nullptr)
   {
     _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
     std::vector<mu2e::CaloHit>::const_iterator iter;
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
     {
       const mu2e::CaloHit& calohit = *iter;
-      int roid = calohit.crystalID();
-      int crystalid=0;
+      int crystalid = calohit.crystalID();
 
-      if(geoservice->hasElement<mu2e::DiskCalorimeter>())
-      {
-        mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;
-        crystalid=diskCalo->caloIDMapper().crystalIDFromSiPMID(roid);
-      }
       double time = calohit.time();
       double energy = calohit.energyDep();
       std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
@@ -1066,14 +1069,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crystal->second->setStartTime(time);
           crystal->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
           crystal->second->getComponentInfo()->setText(3,Form("deposited energy(s): %geV",energy/CLHEP::eV));
-          crystal->second->getComponentInfo()->setText(4,Form("RO ID(s): %i",roid));
           _crystalhits.push_back(crystal->second);
         }
         else
         {
           crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
           crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
-          crystal->second->getComponentInfo()->expandLine(4,Form("%i",roid));
         }
       }
     }
