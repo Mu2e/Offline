@@ -301,7 +301,7 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
     case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloStepPointMCVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloStepPointMCVector[index].product()));
-    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
+    case 3 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloHitVector[index].product()));
   };
