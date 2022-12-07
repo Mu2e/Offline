@@ -200,7 +200,7 @@ namespace mu2e {
     static const double twopi(2*pi);
 
     double              mphi(-9999.);
-    double              meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
+    double              meanDriftTime = 46.7;
 
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
@@ -243,7 +243,7 @@ namespace mu2e {
           for(int istr=0; istr<nch;++istr) {
 
             hit    = &_data.chcol->at(istr);
-            time   = hit->time();
+            time   = hit->correctedTime();
             zstraw = hit->pos().z();
 //-----------------------------------------------------------------------------
 // estimate time-of-flight and calculate residual between the predicted and the hit times
