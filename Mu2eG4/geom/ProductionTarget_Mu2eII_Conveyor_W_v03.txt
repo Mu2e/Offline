@@ -298,7 +298,7 @@ vector<double> targetPS.Mu2eII.conveyor.ball.xs = {
   4135.6514 ,
   4135.6514 ,
   4135.6514 ,
-  4135.6514 
+  4135.6514
 };
 
 vector<double> targetPS.Mu2eII.conveyor.ball.ys = {

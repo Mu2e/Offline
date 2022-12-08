@@ -14,7 +14,7 @@ double targetPS.Mu2eII.front.z = -5915.42826;
 
 //Conveyor type target parameters
 int    PS.verbosityLevel = 0;
-int    targetPS.Mu2eII.conveyor.nballs        = 28; 
+int    targetPS.Mu2eII.conveyor.nballs        = 28;
 double targetPS.Mu2eII.conveyor.ball.radius   = 7.5;
 string targetPS.Mu2eII.conveyor.ball.material = "ProductionTargetCarbon";
 
