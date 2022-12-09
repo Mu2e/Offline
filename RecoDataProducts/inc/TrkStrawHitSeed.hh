@@ -27,7 +27,9 @@ namespace mu2e {
         KinKal::ClosestApproachData const& uptca,
         KinKal::Residual const& utresid, KinKal::Residual const& udresid,
         KinKal::Residual const& rtresid, KinKal::Residual const& rdresid,
-        DriftInfo const& dinfo, WireHitState const& whs) :
+        DriftInfo const& dinfo, // calibrated drift info
+        DriftInfo const& cdinfo, // cluster drift info
+        WireHitState const& whs) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(chit.flag()),
       _ambig(whs.state_), _algo(whs.algo_), _frozen(whs.frozen_), _quality(whs.quality_),
@@ -38,7 +40,8 @@ namespace mu2e {
       _rdt(rptca.deltaT()), _rtocavar(rptca.tocaVar()),
       _udoca(uptca.doca()),_udocavar(uptca.docaVar()),
       _udt(uptca.deltaT()), _utocavar(uptca.tocaVar()),
-      _rdrift(dinfo.driftDistance_),_rerr(dinfo.driftDistanceError_), _dvel(dinfo.driftVelocity_),_lang(dinfo.LorentzAngle_),
+      _rdrift(dinfo.driftDistance_),_cdrift(cdinfo.driftDistance_),
+      _rerr(dinfo.driftDistanceError_), _dvel(dinfo.driftVelocity_),_lang(dinfo.LorentzAngle_),
       _utresid(utresid.value()),_utresidmvar(utresid.measurementVariance()),_utresidpvar(utresid.parameterVariance()),
       _udresid(udresid.value()),_udresidmvar(udresid.measurementVariance()),_udresidpvar(udresid.parameterVariance()),
       _rtresid(rtresid.value()),_rtresidmvar(rtresid.measurementVariance()),_rtresidpvar(rtresid.parameterVariance()),
@@ -67,7 +70,7 @@ namespace mu2e {
       _ptoca(t0._t0),_stoca(chit.time()-stime),
       _rdoca(wdoca), _rdocavar(rerr*rerr), _rdt(dt), _rtocavar(t0._t0err*t0._t0err), _udoca(wdoca), _udocavar(rerr*rerr), _udt(dt), _utocavar(t0._t0err*t0._t0err),
       _rupos(upos),_uupos(upos),
-      _rdrift(rdrift), _rerr(rerr), _dvel(0), _lang(0),
+      _rdrift(rdrift),_cdrift(rdrift), _rerr(rerr), _dvel(0), _lang(0),
       _t0(t0), _trklen(trklen), _hitlen(hitlen),  _stime(stime){}
 
     // legacy interface
@@ -127,6 +130,7 @@ namespace mu2e {
     Float_t         _rupos =0; // reference POCA position along the straw WRT the straw middle
     Float_t         _uupos =0; // unbiased POCA position along the straw WRT the straw middle
     Float_t         _rdrift =0;  // drift radius for this hit
+    Float_t         _cdrift =0;  // cluster drift radius for this hit
     Float_t         _rerr =0;    // intrinsic radial error
     Float_t         _dvel =0;  // instantaneous drift velocity
     Float_t         _lang =0; // Lorentz angle for EXB effects

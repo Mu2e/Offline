@@ -19,9 +19,9 @@ namespace mu2e {
   // Update based just on ANN to the wire
   class DriftANNSHU {
     public:
-      using Config = std::tuple<std::string,float,float,std::string,std::string,int,int>;
+      using Config = std::tuple<std::string,float,std::string,std::string,std::string,std::string,int>;
       DriftANNSHU(Config const& config);
-      DriftANNSHU(DriftANNSHU const& other) : mvacut_(other.mvacut_), nulldoca_(other.nulldoca_),
+      DriftANNSHU(DriftANNSHU const& other) : mvacut_(other.mvacut_), nulldvar_(other.nulldvar_),
       totuse_(other.totuse_), allowed_(other.allowed_), freeze_(other.freeze_), diag_(other.diag_) {
         if(other.mva_) mva_ = new MVATools(*other.mva_);
       }
@@ -31,7 +31,7 @@ namespace mu2e {
     private:
       MVATools* mva_ = nullptr; // neural net calculator
       double mvacut_ =0; // cut value to decide if drift information is usable
-      double nulldoca_ =2.4; // null hit doca
+      WireHitState::NullDistVar nulldvar_; // null hit doca
       WireHitState::TOTUse totuse_ = WireHitState::all; // use TOT time as a residual for all hits
       WHSMask allowed_; // allowed states
       WHSMask freeze_; // states to freeze
