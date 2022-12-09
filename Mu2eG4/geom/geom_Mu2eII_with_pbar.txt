@@ -1,0 +1,22 @@
+//Use the Mu2e-II geometry but with the pbar elements restored
+
+#include "Offline/Mu2eG4/geom/geom_Mu2eII_2020.txt"
+
+///////////////////////////////////////
+//      Turn on pbar elements        //
+///////////////////////////////////////
+bool pbar.build = true;
+
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

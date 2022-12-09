@@ -36,10 +36,10 @@ vector<string> tracker.strawMaterials = { "G4_MYLAR", "StrawGas", "G4_W" };
 // Remove the gold layer from the straw wall and wire plating
 double tracker.straw.wallOuterMetal.thickness  = 0.00005;
 string tracker.straw.wallOuterMetal.material   = "G4_Al";
-double tracker.straw.wallInnerMetal2.thickness = 0.00005; //switch the aluminum to being the innermost metal
-string tracker.straw.wallInnerMetal2.material  = "G4_Al";
 double tracker.straw.wallInnerMetal1.thickness = 0.00001;
 string tracker.straw.wallInnerMetal1.material  = "G4_MYLAR"; //same as straw material to ignore
+double tracker.straw.wallInnerMetal2.thickness = 0.00005; //switch the aluminum to being the innermost metal
+string tracker.straw.wallInnerMetal2.material  = "G4_Al";
 double tracker.straw.wirePlate.thickness       = 0.00025;
 string tracker.straw.wirePlate.material        = "G4_Au"; //keep the gold plating on the sense wires
 
@@ -48,6 +48,25 @@ string tracker.straw.wirePlate.material        = "G4_Au"; //keep the gold platin
 ///////////////////////////////////////
 //Carbon conveyor target
 #include "Offline/Mu2eG4/geom/ProductionTarget_Mu2eII_Conveyor_v01.txt"
+//Tungsten conveyor target
+// #include "Offline/Mu2eG4/geom/ProductionTarget_Mu2eII_Conveyor_W_v01.txt"
+
+///////////////////////////////////////
+//        Change the HRS             //
+///////////////////////////////////////
+vector<double> PSShield.r1 = {  650. , 250. , 250. , 250. , 250.  };
+vector<double> PSShield.r2 = { 677.13, 275.4, 275.4, 275.4, 275.4 };
+
+
+///////////////////////////////////////
+//     Add a muon beam degrader      //
+///////////////////////////////////////
+// #include "Offline/Mu2eG4/geom/muon_beam_degrader_v01.txt"
+
+///////////////////////////////////////
+//     Adjust stopping target        //
+///////////////////////////////////////
+
 
 //
 //

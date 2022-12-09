@@ -1,0 +1,23 @@
+//Use the Mu2e-II geometry but with the carbon target origin matching MARS
+
+#include "Offline/Mu2eG4/geom/geom_Mu2eII_2020.txt"
+
+///////////////////////////////////////
+//     Change production target      //
+///////////////////////////////////////
+//Carbon conveyor target, forced primary proton gun origin
+#include "Offline/Mu2eG4/geom/ProductionTarget_Mu2eII_Conveyor_v02.txt"
+
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

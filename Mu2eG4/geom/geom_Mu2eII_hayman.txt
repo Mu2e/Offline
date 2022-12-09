@@ -1,0 +1,24 @@
+//Use the Mu2e-II geometry but with the hayman target
+
+#include "Offline/Mu2eG4/geom/geom_Mu2eII_2020.txt"
+
+///////////////////////////////////////
+//     Change production target      //
+///////////////////////////////////////
+//Tungsten Mu2e production target
+#include "Offline/Mu2eG4/geom/ProductionTarget_Hayman_v2_1.txt"
+bool targetPS.Mu2eII.build = false;
+
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

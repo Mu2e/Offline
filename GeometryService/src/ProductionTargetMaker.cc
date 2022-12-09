@@ -41,9 +41,9 @@ namespace mu2e {
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeTier1(const SimpleConfig& c, double solenoidOffset){
     std::unique_ptr<ProductionTarget> tgtPS
       (new ProductionTarget(
-			    c.getString("targetPS_model","NULL"),
-			    c.getInt("targetPS_version",1),
-			    c.getDouble("targetPS_rOut"),
+                            c.getString("targetPS_model","NULL"),
+                            c.getInt("targetPS_version",1),
+                            c.getDouble("targetPS_rOut"),
                             c.getDouble("targetPS_halfLength"),
                             c.getDouble("targetPS_rotX") * CLHEP::degree,
                             c.getDouble("targetPS_rotY") * CLHEP::degree,
@@ -52,16 +52,16 @@ namespace mu2e {
                                               c.getDouble("productionTarget.zNominal")
                                               )
                             + c.getHep3Vector("productionTarget.offset", CLHEP::Hep3Vector(0,0,0)),
-                            
-			    c.getInt   ("targetPS_nFins"    ,    0  ),
-			    c.getDouble("targetPS_finHeight",    0.0),
-			    c.getDouble("targetPS_finThickness", 0.0),
-			    c.getDouble("targetPS_hubDistanceUS",0.0),
-			    c.getDouble("targetPS_hubDistanceDS",0.0),
-			    c.getDouble("targetPS_hubAngleUS"   ,0.0),
-			    c.getDouble("targetPS_hubAngleDS"   ,0.0),
-			    c.getDouble("targetPS_hubOverhangUS",0.0),
-			    c.getDouble("targetPS_hubOverhangDS",0.0) ) );
+
+                            c.getInt   ("targetPS_nFins"    ,    0  ),
+                            c.getDouble("targetPS_finHeight",    0.0),
+                            c.getDouble("targetPS_finThickness", 0.0),
+                            c.getDouble("targetPS_hubDistanceUS",0.0),
+                            c.getDouble("targetPS_hubDistanceDS",0.0),
+                            c.getDouble("targetPS_hubAngleUS"   ,0.0),
+                            c.getDouble("targetPS_hubAngleDS"   ,0.0),
+                            c.getDouble("targetPS_hubOverhangUS",0.0),
+                            c.getDouble("targetPS_hubOverhangDS",0.0) ) );
    double trgtMaxAngle = c.getDouble("targetPS_rotY");
     if (c.getDouble("targetPS_rotX")>trgtMaxAngle) { trgtMaxAngle=c.getDouble("targetPS_rotX"); }
     trgtMaxAngle *= CLHEP::deg;
@@ -90,44 +90,44 @@ namespace mu2e {
             double deltaRad = Hub_overhang_Length*tan(Hub_overhang_angle);
             double cosHub_overhang_angle = cos(Hub_overhang_angle);
             double appThick = Hub_thickness/cosHub_overhang_angle;
-	    double actual_hang_Length = Hub_hang_Length;
-	    if ( version > 1 ) actual_hang_Length = Hub_thickness/tan(Hub_overhang_angle);
-	    tgtPS->setHubLenDS(actual_hang_Length);
+            double actual_hang_Length = Hub_hang_Length;
+            if ( version > 1 ) actual_hang_Length = Hub_thickness/tan(Hub_overhang_angle);
+            tgtPS->setHubLenDS(actual_hang_Length);
             //Hub_hang_TotLength+=Hub_overhang_Length;
             HubRgtCornersZ.push_back(tgtPS->halfLength()+Hub_overhang_Length
-				     - tgtPS->hubDistDS());
+                                     - tgtPS->hubDistDS());
             HubRgtCornersInnRadii.push_back(tgtPS->rOut()+deltaRad);
             HubRgtCornersOutRadii.push_back(HubRgtCornersInnRadii.back()+appThick);
 
             HubRgtCornersZ.push_back(tgtPS->halfLength()-tgtPS->hubDistDS());
             HubRgtCornersInnRadii.push_back(tgtPS->rOut());
-	    HubRgtCornersOutRadii.push_back(HubRgtCornersInnRadii.back()+Hub_thickness);
+            HubRgtCornersOutRadii.push_back(HubRgtCornersInnRadii.back()+Hub_thickness);
 
 
-            HubRgtCornersZ.push_back(tgtPS->halfLength() - actual_hang_Length 
-				     - tgtPS->hubDistDS());
+            HubRgtCornersZ.push_back(tgtPS->halfLength() - actual_hang_Length
+                                     - tgtPS->hubDistDS());
             HubRgtCornersInnRadii.push_back(tgtPS->rOut());
 
-	    if ( version > 1 ) {
-	      HubRgtCornersOutRadii.push_back(HubRgtCornersInnRadii.back()+0.001);
-	    } else {
-	      HubRgtCornersOutRadii.push_back(HubRgtCornersInnRadii.back()+Hub_thickness);
-	    }
-	    // Finished downstream/right, now do upstream/left
-	    if (version > 1) {
-	      Hub_overhang_Length = tgtPS->hubOverhangUS();
-	      Hub_overhang_angle  = tgtPS->hubAngleUS();
-	      Hub_overhang_angle *= CLHEP::deg;
-	      deltaRad = Hub_overhang_Length*tan(Hub_overhang_angle);
-	      cosHub_overhang_angle = cos(Hub_overhang_angle);
-	      appThick = Hub_thickness/cosHub_overhang_angle;
-	      actual_hang_Length = Hub_hang_Length;
-	      if ( version > 1 ) actual_hang_Length = Hub_thickness/tan(Hub_overhang_angle);
-	      tgtPS->setHubLenUS(actual_hang_Length);
-	    }
+            if ( version > 1 ) {
+              HubRgtCornersOutRadii.push_back(HubRgtCornersInnRadii.back()+0.001);
+            } else {
+              HubRgtCornersOutRadii.push_back(HubRgtCornersInnRadii.back()+Hub_thickness);
+            }
+            // Finished downstream/right, now do upstream/left
+            if (version > 1) {
+              Hub_overhang_Length = tgtPS->hubOverhangUS();
+              Hub_overhang_angle  = tgtPS->hubAngleUS();
+              Hub_overhang_angle *= CLHEP::deg;
+              deltaRad = Hub_overhang_Length*tan(Hub_overhang_angle);
+              cosHub_overhang_angle = cos(Hub_overhang_angle);
+              appThick = Hub_thickness/cosHub_overhang_angle;
+              actual_hang_Length = Hub_hang_Length;
+              if ( version > 1 ) actual_hang_Length = Hub_thickness/tan(Hub_overhang_angle);
+              tgtPS->setHubLenUS(actual_hang_Length);
+            }
 
             HubLftCornersZ.push_back(-tgtPS->halfLength()-Hub_overhang_Length
-				     + tgtPS->hubDistUS());
+                                     + tgtPS->hubDistUS());
             HubLftCornersInnRadii.push_back(tgtPS->rOut()+deltaRad);
             HubLftCornersOutRadii.push_back(HubLftCornersInnRadii.back()+appThick);
 
@@ -135,34 +135,34 @@ namespace mu2e {
             HubLftCornersInnRadii.push_back(tgtPS->rOut());
             HubLftCornersOutRadii.push_back(HubLftCornersInnRadii.back()+Hub_thickness);
 
-            HubLftCornersZ.push_back(-tgtPS->halfLength()+actual_hang_Length 
-				     + tgtPS->hubDistUS());
+            HubLftCornersZ.push_back(-tgtPS->halfLength()+actual_hang_Length
+                                     + tgtPS->hubDistUS());
             HubLftCornersInnRadii.push_back(tgtPS->rOut());
-	    if (version > 1 ) {
-	      HubLftCornersOutRadii.push_back(HubLftCornersInnRadii.back()+0.1);
-	    } else {
-	      HubLftCornersOutRadii.push_back(HubLftCornersInnRadii.back()+Hub_thickness);
-	    }
+            if (version > 1 ) {
+              HubLftCornersOutRadii.push_back(HubLftCornersInnRadii.back()+0.1);
+            } else {
+              HubLftCornersOutRadii.push_back(HubLftCornersInnRadii.back()+Hub_thickness);
+            }
 
-	    // Created both hubs
+            // Created both hubs
 
 
             double SpkAnchrPosZ = HubRgtCornersZ.at(0)-spokeAnchordist*cosHub_overhang_angle;
             double SpkAnchrPosRad = HubRgtCornersOutRadii.at(0)-spokeAnchordist*sin(Hub_overhang_angle);
             double iSpkAngleRgt(0.0), iSpkAngleLft(-spokeSideDangle), tmpAngle(0.0);
             for (int iSpk=0; iSpk<nSpokeperside; ++iSpk) {
-	      // Switch back to Downstream version of #s
-	      // if version 2 or higher...
-	      if (version > 1) {
-		Hub_overhang_Length = tgtPS->hubOverhangDS();
-		Hub_overhang_angle  = tgtPS->hubAngleDS();
-		Hub_overhang_angle *= CLHEP::deg;
-		deltaRad = Hub_overhang_Length*tan(Hub_overhang_angle);
-		cosHub_overhang_angle = cos(Hub_overhang_angle);
-		appThick = Hub_thickness/cosHub_overhang_angle;
-		SpkAnchrPosZ = HubRgtCornersZ.at(0)-spokeAnchordist*cosHub_overhang_angle;
-		SpkAnchrPosRad = HubRgtCornersOutRadii.at(0)-spokeAnchordist*sin(Hub_overhang_angle);
-	      }
+              // Switch back to Downstream version of #s
+              // if version 2 or higher...
+              if (version > 1) {
+                Hub_overhang_Length = tgtPS->hubOverhangDS();
+                Hub_overhang_angle  = tgtPS->hubAngleDS();
+                Hub_overhang_angle *= CLHEP::deg;
+                deltaRad = Hub_overhang_Length*tan(Hub_overhang_angle);
+                cosHub_overhang_angle = cos(Hub_overhang_angle);
+                appThick = Hub_thickness/cosHub_overhang_angle;
+                SpkAnchrPosZ = HubRgtCornersZ.at(0)-spokeAnchordist*cosHub_overhang_angle;
+                SpkAnchrPosRad = HubRgtCornersOutRadii.at(0)-spokeAnchordist*sin(Hub_overhang_angle);
+              }
                     tmpAngle = iSpkAngleRgt * CLHEP::deg;
                     std::map<double,CLHEP::Hep3Vector>::iterator pntPos;
                     pntPos = tgtPS->_anchoringPntsRgt.insert(
@@ -174,19 +174,19 @@ namespace mu2e {
                                     )
                              ).first;
                     pntPos->second.transform(tgtPS->protonBeamRotation());
-		    // Switch back to Upstream version of #s
-		    // if version 2 or higher...
-		    if (version > 1) {
-		      Hub_overhang_Length = tgtPS->hubOverhangUS();
-		      Hub_overhang_angle  = tgtPS->hubAngleUS();
-		      Hub_overhang_angle *= CLHEP::deg;
-		      deltaRad = Hub_overhang_Length*tan(Hub_overhang_angle);
-		      cosHub_overhang_angle = cos(Hub_overhang_angle);
-		      appThick = Hub_thickness/cosHub_overhang_angle;
-		      SpkAnchrPosZ = HubLftCornersZ.at(0)+spokeAnchordist*cosHub_overhang_angle;
-		      SpkAnchrPosZ *= -1.0;
-		      SpkAnchrPosRad = HubLftCornersOutRadii.at(0)-spokeAnchordist*sin(Hub_overhang_angle);
-	      }
+                    // Switch back to Upstream version of #s
+                    // if version 2 or higher...
+                    if (version > 1) {
+                      Hub_overhang_Length = tgtPS->hubOverhangUS();
+                      Hub_overhang_angle  = tgtPS->hubAngleUS();
+                      Hub_overhang_angle *= CLHEP::deg;
+                      deltaRad = Hub_overhang_Length*tan(Hub_overhang_angle);
+                      cosHub_overhang_angle = cos(Hub_overhang_angle);
+                      appThick = Hub_thickness/cosHub_overhang_angle;
+                      SpkAnchrPosZ = HubLftCornersZ.at(0)+spokeAnchordist*cosHub_overhang_angle;
+                      SpkAnchrPosZ *= -1.0;
+                      SpkAnchrPosRad = HubLftCornersOutRadii.at(0)-spokeAnchordist*sin(Hub_overhang_angle);
+              }
                     tmpAngle = iSpkAngleLft * CLHEP::deg;
                     pntPos = tgtPS->_anchoringPntsLft.insert(
                                     std::pair<double,CLHEP::Hep3Vector>(
@@ -201,14 +201,14 @@ namespace mu2e {
                     iSpkAngleLft += spokeAngleStep;
             }
 
-	    if ( version > 1 ) {
-	      double maxHang = tgtPS->hubOverhangUS();
-	      double tmpHang = tgtPS->hubOverhangDS();
-	      if ( tmpHang > maxHang ) maxHang = tmpHang;
-	      tgtPS->_envelHalfLength += maxHang + 2.0;
-	    } else {
-	      tgtPS->_envelHalfLength += Hub_overhang_Length;
-	    }
+            if ( version > 1 ) {
+              double maxHang = tgtPS->hubOverhangUS();
+              double tmpHang = tgtPS->hubOverhangDS();
+              if ( tmpHang > maxHang ) maxHang = tmpHang;
+              tgtPS->_envelHalfLength += maxHang + 2.0;
+            } else {
+              tgtPS->_envelHalfLength += Hub_overhang_Length;
+            }
 
     } else if (Hub_overhang_angle==90.0) {
 
@@ -318,7 +318,7 @@ namespace mu2e {
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeHayman_v_2_0(const SimpleConfig& c, double solenoidOffset){
 
-    //simple config does not have a method for returning a vector: all voids.  So I get it, stuff it in a 
+    //simple config does not have a method for returning a vector: all voids.  So I get it, stuff it in a
     //temporary variable, and put that into the constructor.
 
     std::vector<double> startingSectionThickness;
@@ -336,11 +336,11 @@ namespace mu2e {
     for_each (finAngles.begin(),finAngles.end(),[]( double& elem){elem *= CLHEP::degree;});
     std::unique_ptr<ProductionTarget> tgtPS
       (new ProductionTarget(
-			    c.getString("targetPS_model","NULL"),
-			    c.getInt("targetPS_version"),
-			    c.getDouble("targetPS_productionTargetMotherOuterRadius"),
-			    c.getDouble("targetPS_productionTargetMotherHalfLength"),
-			    c.getDouble("targetPS_rOut"),
+                            c.getString("targetPS_model","NULL"),
+                            c.getInt("targetPS_version"),
+                            c.getDouble("targetPS_productionTargetMotherOuterRadius"),
+                            c.getDouble("targetPS_productionTargetMotherHalfLength"),
+                            c.getDouble("targetPS_rOut"),
                             c.getDouble("targetPS_halfHaymanLength"),
                             c.getDouble("targetPS_rotX") * CLHEP::degree,
                             c.getDouble("targetPS_rotY") * CLHEP::degree,
@@ -351,26 +351,26 @@ namespace mu2e {
                                               )
                             + c.getHep3Vector("productionTarget.offset"),
                             c.getString("targetPS_targetCoreMaterial"),
-			    c.getString("targetPS_targetFinMaterial"),
-			    c.getString("targetPS_targetVacuumMaterial"),
-			    c.getString("targetPS_supportRingMaterial"),
-			    c.getString("targetPS_spokeMaterial"),
-			    c.getInt("targetPS_numberOfTargetSections"),
-			    startingSectionThickness,
+                            c.getString("targetPS_targetFinMaterial"),
+                            c.getString("targetPS_targetVacuumMaterial"),
+                            c.getString("targetPS_supportRingMaterial"),
+                            c.getString("targetPS_spokeMaterial"),
+                            c.getInt("targetPS_numberOfTargetSections"),
+                            startingSectionThickness,
                             numberOfSegmentsPerSection,
-			    thicknessOfSegmentPerSection,
-			    heightOfRectangularGapPerSection,
-			    thicknessOfGapPerSection,
-			    c.getInt("targetPS_nHaymanFins"),
-			    finAngles,
-			    c.getDouble("targetPS_finThickness"),
-			    c.getDouble("targetPS_finOuterRadius"),
-			    c.getDouble("targetPS_supportRingLength"),
+                            thicknessOfSegmentPerSection,
+                            heightOfRectangularGapPerSection,
+                            thicknessOfGapPerSection,
+                            c.getInt("targetPS_nHaymanFins"),
+                            finAngles,
+                            c.getDouble("targetPS_finThickness"),
+                            c.getDouble("targetPS_finOuterRadius"),
+                            c.getDouble("targetPS_supportRingLength"),
                             c.getDouble("targetPS_supportRingInnerRadius"),
                             c.getDouble("targetPS_supportRingOuterRadius"),
                             c.getDouble("targetPS_supportRingCutoutThickness"),
                             c.getDouble("targetPS_supportRingCutoutLength")
-			    ));
+                            ));
     //check if we should configure supports
     //switch to using '.' instead of '_' to differentiate levels
     tgtPS->_supportsBuild = c.getBool("targetPS.supports.build", false);
@@ -383,9 +383,9 @@ namespace mu2e {
       //number of support rods and wires
       tgtPS->_nSpokesPerSide = c.getInt("targetPS.supports.nSpokes");
       //features on the wheel near each support rod
-      c.getVectorDouble("targetPS.supports.features.angles", tgtPS->_supportWheelFeatureAngles, tgtPS->_nSpokesPerSide); 
-      c.getVectorDouble("targetPS.supports.features.arcs"  , tgtPS->_supportWheelFeatureArcs  , tgtPS->_nSpokesPerSide); 
-      c.getVectorDouble("targetPS.supports.features.rIns"  , tgtPS->_supportWheelFeatureRIns  , tgtPS->_nSpokesPerSide); 
+      c.getVectorDouble("targetPS.supports.features.angles", tgtPS->_supportWheelFeatureAngles, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.features.arcs"  , tgtPS->_supportWheelFeatureArcs  , tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.features.rIns"  , tgtPS->_supportWheelFeatureRIns  , tgtPS->_nSpokesPerSide);
       //support wheel rods parameters
       c.getVectorDouble("targetPS.supports.rods.halfLength", tgtPS->_supportWheelRodHL, tgtPS->_nSpokesPerSide);
       c.getVectorDouble("targetPS.supports.rods.offset", tgtPS->_supportWheelRodOffset, tgtPS->_nSpokesPerSide);
@@ -403,7 +403,7 @@ namespace mu2e {
     }
     return tgtPS;
   }
- 
+
   //make a Conveyor Mu2e-II type target
   std::unique_ptr<ProductionTargetMu2eII> ProductionTargetMaker::makeMu2eIIConveyor(const SimpleConfig& c, double solenoidOffset){
     std::string model = c.getString("targetPS_model");
@@ -424,25 +424,39 @@ namespace mu2e {
     target->_protonBeamRotation.rotateX(target->_beamRotX).rotateY(target->_beamRotY).rotateZ(target->_beamRotZ);
     target->_protonBeamInverseRotation = target->_protonBeamRotation.inverse();
     target->_prodTargetPosition = CLHEP::Hep3Vector(solenoidOffset + c.getDouble("productionTarget.xNominal", 0.),
-						    c.getDouble("productionTarget.yNominal", 0.),
-						    c.getDouble("productionTarget.zNominal")
-						    );
+                                                    c.getDouble("productionTarget.yNominal", 0.),
+                                                    c.getDouble("productionTarget.zNominal")
+                                                    );
+    if(c.getBool("targetPS.Mu2eII.front.override", false)) {
+      target->_prodTargetFrontPosition = CLHEP::Hep3Vector(c.getDouble("targetPS.Mu2eII.front.x"),
+                                                           c.getDouble("targetPS.Mu2eII.front.y"),
+                                                           c.getDouble("targetPS.Mu2eII.front.z"));
+    }
     //figure out the front ball, and then assign the front position as that ball + translation along beam direction
-    if(target->_conveyorNBalls <= 0)
+    else if(target->_conveyorNBalls <= 0)
       target->_prodTargetFrontPosition = target->_prodTargetPosition; //if no balls, use as default
     else {
-      double xmax = target->_conveyorBallXs[0];
-      double ymax = target->_conveyorBallYs[0];
-      double zmax = target->_conveyorBallZs[0];
-      for(int ball = 0; ball < target->_conveyorNBalls; ++ball) {
-	if(zmax < target->_conveyorBallZs[ball]) {
-	  xmax = target->_conveyorBallXs[ball];
-	  ymax = target->_conveyorBallYs[ball];
-	  zmax = target->_conveyorBallZs[ball];
-	}
+      int front = c.getInt("targetPS.Mu2eII.conveyor.front", -1);
+      if(front >= target->_conveyorNBalls) {
+        throw cet::exception("GEOM")
+          << "Production Target (Conveyor): Target front ball index (" << front
+          << ") is beyond the target ball list size (" << target->_conveyorNBalls << ")\n";
       }
-      target->_prodTargetFrontPosition = CLHEP::Hep3Vector(xmax, ymax, zmax) + 
-	target->_protonBeamRotation*CLHEP::Hep3Vector(0., 0., target->_conveyorBallRadius);
+
+      double xmax = target->_conveyorBallXs[(front >= 0) ? front : 0];
+      double ymax = target->_conveyorBallYs[(front >= 0) ? front : 0];
+      double zmax = target->_conveyorBallZs[(front >= 0) ? front : 0];
+      if(front < 0) { //take the most forward ball
+        for(int ball = 0; ball < target->_conveyorNBalls; ++ball) {
+          if(zmax < target->_conveyorBallZs[ball]) {
+            xmax = target->_conveyorBallXs[ball];
+            ymax = target->_conveyorBallYs[ball];
+            zmax = target->_conveyorBallZs[ball];
+          }
+        }
+      }
+      target->_prodTargetFrontPosition = CLHEP::Hep3Vector(xmax, ymax, zmax) +
+        target->_protonBeamRotation*CLHEP::Hep3Vector(0., 0., target->_conveyorBallRadius);
     }
     return target;
   }
@@ -460,12 +474,12 @@ namespace mu2e {
     target->_protonBeamRotation.rotateX(target->_beamRotX).rotateY(target->_beamRotY).rotateZ(target->_beamRotZ);
     target->_protonBeamInverseRotation = target->_protonBeamRotation.inverse();
     target->_prodTargetPosition = CLHEP::Hep3Vector(solenoidOffset + c.getDouble("productionTarget.xNominal", 0.),
-						    c.getDouble("productionTarget.yNominal", 0.),
-						    c.getDouble("productionTarget.zNominal")
-						    );
+                                                    c.getDouble("productionTarget.yNominal", 0.),
+                                                    c.getDouble("productionTarget.zNominal")
+                                                    );
 
     std::cout << __PRETTY_FUNCTION__ << ": Target implementation not fully added yet!\n";
     return nullptr;
   }
- 
+
 } // namespace mu2e

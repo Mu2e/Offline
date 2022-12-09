@@ -1,0 +1,123 @@
+//A Mu2e-II era conveyor type production target
+//version 2 change: override PrimaryProtonGun origin
+
+bool   targetPS.Mu2eII.build   = true;
+string targetPS_model          = "Conveyor"; //options are "Conveyor" or "Rotating"
+int    targetPS_version        = 4; //duplicate model control (4 = conveyor, 5 = rotating)
+int    targetPS.Mu2eII.version = 0; //version of the model
+
+//override the "front" origin of the target
+bool   targetPS.Mu2eII.front.override = true;
+double targetPS.Mu2eII.front.x = 3964.46;
+double targetPS.Mu2eII.front.y = 0.;
+double targetPS.Mu2eII.front.z = -5915.42826;
+
+//Conveyor type target parameters
+int    PS.verbosityLevel = 0;
+int    targetPS.Mu2eII.conveyor.nballs        = 28;
+double targetPS.Mu2eII.conveyor.ball.radius   = 7.5;
+string targetPS.Mu2eII.conveyor.ball.material = "ProductionTargetCarbon";
+
+
+vector<double> targetPS.Mu2eII.conveyor.ball.xs = {
+  3962.64071,
+  3958.99672,
+  3955.3688 ,
+  3951.73431,
+  3948.10744,
+  3944.47969,
+  3940.83876,
+  3937.21477,
+  3933.59959,
+  3929.99381,
+  3926.38463,
+  3922.78401,
+  3919.1802 ,
+  3915.58815,
+  3912.01708,
+  3908.45724,
+  3904.88333,
+  3901.33749,
+  3897.7963 ,
+  3894.2761 ,
+  3890.75986,
+  3887.25583,
+  3883.76988,
+  3880.29837,
+  3876.83904,
+  3873.40081,
+  3869.98556,
+  3866.58285
+};
+vector<double> targetPS.Mu2eII.conveyor.ball.ys = {
+  0.00575,
+  0.05198,
+  0.14417,
+  0.28301,
+  0.46821,
+  0.70038,
+  0.98093,
+  1.30782,
+  1.68167,
+  2.10246,
+  2.57199,
+  3.08906,
+  3.65576,
+  4.27005,
+  4.93023,
+  5.638  ,
+  6.39903,
+  7.20469,
+  8.06025,
+  8.96188,
+  9.91411,
+  10.9150,
+  11.9632,
+  13.0597,
+  14.2054,
+  15.3976,
+  16.6354,
+  17.92281
+};
+vector<double> targetPS.Mu2eII.conveyor.ball.zs = {
+  -5922.72534,
+  -5937.34174,
+  -5951.89771,
+  -5966.48572,
+  -5981.05176,
+  -5995.63245,
+  -6010.27997,
+  -6024.87531,
+  -6039.45386,
+  -6054.01624,
+  -6068.61646,
+  -6083.20874,
+  -6097.84375,
+  -6112.4635 ,
+  -6127.0332 ,
+  -6141.59497,
+  -6156.25562,
+  -6170.84515,
+  -6185.46246,
+  -6200.04315,
+  -6214.66077,
+  -6229.28387,
+  -6243.8905 ,
+  -6258.49957,
+  -6273.12299,
+  -6287.72656,
+  -6302.3042 ,
+  -6316.90381
+};
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -123,7 +123,7 @@ double physicsParams.Al.ePlusEndpointEnergy = 92.32;
 
 //Mu2eII_SM21 Specific configuration
 //WARNING do not merge into master!
-#include "Offline/Mu2eG4/test/globalConstants_mu2eii.txt"
+#include "Offline/GlobalConstantsService/data/globalConstants_mu2eii.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

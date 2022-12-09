@@ -56,8 +56,11 @@ namespace mu2e {
     _randGaussQ{engine, 0., config.beamSpotSigma()},
     _randomUnitSphere{engine, config.czmin(), config.czmax(), config.phimin(), config.phimax()}
     {
-        _config.proton_momentum(_p);
-        
+      _config.proton_momentum(_p);
+      if(config.verbose()) {
+        std::cout << "PrimaryProtonGunImpl::" << __func__ << ": mu2eii = " << _mu2eii
+                  << " p = " << _p << " origin = " << _gunOrigin << " rotation =" << _gunRotation << std::endl;
+      }
     }
 
   void PrimaryProtonGunImpl::generate( GenParticleCollection& genParts ){
