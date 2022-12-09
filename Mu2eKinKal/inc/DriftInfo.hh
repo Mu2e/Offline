@@ -9,6 +9,8 @@ namespace mu2e {
     double driftDistanceError_; // estimated variance on drift distance
     double driftVelocity_; // instantaneous drift velocity
     double driftDistanceVar() const { return driftDistanceError_*driftDistanceError_; }
+    double nullDistanceVar() const { return
+      std::max(driftDistance_*driftDistance_,driftDistanceVar()); }
   };
 }
 #endif

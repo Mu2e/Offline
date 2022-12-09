@@ -11,16 +11,18 @@ namespace mu2e {
     mva_  = new MVATools(std::get<0>(config));
     mva_->initMVA();
     mvacut_ = std::get<1>(config);
-    nulldoca_ = std::get<2>(config);
+    std::string nulldvar = std::get<2>(config);
+    nulldvar_ = WireHitState::nullDistVar(nulldvar);
     std::string allowed = std::get<3>(config);
     allowed_ = WHSMask(allowed);
     std::string freeze = std::get<4>(config);
     freeze_ = WHSMask(freeze);
-    totuse_ = (WireHitState::TOTUse)std::get<5>(config);
+    std::string totuse = std::get<5>(config);
+    totuse_ = WireHitState::totUse(totuse);
     diag_ = std::get<6>(config);
     if(diag_ > 0)
-      std::cout << "DriftANNSHU weights" << std::get<0>(config) << " cut " << mvacut_ << " null doca " << nulldoca_
-        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse_ << std::endl;
+      std::cout << "DriftANNSHU weights" << std::get<0>(config) << " cut " << mvacut_ << " null dist var " << nulldvar
+        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << std::endl;
     if(diag_ > 1)mva_->showMVA();
   }
 
@@ -59,11 +61,7 @@ namespace mu2e {
           whstate.state_ = WireHitState::null;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
-          if(nulldoca_ > 0.0)
-            whstate.nulldvar_ = nulldoca_*nulldoca_/3.0; // assumes a flat distribution over [-nulldoca_,nulldoca_]
-          else
-            // interpret negative nulldoca as the minimum drift distance
-            whstate.nulldvar_ = std::max(nulldoca_*nulldoca_,dinfo.driftDistance_*dinfo.driftDistance_)/3.0;
+          whstate.nulldvar_ = nulldvar_;
         }
       }
       if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);
