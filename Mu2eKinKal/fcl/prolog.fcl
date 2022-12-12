@@ -46,8 +46,8 @@ Mu2eKinKal : {
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
     BFieldCorrection : false
+    BCorrTolerance : 1e-2 # momemntum fraction
     ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
       [ 5.0, "CADSHU" ],
@@ -133,7 +133,7 @@ Mu2eKinKal : {
     DivergenceGap : 10 # mm
     BFieldCorrection : true
     ProcessEnds : false
-    BCorrTolerance : 1e-2 # momemntum fraction
+    BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
