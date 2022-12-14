@@ -8,7 +8,7 @@ namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
   DriftANNSHU::DriftANNSHU(Config const& config) {
-    mva_  = new MVATools(std::get<0>(config));
+    mva_  = std::make_shared<MVATools>(std::get<0>(config));
     mva_->initMVA();
     mvacut_ = std::get<1>(config);
     std::string nulldvar = std::get<2>(config);
