@@ -1,53 +1,52 @@
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/Mu2eKinKal/inc/TrainBkg.hxx"
 #include <cmath>
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
   BkgANNSHU::BkgANNSHU(Config const& config) {
-    mva_  = new MVATools(std::get<0>(config));
-    mva_->initMVA();
+    ConfigFileLookupPolicy configFile;
+    auto mvaWgtsFile = configFile(std::get<0>(config));
+    mva_ = std::make_shared<TMVA_SOFIE_TrainBkg::Session>(mvaWgtsFile);
     mvacut_ = std::get<1>(config);
     std::string freeze = std::get<2>(config);
     diag_ = std::get<3>(config);
     freeze_ = WHSMask(freeze);
     if(diag_ > 0)std::cout << "BkgANNSHU weights " << std::get<0>(config) << " cut " << mvacut_ << " freeze " << freeze_ << std::endl;
-    if(diag_ > 1)mva_->showMVA();
   }
 
   WireHitState BkgANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::BkgANN)){
-      std::vector<Float_t> pars(10,0.0);
+      std::vector<float> pars(9,0.0);
       // this order is given by the training
-      double derr = sqrt(std::max(tpdata.docaVar(),0.0) + dinfo.driftDistanceError_*dinfo.driftDistanceError_);
-      double dvar = derr*derr;
-      double totvar = dvar + tpdata.docaVar();
-      double udoca = fabs(tpdata.doca());
-      pars[0] = udoca;
-      pars[1] = dinfo.driftDistance_;
-      pars[2] = (dinfo.driftDistance_ - udoca)/sqrt(totvar);
+      pars[0] = tpdata.deltaT();
+      pars[1] = tpdata.doca();
+      pars[2] = dinfo.driftDistance_;
       pars[3] = chit.driftTime();
-      pars[4] = 1000.0*chit.energyDep();
-      pars[5] = derr;
-      pars[6] =4.0*dinfo.driftDistance_*udoca/totvar;
+      pars[4] = chit.energyDep();
+      pars[5] = tpdata.docaVar();
+      pars[6] = chit.wireDist();
       // compare the delta-t based U position with the fit U position; requires relative end
       double endsign = 2.0*(chit.driftEnd()-0.5);
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
-      pars[7] = fabs(chit.wireDist()-upos)/chit.wireRes();
-      pars[8] = chit.wireRes();
-      pars[9] = tpdata.particlePoca().Vect().Rho();
-      float mvaout = mva_->evalMVA(pars);
+      pars[7] = upos;
+      //      pars[8] = chit.wireRes();
+      pars[8] = tpdata.particlePoca().Vect().Rho();
+      auto mvaout = mva_->infer(pars.data());
       if(diag_ > 2){
         whstate.algo_  = StrawHitUpdaters::BkgANN;
-        whstate.quality_ = mvaout;
+        whstate.quality_ = mvaout[0];
       }
-      if(mvaout < mvacut_){
+      if(mvaout[0] < mvacut_){
         whstate.algo_  = StrawHitUpdaters::BkgANN;
         whstate.state_ = WireHitState::inactive;
         whstate.frozen_ = whstate.isIn(freeze_);
-        whstate.quality_ = mvaout;
+        whstate.quality_ = mvaout[0];
       }
     }
     return whstate;
