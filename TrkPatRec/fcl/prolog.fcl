@@ -64,28 +64,25 @@ TimeAndPhiClusterFinder : {
   module_type             : TimeAndPhiClusterFinder
   ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  CaloClusterCollection  : "CaloClusterFromProtoCluster"
-  TimeClusterMVA         : { MVAWeights : "Offline/TrkPatRec/data/TimeCluster3.weights.xml" }
-  HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
-  HitBackgroundBits      : @local::PatRecBackground
+  CaloClusterCollection  : "CaloClusterMaker"
+  HitSelectionBits       : ["TimeSelection","RadiusSelection"]
+  HitBackgroundBits      : ["Background","Noisy","Dead"]
+  MVATime                : { MVAWeights : "Offline/TrkPatRec/data/TimePhiCluster.weights.xml" }
   TestFlag               : true
-  Tbin                   : 15.0
-  Pbin                   : 0.2
-  MinNSHits              : 7
   UseCaloCluster         : false
   CaloClusterMinE        : 50.0
   CaloClusterWeight      : 10.0
-  T0Calculator           : { }
-  AveragePitch           : 0.6
-  WindowTime             : 1
-  MinTimeYbin            : 5
-  MaxTimeDT              : 30.0
-  MaxTimeDTCal           : 30.0
-  MinHitSplit            : 30
-  MVAScoreCut            : 0.75
-  Recover                : true
-  DphiMaxReco            : 1.2
-  Diag                   : 0
+  AlgoAssignHits         : 1
+  MinNSHits              : 10
+  Tbin                   : 20.0
+  MinTimeYbin            : 6
+  MaxTimeDT              : 45.0
+  FilterMVA              : false
+  MinCutMVA              : 0.1
+  SplitPhi               : true
+  MaxDeltaPhi            : 0.3
+  MaxNdiff               : 1
+  Diag                   : 1
 
   DiagPlugin : {
     tool_type             : "TimeAndPhiClusterFinderDiag"
