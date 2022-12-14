@@ -65,8 +65,8 @@ TimeAndPhiClusterFinder : {
   ComboHitCollection     : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection  : "CaloClusterMaker"
-  HitSelectionBits       : ["TimeSelection","RadiusSelection"]
-  HitBackgroundBits      : ["Background","Noisy","Dead"]
+  HitSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
+  HitBackgroundBits      : @local::PatRecBackground
   MVATime                : { MVAWeights : "Offline/TrkPatRec/data/TimePhiCluster.weights.xml" }
   TestFlag               : true
   UseCaloCluster         : false
@@ -74,15 +74,15 @@ TimeAndPhiClusterFinder : {
   CaloClusterWeight      : 10.0
   AlgoAssignHits         : 1
   MinNSHits              : 10
-  Tbin                   : 20.0
+  Tbin                   : 15.0
   MinTimeYbin            : 6
-  MaxTimeDT              : 45.0
-  FilterMVA              : false
+  MaxTimeDT              : 35.0
+  FilterMVA              : true
   MinCutMVA              : 0.1
   SplitPhi               : true
   MaxDeltaPhi            : 0.3
   MaxNdiff               : 1
-  Diag                   : 1
+  Diag                   : 0
 
   DiagPlugin : {
     tool_type             : "TimeAndPhiClusterFinderDiag"
@@ -95,6 +95,7 @@ TimeAndPhiClusterFinder : {
 
 # specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
 # note these are helicity-independent
+# NOt needed anymore for TimeAndPhiClusterFinder
 TimeClusterFinderDe : {
   @table::TimeClusterFinder
   AveragePitch : 0.63 # signed
