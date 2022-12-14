@@ -31,7 +31,7 @@ Mu2eKinKal : {
     AddHitSelect : []
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 10.0 # mm
-    MaxStrawHitDt : 20.0 # ns
+    MaxStrawHitDt : 50.0 # ns
     StrawBuffer : 2 #
     MaxStrawDOCA : 3.0 # mm
   }
@@ -118,7 +118,7 @@ Mu2eKinKal : {
       [3.0, 3.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.05,"Inactive", 0]
+      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.3,"Inactive", 0]
     ]
   }
 
@@ -158,7 +158,7 @@ Mu2eKinKal : {
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.05,"Inactive", 0]
+      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.3,"Inactive", 0]
     ]
 
     DriftANNSHUSettings : [
