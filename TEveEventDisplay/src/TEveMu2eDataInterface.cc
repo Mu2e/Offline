@@ -293,7 +293,7 @@ namespace mu2e{
 using LHPT = KinKal::PiecewiseTrajectory<KinKal::LoopHelix>;
 using CHPT = KinKal::PiecewiseTrajectory<KinKal::CentralHelix>;
 using KLPT = KinKal::PiecewiseTrajectory<KinKal::KinematicLine>;
-template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::unique_ptr<KTRAJ> &trajectory, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ){
+template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::unique_ptr<KTRAJ> const& trajectory, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ){
   double t1=trajectory->range().begin();
   double t2=trajectory->range().end();
 
@@ -307,7 +307,7 @@ template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::uniq
   line->SetPoint(0,pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()) , pointmmTocm(InMu2e.z()));
   line_twoDXY->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
   line_twoDXZ->SetPoint(0,pointmmTocm(x1), pointmmTocm(y1) , pointmmTocm(z1));
-  for(double t=t1; t<=t2; t+=0.1)
+  for(double t=t1; t<=t2; t+=0.01)
   {
     const auto &p = trajectory->position3(t);
     double xt=p.x();
@@ -332,7 +332,7 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
     const KalSeedCollection* seedcol = track_list[j];
     colour.push_back(j+3);
     if(seedcol!=0){  
-     for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
+     for(unsigned int k = 0; k < seedcol->size(); k++){
         mu2e::KalSeed kseed = (*seedcol)[k];
         TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
         TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
