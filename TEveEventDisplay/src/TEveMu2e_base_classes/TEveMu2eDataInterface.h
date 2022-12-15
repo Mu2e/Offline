@@ -73,7 +73,7 @@ namespace mu2e{
 
       void AddTrkHits(bool firstloop, const ComboHitCollection *chcol, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
       void AddTimeClusters(bool firstloop, const TimeClusterCollection *tccol, TEveMu2e2DProjection *tracker2Dproj, bool Redraw, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
-      template<class KTRAJ> void AddKinKalTrajectory( std::unique_ptr<KTRAJ> &trajectory, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ);
+      template<class KTRAJ> void AddKinKalTrajectory( std::unique_ptr<KTRAJ> const& trajectory, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ);
       void FillKinKalTrajectory(bool firstloop, std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2);
 
       std::vector<double> AddCaloClusters(bool firstloop, const CaloClusterCollection *clustercol,TEveMu2e2DProjection *calo2Dproj,  bool Redraw, double min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *CfXYMgr, TEveProjectionManager *CfRZMgr, TEveScene *scene1, TEveScene *scene2);
