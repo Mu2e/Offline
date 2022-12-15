@@ -319,10 +319,6 @@ template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::uniq
     line->SetNextPoint(pointmmTocm(InMu2e.x()), pointmmTocm(InMu2e.y()) , pointmmTocm(InMu2e.z()));
     line_twoDXY->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt), pointmmTocm(zt));
     line_twoDXZ->SetNextPoint(pointmmTocm(xt), pointmmTocm(yt), pointmmTocm(zt));
-   // CLHEP::Hep3Vector p = GenVector::Hep3Vec(pos);
-    //          CLHEP::Hep3Vector InMu2e = det->toMu2e(p);
-         
-    
   }
 }
 
@@ -331,24 +327,23 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
   std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
   std::vector<std::string> names = std::get<0>(track_tuple);
   std::vector<int> colour;
-  
+
   for(unsigned int j=0; j< track_list.size(); j++){
     const KalSeedCollection* seedcol = track_list[j];
     colour.push_back(j+3);
     if(seedcol!=0){  
-     for(unsigned int k = 0; k < seedcol->size(); k = k + 20){ 
+     for(unsigned int k = 0; k < seedcol->size(); k = k + 20){
         mu2e::KalSeed kseed = (*seedcol)[k];
-        
         TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
         TEveMu2eCustomHelix *line_twoDXY = new TEveMu2eCustomHelix();
         TEveMu2eCustomHelix *line_twoDXZ = new TEveMu2eCustomHelix();
         line->fKalSeed_ = kseed;
         line->SetSeedInfo(kseed);
-             
+     
         if(kseed.loopHelixFit())
         {
           auto trajectory=kseed.loopHelixFitTrajectory();
-          AddKinKalTrajectory<LHPT>(trajectory,line, line_twoDXY,line_twoDXZ);
+          AddKinKalTrajectory<LHPT>(trajectory, line, line_twoDXY,line_twoDXZ);
         }
         else if(kseed.centralHelixFit())
         {
@@ -360,8 +355,7 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
           auto trajectory=kseed.kinematicLineFitTrajectory();
           AddKinKalTrajectory<KLPT>(trajectory,line,line_twoDXY,line_twoDXZ);
         }
-      
-      
+
       line_twoDXY->SetLineColor(kOrange);
       line_twoDXY->SetLineWidth(3);
       fTrackList2DXY->AddElement(line_twoDXY);
@@ -375,23 +369,18 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
       line->SetLineWidth(3);
       fTrackList3D->AddElement(line);
       }
-
-      /*TXYMgr->ImportElements(fTrackList2D, scene1);
-      TRZMgr->ImportElements(fTrackList2D, scene2);*/
       tracker2Dproj->fXYMgr->ImportElements(fTrackList2DXY, tracker2Dproj->fEvtXYScene);
       tracker2Dproj->fRZMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtRZScene);
       gEve->AddElement(fTrackList3D);
       gEve->Redraw3D(kTRUE);
       }
-      }
-
     }
+  }
 
 
 
   /*------------Function to color code the Tracker hits in 3D and 2D displays:-------------*/
-  void TEveMu2eDataInterface::AddTrkHits(bool firstloop, const ComboHitCollection *chcol,std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj,
-                                         bool Redraw, double  min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
+  void TEveMu2eDataInterface::AddTrkHits(bool firstloop, const ComboHitCollection *chcol,std::tuple<std::vector<std::string>, std::vector<const KalSeedCollection*>> track_tuple, TEveMu2e2DProjection *tracker2Dproj,bool Redraw, double  min_energy, double max_energy, double min_time, double max_time, bool accumulate, TEveProjectionManager *TXYMgr, TEveProjectionManager *TRZMgr, TEveScene *scene1, TEveScene *scene2){
     std::vector<const KalSeedCollection*> track_list = std::get<1>(track_tuple);
     std::vector<std::string> names = std::get<0>(track_tuple);
     GeomHandle<DetectorSystem> det;
@@ -585,7 +574,6 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
             calo2Dproj->fRZMgr->ImportElements(fClusterList2D_disk1, calo2Dproj->fDetRZScene);
             //CfRZMgr->ImportElements(fClusterList2D_disk1, scene2); For MultiView
           }
-
         }
       }
       gEve->AddElement(fClusterList3D);
@@ -757,50 +745,13 @@ void TEveMu2eDataInterface::FillKinKalTrajectory(bool firstloop, std::tuple<std:
       line->SetLineColor(kGreen);
       line->SetLineWidth(3);
       fTrackList3D->AddElement(line);
-
     }
-
     tracker2Dproj->fXYMgr->ImportElements(fTrackList2DXY, tracker2Dproj->fEvtXYScene);
     tracker2Dproj->fRZMgr->ImportElements(fTrackList2DXZ, tracker2Dproj->fEvtRZScene);
-
     /*TXYMgr->ImportElements(fTrackList2D, scene1);
     TRZMgr->ImportElements(fTrackList2D, scene2);*/
     gEve->AddElement(fTrackList3D);
     gEve->Redraw3D(kTRUE);
     }
   }
-
-  /*TODO - Note this function is untested and awaits compatibility in current Offline. We made it for future upgrades.
-  void TEveMu2eDataInterface::AddTrackExitTrajectories(bool firstloop, const TrkExtTrajCollection *trkextcol, double min_time, double max_time, bool Redraw, bool accumulate) {
-  DataLists<const TrkExtTrajCollection*, TEveMu2e2DProjection*>(trkextcol, Redraw, accumulate, "TrackExitTraj", &fExtTrackList3D);
-    if(trkextcol!=0){
-       for(unsigned int i = 0; i < trkextcol->size(); i++){
-        TrkExtTraj trkext = (*trkextcol)[i];
-        TEveMu2eCustomHelix *line = new TEveMu2eCustomHelix();
-        line->fTrkExtTraj_ = trkext;
-
-        line->SetMomentumExt();
-        line->SetParticleExt();
-
-        line->SetPoint(0,trkext.front().x(),trkext.front().y(),trkext.front().z());
-        for(unsigned int k = 0 ; k< trkext.size(); k+=10){
-          const mu2e::TrkExtTrajPoint &trkextpoint = trkext[k];
-          line->SetNextPoint(trkextpoint.x(), trkextpoint.y(), trkextpoint.z());  //TODO accurate translation
-        }
-        //     fExtTrackList2D->AddElement(line);
-        //     tracker2Dproj->fXYMgr->ImportElements(fExtTrackList2D, tracker2Dproj->fDetXYScene);
-        //     tracker2Dproj->fRZMgr->ImportElements(fExtTrackList2D, tracker2Dproj->fDetRZScene);
-        line->SetPickable(kTRUE);
-        const std::string title = "Helix #" + to_string(i + 1) + ", Momentum = " + to_string(line->Momentum_);
-        line->SetTitle(Form(title.c_str()));
-        line->SetLineColor(kRed);
-        line->SetLineWidth(3);
-        fExtTrackList3D->AddElement(line);
-
-      }
-        gEve->AddElement(fExtTrackList3D);
-        gEve->Redraw3D(kTRUE);
-    }
-
-  }*/
 }
