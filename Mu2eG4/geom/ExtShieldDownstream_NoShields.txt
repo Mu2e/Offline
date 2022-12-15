@@ -1,8 +1,8 @@
 // Original author David Norvil Brown, University of Louisville
-// 
-// This is just a simple file to use when you want to turn off 
+//
+// This is just a simple file to use when you want to turn off
 // the downstream external shielding, but keep other things the same.
-// 
+//
 
 // Sort boxes into "types"
 int ExtShieldDownstream.numberOfBoxTypes = 0;

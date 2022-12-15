@@ -4,7 +4,7 @@
 // Andrei Gaponenko, 2014
 #------------------------------------------------------------------------------
 # quick comments: reads signal MC and also background MC inputs with steppoints
-# so need to define input and 
+# so need to define input and
 #------------------------------------------------------------------------------
 
 #include "Offline/fcl/minimalMessageService.fcl"
@@ -20,7 +20,7 @@
 
 process_name : StnMakerEminus
 
-source : { 
+source : {
     module_type : EmptyEvent
 }
 
@@ -42,35 +42,35 @@ services : {
 physics : {
 
     producers: {
-	generate             : {
+        generate             : {
 #------------------------------------------------------------------------------
 # for 105 MeV/c electron : E = 105.00130           MeV
 # for muon: sqrt(105.*105+105.658*105.658) = 148.9584269653785
 #------------------------------------------------------------------------------
-	    module_type      : StoppedParticleReactionGun
-	    physics          : {
-		pdgId              : 11
-		spectrumVariable   : "totalEnergy"
-		spectrumShape      : "conversion"
-#		spectrumResolution : 0.1
-#		spectrumShape    : "flat"
-#		elow               : 103.
-#		ehi                : 103.01
-	    }
-	    muonStops            : {
+            module_type      : StoppedParticleReactionGun
+            physics          : {
+                pdgId              : 11
+                spectrumVariable   : "totalEnergy"
+                spectrumShape      : "conversion"
+#                spectrumResolution : 0.1
+#                spectrumShape    : "flat"
+#                elow               : 103.
+#                ehi                : 103.01
+            }
+            muonStops            : {
 #------------------------------------------------------------------------------
-# use --fclinput=@muStops:datasets/mustops for grid submission 
-# [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ] 
+# use --fclinput=@muStops:datasets/mustops for grid submission
+# [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 #------------------------------------------------------------------------------
-		inputFiles            : @local::mergedMuonStops
-		averageNumRecordsToUse: 500000
-		treeName              : "stoppedMuonDumper/stops"
-		branchName            : "stops"
-		verbosityLevel        : 1
-	    }
-	}
-	
-	g4run                : @local::g4run
+                inputFiles            : @local::mergedMuonStops
+                averageNumRecordsToUse: 500000
+                treeName              : "stoppedMuonDumper/stops"
+                branchName            : "stops"
+                verbosityLevel        : 1
+            }
+        }
+
+        g4run                : @local::g4run
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
@@ -78,44 +78,44 @@ physics : {
         muonTimeMap          : { module_type : GenerateMuonLife }
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	@table::CaloDigiMC.producers
-	@table::CaloReco.producers
+        @table::CaloDigiMC.producers
+        @table::CaloReco.producers
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
-	FSHPreStereo         : @local::FSHPreStereo
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDeM
+        FSHPreStereo         : @local::FSHPreStereo
+        MakeStereoHits       : @local::MakeStereoHits
+        FlagStrawHits        : @local::FlagStrawHits
+        FlagBkgHits          : @local::FlagBkgHits
+        TrkPatRec            : @local::TrkPatRecDeM
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	@table::CaloCluster.producers
-	MakeStrawHitPositions: @local::MakeStrawHitPositions
-	CalPatRec            : @local::CalPatRec
-	MergePatRec          : @local::MergePatRec
+        @table::CaloCluster.producers
+        MakeStrawHitPositions: @local::MakeStrawHitPositions
+        CalPatRec            : @local::CalPatRec
+        MergePatRec          : @local::MergePatRec
 #------------------------------------------------------------------------------
 # needed for analysis
 #------------------------------------------------------------------------------
-	CaloMatching         : @local::TrackCaloMatching
-	TrkExtrapol          : @local::TrkExtrapol
-	ParticleID           : @local::ParticleID
+        CaloMatching         : @local::TrackCaloMatching
+        TrkExtrapol          : @local::TrkExtrapol
+        ParticleID           : @local::ParticleID
     }
 
     filters: {
 #------------------------------------------------------------------------------
 # Stntuple maker sequence
 #------------------------------------------------------------------------------
-	InitStntuple         : @local::InitStntuple
-	StntupleMaker        : @local::StntupleMaker
-	FillStntuple         : @local::FillStntuple
+        InitStntuple         : @local::InitStntuple
+        StntupleMaker        : @local::StntupleMaker
+        FillStntuple         : @local::FillStntuple
 #------------------------------------------------------------------------------
 # Andrej's filter
-# Reject events with no hits from signal-like tracks in the detectors.  
+# Reject events with no hits from signal-like tracks in the detectors.
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
-	FilterStepPointMomentum: {
+        FilterStepPointMomentum: {
             module_type    : FilterStepPointMomentum
             inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
             cutMomentumMin : 10. # MeV/c
@@ -124,51 +124,51 @@ physics : {
 
     analyzers:
     {
-#-----------------------------------------------------------------------------	
+#-----------------------------------------------------------------------------
 # Analyzer module for track extrapolation information
-#-----------------------------------------------------------------------------	
-	ReadTrkExtrapol        : @local::ReadTrkExtrapol
+#-----------------------------------------------------------------------------
+        ReadTrkExtrapol        : @local::ReadTrkExtrapol
 
-#-----------------------------------------------------------------------------	
+#-----------------------------------------------------------------------------
 # Analyzer module for track-cluster match information
-#-----------------------------------------------------------------------------	
-	ReadTrackCaloMatching  : @local::ReadTrackCaloMatching
+#-----------------------------------------------------------------------------
+        ReadTrackCaloMatching  : @local::ReadTrackCaloMatching
 
-	
+
     }
-    
+
 #------------------------------------------------------------------------------
 # paths
 # write out ntuple only, so don't need compression modules...
 #------------------------------------------------------------------------------
     p1 : [generate, g4run
-	  , FilterStepPointMomentum
-	  , protonTimeMap, muonTimeMap 
-	  , makeSD, makeSH
+          , FilterStepPointMomentum
+          , protonTimeMap, muonTimeMap
+          , makeSD, makeSH
           , @sequence::CaloDigiMC.DigiSim
-          , @sequence::CaloReco.Reco		  
+          , @sequence::CaloReco.Reco
           , @sequence::CaloCluster.Reco
-# 
-	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
 #
-	  , MakeStrawHitPositions 
-	  , CalPatRec
-	  , MergePatRec
-#	  
-	  , TrkExtrapol, CaloMatching
-	  
-	  , ParticleID
+          , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 #
-	  , InitStntuple, StntupleMaker, FillStntuple
-	 ]
+          , MakeStrawHitPositions
+          , CalPatRec
+          , MergePatRec
+#
+          , TrkExtrapol, CaloMatching
+
+          , ParticleID
+#
+          , InitStntuple, StntupleMaker, FillStntuple
+         ]
 
     trigger_paths  : [p1]
-    
+
 #    out : [detectorOutput]
     out : [
-	   ReadTrkExtrapol
-	   , ReadTrackCaloMatching
-	  ]
+           ReadTrkExtrapol
+           , ReadTrackCaloMatching
+          ]
 #    an  : [genCountLogger]
     end_paths      : [out]
 }
@@ -193,12 +193,12 @@ services.SeedService.maxUniqueEngines     :  20
 
 # print per event timing for ::event entry points
 # services.Timing: { }
-# print 
+# print
 services.scheduler.wantSummary: true
 services.TFileService.fileName            : "readTrackCluster.hist"
 
 
-physics.filters.InitStntuple.histFileName : "readTrackCluster.stn" 
+physics.filters.InitStntuple.histFileName : "readTrackCluster.stn"
 
 
 # Apply the time offsets in tracker digitization
@@ -219,6 +219,6 @@ physics.producers.CaloMatching.fitterModuleLabel     : MergePatRec
 physics.producers.ParticleID.fitterModuleLabel       : MergePatRec
 
  physics.filters.StntupleMaker.trkPatRec1             : MergePatRec
- physics.filters.StntupleMaker.g4ModuleLabel          : g4run     
+ physics.filters.StntupleMaker.g4ModuleLabel          : g4run
  physics.filters.StntupleMaker.trkExtrapol            : TrkExtrapol
  physics.filters.StntupleMaker.trkCalMatch            : CaloMatching

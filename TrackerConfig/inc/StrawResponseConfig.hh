@@ -14,21 +14,29 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<int> verbose{
-      Name("verbose"), Comment("verbosity: 0 or 1")}; 
+      Name("verbose"), Comment("verbosity: 0 or 1")};
     fhicl::Atom<bool> useDb{
-      Name("useDb"), Comment("use database or fcl")}; 
+      Name("useDb"), Comment("use database or fcl")};
     fhicl::Atom<double> eBins {
       Name("eBins"), Comment("Number of energy bins")};
     fhicl::Atom<double> eBinWidth {
       Name("eBinWidth"), Comment("Width of energy bins (KeV)")};
-    fhicl::Sequence<double> halfPropVelocity {
-      Name("halfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Sequence<double> ehalfPVScale {
+      Name("eHalfPVScale"), Comment(" fraction of nominal ")};
     fhicl::Atom<double> centralWirePos {
       Name("centralWirePos"), Comment(" mm ")};
     fhicl::Sequence<double> tdCentralRes {
       Name("tdCentralRes"), Comment(" tdCentralRes ")};
     fhicl::Sequence<double> tdResSlope {
       Name("tdResSlope"), Comment(" tdResSlope ")};
+    fhicl::Sequence<double> strawHalfPropVelocity {
+      Name("strawHalfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Atom<double> defaultHalfPropVelocity {
+      Name("defaultHalfPropVelocity"), Comment(" mm/ns ")};
+    fhicl::Atom<bool> truncateLongitudinal {
+      Name("truncateLongitudinal"), Comment("truncate reco longitudinal at straw end")};
+    fhicl::Atom<bool> rmsLongErrors {
+      Name("rmsLongErrors"), Comment("Use errors tuned from residual profile rms")};
     fhicl::Atom<int> totTBins {
       Name("totTBins"), Comment("TOT drift time t bins")};
     fhicl::Atom<double> totTBinWidth {
@@ -39,14 +47,28 @@ namespace mu2e {
       Name("totEBinWidth"), Comment("TOT drift time e bin width")};
     fhicl::Sequence<double>  totDriftTime {
       Name("totDriftTime"), Comment(" totDriftTime ")};
-    fhicl::Atom<bool>  useDriftErrorCalibration {
-      Name("useDriftErrorCalibration"), Comment(" useDriftErrorCalibration ")};
+    fhicl::Sequence<double>  totDriftError {
+      Name("totDriftError"), Comment(" totDriftError ")};
+    fhicl::Sequence<double> driftFit {
+      Name("driftFit"), Comment("Drift fit")};
+    fhicl::Sequence<double> driftResBins {
+      Name("driftResBins"), Comment("Drift res bins (doca in mm)")};
+    fhicl::Sequence<double> driftRes {
+      Name("driftRes"), Comment("Drift res (time in ns or doca in mm)")};
+    fhicl::Atom<bool> driftResIsTime {
+      Name("driftResIsTime"), Comment("Drift res is given in units of time (ns)")};
+
+    fhicl::Atom<bool> useOldDrift {
+      Name("useOldDrift"), Comment("Use old drift calibration (for backwards compatibility)")};
+    fhicl::Atom<bool> driftIgnorePhi {
+      Name("driftIgnorePhi"), Comment("Ignore phi for no field reco")};
+
+
+
     fhicl::Sequence<double> driftErrorParameters {
       Name("driftErrorParameters"), Comment(" driftErrorParameters ")};
     fhicl::Atom<bool>  useParameterizedDriftErrors {
       Name("useParameterizedDriftErrors"), Comment(" use errors calculated from formula instead of numbers from fcl ")};
-    fhicl::Atom<int> parameterizedDriftBins {
-      Name("parameterizedDriftBins"), Comment(" number of bins for calculating error and drift offset ")};
     fhicl::Atom<double> parameterizedDriftSigma {
       Name("parameterizedDriftSigma"), Comment(" sigma for calculating drift error and offset ")};
     fhicl::Atom<double> parameterizedDriftTau {
@@ -62,16 +84,8 @@ namespace mu2e {
       Name("useNonLinearDrift"), Comment(" useNonLinearDrift ")};
     fhicl::Atom<double> linearDriftVelocity {
       Name("linearDriftVelocity"), Comment(" mm/ns, only used if nonlindrift= ")};
-    fhicl::Atom<double> minDriftRadiusResolution {
-      Name("minDriftRadiusResolution"), Comment(" mm ")};
-    fhicl::Atom<double> maxDriftRadiusResolution {
-      Name("maxDriftRadiusResolution"), Comment(" mm ")};
-    fhicl::Atom<double> driftRadiusResolutionRadius {
-      Name("driftRadiusResolutionRadius"), Comment(" mm ")};
     fhicl::Atom<double> minT0DOCA {
       Name("minT0DOCA"), Comment("FIXME should be moved to a reconstruction configuration ")};
-    fhicl::Atom<double> t0shift {
-      Name("t0shift"), Comment("FIXME should be average slewing?")};
     fhicl::Atom<double> defaultPeakMinusPedestalEnergyScale {
       Name("defaultPeakMinusPedestalEnergyScale"), Comment("default constant value for pmp energy method calibration")};
     fhicl::Sequence<double> peakMinusPedestalEnergyScale {

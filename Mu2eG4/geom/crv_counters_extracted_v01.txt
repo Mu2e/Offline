@@ -1,5 +1,7 @@
 //CRV module geometry in the extracted detector geometry
 
+string crs.name = "extracted"; // to coordinate with conditions
+
 int   crs.nSectors = 3;
 int   crs.nLayers  = 4;
 
@@ -97,7 +99,7 @@ string         crs.FEBMaterialName     = "ElectronicsFEB";
 double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
 double         crs.FEBDistanceToEdge   = 240.0;
 double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
-double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other 
+double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other
 vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
 
 //simplified version of the top support structure

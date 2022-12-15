@@ -8,7 +8,7 @@ namespace mu2e
   struct CrvSummaryReco
   {
     Int_t               _totalPEs;
-    Int_t               _nHitCounters; 
+    Int_t               _nHitCounters;
     CrvSummaryReco(int totalPEs, int nHitCounters) :
               _totalPEs(totalPEs),
               _nHitCounters(nHitCounters)

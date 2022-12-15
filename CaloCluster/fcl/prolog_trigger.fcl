@@ -16,15 +16,16 @@ CaloClusterFast:
    deltaTime              : 10
    minSiPMPerHit          : 2
    extendSearch           : true
+   timeOffset             : -61 #ns
    diagLevel              : 0
-}  
+}
 
-CaloTrigger : {    
+CaloTrigger : {
     module_type           : CaloTrigger
     caloDigiModuleLabel   : CaloDigiMaker
     digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerDigitizationStart 
-    endTimeBuffer         : 80                          
+    blindTime             : @local::HitMakerDigitizationStart
+    endTimeBuffer         : 80
     windowPeak            : 2
     minAmplitude          : 20
     extendSecond          : false
@@ -41,8 +42,8 @@ CaloClusterTrigger:
    producers : {
       CaloClusterFast : @local::CaloClusterFast
       CaloTrigger     : @local::CaloTrigger
-   }   
-   
+   }
+
    Reco : [ CaloClusterFast ]
 }
 

@@ -1,6 +1,7 @@
-// This module will be used to make electrons from any process originating from mu- stopped in any target material
+// This module will be used to make electrons or positrons from any process originating from mu- stopped in any target material
 //
 // Sophie Middleton, 2021
+
 
 #include <iostream>
 #include <string>
@@ -42,8 +43,9 @@ namespace mu2e {
       fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),
           Comment("Material determines muon life time, capture fraction, and particle spectra.\n"
-                  "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),
-          "Al" };
+                  "Only aluminum (Al) is supported, emisson spectra for other materials are not implemented.\n"),"Al" };
+      fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle"),PDGCode::e_minus};
+
       fhicl::DelegatedParameter decayProducts{Name("decayProducts"), Comment("spectrum (and variables) to be generated")};
       fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
 
@@ -59,10 +61,12 @@ namespace mu2e {
     double muonLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
     unsigned verbosity_;
+    int pdgId_;
+
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandExponential randExp_;
-  
+
     std::unique_ptr<ParticleGeneratorTool> Generator_;
 
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time, ParticleGeneratorTool* gen);
@@ -74,6 +78,7 @@ namespace mu2e {
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
+    , pdgId_{conf().pdgId()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
   {
@@ -88,7 +93,10 @@ namespace mu2e {
     const auto pset = conf().decayProducts.get<fhicl::ParameterSet>();
     Generator_ = art::make_tool<ParticleGeneratorTool>(pset);
     Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
-    
+
+    if(pdgId_==PDGCode::e_plus) {
+      muonLifeTime_=0; //decay time already included for stopped muon(+) FIXME!!!
+    }
   }
 
   //================================================================
@@ -96,14 +104,12 @@ namespace mu2e {
     auto output{std::make_unique<StageParticleCollection>()};
 
     const auto simh = event.getValidHandle<SimParticleCollection>(simsToken_);
-    const auto mus = stoppedMuMinusList(simh);
+    const auto mus=(pdgId_==PDGCode::e_minus) ? stoppedMuMinusList(simh) : stoppedMuPlusList(simh);
 
-    for(const auto& mustop: mus) {
-
+     for(const auto& mustop: mus) {
       const double time = mustop->endGlobalTime() + randExp_.fire(muonLifeTime_);
       addParticles(output.get(), mustop, time, Generator_.get());
-
-    }
+      }
 
     event.put(std::move(output));
   }

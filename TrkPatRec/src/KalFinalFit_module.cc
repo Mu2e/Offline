@@ -397,13 +397,14 @@ namespace mu2e
               const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
               // fill the segment
               KalSegment kseg;
-              TrkUtilities::fillSegment(*htraj,locflt,fltlen,krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
+              TrkUtilities::fillSegment(*htraj,locflt,fltlen,krep->t0(),_tpart.mass(),kseed.segments().begin()->centralHelix().charge(),_kfit.bField(),kseg);
               fseed._segments.push_back(kseg);
             }
             // see if there's a TrkCaloHit
             const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
             if(tch != 0){
-              TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+              auto tmom = krep->momentum(tch->fltLen());
+              TrkUtilities::fillCaloHitSeed(tch,tmom,fseed._chit);
               // set the Ptr using the helix: this could be more direct FIXME!
               fseed._chit._cluster = ccPtr;
               // create a helix segment at the TrkCaloHit
@@ -412,7 +413,7 @@ namespace mu2e
               BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
               double locflt(0.0);
               const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
-              TrkUtilities::fillSegment(*htraj,locflt,tch->fltLen(),krep->t0(),_tpart.mass(),(int)_tpart.charge(),_kfit.bField(),kseg);
+              TrkUtilities::fillSegment(*htraj,locflt,tch->fltLen(),krep->t0(),_tpart.mass(),kseed.segments().begin()->centralHelix().charge(),_kfit.bField(),kseg);
               fseed._segments.push_back(kseg);
             }
             // save KalSeed for this track

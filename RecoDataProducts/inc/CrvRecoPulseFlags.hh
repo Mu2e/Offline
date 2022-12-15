@@ -3,9 +3,9 @@
 
 #include <bitset>
 
-namespace mu2e 
+namespace mu2e
 {
-  enum CrvRecoPulseFlagEnums{failedFit=0, unused=1, unused2=2};
+  enum CrvRecoPulseFlagEnums{failedFit=0, duplicateNoFitPulse=1, separatedDoublePulse=2};
 
   typedef std::bitset<8> CrvRecoPulseFlags;
 }

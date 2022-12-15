@@ -6,9 +6,10 @@
 
 #include <iostream>
 #include <iomanip>
-#include <vector> 
+#include <vector>
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileService.h"
@@ -135,27 +136,27 @@ namespace mu2e
     if (pos1.z() > pos2.z())
     {
       TVector3 tmp = pos1;
-      pos1 = pos2; 
+      pos1 = pos2;
       pos2 = tmp;
-    } 
-  
+    }
+
     TVector3 center = 0.5*(pos1 + pos2);
     if (0) { cout<< "center " << endl;  center.Print(); }
-  
+
     const TString base_name("evt_");
     TString name = base_name + Long_t(evt);
     name += TString("_trk") + Long_t(_trk);
     name += TString("_seg") + Long_t(_seg);
     _seg++;
     float dr = 1;
-  
+
     int color = 1;
-    if (pdg==-2212 || pdg==211) color = 2;
-    else if (pdg==-211 || pdg==13) color = 4;
-    else if (pdg==2112) color = 3; 
+    if (pdg==PDGCode::anti_proton || pdg==PDGCode::pi_plus) color = 2;
+    else if (pdg==PDGCode::pi_minus || pdg==PDGCode::mu_minus) color = 4;
+    else if (pdg==PDGCode::proton) color = 3;
     color = _trk%10;
- 
-    TGeoVolume* top = _geom->GetTopVolume(); 
+
+    TGeoVolume* top = _geom->GetTopVolume();
     int kline_shape = 2;
     if (kline_shape == 1)
     {
@@ -217,7 +218,7 @@ namespace mu2e
       _mainPad = new TPad("mainPad","Detector", 0, 0, 1, 1, 5,1,1);
       _mainPad->SetFillColor(1);
       _mainPad->Draw();
-*/    
+*/
       _first = false;
     }
 
@@ -231,7 +232,7 @@ namespace mu2e
       auto ih = event.getValidHandle<StepPointMCCollection>(tag);
       for(const auto& i : *ih) {
         std::cout << "step (" << setw(ks) << i.position().x()
-          << ", "  << setw(ks) << i.position().y() 
+          << ", "  << setw(ks) << i.position().y()
           << ", "  << setw(ks) << i.position().z() << ")"
           << std::endl;
 
@@ -240,8 +241,8 @@ namespace mu2e
         TVector3 momentum(i.momentum().x(), i.momentum().y(), i.momentum().z());
         momentum.SetMag(1.0);
         TVector3 posEnd = posBegin + momentum*stepLength;
- 
-        int pdg = -2212;
+
+        int pdg = PDGCode::anti_proton;
         int evt = event.id().event();
         drawLine(posBegin*0.1, posEnd*0.1, pdg, evt);
       }

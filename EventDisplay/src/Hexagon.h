@@ -37,7 +37,7 @@ class Hexagon: public VirtualShape
   Hexagon(double x, double y, double z, double rmax, double halflength, double phiOffset, double time,
            const TGeoManager *geomanager, TGeoVolume *topvolume,
            EventDisplayFrame *mainframe, const boost::shared_ptr<ComponentInfo> info,
-           bool isGeometry) : 
+           bool isGeometry) :
            VirtualShape(geomanager, topvolume, mainframe, info, isGeometry)
   {
     setStartTime(time);

@@ -1,17 +1,23 @@
 //
 //
 //
+#include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
+#include "Offline/CRVConditions/inc/CRVCalibCache.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
+#include "Offline/CRVConditions/inc/CRVStatusCache.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
+#include "Offline/DAQConditions/inc/EventTimingCache.hh"
 #include "Offline/DbService/inc/DbService.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/ProditionsService/inc/ProditionsService.hh"
-#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
-#include <iostream>
-#include <typeinfo>
 
 #include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
 #include "Offline/CaloConditions/inc/CalEnergyCalibCache.hh"
 
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
+#include "Offline/STMConditions/inc/STMEnergyCalibCache.hh"
+#include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
+
 #include "Offline/TrackerConditions/inc/AlignedTrackerCache.hh"
 #include "Offline/TrackerConditions/inc/FullReadoutStrawCache.hh"
 #include "Offline/TrackerConditions/inc/Mu2eDetectorCache.hh"
@@ -24,7 +30,10 @@
 
 #include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
 #include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
-    
+
+#include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
+#include <iostream>
+#include <typeinfo>
 
 using namespace std;
 
@@ -38,8 +47,17 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   // and then Geometry
   art::ServiceHandle<GeometryService> g;
 
+  auto cor = std::make_shared<mu2e::CRVOrdinalCache>(_config.crvOrdinal());
+  _caches[cor->name()] = cor;
+  auto cst = std::make_shared<mu2e::CRVStatusCache>(_config.crvStatus());
+  _caches[cst->name()] = cst;
+  auto cca = std::make_shared<mu2e::CRVCalibCache>(_config.crvCalib());
+  _caches[cca->name()] = cca;
   auto etc = std::make_shared<mu2e::EventTimingCache>(_config.eventTiming());
   _caches[etc->name()] = etc;
+  auto sep =
+      std::make_shared<mu2e::STMEnergyCalibCache>(_config.stmEnergyCalib());
+  _caches[sep->name()] = sep;
   auto frc =
       std::make_shared<mu2e::FullReadoutStrawCache>(_config.fullReadoutStraw());
   _caches[frc->name()] = frc;

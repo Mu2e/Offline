@@ -27,32 +27,32 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     Mu2eG4Helper           : { }
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  8
-	maxUniqueEngines :  20
+        baseSeed         :  8
+        maxUniqueEngines :  20
     }
 
     TimeTracker : {
-	printSummary : true
-	dbOutput : {
-	    filename  : ""
-	    overwrite : false
-	}
+        printSummary : true
+        dbOutput : {
+            filename  : ""
+            overwrite : false
+        }
     }
 }
 services.scheduler.wantSummary: true
 
 physics : {
     producers: {
-	generate              : { @table::EventGenerator.producers.ceLeadingLog
-	    doHistograms              : true
-	}
+        generate              : { @table::EventGenerator.producers.ceLeadingLog
+            doHistograms              : true
+        }
     }
-    
-    p1            : [ generate ] 
+
+    p1            : [ generate ]
 
     trigger_paths : [ p1 ]
 }
-   
+
 services.TFileService.fileName                  : "nts.user.ceLeadingLog_test.xxx.000001.root"
 physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 #------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 //
 //
 // Author: dnbrow01
-// Date: 2017/03/22 
+// Date: 2017/03/22
 //
 
 // Include the degrader or not
@@ -23,7 +23,7 @@ string degrader.frame.materialName         = "G4_Al";
 string degrader.counterweight.materialName = "BronzeC938";
 string degrader.rod.materialName           = "G4_Al";
 string degrader.support.materialName         = "StainlessSteel";
- 
+
 double degrader.pivot.x                    = -3582.5;
 double degrader.pivot.y                    = -556.8;
 
@@ -34,12 +34,12 @@ double degrader.frame.centerOffFromPivot   = 643.0;  // dist from pivot of
        // degrader arm to center of the frame (and filter)
 double degrader.frame.arcAngle             = 90.0; // degrees of arc
 
-double degrader.filter.rIn		   = 0.0;
+double degrader.filter.rIn                 = 0.0;
 double degrader.filter.rOut                = 150.0;
 double degrader.filter.halfLength          = 1.00;
 
-double degrader.counterweight.rIn	   = 0.0;
-double degrader.counterweight.rOut	   = 42.0;
+double degrader.counterweight.rIn          = 0.0;
+double degrader.counterweight.rOut         = 42.0;
 double degrader.counterweight.halfLength   = 44.0;
 double degrader.counterweight.centerOffFromPivot = 99.0;
 
@@ -48,7 +48,7 @@ double degrader.rod.depth                  = 12.7;
 
 double degrader.supportArm.dx              = 5.0; // half-lengths
 double degrader.supportArm.dy              = 7.0;
-double degrader.supportArm.dz              = 196.0; 
+double degrader.supportArm.dz              = 196.0;
 double degrader.supportArm.offsetx         = 85.0; // Full Offsets
 double degrader.supportArm.offsety         = 30.0;
 double degrader.supportArm.offsetz         = 235.0;

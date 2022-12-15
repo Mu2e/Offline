@@ -1,23 +1,23 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
-# this example shows how to configure a job to 
+# this example shows how to configure a job to
 #
-# - generate conversion electron events 
-# - add accidental background 
+# - generate conversion electron events
+# - add accidental background
 # - run simulation+reconstruction chain
 # - run particle ID
-# 
-# a) to prepare muon stop file for the interactive job: 
 #
-#     ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops 
+# a) to prepare muon stop file for the interactive job:
+#
+#     ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops
 #
 # b) when submitting to the grid, comment out the PROLOG definition,
 #
 #    ls /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/*.root > muStops.txt
 #
-#    and use 
+#    and use
 #
-#     --fclinput=@muStops:muStops.txt 
+#     --fclinput=@muStops:muStops.txt
 #------------------------------------------------------------------------------
 
 #include "Offline/fcl/minimalMessageService.fcl"
@@ -31,7 +31,7 @@
 
 process_name : GenReco
 
-source : { 
+source : {
     module_type : EmptyEvent
 }
 
@@ -53,36 +53,36 @@ services : {
 physics : {
 
     producers: {
-	generate             : {
+        generate             : {
 #------------------------------------------------------------------------------
 # for 105 MeV/c electron : E = 105.00130           MeV
 # for muon: sqrt(105.*105+105.658*105.658) = 148.9584269653785
-# by default, StoppedParticleReactionGun has 'mean' set to +1, 
-# which means the Poisson mean of 1 !!! 
+# by default, StoppedParticleReactionGun has 'mean' set to +1,
+# which means the Poisson mean of 1 !!!
 #------------------------------------------------------------------------------
-	    module_type      : StoppedParticleReactionGun
-	    mean             : -1
-	    physics          : {
-		pdgId            : 11
-		spectrumVariable : "totalEnergy"
-		spectrumShape    : "flat"
-		elow             : 105.0012
-		ehi              : 105.0014
-	    }
-	    muonStops            : {
+            module_type      : StoppedParticleReactionGun
+            mean             : -1
+            physics          : {
+                pdgId            : 11
+                spectrumVariable : "totalEnergy"
+                spectrumShape    : "flat"
+                elow             : 105.0012
+                ehi              : 105.0014
+            }
+            muonStops            : {
 #------------------------------------------------------------------------------
-# use --fclinput=@muStops:datasets/mustops for grid submission 
-# [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ] 
+# use --fclinput=@muStops:datasets/mustops for grid submission
+# [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 #------------------------------------------------------------------------------
-		inputFiles            : @local::mergedMuonStops
-		averageNumRecordsToUse: 500000
-		treeName              : "stoppedMuonDumper/stops"
-		branchName            : "stops"
-		verbosityLevel        : 1
-	    }
-	}
-	
-	g4run                : @local::g4run
+                inputFiles            : @local::mergedMuonStops
+                averageNumRecordsToUse: 500000
+                treeName              : "stoppedMuonDumper/stops"
+                branchName            : "stops"
+                verbosityLevel        : 1
+            }
+        }
+
+        g4run                : @local::g4run
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
@@ -90,38 +90,38 @@ physics : {
         muonTimeMap          : { module_type : GenerateMuonLife }
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	@table::CaloDigiMC.producers
-	@table::CaloReco.producers
+        @table::CaloDigiMC.producers
+        @table::CaloReco.producers
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
-	FSHPreStereo         : @local::FSHPreStereo
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDeM
+        FSHPreStereo         : @local::FSHPreStereo
+        MakeStereoHits       : @local::MakeStereoHits
+        FlagStrawHits        : @local::FlagStrawHits
+        FlagBkgHits          : @local::FlagBkgHits
+        TrkPatRec            : @local::TrkPatRecDeM
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	@table::CaloCluster.producers
-	MakeStrawHitPositions: @local::MakeStrawHitPositions
-	CalPatRec            : @local::CalPatRec
-	MergePatRec          : @local::MergePatRec
+        @table::CaloCluster.producers
+        MakeStrawHitPositions: @local::MakeStrawHitPositions
+        CalPatRec            : @local::CalPatRec
+        MergePatRec          : @local::MergePatRec
 #------------------------------------------------------------------------------
 # needed for analysis
 #------------------------------------------------------------------------------
-	CaloMatching         : @local::TrackCaloMatching
-	TrkExtrapol          : @local::TrkExtrapol
-	ParticleID           : @local::ParticleID
+        CaloMatching         : @local::TrackCaloMatching
+        TrkExtrapol          : @local::TrkExtrapol
+        ParticleID           : @local::ParticleID
     }
 
     filters: {
 #------------------------------------------------------------------------------
 # Andrej's filter
-# Reject events with no hits from signal-like tracks in the detectors.  
+# Reject events with no hits from signal-like tracks in the detectors.
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
-	FilterStepPointMomentum: {
+        FilterStepPointMomentum: {
             module_type    : FilterStepPointMomentum
             inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
             cutMomentumMin : 10. # MeV/c
@@ -154,19 +154,19 @@ physics : {
     e1 : [ RKFDeM ]
 
     p1 : [generate, g4run
-	  , protonTimeMap, muonTimeMap 
-	  , makeSD, makeSH
-	  , @sequence::CaloDigiMC.DigiSim
+          , protonTimeMap, muonTimeMap
+          , makeSD, makeSH
+          , @sequence::CaloDigiMC.DigiSim
           , @sequence::CaloReco.Reco
-	  , @sequence::CaloCluster.Reco
-# 
-	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
+          , @sequence::CaloCluster.Reco
 #
-	  , TrkExtrapol, CaloMatching, ParticleID
-	 ]
+          , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+#
+          , TrkExtrapol, CaloMatching, ParticleID
+         ]
 
     trigger_paths  : [p1]
-    
+
     out : [detectorOutput]
     out : []
 #    an  : [genCountLogger]
@@ -193,7 +193,7 @@ services.SeedService.maxUniqueEngines     :  20
 
 # print per event timing for ::event entry points
 # services.Timing: { }
-# print 
+# print
 services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage

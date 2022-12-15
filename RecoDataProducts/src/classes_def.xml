@@ -13,11 +13,11 @@
  <class name="art::Wrapper<mu2e::ProtonBunchTime>"/>
 
 <!--  ********* cosmics  ********* -->
- <class name="TrackParams"/>
- <class name="TrackCov"/>
- <class name="TrackAxes"/>
- <class name="TrackEquation"/>
- <class name="TrackSeedDiag"/>
+ <class name="mu2e::TrackParams"/>
+ <class name="mu2e::TrackCov"/>
+ <class name="mu2e::TrackAxes"/>
+ <class name="mu2e::TrackEquation"/>
+ <class name="mu2e::TrackSeedDiag"/>
 
  <class name="mu2e::CosmicTrack"/>
  <class name="mu2e::CosmicTrackSeed"/>
@@ -205,6 +205,10 @@
  <class name="mu2e::KKLoopHelixCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KKLoopHelixCollection>"/>
 
+ <class name="mu2e::KKCentralHelix"/>
+ <class name="mu2e::KKCentralHelixCollection" persistent="false"/>
+ <class name="art::Wrapper<mu2e::KKCentralHelixCollection>"/>
+
  <class name="mu2e::KKLine"/>
  <class name="mu2e::KKLineCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KKLineCollection>"/>
@@ -357,9 +361,12 @@
 
 
 <!--  ********* POT / stopped muons monitoring  ********* -->
-<!--  bvitali May 2021 -->
- <class name="mu2e::IntensityInfo"/>
- <class name="art::Wrapper<mu2e::IntensityInfo>"/>
+ <class name="mu2e::IntensityInfoCalo"/>
+ <class name="art::Wrapper<mu2e::IntensityInfoCalo>"/>
+ <class name="mu2e::IntensityInfoTrackerHits"/>
+ <class name="art::Wrapper<mu2e::IntensityInfoTrackerHits>"/>
+ <class name="mu2e::IntensityInfoTimeCluster"/>
+ <class name="art::Wrapper<mu2e::IntensityInfoTimeCluster>"/>
 
 
 <!--  ********* general reco ********* -->
@@ -367,5 +374,10 @@
  <class name="mu2e::AHist<uint16_t,70>"/>
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
+
+<!--  ********* STM ********* -->
+ <class name="mu2e::STMWaveformDigi"/>
+ <class name="mu2e::STMWaveformDigiCollection"/>
+ <class name="art::Wrapper<mu2e::STMWaveformDigiCollection>"/>
 
 </lcgdict>

@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_TSstairwell.ccl
 
@@ -19,7 +19,7 @@ vector<double> dirt.tsArea.stairwell.xPositions = {
   5308.6   // s4_to_S
 };
 
-vector<int>    dirt.tsArea.stairwell.yreplace   = { 2, 3 }; 
+vector<int>    dirt.tsArea.stairwell.yreplace   = { 2, 3 };
 vector<double> dirt.tsArea.stairwell.yPositions = {
   -11734.8,   // s4
   -11734.8,   // s5

@@ -11,7 +11,7 @@
 namespace mu2e {
 
 
-  MECOStyleProtonAbsorber::MECOStyleProtonAbsorber() : 
+  MECOStyleProtonAbsorber::MECOStyleProtonAbsorber() :
     _parts(),
     _vdHL(0),
     _materialName(),
@@ -47,7 +47,7 @@ namespace mu2e {
     }
     return false;
   }
-          
+
 
 }
 

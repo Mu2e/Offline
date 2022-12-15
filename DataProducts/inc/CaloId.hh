@@ -29,6 +29,7 @@ namespace mu2e {
     constexpr static uint16_t _nPINDiodPerDisk = 8;
     constexpr static uint16_t _nTotChannel     = _nChPerDIRAC*_nDIRAC;
     constexpr static uint16_t _nCrystalChannel = _nCrystalPerDisk*_nSiPMPerCrystal; //total number of readout channels associated to the CsI and CAPHRI crystals
+
     // check that values make sense:
     static bool validChannel(uint16_t ichannel) { return ichannel < _nChPerDIRAC;}
     static bool validCrystal (uint16_t icrystal) { return icrystal < _nCrystalPerDisk;}
@@ -68,7 +69,7 @@ namespace mu2e {
       void setDisk(uint16_t id);
       void setCrystalChannel(uint16_t icc);
 
-    
+
   };
 
 }

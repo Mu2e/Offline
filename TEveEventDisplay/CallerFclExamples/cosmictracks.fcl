@@ -13,9 +13,9 @@ process_name : CosmicStraightFitED
 
 physics :
 {
-  analyzers : { 
-		   @table::TEveDis.analyzers
-	}
+  analyzers : {
+                   @table::TEveDis.analyzers
+        }
 }
 
 # edit the below options for different products:
@@ -26,5 +26,5 @@ physics.analyzers.TEveEventDisplayCosmics.filler.addCosmicSeedFit : true
 physics.analyzers.TEveEventDisplayCosmics.filler.addClusters : false
 physics.analyzers.TEveEventDisplayCosmics.filler.addMCTraj : true
 
-physics.EndPath : [  @sequence::TEveDis.seqCosmics] 
+physics.EndPath : [  @sequence::TEveDis.seqCosmics]
 

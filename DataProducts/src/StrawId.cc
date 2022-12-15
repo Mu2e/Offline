@@ -33,10 +33,10 @@ namespace mu2e {
       vector<string> v;
       splitLine( s, "_", v);
       if ( v.size() < 1 || v.size() > 3 ){
-	throw cet::exception("CONFIG")
-	  << "strawIdFromString: supportted formats: plane_panel_straw, plane_panel, plane: \n"
-	  << "  Input was: " << s
-	  << "\n";
+        throw cet::exception("CONFIG")
+          << "strawIdFromString: supportted formats: plane_panel_straw, plane_panel, plane: \n"
+          << "  Input was: " << s
+          << "\n";
       }
 
       uint16_t plane=0;
@@ -51,8 +51,8 @@ namespace mu2e {
         span >> panel;
       }
       if ( v.size() >= 3){
-	istringstream sstr(v[2]);
-	sstr >> straw;
+        istringstream sstr(v[2]);
+        sstr >> straw;
       }
       return StrawId(plane,panel,straw);
     }
@@ -92,18 +92,18 @@ namespace mu2e {
       int pln2 = other.getPanel()%2;
       int dp = pln2 - pln1;
       if(other.getPlane() == getPlane()){
-	if(dp == 0)
-	  retval = same;
-	else
-	  retval = plane1;
+        if(dp == 0)
+          retval = same;
+        else
+          retval = plane1;
       } else {
-	int dd = other.getPlane() - getPlane();
-	if(dp == 0)
-	  retval = station2;
-	else if(dd*dp>0)
-	  retval = station3;
-	else
-	  retval = station1;
+        int dd = other.getPlane() - getPlane();
+        if(dp == 0)
+          retval = station2;
+        else if(dd*dp>0)
+          retval = station3;
+        else
+          retval = station1;
       }
     }
     return retval;

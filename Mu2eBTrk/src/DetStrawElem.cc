@@ -53,17 +53,17 @@ namespace mu2e {
   // otherwise, require the distance to the wire be inside the straw (within tolerance)
   // should also check the distance along the wire is inside the active length FIXME!!
       if( (dinter.thit != 0 && dinter.thit->isActive()) ||
-	fabs(poca.doca()) < _rstraw + _stype->tolerance() ){
-	retval = true;
+        fabs(poca.doca()) < _rstraw + _stype->tolerance() ){
+        retval = true;
 // call the base class function to update the base members
-	DetElem::reIntersect(traj,dinter);
+        DetElem::reIntersect(traj,dinter);
 // fill the DetIntersection.  Use the gas path give the intersection for the whole straw
-	CLHEP::Hep3Vector tdir = traj->direction(dinter.pathlen);
-	double dpath = gasPath(fabs(poca.doca()),tdir);
-	dinter.pathlen = poca.flt1() + _stype->offset();
-	dinter.dist = poca.doca(); // NB: this can be negative!
-	dinter.pathrange[0] = dinter.pathlen-dpath;
-	dinter.pathrange[1] = dinter.pathlen+dpath;
+        CLHEP::Hep3Vector tdir = traj->direction(dinter.pathlen);
+        double dpath = gasPath(fabs(poca.doca()),tdir);
+        dinter.pathlen = poca.flt1() + _stype->offset();
+        dinter.dist = poca.doca(); // NB: this can be negative!
+        dinter.pathrange[0] = dinter.pathlen-dpath;
+        dinter.pathrange[1] = dinter.pathlen+dpath;
       }
     }
     return retval;
@@ -128,7 +128,7 @@ namespace mu2e {
 // if the POCA distance is outside or too close the outside of the straw, force it inside
     pdist = std::min(fabs(pdist),_stype->maxRadiusFraction()*inRadius);
     double wallpath =  (sqrt( (_rstraw+pdist)*(_rstraw-pdist) ) -
-	sqrt( (inRadius+pdist)*(inRadius-pdist) ));
+        sqrt( (inRadius+pdist)*(inRadius-pdist) ));
     // scale for the other dimension
     double cost = tdir.dot(_straw->getDirection());
 // avoid degenerate case

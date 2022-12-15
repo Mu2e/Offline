@@ -8,7 +8,7 @@ process_name : EventDisplay
 source :
 {
   module_type : RootInput
-  inputCommands: ["keep *", 
+  inputCommands: ["keep *",
                   "drop *KalRepPayload*_*_*_*",
                   "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
@@ -27,6 +27,7 @@ physics :
       module_type               : EventDisplay
       g4ModuleLabel             : "g4run"
       physicalVolumesMultiLabel : "compressPV"
+      kalSeedStepSize           : 0.1
       timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
 #      timeOffsets               : { inputs : [ @sequence::CommonMC.TimeMaps ] }
 #      timeOffsets               : { inputs : [ @sequence::RecoCompression.TimeMaps ] }

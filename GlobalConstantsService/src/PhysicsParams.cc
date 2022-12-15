@@ -65,6 +65,7 @@ namespace mu2e {
     checkMaterial( _chosenStoppingTargetMaterial );
 
     // Loop over available data to fill maps
+    std::string name;
     for ( const auto& material : _allowedTargetMaterials ) {
 
       // Load relevant atomic constants
@@ -78,11 +79,13 @@ namespace mu2e {
 
       // Load muon energy; default to "mumass - Eb(approx.)" if not available
       const std::string muonEnergyString = "physicsParams."+material+".muonEnergy";
-      const bool approxRequired = !config.hasName( muonEnergyString );
-      _muonEnergy[material]     = config.getDouble( muonEnergyString , muonMass-_approxBindingEnergy[material] );
-
-      // Calculate actual binding energy if available
-      if ( !approxRequired ) _bindingEnergy[material] = muonMass - _muonEnergy[material];
+      bool goodMuonEnergy = config.hasName( muonEnergyString );
+      if( goodMuonEnergy ) {
+        _muonEnergy[material] = config.getDouble(muonEnergyString);
+        _bindingEnergy[material] = muonMass - _muonEnergy[material];
+      } else {
+        _muonEnergy[material] = muonMass-_approxBindingEnergy[material] ;
+      }
 
       // Calculate endpoint energy
       _endpointEnergy[material] = _muonEnergy[material] -cet::square(_muonEnergy[material])/(2*_atomicMass[material]);
@@ -90,27 +93,46 @@ namespace mu2e {
       if ( verbosity > 0 ) {
         std::cout << " Stopping target parameters: " << material << std::endl
                   << "       - Muon Energy    : " << _muonEnergy[material] ;
-        if ( approxRequired ) std::cout << " (using m_mu - m_mu*(Z*alpha)^2/2 approx.) " ;
+        if ( ! goodMuonEnergy ) std::cout << " (using m_mu - m_mu*(Z*alpha)^2/2 approx.) " ;
         std::cout << std::endl
                   << "       - Endpoint Energy: " << _endpointEnergy[material] << std::endl;
       }
 
-    // Load Czarnecki constants
-    _czarneckiCoefficient[material] = config.getDouble("physicsParams."+material+".czarneckiCoefficient" );
-    config.getVectorDouble("physicsParams."+material+".czarneckiCoefficients",_czarneckiCoefficients[material],std::vector<double>());
+      // Load Czarnecki constants
+      _czarneckiCoefficient[material] = config.getDouble("physicsParams."+material+".czarneckiCoefficient" );
 
-    // Load capture product rates
-    _captureProtonRate[material] = config.getDouble("physicsParams."+material+".capture.protonRate", 0);
-    _captureDeuteronRate[material] = config.getDouble("physicsParams."+material+".capture.deuteronRate", 0);
-    _captureNeutronRate[material] = config.getDouble("physicsParams."+material+".capture.neutronRate", 0);
-    _capturePhotonRate[material] = config.getDouble("physicsParams."+material+".capture.photonRate", 0);
+      // the following quantities are optional for a material
 
-    // Load capture gamma rays
-    _1809keVGammaEnergy[material] = config.getDouble("physicsParams."+material+".capture.photon.1809keV.energy", 0);
-    _1809keVGammaIntensity[material] = config.getDouble("physicsParams."+material+".capture.photon.1809keV.intensity", 0);
-    
-    //Ce+ endpoint
-    _ePlusEndpointEnergy[material] = config.getDouble("physicsParams."+material+".ePlusEndpointEnergy", 0);
+      name = "physicsParams."+material+".czarneckiCoefficients";
+      if(config.hasName(name)) config.getVectorDouble(name,_czarneckiCoefficients[material]);
+
+      // Load capture product rates
+      name = "physicsParams."+material+".capture.protonRate";
+      if(config.hasName(name)) _captureProtonRate[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.deuteronRate";
+      if(config.hasName(name)) _captureDeuteronRate[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.neutronRate";
+      if(config.hasName(name)) _captureNeutronRate[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.photonRate";
+      if(config.hasName(name)) _capturePhotonRate[material] = config.getDouble(name);
+
+      // Load capture gamma rays
+      name = "physicsParams."+material+".capture.photon.1809keV.energy";
+      if(config.hasName(name)) _1809keVGammaEnergy[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.photon.1809keV.intensity";
+      if(config.hasName(name)) _1809keVGammaIntensity[material] = config.getDouble(name);
+
+      //Ce+ endpoint
+      name = "physicsParams."+material+".ePlusEndpointEnergy";
+      if(config.hasName(name)) _ePlusEndpointEnergy[material] = config.getDouble(name);
+
+      name = "physicsParams."+material+".RMCbindingEnergyFit";
+      if(config.hasName(name)) _RMCbindingEnergyFit[material] = config.getDouble(name);
+      name = "physicsParams."+material+".RMCrecoilEnergyFit";
+      if(config.hasName(name)) _RMCrecoilEnergyFit[material]  = config.getDouble(name);
+      name = "physicsParams."+material+".RMCdeltaMassFit";
+      if(config.hasName(name)) _RMCdeltaMassFit[material]     = config.getDouble(name);
+
     }
 
     // Load Shanker constants
@@ -131,4 +153,15 @@ namespace mu2e {
   }
 
   //================================================================
+  double PhysicsParams::doubleOrThrow( std::map<targetMat, double> const& tmap,
+                                       targetMat const& material, std::string const& parameter) const {
+      const std::string allowedMaterial = checkMaterial( material );
+      auto it = tmap.find(allowedMaterial);
+      if (it==tmap.end()) {
+        throw cet::exception("PHYSICSPARAMS_MISSING_PAR")
+          <<"PhysicsParams: request for missing parameter "<<parameter<<" for material "<<material<< "\n";
+      }
+      return it->second;
+  }
+
 }

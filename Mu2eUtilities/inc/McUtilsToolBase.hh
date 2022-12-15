@@ -6,7 +6,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
-
+#include "Offline/DataProducts/inc/GenVector.hh"
 // #include "TrackerGeom/inc/Straw.hh"
 // #include "RecoDataProducts/inc/StrawHit.hh"
 
@@ -18,7 +18,7 @@ namespace mu2e {
 //   //  class StrawDigiMCCollection;
 // #endif
   class SimParticle;
-  
+
   class McUtilsToolBase {
   public:
 
@@ -31,18 +31,20 @@ namespace mu2e {
     //    virtual double mcDoca       (const art::Event* Event, int Index, const Straw* Straw);
     virtual double mcDoca       (const art::Event* Event, const TrkStrawHit* StrawHit);
 
-    // virtual int    nGenHits     (const art::Event*         Event         , 
-    // 				 fhicl::ParameterSet*      TimeOffsets   ,
-    // 				 const StrawHitCollection* Shcol         );
+    // virtual int    nGenHits     (const art::Event*         Event         ,
+    //                                  fhicl::ParameterSet*      TimeOffsets   ,
+    //                                  const StrawHitCollection* Shcol         );
 
     // virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event*    Event,
-    // 							      const art::InputTag& Tag  );
+    //                                                               const art::InputTag& Tag  );
 
     virtual const SimParticle* getSimParticle(const art::Event* Event, int IHit);
 
+    virtual const XYZVectorF* getMom(const art::Event* Event, int HitIndex) { return NULL; }
     virtual int   getID      (const SimParticle* Sim) { return -1;  }
     virtual int   getPdgID   (const SimParticle* Sim) { return -1;  }
     virtual float getStartMom(const SimParticle* Sim) { return -1.; }
+
   };
 }
 

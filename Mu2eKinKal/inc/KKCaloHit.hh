@@ -10,7 +10,7 @@
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 // art includes
 #include "canvas/Persistency/Common/Ptr.h"
-#include <stdexcept>
+#include "cetlib_except/exception.h"
 namespace mu2e {
   using KinKal::Line;
   using KinKal::MetaIterConfig;
@@ -21,77 +21,101 @@ namespace mu2e {
   template <class KTRAJ> class KKCaloHit : public KinKal::ResidualHit<KTRAJ> {
     public:
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
-      using PTCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,Line>;
+      using CA = KinKal::ClosestApproach<KTRAJ,Line>;
+      using HIT = KinKal::Hit<KTRAJ>;
+      using KTRAJPTR = std::shared_ptr<KTRAJ>;
       // Hit interface overrrides
       unsigned nResid() const override { return 1; } // 1 time residual
-      bool activeRes(unsigned ires=0) const override;
-      Residual const& residual(unsigned ires=0) const override;
-      double time() const override { return tpdata_.particleToca(); }
-      void update(PKTRAJ const& pktraj) override;
-      void update(PKTRAJ const& pktraj, MetaIterConfig const& config) override;
+      Residual const& refResidual(unsigned ires=0) const override;
+      double time() const override { return tpca_.particleToca(); }
+      void updateReference(KTRAJPTR const& ktrajptr) override;
+      void updateState(MetaIterConfig const& config,bool first) override;
+      KTRAJPTR const& refTrajPtr() const override { return tpca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // scintHit explicit interface
-      KKCaloHit(CCPtr caloCluster,  PTCA const& ptca, double tvar, double wvar) :
-        caloCluster_(caloCluster), saxis_(ptca.sensorTraj()), tvar_(tvar), wvar_(wvar), active_(true), tpdata_(ptca.tpData()), precision_(ptca.precision()) {}
+      KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar);
       virtual ~KKCaloHit(){}
       Residual const& timeResidual() const { return rresid_; }
+      CA unbiasedClosestApproach() const;
       // the line encapsulates both the measurement value (through t0), and the light propagation model (through the velocity)
-      Line const& sensorAxis() const { return saxis_; }
-      ClosestApproachData const& closestApproach() const { return tpdata_; }
-      double timeVariance() const { return tvar_; }
-      double widthVariance() const { return wvar_; }
-      CCPtr const& caloCluster() const { return caloCluster_; }
+      auto const& sensorAxis() const { return saxis_; }
+      auto const& closestApproach() const { return tpca_; }
+      auto timeVariance() const { return tvar_; }
+      auto widthVariance() const { return wvar_; }
+      auto const& caloCluster() const { return caloCluster_; }
+      auto precision() const { return tpca_.precision(); }
 
     private:
       CCPtr caloCluster_;  // associated calorimeter cluster
       Line saxis_; // axis along the crystals, through the COG
       double tvar_; // variance in the time measurement: assumed independent of propagation distance/time
       double wvar_; // variance in transverse position of the sensor/measurement in mm.  Assumes cylindrical error, could be more general
-      bool active_; // active or not
-      ClosestApproachData tpdata_; // reference time and distance of closest approach to the axis.
-      // caches
+      CA tpca_; // reference time and distance of closest approach to the axis
       Residual rresid_; // residual WRT most recent reference parameters
-      double precision_; // current precision
   };
 
-  template <class KTRAJ> bool KKCaloHit<KTRAJ>::activeRes(unsigned ires) const {
-    if(ires == 0 && active_)
-      return true;
-    else
-      return false;
-  }
+  template <class KTRAJ> KKCaloHit<KTRAJ>::KKCaloHit(CCPtr caloCluster,  PCA const& pca, double tvar, double wvar) :    caloCluster_(caloCluster), saxis_(pca.sensorTraj()), tvar_(tvar), wvar_(wvar),
+    tpca_(pca.localTraj(),saxis_,pca.precision(),pca.tpData(),pca.dDdP(),pca.dTdP()) {
+    }
 
-  template <class KTRAJ> Residual const& KKCaloHit<KTRAJ>::residual(unsigned ires) const {
-    if(ires !=0)throw std::invalid_argument("Invalid residual");
+  template <class KTRAJ> Residual const& KKCaloHit<KTRAJ>::refResidual(unsigned ires) const {
+    if(ires !=0)throw cet::exception("RECO")<<"mu2e::KKCaloHit: Invalid residual" << std::endl;
     return rresid_;
   }
 
-  template <class KTRAJ> void KKCaloHit<KTRAJ>::update(PKTRAJ const& pktraj) {
-    // compute PTCA
+  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateReference(std::shared_ptr<KTRAJ> const& ktrajptr) {
+    // compute PCA
     CAHint tphint( saxis_.t0(), saxis_.t0());
     // don't update the hint: initial T0 values can be very poor, which can push the CA calculation onto the wrong helix loop,
     // from which it's impossible to ever get back to the correct one.  Active loop checking might be useful eventually too TODO
-    //    if(tpdata_.usable()) tphint = CAHint(tpdata_.particleToca(),tpdata_.sensorToca());
-    PTCA tpoca(pktraj,saxis_,tphint,precision_);
-    if(tpoca.usable()){
-      tpdata_ = tpoca.tpData();
-      // residual is just delta-T at CA.
-      // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
-      double dd2 = tpoca.dirDot()*tpoca.dirDot();
-      double totvar = tvar_ + wvar_*dd2/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
-      rresid_ = Residual(tpoca.deltaT(),totvar,-tpoca.dTdP());
-      this->setRefParams(pktraj.nearestPiece(tpoca.particleToca()));
-    } else
-      throw std::runtime_error("PTCA failure");
+    //    if(tpca_.usable()) tphint = CAHint(tpca_.particleToca(),tpca_.sensorToca());
+    tpca_ = CA(ktrajptr,saxis_,tphint,tpca_.precision());
+    if(!tpca_.usable())rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
   }
 
-  template <class KTRAJ> void KKCaloHit<KTRAJ>::update(PKTRAJ const& pktraj, MetaIterConfig const& miconfig) {
-    // for now, no updates are needed.  Eventually could test for consistency, update errors, etc
-    update(pktraj);
+  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateState(MetaIterConfig const& miconfig,bool first) {
+    // check that TPCA position is consistent with the physical sensor. This can be off if the CA algorithm finds the wrong helix branch
+    // early in the fit when t0 has very large errors.
+    // If it is unphysical try to adjust it back using a better hint.
+    auto ppos = tpca_.particlePoca().Vect();
+    auto sstart = saxis_.startPosition();
+    auto send = saxis_.endPosition();
+    double slen = (send-sstart).R();
+    // tolerance should come from the miconfig.  Should also test relative to the error. FIXME
+    double tol = slen*1.0;
+    if( (ppos-sstart).Dot(saxis_.direction()) < -tol ||
+        (ppos-send).Dot(saxis_.direction()) > tol) {
+      // adjust hint to the middle and try agian
+      double sspeed = tpca_.particleTraj().velocity(tpca_.particleToca()).Dot(saxis_.direction());
+      double sdist = (ppos - saxis_.position3(saxis_.range().mid())).Dot(saxis_.direction());
+      auto tphint = tpca_.hint();
+      tphint.particleToca_ -= sdist/sspeed;
+      tpca_ = CA(tpca_.particleTrajPtr(),saxis_,tphint,precision());
+    }
+    if(tpca_.usable()){
+      // residual is just delta-T at CA.
+      // the variance includes the measurement variance and the tranvserse size (which couples to the relative direction)
+      double dd2 = std::max(0.0001,tpca_.dirDot()*tpca_.dirDot());
+      double totvar = tvar_ + wvar_/(saxis_.speed()*saxis_.speed()*(1.0-dd2));
+      rresid_ = Residual(tpca_.deltaT(),totvar,0.0,true,tpca_.dTdP());
+    } else {
+      rresid_ = Residual(rresid_.value(),rresid_.variance(),0.0,false,rresid_.dRdP());
+    }
+    // finally update the weight
+    this->updateWeight(miconfig);
+  }
+
+  template <class KTRAJ> KinKal::ClosestApproach<KTRAJ,Line> KKCaloHit<KTRAJ>::unbiasedClosestApproach() const {
+    // compute the unbiased closest approach; this is brute force, but works
+    auto const& ca = this->closestApproach();
+    auto uparams = HIT::unbiasedParameters();
+    KTRAJ utraj(uparams,ca.particleTraj());
+    return CA(utraj,saxis_,ca.hint(),ca.precision());
   }
 
   template<class KTRAJ> void KKCaloHit<KTRAJ>::print(std::ostream& ost, int detail) const {
-    if(this->active())
+    if(rresid_.active())
       ost<<"Active ";
     else
       ost<<"Inactive ";

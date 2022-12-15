@@ -140,7 +140,7 @@ namespace mu2e {
       }
     }
 
-    auto ptr = std::make_shared<StrawDrift>(phiBins, deltaD, distances_dbins, instantSpeed_dbins, times_dbins, deltaT, distances_tbins, times_tbins);
+    auto ptr = std::make_shared<StrawDrift>(CC*1000.0, phiBins, deltaD, distances_dbins, instantSpeed_dbins, times_dbins, deltaT, distances_tbins, times_tbins);
 
     return ptr;
 

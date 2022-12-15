@@ -34,7 +34,7 @@ namespace mu2e {
       bool beginRun(art::Run& run) override;
       bool endRun(art::Run& run) override;
       bool filter(art::Event& event) override;
-      
+
       art::InputTag _genParticleModule;
       double _momCutoff;
       PDGCode::type _cutoffPDG;
@@ -65,7 +65,7 @@ namespace mu2e {
     // find highest momentum gen particle that passes cuts
     double mom = 0;
     for ( const auto& i: *genColl ) {
-      if ((i.pdgId() == _cutoffPDG || _cutoffPDG == PDGCode::null) && i.generatorId() == _cutoffGenId) {
+      if ((i.pdgId() == _cutoffPDG || _cutoffPDG == PDGCode::unknown) && i.generatorId() == _cutoffGenId) {
         if (i.momentum().vect().mag() > mom)
           mom = i.momentum().vect().mag();
       }

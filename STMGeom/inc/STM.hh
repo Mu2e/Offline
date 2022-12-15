@@ -32,7 +32,7 @@ namespace mu2e {
     GeDetector       const * getSTMDetector1Ptr()            const { return _pSTMDetector1Params.get(); }
     GeDetector       const * getSTMDetector2Ptr()            const { return _pSTMDetector2Params.get(); }
     ShieldPipe       const * getSTMShieldPipePtr()           const { return _pSTMShieldPipeParams.get(); }
-    
+
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
 
   private:

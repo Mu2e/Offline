@@ -113,13 +113,13 @@ namespace mu2e {
     const BFieldManager::MapContainerType& outerMaps = bf->getOuterMaps();
 
     //plot inner maps
-    for(std::shared_ptr<BFMap> const & map : innerMaps) {
-      fillHistogram(map.get(), tfs);
+    for(auto const & mapptr : innerMaps) {
+      fillHistogram(mapptr.get(), tfs);
     }
 
     //plot outer maps
-    for(std::shared_ptr<BFMap> const & map : outerMaps) {
-      fillHistogram(map.get(), tfs);
+    for(auto const & mapptr : outerMaps) {
+      fillHistogram(mapptr.get(), tfs);
     }
 
     //plot the default field returned from the manager

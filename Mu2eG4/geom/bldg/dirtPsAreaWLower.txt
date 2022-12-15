@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_DirtSlab.ccl
 
@@ -12,9 +12,9 @@ double dirt.psArea.WLower.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.psArea.WLower.yHalfThickness           = 152.3;
 
-vector<int>    dirt.psArea.WLower.xreplace   = { 5, 6 }; 
+vector<int>    dirt.psArea.WLower.xreplace   = { 5, 6 };
 vector<double> dirt.psArea.WLower.xPositions = {
-  -12319.1,  // p8 
+  -12319.1,  // p8
   -12319.1,   // p9
   -18117.5,   // inner elbow PSWallUpper
   -18142.6,   // NW corner PSWallUpper elbow

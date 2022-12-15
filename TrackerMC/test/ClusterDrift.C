@@ -17,8 +17,8 @@ void ClusterDrift(TTree* nt) {
   d2t->SetStats(0);
   d2t->Draw("colorZ");
   cdcan->cd(2);
-  TH1D* d2t_1 =(TH1D*)gDirectory->Get("d2t_1"); 
-  TH1D* d2t_2 =(TH1D*)gDirectory->Get("d2t_2"); 
+  TH1D* d2t_1 =(TH1D*)gDirectory->Get("d2t_1");
+  TH1D* d2t_2 =(TH1D*)gDirectory->Get("d2t_2");
   d2t_1->SetTitle("Mean Cluster Drift time vs drift distance;distance (mm);mean time (ns)");
   d2t_1->Fit("pol2");
   TPaveStats* d2t_1_stats = (TPaveStats*)d2t_1->FindObject("stats");
@@ -35,7 +35,6 @@ void ClusterDrift(TTree* nt) {
   if(d2t_2_stats != 0){
     d2t_2_stats->SetX1NDC(0.0);
     d2t_2_stats->SetX2NDC(0.4);
-  }  
+  }
   cdcan->SaveAs("clusterdrift.png");
 }
-

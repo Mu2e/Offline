@@ -95,7 +95,7 @@ namespace mu2e {
     TH1F* _hMee;
     TH2F* _hMeeVsE;
     TH1F* _hMeeOverE;
-    TH1F* _hy;				// splitting function
+    TH1F* _hy;                                // splitting function
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -306,14 +306,14 @@ namespace mu2e {
                             pos,
                             mome,
                             //fakeElectron,
-                            //			    800. );
+                            //                            800. );
                             stop.t );
       output->emplace_back( PDGCode::e_plus,
                             GenId::InternalRMC,
                             pos,
                             momp,
                             //fakePositron,
-                            //			    800.);
+                            //                            800.);
                             stop.t );
 
       event.put(std::move(output));

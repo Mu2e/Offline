@@ -29,8 +29,8 @@
 //Mu2e:
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 namespace mu2e{
-	class TEveMu2eCalorimeter
-	{
+        class TEveMu2eCalorimeter
+        {
     public:
       #ifndef __CINT__
       explicit TEveMu2eCalorimeter();

@@ -38,7 +38,7 @@ outputs : {
     fileName    : "testG4S4pionSimDOE_02.art"
     outputCommands:   [ "keep *_*_*_*",
                         "drop *_g4run_tracker_pionsg4s4IntConv",
-			"drop *_TriggerResults_*_modifyTrackSPM"
+                        "drop *_TriggerResults_*_modifyTrackSPM"
                       ]
 
   }

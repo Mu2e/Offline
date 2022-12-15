@@ -58,18 +58,18 @@ physics : {
       inputFile : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
     }
 
-    g4run : 
+    g4run :
     {
       module_type: Mu2eG4
       physics: @local::mu2eg4DefaultPhysics
       ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	    TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+            TrajectoryControl: @local::mu2eg4DefaultTrajectories
       debug: @local::mu2eg4DefaultDebug
       visualization: @local::mu2eg4NoVisualization
 
       generatorModuleLabel: cryGen
 
-      SDConfig: 
+      SDConfig:
       {
          enableAllSDs: false
          enableSD: [ CRV, calorimeter, stoppingtarget, tracker ]
@@ -99,8 +99,8 @@ physics : {
 
   analyzers : {
 
-    genCountLogger: { 
-         module_type: GenEventCountReader 
+    genCountLogger: {
+         module_type: GenEventCountReader
     }
     cryGenPlots: {
          module_type: CRYGenPlots

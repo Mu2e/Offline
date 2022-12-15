@@ -93,11 +93,11 @@ namespace mu2e {
       static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
       if (kseed.status().hasAllProperties(goodfit)){
         if(kseed.hasCaloCluster() &&
-            kseed.caloHit().flag().hasAllProperties(StrawHitFlag::active)){
+            kseed.caloHit()._flag.hasAllProperties(StrawHitFlag::active)){
           auto const& tchs = kseed.caloHit();
           auto const& cc = tchs.caloCluster();
           XYZVectorF trkmom;
-          auto ikseg = kseed.nearestSegment(tchs.trkLen());
+          auto ikseg = kseed.nearestSegment(tchs._rptoca);
           if(ikseg != kseed.segments().end())
             ikseg->mom(ikseg->localFlt(tchs.trkLen()),trkmom);
           else

@@ -1,9 +1,12 @@
-#include "cetlib_except/exception.h"
-
+#include "Offline/DbTables/inc/DbTableFactory.hh"
 #include "Offline/DbTables/inc/AnaTrkQualDb.hh"
+#include "Offline/DbTables/inc/CRVBadChan.hh"
+#include "Offline/DbTables/inc/CRVSiPM.hh"
+#include "Offline/DbTables/inc/CRVTime.hh"
 #include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
 #include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
-#include "Offline/DbTables/inc/DbTableFactory.hh"
+#include "Offline/DbTables/inc/STMEnergyPar.hh"
+#include "Offline/DbTables/inc/STMPedestals.hh"
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
 #include "Offline/DbTables/inc/SimEfficiencies2.hh"
 
@@ -19,6 +22,7 @@
 #include "Offline/DbTables/inc/TstCalib1.hh"
 #include "Offline/DbTables/inc/TstCalib2.hh"
 #include "Offline/DbTables/inc/TstCalib3.hh"
+#include "cetlib_except/exception.h"
 
 
 mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
@@ -60,7 +64,19 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
   } else if (name=="CalRoIDMapOfflineToDIRAC") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());    
-  } else if (name=="CalSourceCalibTable") {
+  } else if (name == "CalRoIDMapOfflineToDIRAC") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());
+  } else if (name == "STMEnergyPar") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::STMEnergyPar());
+  } else if (name == "STMPedestals") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::STMPedestals());
+  } else if (name == "CRVBadChan") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVBadChan());
+  } else if (name == "CRVSiPM") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVSiPM());
+  } else if (name == "CRVTime") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVTime());
+  }  else if (name=="CalSourceCalibTable") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSourceCalibTable());    
   } else if (name=="CalEnergyCalibTable") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalibTable());    

@@ -4,10 +4,10 @@
 //
 
 // Includes from C++
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <set>
 
 // Includes from C ( needed for block IO ).
 #include <errno.h>
@@ -32,7 +32,6 @@
 #include "Offline/BFieldGeom/inc/BFInterpolationStyle.hh"
 #include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "Offline/BFieldGeom/inc/DiskRecord.hh"
 #include "Offline/GeneralUtilities/inc/MinMax.hh"
 #include "Offline/GeometryService/inc/BFieldManagerMaker.hh"
 
@@ -81,72 +80,71 @@ namespace mu2e {
     }
 
     BFieldManagerMaker::BFieldManagerMaker(const BFieldConfig& config)
-        : _resolveFullPath(), _bfmgr(new BFieldManager()) {
+        : _resolveFullPath() {
         bfieldVerbosityLevel = config.verbosityLevel();
 
         // break potential mapTypeList into two vectors... kind of ugly right now.
         // Maybe config should just have two mapTypeLists for inner and outer.
         // Eventually, each map file should just be paired with a mapType.
+        // Hold the types of the inner and outer maps (if they differ)
+        std::vector<BFMapType> innerTypes;
+        std::vector<BFMapType> outerTypes;
+
         if (!config.mapTypeList().empty()) {
-            _innerTypes = std::vector<BFMapType>(
+            innerTypes = std::vector<BFMapType>(
                 config.mapTypeList().begin(),
                 config.mapTypeList().begin() + config.innerMapFiles().size());
-            _outerTypes =
-                std::vector<BFMapType>(config.mapTypeList().begin() + config.innerMapFiles().size(),
+            outerTypes =
+                std::vector<BFMapType>(config.mapTypeList().begin()
+                                       + config.innerMapFiles().size(),
                                        config.mapTypeList().end());
+        } else { // only one type
+          innerTypes = std::vector<BFMapType>(config.innerMapFiles().size(),
+                                               config.mapType());
+          outerTypes = std::vector<BFMapType>(config.outerMapFiles().size(),
+                                               config.mapType());
         }
 
-        if (config.mapType() == BFMapType::GMC) {
-            // Add the field maps.
-            for (unsigned i = 0; i < config.gmcDimensions().size(); ++i) {
-                readGMCMap(basename(config.outerMapFiles()[i]),
-                           _resolveFullPath(config.outerMapFiles()[i]), config.gmcDimensions()[i],
-                           config.scaleFactor(), config.interpolationStyle());
-            }
+        MapContainerType innerMaps,outerMaps;
 
-        } else if (config.mapType() == BFMapType::G4BL) {
-            loadG4BL(&_bfmgr->innerMaps_, config.innerMapFiles(), config.scaleFactor(),
-                     config.interpolationStyle());
-            loadG4BL(&_bfmgr->outerMaps_, config.outerMapFiles(), config.scaleFactor(),
-                     config.interpolationStyle());
+        loadMaps(innerMaps, config.innerMapFiles(), innerTypes, config);
+        loadMaps(outerMaps, config.outerMapFiles(), outerTypes, config);
 
-        } else if (config.mapType() == BFMapType::PARAM) {
-            loadParam(&_bfmgr->innerMaps_, config.innerMapFiles(), _innerTypes,
-                      config.interpolationStyle(), config.scaleFactor());
-            loadParam(&_bfmgr->outerMaps_, config.outerMapFiles(), _outerTypes,
-                      config.interpolationStyle(), config.scaleFactor());
 
-        } else {
-            throw cet::exception("GEOM")
-                << "Unknown format of file with magnetic field maps: " << config.mapType() << "\n";
+        // check for duplicate keys
+        auto allMaps = innerMaps;
+        allMaps.insert(allMaps.end(),outerMaps.begin(),outerMaps.end());
+        std::vector<std::string> keys;
+        for(auto const& bmap : allMaps) {
+          keys.emplace_back(bmap->getKey());
+        }
+        std::sort(keys.begin(),keys.end());
+        auto dp = std::adjacent_find(keys.begin(),keys.end());
+
+        if (dp != keys.end()) {
+          throw cet::exception("GEOM")
+            << "Trying to add a new magnetic field when the named field map already exists: "
+            << *dp << "\n";
         }
 
-        _bfmgr->cm_.setMaps((const MapContainerType&)_bfmgr->innerMaps_,
-                            (const MapContainerType&)_bfmgr->outerMaps_);
-
-        // The field manager is fully initialized.
-        // Some extra stuff that is convenient to do here:
-        if (config.flipBFieldMaps()) {
-            for (BFieldManager::MapContainerType::iterator i = _bfmgr->getInnerMaps().begin();
-                 i != _bfmgr->getInnerMaps().end(); ++i) {
-                flipMap(dynamic_cast<BFGridMap&>(**i));
-            }
-
-            for (BFieldManager::MapContainerType::iterator i = _bfmgr->getOuterMaps().begin();
-                 i != _bfmgr->getOuterMaps().end(); ++i) {
-                flipMap(dynamic_cast<BFGridMap&>(**i));
-            }
+        //copy non-const to const before giving maps to new BFieldManager
+        BFieldManager::MapContainerType constInnerMaps,constOuterMaps;
+        for(auto mapptr : innerMaps) {
+          constInnerMaps.emplace_back(mapptr);
         }
+        for(auto mapptr : outerMaps) {
+          constOuterMaps.emplace_back(mapptr);
+        }
+
+        _bfmgr = std::unique_ptr<BFieldManager>(new BFieldManager(constInnerMaps,constOuterMaps));
 
         if (config.writeBinaries()) {
-            for (BFieldManager::MapContainerType::const_iterator i = _bfmgr->getInnerMaps().begin();
-                 i != _bfmgr->getInnerMaps().end(); ++i) {
-                writeG4BLBinary(dynamic_cast<const BFGridMap&>(**i), (*i)->getKey() + ".bin");
+          for (auto mapptr : innerMaps ) {
+                writeG4BLBinary(dynamic_cast<const BFGridMap&>(*mapptr), mapptr->getKey() + ".bin");
             }
 
-            for (BFieldManager::MapContainerType::const_iterator i = _bfmgr->getOuterMaps().begin();
-                 i != _bfmgr->getOuterMaps().end(); ++i) {
-                writeG4BLBinary(dynamic_cast<const BFGridMap&>(**i), (*i)->getKey() + ".bin");
+          for (auto mapptr : outerMaps) {
+                writeG4BLBinary(dynamic_cast<const BFGridMap&>(*mapptr), mapptr->getKey() + ".bin");
             }
         }
 
@@ -340,70 +338,45 @@ namespace mu2e {
     }  // end anonymous namespace
 
     // Loads a sequence of Parametric files
-    void BFieldManagerMaker::loadParam(BFieldManager::MapContainerType* mapContainer,
+    void BFieldManagerMaker::loadMaps(MapContainerType& mapContainer,
                                        const BFieldConfig::FileSequenceType& files,
                                        std::vector<BFMapType> mapTypeList,
-                                       BFInterpolationStyle interpStyle,
-                                       double scaleFactor) {
-        // typedef BFieldConfig::FileSequenceType::const_iterator Iter;
+                                      const BFieldConfig& config) {
 
-        // for (Iter i = files.begin(); i != files.end(); ++i) {
         for (unsigned i = 0; i < files.size(); ++i) {
             if (bfieldVerbosityLevel > 0) {
                 cout << "Reading " << files[i] << endl;
             }
             const std::string mapkey = basename(files[i]);
-            BFMapType indivMapType(BFMapType::PARAM);
-            if (!mapTypeList.empty())
-                indivMapType = mapTypeList[i];
-            if (indivMapType == BFMapType::PARAM) {
-                loadParam(mapContainer, mapkey, _resolveFullPath(files[i]), scaleFactor);
+            if ( mapTypeList[i] == BFMapType::PARAM) {
+                loadParam(mapContainer, mapkey, _resolveFullPath(files[i]), config);
             } else {
-                loadG4BL(mapContainer, mapkey, _resolveFullPath(files[i]), scaleFactor,
-                         interpStyle);
+                loadG4BL(mapContainer, mapkey, _resolveFullPath(files[i]), config);
             }
         }
     }
 
-    // Loads a sequence of G4BL files
-
-    void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType* mapContainer,
-                                      const BFieldConfig::FileSequenceType& files,
-                                      double scaleFactor,
-                                      BFInterpolationStyle interpStyle) {
-        typedef BFieldConfig::FileSequenceType::const_iterator Iter;
-
-        for (Iter i = files.begin(); i != files.end(); ++i) {
-            if (bfieldVerbosityLevel > 0) {
-                cout << "Reading " << *i << endl;
-            }
-
-            const std::string mapkey = basename(*i);
-
-            loadG4BL(mapContainer, mapkey, _resolveFullPath(*i), scaleFactor, interpStyle);
-        }
-    }
 
     // Parse the config file to learn about one magnetic field map.
     // Create an empty map and call the code to load the map from the file.
-    void BFieldManagerMaker::loadParam(BFieldManager::MapContainerType* mapContainer,
+    void BFieldManagerMaker::loadParam(MapContainerType& mapContainer,
                                        const std::string& key,
                                        const std::string& resolvedFileName,
-                                       double scaleFactor) {
+                                       const BFieldConfig& config) {
         // Create an empty map.
-        auto dsmap = _bfmgr->addBFParamMap(mapContainer, key, -4696, -3096, -800, 800, 3500, 14000,
-                                           BFMapType::PARAM, scaleFactor);
-        // Fill the map from the disk file.
-        readParamFile(resolvedFileName, *dsmap);
+      auto dsmap = std::make_shared<BFParamMap>(key, -4696, -3096, -800, 800, 3500, 14000,
+                                                BFMapType::PARAM, config.scaleFactor());
+      // Fill the map from the disk file.
+      readParamFile(resolvedFileName, *dsmap);
     }
 
     // Parse the config file to learn about one magnetic field map.
     // Create an empty map and call the code to load the map from the file.
-    void BFieldManagerMaker::loadG4BL(BFieldManager::MapContainerType* mapContainer,
+    void BFieldManagerMaker::loadG4BL(MapContainerType& mapContainer,
                                       const std::string& key,
                                       const std::string& resolvedFileName,
-                                      double scaleFactor,
-                                      BFInterpolationStyle interpStyle) {
+                                      const BFieldConfig& config) {
+
         // Extract information from the header.
         vector<double> X0;
         vector<int> dim;
@@ -413,10 +386,12 @@ namespace mu2e {
         parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset, extendYFound);
 
         // Create an empty map.
-        BFInterpolationStyle meco(BFInterpolationStyle::meco);
-        auto dsmap =
-            _bfmgr->addBFGridMap(mapContainer, key, dim[0], X0[0], dX[0], dim[1], X0[1], dX[1],
-                                 dim[2], X0[2], dX[2], BFMapType::G4BL, scaleFactor, interpStyle);
+        auto dsmap = std::make_shared<BFGridMap>(key, dim[0], X0[0], dX[0],
+                                                 dim[1], X0[1], dX[1],
+                                                 dim[2], X0[2], dX[2],
+                                                 BFMapType::G4BL,
+                                                 config.scaleFactor(),
+                                                 config.interpolationStyle());
         dsmap->_flipy = extendYFound;
         // Fill the map from the disk file.
         if (resolvedFileName.find(".header") != string::npos) {
@@ -424,152 +399,16 @@ namespace mu2e {
         } else {
             readG4BLMap(resolvedFileName, *dsmap, G4BL_offset);
         }
+
+        if(config.flipBFieldMaps()) flipMap(*dsmap);
+
+        mapContainer.emplace_back(dsmap);
+
+        if (config.writeBinaries()) {
+          writeG4BLBinary(*dsmap, key + ".bin");
+        }
     }
 
-    //
-    // Read one magnetic field map file in MECO GMC format.
-    //
-    // This does a 2 pass operation"
-    // 1) Pass 1:
-    //      Read the input file into a temporary image in memory.
-    //      Find the min and max values of the grid points.
-    //      A the end of this pass, compute the grid spacing.
-    // 2) Pass 2:
-    //      Fill the 3D array from the image in memory.
-    //
-
-    void BFieldManagerMaker::readGMCMap(const std::string& mapKey,
-                                        const std::string& filename,
-                                        const std::vector<int>& dim,
-                                        double scaleFactor,
-                                        BFInterpolationStyle interpStyle) {
-        assert(dim.size() == 3);
-
-        // Open the input file.
-        int fd = open(filename.c_str(), O_RDONLY);
-        if (!fd) {
-            throw cet::exception("GEOM")
-                << "Could not open file containing the magnetic filed map for: " << mapKey << "\n"
-                << "Filename: " << filename << "\n";
-        }
-
-        // Compute number of records in the input file.
-        const int nrecords = computeArraySize(fd, filename);
-
-        // Image of the file in memory.
-        vector<DiskRecord> data(nrecords, DiskRecord());
-
-        // Read file into memory.
-        const int nbytes = nrecords * sizeof(DiskRecord);
-        ssize_t s = read(fd, &data[0], nbytes);
-        if (s != nbytes) {
-            if (s == -1) {
-                throw cet::exception("GEOM")
-                    << "Error reading magnetic field map: " << mapKey << "\n"
-                    << "Filename: " << filename << "\n";
-            } else {
-                throw cet::exception("GEOM")
-                    << "Wrong number of bytes read from magnetic field map: " << mapKey << "\n"
-                    << "Filename: " << filename << "\n";
-            }
-        }
-
-        // Tool to find min and max values of grid points.
-        MinMax mmX, mmY, mmZ;
-
-        // Collect distinct values of (X,Y,Z) on the grid points.
-        set<float> X, Y, Z;
-
-        // Multiply by this factor to convert from kilogauss to tesla.
-        double ratio = CLHEP::kilogauss / CLHEP::tesla;
-
-        // For the image in memory:
-        //   1) Transform into the correct set of units.
-        //   2) Find min/max of each dimension.
-        //   3) Collect unique values of (X,Y,Z) of the grid points.
-        for (vector<DiskRecord>::iterator i = data.begin(); i != data.end(); ++i) {
-            // Modify in place.
-            DiskRecord& r = *i;
-
-            // Unit conversion: from (cm, kG) to (mm,T).
-            r.x *= CLHEP::cm;
-            r.y *= CLHEP::cm;
-            r.z *= CLHEP::cm;
-            r.bx *= ratio;
-            r.by *= ratio;
-            r.bz *= ratio;
-
-            // The one check I can do.
-            if (r.head != r.tail) {
-                throw cet::exception("GEOM")
-                    << "Error reading magnetic field map.  "
-                    << "Mismatched head and tail byte counts at record: " << data.size() << "\n"
-                    << "Could not open file containing the magnetic filed map for: " << mapKey
-                    << "\n"
-                    << "Filename: " << filename << "\n";
-            }
-
-            // Update min/max information.
-            mmX.accumulate(r.x);
-            mmY.accumulate(r.y);
-            mmZ.accumulate(r.z);
-
-            // Populate the set of all unique grid values.
-            X.insert(r.x);
-            Y.insert(r.y);
-            Z.insert(r.z);
-        }
-
-        // Expected grid dimentsions.
-        const size_t nx = dim[0];
-        const size_t ny = dim[1];
-        const size_t nz = dim[2];
-
-        // Cross-check that the grid read from the file has the size we expected.
-        // This is not really a perfect check since there could be round off error
-        // in the computation of the grid points.  But the MECO GMC files were written
-        // in a way that this test works.
-        if (X.size() != nx || Y.size() != ny || Z.size() != nz) {
-            throw cet::exception("GEOM")
-                << "Mismatch in expected and observed number of grid points for BField map: "
-                << mapKey << "\n"
-                << "From file: " << filename << "\n"
-                << "Expected/Observed x: " << nx << " " << X.size() << "\n"
-                << "Expected/Observed y: " << ny << " " << Y.size() << "\n"
-                << "Expected/Observed z: " << nz << " " << Z.size() << "\n";
-        }
-
-        // Cross-check that we did not find more data than we have room for.
-        if (data.size() > nx * ny * nz - 1) {
-            throw cet::exception("GEOM")
-                << "Too many values read into the field map: " << mapKey << "\n"
-                << "From file: " << filename << "\n"
-                << "Expected/Observed size: " << nx * ny * nz << " " << data.size() << "\n";
-        }
-
-        // Create an empty map.
-        auto bfmap = _bfmgr->addBFGridMap(
-            &_bfmgr->outerMaps_, mapKey, nx, mmX.min(), (mmX.max() - mmX.min()) / (nx - 1), ny,
-            mmY.min(), (mmY.max() - mmY.min()) / (ny - 1), nz, mmZ.min(),
-            (mmZ.max() - mmZ.min()) / (nz - 1), BFMapType::GMC, scaleFactor, interpStyle);
-
-        // Store grid points and field values into 3D arrays
-        for (vector<DiskRecord>::const_iterator i = data.begin(), e = data.end(); i != e; ++i) {
-            DiskRecord const& r(*i);
-
-            // Find indices corresponding to this grid point.
-            // By construction the indices must be in bounds ( we set the limits above ).
-            std::size_t ix = bfmap->iX(r.x);
-            std::size_t iy = bfmap->iY(r.y);
-            std::size_t iz = bfmap->iZ(r.z);
-
-            // Store the information into the 3d arrays.
-            bfmap->_field.set(ix, iy, iz, CLHEP::Hep3Vector(r.bx, r.by, r.bz));
-            bfmap->_isDefined.set(ix, iy, iz, true);
-        }
-
-        return;
-    }
 
     //
     // Read one magnetic field map file in G4BL (TD) format.
@@ -607,21 +446,21 @@ namespace mu2e {
         // Read data
         double x[3], b[3];
         int nread = 0;
-	getline(in, cbuf);
+        getline(in, cbuf);
         while (!in.eof()) {
 
             istringstream sin(cbuf);
             if ((sin >> x[0] >> x[1] >> x[2] >> b[0] >> b[1] >> b[2]).fail()) {
                 break;
-		throw cet::exception("BFIELD_FILE_CORRUPT") << "Could not parse  " << filename << "\nat line: "<<cbuf<<"\n" ;
-	    }
+                throw cet::exception("BFIELD_FILE_CORRUPT") << "Could not parse  " << filename << "\nat line: "<<cbuf<<"\n" ;
+            }
 
             // sucessfully read and parsed a line
             ++nread;
 
             if (nread > nrecord) {
-	      throw cet::exception("BFIELD_FILE_TOO_LONG") << "Found too many lines in " << filename << "\n";
-	    }
+              throw cet::exception("BFIELD_FILE_TOO_LONG") << "Found too many lines in " << filename << "\n";
+            }
 
             // Store the information into the 3d arrays.
             CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(x[0], x[1], x[2]) - G4BL_offset;
@@ -655,11 +494,11 @@ namespace mu2e {
                                              << "Attempt to redefine an already defined point.";
             }
 
-            bfmap._field.set(ipos.ix, ipos.iy, ipos.iz, 
-			    CLHEP::Hep3Vector(b[0], b[1], b[2]));
+            bfmap._field.set(ipos.ix, ipos.iy, ipos.iz,
+                            CLHEP::Hep3Vector(b[0], b[1], b[2]));
             bfmap._isDefined.set(ipos.ix, ipos.iy, ipos.iz, true);
 
-	    // next line
+            // next line
             getline(in, cbuf);
         }
 
@@ -923,32 +762,6 @@ namespace mu2e {
 
     }  // end BFieldManagerMaker::writeG4BLBinary
 
-    // Compute the size of the array needed to hold the raw data of the field map.
-    int BFieldManagerMaker::computeArraySize(int fd, const string& filename) {
-        // Get the file size, in bytes, ( info.st_size ).
-        struct stat info;
-        if (fstat(fd, &info)) {
-            int errsave = errno;
-            char* errmsg = strerror(errsave);
-            throw cet::exception("GEOM")
-                << "BFieldManagerMaker::computeArraySize(): Error doing fstat() on " << filename
-                << "  errno: " << errsave << " " << errmsg << "\n";
-        }
-
-        // Check that an integral number of records fits in the file.
-        int remainder = info.st_size % sizeof(DiskRecord);
-        if (remainder != 0) {
-            throw cet::exception("GEOM")
-                << "Field map file does not hold an integral number of records: \n"
-                << "Filename:  " << filename << "\n"
-                << "Size:      " << info.st_size << "\n"
-                << "Remainder: " << remainder << "\n";
-        }
-
-        // Compute number of records.
-        int nrecords = info.st_size / sizeof(DiskRecord);
-        return nrecords;
-    }
 
     void BFieldManagerMaker::flipMap(BFGridMap& bf) {
         std::cout << "Flipping B field vector in map " << bf.getKey() << std::endl;

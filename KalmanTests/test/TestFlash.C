@@ -1,5 +1,5 @@
 void FlashVD(TTree* ntvd,const char* vdname) {
-	
+
   TH2F* xy = new TH2F("xy","Y vs X position at VD",100,-4200,-3600,100,-300,300);
   TH1F* pdg = new TH1F("pdg","PDG code",200,-250,2250);
   TH1F* emt = new TH1F("emt","Time at VD",200,0,2000);
@@ -94,18 +94,18 @@ void FlashVD(TTree* ntvd,const char* vdname) {
   flashcan->Divide(2,2);
   flashcan->cd(1);
   xy->Draw("box");
-  
-	flashcan->cd(2);
+
+        flashcan->cd(2);
   emct->Draw();
   epct->Draw("same");
   mumct->Draw("same");
-	mupct->Draw("same");
+        mupct->Draw("same");
   pct->Draw("same");
   pimct->Draw("same");
   phct->Draw("same");
   nct->Draw("same");
-  
-	flashcan->cd(3);
+
+        flashcan->cd(3);
   gPad->SetLogy();
   emt->Draw();
   ept->Draw("same");
@@ -171,7 +171,7 @@ void TestHits(TTree* sh) {
   sh->Project("ahtime","hittime");
   ahtime->SetMinimum(1);
 
-	TH1F* emstrawz = new TH1F("emstrawz","Hit z;z(mm)",200,-1600,1600);
+        TH1F* emstrawz = new TH1F("emstrawz","Hit z;z(mm)",200,-1600,1600);
   TH1F* epstrawz = new TH1F("epstrawz","Hit z;z(mm)",200,-1600,1600);
   TH1F* pstrawz = new TH1F("pstrawz","Hit z;z(mm)",200,-1600,1600);
   TH1F* mumstrawz = new TH1F("mumstrawz","Hit z;z(mm)",200,-1600,1600);
@@ -202,7 +202,7 @@ void TestHits(TTree* sh) {
   sh->Project("nstrawz","strawz","mcppdg==2112");
   sh->Project("astrawz","strawz");
 
-	TH1F* emstrawr = new TH1F("emstrawr","Hit #rho;#rho(mm)",200,350,700);
+        TH1F* emstrawr = new TH1F("emstrawr","Hit #rho;#rho(mm)",200,350,700);
   TH1F* epstrawr = new TH1F("epstrawr","Hit #rho;#rho(mm)",200,350,700);
   TH1F* pstrawr = new TH1F("pstrawr","Hit #rho;#rho(mm)",200,350,700);
   TH1F* mumstrawr = new TH1F("mumstrawr","Hit #rho;#rho(mm)",200,350,700);
@@ -233,9 +233,9 @@ void TestHits(TTree* sh) {
   sh->Project("nstrawr","strawrho","mcppdg==2112");
   sh->Project("astrawr","strawrho");
 
-	TCut late("hittime>700");
+        TCut late("hittime>700");
 
-	TH1F* emlatestrawz = new TH1F("emlatestrawz","Hit z, t>700 ns;z(mm)",50,-1600,1600);
+        TH1F* emlatestrawz = new TH1F("emlatestrawz","Hit z, t>700 ns;z(mm)",50,-1600,1600);
   TH1F* eplatestrawz = new TH1F("eplatestrawz","Hit z, t>700 ns;z(mm)",50,-1600,1600);
   TH1F* platestrawz = new TH1F("platestrawz","Hit z, t>700 ns;z(mm)",50,-1600,1600);
   TH1F* mumlatestrawz = new TH1F("mumlatestrawz","Hit z, t>700 ns;z(mm)",50,-1600,1600);
@@ -266,7 +266,7 @@ void TestHits(TTree* sh) {
   sh->Project("nlatestrawz","strawz",late+"mcppdg==2112");
   sh->Project("alatestrawz","strawz",late);
 
-	TH1F* emlatestrawr = new TH1F("emlatestrawr","Hit #rho, t>700 ns;#rho(mm)",50,350,700);
+        TH1F* emlatestrawr = new TH1F("emlatestrawr","Hit #rho, t>700 ns;#rho(mm)",50,350,700);
   TH1F* eplatestrawr = new TH1F("eplatestrawr","Hit #rho, t>700 ns;#rho(mm)",50,350,700);
   TH1F* platestrawr = new TH1F("platestrawr","Hit #rho, t>700 ns;#rho(mm)",50,350,700);
   TH1F* mumlatestrawr = new TH1F("mumlatestrawr","Hit #rho, t>700 ns;#rho(mm)",50,350,700);
@@ -297,17 +297,17 @@ void TestHits(TTree* sh) {
   sh->Project("nlatestrawr","strawrho",late+"mcppdg==2112");
   sh->Project("alatestrawr","strawrho",late);
 
-	TH2F* pdg = new TH2F("pdg","Direct PDG Id vs Parent PDG Id",51,-25.5,25.5,51,-25.5,25.5);
-	pdg->SetStats(0);
-	sh->Project("pdg","mcpdg:mcppdg");
+        TH2F* pdg = new TH2F("pdg","Direct PDG Id vs Parent PDG Id",51,-25.5,25.5,51,-25.5,25.5);
+        pdg->SetStats(0);
+        sh->Project("pdg","mcpdg:mcppdg");
 
 
   TCanvas* hcan = new TCanvas("hcan","hcan",1200,800);
-	hcan->Clear();
-	hcan->Divide(2,3);
-	
-	hcan->cd(1);
-	gPad->SetLogy();
+        hcan->Clear();
+        hcan->Divide(2,3);
+
+        hcan->cd(1);
+        gPad->SetLogy();
   ahtime->Draw();
   emhtime->Draw("same");
   ephtime->Draw("same");
@@ -318,10 +318,10 @@ void TestHits(TTree* sh) {
   phhtime->Draw("same");
   nhtime->Draw("same");
 
-	hcan->cd(2);
-	pdg->Draw("box");
+        hcan->cd(2);
+        pdg->Draw("box");
 
-	hcan->cd(3);
+        hcan->cd(3);
   astrawz->Draw();
   emstrawz->Draw("same");
   epstrawz->Draw("same");
@@ -332,7 +332,7 @@ void TestHits(TTree* sh) {
   phstrawz->Draw("same");
   nstrawz->Draw("same");
 
-	hcan->cd(4);
+        hcan->cd(4);
   alatestrawz->Draw();
   emlatestrawz->Draw("same");
   phlatestrawz->Draw("same");
@@ -343,7 +343,7 @@ void TestHits(TTree* sh) {
   platestrawz->Draw("same");
   nlatestrawz->Draw("same");
 
-	hcan->cd(5);
+        hcan->cd(5);
   astrawr->Draw();
   emstrawr->Draw("same");
   epstrawr->Draw("same");
@@ -354,7 +354,7 @@ void TestHits(TTree* sh) {
   phstrawr->Draw("same");
   nstrawr->Draw("same");
 
-	TLegend* leg = new TLegend(0.6,0.35,0.8,0.9);
+        TLegend* leg = new TLegend(0.6,0.35,0.8,0.9);
   leg->AddEntry(ahtime,"All parents","l");
   leg->AddEntry(emhtime,"parent e^{-}","l");
   leg->AddEntry(ephtime,"parent e^{+}","l");
@@ -365,8 +365,8 @@ void TestHits(TTree* sh) {
   leg->AddEntry(phhtime,"parent #gamma","l");
   leg->AddEntry(nhtime,"parent n","l");
   leg->Draw();
-	
-	hcan->cd(6);
+
+        hcan->cd(6);
   alatestrawr->Draw();
   emlatestrawr->Draw("same");
   phlatestrawr->Draw("same");
@@ -378,4 +378,3 @@ void TestHits(TTree* sh) {
   nlatestrawr->Draw("same");
 
 }
-

@@ -7,7 +7,9 @@
 #include <memory>
 #include <string>
 
+#include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -40,13 +42,15 @@ namespace mu2e
                                                          const std::string &classNameToCheck,
                                                          const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                                          bool &showEvent);
-    void checkMinimumHitsKalman(const art::Event &event, 
-                                const mu2e_eventdisplay::EventDisplayFrame *_frame, 
+    void checkMinimumHitsKalman(const art::Event &event,
+                                const mu2e_eventdisplay::EventDisplayFrame *_frame,
                                 bool &showEvent);
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
 
     fhicl::ParameterSet _pset;
+
+    ProditionsHandle<CRVCalib> _calib_h;
   };
 
   EventDisplay::EventDisplay(fhicl::ParameterSet const &pset)
@@ -76,6 +80,7 @@ namespace mu2e
   {
     TVirtualPad *temp_pad=gPad;
     TDirectory  *temp_dir=gDirectory;
+    auto const& calib = _calib_h.get(event.id());  //needed to get the Crv pedestals
     if(_firstLoop)
     {
       int x,y;
@@ -93,7 +98,7 @@ namespace mu2e
       if(findEvent)
       {
         int eventNumber=event.id().event();
-        if(eventNumber==eventToFind) _frame->setEvent(event);
+        if(eventNumber==eventToFind) _frame->setEvent(event,_firstLoop,calib);
         else std::cout<<"event skipped, since this is not the event we are looking for"<<std::endl;
       }
       else
@@ -104,7 +109,7 @@ namespace mu2e
         checkMinimumHits<mu2e::StrawHitCollection>(event, "<mu2e::StrawHit>", _frame, showEvent);
         checkMinimumHits<mu2e::StrawHitCollection>(event, "<StrawHit>", _frame, showEvent);
         checkMinimumHitsKalman(event, _frame, showEvent);
-        if(showEvent) _frame->setEvent(event,_firstLoop);
+        if(showEvent) _frame->setEvent(event,_firstLoop,calib);
       }
     }
 
@@ -112,7 +117,7 @@ namespace mu2e
     if(temp_pad) temp_pad->cd(); else gPad=nullptr;
     if(temp_dir) temp_dir->cd(); else gDirectory=nullptr;
 
-    if(_frame->isClosed()) 
+    if(_frame->isClosed())
     {
       throw cet::exception("CONTROL")<<"QUIT\n";
     }
@@ -153,7 +158,7 @@ namespace mu2e
         {
           KalRep const* particle = kalmantrackCollection->get(i);
           TrkHitVector const& hots = particle->hitVector();
-	  numberHits+=hots.size();
+          numberHits+=hots.size();
         }
         if(numberHits < _frame->getMinimumHits())
         {

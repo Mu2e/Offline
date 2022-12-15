@@ -8,7 +8,7 @@
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 
 namespace mu2e {
-  
+
   class InitEnvToolBase {
   protected:
     std::string _name;

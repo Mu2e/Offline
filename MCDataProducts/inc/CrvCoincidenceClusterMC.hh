@@ -11,7 +11,7 @@
 
 #include <vector>
 
-namespace mu2e 
+namespace mu2e
 {
   class CrvCoincidenceClusterMC
   {
@@ -28,9 +28,9 @@ namespace mu2e
 
     CrvCoincidenceClusterMC() {}
 
-    CrvCoincidenceClusterMC(bool hasMCInfo, const std::vector<PulseInfo> &pulses, const art::Ptr<SimParticle> mostLikelySimParticle, 
+    CrvCoincidenceClusterMC(bool hasMCInfo, const std::vector<PulseInfo> &pulses, const art::Ptr<SimParticle> mostLikelySimParticle,
                             double totalEnergyDeposited, double earliestHitTime, const CLHEP::Hep3Vector &earliestHitPos) :
-                            _hasMCInfo(hasMCInfo), _pulses(pulses), _mostLikelySimParticle(mostLikelySimParticle), 
+                            _hasMCInfo(hasMCInfo), _pulses(pulses), _mostLikelySimParticle(mostLikelySimParticle),
                             _totalEnergyDeposited(totalEnergyDeposited), _earliestHitTime(earliestHitTime), _earliestHitPos(earliestHitPos) {}
 
     bool                                HasMCInfo() const                {return _hasMCInfo;}

@@ -14,7 +14,7 @@
 // CLHEP
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
-// C includes 
+// C includes
 #include <Rtypes.h>
 #include <math.h>
 
@@ -33,12 +33,12 @@ namespace mu2e {
     float cosDip() const { return 1.0/sqrt(1.0 + tanDip()*tanDip()); }
     float sinDip() const { return tanDip()*cosDip(); }
     // simple geometric functions; can't do momentum as we don't know BField here
-    void position(float fltlen,XYZVectorF& pos) const; 
+    void position(float fltlen,XYZVectorF& pos) const;
     void position(const XYZVectorF& pos, float& fltlen) const; // to go from XYZVectorF to fltlen
-    void direction(float fltlen,XYZVectorF& pos) const; 
-    float phi(float fltlen) const; // local azimuthal angle 
+    void direction(float fltlen,XYZVectorF& pos) const;
+    float phi(float fltlen) const; // local azimuthal angle
     float zFlight(float zpos) const { return (zpos-z0())/sinDip(); } // local flight distance for a given z value
-      
+
     Float_t& d0() { return _pars[HelixParams::d0Index]; }
     Float_t& phi0() { return _pars[HelixParams::phi0Index]; }
     Float_t& omega() { return _pars[HelixParams::omegaIndex]; }

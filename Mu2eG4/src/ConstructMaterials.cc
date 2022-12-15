@@ -552,6 +552,44 @@ namespace mu2e {
       A1100->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0005);
     }
 
+    // 6105 Aluminum, "small" extrusion density
+    // 8020 T-Slotted Profile 3030
+    // https://en.wikipedia.org/wiki/6105_aluminium_alloy
+    // https://www.matweb.com/search/datasheet.aspx?matguid=9d1c81ac4e2b4e5590e5781f842b4446&ckck=1
+    // This has reduced density to make up for the fact that the Al extrusion is not a solid block
+    mat = uniqueMaterialOrThrow("A6105SmallExtrusion");
+    {
+      G4Material* A6105SmallExtrusion = new G4Material(mat.name, 2.69*0.51*CLHEP::g/CLHEP::cm3, 9);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Al"), 0.973);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.001);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.001);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.0035);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.008);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.0015);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Si"), 0.01);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.001);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.001);
+    }
+
+    // 6105 Aluminum, "large" extrusion density
+    // 8020 T-Slotted Profile 3030
+    // https://en.wikipedia.org/wiki/6105_aluminium_alloy
+    // https://www.matweb.com/search/datasheet.aspx?matguid=9d1c81ac4e2b4e5590e5781f842b4446&ckck=1
+    // This has reduced density to make up for the fact that the Al extrusion is not a solid block
+    mat = uniqueMaterialOrThrow("A6105LargeExtrusion");
+    {
+      G4Material* A6105SmallExtrusion = new G4Material(mat.name, 2.69*0.36*CLHEP::g/CLHEP::cm3, 9);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Al"), 0.973);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.001);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.001);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.0035);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Mg"), 0.008);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.0015);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Si"), 0.01);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.001);
+      A6105SmallExtrusion->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.001);
+    }
+
     // NbTi
     mat = uniqueMaterialOrThrow( "NbTi"); // FIXME verify it
     {

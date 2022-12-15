@@ -1,7 +1,7 @@
 // ***********************************************************
-// This is the definitions file for the OrientationResolver 
-// class, which is a helper to turn geometry orientation 
-// strings into CLHEP::HepRotations.  This is described in 
+// This is the definitions file for the OrientationResolver
+// class, which is a helper to turn geometry orientation
+// strings into CLHEP::HepRotations.  This is described in
 // more detail in the paper in docdb #4678 and the slides
 // in docdb #4999.
 // Original author:  David Norvil Brown
@@ -16,7 +16,7 @@
 namespace mu2e {
 
   void OrientationResolver::getRotationFromOrientation( CLHEP::HepRotation& aRotation,
-							std::string orient ) {
+                                                        std::string orient ) {
     // This is a helper function for determining the correct HepRotation
     // starting from an orientation number, described in docdb #xxxx
     // Note:  the length of orient should always be 3, enforced in the
@@ -52,7 +52,7 @@ namespace mu2e {
       aRotation.rotateX(-2.0*CLHEP::degree);
       return;
     }
-    
+
     int uRotNum=0,vRotNum=0,wRotNum=0;
     for ( int iChar = 0; iChar < 3; iChar++ ) {
       // unpack the orientation number
@@ -79,49 +79,49 @@ namespace mu2e {
     if ( wRotNum == 0 ) {
       if ( vRotNum != 0 ) aRotation.rotateY(-theta);
       if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateX(-phi);
       } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
       } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(phi);
+        if ( uRotNum != 0 ) aRotation.rotateX(phi);
       } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(phi);
       }
     } else if ( wRotNum == 1 ) {
-      // y-axis has moved to x and x to -y 
+      // y-axis has moved to x and x to -y
       if ( vRotNum != 0 ) aRotation.rotateX(theta);
       if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateY(-phi);
       } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
       } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(phi);
+        if ( uRotNum != 0 ) aRotation.rotateY(phi);
       } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(phi);
       }
     } else if ( wRotNum == 2 ) {
       // y axis now -y and x axis now -x
       if ( vRotNum != 0 ) aRotation.rotateY(theta);
       if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(phi);
+        if ( uRotNum != 0 ) aRotation.rotateX(phi);
       } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
       } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateX(-phi);
       } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(phi);
       }
     } else if ( wRotNum == 3 ) {
       // y axis is now -x and x axis is now +y
       if ( vRotNum != 0 ) aRotation.rotateX(-theta);
       if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(phi);
+        if ( uRotNum != 0 ) aRotation.rotateY(phi);
       } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
       } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(-phi);
+        if ( uRotNum != 0 ) aRotation.rotateY(-phi);
       } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
+        if ( uRotNum != 0 ) aRotation.rotateZ(phi);
       }
     }
     return;

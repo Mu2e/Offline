@@ -1,4 +1,6 @@
-
+#include "Offline/TrackerConditions/inc/StrawDrift.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -6,10 +8,6 @@
 #include <cmath>
 #include <algorithm>
 #include "TMath.h"
-
-#include "Offline/TrackerConditions/inc/StrawDrift.hh"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib_except/exception.h"
 
 
 using namespace std;
@@ -49,59 +47,70 @@ namespace mu2e {
 
   //D2T for sims
   double StrawDrift::D2T(double distance, double phi) const {
-    float phiSliceWidth = (TMath::Pi()/2.0)/float(_phiBins-1);
     //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
-    float reducedPhi = ConstrainAngle(phi);
-    //for interpolation, define a high and a low index
-    int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
-    int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
-
-    int index = min(int(_distances_dbins.size())-2,max(0,int(floor(distance/_deltaD))));
-    double lowerTime = _times_dbins[index*_phiBins+lowerPhiIndex] + (distance - _distances_dbins[index])/(_deltaD) * (_times_dbins[(index+1)*_phiBins+lowerPhiIndex] - _times_dbins[index*_phiBins+lowerPhiIndex]);
-    double upperTime = _times_dbins[index*_phiBins+upperPhiIndex] + (distance - _distances_dbins[index])/(_deltaD) * (_times_dbins[(index+1)*_phiBins+upperPhiIndex] - _times_dbins[index*_phiBins+upperPhiIndex]);
-    if (phi == 0)
-      return lowerTime;
-
-    double lowerPhi = lowerPhiIndex * phiSliceWidth;
-    return lowerTime + (reducedPhi - lowerPhi)/phiSliceWidth * (upperTime - lowerTime);
+    float fphi = foldPhi(phi);
+    size_t phirange[2];
+    phiRange(fphi,phirange);
+    auto dindex = distIndex(distance);
+    double lowerTime = _times_dbins[dindex*_phiBins+phirange[0]] + (distance - _distances_dbins[dindex])/(_deltaD) * (_times_dbins[(dindex+1)*_phiBins+phirange[0]] - _times_dbins[dindex*_phiBins+phirange[0]]);
+    double upperTime = _times_dbins[dindex*_phiBins+phirange[1]] + (distance - _distances_dbins[dindex])/(_deltaD) * (_times_dbins[(dindex+1)*_phiBins+phirange[1]] - _times_dbins[dindex*_phiBins+phirange[1]]);
+    if (phi == 0) return lowerTime;
+    double lowerPhi = phirange[0] * _deltaPhi;
+    return lowerTime + (fphi - lowerPhi)/_deltaPhi * (upperTime - lowerTime);
   }
 
   //T2D for reco
-  double StrawDrift::T2D(double time, double phi) const {
-    if (time < 0)
-      return 0;
-    float phiSliceWidth = (TMath::Pi()/2.0)/float(_phiBins-1);
-    //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
-    float reducedPhi = ConstrainAngle(phi);
-    //for interpolation, define a high and a low index
-    int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
-    int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
-
-    int index = min(int(_times_tbins.size())-2,max(0,int(floor(time/_deltaT))));
-    double lowerDist = _distances_tbins[index*_phiBins+lowerPhiIndex] + (time - _times_tbins[index])/(_deltaT) * (_distances_tbins[(index+1)*_phiBins+lowerPhiIndex] - _distances_tbins[index*_phiBins+lowerPhiIndex]);
-    double upperDist = _distances_tbins[index*_phiBins+upperPhiIndex] + (time - _times_tbins[index])/(_deltaT) * (_distances_tbins[(index+1)*_phiBins+upperPhiIndex] - _distances_tbins[index*_phiBins+upperPhiIndex]);
-    if (phi == 0)
-      return lowerDist;
-
-    double lowerPhi = lowerPhiIndex * phiSliceWidth;
-    return lowerDist + (reducedPhi - lowerPhi)/phiSliceWidth * (upperDist - lowerDist);
+  double StrawDrift::T2D(double time, double phi, bool nonnegative) const {
+    if (time < 0 && nonnegative) return 0;
+    double fphi = foldPhi(phi);
+    size_t phirange[2];
+    phiRange(fphi,phirange);
+    size_t tindex = timeIndex(time);
+    size_t lowrange[2];
+    lowrange[0] = tindex*_phiBins+phirange[0];
+    lowrange[1] = (tindex+1)*_phiBins+phirange[0];
+    double lowerDist = _distances_tbins[lowrange[0]] + (time - _times_tbins[tindex])/(_deltaT) * (_distances_tbins[lowrange[1]] - _distances_tbins[lowrange[0]]);
+    if (fphi == 0) return lowerDist;
+    size_t uprange[2];
+    uprange[0] = tindex*_phiBins+phirange[1];
+    uprange[1] = (tindex+1)*_phiBins+phirange[1];
+    double upperDist = _distances_tbins[uprange[0]] + (time - _times_tbins[tindex])/(_deltaT) * (_distances_tbins[uprange[1]] - _distances_tbins[uprange[0]]);
+    double lowerPhi = phirange[0] * _deltaPhi;
+    return lowerDist + (fphi - lowerPhi)/_deltaPhi * (upperDist - lowerDist);
   }
 
-  double StrawDrift::ConstrainAngle(double phi) const {
-    if (phi < 0) {
-      phi = -1.0*phi;
-    }
-    phi = fmod(phi,TMath::Pi());
-    if (phi > TMath::Pi()/2.0) {
-      phi = phi - 2.0*fmod(phi,TMath::Pi()/2.0);
-    }
+  double StrawDrift::foldPhi(double phi) const {
+    // fold phi onto [0,pi/2]
+    phi = fabs(fmod(phi,M_PI));
+    if (phi > M_PI_2) phi = M_PI-phi;
     return phi;
+  }
+
+  void StrawDrift::phiRange(double phi, size_t prange[2]) const {
+    //for interpolation, define a high and a low index
+    prange[0] = static_cast<size_t>(std::max(0,static_cast<int>(floor(phi/_deltaPhi))));
+    prange[1] = static_cast<size_t>(std::min(static_cast<int>(_phiBins)-1,static_cast<int>(ceil(phi/_deltaPhi))));
+  }
+
+  size_t StrawDrift::timeIndex(double time) const {
+    return static_cast<size_t>( std::min(static_cast<int>(_times_tbins.size())-2,std::max(0,static_cast<int>(floor(time/_deltaT)))));
+  }
+
+  size_t StrawDrift::distIndex(double dist) const {
+    return static_cast<size_t>(std::min(static_cast<int>(_distances_dbins.size())-2,std::max(0,static_cast<int>(floor(dist/_deltaD)))));
+  }
+
+  void StrawDrift::indexRange(double time, double phi, size_t irange[2]) const {
+    size_t phirange[2];
+    phiRange(phi,phirange);
+    size_t tindex = timeIndex(time);
+    irange[0] = tindex*_phiBins+phirange[0];
+    irange[1] = (tindex+1)*_phiBins+phirange[0];
   }
 
   void StrawDrift::print(std::ostream& os) const {
     size_t n = _times_dbins.size();
     size_t nd = _distances_dbins.size();
-    float phiSliceWidth = (TMath::Pi()/2.0)/float(_phiBins-1);
     os << endl << "StrawDrift parameters: "  << std::endl
       << "Times (size=" << n << ") Distances (size=" << nd << "): " << endl;
     os << "  effectiveSpeed = " << _distances_dbins[1]/_times_dbins[1*_phiBins] << " "
@@ -112,7 +121,7 @@ namespace mu2e {
       << _times_dbins[1]
       << " ... " << _times_dbins[n-2] << " "
       << _times_dbins[n-1] << endl;
-    os << "  phi width= " << phiSliceWidth << endl;
+    os << "  phi width= " << _deltaPhi << endl;
 
     os << "distances= " << _distances_dbins[0] << " " << _distances_dbins[1]
       << " ... " << _distances_dbins[nd-2] << " " << _distances_dbins[nd-1] << endl;

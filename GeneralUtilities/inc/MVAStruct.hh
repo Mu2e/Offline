@@ -39,13 +39,13 @@ namespace mu2e {
     typedef std::vector<Float_t> vcoll_type;
     constexpr static const char* cxname = DETAIL::cxname;
 
-    // default Constructor 
+    // default Constructor
     explicit MVAStruct() : _values(DETAIL::n_vars,0.0){
       reset();
     // check for self-consistency
       if(DETAIL::n_vars != DETAIL::varNames().size()){
-	std::ostringstream os;
-	throw std::out_of_range( os.str() );
+        std::ostringstream os;
+        throw std::out_of_range( os.str() );
       }
     }
 
@@ -85,7 +85,7 @@ namespace mu2e {
     void setMVAStatus(MVAStatus status) { _status = status; }
     void reset(){
       for(size_t ivar=0;ivar < DETAIL::n_vars; ++ivar)
-	_values[ivar] = 0.0;
+        _values[ivar] = 0.0;
       _mvaout = -1.0;
       _status = MVAStatus::unset;
     }

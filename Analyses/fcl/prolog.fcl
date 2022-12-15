@@ -23,12 +23,12 @@ TrackSummaryMaker: {
 }
 
 CaloClusterCompareNew : {
-	module_type : CaloClusterCompare
+        module_type : CaloClusterCompare
         CaloClusterCollection : CaloClusterOnline
 }
 
 CaloClusterCompareOld : {
-	module_type : CaloClusterCompare
+        module_type : CaloClusterCompare
         CaloClusterCollection : CaloClusterFast
 }
 
@@ -39,7 +39,7 @@ VirtualDetectorDefaults: {
     g4ModuleLabel          : g4run // obsolete, left for backward compatibility
     debugOutput      : 0
     maxPrint         : 0
-    // Save only those particles in the main ntuple (ntpart), which 
+    // Save only those particles in the main ntuple (ntpart), which
     // cross the required VD. If not specified, save all particles.
     requireVD : 0
     // Save only those particles in the ntuple, which survive until timeCut (ns)
@@ -50,7 +50,7 @@ VirtualDetectorDefaults: {
     saveStopped : false
     saveAllPDG : false
     // Save only listed types of particles in the main ntuple
-    savePDG    : [11,-11]  // electrons and positrons
+    savePDG    : [e_minus,e_plus]  // electrons and positrons
     // Drop listed types of particles in the time vd ntuple
     tvdDropPDG : []
     // List of virtual detectors to save in ntuple
@@ -64,11 +64,11 @@ VirtualDetectorDefaults: {
     tvdStepPoints : "g4run:timeVD"
     physicsVolumeColl : "g4run"
 
-    writeNTVD : true 
+    writeNTVD : true
     writeNTTVD : true
     writeNTPART : true
     writeNTPART1 : true
-    writeNTVDEXT : false 
+    writeNTVDEXT : false
 
 }
 
@@ -77,7 +77,7 @@ readvd: @local::VirtualDetectorDefaults
 ClusterCompareNew :
 {
    analyzers : {
-	CaloClusterCompareNew : @local::CaloClusterCompareNew
+        CaloClusterCompareNew : @local::CaloClusterCompareNew
    }
    Analysis : [CaloClusterCompareNew]
 }
@@ -85,7 +85,7 @@ ClusterCompareNew :
 ClusterCompareOld :
 {
    analyzers : {
-	CaloClusterCompareOld : @local::CaloClusterCompareOld
+        CaloClusterCompareOld : @local::CaloClusterCompareOld
    }
    Analysis : [CaloClusterCompareOld]
 }

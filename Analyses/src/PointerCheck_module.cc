@@ -42,51 +42,51 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Atom<bool> skipDereference{Name("skipDereference"), 
-	  Comment("skip dereferencing pointers check"),false};
-      fhicl::Atom<int> verbose{Name("verbose"), 
-	  Comment("verbose flag, 0 to 10"),1};
+      fhicl::Atom<bool> skipDereference{Name("skipDereference"),
+          Comment("skip dereferencing pointers check"),false};
+      fhicl::Atom<int> verbose{Name("verbose"),
+          Comment("verbose flag, 0 to 10"),1};
 
-      fhicl::Sequence<art::InputTag> skipSimParticle{ 
-	fhicl::Name("skipSimParticle"),
+      fhicl::Sequence<art::InputTag> skipSimParticle{
+        fhicl::Name("skipSimParticle"),
           fhicl::Comment("InputTag for collections to skip"),
-	  std::vector<art::InputTag>()
-	  };
-      fhicl::Sequence<art::InputTag> skipSimParticlePtr{ 
-	fhicl::Name("skipSimParticlePtr"),
-          fhicl::Comment("InputTag for collections to skip"), 
-	  std::vector<art::InputTag>()
-	  };
-      fhicl::Sequence<art::InputTag> skipStepPointMC{ 
-	fhicl::Name("skipStepPointMC"),
-          fhicl::Comment("InputTag for collections to skip"), 
-	  std::vector<art::InputTag>()
-	  };
-      fhicl::Sequence<art::InputTag> skipMCTracjectory{ 
-	fhicl::Name("skipMCTracjectory"),
-          fhicl::Comment("InputTag for collections to skip"), 
-	  std::vector<art::InputTag>()
-	  };
-      fhicl::Sequence<art::InputTag> skipStrawDigiMC{ 
-	fhicl::Name("skipStrawDigiMC"),
-          fhicl::Comment("InputTag for collections to skip"), 
-	  std::vector<art::InputTag>()
-	  };
-      fhicl::Sequence<art::InputTag> skipCaloHitMC{ 
-	fhicl::Name("skipCaloHitMC"),
-          fhicl::Comment("InputTag for collections to skip"), 
-	  std::vector<art::InputTag>()
-	  };
-      fhicl::Sequence<art::InputTag> skipCaloShowerStep{ 
-	fhicl::Name("skipCaloShowerStep"),
-          fhicl::Comment("InputTag for collections to skip"), 
-	  std::vector<art::InputTag>()
-	  };
-      fhicl::Sequence<art::InputTag> skipCrvDigiMC{ 
-	fhicl::Name("skipCrvDigiMC"),
-          fhicl::Comment("InputTag for collections to skip"), 
-	  std::vector<art::InputTag>()
-	  };
+          std::vector<art::InputTag>()
+          };
+      fhicl::Sequence<art::InputTag> skipSimParticlePtr{
+        fhicl::Name("skipSimParticlePtr"),
+          fhicl::Comment("InputTag for collections to skip"),
+          std::vector<art::InputTag>()
+          };
+      fhicl::Sequence<art::InputTag> skipStepPointMC{
+        fhicl::Name("skipStepPointMC"),
+          fhicl::Comment("InputTag for collections to skip"),
+          std::vector<art::InputTag>()
+          };
+      fhicl::Sequence<art::InputTag> skipMCTracjectory{
+        fhicl::Name("skipMCTracjectory"),
+          fhicl::Comment("InputTag for collections to skip"),
+          std::vector<art::InputTag>()
+          };
+      fhicl::Sequence<art::InputTag> skipStrawDigiMC{
+        fhicl::Name("skipStrawDigiMC"),
+          fhicl::Comment("InputTag for collections to skip"),
+          std::vector<art::InputTag>()
+          };
+      fhicl::Sequence<art::InputTag> skipCaloHitMC{
+        fhicl::Name("skipCaloHitMC"),
+          fhicl::Comment("InputTag for collections to skip"),
+          std::vector<art::InputTag>()
+          };
+      fhicl::Sequence<art::InputTag> skipCaloShowerStep{
+        fhicl::Name("skipCaloShowerStep"),
+          fhicl::Comment("InputTag for collections to skip"),
+          std::vector<art::InputTag>()
+          };
+      fhicl::Sequence<art::InputTag> skipCrvDigiMC{
+        fhicl::Name("skipCrvDigiMC"),
+          fhicl::Comment("InputTag for collections to skip"),
+          std::vector<art::InputTag>()
+          };
     };
 
     // this line is required by art to allow the command line help print
@@ -148,56 +148,56 @@ namespace mu2e {
     std::vector< art::Handle<SimParticleCollection> > vah_sp = event.getMany<SimParticleCollection>();
     for (auto const & ah : vah_sp) {
       if(!excludedCollection(*ah.provenance(),_SPtags)) {
-	printProvenance(*ah.provenance());
-	checkSimParticle(*ah);
+        printProvenance(*ah.provenance());
+        checkSimParticle(*ah);
       } // endif excluded
     } // loop over handles
 
     std::vector< art::Handle<StepPointMCCollection> > vah_st = event.getMany<StepPointMCCollection>();
     for (auto const & ah : vah_st) {
       if(!excludedCollection(*ah.provenance(),_SPMCtags)) {
-	printProvenance(*ah.provenance());
-	checkStepPointMC(*ah);
+        printProvenance(*ah.provenance());
+        checkStepPointMC(*ah);
       } // endif excluded
     } // loop over handles
 
     std::vector< art::Handle<MCTrajectoryCollection> > vah_tr = event.getMany<MCTrajectoryCollection>();
     for (auto const & ah : vah_tr) {
       if(!excludedCollection(*ah.provenance(),_trajtags)) {
-	printProvenance(*ah.provenance());
-	checkMCTrajectory(*ah);
+        printProvenance(*ah.provenance());
+        checkMCTrajectory(*ah);
       } // endif excluded
     } // loop over handles
 
     std::vector< art::Handle<SimParticlePtrCollection> > vah_pp = event.getMany<SimParticlePtrCollection>();
     for (auto const & ah : vah_pp) {
       if(!excludedCollection(*ah.provenance(),_trajtags)) {
-	printProvenance(*ah.provenance());
-	checkSimParticlePtr(*ah);
+        printProvenance(*ah.provenance());
+        checkSimParticlePtr(*ah);
       } // endif excluded
     } // loop over handles
 
     std::vector< art::Handle<StrawDigiMCCollection> > vah_sd = event.getMany<StrawDigiMCCollection>();
     for (auto const & ah : vah_sd) {
       if(!excludedCollection(*ah.provenance(),_trkDMCtags)) {
-	printProvenance(*ah.provenance());
-	checkStrawDigiMC(*ah);
+        printProvenance(*ah.provenance());
+        checkStrawDigiMC(*ah);
       } // endif excluded
     } // loop over handles
 
     std::vector< art::Handle<CaloHitMCCollection> > vah_cd = event.getMany<CaloHitMCCollection>();
     for (auto const & ah : vah_cd) {
       if(!excludedCollection(*ah.provenance(),_calDMCtags)) {
-	printProvenance(*ah.provenance());
-	checkCaloHitMC(*ah);
+        printProvenance(*ah.provenance());
+        checkCaloHitMC(*ah);
       } // endif excluded
     } // loop over handles
     std::cout << "Startgin shower steps" << std::endl;
     std::vector< art::Handle<CaloShowerStepCollection> > vah_cs = event.getMany<CaloShowerStepCollection>();
     for (auto const & ah : vah_cs) {
       if(!excludedCollection(*ah.provenance(),_calCSStags)) {
-	printProvenance(*ah.provenance());
-	checkCaloShowerStep(*ah);
+        printProvenance(*ah.provenance());
+        checkCaloShowerStep(*ah);
       } // endif excluded
     } // loop over handles
 
@@ -205,38 +205,38 @@ namespace mu2e {
     std::vector< art::Handle<CrvDigiMCCollection> > vah_cm = event.getMany<CrvDigiMCCollection>();
     for (auto const & ah : vah_cm) {
       if(!excludedCollection(*ah.provenance(),_crvDMCtags)) {
-	printProvenance(*ah.provenance());
-	checkCrvDigiMC(*ah);
+        printProvenance(*ah.provenance());
+        checkCrvDigiMC(*ah);
       } // endif excluded
     } // loop over handles
 
-  
+
   }
 
   void PointerCheck::printProvenance(art::Provenance const& p) {
     if(_verbose<1) return;
-    std::cout 
-      << " " << p.friendlyClassName() 
-      << ":" << p.moduleLabel() 
-      << ":" << p.productInstanceName() 
-      << ":" << p.processName() 
+    std::cout
+      << " " << p.friendlyClassName()
+      << ":" << p.moduleLabel()
+      << ":" << p.productInstanceName()
+      << ":" << p.processName()
       << std::endl;
     return;
   }
 
-  bool PointerCheck::excludedCollection(art::Provenance const& p, 
-					InputTags const& tags) {
+  bool PointerCheck::excludedCollection(art::Provenance const& p,
+                                        InputTags const& tags) {
 
     // a tag has four fields, Classname already determined
     // treat empty fields as wildcards that match
     bool exclude = true;
     for(auto const& tag : tags) {
-      if( !tag.label().empty() && 
-	  tag.label() != p.moduleLabel() ) exclude = false;
-      if( !tag.instance().empty() && 
-	  tag.instance() != p.productInstanceName() ) exclude = false;
+      if( !tag.label().empty() &&
+          tag.label() != p.moduleLabel() ) exclude = false;
+      if( !tag.instance().empty() &&
+          tag.instance() != p.productInstanceName() ) exclude = false;
       if( !tag.process().empty() &&
-	  tag.process() != p.processName() ) exclude = false;
+          tag.process() != p.processName() ) exclude = false;
       if(exclude) return true;
     }
     return false;
@@ -257,52 +257,52 @@ namespace mu2e {
       auto const& s = x.second;
       // check that the map index equals the SP internal index
       if(i==s.id()) {
-	ne++;
+        ne++;
       } else {
-	throw cet::exception("BadSimParticleKey")
-	  << "SimParticle map_vector index does not match id()";
+        throw cet::exception("BadSimParticleKey")
+          << "SimParticle map_vector index does not match id()";
       }
       // check parent pointers
       auto const& p = s.parent();
       if(p.isNonnull()) {
-	nn++;
-	if(p.isAvailable()) {
-	  na++;
-	  if(!_skipDereference && p.get()) {
-	    ni++;
-	  }
-	}
+        nn++;
+        if(p.isAvailable()) {
+          na++;
+          if(!_skipDereference && p.get()) {
+            ni++;
+          }
+        }
       } else { // null
-	if(s.isPrimary()) ns++;
+        if(s.isPrimary()) ns++;
       }
-      
+
       auto const& g = s.genParticle();
       if(g.isNonnull()) {
-	gn++;
-	if(g.isAvailable()) {
-	  ga++;
-	  if(!_skipDereference && g.get()) {
-	    gi++;
-	  }
-	}
+        gn++;
+        if(g.isAvailable()) {
+          ga++;
+          if(!_skipDereference && g.get()) {
+            gi++;
+          }
+        }
       }
-      
+
       // check daughters
       for(auto const& d: s.daughters()) {
-	nd++;
-	if(d.isNonnull()) {
-	  dn++;
-	  if(d.isAvailable()) {
-	    da++;
-	    if(!_skipDereference && d.get()) {
-	      di++;
-	    }
-	  }
-	}
+        nd++;
+        if(d.isNonnull()) {
+          dn++;
+          if(d.isAvailable()) {
+            da++;
+            if(!_skipDereference && d.get()) {
+              di++;
+            }
+          }
+        }
       } // loop over daughters
-      
+
     } // loop over SP in coll
-    
+
     bool rc;
     rc = (ne==n && nn+ns==n && ni==nn && gi==gn && di==nd);
 
@@ -337,16 +337,16 @@ namespace mu2e {
       // check parent pointers
       auto const& p = s.simParticle();
       if(p.isNonnull()) {
-	nn++;
-	if(p.isAvailable()) {
-	  na++;
-	  if(!_skipDereference && p.get()) {
-	    ni++;
-	  }
-	}
+        nn++;
+        if(p.isAvailable()) {
+          na++;
+          if(!_skipDereference && p.get()) {
+            ni++;
+          }
+        }
       }
     } // loop over SP in coll
-    
+
     bool rc = (ni==n);
     if(_verbose<1 && !rc) return rc;
     // report
@@ -372,22 +372,22 @@ namespace mu2e {
       n++;
       // check parent pointers
       if(a==b) {
-	ne++;
+        ne++;
       } else {
-	throw cet::exception("BadSimParticlePtr")
-	  << "MCTrajectory external and internal SimParticle pointers do not agree";
+        throw cet::exception("BadSimParticlePtr")
+          << "MCTrajectory external and internal SimParticle pointers do not agree";
       }
       if(b.isNonnull()) {
-	nn++;
-	if(b.isAvailable()) {
-	  na++;
-	  if(!_skipDereference && b.get()) {
-	    ni++;
-	  }
-	}
+        nn++;
+        if(b.isAvailable()) {
+          na++;
+          if(!_skipDereference && b.get()) {
+            ni++;
+          }
+        }
       }
     } // loop over SP in coll
-    
+
     bool rc = (ni==n);
     if(_verbose<1 && !rc) return rc;
     // report
@@ -410,16 +410,16 @@ namespace mu2e {
     for(auto const& p: coll) { // loop over the collection, a vector of Ptr
       n++;
       if(p.isNonnull()) {
-	nn++;
-	if(p.isAvailable()) {
-	  na++;
-	  if(!_skipDereference && p.get()) {
-	    ni++;
-	  }
-	}
+        nn++;
+        if(p.isAvailable()) {
+          na++;
+          if(!_skipDereference && p.get()) {
+            ni++;
+          }
+        }
       }
     } // loop over SP in coll
-    
+
     bool rc = (ni==n);
     if(_verbose<1 && !rc) return rc;
     // report
@@ -446,19 +446,19 @@ namespace mu2e {
       ptrs.push_back(d.strawGasStep(StrawEnd::hv ));
       // check them
       for(auto const& p: ptrs) {
-	np++;
-	if(p.isNonnull()) {
-	  nn++;
-	  if(p.isAvailable()) {
-	    na++;
-	    if(!_skipDereference && p.get()) {
-	      ni++;
-	    }
-	  }
-	}
+        np++;
+        if(p.isNonnull()) {
+          nn++;
+          if(p.isAvailable()) {
+            na++;
+            if(!_skipDereference && p.get()) {
+              ni++;
+            }
+          }
+        }
       }
     } // loop over SDMC in coll
-    
+
     bool rc = (ni==np);
     if(_verbose<1 && !rc) return rc;
     // report
@@ -481,20 +481,20 @@ namespace mu2e {
     for(auto const& s: coll) { // loop over the collection
       n++;
       for(unsigned i=0; i<s.nParticles(); i++) {
-	n2++;
-	auto const& p = s.energyDeposit(i).sim();
-	if(p.isNonnull()) {
-	  nn++;
-	  if(p.isAvailable()) {
-	    na++;
-	    if(!_skipDereference && p.get()) {
-	      ni++;
-	    }
-	  }
-	}
+        n2++;
+        auto const& p = s.energyDeposit(i).sim();
+        if(p.isNonnull()) {
+          nn++;
+          if(p.isAvailable()) {
+            na++;
+            if(!_skipDereference && p.get()) {
+              ni++;
+            }
+          }
+        }
       } // loop over Simparticles in a digi
     } // loop over SP in coll
-    
+
     bool rc = (ni==n);
     if(_verbose<1 && !rc) return rc;
     // report
@@ -519,16 +519,16 @@ namespace mu2e {
       // check parent pointers
       auto const& p = s.simParticle();
       if(p.isNonnull()) {
-	nn++;
-	if(p.isAvailable()) {
-	  na++;
-	  if(!_skipDereference && p.get()) {
-	    ni++;
-	  }
-	}
+        nn++;
+        if(p.isAvailable()) {
+          na++;
+          if(!_skipDereference && p.get()) {
+            ni++;
+          }
+        }
       }
     } // loop over SS in coll
-    
+
     bool rc = (ni==n);
     if(_verbose<1 && !rc) return rc;
     // report
@@ -552,16 +552,16 @@ namespace mu2e {
       // check parent pointers
       auto const& p = s.GetSimParticle();
       if(p.isNonnull()) {
-	nn++;
-	if(p.isAvailable()) {
-	  na++;
-	  if(!_skipDereference && p.get()) {
-	    ni++;
-	  }
-	}
+        nn++;
+        if(p.isAvailable()) {
+          na++;
+          if(!_skipDereference && p.get()) {
+            ni++;
+          }
+        }
       }
     } // loop over SS in coll
-    
+
     bool rc = (n<10 || (n>10 && ni>=n/2));
     if(_verbose>0) {
     // report
@@ -583,19 +583,19 @@ namespace mu2e {
 
       // check them
       for(auto const& p: ptrs) {
-	np++;
-	if(p.isNonnull()) {
-	  nn++;
-	  if(p.isAvailable()) {
-	    na++;
-	    if(!_skipDereference && p.get()) {
-	      ni++;
-	    }
-	  }
-	}
+        np++;
+        if(p.isNonnull()) {
+          nn++;
+          if(p.isAvailable()) {
+            na++;
+            if(!_skipDereference && p.get()) {
+              ni++;
+            }
+          }
+        }
       }
     } // loop over SDMC in coll
-    
+
     rc = rc && (n<10 || (n>10 && ni>=n/2));
     if(_verbose<1 && !rc) return rc;
     // report

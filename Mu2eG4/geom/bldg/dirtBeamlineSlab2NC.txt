@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_beamline_dirtSlab2_N.ccl
 
@@ -12,12 +12,12 @@ double dirt.beamline.slab2.NC.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.slab2.NC.yHalfThickness           = 635;
 
-//vector<int>    dirt.beamline.slab2.NC.xreplace   = { 21, 21 }; 
+//vector<int>    dirt.beamline.slab2.NC.xreplace   = { 21, 21 };
 vector<double> dirt.beamline.slab2.NC.xPositions = {
-  17288.5,  // SW corner escape hatch                                       
+  17288.5,  // SW corner escape hatch
   17204.7,  // SW corner N escapeHatch
-  15900.79, // return to escape hatch NW corner                             
-  15900.79, // return N of escape hatch NW corner 
+  15900.79, // return to escape hatch NW corner
+  15900.79, // return N of escape hatch NW corner
   9550.51, // E wall of rem hatch
   9550.51 // SE corner rem hatch
 };
@@ -25,8 +25,8 @@ vector<double> dirt.beamline.slab2.NC.xPositions = {
 vector<int>    dirt.beamline.slab2.NC.yreplace   = { 3, 4 };
 vector<double> dirt.beamline.slab2.NC.yPositions = {
   17957,     // SW corner escape hatch
-  18302.6,  // SW corner North escape hatch        
-  23684.2,    // return to escape hatch NW corner                           
+  18302.6,  // SW corner North escape hatch
+  23684.2,    // return to escape hatch NW corner
   50000, // return N or escape hatch NW corner
   50000,   // N of rem hatch E wall
   13055.59 // SE corner rem hatch
