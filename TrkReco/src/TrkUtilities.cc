@@ -158,23 +158,31 @@ namespace mu2e {
         StrawHitFlag hflag = chit.flag();
         if(tsh->isActive())hflag.merge(StrawHitFlag::active);
         if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-        // fill the seed.  I have to protect the class from TrkStrawHit to avoid a circular dependency, FIXME!
-        TrkStrawHitSeed seedhit(tsh->index(),
+        int state = tsh->ambig();
+        if(!tsh->isActive())state = -2;
+        CLHEP::Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen());
+        float upos = (hpos-tsh->straw().wirePosition(0.0)).dot(tsh->straw().wireDirection());
+        float dt = tsh->signalTime() - tsh->driftTime()-tsh->hitT0()._t0;
+        hitseeds.emplace_back(tsh->index(),
             tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-            tsh->driftRadius(), tsh->signalTime(),
-            tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
-        hitseeds.push_back(seedhit);
+            tsh->driftRadius(), tsh->signalTime(), upos, dt,
+            tsh->poca().doca(), state, tsh->driftRadiusErr(), hflag, chit);
       }
     }
 
 
-    void fillCaloHitSeed(const TrkCaloHit* tch, TrkCaloHitSeed& caloseed) {
+    void fillCaloHitSeed(const TrkCaloHit* tch, CLHEP::Hep3Vector const& tmom, TrkCaloHitSeed& caloseed) {
       // set the flag according to the status of this hit
       StrawHitFlag hflag;
       if(tch->isActive())hflag.merge(StrawHitFlag::active);
       if(tch->poca().status().success())hflag.merge(StrawHitFlag::doca);
+      Hep3Vector hpos;
+      tch->hitPosition(hpos);
       caloseed = TrkCaloHitSeed(tch->hitT0(), tch->fltLen(), tch->hitLen(),
-          tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(), hflag);
+          tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(),
+          XYZVectorF(hpos),
+          XYZVectorF(tmom),
+          hflag);
     }
     // DNB: the timeOffset() should NOT be added to time(), it is a double correction.
     // I'm leaving for now as the production was run with this error FIXME!

@@ -3,6 +3,7 @@
 
 #include "Offline/DbService/inc/DbService.hh"
 #include "Offline/DbTables/inc/DbLiveTable.hh"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "cetlib_except/exception.h"
 #include <iostream>

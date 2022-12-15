@@ -6,8 +6,8 @@
 // Original author David Norvil Brown
 //
 
-// The PS External Shield is extruded, upside-down "u" shape, made of 
-// concrete.  
+// The PS External Shield is extruded, upside-down "u" shape, made of
+// concrete.
 
 #include <vector>
 #include <ostream>
@@ -40,17 +40,17 @@ namespace mu2e {
     // Private ctr: the class should only be constructed via PSExternalShielding::PSExternalShieldingMaker.
     PSExternalShielding(const std::vector<CLHEP::Hep2Vector>& shape, const double& leng, const std::string mat, const CLHEP::Hep3Vector site)
       : _externalShieldOutline(shape),
-	_length(leng), _materialName(mat),
-	_centerPosition(site)
+        _length(leng), _materialName(mat),
+        _centerPosition(site)
     { }
 
     // Or read back from persistent storage
     PSExternalShielding();
     template<class T> friend class art::Wrapper;
 
-    // Current description based on private email Rick Coleman -> 
+    // Current description based on private email Rick Coleman ->
     // D. Norvil Brown, describing the implementation of the external shield
-    // in G4BeamLine.  
+    // in G4BeamLine.
 
     std::vector<CLHEP::Hep2Vector> _externalShieldOutline;
     double _length;

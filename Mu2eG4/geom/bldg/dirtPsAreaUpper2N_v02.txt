@@ -1,4 +1,4 @@
-// SimpleConfig geometry file automatically produced for original file: 
+// SimpleConfig geometry file automatically produced for original file:
 //
 //   geom/geom_PSarea_upperExtension2_N.ccl
 
@@ -14,7 +14,7 @@ double dirt.psArea.upper2.N.offsetFromMu2eOrigin.z   = -3581.4;
 //double dirt.psArea.upper2.N.yHalfThickness           = 457.2;
 double dirt.psArea.upper2.N.yHalfThickness           = 431.4;
 
-vector<int>    dirt.psArea.upper2.N.xreplace   = { 7, 8 }; 
+vector<int>    dirt.psArea.upper2.N.xreplace   = { 7, 8 };
 vector<double> dirt.psArea.upper2.N.xPositions = {
   -2006.6,   // h0
   -4749.8,
@@ -32,7 +32,7 @@ vector<double> dirt.psArea.upper2.N.xPositions = {
   -2006.6     // along NRetWall S face
 };
 
-vector<int>    dirt.psArea.upper2.N.yreplace   = { 8, 9 }; 
+vector<int>    dirt.psArea.upper2.N.yreplace   = { 8, 9 };
 vector<double> dirt.psArea.upper2.N.yPositions = {
   6858,   // h0
   6858,

@@ -25,6 +25,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
@@ -80,7 +81,7 @@ typedef struct
   int    run_number, subrun_number, event_number;
 
   char filename[200];
-  
+
   void clear()
   {
     reco_n=0;
@@ -115,7 +116,7 @@ typedef struct
     }
 
     firstCoincidenceHitTime=NAN;
-    
+
     CRVveto_allSectors=false;
     CRVhit_allSectors=false;
     for(int i=0; i<8; i++)
@@ -167,7 +168,7 @@ namespace mu2e
 
   CosmicAnalysis::CosmicAnalysis(fhicl::ParameterSet const &pset)
     :
-    art::EDAnalyzer(pset), 
+    art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
     _fitterModuleInstance(pset.get<std::string>("fitterModuleInstance")),
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","detectorFilter")),
@@ -252,7 +253,7 @@ namespace mu2e
       {
         double ratio=(crossingPos - point1[dim])/diffVector[dim];
         CLHEP::Hep3Vector point=ratio*diffVector+point1;
-        for(int i=0; i<3; i++) 
+        for(int i=0; i<3; i++)
         {
           crossingPoint[i]=point[i];
           crossingDirection[i]=diffVector.unit()[i];
@@ -279,7 +280,7 @@ namespace mu2e
       std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator traj_iter;
       for(traj_iter=_mcTrajectories->begin(); traj_iter!=_mcTrajectories->end(); traj_iter++)
       {
-        if(traj_iter->first->id()==particleKey) 
+        if(traj_iter->first->id()==particleKey)
         {
           const auto &trajectoryPoints = traj_iter->second.points();
           findCrossingDetails(trajectoryPoints, 0, xCrossing1, _eventinfo.xplane1, _eventinfo.xplane1Dir);
@@ -399,13 +400,13 @@ namespace mu2e
             double momentumDifference=fabs(kalReps->at(k).momentum(0).mag()-104.375);
             if(momentumDifference<minMomentumDifference || std::isnan(minMomentumDifference)) selectedTrack=k;
           }
-          
-          const KalRep &particle = kalReps->at(selectedTrack); 
+
+          const KalRep &particle = kalReps->at(selectedTrack);
           _eventinfo.reco_n=kalReps->size();
           _eventinfo.reco_t0=particle.t0().t0();
 
           //from TrkDiag/src/KalDiag.cc
-          double firsthitfltlen = particle.lowFitRange(); 
+          double firsthitfltlen = particle.lowFitRange();
           double lasthitfltlen = particle.hiFitRange();
           double entlen = std::min(firsthitfltlen,lasthitfltlen);
           TrkHelixUtils::findZFltlen(particle.traj(),_zent,entlen,0.1);
@@ -423,7 +424,7 @@ namespace mu2e
               const mu2e::PtrStepPointMCVector &stepPointVector = stepPointVectors->at(stepPointVectorsIndex);
               for(auto iterStepPoint=stepPointVector.begin(); iterStepPoint!=stepPointVector.end(); iterStepPoint++)
               {
-	        const art::Ptr<StepPointMC> stepPoint = *iterStepPoint;
+                const art::Ptr<StepPointMC> stepPoint = *iterStepPoint;
                 simParticles[stepPoint->simParticle()]++;
               }
             }
@@ -479,7 +480,7 @@ namespace mu2e
     } //event.getByLabel
 
     if(strlen(_eventinfo.simreco_particle)==0) //this mostly likely happened because the reconstructed track wasn't found
-    {                                          //don't record such events 
+    {                                          //don't record such events
       std::cout<<"Will not record event "<<_eventinfo.event_number<<" of subrun "<<_eventinfo.subrun_number<<" in file "<<_eventinfo.filename<<", ";
       std::cout<<"since either the reco or the MC track is missing."<<std::endl;
       return;
@@ -490,7 +491,7 @@ namespace mu2e
 
     art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
     std::string crvCoincidenceInstanceName="";
-    
+
     if(event.getByLabel(_crvCoincidenceModuleLabel,crvCoincidenceInstanceName,crvCoincidenceCheckResult))
     {
       const std::vector<CrvCoincidenceCheckResult::CoincidenceCombination> &coincidenceCombinations = crvCoincidenceCheckResult->GetCoincidenceCombinations();
@@ -530,7 +531,7 @@ namespace mu2e
 
 //check for CRV step points
     std::vector<art::Handle<StepPointMCCollection> > CRVStepsVector;
-    art::Selector selector(art::ProductInstanceNameSelector("CRV") && 
+    art::Selector selector(art::ProductInstanceNameSelector("CRV") &&
                            art::ProcessNameSelector("*"));
 
     event.getMany(selector, CRVStepsVector);
@@ -582,17 +583,17 @@ namespace mu2e
 /*
     art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel("CrvRecoPulses","",crvRecoPulsesCollection);
-    for(CrvRecoPulsesCollection::const_iterator iter=crvRecoPulsesCollection->begin(); 
+    for(CrvRecoPulsesCollection::const_iterator iter=crvRecoPulsesCollection->begin();
         iter!=crvRecoPulsesCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
-    
+
       const CrvRecoPulses &crvRecoPulses = iter->second;
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPM);
-        for(unsigned int i = 0; i<pulseVector.size(); i++) 
+        for(unsigned int i = 0; i<pulseVector.size(); i++)
         {
           const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
           int PEs=pulse._PEs;

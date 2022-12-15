@@ -15,7 +15,7 @@ double mbs.MBSCZ              = 15273.0;
 
 vector<double> mbs.BSTSInnerRadii = { 437.5, 437.5, 425.0 };
 vector<double> mbs.BSTSOuterRadii = { 450.2, 475.6, 450.4 };
-vector<double> mbs.BSTSZLengths   = { 1000.0, 2270.0, 816.0 }; 
+vector<double> mbs.BSTSZLengths   = { 1000.0, 2270.0, 816.0 };
 double mbs.BSTSHLength        =  2043.0;
 string mbs.BSTSMaterialName   = "StainlessSteel";
 double mbs.BSTSZrelCntr       =    0.0;
@@ -56,7 +56,7 @@ string mbs.SPBSRMaterialName  = "Polyethylene096";
 double mbs.SPBRZrelCntr       = 1242.0;
 
 // Upstream inner HDPE
-vector<double> mbs.BSTCInnerRadii  =   { 386.2, 323.2 }; 
+vector<double> mbs.BSTCInnerRadii  =   { 386.2, 323.2 };
 vector<double> mbs.BSTCOuterRadii  =   { 437.5, 437.5 };
 vector<double> mbs.BSTCLengths     =   { 1000.0, 585.0 };
 string mbs.BSTCMaterialName   = "Polyethylene096";
@@ -75,7 +75,7 @@ vector<double> mbs.CLV2Lengths     =   {  50.0, 102.4};
 string mbs.CLV2MaterialName   = "Polyethylene096";
 double mbs.CLV2ZrelCntr            =  1959.2;
 
-// Pump-out holes 
+// Pump-out holes
 int    mbs.nHolesSteel = 3;
 int    mbs.nHolesUpstreamPoly = 1;
 int    mbs.nHolesDownstreamPoly = 2;

@@ -17,7 +17,7 @@ namespace mu2e {
      CalorimeterCalibrations::CalorimeterCalibrations( SimpleConfig const& config )
      {
         ConfigFileLookupPolicy configFile;
-        
+
         _pulseFileName  = configFile(config.getString("calorimeter.pulseFileName"));
         _pulseHistName  = config.getString("calorimeter.pulseHistName");
         _propagFileName = configFile(config.getString("calorimeter.propagFileName"));
@@ -25,7 +25,7 @@ namespace mu2e {
 
         // Here we should eventually interface to some database
         _LRUpar0 = config.getDouble("CrystalNonUniformity_0");
- 
+
         // Here we should eventually interface to some database
         _BirkCorrHadron = config.getDouble("BirkCorrHadron");
 
@@ -40,7 +40,7 @@ namespace mu2e {
 
         //conversion factor between ADC counts and MeV for Fast clustering
         _Peak2MeV  = config.getDouble("Peak2MeVConversionFactor");
-      
+
       }
 }
 

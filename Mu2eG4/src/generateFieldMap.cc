@@ -55,7 +55,7 @@ namespace mu2e {
     StraightSection const * ts3in =beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS3,
                                                                               TransportSolenoid::TSRadialPart::IN );
     double L = ts3in->getHalfLength();
-    double Lturn = L + 3.14159/2*R;
+    double Lturn = L + M_PI/2*R;
 
     for( int i=-1100; i<2200; i++ ) {
 

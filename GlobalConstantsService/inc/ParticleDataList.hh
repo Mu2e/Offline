@@ -3,7 +3,7 @@
 //
 // A simple particle data list
 //
-// this list was created from 
+// this list was created from
 // - HepPDT list
 // - mass_width_2008.mc
 // - g4nuclei.tbl

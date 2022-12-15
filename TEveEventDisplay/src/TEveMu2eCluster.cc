@@ -4,7 +4,7 @@ using namespace mu2e;
 namespace mu2e{
 
   TEveMu2eCluster::TEveMu2eCluster(){}
-  
+
   /*------------Function to make object title:-------------*/
   std::string TEveMu2eCluster::DataTitle(const std::string &pstr, double edep){
         std::string dstr= "\nLayer: ";
@@ -20,11 +20,11 @@ namespace mu2e{
     Int_t mSize = 3;
     int colors[] = {+10, +5, +7, +8, -3, +1, -5, 0, -2, -4, +6, -9};
     this->SetMarkerColor(kViolet + colors[energylevel]);
-    this->SetNextPoint(cog.x(), cog.y(), cog.z()); 
+    this->SetNextPoint(cog.x(), cog.y(), cog.z());
     this->SetMarkerStyle(9);
     this->SetMarkerSize(mSize);
     this->SetPickable(kTRUE);
-    
+
     if(addHits){
        TEvePointSet *teve_hit2D = new TEvePointSet();
        for(unsigned int h =0 ; h < hits.size();h++) {
@@ -37,12 +37,12 @@ namespace mu2e{
     }
     ClusterList->AddElement(this);
   }
-  
+
   /*------------Function to draw hits:-------------*/
   void TEveMu2eCluster::DrawCrystalHits(const std::string &pstr, CLHEP::Hep3Vector cog, TEveElementList *ClusterList){
     Int_t mSize = 2;
     this->SetMarkerColor(kGreen);
-    this->SetNextPoint(cog.x(), cog.y(), cog.z()); 
+    this->SetNextPoint(cog.x(), cog.y(), cog.z());
     this->SetMarkerStyle(31);
     this->SetMarkerSize(mSize);
     this->SetPickable(kTRUE);

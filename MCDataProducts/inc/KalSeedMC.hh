@@ -8,6 +8,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
+#include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
@@ -32,11 +33,11 @@ namespace mu2e {
     MCRelationship _rel; // relationship of this particle to its primary
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
-    XYZVectorF _mom; // initial momentum 
+    XYZVectorF _mom; // initial momentum
     cet::map_vector_key _spkey; // key to the SimParticle
     // construct a Ptr from Handle and key
     SPPtr simParticle(SPCH spcH) const { return SPPtr(spcH,_spkey.asUint()); }
-    SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0) {}
+    SimPartStub() : _pdg(PDGCode::unknown), _nhits(0), _nactive(0) {}
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _gid(GenId::unknown), _rel(MCRelationship::none),
@@ -44,7 +45,7 @@ namespace mu2e {
     // dig down to the GenParticle
       auto simPtr = spp;
       while (simPtr->genParticle().isNull() && simPtr->parent().isNonnull()) {
-	simPtr = simPtr->parent();
+        simPtr = simPtr->parent();
       }
       if(simPtr->genParticle().isNonnull())_gid = simPtr->genParticle()->generatorId();
     }
@@ -76,13 +77,17 @@ namespace mu2e {
     StrawHitIndex _sdmcindex; // index into the original StrawDigiMC collection
     StrawHitIndex _spindex; // index into the associated SimPartStub of this DigiMC
     StrawId _strawId; // the ID of the straw that was hit
+    StrawEnd _earlyend; // end with the earliest MC true signal above threshold
     float _energySum; // sum of all MC true energy deposited by trigger particles
     float _time; // time of trigger StepPoint with time maps applied, wrapped to the beam
+    float _tdrift; // true drift time (from particle crossing to threshold-crossing signal reaching wire)
+    float _rdrift; // true drift radius, given the above (using single-cluster time-to-distance)
+    float _tprop; // signal propagation time of from the wire crossing point to the nearest end
     XYZVectorF _cpos; // trigger cluster position in detector coordinates
     XYZVectorF _mom; // momentum of particle at point where digi created
   };
 
-  struct KalSeedMC { 
+  struct KalSeedMC {
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
     std::vector<TrkStrawHitMC> const & trkStrawHitMCs() const { return _tshmcs; }

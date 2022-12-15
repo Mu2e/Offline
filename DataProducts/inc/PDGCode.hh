@@ -2,11 +2,11 @@
 #define DataProducts_PDGCode_hh
 
 //
-// A convenience class to allow compile time access
+// A enum-matched-string class to allow compile time access
 // to the PDG identifier codes for various particles.
 // It has been extended to include a subset of the G4 nuclei codes.
 //
-// This file was initially taken directly from BaBar's pdt/PdtPdg.hh
+// The enum was initially taken directly from BaBar's pdt/PdtPdg.hh
 //
 // For correct usage see any of the event generators or
 // Mu2eG4/src/PrimaryGeneratorAction.cc.
@@ -20,12 +20,18 @@
 // PDGCode::type pid = static_cast<PDGCode::type>(iGamma);
 //
 //
+
+#include <map>
+#include <string>
+
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
+
 namespace mu2e {
 
-  class PDGCode
+  class PDGCodeDetail
   {
   public:
-    enum type
+    enum enum_type
       {
         d = 1 ,
         anti_d = -1 ,
@@ -105,8 +111,8 @@ namespace mu2e {
         pi_minus = -211 ,
         pi_diffr_plus = 210 ,
         pi_diffr_minus = -210 ,
-        proton = 2212,
-        anti_proton = -2212,
+        proton = 2212 ,
+        anti_proton = -2212 ,
         pi_2S0 = 20111 ,
         pi_2S_plus = 20211 ,
         pi_2S_minus = -20211 ,
@@ -299,8 +305,6 @@ namespace mu2e {
         anti_Delta0 = -2114 ,
         p_diffr_plus = 2210 ,
         anti_p_diffr_minus = -2210 ,
-        p_plus = 2212 ,
-        anti_p_minus = -2212 ,
         Delta_plus = 2214 ,
         anti_Delta_minus = -2214 ,
         Delta_plus_plus = 2224 ,
@@ -373,7 +377,7 @@ namespace mu2e {
         anti_Sigma_b_star0 = -5214 ,
         Sigma_b_plus = 5222 ,
         anti_Sigma_b_minus = -5222 ,
-        Sigma_star_ = 5224 ,
+        Sigma_b_star_plus = 5224 ,
         anti_Sigma_b_star_minus = -5224 ,
         Xi_b0 = 5232 ,
         anti_Xi_b0 = -5232 ,
@@ -453,7 +457,9 @@ namespace mu2e {
         tritium =  1000010030,
         alpha =    1000020040,
         He3 =      1000020030,
-        null = 0,
+
+        // Needed for EnumToStringSparse
+        unknown = 0,
 
         // Codes above or equal to this value are defined by G4.
         G4Threshold = 999999999,
@@ -588,7 +594,13 @@ namespace mu2e {
         Zr91_0_0  = 1000400910
 
       };  // end enum PDGCode_type
-  };      // end class PDGCode
+
+    static std::string const& typeName();
+    static std::map<enum_type,std::string> const& names();
+
+  }; // end class PDGCodeDetail
+
+  typedef EnumToStringSparse<PDGCodeDetail> PDGCode;
 
 } // end namespace mu2e.
 

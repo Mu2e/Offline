@@ -1,0 +1,5 @@
+//
+//  Constant field for algorithm debugging and testing ONLY
+//
+#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+int detSolFieldForm = 2;

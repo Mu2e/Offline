@@ -2,6 +2,7 @@
 #include "Offline/Validation/inc/ValTrackSummary.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art_root_io/TFileDirectory.h"
 #include "TMath.h"
 
@@ -188,7 +189,7 @@ find(vids.begin(),vids.end(),imcs->volumeId()) != vids.end())){
     const mu2e::SimParticle& part = sp.second;
     p0 = 0.0;
     td = 0.0;
-    if (part.pdgId() == 11) {
+    if (part.pdgId() == PDGCode::mu_minus) {
       bool found = false;
       double t0 = 1e10;
       CLHEP::Hep3Vector pv;

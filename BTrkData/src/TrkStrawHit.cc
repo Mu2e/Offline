@@ -24,9 +24,9 @@ using CLHEP::Hep3Vector;
 namespace mu2e
 {
   TrkStrawHit::TrkStrawHit(StrawResponse::cptr_t strawResponse,
-			   const ComboHit& strawhit  , Tracker const& tracker, StrawHitIndex index,
-			   const TrkT0&    hitt0     , double       fltlen   , double maxdriftpull,
-			   double          timeWeight) :
+                           const ComboHit& strawhit  , Tracker const& tracker, StrawHitIndex index,
+                           const TrkT0&    hitt0     , double       fltlen   , double maxdriftpull,
+                           double          timeWeight) :
     _strawResponse(strawResponse),
     _combohit(strawhit),
     _straw(tracker.getStraw(strawhit.strawId())),
@@ -76,7 +76,7 @@ namespace mu2e
   TrkStrawHit::driftTime() const {
     return comboHit().time() - _stime - hitT0()._t0;
   }
-  
+
 
   // bool TrkStrawHit::time( TrkT0& t0 ) {
   //   HitT0 st0;
@@ -100,23 +100,23 @@ namespace mu2e
       double doca;
     // 0-ambig hit residual is WRT the wire
       if(_iamb == 0)
-	doca = fabs(resid);
+        doca = fabs(resid);
       else
-	doca = _rdrift + _iamb*resid;
+        doca = _rdrift + _iamb*resid;
     // restrict the range, symmetrically to avoid bias
-      double mint0doca = _strawResponse->Mint0doca(); 
+      double mint0doca = _strawResponse->Mint0doca();
       if(doca > mint0doca && doca < _rstraw-mint0doca){
-	// compute phi WRT BField for lorentz drift.
-	CLHEP::Hep3Vector trjDir(parentRep()->traj().direction(fltLen()));
-	Hep3Vector tperp = trjDir - trjDir.dot(straw().getDirection())*straw().getDirection();
-	double phi = tperp.theta();   // This assumes B along z, FIXME!
-	// translate the DOCA into a time
-	double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), doca, phi);
-	double vdrift = _strawResponse->driftInstantSpeed(_combohit.strawId(),doca, phi);
-	t0._t0 = tdrift + _stime;
-	t0._t0err = residerr/vdrift;// instantaneous velocity to translate the error on the residual
+        // compute phi WRT BField for lorentz drift.
+        CLHEP::Hep3Vector trjDir(parentRep()->traj().direction(fltLen()));
+        Hep3Vector tperp = trjDir - trjDir.dot(straw().getDirection())*straw().getDirection();
+        double phi = tperp.theta();   // This assumes B along z, FIXME!
+        // translate the DOCA into a time
+        double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), doca, phi,true);
+        double vdrift = _strawResponse->driftInstantSpeed(_combohit.strawId(),doca, phi,true);
+        t0._t0 = tdrift + _stime;
+        t0._t0err = residerr/vdrift;// instantaneous velocity to translate the error on the residual
       } else {
-	retval = false;
+        retval = false;
       }
     }
     return retval;
@@ -138,9 +138,9 @@ namespace mu2e
    Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
    _phi = tperp.theta();
    _rdrift = _strawResponse->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
-   _vdriftinst = _strawResponse->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
+   _vdriftinst = _strawResponse->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi,true);
    double vdriftconst = _strawResponse->driftConstantSpeed();
-   _rdrifterr = _strawResponse->driftDistanceError(_combohit.strawId(),_rdrift,_phi,fabs(poca().doca()));
+   _rdrifterr = _strawResponse->driftDistanceError(_combohit.strawId(),fabs(poca().doca()),_phi);
 
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_vdriftinst;
@@ -173,22 +173,22 @@ namespace mu2e
 // note: the wire (U) direction points from HV to Cal (Duke convention)
     if( poca().status().success()){
       switch (_combohit.driftEnd()) {
-	case StrawEnd::cal:
-	  _stime = (straw().halfLength()+hitLen())/_vprop;
-	  break;
-	case StrawEnd::hv:
-	  _stime = (straw().halfLength()-hitLen())/_vprop;
-	  break;
+        case StrawEnd::cal:
+          _stime = (straw().halfLength()+hitLen())/_vprop;
+          break;
+        case StrawEnd::hv:
+          _stime = (straw().halfLength()-hitLen())/_vprop;
+          break;
       }
     } else {
 // if we're missing poca information, use time division instead
       switch (_combohit.driftEnd()) {
-	case StrawEnd::cal:
-	  _stime = (straw().halfLength()+timeDiffDist())/_vprop;
-	  break;
-	case StrawEnd::hv:
-	  _stime = (straw().halfLength()-timeDiffDist())/_vprop;
-	  break;
+        case StrawEnd::cal:
+          _stime = (straw().halfLength()+timeDiffDist())/_vprop;
+          break;
+        case StrawEnd::hv:
+          _stime = (straw().halfLength()-timeDiffDist())/_vprop;
+          break;
       }
     }
   }

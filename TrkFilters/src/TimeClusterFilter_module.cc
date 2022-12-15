@@ -9,7 +9,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"

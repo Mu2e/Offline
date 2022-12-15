@@ -13,7 +13,6 @@ TrackerMC : {
     #    StrawDigiMaker  : {
     makeSD  : {
       module_type : StrawDigisFromStrawGasSteps
-      TimeOffsets   : [  @sequence::CommonMC.TimeMaps ]
       StrawGasStepModule : "StrawGasStepMaker"
       # set to digitize all hits in outer straws of the first 2 planes
       AllHitsPlanes : [0,1]

@@ -9,6 +9,9 @@
  <class name="std::vector<cet::map_vector_key>"/>
  <class name="boost::array<double,5>"/>
 
+<!--  ********* PDG  ********* -->
+  <class name="mu2e::PDGCodeDetail"/>
+  <class name="mu2e::PDGCode"/>
 
 <!--  ********* straws  ********* -->
  <class name="mu2e::StrawEnd"/>
@@ -48,5 +51,9 @@
 
  <class name="HepGeom::Transform3D"/>
 
+<!--  ********* STM  ********* -->
+ <class name="mu2e::STMChannel" />
+ <class name="mu2e::STMTestBeamEventInfo" />
+ <class name="art::Wrapper<mu2e::STMTestBeamEventInfo>" />
 
 </lcgdict>

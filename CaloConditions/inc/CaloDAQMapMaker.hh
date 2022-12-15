@@ -21,11 +21,11 @@ namespace mu2e {
     CaloDAQMapMaker(CaloDAQMapConfig const& config):_config(config) {}
     ptr_t fromFcl();
     ptr_t fromDb(CalRoIDMapDIRACToOffline::cptr_t tdtc,
-		 CalRoIDMapOfflineToDIRAC::cptr_t tctd );
-  
+                 CalRoIDMapOfflineToDIRAC::cptr_t tctd );
+
   private:
 
-    // this object needs to be thread safe, 
+    // this object needs to be thread safe,
     // _config should only be initialized once
     const CaloDAQMapConfig _config;
 

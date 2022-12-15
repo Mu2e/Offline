@@ -17,7 +17,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e 
+namespace mu2e
 {
 
   // Forward declarations.
@@ -36,7 +36,7 @@ namespace mu2e
 
     public:
 
-    CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
+    CRSScintillatorBar(CRSScintillatorBarIndex const &index,
                        CRSScintillatorBarId const &id,
                        CLHEP::Hep3Vector const &position,
                        const std::shared_ptr<CRSScintillatorBarDetail> detail);
@@ -56,7 +56,7 @@ namespace mu2e
     double getHalfWidth() const { return _detail->getHalfWidth();}
     double getHalfLength() const { return _detail->getHalfLength();}
 
-    const CRSScintillatorBarDetail& getBarDetail() const 
+    const CRSScintillatorBarDetail& getBarDetail() const
     {
       return *_detail;
     }
@@ -78,15 +78,15 @@ namespace mu2e
       return _detail->isInside(worldPosition,_position);
     }
 
-    bool operator==(const CRSScintillatorBar other) const 
+    bool operator==(const CRSScintillatorBar other) const
     {
       return _index == other.index();
     }
-    bool operator>(const CRSScintillatorBar other) const 
+    bool operator>(const CRSScintillatorBar other) const
     {
       return _index > other.index();
     }
-    bool operator<(const CRSScintillatorBar other) const 
+    bool operator<(const CRSScintillatorBar other) const
     {
       return _index < other.index();
     }
@@ -115,7 +115,7 @@ namespace mu2e
     {
       return _detail->getCMBPosition(side, _position);
     }
-    std::vector<double> getCMBHalfLengths() const 
+    std::vector<double> getCMBHalfLengths() const
     {
       return _detail->getCMBHalfLengths();
     }
@@ -124,7 +124,7 @@ namespace mu2e
 
     /********************/
     // SiPM section
-    
+
     public:
 
     CLHEP::Hep3Vector getSiPMPosition(int SiPMNumber) const

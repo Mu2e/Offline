@@ -10,10 +10,10 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "mu2e-artdaq-core/Overlays/CalorimeterFragment.hh"
-#include "mu2e-artdaq-core/Overlays/FragmentType.hh"
-#include "mu2e-artdaq-core/Overlays/Mu2eEventFragment.hh"
-#include "mu2e-artdaq-core/Overlays/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
+#include "artdaq-core-mu2e/Overlays/Mu2eEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
 
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
@@ -453,7 +453,7 @@ void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
                     << (int)hits[hitIdx].first.DIRACB << std::endl;
           std::cout << "[StrawAndCaloDigiFromFragments] \tErrorFlags "
                     << (int)hits[hitIdx].first.ErrorFlags << std::endl;
-          std::cout << "[StrawAndCaloDigiFromFragments] \tTime	      "
+          std::cout << "[StrawAndCaloDigiFromFragments] \tTime              "
                     << (int)hits[hitIdx].first.Time << std::endl;
           std::cout << "[StrawAndCaloDigiFromFragments] \tNSamples   "
                     << (int)hits[hitIdx].first.NumberOfSamples << std::endl;

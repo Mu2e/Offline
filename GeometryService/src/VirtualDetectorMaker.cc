@@ -76,7 +76,7 @@ namespace mu2e {
       double zDiff = bg->getTS().getColl1().collarMarginZ();
 
 
-      Hep3Vector deltaZ1(0,0,coll1HL-vdHL);  
+      Hep3Vector deltaZ1(0,0,coll1HL-vdHL);
       Hep3Vector deltaZ1Collar(0,0,coll1HL - vdHL - zDiff);
       Hep3Vector deltaZ0Collar(0,0,coll1HL - coll1ColLen - zDiff + vdHL);
 
@@ -85,9 +85,9 @@ namespace mu2e {
       vd->addVirtualDetector( VirtualDetectorId::Coll1_Out,
                                ts1pos, ts1rot, coll1pos+deltaZ1);
       vd->addVirtualDetector( VirtualDetectorId::Coll1_pBarCollar_Out,
-			      ts1pos, ts1rot, coll1pos+deltaZ1Collar);
+                              ts1pos, ts1rot, coll1pos+deltaZ1Collar);
       vd->addVirtualDetector( VirtualDetectorId::Coll1_pBarCollar_In,
-			      ts1pos, ts1rot, coll1pos+deltaZ0Collar);
+                              ts1pos, ts1rot, coll1pos+deltaZ0Collar);
 
       //************************************************************
       // VD TS2_Bend, TS4_Bend are placed at the nominal beamline in
@@ -96,7 +96,7 @@ namespace mu2e {
       // This gives us the center of curvature of the bend
       Hep3Vector   ts2pos = bg->getTS().getTSCryo(
             TransportSolenoid::TSRegion::TS2,
-	    TransportSolenoid::TSRadialPart::IN)->getGlobal();
+            TransportSolenoid::TSRadialPart::IN)->getGlobal();
 
       // Now displace from center of curvature to nominal beamline
       double rTor = bg->getTS().torusRadius();
@@ -104,25 +104,25 @@ namespace mu2e {
       // Because of rotation of the torus 90 degrees, have to switch put
       // desire z-displacement in negative y-direction...
       Hep3Vector displace(rTor*sin(45.0*CLHEP::deg),
-			  -rTor*cos(45.0*CLHEP::deg),0.0);
+                          -rTor*cos(45.0*CLHEP::deg),0.0);
 
       const HepRotation *ts2rot =
-      	bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS2,
-      			      TransportSolenoid::TSRadialPart::IN)->getRotation();
+              bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS2,
+                                    TransportSolenoid::TSRadialPart::IN)->getRotation();
 
       vd->addVirtualDetector( VirtualDetectorId::TS2_Bend,
-			      ts2pos, ts2rot, displace);
+                              ts2pos, ts2rot, displace);
 
       Hep3Vector   ts4pos = bg->getTS().getTSCryo(
             TransportSolenoid::TSRegion::TS4,
-	    TransportSolenoid::TSRadialPart::IN)->getGlobal();
+            TransportSolenoid::TSRadialPart::IN)->getGlobal();
 
       const HepRotation *ts4rot =
-      	bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS4,
-      			      TransportSolenoid::TSRadialPart::IN)->getRotation();
+              bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS4,
+                                    TransportSolenoid::TSRadialPart::IN)->getRotation();
 
       vd->addVirtualDetector( VirtualDetectorId::TS4_Bend,
-			      ts4pos, ts4rot, -displace );
+                              ts4pos, ts4rot, -displace );
 
       //***************************************************
       // VD Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed
@@ -188,11 +188,11 @@ namespace mu2e {
       /*******new virtual detector for STM Upstream halfway between coll5Out and STIn   ****/
 
       if ( verbosityLevel > 0 ) {
-	std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
+        std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
       }
       const Hep3Vector STMOffset(targetOffset.x()-shift.x(),targetOffset.y()-shift.y(), targetOffset.z()-shift.z() - 0.5*( (coll5pos.z()+deltaZ5.z()) - (targetOffset.z()-shift.z()) ));
       vd->addVirtualDetector( VirtualDetectorId::STMUpstream,
-			      ds2centerInMu2e,0,STMOffset);
+                              ds2centerInMu2e,0,STMOffset);
 
 
 
@@ -219,8 +219,8 @@ namespace mu2e {
 
 
         Hep3Vector vdTTMidOffset(0.,0.,0.);
-	// Version 4 adds brass rings in Tracker, have to move vd to the side
-	if ( c.getBool("TrackerHasBrassRings",false) ) vdTTMidOffset.setZ(10.1);
+        // Version 4 adds brass rings in Tracker, have to move vd to the side
+        if ( c.getBool("TrackerHasBrassRings",false) ) vdTTMidOffset.setZ(10.1);
 
         vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
                                  ttOffset, 0, vdTTMidOffset);
@@ -398,13 +398,13 @@ namespace mu2e {
 //         // for some reason the location has to be taken from the box and not the hole tbd
 //         //        CLHEP::Hep3Vector holeLocation = enscendb->holeLocation(hID);
 //        CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
-	CLHEP::Hep3Vector holeLocation(
-				       c.getDouble("ExtShieldDownstream.detecHoleX")*CLHEP::mm,
-				       c.getDouble("ExtShieldDownstream.detecHoleY")*CLHEP::mm,
-				       c.getDouble("ExtShieldDownstream.detecHoleZ")*CLHEP::mm);
-	double holeHalfLength = c.getDouble("ExtShieldDownstream.detecHoleHalflength")*CLHEP::mm;
+        CLHEP::Hep3Vector holeLocation(
+                                       c.getDouble("ExtShieldDownstream.detecHoleX")*CLHEP::mm,
+                                       c.getDouble("ExtShieldDownstream.detecHoleY")*CLHEP::mm,
+                                       c.getDouble("ExtShieldDownstream.detecHoleZ")*CLHEP::mm);
+        double holeHalfLength = c.getDouble("ExtShieldDownstream.detecHoleHalflength")*CLHEP::mm;
 
-	// End of bit added by Dave (Louisville) Brown
+        // End of bit added by Dave (Louisville) Brown
 
         GeomHandle<DetectorSolenoid> ds;
         CLHEP::Hep3Vector const & dsP ( ds->position() );
@@ -435,19 +435,19 @@ namespace mu2e {
 
       if (c.getBool("hasDiskCalorimeter",true))
       {
-	GeomHandle<DiskCalorimeter> cg;
+        GeomHandle<DiskCalorimeter> cg;
 
-	int vdIdDiskSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
-	int vdIdDiskEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
+        int vdIdDiskSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
+        int vdIdDiskEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
         int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
         int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-        double crateHalfLength = cg->caloInfo().getDouble("crateZLength")/2.0;           
-	double delta           = 2*vdHL+0.02;
+        double crateHalfLength = cg->caloInfo().getDouble("crateZLength")/2.0;
+        double delta           = 2*vdHL+0.02;
 
         CLHEP::Hep3Vector parentInMu2e = cg->geomUtil().origin();
 
-	for(size_t i=0; i<cg->nDisk(); ++i)
+        for(size_t i=0; i<cg->nDisk(); ++i)
         {
            const CLHEP::Hep3Vector& sizeDisk = cg->disk(i).geomInfo().size();
            CLHEP::Hep3Vector posDiskLocal  = cg->disk(i).geomInfo().origin() -
@@ -463,56 +463,56 @@ namespace mu2e {
            CLHEP::Hep3Vector  posInnerFEB  = posCrateLocal;
 
           vd->addVirtualDetector( vdIdDiskSurf,
-				  parentInMu2e,
-				  0,
-				  posFrontDisk);
-	  ++vdIdDiskSurf;
+                                  parentInMu2e,
+                                  0,
+                                  posFrontDisk);
+          ++vdIdDiskSurf;
 
-	  vd->addVirtualDetector( vdIdDiskSurf,
-				  parentInMu2e,
-				  0,
-				  posBackDisk);
-	  ++vdIdDiskSurf;
-
-
-	  vd->addVirtualDetector( vdIdDiskEdge,
-				  parentInMu2e,
-				  0,
-				  posInnerDisk);
-	  ++vdIdDiskEdge;
-
-	  vd->addVirtualDetector( vdIdDiskEdge,
-				  parentInMu2e,
-				  0,
-				  posInnerDisk);
-	  ++vdIdDiskEdge;
+          vd->addVirtualDetector( vdIdDiskSurf,
+                                  parentInMu2e,
+                                  0,
+                                  posBackDisk);
+          ++vdIdDiskSurf;
 
 
+          vd->addVirtualDetector( vdIdDiskEdge,
+                                  parentInMu2e,
+                                  0,
+                                  posInnerDisk);
+          ++vdIdDiskEdge;
 
-	  vd->addVirtualDetector( vdIdFEBSurf,
-				  parentInMu2e,
-				  0,
-				  posFrontFEB);
-	  ++vdIdFEBSurf;
-
-	  vd->addVirtualDetector( vdIdFEBSurf,
-				  parentInMu2e,
-				  0,
-				  posBackFEB);
-	  ++vdIdFEBSurf;
+          vd->addVirtualDetector( vdIdDiskEdge,
+                                  parentInMu2e,
+                                  0,
+                                  posInnerDisk);
+          ++vdIdDiskEdge;
 
 
- 	  vd->addVirtualDetector( vdIdFEBEdge,
-				  parentInMu2e,
-				  0,
-				  posInnerFEB);
-	  ++vdIdFEBEdge;
 
-	  vd->addVirtualDetector( vdIdFEBEdge,
-				  parentInMu2e,
-				  0,
-				  posInnerFEB);
-	  ++vdIdFEBEdge;
+          vd->addVirtualDetector( vdIdFEBSurf,
+                                  parentInMu2e,
+                                  0,
+                                  posFrontFEB);
+          ++vdIdFEBSurf;
+
+          vd->addVirtualDetector( vdIdFEBSurf,
+                                  parentInMu2e,
+                                  0,
+                                  posBackFEB);
+          ++vdIdFEBSurf;
+
+
+           vd->addVirtualDetector( vdIdFEBEdge,
+                                  parentInMu2e,
+                                  0,
+                                  posInnerFEB);
+          ++vdIdFEBEdge;
+
+          vd->addVirtualDetector( vdIdFEBEdge,
+                                  parentInMu2e,
+                                  0,
+                                  posInnerFEB);
+          ++vdIdFEBEdge;
 
 
         }
@@ -751,74 +751,74 @@ namespace mu2e {
          double pbarTS1InOffset = c.getDouble("pbar.coll1In.offset", 1.0);
 
          CLHEP::Hep3Vector pbarTS1InPos = coll1.getLocal();
-	 if (verbosityLevel > 0){
-	 std::cout << "starting coll1 position " << pbarTS1InPos << std::endl;
-	 }
+         if (verbosityLevel > 0){
+         std::cout << "starting coll1 position " << pbarTS1InPos << std::endl;
+         }
          CLHEP::Hep3Vector parentCenterInMu2e;
-	 // 
-	 // make the VD 1 mm upstream of the window; the window is much thinner.  Just add a throw to make sure...
-	 double windowToVDOffset = 1.0 * CLHEP::mm;  //envisaging a day when this will be configurable
-	 if (windowToVDOffset < pbarTS1InHalfLength) throw cet::exception("GEOM") << __func__ << "window thicker than pbarTS1InHalfLength" << std::endl;
-	 CLHEP::Hep3Vector windowLocIn(0.,0.,0.);
- 
-	 if (pbarTS1InOffset >= 0.0) {
-	   // use local when put in the TS1Vacuum
-	   pbarTS1InPos = coll1.getLocal();
-	   //
-	   // put these together before you change pbarTS1InPos.z()
-	   windowLocIn = pbarTS1InPos;
-	   windowLocIn.setZ( pbarTS1InPos.z()  + 2.*vdHL - windowToVDOffset + pbarTS1InOffset);
+         //
+         // make the VD 1 mm upstream of the window; the window is much thinner.  Just add a throw to make sure...
+         double windowToVDOffset = 1.0 * CLHEP::mm;  //envisaging a day when this will be configurable
+         if (windowToVDOffset < pbarTS1InHalfLength) throw cet::exception("GEOM") << __func__ << "window thicker than pbarTS1InHalfLength" << std::endl;
+         CLHEP::Hep3Vector windowLocIn(0.,0.,0.);
 
-	   pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHL + pbarTS1InHalfLength + pbarTS1InOffset);
-	   parentCenterInMu2e = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
+         if (pbarTS1InOffset >= 0.0) {
+           // use local when put in the TS1Vacuum
+           pbarTS1InPos = coll1.getLocal();
+           //
+           // put these together before you change pbarTS1InPos.z()
+           windowLocIn = pbarTS1InPos;
+           windowLocIn.setZ( pbarTS1InPos.z()  + 2.*vdHL - windowToVDOffset + pbarTS1InOffset);
+
+           pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHL + pbarTS1InHalfLength + pbarTS1InOffset);
+           parentCenterInMu2e = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
          }
          else { // pbarTS1InOffset < 0.0
-	   // use global when put in the HallAir
-	   Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
-	   pbarTS1InPos = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
-	   //
-	   // put these together before you change pbarTS1InPos.z()
-	   windowLocIn = pbarTS1InPos;
-	   windowLocIn.setZ   ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - windowToVDOffset + pbarTS1InOffset );
+           // use global when put in the HallAir
+           Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
+           pbarTS1InPos = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
+           //
+           // put these together before you change pbarTS1InPos.z()
+           windowLocIn = pbarTS1InPos;
+           windowLocIn.setZ   ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - windowToVDOffset + pbarTS1InOffset );
 
-	   pbarTS1InPos.setZ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - pbarTS1InHalfLength + pbarTS1InOffset);
-	   if (verbosityLevel > 0){
-	     std::cout << pbarTS1InPos.z() << " " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << " " << pbarTS1InHalfLength << " " <<  pbarTS1InOffset << std::endl;
-	   }
-	   CLHEP::Hep3Vector psVacuumOriginInMu2e = psVacuumParams.originInMu2e();
-	   pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
-	   parentCenterInMu2e = psVacuumOriginInMu2e;
-	   windowLocIn = windowLocIn - psVacuumOriginInMu2e;
+           pbarTS1InPos.setZ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - pbarTS1InHalfLength + pbarTS1InOffset);
+           if (verbosityLevel > 0){
+             std::cout << pbarTS1InPos.z() << " " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << " " << pbarTS1InHalfLength << " " <<  pbarTS1InOffset << std::endl;
+           }
+           CLHEP::Hep3Vector psVacuumOriginInMu2e = psVacuumParams.originInMu2e();
+           pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
+           parentCenterInMu2e = psVacuumOriginInMu2e;
+           windowLocIn = windowLocIn - psVacuumOriginInMu2e;
          }
          CLHEP::Hep3Vector posPSPbarIn = pbarTS1InPos;
-	 posPSPbarIn.setZ( pbarTS1InPos.z() - pbarTS1InHalfLength - vdHL );
-	 if (verbosityLevel > 0){
-	   cout << "posPSPbarIn, windowLocIn, and parent Center is psVacuumOrigin " << posPSPbarIn << " " << windowLocIn << " " << parentCenterInMu2e << endl;
-	 }
+         posPSPbarIn.setZ( pbarTS1InPos.z() - pbarTS1InHalfLength - vdHL );
+         if (verbosityLevel > 0){
+           cout << "posPSPbarIn, windowLocIn, and parent Center is psVacuumOrigin " << posPSPbarIn << " " << windowLocIn << " " << parentCenterInMu2e << endl;
+         }
          vd->addVirtualDetector(VirtualDetectorId::PSPbarIn, parentCenterInMu2e, 0, windowLocIn);
 
 
-	 //
-	 //floating VD
-	 //      CLHEP::Hep3Vector posPSPbarOut = pbarTS1InPos;
-	 //	 posPSPbarOut.setZ( pbarTS1InPos.z() + pbarTS1InHalfLength + vdHL );
+         //
+         //floating VD
+         //      CLHEP::Hep3Vector posPSPbarOut = pbarTS1InPos;
+         //         posPSPbarOut.setZ( pbarTS1InPos.z() + pbarTS1InHalfLength + vdHL );
          //      posPSPbarOut.setZ( pbarTS1InPos.z() + windowToVDOffset + vdHL );
-	 //         vd->addVirtualDetector(VirtualDetectorId::PSPbarOut, parentCenterInMu2e, 0, posPSPbarOut);
+         //         vd->addVirtualDetector(VirtualDetectorId::PSPbarOut, parentCenterInMu2e, 0, posPSPbarOut);
 
-	 CLHEP::Hep3Vector windowLocOut = windowLocIn;
-	 windowLocOut.setZ(windowLocOut.z() + 2.*windowToVDOffset);
-	 if (verbosityLevel > 0){
-	   std::cout << "windowLocOut = " << windowLocOut << std::endl;
-	 }
+         CLHEP::Hep3Vector windowLocOut = windowLocIn;
+         windowLocOut.setZ(windowLocOut.z() + 2.*windowToVDOffset);
+         if (verbosityLevel > 0){
+           std::cout << "windowLocOut = " << windowLocOut << std::endl;
+         }
          vd->addVirtualDetector(VirtualDetectorId::PSPbarOut, parentCenterInMu2e, 0, windowLocOut);
 
 
-	 if ( verbosityLevel > 0 ) {
-	   cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarIn) << endl;
-	   cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarIn) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarIn) <<endl;
-	   cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarOut) << endl;
-	   cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarOut) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarOut) <<endl;
-	 }
+         if ( verbosityLevel > 0 ) {
+           cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarIn) << endl;
+           cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarIn) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarIn) <<endl;
+           cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarOut) << endl;
+           cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarOut) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarOut) <<endl;
+         }
       }
 
       if(c.getBool("vd.crv.build", false))
@@ -859,16 +859,32 @@ namespace mu2e {
       if ( c.getBool("hasPTM",false) ) {
         GeomHandle<PTM> ptMon;
         // Want these vd's to report a hit at position (0,0,0) when a particle hits the plane in the center
-        // first wire chamber vd position within production target monitor
-        CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
-        double groundInZ = ptMon->nearPWC()->upstreamWindowSurfaceZ();
-        pwcPos1.setZ(pwcPos1.z()+groundInZ);
-        vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
+        // first wire chamber vd position within production target monitor.
+        // There are different versions of this geometry, which are organized in different ways.
+        if (ptMon->version() == 1) {
+          // floating PWCs with no stand structure
+          CLHEP::Hep3Vector pwcPos1 = ptMon->nearPWC()->originInParent();
+          double groundInZ = ptMon->nearPWC()->upstreamWindowSurfaceZ();
+          pwcPos1.setZ(pwcPos1.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos1);
 
-        CLHEP::Hep3Vector pwcPos2 = ptMon->farPWC()->originInParent();
-        groundInZ = ptMon->farPWC()->upstreamWindowSurfaceZ();
-        pwcPos2.setZ(pwcPos2.z()+groundInZ);
-        vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
+          CLHEP::Hep3Vector pwcPos2 = ptMon->farPWC()->originInParent();
+          groundInZ = ptMon->farPWC()->upstreamWindowSurfaceZ();
+          pwcPos2.setZ(pwcPos2.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->originInMu2e(), &(ptMon->rotationInMu2e()), pwcPos2);
+        } else if (ptMon->version() == 2) {
+          // includes basic stand structure
+          CLHEP::Hep3Vector pwcPos1 = ptMon->ptmHead()->nearPWC()->originInParent();
+          double groundInZ = ptMon->ptmHead()->nearPWC()->upstreamWindowSurfaceZ();
+          pwcPos1.setZ(pwcPos1.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_1_In, ptMon->ptmHead()->originInMu2e(), &(ptMon->ptmHead()->rotationInMu2e()), pwcPos1);
+
+          CLHEP::Hep3Vector pwcPos2 = ptMon->ptmHead()->farPWC()->originInParent();
+          groundInZ = ptMon->ptmHead()->farPWC()->upstreamWindowSurfaceZ();
+          pwcPos2.setZ(pwcPos2.z()+groundInZ);
+          vd->addVirtualDetector(VirtualDetectorId::PTM_2_In, ptMon->ptmHead()->originInMu2e(), &(ptMon->ptmHead()->rotationInMu2e()), pwcPos2);
+        } // if (version == )
+
       } // if ( c.getBool("hasPTM",false) )
 
     } // if(hasVirtualDetector)

@@ -34,6 +34,8 @@
 #include "TH1F.h"
 #include "TTree.h"
 
+#include <cmath>
+
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
@@ -143,7 +145,7 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     if(_diag > 0){
       _hendrad = tfs->make<TH1F>("endrad","EndStep Radius",100,2.0,3.0);
-      _hphi = tfs->make<TH1F>("phi","Step rotation angle",100,0.0,3.14);
+      _hphi = tfs->make<TH1F>("phi","Step rotation angle",100,0.0,M_PI);
       if(_diag > 1) {
         _sgsdiag=tfs->make<TTree>("sgsdiag","StrawGasStep diagnostics");
         _sgsdiag->Branch("prilen",&_prilen,"prilen/F");
@@ -320,7 +322,7 @@ namespace mu2e {
     setStepType(first,pdata,stype);
     // compute the end position and step type
     XYZVectorF end = XYZVectorF(last->postPosition());
-    XYZVectorF momvec = XYZVectorF(0.5*(first->momentum() + last->momentum()));	// average first and last momentum
+    XYZVectorF momvec = XYZVectorF(0.5*(first->momentum() + last->momentum()));        // average first and last momentum
     float  mom = sqrt(momvec.mag2());
     // determine the width from the sigitta or curl radius
     auto pdir = first->momentum().unit();

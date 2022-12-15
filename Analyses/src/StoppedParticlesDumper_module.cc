@@ -58,15 +58,15 @@ namespace mu2e {
         , y(p->endPosition().y())
         , z(p->endPosition().z())
         , t(p->endGlobalTime())
-	, tau(tt)
-	, pdg(p->pdgId())
-	, origin(p->creationCode())
-	, term(p->stoppingCode()) {
-	  if(!p->endDefined()) {
-	    throw cet::exception("BADINPUTS")
-	      <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
-	  }
-	}
+        , tau(tt)
+        , pdg(p->pdgId())
+        , origin(p->creationCode())
+        , term(p->stoppingCode()) {
+          if(!p->endDefined()) {
+            throw cet::exception("BADINPUTS")
+              <<"StoppedParticlesDumper: input SimParticle does not have end defined!\n";
+          }
+        }
     };
 
   }// namespace
@@ -172,7 +172,7 @@ namespace mu2e {
     if(writeCodes_){
       branchDesc += ":pdg/I:origin/I:term/I";
     }
-      
+
     nt_ = tfs->make<TTree>( "stops", "Stopped particles ntuple");
     nt_->Branch("stops", &data_, branchDesc.c_str());
   }

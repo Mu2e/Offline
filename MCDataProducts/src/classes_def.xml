@@ -8,7 +8,6 @@
 <lcgdict>
 <!--  ********* generation  ********* -->
  <class name="mu2e::ProcessCode"/>
- <class name="mu2e::PDGCode"/>
  <class name="mu2e::GenId"/>
  <class name="mu2e::GenParticle"/>
  <class name="art::Wrapper<mu2e::GenParticle>"/>

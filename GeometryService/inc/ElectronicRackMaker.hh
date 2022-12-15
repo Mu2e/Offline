@@ -19,8 +19,8 @@ namespace mu2e {
   class ElectronicRackMaker {
   public:
 
-    static std::unique_ptr<ElectronicRack>  make(const SimpleConfig& 
-						      config );
+    static std::unique_ptr<ElectronicRack>  make(const SimpleConfig&
+                                                      config );
 
   };
 

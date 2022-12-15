@@ -94,7 +94,7 @@ namespace mu2e {
 
     CLHEP::HepRotation targetRotation_; // rotates target frame to Mu2e frame
     CLHEP::Hep3Vector  targetCenter_;
-  
+
     TF1 *f1;
     TF2 *fsig;
 
@@ -190,7 +190,7 @@ namespace mu2e {
 
     double pLab=8.8;
     double Mp=0.938272029;
- 
+
     double kpar[10]={
     0.1699,  //___0
     10.28,   //___1
@@ -303,7 +303,7 @@ namespace mu2e {
 
     if(verbosityLevel_ > 2) std::cout << "pos " << pos_new << " mom " << mom_new << std::endl;
 
-    PDGCode::type pdgId = static_cast<PDGCode::type>(-2212);
+    PDGCode::type pdgId = PDGCode::anti_proton;
     const double mass = GlobalConstantsHandle<ParticleDataList>()->particle(pdgId).mass();
     const double energy = sqrt(mom_new.mag2() + mass*mass);
     CLHEP::HepLorentzVector fourmom(mom_new, energy);

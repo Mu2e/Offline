@@ -12,7 +12,7 @@
 
 namespace mu2e {
   class CaloDAQMapCache : public ProditionsCache {
-  public: 
+  public:
     CaloDAQMapCache(CaloDAQMapConfig const& config):
     ProditionsCache(CaloDAQMap::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
@@ -23,7 +23,7 @@ namespace mu2e {
         _tctd_p = std::make_unique<DbHandle<CalRoIDMapOfflineToDIRAC>>();
       }
     }
-    
+
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
       if(_useDb) { // use fcl config, overwrite part from DB
@@ -36,7 +36,7 @@ namespace mu2e {
       }
       return cids;
     }
-    
+
     DbIoV makeIov(art::EventID const& eid) {
       DbIoV iov;
       iov.setMax(); // start with full IOV range
@@ -50,16 +50,16 @@ namespace mu2e {
       }
       return iov;
     }
-    
+
     ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
       if(_useDb) {
         return _maker.fromDb( _tdtc_p->getPtr(eid),
-        _tctd_p->getPtr(eid) ); 
+                              _tctd_p->getPtr(eid) );
       } else {
-	      return _maker.fromFcl();
+        return _maker.fromFcl();
       }
     }
-    
+
   private:
     bool _useDb;
     CaloDAQMapMaker _maker;

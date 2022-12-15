@@ -1,0 +1,31 @@
+// Andrei Gaponenko, 2015
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name :  TGTstops
+
+source : { module_type : RootInput }
+
+services : {
+  message: @local::default_message
+  TFileService: { fileName: "TargetStops.root" }
+}
+
+physics: {
+
+  analyzers: {
+    genCountLogger: { module_type: GenEventCountReader }
+
+    stoppedMuonDumper: {
+      module_type: StoppedParticlesDumper
+      dumpSimParticleLeaves: true
+      inputCollection: "TargetStopFilter"
+      writeProperTime : false
+      writeParticleCodes : true
+    }
+  }
+
+  an: [ genCountLogger, stoppedMuonDumper ]
+  end_paths: [an]
+}

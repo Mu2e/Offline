@@ -27,29 +27,29 @@ namespace mu2e {
   // Create and place a G4Polycone inside a logical volume.
   //
   VolumeInfo nestPolycone ( string const & name,
-			    PolyconsParams const & polyParams,
-			    G4Material* material,
-			    G4RotationMatrix const* rot,
-			    G4ThreeVector const & offset,
-			    VolumeInfo const & parent,
-			    int copyNo,
-			    bool const isVisible,
-			    G4Colour const color,
-			    bool const forceSolid,
-			    bool const forceAuxEdgeVisible,
-			    bool const placePV,
-			    bool const doSurfaceCheck
-			    ){
-    
+                            PolyconsParams const & polyParams,
+                            G4Material* material,
+                            G4RotationMatrix const* rot,
+                            G4ThreeVector const & offset,
+                            VolumeInfo const & parent,
+                            int copyNo,
+                            bool const isVisible,
+                            G4Colour const color,
+                            bool const forceSolid,
+                            bool const forceAuxEdgeVisible,
+                            bool const placePV,
+                            bool const doSurfaceCheck
+                            ){
+
     VolumeInfo info(name,offset,parent.centerInWorld);
-    
-    info.solid    = new G4Polycone( name, 
-				    polyParams.phi0(),
-				    polyParams.phiTotal(),
-				    polyParams.numZPlanes(),
-				    &polyParams.zPlanes()[0],
-				    &polyParams.rInner()[0],
-				    &polyParams.rOuter()[0] );
+
+    info.solid    = new G4Polycone( name,
+                                    polyParams.phi0(),
+                                    polyParams.phiTotal(),
+                                    polyParams.numZPlanes(),
+                                    &polyParams.zPlanes()[0],
+                                    &polyParams.rInner()[0],
+                                    &polyParams.rOuter()[0] );
 
     finishNesting(info,
                   material,
@@ -74,25 +74,25 @@ namespace mu2e {
   // Create and place a G4Polycone inside a logical volume.
   //
   VolumeInfo nestPolycone ( string const & name,
-			    PolyconsParams const & polyParams,
-			    G4Material* material,
-			    G4RotationMatrix const* rot,
-			    G4ThreeVector const & offset,
-			    VolumeInfo const & parent,
-			    int copyNo,
-			    G4Colour const color,
-			    string const & lookupToken
-			    ){
-    
+                            PolyconsParams const & polyParams,
+                            G4Material* material,
+                            G4RotationMatrix const* rot,
+                            G4ThreeVector const & offset,
+                            VolumeInfo const & parent,
+                            int copyNo,
+                            G4Colour const color,
+                            string const & lookupToken
+                            ){
+
     VolumeInfo info(name,offset,parent.centerInWorld);
-    
-    info.solid    = new G4Polycone( name, 
-				    polyParams.phi0(),
-				    polyParams.phiTotal(),
-				    polyParams.numZPlanes(),
-				    &polyParams.zPlanes()[0],
-				    &polyParams.rInner()[0],
-				    &polyParams.rOuter()[0] );
+
+    info.solid    = new G4Polycone( name,
+                                    polyParams.phi0(),
+                                    polyParams.phiTotal(),
+                                    polyParams.numZPlanes(),
+                                    &polyParams.zPlanes()[0],
+                                    &polyParams.rInner()[0],
+                                    &polyParams.rOuter()[0] );
 
     finishNesting(info,
                   material,
@@ -101,7 +101,7 @@ namespace mu2e {
                   parent.logical,
                   copyNo,
                   color,
-		  lookupToken
+                  lookupToken
                   );
 
     return info;

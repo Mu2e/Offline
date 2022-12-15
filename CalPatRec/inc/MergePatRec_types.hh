@@ -26,7 +26,7 @@ namespace mu2e {
       const KalRepPtrCollection*    list_of_kreps_cpr;
       const KalSeedCollection*      list_of_kseed_tpr;
       const KalSeedCollection*      list_of_kseed_cpr;
-      int                     debugLevel;	     // printout level
+      int                     debugLevel;             // printout level
     };
   }
 }

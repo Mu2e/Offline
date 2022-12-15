@@ -156,6 +156,11 @@ physics :{
         #inputTags : [ "KFFDeM" ] # select instances
       }
 
+      stmWaveformDigiPrinter : {
+        verbose: 1   # 0,1,2
+        #inputTags : [ "KFFDeM" ] # select instances
+      }
+
       physicalVolumePrinter : {
         verbose: 2   # 0,1,2
         #inputTags : [ "KFFDeM" ] # select instances

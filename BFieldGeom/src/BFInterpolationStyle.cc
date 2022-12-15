@@ -21,7 +21,7 @@ namespace mu2e {
 
         if (nam.empty()) {
             nam[unknown] = "unknown";
-            nam[meco] = "meco";
+            nam[unused] = "unused";
             nam[trilinear] = "trilinear";
             nam[fit] = "fit";
         }

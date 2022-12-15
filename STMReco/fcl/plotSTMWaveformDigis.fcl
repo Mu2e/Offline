@@ -1,0 +1,42 @@
+#
+# Plot STMWaveformDigis
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: PlotSTMWaveformDigis
+
+source : {
+  module_type : RootInput
+}
+
+services : {
+  @table::Services.Core
+  TFileService : { fileName : "stmWaveformDigis.root" }
+}
+
+physics: {
+  producers : {  }
+  filters : {  }
+  analyzers : {
+    plotHPGeWaveformDigis : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
+      subtractPedestal : false
+      verbosityLevel : 0
+    }
+    plotLaBrWaveformDigis : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
+    }
+  }
+  # setup paths
+  trigger_paths: [  ]
+  anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis ]
+  end_paths: [anaPath]
+}
+
+# Can define pedestals in fcl like the commented line below
+# services.ProditionsService.stmEnergyCalib.pedestals : [ ["HPGe",100.0], ["LaBr",2000.0] ]

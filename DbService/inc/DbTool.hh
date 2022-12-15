@@ -11,6 +11,15 @@
 //   DbTool tool;
 //   tool.init();
 //   tool.commitCalibrationSql(coll);
+//       or
+//    DbTool:vec_str args;
+//    args.push_back("print-content");
+//    args.push_back("--cid");
+//    args.push_back("67");
+//    tool.setArgs(args)
+//    tool.init()
+//    tool.run()
+//    cout << tool.getResult();
 //
 
 #include "Offline/DbService/inc/DbEngine.hh"
@@ -35,8 +44,8 @@ class DbTool {
   void setDatabase(std::string database) { _database = database; }
   int setArgs(vec_str const& args = vec_str());
 
-  int run();
   int init();
+  int run();
 
   int printContent();
   int printCalibration();
@@ -48,7 +57,9 @@ class DbTool {
   int printTable();
   int printList();
   int printSet();
+  int printRun();
 
+  std::string getResult() { return _result; }
   int printCIDLine(int cid, int indent = 0);
   int printIOVLine(int iov, int details = 0, int indent = 0);
   int printGIDLine(int gid, int details = 0, int indent = 0);
@@ -142,6 +153,9 @@ class DbTool {
   vec_str _args;
   map_ss _argMap;
   std::string _action;
+
+  std::string _result;
+
 };
 }  // namespace mu2e
 #endif

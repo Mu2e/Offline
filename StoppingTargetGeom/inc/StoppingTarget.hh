@@ -10,7 +10,7 @@
 //
 // Coordinates are given in the detector coordinate
 // system in mm.
-//        
+//
 
 // Includes from C++
 #include <vector>
@@ -46,7 +46,7 @@ namespace mu2e {
 
     int nSupportStructures() const { return _supportStructures.size(); }
     TargetFoilSupportStructure const& supportStructure( unsigned int n ) const { return _supportStructures.at(n); }
-    
+
   protected:
 
     // All dimensions in mm.

@@ -1,4 +1,4 @@
-physics.filters.cprCosmicSeedDePHSFilter.requireCaloCluster   : false 
+physics.filters.cprCosmicSeedDePHSFilter.requireCaloCluster   : false
 physics.filters.cprCosmicSeedDePHSFilter.doHelicityCheck  : true
 physics.filters.cprCosmicSeedDePHSFilter.helicity      : -1
 physics.filters.cprCosmicSeedDePHSFilter.minNStrawHits : 15.0

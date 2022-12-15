@@ -22,8 +22,8 @@ namespace mu2e
     public:
 
       struct Config {
-	fhicl::Atom<float> nPrescale { fhicl::Name("nPrescale"), fhicl::Comment("Average number of events to process for 1 to pass the filter"), 1.0};
-	fhicl::Atom<int>   debugLevel{ fhicl::Name("debugLevel"),fhicl::Comment("debug level"),0 };
+        fhicl::Atom<float> nPrescale { fhicl::Name("nPrescale"), fhicl::Comment("Average number of events to process for 1 to pass the filter"), 1.0};
+        fhicl::Atom<int>   debugLevel{ fhicl::Name("debugLevel"),fhicl::Comment("debug level"),0 };
       };
       using Parameters = art::EDFilter::Table<Config>;
 
@@ -42,7 +42,7 @@ namespace mu2e
       virtual bool endRun(art::Run& run ) override;
 
     private:
-      art::RandomNumberGenerator::base_engine_t& engine_;	
+      art::RandomNumberGenerator::base_engine_t& engine_;
       CLHEP::RandFlat randflat_;
       int debug_;
       unsigned nevt_, npass_;

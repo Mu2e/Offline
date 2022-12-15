@@ -8,14 +8,14 @@
 #include "Offline/TEveEventDisplay/src/shape_classes/TEveMu2eCRV.h"
 
 namespace mu2e{
-	class TEveMu2eProjectionInterface : public TGMainFrame {
-	public:
-        #ifndef __CINT__	
-	void CreateCRVProjection(TEveMu2e2DProjection *CRV2Dproj);
-	void CreateCaloProjection(TEveMu2e2DProjection *calo2Dproj);
-	void CreateTrackerProjection(TEveMu2e2DProjection *tracker2DProj);
-	#endif
-	ClassDef(TEveMu2eProjectionInterface,0);
+        class TEveMu2eProjectionInterface : public TGMainFrame {
+        public:
+        #ifndef __CINT__
+        void CreateCRVProjection(TEveMu2e2DProjection *CRV2Dproj);
+        void CreateCaloProjection(TEveMu2e2DProjection *calo2Dproj);
+        void CreateTrackerProjection(TEveMu2e2DProjection *tracker2DProj);
+        #endif
+        ClassDef(TEveMu2eProjectionInterface,0);
 
     }; //end class def
 

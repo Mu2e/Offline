@@ -101,25 +101,25 @@ Float_t       cluE25[1024];
 vector<vector<int> > *cluList;
 
 Int_t         nCry;
-Int_t         cryId[1024];   
-Int_t         crySecId[1024];   
-Float_t       cryPosX[1024];   
-Float_t       cryPosY[1024];   
-Float_t       cryPosZ[1024];  
-Float_t       cryEdep[1024];  
-Float_t       cryTime[1024];   
+Int_t         cryId[1024];
+Int_t         crySecId[1024];
+Float_t       cryPosX[1024];
+Float_t       cryPosY[1024];
+Float_t       cryPosZ[1024];
+Float_t       cryEdep[1024];
+Float_t       cryTime[1024];
 Int_t         nVd;
-Int_t         vdId[1024];   
-Int_t         vdPdgId[1024];   
-Float_t       vdMom[1024];  
-Float_t       vdMomX[1024];   
-Float_t       vdMomY[1024];   
-Float_t       vdMomZ[1024];   
-Float_t       vdPosX[1024];   
-Float_t       vdPosY[1024];   
-Float_t       vdPosZ[1024];   
-Float_t       vdTime[1024];   
-Int_t         vdSimId[1024];   
+Int_t         vdId[1024];
+Int_t         vdPdgId[1024];
+Float_t       vdMom[1024];
+Float_t       vdMomX[1024];
+Float_t       vdMomY[1024];
+Float_t       vdMomZ[1024];
+Float_t       vdPosX[1024];
+Float_t       vdPosY[1024];
+Float_t       vdPosZ[1024];
+Float_t       vdTime[1024];
+Int_t         vdSimId[1024];
 
 
 
@@ -164,10 +164,10 @@ void FitCog(int wmode = 0)
      tree->LoadBaskets();
      cluList = 0;
 
-     setTree();     
+     setTree();
      makeHist();
-    
-    
+
+
      double param[10];
      int npar(5);
 
@@ -178,27 +178,27 @@ void FitCog(int wmode = 0)
 
        //linear
        case 0:
-	 minuit.SetParameter(0, "par0",  0., 1.,  0.0, 0.0);
-	 //minuit.SetParameter(1, "par1",  1., 1.,  0.0, 0.0);
-	 npar=1;
-	 break;
+         minuit.SetParameter(0, "par0",  0., 1.,  0.0, 0.0);
+         //minuit.SetParameter(1, "par1",  1., 1.,  0.0, 0.0);
+         npar=1;
+         break;
 
        //sqrt(x)
        case 1:
-	 minuit.SetParameter(1, "par1",  1., 1., -20.0, 20.0);
-	 npar=1;
-	 break;
+         minuit.SetParameter(1, "par1",  1., 1., -20.0, 20.0);
+         npar=1;
+         break;
 
        //log(x)
        case 2:
-	 minuit.SetParameter(0, "par0",  0.1, 0.01, 0,0);
-	 minuit.SetParameter(1, "par1",  1, 0.01, 0.001, 100.0);
-	 npar=2;
-	 break;
+         minuit.SetParameter(0, "par0",  0.1, 0.01, 0,0);
+         minuit.SetParameter(1, "par1",  1, 0.01, 0.001, 100.0);
+         npar=2;
+         break;
 
        default :
          cout<<"No wieght "<< WeightMode<<" available"<<endl;
-	 return;
+         return;
      }
 
 
@@ -212,12 +212,12 @@ void FitCog(int wmode = 0)
 //double param2[2]={-10.01,0};
 //double param2[2]={0,0};
 //fillFinal(param2);
-     
+
      cout<<endl<<endl;
      fitFinal("Fit U0  ",_hu0,3);
      fitFinal("Fit V0  ",_hv0,3);
      fitFinal("Fit R   ",_hr,4);
-     
+
      cout<<endl;
      fitFinal("Fit U   ",_hu,3);
      fitFinal("Fit V   ",_hv,3);
@@ -243,7 +243,7 @@ void FitCog(int wmode = 0)
      _hxy2->Draw("colz");
      c2->SaveAs(Form("plots/FitCogNew%i2.eps",wmode));
 
- 
+
      TCanvas *c4 = new TCanvas("c4","c4",800,600);
      c4->Divide(2);
      c4->cd(1); _hu->Draw("e");
@@ -260,7 +260,7 @@ void FitCog(int wmode = 0)
 
 
 //visualize();
-     
+
      TFile fres("hres.root","RECREATE");
      fres.Add(_hx);
      fres.Add(_hy);
@@ -287,8 +287,8 @@ void FitCog(int wmode = 0)
      fres.Add(_chi2prob);
      for (int i=0;i<19;i++)fres.Add(_dedep[i]);
      fres.Write();
-     fres.Close(); 
- 
+     fres.Close();
+
 }
 
 
@@ -306,7 +306,7 @@ void FitCog(int wmode = 0)
 
 void fillFinal(double* par)
 {
-     
+
     int nevent = tree->GetEntries();
 
     for (int i=0;i<nevent;i++)
@@ -314,151 +314,151 @@ void fillFinal(double* par)
         tree->GetEntry(i);
         for (int im=0;im<nMatch;im++)
         {
-	   if (mChi2[im]>100) continue;
-	   int it = mTrkId[im];
-	   int ic = mCluId[im];
+           if (mChi2[im]>100) continue;
+           int it = mTrkId[im];
+           int ic = mCluId[im];
 
 
-	   if (cluEnergy[ic]<50) continue;
-	   if (trkStat[it]!=1 || trkprob[it]<0.01 || trknHit[it] < 15) continue;
+           if (cluEnergy[ic]<50) continue;
+           if (trkStat[it]!=1 || trkprob[it]<0.01 || trknHit[it] < 15) continue;
 
            //if (checkFace  && trkFFZ[it] >1 ) continue;
            //if (checkSide  && trkFFZ[it] <1 ) continue;
 
 
 
-	   double distShowerMax = calcLen(ic);
+           double distShowerMax = calcLen(ic);
 
-	   double trkp  = sqrt(trkpX[it]*trkpX[it] + trkpY[it]*trkpY[it]+ trkpZ[it]*trkpZ[it]);
-	   double trkpt = sqrt(trkpX[it]*trkpX[it]+trkpY[it]*trkpY[it]);
-	   TVector2 du(trkpX[it]/trkpt,trkpY[it]/trkpt);
-	   TVector2 dv(-trkpY[it]/trkpt,trkpX[it]/trkpt);
-	   TVector2 dx_inuv(trkpX[it]/trkpt,-trkpY[it]/trkpt);
-	   TVector2 dy_inuv(trkpY[it]/trkpt,trkpX[it]/trkpt);
+           double trkp  = sqrt(trkpX[it]*trkpX[it] + trkpY[it]*trkpY[it]+ trkpZ[it]*trkpZ[it]);
+           double trkpt = sqrt(trkpX[it]*trkpX[it]+trkpY[it]*trkpY[it]);
+           TVector2 du(trkpX[it]/trkpt,trkpY[it]/trkpt);
+           TVector2 dv(-trkpY[it]/trkpt,trkpX[it]/trkpt);
+           TVector2 dx_inuv(trkpX[it]/trkpt,-trkpY[it]/trkpt);
+           TVector2 dy_inuv(trkpY[it]/trkpt,trkpX[it]/trkpt);
 
 
 
            //TVector3 trkPos0 = getPosTrk(it,0);
            TVector3 trkPos0(trkFFX[it],trkFFY[it],0);
            TVector3 trkDir(trkpX[it]/trkp,trkpY[it]/trkp,trkpZ[it]/trkp);
-	   
-	   TVector3 cog = calcCog(ic, par);
-	   TVector3 cluDir(0,0,1);
+
+           TVector3 cog = calcCog(ic, par);
+           TVector3 cluDir(0,0,1);
 
            TVector3 initDiff = cog-trkPos0;
-	   if ( sqrt(initDiff.X()*initDiff.X()+initDiff.Y()*initDiff.Y()) > 200) continue;
+           if ( sqrt(initDiff.X()*initDiff.X()+initDiff.Y()*initDiff.Y()) > 200) continue;
 
-	   
-	 
 
-	   //min distan0 ce in xy cordinate
-	   double dlenT(0);
+
+
+           //min distan0 ce in xy cordinate
+           double dlenT(0);
            TVector3 diff = trkPos0-cog ;
            double distMin = sqrt(diff.X()*diff.X()+diff.Y()*diff.Y());
-	   for (double dlent=0;dlent<200;dlent+=1.0)
-	   {
-	        //TVector3 trkPos = getPosTrk(it,dlent);
-	        TVector3 trkPos = trkPos0+dlent*trkDir;
-	        diff = trkPos-cog;
+           for (double dlent=0;dlent<200;dlent+=1.0)
+           {
+                //TVector3 trkPos = getPosTrk(it,dlent);
+                TVector3 trkPos = trkPos0+dlent*trkDir;
+                diff = trkPos-cog;
                 double dist = sqrt(diff.X()*diff.X()+diff.Y()*diff.Y());
                 if (dist < distMin) {distMin=dist;dlenT=dlent;}
-	   }
-           
-         
+           }
+
+
            TVector3 TrkPosMin =  trkPos0+dlenT*trkDir;
-	   double dx = cog.X() - TrkPosMin.X();
-	   double dy = cog.Y() - TrkPosMin.Y();
+           double dx = cog.X() - TrkPosMin.X();
+           double dy = cog.Y() - TrkPosMin.Y();
            TVector2 xy(dx,dy);
-	   
+
            TVector2 deltaUV0(xy*du,xy*dv);
-	   TVector2 deltaUV( xy*du-duOffset,xy*dv-dvOffset);
-	   TVector2 deltaXY(dx,dy);
+           TVector2 deltaUV( xy*du-duOffset,xy*dv-dvOffset);
+           TVector2 deltaXY(dx,dy);
             _ha->Fill(dlenT);
-	   
-/*         
-	   
-	   double dlenC(0),dlenT(0);
+
+/*
+
+           double dlenC(0),dlenT(0);
            double distMinGen = (trkPos0-cog).Mag();
-	   for (double dlent=0;dlent<100;dlent+=1.0)
-	   {
-	        TVector3 trkPos = getPosTrk(it,dlent);
-	        //TVector3 trkPos = trkPos0+dlent*trkDir;
-	        for (double dlenc=0;dlenc<100;dlenc+=1.0)
-	        {
-	            TVector3 cluPos = cog + (dlenc*cluDir);
-	            double dist = (cluPos-trkPos).Mag();
-		    if (dist < distMinGen) {distMinGen=dist;;dlenT=dlent;;dlenC=dlenc;}
-	        }
-	   }
+           for (double dlent=0;dlent<100;dlent+=1.0)
+           {
+                TVector3 trkPos = getPosTrk(it,dlent);
+                //TVector3 trkPos = trkPos0+dlent*trkDir;
+                for (double dlenc=0;dlenc<100;dlenc+=1.0)
+                {
+                    TVector3 cluPos = cog + (dlenc*cluDir);
+                    double dist = (cluPos-trkPos).Mag();
+                    if (dist < distMinGen) {distMinGen=dist;;dlenT=dlent;;dlenC=dlenc;}
+                }
+           }
 
-	   TVector3 TrkPosMin =  trkPos0+dlenT*trkDir;
-	   double dx = cog.X() - TrkPosMin.X();
-	   double dy = cog.Y() - TrkPosMin.Y();
+           TVector3 TrkPosMin =  trkPos0+dlenT*trkDir;
+           double dx = cog.X() - TrkPosMin.X();
+           double dy = cog.Y() - TrkPosMin.Y();
            TVector2 xy(dx,dy);
-	   
+
            TVector2 deltaUV0(xy*du,xy*dv);
-	   TVector2 deltaUV( xy*du-duOffset,xy*dv-dvOffset);
-	   TVector2 deltaXY(dx,dy);
+           TVector2 deltaUV( xy*du-duOffset,xy*dv-dvOffset);
+           TVector2 deltaXY(dx,dy);
 */
-	   
-	    
-
-	   _hx->Fill(deltaXY.X());
-	   _hy->Fill(deltaXY.Y());
-	   _hxy->Fill(deltaXY.X());
-	   _hxy->Fill(deltaXY.Y());
-	   _hxy2->Fill(deltaXY.X(),deltaXY.Y());
-	   _hr->Fill(deltaXY.Mod2());
-	   _hu0->Fill(deltaUV0.X());
-	   _hv0->Fill(deltaUV0.Y());
-	   _hu->Fill(deltaUV.X());
-	   _hv->Fill(deltaUV.Y());
-          
 
 
-	   _hu2nd->Fill(clu2Mom[ic]/1000,deltaUV0.X());
-	   _hv2nd->Fill(clu2Mom[ic]/1000,deltaUV0.Y());
-	   _huE25->Fill(cluE25[ic]/cluEnergy[ic],deltaUV0.X());
-	   _huDist->Fill(distShowerMax,deltaUV0.X());
-	   _hucDip->Fill(trkcdip[it],deltaUV0.X());
-	   _huRad->Fill(sqrt(cog.X()*cog.X()+cog.Y()*cog.Y()),deltaUV0.X());
-	  
+
+           _hx->Fill(deltaXY.X());
+           _hy->Fill(deltaXY.Y());
+           _hxy->Fill(deltaXY.X());
+           _hxy->Fill(deltaXY.Y());
+           _hxy2->Fill(deltaXY.X(),deltaXY.Y());
+           _hr->Fill(deltaXY.Mod2());
+           _hu0->Fill(deltaUV0.X());
+           _hv0->Fill(deltaUV0.Y());
+           _hu->Fill(deltaUV.X());
+           _hv->Fill(deltaUV.Y());
+
+
+
+           _hu2nd->Fill(clu2Mom[ic]/1000,deltaUV0.X());
+           _hv2nd->Fill(clu2Mom[ic]/1000,deltaUV0.Y());
+           _huE25->Fill(cluE25[ic]/cluEnergy[ic],deltaUV0.X());
+           _huDist->Fill(distShowerMax,deltaUV0.X());
+           _hucDip->Fill(trkcdip[it],deltaUV0.X());
+           _huRad->Fill(sqrt(cog.X()*cog.X()+cog.Y()*cog.Y()),deltaUV0.X());
+
 
 
 
            int Ncr(0);
-	   std::vector<int> crystalL = (*cluList)[ic];               
-	   for (unsigned int il=0;il<crystalL.size();++il) if (cryEdep[crystalL.at(il)] > 5) ++Ncr;
-	   _hncr->Fill(Ncr);
+           std::vector<int> crystalL = (*cluList)[ic];
+           for (unsigned int il=0;il<crystalL.size();++il) if (cryEdep[crystalL.at(il)] > 5) ++Ncr;
+           _hncr->Fill(Ncr);
 
 
 
-	   if (deltaUV.X() >25 && numPoly<30)
-	   {
-		visX[numPoly]=TrkPosMin.X();
-		visY[numPoly]=TrkPosMin.Y();
-		visPX[numPoly]=trkpX[it]/trkpt;
-		visPY[numPoly]=trkpY[it]/trkpt;	       
-		visCX[numPoly]=cog.X();
-		visCY[numPoly]=cog.Y();
+           if (deltaUV.X() >25 && numPoly<30)
+           {
+                visX[numPoly]=TrkPosMin.X();
+                visY[numPoly]=TrkPosMin.Y();
+                visPX[numPoly]=trkpX[it]/trkpt;
+                visPY[numPoly]=trkpY[it]/trkpt;
+                visCX[numPoly]=cog.X();
+                visCY[numPoly]=cog.Y();
 
-		for (int il=0;il<nCry;++il) if (cryEdep[il] > 0.9)  _dedep[numPoly]->Fill(cryPosX[il],cryPosY[il],cryEdep[il]);
+                for (int il=0;il<nCry;++il) if (cryEdep[il] > 0.9)  _dedep[numPoly]->Fill(cryPosX[il],cryPosY[il],cryEdep[il]);
 
-		std::vector<int> crystalList = (*cluList)[ic];               
-		visN[numPoly]=crystalList.size();              
-		for (unsigned int il=0;il<crystalList.size();++il)
-		{	      
-	      	   int icry = crystalList.at(il);
-		   visLX[numPoly][il]=cryPosX[icry];
-	           visLY[numPoly][il]=cryPosY[icry];
-		} 
+                std::vector<int> crystalList = (*cluList)[ic];
+                visN[numPoly]=crystalList.size();
+                for (unsigned int il=0;il<crystalList.size();++il)
+                {
+                   int icry = crystalList.at(il);
+                   visLX[numPoly][il]=cryPosX[icry];
+                   visLY[numPoly][il]=cryPosY[icry];
+                }
 
-		++numPoly;	
-	   }  	   
-	  
+                ++numPoly;
+           }
+
         }
     }
-         
+
     return;
 }
 
@@ -472,20 +472,20 @@ void fitFinal(TString title, TH1F *h, int ichoice)
        h->Fit("gaus","q","",-20,20);
        cout<<"Results "<<setprecision(3)<<h->GetFunction("gaus")->GetParameter(1)<<" +- "<<h->GetFunction("gaus")->GetParError(1)<<"     "
            <<h->GetFunction("gaus")->GetParameter(2)<<" +- "<<h->GetFunction("gaus")->GetParError(2)<<endl;
-     } 
+     }
 
      if (ichoice==1)
-     {       
+     {
        TF1 func("f","gaus(0)+gaus(3)");
        func.SetParameters(0.5*h->GetMaximum()/2.5,0,6.0,0.5*h->GetMaximum()/5.5,10,1);
        h->Fit("f","q");
        double fwhm = FHWM(&func,-30,30);
-      
+
        cout<<"Results "<<setprecision(3)<<func.GetParameter(2)<<" +- "<<func.GetParError(2)<<"  /  "
                        <<func.GetParameter(5)<<" +- "<<func.GetParError(5)<<"     FWHM/2.34   ="<<fwhm<<" RMS "<<h->GetRMS()<<endl;
 
 
- 
+
      }
 
      if (ichoice==2)
@@ -493,7 +493,7 @@ void fitFinal(TString title, TH1F *h, int ichoice)
        h->Fit("gaus","q");
        cout<<"Results "<<setprecision(3)<<h->GetFunction("gaus")->GetParameter(2)<<" +- "<<h->GetFunction("gaus")->GetParError(2)<<"  /  "
                        <<h->GetFunction("gaus")->GetParameter(1)<<" +- "<<h->GetFunction("gaus")->GetParError(1)<<endl;
-     } 
+     }
 
      if (ichoice==3)
      {
@@ -505,11 +505,11 @@ void fitFinal(TString title, TH1F *h, int ichoice)
        cout<<"Results "<<setprecision(3)<<func.GetParameter(2)<<" +- "<<func.GetParError(2)<<"  /  "
             <<func.GetParameter(1)<<" +- "<<func.GetParError(1)<<"     FWHM/2.34   ="<<fwhm<<" RMS "<<h->GetRMS()<<endl;
 
- 
-     } 
+
+     }
 
      if (ichoice==4)
-     {       
+     {
        TF1 func("f","expo(0)+expo(2)");
        func.SetParameters(8,-0.015,5.7,-0.004);
        h->Fit("f","q");
@@ -525,7 +525,7 @@ void fitFinal(TString title, TH1F *h, int ichoice)
 
 void visualize()
 {
-     
+
     TCanvas *ce = new TCanvas("ce","ce",1200,1200);
 
     for (int i=0;i<20;i++)
@@ -542,7 +542,7 @@ void visualize()
        el2->Draw();
 
        for (int ic=0;ic<visN[i];++ic) {
-	 TEllipse *el3 = new TEllipse(visLX[i][ic],visLY[i][ic],2,2);
+         TEllipse *el3 = new TEllipse(visLX[i][ic],visLY[i][ic],2,2);
          el3->SetFillStyle(3000);
          el3->SetFillColor(1);
          el3->Draw();
@@ -561,20 +561,20 @@ double FHWM(TF1 *func, double xmin, double xmax)
 {
 
   double step(0.01);
-  
+
   double vmax(-1),xvmax(0);
   for (double x=xmin;x<xmax;x+=step)  {
     double val = func->Eval(x);
     if (val > vmax) {vmax = val ; xvmax=x;}
   }
-      
+
   double vlim1(0),vlim2(0);
-  for (double x=xmin;x<xmax;x+=step) { 
+  for (double x=xmin;x<xmax;x+=step) {
     double val = func->Eval(x);
     if (val > (vmax/2.0)) {vlim1 = x ; break;}
   }
-  
-  for (double x=xmax;x>xmin;x-=step) { 
+
+  for (double x=xmax;x>xmin;x-=step) {
     double val = func->Eval(x);
     if (val > (vmax/2.0)) {vlim2 = x+step ; break;}
   }
@@ -592,13 +592,13 @@ void fcn(int& npar, double* deriv, double& f, double par[], int flag)
 {
   f=getChi2(par);
   //cout<<par[0]<<" "<<" "<<f<<endl;
-}                        
+}
 
 
 
 double getChi2(double* par)
 {
-   
+
     double chi2(0);
 
     int nevent = tree->GetEntries();
@@ -609,75 +609,75 @@ double getChi2(double* par)
        tree->GetEntry(i);
        for (int im=0;im<nMatch;im++) {
 
-	 if (mChi2[im]>100) continue;
-	 int it = mTrkId[im];
-	 int ic = mCluId[im];
+         if (mChi2[im]>100) continue;
+         int it = mTrkId[im];
+         int ic = mCluId[im];
 
 
-	 if (cluEnergy[ic]<60) continue;
-	 if (trkStat[it]!=1 || trkprob[it]<0.001) continue;
+         if (cluEnergy[ic]<60) continue;
+         if (trkStat[it]!=1 || trkprob[it]<0.001) continue;
 
          if (checkFace  && trkFFZ[it] >1 ) continue;
          if (checkSide  && trkFFZ[it] <1 ) continue;
 
 
-	 double trkp = sqrt(trkpX[it]*trkpX[it] + trkpY[it]*trkpY[it]+ trkpZ[it]*trkpZ[it]);
-	 TVector3 trkDir(trkpX[it]/trkp,trkpY[it]/trkp,trkpZ[it]/trkp);
+         double trkp = sqrt(trkpX[it]*trkpX[it] + trkpY[it]*trkpY[it]+ trkpZ[it]*trkpZ[it]);
+         TVector3 trkDir(trkpX[it]/trkp,trkpY[it]/trkp,trkpZ[it]/trkp);
          TVector3 trkPos0 = getPosTrk(it,0);
-         
-	 TVector3 cog = calcCog(ic, par);
-	 TVector3 cluDir(0,0,1);
+
+         TVector3 cog = calcCog(ic, par);
+         TVector3 cluDir(0,0,1);
 
 
 
-	 //min distance in xy cordinate
+         //min distance in xy cordinate
          TVector3 diff = trkPos0-cog ;
          double distMin = sqrt(diff.X()*diff.X()+diff.Y()*diff.Y());
-	 for (double dlent=0;dlent<100;dlent+=1.0)
-	 {
-	      //TVector3 trkPos = getPosTrk(it,dlent);
-	      TVector3 trkPos = trkPos0+dlent*trkDir;
-	      diff = trkPos-cog;
+         for (double dlent=0;dlent<100;dlent+=1.0)
+         {
+              //TVector3 trkPos = getPosTrk(it,dlent);
+              TVector3 trkPos = trkPos0+dlent*trkDir;
+              diff = trkPos-cog;
               double dist = sqrt(diff.X()*diff.X()+diff.Y()*diff.Y());
               if (dist < distMin) distMin=dist;
-	 }
+         }
 
-	 
-         
-/*       
+
+
+/*
          // min distance in 3d
          double distMin = (trkPos0-cog).Mag();
-	 for (double dlent=0;dlent<100;dlent+=1.0)
-	 {
-	      TVector3 trkPos = getPosTrk(it,dlent);
-	      //TVector3 trkPos = trkPos0+dlent*trkDir;
-	      for (double dlenc=0;dlenc<100;dlenc+=1.0)
-	      {
-	          TVector3 cluPos = cog + (dlenc*cluDir);
-	          double dist = (cluPos-trkPos).Mag();
-		  if (dist < distMin) distMin=dist;
-	      }
-	 }
-*/         
+         for (double dlent=0;dlent<100;dlent+=1.0)
+         {
+              TVector3 trkPos = getPosTrk(it,dlent);
+              //TVector3 trkPos = trkPos0+dlent*trkDir;
+              for (double dlenc=0;dlenc<100;dlenc+=1.0)
+              {
+                  TVector3 cluPos = cog + (dlenc*cluDir);
+                  double dist = (cluPos-trkPos).Mag();
+                  if (dist < distMin) distMin=dist;
+              }
+         }
+*/
 
 
-	 chi2+=distMin/100;
+         chi2+=distMin/100;
 
        }
-    } 
+    }
 
     return chi2;
 }
 
 TVector3 getPosTrk(int it, double dlen)
 {
-	 double sinDip  = sqrt(1-trkcdip[it]*trkcdip[it]);
-	 double length  = (trkZ[it] - trkz0[it])/sinDip + dlen;
-	 double posXTrk =  sin(trkphi0[it] + trkomega[it]*trkcdip[it]*length)/trkomega[it] - (trkd0[it] + 1.0/trkomega[it])*sin(trkphi0[it]);
-	 double posYTrk = -cos(trkphi0[it] + trkomega[it]*trkcdip[it]*length)/trkomega[it] + (trkd0[it] + 1.0/trkomega[it])*cos(trkphi0[it]);
-	 double posZtrk = dlen/sinDip;
-         
-	 return TVector3(posXTrk,posYTrk,posZtrk);
+         double sinDip  = sqrt(1-trkcdip[it]*trkcdip[it]);
+         double length  = (trkZ[it] - trkz0[it])/sinDip + dlen;
+         double posXTrk =  sin(trkphi0[it] + trkomega[it]*trkcdip[it]*length)/trkomega[it] - (trkd0[it] + 1.0/trkomega[it])*sin(trkphi0[it]);
+         double posYTrk = -cos(trkphi0[it] + trkomega[it]*trkcdip[it]*length)/trkomega[it] + (trkd0[it] + 1.0/trkomega[it])*cos(trkphi0[it]);
+         double posZtrk = dlen/sinDip;
+
+         return TVector3(posXTrk,posYTrk,posZtrk);
 }
 
 
@@ -685,50 +685,50 @@ TVector3 calcCog(int ic, double *par)
 {
 
       TVector3 aVector(0,0,0);
-      double sumWeights(0);    
+      double sumWeights(0);
 
       std::vector<int> crystalList = (*cluList)[ic];
 
-      for (unsigned int il=0;il<crystalList.size();++il) 
-      {         
-	int icry = crystalList.at(il);
+      for (unsigned int il=0;il<crystalList.size();++il)
+      {
+        int icry = crystalList.at(il);
 
-	double energy    = cryEdep[icry];
-	if (energy < 1e-6) continue;
-//	if (energy < 3) continue;
+        double energy    = cryEdep[icry];
+        if (energy < 1e-6) continue;
+//      if (energy < 3) continue;
 
-	//weight function
-	double weight(0),arg(0);
-	double eRatio = energy/cluEnergy[ic];
-	
+        //weight function
+        double weight(0),arg(0);
+        double eRatio = energy/cluEnergy[ic];
 
-	switch(WeightMode)
-	{
-           case 0: 
-	       if ( eRatio> RatioEcut) weight = par[0]+energy;
-	       break;
 
-           case 1: 
-	       if ( eRatio > RatioEcut && (par[0]+energy)>1e-5) weight = sqrt(par[0]+energy); 
-	       break;
+        switch(WeightMode)
+        {
+           case 0:
+               if ( eRatio> RatioEcut) weight = par[0]+energy;
+               break;
 
-           case 2: 
-	       if ( eRatio > RatioEcut) weight = par[0]+par[1]*log(energy); 
-	       break;
+           case 1:
+               if ( eRatio > RatioEcut && (par[0]+energy)>1e-5) weight = sqrt(par[0]+energy);
+               break;
 
-	}
-	if (weight < 0) weight=0;
-        
+           case 2:
+               if ( eRatio > RatioEcut) weight = par[0]+par[1]*log(energy);
+               break;
 
-	aVector[0] += cryPosX[icry]*weight;
-	aVector[1] += cryPosY[icry]*weight;
-	sumWeights += weight;
+        }
+        if (weight < 0) weight=0;
+
+
+        aVector[0] += cryPosX[icry]*weight;
+        aVector[1] += cryPosY[icry]*weight;
+        sumWeights += weight;
      }
 
      if (sumWeights>1e-3) { aVector[0] /= sumWeights; aVector[1] /= sumWeights;}
      else                 { aVector[0]=aVector[1]=0;}
 
-     return aVector;   
+     return aVector;
 }
 
 double calcLen(int ic)
@@ -736,26 +736,26 @@ double calcLen(int ic)
 
       double distMax(0);
       double Emin = 1;
-      
+
       std::vector<int> crystalList = (*cluList)[ic];
 
-      for (unsigned int i=1;i<crystalList.size();++i) 
-      {         
-	int icry = crystalList.at(i);
-	if (cryEdep[icry]<Emin) continue;
-       
-        for (unsigned int j=0;j<i;++j)
-	{
- 	   int jcry = crystalList.at(j);
-   	   if (cryEdep[jcry]<Emin) continue;
+      for (unsigned int i=1;i<crystalList.size();++i)
+      {
+        int icry = crystalList.at(i);
+        if (cryEdep[icry]<Emin) continue;
 
-	   double dx = cryPosX[icry]-cryPosX[jcry];
-	   double dy = cryPosY[icry]-cryPosY[jcry];
-	   double dist = sqrt(dx*dx+dy*dy);
-	   if (dist > distMax) distMax = dist;
-	}
-      }	
-     return distMax;   
+        for (unsigned int j=0;j<i;++j)
+        {
+           int jcry = crystalList.at(j);
+           if (cryEdep[jcry]<Emin) continue;
+
+           double dx = cryPosX[icry]-cryPosX[jcry];
+           double dy = cryPosY[icry]-cryPosY[jcry];
+           double dist = sqrt(dx*dx+dy*dy);
+           if (dist > distMax) distMax = dist;
+        }
+      }
+     return distMax;
 }
 
 bool checkVD(bool wantFace, bool want400, bool wantSide)
@@ -885,7 +885,7 @@ void setTree()
 
 void makeHist()
 {
-   
+
      gStyle->SetFrameBorderMode(0);
      gStyle->SetCanvasBorderMode(0);
      gStyle->SetPadBorderMode(0);
@@ -928,7 +928,7 @@ void makeHist()
      _prob2    = new TH1F("prob2","Prob",50,0,1);
      _chi2prob = new TH1F("chi2prob","Prob",50,0,1);
 
- 
+
       histHelper(_hx,"#DeltaX (mm)");
       histHelper(_hy,"#DeltaY (mm)");
       histHelper(_hr,"R (mm)");
@@ -936,15 +936,15 @@ void makeHist()
       histHelper(_hv0,"#DeltaV (mm)");
       histHelper(_hu,"#DeltaU (mm)");
       histHelper(_hv,"#DeltaV (mm)");
-      
+
 
      _hxy2->GetXaxis()->SetTitle("X residual (mm)");
      _hxy2->GetYaxis()->SetTitle("Y residual (mm)");
      _hxy2->GetXaxis()->SetTitleSize(0.045);
      _hxy2->GetYaxis()->SetTitleSize(0.045);
-     
 
-     for (int i=0;i<30;++i)_dedep[i] = buildDisk(Form("Edep%i_a",i),351,660,33.065); 
+
+     for (int i=0;i<30;++i)_dedep[i] = buildDisk(Form("Edep%i_a",i),351,660,33.065);
 
 }
 
@@ -972,14 +972,14 @@ TH2Poly* buildDisk(TString hname, double _radiusIn, double _radiusOut, double _c
        int nHexagons = 1 + 3*nRings*(nRings-1);
 
        for (int i=0;i<nHexagons;++i) {
-	   double x0(0),y0(0);
-	   getXYPosition_disk(i,x0,y0);
-	   x0 *= _cellSize;
-	   y0 *= _cellSize;
+           double x0(0),y0(0);
+           getXYPosition_disk(i,x0,y0);
+           x0 *= _cellSize;
+           y0 *= _cellSize;
 
-	   if ( !isInsideDisk(x0,y0,_cellSize,_radiusIn,_radiusOut) ) continue;
+           if ( !isInsideDisk(x0,y0,_cellSize,_radiusIn,_radiusOut) ) continue;
 
-	   double x[6]={0},y[6]={0};
+           double x[6]={0},y[6]={0};
            x[0]= x0-0.288675135*_cellSize; y[0]= y0-0.5*_cellSize;
            x[1]= x0+0.288675135*_cellSize; y[1]= y0-0.5*_cellSize;
            x[2]= x0+0.577350269*_cellSize; y[2]= y0;
@@ -992,10 +992,10 @@ TH2Poly* buildDisk(TString hname, double _radiusIn, double _radiusOut, double _c
        return _h2p;
 }
 
-void getXYPosition_disk(int index, double&x, double& y) 
-{        
+void getXYPosition_disk(int index, double&x, double& y)
+{
 
-   if (index==0) {x=0;y=0;return;} 
+   if (index==0) {x=0;y=0;return;}
 
    int _step_l[6]={0,-1,-1,0,1,1};
    int _step_k[6]={1,1,0,-1,-1,0};
@@ -1017,53 +1017,25 @@ void getXYPosition_disk(int index, double&x, double& y)
    return;
 }
 
-bool isInsideDisk(double x, double y, double _cellSize, double _radiusIn, double _radiusOut) 
-{          
+bool isInsideDisk(double x, double y, double _cellSize, double _radiusIn, double _radiusOut)
+{
 
    double apexX[7]={-0.2886751,+0.2886751,+0.5773502,+0.2886751,-0.2886751,-0.5773502,-0.2886751};
    double apexY[7]={-0.5,-0.5,0,0.5,0.5,0,-0.5};
 
-   for (int ip=0;ip<6;++ip){  
+   for (int ip=0;ip<6;++ip){
        TVector2 p1(x+_cellSize*apexX[ip],   y+_cellSize*apexY[ip]);
        TVector2 p2(x+_cellSize*apexX[ip+1], y+_cellSize*apexY[ip+1]);
        if (calcDistToSide(p1,p2) < _radiusIn) return false;
-       if (p1.Mod() > _radiusOut)             return false;      
+       if (p1.Mod() > _radiusOut)             return false;
    }
    return true;
 }
 
-double calcDistToSide(TVector2& a, TVector2& b) 
+double calcDistToSide(TVector2& a, TVector2& b)
 {
     double t = -3.0*(b-a)*a;
     if (t<0) return a.Mod();
     if (t>1) return b.Mod();
     return (a+t*(b-a)).Mod();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

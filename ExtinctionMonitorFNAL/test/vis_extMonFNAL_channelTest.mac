@@ -25,7 +25,7 @@
 ################################################################
 # Settings for top volume ==HallAir
 
-### View trajectories from a side.  
+### View trajectories from a side.
 ## Filter channel rotation: 90 + 13.78 - 0.0316 * 180/m_pi = 101.97 degrees
 /vis/viewer/set/viewpointThetaPhi 101.97 0
 
@@ -59,11 +59,11 @@
 # Simple plan view for whatever the top volume is
 #/vis/viewer/set/viewpointThetaPhi 90 89
 #/vis/viewer/zoomTo 2
-# 
+#
 # /vis/viewer/panTo 22 -3 m
-# /vis/viewer/zoomTo 6   
+# /vis/viewer/zoomTo 6
 
 ################################################################
-/vis/enable 
+/vis/enable
 
 # Do NOT issue the /run/beamon command

@@ -39,7 +39,7 @@ namespace mu2e {
   void EventLister::analyze(const art::Event& event) {
     _ievent++;
     printf("Event: %8i run: %10i subRun: %5i event: %10i\n",
-	   _ievent,event.run(),event.subRun(),event.event());
+           _ievent,event.run(),event.subRun(),event.event());
     //    cout << "Event: " << event.id() << endl;
   }
 

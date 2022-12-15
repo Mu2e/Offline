@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "mu2e-artdaq-core/Overlays/CRVFragment.hh"
+#include "artdaq-core-mu2e/Overlays/CRVFragment.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -69,7 +69,7 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
-int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc) 
+int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc)
 {
   return adc;
 }
@@ -209,7 +209,7 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "TDC: " << crvHit.HitTime << std::endl;
             std::cout << "Waveform: {";
             // TODO: This is a temporary implementation.
-            for (size_t j = 0; j < 8; j++) 
+            for (size_t j = 0; j < 8; j++)
             {
               std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
               if (j+1 < 8) std::cout << " ";
@@ -221,7 +221,7 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << crvHit.SiPMID << " ";
             std::cout << crvHit.HitTime << " ";
             // TODO: This is a temporary implementation.
-            for (size_t j = 0; j < 8; j++) 
+            for (size_t j = 0; j < 8; j++)
             {
               std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
               if (j+1 < 8) std::cout << " ";

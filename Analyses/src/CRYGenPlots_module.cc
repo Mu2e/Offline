@@ -24,6 +24,8 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/Mu2eUtilities/inc/compressPdgId.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -132,7 +134,7 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
   else
     success = e.getByLabel(CRYModuleLabel_, CRYInstanceName_, gpHandle);
 
-  if (!success) 
+  if (!success)
     return;
 
   const auto & particles = *gpHandle;
@@ -184,44 +186,8 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
     _hTime->Fill(p.time());
     _hPyOverPmag->Fill(mom4.py() / mom3.mag());
 
-    switch (p.pdgId()) {
-      case 13: // mu-
-        _hPtypeKE->Fill(mom4.e(), 0); break;
-      case -13: // mu+
-        _hPtypeKE->Fill(mom4.e(), 0); break;
-      case 22: // photon
-        _hPtypeKE->Fill(mom4.e(), 1); break;
-      case -11: // e+
-        _hPtypeKE->Fill(mom4.e(), 2); break;
-      case 11: // e-
-        _hPtypeKE->Fill(mom4.e(), 2); break;
-      case 2112: // neutron
-        _hPtypeKE->Fill(mom4.e(), 3); break;
-      case -2112: // neutron
-        _hPtypeKE->Fill(mom4.e(), 3); break;
-      case 2212: // proton
-        _hPtypeKE->Fill(mom4.e(), 4); break;
-      case -2212: // proton
-        _hPtypeKE->Fill(mom4.e(), 4); break;
-      case 111: // pi0
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case 211: // pi+
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case -211: // pi-
-        _hPtypeKE->Fill(mom4.e(), 5); break;
-      case 130: // k0 L
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case 310: // k0 S
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case 311: // k0
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case 321: // k+
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      case -321: // k-
-        _hPtypeKE->Fill(mom4.e(), 6); break;
-      default: // others
-        _hPtypeKE->Fill(mom4.e(), 7); break;
-    }
+    int pbin = compressPdgIdCosmic(p.pdgId());
+    _hPtypeKE->Fill(mom4.e(), pbin);
 
   }
 

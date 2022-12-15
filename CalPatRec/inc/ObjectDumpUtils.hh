@@ -54,10 +54,10 @@ namespace mu2e {
 
     static void printKalRep(const KalRep* Krep, const char* Opt = "", const char* Prefix = "");
 
-    static void printKalRepCollection(const art::Event*          Event        , 
-				      const KalRepPtrCollection* Coll         ,
-				      int                        PrintHits = 0); 
-    
+    static void printKalRepCollection(const art::Event*          Event        ,
+                                      const KalRepPtrCollection* Coll         ,
+                                      int                        PrintHits = 0);
+
     static void printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluster, const char* Opt = "");
 
     static void printCaloProtoClusterCollection(const mu2e::CaloProtoClusterCollection* Coll);

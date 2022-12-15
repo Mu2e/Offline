@@ -643,7 +643,7 @@ namespace mu2e {
 
       const Hep3Vector posMu2e(extmon_->extMonToMu2e_position(posExtMon));
 
-      static const double muonMass = mc_.mass(PDGCode::type(13));
+      static const double muonMass = mc_.mass(PDGCode::mu_minus);
       const CLHEP::HepLorentzVector momMu2e(Hep3Vector(), muonMass);
 
       return GenParticle(PDGCode::type(ms.muon.pdgId),

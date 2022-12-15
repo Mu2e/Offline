@@ -1,5 +1,6 @@
 
 #include "Offline/Print/inc/SimParticlePrinter.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include <iomanip>
 #include <string>
@@ -61,7 +62,7 @@ void mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind,
   if (verbose() < 1) return;
 
   if (obj.startMomentum().vect().mag() < _pCut) return;
-  if ((abs(obj.pdgId()) == 11 || obj.pdgId() == 22) &&
+  if ((abs(obj.pdgId()) == PDGCode::e_minus || obj.pdgId() == PDGCode::gamma) &&
       obj.startMomentum().vect().mag() < _emPCut)
     return;
   if (_primaryOnly && (!obj.isPrimary())) return;

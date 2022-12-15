@@ -64,18 +64,18 @@ void keyboard()
     case 'm': currentevent++;  //forward
               if(currentevent>=nevents) currentevent=0;
               break;
-    case 'x': 
-    case 'y': 
+    case 'x':
+    case 'y':
     case 'z': changerange(key-'x',true);
               break;
-    case 'X': 
-    case 'Y': 
+    case 'X':
+    case 'Y':
     case 'Z': changerange(key-'X',false);
               break;
-    case 'p': 
+    case 'p':
     case 'P': changeangles(1,key=='p');
               break;
-    case 't': 
+    case 't':
     case 'T': changeangles(2,key=='t');
               break;
     default : return;
@@ -111,7 +111,7 @@ void setup()
   gPad->GetView()->SetRange(rmin,rmax);
   gPad->Modified();
   gPad->Update();
-  cout<<"If the canvas has the focus, and if the mouse is on top of the canvas,"<<endl; 
+  cout<<"If the canvas has the focus, and if the mouse is on top of the canvas,"<<endl;
   cout<<"but not on any drawn object, the the following options are available:"<<endl;
   cout<<"m    : next event"<<endl;
   cout<<"n    : previous event"<<endl;

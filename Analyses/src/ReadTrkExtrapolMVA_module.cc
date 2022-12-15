@@ -81,31 +81,31 @@ namespace mu2e {
 
      public:
 
-	 explicit ReadTrkExtrapolMVA(fhicl::ParameterSet const& pset):
-	   art::EDAnalyzer(pset),
-	   _diagLevel(pset.get<int>("diagLevel",0)),
-	   _trkExtrapolModuleLabel(pset.get<std::string>("trkExtrapolModuleLabel")),
-	   _Ntup(0)
-	 {}
+         explicit ReadTrkExtrapolMVA(fhicl::ParameterSet const& pset):
+           art::EDAnalyzer(pset),
+           _diagLevel(pset.get<int>("diagLevel",0)),
+           _trkExtrapolModuleLabel(pset.get<std::string>("trkExtrapolModuleLabel")),
+           _Ntup(0)
+         {}
 
-	 virtual ~ReadTrkExtrapolMVA() {}
+         virtual ~ReadTrkExtrapolMVA() {}
 
-	 void beginJob();
-	 void endJob() {}
+         void beginJob();
+         void endJob() {}
 
-	 void analyze(art::Event const& event );
+         void analyze(art::Event const& event );
 
 
 
      private:
 
-	  int          _diagLevel;
-	  std::string  _trkExtrapolModuleLabel;
+          int          _diagLevel;
+          std::string  _trkExtrapolModuleLabel;
 
-	  TTree* _Ntup;
-	  Int_t _evt,_ntrks;
-	  Float_t _caloSec[100],_trkId[100],_trkTime[100],_trkTimeErr[100], _trkPathLenghtIn[100], _trkPathLenghtInErr[100], _trkPathLenghtOut[100];
-	  Float_t _trkMom[100],_trkMomX[100], _trkMomY[100],_trkMomZ[100], _trkPosX[100], _trkPosY[100], _trkPosZ[100];
+          TTree* _Ntup;
+          Int_t _evt,_ntrks;
+          Float_t _caloSec[100],_trkId[100],_trkTime[100],_trkTimeErr[100], _trkPathLenghtIn[100], _trkPathLenghtInErr[100], _trkPathLenghtOut[100];
+          Float_t _trkMom[100],_trkMomX[100], _trkMomY[100],_trkMomZ[100], _trkPosX[100], _trkPosY[100], _trkPosZ[100];
 
   };
 
@@ -147,25 +147,25 @@ namespace mu2e {
         _evt   = event.id().event();
         _ntrks = trkExtrapols.size();
 
-	int it(0);
-	for (auto const& extrapol: trkExtrapols)
-	{
-	    double pathLength       = extrapol.pathLengthEntrance();
-	    _caloSec[it]            = extrapol.diskId();
-	    _trkTime[it]            = extrapol.trk()->arrivalTime(pathLength);
-	    _trkPathLenghtIn[it]    = extrapol.pathLengthEntrance();
-	    _trkPathLenghtInErr[it] = extrapol.pathLenghtEntranceErr();
-	    _trkPathLenghtOut[it]   = extrapol.pathLengthExit();
-	    _trkMom[it]             = extrapol.trk()->momentum(pathLength).mag();
-	    _trkMomX[it]            = extrapol.trk()->momentum(pathLength).x();
-	    _trkMomY[it]            = extrapol.trk()->momentum(pathLength).y();
-	    _trkMomZ[it]            = extrapol.trk()->momentum(pathLength).z();
-	    _trkPosX[it]            = extrapol.trk()->position(pathLength).x();
-	    _trkPosY[it]            = extrapol.trk()->position(pathLength).y();
-	    _trkPosZ[it]            = extrapol.trk()->position(pathLength).z();
+        int it(0);
+        for (auto const& extrapol: trkExtrapols)
+        {
+            double pathLength       = extrapol.pathLengthEntrance();
+            _caloSec[it]            = extrapol.diskId();
+            _trkTime[it]            = extrapol.trk()->arrivalTime(pathLength);
+            _trkPathLenghtIn[it]    = extrapol.pathLengthEntrance();
+            _trkPathLenghtInErr[it] = extrapol.pathLenghtEntranceErr();
+            _trkPathLenghtOut[it]   = extrapol.pathLengthExit();
+            _trkMom[it]             = extrapol.trk()->momentum(pathLength).mag();
+            _trkMomX[it]            = extrapol.trk()->momentum(pathLength).x();
+            _trkMomY[it]            = extrapol.trk()->momentum(pathLength).y();
+            _trkMomZ[it]            = extrapol.trk()->momentum(pathLength).z();
+            _trkPosX[it]            = extrapol.trk()->position(pathLength).x();
+            _trkPosY[it]            = extrapol.trk()->position(pathLength).y();
+            _trkPosZ[it]            = extrapol.trk()->position(pathLength).z();
 
-	    ++it;
-	}
+            ++it;
+        }
 
         _Ntup->Fill();
   }

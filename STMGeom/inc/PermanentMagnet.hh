@@ -17,9 +17,9 @@ namespace mu2e {
   public:
     PermanentMagnet(bool build,
                     double halfX, double halfY, double halfZ,
-                    double holeHalfX, double holeHalfY, 
+                    double holeHalfX, double holeHalfY,
                     CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
-                    CLHEP::HepRotation const & rotation = CLHEP::HepRotation(), 
+                    CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
                     CLHEP::Hep3Vector const & holeOffset = CLHEP::Hep3Vector(),
                     std::string const & materialName = "",
                     bool hasLiner = true, double field=0.0,
@@ -51,11 +51,11 @@ namespace mu2e {
     double zEnd()            const { return _originInMu2e.z() + zHalfLength(); }
     double field()           const { return _field; }
     bool   fieldVisible()    const { return _fieldVisible; }
-   
+
     CLHEP::Hep3Vector const &  originInMu2e() const { return _originInMu2e; }
     CLHEP::HepRotation const & rotation()     const { return _rotation; }
     CLHEP::Hep3Vector const &  holeOffset()   const { return _holeOffset; }
-    std::string const &        materialName() const { return _materialName; }    
+    std::string const &        materialName() const { return _materialName; }
 
     // Genreflex can't do persistency of vector<PermanentMagnet> without a default constructor
     PermanentMagnet() {}

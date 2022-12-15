@@ -34,6 +34,11 @@ namespace fhicl
   class ParameterSet;
 }
 
+namespace mu2e
+{
+  class CRVCalib;
+}
+
 namespace mu2e_eventdisplay
 {
   class ContentSelector;
@@ -51,7 +56,7 @@ namespace mu2e_eventdisplay
     EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset);
     virtual          ~EventDisplayFrame();
     void             fillGeometry();
-    void             setEvent(const art::Event& event, bool firstLoop=false);
+    void             setEvent(const art::Event& event, bool firstLoop, const mu2e::CRVCalib &calib);
     boost::shared_ptr<RootFileManager> getRootFileManager() {return _rootFileManager;}
     std::vector<boost::shared_ptr<HistDraw> > &getHistDrawVector(){return _histDrawVector;}
     bool             isClosed() const;
@@ -127,6 +132,7 @@ namespace mu2e_eventdisplay
     TBox                *_legendBox[30];
     TPolyLine           *_legendParticleLine[30];
     std::string         _g4ModuleLabel, _physicalVolumesMultiLabel, _protonBunchTimeLabel;
+    double              _kalStepSize;
 
     mu2e::SimParticleTimeOffset _timeOffsets;
 

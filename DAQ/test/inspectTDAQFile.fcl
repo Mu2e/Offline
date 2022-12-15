@@ -25,31 +25,31 @@ physics : {
 
    analyzers  : {
 
-      readSD : 
+      readSD :
       {
-	 module_type : ReadStrawDigiReco
-	 digisTag    : makeSD
+         module_type : ReadStrawDigiReco
+         digisTag    : makeSD
       }
 
-      readCD : 
+      readCD :
       {
-	 module_type : CaloDigiAna
-	 digisTag     : CaloDigiMaker
+         module_type : CaloDigiAna
+         digisTag     : CaloDigiMaker
       }
 
 
       readFragments : {
-	 module_type : FragmentAna
-	 diagLevel   : 0
-	 parseCAL    : 1
-	 parseTRK    : 1
-	 caloTag     : "daq:calo"
-	 trkTag      : "daq:trk"
+         module_type : FragmentAna
+         diagLevel   : 0
+         parseCAL    : 1
+         parseTRK    : 1
+         caloTag     : "daq:calo"
+         trkTag      : "daq:trk"
       }
    }
 
-   #  t1 : [ makeSD ] 
-   t1 : [  ] 
+   #  t1 : [ makeSD ]
+   t1 : [  ]
    e1 : [ readFragments, readCD, readSD ]
 
    trigger_paths  : [t1]
@@ -58,4 +58,4 @@ physics : {
 
 }
 
-services.TFileService.fileName : "inspectdTDAQFile_test.root" 
+services.TFileService.fileName : "inspectdTDAQFile_test.root"

@@ -3,7 +3,7 @@
 //
 // parameter defaults: CalPatRec/fcl/prolog.fcl
 // this module doesn't do reconstruction
-// on input, it takes a list  of StrawHitFlags flags and eveluates performance 
+// on input, it takes a list  of StrawHitFlags flags and eveluates performance
 // of the delta electron tagging
 //
 // hit type = 0 : proton
@@ -22,7 +22,7 @@
 // conditions
 #include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
-// root 
+// root
 #include "TMath.h"
 #include "TH1F.h"
 #include "TH1.h"
@@ -35,6 +35,7 @@
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 // Utilities
 #include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
@@ -45,13 +46,13 @@
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
-  
+
   class DeltaFinderAna : public art::EDProducer {
-  
+
   public:
     enum { kNStations      = 20 };
     enum { kNFaces         =  4 };
@@ -81,7 +82,7 @@ namespace mu2e {
     struct StrawHitHist_t {
       TH1F*  fType;
       TH1F*  fTime;
-      TH1F*  fMom;			// momentum of the particle which produced the hit
+      TH1F*  fMom;                        // momentum of the particle which produced the hit
       TH1F*  fEnergyDep;
       TH1F*  fDeltaT;
       TH1F*  fPDGCode;
@@ -103,7 +104,7 @@ namespace mu2e {
       EventHist_t*    fEvent   [kNEventHistSets   ];
       StrawHitHist_t* fStrawHit[kNStrawHitHistSets];
       McHist_t*       fMc      [kNMcHistSets      ];
-    }; 
+    };
 
     Hist_t  _hist;
 
@@ -113,37 +114,37 @@ namespace mu2e {
     struct McPart_t {
       int   fFirstStation;
       int   fLastStation;
-      int   fNHitsDelta;	    // number of hits associated with all reconstructed delta electrons 
+      int   fNHitsDelta;            // number of hits associated with all reconstructed delta electrons
       int   fTime;                  // lowest out of the hit times
 
       const SimParticle*               fSim;
       std::vector<const StrawHit*>     fListOfHits;
       std::vector<const StrawHitFlag*> fListOfFlags;
 
-      McPart_t(const SimParticle* Sim = NULL) { 
-	fSim          = Sim; 
-	fFirstStation = 999;
-	fLastStation  = -1;
-	fNHitsDelta   = 0;
-	fTime         = 1.e6;
+      McPart_t(const SimParticle* Sim = NULL) {
+        fSim          = Sim;
+        fFirstStation = 999;
+        fLastStation  = -1;
+        fNHitsDelta   = 0;
+        fTime         = 1.e6;
       }
 
-      ~McPart_t() { 
+      ~McPart_t() {
       }
 
       int NHits()      const { return fListOfHits.size(); }
       int NHitsDelta() const { return fNHitsDelta;        }
 
-      float Momentum() const { 
-	float px = fSim->startMomentum().px();
-	float py = fSim->startMomentum().py();
-	float pz = fSim->startMomentum().pz();
-	return sqrt(px*px+py*py+pz*pz);
+      float Momentum() const {
+        float px = fSim->startMomentum().px();
+        float py = fSim->startMomentum().py();
+        float pz = fSim->startMomentum().pz();
+        return sqrt(px*px+py*py+pz*pz);
       }
 
       float Time() const { return fTime; }
 
-    }; 
+    };
 
     struct McHitInfo_t {
       const  McPart_t*       fMc;
@@ -153,7 +154,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
 // NStations stations, 4-1=3 faces (for hit w/ lower z), 3 panels (for hit w/ lower z)
-// 2017-07-27 P.Murat: the 2nd dimension should be 3, right? 
+// 2017-07-27 P.Murat: the 2nd dimension should be 3, right?
 //-----------------------------------------------------------------------------
     std::vector<McPart_t*>      _list_of_mc_particles; // list_of_particles with hits in the tracker
     std::vector<McHitInfo_t>    _list_of_mc_hit_info ; // for each straw hit, pointer to the MC info
@@ -221,8 +222,8 @@ namespace mu2e {
   };
 
 //-----------------------------------------------------------------------------
-  DeltaFinderAna::DeltaFinderAna(fhicl::ParameterSet const& pset): 
-    art::EDProducer(pset), 
+  DeltaFinderAna::DeltaFinderAna(fhicl::ParameterSet const& pset):
+    art::EDProducer(pset),
     _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
     _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _mcdigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),
@@ -288,15 +289,15 @@ namespace mu2e {
     int book_event_histset[kNEventHistSets];
     for (int i=0; i<kNEventHistSets; i++) book_event_histset[i] = 0;
 
-    book_event_histset[ 0] = 1;		// all events
+    book_event_histset[ 0] = 1;                // all events
 
     for (int i=0; i<kNEventHistSets; i++) {
       if (book_event_histset[i] != 0) {
-	sprintf(folder_name,"evt_%i",i);
-	art::TFileDirectory tfdir = tfs->mkdir(folder_name);
+        sprintf(folder_name,"evt_%i",i);
+        art::TFileDirectory tfdir = tfs->mkdir(folder_name);
 
-	_hist.fEvent[i] = new EventHist_t;
-	bookEventHistograms(_hist.fEvent[i],i,&tfdir);
+        _hist.fEvent[i] = new EventHist_t;
+        bookEventHistograms(_hist.fEvent[i],i,&tfdir);
       }
     }
 //-----------------------------------------------------------------------------
@@ -305,28 +306,28 @@ namespace mu2e {
     int book_straw_hit_histset[kNStrawHitHistSets];
     for (int i=0; i<kNStrawHitHistSets; i++) book_straw_hit_histset[i] = 0;
 
-    book_straw_hit_histset[  0] = 1;		// all hits
-    book_straw_hit_histset[  1] = 1;		// all hits t>500
-    book_straw_hit_histset[  2] = 1;		// all hits t>500 
-    book_straw_hit_histset[  3] = 1;		// all hits t>500 edepOK
-    book_straw_hit_histset[  4] = 1;		// all hits t>500 edepOK non-delta
-    book_straw_hit_histset[  5] = 1;		// all hits t>500 edepOK non-delta MC=delta (type 1)
-    book_straw_hit_histset[  6] = 1;		// all hits t>500 edepOK delta
-    book_straw_hit_histset[  7] = 1;		// all hits t>500 edepOK delta MC=delta (type 1)
+    book_straw_hit_histset[  0] = 1;                // all hits
+    book_straw_hit_histset[  1] = 1;                // all hits t>500
+    book_straw_hit_histset[  2] = 1;                // all hits t>500
+    book_straw_hit_histset[  3] = 1;                // all hits t>500 edepOK
+    book_straw_hit_histset[  4] = 1;                // all hits t>500 edepOK non-delta
+    book_straw_hit_histset[  5] = 1;                // all hits t>500 edepOK non-delta MC=delta (type 1)
+    book_straw_hit_histset[  6] = 1;                // all hits t>500 edepOK delta
+    book_straw_hit_histset[  7] = 1;                // all hits t>500 edepOK delta MC=delta (type 1)
 
-    book_straw_hit_histset[ 10] = 1;		// all hits type=0
-    book_straw_hit_histset[ 20] = 1;		// all hits type=1
-    book_straw_hit_histset[ 30] = 1;		// all hits type=2
-    book_straw_hit_histset[ 40] = 1;		// all hits type=3
-    book_straw_hit_histset[ 50] = 1;		// all hits type=3
+    book_straw_hit_histset[ 10] = 1;                // all hits type=0
+    book_straw_hit_histset[ 20] = 1;                // all hits type=1
+    book_straw_hit_histset[ 30] = 1;                // all hits type=2
+    book_straw_hit_histset[ 40] = 1;                // all hits type=3
+    book_straw_hit_histset[ 50] = 1;                // all hits type=3
 
     for (int i=0; i<kNStrawHitHistSets; i++) {
       if (book_straw_hit_histset[i] != 0) {
-	sprintf(folder_name,"sh_%i",i);
-	art::TFileDirectory tfdir = tfs->mkdir(folder_name);
+        sprintf(folder_name,"sh_%i",i);
+        art::TFileDirectory tfdir = tfs->mkdir(folder_name);
 
-	_hist.fStrawHit[i] = new StrawHitHist_t;
-	bookStrawHitHistograms(_hist.fStrawHit[i],i,&tfdir);
+        _hist.fStrawHit[i] = new StrawHitHist_t;
+        bookStrawHitHistograms(_hist.fStrawHit[i],i,&tfdir);
       }
     }
 //-----------------------------------------------------------------------------
@@ -335,24 +336,24 @@ namespace mu2e {
     int book_mc_histset[kNMcHistSets];
     for (int i=0; i<kNMcHistSets; i++) book_mc_histset[i] = 0;
 
-    book_mc_histset[  0] = 1;		// all particles
-    book_mc_histset[  1] = 1;		// electrons
-    book_mc_histset[  2] = 1;		// electrons fTime > 550
-    book_mc_histset[  3] = 1;		// electrons fTime > 550 with last>first
-    book_mc_histset[  4] = 1;		// electrons fTime > 550 with last>first and 6+ hits
-    book_mc_histset[  5] = 1;		// electrons fTime > 550 with last>first, 5+ hits, and reco delta
-    book_mc_histset[  6] = 1;		// electrons fTime > 550 with last>first, 5+ hits and p < 20
+    book_mc_histset[  0] = 1;                // all particles
+    book_mc_histset[  1] = 1;                // electrons
+    book_mc_histset[  2] = 1;                // electrons fTime > 550
+    book_mc_histset[  3] = 1;                // electrons fTime > 550 with last>first
+    book_mc_histset[  4] = 1;                // electrons fTime > 550 with last>first and 6+ hits
+    book_mc_histset[  5] = 1;                // electrons fTime > 550 with last>first, 5+ hits, and reco delta
+    book_mc_histset[  6] = 1;                // electrons fTime > 550 with last>first, 5+ hits and p < 20
 
-    book_mc_histset[100] = 1;		// electrons fTime > 550 and 20 < p < 80 MeV/c
-    book_mc_histset[101] = 1;		// electrons fTime > 550 and p > 80 MeV/c
+    book_mc_histset[100] = 1;                // electrons fTime > 550 and 20 < p < 80 MeV/c
+    book_mc_histset[101] = 1;                // electrons fTime > 550 and p > 80 MeV/c
 
     for (int i=0; i<kNMcHistSets; i++) {
       if (book_mc_histset[i] != 0) {
-	sprintf(folder_name,"mc_%i",i);
-	art::TFileDirectory tfdir = tfs->mkdir(folder_name);
+        sprintf(folder_name,"mc_%i",i);
+        art::TFileDirectory tfdir = tfs->mkdir(folder_name);
 
-	_hist.fMc[i] = new McHist_t;
-	bookMcHistograms(_hist.fMc[i],i,&tfdir);
+        _hist.fMc[i] = new McHist_t;
+        bookMcHistograms(_hist.fMc[i],i,&tfdir);
       }
     }
   }
@@ -362,7 +363,7 @@ namespace mu2e {
     bookHistograms();
   }
 
- 
+
 //----Get data------------------------------------------------------------------------------------------------
   void DeltaFinderAna::beginRun(art::Run& aRun) {
 
@@ -436,39 +437,39 @@ namespace mu2e {
     for (int i=0; i<_nsh; i++) {
       const StrawHit* sh          = &_shcol->at(i);
       McHitInfo_t*    mc_hit_info = &_list_of_mc_hit_info.at(i);
-      
+
       fillStrawHitHistograms(_hist.fStrawHit[0],sh,mc_hit_info);
       if (sh->time() > 500) {
-	fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
-	
-	const StrawHitFlag* flag = mc_hit_info->fFlag;
+        fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
 
-	fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
-	int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
-	if (edepOK) {
-	  fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
-	  int delta = flag->hasAllProperties(StrawHitFlag::bkg);
-	  if (! delta) {
+        const StrawHitFlag* flag = mc_hit_info->fFlag;
+
+        fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
+        int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
+        if (edepOK) {
+          fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
+          int delta = flag->hasAllProperties(StrawHitFlag::bkg);
+          if (! delta) {
 //-----------------------------------------------------------------------------
 // StrawHit SET 4: hits not marked as delta electron hits
 //          SET 5: hits of low energy electrons not marked as delta electron hits
 //-----------------------------------------------------------------------------
-	    fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
-	    if (mc_hit_info->fType == 1) { // low-energy electrons
-	      fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
-	    }
-	  }
-	  else {
+            fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
+            if (mc_hit_info->fType == 1) { // low-energy electrons
+              fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
+            }
+          }
+          else {
 //-----------------------------------------------------------------------------
 // StrawHit SET 6: hits marked as delta electron hits
 //          SET 7: hits of low energy electrons marked as such
 //-----------------------------------------------------------------------------
-	    fillStrawHitHistograms(_hist.fStrawHit[6],sh,mc_hit_info);
-	    if (mc_hit_info->fType == 1) { // low-energy electrons
-	      fillStrawHitHistograms(_hist.fStrawHit[7],sh,mc_hit_info);
-	    }
-	  }
-	}
+            fillStrawHitHistograms(_hist.fStrawHit[6],sh,mc_hit_info);
+            if (mc_hit_info->fType == 1) { // low-energy electrons
+              fillStrawHitHistograms(_hist.fStrawHit[7],sh,mc_hit_info);
+            }
+          }
+        }
       }
 
       if (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[10],sh,mc_hit_info);
@@ -483,59 +484,59 @@ namespace mu2e {
 // Associated with found DeltaCandidate's
 //-----------------------------------------------------------------------------
     int nmc = _list_of_mc_particles.size();
-    
+
     for (int i=0; i<nmc; i++) {
       McPart_t* mc = _list_of_mc_particles.at(i);
       const SimParticle* sim = mc->fSim;
-      
+
       fillMcHistograms(_hist.fMc[0],mc);
 //-----------------------------------------------------------------------------
 // set 1: electrons
 //-----------------------------------------------------------------------------
-      if (sim->pdgId() == 11) {
-	fillMcHistograms(_hist.fMc[1],mc);
-	if (mc->Time() > 550) {
-	  fillMcHistograms(_hist.fMc[2],mc);
-	  if (mc->fLastStation > mc->fFirstStation) {
-	    fillMcHistograms(_hist.fMc[3],mc);
-	    if (mc->NHits() >= 5) {
-	      fillMcHistograms(_hist.fMc[4],mc);
+      if (sim->pdgId() == PDGCode::e_minus) {
+        fillMcHistograms(_hist.fMc[1],mc);
+        if (mc->Time() > 550) {
+          fillMcHistograms(_hist.fMc[2],mc);
+          if (mc->fLastStation > mc->fFirstStation) {
+            fillMcHistograms(_hist.fMc[3],mc);
+            if (mc->NHits() >= 5) {
+              fillMcHistograms(_hist.fMc[4],mc);
 
-	      if (mc->Momentum() < 20) fillMcHistograms(_hist.fMc[6],mc);
-	    }
+              if (mc->Momentum() < 20) fillMcHistograms(_hist.fMc[6],mc);
+            }
 //-----------------------------------------------------------------------------
 // a closer look at misreconstructed delta electrons
 //-----------------------------------------------------------------------------
-	    float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
+            float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
 
-	    if ((mc->Momentum() < 5) && (mc->Time() > 550) && (mc->NHits() > 40) && (fr < 0.5)) {
-	      printf(" event: %6i missed delta: sim.id = %10li mom = %10.3f time= %9.3f nhits = %3i nhits(delta): %3i first: %2i last: %2i",
-		     _eventNum,
-		     sim->id().asInt(), mc->Momentum(), mc->Time(), 
-		     mc->NHits(), mc->fNHitsDelta, 
-		     mc->fFirstStation, mc->fLastStation);
-	      printf(" fraction: %6.3f\n",fr);
-	    }
-	  }
+            if ((mc->Momentum() < 5) && (mc->Time() > 550) && (mc->NHits() > 40) && (fr < 0.5)) {
+              printf(" event: %6i missed delta: sim.id = %10li mom = %10.3f time= %9.3f nhits = %3i nhits(delta): %3i first: %2i last: %2i",
+                     _eventNum,
+                     sim->id().asInt(), mc->Momentum(), mc->Time(),
+                     mc->NHits(), mc->fNHitsDelta,
+                     mc->fFirstStation, mc->fLastStation);
+              printf(" fraction: %6.3f\n",fr);
+            }
+          }
 
-	  if ((mc->Momentum() > 20) && (mc->Momentum() < 80)) fillMcHistograms(_hist.fMc[100],mc);
-	  if (mc->Momentum()  > 80)                           fillMcHistograms(_hist.fMc[101],mc);
-	}
+          if ((mc->Momentum() > 20) && (mc->Momentum() < 80)) fillMcHistograms(_hist.fMc[100],mc);
+          if (mc->Momentum()  > 80)                           fillMcHistograms(_hist.fMc[101],mc);
+        }
       }
     }
   }
-  
+
 //-----------------------------------------------------------------------------
   DeltaFinderAna::McPart_t* DeltaFinderAna::findParticle(const SimParticle* Sim) {
     McPart_t* found(0);
 
     int n = _list_of_mc_particles.size();
-    
+
     for (int i=0; i<n; i++) {
       McPart_t* mc = _list_of_mc_particles.at(i);
       if (mc->fSim == Sim) {
-	found = mc;
-	break;
+        found = mc;
+        break;
       }
     }
 
@@ -572,10 +573,10 @@ namespace mu2e {
 
       const mu2e::StrawGasStep   *stmc;
       if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
-	stmc = mcdigi->strawGasStep(mu2e::StrawEnd::cal).get();
+        stmc = mcdigi->strawGasStep(mu2e::StrawEnd::cal).get();
       }
       else {
-	stmc = mcdigi->strawGasStep(mu2e::StrawEnd::hv ).get();
+        stmc = mcdigi->strawGasStep(mu2e::StrawEnd::hv ).get();
       }
 
       const mu2e::SimParticle* sim = &(*stmc->simParticle());
@@ -586,9 +587,9 @@ namespace mu2e {
       McPart_t* mc = findParticle(sim);
 
       if (mc == NULL) {
-					// add new particle
-	mc = new McPart_t(sim);
-	_list_of_mc_particles.push_back(mc);
+                                        // add new particle
+        mc = new McPart_t(sim);
+        _list_of_mc_particles.push_back(mc);
       }
       mc->fListOfHits.push_back(sh);
 
@@ -609,20 +610,20 @@ namespace mu2e {
 
       int pdg_id = mc->fSim->pdgId();
 
-      if      (pdg_id == 2212)   mc_hit_info->fType = 0;
-      else if (pdg_id == 11  ) { 
-	float mom = mc->Momentum();
-	if      (mom <  20)      {
-	  mc_hit_info->fType = 1;
-	  delta_nhits_tot++;
-	}
-	else if (mom <  90)      mc_hit_info->fType = 2;
-	else if (mom < 110)      mc_hit_info->fType = 3;
+      if      (pdg_id == PDGCode::proton)   mc_hit_info->fType = 0;
+      else if (pdg_id == PDGCode::e_minus ) {
+        float mom = mc->Momentum();
+        if      (mom <  20)      {
+          mc_hit_info->fType = 1;
+          delta_nhits_tot++;
+        }
+        else if (mom <  90)      mc_hit_info->fType = 2;
+        else if (mom < 110)      mc_hit_info->fType = 3;
       }
       else                       mc_hit_info->fType = 4;
 
       int flagged_as_delta = shf->hasAnyProperty(StrawHitFlag::bkg);
-	
+
       if (flagged_as_delta) fNHitsDeltaReco++;
     }
 
@@ -644,28 +645,28 @@ namespace mu2e {
       McPart_t* mc    = _list_of_mc_particles.at(i);
       mc->fNHitsDelta = 0;
 //-----------------------------------------------------------------------------
-// loop over the hits of MC delta electron and calculate fraction of them 
+// loop over the hits of MC delta electron and calculate fraction of them
 // which have been tagged as the delta electron hits
 //-----------------------------------------------------------------------------
       int nh = mc->fListOfHits.size();
       for (int ih=0; ih<nh; ih++) {
-	const StrawHitFlag* flag = mc->fListOfFlags.at(ih);
+        const StrawHitFlag* flag = mc->fListOfFlags.at(ih);
 
-	int flagged_as_delta = flag->hasAnyProperty(deltamask);
+        int flagged_as_delta = flag->hasAnyProperty(deltamask);
 
-	if (flagged_as_delta) mc->fNHitsDelta += 1;
+        if (flagged_as_delta) mc->fNHitsDelta += 1;
       }
 
       int pdg_id = mc->fSim->pdgId();
-      
-      if (pdg_id == 11  ) { 
-	float mom = mc->Momentum();
-	if (mom < 20)      {
+
+      if (pdg_id == PDGCode::e_minus  ) {
+        float mom = mc->Momentum();
+        if (mom < 20)      {
 //-----------------------------------------------------------------------------
 // call this "a delta electron"
 //-----------------------------------------------------------------------------
-	  fNHitsDeltaTot += mc->NHits();
-	}
+          fNHitsDeltaTot += mc->NHits();
+        }
       }
     }
 
@@ -691,14 +692,14 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     auto mcdH = Evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
     _mcdigis  = mcdH.product();
 
-    return (_shcol != 0) && (_nsh > 0) && (_shfcol != 0) && (_mcdigis != 0) ;     
+    return (_shcol != 0) && (_nsh > 0) && (_shfcol != 0) && (_mcdigis != 0) ;
   }
 
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::produce(art::Event& Event) {
 
     _eventNum = Event.event();
-    if (_debugLevel) printf(">>> DeltaFinderAna::produce  event number: %10i\n",_eventNum);  
+    if (_debugLevel) printf(">>> DeltaFinderAna::produce  event number: %10i\n",_eventNum);
 //-----------------------------------------------------------------------------
 // process event
 //-----------------------------------------------------------------------------
@@ -730,23 +731,23 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
       int nmc = _list_of_mc_particles.size();
 
       for (int i=0; i<nmc; i++) {
-	McPart_t* mc = _list_of_mc_particles.at(i);
-	const SimParticle* sim = mc->fSim;
+        McPart_t* mc = _list_of_mc_particles.at(i);
+        const SimParticle* sim = mc->fSim;
 
-	if ((sim->pdgId() == 11) && (mc->Time() > 550) && (mc->NHits()  >= _printElectronsMinNHits)) {
+        if ((sim->pdgId() == PDGCode::e_minus) && (mc->Time() > 550) && (mc->NHits()  >= _printElectronsMinNHits)) {
 
-	  float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
+          float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
 
-	  if (fr < _printElectronsMaxFReco) {
+          if (fr < _printElectronsMaxFReco) {
 
-	    printf(" electron: sim.id = %10li mom = %10.3f time= %9.3f nhits = %3i nhits(delta): %3i first: %2i last: %2i",
-		   sim->id().asInt(), mc->Momentum(), mc->Time(), 
-		   mc->NHits(), 
-		   mc->fNHitsDelta, 
-		   mc->fFirstStation, mc->fLastStation);
-	    printf(" fraction: %6.3f\n",fr);
-	  }
-	}
+            printf(" electron: sim.id = %10li mom = %10.3f time= %9.3f nhits = %3i nhits(delta): %3i first: %2i last: %2i",
+                   sim->id().asInt(), mc->Momentum(), mc->Time(),
+                   mc->NHits(),
+                   mc->fNHitsDelta,
+                   mc->fFirstStation, mc->fLastStation);
+            printf(" fraction: %6.3f\n",fr);
+          }
+        }
       }
     }
   }
