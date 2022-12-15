@@ -1,0 +1,21 @@
+//
+// Variant of the bfield maps without the PS and TSu maps and with DSMap_atlDS11_helical.
+
+#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau13/DSMap_altDS11_helical.header",
+  "BFieldMaps/Mau13/TSdMap.header",
+  "BFieldMaps/Mau13/DSExtension.header"
+};
+
+vector<string> bfield.outerMaps = {
+  "BFieldMaps/Mau13/WorldMap.header"
+};
+
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
