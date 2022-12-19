@@ -23,6 +23,7 @@
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
 // diagnostics
 
@@ -58,57 +59,61 @@ namespace mu2e {
       int Panel;
       int Layer;
     };
-    //-----------------------------------------------------------------------------
-    // talk-to parameters: input collections and algorithm parameters
-    //-----------------------------------------------------------------------------
-    art::ProductToken<StrawHitCollection> const _shToken;
-    art::ProductToken<ComboHitCollection> const _chToken;
-    art::ProductToken<TimeClusterCollection> const _tpeakToken;
-    int                                 _useTimePeaks;
-    double                              _minCaloDt;
-    double                              _maxCaloDt;
-    double                              _pitchAngle;
-    art::InputTag                       _mcDigisTag;
-    float                               _minHitTime;           // min hit time
-    int                                 _minNFacesWithHits;    // per station per seed
-    int                                 _minNSeeds;            // min number of seeds in the delta electron cluster
-    float                               _maxElectronHitEnergy; //
-    float                               _minT;
-    float                               _maxT;
-    float                               _maxChi2Stereo;        //
-    float                               _maxChi2Neighbor;      //
-    float                               _maxChi2Radial;        //
-    float                               _maxChi2Tot;           //
-    float                               _maxDxy;
-    int                                 _maxGap;
-    float                               _sigmaR;
-    float                               _maxDriftTime;
-    float                               _maxStrawDt;
-    float                               _maxDtDs;              // low-P electron travel time between two stations
-    int                                 _writeStrawHits;
-    int                                 _filter;
+//-----------------------------------------------------------------------------
+// talk-to parameters: input collections and algorithm parameters
+//-----------------------------------------------------------------------------
+    art::InputTag   _shToken;
+    art::InputTag   _chToken;
+    art::InputTag   _tpeakToken;
 
-    int                                 _debugLevel;
-    int                                 _diagLevel;
-    int                                 _testOrder;
+    int             _useTimePeaks;
+    double          _minCaloDt;
+    double          _maxCaloDt;
+    double          _pitchAngle;
+    float           _minHitTime;           // min hit time
+    int             _minNFacesWithHits;    // per station per seed
+    int             _minNSeeds;            // min number of seeds in the delta electron cluster
+    float           _maxElectronHitEnergy; //
+    float           _minT;
+    float           _maxT;
+    float           _maxChi2Stereo;        //
+    float           _maxChi2Neighbor;      //
+    float           _maxChi2Radial;        //
+    float           _maxChi2Tot;           //
+    float           _maxDxy;
+    int             _maxGap;
+    float           _sigmaR;
+    float           _maxDriftTime;
+    float           _maxStrawDt;
+    float           _maxDtDs;              // low-P electron travel time between two stations
+    int             _writeStrawHits;
+    int             _filter;
+
+    int             _debugLevel;
+    int             _diagLevel;
+    int             _testOrder;
+
     std::unique_ptr<ModuleHistToolBase> _hmanager;
 //-----------------------------------------------------------------------------
 // cache event/geometry objects
 //-----------------------------------------------------------------------------
-    const ComboHitCollection*           _chcol ;
-    const TimeClusterCollection*        _tpeakcol;
-    StrawHitFlagCollection*             _bkgfcol;  // output collection
+    const StrawHitCollection*    _shColl ;
 
-    const Tracker*                      _tracker;
-    const DiskCalorimeter*              _calorimeter;
+    //    StrawHitFlagCollection*      _bkgfcol;  // output collection
 
-    float                               _tdbuff; // following Dave - time division buffer
+    const Tracker*               _tracker;
+    const DiskCalorimeter*       _calorimeter;
 
-    DeltaFinderTypes::Data_t            _data;              // all data used
-    int                                 _testOrderPrinted;
+    float                        _tdbuff; // following Dave - time division buffer
 
-    float                               _stationToCaloTOF[2][20];
-    float                               _faceTOF[80];
+    DeltaFinderTypes::Data_t     _data;              // all data used
+    int                          _testOrderPrinted;
+
+    float                        _stationToCaloTOF[2][20];
+    float                        _faceTOF[80];
+
+    int                          _nComboHits;
+    int                          _nStrawHits;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -139,12 +144,13 @@ namespace mu2e {
 
     void         connectSeeds      ();
 
+    int          findIntersection  (const HitData_t* Hit1, const HitData_t* Hit2, Intersection_t* Result);
+
+    void         initTimeCluster   (DeltaCandidate* Delta, TimeCluster* Tc);
     int          recoverStation    (DeltaCandidate* Delta, int Station);
     int          recoverMissingHits();
+    void         runDeltaFinder    ();
 
-    void         runDeltaFinder();
-
-    int          findIntersection(const HitData_t* Hit1, const HitData_t* Hit2, Intersection_t* Result);
 //-----------------------------------------------------------------------------
 // overloaded methods of the module class
 //-----------------------------------------------------------------------------
@@ -156,43 +162,44 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   DeltaFinder::DeltaFinder(fhicl::ParameterSet const& pset):
     art::EDProducer{pset},
-    _shToken{consumes<StrawHitCollection>(pset.get<string>("strawHitCollectionTag"))},
-    _chToken{consumes<ComboHitCollection>(pset.get<string>("comboHitCollectionTag"))},
-    _tpeakToken{consumes<TimeClusterCollection>(pset.get<string>("timePeakCollectionTag"))},
-    _useTimePeaks          (pset.get<int>          ("useTimePeaks"                 )),
-    _minCaloDt             (pset.get<double>       ("minCaloDt"                    )),
-    _maxCaloDt             (pset.get<double>       ("maxCaloDt"                    )),
-    _pitchAngle            (pset.get<double>       ("particleMeanPitchAngle"       )),
-    _mcDigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),
+    _shToken               (pset.get<string>("strawHitCollectionTag" )),
+    _chToken               (pset.get<string>("comboHitCollectionTag" )),
+    _tpeakToken            (pset.get<string>("timePeakCollectionTag" )),
+    _useTimePeaks          (pset.get<int>   ("useTimePeaks"          )),
+    _minCaloDt             (pset.get<double>("minCaloDt"             )),
+    _maxCaloDt             (pset.get<double>("maxCaloDt"             )),
+    _pitchAngle            (pset.get<double>("particleMeanPitchAngle")),
 
-    _minHitTime            (pset.get<float>        ("minHitTime"                   )),
-    _minNFacesWithHits     (pset.get<int>          ("minNFacesWithHits"            )),
-    _minNSeeds             (pset.get<int>          ("minNSeeds"                    )),
-    _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         )),
-    _minT                  (pset.get<double>       ("minimumTime"                  )), // nsec
-    _maxT                  (pset.get<double>       ("maximumTime"                  )), // nsec
-    _maxChi2Stereo         (pset.get<float>        ("maxChi2Stereo"                )),
-    _maxChi2Neighbor       (pset.get<float>        ("maxChi2Neighbor"              )),
-    _maxChi2Radial         (pset.get<float>        ("maxChi2Radial"                )),
-    _maxChi2Tot            (pset.get<float>        ("maxChi2Tot"                   )),
-    _maxDxy                (pset.get<float>        ("maxDxy"                       )),
-    _maxGap                (pset.get<int>          ("maxGap"                       )),
-    _sigmaR                (pset.get<float>        ("sigmaR"                       )),
-    _maxDriftTime          (pset.get<float>        ("maxDriftTime"                 )),
-    _maxStrawDt            (pset.get<float>        ("maxStrawDt"                   )),
-    _maxDtDs               (pset.get<float>        ("maxDtDs"                      )),
-    _writeStrawHits        (pset.get<int>          ("writeStrawHits"               )),
-    _filter                (pset.get<int>          ("filter"                       )),
+    _minHitTime            (pset.get<float> ("minHitTime"            )),
+    _minNFacesWithHits     (pset.get<int>   ("minNFacesWithHits"     )),
+    _minNSeeds             (pset.get<int>   ("minNSeeds"             )),
+    _maxElectronHitEnergy  (pset.get<float> ("maxElectronHitEnergy"  )),
+    _minT                  (pset.get<double>("minimumTime"           )), // nsec
+    _maxT                  (pset.get<double>("maximumTime"           )), // nsec
+    _maxChi2Stereo         (pset.get<float> ("maxChi2Stereo"         )),
+    _maxChi2Neighbor       (pset.get<float> ("maxChi2Neighbor"       )),
+    _maxChi2Radial         (pset.get<float> ("maxChi2Radial"         )),
+    _maxChi2Tot            (pset.get<float> ("maxChi2Tot"            )),
+    _maxDxy                (pset.get<float> ("maxDxy"                )),
+    _maxGap                (pset.get<int>   ("maxGap"                )),
+    _sigmaR                (pset.get<float> ("sigmaR"                )),
+    _maxDriftTime          (pset.get<float> ("maxDriftTime"          )),
+    _maxStrawDt            (pset.get<float> ("maxStrawDt"            )),
+    _maxDtDs               (pset.get<float> ("maxDtDs"               )),
+    _writeStrawHits        (pset.get<int>   ("writeStrawHits"        )),
+    _filter                (pset.get<int>   ("filter"                )),
 
-    _debugLevel            (pset.get<int>          ("debugLevel"                   )),
-    _diagLevel             (pset.get<int>          ("diagLevel"                    )),
-    _testOrder             (pset.get<int>          ("testOrder"                    ))
+    _debugLevel            (pset.get<int>   ("debugLevel"            )),
+    _diagLevel             (pset.get<int>   ("diagLevel"             )),
+    _testOrder             (pset.get<int>   ("testOrder"             ))
   {
     consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
 
     produces<StrawHitFlagCollection>("ComboHits");
-    if(_writeStrawHits == 1) produces<StrawHitFlagCollection>("StrawHits");
-    if (_filter) produces<ComboHitCollection>();
+    if (_writeStrawHits == 1) produces<StrawHitFlagCollection>("StrawHits");
+    if (_filter             ) produces<ComboHitCollection>();
+                                        // a list of delta-electron candidates
+    produces<TimeClusterCollection>();
 
     _testOrderPrinted = 0;
     _tdbuff           = 80.; // mm ... abit less than 1 ns
@@ -242,7 +249,8 @@ namespace mu2e {
       //for a typical Conversion Electron
       if (ipl == 0) {
         station_z = pln->origin().z();
-      }else {
+      }
+      else {
         station_z = (station_z + pln->origin().z())/2.;
         for (int iDisk=0; iDisk<nDisks; ++iDisk){
           _stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - station_z)/sin(_pitchAngle)/CLHEP::c_light;
@@ -255,20 +263,20 @@ namespace mu2e {
         if (panel->id().getPanel() % 2 == 0) face = 0;
         else                                 face = 1;
         for (unsigned il=0; il<panel->nLayers(); ++il) {
-          cx.Station = ist;
-          cx.Plane   = ipl;
-          cx.Face    = face;
-          cx.Panel   = ipn;
-          cx.Layer   = il;
+          cx.Station   = ist;
+          cx.Plane     = ipl;
+          cx.Face      = face;
+          cx.Panel     = ipn;
+          cx.Layer     = il;
           orderID (&cx, &co);
-          int os = co.Station;
-          int of = co.Face;
-          int op = co.Panel;
+          int os       = co.Station;
+          int of       = co.Face;
+          int op       = co.Panel;
           PanelZ_t* pz = &_data.oTracker[os][of][op];
-          pz->fPanel = panel;
-          //-----------------------------------------------------------------------------
-          // panel caches phi of its center and the z
-          //-----------------------------------------------------------------------------
+          pz->fPanel   = panel;
+//-----------------------------------------------------------------------------
+// panel caches phi of its center and the z
+//-----------------------------------------------------------------------------
           pz->wx  = panel->straw0Direction().x();
           pz->wy  = panel->straw0Direction().y();
           pz->phi = panel->straw0MidPoint().phi();
@@ -294,25 +302,24 @@ namespace mu2e {
 
 //------------------------------------------------------------------------------
 // I'd love to use the hit flags, however that is confusing:
-// - hits with very large deltaT get placed to teh middle of the wire and not flagged,
+// - hits with very large deltaT get placed to the middle of the wire and not flagged,
 // - however, some hits within the fiducial get flagged with the ::radsel flag...
 // use only "good" hits
 //-----------------------------------------------------------------------------
   int DeltaFinder::orderHits() {
     ChannelID cx, co;
 
-    int nhits = _chcol->size();
-    for (int h=0; h<nhits; ++h) {
-      const ComboHit*         sh  = &(*_chcol)[h];
+    for (int h=0; h<_nComboHits; ++h) {
+      const ComboHit* ch  = &(*_data.chcol)[h];
 
-      if (sh->energyDep() > _maxElectronHitEnergy)         continue;
-      if ( (sh->time() < _minT) || (sh->time() > _maxT) )  continue;
+      if (ch->energyDep() > _maxElectronHitEnergy)         continue;
+      if ( (ch->correctedTime() < _minT) || (ch->correctedTime() > _maxT) )  continue;
 
-      cx.Station                 = sh->strawId().station();  //straw->id().getStation();
-      cx.Plane                   = sh->strawId().plane() % 2;//straw->id().getPlane() % 2;
+      cx.Station                 = ch->strawId().station();  //straw->id().getStation();
+      cx.Plane                   = ch->strawId().plane() % 2;//straw->id().getPlane() % 2;
       cx.Face                    = -1;
-      cx.Panel                   = sh->strawId().panel();    //straw->id().getPanel();
-      cx.Layer                   = sh->strawId().layer();    //straw->id().getLayer();
+      cx.Panel                   = ch->strawId().panel();    //straw->id().getPanel();
+      cx.Layer                   = ch->strawId().layer();    //straw->id().getLayer();
 
                                               // get Z-ordered location
       orderID(&cx, &co);
@@ -324,13 +331,13 @@ namespace mu2e {
 
       if (_useTimePeaks == 1) {
         bool               intime(false);
-        int                nTPeaks  = _tpeakcol->size();
-        double             hitTime  = sh->time();
+        int                nTPeaks  = _data.tpeakcol->size();
+        double             hitTime  = ch->correctedTime();
         const CaloCluster* cl(nullptr);
         int                iDisk(-1);
 
-        for (int i=0; i<nTPeaks; ++i){
-          cl    = _tpeakcol->at(i).caloCluster().get();
+        for (int i=0; i<nTPeaks; ++i) {
+          cl    = _data.tpeakcol->at(i).caloCluster().get();
           if (cl == nullptr) {
             printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
             continue;
@@ -352,8 +359,8 @@ namespace mu2e {
       if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
       if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
 
-      float sigw = sh->posRes(ComboHit::wire);// shp->posRes(StrawHitPosition::wire);
-      pz->fHitData.push_back(HitData_t(sh,/*shp,straw,*/sigw));
+      float sigw = ch->posRes(ComboHit::wire);// shp->posRes(StrawHitPosition::wire);
+      pz->fHitData.push_back(HitData_t(ch,/*shp,straw,*/sigw));
     }
 
     return 0;
@@ -382,17 +389,17 @@ namespace mu2e {
             int nhits = panelz->fHitData.size();
             for (int h=0; h<nhits; ++h) {
               const HitData_t* hd = &panelz->fHitData[h];
-              const ComboHit*  sh = hd->fHit;
+              const ComboHit*  ch = hd->fHit;
 //-----------------------------------------------------------------------------
 // predicted time is the partticle time, the drift time should be larger
 //-----------------------------------------------------------------------------
-              if (sh->time() < Delta->T0Min(Station))                    continue;
-              if (sh->time() > Delta->T0Max(Station)+_maxDriftTime)      continue;
+              if (ch->correctedTime() < Delta->T0Min(Station))                    continue;
+              if (ch->correctedTime() > Delta->T0Max(Station)+_maxDriftTime)      continue;
 
               //              if (fabs(dt) > _maxDriftTime/2 + 10)                       continue;
 
-              double dx = sh->pos().x()-Delta->CofM.x();
-              double dy = sh->pos().y()-Delta->CofM.y();
+              double dx = ch->pos().x()-Delta->CofM.x();
+              double dy = ch->pos().y()-Delta->CofM.y();
 
               double dw = dx*panelz->wx+dy*panelz->wy; // distance along the wire
 
@@ -413,8 +420,8 @@ namespace mu2e {
               new_seed->fNHitsTot    += 1;
               new_seed->fMaxDriftTime = _maxDriftTime;
 
-              if (sh->time() < new_seed->fMinTime) new_seed->fMinTime = sh->time();
-              if (sh->time() > new_seed->fMaxTime) new_seed->fMaxTime = sh->time();
+              if (ch->correctedTime() < new_seed->fMinTime) new_seed->fMinTime = ch->correctedTime();
+              if (ch->correctedTime() > new_seed->fMaxTime) new_seed->fMaxTime = ch->correctedTime();
               new_seed->hitlist[face].push_back(hd);
             }
           // }
@@ -538,20 +545,28 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   bool DeltaFinder::findData(const art::Event& Evt) {
-    _chcol    = nullptr;
-    _tpeakcol = nullptr;
+    _data.chcol    = nullptr;
+    _data.tpeakcol = nullptr;
 
     if (_useTimePeaks == 1){
-      auto tpeakH    = Evt.getValidHandle(_tpeakToken);
-      _tpeakcol      = tpeakH.product();
-      _data.tpeakcol = _tpeakcol;  // FIXME
+      auto tpeakH = Evt.getValidHandle<mu2e::TimeClusterCollection>(_tpeakToken);
+      _data.tpeakcol = tpeakH.product();
     }
 
-    auto shH    = Evt.getValidHandle(_chToken);
-    _chcol      = shH.product();
-    _data.chcol = _chcol;  // FIXME
+    auto chcH   = Evt.getValidHandle<mu2e::ComboHitCollection>(_chToken);
+    _data.chcol = chcH.product();
 
-    return (_chcol != 0);
+    auto shcH = Evt.getValidHandle<mu2e::StrawHitCollection>(_shToken);
+    _shColl   = shcH.product();
+
+    return (_data.chcol != nullptr) and (_shColl != nullptr);
+  }
+
+
+//-----------------------------------------------------------------------------
+// define the time cluster parameters starting from a DeltaCandidate
+//-----------------------------------------------------------------------------
+  void DeltaFinder::initTimeCluster(DeltaCandidate* Dc, TimeCluster* Tc) {
   }
 
 //-----------------------------------------------------------------------------
@@ -584,31 +599,42 @@ namespace mu2e {
       throw cet::exception("RECO")<< message << endl;
     }
 
+    _nComboHits = _data.chcol->size();
+    _nStrawHits = _shColl->size();
+
     runDeltaFinder();
 //-----------------------------------------------------------------------------
-// form output - copy input flag collection - do we need it ?
+// form output - flag combo hits
 //-----------------------------------------------------------------------------
-    unique_ptr<StrawHitFlagCollection> bkgfcol(new StrawHitFlagCollection());
-    _bkgfcol = bkgfcol.get();
-    int nch = _chcol->size();
-    _bkgfcol->reserve(nch); // add initialization loop *FIXME*
-    for (int i=0; i<nch; i++) {
-      StrawHitFlag flag;
-      const ComboHit* sh  = &(*_chcol)[i];
-      if (sh->energyDep() < _maxElectronHitEnergy) flag.merge(StrawHitFlag::energysel);
-      _bkgfcol->push_back(flag);
-    }
-    _data.shfcol = _bkgfcol;
+    unique_ptr<StrawHitFlagCollection> up_chfcol(new StrawHitFlagCollection());
+    _data.chfcol = up_chfcol.get();
 
-    const ComboHit* sh0(0);
-    if (nch > 0) sh0 = &_chcol->at(0);
+    _data.chfcol->reserve(_nComboHits);
+
+    for (int i=0; i<_nComboHits; i++) {
+      StrawHitFlag flag;
+      const ComboHit* ch = &(*_data.chcol)[i];
+      int ind            = ch->indexArray().at(0);
+      const StrawHit* sh = &_shColl->at(ind);
+//-----------------------------------------------------------------------------
+// make decision based on the first straw hit
+//-----------------------------------------------------------------------------
+      if (sh->energyDep() < _maxElectronHitEnergy) flag.merge(StrawHitFlag::energysel);
+      _data.chfcol->push_back(flag);
+    }
+
+    const ComboHit* ch0(0);
+    if (_nComboHits > 0) ch0 = &_data.chcol->at(0);
 
     StrawHitFlag deltamask(StrawHitFlag::bkg);
+
+    unique_ptr<TimeClusterCollection>  tcColl(new TimeClusterCollection);
 
     int ndeltas = _data.deltaCandidateHolder.size();
 
     for (int i=0; i<ndeltas; i++) {
       DeltaCandidate* dc = &_data.deltaCandidateHolder.at(i);
+
       for (int station=dc->fFirstStation; station<=dc->fLastStation; station++) {
         DeltaSeed* ds = dc->seed[station];
         if (ds != nullptr) {
@@ -618,61 +644,51 @@ namespace mu2e {
           for (int face=0; face<kNFaces; face++) {
             int nh = ds->NHits(face);
             for (int ih=0; ih<nh; ih++) {
-              const ComboHit* sh = ds->HitData(face,ih)->fHit;
-              int loc = sh-sh0;
-              _bkgfcol->at(loc).merge(deltamask);
+              const ComboHit* ch = ds->HitData(face,ih)->fHit;
+              int loc = ch-ch0;
+              _data.chfcol->at(loc).merge(deltamask);
             }
           }
         }
       }
+//-----------------------------------------------------------------------------
+// make a time cluster out of each found DeltaCandidate
+//-----------------------------------------------------------------------------
+      TimeCluster new_tc;
+      initTimeCluster(dc,&new_tc);
+      tcColl->push_back(new_tc);
     }
+
+    Event.put(std::move(tcColl));
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------
     if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
     if (_debugLevel > 0) _hmanager->debug(&_data,2);
-
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
 //-----------------------------------------------------------------------------
-    if(_writeStrawHits == 1){
-      auto shH = Event.getValidHandle<StrawHitCollection>(_shToken);
-      const StrawHitCollection* shcol = shH.product();
-      // first, copy over the original flags
-      unsigned nsh = shcol->size();
-      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
-      std::vector<std::vector<StrawHitIndex> > shids;
-      _chcol->fillStrawHitIndices(Event,shids);
-      for(size_t ich = 0;ich < _chcol->size();++ich) {
-            StrawHitFlag flag = bkgfcol->at(ich);
-            flag.merge((*_chcol)[ich].flag());
-            for(auto ish : shids[ich])
-              (*shfcol)[ish] = flag;
+    if (_writeStrawHits == 1) {
+                                        // first, copy over the original flags
+
+      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(_nStrawHits));
+
+      for(int ich=0; ich<_nComboHits; ich++) {
+        const ComboHit* ch   = &(*_data.chcol )[ich];
+        StrawHitFlag    flag =  (*_data.chfcol)[ich];
+        flag.merge(ch->flag());
+        for (auto ish : ch->indexArray()) {
+          (*shfcol)[ish] = flag;
+        }
       }
 
       Event.put(std::move(shfcol),"StrawHits");
     }
 //-----------------------------------------------------------------------------
-// create the collection of StrawHitFlag for the StrawHitCollection
+// moving in the end, after diagnostics plugin routines have been called - move
+// invalidates the original pointer...
 //-----------------------------------------------------------------------------
-    if (_filter == 1){
-      auto chcol = std::make_unique<ComboHitCollection>();
-      chcol->reserve(nch);
-      // same parent as the original collection
-      chcol->setParent(_chcol->parent());
-      for(int ich=0;ich < nch; ++ich){
-        StrawHitFlag const& flag = bkgfcol->at(ich);
-        if(!flag.hasAnyProperty(StrawHitFlag::bkg)) {
-          chcol->push_back((*_chcol)[ich]);
-          chcol->back()._flag.merge(flag);
-        }
-      }
-      Event.put(std::move(chcol));
-    }
-//-----------------------------------------------------------------------------
-// finally, put the output flag collection into the event
-//-----------------------------------------------------------------------------
-    Event.put(std::move(bkgfcol),"ComboHits");
+    Event.put(std::move(up_chfcol),"ComboHits");
   }
 
 //-----------------------------------------------------------------------------
@@ -722,7 +738,6 @@ namespace mu2e {
     if(n % 2 == 0) X->Layer = 1 - O->Layer;
     else X->Layer = O->Layer;
   }
-
 //-----------------------------------------------------------------------------
 // testOrderID & testdeOrderID not used in module, only were used to make sure OrderID and deOrderID worked as intended
 //-----------------------------------------------------------------------------
@@ -885,10 +900,10 @@ namespace mu2e {
     for (int h=0; h<nh; ++h) {
       HitData_t* hd  = &panelz->fHitData[h];
       if (hd == hd1) continue ;
-      const ComboHit* sh = hd->fHit;
+      const ComboHit* ch = hd->fHit;
 
-      if (sh->time()-Seed->T0Max() > _maxDriftTime          ) continue;
-      if (sh->time()               < Seed->T0Min()          ) continue;
+      if (ch->correctedTime()-Seed->T0Max() > _maxDriftTime          ) continue;
+      if (ch->correctedTime()               < Seed->T0Min()          ) continue;
 
       hd->fDr        = fabs(hd->fRMid-minrad);
       hits.push_back(hd);
@@ -939,9 +954,9 @@ namespace mu2e {
 
         Seed->hitlist[Face].push_back(hd);
 
-        const ComboHit* sh = hd->fHit;
-        if (sh->time() < Seed->fMinTime) Seed->fMinTime = sh->time();
-        if (sh->time() > Seed->fMaxTime) Seed->fMaxTime = sh->time();
+        const ComboHit* ch = hd->fHit;
+        if (ch->correctedTime() < Seed->fMinTime) Seed->fMinTime = ch->correctedTime();
+        if (ch->correctedTime() > Seed->fMaxTime) Seed->fMaxTime = ch->correctedTime();
       }
     }
   }
@@ -959,21 +974,21 @@ namespace mu2e {
       // for (int l=0; l<2; ++l) {                     // loop over layers
       int hitsize1 = panelz->fHitData.size();
       for (int h1=0; h1<hitsize1; ++h1) {             // loop over hits/hit positions
+//-----------------------------------------------------------------------------
+// hit has not been used yet to start a seed,
+// however it could've been used as a second seed
         //-----------------------------------------------------------------------------
-        // hit has not been used yet to start a seed,
-        // however it could've been used as a second seed
-        //-----------------------------------------------------------------------------
-        HitData_t* hd1 = &panelz->fHitData[h1];
-        const ComboHit* sh = hd1->fHit;
-        //        if (sh->energyDep() >= _maxElectronHitEnergy)  continue;
-        // if (fabs(sh->dt())  >= _maxStrawDt          )  continue;//FIXME!
-        float ct = sh->time();
+        HitData_t*      hd1 = &panelz->fHitData[h1];
+        const ComboHit* ch  = hd1->fHit;
+        //        if (ch->energyDep() >= _maxElectronHitEnergy)  continue;
+        // if (fabs(ch->dt())  >= _maxStrawDt          )  continue;//FIXME!
+        float ct = ch->correctedTime();
         if (ct              <  _minHitTime          )  continue;
         // const Straw* straw1 = hd1->fStraw;
         int counter         = 0;                // number of stereo candidates hits close to set up counter
-        //-----------------------------------------------------------------------------
-        // loop over the second faces
-        //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// loop over the second faces
+//-----------------------------------------------------------------------------
         for (int f2=Face+1; f2<kNFaces; f2++) {
           for (int p2=0; p2<3; ++p2) {         // loop over panels
             PanelZ_t* panelz2 = &_data.oTracker[Station][f2][p2];
@@ -995,7 +1010,7 @@ namespace mu2e {
               const ComboHit* sh2 = hd2->fHit;
               //                  if (sh2->energyDep() >= _maxElectronHitEnergy)  continue;
               // if (fabs(sh2->dt())  >= _maxStrawDt)            continue;//FIXME!
-              float t2 = sh2->time();
+              float t2 = sh2->correctedTime();
               if (t2 < _minHitTime)                           continue;
               float dt = abs(t2 - ct);
               if (dt >= _maxDriftTime)                        continue;
@@ -1041,13 +1056,13 @@ namespace mu2e {
               hd1->fSeedNumber = seed->fNumber;
               hd2->fSeedNumber = seed->fNumber;
 
-              seed->fMinTime = sh->time();
-              if (sh2->time() > seed->fMinTime) {
-                seed->fMaxTime = sh2->time();
+              seed->fMinTime = ch->correctedTime();
+              if (sh2->correctedTime() > seed->fMinTime) {
+                seed->fMaxTime = sh2->correctedTime();
               }
               else {
-                seed->fMinTime = sh2->time();
-                seed->fMaxTime = sh->time();
+                seed->fMinTime = sh2->correctedTime();
+                seed->fMaxTime = ch->correctedTime();
               }
 
               seed->hitlist[Face].push_back(hd1);
@@ -1089,18 +1104,18 @@ namespace mu2e {
               seed->fNHitsTot    = nh1+nh2;
 
               _data.seedHolder[Station].push_back(seed);
-              //-----------------------------------------------------------------------------
-              // book-keeping: increment total number of found seeds
-              //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// book-keeping: increment total number of found seeds
+//-----------------------------------------------------------------------------
               _data.nseeds                      += 1;
               _data.nseeds_per_station[Station] += 1;
             }
             // }
           }
         }
-        //-----------------------------------------------------------------------------
-        // this is needed for diagnostics only
-        //-----------------------------------------------------------------------------
+ //-----------------------------------------------------------------------------
+ // this is needed for diagnostics only
+ //-----------------------------------------------------------------------------
         if (_diagLevel > 0) {
           hd1->fNSecondHits  = counter ;
         }
@@ -1305,13 +1320,12 @@ namespace mu2e {
 // (_maxDriftTime represents the maximal drift time in the straw, should there be some tolerance?)
 //-----------------------------------------------------------------------------
                   HitData_t* hd      = &panelz->fHitData[h];
-                  const ComboHit* sh = hd->fHit;
+                  const ComboHit* ch = hd->fHit;
 
-                  if (sh->time()-seed->T0Max() > _maxDriftTime          ) continue;
-                  if (sh->time()               < seed->T0Min()          ) continue;
+                  if (ch->correctedTime()-seed->T0Max() > _maxDriftTime          ) continue;
+                  if (ch->correctedTime()               < seed->T0Min()          ) continue;
 
-                  // const StrawHitPosition* shp  = hd->fPos;
-                  CLHEP::Hep3Vector       dxyz = sh->posCLHEP()-seed->CofM;// shp->posCLHEP()-seed->CofM; // distance from hit to preseed
+                  CLHEP::Hep3Vector dxyz = ch->posCLHEP()-seed->CofM; // distance from hit to preseed
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
@@ -1330,8 +1344,8 @@ namespace mu2e {
                   hd->fChi2Min = chi2;
                   seed->hitlist[f2].push_back(hd);
 
-                  if (sh->time() < seed->fMinTime) seed->fMinTime = sh->time();
-                  if (sh->time() > seed->fMaxTime) seed->fMaxTime = sh->time();
+                  if (ch->correctedTime() < seed->fMinTime) seed->fMinTime = ch->correctedTime();
+                  if (ch->correctedTime() > seed->fMaxTime) seed->fMaxTime = ch->correctedTime();
 
                   seed->fNHitsTot++;
 //-----------------------------------------------------------------------------

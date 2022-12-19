@@ -204,7 +204,7 @@ namespace mu2e {
     return found;
   }
 
-  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
     Hist->fNSecondHits     = Dir->make<TH1F>("nhit2" , "N(second hits)", 100, 0., 100.);
@@ -354,7 +354,6 @@ namespace mu2e {
     return 0;
   }
 
-
 //-----------------------------------------------------------------------------
   void  DeltaFinderDiag::fillEventHistograms(EventHist_t* Hist) {
 
@@ -481,7 +480,6 @@ namespace mu2e {
     Hist->fNHitsPerSeed->Fill(Seed->NHitsTot());
   }
 
-
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta) {
     int n_seeds = Delta->n_seeds;
@@ -501,7 +499,6 @@ namespace mu2e {
       Hist->fDxy->Fill(Delta->dxy[is]);
     }
   }
-
 
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::fillMcHistograms(McHist_t* Hist, McPart_t* Mc) {
@@ -635,8 +632,8 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// create a list of MC particles with hits in the tracker- hope, it is shorter
-// than the list of all particles
+// create a list of MC particles with hits in the tracker
+// teh hope is that it is shorter than the list of all particles
 //-----------------------------------------------------------------------------
   int DeltaFinderDiag::InitMcDiag() {
 //-----------------------------------------------------------------------------
@@ -652,10 +649,10 @@ namespace mu2e {
     _list_of_mc_particles.clear();
     _list_of_mc_part_hit.clear();
 
-    const ComboHit* sh0 = &_data->chcol->at(0);
-    int   nsh           = _data->chcol->size();
+    const ComboHit* ch0 = &_data->chcol->at(0);
+    int   nch           = _data->chcol->size();
 
-    _list_of_mc_part_hit.resize(nsh);
+    _list_of_mc_part_hit.resize(nch);
 
     for (int ist=0; ist<kNStations; ist++) {
       for (int face=0; face<kNFaces; face++) {
@@ -665,47 +662,49 @@ namespace mu2e {
           // for (int il=0; il<2; il++) {
           int nhits = panelz->fHitData.size();
           for (int ih=0; ih<nhits; ih++) {
-            HitData_t* hd = &panelz->fHitData[ih];
-
-            const ComboHit* sh           = hd->fHit;
-            size_t ish                   = sh-sh0;
-            // get the StrawDigi indices associated with this ComboHit
-            std::vector<StrawDigiIndex> shids;
-            _data->chcol->fillStrawDigiIndices(*(_data->event),ish,shids);
-            const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,shids[0]);//ish);
+            HitData_t*      hd = &panelz->fHitData[ih];
+            const ComboHit* ch = hd->fHit;
+            size_t ich         = ch-ch0;  // hit index in the collection
+//-----------------------------------------------------------------------------
+// get MC particle associated with the first hit
+// a combo hit could be made out of the straw hits produced by different particles
+// in the neighbor straws - ignore that for now
+//-----------------------------------------------------------------------------
+            int loc = ch->indexArray()[0];
+            const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,loc);
 //-----------------------------------------------------------------------------
 // search if this particle has already been registered
 //-----------------------------------------------------------------------------
             McPart_t* mc = findParticle(sim);
 
             if (mc == NULL) {
-              // add new particle
+                                        // add new particle
               mc = new McPart_t(sim);
               _list_of_mc_particles.push_back(mc);
               mc->fID       = _mcUtils->getID(sim);
               mc->fPdgID    = _mcUtils->getPdgID(sim);
               mc->fStartMom = _mcUtils->getStartMom(sim);
             }
-            //-----------------------------------------------------------------------------
-            // list of hits produced by the particle
-            //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// list of hits produced by the particle
+//-----------------------------------------------------------------------------
             mc->fListOfHits.push_back(hd);
 
               // StrawId   shid  = sh->strawId();
               // const Straw& straw = _data->tracker->getStraw(shid);
               // int station        = straw.id().getStation();
-            int station        = sh->strawId().station();
+            int station        = ch->strawId().station();
 
             if (station < mc->fFirstStation) mc->fFirstStation = station;
             if (station > mc->fLastStation ) mc->fLastStation  = station;
 
-            if (sh->time() < mc->fTime   ) mc->fTime    = sh->time();
-            if (sh->time() < mc->fHitTMin) mc->fHitTMin = sh->time();
-            if (sh->time() > mc->fHitTMax) mc->fHitTMax = sh->time();
+            if (ch->correctedTime() < mc->fTime   ) mc->fTime    = ch->correctedTime();
+            if (ch->correctedTime() < mc->fHitTMin) mc->fHitTMin = ch->correctedTime();
+            if (ch->correctedTime() > mc->fHitTMax) mc->fHitTMax = ch->correctedTime();
             //-----------------------------------------------------------------------------
             // list of MC particles parallel to StrawHitCollection
             //-----------------------------------------------------------------------------
-            _list_of_mc_part_hit[ish] = mc;
+            _list_of_mc_part_hit[ich] = mc;
           }
           // }
         }
@@ -718,12 +717,17 @@ namespace mu2e {
       printf("    i     SimID        PdgID  NHits   Momentum  Time   FirstSt LastSt\n");
       for (int i=0; i<nmc; i++) {
         McPart_t* mc = _list_of_mc_particles.at(i);
-        printf(" %4i  %10i %10i  %5i %10.3f %8.1f %5i %5i\n",
-               i,mc->fID,mc->fPdgID,
-               mc->NHits(),
-               mc->Momentum(),
-               mc->Time(),
-               mc->fFirstStation,mc->fLastStation);
+        if (mc) {
+          printf(" %4i  %10i %10i  %5i %10.3f %8.1f %5i %5i\n",
+                 i,mc->fID,mc->fPdgID,
+                 mc->NHits(),
+                 mc->Momentum(),
+                 mc->Time(),
+                 mc->fFirstStation,mc->fLastStation);
+        }
+        else {
+          printf(" %4i  mc = nullptr\n",i);
+        }
       }
     }
     return 0;
@@ -762,11 +766,8 @@ namespace mu2e {
           int nh = seed->hitlist[face].size();
           for (int ih=0; ih<nh; ih++) {
             const ComboHit* hit = seed->hitlist[face][ih]->fHit;
-            int loc = hit-hit0;
-            // get the StrawDigi indices associated with this ComboHit
-            std::vector<StrawDigiIndex> shids;
-            _data->chcol->fillStrawDigiIndices(*(_data->event),loc,shids);
-            McPart_t* mc = _list_of_mc_part_hit.at(shids[0]);//loc);
+            int loc = hit-hit0; // ->indexArray()[0];
+            McPart_t* mc = _list_of_mc_part_hit[loc];
             seed->fMcPart[face].push_back(mc);
 //-----------------------------------------------------------------------------
 // count CE hits
@@ -1029,7 +1030,7 @@ namespace mu2e {
         McPart_t* mc = _list_of_mc_particles.at(i);
 
         if ((mc->fPdgID     == PDGCode::e_minus       ) &&
-            (mc->Time()     > 550                     ) &&
+            //            (mc->Time()     > 550                     ) &&
             (mc->Momentum() >  _printElectronsMinMom  ) &&
             (mc->Momentum() <  _printElectronsMaxMom  ) &&
             (mc->NHits()    >= _printElectronsMinNHits)    ) {
@@ -1076,24 +1077,23 @@ namespace mu2e {
   void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Index) {
 
     if (Index < 0) {
-      printf("#-----------------------------------------------------------------------------");
+      printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
-      printf("#      SHID  St:Pl P L Str     Time     dt        eDep       wdist     wres   ");
-      printf("     PDG           ID       p      X        Y         Z   DeltaID radOK edepOK\n");
-      printf("#-----------------------------------------------------------------------------");
+      printf("#      SHID    flag     St:Pl P L Str     Time     dt        eDep       wdist     wres   ");
+      printf("     PDG        simID       p      X        Y         Z   DeltaID radOK edepOK\n");
+      printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
       return;
     }
 
-    const ComboHit* sh0 = &_data->chcol->at(0);
-    const ComboHit* sh  = Hd->fHit;
-    int loc             = sh-sh0;
+    const ComboHit* ch0 = &_data->chcol->at(0);
+    const ComboHit* ch  = Hd->fHit;
+    int loc             = ch-ch0;
 
-    // const StrawHitPosition* shp = Hd->fPos;
-    const StrawHitFlag*     shf = &_data->shfcol->at(loc);
+    const StrawHitFlag* flag = &(*_data->chfcol)[loc];
 
-    int radselOK        = (! shf->hasAnyProperty(StrawHitFlag::radsel));
-    int edepOK          = (! shf->hasAnyProperty(StrawHitFlag::energysel));
+    int radselOK        = (! flag->hasAnyProperty(StrawHitFlag::radsel   ));
+    int edepOK          = (! flag->hasAnyProperty(StrawHitFlag::energysel));
 
     const SimParticle* sim(0);
     int                pdg_id(-9999), sim_id(-9999);
@@ -1106,28 +1106,26 @@ namespace mu2e {
       mc_mom = _mcUtils->getStartMom(sim);
     }
 
-    // const mu2e::Straw* straw = &_data->tracker->getStraw(sh->strawIndex());
-
-    printf("%5i ",loc);
-    printf("%5i" ,sh->strawId().straw()/*strawIndex().asInt()*/);
+    printf("%5i",loc);
+    printf(" %5i 0x%08x" ,ch->strawId().asUint16(),*((int*) flag));
 
     printf("  %2i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
-           sh->strawId().station(),//straw->id().getStation(),
-           sh->strawId().plane(),  //straw->id().getPlane(),
-           sh->strawId().panel(),  //straw->id().getPanel(),
-           sh->strawId().layer(),  //straw->id().getLayer(),
-           sh->strawId().straw(),  //straw->id().getStraw(),
-           sh->time(),
+           ch->strawId().station(),//straw->id().getStation(),
+           ch->strawId().plane(),  //straw->id().getPlane(),
+           ch->strawId().panel(),  //straw->id().getPanel(),
+           ch->strawId().layer(),  //straw->id().getLayer(),
+           ch->strawId().straw(),  //straw->id().getStraw(),
+           ch->time(),
            -1.,//sh->dt(),//FIXME!
-           sh->energyDep(),
-           sh->wireDist(),
-           sh->posRes(ComboHit::wire),
+           ch->energyDep(),
+           ch->wireDist(),
+           ch->posRes(ComboHit::wire),
            pdg_id,
            sim_id,
            mc_mom,
-           sh->pos().x(),
-           sh->pos().y(),
-           sh->pos().z(),
+           ch->pos().x(),
+           ch->pos().y(),
+           ch->pos().z(),
            Hd->fDeltaIndex,
            radselOK,
            edepOK);
@@ -1162,27 +1160,27 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::printComboHit(const ComboHit* Sh, int Index) {
+  void DeltaFinderDiag::printComboHit(const ComboHit* Ch, int Index) {
 
     if (Index <= 0) {
-      printf("#-------------------------------------------------------------------------");
+      printf("#---------------------------------------------------------------------------------");
       printf("-----------------------------------------------------\n");
-      printf("#S:F  I   SHID  Plane   Panel  Layer   Straw     Time          dt       eDep ");
+      printf("#S:F  I   SHID    flag  Plane   Panel  Layer   Straw     Time          dt       eDep ");
       printf("           PDG         ID         p   radselOK edepOK\n");
-      printf("#-------------------------------------------------------------------------");
+      printf("#---------------------------------------------------------------------------------");
       printf("-----------------------------------------------------\n");
       if (Index < 0) return;
     }
 
-    const ComboHit* sh0 = &_data->chcol->at(0);
-    int loc             = Sh-sh0;
+    const ComboHit* ch0 = &_data->chcol->at(0);
+    int loc             = Ch-ch0;
 
-    const StrawHitFlag* shf = &_data->shfcol->at(loc);
+    const StrawHitFlag* shf = &_data->chfcol->at(loc);
 
     int radselOK        = (! shf->hasAnyProperty(StrawHitFlag::radsel));
     int edepOK          = (! shf->hasAnyProperty(StrawHitFlag::energysel));
 
-    const SimParticle* sim(0);
+    const SimParticle* sim(nullptr);
     int                pdg_id(-9999), sim_id(-9999);
     float              mc_mom(-9999.);
 
@@ -1193,19 +1191,17 @@ namespace mu2e {
       mc_mom = _mcUtils->getStartMom(sim);
     }
 
-    // const mu2e::Straw* straw = &_data->tracker->getStraw(Sh->strawIndex());
-
-    printf("%5i ",loc);
-    printf("%5i" ,Sh->strawId().straw());//FIXME! Sh->strawIndex().asInt());
+    printf("%5i",loc);
+    printf(" %5i 0x%08x" ,Ch->strawId().asUint16(),*((int*) shf));
 
     printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i %5i\n",
-           Sh->strawId().plane(),  //straw->id().getPlane(),
-           Sh->strawId().panel(),  //straw->id().getPanel(),
-           Sh->strawId().layer(),  //straw->id().getLayer(),
-           Sh->strawId().straw(),  //straw->id().getStraw(),
-           Sh->time(),
+           Ch->strawId().plane(),
+           Ch->strawId().panel(),
+           Ch->strawId().layer(),
+           Ch->strawId().straw(),
+           Ch->correctedTime(),
            -1.,                //Sh->dt(),//FIXME!
-           Sh->energyDep(),
+           -1.,                 // Ch->energyDep(),
            pdg_id,
            sim_id,
            mc_mom,
@@ -1217,12 +1213,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::printComboHitCollection() {
 
-    int nsh = _data->chcol->size();
-    printf(" ComboHitCollection: nhits : %6i\n", nsh);
+    int nh = _data->chcol->size();
+    printf("[DeltaFinderDiag::printComboHitCollection] : nhits : %6i\n", nh);
 
-    for (int i=0; i<nsh; i++) {
-      const ComboHit* sh = &_data->chcol->at(i);
-      printComboHit(sh,i);
+    for (int i=0; i<nh; i++) {
+      const ComboHit* ch = &_data->chcol->at(i);
+      printComboHit(ch,i);
     }
 
   }
