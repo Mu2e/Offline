@@ -3,7 +3,7 @@
 //
 // parameter defaults: CalPatRec/fcl/prolog.fcl
 // this module doesn't do reconstruction
-// on input, it takes a list  of StrawHitFlags flags and eveluates performance
+// on input, it takes a list  of StrawHitFlags flags and evaluates performance
 // of the delta electron tagging
 //
 // hit type = 0 : proton
@@ -118,7 +118,7 @@ namespace mu2e {
       int   fTime;                  // lowest out of the hit times
 
       const SimParticle*               fSim;
-      std::vector<const StrawHit*>     fListOfHits;
+      std::vector<const ComboHit*>     fListOfHits;
       std::vector<const StrawHitFlag*> fListOfFlags;
 
       McPart_t(const SimParticle* Sim = NULL) {
@@ -132,8 +132,9 @@ namespace mu2e {
       ~McPart_t() {
       }
 
-      int NHits()      const { return fListOfHits.size(); }
-      int NHitsDelta() const { return fNHitsDelta;        }
+      const ComboHit* Hit(int I)   const { return fListOfHits.at(I) ; }
+      int             NHits()      const { return fListOfHits.size(); }
+      int             NHitsDelta() const { return fNHitsDelta;        }
 
       float Momentum() const {
         float px = fSim->startMomentum().px();
@@ -147,7 +148,7 @@ namespace mu2e {
     };
 
     struct McHitInfo_t {
-      const  McPart_t*       fMc;
+      const  McPart_t*     fMc;
       const  StrawHitFlag* fFlag;
       int                  fType;   // 0:p, 1:ele p<20, 2:ele 20<p<80  3:ele 100<p<110 4:everything else
     };
@@ -156,34 +157,36 @@ namespace mu2e {
 // NStations stations, 4-1=3 faces (for hit w/ lower z), 3 panels (for hit w/ lower z)
 // 2017-07-27 P.Murat: the 2nd dimension should be 3, right?
 //-----------------------------------------------------------------------------
-    std::vector<McPart_t*>      _list_of_mc_particles; // list_of_particles with hits in the tracker
-    std::vector<McHitInfo_t>    _list_of_mc_hit_info ; // for each straw hit, pointer to the MC info
+    std::vector<McPart_t*>    _list_of_mc_particles; // list_of_particles with hits in the tracker
+    std::vector<McHitInfo_t>  _list_of_mc_hit_info ; // for each straw hit, pointer to the MC info
 //-----------------------------------------------------------------------------
 // talk-to parameters
 //-----------------------------------------------------------------------------
-    art::InputTag             _shTag;
-    art::InputTag             _shfTag;
-    art::InputTag             _mcdigisTag;
-    int                       _debugLevel;
-    int                       _diagLevel;
-    int                       _printElectrons;         //
-    int                       _printElectronsMinNHits;
-    float                     _printElectronsMaxFReco;
-    //    float                     _maxElectronHitEnergy;
+    art::InputTag                  _chCollTag;
+    art::InputTag                  _shCollTag;              // straw hits "makeSH"
+    art::InputTag                  _shfCollTag;
+    art::InputTag                  _sdmcCollTag;
+    int                            _debugLevel;
+    int                            _diagLevel;
+    int                            _printElectrons;         //
+    int                            _printElectronsMinNHits;
+    float                          _printElectronsMaxFReco;
+    int                            _printElectronHits;
 //-----------------------------------------------------------------------------
 // cache of event or geometry objects
 //-----------------------------------------------------------------------------
-    const StrawHitCollection*                   _shcol;
-    const StrawHitPositionCollection*           _shpcol;
-    const StrawHitFlagCollection*               _shfcol;
-    const StrawDigiMCCollection*                _mcdigis;
+    const ComboHitCollection*      _chColl;
+    const StrawHitCollection*      _shColl;
+    const StrawHitFlagCollection*  _shfColl;
+    const StrawDigiMCCollection*   _sdmcColl;
 
-    const Tracker*                              _tracker;
-    int                                         _eventNum;
-    int                                         _nsh;
+    const Tracker*                 _tracker;
+    int                            _eventNum;
+    int                            _nComboHits;
+    int                            _nStrawHits;
 
-    int                                         fNHitsDeltaTot;
-    int                                         fNHitsDeltaReco;
+    int                            fNHitsDeltaTot;
+    int                            fNHitsDeltaReco;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -203,7 +206,10 @@ namespace mu2e {
 
     void fillHistograms();
 
-    void OrderHits();
+    //    void orderHits();
+
+    void printComboHit(const ComboHit* Hit, const StrawGasStep* Step,
+                       const char* Opt, int IHit, int Flags);
     void debug();
 //-----------------------------------------------------------------------------
 // overloaded methods of the base class
@@ -224,15 +230,16 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   DeltaFinderAna::DeltaFinderAna(fhicl::ParameterSet const& pset):
     art::EDProducer(pset),
-    _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
-    _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
-    _mcdigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),
-    _debugLevel            (pset.get<int>          ("debugLevel"                   )),
-    _diagLevel             (pset.get<int>          ("diagLevel"                    )),
-    _printElectrons        (pset.get<int>          ("printElectrons"               )),
-    _printElectronsMinNHits(pset.get<int>          ("printElectronsMinNHits"       )),
-    _printElectronsMaxFReco(pset.get<float>        ("printElectronsMaxFReco"       ))
-    //    _maxElectronHitEnergy  (pset.get<float>        ("maxElectronHitEnergy"         ))
+    _chCollTag             (pset.get<string>       ("chCollTag"             )),
+    _shCollTag             (pset.get<string>       ("shCollTag"             )),
+    _shfCollTag            (pset.get<string>       ("shfCollTag"            )),
+    _sdmcCollTag           (pset.get<art::InputTag>("sdmcCollTag"           )),
+    _debugLevel            (pset.get<int>          ("debugLevel"            )),
+    _diagLevel             (pset.get<int>          ("diagLevel"             )),
+    _printElectrons        (pset.get<int>          ("printElectrons"        )),
+    _printElectronsMinNHits(pset.get<int>          ("printElectronsMinNHits")),
+    _printElectronsMaxFReco(pset.get<float>        ("printElectronsMaxFReco")),
+    _printElectronHits     (pset.get<int>          ("printElectronHits"     ))
   {
   }
 
@@ -369,7 +376,6 @@ namespace mu2e {
 
     mu2e::GeomHandle<mu2e::Tracker> ttHandle;
     _tracker = ttHandle.get();
-
   }
 
 //-----------------------------------------------------------------------------
@@ -393,6 +399,8 @@ namespace mu2e {
     Hist->fNHitsDeltaR->Fill(fNHitsDeltaReco);
   }
 
+//-----------------------------------------------------------------------------
+// assume that, for a ComboHit,all hits are from the same particle
 //-----------------------------------------------------------------------------
   void  DeltaFinderAna::fillStrawHitHistograms(StrawHitHist_t* Hist, const StrawHit* Hit, McHitInfo_t* McHitInfo) {
 
@@ -432,51 +440,57 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     fillEventHistograms(_hist.fEvent[0]);
 //-----------------------------------------------------------------------------
-// straw hit histograms
+// straw hit histograms, mc_hit_info relates to the straw hit
 //-----------------------------------------------------------------------------
-    for (int i=0; i<_nsh; i++) {
-      const StrawHit* sh          = &_shcol->at(i);
+    for (int i=0; i<_nComboHits; i++) {
+      const ComboHit* ch          = &_chColl->at(i);
       McHitInfo_t*    mc_hit_info = &_list_of_mc_hit_info.at(i);
 
-      fillStrawHitHistograms(_hist.fStrawHit[0],sh,mc_hit_info);
-      if (sh->time() > 500) {
-        fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
+      int nsh = ch->nStrawHits();
+      for (int ish=0; ish<nsh; ish++) {
+        int ind = ch->indexArray().at(ish);
+        const StrawHit* sh = &_shColl->at(ind);
 
-        const StrawHitFlag* flag = mc_hit_info->fFlag;
+        fillStrawHitHistograms(_hist.fStrawHit[0],sh,mc_hit_info);
+        if (sh->time() > 500) {
+          fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
 
-        fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
-        int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
-        if (edepOK) {
-          fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
-          int delta = flag->hasAllProperties(StrawHitFlag::bkg);
-          if (! delta) {
+          const StrawHitFlag* flag = mc_hit_info->fFlag;
+
+          fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
+          int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
+          if (edepOK) {
+            fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
+            int delta = flag->hasAllProperties(StrawHitFlag::bkg);
+            if (! delta) {
 //-----------------------------------------------------------------------------
 // StrawHit SET 4: hits not marked as delta electron hits
 //          SET 5: hits of low energy electrons not marked as delta electron hits
 //-----------------------------------------------------------------------------
-            fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
-            if (mc_hit_info->fType == 1) { // low-energy electrons
-              fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
+              fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
+              if (mc_hit_info->fType == 1) { // low-energy electrons
+                fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
+              }
             }
-          }
-          else {
+            else {
 //-----------------------------------------------------------------------------
 // StrawHit SET 6: hits marked as delta electron hits
 //          SET 7: hits of low energy electrons marked as such
 //-----------------------------------------------------------------------------
-            fillStrawHitHistograms(_hist.fStrawHit[6],sh,mc_hit_info);
-            if (mc_hit_info->fType == 1) { // low-energy electrons
-              fillStrawHitHistograms(_hist.fStrawHit[7],sh,mc_hit_info);
+              fillStrawHitHistograms(_hist.fStrawHit[6],sh,mc_hit_info);
+              if (mc_hit_info->fType == 1) { // low-energy electrons
+                fillStrawHitHistograms(_hist.fStrawHit[7],sh,mc_hit_info);
+              }
             }
           }
         }
-      }
 
-      if (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[10],sh,mc_hit_info);
-      if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[20],sh,mc_hit_info);
-      if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[30],sh,mc_hit_info);
-      if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[40],sh,mc_hit_info);
-      if (mc_hit_info->fType == 4) fillStrawHitHistograms(_hist.fStrawHit[50],sh,mc_hit_info);
+        if (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[10],sh,mc_hit_info);
+        if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[20],sh,mc_hit_info);
+        if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[30],sh,mc_hit_info);
+        if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[40],sh,mc_hit_info);
+        if (mc_hit_info->fType == 4) fillStrawHitHistograms(_hist.fStrawHit[50],sh,mc_hit_info);
+      }
     }
 //-----------------------------------------------------------------------------
 // fill MC histograms
@@ -559,28 +573,20 @@ namespace mu2e {
 
     _list_of_mc_hit_info.clear();
 
-    _list_of_mc_hit_info.resize(_nsh);
-
-    //    const StrawHit* hit0 = &_shcol->at(0);
+    _list_of_mc_hit_info.resize(_nComboHits);
 
     int delta_nhits_tot = 0;
 
-    for (int i=0; i<_nsh; i++) {
-      const StrawHit*     sh  = &_shcol->at(i);
-      const StrawHitFlag* shf = &_shfcol->at(i);
-
-      const mu2e::StrawDigiMC* mcdigi = &_mcdigis->at(i);
-
-      const mu2e::StrawGasStep   *stmc;
-      if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
-        stmc = mcdigi->strawGasStep(mu2e::StrawEnd::cal).get();
-      }
-      else {
-        stmc = mcdigi->strawGasStep(mu2e::StrawEnd::hv ).get();
-      }
-
-      const mu2e::SimParticle* sim = &(*stmc->simParticle());
-
+    for (int i=0; i<_nComboHits; i++) {
+      const ComboHit*     ch   = &_chColl->at(i);
+      const StrawHitFlag* shf  = &_shfColl->at(i);
+//-----------------------------------------------------------------------------
+// MC truth is based on the first straw hit of the combohit
+//-----------------------------------------------------------------------------
+      int ind = ch->indexArray().at(0);
+      const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
+      const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+      const SimParticle*  sim  = &(*sgs->simParticle());
 //-----------------------------------------------------------------------------
 // search if this particle has already been registered
 //-----------------------------------------------------------------------------
@@ -591,15 +597,16 @@ namespace mu2e {
         mc = new McPart_t(sim);
         _list_of_mc_particles.push_back(mc);
       }
-      mc->fListOfHits.push_back(sh);
+      mc->fListOfHits.push_back(ch);
 
-      StrawId   shid  = sh->strawId();
+      const StrawHit* sh = &_shColl->at(ind);
+      StrawId      shid  = sh->strawId();
       const Straw& straw = _tracker->getStraw(shid);
       int station = straw.id().getStation();
       if (station < mc->fFirstStation) mc->fFirstStation = station;
       if (station > mc->fLastStation ) mc->fLastStation  = station;
 
-      if (sh->time() < mc->fTime) mc->fTime = sh->time();
+      if (ch->correctedTime() < mc->fTime) mc->fTime = ch->correctedTime();
 
       mc->fListOfFlags.push_back(shf);
 
@@ -677,45 +684,51 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
 bool DeltaFinderAna::findData(const art::Event& Evt) {
-    _shcol    = 0;
-    _shpcol   = 0;
-    _mcdigis  = 0;
-    _shfcol   = NULL;
+    _chColl     = nullptr;
+    _sdmcColl   = nullptr;
+    _shfColl    = nullptr;
 
-    auto shH  = Evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol    = shH.product();
-    _nsh      = _shcol->size();
+    auto chcH   = Evt.getValidHandle<ComboHitCollection>(_chCollTag);
+    _chColl     = chcH.product();
+    _nComboHits = _chColl->size();
 
-    auto shfH = Evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    _shfcol   = shfH.product();
+    auto shcH   = Evt.getValidHandle<StrawHitCollection>(_shCollTag);
+    _shColl     = shcH.product();
+    _nStrawHits = _shColl->size();
 
-    auto mcdH = Evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
-    _mcdigis  = mcdH.product();
+    auto shfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_shfCollTag);
+    _shfColl    = shfcH.product();
 
-    return (_shcol != 0) && (_nsh > 0) && (_shfcol != 0) && (_mcdigis != 0) ;
+    auto sdmccH = Evt.getValidHandle<StrawDigiMCCollection>(_sdmcCollTag);
+    _sdmcColl   = sdmccH.product();
+
+    return (_chColl != 0) && (_nComboHits > 0) && (_shfColl != 0) && (_sdmcColl != 0) ;
   }
 
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::produce(art::Event& Event) {
 
     _eventNum = Event.event();
-    if (_debugLevel) printf(">>> DeltaFinderAna::produce  event number: %10i\n",_eventNum);
+    if (_debugLevel) {
+      printf(">>> %s::%s event number: %10i\n",typeid(*this).name(), __func__,_eventNum);
+    }
 //-----------------------------------------------------------------------------
 // process event
 //-----------------------------------------------------------------------------
     if (! findData(Event)) {
-      throw cet::exception("RECO")<<"mu2e::DeltaFinderAna_module::produce: data missing or incomplete"<< endl;
+      throw cet::exception("RECO")
+        << "mu2e::DeltaFinderAna_module::produce: missing data" << endl;
     }
 
     fNHitsDeltaTot  = 0;
     fNHitsDeltaReco = 0;
 
-    initMcDiag();
+    initMcDiag      ();
     associateMcTruth();
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------
-    fillHistograms();
+    fillHistograms  ();
 
     if (_debugLevel    > 0) debug();
   }
@@ -734,7 +747,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
         McPart_t* mc = _list_of_mc_particles.at(i);
         const SimParticle* sim = mc->fSim;
 
-        if ((sim->pdgId() == PDGCode::e_minus) && (mc->Time() > 550) && (mc->NHits()  >= _printElectronsMinNHits)) {
+        if ((sim->pdgId() == PDGCode::e_minus) && (mc->NHits()  >= _printElectronsMinNHits)) {
 
           float fr = mc->fNHitsDelta/(mc->NHits()+1.e-3);
 
@@ -746,12 +759,113 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
                    mc->fNHitsDelta,
                    mc->fFirstStation, mc->fLastStation);
             printf(" fraction: %6.3f\n",fr);
+//-----------------------------------------------------------------------------
+// check if want to print hits
+//-----------------------------------------------------------------------------
+            if (_printElectronHits != 0) {
+              int nh  = mc->NHits();
+              const ComboHit* ch0 = &(*_chColl)[0];
+              printComboHit(0,0,"banner",0,0);
+              for (int i=0; i<nh; i++) {
+                const ComboHit* ch       = mc->Hit(i);
+                int loc    = ch-ch0;
+                int flags  = *((int*) &_shfColl->at(loc));
+
+                int ind                  = ch->indexArray().at(0);
+                const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
+                const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+                printComboHit(ch,sgs,"data",loc,flags);
+              }
+            }
           }
         }
       }
     }
   }
 
+//-----------------------------------------------------------------------------
+// stolen from Stntuple/print/TAnaDump.cc
+//-----------------------------------------------------------------------------
+void DeltaFinderAna::printComboHit(const ComboHit*     Hit,
+                                   const StrawGasStep* Step,
+                                   const char*         Opt, int IHit, int Flags) {
+  TString opt = Opt;
+  opt.ToLower();
+
+  if ((opt == "") || (opt.Index("banner") >= 0)) {
+    printf("#----------------------------------------------------------------------------------------------------");
+    printf("--------------------------------------------------------------------------------------------\n");
+    printf("#   I nsh   SID   Flags  Pln:Pnl:Lay:Str      X        Y        Z       Time     TCorr     eDep   End");
+    printf("  DrTime  PrTime  TRes    WDist     WRes        PDG     PDG(M) GenID simID       p        pz\n");
+    printf("#----------------------------------------------------------------------------------------------------");
+    printf("--------------------------------------------------------------------------------------------\n");
+  }
+
+  if (opt == "banner") return;
+
+  const SimParticle * sim (0);
+
+  int      pdg_id(-1), mother_pdg_id(-1), generator_id(-1), sim_id(-1);
+  double   mc_mom(-1.);
+  double   mc_mom_z(-1.);
+
+  GenId gen_id;
+
+  if (Step) {
+    art::Ptr<SimParticle> const& simptr = Step->simParticle();
+    art::Ptr<SimParticle> mother        = simptr;
+
+    while(mother->hasParent()) mother = mother->parent();
+
+    sim           = mother.operator ->();
+
+    pdg_id        = simptr->pdgId();
+    mother_pdg_id = sim->pdgId();
+
+    if (simptr->fromGenerator()) generator_id = simptr->genParticle()->generatorId().id();
+    else                         generator_id = -1;
+
+    sim_id        = simptr->id().asInt();
+    mc_mom        = Step->momvec().mag();
+    mc_mom_z      = Step->momvec().z();
+  }
+
+  if ((opt == "") || (opt.Index("data") >= 0)) {
+    if (IHit  >= 0) printf("%5i " ,IHit);
+    else            printf("      ");
+
+    printf("%3i ",Hit->nStrawHits());
+
+    printf("%5u",Hit->strawId().asUint16());
+
+    if (Flags >= 0) printf(" %08x",Flags);
+    else            printf("        ");
+
+    printf(" %3i %3i %3i %3i  %8.3f %8.3f %9.3f %8.3f %8.3f %8.5f  %3i %7.2f %7.2f %5.2f %8.3f %8.3f %10i %10i %5i %5i %8.3f %8.3f\n",
+           Hit->strawId().plane(),
+           Hit->strawId().panel(),
+           Hit->strawId().layer(),
+           Hit->strawId().straw(),
+           Hit->pos().x(),Hit->pos().y(),Hit->pos().z(),
+           Hit->time(),
+           Hit->correctedTime(),
+           Hit->energyDep(),
+
+           (int) Hit->driftEnd(),
+           Hit->driftTime(),
+           Hit->propTime(),
+           Hit->transRes(),
+           Hit->wireDist(),
+           Hit->wireRes(),
+
+           pdg_id,
+           mother_pdg_id,
+           generator_id,
+           sim_id,
+           mc_mom,
+           mc_mom_z);
+  }
+}
 // Part of the magic that makes this class a module.
 DEFINE_ART_MODULE(DeltaFinderAna)
 

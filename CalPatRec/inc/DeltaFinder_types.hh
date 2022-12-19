@@ -46,8 +46,6 @@ namespace mu2e {
 
     struct HitData_t {
       const ComboHit*         fHit;
-      // const StrawHitPosition* fPos;
-      // const Straw*            fStraw;
       int                     fSeedNumber;
       int                     fNSecondHits;
       int                     fDeltaIndex;
@@ -58,8 +56,6 @@ namespace mu2e {
 
       HitData_t(const ComboHit* Hit, /*const StrawHitPosition* Pos, const Straw* aStraw,*/ float SigW) {
         fHit         = Hit;
-        // fPos         = Pos;
-        // fStraw       = aStraw;
         fChi2Min     = 1.1e10;
         fSigW        = SigW;
         fSeedNumber  = -1;
@@ -248,9 +244,9 @@ namespace mu2e {
       int                           nseeds;
       int                           nseeds_per_station[kNStations];
       const ComboHitCollection*     chcol;
-      const StrawHitFlagCollection* shfcol;
+      StrawHitFlagCollection*       chfcol;       // output combohit flags
       const TimeClusterCollection*  tpeakcol;
-      int                           debugLevel;             // printout level
+      int                           debugLevel;   // printout level
     };
 
 //-----------------------------------------------------------------------------
