@@ -67,11 +67,18 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
   auto const& pptr = obj.simParticle();
   if (pptr) pkey = pptr->id().asUint();
 
-  os << " " << std::setw(5) << pkey << " " << std::setw(8)
-     << obj.strawId().asUint16() << " " << std::setw(10) << std::setprecision(6)
-     << obj.ionizingEdep() << " " << std::setw(8) << std::setprecision(3)
-     << obj.stepLength() << " " << std::setw(8) << std::setprecision(1)
-     << obj.time() << std::endl;
+  os << " "
+     << std::setw(5)  << pkey << " "
+     << std::setw(8)  << obj.strawId().asUint16() << " "
+     << std::setw(10) << std::setprecision(6) << obj.ionizingEdep() << " "
+     << std::setw(8)  << std::setprecision(3) << obj.stepLength() << " "
+     << std::setw(10) << std::setprecision(1) << obj.time()
+     << std::setw(8)  << std::setprecision(1) << obj.momentum().r()
+     << std::setw(8)  << std::setprecision(1) << obj.momentum().z()
+     << std::setw(8)  << std::setprecision(1) << obj.startPosition().x()
+     << std::setw(8)  << std::setprecision(1) << obj.startPosition().y()
+     << std::setw(8)  << std::setprecision(1) << obj.startPosition().z()
+     << std::endl;
 }
 
 void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,
@@ -82,5 +89,5 @@ void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::StrawGasStepPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << " ind SimPart StrwInd    eDep     length    time\n";
+  os << " ind SimPart StrwInd    eDep     length      time     ptot     pz       x     y      z \n";
 }
