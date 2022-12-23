@@ -14,6 +14,7 @@
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 #include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/GeneralUtilities/inc/SplineInterpolation.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
@@ -28,12 +29,6 @@ namespace mu2e {
       typedef std::shared_ptr<StrawResponse> ptr_t;
       typedef std::shared_ptr<const StrawResponse> cptr_t;
       constexpr static const char* cxname = {"StrawResponse"};
-
-      struct DriftInfo {
-        double distance;
-        double speed;
-        double variance;
-      };
 
       explicit StrawResponse( StrawDrift::cptr_t strawDrift,
           StrawElectronics::cptr_t strawElectronics,
@@ -90,8 +85,6 @@ namespace mu2e {
 
       virtual ~StrawResponse() {}
 
-      DriftInfo driftInfoAtDistance(StrawId strawId, double ddist, double dtime, double phi,
-          bool forceOld=false) const;
       double driftDistanceToTime(StrawId strawId, double ddist, double phi,
           bool forceOld=false) const;
       double driftInstantSpeed(StrawId strawId, double ddist, double phi,
@@ -121,6 +114,8 @@ namespace mu2e {
       double calibrateT2DToDriftDistance(double t2d) const;
       double calibrateT2DToDriftDistanceDerivative(double t2d) const;
       double calibrateDriftDistanceToT2DDerivative(double ddist) const;
+
+      DriftInfo driftInfo(StrawId strawId, double dtime, double phi, bool calibrated=true) const;
 
       double driftTimeToDistance(StrawId strawId, double dtime, double phi, bool forceOld=false) const;
       double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
@@ -172,6 +167,8 @@ namespace mu2e {
       static double PieceLine(std::vector<double> const& xvals,
           std::vector<double> const& yvals, double xval);
       static double PieceLineDrift(std::vector<double> const& bins, std::vector<double> const& yvals, double xval);
+      static void interpolateCalib(std::vector<double> const& bins,std::vector<double> const& yvals, double xval,
+          double& value, double& slope);
 
       StrawDrift::cptr_t _strawDrift;
       StrawElectronics::cptr_t _strawElectronics;
@@ -227,6 +224,7 @@ namespace mu2e {
       bool _useOldDrift;
       bool _driftIgnorePhi;
       std::array<double,3> _dc;
+      static double rstraw_; // straw radius, = maximum drift distance
   };
 }
 #endif

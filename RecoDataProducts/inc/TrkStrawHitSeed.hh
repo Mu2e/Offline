@@ -13,7 +13,7 @@
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "KinKal/Detector/Residual.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
-#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
+#include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include <Rtypes.h>
 #include <functional>
