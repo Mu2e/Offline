@@ -7,7 +7,7 @@
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/WHSMask.hh"
-#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
+#include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include <tuple>
 #include <string>

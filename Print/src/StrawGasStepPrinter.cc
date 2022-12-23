@@ -71,14 +71,14 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
   ConditionsHandle<AcceleratorParams> accPar("ignored");
   double mbtime = accPar->deBuncherPeriod;
 
-  os << " " << std::setw(5) << pkey << " " << std::setw(8)
-     << obj.strawId().asUint16() << " " << std::setw(5) << std::setprecision(5)
-     << obj.ionizingEdep() << " " << std::setw(5) << std::setprecision(3)
-     << obj.stepLength() << " " << std::setw(5) << std::setprecision(2)
-     << obj.time() << " " << std::setw(7) << std::setprecision(2)
-     << fmod(obj.time(),mbtime) << " " << std::setw(4) << std::setprecision(1)
-     << obj.momentum().R() << " " << std::setw(5) << std::setprecision(2)
-     << obj.position() << " " << std::endl;
+  os << ", " << std::setw(5) << pkey << ", " << std::setw(8)
+     << obj.strawId().asUint16() << ", " << std::setw(5) << std::setprecision(5)
+     << obj.ionizingEdep() << ", " << std::setw(5) << std::setprecision(3)
+     << obj.stepLength() << ", " << std::setw(5) << std::setprecision(2)
+     << obj.time() << ", " << std::setw(7) << std::setprecision(2)
+     << fmod(obj.time(),mbtime) << ", " << std::setw(5) << std::setprecision(2)
+     << obj.momentum().R() << ", " << std::setw(5) << std::setprecision(2)
+     << obj.position() << std::endl;
 }
 
 void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,

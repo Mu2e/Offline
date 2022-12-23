@@ -1,14 +1,17 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <cmath>
 #include <algorithm>
+#include "gsl/gsl_fit.h"
 
 using namespace std;
 
 namespace mu2e {
+  double StrawResponse::rstraw_(2.5);  // should come from geometry, TODO
 
-  // simple line interpolation, this should be a utility function, FIXME!
-  // This only works if the bins are uniform, should be rewritten FIXME
+  // simple line interpolation, this should be a utility function, TODO
+  // This only works if the bins are uniform, should be rewritten TODO
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
     int imax = int(xvals.size()-2);
     double xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
@@ -21,7 +24,7 @@ namespace mu2e {
   }
 
   double StrawResponse::PieceLineDrift(std::vector<double> const& bins,std::vector<double> const& yvals, double xval){
-    int imax = yvals.size()-1;
+      int imax = yvals.size()-1;
     double xbin = (bins[1]-bins[0])/yvals.size();
     int ibin = min(imax,max(0,int(floor((xval-bins[0])/xbin))));
     double yval = yvals[ibin];
@@ -35,6 +38,30 @@ namespace mu2e {
     }
     yval += (xval-(ibin+0.5)*xbin)*slope;
     return yval;
+  }
+
+  void StrawResponse::interpolateCalib(std::vector<double> const& bins,std::vector<double> const& yvals, double xval,
+      double& value, double& slope) {
+    int maxindex = yvals.size()-1;
+    double xbin = (bins[1]-bins[0])/yvals.size();
+    int ibin = min(maxindex,max(0,int(floor((xval-bins[0])/xbin))));
+// find a range of N bins about the central bin
+    static const int halfrange(2);
+    int imin = std::max(0,ibin-halfrange);
+    int imax = std::min(maxindex,ibin+halfrange);
+    std::vector<double> xfit, yfit;
+    for(int jbin=imin;jbin<=imax;++jbin){
+      xfit.push_back(bins[0]+xbin*(jbin+0.5)); // y values are at bin center, x vaues are bin edges
+      yfit.push_back(yvals[jbin]);
+    }
+    double c0,c1;
+    double cov00, cov01, cov11, sumsq;
+    auto fitok = gsl_fit_linear(xfit.data(),1,yfit.data(),1,xfit.size(),
+        &c0, &c1, &cov00, &cov01, &cov11, &sumsq);
+// test fitok
+    if(fitok != 0)throw cet::exception("RECO")<<"mu2e::StrawResponse: calibration interpolation faiulre" << endl;
+    value = c0 + c1*xval;
+    slope = c1;
   }
 
   double ConstrainAngle(double phi) {
@@ -85,21 +112,31 @@ namespace mu2e {
     return (_dc[2] + t2d)/sqrt(pow(_dc[1],2)*(-1*pow(_dc[0],2)-2*_dc[0]*_dc[2]+pow(_dc[2]+t2d,2)));
   }
 
-  StrawResponse::DriftInfo StrawResponse::driftInfoAtDistance(StrawId strawId,
-      double ddist, double dtime, double phi, bool forceOld) const {
-    StrawResponse::DriftInfo info;
-    if (!_useOldDrift && !forceOld){
-      //FIXME
-      info.distance = driftTimeToDistance(strawId,dtime,phi,forceOld);
-      info.speed = driftInstantSpeed(strawId,ddist,phi,forceOld);
-      info.variance = pow(driftDistanceError(strawId,ddist,phi,forceOld),2);
-    }else{
-      //FIXME to be deprecated
-      info.distance = driftTimeToDistance(strawId,dtime,phi,true);
-      info.speed = driftInstantSpeed(strawId,ddist,phi,true);
-      info.variance = pow(driftDistanceError(strawId,ddist,phi,true),2);
+  DriftInfo StrawResponse::driftInfo(StrawId strawId, double dtime, double phi, bool calibrated) const {
+    if (_driftIgnorePhi) phi = 0;
+    DriftInfo dinfo;
+    dinfo.LorentzAngle_ = phi;
+    double cdist = _strawDrift->T2D(dtime,phi,false); // allow values outside the physical range at this point
+     double derr, derrslope;
+    interpolateCalib(_driftResBins,_driftResRMS, cdist, derr, derrslope);
+    dinfo.driftDistanceError_ = derr;
+    if(calibrated){
+      double dcorr, dcorrslope;
+      interpolateCalib(_driftResBins,_driftResOffset, cdist, dcorr, dcorrslope);
+      dinfo.driftDistance_ = cdist - dcorr;
+      double cspeed = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
+      dinfo.driftVelocity_ = cspeed*(1.0 - dcorrslope);
+      //      std::cout << "Drift time " << dtime << " Cluster distance " << cdist
+      //         << " offset " << dcorr << " slope " << dcorrslope
+      //         << " ddist " << dinfo.driftDistance_ << " dvel " << dinfo.driftVelocity_ << std::endl;
+    } else {
+      dinfo.driftDistance_ = cdist;
+      dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
     }
-    return info;
+    // force into range
+//    dinfo.driftDistance_ = std::min(rstraw_,std::max(0.0,dinfo.driftDistance_));
+//    dinfo.driftVelocity_ = std::max(0.0,dinfo.driftVelocity_);
+    return dinfo;
   }
 
   double StrawResponse::driftDistanceToTime(StrawId strawId,
@@ -125,7 +162,7 @@ namespace mu2e {
       double ddist, double phi, bool forceOld) const {
     if (!_useOldDrift && !forceOld){
       if (_driftResIsTime){
-        ddist = std::max(0.0,std::min(2.5,ddist));
+        ddist = std::max(0.0,std::min(rstraw_,ddist));
         return PieceLineDrift(_driftResBins, _driftResRMS, ddist);
       }else{
         double distance_error = driftDistanceError(strawId,ddist,phi,forceOld);
@@ -135,7 +172,7 @@ namespace mu2e {
     }else{
       //FIXME to be deprecated
       if (useParameterizedDriftError()){
-        ddist = std::max(0.0,std::min(2.5,ddist));
+        ddist = std::max(0.0,std::min(rstraw_,ddist));
         return PieceLineDrift(_driftResBins, _driftResRMS, ddist);
       }else{
         return driftDistanceError(strawId, ddist, phi, forceOld) / _lindriftvel;
@@ -148,8 +185,8 @@ namespace mu2e {
     if (!_useOldDrift && !forceOld){
       if (_driftIgnorePhi)
         phi = 0;
-      double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
-      return _strawDrift->GetInstantSpeedFromD(calibrated_ddist)/calibrateDriftDistanceToT2DDerivative(ddist);
+//      double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
+      return _strawDrift->GetInstantSpeedFromD(ddist)/calibrateDriftDistanceToT2DDerivative(ddist);
     }else{
       // FIXME to be deprecated
       if(_usenonlindrift){
@@ -168,6 +205,7 @@ namespace mu2e {
       double ddist = _strawDrift->T2D(dtime,phi,false);
 //      double ddist = calibrateT2DToDriftDistance(t2d_driftonly);
       ddist -= driftDistanceOffset(ddist);
+      ddist = std::min(std::max(ddist,0.0),rstraw_); // truncate
       return ddist;
     }else{
       if(_usenonlindrift){
@@ -189,14 +227,13 @@ namespace mu2e {
         double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
         return time_error*speed_at_ddist;
       }else{
-        ddist = std::max(0.0,std::min(2.5,ddist));
+      //  ddist = std::max(0.0,std::min(rstraw_,ddist));
         return PieceLineDrift(_driftResBins,_driftResRMS, ddist);
       }
     }else{
       // maximum drift is the straw radius.  should come from conditions FIXME!
-      static double rstraw(2.5);
-      ddist = std::min(fabs(ddist),rstraw);
-      size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(ddist/rstraw))));
+      ddist = std::min(fabs(ddist),rstraw_);
+      size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(ddist/rstraw_))));
       return _derr[idoca];
     }
   }
@@ -205,10 +242,11 @@ namespace mu2e {
     if(_driftResIsTime)
       return 0;
     else{
-      ddist = std::max(0.0,std::min(2.5,ddist));
+      ddist = std::max(0.0,std::min(rstraw_,ddist));
       return PieceLineDrift(_driftResBins,_driftResOffset, ddist);
     }
   }
+
 
   // FIXME to be deprecated
   double StrawResponse::driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const {

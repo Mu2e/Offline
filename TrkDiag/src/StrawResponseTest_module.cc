@@ -12,6 +12,7 @@
 #include "TDirectory.h"
 #include "TTree.h"
 #include "TGraph.h"
+#include "TCanvas.h"
 #include <iostream>
 
 namespace mu2e {
@@ -34,9 +35,11 @@ namespace mu2e {
       virtual ~StrawResponseTest();
       void analyze( art::Event const & e) override;
       void beginJob ( ) override;
+      void endJob ( ) override;
     private:
       ProditionsHandle<Tracker> _alignedTracker_h;
       TTree*  srtest_;
+      TCanvas* srtcan_;
       float dtime_, vinst_;
       float rderr_, rdrift_;
       TGraph* t2d_, *t2derr_, *t2v_;
@@ -79,9 +82,11 @@ namespace mu2e {
       t2derr_->SetTitle("Drift Distance Error;Drift Time (ns);Drift Distance Error (mm)");
       gDirectory->Append(t2derr_);
       t2v_ = tfs->make<TGraph>(nbins_);
-      t2v_->SetName("D2V");
+      t2v_->SetName("T2V");
       t2v_->SetTitle("Instantaneous Drift Velocity;Drift Time (ns);Instantaneous Drift Velocity (ns/mm)");
       gDirectory->Append(t2v_);
+      srtcan_=tfs->make<TCanvas>("SRTcan","SRTcan",800,800);
+      gDirectory->Append(srtcan_);
     }
   }
 
@@ -95,16 +100,27 @@ namespace mu2e {
       double tstep = (tmax_ - tmin_)/(nbins_-1);
       for (int ibin=0;ibin<nbins_; ++ibin){
         dtime_ = tmin_ + tstep*ibin;
-        rdrift_ = sresponse->driftTimeToDistance(sid,dtime_,0.0);
-        rderr_ = sresponse->driftDistanceError(sid,rdrift_,0.0);
-        vinst_ = sresponse->driftInstantSpeed(sid,rdrift_,0.0,false);
-
+        DriftInfo dinfo = sresponse->driftInfo(sid,dtime_,0.0);
+        rdrift_ = dinfo.driftDistance_;
+        rderr_ = dinfo.driftDistanceError_;
+        vinst_ = dinfo.driftVelocity_;
         srtest_->Fill();
         t2d_->SetPoint(ibin,dtime_,rdrift_);
         t2derr_->SetPoint(ibin,dtime_,rderr_);
         t2v_->SetPoint(ibin,dtime_,vinst_);
       }
     }
+  }
+  void StrawResponseTest::endJob(){
+    if(diag_ > 0){
+       srtcan_->Divide(2,2);
+       srtcan_->cd(1);
+       t2d_->Draw("APL");
+       srtcan_->cd(2);
+       t2derr_->Draw("APL");
+       srtcan_->cd(3);
+       t2v_->Draw("APL");
+   }
   }
 }
 
