@@ -27,7 +27,7 @@
 #include "TH1F.h"
 #include "TH1.h"
 #include "TTree.h"
-#include "TH2F.h"
+#include "TH2.h"
 #include "TVector2.h"
 // data
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -74,6 +74,9 @@ namespace mu2e {
       TH1F*  fPDGCode;
       TH1F*  fMom;
       TH1F*  fNHits;
+      TH2F*  fNHitsVsMom;
+      TH2F*  fNHitsRVsMom;
+      TH2F*  fNHitsRVsNHits;
       TH1F*  fNHitsDelta;
       TH1F*  fFractReco;
       TH2F*  fFractRecoVsNHits;
@@ -86,6 +89,7 @@ namespace mu2e {
       TH1F*  fEnergyDep;
       TH1F*  fDeltaT;
       TH1F*  fPDGCode;
+      TH1F*  fDeltaFlag;
     };
 
     struct EventHist_t {
@@ -263,11 +267,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookMcHistograms(McHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
 
-    Hist->fPDGCode    = Dir->make<TH1F>("pdg"  , "PDG code"        , 500, -250., 250.);
-    Hist->fMom        = Dir->make<TH1F>("mom"  , "momentum"        , 200, 0., 200.);
-    Hist->fNHits      = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
-    Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr", "N(hits reco)"   , 200, 0., 200.);
-    Hist->fFractReco  = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
+    Hist->fPDGCode    = Dir->make<TH1F>("pdg"         , "PDG code"        , 500, -250., 250.);
+    Hist->fMom        = Dir->make<TH1F>("mom"         , "momentum"        , 200, 0., 200.);
+    Hist->fNHits      = Dir->make<TH1F>("nhits"       , "N(hits)"         , 200, 0., 200.);
+    Hist->fNHitsVsMom = Dir->make<TH2F>("nhits_vs_mom", "N(hits) vs mom"  , 100,0,100, 200, 0., 200.);
+    Hist->fNHitsRVsMom = Dir->make<TH2F>("nhr_vs_mom", "N(hits R) vs mom"  , 100,0,100, 200, 0., 200.);
+    Hist->fNHitsRVsNHits = Dir->make<TH2F>("nhr_vs_nh", "N(hits R) vs NH"  , 100,0,100, 100, 0., 100.);
+    Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr"      , "N(hits reco)"   , 200, 0., 200.);
+    Hist->fFractReco  = Dir->make<TH1F>("fractr"      , "NR/N"           , 100, 0.,   1.);
 
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
   }
@@ -275,12 +282,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookStrawHitHistograms(StrawHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
 
-    Hist->fType      = Dir->make<TH1F>("type", "Hit type"        , 10, 0., 10.);
-    Hist->fTime      = Dir->make<TH1F>("time", "time"            , 400, 0., 2000.);
-    Hist->fMom       = Dir->make<TH1F>("mom" , "Momentum"        , 200, 0., 400.);
-    Hist->fEnergyDep = Dir->make<TH1F>("edep", "edep"            , 200, 0., 2e-2);
-    Hist->fDeltaT    = Dir->make<TH1F>("dt"  , "DeltaT"          , 200, -10,10);
-    Hist->fPDGCode   = Dir->make<TH1F>("pdg" , "PDG code"        , 2000, -10000,10000);
+    Hist->fType      = Dir->make<TH1F>("type"  , "Hit type"        ,   10, 0., 10.);
+    Hist->fTime      = Dir->make<TH1F>("time"  , "time"            ,  400, 0., 2000.);
+    Hist->fMom       = Dir->make<TH1F>("mom"   , "Momentum"        ,  200, 0., 400.);
+    Hist->fEnergyDep = Dir->make<TH1F>("edep"  , "edep"            ,  200, 0., 2e-2);
+    Hist->fDeltaT    = Dir->make<TH1F>("dt"    , "DeltaT"          ,  200, -10,10);
+    Hist->fPDGCode   = Dir->make<TH1F>("pdg"   , "PDG code"        , 2000, -10000,10000);
+    Hist->fDeltaFlag = Dir->make<TH1F>("deflag", "Delta Flag = 1"  ,    2, 0,1);
   }
 
 //-----------------------------------------------------------------------------
@@ -412,6 +420,10 @@ namespace mu2e {
     Hist->fEnergyDep->Fill(Hit->energyDep());
     Hist->fDeltaT->Fill(Hit->dt());
     Hist->fPDGCode->Fill(mc->fSim->pdgId());
+    Hist->fPDGCode->Fill(mc->fSim->pdgId());
+
+    int delta_flag = McHitInfo->fFlag->hasAnyProperty(StrawHitFlag::bkg);
+    Hist->fDeltaFlag->Fill(delta_flag);
   }
 
 //-----------------------------------------------------------------------------
@@ -422,7 +434,10 @@ namespace mu2e {
     Hist->fPDGCode->Fill(sim->pdgId());
     Hist->fMom->Fill(mom);
     Hist->fNHits->Fill(Mc->NHits());
+    Hist->fNHitsVsMom->Fill(mom,Mc->NHits());
     Hist->fNHitsDelta->Fill(Mc->fNHitsDelta);
+    Hist->fNHitsRVsMom->Fill(mom,Mc->NHitsDelta());
+    Hist->fNHitsRVsNHits->Fill(Mc->NHits(),Mc->NHitsDelta());
 
     float freco = Mc->fNHitsDelta/(Mc->NHits()+1.e-4);
 
@@ -586,7 +601,7 @@ namespace mu2e {
       int ind = ch->indexArray().at(0);
       const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
       const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
-      const SimParticle*  sim  = &(*sgs->simParticle());
+      const SimParticle*  sim  = sgs->simParticle().get();
 //-----------------------------------------------------------------------------
 // search if this particle has already been registered
 //-----------------------------------------------------------------------------
@@ -599,10 +614,8 @@ namespace mu2e {
       }
       mc->fListOfHits.push_back(ch);
 
-      const StrawHit* sh = &_shColl->at(ind);
-      StrawId      shid  = sh->strawId();
-      const Straw& straw = _tracker->getStraw(shid);
-      int station = straw.id().getStation();
+      int station = ch->strawId().getStation();
+
       if (station < mc->fFirstStation) mc->fFirstStation = station;
       if (station > mc->fLastStation ) mc->fLastStation  = station;
 

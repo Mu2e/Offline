@@ -30,10 +30,9 @@ namespace mu2e {
     struct Intersection_t {
       double     x;                        // x-coordinate of the intersection point
       double     y;                        // y-coordinate of the intersection point
-      double     t1;                        // distanCe from the center of the 1st wire
-      double     t2;                        // distance from the center of the 2nd wire
-      double     wd1;                   // distance btw the 1st hit and the intersection
-      double     wd2;                        // distance btw the 2nd hit and the intersection
+      double     z;                        // y-coordinate of the intersection point
+      double     wd1;                      // distance btw the 1st hit and the intersection
+      double     wd2;                      // distance btw the 2nd hit and the intersection
     };
 
     struct DeltaCandidate;
@@ -54,18 +53,18 @@ namespace mu2e {
       float                   fRMid;
       float                   fDr;        // work variable
 
-      HitData_t(const ComboHit* Hit, /*const StrawHitPosition* Pos, const Straw* aStraw,*/ float SigW) {
+      HitData_t(const ComboHit* Hit, float SigW) {
         fHit         = Hit;
         fChi2Min     = 1.1e10;
         fSigW        = SigW;
         fSeedNumber  = -1;
         fNSecondHits = -1;
         fDeltaIndex  = -1;
-        fRMid        = sqrt(fHit->centerPos().Mag2());//FIXME! crosscheck  fStraw->getMidPoint().perp();
+        fRMid        = fHit->centerPos().rho();
         fDr          = 1.1e10;
       }
 
-      int Used() { return (fChi2Min < 1.e10) ; }
+      int Used() const { return (fSeedNumber >= 0) ; }
     };
 
     struct PanelZ_t {
@@ -76,6 +75,8 @@ namespace mu2e {
       double                           wy;
       double                           phi;         // phi angle of the wire
       double                           z;           //
+      float                            tmin;        // for hits stored on this panel
+      float                            tmax;
     };
 
 //-----------------------------------------------------------------------------
@@ -87,12 +88,12 @@ namespace mu2e {
       std::vector<const HitData_t*> fListOfHits;
       int                           fFirstStation;
       int                           fLastStation;
-      int                           fID;                   // SimParticle::id().asInt()
+      int                           fID;         // SimParticle::id().asInt()
       int                           fPdgID;
       int                           fNHitsCE;
-      int                           fNHitsDelta;           // number of hits associated with reconstructed delta electrons
+      int                           fNHitsDelta; // number of hits associated with reconstructed delta electrons
       float                         fTime;
-      float                         fHitTMin;          // min and max times of the straw hits
+      float                         fHitTMin;    // min and max times of the straw hits
       float                         fHitTMax;
       float                         fStartMom;
 
@@ -122,47 +123,55 @@ namespace mu2e {
 
     class DeltaSeed {
     public:
-      int                            fNumber;                // number within the station
-      int                            fStation;                // station
+      int                            fNumber;           // number within the station
+      int                            fStation;          // station with seed stereo hit
       int                            fType;             // defines indices of the two faces used for preseed seach
-                                                        // 0: used in recovery
-      int                            fFaceProcessed[kNFaces];
       int                            fGood;             // <-killer number> if not to be used - what about 0 ?
       int                            fNFacesWithHits;
-      int                            fNHitsTot;         // total number of hits
+      int                            fNHits;
+      int                            fNStrawHits;       // total number of hits
       int                            fNHitsCE;
-      const HitData_t*               fHitData[2];       // stereo hit seeding the seed search
-      // const StrawHitPosition*        fPos[2];
-      float                          fChi21;             // chi2's of the two initial hits
+
+      HitData_t*                     fHitData[2];       // stereo hit seeding the seed search
+      float                          fChi21;            // chi2's of the two initial hits
       float                          fChi22;
-      PanelZ_t*                      panelz   [kNFaces];
-      std::vector<const HitData_t*>  hitlist  [kNFaces];
-      std::vector<McPart_t*>         fMcPart  [kNFaces];
-      CLHEP::Hep3Vector              CofM;
-      float                          fMinTime;          // min and max times of the included hits
-      float                          fMaxTime;
+                                                        // 0: used in recovery
+      int                            fFaceProcessed[kNFaces];
+      PanelZ_t*                      panelz        [kNFaces];
+      HitData_t*                     hitData       [kNFaces];
+      McPart_t*                      fMcPart       [kNFaces];
+      XYZVectorF                     CofM;
+      float                          fMinHitTime;          // min and max times of the included hits
+      float                          fMaxHitTime;
       float                          fMaxDriftTime;
       McPart_t*                      fPreSeedMcPart[2]; // McPart_t's corresponding to initial intersection
       int                            fDeltaIndex;
       float                          fChi2All;
 
       DeltaSeed() {
+        fStation          = -1;
         fType             =  0;
         fGood             =  1;
-        fNHitsTot         =  0;
+        fNHits            =  0;
+        fNStrawHits       =  0;
         fNHitsCE          =  0;
         fNFacesWithHits   =  0;
-        fStation          = -1;
         fNumber           = -1;
-        fPreSeedMcPart[0] = NULL;
-        fPreSeedMcPart[1] = NULL;
-        //        used              = false;
-        fMinTime          = 1.e10;
-        fMaxTime          = -1.;
+        fHitData[0]       = nullptr;
+        fHitData[1]       = nullptr;
+        fPreSeedMcPart[0] = nullptr;
+        fPreSeedMcPart[1] = nullptr;
+        //
+        fMinHitTime          = 1.e10;
+        fMaxHitTime          = -1.;
         fMaxDriftTime     = -1.;
-        for (int face=0; face<kNFaces; face++) {
-          fFaceProcessed[face] = 0;
-          panelz        [face] = NULL;
+        for (int is=0; is<kNStations; is++) {
+          for (int face=0; face<kNFaces; face++) {
+            fFaceProcessed[face] = 0;
+            panelz        [face] = NULL;
+            hitData       [face] = NULL;
+            fMcPart       [face] = NULL;
+          }
         }
         fDeltaIndex       = -1;
         fChi21            = -1;
@@ -174,79 +183,95 @@ namespace mu2e {
       //------------------------------------------------------------------------------
       ~DeltaSeed() {}
 
-      float            Chi2N   ()         { return (fChi21+fChi22)/fNHitsTot; }
+      float            Chi2N   ()         { return (fChi21+fChi22)/fNHits; }
       float            Chi2Tot ()         { return (fChi21+fChi22); }
       float            Chi2All ()         { return fChi2All; }
-      float            Chi2AllDof ()      { return fChi2All/fNHitsTot; }
-      int              NHits   (int Face) { return hitlist[Face].size(); }
-      const HitData_t* HitData (int Face, int I) { return hitlist[Face][I]; } // no boundary check !
-      int              NHitsTot()         { return fNHitsTot; }
+      float            Chi2AllDof ()      { return fChi2All/fNHits; }
+      const HitData_t* HitData (int Face) { return hitData[Face]; } // no boundary check !
+      int              NHits   ()         { return fNHits; }
+      int              NStrawHits()       { return fNStrawHits; }
       int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
       bool             Used    ()         { return (fDeltaIndex >= 0); }
-      //-----------------------------------------------------------------------------
-      // drift time can't be < 0, so it is the minimal measured time which represents
-      // best the 'particle time'
-      // keep in mind that fMaxTime < particle T0 < fMinTime
-      //-----------------------------------------------------------------------------
-      float            Time()     { return fMinTime; }
-      float            T0Min()    { return fMaxTime-fMaxDriftTime;   }
-      float            T0Max()    { return fMinTime; }
+//-----------------------------------------------------------------------------
+// drift time can't be < 0
+// fMaxTime < particle T0 < fMinTime
+//-----------------------------------------------------------------------------
+      float            Time      () { return (fMinHitTime+fMaxHitTime)/2;    }
+      float            MinHitTime() { return fMinHitTime; }
+      float            MaxHitTime() { return fMaxHitTime; }
+//-----------------------------------------------------------------------------
+// assumed range of allowed hit times for this seed
+//-----------------------------------------------------------------------------
+      float            T0Min     () { return (fMinHitTime+fMaxHitTime)/2-25; }
+      float            T0Max     () { return (fMinHitTime+fMaxHitTime)/2+25; }
     };
 
     struct DeltaCandidate {
     public:
-      int                   fNumber;
+      int                   fIndex;
+      int                   fActive;               // 0:merged in candidate
       int                   fFirstStation;
       int                   fLastStation;
       DeltaSeed*            seed   [kNStations];
       float                 dxy    [kNStations];   // used only for diagnostics
       float                 fT0Min [kNStations];
       float                 fT0Max [kNStations];
-      CLHEP::Hep3Vector     CofM;
+      XYZVectorF            CofM;
       float                 phi;
       int                   n_seeds;
       McPart_t*             fMcPart;
       int                   fNHits;
+      int                   fNStrawHits;
       int                   fNHitsMcP;               // Nhits by the "best" particle"
       int                   fNHitsCE;
 
-      DeltaCandidate() {
-        fNumber = -1;
-        for(int s=0; s<kNStations; ++s) {
-          dxy    [s] = -1;
-          seed   [s] = NULL;
-        }
-        fFirstStation = -1;
-        fLastStation  = -1;
-        fMcPart       = NULL;
-        fNHits        = 0;
-        fNHitsCE      = 0;
-      }
+      DeltaCandidate();
+      DeltaCandidate(int Index, DeltaSeed* Seed, int Station);
 
+      int        Active               () const { return fActive; }
+      int        Index                () const { return fIndex ; }
       int        NSeeds               () { return n_seeds; }
+      int        NHits                () { return fNHits; }
+      int        NStrawHits           () { return fNStrawHits; }
       DeltaSeed* Seed            (int I) { return seed[I]; }
       bool       StationUsed     (int I) { return (seed[I] != NULL); }
       float      T0Min           (int I) { return fT0Min[I]; }
       float      T0Max           (int I) { return fT0Max[I]; }
+      float      Time            (int I) { return (fT0Max[I]+fT0Min[I])/2.; }
+      int        LastStation          () { return fLastStation ; }
+      int        FirstStation         () { return fFirstStation; }
+
+      void       AddSeed            (DeltaSeed* Ds, int Station);
+
+      void       MergeDeltaCandidate(DeltaCandidate* Delta);
+
+      void       SetActive          (int OnOff) { fActive = OnOff; }
     };
 //-----------------------------------------------------------------------------
-// data structure passed to the histogramming routine
+// data structure passed to the diagnostics plugin
 //-----------------------------------------------------------------------------
     struct Data_t {
       const art::Event*             event;
       const Tracker*                tracker;
-      std::string                   strawDigiMCCollectionTag;
-      std::string                   ptrStepPointMCVectorCollectionTag;
-      std::vector<DeltaSeed*>       seedHolder [kNStations];
-      std::vector<DeltaCandidate>   deltaCandidateHolder;
-      PanelZ_t                      oTracker[kNStations][kNFaces][kNPanelsPerFace];
+      art::InputTag                 chCollTag;
+      art::InputTag                 chfCollTag;
+
+      art::InputTag                 sdmcCollTag;
+      std::vector<DeltaSeed*>       listOfSeeds[kNStations]; // seeds with the first station being this
+      std::vector<DeltaCandidate>   listOfDeltaCandidates;
+
+      PanelZ_t                      oTracker   [kNStations][kNFaces][kNPanelsPerFace];
       int                           stationUsed[kNStations];
+
       int                           nseeds;
       int                           nseeds_per_station[kNStations];
       const ComboHitCollection*     chcol;
       StrawHitFlagCollection*       chfcol;       // output combohit flags
       const TimeClusterCollection*  tpeakcol;
       int                           debugLevel;   // printout level
+
+      DeltaCandidate*     deltaCandidate(int I) { return &listOfDeltaCandidates[I]; }
+      DeltaSeed*          deltaSeed(int Station, int I) { return listOfSeeds[Station][I]; }
     };
 
 //-----------------------------------------------------------------------------
