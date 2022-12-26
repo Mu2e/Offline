@@ -19,22 +19,22 @@ physics : {
 
     producers : { @table::Reconstruction.producers
         DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
-            diagLevel                     : 1 ## 0
-            debugLevel                    : 11 ## 1 ## 0
+            diagLevel                     : 0 ## 0 ##
+            debugLevel                    : 0 ## 1 ##
             useTimePeaks                  : 0
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
-                printElectrons            : 1  ## 0
-                printElectronsHits        : 1  ## 0
+                printElectrons            : 1 ## 0 ##
+                printElectronsHits        : 1 ## 1 ##
                 printElectronsMinMom      : 0.
                 printElectronsMaxMom      : 20.
-                printElectronsMinNHits    : 1   ## 30
-                printElectronsMaxFReco    : 1.1 ## 0.5
+                printElectronsMinNHits    : 10   ## 30
+                printElectronsMaxFReco    : 0.2 ## 0.5
             }
         }
 
         DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
-            debugLevel                    : 1
+            debugLevel                    : 0 ## 1
             tcCollTag                     : "DeltaFinder"
             strawHitFlagCollectionTag     : "DeltaFinder:ComboHits"
             strawDigiMCCollectionTag      : "compressDigiMCs"
@@ -63,6 +63,7 @@ physics.producers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # physics.out : [detectorOutput]
 # outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
+services.TFileService.fileName            : "deltaFinder_test.root"
 #------------------------------------------------------------------------------
 # everything below is appended by murat/scripts/submit_mu2e_job
 #------------------------------------------------------------------------------
