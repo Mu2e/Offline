@@ -38,7 +38,6 @@ namespace mu2e {
       std::string                   _strawDigiMCCollTag;
       const StrawDigiMCCollection*  _mcdigis;
       art::EventID                  _lastEvent;
-      //    SimParticleTimeOffset*       _timeOffsets;
       double                        _mbtime;
 
     public:
