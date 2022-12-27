@@ -58,7 +58,7 @@ physics.producers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # physics.out : [detectorOutput]
 # outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
-services.TFileService.fileName            : "flagbkghits_test.root"
+services.TFileService.fileName            : "flagBkgHits_test.root"
 #------------------------------------------------------------------------------
 # everything below is appended by murat/scripts/submit_mu2e_job
 #------------------------------------------------------------------------------

@@ -55,7 +55,7 @@ namespace mu2e {
 
       HitData_t(const ComboHit* Hit, float SigW) {
         fHit         = Hit;
-        fChi2Min     = 1.1e10;
+        fChi2Min     = 999999.;
         fSigW        = SigW;
         fSeedNumber  = -1;
         fNSecondHits = -1;
@@ -162,7 +162,7 @@ namespace mu2e {
         fPreSeedMcPart[0] = nullptr;
         fPreSeedMcPart[1] = nullptr;
         //
-        fMinHitTime          = 1.e10;
+        fMinHitTime          = 999999.9;
         fMaxHitTime          = -1.;
         fMaxDriftTime     = -1.;
         for (int is=0; is<kNStations; is++) {
@@ -176,7 +176,7 @@ namespace mu2e {
         fDeltaIndex       = -1;
         fChi21            = -1;
         fChi22            = -1;
-        fChi2All          = 1.e10;
+        fChi2All          = 99999.99;
       }
       //------------------------------------------------------------------------------
       // dont need a copy constructor
@@ -208,13 +208,12 @@ namespace mu2e {
 
     struct DeltaCandidate {
     public:
-      int                   fIndex;
-      int                   fActive;               // 0:merged in candidate
+      int                   fIndex;                 // >= 0: index, <0: -1000-index merged
       int                   fFirstStation;
       int                   fLastStation;
       DeltaSeed*            seed   [kNStations];
       float                 dxy    [kNStations];   // used only for diagnostics
-      float                 fT0Min [kNStations];
+      float                 fT0Min [kNStations];   // acceptable hit times (no need to account for the drift time!)
       float                 fT0Max [kNStations];
       XYZVectorF            CofM;
       float                 phi;
@@ -228,7 +227,7 @@ namespace mu2e {
       DeltaCandidate();
       DeltaCandidate(int Index, DeltaSeed* Seed, int Station);
 
-      int        Active               () const { return fActive; }
+      int        Active               () const { return (fIndex >= 0); }
       int        Index                () const { return fIndex ; }
       int        NSeeds               () { return n_seeds; }
       int        NHits                () { return fNHits; }
@@ -245,7 +244,7 @@ namespace mu2e {
 
       void       MergeDeltaCandidate(DeltaCandidate* Delta);
 
-      void       SetActive          (int OnOff) { fActive = OnOff; }
+      void       SetIndex(int Index) { fIndex = Index; }
     };
 //-----------------------------------------------------------------------------
 // data structure passed to the diagnostics plugin

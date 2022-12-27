@@ -349,13 +349,14 @@ CalPatRec : { @table::CalPatRec
             minHitTime                    : 350.                  # ns
             minNFacesWithHits             : 2                     #
             minNSeeds                     : 2                     #
+            minDeltaNHits                 : 5                     # min number of hits of a delta candidate
             maxElectronHitEnergy          : 0.0200                # means: use all hits
             minimumTime                   : 400.                  # ns
             maximumTime                   : 1750.                 # ns
-            maxChi2Stereo                 : 10.                   # 50.                   #
-            maxChi2Neighbor               : 15.                   # 2018-01-24: 25 --> 15
-            maxChi2Radial                 : 15.                   # 2018-01-24: 25 --> 15
-            maxChi2Tot                    : 15.                   # 2018-01-24: 25 --> 15
+            maxChi2Stereo                 : 16.                   ## 16="4sigma" 50.                   #
+            maxChi2Neighbor               : 16.                   # 2018-01-24: 25 --> 15
+            maxChi2Radial                 : 16.                   # 2018-01-24: 25 --> 15
+            maxChi2Tot                    : 16.                   # 2018-01-24: 25 --> 15
             maxDxy                        : 40.                   # mm
             maxGap                        : 3                     # gap in missing stations along the candidate
             sigmaR                        : 10.                   # mm, roughly 3 MeV/c

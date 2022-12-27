@@ -74,6 +74,7 @@ namespace mu2e {
     float           _minHitTime;           // min hit time
     int             _minNFacesWithHits;    // per station per seed
     int             _minNSeeds;            // min number of seeds in the delta electron cluster
+    int             _minDeltaNHits;        // min number of hits of a delta candidate
     float           _maxElectronHitEnergy; //
     float           _minT;
     float           _maxT;
@@ -176,6 +177,7 @@ namespace mu2e {
     _minHitTime            (pset.get<float> ("minHitTime"            )),
     _minNFacesWithHits     (pset.get<int>   ("minNFacesWithHits"     )),
     _minNSeeds             (pset.get<int>   ("minNSeeds"             )),
+    _minDeltaNHits         (pset.get<int>   ("minDeltaNHits"         )),
     _maxElectronHitEnergy  (pset.get<float> ("maxElectronHitEnergy"  )),
     _minT                  (pset.get<double>("minimumTime"           )), // nsec
     _maxT                  (pset.get<double>("maximumTime"           )), // nsec
@@ -327,7 +329,7 @@ namespace mu2e {
 // Hit1 was found, check the same seed for Hit2 in Face2
 //-----------------------------------------------------------------------------
       const HitData_t* h2 = seed->hitData[Face2];
-      if (h2 != Hit2) {
+      if (h2 == Hit2) {
 //-----------------------------------------------------------------------------
 // both Hit1 and Hit2 were found within the same seed, done
 //-----------------------------------------------------------------------------
@@ -624,6 +626,10 @@ namespace mu2e {
 
               hd1->fChi2Min              = chi1*chi1;
               hd2->fChi2Min              = chi2*chi2;
+//-----------------------------------------------------------------------------
+// mark both hits as a part of a seed, so they hits would not be used individually
+// - see HitData_t::Used()
+//-----------------------------------------------------------------------------
               hd1->fSeedNumber           = seed->fNumber;
               hd2->fSeedNumber           = seed->fNumber;
 
@@ -856,7 +862,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// merge Delta Candidates
+// merge Delta Candidates : check for duplicates !
 //-----------------------------------------------------------------------------
   int DeltaFinder::mergeDeltaCandidates() {
     int rc(0);
@@ -866,10 +872,12 @@ namespace mu2e {
 
     for (int i1=0; i1<ndelta-1; i1++) {
       DeltaCandidate* dc1 = _data.deltaCandidate(i1);
+      if (dc1->Active() == 0)                                          continue;
       float x1 = dc1->CofM.x();
       float y1 = dc1->CofM.y();
       for (int i2=i1+1; i2<ndelta; i2++) {
         DeltaCandidate* dc2 = _data.deltaCandidate(i2);
+        if (dc2->Active() == 0)                                        continue;
         float x2 = dc2->CofM.x();
         float y2 = dc2->CofM.y();
         float d2 = (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2);
@@ -897,7 +905,7 @@ namespace mu2e {
 // leave dc1 active, mark dc2 as not active
 //-----------------------------------------------------------------------------
         dc1->MergeDeltaCandidate(dc2);
-        dc2->SetActive(0);
+        dc2->SetIndex(-1000-dc1->Index());
       }
     }
     return rc;
@@ -1062,8 +1070,10 @@ namespace mu2e {
       DeltaCandidate* dc = &_data.listOfDeltaCandidates.at(i);
 //-----------------------------------------------------------------------------
 // skip merged in delta candidates
+// also require a delta candidate to have at least 5 hits
 //-----------------------------------------------------------------------------
       if (dc->Active() == 0)                                          continue;
+      if (dc->NHits () < _minDeltaNHits)                              continue;
       for (int station=dc->fFirstStation; station<=dc->fLastStation; station++) {
         DeltaSeed* ds = dc->seed[station];
         if (ds != nullptr) {
@@ -1301,8 +1311,10 @@ namespace mu2e {
 // predicted time is the particle time, the drift time should be larger
 // ** FIXME: this check needs to be modified
 //-----------------------------------------------------------------------------
-          if (corr_time < t0min-_maxDriftTime)                        continue;
-          if (corr_time > t0max+_maxDriftTime)                        continue;
+          // if (corr_time < t0min-_maxDriftTime)                        continue;
+          // if (corr_time > t0max+_maxDriftTime)                        continue;
+          if (corr_time < t0min)                                         continue;
+          if (corr_time > t0max)                                         continue;
 
           double dx = ch->pos().x()-Delta->CofM.x();
           double dy = ch->pos().y()-Delta->CofM.y();

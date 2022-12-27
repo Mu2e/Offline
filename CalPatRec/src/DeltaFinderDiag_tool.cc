@@ -677,9 +677,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             mc->fListOfHits.push_back(hd);
 
-              // StrawId   shid  = sh->strawId();
-              // const Straw& straw = _data->tracker->getStraw(shid);
-              // int station        = straw.id().getStation();
             int station        = ch->strawId().station();
 
             if (station < mc->fFirstStation) mc->fFirstStation = station;
@@ -907,53 +904,38 @@ namespace mu2e {
         int nseeds = _data->listOfSeeds[st].size();
         printf("station: %2i N(seeds): %3i\n",st,nseeds);
         if (nseeds > 0) {
-          printf("---------------------------------------------------------------------------------------------------------------------------------------\n");
-          printf("      st  i  good:type   SHID:MCID(0)    SHID:MCID(1)    chi2all/N  chi21    chi22 mintime  maxtime      X        Y         Z  nfwh nht\n");
-          printf("---------------------------------------------------------------------------------------------------------------------------------------\n");
+          printf("-------------------------------------------------------------------------------------------");
+          printf("-------------------------------------------------------------------------------\n");
+          printf(" st seed good type delta   SHID:  MCID    SHID:  MCID    SHID:  MCID    SHID:  MCID");
+          printf("  chi2all/N  chi21   chi22 mintime  maxtime     X        Y         Z   nfwh nch nsh\n");
+          printf("-------------------------------------------------------------------------------------------");
+          printf("-------------------------------------------------------------------------------\n");
           for (int ps=0; ps<nseeds; ++ps) {
             DeltaSeed* seed = _data->listOfSeeds[st].at(ps);
 
-            printf("seed %2i:%03i %5i %2i ",st,ps,seed->fGood,seed->fType);
-            const HitData_t* hd0 = seed->fHitData[0];
-            const HitData_t* hd1 = seed->fHitData[1];
-            if (hd0 != nullptr) printf("(%5i:%9i)",hd0->fHit->strawId().straw(),seed->fPreSeedMcPart[0]->fID);
-            else                printf("(%5i:%9i)",-1,-1);
-
-            if (hd1 != nullptr) printf("(%5i:%9i)",hd1->fHit->strawId().straw(),seed->fPreSeedMcPart[1]->fID);
-            else                printf("(%5i:%9i)",-1,-1);
-
-            printf(" %8.2f %8.2f %8.2f",seed->Chi2AllDof(),seed->fChi21,seed->fChi22);
-            printf("%8.1f %8.1f",seed->MinHitTime(),seed->MaxHitTime());
-            printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
-            printf("%4i",seed->fNFacesWithHits);
-            printf("%4i",seed->fNHits);
-            printf("\n");
+            printf("%2i  %03i %5i %4i",st,ps,seed->fGood,seed->fType);
+            printf(" %5i",seed->fDeltaIndex);
 //-----------------------------------------------------------------------------
 // print hit ID's in each face
 //-----------------------------------------------------------------------------
             for (int face=0; face<kNFaces; face++) {
-              int first_line=1;
-              printf("       ");
-              printf("         %i:ZZ" ,face);
-              int nprinted = 0;
               const HitData_t* hd = seed->hitData[face];
-              if (hd == nullptr)                                     continue;
-              const ComboHit* hit = hd->fHit;
-
-              McPart_t* mcp       = seed->fMcPart[face];
-              int mcid = mcp->fID;
-              if ((nprinted == 0) && (first_line == 0)) printf("%21s","");
-              printf("(%5i:%9i)",hit->strawId().straw()/*strawIndex().asInt()*/,mcid);
-              nprinted++;
-              if (nprinted == 5) {
-                printf("\n");
-                first_line = 0;
-                nprinted = 0;
-              }
-              if (nprinted > 0) {
-                printf("\n");
+              if (hd == nullptr) printf(" (%5i:%6i)",-1,-1);
+              else {
+                const ComboHit* hit = hd->fHit;
+                McPart_t* mcp = seed->fMcPart[face];
+                int mcid = mcp->fID;
+                printf(" (%5i:%6i)",hit->strawId().asUint16(),mcid);
               }
             }
+
+            printf(" %8.2f %7.2f %7.2f",seed->Chi2AllDof(),seed->fChi21,seed->fChi22);
+            printf("%8.1f %8.1f",seed->MinHitTime(),seed->MaxHitTime());
+            printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
+            printf("%4i",seed->fNFacesWithHits);
+            printf("%4i",seed->NHits());
+            printf("%4i",seed->NStrawHits());
+            printf("\n");
           }
         }
       }
@@ -968,13 +950,12 @@ namespace mu2e {
       if (nd > 0) {
         for (int i=0; i<nd; i++) {
           DeltaCandidate* dc = &_data->listOfDeltaCandidates.at(i);
-          if (dc->Active() == 0)                                      continue;
           int pdg_id = -1;
           if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
           printf("--------------------------------------------------------------------------------------------------------------------------\n");
-          printf("      i  nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0min   t0max     PdgID N(MC hits)\n");
+          printf("      i    nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0min   t0max     PdgID N(MC hits)\n");
           printf("--------------------------------------------------------------------------------------------------------------------------\n");
-          printf(":dc:%03i %3i  %3i",i,dc->fNHits,dc->fNHitsCE);
+          printf(":dc:%05i %3i  %3i",dc->Index(),dc->fNHits,dc->fNHitsCE);
           printf(" %3i",dc->n_seeds);
           printf(" %2i  %2i %7.2f %7.2f %9.2f",dc->fFirstStation,dc->fLastStation,
                  dc->CofM.x(),dc->CofM.y(),dc->CofM.z());
@@ -985,28 +966,26 @@ namespace mu2e {
           for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
             DeltaSeed* ds = dc->seed[is];
             if (ds != NULL) {
-              printf("        %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->fNumber);
+              printf("          %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->fNumber);
               printf(" %7.2f %7.2f %9.2f",ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
               printf(" %7.1f %7.1f",ds->fChi21, ds->fChi22);
               printf(" %7.1f %7.1f",ds->MinHitTime(),ds->MaxHitTime());
               printf(" %7.1f %7.1f",dc->fT0Min[is]  ,dc->fT0Max[is]);
 
-              const HitData_t* hd0 = ds->fHitData[0];
-              const HitData_t* hd1 = ds->fHitData[1];
-
-              if (hd0 != nullptr) {
-                int f0 = ds->fType / 10;
-                printf(" (%5i:%9i, ",hd0->fHit->strawId().straw(),ds->fMcPart[f0]->fID);
+              printf("  (");
+              for (int face=0; face<kNFaces; face++) {
+                const HitData_t* hd = ds->hitData[face];
+                if (hd == nullptr) printf(" %5i:%6i",-1,-1);
+                else {
+                  const ComboHit* hit = hd->fHit;
+                  McPart_t* mcp = ds->fMcPart[face];
+                  int mcid = mcp->fID;
+                  printf(" %5i:%6i",hit->strawId().asUint16(),mcid);
+                }
+                if (face != kNFaces-1) printf(",");
               }
-              else                printf(" (%5i:%9i, ",-1,-1);
 
-              if (hd1 != nullptr) {
-                int f1 = ds->fType % 10;
-                printf("%5i:%9i)"   ,hd1->fHit->strawId().straw(),ds->fMcPart[f1]->fID);
-              }
-              else              printf("%5i:%9i)",-1,-1);
-
-              printf("\n");
+              printf(")\n");
             }
           }
         }

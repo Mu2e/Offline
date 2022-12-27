@@ -10,7 +10,6 @@ namespace mu2e {
 
     DeltaCandidate::DeltaCandidate() {
       fIndex  = -1;
-      fActive =  0;
       for(int s=0; s<kNStations; ++s) {
         dxy    [s] = -1;
         seed   [s] = NULL;
@@ -23,11 +22,11 @@ namespace mu2e {
       fNHits        = 0;
       fNStrawHits   = 0;
       fNHitsCE      = 0;
+      n_seeds       = 0;
     }
 
     DeltaCandidate::DeltaCandidate(int Index, DeltaSeed* Seed, int Station) {
       fIndex  = Index;
-      fActive =  1;
       for(int s=0; s<kNStations; ++s) {
         dxy    [s] = -1;
         seed   [s] = NULL;
@@ -40,6 +39,7 @@ namespace mu2e {
       fNHits        = 0;
       fNStrawHits   = 0;
       fNHitsCE      = 0;
+      n_seeds       = 0;
 
       if (Seed) AddSeed(Seed,Station);
     }
@@ -92,8 +92,12 @@ namespace mu2e {
         }
         seed[is] = Delta->seed[is];
         seed[is]->fDeltaIndex = fIndex;
-
+//-----------------------------------------------------------------------------
+// increment hit count only if a seed has been addded
+//-----------------------------------------------------------------------------
         n_seeds              += 1;
+        fNHits               += Delta->seed[is]->NHits();
+        fNStrawHits          += Delta->seed[is]->NStrawHits();
 
         if (fFirstStation > is) fFirstStation = is;
         if (fLastStation  < is) fLastStation  = is;
@@ -103,9 +107,6 @@ namespace mu2e {
       float y = (CofM.y()*fNHits+Delta->CofM.y()*Delta->NHits())/(fNHits+Delta->NHits());
       CofM.SetX(x);
       CofM.SetY(y);
-
-      fNHits               += Delta->NHits();
-      fNStrawHits          += Delta->NStrawHits();
     }
 
 //-----------------------------------------------------------------------------
