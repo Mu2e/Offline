@@ -143,7 +143,7 @@ namespace mu2e {
     int         InitMcDiag      ();
     int         associateMcTruth();
 
-    void        printHitData(const HitData_t* Hd, int Index);
+    void        printHitData(const HitData_t* Hd, int Face, int Panel);
     void        printOTracker();
 
     void        printComboHit(const ComboHit* Sh, int Index);
@@ -892,11 +892,28 @@ namespace mu2e {
     }
 
     if (_printComboHits) {
-      HlPrint* hlp = HlPrint::Instance();
-      hlp->SetEvent(_data->event);
-      hlp->printComboHitCollection(_data->chCollTag.encode().data(),
-                                   _data->chfCollTag.encode().data(),
-                                   _data->sdmcCollTag.encode().data());
+//-----------------------------------------------------------------------------
+// print combo hits Z-ordered
+//-----------------------------------------------------------------------------
+      for (int is=0; is<kNStations; is++) {
+        printHitData(nullptr,-1,-1);
+        for (int face=0; face<kNFaces; face++) {
+          for (int ip=0; ip<kNPanelsPerFace; ip++) {
+            PanelZ_t* pz = &_data->oTracker[is][face][ip];
+            int nhits = pz->fHitData.size();
+            for (int ih=0; ih<nhits; ih++) {
+              HitData_t* hd = &pz->fHitData[ih];
+              printHitData(hd,face,ip);
+            }
+          }
+        }
+      }
+
+      // HlPrint* hlp = HlPrint::Instance();
+      // hlp->SetEvent(_data->event);
+      // hlp->printComboHitCollection(_data->chCollTag.encode().data(),
+      //                              _data->chfCollTag.encode().data(),
+      //                              _data->sdmcCollTag.encode().data());
     }
 
     if (_printDeltaSeeds != 0) {
@@ -1027,9 +1044,9 @@ namespace mu2e {
 
             if (_printElectronsHits > 0) {
               int nh = mc->fListOfHits.size();
-              if (nh > 0) printHitData(NULL,-1);
+              if (nh > 0) printHitData(NULL,-1,-1);
               for (int ih=0; ih<nh; ih++) {
-                printHitData(mc->fListOfHits[ih],ih);
+                printHitData(mc->fListOfHits[ih],0,0);
               }
             }
           }
@@ -1045,12 +1062,12 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Index) {
+  void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Face, int Panel) {
 
-    if (Index < 0) {
+    if (Panel < 0) {
       printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
-      printf("#      SHID    flag     St:Pl P L Str     Time     dt        eDep       wdist     wres   ");
+      printf("#      SHID    flag     St:F:P:Pl P L Str     Time     dt        eDep       wdist     wres   ");
       printf("     PDG        simID       p      X        Y         Z   DeltaID radOK edepOK\n");
       printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
@@ -1081,14 +1098,15 @@ namespace mu2e {
     printf("%5i",loc);
     printf(" %5i 0x%08x" ,ch->strawId().asUint16(),*((int*) flag));
 
-    printf("  %2i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
-           ch->strawId().station(),//straw->id().getStation(),
-           ch->strawId().plane(),  //straw->id().getPlane(),
-           ch->strawId().panel(),  //straw->id().getPanel(),
-           ch->strawId().layer(),  //straw->id().getLayer(),
-           ch->strawId().straw(),  //straw->id().getStraw(),
+    printf("  %2i:%i:%i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
+           ch->strawId().station(),
+           Face,Panel,
+           ch->strawId().plane(),
+           ch->strawId().panel(),
+           ch->strawId().layer(),
+           ch->strawId().straw(),
            ch->time(),
-           -1.,//sh->dt(),//FIXME!
+           -1.,//sh->dt(),// ** FIXME!
            ch->energyDep(),
            ch->wireDist(),
            ch->posRes(ComboHit::wire),
@@ -1116,14 +1134,12 @@ namespace mu2e {
           printf("#        --------------- station: %2i face: %2i panel: %2i nhits:%3li\n",
                  is,face,ip, pz->fHitData.size());
           int nh2 = pz->fHitData.size();// pz->fHitData[0].size()+pz->fHitData[1].size();
-          if (nh2 > 0) printHitData(NULL,-1);
-          // for (int il=0; il<2; il++) {
+          if (nh2 > 0) printHitData(NULL,-1,-1);
           int nh = pz->fHitData.size();
           for (int ih=0; ih<nh; ih++) {
-            printHitData(&pz->fHitData[ih],ih);
+            printHitData(&pz->fHitData[ih],face,ip);
           }
           nhitso += nh;
-          // }
         }
       }
     }
