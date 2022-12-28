@@ -35,7 +35,6 @@ namespace mu2e {
       double endsign = 2.0*(chit.driftEnd()-0.5);
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
       pars[7] = upos;
-      //      pars[8] = chit.wireRes();
       pars[8] = tpdata.particlePoca().Vect().Rho();
       auto mvaout = mva_->infer(pars.data());
       if(diag_ > 2){
