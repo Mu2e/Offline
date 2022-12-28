@@ -61,6 +61,8 @@ namespace mu2e {
         CofM.SetX(x);
         CofM.SetY(y);
       }
+                                        // precalculate phi
+      phi                   = CofM.phi();
       fNHits               += Seed->NHits();
       fNStrawHits          += Seed->NStrawHits();
 //-----------------------------------------------------------------------------

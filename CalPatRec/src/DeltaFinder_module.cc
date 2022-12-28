@@ -145,8 +145,6 @@ namespace mu2e {
 
     void         connectSeeds      ();
 
-    //    int          findIntersection  (const HitData_t* Hit1, const HitData_t* Hit2, Intersection_t* Result);
-
     void         initTimeCluster   (DeltaCandidate* Delta, TimeCluster* Tc);
     int          mergeDeltaCandidates();
     int          recoverStation    (DeltaCandidate* Delta, int Station);
@@ -370,7 +368,7 @@ namespace mu2e {
       for (int ids=0; ids<nseeds; ids++) {
         DeltaSeed* seed = _data.listOfSeeds[is][ids];
 
-        if (seed->fGood < 0)                                          continue;
+        if (! seed->Good() )                                          continue;
         if (seed->Used()   )                                          continue;
         if (seed->fNFacesWithHits < _minNFacesWithHits)               continue;
 //-----------------------------------------------------------------------------
@@ -385,7 +383,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // skip candidates already merged with others
 //-----------------------------------------------------------------------------
-          if (dc->Active() == 0)                                      continue;
+          if (dc->Active() == 0      )                                continue;
+          if (dc->seed[is] != nullptr)                                continue;
           int last = dc->LastStation();
 //-----------------------------------------------------------------------------
 // a delta candidate starting from a seed in a previous station may already have
@@ -397,7 +396,7 @@ namespace mu2e {
           dc->fT0Min[is] = dc->fT0Min[last]-_maxDtDs*gap;
           dc->fT0Max[is] = dc->fT0Max[last]+_maxDtDs*gap;
           if (dc->fT0Min[is] > seed->T0Max() + _maxDriftTime)         continue;
-          if (dc->fT0Max[is] < seed->T0Max() - _maxDriftTime)         continue;
+          if (dc->fT0Max[is] < seed->T0Min() - _maxDriftTime)         continue;
 //-----------------------------------------------------------------------------
 // the time is OK'ish - checks should be implemented more accurately (FIXME)
 // look at the coordinates
@@ -461,7 +460,6 @@ namespace mu2e {
               delta.fT0Max[station] = t0 + (50-dt/2);
             }
           }
-          delta.phi     = delta.CofM.phi();                  // calculate just once
           _data.listOfDeltaCandidates.push_back(delta);
         }
         else {
@@ -553,16 +551,14 @@ namespace mu2e {
 
     for (int p=0; p<3; ++p) {                        // loop over panels in this face
       PanelZ_t* panelz = &_data.oTracker[Station][Face][p];
-      int hitsize1 = panelz->fHitData.size();
-      for (int h1=0; h1<hitsize1; ++h1) {
+      int nh1 = panelz->fHitData.size();
+      for (int h1=0; h1<nh1; ++h1) {
 //-----------------------------------------------------------------------------
 // hit has not been used yet to start a seed, however it could've been used as a second seed
 //-----------------------------------------------------------------------------
         HitData_t*      hd1 = &panelz->fHitData[h1];
         const ComboHit* ch  = hd1->fHit;
-        //        if (ch->energyDep() >= _maxElectronHitEnergy)  continue;
-        //        if (fabs(ch->dt())  >= _maxStrawDt          )  continue;//FIXME!
-        float ct = ch->correctedTime();
+        float           ct  = ch->correctedTime();
         if (ct              <  _minHitTime          )  continue;
         int counter         = 0;                // number of stereo candidate hits close to set up counter
 //-----------------------------------------------------------------------------
@@ -571,8 +567,6 @@ namespace mu2e {
         for (int f2=Face+1; f2<kNFaces; f2++) {
           for (int p2=0; p2<3; ++p2) {         // loop over panels
             PanelZ_t* panelz2 = &_data.oTracker[Station][f2][p2];
-            if (ct - panelz2->tmax > _maxDriftTime)           continue;
-            if (panelz2->tmin - ct > _maxDriftTime)           continue;
 //-----------------------------------------------------------------------------
 // check if the two panels overlap in XY
 // 2D angle between the vectors pointing to the panel centers, can't be greater than pi
@@ -582,14 +576,15 @@ namespace mu2e {
             if (dphi >  M_PI) dphi -= 2*M_PI;
             if (abs(dphi) >= 2*M_PI/3.)                       continue;
 //-----------------------------------------------------------------------------
-// panels do overlap
+// panels do overlap, check time
 //-----------------------------------------------------------------------------
-            int hitsize2 = panelz2->fHitData.size();
-            for (int h2=0; h2<hitsize2;++h2) {
+            if (ct - panelz2->tmax > _maxDriftTime)           continue;
+            if (panelz2->tmin - ct > _maxDriftTime)           continue;
+
+            int nh2 = panelz2->fHitData.size();
+            for (int h2=0; h2<nh2;++h2) {
               HitData_t* hd2 = &panelz2->fHitData[h2];
               const ComboHit* ch2 = hd2->fHit;
-              // if (sh2->energyDep() >= _maxElectronHitEnergy)  continue;
-              // if (fabs(sh2->dt())  >= _maxStrawDt)            continue;//FIXME!
               float ct2 = ch2->correctedTime();
               if (ct2 < _minHitTime)                           continue;
               float dt = fabs(ct2 - ct);
@@ -627,7 +622,7 @@ namespace mu2e {
               hd1->fChi2Min              = chi1*chi1;
               hd2->fChi2Min              = chi2*chi2;
 //-----------------------------------------------------------------------------
-// mark both hits as a part of a seed, so they hits would not be used individually
+// mark both hits as a part of a seed, so they would not be used individually
 // - see HitData_t::Used()
 //-----------------------------------------------------------------------------
               hd1->fSeedNumber           = seed->fNumber;
@@ -734,7 +729,7 @@ namespace mu2e {
               double dphi      = seed_phi-panelz->phi;
               if (dphi < -M_PI) dphi += 2*M_PI;
               if (dphi >  M_PI) dphi -= 2*M_PI;
-              if (fabs(dphi) >= 2*M_PI/3)                               continue;
+              if (fabs(dphi) >= M_PI/3)                               continue;
 //-----------------------------------------------------------------------------
 // panel overlaps with the panel containing the seed, look at its hits
 //-----------------------------------------------------------------------------
@@ -748,12 +743,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
                 HitData_t* hd            = &panelz->fHitData[h];
                 const ComboHit*   ch     = hd->fHit;
-                const XYZVectorF* ch_pos = &ch->pos();
                 float corr_time          = ch->correctedTime();
+//-----------------------------------------------------------------------------
+// ** FIXME : replace 10 with a named parameter
+//-----------------------------------------------------------------------------
+                if (corr_time-seed->T0Max() > 10)                     continue;
+                if (seed->T0Min()-corr_time > 10)                     continue;
 
-                if (corr_time-seed->T0Max() > _maxDriftTime)          continue;
-                if (seed->T0Min()-corr_time > _maxDriftTime)          continue;
-
+                const XYZVectorF* ch_pos = &ch->pos();
                 XYZVectorF dxyz = *ch_pos-seed->CofM; // distance from hit to preseed
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
@@ -1139,27 +1136,27 @@ namespace mu2e {
 
     for (int i1=0; i1<nseeds-1; i1++) {
       DeltaSeed* ds1 = _data.listOfSeeds[Station][i1];
-      if (ds1->fGood < 0) continue;
+      if (ds1->fGood < 0)                                             continue;
 
       if (ds1->Chi2Tot() > _maxChi2Tot) {
         ds1->fGood = -1000-i1;
-        continue;
+                                                                      continue;
       }
 
       float tmean1 = ds1->Time();
 
       for (int i2=i1+1; i2<nseeds; i2++) {
         DeltaSeed* ds2 = _data.listOfSeeds[Station][i2];
-        if (ds2->fGood < 0) continue;
+        if (ds2->fGood < 0)                                           continue;
 
         if (ds2->Chi2Tot() > _maxChi2Tot) {
           ds2->fGood = -1000-i2;
-          continue;
+                                                                      continue;
         }
 
         float tmean2 = ds2->Time();
 
-        if (fabs(tmean1-tmean2) > _maxDriftTime) continue;
+        if (fabs(tmean1-tmean2) > _maxDriftTime)                      continue;
 //-----------------------------------------------------------------------------
 // the two segments are close in time and space, check hit overlap
 // *FIXME* didn't check distance !!!!!
@@ -1186,8 +1183,9 @@ namespace mu2e {
               break;
             }
             else {
-                                        // the second one also has 2 faces with hits
-
+//-----------------------------------------------------------------------------
+// the second seed also has 2 faces with hits
+//-----------------------------------------------------------------------------
               if (ds1->Chi2AllDof() <  ds2->Chi2AllDof()) ds2->fGood = -1000-i1;
               else {
                 ds1->fGood = -1000-i2;
@@ -1261,9 +1259,15 @@ namespace mu2e {
     DeltaSeed* closest_seed(nullptr);
     for (int i=0; i<nseeds; i++) {
       DeltaSeed* seed =  _data.deltaSeed(Station,i);
-      if (seed->Used())                                               continue;
-      if (t0min > seed->T0Max() + _maxDriftTime)                      continue;
-      if (t0max < seed->T0Max() - _maxDriftTime)                      continue;
+      if (seed->Good() == 0)                                          continue;
+      if (seed->Used()     )                                          continue;
+//-----------------------------------------------------------------------------
+// one might need some safety here, but not the _maxDriftTime
+//-----------------------------------------------------------------------------
+      // if (t0min > seed->T0Max() + _maxDriftTime)                      continue;
+      // if (t0max < seed->T0Max() - _maxDriftTime)                      continue;
+      if (t0min > seed->T0Max())                                      continue;
+      if (t0max < seed->T0Min())                                      continue;
 
       float dx   = Delta->CofM.x()-seed->CofM.x();
       float dy   = Delta->CofM.y()-seed->CofM.y();
@@ -1287,14 +1291,14 @@ namespace mu2e {
     for (int face=0; face<kNFaces; face++) {
       for (int ip=0; ip<kNPanelsPerFace; ip++) {
         PanelZ_t* panelz = &_data.oTracker[Station][face][ip];
+        double dphi      = Delta->phi-panelz->phi;
+
+        if (dphi < -M_PI) dphi += 2*M_PI;
+        if (dphi >  M_PI) dphi -= 2*M_PI;
+        if (fabs(dphi) > M_PI/3)                                      continue;
 
         if (t0min > panelz->tmax)                                     continue;
         if (t0max < panelz->tmin)                                     continue;
-
-        double dphi      = Delta->phi-panelz->phi;
-        if (dphi < -M_PI) dphi += 2*M_PI;
-        if (dphi >  M_PI) dphi -= 2*M_PI;
-        if (fabs(dphi) > 2*M_PI/3)                                    continue;
 //-----------------------------------------------------------------------------
 // panel and Delta overlap in phi and time, loop over hits
 //-----------------------------------------------------------------------------
@@ -1309,10 +1313,7 @@ namespace mu2e {
           float corr_time     = ch->correctedTime();
 //-----------------------------------------------------------------------------
 // predicted time is the particle time, the drift time should be larger
-// ** FIXME: this check needs to be modified
 //-----------------------------------------------------------------------------
-          // if (corr_time < t0min-_maxDriftTime)                        continue;
-          // if (corr_time > t0max+_maxDriftTime)                        continue;
           if (corr_time < t0min)                                         continue;
           if (corr_time > t0max)                                         continue;
 
@@ -1331,7 +1332,7 @@ namespace mu2e {
           if (chi2 >= _maxChi2Radial)          continue;
 //-----------------------------------------------------------------------------
 // new hit needs to be added, create a special 1-hit seed for that
-// ex[ect this seed not to have he second hit, leave ###
+// in most cases, expect this seed not to have the second hit, but it may
 // such a seed has its own CofM undefined
 //-----------------------------------------------------------------------------
           if (new_seed == NULL) {

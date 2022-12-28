@@ -192,6 +192,7 @@ namespace mu2e {
       int              NStrawHits()       { return fNStrawHits; }
       int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
       bool             Used    ()         { return (fDeltaIndex >= 0); }
+      int              Good    ()         { return (fGood       >= 0); }
 //-----------------------------------------------------------------------------
 // drift time can't be < 0
 // fMaxTime < particle T0 < fMinTime

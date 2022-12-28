@@ -25,7 +25,7 @@ physics : {
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
                 printElectrons            : 1 ## 0 ##
-                printElectronsHits        : 1 ## 1 ##
+                printElectronsHits        : 0 ## 1 ##
                 printElectronsMinMom      : 0.
                 printElectronsMaxMom      : 20.
                 printElectronsMinNHits    : 10   ## 30
