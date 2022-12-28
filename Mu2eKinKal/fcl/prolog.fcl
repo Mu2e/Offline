@@ -158,7 +158,7 @@ Mu2eKinKal : {
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.1,"Inactive", 0]
+      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.1,"Inactive", 1]
     ]
 
     DriftANNSHUSettings : [

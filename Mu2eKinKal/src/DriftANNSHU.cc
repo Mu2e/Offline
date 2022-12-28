@@ -2,14 +2,17 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/Mu2eKinKal/inc/TrainDrift.hxx"
 #include <cmath>
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
   DriftANNSHU::DriftANNSHU(Config const& config) {
-    mva_  = std::make_shared<MVATools>(std::get<0>(config));
-    mva_->initMVA();
+    ConfigFileLookupPolicy configFile;
+    auto mvaWgtsFile = configFile(std::get<0>(config));
+    mva_ = std::make_shared<TMVA_SOFIE_TrainDrift::Session>(mvaWgtsFile);
     mvacut_ = std::get<1>(config);
     std::string nulldvar = std::get<2>(config);
     nulldvar_ = WireHitState::nullDistVar(nulldvar);
@@ -23,7 +26,6 @@ namespace mu2e {
     if(diag_ > 0)
       std::cout << "DriftANNSHU weights" << std::get<0>(config) << " cut " << mvacut_ << " null dist var " << nulldvar
         << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << std::endl;
-    if(diag_ > 1)mva_->showMVA();
   }
 
   std::string const& DriftANNSHU::configDescription() {
@@ -35,33 +37,33 @@ namespace mu2e {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::DriftANN)){
       // invoke the ANN
-      std::vector<Float_t> pars(7,0.0);
+      std::vector<Float_t> pars(6,0.0);
       // this order is given by the training
-      double derr = sqrt(std::max(tpdata.docaVar(),0.0) + dinfo.driftDistanceError_*dinfo.driftDistanceError_);
-      double dvar = derr*derr;
-      double totvar = dvar + tpdata.docaVar();
-      double udoca = fabs(tpdata.doca());
-      pars[0] = udoca;
-      pars[1] = dinfo.driftDistance_;
-      pars[2] = (dinfo.driftDistance_ - udoca)/sqrt(totvar);
+      pars[0] = tpdata.deltaT();
+      pars[1] = tpdata.doca();
+      pars[2] = dinfo.driftDistance_;
       pars[3] = chit.driftTime();
-      pars[4] = 1000.0*chit.energyDep();
-      pars[5] = derr;
-      pars[6] =4.0*dinfo.driftDistance_*udoca/totvar;
-      float mvaout = mva_->evalMVA(pars);
-      whstate.quality_ = mvaout;
-      if(mvaout > mvacut_){
+      pars[4] = chit.energyDep();
+      pars[5] = tpdata.docaVar();
+      auto mvaout = mva_->infer(pars.data());
+      if(diag_ > 2){
+        whstate.algo_  = StrawHitUpdaters::DriftANN;
+        whstate.quality_ = mvaout[0];
+      }
+      if(mvaout[0] > mvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
           whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
-        }
+          whstate.quality_ = mvaout[0];
+       }
       } else {
         if(allowed_.hasAnyProperty(WHSMask::null)){
           whstate.state_ = WireHitState::null;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
           whstate.nulldvar_ = nulldvar_;
+          whstate.quality_ = mvaout[0];
         }
       }
       if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);
