@@ -117,7 +117,7 @@ namespace mu2e {
     DriftInfo dinfo;
     dinfo.LorentzAngle_ = phi;
     double cdist = _strawDrift->T2D(dtime,phi,false); // allow values outside the physical range at this point
-     double derr, derrslope;
+    double derr, derrslope;
     interpolateCalib(_driftResBins,_driftResRMS, cdist, derr, derrslope);
     dinfo.driftDistanceError_ = derr;
     if(calibrated){

@@ -5,6 +5,7 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eKinKal/inc/TrainDrift.hxx"
 #include <cmath>
+#include <array>
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
@@ -37,16 +38,15 @@ namespace mu2e {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::DriftANN)){
       // invoke the ANN
-      std::vector<Float_t> pars(6,0.0);
+      std::array<float,5> pars;
       // this order is given by the training
-      pars[0] = tpdata.deltaT();
-      pars[1] = tpdata.doca();
-      pars[2] = dinfo.driftDistance_;
+      pars[0] = fabs(tpdata.doca());
+      pars[1] = dinfo.driftDistance_;
+      pars[2] = tpdata.docaVar();
       pars[3] = chit.driftTime();
       pars[4] = chit.energyDep();
-      pars[5] = tpdata.docaVar();
       auto mvaout = mva_->infer(pars.data());
-      if(diag_ > 2){
+      if(diag_ > 1){
         whstate.algo_  = StrawHitUpdaters::DriftANN;
         whstate.quality_ = mvaout[0];
       }
