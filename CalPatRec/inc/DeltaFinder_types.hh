@@ -121,7 +121,7 @@ namespace mu2e {
 
     class DeltaSeed {
     public:
-      int                            fNumber;           // number within the station
+      int                            fIndex;            // index within the station
       int                            fStation;          // station with seed stereo hit
       int                            fType;             // defines indices of the two faces used for preseed seach
       int                            fGood;             // <-killer number> if not to be used - what about 0 ?
@@ -150,6 +150,7 @@ namespace mu2e {
       DeltaSeed (int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
       ~DeltaSeed() {}
 
+      int              Index   ()         { return fIndex; }
       int              SFace(int I)       { return fSFace[I]; }
       float            Chi2N   ()         { return (fChi21+fChi22)/fNHits; }
       float            Chi2Tot ()         { return (fChi21+fChi22); }
@@ -242,6 +243,10 @@ namespace mu2e {
 
       DeltaCandidate*     deltaCandidate(int I) { return &listOfDeltaCandidates[I]; }
       DeltaSeed*          deltaSeed(int Station, int I) { return listOfSeeds[Station][I]; }
+
+      void printHitData       (HitData_t*      HitData, const char* Option = "");
+      void printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");
+      void printDeltaCandidate(DeltaCandidate* Delta  , const char* Option = "");
     };
 
 //-----------------------------------------------------------------------------

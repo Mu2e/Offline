@@ -1374,7 +1374,12 @@ namespace mu2e {
             new_seed = new DeltaSeed(-1,Station,face,hd,-1,nullptr);
           }
           else {
-            printf("ERROR in DeltaFinder::recoverStation: shouldn\'t be getting here\n");
+            printf("ERROR in DeltaFinder::recoverStation: ");
+            printf("station=%2i - shouldn\'t be getting here, printout of new_seed and hd follows\n",Station);
+
+            _data.printDeltaSeed(new_seed,"");
+            _data.printHitData  (hd      ,"");
+
             new_seed->hitData[face]    = hd;
             new_seed->fNFacesWithHits += 1;
             new_seed->fNHits          += 1;
@@ -1394,11 +1399,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int rc(0);
     if (new_seed) {
-      new_seed->fNumber     = _data.listOfSeeds[Station].size();
+      new_seed->fIndex     = _data.listOfSeeds[Station].size();
       _data.listOfSeeds[Station].push_back(new_seed);
       _data.nseeds_per_station[Station] += 1;
       int face0 = new_seed->SFace(0);
-      new_seed->HitData(face0)->fSeedIndex = new_seed->fNumber;
+      new_seed->HitData(face0)->fSeedIndex = new_seed->fIndex;
 
       Delta->AddSeed(new_seed,Station);
       rc = 1;

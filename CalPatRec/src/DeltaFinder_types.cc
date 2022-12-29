@@ -8,12 +8,63 @@
 namespace mu2e {
   namespace DeltaFinderTypes {
 
+//-----------------------------------------------------------------------------
+    void Data_t::printHitData(HitData_t* Hd, const char* Option) {
+      const mu2e::ComboHit* ch0 = &(*chcol)[0];
+
+      const mu2e::ComboHit* ch = Hd->fHit;
+
+      int index = ch-ch0;
+
+      printf("index   sid  seed delta   chi2min     sigw\n");
+      printf("------------------------------------------\n");
+      printf("%5i %5i %5i %5i  %8.2f %8.2f\n",
+             index,ch->strawId().asUint16(),Hd->fSeedIndex,Hd->fDeltaIndex,Hd->fChi2Min,Hd->fSigW);
+
+    }
+
+//-----------------------------------------------------------------------------
+    void Data_t::printDeltaSeed(DeltaSeed* Seed, const char* Option) {
+      printf("---------------------------------------------");
+      printf("-------------------------------------------------------------------------------------\n");
+      printf("index good type delta  SHID  SHID  SHID  SHID");
+      printf("  chi2all/N    chi21   chi22 mintime  maxtime     X        Y         Z   nfwh nch nsh\n");
+      printf("---------------------------------------------");
+      printf("-------------------------------------------------------------------------------------\n");
+
+      printf("%5i  %03i %4i %5i",Seed->Index(),Seed->fGood,Seed->fType,Seed->fDeltaIndex);
+//-----------------------------------------------------------------------------
+// print hit ID's in each face
+//-----------------------------------------------------------------------------
+      for (int face=0; face<kNFaces; face++) {
+        const HitData_t* hd = Seed->hitData[face];
+        if (hd == nullptr) printf(" %5i",-1);
+        else {
+          const ComboHit* hit = hd->fHit;
+          printf(" %5i",hit->strawId().asUint16());
+        }
+      }
+
+      printf(" %8.2f %7.2f %7.2f",Seed->Chi2AllDof(),Seed->fChi21,Seed->fChi22);
+      printf("%8.1f %8.1f",Seed->MinHitTime(),Seed->MaxHitTime());
+      printf(" %8.3f %8.3f %9.3f",Seed->CofM.x(),Seed->CofM.y(),Seed->CofM.z());
+      printf("%4i",Seed->fNFacesWithHits);
+      printf("%4i",Seed->NHits());
+      printf("%4i",Seed->NStrawHits());
+      printf("\n");
+    }
+
+//-----------------------------------------------------------------------------
+    void Data_t::printDeltaCandidate(DeltaCandidate* Delta, const char* Option) {
+    }
+
+//-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed() {
       printf("ERROR: DeltaSeed::DeltaSeed() should not be called\n");
     }
 
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
-      fNumber           = Index;
+      fIndex            = Index;
       fStation          = Station;
       fGood             =  1;
       fSFace[0]         = Face0;
@@ -67,7 +118,7 @@ namespace mu2e {
       fChi2All          = 9999.99;
     }
 
-
+//-----------------------------------------------------------------------------
     DeltaCandidate::DeltaCandidate() {
       fIndex  = -1;
       for(int s=0; s<kNStations; ++s) {
