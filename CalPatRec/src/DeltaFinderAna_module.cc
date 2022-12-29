@@ -321,20 +321,26 @@ namespace mu2e {
     int book_straw_hit_histset[kNStrawHitHistSets];
     for (int i=0; i<kNStrawHitHistSets; i++) book_straw_hit_histset[i] = 0;
 
-    book_straw_hit_histset[  0] = 1;                // all hits
-    book_straw_hit_histset[  1] = 1;                // all hits t>500
-    book_straw_hit_histset[  2] = 1;                // all hits t>500
-    book_straw_hit_histset[  3] = 1;                // all hits t>500 edepOK
-    book_straw_hit_histset[  4] = 1;                // all hits t>500 edepOK non-delta
-    book_straw_hit_histset[  5] = 1;                // all hits t>500 edepOK non-delta MC=delta (type 1)
-    book_straw_hit_histset[  6] = 1;                // all hits t>500 edepOK delta
-    book_straw_hit_histset[  7] = 1;                // all hits t>500 edepOK delta MC=delta (type 1)
+    book_straw_hit_histset[  0] = 1;                // all
+    book_straw_hit_histset[  1] = 1;                // all prot
+    book_straw_hit_histset[  2] = 1;                // all e: p<20
+    book_straw_hit_histset[  3] = 1;                // all e 20<p<80
+    book_straw_hit_histset[  4] = 1;                // all e: 80<p<110
+    book_straw_hit_histset[  5] = 1;                // all everything else
 
-    book_straw_hit_histset[ 10] = 1;                // all hits type=0
-    book_straw_hit_histset[ 20] = 1;                // all hits type=1
-    book_straw_hit_histset[ 30] = 1;                // all hits type=2
-    book_straw_hit_histset[ 40] = 1;                // all hits type=3
-    book_straw_hit_histset[ 50] = 1;                // all hits type=3
+    book_straw_hit_histset[ 10] = 1;                // delta  all
+    book_straw_hit_histset[ 11] = 1;                // delta  prot
+    book_straw_hit_histset[ 12] = 1;                // delta  e: p<20
+    book_straw_hit_histset[ 13] = 1;                // delta  e 20<p<80
+    book_straw_hit_histset[ 14] = 1;                // delta  e: 80<p<110
+    book_straw_hit_histset[ 15] = 1;                // delta  everything else
+
+    book_straw_hit_histset[ 20] = 1;                // non-delta all
+    book_straw_hit_histset[ 21] = 1;                // non-delta prot
+    book_straw_hit_histset[ 22] = 1;                // non-delta e: p<20
+    book_straw_hit_histset[ 23] = 1;                // non-delta e 20<p<80
+    book_straw_hit_histset[ 24] = 1;                // non-delta e: 80<p<110
+    book_straw_hit_histset[ 25] = 1;                // non-delta everything else
 
     for (int i=0; i<kNStrawHitHistSets; i++) {
       if (book_straw_hit_histset[i] != 0) {
@@ -455,7 +461,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     fillEventHistograms(_hist.fEvent[0]);
 //-----------------------------------------------------------------------------
-// straw hit histograms, mc_hit_info relates to the straw hit
+// straw hit histograms, mc_hit_info relates to the straw hit type
+// 0:p, 1:ele p<20, 2:ele 20<p<80  3:ele 100<p<110 4:everything else
 //-----------------------------------------------------------------------------
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit* ch          = &_chColl->at(i);
@@ -467,44 +474,38 @@ namespace mu2e {
         const StrawHit* sh = &_shColl->at(ind);
 
         fillStrawHitHistograms(_hist.fStrawHit[0],sh,mc_hit_info);
-        if (sh->time() > 500) {
-          fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
 
-          const StrawHitFlag* flag = mc_hit_info->fFlag;
+        if      (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
+        else if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
+        else if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
+        else if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
+        else                              fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
 
-          fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
-          int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
-          if (edepOK) {
-            fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
-            int delta = flag->hasAllProperties(StrawHitFlag::bkg);
-            if (! delta) {
+        const StrawHitFlag* flag = mc_hit_info->fFlag;
+
+        // int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
+        int delta  = flag->hasAllProperties(StrawHitFlag::bkg);
+
+        if (delta) {
 //-----------------------------------------------------------------------------
-// StrawHit SET 4: hits not marked as delta electron hits
-//          SET 5: hits of low energy electrons not marked as delta electron hits
+// set 2: all hits flagged as delta electrons
 //-----------------------------------------------------------------------------
-              fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
-              if (mc_hit_info->fType == 1) { // low-energy electrons
-                fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
-              }
-            }
-            else {
-//-----------------------------------------------------------------------------
-// StrawHit SET 6: hits marked as delta electron hits
-//          SET 7: hits of low energy electrons marked as such
-//-----------------------------------------------------------------------------
-              fillStrawHitHistograms(_hist.fStrawHit[6],sh,mc_hit_info);
-              if (mc_hit_info->fType == 1) { // low-energy electrons
-                fillStrawHitHistograms(_hist.fStrawHit[7],sh,mc_hit_info);
-              }
-            }
-          }
+          fillStrawHitHistograms(_hist.fStrawHit[10],sh,mc_hit_info);
+
+          if      (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[11],sh,mc_hit_info);
+          else if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[12],sh,mc_hit_info);
+          else if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[13],sh,mc_hit_info);
+          else if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[14],sh,mc_hit_info);
+          else                              fillStrawHitHistograms(_hist.fStrawHit[15],sh,mc_hit_info);
         }
-
-        if (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[10],sh,mc_hit_info);
-        if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[20],sh,mc_hit_info);
-        if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[30],sh,mc_hit_info);
-        if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[40],sh,mc_hit_info);
-        if (mc_hit_info->fType == 4) fillStrawHitHistograms(_hist.fStrawHit[50],sh,mc_hit_info);
+        else {
+          fillStrawHitHistograms(_hist.fStrawHit[20],sh,mc_hit_info);
+          if      (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[21],sh,mc_hit_info);
+          else if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[22],sh,mc_hit_info);
+          else if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[23],sh,mc_hit_info);
+          else if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[24],sh,mc_hit_info);
+          else                              fillStrawHitHistograms(_hist.fStrawHit[25],sh,mc_hit_info);
+        }
       }
     }
 //-----------------------------------------------------------------------------

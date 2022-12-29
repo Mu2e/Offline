@@ -999,7 +999,7 @@ namespace mu2e {
               const HitData_t* hd0 = ds->HitData(face0);
               const HitData_t* hd1 = (face1 >= 0) ? ds->HitData(face1) : nullptr;
 
-              printf("          %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->fNumber);
+              printf("          %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->Index());
               printf(" %7.2f %7.2f %9.2f",ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
               float chi22 = (hd1) ? hd1->fChi2Min : -1;
               printf(" %7.1f %7.1f",hd0->fChi2Min, chi22);

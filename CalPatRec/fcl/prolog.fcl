@@ -353,7 +353,7 @@ CalPatRec : { @table::CalPatRec
             maxElectronHitEnergy          : 0.0200                # means: use all hits
             minimumTime                   : 400.                  # ns
             maximumTime                   : 1750.                 # ns
-            maxChi2Stereo                 : 16.                   ## 16="4sigma" 50.                   #
+            maxChi2Stereo                 : 16.                   ## 16 = 4sigma  25="5sigma" 50.                   #
             maxChi2Radial                 : 25.                   # 16 ... 2018-01-24: 25 --> 15
             maxChi2Tot                    : 16.                   ## 16 used by pruneSeeds to mark bad seeds... ## 2018-01-24: 25 --> 15
             maxDxy                        : 40.                   # mm
