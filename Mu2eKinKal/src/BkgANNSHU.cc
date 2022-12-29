@@ -4,6 +4,7 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eKinKal/inc/TrainBkg.hxx"
 #include <cmath>
+#include <array>
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
@@ -22,20 +23,19 @@ namespace mu2e {
   WireHitState BkgANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::BkgANN)){
-      std::vector<float> pars(9,0.0);
+      std::array<float,8> pars;
       // this order is given by the training
-      pars[0] = tpdata.deltaT();
-      pars[1] = tpdata.doca();
-      pars[2] = dinfo.driftDistance_;
+      pars[0] = fabs(tpdata.doca());
+      pars[1] = dinfo.driftDistance_;
+      pars[2] = tpdata.docaVar();
       pars[3] = chit.driftTime();
       pars[4] = chit.energyDep();
-      pars[5] = tpdata.docaVar();
-      pars[6] = chit.wireDist();
+      pars[5] = chit.wireDist();
       // compare the delta-t based U position with the fit U position; requires relative end
       double endsign = 2.0*(chit.driftEnd()-0.5);
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
-      pars[7] = upos;
-      pars[8] = tpdata.particlePoca().Vect().Rho();
+      pars[6] = upos;
+      pars[7] = tpdata.particlePoca().Vect().Rho();
       auto mvaout = mva_->infer(pars.data());
       if(diag_ > 2){
         whstate.algo_  = StrawHitUpdaters::BkgANN;
