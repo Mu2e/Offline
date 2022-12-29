@@ -723,7 +723,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 
     _eventNum = Event.event();
     if (_debugLevel) {
-      printf(">>> %s::%s event number: %10i\n",typeid(*this).name(), __func__,_eventNum);
+      printf("* >>> DeltaFinderAna::%s event number: %10i\n",__func__,_eventNum);
     }
 //-----------------------------------------------------------------------------
 // process event

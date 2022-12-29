@@ -409,13 +409,15 @@ namespace mu2e {
     Hist->fChi2N->Fill(Seed->Chi2N());
     Hist->fChi2Tot->Fill(Seed->Chi2Tot());
 
-    const HitData_t* hd1 = Seed->fHitData[0];
-    const HitData_t* hd2 = Seed->fHitData[1];
+    int face0 = Seed->SFace(0);
+    int face1 = Seed->SFace(1);
 
-    if ((hd1 != nullptr) and (hd2 != nullptr)) {
-      // ** FIXME need to be able to tell everything from fType
-      int face1 = Seed->fType/10;
-      int face2 = Seed->fType % 10;
+    if (face1 >= 0) {
+//-----------------------------------------------------------------------------
+// full-fledged stereo seed
+//-----------------------------------------------------------------------------
+      const HitData_t* hd1 = Seed->HitData(face0);
+      const HitData_t* hd2 = Seed->HitData(face1);
 
       DeltaFinderTypes::findIntersection(hd1,hd2,&res);
 
@@ -432,7 +434,10 @@ namespace mu2e {
       double _sigmaR = 10;
 
       for (int face=0; face<kNFaces; face++) {
-        if ((face == face1) || (face == face2))                       continue;
+//-----------------------------------------------------------------------------
+// skip seed faces
+//-----------------------------------------------------------------------------
+        if ((face == face0) || (face == face1))                       continue;
 
         const HitData_t* hd  = Seed->hitData[face];
         if (hd == nullptr)                                            continue;
@@ -735,13 +740,17 @@ namespace mu2e {
         seed->fPreSeedMcPart[0] = NULL;
         seed->fPreSeedMcPart[1] = NULL;
 
-        if (seed->fHitData[0] != nullptr) {
-          int loc1 = seed->fHitData[0]->fHit-hit0;
+        int face0 = seed->SFace(0);
+        if (seed->HitData(face0) != nullptr) {
+          const HitData_t* hd1 = seed->HitData(face0);
+          int loc1 = hd1->fHit-hit0;
           seed->fPreSeedMcPart[0] = _list_of_mc_part_hit.at(loc1);
         }
 
-        if (seed->fHitData[1] != nullptr) {
-          int loc2 = seed->fHitData[1]->fHit-hit0;
+        int face1 = seed->SFace(1);
+        if (face1 >= 0) {
+          const HitData_t* hd2 = seed->HitData(face1);
+          int loc2 = hd2->fHit-hit0;
           seed->fPreSeedMcPart[1] = _list_of_mc_part_hit.at(loc2);
         }
 //-----------------------------------------------------------------------------
@@ -749,7 +758,7 @@ namespace mu2e {
 // assume one CombiHit per face
 //-----------------------------------------------------------------------------
         for (int face=0; face<kNFaces; face++) {
-          const HitData_t* hd = seed->hitData[face];
+          const HitData_t* hd = seed->HitData(face);
           if (hd == nullptr)                                          continue;
           int loc             = hd->fHit-hit0;         // ComboHit index in the collection
           McPart_t* mc        = _list_of_mc_part_hit[loc];
@@ -983,15 +992,23 @@ namespace mu2e {
           for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
             DeltaSeed* ds = dc->seed[is];
             if (ds != NULL) {
+
+              int face0 = ds->SFace(0);
+              int face1 = ds->SFace(1);
+
+              const HitData_t* hd0 = ds->HitData(face0);
+              const HitData_t* hd1 = (face1 >= 0) ? ds->HitData(face1) : nullptr;
+
               printf("          %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->fNumber);
               printf(" %7.2f %7.2f %9.2f",ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
-              printf(" %7.1f %7.1f",ds->fChi21, ds->fChi22);
+              float chi22 = (hd1) ? hd1->fChi2Min : -1;
+              printf(" %7.1f %7.1f",hd0->fChi2Min, chi22);
               printf(" %7.1f %7.1f",ds->MinHitTime(),ds->MaxHitTime());
               printf(" %7.1f %7.1f",dc->fT0Min[is]  ,dc->fT0Max[is]);
 
               printf("  (");
               for (int face=0; face<kNFaces; face++) {
-                const HitData_t* hd = ds->hitData[face];
+                const HitData_t* hd = ds->HitData(face);
                 if (hd == nullptr) printf(" %5i:%6i",-1,-1);
                 else {
                   const ComboHit* hit = hd->fHit;
@@ -1018,7 +1035,6 @@ namespace mu2e {
         McPart_t* mc = _list_of_mc_particles.at(i);
 
         if ((mc->fPdgID     == PDGCode::e_minus       ) &&
-            //            (mc->Time()     > 550                     ) &&
             (mc->Momentum() >  _printElectronsMinMom  ) &&
             (mc->Momentum() <  _printElectronsMaxMom  ) &&
             (mc->NHits()    >= _printElectronsMinNHits)    ) {
@@ -1033,7 +1049,7 @@ namespace mu2e {
               nseeds   = mc->fDelta->n_seeds;
             }
 
-            printf(" event: %4i electron.sim.id: %10i",_data->event->event(),mc->fID);
+            printf("* event: %4i electron.sim.id: %10i",_data->event->event(),mc->fID);
             printf(" mom = %7.3f time: %8.3f deltaID: %3i nseeds: %2i nhits: %3i/%3i stations:%2i:%2i",
                    mc->Momentum(), mc->Time(),
                    delta_id, nseeds,
@@ -1067,7 +1083,7 @@ namespace mu2e {
     if (Panel < 0) {
       printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
-      printf("#      SHID    flag     St:F:P:Pl P L Str     Time     dt        eDep       wdist     wres   ");
+      printf("#      SHID    flag nsh    St:F:P:Pl P L Str     Time    TCorr    dt        eDep       wdist     wres   ");
       printf("     PDG        simID       p      X        Y         Z   DeltaID radOK edepOK\n");
       printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
@@ -1096,9 +1112,9 @@ namespace mu2e {
     }
 
     printf("%5i",loc);
-    printf(" %5i 0x%08x" ,ch->strawId().asUint16(),*((int*) flag));
+    printf(" %5i 0x%08x %2i" ,ch->strawId().asUint16(),*((int*) flag),ch->nStrawHits());
 
-    printf("  %2i:%i:%i:%2i %1i %1i %2i   %8.3f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
+    printf("  %2i:%i:%i:%2i %1i %1i %2i   %8.2f %8.2f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
            ch->strawId().station(),
            Face,Panel,
            ch->strawId().plane(),
@@ -1106,6 +1122,7 @@ namespace mu2e {
            ch->strawId().layer(),
            ch->strawId().straw(),
            ch->time(),
+           ch->correctedTime(),
            -1.,//sh->dt(),// ** FIXME!
            ch->energyDep(),
            ch->wireDist(),

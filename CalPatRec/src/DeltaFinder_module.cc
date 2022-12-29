@@ -147,7 +147,7 @@ namespace mu2e {
 
     void         initTimeCluster   (DeltaCandidate* Delta, TimeCluster* Tc);
     int          mergeDeltaCandidates();
-    int          recoverStation    (DeltaCandidate* Delta, int Station);
+    int          recoverStation    (DeltaCandidate* Delta, int Station, int UseUsedHits = 0);
     int          recoverMissingHits();
     void         runDeltaFinder    ();
 
@@ -180,7 +180,6 @@ namespace mu2e {
     _minT                  (pset.get<double>("minimumTime"           )), // nsec
     _maxT                  (pset.get<double>("maximumTime"           )), // nsec
     _maxChi2Stereo         (pset.get<float> ("maxChi2Stereo"         )),
-    _maxChi2Neighbor       (pset.get<float> ("maxChi2Neighbor"       )),
     _maxChi2Radial         (pset.get<float> ("maxChi2Radial"         )),
     _maxChi2Tot            (pset.get<float> ("maxChi2Tot"            )),
     _maxDxy                (pset.get<float> ("maxDxy"                )),
@@ -431,9 +430,9 @@ namespace mu2e {
           delta.fT0Max[is2] = delta.fT0Max[is]+_maxDtDs;
           recoverStation(&delta,is2);
 //-----------------------------------------------------------------------------
-// continue only of found something, no gaps allowed
+// continue only of found something, allow one gaps allowed
 //-----------------------------------------------------------------------------
-          if (delta.fFirstStation != is2) break;
+          if (delta.fFirstStation-is2 > 1) break;
         }
 //-----------------------------------------------------------------------------
 // next, try to extend it forward, by one step
@@ -610,50 +609,24 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // new seed : an intersection of two wires coresponsing to close in time combo hits
 //-----------------------------------------------------------------------------
-              DeltaSeed* seed            = new DeltaSeed();
-              seed->fStation             =  Station;      // should be the first station
-              seed->fNumber              =  _data.listOfSeeds[Station].size();
-              seed->fType                = 10*Face+f2;
-              seed->fNFacesWithHits      = 2;
-              seed->fFaceProcessed[Face] = 1;
-              seed->fFaceProcessed[f2  ] = 1;
-              seed->fMaxDriftTime        = _maxDriftTime;
+              hd1->fChi2Min    = chi1*chi1;
+              hd2->fChi2Min    = chi2*chi2;
 
-              hd1->fChi2Min              = chi1*chi1;
-              hd2->fChi2Min              = chi2*chi2;
+              int nseeds = _data.listOfSeeds[Station].size();
+              DeltaSeed* seed  = new DeltaSeed(nseeds,Station,Face,hd1,f2,hd2);
+
+              seed->CofM.SetXYZ(res.x,res.y,res.z);
+              seed->fPhi = polyAtan2(res.y,res.x);
 //-----------------------------------------------------------------------------
 // mark both hits as a part of a seed, so they would not be used individually
 // - see HitData_t::Used()
 //-----------------------------------------------------------------------------
-              hd1->fSeedNumber           = seed->fNumber;
-              hd2->fSeedNumber           = seed->fNumber;
-
-              seed->fMinHitTime = ct;
-              if (ct2 > seed->fMinHitTime) {
-                seed->fMaxHitTime = ct2;
-              }
-              else {
-                seed->fMinHitTime = ct2;
-                seed->fMaxHitTime = ct;
-              }
-
-              seed->hitData[Face] = hd1;
-              seed->hitData[f2  ] = hd2;
-
-              seed->CofM.SetXYZ(res.x,res.y,res.z);
-              seed->fHitData[0]  = hd1;
-              seed->fHitData[1]  = hd2;
-              seed->fChi21       = chi1*chi1;
-              seed->fChi22       = chi2*chi2;
-              seed->panelz[Face] = panelz;
-              seed->panelz[f2]   = panelz2;
-              seed->fNHits       = 2;                   // two combo hits
-              seed->fNStrawHits  = ch->nStrawHits()+ch2->nStrawHits();
-
-              _data.listOfSeeds[Station].push_back(seed);
+              hd1->fSeedIndex  = nseeds;
+              hd2->fSeedIndex  = nseeds;
 //-----------------------------------------------------------------------------
 // book-keeping: increment total number of found seeds
 //-----------------------------------------------------------------------------
+              _data.listOfSeeds[Station].push_back(seed);
               _data.nseeds                      += 1;
               _data.nseeds_per_station[Station] += 1;
             }
@@ -692,7 +665,6 @@ namespace mu2e {
         int nseeds = _data.listOfSeeds[s].size();
         for (int iseed=last; iseed<nseeds; iseed++) {
           DeltaSeed* seed = _data.listOfSeeds[s][iseed];
-          double seed_phi = polyAtan2(seed->CofM.y(), seed->CofM.x()); // check to find right panel
 //-----------------------------------------------------------------------------
 // simultaneously update CoM coordinates
 //-----------------------------------------------------------------------------
@@ -726,7 +698,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
             for (int p2=0; p2<3; ++p2) {
               PanelZ_t* panelz = &_data.oTracker[s][f2][p2];
-              double dphi      = seed_phi-panelz->phi;
+              double dphi      = seed->Phi()-panelz->phi;
               if (dphi < -M_PI) dphi += 2*M_PI;
               if (dphi >  M_PI) dphi -= 2*M_PI;
               if (fabs(dphi) >= M_PI/3)                               continue;
@@ -827,7 +799,7 @@ namespace mu2e {
           for (int face=0; face<kNFaces; face++) {
             const HitData_t* hd = seed->HitData(face);
             if (hd) {
-              XYZVectorF  dxyz = hd->fHit->pos()-seed->CofM; // distance from hit to the center-of-gravity
+              XYZVectorF  dxyz = hd->fHit->pos()-seed->CofM; // distance from the hit to the center-of-gravity
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
@@ -842,7 +814,7 @@ namespace mu2e {
               seed->fChi2All               += chi2;
             }
           }
-          seed->fChi2All = seed->fChi2All/seed->fNHits;
+          // seed->fChi2All = seed->fChi2All/seed->fNHits;
         }
 //-----------------------------------------------------------------------------
 // prune list of found seeds and do that right away
@@ -891,7 +863,7 @@ namespace mu2e {
 
         int dds = dc2->FirstStation()-dc1->LastStation();
         if (dds < 0) {
-          printf("ERROR in DeltaFinder::connectSeeds:");
+          printf("ERROR in DeltaFinder::%s:",__func__);
           printf("i1, i2, dc1->LastStation, dc2->FirstStation: %2i %2i %2i %2i \n",
                  i1,i2,dc1->LastStation(),dc2->FirstStation());
                                                                        continue;
@@ -1129,7 +1101,7 @@ namespace mu2e {
 // some of found seeds could be duplicates or ghosts
 // in case two DeltaSeeds share the first seed hit, leave only the best one
 // all seeds we're loooping over have been reconstructed within the same
-// also reject seeds with Chi2Tot > 10
+// also reject seeds with Chi2Tot > _maxChi2Tot=10
 //-----------------------------------------------------------------------------
   void DeltaFinder::pruneSeeds(int Station) {
     int nseeds =  _data.listOfSeeds[Station].size();
@@ -1241,13 +1213,74 @@ namespace mu2e {
   }
 
 //------------------------------------------------------------------------------
+// start from looking at the "holes" in the seed pattern
+// delta candidates in the list are already required to have at least 2 segments
+// extend them outwards by one station
+//-----------------------------------------------------------------------------
+  int DeltaFinder::recoverMissingHits() {
+
+    int ndelta = _data.listOfDeltaCandidates.size();
+    for (int idelta=0; idelta<ndelta; idelta++) {
+      DeltaCandidate* dc = &_data.listOfDeltaCandidates[idelta];
+//-----------------------------------------------------------------------------
+// don't extend candidates made out of one segment - but there is no such
+// start from the first station to define limits
+//-----------------------------------------------------------------------------
+      int s1 = dc->fFirstStation;
+      int s2 = dc->fLastStation-1;
+      int last(-1);
+      float t0min(-1.), t0max(-1.);
+//-----------------------------------------------------------------------------
+// first check inside "holes"
+//-----------------------------------------------------------------------------
+      for (int i=s1+1; i<=s2; i++) {
+        if (dc->seed[i] != nullptr) {
+          last  = i;
+          t0min = dc->fT0Min[i];
+          t0max = dc->fT0Max[i];
+          continue;
+        }
+//-----------------------------------------------------------------------------
+// define expected T0 limits
+//-----------------------------------------------------------------------------
+        dc->fT0Min[i] = t0min-_maxDtDs*(i-last);
+        dc->fT0Max[i] = t0max+_maxDtDs*(i-last);
+        recoverStation(dc,i,1);
+      }
+
+      last  = dc->fFirstStation;
+      for (int i=last-1; i>=0; i--) {
+//-----------------------------------------------------------------------------
+// skip empty stations
+//-----------------------------------------------------------------------------
+        if (dc->fFirstStation -i > _maxGap) break;
+        dc->fT0Min[i] = dc->fT0Min[dc->fFirstStation]-_maxDtDs*(dc->fFirstStation-i);
+        dc->fT0Max[i] = dc->fT0Max[dc->fFirstStation]+_maxDtDs*(dc->fFirstStation-i);
+        recoverStation(dc,i,0);
+      }
+
+      last = dc->fLastStation;
+      for (int i=last+1; i<kNStations; i++) {
+//-----------------------------------------------------------------------------
+// skip empty stations
+//-----------------------------------------------------------------------------
+        if (i-dc->fLastStation > _maxGap) break;
+        dc->fT0Min[i] = dc->fT0Min[dc->fLastStation]-_maxDtDs*(i-dc->fLastStation);
+        dc->fT0Max[i] = dc->fT0Max[dc->fLastStation]+_maxDtDs*(i-dc->fLastStation);
+        recoverStation(dc,i,0);
+      }
+    }
+
+    return 0;
+  }
+
+//------------------------------------------------------------------------------
 // try to recover hits of a 'Delta' candidate in a given 'Station'
 // the delta candidate doesn't have hits in this station, check all hits here
 // when predicting time, use the same value of Z for both layers of a given face
 //-----------------------------------------------------------------------------
-  int DeltaFinder::recoverStation(DeltaCandidate* Delta, int Station) {
+  int DeltaFinder::recoverStation(DeltaCandidate* Delta, int Station, int UseUsedHits) {
 
-    DeltaSeed*  new_seed (nullptr);
                                         // predicted time range for this station
     float t0min = Delta->T0Min(Station);
     float t0max = Delta->T0Max(Station);
@@ -1264,8 +1297,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // one might need some safety here, but not the _maxDriftTime
 //-----------------------------------------------------------------------------
-      // if (t0min > seed->T0Max() + _maxDriftTime)                      continue;
-      // if (t0max < seed->T0Max() - _maxDriftTime)                      continue;
       if (t0min > seed->T0Max())                                      continue;
       if (t0max < seed->T0Min())                                      continue;
 
@@ -1288,6 +1319,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // no seeds found, look for single hits
 //-----------------------------------------------------------------------------
+    DeltaSeed*  new_seed (nullptr);
+
     for (int face=0; face<kNFaces; face++) {
       for (int ip=0; ip<kNPanelsPerFace; ip++) {
         PanelZ_t* panelz = &_data.oTracker[Station][face][ip];
@@ -1306,16 +1339,17 @@ namespace mu2e {
         for (int h=0; h<nhits; ++h) {
           HitData_t* hd = &panelz->fHitData[h];
 //-----------------------------------------------------------------------------
-// skip hits already included into seeds
+// don't skip hits already included into seeds - a two-hit stereo seed
+// could be random
 //-----------------------------------------------------------------------------
-          if (hd->Used())                                             continue;
+          if ((UseUsedHits == 0) and hd->Used())                      continue;
           const ComboHit*  ch = hd->fHit;
           float corr_time     = ch->correctedTime();
 //-----------------------------------------------------------------------------
 // predicted time is the particle time, the drift time should be larger
 //-----------------------------------------------------------------------------
-          if (corr_time < t0min)                                         continue;
-          if (corr_time > t0max)                                         continue;
+          if (corr_time < t0min)                                      continue;
+          if (corr_time > t0max)                                      continue;
 
           double dx = ch->pos().x()-Delta->CofM.x();
           double dy = ch->pos().y()-Delta->CofM.y();
@@ -1334,25 +1368,21 @@ namespace mu2e {
 // new hit needs to be added, create a special 1-hit seed for that
 // in most cases, expect this seed not to have the second hit, but it may
 // such a seed has its own CofM undefined
+// ** FIXME ..in principle, at this point may want to check if the hit was used...
 //-----------------------------------------------------------------------------
-          if (new_seed == NULL) {
-            new_seed = new DeltaSeed();
-            new_seed->fType           = 10*face;
-            new_seed->fHitData[0]     = hd;
-            new_seed->fMaxDriftTime   = _maxDriftTime;
+          if (new_seed == nullptr) {
+            new_seed = new DeltaSeed(-1,Station,face,hd,-1,nullptr);
           }
           else {
             printf("ERROR in DeltaFinder::recoverStation: shouldn\'t be getting here\n");
+            new_seed->hitData[face]    = hd;
+            new_seed->fNFacesWithHits += 1;
+            new_seed->fNHits          += 1;
+            new_seed->fNStrawHits     += ch->nStrawHits();
+
+            if (corr_time < new_seed->fMinHitTime) new_seed->fMinHitTime = corr_time;
+            if (corr_time > new_seed->fMaxHitTime) new_seed->fMaxHitTime = corr_time;
           }
-
-          new_seed->panelz[face]     = panelz;
-          new_seed->fNFacesWithHits += 1;
-          new_seed->fNHits          += 1;
-          new_seed->fNStrawHits     += ch->nStrawHits();
-
-          if (corr_time < new_seed->fMinHitTime) new_seed->fMinHitTime = corr_time;
-          if (corr_time > new_seed->fMaxHitTime) new_seed->fMaxHitTime = corr_time;
-          new_seed->hitData[face] = hd;
         }
       }
       if (new_seed) new_seed->fFaceProcessed[face] = 1;
@@ -1367,75 +1397,14 @@ namespace mu2e {
       new_seed->fNumber     = _data.listOfSeeds[Station].size();
       _data.listOfSeeds[Station].push_back(new_seed);
       _data.nseeds_per_station[Station] += 1;
-      new_seed->fHitData[0]->fSeedNumber = new_seed->fNumber;
+      int face0 = new_seed->SFace(0);
+      new_seed->HitData(face0)->fSeedIndex = new_seed->fNumber;
 
       Delta->AddSeed(new_seed,Station);
       rc = 1;
     }
                                         // return 1 if hits were added
     return rc;
-  }
-//------------------------------------------------------------------------------
-// start from looking at the "holes" in the seed pattern
-// delta candidates in the list are already required to have at least 2 segments
-// extend them outwards by one station
-//-----------------------------------------------------------------------------
-  int DeltaFinder::recoverMissingHits() {
-
-    int ndelta = _data.listOfDeltaCandidates.size();
-    for (int idelta=0; idelta<ndelta; idelta++) {
-      DeltaCandidate* dc = &_data.listOfDeltaCandidates[idelta];
-//-----------------------------------------------------------------------------
-// don't extend candidates made out of one segment - but there is no such
-// start from the first station to define limits
-//-----------------------------------------------------------------------------
-      int s1 = dc->fFirstStation;
-      int s2 = dc->fLastStation-1;
-      int last(-1);
-      float t0min(-1.), t0max(-1.);
-//-----------------------------------------------------------------------------
-// first check inside "holes", skip unused stations
-//-----------------------------------------------------------------------------
-      for (int i=s1; i<=s2; i++) {
-        if (dc->seed[i] != nullptr) {
-          last  = i;
-          t0min = dc->fT0Min[i];
-          t0max = dc->fT0Max[i];
-          continue;
-        }
-        if (_data.stationUsed[i] == 0) continue;
-//-----------------------------------------------------------------------------
-// define expected T0 limits
-//-----------------------------------------------------------------------------
-        dc->fT0Min[i] = t0min-_maxDtDs*(i-last);
-        dc->fT0Max[i] = t0max+_maxDtDs*(i-last);
-        recoverStation(dc,i);
-      }
-
-      last  = dc->fFirstStation;
-      for (int i=last-1; i>=0; i--) {
-//-----------------------------------------------------------------------------
-// skip empty stations
-//-----------------------------------------------------------------------------
-        if (dc->fFirstStation -i > _maxGap) break;
-        dc->fT0Min[i] = dc->fT0Min[dc->fFirstStation]-_maxDtDs*(dc->fFirstStation-i);
-        dc->fT0Max[i] = dc->fT0Max[dc->fFirstStation]+_maxDtDs*(dc->fFirstStation-i);
-        recoverStation(dc,i);
-      }
-
-      last = dc->fLastStation;
-      for (int i=last+1; i<kNStations; i++) {
-//-----------------------------------------------------------------------------
-// skip empty stations
-//-----------------------------------------------------------------------------
-        if (i-dc->fLastStation > _maxGap) break;
-        dc->fT0Min[i] = dc->fT0Min[dc->fLastStation]-_maxDtDs*(i-dc->fLastStation);
-        dc->fT0Max[i] = dc->fT0Max[dc->fLastStation]+_maxDtDs*(i-dc->fLastStation);
-        recoverStation(dc,i);
-      }
-    }
-
-    return 0;
   }
 
 //-----------------------------------------------------------------------------
@@ -1529,128 +1498,6 @@ namespace mu2e {
       }
     }
   }
-
-//-----------------------------------------------------------------------------
-//   int DeltaFinder::findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result) {
-//     double x1, y1, x2, y2, nx1, ny1, nx2, ny2;
-
-//     const Hep3Vector& p1 = Hd1->fHit->centerPosCLHEP();//fStraw->getMidPoint();
-
-//     x1 =  p1.x();
-//     y1 =  p1.y();
-
-//     const Hep3Vector& p2 = Hd2->fHit->centerPosCLHEP();//fStraw->getMidPoint();
-//     x2 =  p2.x();
-//     y2 =  p2.y();
-
-//     const Hep3Vector& wdir1 = Hd1->fHit->centerPosCLHEP();//fStraw->getDirection();
-//     nx1 = wdir1.x();
-//     ny1 = wdir1.y();
-
-//     const Hep3Vector& wdir2 = Hd2->fHit->centerPosCLHEP();//fStraw->getDirection();
-//     nx2 = wdir2.x();
-//     ny2 = wdir2.y();
-
-//     double n1n2  = nx1*nx2+ny1*ny2;
-//     double r12n1 = (x1-x2)*nx1+(y1-y2)*ny1;
-//     double r12n2 = (x1-x2)*nx2+(y1-y2)*ny2;
-// //-----------------------------------------------------------------------------
-// // t1 and t2 are distances to the intersection point from the centers of the
-// // corresponding wires
-// //-----------------------------------------------------------------------------
-//     Result->t1 = (n1n2*r12n2-r12n1)/(1-n1n2*n1n2);
-//     Result->t2 = (r12n2-n1n2*r12n1)/(1-n1n2*n1n2);
-
-//                                         // in 2D, the lines intersect, take one
-//     Result->x = x1+nx1*Result->t1;
-//     Result->y = y1+ny1*Result->t1;
-// //-----------------------------------------------------------------------------
-// // now define distances to the hits
-// //-----------------------------------------------------------------------------
-//     Hep3Vector h1 = Hd1->fHit->posCLHEP();
-//     Result->wd1 = (h1.x()-Result->x)*nx1+(h1.y()-Result->y)*ny1;
-//     Hep3Vector h2 = Hd2->fHit->posCLHEP();
-//     Result->wd2 = (h2.x()-Result->x)*nx2+(h2.y()-Result->y)*ny2;
-
-//     return 0;
-//   }
-
-// //-----------------------------------------------------------------------------
-// // pick up neighboring hits in 'Face'
-// //-----------------------------------------------------------------------------
-//   void DeltaFinder::getNeighborHits(DeltaSeed* Seed, int Face, int Face2, PanelZ_t* panelz) {
-
-//     DeltaFinderTypes::Intersection_t     res;
-
-//     vector<HitData_t*> hits;
-
-//     const HitData_t* hd1 = Seed->HitData(Face,0);
-//     float minrad         = hd1->fHit->centerPos().rho();
-//     float maxrad         = minrad;
-
-//     int nh = panelz->fHitData.size();
-//     for (int h=0; h<nh; ++h) {
-//       HitData_t* hd  = &panelz->fHitData[h];
-//       if (hd == hd1) continue ;
-//       const ComboHit* ch = hd->fHit;
-
-//       if (ch->correctedTime()-Seed->T0Max() > _maxDriftTime          ) continue;
-//       if (ch->correctedTime()               < Seed->T0Min()          ) continue;
-
-//       hd->fDr        = fabs(hd->fRMid-minrad);
-//       hits.push_back(hd);
-//     }
-//     //-----------------------------------------------------------------------------
-//     // sorted hits in dr wrt the seed hit.
-//     // I know that sorting could be done with more elegance, don't care at the moment
-//     // also the diagnostics data could be fully separated from the data itself
-//     //-----------------------------------------------------------------------------
-//     int nhits = hits.size();
-//     for (int i=0; i<nhits-1; i++) {
-//       HitData_t** hi = &hits[i];
-//       for (int j=i+1; j<nhits; j++) {
-//         HitData_t** hj = &hits[j];
-//         if ((*hi)->fDr >= (*hj)->fDr) {
-//           HitData_t* h = hits[i];
-//           hits[i]      = hits[j];
-//           hits[j]      = h;
-//         }
-//       }
-//     }
-// //-----------------------------------------------------------------------------
-// // hits are orders in distance from the first pre-seed hit
-// // loop over them again, 'hd2' - the second seed hit
-// //-----------------------------------------------------------------------------
-//     const HitData_t* hd2 = Seed->HitData(Face2,0);
-
-//     for (int i=0; i<nhits; i++) {
-//       const HitData_t* hd = hits[i];
-//       float rad     = hd->fRMid;
-//       if ((minrad-rad > 10) || (rad-maxrad > 10) ) continue;
-// //-----------------------------------------------------------------------------
-// // radially we're OK, check distance from the intersection
-// //-----------------------------------------------------------------------------
-//       // CLHEP::Hep3Vector pos;
-
-//       DeltaFinderTypes::findIntersection(hd, hd2, &res);
-
-//       float chi = res.wd1/hd->fSigW;
-
-//       if (chi*chi < _maxChi2Neighbor) {
-// //-----------------------------------------------------------------------------
-// // OK along the wire, add hit as a neighbor
-// //-----------------------------------------------------------------------------
-//         if (rad < minrad) minrad = rad;
-//         else              maxrad = rad;
-
-//         Seed->hitData[Face].push_back(hd);
-
-//         const ComboHit* ch = hd->fHit;
-//         if (ch->correctedTime() < Seed->fMinTime) Seed->fMinTime = ch->correctedTime();
-//         if (ch->correctedTime() > Seed->fMaxTime) Seed->fMaxTime = ch->correctedTime();
-//       }
-//     }
-//   }
 
 }
 
