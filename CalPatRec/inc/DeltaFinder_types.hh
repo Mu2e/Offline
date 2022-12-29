@@ -45,26 +45,24 @@ namespace mu2e {
 
     struct HitData_t {
       const ComboHit*         fHit;
-      int                     fSeedNumber;
+      int                     fSeedIndex;
       int                     fNSecondHits;
       int                     fDeltaIndex;
       float                   fChi2Min;
       float                   fSigW;     // cached resolution along the wire
-      float                   fRMid;
       float                   fDr;        // work variable
 
       HitData_t(const ComboHit* Hit, float SigW) {
         fHit         = Hit;
         fChi2Min     = 999999.;
         fSigW        = SigW;
-        fSeedNumber  = -1;
-        fNSecondHits = -1;
+        fSeedIndex   = -1;
+        fNSecondHits =  0;
         fDeltaIndex  = -1;
-        fRMid        = fHit->centerPos().rho();
         fDr          = 1.1e10;
       }
 
-      int Used() const { return (fSeedNumber >= 0) ; }
+      int Used() const { return (fSeedIndex >= 0) ; }
     };
 
     struct PanelZ_t {
@@ -132,67 +130,39 @@ namespace mu2e {
       int                            fNStrawHits;       // total number of hits
       int                            fNHitsCE;
 
-      HitData_t*                     fHitData[2];       // stereo hit seeding the seed search
-      float                          fChi21;            // chi2's of the two initial hits
+      int                            fSFace[2];         // faces making the stereo seed
+      // HitData_t*                     fHitData[2];    // stereo hit seeding the seed search
+      float                          fChi21;            // chi2's of the two initial hits, also stored in hit data
       float                          fChi22;
                                                         // 0: used in recovery
       int                            fFaceProcessed[kNFaces];
-      PanelZ_t*                      panelz        [kNFaces];
       HitData_t*                     hitData       [kNFaces];
       McPart_t*                      fMcPart       [kNFaces];
       XYZVectorF                     CofM;
+      float                          fPhi;              // cache to speed up the phi checks
       float                          fMinHitTime;          // min and max times of the included hits
       float                          fMaxHitTime;
-      float                          fMaxDriftTime;
       McPart_t*                      fPreSeedMcPart[2]; // McPart_t's corresponding to initial intersection
       int                            fDeltaIndex;
       float                          fChi2All;
 
-      DeltaSeed() {
-        fStation          = -1;
-        fType             =  0;
-        fGood             =  1;
-        fNHits            =  0;
-        fNStrawHits       =  0;
-        fNHitsCE          =  0;
-        fNFacesWithHits   =  0;
-        fNumber           = -1;
-        fHitData[0]       = nullptr;
-        fHitData[1]       = nullptr;
-        fPreSeedMcPart[0] = nullptr;
-        fPreSeedMcPart[1] = nullptr;
-        //
-        fMinHitTime          = 999999.9;
-        fMaxHitTime          = -1.;
-        fMaxDriftTime     = -1.;
-        for (int is=0; is<kNStations; is++) {
-          for (int face=0; face<kNFaces; face++) {
-            fFaceProcessed[face] = 0;
-            panelz        [face] = NULL;
-            hitData       [face] = NULL;
-            fMcPart       [face] = NULL;
-          }
-        }
-        fDeltaIndex       = -1;
-        fChi21            = -1;
-        fChi22            = -1;
-        fChi2All          = 99999.99;
-      }
-      //------------------------------------------------------------------------------
-      // dont need a copy constructor
-      //------------------------------------------------------------------------------
+      DeltaSeed ();
+      DeltaSeed (int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
       ~DeltaSeed() {}
 
+      int              SFace(int I)       { return fSFace[I]; }
       float            Chi2N   ()         { return (fChi21+fChi22)/fNHits; }
       float            Chi2Tot ()         { return (fChi21+fChi22); }
       float            Chi2All ()         { return fChi2All; }
       float            Chi2AllDof ()      { return fChi2All/fNHits; }
-      const HitData_t* HitData (int Face) { return hitData[Face]; } // no boundary check !
+      HitData_t*       HitData (int Face) { return hitData[Face]; } // no boundary check !
       int              NHits   ()         { return fNHits; }
       int              NStrawHits()       { return fNStrawHits; }
       int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
       bool             Used    ()         { return (fDeltaIndex >= 0); }
       int              Good    ()         { return (fGood       >= 0); }
+
+      float            Phi     () const   { return fPhi; }
 //-----------------------------------------------------------------------------
 // drift time can't be < 0
 // fMaxTime < particle T0 < fMinTime

@@ -354,14 +354,13 @@ CalPatRec : { @table::CalPatRec
             minimumTime                   : 400.                  # ns
             maximumTime                   : 1750.                 # ns
             maxChi2Stereo                 : 16.                   ## 16="4sigma" 50.                   #
-            maxChi2Neighbor               : 16.                   # 2018-01-24: 25 --> 15
-            maxChi2Radial                 : 16.                   # 2018-01-24: 25 --> 15
-            maxChi2Tot                    : 16.                   # 2018-01-24: 25 --> 15
+            maxChi2Radial                 : 25.                   # 16 ... 2018-01-24: 25 --> 15
+            maxChi2Tot                    : 16.                   ## 16 used by pruneSeeds to mark bad seeds... ## 2018-01-24: 25 --> 15
             maxDxy                        : 40.                   # mm
             maxGap                        : 3                     # gap in missing stations along the candidate
             sigmaR                        : 10.                   # mm, roughly 3 MeV/c
-            maxDriftTime                  : 50.                   # ns, includes some tolerance
-            maxStrawDt                    : 50.                   # max sensible time difference for a straw, ns, off by default
+            maxDriftTime                  : 40.                   ## ns, includes some tolerance (50)
+            maxStrawDt                    : 10.                   # max sensible time difference for a straw, ns, off by default
             maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
             maxDtDc                       : 30.                   # ns, max dT between two delta candidates
             writeStrawHits                : 1

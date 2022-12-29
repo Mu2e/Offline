@@ -8,6 +8,66 @@
 namespace mu2e {
   namespace DeltaFinderTypes {
 
+    DeltaSeed::DeltaSeed() {
+      printf("ERROR: DeltaSeed::DeltaSeed() should not be called\n");
+    }
+
+    DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
+      fNumber           = Index;
+      fStation          = Station;
+      fGood             =  1;
+      fSFace[0]         = Face0;
+      fSFace[1]         = Face1;
+
+      for (int face=0; face<kNFaces; face++) {
+        fFaceProcessed[face] = 0;
+        hitData       [face] = NULL;
+        fMcPart       [face] = NULL;
+      }
+
+      hitData[Face0]    = Hd0;
+
+      fChi21            = Hd0->fChi2Min;
+
+      if (Face1 >= 0) {
+        hitData[Face1]    = Hd1;
+        fType             =  10*Face0+Face1;
+        fNHits            =  2;
+        fNStrawHits       = Hd0->fHit->nStrawHits()+Hd1->fHit->nStrawHits();
+        fNFacesWithHits   =  2;
+        fFaceProcessed[Face0] = 1;
+        fFaceProcessed[Face1] = 1;
+        fChi22                = Hd1->fChi2Min;
+      }
+      else {
+        fType             =  10*Face0;  // may want to revisit
+        fNHits            =  1;
+        fNStrawHits       = Hd0->fHit->nStrawHits();
+        fNFacesWithHits   =  1;
+        fFaceProcessed[Face0] = 1;
+        fChi22                = -1;
+      }
+
+      fNHitsCE          =  0;
+                                        // these ones used by teh diag tool
+      fPreSeedMcPart[0] = nullptr;
+      fPreSeedMcPart[1] = nullptr;
+
+      fMinHitTime = Hd0->fHit->correctedTime();
+      fMaxHitTime = fMinHitTime;
+
+      if (Hd1) {
+        float ct2 = Hd1->fHit->correctedTime();
+
+        if (ct2 >= fMinHitTime) fMaxHitTime = ct2;
+        else                    fMinHitTime = ct2;
+      }
+
+      fDeltaIndex       = -1;
+      fChi2All          = 9999.99;
+    }
+
+
     DeltaCandidate::DeltaCandidate() {
       fIndex  = -1;
       for(int s=0; s<kNStations; ++s) {
@@ -88,7 +148,7 @@ namespace mu2e {
       for (int is=is1; is<=is2; is++) {
         if (Delta->seed[is] == nullptr)                               continue;
         if (seed[is] != nullptr) {
-          printf("ERROR in DeltaCandidate::MergeDeltaCandidate: ");
+          printf("ERsROR in DeltaCandidate::MergeDeltaCandidate: ");
           printf("merged DC also has a segment in station %i\n",is);
                                                                       continue;
         }
