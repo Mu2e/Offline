@@ -21,7 +21,7 @@ Mu2eKinKal : {
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
     StrawHitClusterLevel : "none"
-    CaloTrackerTimeOffset : -1.2 #ns
+    CaloTrackerTimeOffset : -1.4 #ns
     CaloPositionResolution : 9.0 #mm
     CaloTimeResolution : 0.5 #ns
     CaloPropagationSpeed : 200.0 #mm/ns
@@ -118,7 +118,7 @@ Mu2eKinKal : {
       [3.0, 3.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.1,"Inactive", 0]
+      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",0.3,"Inactive", 1]
     ]
   }
 
@@ -138,12 +138,12 @@ Mu2eKinKal : {
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
       [ 1.0, "CADSHU" ],
-      [ 0.0, "CADSHU" ],
+      [ 0.3, "CADSHU" ],
       [ 0.0, "CADSHU:BkgANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
-      [ 0.0, "CADSHU:DriftANNSHU" ],
-      [ 0.0, "CADSHU:DriftANNSHU" ]
+      [ 0.0, "DriftANNSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
@@ -153,19 +153,19 @@ Mu2eKinKal : {
       [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
       [ 6.0,  10.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ],
       [ 5.0,   8.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 4.0,   8.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 4.0,   8.0, 5.0, 2.8, "All", "DriftRadius", "Null:Inactive", "", 1 ]
+      [ 10.0,   20.0, 5.0, 5.0, "All", "DriftRadius", "Null:Inactive", "", 1 ]
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg.dat",0.1,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",0.3,"Inactive", 1],
+      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage1.dat",0.3,"Inactive", 1]
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainDrift.dat",0.4, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainDrift.dat",0.6, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainDrift.dat",0.6, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainDrift.dat",0.5, "DriftRadius" ,"Null:Drift","", "All", 1]
+      [ "Offline/Mu2eKinKal/data/TrainDrift_Stage0.dat",0.5, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/TrainDrift_Stage1.dat",0.4, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/TrainDrift_Stage1.dat",0.35, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/TrainDrift_Stage1.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 1]
     ]
     Chi2SHUSettings : [
     ]
