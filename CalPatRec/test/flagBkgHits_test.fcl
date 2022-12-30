@@ -52,6 +52,8 @@ physics : {
     e1            : [               ] ## MuHitDisplay  ] # defaultOutput ]
     end_paths     : [ e1            ]
 }
+
+physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection", "EnergySelection" ] ## default
 physics.producers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # uncomment to write the DST out

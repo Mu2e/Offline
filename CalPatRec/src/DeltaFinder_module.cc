@@ -94,6 +94,7 @@ namespace mu2e {
 
     int             _debugLevel;
     int             _diagLevel;
+    int             _printErrorDiagnostics;
     int             _testOrder;
 
     std::unique_ptr<ModuleHistToolBase> _hmanager;
@@ -194,6 +195,7 @@ namespace mu2e {
 
     _debugLevel            (pset.get<int>   ("debugLevel"            )),
     _diagLevel             (pset.get<int>   ("diagLevel"             )),
+    _printErrorDiagnostics (pset.get<int>   ("printErrorDiagnostics" )),
     _testOrder             (pset.get<int>   ("testOrder"             ))
   {
     consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
@@ -863,9 +865,11 @@ namespace mu2e {
 
         int dds = dc2->FirstStation()-dc1->LastStation();
         if (dds < 0) {
-          printf("ERROR in DeltaFinder::%s:",__func__);
-          printf("i1, i2, dc1->LastStation, dc2->FirstStation: %2i %2i %2i %2i \n",
-                 i1,i2,dc1->LastStation(),dc2->FirstStation());
+          if (_printErrorDiagnostics) {
+            printf("ERROR in DeltaFinder::%s:",__func__);
+            printf("i1, i2, dc1->LastStation, dc2->FirstStation: %2i %2i %2i %2i \n",
+                   i1,i2,dc1->LastStation(),dc2->FirstStation());
+          }
                                                                        continue;
         }
         else if (dds > _maxGap)                                        continue;
@@ -873,7 +877,7 @@ namespace mu2e {
 // merge two delta candidates, not too far from each other in Z,
 // leave dc1 active, mark dc2 as not active
 //-----------------------------------------------------------------------------
-        dc1->MergeDeltaCandidate(dc2);
+        dc1->MergeDeltaCandidate(dc2,_printErrorDiagnostics);
         dc2->SetIndex(-1000-dc1->Index());
       }
     }
@@ -935,10 +939,12 @@ namespace mu2e {
 
       PanelZ_t* pz = &_data.oTracker[os][of][op];
 
-      if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
-      if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
-      if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
-      if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
+      if (_printErrorDiagnostics) {
+        if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
+        if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
+        if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
+        if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
+      }
 
       float sigw = ch->posRes(ComboHit::wire);
       pz->fHitData.push_back(HitData_t(ch,sigw));
@@ -1233,11 +1239,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // first check inside "holes"
 //-----------------------------------------------------------------------------
-      for (int i=s1+1; i<=s2; i++) {
+      for (int i=s1; i<=s2; i++) {
         if (dc->seed[i] != nullptr) {
           last  = i;
-          t0min = dc->fT0Min[i];
-          t0max = dc->fT0Max[i];
+          t0min = dc->seed[i]->T0Min();
+          t0max = dc->seed[i]->T0Max();
           continue;
         }
 //-----------------------------------------------------------------------------
@@ -1372,18 +1378,39 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           if (new_seed == nullptr) {
             new_seed = new DeltaSeed(-1,Station,face,hd,-1,nullptr);
+            hd->fChi2Min = chi2;
           }
           else {
-            printf("ERROR in DeltaFinder::recoverStation: ");
-            printf("station=%2i - shouldn\'t be getting here, printout of new_seed and hd follows\n",Station);
+            if (face == new_seed->SFace(0)) {
+//-----------------------------------------------------------------------------
+// another close hit in the same panel, choose the best
+//-----------------------------------------------------------------------------
+              if (chi2 >= new_seed->HitData(face)->fChi2Min)          continue;
+//-----------------------------------------------------------------------------
+// new best hit in the same face
+//-----------------------------------------------------------------------------
+              new_seed->ReplaceFirstHit(hd);
+              hd->fChi2Min = chi2;
+            }
+            else {
+              if (_printErrorDiagnostics) {
+                printf("ERROR in DeltaFinder::recoverStation: ");
+                printf("station=%2i - shouldn\'t be getting here, printout of new_seed and hd follows\n",Station);
+                printf("chi2_par, chi2_perp, chi2: %8.2f %8.2f %8.2f\n",chi2_par, chi2_perp, chi2);
 
-            _data.printDeltaSeed(new_seed,"");
-            _data.printHitData  (hd      ,"");
+                printf("DELTA:\n");
+                _data.printDeltaCandidate(Delta,"");
+                printf("SEED:\n");
+                _data.printDeltaSeed(new_seed,"");
+                printf("HIT:\n");
+                _data.printHitData  (hd      ,"");
+              }
 
-            new_seed->hitData[face]    = hd;
-            new_seed->fNFacesWithHits += 1;
-            new_seed->fNHits          += 1;
-            new_seed->fNStrawHits     += ch->nStrawHits();
+              new_seed->hitData[face]    = hd;
+              new_seed->fNFacesWithHits += 1;
+              new_seed->fNHits          += 1;
+              new_seed->fNStrawHits     += ch->nStrawHits();
+            }
 
             if (corr_time < new_seed->fMinHitTime) new_seed->fMinHitTime = corr_time;
             if (corr_time > new_seed->fMaxHitTime) new_seed->fMaxHitTime = corr_time;

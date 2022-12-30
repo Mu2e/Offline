@@ -46,6 +46,8 @@
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
+#include "Offline/CalPatRec/inc/HlPrint.hh"
+
 using namespace std;
 using CLHEP::Hep3Vector;
 
@@ -122,8 +124,11 @@ namespace mu2e {
       int   fTime;                  // lowest out of the hit times
 
       const SimParticle*               fSim;
-      std::vector<const ComboHit*>     fListOfHits;
-      std::vector<const StrawHitFlag*> fListOfFlags;
+//-----------------------------------------------------------------------------
+// a hit and its flag here could be inconsistent - the flag comes from the 'combo' combohit
+//-----------------------------------------------------------------------------
+      std::vector<const ComboHit*>     fListOfHits; // 1-straw combo hits
+      std::vector<const StrawHitFlag*> fListOfFlags;// a parallel list, but the flags are those of "Combo" ComboHits
 
       McPart_t(const SimParticle* Sim = NULL) {
         fSim          = Sim;
@@ -136,9 +141,10 @@ namespace mu2e {
       ~McPart_t() {
       }
 
-      const ComboHit* Hit(int I)   const { return fListOfHits.at(I) ; }
-      int             NHits()      const { return fListOfHits.size(); }
-      int             NHitsDelta() const { return fNHitsDelta;        }
+      const ComboHit*     Hit(int I)   const { return fListOfHits[I] ;    }
+      int                 NHits()      const { return fListOfHits.size(); }
+      int                 NHitsDelta() const { return fNHitsDelta;        }
+      const StrawHitFlag* Flag (int I) const { return fListOfFlags[I];    }
 
       float Momentum() const {
         float px = fSim->startMomentum().px();
@@ -162,12 +168,13 @@ namespace mu2e {
 // 2017-07-27 P.Murat: the 2nd dimension should be 3, right?
 //-----------------------------------------------------------------------------
     std::vector<McPart_t*>    _list_of_mc_particles; // list_of_particles with hits in the tracker
-    std::vector<McHitInfo_t>  _list_of_mc_hit_info ; // for each straw hit, pointer to the MC info
+    std::vector<McHitInfo_t>  _list_of_mc_hit_info ; // for each 1-straw hit, pointer to the MC info
 //-----------------------------------------------------------------------------
 // talk-to parameters
 //-----------------------------------------------------------------------------
     art::InputTag                  _chCollTag;
-    art::InputTag                  _shCollTag;              // straw hits "makeSH"
+    art::InputTag                  _shCollTag;              // straw hits        by "makeSH"
+    art::InputTag                  _schCollTag;             // 1-straw combohits by "makeSH"
     art::InputTag                  _shfCollTag;
     art::InputTag                  _sdmcCollTag;
     int                            _debugLevel;
@@ -180,6 +187,7 @@ namespace mu2e {
 // cache of event or geometry objects
 //-----------------------------------------------------------------------------
     const ComboHitCollection*      _chColl;
+    const ComboHitCollection*      _schColl; // one straw hit per combo hit
     const StrawHitCollection*      _shColl;
     const StrawHitFlagCollection*  _shfColl;
     const StrawDigiMCCollection*   _sdmcColl;
@@ -187,10 +195,13 @@ namespace mu2e {
     const Tracker*                 _tracker;
     int                            _eventNum;
     int                            _nComboHits;
-    int                            _nStrawHits;
+    int                            _nStrawHits; // not the total number of straw hits, but the
+                                                // number of straw hits from combohits
 
     int                            fNHitsDeltaTot;
     int                            fNHitsDeltaReco;
+
+    HlPrint*                       _hlp;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -212,8 +223,8 @@ namespace mu2e {
 
     //    void orderHits();
 
-    void printComboHit(const ComboHit* Hit, const StrawGasStep* Step,
-                       const char* Opt, int IHit, int Flags);
+    // void printComboHit(const ComboHit* Hit, const StrawGasStep* Step,
+    //                    const char* Opt, int IHit, int Flags);
     void debug();
 //-----------------------------------------------------------------------------
 // overloaded methods of the base class
@@ -236,6 +247,7 @@ namespace mu2e {
     art::EDProducer(pset),
     _chCollTag             (pset.get<string>       ("chCollTag"             )),
     _shCollTag             (pset.get<string>       ("shCollTag"             )),
+    _schCollTag            (pset.get<string>       ("schCollTag"            )),
     _shfCollTag            (pset.get<string>       ("shfCollTag"            )),
     _sdmcCollTag           (pset.get<art::InputTag>("sdmcCollTag"           )),
     _debugLevel            (pset.get<int>          ("debugLevel"            )),
@@ -245,6 +257,7 @@ namespace mu2e {
     _printElectronsMaxFReco(pset.get<float>        ("printElectronsMaxFReco")),
     _printElectronHits     (pset.get<int>          ("printElectronHits"     ))
   {
+    _hlp = HlPrint::Instance();
   }
 
   DeltaFinderAna::~DeltaFinderAna() {
@@ -284,7 +297,7 @@ namespace mu2e {
 
     Hist->fType      = Dir->make<TH1F>("type"  , "Hit type"        ,   10, 0., 10.);
     Hist->fTime      = Dir->make<TH1F>("time"  , "time"            ,  400, 0., 2000.);
-    Hist->fMom       = Dir->make<TH1F>("mom"   , "Momentum"        ,  200, 0., 400.);
+    Hist->fMom       = Dir->make<TH1F>("mom"   , "Momentum"        ,  800, 0., 400.);
     Hist->fEnergyDep = Dir->make<TH1F>("edep"  , "edep"            ,  200, 0., 2e-2);
     Hist->fDeltaT    = Dir->make<TH1F>("dt"    , "DeltaT"          ,  200, -10,10);
     Hist->fPDGCode   = Dir->make<TH1F>("pdg"   , "PDG code"        , 2000, -10000,10000);
@@ -322,25 +335,34 @@ namespace mu2e {
     for (int i=0; i<kNStrawHitHistSets; i++) book_straw_hit_histset[i] = 0;
 
     book_straw_hit_histset[  0] = 1;                // all
-    book_straw_hit_histset[  1] = 1;                // all prot
-    book_straw_hit_histset[  2] = 1;                // all e: p<20
-    book_straw_hit_histset[  3] = 1;                // all e 20<p<80
-    book_straw_hit_histset[  4] = 1;                // all e: 80<p<110
-    book_straw_hit_histset[  5] = 1;                // all everything else
+    book_straw_hit_histset[  1] = 1;                // all prot and deut
+    book_straw_hit_histset[  2] = 1;                // all e-: p<20
+    book_straw_hit_histset[  3] = 1;                // all e- 20<p<80
+    book_straw_hit_histset[  4] = 1;                // all e-: 80<p<110
+    book_straw_hit_histset[  5] = 1;                // all e-  p > 110
+    book_straw_hit_histset[  6] = 1;                // all e+
+    book_straw_hit_histset[  7] = 1;                // all mu- and mu+
+    book_straw_hit_histset[  8] = 1;                // all everything else
 
-    book_straw_hit_histset[ 10] = 1;                // delta  all
-    book_straw_hit_histset[ 11] = 1;                // delta  prot
-    book_straw_hit_histset[ 12] = 1;                // delta  e: p<20
-    book_straw_hit_histset[ 13] = 1;                // delta  e 20<p<80
-    book_straw_hit_histset[ 14] = 1;                // delta  e: 80<p<110
-    book_straw_hit_histset[ 15] = 1;                // delta  everything else
+    book_straw_hit_histset[ 10] = 1;                // delta
+    book_straw_hit_histset[ 11] = 1;                // delta prot and deut
+    book_straw_hit_histset[ 12] = 1;                // delta e-: p<20
+    book_straw_hit_histset[ 13] = 1;                // delta e- 20<p<80
+    book_straw_hit_histset[ 14] = 1;                // delta e-: 80<p<110
+    book_straw_hit_histset[ 15] = 1;                // delta e-  p > 110
+    book_straw_hit_histset[ 16] = 1;                // delta e+
+    book_straw_hit_histset[ 17] = 1;                // delta mu- and mu+
+    book_straw_hit_histset[ 18] = 1;                // delta everything else
 
-    book_straw_hit_histset[ 20] = 1;                // non-delta all
-    book_straw_hit_histset[ 21] = 1;                // non-delta prot
-    book_straw_hit_histset[ 22] = 1;                // non-delta e: p<20
-    book_straw_hit_histset[ 23] = 1;                // non-delta e 20<p<80
-    book_straw_hit_histset[ 24] = 1;                // non-delta e: 80<p<110
-    book_straw_hit_histset[ 25] = 1;                // non-delta everything else
+    book_straw_hit_histset[ 20] = 1;                // non-delta
+    book_straw_hit_histset[ 21] = 1;                // non-delta prot and deut
+    book_straw_hit_histset[ 22] = 1;                // non-delta e-: p<20
+    book_straw_hit_histset[ 23] = 1;                // non-delta e- 20<p<80
+    book_straw_hit_histset[ 24] = 1;                // non-delta e-: 80<p<110
+    book_straw_hit_histset[ 25] = 1;                // non-delta e-  p > 110
+    book_straw_hit_histset[ 26] = 1;                // non-delta e+
+    book_straw_hit_histset[ 27] = 1;                // non-delta mu- and mu+
+    book_straw_hit_histset[ 28] = 1;                // non-delta everything else
 
     for (int i=0; i<kNStrawHitHistSets; i++) {
       if (book_straw_hit_histset[i] != 0) {
@@ -464,24 +486,56 @@ namespace mu2e {
 // straw hit histograms, mc_hit_info relates to the straw hit type
 // 0:p, 1:ele p<20, 2:ele 20<p<80  3:ele 100<p<110 4:everything else
 //-----------------------------------------------------------------------------
+    int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
-      const ComboHit* ch          = &_chColl->at(i);
-      McHitInfo_t*    mc_hit_info = &_list_of_mc_hit_info.at(i);
-
+      const ComboHit* ch         = &_chColl->at(i);
       int nsh = ch->nStrawHits();
       for (int ish=0; ish<nsh; ish++) {
         int ind = ch->indexArray().at(ish);
+
         const StrawHit* sh = &_shColl->at(ind);
 
-        fillStrawHitHistograms(_hist.fStrawHit[0],sh,mc_hit_info);
+        const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
+        const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+        const SimParticle*  sim  = sgs->simParticle().get();
 
-        if      (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[1],sh,mc_hit_info);
-        else if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[2],sh,mc_hit_info);
-        else if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[3],sh,mc_hit_info);
-        else if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[4],sh,mc_hit_info);
-        else                              fillStrawHitHistograms(_hist.fStrawHit[5],sh,mc_hit_info);
+        float px = sim->startMomentum().x();
+        float py = sim->startMomentum().y();
+        float pz = sim->startMomentum().z();
+        float momentum = sqrt(px*px+py*py+pz*pz);
 
-        const StrawHitFlag* flag = mc_hit_info->fFlag;
+        int mc_type = -1;
+
+        if      ((sim->pdgId() == 2212) or (sim->pdgId() == 1000010020)) mc_type = 0;
+        else if (sim->pdgId() == 11) {
+          if      (momentum <  20) mc_type = 1;
+          else if (momentum <  80) mc_type = 2;
+          else if (momentum < 110) mc_type = 3;
+          else                     mc_type = 4;
+        }
+        else if (sim->pdgId() == -11)                           mc_type = 5;
+        else if ((sim->pdgId() == 13) or (sim->pdgId() == -13)) mc_type = 6;
+        else                                                    mc_type = 7;
+
+        McPart_t mc(sim);
+        McHitInfo_t    mc_hit_info;
+
+        mc_hit_info.fMc   = &mc;
+        mc_hit_info.fType = mc_type;
+        mc_hit_info.fFlag = &_shfColl->at(i);
+
+        fillStrawHitHistograms(_hist.fStrawHit[0],sh,&mc_hit_info);  // all
+
+        if      (mc_type == 0) fillStrawHitHistograms(_hist.fStrawHit[1],sh,&mc_hit_info);
+        else if (mc_type == 1) fillStrawHitHistograms(_hist.fStrawHit[2],sh,&mc_hit_info);
+        else if (mc_type == 2) fillStrawHitHistograms(_hist.fStrawHit[3],sh,&mc_hit_info);
+        else if (mc_type == 3) fillStrawHitHistograms(_hist.fStrawHit[4],sh,&mc_hit_info);
+        else if (mc_type == 4) fillStrawHitHistograms(_hist.fStrawHit[5],sh,&mc_hit_info);
+        else if (mc_type == 5) fillStrawHitHistograms(_hist.fStrawHit[6],sh,&mc_hit_info);
+        else if (mc_type == 6) fillStrawHitHistograms(_hist.fStrawHit[7],sh,&mc_hit_info);
+        else                   fillStrawHitHistograms(_hist.fStrawHit[8],sh,&mc_hit_info);
+
+        const StrawHitFlag* flag = mc_hit_info.fFlag;
 
         // int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
         int delta  = flag->hasAllProperties(StrawHitFlag::bkg);
@@ -490,22 +544,31 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // set 2: all hits flagged as delta electrons
 //-----------------------------------------------------------------------------
-          fillStrawHitHistograms(_hist.fStrawHit[10],sh,mc_hit_info);
+          fillStrawHitHistograms(_hist.fStrawHit[10],sh,&mc_hit_info);
 
-          if      (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[11],sh,mc_hit_info);
-          else if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[12],sh,mc_hit_info);
-          else if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[13],sh,mc_hit_info);
-          else if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[14],sh,mc_hit_info);
-          else                              fillStrawHitHistograms(_hist.fStrawHit[15],sh,mc_hit_info);
+          if      (mc_type == 0) fillStrawHitHistograms(_hist.fStrawHit[11],sh,&mc_hit_info);
+          else if (mc_type == 1) fillStrawHitHistograms(_hist.fStrawHit[12],sh,&mc_hit_info);
+          else if (mc_type == 2) fillStrawHitHistograms(_hist.fStrawHit[13],sh,&mc_hit_info);
+          else if (mc_type == 3) fillStrawHitHistograms(_hist.fStrawHit[14],sh,&mc_hit_info);
+          else if (mc_type == 4) fillStrawHitHistograms(_hist.fStrawHit[15],sh,&mc_hit_info);
+          else if (mc_type == 5) fillStrawHitHistograms(_hist.fStrawHit[16],sh,&mc_hit_info);
+          else if (mc_type == 6) fillStrawHitHistograms(_hist.fStrawHit[17],sh,&mc_hit_info);
+          else                   fillStrawHitHistograms(_hist.fStrawHit[18],sh,&mc_hit_info);
         }
         else {
-          fillStrawHitHistograms(_hist.fStrawHit[20],sh,mc_hit_info);
-          if      (mc_hit_info->fType == 0) fillStrawHitHistograms(_hist.fStrawHit[21],sh,mc_hit_info);
-          else if (mc_hit_info->fType == 1) fillStrawHitHistograms(_hist.fStrawHit[22],sh,mc_hit_info);
-          else if (mc_hit_info->fType == 2) fillStrawHitHistograms(_hist.fStrawHit[23],sh,mc_hit_info);
-          else if (mc_hit_info->fType == 3) fillStrawHitHistograms(_hist.fStrawHit[24],sh,mc_hit_info);
-          else                              fillStrawHitHistograms(_hist.fStrawHit[25],sh,mc_hit_info);
+          fillStrawHitHistograms(_hist.fStrawHit[20],sh,&mc_hit_info);
+
+          if      (mc_type == 0) fillStrawHitHistograms(_hist.fStrawHit[21],sh,&mc_hit_info);
+          else if (mc_type == 1) fillStrawHitHistograms(_hist.fStrawHit[22],sh,&mc_hit_info);
+          else if (mc_type == 2) fillStrawHitHistograms(_hist.fStrawHit[23],sh,&mc_hit_info);
+          else if (mc_type == 3) fillStrawHitHistograms(_hist.fStrawHit[24],sh,&mc_hit_info);
+          else if (mc_type == 4) fillStrawHitHistograms(_hist.fStrawHit[25],sh,&mc_hit_info);
+          else if (mc_type == 5) fillStrawHitHistograms(_hist.fStrawHit[26],sh,&mc_hit_info);
+          else if (mc_type == 6) fillStrawHitHistograms(_hist.fStrawHit[27],sh,&mc_hit_info);
+          else                   fillStrawHitHistograms(_hist.fStrawHit[28],sh,&mc_hit_info);
         }
+
+        loc++;
       }
     }
 //-----------------------------------------------------------------------------
@@ -550,7 +613,7 @@ namespace mu2e {
           }
 
           if ((mc->Momentum() > 20) && (mc->Momentum() < 80)) fillMcHistograms(_hist.fMc[100],mc);
-          if (mc->Momentum()  > 80)                           fillMcHistograms(_hist.fMc[101],mc);
+          if ( mc->Momentum() > 80)                           fillMcHistograms(_hist.fMc[101],mc);
         }
       }
     }
@@ -588,64 +651,92 @@ namespace mu2e {
     _list_of_mc_particles.clear();
 
     _list_of_mc_hit_info.clear();
+//-----------------------------------------------------------------------------
+// count the number of participating straw hits (remember, it could be less than
+// the total number of straw hits :participating are only the straw hits from
+// combo hits
+//-----------------------------------------------------------------------------
+    _nStrawHits = 0;
+    for (int i=0; i<_nComboHits; i++) {
+      const ComboHit*     ch   = &_chColl->at(i);
+      _nStrawHits += ch->nStrawHits();
+    }
 
-    _list_of_mc_hit_info.resize(_nComboHits);
+    _list_of_mc_hit_info.resize(_nStrawHits);
 
     int delta_nhits_tot = 0;
-
+//-----------------------------------------------------------------------------
+// 'shf' is the combohit flag, despite the name
+// so some straw hits may have flags not consistent with their origin
+//-----------------------------------------------------------------------------
+    int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit*     ch   = &_chColl->at(i);
       const StrawHitFlag* shf  = &_shfColl->at(i);
+
+      int nsh = ch->nStrawHits();
+      for (int ish=0; ish<nsh; ish++) {
+                                        // 'ind' is not an index in _list_of_mc_hit_info ,
+                                        // how to find it ? - count !
+
+        int ind = ch->indexArray().at(ish);
+        const ComboHit* sch = &_schColl->at(ind);
 //-----------------------------------------------------------------------------
 // MC truth is based on the first straw hit of the combohit
 //-----------------------------------------------------------------------------
-      int ind = ch->indexArray().at(0);
-      const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
-      const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
-      const SimParticle*  sim  = sgs->simParticle().get();
+        const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
+        const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+        const SimParticle*  sim  = sgs->simParticle().get();
 //-----------------------------------------------------------------------------
 // search if this particle has already been registered
 //-----------------------------------------------------------------------------
-      McPart_t* mc = findParticle(sim);
+        McPart_t* mc = findParticle(sim);
 
-      if (mc == NULL) {
+        if (mc == NULL) {
                                         // add new particle
-        mc = new McPart_t(sim);
-        _list_of_mc_particles.push_back(mc);
-      }
-      mc->fListOfHits.push_back(ch);
-
-      int station = ch->strawId().getStation();
-
-      if (station < mc->fFirstStation) mc->fFirstStation = station;
-      if (station > mc->fLastStation ) mc->fLastStation  = station;
-
-      if (ch->correctedTime() < mc->fTime) mc->fTime = ch->correctedTime();
-
-      mc->fListOfFlags.push_back(shf);
-
-      McHitInfo_t* mc_hit_info = &_list_of_mc_hit_info.at(i);
-
-      mc_hit_info->fMc   = mc;
-      mc_hit_info->fFlag = shf;
-
-      int pdg_id = mc->fSim->pdgId();
-
-      if      (pdg_id == PDGCode::proton)   mc_hit_info->fType = 0;
-      else if (pdg_id == PDGCode::e_minus ) {
-        float mom = mc->Momentum();
-        if      (mom <  20)      {
-          mc_hit_info->fType = 1;
-          delta_nhits_tot++;
+          mc = new McPart_t(sim);
+          _list_of_mc_particles.push_back(mc);
         }
-        else if (mom <  90)      mc_hit_info->fType = 2;
-        else if (mom < 110)      mc_hit_info->fType = 3;
+        mc->fListOfHits.push_back(sch);
+
+        int station = sch->strawId().getStation();
+
+        if (station < mc->fFirstStation) mc->fFirstStation = station;
+        if (station > mc->fLastStation ) mc->fLastStation  = station;
+
+        if (sch->correctedTime() < mc->fTime) mc->fTime = sch->correctedTime();
+//-----------------------------------------------------------------------------
+// remember, this is a combohit flag !
+//-----------------------------------------------------------------------------
+        mc->fListOfFlags.push_back(shf);
+
+        McHitInfo_t* mc_hit_info = &_list_of_mc_hit_info.at(loc);
+
+        mc_hit_info->fMc   = mc;
+        mc_hit_info->fFlag = shf;
+
+        int pdg_id = mc->fSim->pdgId();
+
+        if      (pdg_id == 2212)   mc_hit_info->fType = 0;
+        else if (pdg_id == 11  ) {
+          float mom = mc->Momentum();
+          if      (mom <  20)      {
+            mc_hit_info->fType = 1;
+            delta_nhits_tot++;
+          }
+          else if (mom <  90)       mc_hit_info->fType = 2;
+          else if (mom < 110)       mc_hit_info->fType = 3;
+          else                      mc_hit_info->fType = 4;
+        }
+        else if (pdg_id      == -11)mc_hit_info->fType = 5;
+        else if (abs(pdg_id) == 13) mc_hit_info->fType = 6;
+        else                        mc_hit_info->fType = 7;
+
+        int flagged_as_delta = shf->hasAnyProperty(StrawHitFlag::bkg);
+
+        if (flagged_as_delta) fNHitsDeltaReco++;
+        loc++;
       }
-      else                       mc_hit_info->fType = 4;
-
-      int flagged_as_delta = shf->hasAnyProperty(StrawHitFlag::bkg);
-
-      if (flagged_as_delta) fNHitsDeltaReco++;
     }
 
     return 0;
@@ -708,7 +799,10 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 
     auto shcH   = Evt.getValidHandle<StrawHitCollection>(_shCollTag);
     _shColl     = shcH.product();
-    _nStrawHits = _shColl->size();
+    //    _nStrawHits = _shColl->size();
+
+    auto schcH  = Evt.getValidHandle<ComboHitCollection>(_schCollTag);
+    _schColl    = schcH.product();
 
     auto shfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_shfCollTag);
     _shfColl    = shfcH.product();
@@ -726,6 +820,8 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     if (_debugLevel) {
       printf("* >>> DeltaFinderAna::%s event number: %10i\n",__func__,_eventNum);
     }
+
+    _hlp->SetEvent(&Event);
 //-----------------------------------------------------------------------------
 // process event
 //-----------------------------------------------------------------------------
@@ -751,6 +847,9 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 // debugLevel > 0: print seeds
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::debug() {
+    // hlp->printComboHitCollection(_data->chCollTag.encode().data(),
+    //                              _data->chfCollTag.encode().data(),
+    //                              _data->sdmcCollTag.encode().data());
 //-----------------------------------------------------------------------------
 // print MC electrons
 //-----------------------------------------------------------------------------
@@ -777,18 +876,20 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 // check if want to print hits
 //-----------------------------------------------------------------------------
             if (_printElectronHits != 0) {
+                                        // these are the 1-straw ComboHits
               int nh  = mc->NHits();
-              const ComboHit* ch0 = &(*_chColl)[0];
-              printComboHit(0,0,"banner",0,0);
-              for (int i=0; i<nh; i++) {
-                const ComboHit* ch       = mc->Hit(i);
-                int loc    = ch-ch0;
-                int flags  = *((int*) &_shfColl->at(loc));
+              const ComboHit* sch0 = &(*_schColl)[0];
+              _hlp->printComboHit(0,0,"banner",0,0);
 
-                int ind                  = ch->indexArray().at(0);
+              for (int i=0; i<nh; i++) {
+                const ComboHit* sch = mc->Hit(i);
+                                        // flags here are the combo hit flags, not 1-straw hit flags
+                int flags  = *((int*) mc->Flag(i));
+                int ind    = sch-sch0;
+
                 const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
                 const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
-                printComboHit(ch,sgs,"data",loc,flags);
+                _hlp->printComboHit(sch,sgs,"data",ind,flags);
               }
             }
           }
@@ -797,89 +898,6 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     }
   }
 
-//-----------------------------------------------------------------------------
-// stolen from Stntuple/print/TAnaDump.cc
-//-----------------------------------------------------------------------------
-void DeltaFinderAna::printComboHit(const ComboHit*     Hit,
-                                   const StrawGasStep* Step,
-                                   const char*         Opt, int IHit, int Flags) {
-  TString opt = Opt;
-  opt.ToLower();
-
-  if ((opt == "") || (opt.Index("banner") >= 0)) {
-    printf("#----------------------------------------------------------------------------------------------------");
-    printf("--------------------------------------------------------------------------------------------\n");
-    printf("#   I nsh   SID   Flags  Stn:Pln:Pnl:Str      X        Y        Z       Time     TCorr     eDep   End");
-    printf("  DrTime  PrTime  TRes    WDist     WRes        PDG     PDG(M) GenID simID       p        pz\n");
-    printf("#----------------------------------------------------------------------------------------------------");
-    printf("--------------------------------------------------------------------------------------------\n");
-  }
-
-  if (opt == "banner") return;
-
-  const SimParticle * sim (0);
-
-  int      pdg_id(-1), mother_pdg_id(-1), generator_id(-1), sim_id(-1);
-  double   mc_mom(-1.);
-  double   mc_mom_z(-1.);
-
-  GenId gen_id;
-
-  if (Step) {
-    art::Ptr<SimParticle> const& simptr = Step->simParticle();
-    art::Ptr<SimParticle> mother        = simptr;
-
-    while(mother->hasParent()) mother = mother->parent();
-
-    sim           = mother.operator ->();
-
-    pdg_id        = simptr->pdgId();
-    mother_pdg_id = sim->pdgId();
-
-    if (simptr->fromGenerator()) generator_id = simptr->genParticle()->generatorId().id();
-    else                         generator_id = -1;
-
-    sim_id        = simptr->id().asInt();
-    mc_mom        = Step->momvec().mag();
-    mc_mom_z      = Step->momvec().z();
-  }
-
-  if ((opt == "") || (opt.Index("data") >= 0)) {
-    if (IHit  >= 0) printf("%5i " ,IHit);
-    else            printf("      ");
-
-    printf("%3i ",Hit->nStrawHits());
-
-    printf("%5u",Hit->strawId().asUint16());
-
-    if (Flags >= 0) printf(" %08x",Flags);
-    else            printf("        ");
-
-    printf(" %3i %3i %3i %3i  %8.3f %8.3f %9.3f %8.3f %8.3f %8.5f  %3i %7.2f %7.2f %5.2f %8.3f %8.3f %10i %10i %5i %5i %8.3f %8.3f\n",
-           Hit->strawId().station(),
-           Hit->strawId().plane(),
-           Hit->strawId().panel(),
-           Hit->strawId().straw(),
-           Hit->pos().x(),Hit->pos().y(),Hit->pos().z(),
-           Hit->time(),
-           Hit->correctedTime(),
-           Hit->energyDep(),
-
-           (int) Hit->driftEnd(),
-           Hit->driftTime(),
-           Hit->propTime(),
-           Hit->transRes(),
-           Hit->wireDist(),
-           Hit->wireRes(),
-
-           pdg_id,
-           mother_pdg_id,
-           generator_id,
-           sim_id,
-           mc_mom,
-           mc_mom_z);
-  }
-}
 // Part of the magic that makes this class a module.
 DEFINE_ART_MODULE(DeltaFinderAna)
 
