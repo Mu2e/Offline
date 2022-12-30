@@ -16,11 +16,20 @@ namespace mu2e {
 
       int index = ch-ch0;
 
-      printf("index   sid  seed delta   chi2min     sigw\n");
+      printf("index   sid  Stn:Pln:Pnl:Str seed delta  Time     TCorr     eDep    chi2min     sigw\n");
       printf("------------------------------------------\n");
-      printf("%5i %5i %5i %5i  %8.2f %8.2f\n",
-             index,ch->strawId().asUint16(),Hd->fSeedIndex,Hd->fDeltaIndex,Hd->fChi2Min,Hd->fSigW);
+      printf("%5i %5i ",
+             index,ch->strawId().asUint16());
 
+      printf(" %3i %3i %3i %3i",
+             ch->strawId().station(),
+             ch->strawId().plane(),
+             ch->strawId().panel(),
+             ch->strawId().straw());
+
+      printf("%5i %5i",Hd->fSeedIndex,Hd->fDeltaIndex);
+      printf("  %8.3f %8.3f %8.5f",ch->time(),ch->correctedTime(),ch->energyDep());
+      printf(" %8.2f %8.2f\n",Hd->fChi2Min,Hd->fSigW);
     }
 
 //-----------------------------------------------------------------------------
@@ -56,6 +65,48 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
     void Data_t::printDeltaCandidate(DeltaCandidate* Delta, const char* Option) {
+
+      printf("------------------------------------------------------------------------------------------------------\n");
+      printf("      i    nh  ns s1  s2     X       Y         Z          chi21   chi22   htmin   htmax   t0min   t0max     \n");
+      printf("------------------------------------------------------------------------------------------------------\n");
+      printf(":dc:%05i %3i",Delta->Index(),Delta->fNHits);
+      printf(" %3i",Delta->n_seeds);
+      printf(" %2i  %2i %7.2f %7.2f %9.2f",Delta->fFirstStation,Delta->fLastStation,
+             Delta->CofM.x(),Delta->CofM.y(),Delta->CofM.z());
+      printf("\n");
+      printf("------------------------------------------------------------------------------------------------------\n");
+
+      for (int is=Delta->fFirstStation;is<=Delta->fLastStation; is++) {
+        DeltaSeed* ds = Delta->seed[is];
+        if (ds != NULL) {
+
+          int face0 = ds->SFace(0);
+          int face1 = ds->SFace(1);
+
+          const HitData_t* hd0 = ds->HitData(face0);
+          const HitData_t* hd1 = (face1 >= 0) ? ds->HitData(face1) : nullptr;
+
+          printf("          %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->Index());
+          printf(" %7.2f %7.2f %9.2f",ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
+          float chi22 = (hd1) ? hd1->fChi2Min : -1;
+          printf(" %7.1f %7.1f",hd0->fChi2Min, chi22);
+          printf(" %7.1f %7.1f",ds->MinHitTime(),ds->MaxHitTime());
+          printf(" %7.1f %7.1f",Delta->fT0Min[is]  ,Delta->fT0Max[is]);
+
+          printf("  (");
+          for (int face=0; face<kNFaces; face++) {
+            const HitData_t* hd = ds->HitData(face);
+            if (hd == nullptr) printf(" %5i",-1);
+            else {
+              const ComboHit* hit = hd->fHit;
+              printf(" %5i",hit->strawId().asUint16());
+            }
+            if (face != kNFaces-1) printf(",");
+          }
+
+          printf(")\n");
+        }
+      }
     }
 
 //-----------------------------------------------------------------------------
@@ -63,6 +114,7 @@ namespace mu2e {
       printf("ERROR: DeltaSeed::DeltaSeed() should not be called\n");
     }
 
+//-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
       fIndex            = Index;
       fStation          = Station;
@@ -91,11 +143,11 @@ namespace mu2e {
         fChi22                = Hd1->fChi2Min;
       }
       else {
-        fType             =  10*Face0;  // may want to revisit
-        fNHits            =  1;
-        fNStrawHits       = Hd0->fHit->nStrawHits();
-        fNFacesWithHits   =  1;
-        fFaceProcessed[Face0] = 1;
+        fType                 =  10*Face0;  // may want to revisit
+        fNHits                =  1;
+        fNStrawHits           = Hd0->fHit->nStrawHits();
+        fNFacesWithHits       =  1;
+        fFaceProcessed[Face0] =  1;
         fChi22                = -1;
       }
 
@@ -116,6 +168,20 @@ namespace mu2e {
 
       fDeltaIndex       = -1;
       fChi2All          = 9999.99;
+    }
+
+
+//-----------------------------------------------------------------------------
+// replace first hit with another one founce in the same face..
+//-----------------------------------------------------------------------------
+    void DeltaSeed::ReplaceFirstHit(HitData_t* Hd) {
+
+      hitData[fSFace[0]] = Hd;
+
+      fChi21             = Hd->fChi2Min;
+      fNStrawHits        = Hd->fHit->nStrawHits();
+      fMinHitTime        = Hd->fHit->correctedTime();
+      fMaxHitTime        = fMinHitTime;
     }
 
 //-----------------------------------------------------------------------------
@@ -193,13 +259,13 @@ namespace mu2e {
     }
 
 //-----------------------------------------------------------------------------
-    void DeltaCandidate::MergeDeltaCandidate(DeltaCandidate* Delta) {
+    void DeltaCandidate::MergeDeltaCandidate(DeltaCandidate* Delta,int PrintErrorDiagnostics) {
       int is1 = Delta->FirstStation();
       int is2 = Delta->LastStation ();
       for (int is=is1; is<=is2; is++) {
         if (Delta->seed[is] == nullptr)                               continue;
-        if (seed[is] != nullptr) {
-          printf("ERsROR in DeltaCandidate::MergeDeltaCandidate: ");
+        if ((seed[is] != nullptr) and PrintErrorDiagnostics) {
+          printf("ERROR in DeltaCandidate::MergeDeltaCandidate: ");
           printf("merged DC also has a segment in station %i\n",is);
                                                                       continue;
         }

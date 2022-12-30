@@ -54,7 +54,7 @@ namespace mu2e {
 
       HitData_t(const ComboHit* Hit, float SigW) {
         fHit         = Hit;
-        fChi2Min     = 999999.;
+        fChi2Min     = 99999.0;
         fSigW        = SigW;
         fSeedIndex   = -1;
         fNSecondHits =  0;
@@ -176,6 +176,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       float            T0Min     () { return (fMinHitTime+fMaxHitTime)/2-25; }
       float            T0Max     () { return (fMinHitTime+fMaxHitTime)/2+25; }
+//-----------------------------------------------------------------------------
+// less trivial functions
+//-----------------------------------------------------------------------------
+      void             ReplaceFirstHit(HitData_t* Hd);
     };
 
     struct DeltaCandidate {
@@ -214,7 +218,7 @@ namespace mu2e {
 
       void       AddSeed            (DeltaSeed* Ds, int Station);
 
-      void       MergeDeltaCandidate(DeltaCandidate* Delta);
+      void       MergeDeltaCandidate(DeltaCandidate* Delta, int PrintErrorDiagnostics);
 
       void       SetIndex(int Index) { fIndex = Index; }
     };
