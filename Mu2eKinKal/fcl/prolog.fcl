@@ -166,7 +166,7 @@ Mu2eKinKal : {
       [ "Offline/Mu2eKinKal/data/TrainDrift_Stage0.dat",0.5, "DriftRadius" ,"Null:Drift","", "All", 1],
       [ "Offline/Mu2eKinKal/data/TrainDrift_Stage1.dat",0.4, "DriftRadius" ,"Null:Drift","", "All", 1],
       [ "Offline/Mu2eKinKal/data/TrainDrift_Stage2.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainDrift_Stage2.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 1]
+      [ "Offline/Mu2eKinKal/data/TrainDrift_Stage2.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 1]
     ]
     Chi2SHUSettings : [
     ]

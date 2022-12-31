@@ -168,7 +168,7 @@ namespace mu2e {
           std::vector<double> const& yvals, double xval);
       static double PieceLineDrift(std::vector<double> const& bins, std::vector<double> const& yvals, double xval);
       static void interpolateCalib(std::vector<double> const& bins,std::vector<double> const& yvals, double xval,
-          double& value, double& slope);
+          int halfrange, double& value, double& slope);
 
       StrawDrift::cptr_t _strawDrift;
       StrawElectronics::cptr_t _strawElectronics;
