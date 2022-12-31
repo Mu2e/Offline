@@ -41,12 +41,11 @@ namespace mu2e {
   }
 
   void StrawResponse::interpolateCalib(std::vector<double> const& bins,std::vector<double> const& yvals, double xval,
-      double& value, double& slope) {
+      int halfrange, double& value, double& slope) {
     int maxindex = yvals.size()-1;
     double xbin = (bins[1]-bins[0])/yvals.size();
     int ibin = min(maxindex,max(0,int(floor((xval-bins[0])/xbin))));
 // find a range of N bins about the central bin
-    static const int halfrange(2);
     int imin = std::max(0,ibin-halfrange);
     int imax = std::min(maxindex,ibin+halfrange);
     std::vector<double> xfit, yfit;
@@ -118,11 +117,12 @@ namespace mu2e {
     dinfo.LorentzAngle_ = phi;
     double cdist = _strawDrift->T2D(dtime,phi,false); // allow values outside the physical range at this point
     double derr, derrslope;
-    interpolateCalib(_driftResBins,_driftResRMS, cdist, derr, derrslope);
+    int halfrange(2); // should be a parameter TODO
+    interpolateCalib(_driftResBins,_driftResRMS, cdist, halfrange, derr, derrslope);
     dinfo.driftDistanceError_ = derr;
     if(calibrated){
       double dcorr, dcorrslope;
-      interpolateCalib(_driftResBins,_driftResOffset, cdist, dcorr, dcorrslope);
+      interpolateCalib(_driftResBins,_driftResOffset, cdist, halfrange, dcorr, dcorrslope);
       dinfo.driftDistance_ = cdist - dcorr;
       double cspeed = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
       dinfo.driftVelocity_ = cspeed*(1.0 - dcorrslope);
