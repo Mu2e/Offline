@@ -124,8 +124,7 @@ namespace mu2e {
       double dcorr, dcorrslope;
       interpolateCalib(_driftResBins,_driftResOffset, cdist, halfrange, dcorr, dcorrslope);
       dinfo.driftDistance_ = cdist - dcorr;
-      double cspeed = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
-      dinfo.driftVelocity_ = cspeed*(1.0 - dcorrslope);
+      dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
       //      std::cout << "Drift time " << dtime << " Cluster distance " << cdist
       //         << " offset " << dcorr << " slope " << dcorrslope
       //         << " ddist " << dinfo.driftDistance_ << " dvel " << dinfo.driftVelocity_ << std::endl;

@@ -11,8 +11,7 @@ namespace mu2e {
     double driftVelocity_; // instantaneous drift velocity
     static double maxdvar_; // maximum distance variance, given by straw radius
     double driftDistanceVar() const { return driftDistanceError_*driftDistanceError_; }
-    double nullDistanceVar() const {
-      return std::min(maxdvar_, driftDistance_*driftDistance_ + driftDistanceVar()); }
+    double nullDistanceVar() const;
   };
 }
 #endif
