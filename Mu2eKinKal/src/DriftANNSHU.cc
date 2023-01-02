@@ -3,7 +3,6 @@
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Offline/Mu2eKinKal/inc/TrainDrift.hxx"
 #include <cmath>
 #include <array>
 
@@ -12,20 +11,25 @@ namespace mu2e {
   using KinKal::VEC3;
   DriftANNSHU::DriftANNSHU(Config const& config) {
     ConfigFileLookupPolicy configFile;
-    auto mvaWgtsFile = configFile(std::get<0>(config));
-    mva_ = std::make_shared<TMVA_SOFIE_TrainDrift::Session>(mvaWgtsFile);
-    mvacut_ = std::get<1>(config);
-    std::string nulldvar = std::get<2>(config);
+    auto signmvaWgtsFile = configFile(std::get<0>(config));
+    signmva_ = std::make_shared<TMVA_SOFIE_TrainSign::Session>(signmvaWgtsFile);
+    signmvacut_ = std::get<1>(config);
+    auto clustermvaWgtsFile = configFile(std::get<2>(config));
+    clustermva_ = std::make_shared<TMVA_SOFIE_TrainCluster::Session>(clustermvaWgtsFile);
+    clustermvacut_ = std::get<3>(config);
+    std::string nulldvar = std::get<4>(config);
     nulldvar_ = WireHitState::nullDistVar(nulldvar);
-    std::string allowed = std::get<3>(config);
+    std::string allowed = std::get<5>(config);
     allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<4>(config);
+    std::string freeze = std::get<6>(config);
     freeze_ = WHSMask(freeze);
-    std::string totuse = std::get<5>(config);
+    std::string totuse = std::get<7>(config);
     totuse_ = WireHitState::totUse(totuse);
-    diag_ = std::get<6>(config);
+    diag_ = std::get<8>(config);
     if(diag_ > 0)
-      std::cout << "DriftANNSHU weights" << std::get<0>(config) << " cut " << mvacut_ << " null dist var " << nulldvar
+      std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
+        << " cluster weights " << std::get<0>(config) << " cut " << clustermvacut_
+        << " null dist var " << nulldvar
         << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << std::endl;
   }
 
@@ -42,20 +46,21 @@ namespace mu2e {
       // this order is given by the training
       pars[0] = fabs(tpdata.doca());
       pars[1] = dinfo.driftDistance_;
-      pars[2] = tpdata.docaVar();
+      pars[2] = sqrt(std::max(0.0,tpdata.docaVar()));
       pars[3] = chit.driftTime();
       pars[4] = chit.energyDep();
-      auto mvaout = mva_->infer(pars.data());
+      auto signmvaout = signmva_->infer(pars.data());
+      auto clustermvaout = clustermva_->infer(pars.data());
       if(diag_ > 1){
         whstate.algo_  = StrawHitUpdaters::DriftANN;
-        whstate.quality_ = mvaout[0];
+        whstate.quality_ = signmvaout[0]; // need an array here TODO
       }
-      if(mvaout[0] > mvacut_){
+      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
           whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
-          whstate.quality_ = mvaout[0];
+          whstate.quality_ = signmvaout[0];
        }
       } else {
         if(allowed_.hasAnyProperty(WHSMask::null)){
@@ -63,7 +68,7 @@ namespace mu2e {
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
           whstate.nulldvar_ = nulldvar_;
-          whstate.quality_ = mvaout[0];
+          whstate.quality_ = signmvaout[0];
         }
       }
       if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);
