@@ -42,15 +42,20 @@ namespace mu2e {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::DriftANN)){
       // invoke the ANN
-      std::array<float,5> pars;
+      std::array<float,5> spars;
+      std::array<float,4> cpars;
       // this order is given by the training
-      pars[0] = fabs(tpdata.doca());
-      pars[1] = dinfo.driftDistance_;
-      pars[2] = sqrt(std::max(0.0,tpdata.docaVar()));
-      pars[3] = chit.driftTime();
-      pars[4] = chit.energyDep();
-      auto signmvaout = signmva_->infer(pars.data());
-      auto clustermvaout = clustermva_->infer(pars.data());
+      spars[0] = fabs(tpdata.doca());
+      spars[1] = dinfo.driftDistance_;
+      spars[2] = sqrt(std::max(0.0,tpdata.docaVar()));
+      spars[3] = chit.driftTime();
+      spars[4] = chit.energyDep();
+      auto signmvaout = signmva_->infer(spars.data());
+      cpars[0] = fabs(tpdata.doca());
+      cpars[1] = dinfo.driftDistance_;
+      cpars[2] = chit.driftTime();
+      cpars[3] = chit.energyDep();
+     auto clustermvaout = clustermva_->infer(cpars.data());
       if(diag_ > 1){
         whstate.algo_  = StrawHitUpdaters::DriftANN;
         whstate.quality_ = signmvaout[0]; // need an array here TODO
