@@ -41,8 +41,8 @@ namespace mu2e {
       TTree*  srtest_;
       TCanvas* srtcan_;
       float dtime_, vinst_;
-      float rderr_, rdrift_;
-      TGraph* t2d_, *t2derr_, *t2v_;
+      float rderr_, rdrift_, rnerr_;
+      TGraph* t2d_, *t2derr_, *t2nerr_, *t2v_;
       int plane_, panel_, straw_;
       int print_, diag_;
       int nbins_;
@@ -52,7 +52,7 @@ namespace mu2e {
   };
 
   StrawResponseTest::StrawResponseTest(Parameters const& config) :     art::EDAnalyzer(config),
-  srtest_(0),t2d_(0), t2derr_(0), t2v_(0),
+  srtest_(0),t2d_(0), t2derr_(0), t2nerr_(0), t2v_(0),
   print_(config().printLevel()),
   diag_(config().diagLevel()),
   nbins_(config().nbins()),
@@ -73,6 +73,7 @@ namespace mu2e {
       srtest_->Branch("dtime",&dtime_,"dtime/F");
       srtest_->Branch("vinst",&vinst_,"vinst/F");
       srtest_->Branch("rderr",&rderr_,"rderr/F");
+      srtest_->Branch("rnerr",&rnerr_,"rnerr/F");
       t2d_ = tfs->make<TGraph>(nbins_);
       t2d_->SetName("T2D");
       t2d_->SetTitle("Time to Distance;Drift Time (ns);Distance to Wire (mm)");
@@ -81,6 +82,10 @@ namespace mu2e {
       t2derr_->SetName("T2DErr");
       t2derr_->SetTitle("Drift Distance Error;Drift Time (ns);Drift Distance Error (mm)");
       gDirectory->Append(t2derr_);
+      t2nerr_ = tfs->make<TGraph>(nbins_);
+      t2nerr_->SetName("T2NErr");
+      t2nerr_->SetTitle("Null hit Distance Error;Drift Time (ns);Null hit Distance Error (mm)");
+      gDirectory->Append(t2nerr_);
       t2v_ = tfs->make<TGraph>(nbins_);
       t2v_->SetName("T2V");
       t2v_->SetTitle("Instantaneous Drift Velocity;Drift Time (ns);Instantaneous Drift Velocity (ns/mm)");
@@ -103,10 +108,12 @@ namespace mu2e {
         DriftInfo dinfo = sresponse->driftInfo(sid,dtime_,0.0);
         rdrift_ = dinfo.driftDistance_;
         rderr_ = dinfo.driftDistanceError_;
+        rnerr_ = dinfo.nullDistanceError_;
         vinst_ = dinfo.driftVelocity_;
         srtest_->Fill();
         t2d_->SetPoint(ibin,dtime_,rdrift_);
         t2derr_->SetPoint(ibin,dtime_,rderr_);
+        t2nerr_->SetPoint(ibin,dtime_,rnerr_);
         t2v_->SetPoint(ibin,dtime_,vinst_);
       }
     }
