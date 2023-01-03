@@ -52,11 +52,13 @@ namespace mu2e {
     fhicl::Sequence<double> driftFit {
       Name("driftFit"), Comment("Drift fit")};
     fhicl::Sequence<double> driftResBins {
-      Name("driftResBins"), Comment("Drift response Bin edges (time in ns or doca in mm)")};
-    fhicl::Sequence<double> driftResRMS {
-      Name("driftResRMS"), Comment("Drift response RMS (time in ns or doca in mm)")};
+      Name("driftResBins"), Comment("Drift response Bin edges (mm)")};
     fhicl::Sequence<double> driftResOffset {
-      Name("driftResOffset"), Comment("Drift response Offset (ns or mm)")};
+      Name("driftResOffset"), Comment("Drift response Offset (mm)")};
+    fhicl::Sequence<double> driftResRMS {
+      Name("driftResRMS"), Comment("Drift response RMS (mm)")};
+    fhicl::Sequence<double> nullResRMS {
+      Name("nullResRMS"), Comment("Null hit response RMS (mm)")};
     fhicl::Atom<bool> driftResIsTime {
       Name("driftResIsTime"), Comment("Drift res is given in units of time (ns)")};
 
