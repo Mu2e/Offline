@@ -29,7 +29,7 @@ namespace mu2e {
 
       printf("%5i %5i",Hd->fSeedIndex,Hd->fDeltaIndex);
       printf("  %8.3f %8.3f %8.5f",ch->time(),ch->correctedTime(),ch->energyDep());
-      printf(" %8.2f %8.2f\n",Hd->fChi2Min,Hd->fSigW);
+      printf(" %8.2f %8.2f\n",Hd->fChi2Min,ch->posRes(ComboHit::wire));
     }
 
 //-----------------------------------------------------------------------------
@@ -37,7 +37,7 @@ namespace mu2e {
       printf("---------------------------------------------");
       printf("-------------------------------------------------------------------------------------\n");
       printf("index good type delta  SHID  SHID  SHID  SHID");
-      printf("  chi2all/N    chi21   chi22 mintime  maxtime     X        Y         Z   nfwh nch nsh\n");
+      printf("  chi2all/N chi2perp/N   chi21   chi22 mintime  maxtime     X        Y         Z   nfwh nch nsh\n");
       printf("---------------------------------------------");
       printf("-------------------------------------------------------------------------------------\n");
 
@@ -54,7 +54,7 @@ namespace mu2e {
         }
       }
 
-      printf(" %8.2f %7.2f %7.2f",Seed->Chi2AllDof(),Seed->fChi21,Seed->fChi22);
+      printf(" %8.2f   %7.2f %7.2f %7.2f",Seed->Chi2AllN(),Seed->Chi2PerpN(),Seed->fChi21,Seed->fChi22);
       printf("%8.1f %8.1f",Seed->MinHitTime(),Seed->MaxHitTime());
       printf(" %8.3f %8.3f %9.3f",Seed->CofM.x(),Seed->CofM.y(),Seed->CofM.z());
       printf("%4i",Seed->fNFacesWithHits);
@@ -110,81 +110,6 @@ namespace mu2e {
     }
 
 //-----------------------------------------------------------------------------
-    DeltaSeed::DeltaSeed() {
-      printf("ERROR: DeltaSeed::DeltaSeed() should not be called\n");
-    }
-
-//-----------------------------------------------------------------------------
-    DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
-      fIndex            = Index;
-      fStation          = Station;
-      fGood             =  1;
-      fSFace[0]         = Face0;
-      fSFace[1]         = Face1;
-
-      for (int face=0; face<kNFaces; face++) {
-        fFaceProcessed[face] = 0;
-        hitData       [face] = NULL;
-        fMcPart       [face] = NULL;
-      }
-
-      hitData[Face0]    = Hd0;
-
-      fChi21            = Hd0->fChi2Min;
-
-      if (Face1 >= 0) {
-        hitData[Face1]    = Hd1;
-        fType             =  10*Face0+Face1;
-        fNHits            =  2;
-        fNStrawHits       = Hd0->fHit->nStrawHits()+Hd1->fHit->nStrawHits();
-        fNFacesWithHits   =  2;
-        fFaceProcessed[Face0] = 1;
-        fFaceProcessed[Face1] = 1;
-        fChi22                = Hd1->fChi2Min;
-      }
-      else {
-        fType                 =  10*Face0;  // may want to revisit
-        fNHits                =  1;
-        fNStrawHits           = Hd0->fHit->nStrawHits();
-        fNFacesWithHits       =  1;
-        fFaceProcessed[Face0] =  1;
-        fChi22                = -1;
-      }
-
-      fNHitsCE          =  0;
-                                        // these ones used by teh diag tool
-      fPreSeedMcPart[0] = nullptr;
-      fPreSeedMcPart[1] = nullptr;
-
-      fMinHitTime = Hd0->fHit->correctedTime();
-      fMaxHitTime = fMinHitTime;
-
-      if (Hd1) {
-        float ct2 = Hd1->fHit->correctedTime();
-
-        if (ct2 >= fMinHitTime) fMaxHitTime = ct2;
-        else                    fMinHitTime = ct2;
-      }
-
-      fDeltaIndex       = -1;
-      fChi2All          = 9999.99;
-    }
-
-
-//-----------------------------------------------------------------------------
-// replace first hit with another one founce in the same face..
-//-----------------------------------------------------------------------------
-    void DeltaSeed::ReplaceFirstHit(HitData_t* Hd) {
-
-      hitData[fSFace[0]] = Hd;
-
-      fChi21             = Hd->fChi2Min;
-      fNStrawHits        = Hd->fHit->nStrawHits();
-      fMinHitTime        = Hd->fHit->correctedTime();
-      fMaxHitTime        = fMinHitTime;
-    }
-
-//-----------------------------------------------------------------------------
     DeltaCandidate::DeltaCandidate() {
       fIndex  = -1;
       for(int s=0; s<kNStations; ++s) {
@@ -230,9 +155,10 @@ namespace mu2e {
       if (fLastStation  < Station) fLastStation  = Station;
 //-----------------------------------------------------------------------------
 // ** FIXME recalculate the center of gravity - dont' need to be exact here
-// seeds with NHits=1 don't have their center of gravity defined
+// seeds with SFace(1) < 0 don't have their center of gravity defined - their hits
+// have been picked up individually, the intersection doesn't matter
 //-----------------------------------------------------------------------------
-      if (Seed->fNFacesWithHits > 1) {
+      if (Seed->SFace(1) >= 0) {
         float x = (CofM.x()*fNHits+Seed->CofM.x()*Seed->NHits())/(fNHits+Seed->NHits());
         float y = (CofM.y()*fNHits+Seed->CofM.y()*Seed->NHits())/(fNHits+Seed->NHits());
         CofM.SetX(x);
@@ -246,10 +172,11 @@ namespace mu2e {
 // update t0min and t0max
 // FIXME - need more reasonable limits
 //-----------------------------------------------------------------------------
-      float t0min = Seed->T0Min();
-      float t0max = Seed->T0Max();
-      float t0    = (t0min+t0max)/2;
-      float dt    = 50-(t0max-t0min)/2;
+      float t0min     = Seed->MinHitTime();
+      float t0max     = Seed->MaxHitTime();
+      float t0        = (t0min+t0max)/2;
+      float dt        = (t0max-t0min)/2;
+      if (dt < 20) dt = 20;
       fT0Min[Station] = t0-dt;
       fT0Max[Station] = t0+dt;
 //-----------------------------------------------------------------------------

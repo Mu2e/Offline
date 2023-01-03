@@ -41,8 +41,9 @@ namespace mu2e {
     };
 
     struct SeedHist_t {
-      TH1F*  fChi2N;
-      TH1F*  fChi2Tot;
+      TH1F*  fChi2TotN;
+      TH1F*  fChi2AllN;
+      TH1F*  fChi2PerpN;
       TH1F*  fHitChi2Min;                        // chi2 of the first two hits along the wire
       TH1F*  fChi2Neighbour;
       TH1F*  fChi2Radial;
@@ -53,6 +54,7 @@ namespace mu2e {
       TH1F*  fSeedMomentum;
       TH2F*  fSeedSize;
       TH1F*  fNHits;
+      TH1F*  fEDep;
     };
 
     struct DeltaHist_t {
@@ -125,6 +127,7 @@ namespace mu2e {
   public:
 
     DeltaFinderDiag(const fhicl::ParameterSet& PSet);
+    DeltaFinderDiag(const DeltaFinderTypes::Config& config);
     ~DeltaFinderDiag();
 
   private:
@@ -165,7 +168,6 @@ namespace mu2e {
   DeltaFinderDiag::DeltaFinderDiag(const fhicl::ParameterSet& PSet):
     _mcDiag                (PSet.get<bool>         ("mcDiag"                       )),
     _printOTracker         (PSet.get<int>          ("printOTracker"                )),
-    _printComboHits        (PSet.get<int>          ("printComboHits"               )),
     _printElectrons        (PSet.get<int>          ("printElectrons"               )),
     _printElectronsHits    (PSet.get<int>          ("printElectronsHits"           )),
     _printElectronsMinNHits(PSet.get<int>          ("printElectronsMinNHits"       )),
@@ -181,6 +183,29 @@ namespace mu2e {
     //    _timeOffsets = NULL;
 
     if (_mcDiag != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
+    else              _mcUtils = std::make_unique<McUtilsToolBase>();
+  }
+//-----------------------------------------------------------------------------
+// this routine is called once per job
+//-----------------------------------------------------------------------------
+  DeltaFinderDiag::DeltaFinderDiag(const DeltaFinderTypes::Config& config):
+    _mcDiag                (config.mcDiag()                ),
+    _printOTracker         (config.printOTracker()         ),
+    _printComboHits        (config.printComboHits()        ),
+    _printElectrons        (config.printElectrons()        ),
+    _printElectronsHits    (config.printElectronsHits()    ),
+    _printElectronsMinNHits(config.printElectronsMinNHits()),
+    _printElectronsMaxFReco(config.printElectronsMaxFReco()),
+    _printElectronsMinMom  (config.printElectronsMinMom()  ),
+    _printElectronsMaxMom  (config.printElectronsMaxMom()  ),
+    _printDeltaSeeds       (config.printDeltaSeeds()       ),
+    _printDeltaCandidates  (config.printDeltaCandidates()  ),
+    _printShcol            (config.printShcol()            )
+  {
+    printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY! \n");
+    //    _firstCall   =  1;
+
+    if (_mcDiag != 0) _mcUtils = art::make_tool  <McUtilsToolBase>(config.mcUtils.get_PSet());
     else              _mcUtils = std::make_unique<McUtilsToolBase>();
   }
 
@@ -223,8 +248,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookSeedHistograms(SeedHist_t* Hist, art::TFileDirectory* Dir) {
 
-    Hist->fChi2N           = Dir->make<TH1F>("chi2n"       , "Chi2/N"            , 1000, 0., 100.);
-    Hist->fChi2Tot         = Dir->make<TH1F>("chi2t"       , "Chi (all 2 hits)"  , 1000, 0., 100.);
+    Hist->fChi2TotN        = Dir->make<TH1F>("chi2totn"    , "Chi2Tot/N"         , 1000, 0., 100.);
+    Hist->fChi2PerpN       = Dir->make<TH1F>("chi2perpn"   , "Chi2Perp/N"        , 1000, 0., 100.);
+    Hist->fChi2AllN        = Dir->make<TH1F>("chi2alln"    , "Chi (all)/N"       , 1000, 0., 100.);
     Hist->fHitChi2Min      = Dir->make<TH1F>("hitchi2min"  , "Hit Chi (min)"     , 1000, 0.,  50.);
     Hist->fChi2Neighbour   = Dir->make<TH1F>("chi2_nb"     , "Chi2 neighbour"    , 1000, 0.,  50.);
     Hist->fChi2Radial      = Dir->make<TH1F>("chi2_r"      , "Chi2 radial"       , 1000, 0.,  50.);
@@ -234,6 +260,7 @@ namespace mu2e {
     Hist->fSeedRadius      = Dir->make<TH1F>("rad"         , "Seed radius", 500, 0., 1000.);
     Hist->fSeedMomentum    = Dir->make<TH1F>("mom"         , "Seed momentum", 400, 0., 400.);
     Hist->fSeedSize        = Dir->make<TH2F>("seed_size"   , "Seed (nh2+1):(nh1+1)", 20, 0., 20.,20,0,20);
+    Hist->fEDep            = Dir->make<TH1F>("edep"        , "mean E(Dep)"         ,100, 0., 0.01);
   }
 
 //-----------------------------------------------------------------------------
@@ -291,13 +318,14 @@ namespace mu2e {
     int book_seed_histset[kNSeedHistSets];
     for (int i=0; i<kNSeedHistSets; i++) book_seed_histset[i] = 0;
 
-    book_seed_histset[ 0] = 1;                // all seeds
+    book_seed_histset[ 0] = 1;          // all seeds
     book_seed_histset[ 1] = 0;          // *** unused
     book_seed_histset[ 2] = 1;          // truth
     book_seed_histset[ 3] = 0;          // *** unused
     book_seed_histset[ 4] = 1;          // truth and P < 30 MeV/c
     book_seed_histset[ 5] = 1;          // truth and P > 30 MeV/c
     book_seed_histset[ 6] = 1;          // truth = 0
+    book_seed_histset[ 7] = 1;          // N(CE hits) > 0
 
     for (int i=0; i<kNSeedHistSets; i++) {
       if (book_seed_histset[i] != 0) {
@@ -406,8 +434,9 @@ namespace mu2e {
 
     DeltaFinderTypes::Intersection_t res;
 
-    Hist->fChi2N->Fill(Seed->Chi2N());
-    Hist->fChi2Tot->Fill(Seed->Chi2Tot());
+    Hist->fChi2TotN->Fill(Seed->Chi2TotN());
+    Hist->fChi2AllN->Fill(Seed->Chi2AllN());
+    Hist->fChi2PerpN->Fill(Seed->Chi2PerpN());
 
     int face0 = Seed->SFace(0);
     int face1 = Seed->SFace(1);
@@ -421,11 +450,11 @@ namespace mu2e {
 
       DeltaFinderTypes::findIntersection(hd1,hd2,&res);
 
-      double chi1 = res.wd1/hd1->fSigW;
-      double chi2 = res.wd2/hd2->fSigW;
+      double chi2_1 = res.wd1*res.wd1/hd1->fSigW2;
+      double chi2_2 = res.wd2*res.wd2/hd2->fSigW2;
 
-      Hist->fHitChi2Min->Fill(chi1*chi1);
-      Hist->fHitChi2Min->Fill(chi2*chi2);
+      Hist->fHitChi2Min->Fill(chi2_1);
+      Hist->fHitChi2Min->Fill(chi2_2);
 
       int nh1 = hd1->fHit->nStrawHits();
       int nh2 = hd2->fHit->nStrawHits();
@@ -452,8 +481,8 @@ namespace mu2e {
         XYZVectorF        d_par    = (dxyz.Dot(wdir))/(wdir.Dot(wdir))*wdir;
         XYZVectorF        d_perp_z = dxyz-d_par;
         float  d_perp              = d_perp_z.rho();
-        double sigw                = hd->fSigW;
-        float  chi2_par            = (d_par.R()/sigw)*(d_par.R()/sigw);
+        // double sigw                = hd->fSigW;
+        float  chi2_par            = (d_par.R()*d_par.R())/hd->fSigW2;
         float  chi2_perp           = (d_perp/_sigmaR)*(d_perp/_sigmaR);
         float  chi2r               = chi2_par + chi2_perp;
         Hist->fChi2Radial->Fill(chi2r);
@@ -469,6 +498,7 @@ namespace mu2e {
     Hist->fSeedMomentum->Fill(mom);
 
     Hist->fNHitsPerSeed->Fill(Seed->NHits());
+    Hist->fEDep->Fill(Seed->EDep());
   }
 
 //-----------------------------------------------------------------------------
@@ -548,18 +578,31 @@ namespace mu2e {
         if (seed->MCTruth()) {
 //-----------------------------------------------------------------------------
 // real pre-seed - made out of hits produced by the same particle
+// make sure it is electron
 //-----------------------------------------------------------------------------
-          fillSeedHistograms(_hist.fSeed[2],seed);
+          int pdg_id =  seed->fPreSeedMcPart[0]->fPdgID;
+          if (pdg_id == 11) {
 
-          float mom = seed->fPreSeedMcPart[0]->Momentum();
-          if (mom < 20) fillSeedHistograms(_hist.fSeed[4],seed);
-          else          fillSeedHistograms(_hist.fSeed[5],seed);
+            fillSeedHistograms(_hist.fSeed[2],seed);
+
+            float mom = seed->fPreSeedMcPart[0]->Momentum();
+            if (mom < 20) fillSeedHistograms(_hist.fSeed[4],seed);
+            else          fillSeedHistograms(_hist.fSeed[5],seed);
+          }
         }
         else {
 //-----------------------------------------------------------------------------
 // fake pre-seed - made out of hits produced by two different particles
 //-----------------------------------------------------------------------------
           fillSeedHistograms(_hist.fSeed[6],seed);
+        }
+
+        if (seed->NHitsCE() > 0) {
+          fillSeedHistograms(_hist.fSeed[7],seed);
+          if (seed->Chi2TotN() > 50) {
+            printf("* ERROR seed with chi2TotN  > 50\n");
+            _data->printDeltaSeed(seed);
+          }
         }
       }
     }
@@ -726,6 +769,8 @@ namespace mu2e {
 // for each DeltaSeed, create a list of SimParticle*'s parallel to its list of straw hits
 //-----------------------------------------------------------------------------
   int DeltaFinderDiag::associateMcTruth() {
+
+    if (_data->chcol->size() == 0) return 0;
 
     const ComboHit* hit0 = &_data->chcol->at(0);
 
@@ -933,7 +978,7 @@ namespace mu2e {
           printf("-------------------------------------------------------------------------------------------");
           printf("-------------------------------------------------------------------------------\n");
           printf(" st seed good type delta   SHID:  MCID    SHID:  MCID    SHID:  MCID    SHID:  MCID");
-          printf("  chi2all/N  chi21   chi22 mintime  maxtime     X        Y         Z   nfwh nch nsh\n");
+          printf("  chi2all/N chi2perp/N chi21   chi22 mintime  maxtime     X        Y         Z   nfwh nch nsh\n");
           printf("-------------------------------------------------------------------------------------------");
           printf("-------------------------------------------------------------------------------\n");
           for (int ps=0; ps<nseeds; ++ps) {
@@ -955,7 +1000,7 @@ namespace mu2e {
               }
             }
 
-            printf(" %8.2f %7.2f %7.2f",seed->Chi2AllDof(),seed->fChi21,seed->fChi22);
+            printf(" %8.2f   %7.2f %7.2f %7.2f",seed->Chi2AllN(),seed->Chi2PerpN(),seed->fChi21,seed->fChi22);
             printf("%8.1f %8.1f",seed->MinHitTime(),seed->MaxHitTime());
             printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
             printf("%4i",seed->fNFacesWithHits);

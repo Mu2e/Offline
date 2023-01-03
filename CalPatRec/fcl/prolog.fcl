@@ -335,27 +335,28 @@ CalPatRec : { @table::CalPatRec
         }
 #------------------------------------------------------------------------------
         DeltaFinder : { module_type:DeltaFinder
-            comboHitCollectionTag         : "makePH"                ## input coll
-            strawHitCollectionTag         : "makeSH"                ## input coll
+            chCollTag                     : "makePH"                ## input coll
+            shCollTag                     : "makeSH"                ## input coll
             chfCollTag                    : "FlagBkgHits:ComboHits" ## input coll, so far - debugging
             sdmcCollTag                   : "compressDigiMCs"       ## used for debug only
-            timePeakCollectionTag         : CalTimePeakFinder
+            tpeakCollTag                  : "CalTimePeakFinder"
             useTimePeaks                  : 1
                                                                   # +/-70 to provide 100% efficiency for delta tagging + +/- 5
                                                                   # accounting for the drift time of a delta electron
             minCaloDt                     : -75.
             maxCaloDt                     :  75.
-            particleMeanPitchAngle        : 0.67                  # mean pitch for CE
+            meanPitchAngle                : 0.67                  # mean pitch for CE
             minHitTime                    : 350.                  # ns
             minNFacesWithHits             : 2                     #
             minNSeeds                     : 2                     #
             minDeltaNHits                 : 5                     # min number of hits of a delta candidate
-            maxElectronHitEnergy          : 0.0200                # means: use all hits
+            maxEleHitEnergy               : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
             minimumTime                   : 400.                  # ns
             maximumTime                   : 1750.                 # ns
-            maxChi2Stereo                 : 16.                   ## 16 = 4sigma  25="5sigma" 50.                   #
+            maxHitSeedDt                  : 10                    ## ns
+            maxChi2Seed                   : 16.                   ## 16 = 4sigma  25="5sigma" 50.                   #
+            maxChi2All                    : 16.                   ## 16 used by pruneSeeds to mark bad seeds... ## 2018-01-24: 25 --> 15
             maxChi2Radial                 : 25.                   # 16 ... 2018-01-24: 25 --> 15
-            maxChi2Tot                    : 16.                   ## 16 used by pruneSeeds to mark bad seeds... ## 2018-01-24: 25 --> 15
             maxDxy                        : 40.                   # mm
             maxGap                        : 3                     # gap in missing stations along the candidate
             sigmaR                        : 10.                   # mm, roughly 3 MeV/c
@@ -369,10 +370,11 @@ CalPatRec : { @table::CalPatRec
             testOrder                     : 0
             debugLevel                    : 0
             diagLevel                     : 0
-            printErrorDiagnostics         : 0
-            diagPlugin : { tool_type : "DeltaFinderDiag"
-                stepPointMcCollTag        : makeSD
-                debugLevel                : 0
+            printErrors                   : 0
+            diagPlugin                    : { tool_type : "DeltaFinderDiag"
+                # spmcCollTag               : makeSD
+                # debugLevel                : 0
+                diagLevel                 : 0
                 mcDiag                    : false
                 mcTruth                   : 0
                 printComboHits            : 0
@@ -386,7 +388,7 @@ CalPatRec : { @table::CalPatRec
                 printDeltaCandidates      : 0
                 printOTracker             : 0                     #
                 printShcol                : 0                     #
-                testOrder                 : 0                     #
+                # testOrder                 : 0                     #
                 mcUtils                   : { tool_type : "TrkRecoMcUtils"
                     strawDigiMCCollTag : "compressDigiMCs"
                     comboHitCollTag    : "makePH"
@@ -396,8 +398,9 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
         DeltaFinderAna : { module_type:DeltaFinderAna
             chCollTag              : "makePH"                # use combo hits
-            shfCollTag             : "DeltaFinder:ComboHits" #
+            chfCollTag             : "DeltaFinder:ComboHits" #
             shCollTag              : "makeSH"                # assume StrawHits have been written out
+            shfCollTag             : "DeltaFinder:StrawHits" ## input coll, so far - debugging
             schCollTag             : "makeSH"                # 1-straw combohits
             sdmcCollTag            : "compressDigiMCs"
             debugLevel             : 0
@@ -406,6 +409,8 @@ CalPatRec : { @table::CalPatRec
             printElectronsMinNHits : 0
             printElectronsMaxFReco : 1.1                   # if print, then print all
             printElectronHits      : 0
+            printComboHits         : 0
+            printSingleComboHits   : 0
 #            maxElectronHitEnergy          : 0.0035                # for comparisons
         }
     }
