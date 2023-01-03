@@ -26,6 +26,12 @@ mu2eg4DefaultPhysics: {
     setMuHadLateralDisplacement: true // improves accuracy of boundary
                                       // crossing for muons and common charged hadrons
 
+    // disableEnergyLossFluctuations: false // only disable it for testing pourposes
+    // the following parameter works with Geant4 11.1 and above
+    // setEnergyLossFluctuationModel: 2 // the deafult changes with Geant4 version; it is 2 for 11.1
+    // enum G4EmFluctuationType { fDummyFluctuation = 0, fUniversalFluctuation, fUrbanFluctuation };
+
+
     useDensityEffectInIonizationLossCalc: false // improves accuracy of energy loss calculations;
                                                 // done for the materials listed below, for now
                                                 // to be used with Geant4 10.7.p03 and above
