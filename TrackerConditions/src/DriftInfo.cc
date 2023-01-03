@@ -4,6 +4,6 @@ namespace mu2e {
 
   double DriftInfo::nullDistanceVar() const {
     double rdrift = std::max(0.0,driftDistance_); // don't count negative drift distances
-    return std::min(maxdvar_, rdrift*rdrift + driftDistanceVar());
+    return std::min(maxdvar_, rdrift*rdrift + nullDistanceError_*nullDistanceError_);
   }
 }

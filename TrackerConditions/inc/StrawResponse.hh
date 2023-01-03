@@ -42,7 +42,7 @@ namespace mu2e {
           std::vector<double> totderror,
           std::vector<double> derr,
           bool usepderr,
-          std::vector<double> driftResBins,std::vector<double> driftResOffset, std::vector<double> driftResRMS,
+          std::vector<double> driftResBins,std::vector<double> driftResOffset, std::vector<double> driftResRMS, std::vector<double> nullResRMS,
           bool driftResIsTime,
           double wbuf, double slfac, double errfac, bool usenonlindrift,
           double lindriftvel, double mint0doca,
@@ -69,6 +69,7 @@ namespace mu2e {
         _driftResBins(driftResBins),
         _driftResOffset(driftResOffset),
         _driftResRMS(driftResRMS),
+        _nullResRMS(nullResRMS),
         _driftResIsTime(driftResIsTime),
         _wbuf(wbuf), _slfac(slfac), _errfac(errfac),
         _usenonlindrift(usenonlindrift), _lindriftvel(lindriftvel),
@@ -199,6 +200,7 @@ namespace mu2e {
       std::vector<double> _driftResBins;
       std::vector<double> _driftResOffset;
       std::vector<double> _driftResRMS;
+      std::vector<double> _nullResRMS;
       bool _driftResIsTime;
       double _wbuf; // buffer at the edge of the straws, in terms of sigma
       double _slfac; // factor of straw length to set 'missing cluster' hits

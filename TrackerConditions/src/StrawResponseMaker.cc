@@ -1,4 +1,3 @@
-
 #include "Offline/TrackerConditions/inc/StrawResponseMaker.hh"
 // data products
 #include <cmath>
@@ -66,6 +65,7 @@ namespace mu2e {
 //    double tau = _config.parameterizedDriftTau();
 
     if (_config.driftResOffset().size() != _config.driftResRMS().size()
+         || _config.nullResRMS().size() != _config.driftResRMS().size()
         || _config.driftResBins().size() != 2){
       throw cet::exception("BADCONFIG")
         << "StrawResponse drift res vector lengths incorrect" << "\n";
@@ -112,7 +112,7 @@ namespace mu2e {
         _config.totDriftError(),
         _config.driftErrorParameters(),
         _config.useParameterizedDriftErrors(),
-        _config.driftResBins(),_config.driftResOffset(), _config.driftResRMS(),
+        _config.driftResBins(),_config.driftResOffset(), _config.driftResRMS(), _config.nullResRMS(),
         _config.driftResIsTime(),
         _config.wireLengthBuffer(), _config.strawLengthFactor(),
         _config.errorFactor(), _config.useNonLinearDrift(),
