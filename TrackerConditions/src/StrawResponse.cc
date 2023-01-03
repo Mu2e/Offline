@@ -115,26 +115,19 @@ namespace mu2e {
     if (_driftIgnorePhi) phi = 0;
     DriftInfo dinfo;
     dinfo.LorentzAngle_ = phi;
-    double cdist = _strawDrift->T2D(dtime,phi,false); // allow values outside the physical range at this point
-    double derr, derrslope;
+    dinfo.driftDistance_ = _strawDrift->T2D(dtime,phi,false); // allow values outside the physical range at this point
+    dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
+    double derrslope,nerrslope;
     int halfrange(2); // should be a parameter TODO
-    interpolateCalib(_driftResBins,_driftResRMS, cdist, halfrange, derr, derrslope);
-    dinfo.driftDistanceError_ = derr;
+    interpolateCalib(_driftResBins,_driftResRMS, dinfo.driftDistance_, halfrange, dinfo.driftDistanceError_, derrslope);
+    interpolateCalib(_driftResBins,_nullResRMS, dinfo.driftDistance_, halfrange, dinfo.nullDistanceError_ , nerrslope);
     if(calibrated){
       double dcorr, dcorrslope;
-      interpolateCalib(_driftResBins,_driftResOffset, cdist, halfrange, dcorr, dcorrslope);
-      dinfo.driftDistance_ = cdist - dcorr;
-      dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
-      //      std::cout << "Drift time " << dtime << " Cluster distance " << cdist
-      //         << " offset " << dcorr << " slope " << dcorrslope
-      //         << " ddist " << dinfo.driftDistance_ << " dvel " << dinfo.driftVelocity_ << std::endl;
-    } else {
-      dinfo.driftDistance_ = cdist;
-      dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
+      interpolateCalib(_driftResBins,_driftResOffset, dinfo.driftDistance_, halfrange, dcorr, dcorrslope);
+      dinfo.driftDistance_ -= dcorr;
+      // note 'calibrated Velocity' is interpreted as dR/dt (change in drift distance WRT time), not a true physical velocity
+      dinfo.driftVelocity_ *= (1.0 - dcorrslope);
     }
-    // force into range
-//    dinfo.driftDistance_ = std::min(rstraw_,std::max(0.0,dinfo.driftDistance_));
-//    dinfo.driftVelocity_ = std::max(0.0,dinfo.driftVelocity_);
     return dinfo;
   }
 
