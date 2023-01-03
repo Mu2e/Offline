@@ -9,12 +9,17 @@ namespace fhicl {
   class ParameterSet;
 };
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Table.h"
+
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 
 namespace mu2e {
   class Panel;
@@ -24,6 +29,27 @@ namespace mu2e {
 // doesn't own anything, no need to delete any pinters
 //-----------------------------------------------------------------------------
   namespace DeltaFinderTypes {
+
+    struct Config {
+      fhicl::Atom<std::string> tool_type             {fhicl::Name("tool_type"             ), fhicl::Comment("tool type: DeltaFinderDiag")     };
+      // fhicl::Atom<art::InputTag> spmcCollTag         {fhicl::Name("spmcCollTag"           ), fhicl::Comment("StepPointMC coll tag"      )     };
+      fhicl::Atom<int>         mcTruth               {fhicl::Name("mcTruth"               ), fhicl::Comment("MC truth")                       };
+      fhicl::Atom<int>         diagLevel             {fhicl::Name("diagLevel"             ), fhicl::Comment("diagnostic level")               };
+      fhicl::Atom<bool>        mcDiag                {fhicl::Name("mcDiag"                ), fhicl::Comment("MC diag")                        };
+      fhicl::Atom<int>         printOTracker         {fhicl::Name("printOTracker"         ), fhicl::Comment("print ordered Tracker")          };
+      fhicl::Atom<int>         printComboHits        {fhicl::Name("printComboHits"        ), fhicl::Comment("print combo hits")               };
+      fhicl::Atom<int>         printElectrons        {fhicl::Name("printElectrons"        ), fhicl::Comment("print electrons")                };
+      fhicl::Atom<int>         printElectronsHits    {fhicl::Name("printElectronsHits"    ), fhicl::Comment("print electron hits")            };
+      fhicl::Atom<int>         printElectronsMinNHits{fhicl::Name("printElectronsMinNHits"), fhicl::Comment("minNhhits for printed electrons")};
+      fhicl::Atom<float>       printElectronsMaxFReco{fhicl::Name("printElectronsMaxFReco"), fhicl::Comment("maxFReco for printed electrons" )};
+      fhicl::Atom<float>       printElectronsMinMom  {fhicl::Name("printElectronsMinMom"  ), fhicl::Comment("min mom for printed electrons"  )};
+      fhicl::Atom<float>       printElectronsMaxMom  {fhicl::Name("printElectronsMaxMom"  ), fhicl::Comment("max mom for printed electrons"  )};
+      fhicl::Atom<int>         printDeltaSeeds       {fhicl::Name("printDeltaSeeds"       ), fhicl::Comment("if 1, print delta seeds"        )};
+      fhicl::Atom<int>         printDeltaCandidates  {fhicl::Name("printDeltaCandidates"  ), fhicl::Comment("if 1, print delta candidates"   )};
+      fhicl::Atom<int>         printShcol            {fhicl::Name("printShcol"            ), fhicl::Comment("if 1, print shColl"             )};
+
+      fhicl::Table<McUtilsToolBase::Config> mcUtils{fhicl::Name("mcUtils"       ), fhicl::Comment("MC Diag plugin") };
+    };
 //-----------------------------------------------------------------------------
 // intersection of the two hit wires
 //-----------------------------------------------------------------------------
@@ -49,17 +75,18 @@ namespace mu2e {
       int                     fNSecondHits;
       int                     fDeltaIndex;
       float                   fChi2Min;
-      float                   fSigW;     // cached resolution along the wire
-      float                   fDr;        // work variable
+      float                   fSigW2;    // cached resolution^2 along the wire
+      float                   fCorrTime; // cache hit corrected time
 
-      HitData_t(const ComboHit* Hit, float SigW) {
+      HitData_t(const ComboHit* Hit) {
         fHit         = Hit;
         fChi2Min     = 99999.0;
-        fSigW        = SigW;
+        float sigw   =  Hit->posRes(ComboHit::wire);
+        fSigW2       = sigw*sigw;  // to be used to calculate chi2...
         fSeedIndex   = -1;
         fNSecondHits =  0;
         fDeltaIndex  = -1;
-        fDr          = 1.1e10;
+        fCorrTime    = Hit->correctedTime();
       }
 
       int Used() const { return (fSeedIndex >= 0) ; }
@@ -131,34 +158,49 @@ namespace mu2e {
       int                            fNHitsCE;
 
       int                            fSFace[2];         // faces making the stereo seed
-      // HitData_t*                     fHitData[2];    // stereo hit seeding the seed search
       float                          fChi21;            // chi2's of the two initial hits, also stored in hit data
       float                          fChi22;
+      float                          fSumEDep;          // sum over the straw hits
                                                         // 0: used in recovery
       int                            fFaceProcessed[kNFaces];
       HitData_t*                     hitData       [kNFaces];
       McPart_t*                      fMcPart       [kNFaces];
-      XYZVectorF                     CofM;
-      float                          fPhi;              // cache to speed up the phi checks
+                                                        // XY coordinate sums
+      double                         fSx;
+      double                         fSy;
+      double                         fSnx2;
+      double                         fSnxny;
+      double                         fSny2;
+      double                         fSnxnr;
+      double                         fSnynr;
+      XYZVectorF                     CofM;                 // COG
+      float                          fPhi;                 // cache to speed up the phi checks
       float                          fMinHitTime;          // min and max times of the included hits
       float                          fMaxHitTime;
-      McPart_t*                      fPreSeedMcPart[2]; // McPart_t's corresponding to initial intersection
+      McPart_t*                      fPreSeedMcPart[2];    // McPart_t's for initial intersection
       int                            fDeltaIndex;
+                                                           // chi2's
       float                          fChi2All;
+      float                          fChi2Perp;
 
       DeltaSeed ();
       DeltaSeed (int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
       ~DeltaSeed() {}
 
+      int              Station ()         { return fStation; }
       int              Index   ()         { return fIndex; }
       int              SFace(int I)       { return fSFace[I]; }
-      float            Chi2N   ()         { return (fChi21+fChi22)/fNHits; }
+      float            Chi2TotN()         { return (fChi21+fChi22)/fNHits; }
       float            Chi2Tot ()         { return (fChi21+fChi22); }
       float            Chi2All ()         { return fChi2All; }
-      float            Chi2AllDof ()      { return fChi2All/fNHits; }
+      float            Chi2Perp()         { return fChi2Perp; }
+      float            Chi2PerpN()        { return fChi2Perp/fNHits; }
+      float            Chi2AllN ()        { return fChi2All/fNHits ; }
       HitData_t*       HitData (int Face) { return hitData[Face]; } // no boundary check !
       int              NHits   ()         { return fNHits; }
+      int              NHitsCE ()         { return fNHitsCE; }
       int              NStrawHits()       { return fNStrawHits; }
+      float            EDep    ()         { return fSumEDep/fNStrawHits ; }
       int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
       bool             Used    ()         { return (fDeltaIndex >= 0); }
       int              Good    ()         { return (fGood       >= 0); }
@@ -174,12 +216,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // assumed range of allowed hit times for this seed
 //-----------------------------------------------------------------------------
-      float            T0Min     () { return (fMinHitTime+fMaxHitTime)/2-25; }
-      float            T0Max     () { return (fMinHitTime+fMaxHitTime)/2+25; }
+      float            T0Min     () { return (fMinHitTime+fMaxHitTime)/2-20; }
+      float            T0Max     () { return (fMinHitTime+fMaxHitTime)/2+20; }
 //-----------------------------------------------------------------------------
 // less trivial functions
 //-----------------------------------------------------------------------------
+      void             AddHit         (HitData_t* Hd, int Face);
       void             ReplaceFirstHit(HitData_t* Hd);
+      void             CalculateCogAndChi2(double SigmaR2);
     };
 
     struct DeltaCandidate {
@@ -245,8 +289,8 @@ namespace mu2e {
       const TimeClusterCollection*  tpeakcol;
       int                           debugLevel;   // printout level
 
-      DeltaCandidate*     deltaCandidate(int I) { return &listOfDeltaCandidates[I]; }
-      DeltaSeed*          deltaSeed(int Station, int I) { return listOfSeeds[Station][I]; }
+      DeltaCandidate* deltaCandidate(int I)              { return &listOfDeltaCandidates[I]; }
+      DeltaSeed*      deltaSeed     (int Station, int I) { return listOfSeeds[Station][I]; }
 
       void printHitData       (HitData_t*      HitData, const char* Option = "");
       void printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");

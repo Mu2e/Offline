@@ -8,8 +8,7 @@
 #include "Offline/fcl/standardServices.fcl"
 BEGIN_PROLOG
   INPUT_MODULE  @protect_ignore: RootInput        # choices: EmptyEvent / RootInput
-  TRIGGER_PATH  @protect_ignore: [ p3       ]     # defined below
-  SIM_ID                       : 1626
+  TRIGGER_PATHS @protect_ignore: [ p1       ]     # defined below
 END_PROLOG
 
 #include "Stntuple/fcl/stntuple.fcl"
@@ -19,48 +18,43 @@ process_name : TestDeltaFinder
 physics : {
 
     producers : { @table::Reconstruction.producers
-
-        ComboHitFilter : { @table::CalPatRec.producers.ComboHitFilter
-            simID      : @local::SIM_ID
-            debugLevel : 1
-        }
-
         DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
-            diagLevel                     : 1 ## 0 ##
-            debugLevel                    : 1 ## 1 ##
-            useTimePeaks                  : 0
-            comboHitCollectionTag         : "ComboHitFilter"
+            diagLevel                     :  1 ## 0 ##
+            debugLevel                    :  1 ## 1 ##
+            useTimePeaks                  :  0
 
-            maxChi2Seed                   :  8.                   ## max (chi2_1 + chi2_2)/2 of a stereo seed
-            maxChi2Radial                 : 10.                   ## 10 25 used by recoverStation (wire-to-seed dist)
-            maxChi2All                    : 10.                   ## 10 16 used by pruneSeeds to mark bad seeds
-            maxDxy                        : 30.                   ## used by connectSeeds 30 40 mm
-            maxGap                        :  3                    ## 3 gap in missing stations along the candidate
-            sigmaR                        : 10.                   # mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-            maxDriftTime                  : 35.                   ## 40 ns, includes some tolerance (50)
-            maxStrawDt                    : 10.                   # max sensible time difference for a straw, ns, off by default
-            maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
-            maxDtDc                       : 10.                   ## 15 20 30 ns, max dT between two delta candidates
-            maxHitSeedDt                  : 10                    ##
+            maxChi2Seed                   : 10. ## 10 16 used by findSeeds, for each hit
+            maxChi2Radial                 : 10. ## 10 25 used by recoverStation (wire-to-seed dist)
+            maxChi2All                    : 10. ## 10 16 used by pruneSeeds to mark bad seeds
+            maxDxy                        : 30. ## used by connectSeeds 30 40 mm
+            maxGap                        :  2  ## 3 gap in missing stations along the candidate
+            sigmaR                        : 10. # mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+            maxDriftTime                  : 30. ## 40 ns, includes some tolerance (50)
+            maxStrawDt                    : 10. # max sensible time difference for a straw, ns, off by default
+            maxDtDs                       :  5. # ns, max allowed T0 shift per station
+            maxDtDc                       : 10. ## 15 20 30 ns, max dT between two delta candidates
+            maxHitSeedDt                  : 10  ##
+            minDeltaNHits                 :  5
+
+#             maxDriftTime                  : 40.                   ## ns, includes some tolerance (50)
+#             maxStrawDt                    : 10.                   # max sensible time difference for a straw, ns, off by default
+#             maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
+#             maxDtDc                       : 15.                   ## 20 30 ns, max dT between two delta candidates
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
-                printDeltaSeeds           : 1
-                printDeltaCandidates      : 1
-
                 mcDiag                    : true
-                printComboHits            : 1 ## 0 ##
                 printElectrons            : 1 ## 0 ##
                 printElectronsHits        : 1 ## 1 ##
                 printElectronsMinMom      : 0.
                 printElectronsMaxMom      : 20.
-                printElectronsMinNHits    : 5   ## 30
+                printElectronsMinNHits    : 10   ## 30
                 printElectronsMaxFReco    : 0.2 ## 0.5
             }
         }
 
         DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
             debugLevel                    : 0 ## 1
-            tcCollTag                     : "DeltaFinder"
+            # tcCollTag                     : "DeltaFinder"
             strawHitFlagCollectionTag     : "DeltaFinder:ComboHits"
             strawDigiMCCollectionTag      : "compressDigiMCs"
         }
@@ -69,26 +63,29 @@ physics : {
     filters   : { @table::Reconstruction.filters   }
     analyzers : { @table::stntuple.analyzers       }
 
-    p1: [ @sequence::TrkHitReco.PrepareHits,                    DeltaFinder, DeltaFinderAna ]
+    p1: [ @sequence::TrkHitReco.PrepareHits, DeltaFinder, DeltaFinderAna ]
+
     p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder ]
-    p3: [ @sequence::TrkHitReco.PrepareHits, ComboHitFilter   , CalTimePeakFinder, DeltaFinder ]
+    p3: [                                    CalTimePeakFinder, DeltaFinder ]
     p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
     p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
     p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloClusterMC.TruthMatch,
           CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
 
-    trigger_paths : [ @sequence::TRIGGER_PATH ]
+    trigger_paths : [ p1            ]
 
     e1            : [               ] ## MuHitDisplay  ] # defaultOutput ]
     end_paths     : [ e1            ]
 }
+
+physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
 physics.producers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # uncomment to write the DST out
 #------------------------------------------------------------------------------
 # physics.out : [detectorOutput]
 # outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
-services.TFileService.fileName            : "deltaFinder_debug.root"
+services.TFileService.fileName            : "deltaFinder_diag.root"
 #------------------------------------------------------------------------------
 # everything below is appended by murat/scripts/submit_mu2e_job
 #------------------------------------------------------------------------------

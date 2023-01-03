@@ -78,7 +78,7 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
-    explicit ComboHitFilter(fhicl::ParameterSet const&);
+    explicit ComboHitFilter(const art::EDProducer::Table<ComboHitFilter::Config>& config);
 
   private:
 
@@ -92,13 +92,13 @@ namespace mu2e {
   };
 
 //-----------------------------------------------------------------------------
-  ComboHitFilter::ComboHitFilter(fhicl::ParameterSet const& pset):
-    art::EDProducer{pset},
-    _chfCollTag            (pset.get<string>("chfCollTag" )),
-    _chCollTag             (pset.get<string>("chCollTag"  )),
-    _sdmcCollTag           (pset.get<string>("sdmcCollTag")),
-    _simID                 (pset.get<int>   ("simID"      )),
-    _debugLevel            (pset.get<int>   ("debugLevel" ))
+  ComboHitFilter::ComboHitFilter(const art::EDProducer::Table<ComboHitFilter::Config>& config):
+    art::EDProducer{config},
+    _chfCollTag            (config().chfCollTag ()),
+    _chCollTag             (config().chCollTag  ()),
+    _sdmcCollTag           (config().sdmcCollTag()),
+    _simID                 (config().simID      ()),
+    _debugLevel            (config().debugLevel ())
   {
     consumes<ComboHitCollection>    (_chCollTag  );
     consumes<StrawHitFlagCollection>(_chfCollTag );
@@ -167,6 +167,9 @@ namespace mu2e {
         new_chfColl->push_back((*_chfColl)[i]);
       }
     }
+    if (_debugLevel > 0) {
+      printf(" ComboHitFilter::%s : output collection : %lu hits\n",__func__,new_chColl->size());
+    }
 //-----------------------------------------------------------------------------
 // finally, put the output flag collection into the event
 //-----------------------------------------------------------------------------
@@ -176,6 +179,11 @@ namespace mu2e {
 // debug, if requested
 //-----------------------------------------------------------------------------
     if (_debugLevel > 0) {
+      HlPrint* hlp = HlPrint::Instance();
+      hlp->SetEvent(&Event);
+      hlp->printComboHitCollection("ComboHitFilter",
+                                   "ComboHitFilter",
+                                   _sdmcCollTag.encode().data());
     }
   }
 }
