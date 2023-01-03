@@ -32,22 +32,23 @@
 namespace mu2e {
 
   class TrkRecoMcUtils : public mu2e::McUtilsToolBase {
-    protected:
-      std::string                   _comboHitCollTag;
-      const ComboHitCollection*     _chColl;
-      std::string                   _strawDigiMCCollTag;
-      const StrawDigiMCCollection*  _mcdigis;
-      art::EventID                  _lastEvent;
-      double                        _mbtime;
+  protected:
+    art::InputTag                 _comboHitCollTag;
+    const ComboHitCollection*     _chColl;
+    art::InputTag                 _strawDigiMCCollTag;
+    const StrawDigiMCCollection*  _mcdigis;
+    art::EventID                  _lastEvent;
+    double                        _mbtime;
 
-    public:
+  public:
 
-      TrkRecoMcUtils(const fhicl::ParameterSet& PSet);
-      ~TrkRecoMcUtils();
+    TrkRecoMcUtils(const McUtilsToolBase::Config& config);
+    TrkRecoMcUtils(const fhicl::ParameterSet& PSet);
+    ~TrkRecoMcUtils();
 
-    public:
+  public:
 
-      int     initEvent(const art::Event* Event);
+      int            initEvent(const art::Event* Event);
 
       virtual int    strawHitSimId(const art::Event* Event, int Index) override;
 
@@ -63,7 +64,7 @@ namespace mu2e {
       //                    const art::InputTag& Tag) override;
 
       virtual const SimParticle* getSimParticle(const art::Event* Event, int HitIndex) override;
-      virtual const XYZVectorF* getMom(const art::Event* Event, int HitIndex) override;
+      virtual const XYZVectorF*  getMom        (const art::Event* Event, int HitIndex) override;
 
       int   getID      (const SimParticle* Sim) override;
       int   getPdgID   (const SimParticle* Sim) override;
@@ -73,19 +74,28 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   TrkRecoMcUtils::TrkRecoMcUtils(const fhicl::ParameterSet& PSet) :
-    _comboHitCollTag   { PSet.get<std::string>("comboHitCollTag"   ) },
-    _strawDigiMCCollTag{ PSet.get<std::string>("strawDigiMCCollTag") }
+    _comboHitCollTag   { PSet.get<art::InputTag>("comboHitCollTag"   ) },
+    _strawDigiMCCollTag{ PSet.get<art::InputTag>("strawDigiMCCollTag") }
   {
     _lastEvent   = art::EventID();
     _mcdigis     = nullptr;
     _chColl      = nullptr;
     _mbtime      = -1;
-    //    _timeOffsets = new SimParticleTimeOffset(*TimeOffsets);
+  }
+
+//-----------------------------------------------------------------------------
+  TrkRecoMcUtils::TrkRecoMcUtils(const McUtilsToolBase::Config& config) :
+    _comboHitCollTag   { config.comboHitCollTag()    },
+    _strawDigiMCCollTag{ config.strawDigiMCCollTag() }
+  {
+    _lastEvent   = art::EventID();
+    _mcdigis     = nullptr;
+    _chColl      = nullptr;
+    _mbtime      = -1;
   }
 
   //-----------------------------------------------------------------------------
   TrkRecoMcUtils::~TrkRecoMcUtils() {
-    //    delete _timeOffsets;
   }
 
   //-----------------------------------------------------------------------------
@@ -98,7 +108,6 @@ namespace mu2e {
     auto chcH = Event->getValidHandle<ComboHitCollection>(_comboHitCollTag);
     _chColl   = chcH.product();
 
-    //    _timeOffsets->updateMap(*Event);
     if (_mbtime < 0) {
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       _mbtime      = accPar->deBuncherPeriod;

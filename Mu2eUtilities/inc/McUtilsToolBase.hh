@@ -4,6 +4,8 @@
 #ifndef __CalPatRec_McUtilsToolsBase_hh__
 #define __CalPatRec_McUtilsToolsBase_hh__
 
+#include "fhiclcpp/types/Atom.h"
+
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "Offline/DataProducts/inc/GenVector.hh"
@@ -12,17 +14,21 @@
 
 namespace mu2e {
 
-  //  class Straw;
   class TrkStrawHit;
-// #ifndef MCDataProducts_StrawDigiMCCollection_hh
-//   //  class StrawDigiMCCollection;
-// #endif
   class SimParticle;
 
   class McUtilsToolBase {
   public:
 
+    struct Config {
+      fhicl::Atom<std::string>   tool_type         {fhicl::Name("tool_type"         ), fhicl::Comment("tool type: McUtils")     };
+      fhicl::Atom<art::InputTag> comboHitCollTag   {fhicl::Name("comboHitCollTag"   ), fhicl::Comment("ComboHit collection tag")};
+      fhicl::Atom<art::InputTag> strawDigiMCCollTag{fhicl::Name("strawDigiMCCollTag"), fhicl::Comment("StrawDigiMC Coll Tag")   };
+    };
+
     McUtilsToolBase()          noexcept = default ;
+    McUtilsToolBase(const Config& config) {};
+
     virtual ~McUtilsToolBase() noexcept = default ;
 //-----------------------------------------------------------------------------
 // functions to be overloaded
