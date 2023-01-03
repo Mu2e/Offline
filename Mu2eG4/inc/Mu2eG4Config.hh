@@ -141,6 +141,10 @@ namespace mu2e {
                   "or one of \"PDG\", \"All\", \"None\" pre-defined settings.")
           };
 
+      fhicl::OptionalAtom<bool> disableEnergyLossFluctuations {Name("disableEnergyLossFluctuations")};
+#if G4VERSION>4110
+      fhicl::OptionalAtom<unsigned int> setEnergyLossFluctuationModel {Name("energyLossFluctuationModel")};
+#endif
       fhicl::OptionalAtom<double> mscModelTransitionEnergy {Name("mscModelTransitionEnergy")};
       fhicl::OptionalAtom<double> muonPreAssignedDecayProperTime {Name("muonPreAssignedDecayProperTime")};
       fhicl::OptionalAtom<double> muonMaxPreAssignedDecayProperTime {Name("muonMaxPreAssignedDecayProperTime")};
