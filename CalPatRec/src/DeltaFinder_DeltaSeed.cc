@@ -13,7 +13,8 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1):
-      fSx(0), fSy(0), fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0)
+      fSx(0), fSy(0), fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
+      fSumEDep(0)
     {
       fIndex            = Index;
       fStation          = Station;
@@ -70,11 +71,12 @@ namespace mu2e {
         int face = fSFace[i];
         if (face < 0)                                                 continue;
         const HitData_t* hd = hitData[face];
+        const ComboHit* ch = hd->fHit;
         if (hd) {
-          double x0 = hd->fHit->pos().x();
-          double y0 = hd->fHit->pos().y();
-          double nx = hd->fHit->wdir().x();
-          double ny = hd->fHit->wdir().y();
+          double x0 = ch->pos().x();
+          double y0 = ch->pos().y();
+          double nx = ch->wdir().x();
+          double ny = ch->wdir().y();
 
           // this should be the hit wdir - check...
           double nr = nx*x0+ny*y0;
@@ -87,14 +89,13 @@ namespace mu2e {
           fSnxnr += nx*nr;
           fSnynr += ny*nr;
 
-          fSumEDep += hd->fHit->energyDep()*hd->fHit->nCombo();
+          fSumEDep += ch->energyDep()*ch->nStrawHits();
         }
       }
-
-      fDeltaIndex       = -1;
 //-----------------------------------------------------------------------------
 // do't want a chi2 selection to do anything if the chi2 has not been calculated
 //-----------------------------------------------------------------------------
+      fDeltaIndex       = -1;
       fChi2All          = -1;
       fChi2Perp         = -1;
     }
@@ -113,9 +114,9 @@ namespace mu2e {
 
       const ComboHit* ch = Hd->fHit;
 
-      fNHits      += 1;
-      fNStrawHits += ch->nStrawHits();
-      fNFacesWithHits++;
+      fNFacesWithHits += 1;
+      fNHits          += 1;
+      fNStrawHits     += ch->nStrawHits();
 //-----------------------------------------------------------------------------
 // in parallel, update coordinate sums
 //-----------------------------------------------------------------------------
@@ -133,6 +134,8 @@ namespace mu2e {
       fSny2  += ny*ny;
       fSnxnr += nx*nr;
       fSnynr += ny*nr;
+
+      fSumEDep += ch->energyDep()*ch->nStrawHits();
     }
 //-----------------------------------------------------------------------------
 // replace first hit with another one founce in the same face..
@@ -145,6 +148,8 @@ namespace mu2e {
       fNStrawHits        = Hd->fHit->nStrawHits();
       fMinHitTime        = Hd->fHit->correctedTime();
       fMaxHitTime        = fMinHitTime;
+
+      fSumEDep           = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
     }
 //-----------------------------------------------------------------------------
 // calculate Com and chi2's

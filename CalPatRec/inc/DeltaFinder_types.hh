@@ -151,16 +151,15 @@ namespace mu2e {
       int                            fIndex;            // index within the station
       int                            fStation;          // station with seed stereo hit
       int                            fType;             // defines indices of the two faces used for preseed seach
-      int                            fGood;             // <-killer number> if not to be used - what about 0 ?
+      int                            fGood;             // <killer number> if not to be used - what about 0 ?
       int                            fNFacesWithHits;
-      int                            fNHits;
-      int                            fNStrawHits;       // total number of hits
-      int                            fNHitsCE;
+      int                            fNHits;            // total number of combo hits
+      int                            fNStrawHits;       // total number of straw hits
+      int                            fNHitsCE;          // number of associated CE hits
 
       int                            fSFace[2];         // faces making the stereo seed
       float                          fChi21;            // chi2's of the two initial hits, also stored in hit data
       float                          fChi22;
-      float                          fSumEDep;          // sum over the straw hits
                                                         // 0: used in recovery
       int                            fFaceProcessed[kNFaces];
       HitData_t*                     hitData       [kNFaces];
@@ -173,6 +172,8 @@ namespace mu2e {
       double                         fSny2;
       double                         fSnxnr;
       double                         fSnynr;
+      float                          fSumEDep;          // sum over the straw hits
+
       XYZVectorF                     CofM;                 // COG
       float                          fPhi;                 // cache to speed up the phi checks
       float                          fMinHitTime;          // min and max times of the included hits
@@ -200,6 +201,7 @@ namespace mu2e {
       int              NHits   ()         { return fNHits; }
       int              NHitsCE ()         { return fNHitsCE; }
       int              NStrawHits()       { return fNStrawHits; }
+      float            SumEDep ()         { return fSumEDep ; }
       float            EDep    ()         { return fSumEDep/fNStrawHits ; }
       int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
       bool             Used    ()         { return (fDeltaIndex >= 0); }
@@ -239,10 +241,11 @@ namespace mu2e {
       float                 phi;
       int                   n_seeds;
       McPart_t*             fMcPart;
-      int                   fNHits;
+      int                   fNHits;     // n(combo hits)
       int                   fNStrawHits;
-      int                   fNHitsMcP;               // Nhits by the "best" particle"
+      int                   fNHitsMcP;               // N combo hits by the "best" particle"
       int                   fNHitsCE;
+      float                 fSumEDep;      //
 
       DeltaCandidate();
       DeltaCandidate(int Index, DeltaSeed* Seed, int Station);
@@ -251,6 +254,7 @@ namespace mu2e {
       int        Index                () const { return fIndex ; }
       int        NSeeds               () { return n_seeds; }
       int        NHits                () { return fNHits; }
+      int        NHitsMcP             () { return fNHitsMcP; }
       int        NStrawHits           () { return fNStrawHits; }
       DeltaSeed* Seed            (int I) { return seed[I]; }
       bool       StationUsed     (int I) { return (seed[I] != NULL); }
@@ -259,10 +263,11 @@ namespace mu2e {
       float      Time            (int I) { return (fT0Max[I]+fT0Min[I])/2.; }
       int        LastStation          () { return fLastStation ; }
       int        FirstStation         () { return fFirstStation; }
+      float      EDep                 () { return fSumEDep/fNStrawHits; }
+      float      FBest                () { return float(fNHitsMcP)/fNHits; }
 
-      void       AddSeed            (DeltaSeed* Ds, int Station);
-
-      void       MergeDeltaCandidate(DeltaCandidate* Delta, int PrintErrorDiagnostics);
+      void       AddSeed            (DeltaSeed*      Ds   , int Station);
+      void       MergeDeltaCandidate(DeltaCandidate* Delta, int PrintErrors);
 
       void       SetIndex(int Index) { fIndex = Index; }
     };
