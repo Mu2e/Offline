@@ -163,8 +163,7 @@ namespace mu2e {
     exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings())),
     fixedfield_(false)
     {
-      // test: only 1 of saveFull and zsave should be set
-      if((savefull_ && zsave_.size() > 0) || ((!savefull_) && zsave_.size() == 0))
+      if((!savefull_) && zsave_.size() == 0)
         throw cet::exception("RECO")<<"mu2e::HelixFit:Segment saving configuration error"<< endl;
       // collection handling
       for(const auto& hseedtag : settings().modSettings().helixSeedCollections()) { hseedCols_.emplace_back(consumes<HelixSeedCollection>(hseedtag)); }
@@ -289,14 +288,12 @@ namespace mu2e {
     auto const& fittraj = ktrk.fitTraj();
     if(savefull_){ // loop over all pieces of the fit trajectory and record their times
       for (auto const& traj : fittraj.pieces() ) savetimes.insert(traj->range().mid());
-    } else {
-      for(auto zpos : zsave_ ) {
-        // compute the time the trajectory crosses this plane
-        double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
-        // find the explicit trajectory piece at this time, and store the midpoint time.  This enforces uniqueness (no duplicates)
-        auto const& zpiece = fittraj.nearestPiece(tz);
-        savetimes.insert(zpiece.range().mid());
-      }
+    }
+    // also add explicitly-requested z positions
+    for(auto zpos : zsave_ ) {
+      // compute the time the trajectory crosses this plane
+      double tz = Mu2eKinKal::zTime(fittraj,zpos,fittraj.range().begin());
+      savetimes.insert(tz);
     }
   }
 } // mu2e
