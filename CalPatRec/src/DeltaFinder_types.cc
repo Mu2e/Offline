@@ -125,6 +125,7 @@ namespace mu2e {
       fNStrawHits   = 0;
       fNHitsCE      = 0;
       n_seeds       = 0;
+      fSumEDep      = 0;
     }
 
     DeltaCandidate::DeltaCandidate(int Index, DeltaSeed* Seed, int Station) {
@@ -142,6 +143,7 @@ namespace mu2e {
       fNStrawHits   = 0;
       fNHitsCE      = 0;
       n_seeds       = 0;
+      fSumEDep      = 0;
 
       if (Seed) AddSeed(Seed,Station);
     }
@@ -164,10 +166,12 @@ namespace mu2e {
         CofM.SetX(x);
         CofM.SetY(y);
       }
-                                        // precalculate phi
-      phi                   = CofM.phi();
-      fNHits               += Seed->NHits();
-      fNStrawHits          += Seed->NStrawHits();
+                                        // recalculate phi
+      phi             = CofM.phi();
+
+      fNHits         += Seed->NHits();
+      fNStrawHits    += Seed->NStrawHits();
+      fSumEDep       += Seed->SumEDep();
 //-----------------------------------------------------------------------------
 // update t0min and t0max
 // FIXME - need more reasonable limits
@@ -193,7 +197,8 @@ namespace mu2e {
         if (Delta->seed[is] == nullptr)                               continue;
         if ((seed[is] != nullptr) and PrintErrorDiagnostics) {
           printf("ERROR in DeltaCandidate::MergeDeltaCandidate: ");
-          printf("merged DC also has a segment in station %i\n",is);
+          printf("merged DC also has a segment in station %i,",is);
+          printf(" LEAVE THE EXISTING ONE\n");
                                                                       continue;
         }
         seed[is] = Delta->seed[is];
@@ -202,8 +207,9 @@ namespace mu2e {
 // increment hit count only if a seed has been addded
 //-----------------------------------------------------------------------------
         n_seeds              += 1;
-        fNHits               += Delta->seed[is]->NHits();
-        fNStrawHits          += Delta->seed[is]->NStrawHits();
+        fNHits               += seed[is]->NHits();
+        fNStrawHits          += seed[is]->NStrawHits();
+        fSumEDep             += seed[is]->SumEDep();
 
         if (fFirstStation > is) fFirstStation = is;
         if (fLastStation  < is) fLastStation  = is;
