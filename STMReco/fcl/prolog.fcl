@@ -1,0 +1,28 @@
+#
+# prolog.fcl for fcl paramaters that might be used in multiple modules
+#
+BEGIN_PROLOG
+
+STM : {
+
+  HPGe : {
+    samplingFrequency : 320.0520833313 # MHz - will probably end up in a DB somewhere
+    # zero-suppression parameters
+    tbefore : 2000 # ns
+    tafter : 10000 # ns
+    threshold : -100
+    window : 100
+    naverage : 5
+  }
+  LaBr : {
+    samplingFrequency : 370.370370370 # MHz - will probably end up in a DB somewhere
+    # zero-suppression parameters
+    tbefore : 2000 # ns
+    tafter : 10000 # ns
+    threshold : -100
+    window : 100
+    naverage : 5
+  }
+}
+
+END_PROLOG
