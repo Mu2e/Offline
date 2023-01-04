@@ -33,7 +33,8 @@ Mu2eKinKal : {
     MaxStrawHitDOCA : 10.0 # mm
     MaxStrawHitDt : 50.0 # ns
     StrawBuffer : 2 #
-    MaxStrawDOCA : 3.0 # mm
+    MaxStrawDOCA : 5.0 # mm
+    MaxStrawDOCAConsistency : 1.0 # units of chi
   }
 
   KKSEEDFIT: {
@@ -132,7 +133,7 @@ Mu2eKinKal : {
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
     BFieldCorrection : true
-    ProcessEnds : false
+    ProcessEnds : true
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
@@ -163,10 +164,10 @@ Mu2eKinKal : {
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.15, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.15, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.15, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.15, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2]
+      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.175, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2],
+      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.175, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2],
+      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.175, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2],
+      [ "Offline/Mu2eKinKal/data/TrainSign.dat",0.175, "Offline/Mu2eKinKal/data/TrainCluster.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2]
     ]
     Chi2SHUSettings : [
     ]
@@ -174,7 +175,7 @@ Mu2eKinKal : {
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
       [ 10.0, -1.0, -1.0, true, 0 ],
       [ 5.0,  -1.0, -1.0, true, 0 ],
-      [ 3.0,   2.5, 1.0,  false, 0 ]
+      [ 4.0,   2.3, 0.1,  false, 0 ]
     ]
   }
 
@@ -188,7 +189,7 @@ Mu2eKinKal : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
     SaveFullFit : true
-    #    ZSavePositions : [-1522.0,0.0,1522.0]
+    ZSavePositions : [-1635.1,-1522.0,0.0,1522.0,1635.1,1671,2371] # VDs, tracker front, mid, and end, and calo disks
   }
 
   KKKINEMATICLINE : {
