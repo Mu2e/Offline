@@ -3,8 +3,10 @@
 //
 // Helper class to do work on STM objects.
 //
-
+#include "Offline/GeneralUtilities/inc/Binning.hh"
 #include "Offline/DataProducts/inc/STMChannel.hh"
+#include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
+
 #include "canvas/Utilities/InputTag.h"
 
 namespace mu2e {
@@ -12,6 +14,9 @@ namespace mu2e {
   namespace STMUtils {
     // Want to take an input tag and return an STMChannel
     STMChannel getChannel(art::InputTag const& tag);
+
+    // To get the binning for a specific STMWaveformDigi
+Binning getBinning(const STMWaveformDigi& waveform, const std::string& xAxis, const double nsPerCt);
   }
 }
 

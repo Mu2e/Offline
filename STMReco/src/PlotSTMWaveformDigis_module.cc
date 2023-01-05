@@ -78,33 +78,15 @@ namespace mu2e {
       std::cout << _channel.name() << " Pedestal = " << pedestal << std::endl;
     }
 
-    double x_min = 0;
-    double x_max = 0;
-    int n_bins = 0;
     for (const auto& waveform : *waveformsHandle) {
       histname.str("");
       histname << "evt" << event.event() << "_waveform" << count;
       histtitle.str("");
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
 
-      n_bins = waveform.adcs().size();
-      if (_xAxis == "sample_number") {
-        x_min = 0;
-        x_max = n_bins;
-      }
-      else if (_xAxis == "waveform_time") {
-        x_min = 0;
-        x_max = n_bins*_nsPerCt;
-      }
-      else if (_xAxis == "event_time") {
-        x_min = waveform.trigTimeOffset()*_nsPerCt;
-        x_max = x_min+n_bins*_nsPerCt;
-      }
-      else {
-        throw cet::exception("PlotSTMWaveformDigis") << "Invalid xAxis option: \"" << _xAxis << "\"" << std::endl;
-      }
+      Binning binning = STMUtils::getBinning(waveform, _xAxis, _nsPerCt);
+      TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
 
-      TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), n_bins,x_min,x_max);
       for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc) {
         const auto adc = waveform.adcs().at(i_adc);
 
@@ -113,7 +95,7 @@ namespace mu2e {
           content -= pedestal;
         }
 
-        _hWaveform->SetBinContent(i_adc+1, content); // bins start numbering at 1
+        hWaveform->SetBinContent(i_adc+1, content); // bins start numbering at 1
       }
       ++count;
     }
