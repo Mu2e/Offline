@@ -25,19 +25,21 @@ namespace mu2e {
     Binning getBinning(const STMWaveformDigi& waveform, const std::string& xAxis, const double nsPerCt) {
 
       int n_bins = waveform.adcs().size();
-      double x_min = 0;
-      double x_max = n_bins;
-      double t_min = waveform.trigTimeOffset()*nsPerCt;
-      double t_max = n_bins*nsPerCt;
+      double samp_min = 0;
+      double samp_max = n_bins;
+      double wvf_t_min = 0;
+      double wvf_t_max = n_bins*nsPerCt;
+      double evt_t_min = waveform.trigTimeOffset()*nsPerCt;
+      double evt_t_max = evt_t_min + wvf_t_max;
 
       if (xAxis == "sample_number") {
-        return Binning(n_bins, x_min, x_max);
+        return Binning(n_bins, samp_min, samp_max);
       }
       else if (xAxis == "waveform_time") {
-        return Binning(n_bins, x_min, t_max);
+        return Binning(n_bins, wvf_t_min, wvf_t_max);
       }
       else if (xAxis == "event_time") {
-        return Binning(n_bins, t_min, t_min+t_max);
+        return Binning(n_bins, evt_t_min, evt_t_max);
       }
       else {
         throw cet::exception("STMUtils::getBinning") << "Invalid xAxis option: \"" << xAxis << "\"" << std::endl;
