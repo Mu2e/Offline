@@ -50,7 +50,7 @@ namespace mu2e {
     int _verbosityLevel;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
     STMChannel _channel;
-    double _ctPerNs;
+    double _nsPerCt;
   };
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
@@ -59,7 +59,7 @@ namespace mu2e {
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
-    _ctPerNs((1.0/config().samplingFrequency())*1e3) // convert to ns
+    _nsPerCt((1.0/config().samplingFrequency())*1e3) // convert to ns
   {
     consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     _channel = STMUtils::getChannel(_stmWaveformDigisTag);
@@ -94,11 +94,11 @@ namespace mu2e {
       }
       else if (_xAxis == "waveform_time") {
         x_min = 0;
-        x_max = n_bins*_ctPerNs;
+        x_max = n_bins*_nsPerCt;
       }
       else if (_xAxis == "event_time") {
-        x_min = waveform.trigTimeOffset()*_ctPerNs;
-        x_max = x_min+n_bins*_ctPerNs;
+        x_min = waveform.trigTimeOffset()*_nsPerCt;
+        x_max = x_min+n_bins*_nsPerCt;
       }
       else {
         throw cet::exception("PlotSTMWaveformDigis") << "Invalid xAxis option: \"" << _xAxis << "\"" << std::endl;
