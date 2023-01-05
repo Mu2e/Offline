@@ -60,7 +60,7 @@ namespace mu2e {
     double _tbefore; // time before the peak [ns]
     double _tafter; // time after the peak [ns]
     double _threshold; // threshold
-    double _ctPerNs; // clock ticks per ns
+    double _nsPerCt; // nanosecond per clock tick
     unsigned int _nadcBefore; // number of samples before peak
     unsigned int _nadcAfter; // number of samples after peak
 
@@ -84,9 +84,9 @@ namespace mu2e {
     ,_tbefore(config().tbefore())
     ,_tafter(config().tafter())
     ,_threshold(config().threshold())
-    ,_ctPerNs((1.0/config().samplingFrequency())*1e3) // convert to ns
-    ,_nadcBefore(_tbefore/_ctPerNs)
-    ,_nadcAfter(_tafter/_ctPerNs)
+    ,_nsPerCt((1.0/config().samplingFrequency())*1e3) // convert to ns
+    ,_nadcBefore(_tbefore/_nsPerCt)
+    ,_nadcAfter(_tafter/_nsPerCt)
     ,_window(config().window())
     ,_naverage(config().naverage())
   {
