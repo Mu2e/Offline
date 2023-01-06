@@ -14,7 +14,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1):
       fSx(0), fSy(0), fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
-      fSumEDep(0)
+      fSumEDep(0), fSumT(0)
     {
       fIndex            = Index;
       fStation          = Station;
@@ -90,6 +90,7 @@ namespace mu2e {
           fSnynr += ny*nr;
 
           fSumEDep += ch->energyDep()*ch->nStrawHits();
+          fSumT    += ch->correctedTime()*ch->nStrawHits();
         }
       }
 //-----------------------------------------------------------------------------
@@ -136,6 +137,7 @@ namespace mu2e {
       fSnynr += ny*nr;
 
       fSumEDep += ch->energyDep()*ch->nStrawHits();
+      fSumT    += ch->correctedTime()*ch->nStrawHits();
     }
 //-----------------------------------------------------------------------------
 // replace first hit with another one founce in the same face..
@@ -150,6 +152,7 @@ namespace mu2e {
       fMaxHitTime        = fMinHitTime;
 
       fSumEDep           = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
+      fSumT              = Hd->fHit->correctedTime()*Hd->fHit->nStrawHits();
     }
 //-----------------------------------------------------------------------------
 // calculate Com and chi2's

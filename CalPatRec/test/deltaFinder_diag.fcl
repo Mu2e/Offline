@@ -23,23 +23,18 @@ physics : {
             debugLevel                    :  1 ## 1 ##
             useTimePeaks                  :  0
 
-            maxChi2Seed                   : 10. ## 10 16 used by findSeeds, for each hit
+            maxChi2Seed                   :  8. ## 10 16 used by findSeeds, for each hit
             maxChi2Radial                 : 10. ## 10 25 used by recoverStation (wire-to-seed dist)
             maxChi2All                    : 10. ## 10 16 used by pruneSeeds to mark bad seeds
             maxDxy                        : 30. ## used by connectSeeds 30 40 mm
-            maxGap                        :  2  ## 3 gap in missing stations along the candidate
+            maxGap                        :  3  ## 3 gap in missing stations along the candidate
             sigmaR                        : 10. # mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-            maxDriftTime                  : 30. ## 40 ns, includes some tolerance (50)
+            maxDriftTime                  : 35. ## 40 ns, includes some tolerance (50)
             maxStrawDt                    : 10. # max sensible time difference for a straw, ns, off by default
             maxDtDs                       :  5. # ns, max allowed T0 shift per station
             maxDtDc                       : 10. ## 15 20 30 ns, max dT between two delta candidates
             maxHitSeedDt                  : 10  ##
             minDeltaNHits                 :  5
-
-#             maxDriftTime                  : 40.                   ## ns, includes some tolerance (50)
-#             maxStrawDt                    : 10.                   # max sensible time difference for a straw, ns, off by default
-#             maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
-#             maxDtDc                       : 15.                   ## 20 30 ns, max dT between two delta candidates
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
@@ -79,7 +74,10 @@ physics : {
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
-physics.producers.DeltaFinderAna.printElectronHits : 1
+# physics.producers.makePH.MaxDS                     : 4
+# physics.producers.makePH.MinimumRadius             : 370.
+# physics.producers.makePH.MaximumRadius             : 680.
+# physics.producers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # uncomment to write the DST out
 #------------------------------------------------------------------------------
