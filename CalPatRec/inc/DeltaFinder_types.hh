@@ -62,6 +62,7 @@ namespace mu2e {
     };
 
     struct DeltaCandidate;
+    struct DeltaSeed;
 
     enum {
       kNStations      = StrawId::_nplanes/2,   // number of tracking stations
@@ -71,7 +72,7 @@ namespace mu2e {
 
     struct HitData_t {
       const ComboHit*         fHit;
-      int                     fSeedIndex;
+      DeltaSeed*              fSeed;           // nullptr if not associated...
       int                     fNSecondHits;
       int                     fDeltaIndex;
       float                   fChi2Min;
@@ -83,13 +84,13 @@ namespace mu2e {
         fChi2Min     = 99999.0;
         float sigw   =  Hit->posRes(ComboHit::wire);
         fSigW2       = sigw*sigw;  // to be used to calculate chi2...
-        fSeedIndex   = -1;
+        fSeed        = nullptr;
         fNSecondHits =  0;
         fDeltaIndex  = -1;
         fCorrTime    = Hit->correctedTime();
       }
 
-      int Used() const { return (fSeedIndex >= 0) ; }
+      int Used() const { return (fSeed != nullptr) ; }
     };
 
     struct PanelZ_t {
@@ -148,41 +149,45 @@ namespace mu2e {
 
     class DeltaSeed {
     public:
-      int                            fIndex;            // index within the station
-      int                            fStation;          // station with seed stereo hit
-      int                            fType;             // defines indices of the two faces used for preseed seach
-      int                            fGood;             // <killer number> if not to be used - what about 0 ?
-      int                            fNFacesWithHits;
-      int                            fNHits;            // total number of combo hits
-      int                            fNStrawHits;       // total number of straw hits
-      int                            fNHitsCE;          // number of associated CE hits
+      int          fIndex;            // index within the station
+      int          fStation;          // station with seed stereo hit
+      int          fType;             // defines indices of the two faces used for preseed seach
+      int          fGood;             // <killer number> if not to be used - what about 0 ?
+      int          fNFacesWithHits;
+      int          fNHits;            // total number of combo hits
+      int          fNStrawHits;       // total number of straw hits
+      int          fNHitsCE;          // number of associated CE hits
 
-      int                            fSFace[2];         // faces making the stereo seed
-      float                          fChi21;            // chi2's of the two initial hits, also stored in hit data
-      float                          fChi22;
-                                                        // 0: used in recovery
-      int                            fFaceProcessed[kNFaces];
-      HitData_t*                     hitData       [kNFaces];
-      McPart_t*                      fMcPart       [kNFaces];
-                                                        // XY coordinate sums
-      double                         fSx;
-      double                         fSy;
-      double                         fSnx2;
-      double                         fSnxny;
-      double                         fSny2;
-      double                         fSnxnr;
-      double                         fSnynr;
-      float                          fSumEDep;          // sum over the straw hits
+      int          fSFace[2];         // faces making the stereo seed
+      float        fChi21;            // chi2's of the two initial hits, also stored in hit data
+      float        fChi22;
+                                      // 0: used in recovery
+      int          fFaceProcessed[kNFaces];
+      HitData_t*   hitData       [kNFaces];
+      McPart_t*    fMcPart       [kNFaces];
+                                      // XY coordinate sums
+      double       fSx;
+      double       fSy;
+      double       fSnx2;
+      double       fSnxny;
+      double       fSny2;
+      double       fSnxnr;
+      double       fSnynr;
+      float        fSumEDep;             // sum over the straw hits
 
-      XYZVectorF                     CofM;                 // COG
-      float                          fPhi;                 // cache to speed up the phi checks
-      float                          fMinHitTime;          // min and max times of the included hits
-      float                          fMaxHitTime;
-      McPart_t*                      fPreSeedMcPart[2];    // McPart_t's for initial intersection
-      int                            fDeltaIndex;
-                                                           // chi2's
-      float                          fChi2All;
-      float                          fChi2Perp;
+      XYZVectorF   CofM;                 // COG
+      float        fPhi;                 // cache to speed up the phi checks
+      float        fZ;                   // Z-coordinate of the center of the corresponding station
+
+      double       fSumT;
+
+      float        fMinHitTime;          // min and max times of the included hits
+      float        fMaxHitTime;
+      McPart_t*    fPreSeedMcPart[2];    // McPart_t's for initial intersection
+      int          fDeltaIndex;
+                                         // chi2's
+      float        fChi2All;
+      float        fChi2Perp;
 
       DeltaSeed ();
       DeltaSeed (int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
@@ -206,6 +211,8 @@ namespace mu2e {
       int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
       bool             Used    ()         { return (fDeltaIndex >= 0); }
       int              Good    ()         { return (fGood       >= 0); }
+      float            TMean   ()         { return fSumT/fNStrawHits;  }
+      float            Z       ()         { return fZ;  }
 
       float            Phi     () const   { return fPhi; }
 //-----------------------------------------------------------------------------
@@ -241,30 +248,50 @@ namespace mu2e {
       float                 phi;
       int                   n_seeds;
       McPart_t*             fMcPart;
-      int                   fNHits;     // n(combo hits)
+      int                   fNHits;                // n(combo hits)
       int                   fNStrawHits;
-      int                   fNHitsMcP;               // N combo hits by the "best" particle"
+      int                   fNHitsMcP;             // N combo hits by the "best" particle"
       int                   fNHitsCE;
-      float                 fSumEDep;      //
+      float                 fSumEDep;              //
+                                                   // LSQ sums
+      double                fSx;
+      double                fSy;
+      double                fSnx2;
+      double                fSnxny;
+      double                fSny2;
+      double                fSnxnr;
+      double                fSnynr;
+                                                   // LSQ sumz for TZ
+      double                fSt;
+      double                fSz;
+      double                fSt2;
+      double                fStz;
+      double                fSz2;
 
+      double                fT0;
+      double                fDtDz;
+      double                fSigT0;
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
       DeltaCandidate();
       DeltaCandidate(int Index, DeltaSeed* Seed, int Station);
 
       int        Active               () const { return (fIndex >= 0); }
       int        Index                () const { return fIndex ; }
-      int        NSeeds               () { return n_seeds; }
-      int        NHits                () { return fNHits; }
-      int        NHitsMcP             () { return fNHitsMcP; }
-      int        NStrawHits           () { return fNStrawHits; }
-      DeltaSeed* Seed            (int I) { return seed[I]; }
-      bool       StationUsed     (int I) { return (seed[I] != NULL); }
-      float      T0Min           (int I) { return fT0Min[I]; }
-      float      T0Max           (int I) { return fT0Max[I]; }
-      float      Time            (int I) { return (fT0Max[I]+fT0Min[I])/2.; }
-      int        LastStation          () { return fLastStation ; }
-      int        FirstStation         () { return fFirstStation; }
-      float      EDep                 () { return fSumEDep/fNStrawHits; }
-      float      FBest                () { return float(fNHitsMcP)/fNHits; }
+      int        NSeeds               () const { return n_seeds; }
+      int        NHits                () const { return fNHits; }
+      int        NHitsMcP             () const { return fNHitsMcP; }
+      int        NStrawHits           () const { return fNStrawHits; }
+      DeltaSeed* Seed            (int I) const { return seed[I]; }
+      bool       StationUsed     (int I) const { return (seed[I] != NULL); }
+      float      T0Min           (int I) const { return fT0Min[I]; }
+      float      T0Max           (int I) const { return fT0Max[I]; }
+      float      Time            (int I) const { return (fT0Max[I]+fT0Min[I])/2.; }
+      int        LastStation          () const { return fLastStation ; }
+      int        FirstStation         () const { return fFirstStation; }
+      float      EDep                 () const { return fSumEDep/fNStrawHits; }
+      float      FBest                () const { return float(fNHitsMcP)/fNHits; }
 
       void       AddSeed            (DeltaSeed*      Ds   , int Station);
       void       MergeDeltaCandidate(DeltaCandidate* Delta, int PrintErrors);

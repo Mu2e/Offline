@@ -1019,7 +1019,7 @@ namespace mu2e {
           printf("-------------------------------------------------------------------------------------------");
           printf("-------------------------------------------------------------------------------\n");
           printf(" st seed good type delta   SHID:  MCID    SHID:  MCID    SHID:  MCID    SHID:  MCID");
-          printf("  chi2all/N chi2perp/N chi21   chi22 mintime  maxtime  <edep>    X        Y         Z   nfwh nch nsh\n");
+          printf("  chi2all/N chi2perp/N chi21   chi22 mintime  maxtime  <edep>      X        Y         Z   nfwh nch nsh\n");
           printf("-------------------------------------------------------------------------------------------");
           printf("-------------------------------------------------------------------------------\n");
           for (int ps=0; ps<nseeds; ++ps) {
