@@ -56,7 +56,7 @@ physics : {
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection", "EnergySelection" ] ## default
-physics.producers.makePH.MaxDS                     : 4
+# physics.producers.makePH.MaxDS                     : 4
 # physics.producers.makePH.MinimumRadius             : 370.
 ## physics.producers.makePH.MaximumRadius             : 680.
 physics.producers.DeltaFinderAna.printElectronHits : 1
@@ -65,7 +65,7 @@ physics.producers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # physics.out : [detectorOutput]
 # outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
-services.TFileService.fileName            : "flagBkgHits_test.root"
+services.TFileService.fileName            : "flagBkgHits_test0.root"
 #------------------------------------------------------------------------------
 # everything below is appended by murat/scripts/submit_mu2e_job
 #------------------------------------------------------------------------------
