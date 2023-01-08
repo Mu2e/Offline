@@ -43,6 +43,7 @@ namespace mu2e {
         fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverseradius squared") };
         fhicl::Atom<int>              maxds   { Name("MaxDS"),                 Comment("maximum straw number difference") };
         fhicl::Atom<bool>             isVSTdata{ Name("IsVSTData"),            Comment("Data from VST and needs sorting"), false };
+        fhicl::Atom<bool>             checkWres{ Name("CheckWres"),            Comment("Check Wres for consistency"), false };
       };
 
       explicit CombineStrawHits(const art::EDProducer::Table<Config>& config);
@@ -67,6 +68,7 @@ namespace mu2e {
       float         _maxR2;
       int           _maxds;
       bool          _isVSTdata;
+      bool          _checkWres;
       StrawIdMask   _mask;
   };
 
@@ -87,6 +89,7 @@ namespace mu2e {
     _maxR2(     config().maxR()*config().maxR()),
     _maxds(     config().maxds()),
     _isVSTdata( config().isVSTdata()),
+    _checkWres( config().checkWres()),
     _mask(      "uniquepanel")     // define the mask: ComboHits are made from straws in the same unique panel
     {
       consumes<ComboHitCollection>(_chTag);
@@ -228,6 +231,15 @@ namespace mu2e {
     combohit._tres       = _terr/sqrt(combohit._nsh); // error proportional to # of straws (roughly)
     //      float wvar           = sqrtf((wacc2/weights-wacc/weights*wacc/weights));//define quality as variance/average ratio
     combohit._qual       = 1.0; // quality isn't used and should be removed FIXME
+//-----------------------------------------------------------------------------
+// if combohit._wres is not consistent with the spread of the individual hits,
+// increase it
+//-----------------------------------------------------------------------------
+    if (_checkWres) {
+      float wdist2 = wacc2/weights;
+      float sigw   = sqrt((wdist2-combohit._wdist*combohit._wdist)/(combohit.nCombo()-1+1e-12));
+      if (combohit._wres < sigw/2) combohit._wres = sigw;
+    }
   }
 }
 
