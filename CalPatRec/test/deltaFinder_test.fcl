@@ -54,7 +54,6 @@ physics : {
             chfCollTag                    : "DeltaFinder:ComboHits"
             shfCollTag                    : "DeltaFinder:StrawHits"
             strawDigiMCCollectionTag      : "compressDigiMCs"
-            tcCollTag                     : "DeltaFinder"
         }
     }
 
@@ -77,6 +76,7 @@ physics : {
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
 physics.producers.makePH.MaxDS                     : 4
+physics.producers.makePH.CheckWres                 : true
 # physics.producers.makePH.MinimumRadius             : 370.
 # physics.producers.makePH.MaximumRadius             : 680.
 

@@ -17,7 +17,8 @@ extrarootlibs = ['TMVA' , 'Minuit' , 'XMLIO' ]
 helper=mu2e_helper(env);
 # helper=calpatrec_helper();
 
-mainlib = helper.make_mainlib( [ 'mu2e_CaloCluster',
+mainlib = helper.make_mainlib( [ 'mu2e_CalPatRec_dict',
+                                 'mu2e_CaloCluster',
                                  'mu2e_TrkReco',
                                  'mu2e_BTrkData',
                                  'mu2e_Mu2eBTrk',
@@ -93,6 +94,30 @@ helper.make_plugins( [ mainlib,
                        'boost_filesystem',
                      ] )
 
+
+helper.make_dict_and_map( [ # mainlib,
+  'mu2e_GeomPrimitives',
+  'mu2e_Mu2eInterfaces',
+  'mu2e_GeneralUtilities',
+  'mu2e_TrackerGeom',
+  'BTrk_KalmanTrack',
+  'BTrk_TrkBase',
+  'BTrk_ProbTools',
+  'BTrk_BaBar',
+  'art_Persistency_Common',
+  'art_Persistency_Provenance',
+  'art_Utilities',
+  'canvas',
+  'cetlib',
+  'cetlib_except',
+  'CLHEP',
+  'Hist',
+  'Core',
+  'xerces-c',
+  'art_Persistency_Common',
+  'art_Utilities',
+  ],
+  [ '-fvar-tracking-assignments-toggle'] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

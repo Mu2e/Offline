@@ -2,17 +2,19 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 #include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
+ClassImp(mu2e::DeltaSeed)
 
 namespace mu2e {
-  namespace DeltaFinderTypes {
+  //  namespace DeltaFinderTypes {
 
 //-----------------------------------------------------------------------------
-    DeltaSeed::DeltaSeed() {
-      printf("ERROR: DeltaSeed::DeltaSeed() should not be called\n");
-    }
+    // DeltaSeed::DeltaSeed() : TObject() {
+    //   printf("ERROR: DeltaSeed::DeltaSeed() should not be called\n");
+    // }
 
 //-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1):
+      TObject(),
       fSx(0), fSy(0), fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
       fSumEDep(0), fSumT(0)
     {
@@ -224,5 +226,5 @@ namespace mu2e {
         }
       }
     }
-  }
+  //  }
 }
