@@ -313,7 +313,7 @@ namespace mu2e {
     // straw is present in case of eventual calibration
     size_t totbin = min(_totTBins-1,static_cast<size_t>(tot/_totTBinWidth));
     size_t ebin = min(_totEBins-1,static_cast<size_t>(edep/_totEBinWidth));
-    return _totdtime[totbin*_totEBins+ebin];
+    return _totdtime[totbin*_totEBins+ebin] - 0.1; // temporary kludge
   }
 
   double StrawResponse::TOTdriftTimeError(Straw const& straw,
