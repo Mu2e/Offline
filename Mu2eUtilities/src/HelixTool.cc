@@ -17,6 +17,7 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
 #include "Offline/Mu2eUtilities/inc/HelixTool.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 
 
 namespace mu2e {
@@ -61,7 +62,7 @@ namespace mu2e {
 
     if (counter > 0) _meanHitRadialDist /= counter;
 
-    _nLoops = (z_last_hit - z_first_hit)/(fabs(robustHel->lambda())*2.*M_PI);
+    _nLoops = std::fabs((z_last_hit - z_first_hit)/(robustHel->lambda()*2.*M_PI));
 
     //here we evaluate once the impact parameter
     _d0 = robustHel->rcent  () - robustHel->radius ();
@@ -98,5 +99,23 @@ namespace mu2e {
     //each plane has two layers of panels. We are assuming 2 ComboHits per face
     _hitRatio = _nStrawHits/expected_faces;
   }
+
+
+  void   HelixTool::dirOfProp(float& Slope, float& Chi2ndof){
+    ::LsqSums4 fitDtDz;
+    const mu2e::ComboHit* hit;
+    double     timeErrSquared(25.);//ns^2
+    double     hitWeight = 1./timeErrSquared;
+    for (size_t j=0; j<_hel->_hhits.size(); j++) {
+      hit = &_hel->_hhits[j];
+      if (hit->_flag.hasAnyProperty(StrawHitFlag::outlier))     continue;
+      double hitTime = hit->correctedTime();
+      double hitZpos = hit->pos().z();
+      fitDtDz.addPoint(hitZpos,hitTime, hitWeight);
+    }
+    Slope    = fitDtDz.dfdz();
+    Chi2ndof = fitDtDz.chi2DofLine();
+  }
+
 
 }
