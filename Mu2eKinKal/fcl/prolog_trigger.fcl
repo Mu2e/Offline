@@ -1,0 +1,113 @@
+#
+#  Trigger-specific overrides for KinKal settings
+#
+#include "Offline/Mu2eKinKal/fcl/prolog.fcl"
+BEGIN_PROLOG
+Mu2eKinKalTrigger : {
+   KKMAT: {
+     @table::Mu2eKinKal.KKMAT
+  }
+
+  KKMU2E: {
+    @table::Mu2eKinKal.KKMU2E
+    AddHits : false
+    AddMaterial : false
+  }
+
+  KKSEEDFIT: {
+    @table::Mu2eKinKal.KKSEEDFIT
+    MaxNIter : 2
+    CADSHUSettings : [
+      [ 40.0, 80.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ]
+    ]
+    MetaIterationSettings : [
+      [ 5.0, "CADSHU" ]
+    ]
+    StrawXingUpdaterSettings : [
+      [10.0, -1.0, -1.0, true, 0 ]
+    ]
+  }
+
+  KKSEEDEXT: {
+    @table::Mu2eKinKal.KKSEEDEXT
+    MaxNIter : 2
+    CADSHUSettings : [
+      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 0 ]
+    ]
+    MetaIterationSettings : [
+      [ 0.0, "CADSHU" ]
+    ]
+    StrawXingUpdaterSettings : [
+      [3.0, 3.0, -1.0, true, 0 ]
+    ]
+    BkgANNSHUSettings : [
+    ]
+ }
+
+  KKLOOPHELIX : {
+    @table::Mu2eKinKal.KKLOOPHELIX
+    SaveFullFit : false
+  }
+
+  KKKINEMATICLINE : {
+    @table::Mu2eKinKal.KKKINEMATICLINE
+  }
+}
+
+TTMu2eKinKal : {
+  @table::Mu2eKinKal
+  @table::Mu2eKinKalTrigger
+
+  TTKKSeedFit : {
+    module_type : LoopHelixFit
+    MaterialSettings : @local::Mu2eKinKalTrigger.KKMAT
+    Mu2eSettings: @local::Mu2eKinKalTrigger.KKMU2E
+    KinKalFitSettings : @local::Mu2eKinKalTrigger.KKSEEDFIT
+    KinKalExtensionSettings : @local::Mu2eKinKalTrigger.KKSEEDEXT
+    ModuleSettings : @local::Mu2eKinKalTrigger.KKLOOPHELIX
+  }
+
+  TTKKLineSeedFit : {
+    module_type : KinematicLineFit
+    MaterialSettings : @local::Mu2eKinKalTrigger.KKMAT
+    Mu2eSettings: @local::Mu2eKinKalTrigger.KKMU2E
+    KinKalFitSettings : @local::Mu2eKinKalTrigger.KKSEEDFIT
+    KinKalExtensionSettings : @local::Mu2eKinKalTrigger.KKSEEDEXT
+    ModuleSettings : @local::Mu2eKinKalTrigger.KKKINEMATICLINE
+  }
+
+  CosmicFilter : {
+    module_type : CosmicTrackFinderTimeFit
+  }
+}
+
+TTMu2eKinKal : {
+  @table::TTMu2eKinKal
+  producers : {
+    # seed fits: these don't use drift information or BField corrections
+    TTKKDePSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKDeMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKUePSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKUeMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKLineSeedFit: @local::TTMu2eKinKal.KKLineSeedFit
+    # do we want other fits here?
+
+  }
+  filters : {
+    CosmicFilter: @local::TTMu2eKinKal.CosmicFilter
+  }
+}
+
+TTMu2eKinKal.producers.TTKKLineSeedFit.KinKalExtensionSettings.BFieldCorrection : false
+TTMu2eKinKal.producers.TTKKLineSeedFit.Mu2eSettings.FitParticle : 13
+TTMu2eKinKal.producers.TTKKLineSeedFit.Mu2eSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKDeMSeedFit.Mu2eSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKDeMSeedFit.Mu2eSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKDePSeedFit.Mu2eSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKDePSeedFit.Mu2eSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKUeMSeedFit.Mu2eSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKUeMSeedFit.Mu2eSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKUePSeedFit.Mu2eSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKUePSeedFit.Mu2eSettings.FitDirection : 1
+
+END_PROLOG

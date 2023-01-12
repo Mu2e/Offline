@@ -14,6 +14,8 @@ namespace mu2e {
     State state_ = null;
     StrawHitUpdaters::algorithm algo_ = StrawHitUpdaters::unknown; // algorithm used to set this state
     NullDistVar nulldvar_ = rstraw; // distance variance for null hits
+    double dVar_; // drift distance variance value
+    double dDdT_; // drift distance time derivative, crudely the drift velocity
     bool frozen_ = false; // if set, state not allowed to change during update
     TOTUse totuse_ = all;
     double quality_ = -1.0; // algorithm-dependent, dimensionless quality of this state assignment

@@ -59,6 +59,8 @@ namespace mu2e {
       Name("driftResRMS"), Comment("Drift response RMS (mm)")};
     fhicl::Sequence<double> nullResRMS {
       Name("nullResRMS"), Comment("Null hit response RMS (mm)")};
+    fhicl::Atom<double> dRdTScale {
+      Name("dRdTScale"), Comment("Scale factor for dRdT")};
     fhicl::Atom<bool> driftResIsTime {
       Name("driftResIsTime"), Comment("Drift res is given in units of time (ns)")};
 

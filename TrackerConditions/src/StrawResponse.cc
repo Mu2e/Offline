@@ -125,8 +125,8 @@ namespace mu2e {
       double dcorr, dcorrslope;
       interpolateCalib(_driftResBins,_driftResOffset, dinfo.driftDistance_, halfrange, dcorr, dcorrslope);
       dinfo.driftDistance_ -= dcorr;
-      // note 'calibrated Velocity' is interpreted as dR/dt (change in drift distance WRT time), not a true physical velocity
-      dinfo.driftVelocity_ *= (1.0 - dcorrslope);
+      // note 'calibrated Velocity' is really dR/dt (change in average drift distance WRT measured time), not a true physical velocity
+      dinfo.driftVelocity_ *= (1.0 - dcorrslope)*_dRdTScale;
     }
     return dinfo;
   }
