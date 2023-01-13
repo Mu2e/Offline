@@ -104,13 +104,13 @@ namespace mu2e {
   void   HelixTool::dirOfProp(float& Slope, float& Chi2ndof){
     ::LsqSums4 fitDtDz;
     const mu2e::ComboHit* hit;
-    double     timeErrSquared(25.);//ns^2
-    double     hitWeight = 1./timeErrSquared;
     for (size_t j=0; j<_hel->_hhits.size(); j++) {
       hit = &_hel->_hhits[j];
       if (hit->_flag.hasAnyProperty(StrawHitFlag::outlier))     continue;
       double hitTime = hit->correctedTime();
       double hitZpos = hit->pos().z();
+      double timeErrSquared = hit->driftTimeRes()*hit->driftTimeRes();//ns^2
+      double hitWeight      = 1./timeErrSquared;
       fitDtDz.addPoint(hitZpos,hitTime, hitWeight);
     }
     Slope    = fitDtDz.dfdz();
