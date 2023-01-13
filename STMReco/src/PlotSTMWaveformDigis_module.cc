@@ -34,7 +34,9 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
         fhicl::Atom<bool> subtractPedestal{ Name("subtractPedestal"), Comment("True/False whether to subtract the pedestal before plotting")};
+        fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"waveform_time\", or \"event_time\"") };
         fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity level")};
+        fhicl::Atom<double> samplingFrequency{ Name("samplingFrequency"), Comment("Sampling Frequency of ADC [MHz]")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMWaveformDigis(const Parameters& conf);
@@ -44,16 +46,20 @@ namespace mu2e {
 
     art::InputTag _stmWaveformDigisTag;
     bool _subtractPedestal;
+    std::string _xAxis;
     int _verbosityLevel;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
     STMChannel _channel;
+    double _nsPerCt;
   };
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
     art::EDAnalyzer{config},
     _stmWaveformDigisTag(config().stmWaveformDigisTag()),
     _subtractPedestal(config().subtractPedestal()),
-    _verbosityLevel(config().verbosityLevel())
+    _xAxis(config().xAxis()),
+    _verbosityLevel(config().verbosityLevel()),
+    _nsPerCt((1.0/config().samplingFrequency())*1e3) // convert to ns
   {
     consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     _channel = STMUtils::getChannel(_stmWaveformDigisTag);
@@ -77,7 +83,10 @@ namespace mu2e {
       histname << "evt" << event.event() << "_waveform" << count;
       histtitle.str("");
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
-      TH1F* _hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), waveform.adcs().size(),0,waveform.adcs().size());
+
+      Binning binning = STMUtils::getBinning(waveform, _xAxis, _nsPerCt);
+      TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
+
       for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc) {
         const auto adc = waveform.adcs().at(i_adc);
 
@@ -86,7 +95,7 @@ namespace mu2e {
           content -= pedestal;
         }
 
-        _hWaveform->SetBinContent(i_adc+1, content); // bins start numbering at 1
+        hWaveform->SetBinContent(i_adc+1, content); // bins start numbering at 1
       }
       ++count;
     }

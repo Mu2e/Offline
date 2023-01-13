@@ -3,6 +3,7 @@
 #
 
 #include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
 
 process_name: PlotSTMWaveformDigis
 
@@ -24,17 +25,39 @@ physics: {
       stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
       subtractPedestal : false
       verbosityLevel : 0
+      xAxis : "event_time"
+      samplingFrequency : @local::STM.HPGe.samplingFrequency
     }
     plotLaBrWaveformDigis : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
       subtractPedestal : false
       verbosityLevel : 0
+      xAxis : "event_time"
+      samplingFrequency : @local::STM.LaBr.samplingFrequency
+    }
+
+    plotHPGeWaveformDigisZP : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "zeroSuppressHPGe"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "event_time"
+      samplingFrequency : @local::STM.HPGe.samplingFrequency
+    }
+    plotLaBrWaveformDigisZP : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "zeroSuppressLaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "event_time"
+      samplingFrequency : @local::STM.LaBr.samplingFrequency
     }
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis ]
+  anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis,
+    plotHPGeWaveformDigisZP, plotLaBrWaveformDigisZP ]
   end_paths: [anaPath]
 }
 
