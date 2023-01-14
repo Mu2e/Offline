@@ -26,7 +26,7 @@ physics : {
             maxChi2Seed                   : 12. ## 10 16 used by findSeeds, for each hit
             maxChi2Radial                 : 12. ## 10 25 used by recoverStation (wire-to-seed dist)
             maxChi2All                    : 12. ## 10 16 used by pruneSeeds to mark bad seeds
-            maxChi2SeedDelta              :  4. ##
+            maxChi2SeedDelta              :  3. ##
             maxDxy                        : 10. ## used by connectSeeds 30 40 mm
             maxGap                        :  3  ## 3 gap in missing stations along the candidate
             sigmaR                        :  3. # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
@@ -54,7 +54,6 @@ physics : {
         DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
             debugLevel                    : 0 ## 1
             chCollTag                     : "makePH"
-            shCollTag                     : "makeSH"
             chfCollTag                    : "DeltaFinder:ComboHits"
             shfCollTag                    : "DeltaFinder:StrawHits"
             strawDigiMCCollectionTag      : "compressDigiMCs"

@@ -85,13 +85,14 @@ namespace mu2e {
     struct McHist_t {
       TH1F*  fPDGCode;
       TH1F*  fMom;
-      TH1F*  fNHits;
-      TH2F*  fNHitsVsMom;
-      TH2F*  fNHitsRVsMom;
-      TH2F*  fNHitsRVsNHits;
-      TH1F*  fNHitsDelta;
+      TH1F*  fNCHits;
+      TH1F*  fNSSCHits;
+      TH2F*  fNCHitsVsMom;
+      TH2F*  fNCHitsRVsMom;
+      TH2F*  fNCHitsRVsNCHits;
+      TH1F*  fNCHitsDelta;
       TH1F*  fFractReco;
-      TH2F*  fFractRecoVsNHits;
+      TH2F*  fFractRecoVsNCHits;
     };
 
     struct StrawHitHist_t {
@@ -110,8 +111,6 @@ namespace mu2e {
       TH1F*  fNSecondHits;
       TH1F*  fNSecondHitsT;
       TH1F*  fNMc;
-      TH1F*  fPDGCode;
-      TH1F*  fNMcHits;
       TH1F*  fNHitsDeltaT;
       TH1F*  fNHitsDeltaR;
       TH1F*  fNSSh;                    // total number of straw hits
@@ -142,8 +141,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // a hit and its flag here could be inconsistent - the flag comes from the 'combo' combohit
 //-----------------------------------------------------------------------------
-      std::vector<const ComboHit*>     fListOfHits; // 1-straw combo hits (SSCH)
-      std::vector<const StrawHitFlag*> fListOfFlags;// a parallel list, but the flags are those of "Combo" ComboHits
+      std::vector<const ComboHit*>     fListOfSSCHits; // 1-straw combo hits (SSCH)
+      std::vector<const StrawHitFlag*> fListOfFlags;   // a parallel list, but the flags are those of "Combo" ComboHits
 
       std::vector<const ComboHit*>     fListOfComboHits; // combo hits (SSCH)
       std::vector<const StrawHitFlag*> fListOfChFlags;   // a parallel list, but the flags are those of "Combo" ComboHits
@@ -161,11 +160,11 @@ namespace mu2e {
       ~McPart_t() {
       }
 
-      const ComboHit*     SSCh (int I) const { return fListOfHits[I] ;    }
+      const ComboHit*     SSCh (int I) const { return fListOfSSCHits[I] ;    }
       const ComboHit*     Ch   (int I) const { return fListOfComboHits[I] ;    }
 
                                         // these are single-hit SCH's
-      int                 NHits     () const { return fListOfHits.size(); }
+      int                 NSSCHits  () const { return fListOfSSCHits.size(); }
       int                 NComboHits() const { return fListOfComboHits.size(); }
 
       int                 NShTaggedDelta() const { return fNShTaggedDelta; }
@@ -223,7 +222,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::InputTag                  _chCollTag;
     art::InputTag                  _shCollTag;              // straw hits        by "makeSH"
-    art::InputTag                  _schCollTag;             // 1-straw combohits by "makeSH"
+    art::InputTag                  _sschCollTag;            // single straw combohits by "makeSH"
     art::InputTag                  _chfCollTag;             // combined ComboHit flags
     art::InputTag                  _shfCollTag;             // 1-straw  ComboHit flags
     art::InputTag                  _sdmcCollTag;
@@ -239,7 +238,7 @@ namespace mu2e {
 // cache of event or geometry objects
 //-----------------------------------------------------------------------------
     const ComboHitCollection*      _chColl;
-    const ComboHitCollection*      _schColl; // one straw hit per combo hit
+    const ComboHitCollection*      _sschColl; // one straw hit per combo hit
     const StrawHitCollection*      _shColl;
     const StrawHitFlagCollection*  _chfColl;
     const StrawDigiMCCollection*   _sdmcColl;
@@ -294,7 +293,7 @@ namespace mu2e {
     art::EDProducer(pset),
     _chCollTag             (pset.get<string>       ("chCollTag"             )),
     _shCollTag             (pset.get<string>       ("shCollTag"             )),
-    _schCollTag            (pset.get<string>       ("schCollTag"            )),
+    _sschCollTag           (pset.get<string>       ("sschCollTag"           )),
     _chfCollTag            (pset.get<string>       ("chfCollTag"            )),
     _shfCollTag            (pset.get<string>       ("shfCollTag"            )),
     _sdmcCollTag           (pset.get<art::InputTag>("sdmcCollTag"           )),
@@ -332,7 +331,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // call this "a delta electron"
 //-----------------------------------------------------------------------------
-        fNHitsDeltaTot += mc->NHits();
+        fNHitsDeltaTot += mc->NSSCHits();
       }
     }
 
@@ -347,8 +346,8 @@ namespace mu2e {
     Hist->fNSecondHitsT    = Dir->make<TH1F>(Form("nhit2t_%02i",HistSet), "N(second hits) w/ time selection", 100, 0., 100.);
 
     Hist->fNMc             = Dir->make<TH1F>(Form("nmc_%02i"       ,HistSet), "N(MC particles)", 100, 0., 1000.);
-    Hist->fPDGCode         = Dir->make<TH1F>(Form("pdg_code_%02i"  ,HistSet), "PDG Code"       , 100, 0., 100.);
-    Hist->fNMcHits         = Dir->make<TH1F>(Form("n_mc_hits_%02i" ,HistSet), "N(MC hits)"     , 250, 0., 500.);
+    // Hist->fPDGCode         = Dir->make<TH1F>(Form("pdg_code_%02i"  ,HistSet), "PDG Code"       , 100, 0., 100.);
+    // Hist->fNMcHits         = Dir->make<TH1F>(Form("n_mc_hits_%02i" ,HistSet), "N(MC hits)"     , 250, 0., 500.);
     Hist->fNHitsDeltaT     = Dir->make<TH1F>(Form("n_delta_ht_%02i",HistSet), "N(delta hits T)", 500, 0., 5000.);
     Hist->fNHitsDeltaR     = Dir->make<TH1F>(Form("n_delta_hr_%02i",HistSet), "N(delta hits R)", 500, 0., 5000.);
     Hist->fNCh             = Dir->make<TH1F>(Form("nch_%02i"       ,HistSet), "N(combo hits)"  ,1000, 0., 10000.);
@@ -359,16 +358,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookMcHistograms(McHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
 
-    Hist->fPDGCode    = Dir->make<TH1F>("pdg"         , "PDG code"        , 500, -250., 250.);
-    Hist->fMom        = Dir->make<TH1F>("mom"         , "momentum"        , 200, 0., 200.);
-    Hist->fNHits      = Dir->make<TH1F>("nhits"       , "N(hits)"         , 200, 0., 200.);
-    Hist->fNHitsVsMom = Dir->make<TH2F>("nhits_vs_mom", "N(hits) vs mom"  , 100,0,100, 200, 0., 200.);
-    Hist->fNHitsRVsMom = Dir->make<TH2F>("nhr_vs_mom", "N(hits R) vs mom"  , 100,0,100, 200, 0., 200.);
-    Hist->fNHitsRVsNHits = Dir->make<TH2F>("nhr_vs_nh", "N(hits R) vs NH"  , 100,0,100, 100, 0., 100.);
-    Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr"      , "N(hits reco)"   , 200, 0., 200.);
-    Hist->fFractReco  = Dir->make<TH1F>("fractr"      , "NR/N"           , 100, 0.,   1.);
+    Hist->fPDGCode     = Dir->make<TH1F>("pdg"         , "PDG code"        , 500, -250., 250.);
+    Hist->fMom         = Dir->make<TH1F>("mom"         , "momentum"        , 200, 0., 200.);
+    Hist->fNCHits      = Dir->make<TH1F>("nch"         , "N(combo hits)"   , 200, 0., 200.);
+    Hist->fNSSCHits    = Dir->make<TH1F>("nssch"       , "N(SS combo hits)", 200, 0., 200.);
+    Hist->fNCHitsDelta = Dir->make<TH1F>("nchitsr"     , "N(chits reco)"   , 200, 0., 200.);
 
-    Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
+    Hist->fNCHitsVsMom     = Dir->make<TH2F>("nch_vs_mom" , "N(hits) vs mom"   , 100,0,100, 200, 0., 200.);
+    Hist->fNCHitsRVsMom    = Dir->make<TH2F>("nchr_vs_mom", "N(chits R) vs mom", 100,0,100, 200, 0., 200.);
+    Hist->fNCHitsRVsNCHits = Dir->make<TH2F>("nchr_vs_nh" , "N(chits R) vs cNH", 100,0,100, 100, 0., 100.);
+    Hist->fFractReco       = Dir->make<TH1F>("fr"         , "NCHR/NCH"         , 100, 0.,   1.);
+
+    Hist->fFractRecoVsNCHits = Dir->make<TH2F>("fr_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
   }
 
 //-----------------------------------------------------------------------------
@@ -511,13 +512,6 @@ namespace mu2e {
 // fill MC particle histograms
 //-----------------------------------------------------------------------------
     int nmc = _list_of_mc_particles.size();
-    for (int i=0; i<nmc; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
-      int n_mc_hits = mc->fListOfHits.size();
-
-      Hist->fNMcHits->Fill(n_mc_hits);
-      Hist->fPDGCode->Fill(mc->fSim->pdgId());
-    }
 
     Hist->fNMc->Fill(nmc);
     Hist->fNHitsDeltaT->Fill(fNHitsDeltaTot);
@@ -553,17 +547,18 @@ namespace mu2e {
 
     Hist->fPDGCode->Fill(sim->pdgId());
     Hist->fMom->Fill(mom);
-    Hist->fNHits->Fill(Mc->NHits());
-    Hist->fNHitsVsMom->Fill(mom,Mc->NHits());
-    Hist->fNHitsDelta->Fill(Mc->NChTaggedDelta());
-    Hist->fNHitsRVsMom->Fill(mom,Mc->NChTaggedDelta());
-    Hist->fNHitsRVsNHits->Fill(Mc->NComboHits(),Mc->NChTaggedDelta());
+    Hist->fNCHits->Fill(Mc->NComboHits());
+    Hist->fNSSCHits->Fill(Mc->NSSCHits());
+    Hist->fNCHitsVsMom->Fill(mom,Mc->NComboHits());
+    Hist->fNCHitsDelta->Fill(Mc->NChTaggedDelta());
+    Hist->fNCHitsRVsMom->Fill(mom,Mc->NChTaggedDelta());
+    Hist->fNCHitsRVsNCHits->Fill(Mc->NComboHits(),Mc->NChTaggedDelta());
 
     float freco = Mc->NChTaggedDelta()/(Mc->NComboHits()+1.e-4);
 
     Hist->fFractReco->Fill(freco);
 
-    Hist->fFractRecoVsNHits->Fill(Mc->NComboHits(),freco);
+    Hist->fFractRecoVsNCHits->Fill(Mc->NComboHits(),freco);
   }
 
 //-----------------------------------------------------------------------------
@@ -684,14 +679,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // a closer look at misreconstructed delta electrons
 //-----------------------------------------------------------------------------
-      float fr = mc->NChTaggedDelta()/(mc->NComboHits()+1.e-3);
+      float fr_ch = mc->NChTaggedDelta()/(mc->NComboHits()+1.e-3);
 
-      if ((mc->Momentum() < 5) && (mc->Time() > 550) && (mc->NHits() > 40) && (fr < 0.5)) {
+      if ((mc->Momentum() < 5) && (mc->Time() > 550) && (mc->NComboHits() > 40) && (fr_ch < 0.5)) {
         printf(" event: %6i missed delta: sim.id = %10li mom = %10.3f time= %9.3f ",
                _eventNum, sim->id().asInt(), mc->Momentum(), mc->Time());
-        printf("nhits = %3i nhits(delta): %3i first: %2i last: %2i",
+        printf("nch:nch(delta) = %3i:%3i stations(first:last): %2i:%2i",
                mc->NComboHits(), mc->NChTaggedDelta(), mc->fFirstStation, mc->fLastStation);
-        printf(" fraction: %6.3f\n",fr);
+        printf(" fraction(ch): %6.3f\n",fr_ch);
       }
     }
   }
@@ -727,8 +722,8 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     _shColl     = shcH.product();
     _nSingleSH  = _shColl->size();
 
-    auto schcH  = Evt.getValidHandle<ComboHitCollection>(_schCollTag);
-    _schColl    = schcH.product();
+    auto sschcH = Evt.getValidHandle<ComboHitCollection>(_sschCollTag);
+    _sschColl   = sschcH.product();
 
     auto chfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_chfCollTag);
     _chfColl    = chfcH.product();
@@ -799,7 +794,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
                                         // how to find it ? - count !
 
         int ind = ch->indexArray().at(ish);
-        const ComboHit* sch = &_schColl->at(ind);
+        const ComboHit* ssch = &_sschColl->at(ind);
 
         const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
         const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
@@ -809,14 +804,14 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 //-----------------------------------------------------------------------------
         McPart_t* mc = findParticle(sim);
 
-        mc->fListOfHits.push_back(sch);
+        mc->fListOfSSCHits.push_back(ssch);
 
-        int station = sch->strawId().getStation();
+        int station = ssch->strawId().getStation();
 
         if (station < mc->fFirstStation) mc->fFirstStation = station;
         if (station > mc->fLastStation ) mc->fLastStation  = station;
 
-        if (sch->correctedTime() < mc->fTime) mc->fTime = sch->correctedTime();
+        if (ssch->correctedTime() < mc->fTime) mc->fTime = ssch->correctedTime();
 //-----------------------------------------------------------------------------
 // remember, this is a combohit flag !
 // delta-wise, all straw hits corresponding to the same combo hits,
@@ -896,9 +891,9 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
         McPart_t* mc = _list_of_mc_particles.at(i);
         const SimParticle* sim = mc->fSim;
 
-        if ((sim->pdgId() == PDGCode::e_minus) and (mc->NHits() >= _printElectronsMinNHits)) {
+        if ((sim->pdgId() == PDGCode::e_minus) and (mc->NComboHits() >= _printElectronsMinNHits)) {
 
-          float fr_sh = mc->NShTaggedDelta()/(mc->NHits()+1.e-3);
+          float fr_sh = mc->NShTaggedDelta()/(mc->NSSCHits()+1.e-3);
           float fr_ch = mc->NChTaggedDelta()/(mc->NComboHits()+1.e-3);
 
           if (fr_ch < _printElectronsMaxFReco) {
@@ -907,7 +902,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
                    sim->id().asInt(), mc->Momentum(), mc->Time());
             printf("nch:nchd:fr: %3i:%3i:%6.3f  nsh:nshd:fr %3i:%3i:%6.3f stations: %2i:%2i",
                    mc->NComboHits(),mc->NChTaggedDelta(),fr_ch,
-                   mc->NHits(),mc->NShTaggedDelta(),fr_sh,
+                   mc->NSSCHits  (),mc->NShTaggedDelta(),fr_sh,
                    mc->fFirstStation, mc->fLastStation);
             printf(" \n");
 //-----------------------------------------------------------------------------
