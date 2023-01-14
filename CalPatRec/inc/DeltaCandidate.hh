@@ -14,14 +14,14 @@ namespace mu2e {
       int                   fLastStation;
       DeltaSeed*            seed   [kNStations];
       float                 dxy    [kNStations];   // used only for diagnostics
-      float                 fT0Min [kNStations];   // acceptable hit times (no need to account for the drift time!)
-      float                 fT0Max [kNStations];
+      // float                 fT0Min [kNStations];   // acceptable hit times (no need to account for the drift time!)
+      // float                 fT0Max [kNStations];
       XYZVectorF            CofM;
       float                 phi;
       int                   fNSeeds;
       McPart_t*             fMcPart;
       int                   fNHits;                // n(combo hits)
-      int                   fNStrawHits;
+      int                   fNStrawHits;           // number of straw hits
       int                   fNHitsMcP;             // N combo hits by the "best" particle"
       int                   fNHitsCE;
       float                 fSumEDep;              //
@@ -57,13 +57,15 @@ namespace mu2e {
       int        NStrawHits           () const { return fNStrawHits; }
       DeltaSeed* Seed            (int I) const { return seed[I]; }
       bool       StationUsed     (int I) const { return (seed[I] != NULL); }
-      float      T0Min           (int I) const { return fT0Min[I]; }
-      float      T0Max           (int I) const { return fT0Max[I]; }
-      float      Time            (int I) const { return (fT0Max[I]+fT0Min[I])/2.; }
+      // float      T0Min           (int I) const { return fT0Min[I]; }
+      // float      T0Max           (int I) const { return fT0Max[I]; }
+      // float      Time            (int I) const { return (fT0Max[I]+fT0Min[I])/2.; }
       int        LastStation          () const { return fLastStation ; }
       int        FirstStation         () const { return fFirstStation; }
       float      EDep                 () const { return fSumEDep/fNStrawHits; }
       float      FBest                () const { return float(fNHitsMcP)/fNHits; }
+      double     Xc                   () const { return CofM.x(); }
+      double     Yc                   () const { return CofM.y(); }
 
       void       AddSeed            (DeltaSeed*      Ds   , int Station);
       void       MergeDeltaCandidate(DeltaCandidate* Delta, int PrintErrors);

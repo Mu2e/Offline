@@ -4,15 +4,15 @@
 namespace mu2e {
 //-----------------------------------------------------------------------------
     DeltaCandidate::DeltaCandidate() :
-      fSx(0), fSy(0), fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
+      fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
       fSt(0), fSz(0), fSt2(0), fStz(0), fSz2(0)
     {
       fIndex  = -1;
       for(int s=0; s<kNStations; ++s) {
         dxy    [s] = -1;
         seed   [s] = NULL;
-        fT0Min [s] = -1.e10;
-        fT0Max [s] =  1.e10;
+        // fT0Min [s] = -1.e10;
+        // fT0Max [s] =  1.e10;
       }
       fFirstStation = 999;
       fLastStation  =  -1;
@@ -24,15 +24,17 @@ namespace mu2e {
       fSumEDep      = 0;
     }
 
+//-----------------------------------------------------------------------------
     DeltaCandidate::DeltaCandidate(int Index, DeltaSeed* Seed, int Station) :
-      fSx(0), fSy(0), fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0)
+      fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
+      fSt(0), fSz(0), fSt2(0), fStz(0), fSz2(0)
     {
       fIndex  = Index;
       for(int s=0; s<kNStations; ++s) {
         dxy    [s] = -1;
         seed   [s] = NULL;
-        fT0Min [s] = -1.e10;
-        fT0Max [s] =  1.e10;
+        // fT0Min [s] = -1.e10;
+        // fT0Max [s] =  1.e10;
       }
       fFirstStation = 999;
       fLastStation  =  -1;
@@ -64,33 +66,28 @@ namespace mu2e {
       fNStrawHits    += Seed->NStrawHits();
       fSumEDep       += Seed->SumEDep();
 
-      fSx            += Seed->fSx;
-      fSy            += Seed->fSy;
       fSnx2          += Seed->fSnx2;
       fSnxny         += Seed->fSnxny;
       fSny2          += Seed->fSny2;
       fSnxnr         += Seed->fSnxnr;
       fSnynr         += Seed->fSnynr;
 
-      double x_mean, y_mean, nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
+      double nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
 
-      x_mean    = fSx   /fNHits;
-      y_mean    = fSy   /fNHits;
       nxny_mean = fSnxny/fNHits;
       nx2_mean  = fSnx2 /fNHits;
       ny2_mean  = fSny2 /fNHits;
       nxnr_mean = fSnxnr/fNHits;
       nynr_mean = fSnynr/fNHits;
 
-      double d  = (1-nx2_mean)*(1-ny2_mean)-nxny_mean*nxny_mean;
-
-      double xc = ((x_mean-nxnr_mean)*(1-ny2_mean)+(y_mean-nynr_mean)*nxny_mean)/d;
-      double yc = ((y_mean-nynr_mean)*(1-nx2_mean)+(x_mean-nxnr_mean)*nxny_mean)/d;
+      double d  = nx2_mean*ny2_mean-nxny_mean*nxny_mean;
+      double xc = (nynr_mean*nx2_mean-nxnr_mean*nxny_mean)/d;
+      double yc = (nynr_mean*nxny_mean-nxnr_mean*ny2_mean)/d;
 
       CofM.SetX(xc);
       CofM.SetY(yc);
                                         // and recalculate phi
-      phi             = CofM.phi();
+      phi  = CofM.phi();
 //-----------------------------------------------------------------------------
 // time
 //-----------------------------------------------------------------------------
@@ -110,21 +107,29 @@ namespace mu2e {
       t2m = fSt2/fNSeeds;
       z2m = fSz2/fNSeeds;
                                         // 'combo-hit'-based way, FIXME
-      fDtDz  = (tzm-tm*zm)/(z2m-zm*zm);
-      fT0    = tm-fDtDz*zm;
-      fSigT0 = sqrt((t2m-tm*tm)/(fNSeeds-0.9999));
+      if (fNSeeds > 1) {
+        fDtDz  = (tzm-tm*zm)/(z2m-zm*zm);
+        fT0    = tm-fDtDz*zm;
+        fSigT0 = sqrt((t2m-tm*tm)/(fNSeeds-0.9999));
+      }
+      else {
+        fDtDz  = 0;
+        fT0    = tm;
+        fSigT0 = 0;
+      }
 //-----------------------------------------------------------------------------
 // update t0min and t0max
 // FIXME - need more reasonable limits
 //-----------------------------------------------------------------------------
-      float t0min     = Seed->MinHitTime();
-      float t0max     = Seed->MaxHitTime();
-      float t0        = (t0min+t0max)/2;
-      float dt        = (t0max-t0min)/2;
+      // float t0min     = Seed->MinHitTime();
+      // float t0max     = Seed->MaxHitTime();
+      // float t0        = (t0min+t0max)/2;
+      // float dt        = (t0max-t0min)/2;
 
-      if (dt < 20) dt = 20;
-      fT0Min[Station] = t0-dt;
-      fT0Max[Station] = t0+dt;
+      // double kMinDt(30.) ; // was 20 before
+      // if (dt < kMinDt) dt = kMinDt;
+      // fT0Min[Station] = t0-dt;
+      // fT0Max[Station] = t0+dt;
 //-----------------------------------------------------------------------------
 // finally, set seed DeltaIndex
 //-----------------------------------------------------------------------------
@@ -159,8 +164,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // update XY sums
 //-----------------------------------------------------------------------------
-      fSx            += Delta->fSx;
-      fSy            += Delta->fSy;
       fSnx2          += Delta->fSnx2;
       fSnxny         += Delta->fSnxny;
       fSny2          += Delta->fSny2;
@@ -169,20 +172,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // and recalculate the center-of-mass XY position
 //-----------------------------------------------------------------------------
-      double x_mean, y_mean, nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
+      double nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
 
-      x_mean    = fSx   /fNHits;
-      y_mean    = fSy   /fNHits;
       nxny_mean = fSnxny/fNHits;
       nx2_mean  = fSnx2 /fNHits;
       ny2_mean  = fSny2 /fNHits;
       nxnr_mean = fSnxnr/fNHits;
       nynr_mean = fSnynr/fNHits;
 
-      double d  = (1-nx2_mean)*(1-ny2_mean)-nxny_mean*nxny_mean;
+      double d  = nx2_mean*ny2_mean-nxny_mean*nxny_mean;
 
-      double xc = ((x_mean-nxnr_mean)*(1-ny2_mean)+(y_mean-nynr_mean)*nxny_mean)/d;
-      double yc = ((y_mean-nynr_mean)*(1-nx2_mean)+(x_mean-nxnr_mean)*nxny_mean)/d;
+      double xc = (nynr_mean*nx2_mean-nxnr_mean*nxny_mean)/d;
+      double yc = (nynr_mean*nxny_mean-nxnr_mean*ny2_mean)/d;
 
       CofM.SetX(xc);
       CofM.SetY(yc);

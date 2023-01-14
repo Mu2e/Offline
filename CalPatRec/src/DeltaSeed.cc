@@ -15,7 +15,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1):
       TObject(),
-      fSx(0), fSy(0), fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
+      fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
       fSumEDep(0), fSumT(0)
     {
       fIndex            = Index;
@@ -23,6 +23,7 @@ namespace mu2e {
       fGood             =  1;
       fSFace[0]         = Face0;
       fSFace[1]         = Face1;
+      fChi2Delta        = -1.;
 
       for (int face=0; face<kNFaces; face++) {
         fFaceProcessed[face] = 0;
@@ -81,10 +82,10 @@ namespace mu2e {
           double ny = ch->wdir().y();
 
           // this should be the hit wdir - check...
-          double nr = nx*x0+ny*y0;
+          double nr = x0*ny-y0*nx;
 
-          fSx    += x0;
-          fSy    += y0;
+          // fSx    += x0;
+          // fSy    += y0;
           fSnx2  += nx*nx;
           fSnxny += nx*ny;
           fSny2  += ny*ny;
@@ -102,7 +103,6 @@ namespace mu2e {
       fChi2All          = -1;
       fChi2Perp         = -1;
     }
-
 
 //-----------------------------------------------------------------------------
 // add hit
@@ -128,10 +128,8 @@ namespace mu2e {
       double nx                = ch->wdir().x();
       double ny                = ch->wdir().y();
 
-      double nr                = nx*x0+ny*y0;
+      double nr                = x0*ny-y0*nx;
 
-      fSx    += x0;
-      fSy    += y0;
       fSnx2  += nx*nx;
       fSnxny += nx*ny;
       fSny2  += ny*ny;
@@ -175,20 +173,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       assert(fNHits > 2);
 
-      double x_mean, y_mean, nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
+      double nxym, nx2m, ny2m, nxrm, nyrm;
 
-      x_mean    = fSx   /fNHits;
-      y_mean    = fSy   /fNHits;
-      nxny_mean = fSnxny/fNHits;
-      nx2_mean  = fSnx2 /fNHits;
-      ny2_mean  = fSny2 /fNHits;
-      nxnr_mean = fSnxnr/fNHits;
-      nynr_mean = fSnynr/fNHits;
+      nxym = fSnxny/fNHits;
+      nx2m = fSnx2 /fNHits;
+      ny2m = fSny2 /fNHits;
+      nxrm = fSnxnr/fNHits;
+      nyrm = fSnynr/fNHits;
 
-      double d  = (1-nx2_mean)*(1-ny2_mean)-nxny_mean*nxny_mean;
+      double d  = nx2m*ny2m-nxym*nxym;
 
-      double xc = ((x_mean-nxnr_mean)*(1-ny2_mean)+(y_mean-nynr_mean)*nxny_mean)/d;
-      double yc = ((y_mean-nynr_mean)*(1-nx2_mean)+(x_mean-nxnr_mean)*nxny_mean)/d;
+      double xc = (nyrm*nx2m-nxrm*nxym)/d;
+      double yc = (nyrm*nxym-nxrm*ny2m)/d;
 
       CofM.SetX(xc);
       CofM.SetY(yc);

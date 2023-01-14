@@ -84,7 +84,7 @@ namespace mu2e {
     void Data_t::printDeltaCandidate(DeltaCandidate* Delta, const char* Option) {
 
       printf("------------------------------------------------------------------------------------------------------\n");
-      printf("      i    nh  ns s1  s2     X       Y         Z          chi21   chi22   htmin   htmax   t0min   t0max     \n");
+      printf("      i    nh  ns s1  s2     X       Y         Z          chi21   chi22   htmin   htmax   t0     \n");
       printf("------------------------------------------------------------------------------------------------------\n");
       printf(":dc:%05i %3i",Delta->Index(),Delta->fNHits);
       printf(" %3i",Delta->fNSeeds);
@@ -108,9 +108,9 @@ namespace mu2e {
           float chi22 = (hd1) ? hd1->fChi2Min : -1;
           printf(" %7.1f %7.1f",hd0->fChi2Min, chi22);
           printf(" %7.1f %7.1f",ds->MinHitTime(),ds->MaxHitTime());
-          printf(" %7.1f %7.1f",Delta->fT0Min[is]  ,Delta->fT0Max[is]);
+          printf(" %7.1f ",Delta->T0(is));
 
-          printf("  (");
+          printf("(");
           for (int face=0; face<kNFaces; face++) {
             const HitData_t* hd = ds->HitData(face);
             if (hd == nullptr) printf(" %5i",-1);

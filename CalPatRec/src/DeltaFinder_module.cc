@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 // framework
 //
 // parameter defaults: CalPatRec/fcl/prolog.fcl
@@ -78,12 +78,14 @@ namespace mu2e {
       fhicl::Atom<float>             maxChi2Seed      {Name("maxChi2Seed"      ), Comment("max seed chi2 (stereo)"      ) };
       fhicl::Atom<float>             maxChi2Radial    {Name("maxChi2Radial"    ), Comment("max chi2 (radial)"           ) };
       fhicl::Atom<float>             maxChi2All       {Name("maxChi2All"       ), Comment("max chi2 (all)"              ) };
+      fhicl::Atom<float>             maxChi2SeedDelta {Name("maxChi2SeedDelta" ), Comment("max chi2 (seed-delta)"       ) };
       fhicl::Atom<float>             seedRes          {Name("seedRes"          ), Comment("stereo seed resolution"      ) };
       fhicl::Atom<float>             maxDxy           {Name("maxDxy"           ), Comment("max Dxy"                     ) };
       fhicl::Atom<int>               maxGap           {Name("maxGap"           ), Comment("max Gap"                     ) };
       fhicl::Atom<float>             sigmaR           {Name("sigmaR"           ), Comment("sigmaR"                      ) };
       fhicl::Atom<float>             maxDriftTime     {Name("maxDriftTime"     ), Comment("maxDriftTime"                ) };
       fhicl::Atom<float>             maxSeedDt        {Name("maxSeedDt"        ), Comment("maxSeedDt"                   ) };
+      fhicl::Atom<float>             maxHitDt         {Name("maxHitDt"         ), Comment("maxHitDt"                    ) };
       fhicl::Atom<float>             maxStrawDt       {Name("maxStrawDt"       ), Comment("max straw Dt"                ) };
       fhicl::Atom<float>             maxDtDs          {Name("maxDtDs"          ), Comment("max Dt/Dstation"             ) };
       fhicl::Atom<float>             maxDtDc          {Name("maxDtDc"          ), Comment("max deltaT between deltas"   ) };
@@ -130,6 +132,7 @@ namespace mu2e {
     float           _maxChi2Neighbor;      //
     float           _maxChi2Radial;        //
     float           _maxChi2All;           // max chi2/N of a seed
+    float           _maxChi2SeedDelta;     // max delta-seed chi2 for adding a seed to a delta
     float           _seedRes;              //
     float           _maxDxy;
     int             _maxGap;
@@ -137,6 +140,7 @@ namespace mu2e {
     float           _sigmaR2;              // _sigmaR^2
     float           _maxDriftTime;
     float           _maxSeedDt;            // +/- SeedDt is the time window for checking duplicate seeds
+    float           _maxHitDt;
     float           _maxStrawDt;
     float           _maxDtDs;              // low-P electron travel time between two stations
     float           _maxDtDc;              // max deltaT between two delta candiates
@@ -199,9 +203,9 @@ namespace mu2e {
     int          orderHits           ();
     void         pruneSeeds          (int Station);
     int          recoverMissingHits  ();
-    int          recoverStation      (DeltaCandidate* Delta, int Station, int UseUsedHits, int RecoverSeeds);
+    int          recoverStation      (DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds);
     void         runDeltaFinder      ();
-
+    double       seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta);
 //-----------------------------------------------------------------------------
 // overloaded methods of the module class
 //-----------------------------------------------------------------------------
@@ -234,12 +238,14 @@ namespace mu2e {
     _maxChi2Seed           (config().maxChi2Seed()      ),
     _maxChi2Radial         (config().maxChi2Radial()    ),
     _maxChi2All            (config().maxChi2All()       ),
+    _maxChi2SeedDelta      (config().maxChi2SeedDelta() ),
     _seedRes               (config().seedRes()          ),
     _maxDxy                (config().maxDxy()           ),
     _maxGap                (config().maxGap()           ),
     _sigmaR                (config().sigmaR()           ),
     _maxDriftTime          (config().maxDriftTime()     ),
     _maxSeedDt             (config().maxSeedDt()        ),
+    _maxHitDt              (config().maxHitDt()         ),
     _maxStrawDt            (config().maxStrawDt()       ),
     _maxDtDs               (config().maxDtDs()          ),
     _maxDtDc               (config().maxDtDc()          ),
@@ -276,6 +282,15 @@ namespace mu2e {
     for (int i=0; i<kNStations; i++) {
       _data.listOfSeeds[i] = new TClonesArray("mu2e::DeltaSeed",50);
       _data.listOfSeeds[i]->SetOwner(kTRUE);
+    }
+
+    for (int is=0; is<kNStations; is++) {
+      for (int face=0; face<kNFaces; face++) {
+        for (int ip=0; ip<kNPanelsPerFace; ip++) {
+          PanelZ_t* pz = &_data.oTracker[is][face][ip];
+          pz->fHitData = new std::vector<HitData_t> ;
+        }
+      }
     }
   }
 
@@ -453,7 +468,7 @@ namespace mu2e {
         assert(sxy_dot_w != 1.e10);             // test
         if (sxy_dot_w > 1.e5) printf("emoe\n"); // test
 
-        int    nhits = panelz->fHitData.size();
+        int    nhits = panelz->fHitData->size();
         for (int ih=0; ih<nhits; ih++) {
 //-----------------------------------------------------------------------------
 // 2017-10-05 PM: consider all hits
@@ -461,7 +476,7 @@ namespace mu2e {
 // between any two measured hit times should not exceed _maxDriftTime
 // (_maxDriftTime represents the maximal drift time in the straw, should there be some tolerance?)
 //-----------------------------------------------------------------------------
-          HitData_t* hd            = &panelz->fHitData[ih];
+          HitData_t* hd            = &(*panelz->fHitData)[ih];
           float corr_time          = hd->fCorrTime;
 
           if (corr_time-Seed->T0Max() > _maxHitSeedDt)                break;
@@ -528,7 +543,7 @@ namespace mu2e {
 // with one of them
 //-----------------------------------------------------------------------------
         DeltaCandidate* closest(nullptr);
-        float           rho2min (_maxDxy*_maxDxy);
+        float           chi2min (_maxChi2SeedDelta);
 
         int ndelta = _data.listOfDeltaCandidates.size();
         for (int idc=0; idc<ndelta; idc++) {
@@ -546,29 +561,29 @@ namespace mu2e {
           if (last == is)                                             continue;
           int gap  = is-last;
           if (gap > _maxGap)                                          continue;
-          dc->fT0Min[is] = dc->fT0Min[last]-_maxDtDs*gap;
-          dc->fT0Max[is] = dc->fT0Max[last]+_maxDtDs*gap;
-          if (dc->fT0Min[is] > seed->T0Max() + _maxDriftTime)         continue;
-          if (dc->fT0Max[is] < seed->T0Min() - _maxDriftTime)         continue;
+          float t0 = dc->T0(is);
+          assert(t0 > 0);
+          float dt = t0-seed->TMean();
+          if (fabs(dt) > _maxSeedDt+_maxDtDs*gap)                     continue;
 //-----------------------------------------------------------------------------
 // the time is OK'ish - checks should be implemented more accurately (FIXME)
 // look at the coordinates
 //-----------------------------------------------------------------------------
-          float dx   = dc->CofM.x()-seed->CofM.x();
-          float dy   = dc->CofM.y()-seed->CofM.y();
-          float rho2 = dx*dx+dy*dy;
-          if (rho2 >= rho2min)                                        continue;
+          float chi2 = seedDeltaChi2(seed,dc);
+          if (chi2 < chi2min) {
 //-----------------------------------------------------------------------------
-// everything matches, add the seed to the candidate
+// everything matches, new closest delta candidate
 //-----------------------------------------------------------------------------
-          closest = dc;
-          rho2min = rho2;
+            closest = dc;
+            chi2min = chi2;
+          }
         }
 //-----------------------------------------------------------------------------
 // if a DeltaSeed has been "attached" to a DeltaCandidate, this is it.
 //-----------------------------------------------------------------------------
         if (closest) {
           closest->AddSeed(seed,is);
+          seed->fChi2Delta = chi2min;
                                                                       continue;
         }
 //-----------------------------------------------------------------------------
@@ -578,24 +593,20 @@ namespace mu2e {
         DeltaCandidate delta(ndelta,seed,is);
 //-----------------------------------------------------------------------------
 // first, try to extend it backwards, in a compact way, to pick missing single hits
-// seeds should've been picked up !
+// seeds should've already been picked up !
 //-----------------------------------------------------------------------------
         for (int is2=is-1; is2>=0; is2--) {
-          delta.fT0Min[is2] = delta.fT0Min[is]-_maxDtDs;
-          delta.fT0Max[is2] = delta.fT0Max[is]+_maxDtDs;
-          recoverStation(&delta,is2,1,0);
+          recoverStation(&delta,delta.fFirstStation,is2,1,0);
 //-----------------------------------------------------------------------------
 // continue only if found something, allow one gap
 //-----------------------------------------------------------------------------
-          if (delta.fFirstStation-is2 > 1) break;
+          if (delta.fFirstStation-is2 > 2) break;
         }
 //-----------------------------------------------------------------------------
 // next, try to extend it forward, by one step, use of seeds is allowed
 //-----------------------------------------------------------------------------
         if (is < kNStations-1) {
-          delta.fT0Min[is+1] = delta.fT0Min[is]-_maxDtDs;
-          delta.fT0Max[is+1] = delta.fT0Max[is]+_maxDtDs;
-          recoverStation(&delta,is+1,1,1);
+          recoverStation(&delta,is,is+1,1,1);
         }
 //-----------------------------------------------------------------------------
 // store only delta candidates with hits in more than 2 stations
@@ -629,9 +640,7 @@ namespace mu2e {
 // if a delta candidate has been created in this routine, time limits
 // may not be defined. Make sure they are
 //-----------------------------------------------------------------------------
-        dc->fT0Min[is] = dc->fT0Min[last]-_maxDtDs;
-        dc->fT0Max[is] = dc->fT0Max[last]+_maxDtDs;
-        recoverStation(dc,is,1,0);
+        recoverStation(dc,last,is,1,0);
       }
     }
 
@@ -697,14 +706,13 @@ namespace mu2e {
       PanelZ_t* panelz1 = &_data.oTracker[Station][Face][p];
       double nx1        = panelz1->wx;
       double ny1        = panelz1->wy;
-      int    nh1        = panelz1->fHitData.size();
+      int    nh1        = panelz1->fHitData->size();
       for (int h1=0; h1<nh1; ++h1) {
 //-----------------------------------------------------------------------------
 // hit has not been used yet to start a seed, however it could've been used as a second seed
 //-----------------------------------------------------------------------------
-        HitData_t*      hd1 = &panelz1->fHitData[h1];
+        HitData_t*      hd1 = &(*panelz1->fHitData)[h1];
         float           ct1 = hd1->fCorrTime;
-        //        if (ct1 < _minHitTime)                                        continue;
         double x1           = hd1->fHit->pos().x();
         double y1           = hd1->fHit->pos().y();
 
@@ -735,9 +743,9 @@ namespace mu2e {
             double q12   = 1-n1n2*n1n2;
             double res_z = (panelz1->z+panelz2->z)/2;
 
-            int    nh2 = panelz2->fHitData.size();
+            int    nh2 = panelz2->fHitData->size();
             for (int h2=0; h2<nh2;++h2) {
-              HitData_t* hd2 = &panelz2->fHitData[h2];
+              HitData_t* hd2 = &(*panelz2->fHitData)[h2];
               float      ct2 = hd2->fCorrTime;
 //-----------------------------------------------------------------------------
 // hits are ordered in time, so if ct2-ct > _maxDriftTime, can proceed with the next panel
@@ -803,9 +811,9 @@ namespace mu2e {
  //-----------------------------------------------------------------------------
  // this is needed for diagnostics only
  //-----------------------------------------------------------------------------
-        if (_diagLevel > 0) {
-          hd1->fNSecondHits  = counter ;
-        }
+        // if (_diagLevel > 0) {
+        //   hd1->fNSecondHits  = counter ;
+        // }
       }
     }
   }
@@ -853,8 +861,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // too lazy to extrapolate the time to the same Z...  ** FIXME
 //-----------------------------------------------------------------------------
-        float t1 = dc1->Time(dc1->LastStation());
-        float t2 = dc2->Time(dc2->FirstStation());
+        float t1 = dc1->T0(dc1->LastStation());
+        float t2 = dc2->T0(dc2->FirstStation());
 //-----------------------------------------------------------------------------
 // time check could be done more intelligently - compare time at the same Z
 //-----------------------------------------------------------------------------
@@ -972,7 +980,7 @@ namespace mu2e {
         if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
       }
 
-      pz->fHitData.push_back(HitData_t(ch));
+      pz->fHitData->push_back(HitData_t(ch));
 
       if (pz->tmin > corr_time) pz->tmin = corr_time;
       if (pz->tmax < corr_time) pz->tmax = corr_time;
@@ -1250,23 +1258,18 @@ namespace mu2e {
       int s1 = dc->fFirstStation;
       int s2 = dc->fLastStation-1;
       int last(-1);
-      float t0min(-1.), t0max(-1.);
 //-----------------------------------------------------------------------------
 // first check inside "holes"
 //-----------------------------------------------------------------------------
       for (int i=s1; i<=s2; i++) {
         if (dc->seed[i] != nullptr) {
           last  = i;
-          t0min = dc->seed[i]->T0Min();
-          t0max = dc->seed[i]->T0Max();
           continue;
         }
 //-----------------------------------------------------------------------------
 // define expected T0 limits
 //-----------------------------------------------------------------------------
-        dc->fT0Min[i] = t0min-_maxDtDs*(i-last);
-        dc->fT0Max[i] = t0max+_maxDtDs*(i-last);
-        recoverStation(dc,i,1,0);
+        recoverStation(dc,last,i,1,0);
       }
 
       last  = dc->fFirstStation;
@@ -1275,9 +1278,7 @@ namespace mu2e {
 // skip empty stations
 //-----------------------------------------------------------------------------
         if (dc->fFirstStation -i > _maxGap) break;
-        dc->fT0Min[i] = dc->fT0Min[dc->fFirstStation]-_maxDtDs*(dc->fFirstStation-i);
-        dc->fT0Max[i] = dc->fT0Max[dc->fFirstStation]+_maxDtDs*(dc->fFirstStation-i);
-        recoverStation(dc,i,1,0);
+        recoverStation(dc,dc->fFirstStation,i,1,0);
       }
 
       last = dc->fLastStation;
@@ -1286,13 +1287,37 @@ namespace mu2e {
 // skip empty stations
 //-----------------------------------------------------------------------------
         if (i-dc->fLastStation > _maxGap) break;
-        dc->fT0Min[i] = dc->fT0Min[dc->fLastStation]-_maxDtDs*(i-dc->fLastStation);
-        dc->fT0Max[i] = dc->fT0Max[dc->fLastStation]+_maxDtDs*(i-dc->fLastStation);
-        recoverStation(dc,i,1,0);
+        recoverStation(dc,dc->fLastStation,i,1,0);
       }
     }
 
     return 0;
+  }
+
+//-----------------------------------------------------------------------------
+  double DeltaFinder::seedDeltaChi2(DeltaSeed* Seed, DeltaCandidate* Delta) {
+
+    int    nh   = Delta->NHits()+Seed->NHits();
+
+    double nxym = (Delta->fSnxny+Seed->fSnxny)/nh;
+    double nx2m = (Delta->fSnx2 +Seed->fSnx2 )/nh;
+    double ny2m = (Delta->fSny2 +Seed->fSny2 )/nh;
+    double nxrm = (Delta->fSnxnr+Seed->fSnxnr)/nh;
+    double nyrm = (Delta->fSnynr+Seed->fSnynr)/nh;
+
+    double d    = nx2m*ny2m-nxym*nxym;
+    double xc   = (nyrm*nx2m-nxrm*nxym)/d;
+    double yc   = (nyrm*nxym-nxrm*ny2m)/d;
+
+    double dxs  = xc-Seed->Xc();
+    double dys  = yc-Seed->Yc();
+
+    double dxd  = xc-Delta->Xc();
+    double dyd  = yc-Delta->Yc();
+
+    double chi2 = (dxs*dxs+dys*dys+dxd*dxd+dyd*dyd)/(_maxDxy*_maxDxy);
+
+    return chi2;
   }
 
 //------------------------------------------------------------------------------
@@ -1300,20 +1325,20 @@ namespace mu2e {
 // the delta candidate doesn't have hits in this station, check all hits here
 // when predicting time, use the same value of Z for both layers of a given face
 //-----------------------------------------------------------------------------
-  int DeltaFinder::recoverStation(DeltaCandidate* Delta, int Station, int UseUsedHits, int RecoverSeeds) {
+  int DeltaFinder::recoverStation(DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds) {
 
                                         // predicted time range for this station
-    float t0min  = Delta->T0Min(Station);
-    float t0max  = Delta->T0Max(Station);
+    float tdelta = Delta->T0(Station);
     float xdelta = Delta->CofM.x();
     float ydelta = Delta->CofM.y();
 //-----------------------------------------------------------------------------
 // first, loop over the existing seeds - need for the forward step
 //-----------------------------------------------------------------------------
     if (RecoverSeeds) {
-      float      chi2min(1.);
+      float      chi2min(_maxChi2SeedDelta);
       DeltaSeed* closest_seed(nullptr);
 
+      float dt   = _maxSeedDt + _maxDtDs*fabs(Station-LastStation);
       int nseeds = _data.NSeeds(Station);
       for (int i=0; i<nseeds; i++) {
         DeltaSeed* seed =  _data.deltaSeed(Station,i);
@@ -1322,15 +1347,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // one might need some safety here, but not the _maxDriftTime
 //-----------------------------------------------------------------------------
-        if (t0min > seed->T0Max())                                      continue;
-        if (t0max < seed->T0Min())                                      continue;
+        if (fabs(tdelta-seed->TMean()) > dt)                            continue;
 
-        float dx   = xdelta-seed->CofM.x();
-        float dy   = ydelta-seed->CofM.y();
-        float chi2 = (dx*dx+dy*dy)/(_maxDxy*_maxDxy);
-        if (chi2 >= chi2min)                                            continue;
-        closest_seed = seed;
-        chi2min      = chi2;
+        float chi2 = seedDeltaChi2(seed,Delta);
+
+        if (chi2 < chi2min) {
+                                        // new best seed
+          closest_seed = seed;
+          chi2min      = chi2;
+        }
       }
 
       if (closest_seed) {
@@ -1339,6 +1364,7 @@ namespace mu2e {
 // it is marked as associated with the delta candidate in DeltaCandidate::AddSeed
 //-----------------------------------------------------------------------------
         Delta->AddSeed(closest_seed,Station);
+        closest_seed->fChi2Delta = chi2min;
         return 0;
       }
     }
@@ -1346,6 +1372,8 @@ namespace mu2e {
 // no seeds found, look for single hits
 //-----------------------------------------------------------------------------
     DeltaSeed*  new_seed (nullptr);
+
+    float dt_hit = _maxHitDt+_maxDtDs*fabs(Station-LastStation);
 
     for (int face=0; face<kNFaces; face++) {
       for (int ip=0; ip<kNPanelsPerFace; ip++) {
@@ -1356,14 +1384,14 @@ namespace mu2e {
         if (dphi >  M_PI) dphi -= 2*M_PI;
         if (fabs(dphi) > M_PI/3)                                      continue;
 
-        if (t0min > panelz->tmax)                                     continue;
-        if (t0max < panelz->tmin)                                     continue;
+        if (tdelta-dt_hit > panelz->tmax)                             continue;
+        if (tdelta+dt_hit < panelz->tmin)                             continue;
 //-----------------------------------------------------------------------------
 // panel and Delta overlap in phi and time, loop over hits
 //-----------------------------------------------------------------------------
-        int nhits = panelz->fHitData.size();
+        int nhits = panelz->fHitData->size();
         for (int h=0; h<nhits; ++h) {
-          HitData_t* hd = &panelz->fHitData[h];
+          HitData_t* hd = &(*panelz->fHitData)[h];
 //-----------------------------------------------------------------------------
 // don't skip hits already included into seeds - a two-hit stereo seed
 // could be random
@@ -1373,8 +1401,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // predicted time is the particle time, the drift time should be larger
 //-----------------------------------------------------------------------------
-          if (corr_time > t0max)                                      break;
-          if (corr_time < t0min)                                      continue;
+          if (corr_time > tdelta+dt_hit)                              break;
+          if (corr_time < tdelta-dt_hit)                              continue;
 
           const ComboHit*  ch = hd->fHit;
           double dx  = ch->pos().x()-xdelta;
@@ -1420,6 +1448,10 @@ namespace mu2e {
               new_seed->ReplaceFirstHit(hd);
             }
             else {
+//-----------------------------------------------------------------------------
+// more than one hit added in the hit pickup mode. The question is why a seed,
+// constructed out of those two hits has not been added (or created)
+//-----------------------------------------------------------------------------
               if (_printErrors) {
                 printf("ERROR in DeltaFinder::recoverStation: ");
                 printf("station=%2i - shouldn\'t be getting here, printout of new_seed and hd follows\n",Station);
@@ -1433,10 +1465,7 @@ namespace mu2e {
                 _data.printHitData  (hd      ,"");
               }
 
-              new_seed->hitData[face]    = hd;
-              new_seed->fNFacesWithHits += 1;
-              new_seed->fNHits          += 1;
-              new_seed->fNStrawHits     += ch->nStrawHits();
+              new_seed->AddHit(hd,face);
             }
 
             if (corr_time < new_seed->fMinHitTime) new_seed->fMinHitTime = corr_time;
@@ -1467,13 +1496,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void  DeltaFinder::runDeltaFinder() {
 
-    for (int s=0; s<kNStations; ++s) {
-      for (int f=0; f<kNFaces; ++f) {
-        for (int p=0; p<3; ++p) {
-          PanelZ_t* panelz = &_data.oTracker[s][f][p];
-          panelz->fHitData.clear() ;
-          panelz->tmin =  1.e6;
-          panelz->tmax = -1.e6;
+    for (int is=0; is<kNStations; is++) {
+      for (int face=0; face<kNFaces; face++) {
+        for (int ip=0; ip<kNPanelsPerFace; ip++) {
+          PanelZ_t* pz = &_data.oTracker[is][face][ip];
+          pz->fHitData->clear() ;
+          pz->tmin =  1.e6;
+          pz->tmax = -1.e6;
         }
       }
     }

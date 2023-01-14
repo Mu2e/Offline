@@ -255,40 +255,38 @@ namespace mu2e {
     int                            fNHitsDeltaReco;
 
     HlPrint*                       _hlp;
+
+    StrawHitFlag                   _deltaMask;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
   public:
-    explicit     DeltaFinderAna(fhicl::ParameterSet const&);
-    virtual      ~DeltaFinderAna();
+    explicit  DeltaFinderAna(fhicl::ParameterSet const&);
+    virtual   ~DeltaFinderAna();
 
-    void bookEventHistograms   (EventHist_t*    Hist, int HistSet, art::TFileDirectory* Dir);
-    void bookStrawHitHistograms(StrawHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir);
-    void bookMcHistograms      (McHist_t*       Hist, int HistSet, art::TFileDirectory* Dir);
+    int       associateMcTruth();
 
-    void bookHistograms();
+    void      bookEventHistograms   (EventHist_t*    Hist, int HistSet, art::TFileDirectory* Dir);
+    void      bookStrawHitHistograms(StrawHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir);
+    void      bookMcHistograms      (McHist_t*       Hist, int HistSet, art::TFileDirectory* Dir);
+    void      bookHistograms();
 
-    void fillEventHistograms   (EventHist_t*    Hist);
-    void fillMcHistograms      (McHist_t*       Hist, McPart_t* Mc );
-    void fillStrawHitHistograms(StrawHitHist_t* Hist, const StrawHit* Hit, McHitInfo_t* McHitInfo);
+    void      debug();
 
-    void fillHistograms();
+    void      fillEventHistograms   (EventHist_t*    Hist);
+    void      fillMcHistograms      (McHist_t*       Hist, McPart_t* Mc );
+    void      fillStrawHitHistograms(StrawHitHist_t* Hist, const StrawHit* Hit, McHitInfo_t* McHitInfo);
+    void      fillHistograms();
 
-    void debug();
+    bool      findData     (const art::Event&  Evt);
+    McPart_t* findParticle (const SimParticle* Sim);
+    int       initMcDiag      ();
 //-----------------------------------------------------------------------------
 // overloaded methods of the base class
 //-----------------------------------------------------------------------------
     virtual void beginJob();
     virtual void beginRun(art::Run& ARun);
     virtual void produce( art::Event& e);
-
-//-----------------------------------------------------------------------------
-// do these need to be private ?
-//-----------------------------------------------------------------------------
-    bool      findData     (const art::Event&  Evt);
-    McPart_t* findParticle (const SimParticle* Sim);
-    int       initMcDiag      ();
-    int       associateMcTruth();
   };
 
 //-----------------------------------------------------------------------------
@@ -310,9 +308,35 @@ namespace mu2e {
     _printSingleComboHits  (pset.get<int>          ("printSingleComboHits"  ))
   {
     _hlp = HlPrint::Instance();
+
   }
 
   DeltaFinderAna::~DeltaFinderAna() {
+  }
+
+//-----------------------------------------------------------------------------
+// form a list of MC particles with hits in the tracker
+//-----------------------------------------------------------------------------
+  int DeltaFinderAna::associateMcTruth() {
+//-----------------------------------------------------------------------------
+// for each MC electron calculate the number of reconstructed hits
+//-----------------------------------------------------------------------------
+    int nmc    = _list_of_mc_particles.size();
+
+    fNHitsDeltaTot  = 0;
+
+    for (int i=0; i<nmc; i++) {
+      McPart_t* mc    = _list_of_mc_particles.at(i);
+
+      if (mc->fType == kLoMomElectron) {
+//-----------------------------------------------------------------------------
+// call this "a delta electron"
+//-----------------------------------------------------------------------------
+        fNHitsDeltaTot += mc->NHits();
+      }
+    }
+
+    return 0;
   }
 
 //-----------------------------------------------------------------------------
@@ -690,6 +714,32 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+bool DeltaFinderAna::findData(const art::Event& Evt) {
+    _chColl     = nullptr;
+    _sdmcColl   = nullptr;
+    _chfColl    = nullptr;
+
+    auto chcH   = Evt.getValidHandle<ComboHitCollection>(_chCollTag);
+    _chColl     = chcH.product();
+    _nComboHits = _chColl->size();
+
+    auto shcH   = Evt.getValidHandle<StrawHitCollection>(_shCollTag);
+    _shColl     = shcH.product();
+    _nSingleSH  = _shColl->size();
+
+    auto schcH  = Evt.getValidHandle<ComboHitCollection>(_schCollTag);
+    _schColl    = schcH.product();
+
+    auto chfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_chfCollTag);
+    _chfColl    = chfcH.product();
+
+    auto sdmccH = Evt.getValidHandle<StrawDigiMCCollection>(_sdmcCollTag);
+    _sdmcColl   = sdmccH.product();
+
+    return (_chColl != 0) && (_chfColl != 0) && (_sdmcColl != 0) ;
+  }
+
+//-----------------------------------------------------------------------------
 // create a list of MC particles with hits in the tracker
 // it should be shorter than the list of all MC particles
 //-----------------------------------------------------------------------------
@@ -714,9 +764,24 @@ namespace mu2e {
       _nStrawHits       += ch->nStrawHits();
     }
 
-    _list_of_mc_hit_info.resize(_nStrawHits);
+    _list_of_mc_hit_info.resize(_nSingleSH);
+//-----------------------------------------------------------------------------
+// create list of MC particles - of all particles which made at least one hit
+//-----------------------------------------------------------------------------
+    for (int i=0; i<_nSingleSH; i++) {
+      const StrawDigiMC*  sdmc = &_sdmcColl->at(i);
+      const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+      const SimParticle*  sim  = sgs->simParticle().get();
 
-    //    int delta_nhits_tot = 0;
+      McPart_t* mc = findParticle(sim);
+
+      if (mc == NULL) {
+                                        // add new particle
+        mc = new McPart_t(sim);
+        _list_of_mc_particles.push_back(mc);
+      }
+    }
+
     fNHitsDeltaReco = 0;
 //-----------------------------------------------------------------------------
 // 'shf' is also a mu2e::ComboHit flag, despite the name
@@ -740,15 +805,10 @@ namespace mu2e {
         const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
         const SimParticle*  sim  = sgs->simParticle().get();
 //-----------------------------------------------------------------------------
-// check if this particle has already been registered
+// at this poit, all MC particles should already be registered
 //-----------------------------------------------------------------------------
         McPart_t* mc = findParticle(sim);
 
-        if (mc == NULL) {
-                                        // add new particle
-          mc = new McPart_t(sim);
-          _list_of_mc_particles.push_back(mc);
-        }
         mc->fListOfHits.push_back(sch);
 
         int station = sch->strawId().getStation();
@@ -793,57 +853,6 @@ namespace mu2e {
     }
 
     return 0;
-  }
-
-//-----------------------------------------------------------------------------
-// form a list of MC particles with hits in the tracker
-//-----------------------------------------------------------------------------
-  int DeltaFinderAna::associateMcTruth() {
-//-----------------------------------------------------------------------------
-// for each MC electron calculate the number of reconstructed hits
-//-----------------------------------------------------------------------------
-    int nmc    = _list_of_mc_particles.size();
-
-    fNHitsDeltaTot  = 0;
-
-    for (int i=0; i<nmc; i++) {
-      McPart_t* mc    = _list_of_mc_particles.at(i);
-
-      if (mc->fType == kLoMomElectron) {
-//-----------------------------------------------------------------------------
-// call this "a delta electron"
-//-----------------------------------------------------------------------------
-        fNHitsDeltaTot += mc->NHits();
-      }
-    }
-
-    return 0;
-  }
-
-//-----------------------------------------------------------------------------
-bool DeltaFinderAna::findData(const art::Event& Evt) {
-    _chColl     = nullptr;
-    _sdmcColl   = nullptr;
-    _chfColl    = nullptr;
-
-    auto chcH   = Evt.getValidHandle<ComboHitCollection>(_chCollTag);
-    _chColl     = chcH.product();
-    _nComboHits = _chColl->size();
-
-    auto shcH   = Evt.getValidHandle<StrawHitCollection>(_shCollTag);
-    _shColl     = shcH.product();
-    _nSingleSH  = _shColl->size();
-
-    auto schcH  = Evt.getValidHandle<ComboHitCollection>(_schCollTag);
-    _schColl    = schcH.product();
-
-    auto chfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_chfCollTag);
-    _chfColl    = chfcH.product();
-
-    auto sdmccH = Evt.getValidHandle<StrawDigiMCCollection>(_sdmcCollTag);
-    _sdmcColl   = sdmccH.product();
-
-    return (_chColl != 0) && (_chfColl != 0) && (_sdmcColl != 0) ;
   }
 
 //-----------------------------------------------------------------------------

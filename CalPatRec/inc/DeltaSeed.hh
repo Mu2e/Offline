@@ -35,8 +35,6 @@ namespace mu2e {
     HitData_t*   hitData       [kNFaces];
     McPart_t*    fMcPart       [kNFaces];
                                       // XY coordinate sums
-    double       fSx;
-    double       fSy;
     double       fSnx2;
     double       fSnxny;
     double       fSny2;
@@ -54,9 +52,10 @@ namespace mu2e {
     float        fMaxHitTime;
     McPart_t*    fPreSeedMcPart[2];    // McPart_t's for initial intersection
     int          fDeltaIndex;
-                                        // chi2's
+                                       // chi2's
     float        fChi2All;
     float        fChi2Perp;
+    float        fChi2Delta;           // chi2 when the seed is added to Delta
 
     DeltaSeed () {}
     DeltaSeed (int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
@@ -71,6 +70,7 @@ namespace mu2e {
     float            Chi2Perp()         { return fChi2Perp; }
     float            Chi2PerpN()        { return fChi2Perp/fNHits; }
     float            Chi2AllN ()        { return fChi2All/fNHits ; }
+    float            Chi2Delta()        { return fChi2Delta   ; }
     HitData_t*       HitData (int Face) { return hitData[Face]; } // no boundary check !
     int              NHits   ()         { return fNHits; }
     int              NHitsCE ()         { return fNHitsCE; }
@@ -82,6 +82,8 @@ namespace mu2e {
     int              Good    ()         { return (fGood       >= 0); }
     float            TMean   ()         { return fSumT/fNStrawHits;  }
     float            Z       ()         { return fZ;  }
+    double           Xc      () const { return CofM.x(); }
+    double           Yc      () const { return CofM.y(); }
 
     float            Phi     () const   { return fPhi; }
 //-----------------------------------------------------------------------------

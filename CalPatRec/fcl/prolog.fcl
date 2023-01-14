@@ -359,11 +359,13 @@ CalPatRec : { @table::CalPatRec
             maximumTime                 : 1750.                 # ns
             maxHitSeedDt                : 10                    ## ns
             maxSeedDt                   : 30.                   ## time window for checking duplicate seeds
+            maxHitDt                    : 30.                   ## time window for checking duplicate seeds
             maxChi2Seed                 : 16.                   ## 16 = 4sigma  25="5sigma" 50.                   #
             maxChi2All                  : 16.                   ## 16 used by pruneSeeds to mark bad seeds... ## 2018-01-24: 25 --> 15
-            maxChi2Radial               : 25.                   # 16 ... 2018-01-24: 25 --> 15
+            maxChi2Radial               : 16.                   # 16 ... 2018-01-24: 25 --> 15
+            maxChi2SeedDelta            : 16                    #
             seedRes                     :  0.                   #
-            maxDxy                      : 40.                   # mm
+            maxDxy                      : 10.                   # mm
             maxGap                      : 3                     # gap in missing stations along the candidate
             sigmaR                      : 10.                   # mm, roughly 3 MeV/c
             maxDriftTime                : 40.                   ## ns, includes some tolerance (50)

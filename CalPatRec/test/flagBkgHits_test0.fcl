@@ -35,7 +35,6 @@ physics : {
 
         DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
             debugLevel     : 0 ## 1
-            # tcCollTag    : "DeltaFinder"
             chCollTag      : "makePH"
             chfCollTag     : "FlagBkgHits:ComboHits"
             shfCollTag     : "FlagBkgHits:StrawHits"
