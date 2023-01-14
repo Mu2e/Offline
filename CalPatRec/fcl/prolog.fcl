@@ -407,7 +407,7 @@ CalPatRec : { @table::CalPatRec
             chfCollTag             : "DeltaFinder:ComboHits" #
             shCollTag              : "makeSH"                # assume StrawHits have been written out
             shfCollTag             : "DeltaFinder:StrawHits" ## input coll, so far - debugging
-            schCollTag             : "makeSH"                # 1-straw combohits
+            sschCollTag            : "makeSH"                # 1-straw combohits
             sdmcCollTag            : "compressDigiMCs"
             debugLevel             : 0
             diagLevel              : 0
