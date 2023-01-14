@@ -48,6 +48,7 @@ namespace mu2e {
       TH1F*  fHitChi2Min;                        // chi2 of the first two hits along the wire
       TH1F*  fChi2Neighbour;
       TH1F*  fChi2Radial;
+      TH1F*  fChi2Delta;
       TH1F*  fNFacesWithHits;
       TH1F*  fNHitsPerFace;
       TH1F*  fNHitsPerSeed;
@@ -65,6 +66,7 @@ namespace mu2e {
 
     struct DeltaHist_t {
       TH1F*  fNHits;
+      TH1F*  fNStrawHits;
       TH1F*  fNSeeds;
       TH1F*  fMcMom;
       TH1F*  fPDGCode;
@@ -88,7 +90,7 @@ namespace mu2e {
     struct EventHist_t {
       TH1F*  fEventNumber;
       TH1F*  fRunNumber;
-      TH1F*  fNSecondHits;
+      //      TH1F*  fNSecondHits;
       TH1F*  fNSeeds;
       TH2F*  fNSeedsVsStation;
       TH1F*  fNMc;
@@ -250,7 +252,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
-    Hist->fNSecondHits     = Dir->make<TH1F>("nhit2" , "N(second hits)", 100, 0., 100.);
+    //    Hist->fNSecondHits     = Dir->make<TH1F>("nhit2" , "N(second hits)", 100, 0., 100.);
     Hist->fNSeeds          = Dir->make<TH1F>("nseeds", "N(seeds)"   , 200, 0., 2000.);
     Hist->fNSeedsVsStation = Dir->make<TH2F>("ns_vs_st", "N(seeds) vs station", 20, 0., 20.,100,0,100);
 
@@ -271,6 +273,7 @@ namespace mu2e {
     Hist->fHitChi2Min      = Dir->make<TH1F>("hitchi2min"  , "Hit Chi (min)"     , 1000, 0.,  50.);
     Hist->fChi2Neighbour   = Dir->make<TH1F>("chi2_nb"     , "Chi2 neighbour"    , 1000, 0.,  50.);
     Hist->fChi2Radial      = Dir->make<TH1F>("chi2_r"      , "Chi2 radial"       , 1000, 0.,  50.);
+    Hist->fChi2Delta       = Dir->make<TH1F>("chi2_delta"  , "Chi2 delta match"  , 1000, 0.,  50.);
     Hist->fNFacesWithHits  = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
     Hist->fNHitsPerFace    = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
     Hist->fNHitsPerSeed    = Dir->make<TH1F>("nhits_seed"  , "Number of hits per seed", 40, 0., 40.);
@@ -288,14 +291,15 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookDeltaHistograms(DeltaHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->fNSeeds   = Dir->make<TH1F>("nseeds"    , "N(seeds)"    ,  20, 0.,  20.);
-    Hist->fNHits    = Dir->make<TH1F>("nhits"     , "N(hits)"     , 200, 0., 200.);
-    Hist->fPDGCode  = Dir->make<TH1F>("pdg"       , "PDG code"    ,1000, -2500., 2500.);
-    Hist->fMcMom    = Dir->make<TH1F>("mc_mom"    , "N(hits)"     , 200, 0., 200.);
-    Hist->fDxy      = Dir->make<TH1F>("dxy"       , "Delta Dxy"   , 500, 0., 200.);
-    Hist->fEDep     = Dir->make<TH1F>("edep"      , "mean E(Dep)" , 100, 0., 0.01);
-    Hist->fNBestVsN = Dir->make<TH2F>("nbest_vs_n", "N(bset) vs N", 100, 0., 100.,100,0,100);
-    Hist->fFBest    = Dir->make<TH1F>("fbest"     , "N(best)/N"   , 100, 0.,    1);
+    Hist->fNSeeds     = Dir->make<TH1F>("nseeds"    , "N(seeds)"     ,  20, 0.,  20.);
+    Hist->fNHits      = Dir->make<TH1F>("nch"       , "N(combo hits)", 200, 0., 200.);
+    Hist->fNStrawHits = Dir->make<TH1F>("nsh"       , "N(straw hits)", 200, 0., 200.);
+    Hist->fPDGCode    = Dir->make<TH1F>("pdg"       , "PDG code"     ,1000, -2500., 2500.);
+    Hist->fMcMom      = Dir->make<TH1F>("mc_mom"    , "N(hits)"      , 200, 0., 200.);
+    Hist->fDxy        = Dir->make<TH1F>("dxy"       , "Delta Dxy"    , 500, 0., 200.);
+    Hist->fEDep       = Dir->make<TH1F>("edep"      , "mean E(Dep)"  , 100, 0., 0.01);
+    Hist->fNBestVsN   = Dir->make<TH2F>("nbest_vs_n", "N(bset) vs N" , 100, 0., 100.,100,0,100);
+    Hist->fFBest      = Dir->make<TH1F>("fbest"     , "N(best)/N"    , 100, 0.,    1);
   }
 
 //-----------------------------------------------------------------------------
@@ -351,6 +355,8 @@ namespace mu2e {
     book_seed_histset[ 4] = 1;          // e-  80<p<110
     book_seed_histset[ 5] = 1;          // e-  110<p
     book_seed_histset[ 6] = 1;          // e+
+    book_seed_histset[ 7] = 1;          // muons
+    book_seed_histset[ 8] = 1;          // pions
 
     book_seed_histset[11] = 1;          // delta seed nhits=1
     book_seed_histset[12] = 1;          // delta seed nhits=2
@@ -406,11 +412,15 @@ namespace mu2e {
     book_delta_histset[ 1] = 1;                // prot+deut
     book_delta_histset[ 2] = 1;                // low-mom e-
     book_delta_histset[ 6] = 1;                // e+
+    book_delta_histset[ 7] = 1;                // muons
+    book_delta_histset[ 8] = 1;                // pions
 
     book_delta_histset[10] = 1;                // long deltas
     book_delta_histset[11] = 1;                // long prot+deut
     book_delta_histset[12] = 1;                // long low-mom e-
     book_delta_histset[16] = 1;                // e+
+    book_delta_histset[17] = 1;                // muons
+    book_delta_histset[18] = 1;                // pions
 
     for (int i=0; i<kNDeltaHistSets; i++) {
       if (book_delta_histset[i] != 0) {
@@ -462,17 +472,17 @@ namespace mu2e {
 
       Hist->fNSeedsVsStation->Fill(is,_data->nseeds_per_station[is]);
 
-      for (int f=0; f<kNFaces-1; ++f) { // loop over faces
-        for (int p=0; p<kNPanelsPerFace; ++p) { // loop over panels
-          PanelZ_t* panelz = &_data->oTracker[is][f][p];
+      // for (int f=0; f<kNFaces-1; ++f) { // loop over faces
+      //   for (int p=0; p<kNPanelsPerFace; ++p) { // loop over panels
+      //     PanelZ_t* panelz = &_data->oTracker[is][f][p];
 
-          int nhits =  panelz->fHitData.size();
-          for (int i=0; i<nhits; i++) {
-            int counter  = panelz->fHitData.at(i).fNSecondHits;
-            Hist->fNSecondHits->Fill(counter);
-          }
-        }
-      }
+      //     // int nhits =  panelz->fHitData.size();
+      //     // for (int i=0; i<nhits; i++) {
+      //     //   int counter  = panelz->fHitData.at(i).fNSecondHits;
+      //     //   Hist->fNSecondHits->Fill(counter);
+      //     // }
+      //   }
+      // }
     }
 
     int ndelta = _data->listOfDeltaCandidates.size();
@@ -503,6 +513,7 @@ namespace mu2e {
     Hist->fChi2TotN->Fill(Seed->Chi2TotN());
     Hist->fChi2AllN->Fill(Seed->Chi2AllN());
     Hist->fChi2PerpN->Fill(Seed->Chi2PerpN());
+    Hist->fChi2Delta->Fill(Seed->Chi2Delta());
 
     int face0 = Seed->SFace(0);
     int face1 = Seed->SFace(1);
@@ -580,6 +591,7 @@ namespace mu2e {
     int n_seeds = Delta->fNSeeds;
     Hist->fNSeeds->Fill(n_seeds);
     Hist->fNHits->Fill(Delta->fNHits);
+    Hist->fNStrawHits->Fill(Delta->fNStrawHits);
 
     float mom(-1), pdg_code(-1.e6);
     if (Delta->fMcPart) {
@@ -660,7 +672,7 @@ namespace mu2e {
         seed_par.dt = -1.e6;
         if (seed->fDeltaIndex >= 0) {
           DeltaCandidate* dc = &_data->listOfDeltaCandidates.at(seed->fDeltaIndex);
-          seed_par.dt = seed->Time() - dc->Time(s);
+          seed_par.dt = seed->TMean() - dc->T0(s);
         }
 
         fillSeedHistograms(_hist.fSeed[0],seed,&seed_par);
@@ -670,7 +682,9 @@ namespace mu2e {
 // real pre-seed - made out of hits produced by the same particle
 // make sure it is electron
 //-----------------------------------------------------------------------------
-          if      (pdg_id > 2000) fillSeedHistograms(_hist.fSeed[1],seed,&seed_par);
+          if      (pdg_id > 2000) {
+            fillSeedHistograms(_hist.fSeed[1],seed,&seed_par);
+          }
           else if (pdg_id == 11) {
 
             if      (mom <  20) fillSeedHistograms(_hist.fSeed[2],seed,&seed_par);
@@ -678,7 +692,15 @@ namespace mu2e {
             else if (mom < 110) fillSeedHistograms(_hist.fSeed[4],seed,&seed_par);
             else                fillSeedHistograms(_hist.fSeed[5],seed,&seed_par);
           }
-          else if (pdg_id == -11) fillSeedHistograms(_hist.fSeed[6],seed,&seed_par);
+          else if (pdg_id == -11) {
+            fillSeedHistograms(_hist.fSeed[6],seed,&seed_par);
+          }
+          else if (abs(pdg_id) == 13) {
+            fillSeedHistograms(_hist.fSeed[7],seed,&seed_par);
+          }
+          else if (abs(pdg_id) == 211) {
+            fillSeedHistograms(_hist.fSeed[8],seed,&seed_par);
+          }
 
           if ((pdg_id == 11) and (mom < 20)) {
             DeltaCandidate* dc(nullptr);
@@ -754,22 +776,24 @@ namespace mu2e {
 
       fillDeltaHistograms(_hist.fDelta[0],delta);
 
-      if (pdg_id > 2000) fillDeltaHistograms(_hist.fDelta[1],delta);
-      if (pdg_id ==  11) {
-        if (mom < 20) fillDeltaHistograms(_hist.fDelta[2],delta);
+      if      (pdg_id > 2000)    fillDeltaHistograms(_hist.fDelta[1],delta);
+      else if (pdg_id ==  11) {
+        if (mom < 20)            fillDeltaHistograms(_hist.fDelta[2],delta);
       }
-
-      if (pdg_id == -11) fillDeltaHistograms(_hist.fDelta[6],delta);
+      else if (pdg_id      == -11)    fillDeltaHistograms(_hist.fDelta[6],delta);
+      else if (abs(pdg_id) ==  13)    fillDeltaHistograms(_hist.fDelta[7],delta);
+      else if (abs(pdg_id) == 211)    fillDeltaHistograms(_hist.fDelta[8],delta);
 
       if (delta->NHits() >= 5) {
         fillDeltaHistograms(_hist.fDelta[10],delta);
 
-        if (pdg_id > 2000) fillDeltaHistograms(_hist.fDelta[11],delta);
-        if (pdg_id ==  11) {
-          if (mom < 20) fillDeltaHistograms(_hist.fDelta[12],delta);
+        if      (pdg_id      > 2000) fillDeltaHistograms(_hist.fDelta[11],delta);
+        else if (pdg_id ==  11) {
+          if (mom < 20)              fillDeltaHistograms(_hist.fDelta[12],delta);
         }
-
-        if (pdg_id == -11) fillDeltaHistograms(_hist.fDelta[16],delta);
+        else if (pdg_id      == -11) fillDeltaHistograms(_hist.fDelta[16],delta);
+        else if (abs(pdg_id) ==  13) fillDeltaHistograms(_hist.fDelta[17],delta);
+        else if (abs(pdg_id) == 211) fillDeltaHistograms(_hist.fDelta[18],delta);
       }
     }
 //-----------------------------------------------------------------------------
@@ -852,9 +876,9 @@ namespace mu2e {
           PanelZ_t* panelz = &_data->oTracker[ist][face][ip];
 
           // for (int il=0; il<2; il++) {
-          int nhits = panelz->fHitData.size();
+          int nhits = panelz->fHitData->size();
           for (int ih=0; ih<nhits; ih++) {
-            HitData_t*      hd = &panelz->fHitData[ih];
+            HitData_t*      hd = &(*panelz->fHitData)[ih];
             const ComboHit* ch = hd->fHit;
             size_t ich         = ch-ch0;  // hit index in the collection
 //-----------------------------------------------------------------------------
@@ -1111,9 +1135,9 @@ namespace mu2e {
         for (int face=0; face<kNFaces; face++) {
           for (int ip=0; ip<kNPanelsPerFace; ip++) {
             PanelZ_t* pz = &_data->oTracker[is][face][ip];
-            int nhits = pz->fHitData.size();
+            int nhits = pz->fHitData->size();
             for (int ih=0; ih<nhits; ih++) {
-              HitData_t* hd = &pz->fHitData[ih];
+              HitData_t* hd = &(*pz->fHitData)[ih];
               printHitData(hd,face,ip);
             }
           }
@@ -1181,16 +1205,16 @@ namespace mu2e {
           DeltaCandidate* dc = &_data->listOfDeltaCandidates.at(i);
           int pdg_id = -1;
           if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
-          printf("--------------------------------------------------------------------------------------------------------------------------\n");
-          printf("      i    nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0min   t0max     PdgID N(MC hits)\n");
-          printf("--------------------------------------------------------------------------------------------------------------------------\n");
+          printf("----------------------------------------------------------------------------------------------------------------\n");
+          printf("      i    nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0    PdgID N(MC hits)\n");
+          printf("----------------------------------------------------------------------------------------------------------------\n");
           printf(":dc:%05i %3i  %3i",dc->Index(),dc->fNHits,dc->fNHitsCE);
           printf(" %3i",dc->fNSeeds);
           printf(" %2i  %2i %7.2f %7.2f %9.2f",dc->fFirstStation,dc->fLastStation,
                  dc->CofM.x(),dc->CofM.y(),dc->CofM.z());
           printf("                            %30i %5i",pdg_id,dc->fNHitsMcP);
           printf("\n");
-          printf("--------------------------------------------------------------------------------------------------------------------------\n");
+          printf("----------------------------------------------------------------------------------------------------------------\n");
 
           for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
             DeltaSeed* ds = dc->seed[is];
@@ -1207,9 +1231,9 @@ namespace mu2e {
               float chi22 = (hd1) ? hd1->fChi2Min : -1;
               printf(" %7.1f %7.1f",hd0->fChi2Min, chi22);
               printf(" %7.1f %7.1f",ds->MinHitTime(),ds->MaxHitTime());
-              printf(" %7.1f %7.1f",dc->fT0Min[is]  ,dc->fT0Max[is]);
+              printf(" %7.1f ",dc->T0(is));
 
-              printf("  (");
+              printf("(");
               for (int face=0; face<kNFaces; face++) {
                 const HitData_t* hd = ds->HitData(face);
                 if (hd == nullptr) printf(" %5i:%6i",-1,-1);
@@ -1352,12 +1376,12 @@ namespace mu2e {
         for (int ip=0; ip<kNPanelsPerFace; ip++) {
           PanelZ_t* pz = &_data->oTracker[is][face][ip];
           printf("#        --------------- station: %2i face: %2i panel: %2i nhits:%3li\n",
-                 is,face,ip, pz->fHitData.size());
-          int nh2 = pz->fHitData.size();// pz->fHitData[0].size()+pz->fHitData[1].size();
+                 is,face,ip, pz->fHitData->size());
+          int nh2 = pz->fHitData->size();// pz->fHitData[0].size()+pz->fHitData[1].size();
           if (nh2 > 0) printHitData(NULL,-1,-1);
-          int nh = pz->fHitData.size();
+          int nh = pz->fHitData->size();
           for (int ih=0; ih<nh; ih++) {
-            printHitData(&pz->fHitData[ih],face,ip);
+            printHitData(&(*pz->fHitData)[ih],face,ip);
           }
           nhitso += nh;
         }

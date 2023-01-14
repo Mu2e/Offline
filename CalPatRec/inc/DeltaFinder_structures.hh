@@ -27,7 +27,7 @@ namespace mu2e {
      struct HitData_t {
       const ComboHit*         fHit;
       DeltaSeed*              fSeed;           // nullptr if not associated...
-      int                     fNSecondHits;
+       //      int                     fNSecondHits;
       int                     fDeltaIndex;
       float                   fChi2Min;
       float                   fSigW2;    // cached resolution^2 along the wire
@@ -39,7 +39,7 @@ namespace mu2e {
         float sigw   =  Hit->posRes(ComboHit::wire);
         fSigW2       = sigw*sigw;  // to be used to calculate chi2...
         fSeed        = nullptr;
-        fNSecondHits =  0;
+        // fNSecondHits =  0;
         fDeltaIndex  = -1;
         fCorrTime    = Hit->correctedTime();
       }
@@ -49,7 +49,7 @@ namespace mu2e {
 
     struct PanelZ_t {
       int                              fNHits  ; // guess, total number of ComboHits
-      std::vector<HitData_t>           fHitData;
+      std::vector<HitData_t>*          fHitData;
       const Panel*                     fPanel;      // backward pointer to the tracker panel
       double                           wx;          // direction cosines of the wires, assumed to be all the same
       double                           wy;
