@@ -29,22 +29,24 @@ namespace mu2e {
       pars[1] = dinfo.driftDistance_;
       pars[2] = tpdata.docaVar();
       pars[3] = chit.driftTime();
-      pars[4] = chit.energyDep();
+      // normalize edep to the estimated path length through the straw
+      double sint = sqrt(1.0-tpdata.dirDot()*tpdata.dirDot());
+      double plen = sqrt(std::max(0.25, 6.25-dinfo.driftDistance_*dinfo.driftDistance_))/sint;
+      pars[4] = chit.energyDep()/plen;
       // compare the delta-t based U position with the fit U position; requires relative end
       double endsign = 2.0*(chit.driftEnd()-0.5);
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
       pars[5] = fabs(chit.wireDist() - upos);
       pars[6] = tpdata.particlePoca().Vect().Rho();
       auto mvaout = mva_->infer(pars.data());
+      whstate.quality_[WireHitState::bkg] = mvaout[0];
       if(diag_ > 2){
         whstate.algo_  = StrawHitUpdaters::BkgANN;
-        whstate.quality_ = mvaout[0];
       }
       if(mvaout[0] < mvacut_){
         whstate.algo_  = StrawHitUpdaters::BkgANN;
         whstate.state_ = WireHitState::inactive;
         whstate.frozen_ = whstate.isIn(freeze_);
-        whstate.quality_ = mvaout[0];
       }
     }
     return whstate;

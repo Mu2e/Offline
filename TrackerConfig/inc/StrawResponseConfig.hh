@@ -51,14 +51,16 @@ namespace mu2e {
       Name("totDriftError"), Comment(" totDriftError ")};
     fhicl::Sequence<double> driftFit {
       Name("driftFit"), Comment("Drift fit")};
-    fhicl::Sequence<double> driftResBins {
-      Name("driftResBins"), Comment("Drift response Bin edges (mm)")};
-    fhicl::Sequence<double> driftResOffset {
-      Name("driftResOffset"), Comment("Drift response Offset (mm)")};
-    fhicl::Sequence<double> driftResRMS {
-      Name("driftResRMS"), Comment("Drift response RMS (mm)")};
-    fhicl::Sequence<double> nullResRMS {
-      Name("nullResRMS"), Comment("Null hit response RMS (mm)")};
+    fhicl::Sequence<double> driftOffBins {
+      Name("driftOffBins"), Comment("Drift Offset Bin edges (mm)")};
+    fhicl::Sequence<double> driftOffset {
+      Name("driftOffset"), Comment("Drift Offset (mm)")};
+    fhicl::Sequence<double> driftRMSBins {
+      Name("driftRMSBins"), Comment("Drift RMS Bin edges (mm)")};
+    fhicl::Sequence<double> signedDriftRMS {
+      Name("signedDriftRMS"), Comment("Signed Drift RMS (mm)")};
+    fhicl::Sequence<double> unsignedDriftRMS {
+      Name("unsignedDriftRMS"), Comment("Unsigned Drift RMS (mm)")};
     fhicl::Atom<double> dRdTScale {
       Name("dRdTScale"), Comment("Scale factor for dRdT")};
     fhicl::Atom<bool> driftResIsTime {

@@ -64,9 +64,9 @@ namespace mu2e {
 //    double sigma = _config.parameterizedDriftSigma();
 //    double tau = _config.parameterizedDriftTau();
 
-    if (_config.driftResOffset().size() != _config.driftResRMS().size()
-         || _config.nullResRMS().size() != _config.driftResRMS().size()
-        || _config.driftResBins().size() != 2){
+    if ( _config.unsignedDriftRMS().size() != _config.signedDriftRMS().size()
+        || _config.driftOffBins().size() != 2
+        || _config.driftRMSBins().size() != 2){
       throw cet::exception("BADCONFIG")
         << "StrawResponse drift res vector lengths incorrect" << "\n";
     }
@@ -112,8 +112,9 @@ namespace mu2e {
         _config.totDriftError(),
         _config.driftErrorParameters(),
         _config.useParameterizedDriftErrors(),
-        _config.driftResBins(),_config.driftResOffset(), _config.driftResRMS(),
-        _config.nullResRMS(),_config.dRdTScale(),
+        _config.driftOffBins(),_config.driftOffset(),
+        _config.driftRMSBins(),_config.signedDriftRMS(),
+        _config.unsignedDriftRMS(),_config.dRdTScale(),
         _config.driftResIsTime(),
         _config.wireLengthBuffer(), _config.strawLengthFactor(),
         _config.errorFactor(), _config.useNonLinearDrift(),

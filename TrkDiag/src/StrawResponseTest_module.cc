@@ -107,8 +107,8 @@ namespace mu2e {
         dtime_ = tmin_ + tstep*ibin;
         DriftInfo dinfo = sresponse->driftInfo(sid,dtime_,0.0);
         rdrift_ = dinfo.driftDistance_;
-        rderr_ = dinfo.driftDistanceError_;
-        rnerr_ = dinfo.nullDistanceError_;
+        rderr_ = dinfo.signedDriftError_;
+        rnerr_ = dinfo.unsignedDriftError_;
         vinst_ = dinfo.driftVelocity_;
         srtest_->Fill();
         t2d_->SetPoint(ibin,dtime_,rdrift_);
