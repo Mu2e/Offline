@@ -42,8 +42,9 @@ namespace mu2e {
           std::vector<double> totderror,
           std::vector<double> derr,
           bool usepderr,
-          std::vector<double> driftResBins,std::vector<double> driftResOffset, std::vector<double> driftResRMS,
-          std::vector<double> nullResRMS, double dRdTScale,
+          std::vector<double> driftOffBins, std::vector<double> driftOffset,
+          std::vector<double> driftRMSBins, std::vector<double> signedDriftRMS,
+          std::vector<double> unsignedDriftRMS, double dRdTScale,
           bool driftResIsTime,
           double wbuf, double slfac, double errfac, bool usenonlindrift,
           double lindriftvel, double mint0doca,
@@ -67,10 +68,11 @@ namespace mu2e {
         _totdtime(totdtime),
         _totderror(totderror),
         _derr(derr), _usepderr(usepderr),
-        _driftResBins(driftResBins),
-        _driftResOffset(driftResOffset),
-        _driftResRMS(driftResRMS),
-        _nullResRMS(nullResRMS),
+        _driftOffBins(driftOffBins),
+        _driftOffset(driftOffset),
+        _driftRMSBins(driftRMSBins),
+        _signedDriftRMS(signedDriftRMS),
+        _unsignedDriftRMS(unsignedDriftRMS),
         _dRdTScale(dRdTScale),
         _driftResIsTime(driftResIsTime),
         _wbuf(wbuf), _slfac(slfac), _errfac(errfac),
@@ -122,7 +124,7 @@ namespace mu2e {
 
       double driftTimeToDistance(StrawId strawId, double dtime, double phi, bool forceOld=false) const;
       double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
-      double driftDistanceError(StrawId strawId, double ddist, double phi, bool forceOld=false) const;
+      double signedDriftError(StrawId strawId, double ddist, double phi, bool forceOld=false) const;
       double driftDistanceOffset(double DOCA) const;
       double driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 
@@ -199,10 +201,11 @@ namespace mu2e {
       std::vector<double> _totderror;
       std::vector<double> _derr; // parameters describing the drift error function
       bool _usepderr; // flag to use calculated version of drift error calculation
-      std::vector<double> _driftResBins;
-      std::vector<double> _driftResOffset;
-      std::vector<double> _driftResRMS;
-      std::vector<double> _nullResRMS;
+      std::vector<double> _driftOffBins;
+      std::vector<double> _driftOffset;
+      std::vector<double> _driftRMSBins;
+      std::vector<double> _signedDriftRMS;
+      std::vector<double> _unsignedDriftRMS;
       double _dRdTScale;
       bool _driftResIsTime;
       double _wbuf; // buffer at the edge of the straws, in terms of sigma

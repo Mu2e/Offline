@@ -119,15 +119,15 @@ namespace mu2e {
     dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
     double derrslope,nerrslope;
     int halfrange(2); // should be a parameter TODO
-    interpolateCalib(_driftResBins,_driftResRMS, dinfo.driftDistance_, halfrange, dinfo.driftDistanceError_, derrslope);
-    interpolateCalib(_driftResBins,_nullResRMS, dinfo.driftDistance_, halfrange, dinfo.nullDistanceError_ , nerrslope);
     if(calibrated){
       double dcorr, dcorrslope;
-      interpolateCalib(_driftResBins,_driftResOffset, dinfo.driftDistance_, halfrange, dcorr, dcorrslope);
+      interpolateCalib(_driftOffBins,_driftOffset, dinfo.driftDistance_, halfrange, dcorr, dcorrslope);
       dinfo.driftDistance_ -= dcorr;
-      // note 'calibrated Velocity' is really dR/dt (change in average drift distance WRT measured time), not a true physical velocity
+      // note 'calibrated Velocity' is really dR/dt (change in calibrated drift distance WRT measured time), not a true physical velocity
       dinfo.driftVelocity_ *= (1.0 - dcorrslope)*_dRdTScale;
     }
+    interpolateCalib(_driftOffBins,_signedDriftRMS, dinfo.driftDistance_, halfrange, dinfo.signedDriftError_, derrslope);
+    interpolateCalib(_driftRMSBins,_unsignedDriftRMS, dinfo.driftDistance_, halfrange, dinfo.unsignedDriftError_ , nerrslope);
     return dinfo;
   }
 
@@ -155,9 +155,9 @@ namespace mu2e {
     if (!_useOldDrift && !forceOld){
       if (_driftResIsTime){
         ddist = std::max(0.0,std::min(rstraw_,ddist));
-        return PieceLineDrift(_driftResBins, _driftResRMS, ddist);
+        return PieceLineDrift(_driftRMSBins, _signedDriftRMS, ddist);
       }else{
-        double distance_error = driftDistanceError(strawId,ddist,phi,forceOld);
+        double distance_error = signedDriftError(strawId,ddist,phi,forceOld);
         double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
         return distance_error/speed_at_ddist;
       }
@@ -165,9 +165,9 @@ namespace mu2e {
       //FIXME to be deprecated
       if (useParameterizedDriftError()){
         ddist = std::max(0.0,std::min(rstraw_,ddist));
-        return PieceLineDrift(_driftResBins, _driftResRMS, ddist);
+        return PieceLineDrift(_driftRMSBins, _signedDriftRMS, ddist);
       }else{
-        return driftDistanceError(strawId, ddist, phi, forceOld) / _lindriftvel;
+        return signedDriftError(strawId, ddist, phi, forceOld) / _lindriftvel;
       }
     }
   }
@@ -209,7 +209,7 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftDistanceError(StrawId strawId,
+  double StrawResponse::signedDriftError(StrawId strawId,
       double ddist, double phi, bool forceOld) const {
     if (!_useOldDrift && !forceOld){
       if (_driftIgnorePhi)
@@ -220,7 +220,7 @@ namespace mu2e {
         return time_error*speed_at_ddist;
       }else{
       //  ddist = std::max(0.0,std::min(rstraw_,ddist));
-        return PieceLineDrift(_driftResBins,_driftResRMS, ddist);
+        return PieceLineDrift(_driftRMSBins,_signedDriftRMS, ddist);
       }
     }else{
       // maximum drift is the straw radius.  should come from conditions FIXME!
@@ -235,7 +235,7 @@ namespace mu2e {
       return 0;
     else{
       ddist = std::max(0.0,std::min(rstraw_,ddist));
-      return PieceLineDrift(_driftResBins,_driftResOffset, ddist);
+      return PieceLineDrift(_driftOffBins,_driftOffset, ddist);
     }
   }
 

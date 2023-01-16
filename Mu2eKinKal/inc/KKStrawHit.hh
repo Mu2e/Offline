@@ -152,10 +152,10 @@ namespace mu2e {
       auto cdinfo = fillDriftInfo(true);
       if(whstate_.driftConstraint()){
         whstate_.dDdT_ = cdinfo.driftVelocity_;
-        whstate_.dVar_ = cdinfo.driftDistanceVar();
+        whstate_.dVar_ = cdinfo.signedDriftVar();
       } else {
         if(whstate_.nulldvar_ == WireHitState::rdrift){
-          whstate_.dVar_ = cdinfo.nullDistanceVar();
+          whstate_.dVar_ = cdinfo.unsignedDriftVar();
         } else {
           whstate_.dVar_ = DriftInfo::maxdvar_;
         }

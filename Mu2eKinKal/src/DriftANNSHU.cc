@@ -49,34 +49,39 @@ namespace mu2e {
       spars[1] = dinfo.driftDistance_;
       spars[2] = sqrt(std::max(0.0,tpdata.docaVar()));
       spars[3] = chit.driftTime();
-      spars[4] = chit.energyDep();
+        // normalize edep.
+        // For drift quality, use the estimated path length through the straw, as that measures the clustering effects
+        // For sign, noralize only to the crossing angle, as there it serves as an estimate of the drift radius
+      double sint = sqrt(1.0-tpdata.dirDot()*tpdata.dirDot());
+      double plen = sqrt(std::max(0.25, 6.25-dinfo.driftDistance_*dinfo.driftDistance_))/sint;
+      spars[4] = chit.energyDep()*sint;
+      cpars[4] = chit.energyDep()/plen;
       auto signmvaout = signmva_->infer(spars.data());
       cpars[0] = fabs(tpdata.doca());
       cpars[1] = dinfo.driftDistance_;
       cpars[2] = chit.driftTime();
       cpars[3] = chit.energyDep();
      auto clustermvaout = clustermva_->infer(cpars.data());
-      if(diag_ > 1){
-        whstate.algo_  = StrawHitUpdaters::DriftANN;
-        whstate.quality_ = signmvaout[0]; // need an array here TODO
-      }
-      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
-        if(allowed_.hasAnyProperty(WHSMask::drift)){
-          whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-          whstate.algo_ = StrawHitUpdaters::DriftANN;
-          whstate.totuse_ = totuse_;
-          whstate.quality_ = signmvaout[0];
+     whstate.quality_[WireHitState::sign] = signmvaout[0];
+     whstate.quality_[WireHitState::drift] = clustermvaout[0];
+     if(diag_ > 1){
+       whstate.algo_  = StrawHitUpdaters::DriftANN;
+     }
+     if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
+       if(allowed_.hasAnyProperty(WHSMask::drift)){
+         whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
+         whstate.algo_ = StrawHitUpdaters::DriftANN;
+         whstate.totuse_ = totuse_;
        }
-      } else {
-        if(allowed_.hasAnyProperty(WHSMask::null)){
-          whstate.state_ = WireHitState::null;
-          whstate.algo_ = StrawHitUpdaters::DriftANN;
-          whstate.totuse_ = totuse_;
-          whstate.nulldvar_ = nulldvar_;
-          whstate.quality_ = signmvaout[0];
-        }
-      }
-      if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);
+     } else {
+       if(allowed_.hasAnyProperty(WHSMask::null)){
+         whstate.state_ = WireHitState::null;
+         whstate.algo_ = StrawHitUpdaters::DriftANN;
+         whstate.totuse_ = totuse_;
+         whstate.nulldvar_ = nulldvar_;
+       }
+     }
+     if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);
     }
     return whstate;
   }
