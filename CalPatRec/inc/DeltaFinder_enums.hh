@@ -11,7 +11,5 @@ namespace mu2e {
     kNPanelsPerFace = StrawId::_npanels/2    // = 3
   };
 
-  extern float DeltaFinder_stationZ[kNStations];
-
 }
 #endif

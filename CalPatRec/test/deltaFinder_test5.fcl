@@ -1,7 +1,6 @@
 # -*- mode:tcl -*-
-# variables which need defaults:
-# -----------------------------
-# :DEFAULT: TRIGGER_PATH=p6
+# differences from test1 :
+# -- sigmaR = seedRes = 4mm
 #------------------------------------------------------------------------------
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
@@ -22,20 +21,22 @@ physics : {
             diagLevel                     :  0  ## 0 ##
             debugLevel                    :  0  ## 1 ##
             useTimePeaks                  :  0
-            maxChi2Seed                   : 16. ## 10 16 used by findSeeds, for each hit
+
+            maxChi2Seed                   : 12. ## 10 16 used by findSeeds, for each hit
             maxChi2Radial                 : 12. ## 10 25 used by recoverStation (wire-to-seed dist)
             maxChi2All                    : 12. ## 10 16 used by pruneSeeds to mark bad seeds
-            maxDxy                        : 30. ## used by connectSeeds 30 40 mm
-            maxGap                        :  3  ## 3 gap in missing stations along the candidate
-            sigmaR                        :  4. # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-            seedRes                       :  4. # 5 is good just to see what it does
+            maxChi2SeedDelta              :  3. ##
+            maxDxy                        : 10. ## used by connectSeeds 30 40 mm
+            maxGap                        :  3. ## 3 gap in missing stations along the candidate
+            sigmaR                        :  3. # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+            seedRes                       :  3. # 5 is good just to see what it does
             maxDriftTime                  : 35. ## 40 ns, includes some tolerance (50)
             maxSeedDt                     : 20. ## time window for checking duplicate seeds
             maxHitDt                      : 30. ## time window for checking duplicate seeds
             maxStrawDt                    : 10. # max sensible time difference for a straw, ns, off by default
             maxDtDs                       :  5. # ns, max allowed T0 shift per station
             maxDtDc                       : 10. ## 15 20 30 ns, max dT between two delta candidates
-            maxHitSeedDt                  : 20  ## time tolerance for picking up single hits ?
+            maxHitSeedDt                  : 10  ##
             minDeltaNHits                 :  5
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
@@ -52,7 +53,6 @@ physics : {
         DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
             debugLevel                    : 0 ## 1
             chCollTag                     : "makePH"
-            shCollTag                     : "makeSH"
             chfCollTag                    : "DeltaFinder:ComboHits"
             shfCollTag                    : "DeltaFinder:StrawHits"
             strawDigiMCCollectionTag      : "compressDigiMCs"
@@ -62,10 +62,11 @@ physics : {
     filters   : { @table::Reconstruction.filters   }
     analyzers : { @table::stntuple.analyzers       }
 
-    p1: [ @sequence::TrkHitReco.PrepareHits, DeltaFinder, DeltaFinderAna ]  ## CalTimePeakFinder,
-    p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder ]
-    p3: [                                    CalTimePeakFinder, DeltaFinder ]
-    p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
+    p1: [ @sequence::TrkHitReco.PrepareHits,                    DeltaFinder, DeltaFinderAna ]  ## CalTimePeakFinder,
+    p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder                 ]
+    p3: [                                    CalTimePeakFinder, DeltaFinder                 ]
+    p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder                 ]
+
     p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
     p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloClusterMC.TruthMatch,
           CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]

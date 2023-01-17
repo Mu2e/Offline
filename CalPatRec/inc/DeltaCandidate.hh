@@ -1,6 +1,7 @@
 #ifndef __CalPatRec_DeltaCandidate_hh__
 #define __CalPatRec_DeltaCandidate_hh__
 
+#include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 #include "Offline/CalPatRec/inc/DeltaSeed.hh"
 
 namespace mu2e {
@@ -74,7 +75,7 @@ namespace mu2e {
 
       float      T0(int Station)     {
         if (fNSeeds == 1) return fT0;
-        else              return fT0 + fDtDz*DeltaFinder_stationZ[Station];
+        else              return fT0 + fDtDz*DeltaFinderTypes::stationZ[Station];
       }
     };
 }

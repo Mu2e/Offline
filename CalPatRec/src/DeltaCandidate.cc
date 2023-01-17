@@ -92,7 +92,7 @@ namespace mu2e {
 // time
 //-----------------------------------------------------------------------------
       double t = Seed->TMean();
-      double z = DeltaFinder_stationZ[Station];
+      double z = DeltaFinderTypes::stationZ[Station];
       fSt     += t;
       fSt2    += t*t;
       fStz    += t*z;
@@ -131,7 +131,7 @@ namespace mu2e {
       // fT0Min[Station] = t0-dt;
       // fT0Max[Station] = t0+dt;
 //-----------------------------------------------------------------------------
-// finally, set seed DeltaIndex
+// finally, set fDeltaIndex, this marks the 'Seed' as used
 //-----------------------------------------------------------------------------
       Seed->fDeltaIndex = fIndex;
     }

@@ -1,13 +1,99 @@
 //////////////////////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////////////////////
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+// #include "Offline/GeometryService/inc/DetectorSystem.hh"
+
 #include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
+
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
-  float DeltaFinder_stationZ[kNStations];
-
   namespace DeltaFinderTypes {
+
+    float stationZ   [kNStations];
+
+//-----------------------------------------------------------------------------
+    Data_t::Data_t() {
+      for (int i=0; i<kNStations; i++) {
+        listOfSeeds[i] = new TClonesArray("mu2e::DeltaSeed",50);
+        listOfSeeds[i]->SetOwner(kTRUE);
+      }
+
+      for (int is=0; is<kNStations; is++) {
+        for (int face=0; face<kNFaces; face++) {
+          for (int ip=0; ip<kNPanelsPerFace; ip++) {
+            PanelZ_t* pz = &oTracker[is][face][ip];
+            pz->fHitData = new std::vector<HitData_t> ;
+          }
+        }
+      }
+    }
+
+//-----------------------------------------------------------------------------
+    Data_t::~Data_t() {
+      for (int i=0; i<kNStations; i++) {
+        delete listOfSeeds[i];
+      }
+
+      for (int is=0; is<kNStations; is++) {
+        for (int face=0; face<kNFaces; face++) {
+          for (int ip=0; ip<kNPanelsPerFace; ip++) {
+            PanelZ_t* pz = &oTracker[is][face][ip];
+            delete pz->fHitData;
+          }
+        }
+      }
+    }
+
+//-----------------------------------------------------------------------------
+    void Data_t::orderID(ChannelID* X, ChannelID* O) {
+      if (X->Panel % 2 == 0) X->Face = 0;
+      else                   X->Face = 1; // define original face
+
+      O->Station = X->Station;            // stations already ordered
+      O->Plane   = X->Plane;              // planes already ordered, but not necessary for ordered construct
+
+      if (X->Station % 2 == 0) {
+        if (X->Plane == 0) O->Face = 1 - X->Face;
+        else               O->Face = X->Face + 2;
+      }
+      else {
+        if (X->Plane == 0) O->Face = X->Face;
+        else               O->Face = 3 - X->Face; // order face
+      }
+
+      O->Panel = int(X->Panel/2);                // order panel
+
+      int n = X->Station + X->Plane + X->Face;   // pattern has no intrinsic meaning, just works
+      if (n % 2 == 0) O->Layer = 1 - X->Layer;
+      else            O->Layer = X->Layer;       // order layer
+    }
+
+//-----------------------------------------------------------------------------
+  void Data_t::deOrderID(ChannelID* X, ChannelID* O) {
+
+    X->Station = O->Station;
+
+    X->Plane   = O->Plane;
+
+    if(O->Station % 2 ==  0) {
+      if(O->Plane == 0) X->Face = 1 - O->Face;
+      else X->Face = O->Face - 2;
+    }
+    else {
+      if(O->Plane == 0) X->Face = O->Face;
+      else X->Face = 3 - O->Face;
+    }
+
+    if(X->Face == 0) X->Panel = O->Panel * 2;
+    else X->Panel = 1 + (O->Panel * 2);
+
+    int n = X->Station + X->Plane + X->Face;
+    if(n % 2 == 0) X->Layer = 1 - O->Layer;
+    else X->Layer = O->Layer;
+  }
 
 //-----------------------------------------------------------------------------
     void Data_t::InitEvent(const art::Event* Evt, int DebugLevel) {
@@ -21,6 +107,85 @@ namespace mu2e {
       }
 
       listOfDeltaCandidates.clear();
+    }
+
+//-----------------------------------------------------------------------------
+    void Data_t::InitGeometry() {
+      mu2e::GeomHandle<mu2e::Tracker> tH;
+      tracker     = tH.get();
+
+      mu2e::GeomHandle<mu2e::DiskCalorimeter> cH;
+      calorimeter = cH.get();
+
+      ChannelID cx, co;
+      int       nDisks    = calorimeter->nDisk();
+
+      double    disk_z[2] = {0, 0};                            // in the tracker frame
+
+      for (int i=0; i<nDisks; ++i){
+        Hep3Vector gpos = calorimeter->disk(i).geomInfo().origin();
+        Hep3Vector tpos = calorimeter->geomUtil().mu2eToTracker(gpos);
+        disk_z[i] = tpos.z();
+      }
+//-----------------------------------------------------------------------------
+// define station Z coordinates and calculate the time-of-flight between
+// the station and each calorimeter disk for a typical mu-->e conversion electron
+//-----------------------------------------------------------------------------
+      for (unsigned ipl=0; ipl<tracker->nPlanes(); ipl += 2) {
+        const Plane* p1 = &tracker->getPlane(ipl);
+        const Plane* p2 = &tracker->getPlane(ipl+1);
+        int ist         = ipl/2;
+        stationZ[ist]   = (p1->origin().z()+p2->origin().z())/2;
+
+        for (int iDisk=0; iDisk<nDisks; ++iDisk){
+          stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - stationZ[ist])/sin(meanPitchAngle)/CLHEP::c_light;
+        }
+      }
+
+      float     z_tracker_center(0.);
+      // int       nPlanesPerStation(2);
+
+//-----------------------------------------------------------------------------
+// per-panel TOF corrections
+//-----------------------------------------------------------------------------
+      int npl = tracker->nPlanes();
+      for (int ipl=0; ipl< npl; ipl++) {
+        const Plane* pln = &tracker->getPlane(ipl);
+        int  ist = ipl/2;
+
+        for (unsigned ipn=0; ipn<pln->nPanels(); ipn++) {
+          const Panel* panel = &pln->getPanel(ipn);
+
+          int face;
+          if (panel->id().getPanel() % 2 == 0) face = 0;
+          else                                 face = 1;
+
+          for (unsigned il=0; il<panel->nLayers(); ++il) {
+            cx.Station   = ist;
+            cx.Plane     = ipl % 2;
+            cx.Face      = face;
+            cx.Panel     = ipn;
+            cx.Layer     = il;
+            orderID (&cx, &co);
+            int os       = co.Station;
+            int of       = co.Face;
+            int op       = co.Panel;
+            PanelZ_t* pz = &oTracker[os][of][op];
+            pz->fPanel   = panel;
+//-----------------------------------------------------------------------------
+// panel caches phi of its center and the z, phi runs from 0 to 2*pi
+//-----------------------------------------------------------------------------
+            pz->wx  = panel->straw0Direction().x();
+            pz->wy  = panel->straw0Direction().y();
+            pz->phi = panel->straw0MidPoint().phi();
+            pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+
+            int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
+            faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(meanPitchAngle)/CLHEP::c_light;
+          }
+        }
+        stationUsed[ist] = 1;
+      }
     }
 
 //-----------------------------------------------------------------------------
@@ -165,6 +330,60 @@ namespace mu2e {
 
       return 0;
     }
-  //  }
+
+//-----------------------------------------------------------------------------
+// testOrderID & testdeOrderID not used in module, only were used to make sure OrderID and deOrderID worked as intended
+//-----------------------------------------------------------------------------
+    void Data_t::testdeOrderID() {
+
+      ChannelID x, o;
+
+      for (int s=0; s<2; ++s) {
+        for (int f=0; f<4; ++f) {
+          for (int pa=0; pa<3; ++pa) {
+            for (int l=0; l<2; ++l) {
+
+              o.Station          = s;
+              o.Face             = f;
+              if (f < 2) o.Plane = 0;
+              else       o.Plane = 1;
+              o.Panel            = pa;
+              o.Layer            = l;
+
+              deOrderID(&x, &o);
+
+              printf(" testdeOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i, layer = %i)",
+                     x.Station,x.Plane,x.Face,x.Panel,x.Layer);
+              printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i, layer = %i)\n",
+                     o.Station,o.Plane,o.Face,o.Panel,o.Layer);
+            }
+          }
+        }
+      }
+    }
+
+//-----------------------------------------------------------------------------
+    void Data_t::testOrderID() {
+
+      ChannelID x, o;
+
+      for (int s=0; s<2; ++s) {
+        for (int pl=0; pl<2; ++pl) {
+          for (int pa=0; pa<6; ++pa) {
+            for (int l=0; l<2; ++l) {
+              x.Station = s;
+              x.Plane   = pl;
+              x.Panel   = pa;
+              x.Layer   = l;
+              orderID(&x, &o);
+              printf(" testOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i, layer = %i)",
+                     x.Station, x.Plane, x.Face, x.Panel, x.Layer);
+              printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i, layer = %i)\n",
+                     o.Station, o.Plane, o.Face, o.Panel, o.Layer);
+            }
+          }
+        }
+      }
+    }
   }
 }

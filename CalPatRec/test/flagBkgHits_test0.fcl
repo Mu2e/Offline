@@ -1,14 +1,14 @@
 # -*- mode:tcl -*-
-# variables which need defaults:
-# -----------------------------
-# :DEFAULT: TRIGGER_PATH=p6
+#------------------------------------------------------------------------------
+# flagBkgHits_test0 : defaults of the FlagBkgHits module
 #------------------------------------------------------------------------------
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
+
 BEGIN_PROLOG
   INPUT_MODULE  @protect_ignore: RootInput        # choices: EmptyEvent / RootInput
-  TRIGGER_PATHS @protect_ignore: [ p1       ]     # defined below
+  TRIGGER_PATHS @protect_ignore: [ p2       ]     # defined below
 END_PROLOG
 
 #include "Stntuple/fcl/stntuple.fcl"
