@@ -120,8 +120,8 @@ namespace mu2e {
       auto cad = ca_.tpData();
       if(shptr_ && shptr_->hitState().active()){
         // if we have an associated hit, overwrite the DOCA and DOCAVAR using the drift info, which is much more accurate
-        auto dinfo = shptr_->fillDriftInfo(false);
-        cad.doca_ = dinfo.driftDistance_;
+        auto dinfo = shptr_->fillDriftInfo();
+        cad.doca_ = dinfo.rDrift_;
         cad.docavar_ = dinfo.unsignedDriftVar();
       }
       smat_.findXings(cad,sxconfig_,mxings_);

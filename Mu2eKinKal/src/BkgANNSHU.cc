@@ -26,12 +26,12 @@ namespace mu2e {
       std::array<float,7> pars;
       // this order is given by the training
       pars[0] = fabs(tpdata.doca());
-      pars[1] = dinfo.driftDistance_;
+      pars[1] = dinfo.cDrift_;
       pars[2] = tpdata.docaVar();
       pars[3] = chit.driftTime();
       // normalize edep to the estimated path length through the straw
       double sint = sqrt(1.0-tpdata.dirDot()*tpdata.dirDot());
-      double plen = sqrt(std::max(0.25, 6.25-dinfo.driftDistance_*dinfo.driftDistance_))/sint;
+      double plen = sqrt(std::max(0.25, 6.25-dinfo.rDrift_*dinfo.rDrift_))/sint;
       pars[4] = chit.energyDep()/plen;
       // compare the delta-t based U position with the fit U position; requires relative end
       double endsign = 2.0*(chit.driftEnd()-0.5);

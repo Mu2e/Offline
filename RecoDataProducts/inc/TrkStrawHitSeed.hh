@@ -27,8 +27,7 @@ namespace mu2e {
         KinKal::ClosestApproachData const& uptca,
         KinKal::Residual const& utresid, KinKal::Residual const& udresid,
         KinKal::Residual const& rtresid, KinKal::Residual const& rdresid,
-        DriftInfo const& dinfo, // calibrated drift info
-        DriftInfo const& cdinfo, // cluster drift info
+        DriftInfo const& dinfo,
         WireHitState const& whs) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
       _flag(chit.flag()),
@@ -44,7 +43,7 @@ namespace mu2e {
       _rdt(rptca.deltaT()), _rtocavar(rptca.tocaVar()),
       _udoca(uptca.doca()),_udocavar(uptca.docaVar()),
       _udt(uptca.deltaT()), _utocavar(uptca.tocaVar()),
-      _rdrift(dinfo.driftDistance_),_cdrift(cdinfo.driftDistance_),
+      _rdrift(dinfo.rDrift_),_cdrift(dinfo.cDrift_ ),
       _sderr(dinfo.signedDriftError_),_uderr(dinfo.unsignedDriftError_), _dvel(dinfo.driftVelocity_),_lang(dinfo.LorentzAngle_),
       _utresid(utresid.value()),_utresidmvar(utresid.measurementVariance()),_utresidpvar(utresid.parameterVariance()),
       _udresid(udresid.value()),_udresidmvar(udresid.measurementVariance()),_udresidpvar(udresid.parameterVariance()),
