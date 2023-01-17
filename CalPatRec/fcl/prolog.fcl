@@ -337,10 +337,10 @@ CalPatRec : { @table::CalPatRec
         DeltaFinder : { module_type:DeltaFinder
             chCollTag                   : "makePH"                ## input coll
             shCollTag                   : "makeSH"                ## input coll
-            chfCollTag                  : "FlagBkgHits:ComboHits" ## input coll, so far - debugging
+            # chfCollTag                  : "FlagBkgHits:ComboHits" ## not used
             sdmcCollTag                 : "compressDigiMCs"       ## used for debug only
             tpeakCollTag                : "CalTimePeakFinder"
-            useTimePeaks                : 1
+            useTimePeaks                : 0
             testHitMask                 : false                 # off by default
             goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
                                                                 ## out of straw hits with an apriory wrong wdist ?
