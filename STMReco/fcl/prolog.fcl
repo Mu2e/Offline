@@ -1,15 +1,11 @@
 #
 # prolog.fcl for fcl paramaters that will be used in STM modules
 #
-# Some notes:
-# - The sampling frequency in different for the HPGe and LaBr in the test beam. In the real experiment this will not be the case.
-#
 BEGIN_PROLOG
 
 STM : {
 
   HPGe : {
-    samplingFrequency : 320.0520833313 # MHz - will probably end up in a DB somewhere
     # zero-suppression parameters
     tbefore : 2000 # ns
     tafter : 10000 # ns
@@ -18,7 +14,6 @@ STM : {
     naverage : 5
   }
   LaBr : {
-    samplingFrequency : 370.370370370 # MHz - will probably end up in a DB somewhere
     # zero-suppression parameters
     tbefore : 2000 # ns
     tafter : 10000 # ns

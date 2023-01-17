@@ -24,6 +24,9 @@
 
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/Mu2eUtilities/inc/STMUtils.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
+
 
 namespace mu2e {
 
@@ -33,7 +36,6 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       struct Config {
         fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
-        fhicl::Atom<double> samplingFrequency{ Name("samplingFrequency"), Comment("Sampling Frequency of ADC [MHz]")};
         fhicl::Atom<double> tbefore{ Name("tbefore"), Comment("Store this time before the peak [ns]")};
         fhicl::Atom<double> tafter{ Name("tafter"), Comment("Store this time after the peak [ns]")};
         fhicl::Atom<double> threshold{ Name("threshold"), Comment("Threshold to define the peak [ADC/ct]")};
@@ -55,6 +57,7 @@ namespace mu2e {
 
     int _verbosityLevel;
     art::InputTag _stmWaveformDigisTag;
+    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
     STMChannel _channel;
 
     double _tbefore; // time before the peak [ns]
@@ -84,9 +87,6 @@ namespace mu2e {
     ,_tbefore(config().tbefore())
     ,_tafter(config().tafter())
     ,_threshold(config().threshold())
-    ,_nsPerCt((1.0/config().samplingFrequency())*1e3) // convert to ns
-    ,_nadcBefore(_tbefore/_nsPerCt)
-    ,_nadcAfter(_tafter/_nsPerCt)
     ,_window(config().window())
     ,_naverage(config().naverage())
   {
@@ -103,6 +103,13 @@ namespace mu2e {
     // create output
     auto waveformsHandle = event.getValidHandle<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     std::unique_ptr<STMWaveformDigiCollection> outputSTMWaveformDigis(new STMWaveformDigiCollection());
+
+
+    STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get prodition
+    const auto samplingFrequency = stmEnergyCalib.samplingFrequency(_channel);
+    _nsPerCt = (1.0/samplingFrequency)*1e3;
+    _nadcBefore = (_tbefore/_nsPerCt);
+    _nadcAfter = (_tafter/_nsPerCt);
 
     if (_verbosityLevel > 0) {
       std::cout << "STM Zero-Suppression Algorithm Parameters:" << std::endl;
