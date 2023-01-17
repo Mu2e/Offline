@@ -21,6 +21,7 @@ namespace fhicl {
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 
@@ -57,16 +58,25 @@ namespace mu2e {
 
       fhicl::Table<McUtilsToolBase::Config> mcUtils{fhicl::Name("mcUtils"       ), fhicl::Comment("MC Diag plugin") };
     };
+
 //-----------------------------------------------------------------------------
 // data structure passed to the diagnostics plugin
 //-----------------------------------------------------------------------------
     struct Data_t {
       const art::Event*             event;
       const Tracker*                tracker;
+      const DiskCalorimeter*        calorimeter;
+
       art::InputTag                 chCollTag;
       art::InputTag                 chfCollTag;
-
       art::InputTag                 sdmcCollTag;
+
+      const ComboHitCollection*     chcol;
+      const StrawHitFlagCollection* chfColl;                 // input  combohit flags
+      StrawHitFlagCollection*       outputChfColl;           // output combohit flags
+      const TimeClusterCollection*  tpeakcol;
+
+      int                           debugLevel;              // printout level
 
       TClonesArray*                 listOfSeeds[kNStations]; // seeds with the first station being this
 
@@ -75,13 +85,17 @@ namespace mu2e {
       PanelZ_t                      oTracker   [kNStations][kNFaces][kNPanelsPerFace];
       int                           stationUsed[kNStations];
 
+      float                         stationToCaloTOF[2][20];
+      float                         faceTOF[80];
+      float                         meanPitchAngle;
+
       int                           fNSeeds;
       int                           nseeds_per_station[kNStations];
-      const ComboHitCollection*     chcol;
-      const StrawHitFlagCollection* chfColl;            // input  combohit flags
-      StrawHitFlagCollection*       outputChfColl;      // output combohit flags
-      const TimeClusterCollection*  tpeakcol;
-      int                           debugLevel;   // printout level
+//-----------------------------------------------------------------------------
+// functions
+//-----------------------------------------------------------------------------
+      Data_t();
+      ~Data_t();
 
       DeltaCandidate* deltaCandidate(int I)              { return &listOfDeltaCandidates[I]; }
       DeltaSeed*      deltaSeed     (int Station, int I) {
@@ -90,14 +104,15 @@ namespace mu2e {
 
 
       void InitEvent(const art::Event* Evt, int DebugLevel);
+      void InitGeometry();
 
-      int NSeedsTot() { return fNSeeds; }
+      int  NSeedsTot() { return fNSeeds; }
 
-      int NSeeds(int Station) {
+      int  NSeeds(int Station) {
         return listOfSeeds[Station]->GetEntriesFast();
       }
 
-      DeltaSeed*      NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
+      DeltaSeed* NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
         int loc = nseeds_per_station[Station];
         DeltaSeed* ds = new ((*listOfSeeds[Station])[loc]) DeltaSeed(loc,Station,Face0,Hd0,Face1,Hd1);
         nseeds_per_station[Station] += 1;
@@ -105,10 +120,16 @@ namespace mu2e {
         return ds;
       }
 
-      void printHitData       (HitData_t*      HitData, const char* Option = "");
-      void printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");
-      void printDeltaCandidate(DeltaCandidate* Delta  , const char* Option = "");
-    };
+      static void orderID           (ChannelID* X, ChannelID* Ordered);
+      static void deOrderID         (ChannelID* X, ChannelID* Ordered);
+
+      void       printHitData       (HitData_t*      HitData, const char* Option = "");
+      void       printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");
+      void       printDeltaCandidate(DeltaCandidate* Delta  , const char* Option = "");
+
+      void       testOrderID  ();
+      void       testdeOrderID();
+   };
 
 //-----------------------------------------------------------------------------
 // finally, utility functions still used by the diag tool

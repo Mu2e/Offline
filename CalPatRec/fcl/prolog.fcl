@@ -351,27 +351,29 @@ CalPatRec : { @table::CalPatRec
             maxCaloDt                   :  75.
             meanPitchAngle              : 0.67                  # mean pitch for CE
             minHitTime                  : 350.                  # ns
-            minNFacesWithHits           : 2                     #
-            minNSeeds                   : 2                     #
-            minDeltaNHits               : 5                     # min number of hits of a delta candidate
-            maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
             minimumTime                 : 400.                  # ns
             maximumTime                 : 1750.                 # ns
-            maxHitSeedDt                : 10                    ## ns
-            maxSeedDt                   : 30.                   ## time window for checking duplicate seeds
-            maxHitDt                    : 30.                   ## time window for checking duplicate seeds
-            maxChi2Seed                 : 16.                   ## 16 = 4sigma  25="5sigma" 50.                   #
-            maxChi2All                  : 16.                   ## 16 used by pruneSeeds to mark bad seeds... ## 2018-01-24: 25 --> 15
-            maxChi2Radial               : 16.                   # 16 ... 2018-01-24: 25 --> 15
-            maxChi2SeedDelta            : 16                    #
-            seedRes                     :  0.                   #
-            maxDxy                      : 10.                   # mm
-            maxGap                      : 3                     # gap in missing stations along the candidate
-            sigmaR                      : 10.                   # mm, roughly 3 MeV/c
-            maxDriftTime                : 40.                   ## ns, includes some tolerance (50)
-            maxStrawDt                  : 10.                   # max sensible time difference for a straw, ns, off by default
-            maxDtDs                     :  5.                   # ns, max allowed T0 shift per station
-            maxDtDc                     : 30.                   # ns, max dT between two delta candidates
+            minNFacesWithHits           : 2                     #
+            minNSeeds                   : 2                     #
+            maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
+
+            maxChi2Seed                 : 12. ## 10 16 used by findSeeds, for each hit
+            maxChi2Radial               : 12. ## 10 25 used by recoverStation (wire-to-seed dist)
+            maxChi2All                  : 12. ## 10 16 used by pruneSeeds to mark bad seeds
+            maxChi2SeedDelta            :  3. ##
+            maxDxy                      : 10. ## used by connectSeeds 30 40 mm
+            maxGap                      :  3  ## 3 gap in missing stations along the candidate
+            sigmaR                      :  3. # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+            seedRes                     :  3. # 5 is good just to see what it does
+            maxDriftTime                : 35. ## 40 ns, includes some tolerance (50)
+            maxSeedDt                   : 20. ## time window for checking duplicate seeds
+            maxHitDt                    : 30. ## time window for checking duplicate seeds
+            maxStrawDt                  : 10. # max sensible time difference for a straw, ns, off by default
+            maxDtDs                     :  5. # ns, max allowed T0 shift per station
+            maxDtDc                     : 10. ## 15 20 30 ns, max dT between two delta candidates
+            maxHitSeedDt                : 10  ##
+            minDeltaNHits               :  5
+
             writeStrawHits              : 1
             filter                      : 0
                                                                 # debugging/diagnostics

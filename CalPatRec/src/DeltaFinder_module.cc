@@ -9,15 +9,16 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
+#include "art_root_io/TFileService.h"
+
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
-#include "art_root_io/TFileService.h"
-// conditions
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
-// root
-#include "TVector2.h"
+
+// conditions
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+
 // data
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -100,13 +101,6 @@ namespace mu2e {
     };
 
   protected:
-    struct ChannelID {
-      int Station;
-      int Plane;
-      int Face;
-      int Panel;
-      int Layer;
-    };
 //-----------------------------------------------------------------------------
 // talk-to parameters: input collections and algorithm parameters
 //-----------------------------------------------------------------------------
@@ -169,9 +163,6 @@ namespace mu2e {
     DeltaFinderTypes::Data_t     _data;              // all data used
     int                          _testOrderPrinted;
 
-    float                        _stationToCaloTOF[2][20];
-    float                        _faceTOF[80];
-
     int                          _nComboHits;
     int                          _nStrawHits;
 
@@ -183,11 +174,6 @@ namespace mu2e {
     explicit DeltaFinder(const art::EDProducer::Table<Config>& config);
 
   private:
-
-    void         orderID      (ChannelID* X, ChannelID* Ordered);
-    void         deOrderID    (ChannelID* X, ChannelID* Ordered);
-    void         testOrderID  ();
-    void         testdeOrderID();
 
     bool         findData            (const art::Event&  Evt);
     int          checkDuplicates     (int Station,
@@ -203,6 +189,7 @@ namespace mu2e {
     int          orderHits           ();
     void         pruneSeeds          (int Station);
     int          recoverMissingHits  ();
+    int          recoverSeed         (DeltaCandidate* Delta, int LastStation, int Station);
     int          recoverStation      (DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds);
     void         runDeltaFinder      ();
     double       seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta);
@@ -275,23 +262,11 @@ namespace mu2e {
     if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(config().diagPlugin.get_PSet());
     else                 _hmanager = std::make_unique<ModuleHistToolBase>();
 
-    _data.chCollTag   = _chCollTag;
-    _data.chfCollTag  = _chfCollTag;
-    _data.sdmcCollTag = _sdmcCollTag;
+    _data.chCollTag      = _chCollTag;
+    _data.chfCollTag     = _chfCollTag;
+    _data.sdmcCollTag    = _sdmcCollTag;
+    _data.meanPitchAngle = _meanPitchAngle;
 
-    for (int i=0; i<kNStations; i++) {
-      _data.listOfSeeds[i] = new TClonesArray("mu2e::DeltaSeed",50);
-      _data.listOfSeeds[i]->SetOwner(kTRUE);
-    }
-
-    for (int is=0; is<kNStations; is++) {
-      for (int face=0; face<kNFaces; face++) {
-        for (int ip=0; ip<kNPanelsPerFace; ip++) {
-          PanelZ_t* pz = &_data.oTracker[is][face][ip];
-          pz->fHitData = new std::vector<HitData_t> ;
-        }
-      }
-    }
   }
 
   //-----------------------------------------------------------------------------
@@ -304,96 +279,100 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void DeltaFinder::endJob() {
-    for (int i=0; i<kNStations; i++) {
-      delete _data.listOfSeeds[i];
-    }
   }
 
 //-----------------------------------------------------------------------------
-// create a Z-ordered map of the tracker
+// create a Z-ordered representation of the tracker
 //-----------------------------------------------------------------------------
   void DeltaFinder::beginRun(art::Run& aRun) {
-    mu2e::GeomHandle<mu2e::Tracker> tHandle;
-    _tracker      = tHandle.get();
-    _data.tracker = _tracker;
 
-    mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
-    _calorimeter = ch.get();
 
-    ChannelID cx, co;
-    int       nDisks    = _calorimeter->nDisk();
-    double    disk_z[2] = {0};//given in the tracker frame
+    _data.InitGeometry();
 
-    for (int i=0; i<nDisks; ++i){
-      Hep3Vector gpos = _calorimeter->disk(i).geomInfo().origin();
-      Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-      disk_z[i] = tpos.z();
-    }
+    // mu2e::GeomHandle<mu2e::Tracker> tHandle;
+    // _tracker      = tHandle.get();
+    // _data.tracker = _tracker;
+
+    // mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
+    // _calorimeter = ch.get();
+
+    // ChannelID cx, co;
+
+    // int       nDisks    = _calorimeter->nDisk();
+    // double    disk_z[2] = {0};//given in the tracker frame
+
+    // for (int i=0; i<nDisks; ++i){
+    //   Hep3Vector gpos = _calorimeter->disk(i).geomInfo().origin();
+    //   Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    //   disk_z[i] = tpos.z();
+    // }
 //-----------------------------------------------------------------------------
 // define station Z coordinates
 //-----------------------------------------------------------------------------
-    for (unsigned ipl=0; ipl<_tracker->nPlanes(); ipl += 2) {
-      const Plane* p1 = &_tracker->getPlane(ipl);
-      const Plane* p2 = &_tracker->getPlane(ipl+1);
-      DeltaFinder_stationZ[ipl/2] = (p1->origin().z()+p2->origin().z())/2;
-    }
+    // for (unsigned ipl=0; ipl<_tracker->nPlanes(); ipl += 2) {
+    //   const Plane* p1 = &_tracker->getPlane(ipl);
+    //   const Plane* p2 = &_tracker->getPlane(ipl+1);
+    //   _data.stationZ[ipl/2] = (p1->origin().z()+p2->origin().z())/2;
+    // }
 
-    float     z_tracker_center(0.);
-    int       nPlanesPerStation(2);
-    double    station_z(0);
+//     float     z_tracker_center(0.);
+//     int       nPlanesPerStation(2);
+//     double    station_z(0);
 
-    for (unsigned planeId=0; planeId<_tracker->nPlanes(); planeId++) {
-      const Plane* pln = &_tracker->getPlane(planeId);
-      int  ist = planeId/nPlanesPerStation;
-      int  ipl = planeId % nPlanesPerStation;
-      //calculate the time-of-flight between the station and each calorimeter disk
-      //for a typical Conversion Electron
-      if (ipl == 0) {
-        station_z = pln->origin().z();
-      }
-      else {
-        station_z = (station_z + pln->origin().z())/2.;
-        for (int iDisk=0; iDisk<nDisks; ++iDisk){
-          _stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - station_z)/sin(_meanPitchAngle)/CLHEP::c_light;
-        }
-      }
+//     for (unsigned planeId=0; planeId<_tracker->nPlanes(); planeId++) {
+//       const Plane* pln = &_tracker->getPlane(planeId);
+//       int  ist = planeId/nPlanesPerStation;
+//       int  ipl = planeId % nPlanesPerStation;
+// //-----------------------------------------------------------------------------
+// // calculate the time-of-flight between the station and each calorimeter disk
+// // for a typical Conversion Electron
+// //-----------------------------------------------------------------------------
+//       if (ipl == 0) {
+//         station_z = pln->origin().z();
+//       }
+//       else {
+//         station_z = (station_z + pln->origin().z())/2.;
+//         for (int iDisk=0; iDisk<nDisks; ++iDisk){
+//           _stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - station_z)/sin(_meanPitchAngle)/CLHEP::c_light;
+//         }
+//       }
 
-      for (unsigned ipn=0; ipn<pln->nPanels(); ipn++) {
-        const Panel* panel = &pln->getPanel(ipn);
-        int face;
-        if (panel->id().getPanel() % 2 == 0) face = 0;
-        else                                 face = 1;
-        for (unsigned il=0; il<panel->nLayers(); ++il) {
-          cx.Station   = ist;
-          cx.Plane     = ipl;
-          cx.Face      = face;
-          cx.Panel     = ipn;
-          cx.Layer     = il;
-          orderID (&cx, &co);
-          int os       = co.Station;
-          int of       = co.Face;
-          int op       = co.Panel;
-          PanelZ_t* pz = &_data.oTracker[os][of][op];
-          pz->fPanel   = panel;
-//-----------------------------------------------------------------------------
-// panel caches phi of its center and the z
-//-----------------------------------------------------------------------------
-          pz->wx  = panel->straw0Direction().x();
-          pz->wy  = panel->straw0Direction().y();
-          pz->phi = panel->straw0MidPoint().phi();
-          pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-          int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
-          _faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(_meanPitchAngle)/CLHEP::c_light;
-        }
-      }
-      _data.stationUsed[ist] = 1;
-    }
+//       for (unsigned ipn=0; ipn<pln->nPanels(); ipn++) {
+//         const Panel* panel = &pln->getPanel(ipn);
+//         int face;
+//         if (panel->id().getPanel() % 2 == 0) face = 0;
+//         else                                 face = 1;
+//         for (unsigned il=0; il<panel->nLayers(); ++il) {
+//           cx.Station   = ist;
+//           cx.Plane     = ipl;
+//           cx.Face      = face;
+//           cx.Panel     = ipn;
+//           cx.Layer     = il;
+//           orderID (&cx, &co);
+//           int os       = co.Station;
+//           int of       = co.Face;
+//           int op       = co.Panel;
+//           PanelZ_t* pz = &_data.oTracker[os][of][op];
+//           pz->fPanel   = panel;
+// //-----------------------------------------------------------------------------
+// // panel caches phi of its center and the z, phi runs from 0 to 2*pi
+// //-----------------------------------------------------------------------------
+//           pz->wx  = panel->straw0Direction().x();
+//           pz->wy  = panel->straw0Direction().y();
+//           pz->phi = panel->straw0MidPoint().phi();
+//           pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+//           int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
+//           _faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(_meanPitchAngle)/CLHEP::c_light;
+//         }
+//       }
+//       _data.stationUsed[ist] = 1;
+//     }
 //-----------------------------------------------------------------------------
 // it is enough to print that once
 //-----------------------------------------------------------------------------
     if (_testOrder && (_testOrderPrinted == 0)) {
-      testOrderID  ();
-      testdeOrderID();
+      _data.testOrderID  ();
+      _data.testdeOrderID();
       _testOrderPrinted = 1;
     }
 
@@ -422,18 +401,9 @@ namespace mu2e {
     return rc;
   }
 
-  // unflagging preseed hits if seed is not completed?
-  // start with object, fill in as it goes, then decide whether or not to keep it
-
-  // move to other faces, use phi of preseed pos and phi of panels to determine which panel to check
-  // loop through hits with time constraint
-  // for chi2, use distance along the wire/resolution and distance across the wire/TBD(1 cm?)
-  // find a way to accommodate for preseed size
-
-  // Find "average straw" of all candidates in both directions, then find intersection of these two average straws
-
 //-----------------------------------------------------------------------------
-// assume that the seed has two hits
+// input 'Seed' has two hits , non parallel wires
+// try to add more close hits to it (one hit per face)
 //-----------------------------------------------------------------------------
   void DeltaFinder::completeSeed(DeltaSeed* Seed) {
 
@@ -466,7 +436,9 @@ namespace mu2e {
         float sxy_dot_w = xseed*nx+yseed*ny;
 
         assert(sxy_dot_w != 1.e10);             // test
-        if (sxy_dot_w > 1.e5) printf("emoe\n"); // test
+        if (sxy_dot_w > 1.e5) {
+          printf("emoe\n"); // test
+        }
 
         int    nhits = panelz->fHitData->size();
         for (int ih=0; ih<nhits; ih++) {
@@ -537,7 +509,7 @@ namespace mu2e {
 
         if (! seed->Good() )                                          continue;
         if (seed->Used()   )                                          continue;
-        if (seed->fNFacesWithHits < _minNFacesWithHits)               continue;
+        //        if (seed->fNFacesWithHits < _minNFacesWithHits)               continue;
 //-----------------------------------------------------------------------------
 // first, loop over existing delta candidates and try to associate the seed
 // with one of them
@@ -648,30 +620,6 @@ namespace mu2e {
 // at this point we have a set of delta candidates, which might need to be merged
 //-----------------------------------------------------------------------------
     mergeDeltaCandidates();
-  }
-
-//-----------------------------------------------------------------------------
-  void DeltaFinder::deOrderID(ChannelID* X, ChannelID* O) {
-
-    X->Station = O->Station;
-
-    X->Plane   = O->Plane;
-
-    if(O->Station % 2 ==  0) {
-      if(O->Plane == 0) X->Face = 1 - O->Face;
-      else X->Face = O->Face - 2;
-    }
-    else {
-      if(O->Plane == 0) X->Face = O->Face;
-      else X->Face = 3 - O->Face;
-    }
-
-    if(X->Face == 0) X->Panel = O->Panel * 2;
-    else X->Panel = 1 + (O->Panel * 2);
-
-    int n = X->Station + X->Plane + X->Face;
-    if(n % 2 == 0) X->Layer = 1 - O->Layer;
-    else X->Layer = O->Layer;
   }
 
 //-----------------------------------------------------------------------------
@@ -800,6 +748,9 @@ namespace mu2e {
               hd2->fSeed  = seed;
 //-----------------------------------------------------------------------------
 // complete search for hits of this seed, mark it BAD if a proton
+// in principle, could place "high-charge" seeds into a separate list
+// that should improve the performance
+// make eDep cut value a module parameter
 //-----------------------------------------------------------------------------
               completeSeed(seed);
               if (seed->EDep() > 0.005) {
@@ -942,12 +893,12 @@ namespace mu2e {
       cx.Layer                   = ch->strawId().layer();
 
                                               // get Z-ordered location
-      orderID(&cx, &co);
+      Data_t::orderID(&cx, &co);
 
       int os       = co.Station;
       int of       = co.Face;
       int op       = co.Panel;
-      int ol       = co.Layer;
+      // int ol       = co.Layer;
 
       if (_useTimePeaks == 1) {
         bool               intime(false);
@@ -962,7 +913,7 @@ namespace mu2e {
             continue;
           }
           iDisk = cl->diskID();
-          double    dt = cl->time() - (corr_time + _stationToCaloTOF[iDisk][os]);
+          double    dt = cl->time() - (corr_time + _data.stationToCaloTOF[iDisk][os]);
           if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
             intime = true;
             break;
@@ -977,7 +928,7 @@ namespace mu2e {
         if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
         if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
         if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
-        if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
+        // if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
       }
 
       pz->fHitData->push_back(HitData_t(ch));
@@ -987,30 +938,6 @@ namespace mu2e {
     }
 
     return 0;
-  }
-
-//-----------------------------------------------------------------------------
-  void DeltaFinder::orderID(ChannelID* X, ChannelID* O) {
-    if (X->Panel % 2 == 0) X->Face = 0;
-    else                   X->Face = 1; // define original face
-
-    O->Station = X->Station;            // stations already ordered
-    O->Plane   = X->Plane;              // planes already ordered, but not necessary for ordered construct
-
-    if (X->Station % 2 == 0) {
-      if (X->Plane == 0) O->Face = 1 - X->Face;
-      else               O->Face = X->Face + 2;
-    }
-    else {
-      if (X->Plane == 0) O->Face = X->Face;
-      else               O->Face = 3 - X->Face; // order face
-    }
-
-    O->Panel = int(X->Panel/2);                // order panel
-
-    int n = X->Station + X->Plane + X->Face;   // pattern has no intrinsic meaning, just works
-    if (n % 2 == 0) O->Layer = 1 - X->Layer;
-    else            O->Layer = X->Layer;       // order layer
   }
 
 //-----------------------------------------------------------------------------
@@ -1295,6 +1222,9 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+// *FIXME* : need a formula for chi2, this simplification may not work well
+// in the corners
+//-----------------------------------------------------------------------------
   double DeltaFinder::seedDeltaChi2(DeltaSeed* Seed, DeltaCandidate* Delta) {
 
     int    nh   = Delta->NHits()+Seed->NHits();
@@ -1320,10 +1250,58 @@ namespace mu2e {
     return chi2;
   }
 
+
+//-----------------------------------------------------------------------------
+// return 1 if a seed has been found , 0 otherwise
+//-----------------------------------------------------------------------------
+  int DeltaFinder::recoverSeed(DeltaCandidate* Delta, int LastStation, int Station) {
+    // int rc(0);
+                                        // predicted time range for this station
+    float tdelta = Delta->T0(Station);
+    // float xdelta = Delta->CofM.x();
+    // float ydelta = Delta->CofM.y();
+
+    float      chi2min(_maxChi2SeedDelta);
+    DeltaSeed* closest_seed(nullptr);
+
+    float dt   = _maxSeedDt + _maxDtDs*fabs(Station-LastStation);
+
+    int nseeds = _data.NSeeds(Station);
+    for (int i=0; i<nseeds; i++) {
+      DeltaSeed* seed =  _data.deltaSeed(Station,i);
+      if (seed->Good() == 0)                                          continue;
+      if (seed->Used()     )                                          continue;
+//-----------------------------------------------------------------------------
+// one might need some safety here, but not the _maxDriftTime
+//-----------------------------------------------------------------------------
+      if (fabs(tdelta-seed->TMean()) > dt)                            continue;
+
+      float chi2 = seedDeltaChi2(seed,Delta);
+
+      if (chi2 < chi2min) {
+                                        // new best seed
+        closest_seed = seed;
+        chi2min      = chi2;
+      }
+    }
+
+    if (closest_seed) {
+//-----------------------------------------------------------------------------
+// the closest seed found, add it to the delta candidate and exit
+// it is marked as associated with the delta candidate in DeltaCandidate::AddSeed
+//-----------------------------------------------------------------------------
+      Delta->AddSeed(closest_seed,Station);
+      closest_seed->fChi2Delta = chi2min;
+    }
+
+    return (closest_seed != nullptr);
+  }
+
 //------------------------------------------------------------------------------
 // try to recover hits of a 'Delta' candidate in a given 'Station'
-// the delta candidate doesn't have hits in this station, check all hits here
+// 'Delta' doesn't have hits in this station, check all hits here
 // when predicting time, use the same value of Z for both layers of a given face
+// return 1 if something has been found
 //-----------------------------------------------------------------------------
   int DeltaFinder::recoverStation(DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds) {
 
@@ -1335,41 +1313,11 @@ namespace mu2e {
 // first, loop over the existing seeds - need for the forward step
 //-----------------------------------------------------------------------------
     if (RecoverSeeds) {
-      float      chi2min(_maxChi2SeedDelta);
-      DeltaSeed* closest_seed(nullptr);
-
-      float dt   = _maxSeedDt + _maxDtDs*fabs(Station-LastStation);
-      int nseeds = _data.NSeeds(Station);
-      for (int i=0; i<nseeds; i++) {
-        DeltaSeed* seed =  _data.deltaSeed(Station,i);
-        if (seed->Good() == 0)                                          continue;
-        if (seed->Used()     )                                          continue;
-//-----------------------------------------------------------------------------
-// one might need some safety here, but not the _maxDriftTime
-//-----------------------------------------------------------------------------
-        if (fabs(tdelta-seed->TMean()) > dt)                            continue;
-
-        float chi2 = seedDeltaChi2(seed,Delta);
-
-        if (chi2 < chi2min) {
-                                        // new best seed
-          closest_seed = seed;
-          chi2min      = chi2;
-        }
-      }
-
-      if (closest_seed) {
-//-----------------------------------------------------------------------------
-// the closest seed found, add it to the delta candidate and exit
-// it is marked as associated with the delta candidate in DeltaCandidate::AddSeed
-//-----------------------------------------------------------------------------
-        Delta->AddSeed(closest_seed,Station);
-        closest_seed->fChi2Delta = chi2min;
-        return 0;
-      }
+      int closest_seed_found = recoverSeed(Delta,LastStation,Station);
+      if (closest_seed_found == 1) return 1;
     }
 //-----------------------------------------------------------------------------
-// no seeds found, look for single hits
+// no seeds found, look for single hits in the 'Station'
 //-----------------------------------------------------------------------------
     DeltaSeed*  new_seed (nullptr);
 
@@ -1482,8 +1430,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int rc(0);
     if (new_seed) {
-      // new_seed->fIndex  = _data.NSeeds();
-      int face0         = new_seed->SFace(0);
+      int face0                       = new_seed->SFace(0);
       new_seed->HitData(face0)->fSeed = new_seed;
 
       Delta->AddSeed(new_seed,Station);
@@ -1529,62 +1476,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     mergeDeltaCandidates();
   }
-
-//-----------------------------------------------------------------------------
-// testOrderID & testdeOrderID not used in module, only were used to make sure OrderID and deOrderID worked as intended
-//-----------------------------------------------------------------------------
-  void DeltaFinder::testOrderID() {
-
-    ChannelID x, o;
-
-    for (int s=0; s<2; ++s) {
-      for (int pl=0; pl<2; ++pl) {
-        for (int pa=0; pa<6; ++pa) {
-          for (int l=0; l<2; ++l) {
-            x.Station = s;
-            x.Plane   = pl;
-            x.Panel   = pa;
-            x.Layer   = l;
-            orderID(&x, &o);
-            printf(" testOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i, layer = %i)",
-                   x.Station, x.Plane, x.Face, x.Panel, x.Layer);
-            printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i, layer = %i)\n",
-                   o.Station, o.Plane, o.Face, o.Panel, o.Layer);
-          }
-        }
-      }
-    }
-  }
-
-//-----------------------------------------------------------------------------
-  void DeltaFinder::testdeOrderID() {
-
-    ChannelID x, o;
-
-    for (int s=0; s<2; ++s) {
-      for (int f=0; f<4; ++f) {
-        for (int pa=0; pa<3; ++pa) {
-          for (int l=0; l<2; ++l) {
-
-            o.Station          = s;
-            o.Face             = f;
-            if (f < 2) o.Plane = 0;
-            else       o.Plane = 1;
-            o.Panel            = pa;
-            o.Layer            = l;
-
-            deOrderID(&x, &o);
-
-            printf(" testdeOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i, layer = %i)",
-                   x.Station,x.Plane,x.Face,x.Panel,x.Layer);
-            printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i, layer = %i)\n",
-                   o.Station,o.Plane,o.Face,o.Panel,o.Layer);
-          }
-        }
-      }
-    }
-  }
-
 }
 
 //-----------------------------------------------------------------------------
