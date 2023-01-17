@@ -58,7 +58,7 @@ namespace mu2e {
       using Comment = fhicl::Comment;
       fhicl::Atom<art::InputTag>     shCollTag        {Name("shCollTag"        ), Comment("SComboHit collection Name"   ) };
       fhicl::Atom<art::InputTag>     chCollTag        {Name("chCollTag"        ), Comment("ComboHit collection Name"    ) };
-      fhicl::Atom<art::InputTag>     chfCollTag       {Name("chfCollTag"       ), Comment("StrawHitFlag collection Name") };
+      // fhicl::Atom<art::InputTag>     chfCollTag       {Name("chfCollTag"       ), Comment("StrawHitFlag collection Name") };
       fhicl::Atom<art::InputTag>     sdmcCollTag      {Name("sdmcCollTag"      ), Comment("StrawDigiMC collection Name" ) };
       fhicl::Atom<art::InputTag>     tpeakCollTag     {Name("tpeakCollTag"     ), Comment("Time peak collection Name"   ) };
       fhicl::Atom<int>               useTimePeaks     {Name("useTimePeaks"     ), Comment("to use time peaks set to 1"  ) };
@@ -106,7 +106,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::InputTag   _shCollTag;
     art::InputTag   _chCollTag;
-    art::InputTag   _chfCollTag;
+    // art::InputTag   _chfCollTag;
     art::InputTag   _sdmcCollTag;
     art::InputTag   _tpeakCollTag;
 
@@ -207,7 +207,7 @@ namespace mu2e {
     art::EDProducer{config},
     _shCollTag             (config().shCollTag()        ),
     _chCollTag             (config().chCollTag()        ),
-    _chfCollTag            (config().chfCollTag()       ),
+    // _chfCollTag            (config().chfCollTag()       ),
     _sdmcCollTag           (config().sdmcCollTag()      ),
     _tpeakCollTag          (config().tpeakCollTag()     ),
     _useTimePeaks          (config().useTimePeaks()     ),
@@ -263,7 +263,7 @@ namespace mu2e {
     else                 _hmanager = std::make_unique<ModuleHistToolBase>();
 
     _data.chCollTag      = _chCollTag;
-    _data.chfCollTag     = _chfCollTag;
+    //    _data.chfCollTag     = _chfCollTag;
     _data.sdmcCollTag    = _sdmcCollTag;
     _data.meanPitchAngle = _meanPitchAngle;
 
@@ -635,13 +635,14 @@ namespace mu2e {
     auto chcH   = Evt.getValidHandle<mu2e::ComboHitCollection>(_chCollTag);
     _data.chcol = chcH.product();
 
-    auto chcfH    = Evt.getValidHandle<mu2e::StrawHitFlagCollection>(_chfCollTag);
-    _data.chfColl = chcfH.product();
+    // auto chcfH    = Evt.getValidHandle<mu2e::StrawHitFlagCollection>(_chfCollTag);
+    // _data.chfColl = chcfH.product();
 
     auto shcH = Evt.getValidHandle<mu2e::StrawHitCollection>(_shCollTag);
     _shColl   = shcH.product();
 
-    return (_data.chcol != nullptr) and (_data.chfColl != nullptr) and (_shColl != nullptr);
+    //    return (_data.chcol != nullptr) and (_data.chfColl != nullptr) and (_shColl != nullptr);
+    return (_data.chcol != nullptr) and (_shColl != nullptr);
   }
 
 //-----------------------------------------------------------------------------
@@ -872,13 +873,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // at this point all hits are ordered in time
 //-----------------------------------------------------------------------------
-    const ComboHit* ch0 = &(*_data.chcol)[0];
+    // const ComboHit* ch0 = &(*_data.chcol)[0];
 
     for (int ih=0; ih<_nComboHits; ih++) {
       const ComboHit* ch = _v[ih];
 
-      int loc = ch-ch0;
-      const StrawHitFlag* flag   = &(*_data.chfColl)[loc];
+      // int loc = ch-ch0;
+      //      const StrawHitFlag* flag   = &(*_data.chfColl)[loc];
+      const StrawHitFlag* flag   = &ch->flag();
       if (_testHitMask && (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
 
       float corr_time    = ch->correctedTime();
@@ -967,13 +969,13 @@ namespace mu2e {
     _data.outputChfColl = up_chfcol.get();
 
     for (int i=0; i<_nComboHits; i++) {
-      StrawHitFlag flag;
       const ComboHit* ch = &(*_data.chcol)[i];
       int ind            = ch->indexArray().at(0);
       const StrawHit* sh = &_shColl->at(ind);
 //-----------------------------------------------------------------------------
-// make decision based on the first straw hit
+// make decision based on the first straw hit ???? FIXME - check all hits
 //-----------------------------------------------------------------------------
+      StrawHitFlag flag = ch->flag();
       if (sh->energyDep() < _maxEleHitEnergy) flag.merge(StrawHitFlag::energysel);
       (*_data.outputChfColl)[i] = flag;
     }
