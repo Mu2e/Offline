@@ -75,7 +75,7 @@ namespace mu2e {
       CA unbiasedClosestApproach() const;
       auto updater() const { return whstate_.algo_; }
       void setState(WireHitState const& whstate); // allow cluster updaters to set the state directly
-      DriftInfo fillDriftInfo(bool calibrated) const;
+      DriftInfo fillDriftInfo() const;
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
@@ -143,19 +143,17 @@ namespace mu2e {
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
-      auto dinfo = fillDriftInfo(false); // update using raw (uncalibrated) drift info, to avoid feedback loop with the calibration
+      auto dinfo = fillDriftInfo();
       // there can be multiple updaters: apply them all
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
-      // now update the velocity and variance.  This uses the calibrated info
-      auto cdinfo = fillDriftInfo(true);
       if(whstate_.driftConstraint()){
-        whstate_.dDdT_ = cdinfo.driftVelocity_;
-        whstate_.dVar_ = cdinfo.signedDriftVar();
+        whstate_.dDdT_ = dinfo.driftVelocity_;
+        whstate_.dVar_ = dinfo.signedDriftVar();
       } else {
         if(whstate_.nulldvar_ == WireHitState::rdrift){
-          whstate_.dVar_ = cdinfo.unsignedDriftVar();
+          whstate_.dVar_ = dinfo.unsignedDriftVar();
         } else {
           whstate_.dVar_ = DriftInfo::maxdvar_;
         }
@@ -178,9 +176,9 @@ namespace mu2e {
     whstate_ = whstate;
   }
 
-  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo(bool calibrated) const {
+  template <class KTRAJ> DriftInfo KKStrawHit<KTRAJ>::fillDriftInfo() const {
     double lorentzAngle = Mu2eKinKal::LorentzAngle(ca_.tpData(),ca_.particleTraj().bnom().Unit());
-    return sresponse_.driftInfo(strawId(),ca_.deltaT(),lorentzAngle,calibrated);
+    return sresponse_.driftInfo(strawId(),ca_.deltaT(),lorentzAngle);
   }
 
   template <class KTRAJ> void KKStrawHit<KTRAJ>::setResiduals(MetaIterConfig const& miconfig, WireHitState const& whstate, RESIDCOL& resids) const {
@@ -196,8 +194,8 @@ namespace mu2e {
       }
       // distance residual
       if(whstate.driftConstraint()){
-        auto dinfo = fillDriftInfo(true); // use calibrated drift info
-        double dr = whstate.lrSign()*dinfo.driftDistance_ - ca_.doca();
+        auto dinfo = fillDriftInfo();
+        double dr = whstate.lrSign()*dinfo.rDrift_ - ca_.doca();
         DVEC dRdP = whstate.lrSign()*whstate.dDdT_*ca_.dTdP() -ca_.dDdP();
         resids[Mu2eKinKal::dresid] = Residual(dr,whstate.dVar_,0.0,true,dRdP);
       } else {

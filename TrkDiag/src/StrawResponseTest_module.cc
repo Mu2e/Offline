@@ -41,7 +41,7 @@ namespace mu2e {
       TTree*  srtest_;
       TCanvas* srtcan_;
       float dtime_, vinst_;
-      float rderr_, rdrift_, rnerr_;
+      float rderr_, rdrift_, cdrift_, rnerr_;
       TGraph* t2d_, *t2derr_, *t2nerr_, *t2v_;
       int plane_, panel_, straw_;
       int print_, diag_;
@@ -70,6 +70,7 @@ namespace mu2e {
 //      srtest_->Branch("panel",&spanel_,"panel/I");
 //      srtest_->Branch("straw",&straw_,"straw/I");
       srtest_->Branch("rdrift",&rdrift_,"rdrift/F");
+      srtest_->Branch("cdrift",&cdrift_,"cdrift/F");
       srtest_->Branch("dtime",&dtime_,"dtime/F");
       srtest_->Branch("vinst",&vinst_,"vinst/F");
       srtest_->Branch("rderr",&rderr_,"rderr/F");
@@ -106,7 +107,8 @@ namespace mu2e {
       for (int ibin=0;ibin<nbins_; ++ibin){
         dtime_ = tmin_ + tstep*ibin;
         DriftInfo dinfo = sresponse->driftInfo(sid,dtime_,0.0);
-        rdrift_ = dinfo.driftDistance_;
+        rdrift_ = dinfo.rDrift_;
+        cdrift_ = dinfo.cDrift_;
         rderr_ = dinfo.signedDriftError_;
         rnerr_ = dinfo.unsignedDriftError_;
         vinst_ = dinfo.driftVelocity_;

@@ -120,7 +120,7 @@ namespace mu2e {
       double calibrateT2DToDriftDistanceDerivative(double t2d) const;
       double calibrateDriftDistanceToT2DDerivative(double ddist) const;
 
-      DriftInfo driftInfo(StrawId strawId, double dtime, double phi, bool calibrated=true) const;
+      DriftInfo driftInfo(StrawId strawId, double dtime, double phi) const;
 
       double driftTimeToDistance(StrawId strawId, double dtime, double phi, bool forceOld=false) const;
       double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity

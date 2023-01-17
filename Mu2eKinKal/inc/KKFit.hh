@@ -486,8 +486,7 @@ namespace mu2e {
           utres, udres,
           strawhit->refResidual(Mu2eKinKal::tresid),
           strawhit->refResidual(Mu2eKinKal::dresid),
-          strawhit->fillDriftInfo(true),
-          strawhit->fillDriftInfo(false),
+          strawhit->fillDriftInfo(),
           strawhit->hitState());
     }
     if(kktrk.caloHits().size() > 0){

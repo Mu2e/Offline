@@ -111,23 +111,20 @@ namespace mu2e {
     return (_dc[2] + t2d)/sqrt(pow(_dc[1],2)*(-1*pow(_dc[0],2)-2*_dc[0]*_dc[2]+pow(_dc[2]+t2d,2)));
   }
 
-  DriftInfo StrawResponse::driftInfo(StrawId strawId, double dtime, double phi, bool calibrated) const {
+  DriftInfo StrawResponse::driftInfo(StrawId strawId, double dtime, double phi) const {
     if (_driftIgnorePhi) phi = 0;
     DriftInfo dinfo;
     dinfo.LorentzAngle_ = phi;
-    dinfo.driftDistance_ = _strawDrift->T2D(dtime,phi,false); // allow values outside the physical range at this point
-    dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.driftDistance_);
-    double derrslope,nerrslope;
+    dinfo.cDrift_ = _strawDrift->T2D(dtime,phi,false); // allow values outside the physical range at this point
     int halfrange(2); // should be a parameter TODO
-    if(calibrated){
-      double dcorr, dcorrslope;
-      interpolateCalib(_driftOffBins,_driftOffset, dinfo.driftDistance_, halfrange, dcorr, dcorrslope);
-      dinfo.driftDistance_ -= dcorr;
-      // note 'calibrated Velocity' is really dR/dt (change in calibrated drift distance WRT measured time), not a true physical velocity
-      dinfo.driftVelocity_ *= (1.0 - dcorrslope)*_dRdTScale;
-    }
-    interpolateCalib(_driftOffBins,_signedDriftRMS, dinfo.driftDistance_, halfrange, dinfo.signedDriftError_, derrslope);
-    interpolateCalib(_driftRMSBins,_unsignedDriftRMS, dinfo.driftDistance_, halfrange, dinfo.unsignedDriftError_ , nerrslope);
+    double dcorr, dcorrslope;
+    interpolateCalib(_driftOffBins,_driftOffset, dinfo.cDrift_, halfrange, dcorr, dcorrslope);
+    dinfo.rDrift_ = dinfo.cDrift_ -dcorr;
+    // note 'Velocity' is really dR/dt (change in calibrated drift distance WRT measured time), not a true physical velocity
+    dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.cDrift_)*(1.0 - dcorrslope)*_dRdTScale;
+    double serrslope,uerrslope;
+    interpolateCalib(_driftOffBins,_signedDriftRMS, dinfo.rDrift_, halfrange, dinfo.signedDriftError_, serrslope);
+    interpolateCalib(_driftRMSBins,_unsignedDriftRMS, dinfo.rDrift_, halfrange, dinfo.unsignedDriftError_ , uerrslope);
     return dinfo;
   }
 
