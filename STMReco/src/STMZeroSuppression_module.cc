@@ -218,33 +218,35 @@ namespace mu2e {
 
   void STMZeroSuppression::chooseStartsAndEnds() {
     // Now go through and account for overlapped data
-    unsigned int i_peak = 0;
-    size_t current_start = _starts.at(i_peak);
-    size_t current_end = _ends.at(i_peak);
+    if (_starts.size() != 0) { // need to be careful just in case there were no peaks found (i.e. just noise)
+      unsigned int i_peak = 0;
+      size_t current_start = _starts.at(i_peak);
+      size_t current_end = _ends.at(i_peak);
 
-    unsigned int peakcounter = _starts.size();
-    _finalstarts.clear();
-    _finalends.clear();
-    _finalstarts.reserve(peakcounter);
-    _finalends.reserve(peakcounter);
-    while (i_peak < peakcounter) {
-      if (i_peak == (peakcounter-1)) { // the final peak
-        _finalstarts.push_back(current_start);
-        _finalends.push_back(_ends.at(i_peak));
-        break;
-      }
-      else if (_starts.at(i_peak+1) <= _ends.at(i_peak)) { // peaks are overlapping
-        current_end = _ends.at(i_peak+1); // update so that we will go to the end of the second peak
-        ++i_peak;
-      }
-      else if (_starts.at(i_peak+1) > _ends.at(i_peak)) { // peaks don't overlap
-        _finalstarts.push_back(current_start);
-        _finalends.push_back(current_end);
+      unsigned int peakcounter = _starts.size();
+      _finalstarts.clear();
+      _finalends.clear();
+      _finalstarts.reserve(peakcounter);
+      _finalends.reserve(peakcounter);
+      while (i_peak < peakcounter) {
+        if (i_peak == (peakcounter-1)) { // the final peak
+          _finalstarts.push_back(current_start);
+          _finalends.push_back(_ends.at(i_peak));
+          break;
+        }
+        else if (_starts.at(i_peak+1) <= _ends.at(i_peak)) { // peaks are overlapping
+          current_end = _ends.at(i_peak+1); // update so that we will go to the end of the second peak
+          ++i_peak;
+        }
+        else if (_starts.at(i_peak+1) > _ends.at(i_peak)) { // peaks don't overlap
+          _finalstarts.push_back(current_start);
+          _finalends.push_back(current_end);
 
-        // go to next peak
-        current_start = _starts.at(i_peak+1);
-        current_end = _ends.at(i_peak+1);
-        ++i_peak;
+          // go to next peak
+          current_start = _starts.at(i_peak+1);
+          current_end = _ends.at(i_peak+1);
+          ++i_peak;
+        }
       }
     }
   }
