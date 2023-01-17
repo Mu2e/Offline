@@ -36,7 +36,6 @@ namespace mu2e {
         fhicl::Atom<bool> subtractPedestal{ Name("subtractPedestal"), Comment("True/False whether to subtract the pedestal before plotting")};
         fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"waveform_time\", or \"event_time\"") };
         fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity level")};
-        fhicl::Atom<double> samplingFrequency{ Name("samplingFrequency"), Comment("Sampling Frequency of ADC [MHz]")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMWaveformDigis(const Parameters& conf);
@@ -58,8 +57,7 @@ namespace mu2e {
     _stmWaveformDigisTag(config().stmWaveformDigisTag()),
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
-    _verbosityLevel(config().verbosityLevel()),
-    _nsPerCt((1.0/config().samplingFrequency())*1e3) // convert to ns
+    _verbosityLevel(config().verbosityLevel())
   {
     consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     _channel = STMUtils::getChannel(_stmWaveformDigisTag);
@@ -77,6 +75,9 @@ namespace mu2e {
     if (_verbosityLevel > 0) {
       std::cout << _channel.name() << " Pedestal = " << pedestal << std::endl;
     }
+
+    const auto samplingFrequency = stmEnergyCalib.samplingFrequency(_channel);
+    _nsPerCt = (1.0/samplingFrequency)*1e3;
 
     for (const auto& waveform : *waveformsHandle) {
       histname.str("");
