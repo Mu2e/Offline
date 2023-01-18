@@ -34,12 +34,12 @@ TrkFilters : {
     cprDeMHighPStopTargTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprDePHighPStopTargTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
 
     #cosmic tracks
@@ -70,32 +70,32 @@ TrkFilters : {
     cprDeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprDePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixDeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixDePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixUeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUe"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixUePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUe"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
 
     #low p particles from the ST
@@ -110,12 +110,12 @@ TrkFilters : {
     cprDeMLowPStopTargTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprDePLowPStopTargTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
 
     #fast sequcnes that process only the ComboHits in time with the calo-cluster with E>50MeV
@@ -130,12 +130,12 @@ TrkFilters : {
     cprSeedUCCDeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUCC"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprSeedUCCDePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUCC"
-      minNHits              : 1  #just check if there are TimeClusters
+      minNStrawHits              : 1  #just check if there are TimeClusters
     }
 
     #e- from the IPA
