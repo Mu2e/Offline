@@ -58,7 +58,6 @@ namespace mu2e {
       using Comment = fhicl::Comment;
       fhicl::Atom<art::InputTag>     shCollTag        {Name("shCollTag"        ), Comment("SComboHit collection Name"   ) };
       fhicl::Atom<art::InputTag>     chCollTag        {Name("chCollTag"        ), Comment("ComboHit collection Name"    ) };
-      // fhicl::Atom<art::InputTag>     chfCollTag       {Name("chfCollTag"       ), Comment("StrawHitFlag collection Name") };
       fhicl::Atom<art::InputTag>     sdmcCollTag      {Name("sdmcCollTag"      ), Comment("StrawDigiMC collection Name" ) };
       fhicl::Atom<art::InputTag>     tpeakCollTag     {Name("tpeakCollTag"     ), Comment("Time peak collection Name"   ) };
       fhicl::Atom<int>               useTimePeaks     {Name("useTimePeaks"     ), Comment("to use time peaks set to 1"  ) };
@@ -69,7 +68,8 @@ namespace mu2e {
       fhicl::Atom<float>             maxCaloDt        {Name("maxCaloDt"        ), Comment("max Calo Dt"                 ) };
       fhicl::Atom<float>             meanPitchAngle   {Name("meanPitchAngle"   ), Comment("mean pitch angle"            ) };
       fhicl::Atom<float>             minHitTime       {Name("minHitTime"       ), Comment("min hit time"                ) };
-      fhicl::Atom<int>               minNFacesWithHits{Name("minNFacesWithHits"), Comment("min N faces with hits"       ) };
+      fhicl::Atom<float>             maxDeltaEDep     {Name("maxDeltaEDep"     ), Comment("max delta candidate <eDep>"  ) };
+      fhicl::Atom<float>             maxSeedEDep      {Name("maxSeedEDep"      ), Comment("max  seed <eDep>"            ) };
       fhicl::Atom<int>               minNSeeds        {Name("minNSeeds"        ), Comment("min N seeds in a delta cand" ) };
       fhicl::Atom<int>               minDeltaNHits    {Name("minDeltaNHits"    ), Comment("min N combo  hits in a delta") };
       fhicl::Atom<float>             maxEleHitEnergy  {Name("maxEleHitEnergy"  ), Comment("max electron hit energy"     ) };
@@ -106,7 +106,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::InputTag   _shCollTag;
     art::InputTag   _chCollTag;
-    // art::InputTag   _chfCollTag;
     art::InputTag   _sdmcCollTag;
     art::InputTag   _tpeakCollTag;
 
@@ -115,7 +114,8 @@ namespace mu2e {
     float           _maxCaloDt;
     float           _meanPitchAngle;
     float           _minHitTime;           // min hit time
-    int             _minNFacesWithHits;    // per station per seed
+    float           _maxSeedEDep;          //
+    float           _maxDeltaEDep;         //
     int             _minNSeeds;            // min number of seeds in the delta electron cluster
     int             _minDeltaNHits;        // min number of hits of a delta candidate
     float           _maxEleHitEnergy;      //
@@ -215,7 +215,8 @@ namespace mu2e {
     _maxCaloDt             (config().maxCaloDt()        ),
     _meanPitchAngle        (config().meanPitchAngle()   ),
     _minHitTime            (config().minHitTime()       ),
-    _minNFacesWithHits     (config().minNFacesWithHits()),
+    _maxSeedEDep           (config().maxSeedEDep()      ),
+    _maxDeltaEDep          (config().maxDeltaEDep()     ),
     _minNSeeds             (config().minNSeeds()        ),
     _minDeltaNHits         (config().minDeltaNHits()    ),
     _maxEleHitEnergy       (config().maxEleHitEnergy()  ),
@@ -263,7 +264,6 @@ namespace mu2e {
     else                 _hmanager = std::make_unique<ModuleHistToolBase>();
 
     _data.chCollTag      = _chCollTag;
-    //    _data.chfCollTag     = _chfCollTag;
     _data.sdmcCollTag    = _sdmcCollTag;
     _data.meanPitchAngle = _meanPitchAngle;
 
@@ -286,87 +286,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinder::beginRun(art::Run& aRun) {
 
-
     _data.InitGeometry();
-
-    // mu2e::GeomHandle<mu2e::Tracker> tHandle;
-    // _tracker      = tHandle.get();
-    // _data.tracker = _tracker;
-
-    // mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
-    // _calorimeter = ch.get();
-
-    // ChannelID cx, co;
-
-    // int       nDisks    = _calorimeter->nDisk();
-    // double    disk_z[2] = {0};//given in the tracker frame
-
-    // for (int i=0; i<nDisks; ++i){
-    //   Hep3Vector gpos = _calorimeter->disk(i).geomInfo().origin();
-    //   Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-    //   disk_z[i] = tpos.z();
-    // }
-//-----------------------------------------------------------------------------
-// define station Z coordinates
-//-----------------------------------------------------------------------------
-    // for (unsigned ipl=0; ipl<_tracker->nPlanes(); ipl += 2) {
-    //   const Plane* p1 = &_tracker->getPlane(ipl);
-    //   const Plane* p2 = &_tracker->getPlane(ipl+1);
-    //   _data.stationZ[ipl/2] = (p1->origin().z()+p2->origin().z())/2;
-    // }
-
-//     float     z_tracker_center(0.);
-//     int       nPlanesPerStation(2);
-//     double    station_z(0);
-
-//     for (unsigned planeId=0; planeId<_tracker->nPlanes(); planeId++) {
-//       const Plane* pln = &_tracker->getPlane(planeId);
-//       int  ist = planeId/nPlanesPerStation;
-//       int  ipl = planeId % nPlanesPerStation;
-// //-----------------------------------------------------------------------------
-// // calculate the time-of-flight between the station and each calorimeter disk
-// // for a typical Conversion Electron
-// //-----------------------------------------------------------------------------
-//       if (ipl == 0) {
-//         station_z = pln->origin().z();
-//       }
-//       else {
-//         station_z = (station_z + pln->origin().z())/2.;
-//         for (int iDisk=0; iDisk<nDisks; ++iDisk){
-//           _stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - station_z)/sin(_meanPitchAngle)/CLHEP::c_light;
-//         }
-//       }
-
-//       for (unsigned ipn=0; ipn<pln->nPanels(); ipn++) {
-//         const Panel* panel = &pln->getPanel(ipn);
-//         int face;
-//         if (panel->id().getPanel() % 2 == 0) face = 0;
-//         else                                 face = 1;
-//         for (unsigned il=0; il<panel->nLayers(); ++il) {
-//           cx.Station   = ist;
-//           cx.Plane     = ipl;
-//           cx.Face      = face;
-//           cx.Panel     = ipn;
-//           cx.Layer     = il;
-//           orderID (&cx, &co);
-//           int os       = co.Station;
-//           int of       = co.Face;
-//           int op       = co.Panel;
-//           PanelZ_t* pz = &_data.oTracker[os][of][op];
-//           pz->fPanel   = panel;
-// //-----------------------------------------------------------------------------
-// // panel caches phi of its center and the z, phi runs from 0 to 2*pi
-// //-----------------------------------------------------------------------------
-//           pz->wx  = panel->straw0Direction().x();
-//           pz->wy  = panel->straw0Direction().y();
-//           pz->phi = panel->straw0MidPoint().phi();
-//           pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-//           int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
-//           _faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(_meanPitchAngle)/CLHEP::c_light;
-//         }
-//       }
-//       _data.stationUsed[ist] = 1;
-//     }
 //-----------------------------------------------------------------------------
 // it is enough to print that once
 //-----------------------------------------------------------------------------
@@ -440,6 +360,9 @@ namespace mu2e {
           printf("emoe\n"); // test
         }
 
+        HitData_t* closest_hit(nullptr);
+        float      best_chi2(_maxChi2Radial);
+
         int    nhits = panelz->fHitData->size();
         for (int ih=0; ih<nhits; ih++) {
 //-----------------------------------------------------------------------------
@@ -472,12 +395,19 @@ namespace mu2e {
           float chi2_par           = (dxy_dot_wdir*dxy_dot_wdir)/(hd->fSigW2+_seedRes*_seedRes);
           float chi2_perp          = d_perp_2/_sigmaR2;
           float chi2               = chi2_par + chi2_perp;
-          if (chi2 >= _maxChi2Radial)                                 continue;
+          if (chi2 < best_chi2) {
+                                        // new best hit
+            closest_hit = hd;
+            best_chi2   = chi2;
+          }
+        }
+
+        if (closest_hit) {
 //-----------------------------------------------------------------------------
 // add hit
 //-----------------------------------------------------------------------------
-          hd->fChi2Min             = chi2;
-          Seed->AddHit(hd,face);
+          closest_hit->fChi2Min = best_chi2;
+          Seed->AddHit(closest_hit,face);
         }
       }
     }
@@ -509,7 +439,6 @@ namespace mu2e {
 
         if (! seed->Good() )                                          continue;
         if (seed->Used()   )                                          continue;
-        //        if (seed->fNFacesWithHits < _minNFacesWithHits)               continue;
 //-----------------------------------------------------------------------------
 // first, loop over existing delta candidates and try to associate the seed
 // with one of them
@@ -635,32 +564,28 @@ namespace mu2e {
     auto chcH   = Evt.getValidHandle<mu2e::ComboHitCollection>(_chCollTag);
     _data.chcol = chcH.product();
 
-    // auto chcfH    = Evt.getValidHandle<mu2e::StrawHitFlagCollection>(_chfCollTag);
-    // _data.chfColl = chcfH.product();
-
     auto shcH = Evt.getValidHandle<mu2e::StrawHitCollection>(_shCollTag);
     _shColl   = shcH.product();
 
-    //    return (_data.chcol != nullptr) and (_data.chfColl != nullptr) and (_shColl != nullptr);
     return (_data.chcol != nullptr) and (_shColl != nullptr);
   }
 
 //-----------------------------------------------------------------------------
 // find delta electron seeds in 'Station' with hits in faces 'f' and 'f+1'
-// do not consider proton hits with eDep > _minHitEnergy
+// do not consider proton hits with eDep > _minHtEnergy
 //-----------------------------------------------------------------------------
   void DeltaFinder::findSeeds(int Station, int Face) {
 
-    for (int p=0; p<3; ++p) {                        // loop over panels in this face
-      PanelZ_t* panelz1 = &_data.oTracker[Station][Face][p];
-      double nx1        = panelz1->wx;
-      double ny1        = panelz1->wy;
-      int    nh1        = panelz1->fHitData->size();
+    for (int ip1=0; ip1<3; ++ip1) {                        // loop over panels in this face
+      PanelZ_t* pz1 = &_data.oTracker[Station][Face][ip1];
+      double nx1    = pz1->wx;
+      double ny1    = pz1->wy;
+      int    nh1    = pz1->fHitData->size();
       for (int h1=0; h1<nh1; ++h1) {
 //-----------------------------------------------------------------------------
 // hit has not been used yet to start a seed, however it could've been used as a second seed
 //-----------------------------------------------------------------------------
-        HitData_t*      hd1 = &(*panelz1->fHitData)[h1];
+        HitData_t*      hd1 = &(*pz1->fHitData)[h1];
         float           ct1 = hd1->fCorrTime;
         double x1           = hd1->fHit->pos().x();
         double y1           = hd1->fHit->pos().y();
@@ -670,31 +595,46 @@ namespace mu2e {
 // loop over the second faces
 //-----------------------------------------------------------------------------
         for (int f2=Face+1; f2<kNFaces; f2++) {
-          for (int p2=0; p2<3; ++p2) {         // loop over panels
-            PanelZ_t* panelz2 = &_data.oTracker[Station][f2][p2];
+          for (int ip2=0; ip2<3; ++ip2) {         // loop over panels
+            PanelZ_t* pz2 = &_data.oTracker[Station][f2][ip2];
 //-----------------------------------------------------------------------------
 // check if the two panels overlap in XY
 // 2D angle between the vectors pointing to the panel centers, can't be greater than 2*pi/3
 //-----------------------------------------------------------------------------
-            float dphi = panelz2->phi - panelz1->phi;
-            if (dphi < -M_PI) dphi += 2*M_PI;
-            if (dphi >  M_PI) dphi -= 2*M_PI;
-            if (abs(dphi) >= 2*M_PI/3.)                                continue;
+            // float dphi = pz2->phi - pz1->phi;
+            // if (dphi < -M_PI) dphi += 2*M_PI;
+            // if (dphi >  M_PI) dphi -= 2*M_PI;
+            // bool c1 = fabs(dphi) >= 2*M_PI/3.;
+
+            int iss = Station % 2;
+
+            // bool c2 = _data.panelOverlap[iss][pz1->fID][pz2->fID] == 0;
+
+            // if (c1 != c2) {
+            //   printf("ERROR in DeltaFinder::%s: station:%2i ",__func__,Station);
+            //   printf("Face,ip1,ID1,Z1,nx1,ny1,f2,ip2,ID2,Z2,nx2,ny2,c1,c2:");
+            //   printf("%2i %2i %2i %8.2f %8.5f %8.5f %8.5f ",Face,ip1,pz1->fID,pz1->z,pz1->phi,pz1->nx,pz1->ny);
+            //   printf("%2i %2i %2i %8.2f %8.5f %8.5f %8.5f ",f2  ,ip2,pz2->fID,pz2->z,pz2->phi,pz2->nx,pz2->ny);
+            //   printf("%d %d\n",c1,c2);
+            // }
+
+            // if (fabs(dphi) >= 2*M_PI/3.)                              continue;
+            if (_data.panelOverlap[iss][pz1->fID][pz2->fID] == 0)     continue;
 //-----------------------------------------------------------------------------
 // panels do overlap, check the time. tmin and tmax also detect panels w/o hits
 //-----------------------------------------------------------------------------
-            if (panelz2->tmin - ct1 > _maxDriftTime)                   continue;
-            if (ct1 - panelz2->tmax > _maxDriftTime)                   continue;
+            if (pz2->tmin - ct1 > _maxDriftTime)                      continue;
+            if (ct1 - pz2->tmax > _maxDriftTime)                      continue;
 
-            double nx2   = panelz2->wx;
-            double ny2   = panelz2->wy;
+            double nx2   = pz2->wx;
+            double ny2   = pz2->wy;
             double n1n2  = nx1*nx2+ny1*ny2;
             double q12   = 1-n1n2*n1n2;
-            double res_z = (panelz1->z+panelz2->z)/2;
+            double res_z = (pz1->z+pz2->z)/2;
 
-            int    nh2 = panelz2->fHitData->size();
+            int    nh2 = pz2->fHitData->size();
             for (int h2=0; h2<nh2;++h2) {
-              HitData_t* hd2 = &(*panelz2->fHitData)[h2];
+              HitData_t* hd2 = &(*pz2->fHitData)[h2];
               float      ct2 = hd2->fCorrTime;
 //-----------------------------------------------------------------------------
 // hits are ordered in time, so if ct2-ct > _maxDriftTime, can proceed with the next panel
@@ -754,7 +694,7 @@ namespace mu2e {
 // make eDep cut value a module parameter
 //-----------------------------------------------------------------------------
               completeSeed(seed);
-              if (seed->EDep() > 0.005) {
+              if (seed->EDep() > _maxSeedEDep) {
                 seed->fGood = -2000-seed->fIndex;
               }
             }
@@ -873,26 +813,21 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // at this point all hits are ordered in time
 //-----------------------------------------------------------------------------
-    // const ComboHit* ch0 = &(*_data.chcol)[0];
-
     for (int ih=0; ih<_nComboHits; ih++) {
       const ComboHit* ch = _v[ih];
 
-      // int loc = ch-ch0;
-      //      const StrawHitFlag* flag   = &(*_data.chfColl)[loc];
       const StrawHitFlag* flag   = &ch->flag();
       if (_testHitMask && (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
 
       float corr_time    = ch->correctedTime();
 
-      // if (ch->energyDep() > _maxEleHitEnergy             )  continue;
       if ((corr_time      < _minT) || (corr_time > _maxT))  continue;
 
       cx.Station                 = ch->strawId().station();
       cx.Plane                   = ch->strawId().plane() % 2;
       cx.Face                    = -1;
       cx.Panel                   = ch->strawId().panel();
-      cx.Layer                   = ch->strawId().layer();
+      //      cx.Layer                   = ch->strawId().layer();
 
                                               // get Z-ordered location
       Data_t::orderID(&cx, &co);
@@ -900,7 +835,6 @@ namespace mu2e {
       int os       = co.Station;
       int of       = co.Face;
       int op       = co.Panel;
-      // int ol       = co.Layer;
 
       if (_useTimePeaks == 1) {
         bool               intime(false);
@@ -930,7 +864,6 @@ namespace mu2e {
         if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
         if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
         if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
-        // if ((ol < 0) || (ol >= 2              )) printf(" >>> ERROR: wrong layer   number: %i\n",ol);
       }
 
       pz->fHitData->push_back(HitData_t(ch));
@@ -998,7 +931,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       if (dc->Active() == 0)                                          continue;
       if (dc->NHits () < _minDeltaNHits)                              continue;
-      if (dc->EDep  () > 0.004         )                              continue;
+      if (dc->EDep  () > _maxDeltaEDep )                              continue;
       for (int station=dc->fFirstStation; station<=dc->fLastStation; station++) {
         DeltaSeed* ds = dc->seed[station];
         if (ds != nullptr) {

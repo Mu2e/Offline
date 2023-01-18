@@ -20,7 +20,7 @@ namespace mu2e {
     int Plane;
     int Face;
     int Panel;
-    int Layer;
+    // int Layer;
   };
 //-----------------------------------------------------------------------------
 // intersection of the two hit wires
@@ -60,12 +60,15 @@ namespace mu2e {
   };
 
   struct PanelZ_t {
-    int                              fNHits  ; // guess, total number of ComboHits
+    int                              fID;         // 3*face+panel, for pre-calculating overlaps
+    int                              fNHits  ;    // guess, total number of ComboHits
     std::vector<HitData_t>*          fHitData;
     const Panel*                     fPanel;      // backward pointer to the tracker panel
     double                           wx;          // direction cosines of the wires, assumed to be all the same
     double                           wy;
     double                           phi;         // phi angle of the wire
+    double                           nx;          // direction cosines of the normal to the wires, pointing outwards
+    double                           ny;
     double                           z;           //
     float                            tmin;        // for hits stored on this panel
     float                            tmax;

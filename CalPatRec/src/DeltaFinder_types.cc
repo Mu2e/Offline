@@ -53,29 +53,30 @@ namespace mu2e {
       else                   X->Face = 1; // define original face
 
       O->Station = X->Station;            // stations already ordered
-      O->Plane   = X->Plane;              // planes already ordered, but not necessary for ordered construct
+      O->Plane   = X->Plane;              // planes already ordered. Not using them
 
       if (X->Station % 2 == 0) {
+//-----------------------------------------------------------------------------
+// even stations : 0,2,4...
+//-----------------------------------------------------------------------------
         if (X->Plane == 0) O->Face = 1 - X->Face;
         else               O->Face = X->Face + 2;
       }
       else {
+//-----------------------------------------------------------------------------
+// odd stations : 1,3,5...
+//-----------------------------------------------------------------------------
         if (X->Plane == 0) O->Face = X->Face;
         else               O->Face = 3 - X->Face; // order face
       }
 
-      O->Panel = int(X->Panel/2);                // order panel
-
-      int n = X->Station + X->Plane + X->Face;   // pattern has no intrinsic meaning, just works
-      if (n % 2 == 0) O->Layer = 1 - X->Layer;
-      else            O->Layer = X->Layer;       // order layer
+      O->Panel = int(X->Panel/2);                // 3 panels per face, face0: 024
     }
 
 //-----------------------------------------------------------------------------
   void Data_t::deOrderID(ChannelID* X, ChannelID* O) {
 
     X->Station = O->Station;
-
     X->Plane   = O->Plane;
 
     if(O->Station % 2 ==  0) {
@@ -89,10 +90,6 @@ namespace mu2e {
 
     if(X->Face == 0) X->Panel = O->Panel * 2;
     else X->Panel = 1 + (O->Panel * 2);
-
-    int n = X->Station + X->Plane + X->Face;
-    if(n % 2 == 0) X->Layer = 1 - O->Layer;
-    else X->Layer = O->Layer;
   }
 
 //-----------------------------------------------------------------------------
@@ -141,13 +138,11 @@ namespace mu2e {
           stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - stationZ[ist])/sin(meanPitchAngle)/CLHEP::c_light;
         }
       }
-
-      float     z_tracker_center(0.);
-      // int       nPlanesPerStation(2);
-
 //-----------------------------------------------------------------------------
 // per-panel TOF corrections
 //-----------------------------------------------------------------------------
+      float     z_tracker_center(0.);
+
       int npl = tracker->nPlanes();
       for (int ipl=0; ipl< npl; ipl++) {
         const Plane* pln = &tracker->getPlane(ipl);
@@ -165,12 +160,14 @@ namespace mu2e {
             cx.Plane     = ipl % 2;
             cx.Face      = face;
             cx.Panel     = ipn;
-            cx.Layer     = il;
+            // cx.Layer     = il;
             orderID (&cx, &co);
             int os       = co.Station;
             int of       = co.Face;
             int op       = co.Panel;
+
             PanelZ_t* pz = &oTracker[os][of][op];
+            pz->fID      = 3*co.Face+co.Panel;
             pz->fPanel   = panel;
 //-----------------------------------------------------------------------------
 // panel caches phi of its center and the z, phi runs from 0 to 2*pi
@@ -178,6 +175,13 @@ namespace mu2e {
             pz->wx  = panel->straw0Direction().x();
             pz->wy  = panel->straw0Direction().y();
             pz->phi = panel->straw0MidPoint().phi();
+//-----------------------------------------------------------------------------
+// can't simply define nx,ny via the wx,wy - there is a couple of sign inversions:
+// - plane=0,face=1 is flipped wrt plane=0,face=0
+// - plane=1 is flipped wrt plane-0
+//-----------------------------------------------------------------------------
+            pz->nx  = cos(pz->phi);
+            pz->ny  = sin(pz->phi);
             pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
 
             int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
@@ -186,8 +190,33 @@ namespace mu2e {
         }
         stationUsed[ist] = 1;
       }
+//-----------------------------------------------------------------------------
+// precalculate overlaps between panels - 12x12 matrix,
+// use first aand second stations for that
+// a panel covers 120 deg, two panels overlap if n1*n2 > -sin(30 deg) = -0.5
+//-----------------------------------------------------------------------------
+      for (int ich=0; ich<2; ich++) {
+        for (int f1=0; f1<3; f1++) {
+          for (int ip1=0; ip1<3; ip1++) {
+            PanelZ_t* pz1 = &oTracker[ich][f1][ip1];
+            for (int f2=f1+1; f2<4; f2++) {
+              for (int ip2=0; ip2<3; ip2++) {
+                PanelZ_t* pz2 = &oTracker[ich][f2][ip2];
+                float n1n2 = pz1->nx*pz2->nx+pz1->ny*pz2->ny;
+                if (n1n2 >= -0.5-1.e-6) {
+                  panelOverlap[ich][pz1->fID][pz2->fID] = 1;
+                  panelOverlap[ich][pz2->fID][pz1->fID] = 1;
+                }
+                else {
+                  panelOverlap[ich][pz1->fID][pz2->fID] = 0;
+                  panelOverlap[ich][pz2->fID][pz1->fID] = 0;
+                }
+              }
+            }
+          }
+        }
+      }
     }
-
 //-----------------------------------------------------------------------------
     void Data_t::printHitData(HitData_t* Hd, const char* Option) {
       const mu2e::ComboHit* ch0 = &(*chcol)[0];
@@ -341,22 +370,18 @@ namespace mu2e {
       for (int s=0; s<2; ++s) {
         for (int f=0; f<4; ++f) {
           for (int pa=0; pa<3; ++pa) {
-            for (int l=0; l<2; ++l) {
+            o.Station          = s;
+            o.Face             = f;
+            if (f < 2) o.Plane = 0;
+            else       o.Plane = 1;
+            o.Panel            = pa;
 
-              o.Station          = s;
-              o.Face             = f;
-              if (f < 2) o.Plane = 0;
-              else       o.Plane = 1;
-              o.Panel            = pa;
-              o.Layer            = l;
+            deOrderID(&x, &o);
 
-              deOrderID(&x, &o);
-
-              printf(" testdeOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i, layer = %i)",
-                     x.Station,x.Plane,x.Face,x.Panel,x.Layer);
-              printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i, layer = %i)\n",
-                     o.Station,o.Plane,o.Face,o.Panel,o.Layer);
-            }
+            printf(" testdeOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i)",
+                   x.Station,x.Plane,x.Face,x.Panel);
+            printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i)\n",
+                   o.Station,o.Plane,o.Face,o.Panel);
           }
         }
       }
@@ -370,17 +395,14 @@ namespace mu2e {
       for (int s=0; s<2; ++s) {
         for (int pl=0; pl<2; ++pl) {
           for (int pa=0; pa<6; ++pa) {
-            for (int l=0; l<2; ++l) {
-              x.Station = s;
-              x.Plane   = pl;
-              x.Panel   = pa;
-              x.Layer   = l;
-              orderID(&x, &o);
-              printf(" testOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i, layer = %i)",
-                     x.Station, x.Plane, x.Face, x.Panel, x.Layer);
-              printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i, layer = %i)\n",
-                     o.Station, o.Plane, o.Face, o.Panel, o.Layer);
-            }
+            x.Station = s;
+            x.Plane   = pl;
+            x.Panel   = pa;
+            orderID(&x, &o);
+            printf(" testOrderID: Initial(station = %i, plane = %i, face = %i, panel = %i)",
+                   x.Station, x.Plane, x.Face, x.Panel);
+            printf("  Ordered(station = %i, plane = %i, face = %i, panel = %i)\n",
+                   o.Station, o.Plane, o.Face, o.Panel);
           }
         }
       }
