@@ -84,6 +84,10 @@ namespace mu2e {
 
       PanelZ_t                      oTracker   [kNStations][kNFaces][kNPanelsPerFace];
       int                           stationUsed[kNStations];
+//-----------------------------------------------------------------------------
+// station #2 is the same as station #0 etc...
+//-----------------------------------------------------------------------------
+      int                           panelOverlap[2][12][12];
 
       float                         stationToCaloTOF[2][20];
       float                         faceTOF[80];

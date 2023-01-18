@@ -353,7 +353,8 @@ CalPatRec : { @table::CalPatRec
             minHitTime                  : 350.                  # ns
             minimumTime                 : 400.                  # ns
             maximumTime                 : 1750.                 # ns
-            minNFacesWithHits           : 2                     #
+            maxSeedEDep                 : 0.005                 # max allowed <seed hit eDep>
+            maxDeltaEDep                : 0.004                 # max allowed <delta hit eDep>
             minNSeeds                   : 2                     #
             maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
 
