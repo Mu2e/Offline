@@ -287,15 +287,17 @@ namespace mu2e {
     // compute the signal propagation time and drift time
     double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
     auto const& straw = tracker.straw(sdmc.strawId());
-    double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
-    tshmc._tprop = pdist/vprop;
-    tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
     auto wdir = XYZVectorF(straw.wireDirection());
     auto tdir = mcstep.momentum().Unit();
+    double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
+    tshmc._tprop = fabs(pdist)/vprop;
+    tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
     auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
     const static XYZVectorF bdir(0.0,0.0,1.0);
     double phi = acos(tperp.Dot(bdir)); // Lorentz angle
-    tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
+    tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,phi);
+    // compute 'tau' of the cluster
+
   }
 
   void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SHIS& shindices) {
