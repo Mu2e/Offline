@@ -15,7 +15,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1):
       TObject(),
-      fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
+      fSnx2(0), fSnxy(0), fSny2(0),fSnxr(0),fSnyr(0),
       fSumEDep(0), fSumT(0)
     {
       fIndex            = Index;
@@ -84,13 +84,11 @@ namespace mu2e {
           // this should be the hit wdir - check...
           double nr = x0*ny-y0*nx;
 
-          // fSx    += x0;
-          // fSy    += y0;
-          fSnx2  += nx*nx;
-          fSnxny += nx*ny;
-          fSny2  += ny*ny;
-          fSnxnr += nx*nr;
-          fSnynr += ny*nr;
+          fSnx2 += nx*nx;
+          fSnxy += nx*ny;
+          fSny2 += ny*ny;
+          fSnxr += nx*nr;
+          fSnyr += ny*nr;
 
           fSumEDep += ch->energyDep()*ch->nStrawHits();
           fSumT    += ch->correctedTime()*ch->nStrawHits();
@@ -130,11 +128,11 @@ namespace mu2e {
 
       double nr                = x0*ny-y0*nx;
 
-      fSnx2  += nx*nx;
-      fSnxny += nx*ny;
-      fSny2  += ny*ny;
-      fSnxnr += nx*nr;
-      fSnynr += ny*nr;
+      fSnx2 += nx*nx;
+      fSnxy += nx*ny;
+      fSny2 += ny*ny;
+      fSnxr += nx*nr;
+      fSnyr += ny*nr;
 
       fSumEDep += ch->energyDep()*ch->nStrawHits();
       fSumT    += ch->correctedTime()*ch->nStrawHits();
@@ -175,11 +173,11 @@ namespace mu2e {
 
       double nxym, nx2m, ny2m, nxrm, nyrm;
 
-      nxym = fSnxny/fNHits;
-      nx2m = fSnx2 /fNHits;
-      ny2m = fSny2 /fNHits;
-      nxrm = fSnxnr/fNHits;
-      nyrm = fSnynr/fNHits;
+      nxym = fSnxy/fNHits;
+      nx2m = fSnx2/fNHits;
+      ny2m = fSny2/fNHits;
+      nxrm = fSnxr/fNHits;
+      nyrm = fSnyr/fNHits;
 
       double d  = nx2m*ny2m-nxym*nxym;
 
@@ -214,7 +212,7 @@ namespace mu2e {
 
           float  dxy2_perp       = dx_perp*dx_perp+dy_perp*dy_perp;
 
-          float  chi2_par        = dxy_dot_wdir*dxy_dot_wdir/hd->fSigW2;
+          float  chi2_par        = dxy_dot_wdir*dxy_dot_wdir/(hd->fSigW2+SigmaR2);
           float  chi2_perp       = dxy2_perp/SigmaR2;
           float  chi2            = chi2_par + chi2_perp;
           fChi2All              += chi2;
@@ -222,4 +220,40 @@ namespace mu2e {
         }
       }
     }
+//-----------------------------------------------------------------------------
+// utility: calculate Com and chi2's, call for N>= 2 hit seeds
+//-----------------------------------------------------------------------------
+  void DeltaSeed::Chi2(double Xc, double Yc, double SigmaR2, double& Chi2All, double& Chi2Perp) {
+
+    Chi2All  = 0;
+    Chi2Perp = 0;
+
+    for (int face=0; face<kNFaces; face++) {
+      const HitData_t* hd = hitData[face];
+      if (hd) {
+        double dx = hd->fHit->pos().x()-Xc;
+        double dy = hd->fHit->pos().y()-Yc;
+//-----------------------------------------------------------------------------
+// split into wire parallel and perpendicular components
+//-----------------------------------------------------------------------------
+        const XYZVectorF& wdir = hd->fHit->wdir();
+
+        double dxy_dot_wdir    = dx*wdir.x()+dy*wdir.y();
+
+        double dx_par          = dxy_dot_wdir*wdir.x();
+        double dy_par          = dxy_dot_wdir*wdir.y();
+
+        double dx_perp         = dx-dx_par;
+        double dy_perp         = dy-dy_par;
+
+        float  dxy2_perp       = dx_perp*dx_perp+dy_perp*dy_perp;
+
+        float  chi2_par        = dxy_dot_wdir*dxy_dot_wdir/(hd->fSigW2+SigmaR2);
+        float  chi2_perp       = dxy2_perp/SigmaR2;
+        float  chi2            = chi2_par + chi2_perp;
+        Chi2All               += chi2;
+        Chi2Perp              += chi2_perp;
+      }
+    }
+  }
 }

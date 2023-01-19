@@ -25,11 +25,12 @@ physics : {
             maxChi2Seed                   : 12. ## 10 16 used by findSeeds, for each hit
             maxChi2Radial                 : 12. ## 10 25 used by recoverStation (wire-to-seed dist)
             maxChi2All                    : 12. ## 10 16 used by pruneSeeds to mark bad seeds
-            maxChi2SeedDelta              :  3. ##
+            maxChi2SeedDelta              : 3.0 ##
             maxDxy                        : 10. ## used by connectSeeds 30 40 mm
-            maxGap                        :  3. ## 3 gap in missing stations along the candidate
-            sigmaR                        :  3. # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-            seedRes                       :  3. # 5 is good just to see what it does
+            maxGap                        :  3  ## 3 gap in missing stations along the candidate
+            updateSeedCOG                 :  0  ## 1
+            sigmaR                        : 3.0 # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+            seedRes                       : 3.0 # 5 is good just to see what it does
             maxDriftTime                  : 35. ## 40 ns, includes some tolerance (50)
             maxSeedDt                     : 20. ## time window for checking duplicate seeds
             maxHitDt                      : 30. ## time window for checking duplicate seeds

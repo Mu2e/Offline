@@ -377,8 +377,10 @@ CalPatRec : { @table::CalPatRec
 
             writeStrawHits              : 1
             filter                      : 0
-                                                                # debugging/diagnostics
+                                                                # debugging/diagnostics/testing
             testOrder                   : 0
+            updateSeedCOG               : 0
+
             debugLevel                  : 0
             diagLevel                   : 0
             printErrors                 : 0

@@ -36,10 +36,10 @@ namespace mu2e {
     McPart_t*    fMcPart       [kNFaces];
                                       // XY coordinate sums
     double       fSnx2;
-    double       fSnxny;
+    double       fSnxy;
     double       fSny2;
-    double       fSnxnr;
-    double       fSnynr;
+    double       fSnxr;
+    double       fSnyr;
     float        fSumEDep;             // sum over the straw hits
 
     XYZVectorF   CofM;                 // COG
@@ -104,6 +104,7 @@ namespace mu2e {
     void             AddHit         (HitData_t* Hd, int Face);
     void             ReplaceFirstHit(HitData_t* Hd);
     void             CalculateCogAndChi2(double SigmaR2);
+    void             Chi2(double Xc, double Yc, double SigmaR2, double& Chi2All, double& Chi2Perp);
 
     ClassDef(mu2e::DeltaSeed,0)
   };
