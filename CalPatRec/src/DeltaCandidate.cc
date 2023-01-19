@@ -4,7 +4,7 @@
 namespace mu2e {
 //-----------------------------------------------------------------------------
     DeltaCandidate::DeltaCandidate() :
-      fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
+      fSnx2(0), fSnxy(0), fSny2(0),fSnxr(0),fSnyr(0),
       fSt(0), fSz(0), fSt2(0), fStz(0), fSz2(0)
     {
       fIndex  = -1;
@@ -26,7 +26,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
     DeltaCandidate::DeltaCandidate(int Index, DeltaSeed* Seed, int Station) :
-      fSnx2(0), fSnxny(0), fSny2(0),fSnxnr(0),fSnynr(0),
+      fSnx2(0), fSnxy(0), fSny2(0),fSnxr(0),fSnyr(0),
       fSt(0), fSz(0), fSt2(0), fStz(0), fSz2(0)
     {
       fIndex  = Index;
@@ -67,18 +67,18 @@ namespace mu2e {
       fSumEDep       += Seed->SumEDep();
 
       fSnx2          += Seed->fSnx2;
-      fSnxny         += Seed->fSnxny;
+      fSnxy          += Seed->fSnxy;
       fSny2          += Seed->fSny2;
-      fSnxnr         += Seed->fSnxnr;
-      fSnynr         += Seed->fSnynr;
+      fSnxr          += Seed->fSnxr;
+      fSnyr          += Seed->fSnyr;
 
       double nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
 
-      nxny_mean = fSnxny/fNHits;
-      nx2_mean  = fSnx2 /fNHits;
-      ny2_mean  = fSny2 /fNHits;
-      nxnr_mean = fSnxnr/fNHits;
-      nynr_mean = fSnynr/fNHits;
+      nxny_mean = fSnxy/fNHits;
+      nx2_mean  = fSnx2/fNHits;
+      ny2_mean  = fSny2/fNHits;
+      nxnr_mean = fSnxr/fNHits;
+      nynr_mean = fSnyr/fNHits;
 
       double d  = nx2_mean*ny2_mean-nxny_mean*nxny_mean;
       double xc = (nynr_mean*nx2_mean-nxnr_mean*nxny_mean)/d;
@@ -165,25 +165,25 @@ namespace mu2e {
 // update XY sums
 //-----------------------------------------------------------------------------
       fSnx2          += Delta->fSnx2;
-      fSnxny         += Delta->fSnxny;
+      fSnxy          += Delta->fSnxy;
       fSny2          += Delta->fSny2;
-      fSnxnr         += Delta->fSnxnr;
-      fSnynr         += Delta->fSnynr;
+      fSnxr          += Delta->fSnxr;
+      fSnyr          += Delta->fSnyr;
 //-----------------------------------------------------------------------------
 // and recalculate the center-of-mass XY position
 //-----------------------------------------------------------------------------
-      double nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
+      double nxym, nx2m, ny2m, nxrm, nyrm;
 
-      nxny_mean = fSnxny/fNHits;
-      nx2_mean  = fSnx2 /fNHits;
-      ny2_mean  = fSny2 /fNHits;
-      nxnr_mean = fSnxnr/fNHits;
-      nynr_mean = fSnynr/fNHits;
+      nxym  = fSnxy/fNHits;
+      nx2m  = fSnx2/fNHits;
+      ny2m  = fSny2/fNHits;
+      nxrm  = fSnxr/fNHits;
+      nyrm  = fSnyr/fNHits;
 
-      double d  = nx2_mean*ny2_mean-nxny_mean*nxny_mean;
+      double d  = nx2m*ny2m-nxym*nxym;
 
-      double xc = (nynr_mean*nx2_mean-nxnr_mean*nxny_mean)/d;
-      double yc = (nynr_mean*nxny_mean-nxnr_mean*ny2_mean)/d;
+      double xc = (nyrm*nx2m-nxrm*nxym)/d;
+      double yc = (nyrm*nxym-nxrm*ny2m)/d;
 
       CofM.SetX(xc);
       CofM.SetY(yc);

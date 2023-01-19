@@ -677,6 +677,7 @@ namespace mu2e {
 
         fillSeedHistograms(_hist.fSeed[0],seed,&seed_par);
 
+        if (! seed->Used())            continue;
         if (seed->MCTruth()) {
 //-----------------------------------------------------------------------------
 // real pre-seed - made out of hits produced by the same particle

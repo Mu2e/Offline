@@ -96,6 +96,7 @@ namespace mu2e {
       fhicl::Atom<bool>              testHitMask      {Name("testHitMask"      ), Comment("if true, test hit mask"      ) };
       fhicl::Sequence<std::string>   goodHitMask      {Name("goodHitMask"      ), Comment("good hit mask"               ) };
       fhicl::Sequence<std::string>   bkgHitMask       {Name("bkgHitMask"       ), Comment("background hit mask"         ) };
+      fhicl::Atom<int>               updateSeedCOG    {Name("updateSeedCOG"    ), Comment("if 1, update seed COG"       ) };
 
       fhicl::Table<DeltaFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
     };
@@ -148,6 +149,7 @@ namespace mu2e {
     bool            _testHitMask;
     StrawHitFlag    _goodHitMask;
     StrawHitFlag    _bkgHitMask;
+    int             _updateSeedCOG;
 
     std::unique_ptr<ModuleHistToolBase> _hmanager;
 //-----------------------------------------------------------------------------
@@ -245,7 +247,8 @@ namespace mu2e {
     _testOrder             (config().testOrder()        ),
     _testHitMask           (config().testHitMask()      ),
     _goodHitMask           (config().goodHitMask()      ),
-    _bkgHitMask            (config().bkgHitMask()       )
+    _bkgHitMask            (config().bkgHitMask()       ),
+    _updateSeedCOG         (config().updateSeedCOG()    )
   {
     consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
 
@@ -371,30 +374,70 @@ namespace mu2e {
 // between any two measured hit times should not exceed _maxDriftTime
 // (_maxDriftTime represents the maximal drift time in the straw, should there be some tolerance?)
 //-----------------------------------------------------------------------------
-          HitData_t* hd            = &(*panelz->fHitData)[ih];
-          float corr_time          = hd->fCorrTime;
+          HitData_t* hd      = &(*panelz->fHitData)[ih];
+          float corr_time    = hd->fCorrTime;
 
           if (corr_time-Seed->T0Max() > _maxHitSeedDt)                break;
           if (Seed->T0Min()-corr_time > _maxHitSeedDt)                continue;
 
-          const ComboHit*   ch     = hd->fHit;
-          double dx                = ch->pos().x()-xseed;
-          double dy                = ch->pos().y()-yseed;
+          const ComboHit* ch = hd->fHit;
+          double dx          = ch->pos().x()-xseed;
+          double dy          = ch->pos().y()-yseed;
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 // assume wire direction vector is normalized to 1
 //-----------------------------------------------------------------------------
-          float dxy_dot_wdir       = dx*nx+dy*ny;
+          float dxy_dot_wdir = dx*nx+dy*ny;
 
-          float dx_perp            = dx-dxy_dot_wdir*nx;
-          float dy_perp            = dy-dxy_dot_wdir*ny;
-          float d_perp_2           = dx_perp*dx_perp+dy_perp*dy_perp;
+          float dx_perp      = dx-dxy_dot_wdir*nx;
+          float dy_perp      = dy-dxy_dot_wdir*ny;
+          float d_perp_2     = dx_perp*dx_perp+dy_perp*dy_perp;
 
           // add an uncertainty on the intersection, can do better :
 
-          float chi2_par           = (dxy_dot_wdir*dxy_dot_wdir)/(hd->fSigW2+_seedRes*_seedRes);
-          float chi2_perp          = d_perp_2/_sigmaR2;
-          float chi2               = chi2_par + chi2_perp;
+          float chi2_par     = (dxy_dot_wdir*dxy_dot_wdir)/(hd->fSigW2+_seedRes*_seedRes);
+          float chi2_perp    = d_perp_2/_sigmaR2;
+          float chi2         = chi2_par + chi2_perp;
+
+          if (_updateSeedCOG != 0) {
+//-----------------------------------------------------------------------------
+// try updating the seed candidate coordinates with the hit added
+// to see if that could speed the code up by improvind the efficiency
+// of picking up the right hits
+// OFF by default
+//-----------------------------------------------------------------------------
+            double nr   = ch->pos().x()*ny-ch->pos().y()*nx;
+
+            double nx2m = (Seed->fSnx2+nx*nx)/(Seed->NHits()+1);
+            double nxym = (Seed->fSnxy+nx*ny)/(Seed->NHits()+1);
+            double ny2m = (Seed->fSny2+ny*ny)/(Seed->NHits()+1);
+            double nxrm = (Seed->fSnxr+nx*nr)/(Seed->NHits()+1);
+            double nyrm = (Seed->fSnyr+ny*nr)/(Seed->NHits()+1);
+
+            double d    = nx2m*ny2m-nxym*nxym;
+
+            double xc   = (nyrm*nx2m-nxrm*nxym)/d;
+            double yc   = (nyrm*nxym-nxrm*ny2m)/d;
+
+            float dx1   = ch->pos().x()-xc;
+            float dy1   = ch->pos().y()-yc;
+
+            float dxy1_dot_wdir = dx1*nx+dy1*ny;
+
+            float dx1_perp      = dx1-dxy1_dot_wdir*nx;
+            float dy1_perp      = dy1-dxy1_dot_wdir*ny;
+            float dxy1_perp_2   = dx1_perp*dx1_perp+dy1_perp*dy1_perp;
+
+            double chi2_par1(0), chi2_perp1(0);
+
+            Seed->Chi2(xc,yc,_sigmaR2,chi2_par1,chi2_perp1);
+            chi2_par1          += (dxy1_dot_wdir*dxy1_dot_wdir)/(hd->fSigW2 + _sigmaR2);
+            chi2_perp1         += dxy1_perp_2/_sigmaR2;                        // some radius
+            float chi21         = (chi2_par1 + chi2_perp1)/(Seed->NHits()+1);
+
+            chi2                = chi21;
+          }
+
           if (chi2 < best_chi2) {
                                         // new best hit
             closest_hit = hd;
@@ -903,14 +946,7 @@ namespace mu2e {
 
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit* ch = &(*_data.chcol)[i];
-      int ind            = ch->indexArray().at(0);
-      const StrawHit* sh = &_shColl->at(ind);
-//-----------------------------------------------------------------------------
-// make decision based on the first straw hit ???? FIXME - check all hits
-//-----------------------------------------------------------------------------
-      StrawHitFlag flag = ch->flag();
-      if (sh->energyDep() < _maxEleHitEnergy) flag.merge(StrawHitFlag::energysel);
-      (*_data.outputChfColl)[i] = flag;
+      (*_data.outputChfColl)[i].merge(ch->flag());
     }
 
     const ComboHit* ch0(0);
@@ -1164,11 +1200,11 @@ namespace mu2e {
 
     int    nh   = Delta->NHits()+Seed->NHits();
 
-    double nxym = (Delta->fSnxny+Seed->fSnxny)/nh;
-    double nx2m = (Delta->fSnx2 +Seed->fSnx2 )/nh;
-    double ny2m = (Delta->fSny2 +Seed->fSny2 )/nh;
-    double nxrm = (Delta->fSnxnr+Seed->fSnxnr)/nh;
-    double nyrm = (Delta->fSnynr+Seed->fSnynr)/nh;
+    double nxym = (Delta->fSnxy+Seed->fSnxy)/nh;
+    double nx2m = (Delta->fSnx2+Seed->fSnx2)/nh;
+    double ny2m = (Delta->fSny2+Seed->fSny2)/nh;
+    double nxrm = (Delta->fSnxr+Seed->fSnxr)/nh;
+    double nyrm = (Delta->fSnyr+Seed->fSnyr)/nh;
 
     double d    = nx2m*ny2m-nxym*nxym;
     double xc   = (nyrm*nx2m-nxrm*nxym)/d;
@@ -1193,8 +1229,6 @@ namespace mu2e {
     // int rc(0);
                                         // predicted time range for this station
     float tdelta = Delta->T0(Station);
-    // float xdelta = Delta->CofM.x();
-    // float ydelta = Delta->CofM.y();
 
     float      chi2min(_maxChi2SeedDelta);
     DeltaSeed* closest_seed(nullptr);

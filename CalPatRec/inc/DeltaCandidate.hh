@@ -30,10 +30,10 @@ namespace mu2e {
       double                fSx;
       double                fSy;
       double                fSnx2;
-      double                fSnxny;
+      double                fSnxy;
       double                fSny2;
-      double                fSnxnr;
-      double                fSnynr;
+      double                fSnxr;
+      double                fSnyr;
                                                    // LSQ sumz for TZ
       double                fSt;
       double                fSz;
