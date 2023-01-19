@@ -80,12 +80,12 @@ namespace mu2e {
       t2d_->SetTitle("Time to Distance;Drift Time (ns);Distance to Wire (mm)");
       gDirectory->Append(t2d_);
       t2derr_ = tfs->make<TGraph>(nbins_);
-      t2derr_->SetName("T2DErr");
-      t2derr_->SetTitle("Drift Distance Error;Drift Time (ns);Drift Distance Error (mm)");
+      t2derr_->SetName("T2SDErr");
+      t2derr_->SetTitle("Signed Drift Error;Drift Time (ns);Drift Error (mm)");
       gDirectory->Append(t2derr_);
       t2nerr_ = tfs->make<TGraph>(nbins_);
-      t2nerr_->SetName("T2NErr");
-      t2nerr_->SetTitle("Null hit Distance Error;Drift Time (ns);Null hit Distance Error (mm)");
+      t2nerr_->SetName("T2UDErr");
+      t2nerr_->SetTitle("Unsigned Drift Error;Drift Time (ns);Drift Error (mm)");
       gDirectory->Append(t2nerr_);
       t2v_ = tfs->make<TGraph>(nbins_);
       t2v_->SetName("T2V");
