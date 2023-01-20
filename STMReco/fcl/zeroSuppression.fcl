@@ -12,7 +12,7 @@ source : {
 }
 
 services : {
-  message : { @table::Services.Core.message }
+  @table::Services.Core
 }
 
 physics: {
@@ -20,7 +20,6 @@ physics: {
     zeroSuppressHPGe : {
       module_type : STMZeroSuppression
       stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
-      samplingFrequency : @local::STM.HPGe.samplingFrequency
       tbefore : @local::STM.HPGe.tbefore
       tafter : @local::STM.HPGe.tafter
       threshold : @local::STM.HPGe.threshold
@@ -32,7 +31,6 @@ physics: {
     zeroSuppressLaBr : {
       module_type : STMZeroSuppression
       stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
-      samplingFrequency : @local::STM.LaBr.samplingFrequency
       tbefore : @local::STM.LaBr.tbefore
       tafter : @local::STM.LaBr.tafter
       threshold : @local::STM.LaBr.threshold
