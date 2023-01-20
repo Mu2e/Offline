@@ -23,6 +23,11 @@ mu2eg4DefaultPhysics: {
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
 
+    // the following option is to be used mainly as an extention of
+    // the physics lists activating HP neutron physics e.g., Shielding, ShieldingM
+    // or any of the _HP ones
+    turnOnThermalNeutronPhysics: false
+
     setMuHadLateralDisplacement: true // improves accuracy of boundary
                                       // crossing for muons and common charged hadrons
 
