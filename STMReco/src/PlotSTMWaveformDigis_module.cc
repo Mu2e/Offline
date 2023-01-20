@@ -49,7 +49,6 @@ namespace mu2e {
     int _verbosityLevel;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
     STMChannel _channel;
-    double _nsPerCt;
   };
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
@@ -76,8 +75,7 @@ namespace mu2e {
       std::cout << _channel.name() << " Pedestal = " << pedestal << std::endl;
     }
 
-    const auto samplingFrequency = stmEnergyCalib.samplingFrequency(_channel);
-    _nsPerCt = (1.0/samplingFrequency)*1e3;
+    const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
 
     for (const auto& waveform : *waveformsHandle) {
       histname.str("");
@@ -85,7 +83,7 @@ namespace mu2e {
       histtitle.str("");
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
 
-      Binning binning = STMUtils::getBinning(waveform, _xAxis, _nsPerCt);
+      Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
       TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
 
       for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc) {
