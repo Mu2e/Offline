@@ -4,6 +4,7 @@
 
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMReco/fcl/prolog_testbeam.fcl"
 
 process_name: PlotSTMWaveformDigis
 
@@ -26,7 +27,6 @@ physics: {
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "event_time"
-      samplingFrequency : @local::STM.HPGe.samplingFrequency
     }
     plotLaBrWaveformDigis : {
       module_type : PlotSTMWaveformDigis
@@ -34,7 +34,6 @@ physics: {
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "event_time"
-      samplingFrequency : @local::STM.LaBr.samplingFrequency
     }
 
     plotHPGeWaveformDigisZP : {
@@ -43,7 +42,6 @@ physics: {
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "event_time"
-      samplingFrequency : @local::STM.HPGe.samplingFrequency
     }
     plotLaBrWaveformDigisZP : {
       module_type : PlotSTMWaveformDigis
@@ -51,7 +49,6 @@ physics: {
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "event_time"
-      samplingFrequency : @local::STM.LaBr.samplingFrequency
     }
   }
   # setup paths
@@ -63,3 +60,5 @@ physics: {
 
 # Can define pedestals in fcl like the commented line below
 # services.ProditionsService.stmEnergyCalib.pedestals : [ ["HPGe",100.0], ["LaBr",2000.0] ]
+
+services.ProditionsService.stmEnergyCalib.samplingFrequencies : @local::STMTestBeam.Conditions.samplingFrequencies
