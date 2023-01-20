@@ -123,7 +123,7 @@ namespace mu2e {
     // note 'Velocity' is really dR/dt (change in calibrated drift distance WRT measured time), not a true physical velocity
     dinfo.driftVelocity_ = _strawDrift->GetInstantSpeedFromD(dinfo.cDrift_)*(1.0 - dcorrslope)*_dRdTScale;
     double serrslope,uerrslope;
-    interpolateCalib(_driftOffBins,_signedDriftRMS, dinfo.rDrift_, halfrange, dinfo.signedDriftError_, serrslope);
+    interpolateCalib(_driftRMSBins,_signedDriftRMS, dinfo.rDrift_, halfrange, dinfo.signedDriftError_, serrslope);
     interpolateCalib(_driftRMSBins,_unsignedDriftRMS, dinfo.rDrift_, halfrange, dinfo.unsignedDriftError_ , uerrslope);
     return dinfo;
   }
