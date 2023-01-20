@@ -150,10 +150,10 @@ namespace mu2e {
       if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
         whstate_.dDdT_ = dinfo.driftVelocity_;
-        whstate_.dVar_ = dinfo.signedDriftVar();
+        whstate_.dVar_ = dinfo.driftHitVar();
       } else {
         if(whstate_.nulldvar_ == WireHitState::rdrift){
-          whstate_.dVar_ = dinfo.unsignedDriftVar();
+          whstate_.dVar_ = dinfo.nullHitVar();
         } else {
           whstate_.dVar_ = DriftInfo::maxdvar_;
         }

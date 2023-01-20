@@ -167,7 +167,7 @@ Mu2eKinKal : {
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 2],
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 2],
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.15, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.15, "DriftRadius" ,"Null:Drift","", "All", 2]
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 2]
     ]
     Chi2SHUSettings : [
     ]

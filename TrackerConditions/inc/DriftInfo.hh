@@ -8,12 +8,13 @@ namespace mu2e {
     double LorentzAngle_ =0; // angle for EXB effects
     double rDrift_ =0; // calibrated drift distance
     double cDrift_ =0; // single cluster drift distance
-    double signedDriftError_ =0; // estimated variance on drift distance (includes LR ambiguity errors)
-    double unsignedDriftError_ =0; // estimated variance on drift distance for null hits (unsigned)
+    double signedDriftError_ =0; // estimated error on signed drift distance (includes LR ambiguity error effects)
+    double unsignedDriftError_ =0; // estimated error on unsigned drift distance
     double driftVelocity_; // instantaneous drift velocity
     static double maxdvar_; // maximum distance variance, given by straw radius
-    double signedDriftVar() const { return signedDriftError_*signedDriftError_; }
-    double unsignedDriftVar() const;
+    double driftHitVar() const { return signedDriftError_*signedDriftError_; } // variance for hits constrained to the signed drift distance
+    double nullHitVar() const; // variance for hits constrained to the wire position (null hits)
+    double unsignedDriftVar() const { return unsignedDriftError_*unsignedDriftError_; }
   };
 }
 #endif
