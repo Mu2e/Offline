@@ -44,6 +44,7 @@
 #include "Geant4/G4PhysListFactory.hh"
 #include "Geant4/G4VUserPhysicsList.hh"
 #include "Geant4/G4RadioactiveDecayPhysics.hh"
+#include "Geant4/G4ThermalNeutrons.hh"
 #include "Geant4/G4ErrorPhysicsList.hh"
 #include "Geant4/G4EmStandardPhysics_option4.hh"
 
@@ -115,6 +116,10 @@ namespace mu2e{
 
     if (phys.turnOnRadioactiveDecay()) {
       tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(debug.diagLevel()));
+    }
+
+    if (phys.turnOnThermalNeutronPhysics()) {
+      tmpPL->RegisterPhysics(new G4ThermalNeutrons(debug.diagLevel()));
     }
 
 #if G4VERSION>4104

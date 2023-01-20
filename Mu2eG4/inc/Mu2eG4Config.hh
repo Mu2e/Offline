@@ -120,6 +120,7 @@ namespace mu2e {
       fhicl::Atom<std::string> physicsListName {Name("physicsListName")};
       fhicl::Atom<bool> turnOffRadioactiveDecay {Name("turnOffRadioactiveDecay"), false};
       fhicl::Atom<bool> turnOnRadioactiveDecay {Name("turnOnRadioactiveDecay"), false};
+      fhicl::Atom<bool> turnOnThermalNeutronPhysics {Name("turnOnThermalNeutronPhysics"), false};
       fhicl::Atom<bool> decayMuonsWithSpin {Name("decayMuonsWithSpin"), false};
       fhicl::Atom<double> minRangeCut {Name("minRangeCut")};
 
