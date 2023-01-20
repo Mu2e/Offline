@@ -46,10 +46,15 @@ namespace mu2e {
       }
     }
 
-    // To convert from time to clock ticks
+    // To convert from time (to nanoseconds) to clock ticks...
     unsigned int convertToClockTicks(double time, const STMChannel channel, const STMEnergyCalib& stmEnergyCalib) {
       const auto nsPerCt = stmEnergyCalib.nsPerCt(channel);
       return (time/nsPerCt);
+    }
+    // ...and vice versa
+    double convertToTime(unsigned int ct, const STMChannel channel, const STMEnergyCalib& stmEnergyCalib) {
+      const auto nsPerCt = stmEnergyCalib.nsPerCt(channel);
+      return ct*nsPerCt;
     }
   }
 }

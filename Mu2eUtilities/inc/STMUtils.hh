@@ -19,8 +19,9 @@ namespace mu2e {
     // To get the binning for a specific STMWaveformDigi
     Binning getBinning(const STMWaveformDigi& waveform, const std::string& xAxis, const double nsPerCt);
 
-    // To convert from time to clock ticks
+    // To convert from time (in nanoseconds) to clock ticks and vice versa
     unsigned int convertToClockTicks(double time, const STMChannel channel, const STMEnergyCalib& stmEnergyCalib);
+    double convertToTime(unsigned int ct, const STMChannel channel, const STMEnergyCalib& stmEnergyCalib);
   }
 }
 
