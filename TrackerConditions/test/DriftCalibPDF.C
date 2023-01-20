@@ -13,8 +13,9 @@
 #include <fstream>
 #include "KKCuts.hh"
 #include "FillChain.C"
+#include <ctime>
 
-void DriftCalibPDF(TTree* ta,const char* acut="") {
+void DriftCalibPDF(TTree* ta,const char* hcut="") {
   if(ta==0){
     cout << "No tree specified" << endl;
     return;
@@ -37,8 +38,8 @@ void DriftCalibPDF(TTree* ta,const char* acut="") {
   rcluster->SetStats(0);
   rdrift->SetStats(0);
 
-  TCut hcut(acut);
-  TCut hitsel =gfit+gmom+ghit+thit+hcut;
+  TCut hsel(hcut);
+  TCut hitsel =gfit+gmom+ghit+thit+hsel;
   ta->Project("mcdoca","detshmc.dist",hitsel);
   ta->Project("rcluster","detsh.cdrift",hitsel);
   ta->Project("rcluster_fine","detsh.cdrift",hitsel);
@@ -119,7 +120,7 @@ void DriftCalibPDF(TTree* ta,const char* acut="") {
   //
 
   string cfname;
-  string cutstr(acut);
+  string cutstr(hcut);
   if(!cutstr.empty())
     cfname = string("DriftCalibPDF_") + cutstr + string(".txt");
   else
@@ -127,6 +128,9 @@ void DriftCalibPDF(TTree* ta,const char* acut="") {
 
   cout << "Saving calibration to " << cfname << endl;
   ofstream cfile(cfname.c_str(),ios::trunc);
+  time_t now = time(0);
+  char* dt = ctime(&now);
+  cfile << "# The following was produced by DriftCalibPDF.C with hit selection " << cutstr << " on " << dt << endl;
   cfile << std::setw(4) << std::setprecision(3);
   cfile << "driftOffBins : [ ";
   cfile << rcbinedges[0] << " , " << rcbinedges[1] << " ]" << endl;
@@ -141,14 +145,14 @@ void DriftCalibPDF(TTree* ta,const char* acut="") {
   cfile.close();
 }
 
-void DriftCalibPDFFile(const char* file,const char* acut="") {
+void DriftCalibPDFFile(const char* file,const char* hcut="") {
   TFile* tf = new TFile(file);
   TTree* ta = (TTree*)tf->Get("TAKK/trkana");
-  DriftCalibPDF(ta,acut);
+  DriftCalibPDF(ta,hcut);
 }
 
-void DriftCalibPDFChain(const char* files,const char* acut="") {
+void DriftCalibPDFChain(const char* files,const char* hcut="") {
   TChain* ta = new TChain("TAKK/trkana");
   FillChain(ta,files);
-  DriftCalibPDF(ta,acut);
+  DriftCalibPDF(ta,hcut);
 }

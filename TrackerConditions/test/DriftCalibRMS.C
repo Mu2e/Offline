@@ -13,8 +13,9 @@
 #include <fstream>
 #include "KKCuts.hh"
 #include "FillChain.C"
+#include <ctime>
 
-void DriftCalibRMS(TTree* ta,const char* hcut="") {
+void DriftCalibRMS(TTree* ta,const char* dcut="",const char* ncut="") {
   if(ta==0){
     cout << "No tree specified" << endl;
     return;
@@ -38,12 +39,14 @@ void DriftCalibRMS(TTree* ta,const char* hcut="") {
   udr_vs_rdp->SetLineColor(kRed);
   udr_vs_rdp->SetMarkerColor(kRed);
 
-  TCut hsel(hcut);
-  TCut hitsel =gfit+gmom+ghit+thit+hsel;
-  ta->Project("sdr_vs_rd","copysign(detsh.rdrift,detsh.udoca*detshmc.doca)-detshmc.dist:detsh.rdrift",hitsel+dhit);
-  ta->Project("sdr_vs_rdp","copysign(detsh.rdrift,detsh.udoca*detshmc.doca)-detshmc.dist:detsh.rdrift",hitsel+dhit);
-  ta->Project("udr_vs_rd","detsh.rdrift-detshmc.dist:detsh.rdrift",hitsel);
-  ta->Project("udr_vs_rdp","detsh.rdrift-detshmc.dist:detsh.rdrift",hitsel);
+  TCut dsel(dcut);
+  TCut nsel(ncut);
+  TCut dhitsel =gfit+gmom+ghit+thit+dsel;
+  TCut nhitsel =gfit+gmom+ghit+thit+nsel;
+  ta->Project("sdr_vs_rd","copysign(detsh.rdrift,detsh.udoca*detshmc.doca)-detshmc.dist:detsh.rdrift",dhitsel);
+  ta->Project("sdr_vs_rdp","copysign(detsh.rdrift,detsh.udoca*detshmc.doca)-detshmc.dist:detsh.rdrift",dhitsel);
+  ta->Project("udr_vs_rd","detsh.rdrift-detshmc.dist:detsh.rdrift",nhitsel);
+  ta->Project("udr_vs_rdp","detsh.rdrift-detshmc.dist:detsh.rdrift",nhitsel);
 
   TH1D* sdr_vs_rdp_mean = new TH1D("sdr_vs_rdp_mean","Mean #Delta R vs R_{drift};R_{drift} (mm);Mean #Delta R (mm)",nrdbins,rdbinedges[0],rdbinedges[1]);
   TH1D* sdr_vs_rdp_sigma = new TH1D("sdr_vs_rdp_sigma","#sigma #Delta R vs R_{drift};R_{drift} (mm);#sigma #Delta R (mm)",nrdbins,rdbinedges[0],rdbinedges[1]);
@@ -95,8 +98,21 @@ void DriftCalibRMS(TTree* ta,const char* hcut="") {
   sdr_vs_rdp_sigma->Draw();
   udr_vs_rdp_sigma->Draw("same");
   cleg2->Draw();
+  //
   // dump the resolutions
-  ofstream cfile("DriftCalibRMS.txt",ios::trunc);
+  //
+  string cfname;
+  string cutstr = string(dcut)+string("_")+string(ncut);
+  if(!cutstr.empty())
+    cfname = string("DriftCalibRMS_") + cutstr + string(".txt");
+  else
+    cfname = string("DriftCalibRMS.txt");
+
+  cout << "Saving calibration to " << cfname << endl;
+  ofstream cfile(cfname.c_str(),ios::trunc);
+  time_t now = time(0);
+  char* dt = ctime(&now);
+  cfile << "# The following was produced by DriftCalibRMS.C with drift, null hit selection " << cutstr << " on " << dt << endl;
   cfile << std::setw(4) << std::setprecision(3);
   cfile << "driftRMSBins : [ ";
   cfile << rdbinedges[0] << " , " << rdbinedges[1] << " ]" << endl;
@@ -118,14 +134,14 @@ void DriftCalibRMS(TTree* ta,const char* hcut="") {
   cfile << " ]" << endl;
 }
 
-void DriftCalibRMSFile(const char* file,const char* hcut="") {
+void DriftCalibRMSFile(const char* file,const char* dcut="",const char* ncut=""){
   TFile* tf = new TFile(file);
   TTree* ta = (TTree*)tf->Get("TAKK/trkana");
-  DriftCalibRMS(ta,hcut);
+  DriftCalibRMS(ta,dcut,ncut);
 }
 
-void DriftCalibRMSChain(const char* files,const char* hcut="") {
+void DriftCalibRMSChain(const char* files,const char* dcut="",const char* ncut=""){
   TChain* ta = new TChain("TAKK/trkana");
   FillChain(ta,files);
-  DriftCalibRMS(ta,hcut);
+  DriftCalibRMS(ta,dcut,ncut);
 }
