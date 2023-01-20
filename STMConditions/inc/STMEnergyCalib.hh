@@ -32,7 +32,7 @@ class STMEnergyCalib : virtual public ProditionsEntity {
 
   float pedestal(STMChannel const& channel) const { return _pmap.at(channel); }
   float samplingFrequency(STMChannel const& channel) const { return _sfmap.at(channel); }
-  float nsPerCt(STMChannel const& channel) const { return (1.0/_sfmap.at(channel))*1e3; }
+  float nsPerCt(STMChannel const& channel) const { return (1.0/_sfmap.at(channel))*1e3; } // converting from MHz to ns
 
   void setCalib(CalibMap cmap) { _cmap = cmap; }
   void setPedestal(PedestalMap pmap) { _pmap = pmap; }
