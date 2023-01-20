@@ -45,5 +45,11 @@ namespace mu2e {
         throw cet::exception("STMUtils::getBinning") << "Invalid xAxis option: \"" << xAxis << "\"" << std::endl;
       }
     }
+
+    // To convert from time to clock ticks
+    unsigned int convertToClockTicks(double time, const STMChannel channel, const STMEnergyCalib& stmEnergyCalib) {
+      const auto nsPerCt = stmEnergyCalib.nsPerCt(channel);
+      return (time/nsPerCt);
+    }
   }
 }
