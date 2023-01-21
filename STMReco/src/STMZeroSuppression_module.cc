@@ -52,7 +52,7 @@ namespace mu2e {
 
     void calculateGradient(const std::vector<int16_t>& adcs);
     void averageGradient();
-    void findPeaks();
+    void findPeaks(const STMEnergyCalib& stmEnergyCalib);
     void chooseStartsAndEnds(); // taking into account any overlapping data
 
     int _verbosityLevel;
@@ -63,9 +63,6 @@ namespace mu2e {
     double _tbefore; // time before the peak [ns]
     double _tafter; // time after the peak [ns]
     double _threshold; // threshold
-    double _nsPerCt; // nanosecond per clock tick
-    unsigned int _nadcBefore; // number of samples before peak
-    unsigned int _nadcAfter; // number of samples after peak
 
     unsigned long int _nadc; // number of ADC values in unsuppressed waveform
     unsigned long int _window; // distance between two ADC values to calculate the gradient for
@@ -106,10 +103,6 @@ namespace mu2e {
 
 
     STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get prodition
-    const auto samplingFrequency = stmEnergyCalib.samplingFrequency(_channel);
-    _nsPerCt = (1.0/samplingFrequency)*1e3;
-    _nadcBefore = (_tbefore/_nsPerCt);
-    _nadcAfter = (_tafter/_nsPerCt);
 
     if (_verbosityLevel > 0) {
       std::cout << "STM Zero-Suppression Algorithm Parameters:" << std::endl;
@@ -133,7 +126,7 @@ namespace mu2e {
 
       calculateGradient(adcs);
       averageGradient();
-      findPeaks();
+      findPeaks(stmEnergyCalib); // pass it the prodition because it needs to get the sampling frequency
       chooseStartsAndEnds();
 
       const auto& n_zp_waveforms = _finalstarts.size();
@@ -181,7 +174,7 @@ namespace mu2e {
     }
   }
 
-  void STMZeroSuppression::findPeaks() {
+  void STMZeroSuppression::findPeaks(const STMEnergyCalib& stmEnergyCalib) {
     //Initial values
     bool found_peak=false;
     unsigned int peak=0;
@@ -189,6 +182,8 @@ namespace mu2e {
     unsigned long int n_avgradient_points = _avgradient.size();
     _starts.clear();
     _ends.clear();
+    unsigned int nadcBefore = STMUtils::convertToClockTicks(_tbefore, _channel, stmEnergyCalib); // number of samples before peak
+    unsigned int nadcAfter = STMUtils::convertToClockTicks(_tafter, _channel, stmEnergyCalib); // number of samples after peak
     //Store positions in clock ticks for the peaks found, fill _peaks[]
     for(unsigned long int i=0;i<n_avgradient_points;i++){
 
@@ -205,17 +200,17 @@ namespace mu2e {
         found_peak=true;
         peak=_avtime[i];
         _peaks[peakcounter]=peak;
-        if (peak<_nadcBefore) {
+        if (peak<nadcBefore) {
           _starts.push_back(0); // too close to the start of the waveform so can't go tbefore back
         }
         else {
-          _starts.push_back(peak - _nadcBefore);
+          _starts.push_back(peak - nadcBefore);
         }
-        if (peak>_nadc-_nadcAfter) {
+        if (peak>_nadc-nadcAfter) {
           _ends.push_back(_nadc); // too close to the end of the waveform so can't go tafter forwaed
         }
         else {
-          _ends.push_back(peak + _nadcAfter);
+          _ends.push_back(peak + nadcAfter);
         }
 
         peakcounter++;
