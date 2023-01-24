@@ -74,6 +74,7 @@ namespace mu2e {
           fhicl::Atom<unsigned>                   minTimeYbin            {Name("MinTimeYbin"),            Comment("Minimum number of bins to start recording max for scanning algo") };
           fhicl::Atom<float>                      maxTimeDT              {Name("MaxTimeDT"),              Comment("Max time difference for hits in cluster") };
           fhicl::Atom<bool>                       filterMVA              {Name("FilterMVA"),              Comment("Refine time cluster with NN info") };
+          fhicl::Atom<unsigned>                   minHitSelect           {Name("MinHitSelect"),           Comment("Minimun hits to copy full time cluster without any filtering") };
           fhicl::Atom<float>                      minCutMVA              {Name("MinCutMVA"),              Comment("Minimun value of NN output to keep hit") };
           fhicl::Atom<bool>                       splitPhi               {Name("SplitPhi"),               Comment("Split time cluster with phi info") };
           fhicl::Atom<float>                      maxDeltaPhi            {Name("MaxDeltaPhi"),            Comment("Max delta phi between consecutive hits in cluster") };
@@ -106,6 +107,7 @@ namespace mu2e {
       unsigned                                        minTimeYbin_;
       float                                           maxTimeDT_;
       bool                                            filterMVA_;
+      unsigned                                        minHitSelect_;
       float                                           minCutMVA_;
       bool                                            splitPhi_;
       float                                           maxDeltaPhi_;
@@ -162,6 +164,7 @@ namespace mu2e {
     minTimeYbin_         (config().minTimeYbin()),
     maxTimeDT_           (config().maxTimeDT()),
     filterMVA_           (config().filterMVA()),
+    minHitSelect_        (config().minHitSelect()),
     minCutMVA_           (config().minCutMVA()),
     splitPhi_            (config().splitPhi()),
     maxDeltaPhi_         (config().maxDeltaPhi()),
@@ -431,6 +434,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------------------------------------
   void TimeAndPhiClusterFinder::filterMVACluster(const ComboHitCollection& chcol, TimePhiCandidateCollection& candidates)
   {
+      TimePhiCandidateCollection tempCand;
       std:: vector<float> parsMVA(3,0.0);
 
       for (auto& cand : candidates){
@@ -452,6 +456,8 @@ namespace mu2e {
           mean_y /= sweight;
           float mean_p = polyAtan2(mean_y,mean_x);
 
+          if (sweight > minHitSelect_) tempCand.emplace_back(cand);
+
           // loop ovr hits, calculate MVA output and flag bad hits
           for (auto& hit : hits){
               const ComboHit& ch = chcol[hit];
@@ -472,6 +478,7 @@ namespace mu2e {
 
           hits.erase(std::remove_if(hits.begin(), hits.end(), [&chcol](auto ich){return ich>chcol.size();}),hits.end());
       }
+      std::move(tempCand.begin(), tempCand.end(), std::back_inserter(candidates));
   }
 
 
