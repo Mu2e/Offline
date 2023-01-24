@@ -142,8 +142,9 @@ Mu2eKinKal : {
       [ 0.3, "CADSHU" ],
       [ 0.0, "CADSHU:BkgANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
-      [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ]
     ]
     CADSHUSettings : [
@@ -153,6 +154,7 @@ Mu2eKinKal : {
       [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
       [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
       [ 6.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
       [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
       [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
       [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ]
@@ -167,7 +169,8 @@ Mu2eKinKal : {
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 2],
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 2],
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 2]
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 2],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.08, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 2]
     ]
     Chi2SHUSettings : [
     ]
@@ -175,7 +178,13 @@ Mu2eKinKal : {
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
       [ 10.0, -1.0, -1.0, true, 0 ],
       [ 5.0,  -1.0, -1.0, true, 0 ],
-      [ 4.0,   2.3, 0.1,  false, 0 ]
+      [ 4.0,  -1.0, -1.0, true, 0 ],
+      [ 4.0,  -1.0, -1.0, false, 0 ],
+      [ 4.0,   2.0, 0.2,  false, 0 ],
+      [ 3.5,   2.0, 0.2,  false, 0 ],
+      [ 3.0,   2.0, 0.2,  false, 0 ],
+      [ 3.0,   2.3, 0.1,  false, 0 ],
+      [ 3.0,   2.3, 0.1,  false, 0 ]
     ]
   }
 
