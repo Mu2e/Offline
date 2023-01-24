@@ -70,32 +70,26 @@ TrkFilters : {
     cprDeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprDePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixDeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixDePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixUeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUe"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprHelixUePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUe"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
 
     #low p particles from the ST
@@ -110,12 +104,10 @@ TrkFilters : {
     cprDeMLowPStopTargTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprDePLowPStopTargTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinder"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
 
     #fast sequcnes that process only the ComboHits in time with the calo-cluster with E>50MeV
@@ -130,12 +122,10 @@ TrkFilters : {
     cprSeedUCCDeMTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUCC"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
     cprSeedUCCDePTCFilter : {
       module_type : TimeClusterFilter
       timeClusterCollection : "TTCalTimePeakFinderUCC"
-      minNStrawHits              : 1  #just check if there are TimeClusters
     }
 
     #e- from the IPA
@@ -157,281 +147,73 @@ TrkFilters : {
     tprDeMHighPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 70.
-      maxMomentum         : 120.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 300.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     tprDePHighPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 60.
-      maxMomentum         : 140.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     cprDeMHighPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 80.
-      maxMomentum         : 140.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 350.
-      minD0               : -350.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     cprDePHighPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 60.
-      maxMomentum         : 140.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     # cosmic tracks e-/e+ not from the ST
     tprDeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 50.
-      maxMomentum         : 70.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 300.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     tprDePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 40.
-      maxMomentum         : 60.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     cprDeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 60.
-      maxMomentum         : 80.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 350.
-      minD0               : -350.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     cprDePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 50.
-      maxMomentum         : 60.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     #cosmic helix: HS filters
     tprHelixDeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 50.
-      maxMomentum         : 70.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 300.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     tprHelixDePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 40.
-      maxMomentum         : 60.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     tprHelixUeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerUeM"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 50.
-      maxMomentum         : 70.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 300.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     tprHelixUePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerUeP"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 40.
-      maxMomentum         : 60.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     cprHelixDeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 60.
-      maxMomentum         : 80.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 350.
-      minD0               : -350.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     cprHelixDePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 50.
-      maxMomentum         : 60.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     cprHelixUeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerUeM"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 40.
-      maxMomentum         : 500.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 800.
-      minD0               : -800.
-      minAbsLambda        : 50.
-      maxAbsLambda        : 1000.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     cprHelixUePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerUeP"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 40.
-      maxMomentum         : 500.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 800.
-      minD0               : -800.
-      minAbsLambda        : 50.
-      maxAbsLambda        : 1000.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
 
@@ -439,179 +221,49 @@ TrkFilters : {
     tprDeMLowPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 50.
-      maxMomentum         : 70.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 300.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     tprDePLowPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 40.
-      maxMomentum         : 60.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     cprDeMLowPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 60.
-      maxMomentum         : 80.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 350.
-      minD0               : -350.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     cprDePLowPStopTargHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 50.
-      maxMomentum         : 60.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     # filters that uses the combohit collection filtered with the calorimeter info
     tprSeedUCCDeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixUCCMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 70.
-      maxMomentum         : 120.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 300.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     tprSeedUCCDePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixUCCMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 60.
-      maxMomentum         : 140.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     cprSeedUCCDeMHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixUCCMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 80.
-      maxMomentum         : 140.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 350.
-      minD0               : -350.
-      minAbsLambda        : 140.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
     cprSeedUCCDePHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTCalHelixUCCMergerDeP"
-      helicity            : -1
-      minNStrawHits       : 15
-      minMomentum         : 60.
-      maxMomentum         : 140.
-      minPt               : 0
-      maxChi2XY           : 5.
-      maxChi2PhiZ         : 5.
-      maxD0               : 300.
-      minD0               : -150.
-      minAbsLambda        : 100.
-      maxAbsLambda        : 330.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
 
     tprHelixDeMIpaHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 30.
-      maxMomentum         : 70.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 500.
-      minD0               : 200.
-      minAbsLambda        : 40.
-      maxAbsLambda        : 80.
-      prescaleUsingD0Phi  : false
-      prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
     }
 
     tprHelixDeMIpaPhiScaledHSFilter : {
       module_type : HelixFilter
       helixSeedCollection : "TTHelixMergerDeM"
-      helicity            : 1
-      minNStrawHits       : 15
-      minMomentum         : 30.
-      maxMomentum         : 70.
-      minPt               : 0
-      maxChi2XY           : 8.
-      maxChi2PhiZ         : 8.
-      maxD0               : 500.
-      minD0               : 200.
-      minAbsLambda        : 40.
-      maxAbsLambda        : 80.
-      prescaleUsingD0Phi  : true
-      prescalerPar        : { amplitude: 6.2 frequency : 0.9675 phase : 0.1396}
     }
 
 
@@ -619,87 +271,33 @@ TrkFilters : {
     tprDeMHighPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFDeM"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 80.
-      maxMomentum       : 200.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprDeMHighPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitDem"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 80.
-      maxMomentum       : 200.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     #cosmic tracks e-/e+
     tprDeMTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFDeM"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 60.
-      maxMomentum       : 80.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprDeMTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitDem"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 60.
-      maxMomentum       : 80.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     #low P e-/e+ from the ST
     tprDeMLowPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFDeM"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 60.
-      maxMomentum       : 80.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprDeMLowPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitDem"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 60.
-      maxMomentum       : 80.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
 
@@ -707,29 +305,11 @@ TrkFilters : {
     tprSeedUCCDeMTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFUCCDeM"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 80.
-      maxMomentum       : 200.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprSeedUCCDeMTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitUCCDem"
-      fitparticle       : @local::Particle.eminus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 80.
-      maxMomentum       : 200.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
     tprDeMHighPStopTargKFFilter : {
       module_type : SeedFilter
@@ -739,29 +319,11 @@ TrkFilters : {
     tprDePHighPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFDeP"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 70.
-      maxMomentum       : 110.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprDePHighPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitDep"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 70.
-      maxMomentum       : 110.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
 
@@ -769,58 +331,22 @@ TrkFilters : {
     tprDePTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFDeP"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 50.
-      maxMomentum       : 70.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprDePTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitDep"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 50.
-      maxMomentum       : 70.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     #low P e-/e+ from the ST
     tprDePLowPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFDeP"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 50.
-      maxMomentum       : 70.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprDePLowPStopTargTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitDep"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 50.
-      maxMomentum       : 70.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
 
@@ -828,29 +354,11 @@ TrkFilters : {
     tprSeedUCCDePTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTKSFUCCDeP"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 70.
-      maxMomentum       : 110.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     cprSeedUCCDePTSFilter : {
       module_type : SeedFilter
       kalSeedCollection : "TTCalSeedFitUCCDep"
-      fitparticle       : @local::Particle.eplus
-      fitdirection      : @local::FitDir.downstream
-      minNStrawHits     : 15
-      minMomentum       : 70.
-      maxMomentum       : 110.     #don't apply cut
-      maxChi2DOF        : 20.      #don't apply cut
-      maxMomErr         : 10.      #don't apply cut
-      minD0             : -200.
-      maxD0             : 200.
     }
 
     tprDePHighPStopTargKFFilter : {
@@ -870,125 +378,55 @@ TrkFilters : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprTimeClusterDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     tprHelixDeMSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprHelixDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprHelixDeMIpaSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     tprHelixDeMIpaPhiScaledSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     tprDeMHighPStopTargSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprDePHighPStopTargSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     cprDeMHighPStopTargSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     cprDePHighPStopTargSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     #SD counter filter for comisc track triggers
@@ -997,50 +435,22 @@ TrkFilters : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     cprDeMSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     cprDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     #cosmic cpr helix
@@ -1048,74 +458,32 @@ TrkFilters : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprHelixDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprHelixUeMSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprHelixUePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     cprHelixDeMSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     cprHelixDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
 
@@ -1124,50 +492,22 @@ TrkFilters : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprDePLowPStopTargSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     cprDeMLowPStopTargSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     cprDePLowPStopTargSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
 
@@ -1175,50 +515,22 @@ TrkFilters : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     tprSeedUCCDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
 
     cprSeedUCCDeMSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     cprSeedUCCDePSDCountFilter     : {
       module_type : DigiFilter
       strawDigiCollection : makeSD
       caloDigiCollection  : notUsed
-      useStrawDigi        : true
-      useCaloDigi         : false
-      minNStrawDigi       : 10
-      maxNStrawDigi       : 10000
-      minNCaloDigi        : -1
-      maxNCaloDigi        : -1
-      maxCaloEnergy       : -1
     }
     #  Prescaling filters
     #follow the prescaler filters for Tpr Track sequences
@@ -1226,94 +538,67 @@ TrkFilters : {
     #filters for the paths where decision is made using the TimeCluster
     tprTimeClusterDeMEventPrescale : {
       module_type : PrescaleEvent
-      nPrescale     : 1
     }
     tprTimeClusterDeMPrescale : {
       module_type : PrescaleEvent
-      nPrescale : 1000
-      useFilteredEvents : true
     }
     tprTimeClusterDePEventPrescale : {
       module_type : PrescaleEvent
-      nPrescale     : 1
     }
     tprTimeClusterDePPrescale : {
       module_type : PrescaleEvent
-      nPrescale : 1000
-      useFilteredEvents : true
     }
 
     #filters for the paths where decision is made using the HelixSeed
     tprHelixDeMEventPrescale : {
       module_type : PrescaleEvent
-      nPrescale     : 1
     }
     tprHelixDeMPrescale : {
       module_type : PrescaleEvent
-      useFilteredEvents : true
-      nPrescale         : 300
     }
     tprHelixDePEventPrescale : {
       module_type : PrescaleEvent
-      nPrescale     : 1
     }
     tprHelixDePPrescale : {
       module_type : PrescaleEvent
-      useFilteredEvents : true
-      nPrescale         : 300
     }
     tprHelixDeMIpaEventPrescale : {
       module_type : PrescaleEvent
-      nPrescale     : 1
     }
     tprHelixDeMIpaPrescale : {
       module_type : PrescaleEvent
-      useFilteredEvents : true
-      nPrescale         : 300
     }
 
     tprHelixDeMIpaPhiScaledEventPrescale : {
       module_type : PrescaleEvent
-      nPrescale     : 1
     }
     tprHelixDeMIpaPhiScaledPrescale : {
       module_type : PrescaleEvent
-      useFilteredEvents : true
-      nPrescale         : 300
     }
 
     #filters for the paths where decision is made using the TrackSeed
     tprDeMHighPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     tprDeMHighPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     tprDePHighPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
     tprDePHighPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
 
     tprDeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     tprDeMPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     tprDePEventPrescale: {
@@ -1322,191 +607,143 @@ TrkFilters : {
     }
     tprDePPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     #cosmic tpr helix
     tprHelixDeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     tprHelixDePEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     tprHelixUeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     tprHelixUePEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     # low p particles
     tprDeMLowPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     tprDeMLowPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     tprDePLowPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
     tprDePLowPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
 
     #follow the prescaler filters for Tpr Track sequences
     cprDeMHighPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprDeMHighPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprDePHighPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprDePHighPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprDePLowPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprDePLowPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprDeMLowPStopTargPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprDeMLowPStopTargEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     #cosmic tracks
     cprDeMPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprDeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprDePPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprDePEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     #cosmic helixes
     cprHelixDeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprHelixUeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprHelixDePPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprHelixDePEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprHelixUePEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     #prescaler for the sequences that use the combohit collection filtered with the calorimeter cluster
     tprSeedUCCDeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     tprSeedUCCDeMPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     tprSeedUCCDePEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
     tprSeedUCCDePPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     #follow the prescaler filters for Tpr Track sequences
     cprSeedUCCDeMEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
 
     cprSeedUCCDeMPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
     cprSeedUCCDePEventPrescale: {
       module_type : PrescaleEvent
-      nPrescale         : 1
     }
     cprSeedUCCDePPrescale : {
       module_type : PrescaleEvent
-      nPrescale         : 1
-      useFilteredEvents : true
     }
 
   }
