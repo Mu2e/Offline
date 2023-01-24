@@ -84,7 +84,7 @@ TTMu2eKinKal : {
 TTMu2eKinKal : {
   @table::TTMu2eKinKal
   producers : {
-    # seed fits: these don't use drift information or BField corrections
+    # seed fits: these don't use drift information
     TTKKDePSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
     TTKKDeMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
     TTKKUePSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
