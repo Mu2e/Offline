@@ -4,6 +4,7 @@
 //
 // framework
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
@@ -59,7 +60,7 @@ namespace mu2e
         fhicl::Atom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
         fhicl::Sequence<std::string>    helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
         fhicl::Atom<int>                debugLevel           {     Name("debugLevel"),              Comment("debugLevel")     , 0 };
-        fhicl::Atom<bool>               prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi"), false };
+        fhicl::OptionalAtom<bool>       prescaleUsingD0Phi   {     Name("prescaleUsingD0Phi"),      Comment("prescaleUsingD0Phi") };
         fhicl::Table<PhiPrescalingParams::Config>             prescalerPar{     Name("prescalerPar"),      Comment("prescalerPar") };
       };
 
@@ -120,13 +121,18 @@ namespace mu2e
     _minlambda         (config().minAbsLambda()),
     _maxnloops         (config().maxNLoops()),
     _minnloops         (config().minNLoops()),
-    _goodh             (config().helixFitFlag()),//,std::vector<std::string>{"HelixOK"})),
-    _prescaleUsingD0Phi(config().prescaleUsingD0Phi()),
+    _goodh             (config().helixFitFlag()),
     _debug             (config().debugLevel()),
     _nevt(0), _npass(0)
     {
-      if (_prescaleUsingD0Phi){
-        _prescalerPar    = PhiPrescalingParams(config().prescalerPar());
+      bool val;
+      if (config().prescaleUsingD0Phi(val)) {
+        _prescaleUsingD0Phi = val;
+        if (_prescaleUsingD0Phi){
+          _prescalerPar    = PhiPrescalingParams(config().prescalerPar());
+        }
+      }else {
+        _prescaleUsingD0Phi = false;
       }
       produces<TriggerInfo>();
     }
