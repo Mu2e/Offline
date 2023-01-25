@@ -31,8 +31,8 @@ namespace mu2e {
     bool updated(false);
     if(input.updateable(StrawHitUpdaters::CAD)){
       double absdoca = fabs(tpdata.doca());
-      if(dinfo.driftDistance_ < maxrdrift_ && absdoca < maxdoca_ && tpdata.docaVar() > 0.0 && tpdata.docaVar() < maxdvar_ ){
-        if(dinfo.driftDistance_ > minrdrift_){
+      if(dinfo.rDrift_ < maxrdrift_ && absdoca < maxdoca_ && tpdata.docaVar() > 0.0 && tpdata.docaVar() < maxdvar_ ){
+        if(dinfo.rDrift_ > minrdrift_){
           // in the sweet spot: use the DOCA to sign the ambiguity
           if(allowed_.hasAnyProperty(WHSMask::drift)) {
             whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
