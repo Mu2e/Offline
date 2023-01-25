@@ -14,6 +14,7 @@
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 #include "Offline/TrackerConditions/inc/StrawPhysics.hh"
+#include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/GeneralUtilities/inc/SplineInterpolation.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
@@ -29,12 +30,6 @@ namespace mu2e {
       typedef std::shared_ptr<const StrawResponse> cptr_t;
       constexpr static const char* cxname = {"StrawResponse"};
 
-      struct DriftInfo {
-        double distance;
-        double speed;
-        double variance;
-      };
-
       explicit StrawResponse( StrawDrift::cptr_t strawDrift,
           StrawElectronics::cptr_t strawElectronics,
           StrawPhysics::cptr_t strawPhysics,
@@ -47,7 +42,9 @@ namespace mu2e {
           std::vector<double> totderror,
           std::vector<double> derr,
           bool usepderr,
-          std::vector<double> driftResBins,std::vector<double> driftResOffset, std::vector<double> driftResRMS,
+          std::vector<double> driftOffBins, std::vector<double> driftOffset,
+          std::vector<double> driftRMSBins, std::vector<double> signedDriftRMS,
+          std::vector<double> unsignedDriftRMS, double dRdTScale,
           bool driftResIsTime,
           double wbuf, double slfac, double errfac, bool usenonlindrift,
           double lindriftvel, double mint0doca,
@@ -71,9 +68,12 @@ namespace mu2e {
         _totdtime(totdtime),
         _totderror(totderror),
         _derr(derr), _usepderr(usepderr),
-        _driftResBins(driftResBins),
-        _driftResOffset(driftResOffset),
-        _driftResRMS(driftResRMS),
+        _driftOffBins(driftOffBins),
+        _driftOffset(driftOffset),
+        _driftRMSBins(driftRMSBins),
+        _signedDriftRMS(signedDriftRMS),
+        _unsignedDriftRMS(unsignedDriftRMS),
+        _dRdTScale(dRdTScale),
         _driftResIsTime(driftResIsTime),
         _wbuf(wbuf), _slfac(slfac), _errfac(errfac),
         _usenonlindrift(usenonlindrift), _lindriftvel(lindriftvel),
@@ -90,8 +90,6 @@ namespace mu2e {
 
       virtual ~StrawResponse() {}
 
-      DriftInfo driftInfoAtDistance(StrawId strawId, double ddist, double dtime, double phi,
-          bool forceOld=false) const;
       double driftDistanceToTime(StrawId strawId, double ddist, double phi,
           bool forceOld=false) const;
       double driftInstantSpeed(StrawId strawId, double ddist, double phi,
@@ -122,9 +120,11 @@ namespace mu2e {
       double calibrateT2DToDriftDistanceDerivative(double t2d) const;
       double calibrateDriftDistanceToT2DDerivative(double ddist) const;
 
+      DriftInfo driftInfo(StrawId strawId, double dtime, double phi) const;
+
       double driftTimeToDistance(StrawId strawId, double dtime, double phi, bool forceOld=false) const;
       double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
-      double driftDistanceError(StrawId strawId, double ddist, double phi, bool forceOld=false) const;
+      double signedDriftError(StrawId strawId, double ddist, double phi, bool forceOld=false) const;
       double driftDistanceOffset(double DOCA) const;
       double driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 
@@ -172,6 +172,8 @@ namespace mu2e {
       static double PieceLine(std::vector<double> const& xvals,
           std::vector<double> const& yvals, double xval);
       static double PieceLineDrift(std::vector<double> const& bins, std::vector<double> const& yvals, double xval);
+      static void interpolateCalib(std::vector<double> const& bins,std::vector<double> const& yvals, double xval,
+          int halfrange, double& value, double& slope);
 
       StrawDrift::cptr_t _strawDrift;
       StrawElectronics::cptr_t _strawElectronics;
@@ -199,9 +201,12 @@ namespace mu2e {
       std::vector<double> _totderror;
       std::vector<double> _derr; // parameters describing the drift error function
       bool _usepderr; // flag to use calculated version of drift error calculation
-      std::vector<double> _driftResBins;
-      std::vector<double> _driftResOffset;
-      std::vector<double> _driftResRMS;
+      std::vector<double> _driftOffBins;
+      std::vector<double> _driftOffset;
+      std::vector<double> _driftRMSBins;
+      std::vector<double> _signedDriftRMS;
+      std::vector<double> _unsignedDriftRMS;
+      double _dRdTScale;
       bool _driftResIsTime;
       double _wbuf; // buffer at the edge of the straws, in terms of sigma
       double _slfac; // factor of straw length to set 'missing cluster' hits
@@ -227,6 +232,7 @@ namespace mu2e {
       bool _useOldDrift;
       bool _driftIgnorePhi;
       std::array<double,3> _dc;
+      static double rstraw_; // straw radius, = maximum drift distance
   };
 }
 #endif

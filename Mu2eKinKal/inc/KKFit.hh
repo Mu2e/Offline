@@ -122,10 +122,11 @@ namespace mu2e {
       double tprec_; // TPOCA calculation nominal precision
       StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
       // parameters controlling adding hits
-      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_;
+      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_;
       int sbuff_; // maximum distance from the track a strawhit can be to consider it for adding.
       int printLevel_;
       // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
+      mutable double strawradius_;
       mutable double ymin_, ymax_, umax_; // panel-level info
       mutable double rmin_, rmax_; // plane-level info
       mutable double spitch_;
@@ -153,6 +154,7 @@ namespace mu2e {
     maxStrawHitDoca_(fitconfig.maxStrawHitDOCA()),
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
+    maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
     sbuff_(fitconfig.strawBuffer()),
     printLevel_(fitconfig.printLevel()),
     needstrackerinfo_(true)
@@ -330,8 +332,11 @@ namespace mu2e {
                     CAHint hint(zt,zt);
                     // compute PCA between the trajectory and this straw
                     PCA pca(ftraj, wline, hint, tprec_ );
+                    // require consistency with this track passing through this straw
                     double du = (pca.sensorPoca().Vect()-smid).R();
-                    if(fabs(pca.doca()) < maxStrawDoca_ && du < straw.halfLength()){ // add test of chi TODO
+                    double doca = fabs(pca.doca());
+                    double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
+                    if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength()){
                       addexings.push_back(std::make_shared<KKSTRAWXING>(pca,smat,straw.id()));
                     }
                   } // not existing straw cut
@@ -397,7 +402,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKFit<KTRAJ>::fillTrackerInfo(Tracker const& tracker) const {
     // pre-compute some info derived from the tracker
-    double strawradius = tracker.strawOuterRadius();
+    strawradius_ = tracker.strawOuterRadius();
     auto const& frontplane = tracker.planes().front();
     auto const& firstpanel = frontplane.getPanel(0);
     auto const& innerstraw = firstpanel.getStraw(0);
@@ -408,10 +413,10 @@ namespace mu2e {
     auto outerstraw_origin = DStoP*outerstraw.origin();
     ymin_ = innerstraw_origin.y();
     ymax_ = outerstraw_origin.y();
-    umax_ = innerstraw.halfLength() + strawradius; // longest possible straw
+    umax_ = innerstraw.halfLength() + strawradius_; // longest possible straw
     // plane-level variables: these add some buffer
-    rmin_ = innerstraw_origin.y() - sbuff_*strawradius;
-    rmax_ = outerstraw.wireEnd(StrawEnd::cal).mag() + sbuff_*strawradius;
+    rmin_ = innerstraw_origin.y() - sbuff_*strawradius_;
+    rmax_ = outerstraw.wireEnd(StrawEnd::cal).mag() + sbuff_*strawradius_;
     spitch_ = (StrawId::_nstraws-1)/(ymax_-ymin_);
     needstrackerinfo_= false;
   }
@@ -481,8 +486,7 @@ namespace mu2e {
           utres, udres,
           strawhit->refResidual(Mu2eKinKal::tresid),
           strawhit->refResidual(Mu2eKinKal::dresid),
-          strawhit->fillDriftInfo(true),
-          strawhit->fillDriftInfo(false),
+          strawhit->fillDriftInfo(),
           strawhit->hitState());
     }
     if(kktrk.caloHits().size() > 0){

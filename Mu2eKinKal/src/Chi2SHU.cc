@@ -46,7 +46,7 @@ namespace mu2e {
     }
     for(auto& whs : best.hitstates_){
       whs.frozen_ =  whs.isIn(freeze_);
-      whs.quality_ = quality;
+      whs.quality_[WireHitState::chi2] = quality;
     }
     if(diag_ > 1){
       std::cout << "Best Cluster " << best.chi2_ << " hit states ";

@@ -2,7 +2,7 @@
 #include "cetlib_except/exception.h"
 namespace mu2e {
   std::vector<std::string> WireHitState::StateNames_ = {"Unusable", "Inactive", "Left", "Right", "Null"};
-  std::vector<std::string> WireHitState::TOTUseNames_ = { "Unused", "NullOnly", "DriftOny", "All"};
+  std::vector<std::string> WireHitState::TOTUseNames_ = { "Unused", "NullOnly", "DriftOnly", "All"};
   std::vector<std::string> WireHitState::NullDistVarNames_ = { "StrawRadius", "DriftRadius" };
   std::ostream& operator <<(std::ostream& ost, WireHitState const& whs) {
     ost << "WireHitState ";
