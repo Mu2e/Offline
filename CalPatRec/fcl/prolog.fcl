@@ -337,7 +337,6 @@ CalPatRec : { @table::CalPatRec
         DeltaFinder : { module_type:DeltaFinder
             chCollTag                   : "makePH"                ## input coll
             shCollTag                   : "makeSH"                ## input coll
-            # chfCollTag                  : "FlagBkgHits:ComboHits" ## not used
             sdmcCollTag                 : "compressDigiMCs"       ## used for debug only
             tpeakCollTag                : "CalTimePeakFinder"
             useTimePeaks                : 0
@@ -375,8 +374,8 @@ CalPatRec : { @table::CalPatRec
             maxHitSeedDt                : 10  ##
             minDeltaNHits               :  5
 
-            writeStrawHits              : 1
-            filter                      : 0
+            writeComboHits              : 0
+            writeStrawHitFlags          : 1                     # used by the track fit
                                                                 # debugging/diagnostics/testing
             testOrder                   : 0
             updateSeedCOG               : 0
@@ -406,7 +405,10 @@ CalPatRec : { @table::CalPatRec
                 }
             }
         }
+    }
+
 #------------------------------------------------------------------------------
+    analyzers : {
         DeltaFinderAna : { module_type:DeltaFinderAna
             chCollTag              : "makePH"                # use combo hits
             chfCollTag             : "DeltaFinder:ComboHits" #
