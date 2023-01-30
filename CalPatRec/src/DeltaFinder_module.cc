@@ -56,47 +56,48 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>     shCollTag        {Name("shCollTag"        ), Comment("SComboHit collection Name"   ) };
-      fhicl::Atom<art::InputTag>     chCollTag        {Name("chCollTag"        ), Comment("ComboHit collection Name"    ) };
-      fhicl::Atom<art::InputTag>     sdmcCollTag      {Name("sdmcCollTag"      ), Comment("StrawDigiMC collection Name" ) };
-      fhicl::Atom<art::InputTag>     tpeakCollTag     {Name("tpeakCollTag"     ), Comment("Time peak collection Name"   ) };
-      fhicl::Atom<int>               useTimePeaks     {Name("useTimePeaks"     ), Comment("to use time peaks set to 1"  ) };
-      fhicl::Atom<int>               debugLevel       {Name("debugLevel"       ), Comment("debug level"                 ) };
-      fhicl::Atom<int>               diagLevel        {Name("diagLevel"        ), Comment("diag level"                  ) };
-      fhicl::Atom<int>               printErrors      {Name("printErrors"      ), Comment("print errors"                ) };
-      fhicl::Atom<float>             minCaloDt        {Name("minCaloDt"        ), Comment("min Calo Dt"                 ) };
-      fhicl::Atom<float>             maxCaloDt        {Name("maxCaloDt"        ), Comment("max Calo Dt"                 ) };
-      fhicl::Atom<float>             meanPitchAngle   {Name("meanPitchAngle"   ), Comment("mean pitch angle"            ) };
-      fhicl::Atom<float>             minHitTime       {Name("minHitTime"       ), Comment("min hit time"                ) };
-      fhicl::Atom<float>             maxDeltaEDep     {Name("maxDeltaEDep"     ), Comment("max delta candidate <eDep>"  ) };
-      fhicl::Atom<float>             maxSeedEDep      {Name("maxSeedEDep"      ), Comment("max  seed <eDep>"            ) };
-      fhicl::Atom<int>               minNSeeds        {Name("minNSeeds"        ), Comment("min N seeds in a delta cand" ) };
-      fhicl::Atom<int>               minDeltaNHits    {Name("minDeltaNHits"    ), Comment("min N combo  hits in a delta") };
-      fhicl::Atom<float>             maxEleHitEnergy  {Name("maxEleHitEnergy"  ), Comment("max electron hit energy"     ) };
-      fhicl::Atom<float>             minimumTime      {Name("minimumTime"      ), Comment("minimum time"                ) };
-      fhicl::Atom<float>             maximumTime      {Name("maximumTime"      ), Comment("maximum time"                ) };
-      fhicl::Atom<float>             maxHitSeedDt     {Name("maxHitSeedDt"     ), Comment("max DT(hit-seed)"            ) };
-      fhicl::Atom<float>             maxChi2Seed      {Name("maxChi2Seed"      ), Comment("max seed chi2 (stereo)"      ) };
-      fhicl::Atom<float>             maxChi2Radial    {Name("maxChi2Radial"    ), Comment("max chi2 (radial)"           ) };
-      fhicl::Atom<float>             maxChi2All       {Name("maxChi2All"       ), Comment("max chi2 (all)"              ) };
-      fhicl::Atom<float>             maxChi2SeedDelta {Name("maxChi2SeedDelta" ), Comment("max chi2 (seed-delta)"       ) };
-      fhicl::Atom<float>             seedRes          {Name("seedRes"          ), Comment("stereo seed resolution"      ) };
-      fhicl::Atom<float>             maxDxy           {Name("maxDxy"           ), Comment("max Dxy"                     ) };
-      fhicl::Atom<int>               maxGap           {Name("maxGap"           ), Comment("max Gap"                     ) };
-      fhicl::Atom<float>             sigmaR           {Name("sigmaR"           ), Comment("sigmaR"                      ) };
-      fhicl::Atom<float>             maxDriftTime     {Name("maxDriftTime"     ), Comment("maxDriftTime"                ) };
-      fhicl::Atom<float>             maxSeedDt        {Name("maxSeedDt"        ), Comment("maxSeedDt"                   ) };
-      fhicl::Atom<float>             maxHitDt         {Name("maxHitDt"         ), Comment("maxHitDt"                    ) };
-      fhicl::Atom<float>             maxStrawDt       {Name("maxStrawDt"       ), Comment("max straw Dt"                ) };
-      fhicl::Atom<float>             maxDtDs          {Name("maxDtDs"          ), Comment("max Dt/Dstation"             ) };
-      fhicl::Atom<float>             maxDtDc          {Name("maxDtDc"          ), Comment("max deltaT between deltas"   ) };
-      fhicl::Atom<int>               writeStrawHits   {Name("writeStrawHits"   ), Comment("if 1, write SCH coll"        ) };
-      fhicl::Atom<int>               filter           {Name("filter"           ), Comment("if 1, write only nonDelta CH") };
-      fhicl::Atom<int>               testOrder        {Name("testOrder"        ), Comment("if 1, test order"            ) };
-      fhicl::Atom<bool>              testHitMask      {Name("testHitMask"      ), Comment("if true, test hit mask"      ) };
-      fhicl::Sequence<std::string>   goodHitMask      {Name("goodHitMask"      ), Comment("good hit mask"               ) };
-      fhicl::Sequence<std::string>   bkgHitMask       {Name("bkgHitMask"       ), Comment("background hit mask"         ) };
-      fhicl::Atom<int>               updateSeedCOG    {Name("updateSeedCOG"    ), Comment("if 1, update seed COG"       ) };
+      fhicl::Atom<art::InputTag>    shCollTag        {Name("shCollTag"        ), Comment("SComboHit collection Name"   ) };
+      fhicl::Atom<art::InputTag>    chCollTag        {Name("chCollTag"        ), Comment("ComboHit collection Name"    ) };
+      fhicl::Atom<art::InputTag>    sdmcCollTag      {Name("sdmcCollTag"      ), Comment("StrawDigiMC collection Name" ) };
+      fhicl::Atom<art::InputTag>    tpeakCollTag     {Name("tpeakCollTag"     ), Comment("Time peak collection Name"   ) };
+      fhicl::Atom<int>              useTimePeaks     {Name("useTimePeaks"     ), Comment("to use time peaks set to 1"  ) };
+      fhicl::Atom<int>              debugLevel       {Name("debugLevel"       ), Comment("debug level"                 ) };
+      fhicl::Atom<int>              diagLevel        {Name("diagLevel"        ), Comment("diag level"                  ) };
+      fhicl::Atom<int>              printErrors      {Name("printErrors"      ), Comment("print errors"                ) };
+      fhicl::Atom<float>            minCaloDt        {Name("minCaloDt"        ), Comment("min Calo Dt"                 ) };
+      fhicl::Atom<float>            maxCaloDt        {Name("maxCaloDt"        ), Comment("max Calo Dt"                 ) };
+      fhicl::Atom<float>            meanPitchAngle   {Name("meanPitchAngle"   ), Comment("mean pitch angle"            ) };
+      fhicl::Atom<float>            minHitTime       {Name("minHitTime"       ), Comment("min hit time"                ) };
+      fhicl::Atom<float>            maxDeltaEDep     {Name("maxDeltaEDep"     ), Comment("max delta candidate <eDep>"  ) };
+      fhicl::Atom<float>            maxSeedEDep      {Name("maxSeedEDep"      ), Comment("max  seed <eDep>"            ) };
+      fhicl::Atom<int>              minNSeeds        {Name("minNSeeds"        ), Comment("min N seeds in a delta cand" ) };
+      fhicl::Atom<int>              minDeltaNHits    {Name("minDeltaNHits"    ), Comment("min N combo  hits in a delta") };
+      fhicl::Atom<float>            maxEleHitEnergy  {Name("maxEleHitEnergy"  ), Comment("max electron hit energy"     ) };
+      fhicl::Atom<float>            minimumTime      {Name("minimumTime"      ), Comment("minimum time"                ) };
+      fhicl::Atom<float>            maximumTime      {Name("maximumTime"      ), Comment("maximum time"                ) };
+      fhicl::Atom<float>            maxHitSeedDt     {Name("maxHitSeedDt"     ), Comment("max DT(hit-seed)"            ) };
+      fhicl::Atom<float>            maxChi2Seed      {Name("maxChi2Seed"      ), Comment("max seed chi2 (stereo)"      ) };
+      fhicl::Atom<float>            maxChi2Radial    {Name("maxChi2Radial"    ), Comment("max chi2 (radial)"           ) };
+      fhicl::Atom<float>            maxChi2All       {Name("maxChi2All"       ), Comment("max chi2 (all)"              ) };
+      fhicl::Atom<float>            maxChi2SeedDelta {Name("maxChi2SeedDelta" ), Comment("max chi2 (seed-delta)"       ) };
+      fhicl::Atom<float>            seedRes          {Name("seedRes"          ), Comment("stereo seed resolution"      ) };
+      fhicl::Atom<float>            maxDxy           {Name("maxDxy"           ), Comment("max Dxy"                     ) };
+      fhicl::Atom<int>              maxGap           {Name("maxGap"           ), Comment("max Gap"                     ) };
+      fhicl::Atom<float>            sigmaR           {Name("sigmaR"           ), Comment("sigmaR"                      ) };
+      fhicl::Atom<float>            maxDriftTime     {Name("maxDriftTime"     ), Comment("maxDriftTime"                ) };
+      fhicl::Atom<float>            maxSeedDt        {Name("maxSeedDt"        ), Comment("maxSeedDt"                   ) };
+      fhicl::Atom<float>            maxHitDt         {Name("maxHitDt"         ), Comment("maxHitDt"                    ) };
+      fhicl::Atom<float>            maxStrawDt       {Name("maxStrawDt"         ), Comment("max straw Dt"                ) };
+      fhicl::Atom<float>            maxDtDs           {Name("maxDtDs"           ), Comment("max Dt/Dstation"             ) };
+      fhicl::Atom<float>            maxDtDc           {Name("maxDtDc"           ), Comment("max deltaT between deltas"   ) };
+      fhicl::Atom<int>              writeComboHits    {Name("writeComboHits"    ), Comment("if 1, write combohit coll"   ) };
+      fhicl::Atom<int>              writeStrawHitFlags{Name("writeStrawHitFlags"), Comment("if 1, write strawhitflag coll"   ) };
+      // fhicl::Atom<int>              filter            {Name("filter"            ), Comment("if 1, write only nonDelta CH") };
+      fhicl::Atom<int>              testOrder         {Name("testOrder"         ), Comment("if 1, test order"            ) };
+      fhicl::Atom<bool>             testHitMask       {Name("testHitMask"       ), Comment("if true, test hit mask"      ) };
+      fhicl::Sequence<std::string>  goodHitMask       {Name("goodHitMask"       ), Comment("good hit mask"               ) };
+      fhicl::Sequence<std::string>  bkgHitMask        {Name("bkgHitMask"        ), Comment("background hit mask"         ) };
+      fhicl::Atom<int>              updateSeedCOG     {Name("updateSeedCOG"     ), Comment("if 1, update seed COG"       ) };
 
       fhicl::Table<DeltaFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
     };
@@ -139,8 +140,9 @@ namespace mu2e {
     float           _maxStrawDt;
     float           _maxDtDs;              // low-P electron travel time between two stations
     float           _maxDtDc;              // max deltaT between two delta candiates
-    int             _writeStrawHits;
-    int             _filter;
+
+    int             _writeComboHits;       // write (filtered ?) combo hits
+    int             _writeStrawHitFlags;
 
     int             _debugLevel;
     int             _diagLevel;
@@ -201,7 +203,7 @@ namespace mu2e {
     void         beginJob() override;
     void         beginRun(art::Run& ARun) override;
     void         endJob  () override;
-    void         produce(art::Event& e) override;
+    void         produce (art::Event& E ) override;
   };
 
 //-----------------------------------------------------------------------------
@@ -209,7 +211,6 @@ namespace mu2e {
     art::EDProducer{config},
     _shCollTag             (config().shCollTag()        ),
     _chCollTag             (config().chCollTag()        ),
-    // _chfCollTag            (config().chfCollTag()       ),
     _sdmcCollTag           (config().sdmcCollTag()      ),
     _tpeakCollTag          (config().tpeakCollTag()     ),
     _useTimePeaks          (config().useTimePeaks()     ),
@@ -239,22 +240,22 @@ namespace mu2e {
     _maxStrawDt            (config().maxStrawDt()       ),
     _maxDtDs               (config().maxDtDs()          ),
     _maxDtDc               (config().maxDtDc()          ),
-    _writeStrawHits        (config().writeStrawHits()   ),
-    _filter                (config().filter()           ),
-    _debugLevel            (config().debugLevel()       ),
-    _diagLevel             (config().diagLevel()        ),
-    _printErrors           (config().printErrors()      ),
-    _testOrder             (config().testOrder()        ),
-    _testHitMask           (config().testHitMask()      ),
-    _goodHitMask           (config().goodHitMask()      ),
-    _bkgHitMask            (config().bkgHitMask()       ),
-    _updateSeedCOG         (config().updateSeedCOG()    )
+    _writeComboHits        (config().writeComboHits()   ),
+    _writeStrawHitFlags    (config().writeStrawHitFlags()),
+    _debugLevel            (config().debugLevel()        ),
+    _diagLevel             (config().diagLevel()         ),
+    _printErrors           (config().printErrors()       ),
+    _testOrder             (config().testOrder()         ),
+    _testHitMask           (config().testHitMask()       ),
+    _goodHitMask           (config().goodHitMask()       ),
+    _bkgHitMask            (config().bkgHitMask()        ),
+    _updateSeedCOG         (config().updateSeedCOG()     )
   {
     consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
 
     produces<StrawHitFlagCollection>("ComboHits");
-    if (_writeStrawHits == 1) produces<StrawHitFlagCollection>("StrawHits");
-    if (_filter             ) produces<ComboHitCollection>();
+    if (_writeStrawHitFlags == 1) produces<StrawHitFlagCollection>("StrawHits");
+    if (_writeComboHits     == 1) produces<ComboHitCollection>    ("");
 
                                         // this is a list of delta-electron candidates
     produces<TimeClusterCollection>();
@@ -939,7 +940,8 @@ namespace mu2e {
 
     runDeltaFinder();
 //-----------------------------------------------------------------------------
-// form output - flag combo hits
+// form output - flag combo hits -
+// if flagged combo hits are written out, likely don't need writing out the flags
 //-----------------------------------------------------------------------------
     unique_ptr<StrawHitFlagCollection> up_chfcol(new StrawHitFlagCollection(_nComboHits));
     _data.outputChfColl = up_chfcol.get();
@@ -996,10 +998,31 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
     if (_debugLevel > 0) _hmanager->debug(&_data,2);
+
+    if (_writeComboHits) {
+//-----------------------------------------------------------------------------
+// write out collection of ComboHits with right flags, use deep copy
+//-----------------------------------------------------------------------------
+      auto outputChColl = std::make_unique<ComboHitCollection>();
+      outputChColl->reserve(_nComboHits);
+
+      outputChColl->setParent(_data.chcol->parent());
+      for (int i=0; i<_nComboHits; i++) {
+        StrawHitFlag const* flag = &(*_data.outputChfColl)[i];
+        if (flag->hasAnyProperty(_bkgHitMask))                        continue;
+//-----------------------------------------------------------------------------
+// for the moment, assume bkgHitMask to be empty, so write out all hits
+//-----------------------------------------------------------------------------
+        const ComboHit* ch = &(*_data.chcol)[i];
+        outputChColl->push_back(*ch);
+        outputChColl->back()._flag.merge(*flag);
+      }
+      Event.put(std::move(outputChColl));
+    }
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
 //-----------------------------------------------------------------------------
-    if (_writeStrawHits == 1) {
+    if (_writeStrawHitFlags == 1) {
                                         // first, copy over the original flags
 
       std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(_nStrawHits));

@@ -16,7 +16,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/EDAnalyzer.h"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art_root_io/TFileService.h"
 // conditions
@@ -53,7 +53,26 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
-  class DeltaFinderAna : public art::EDProducer {
+  class DeltaFinderAna : public art::EDAnalyzer {
+
+    struct Config {
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<art::InputTag>    shCollTag              {Name("shCollTag"             ), Comment("SComboHit collection tag"         ) };
+      fhicl::Atom<art::InputTag>    chCollTag              {Name("chCollTag"             ), Comment("ComboHit collection tag"          ) };
+      fhicl::Atom<art::InputTag>    sschCollTag            {Name("sschCollTag"           ), Comment("SS ComboHit collection tag"       ) };
+      fhicl::Atom<art::InputTag>    chfCollTag             {Name("chfCollTag"            ), Comment("ComboHit flag collection tag"     ) };
+      fhicl::Atom<art::InputTag>    shfCollTag             {Name("shfCollTag"            ), Comment("SSC Hit  flag collection tag"     ) };
+      fhicl::Atom<art::InputTag>    sdmcCollTag            {Name("sdmcCollTag"           ), Comment("StrawDigiMC collection Name"      ) };
+      fhicl::Atom<int>              debugLevel             {Name("debugLevel"            ), Comment("debug level"                      ) };
+      fhicl::Atom<int>              diagLevel              {Name("diagLevel"             ), Comment("diag level"                       ) };
+      fhicl::Atom<int>              printElectrons         {Name("printElectrons"        ), Comment("print Electrons"                  ) };
+      fhicl::Atom<int>              printElectronsMinNHits {Name("printElectronsMinNHits"), Comment("min N(hits) for printed electrons") };
+      fhicl::Atom<float>            printElectronsMaxFReco {Name("printElectronsMaxFReco"), Comment("max F(reco) for printed electrons") };
+      fhicl::Atom<int>              printElectronHits      {Name("printElectronHits"     ), Comment("if 1, print electron hits"        ) };
+      fhicl::Atom<int>              printComboHits         {Name("printComboHits"        ), Comment("if 1, print combo hits"           ) };
+      fhicl::Atom<int>              printSingleComboHits   {Name("printSingleComboHits"  ), Comment("if 1, print single straw ComboH"  ) };
+    };
 
   public:
     enum { kNStations      = 20 };
@@ -210,7 +229,6 @@ namespace mu2e {
       const  StrawHitFlag* fFlag;
       int                  fType;   // 0:p, 1:ele p<20, 2:ele 20<p<80  3:ele 100<p<110 4:everything else
     };
-
 //-----------------------------------------------------------------------------
 // NStations stations, 4-1=3 faces (for hit w/ lower z), 3 panels (for hit w/ lower z)
 // 2017-07-27 P.Murat: the 2nd dimension should be 3, right?
@@ -220,11 +238,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // talk-to parameters
 //-----------------------------------------------------------------------------
-    art::InputTag                  _chCollTag;
     art::InputTag                  _shCollTag;              // straw hits        by "makeSH"
+    art::InputTag                  _chCollTag;
     art::InputTag                  _sschCollTag;            // single straw combohits by "makeSH"
-    art::InputTag                  _chfCollTag;             // combined ComboHit flags
     art::InputTag                  _shfCollTag;             // 1-straw  ComboHit flags
+    art::InputTag                  _chfCollTag;             // combined ComboHit flags
     art::InputTag                  _sdmcCollTag;
     int                            _debugLevel;
     int                            _diagLevel;
@@ -260,7 +278,7 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
-    explicit  DeltaFinderAna(fhicl::ParameterSet const&);
+    explicit  DeltaFinderAna(const art::EDAnalyzer::Table<Config>& config);
     virtual   ~DeltaFinderAna();
 
     int       associateMcTruth();
@@ -284,27 +302,27 @@ namespace mu2e {
 // overloaded methods of the base class
 //-----------------------------------------------------------------------------
     virtual void beginJob();
-    virtual void beginRun(art::Run& ARun);
-    virtual void produce( art::Event& e);
+    virtual void beginRun(const art::Run&   r);
+    virtual void analyze (const art::Event& e);
   };
 
 //-----------------------------------------------------------------------------
-  DeltaFinderAna::DeltaFinderAna(fhicl::ParameterSet const& pset):
-    art::EDProducer(pset),
-    _chCollTag             (pset.get<string>       ("chCollTag"             )),
-    _shCollTag             (pset.get<string>       ("shCollTag"             )),
-    _sschCollTag           (pset.get<string>       ("sschCollTag"           )),
-    _chfCollTag            (pset.get<string>       ("chfCollTag"            )),
-    _shfCollTag            (pset.get<string>       ("shfCollTag"            )),
-    _sdmcCollTag           (pset.get<art::InputTag>("sdmcCollTag"           )),
-    _debugLevel            (pset.get<int>          ("debugLevel"            )),
-    _diagLevel             (pset.get<int>          ("diagLevel"             )),
-    _printElectrons        (pset.get<int>          ("printElectrons"        )),
-    _printElectronsMinNHits(pset.get<int>          ("printElectronsMinNHits")),
-    _printElectronsMaxFReco(pset.get<float>        ("printElectronsMaxFReco")),
-    _printElectronHits     (pset.get<int>          ("printElectronHits"     )),
-    _printComboHits        (pset.get<int>          ("printComboHits"        )),
-    _printSingleComboHits  (pset.get<int>          ("printSingleComboHits"  ))
+  DeltaFinderAna::DeltaFinderAna(const art::EDAnalyzer::Table<Config>& config):
+    art::EDAnalyzer(config),
+    _shCollTag             (config().shCollTag  ()      ),
+    _chCollTag             (config().chCollTag  ()      ),
+    _sschCollTag           (config().sschCollTag()      ),
+    _shfCollTag            (config().shfCollTag ()      ),
+    _chfCollTag            (config().chfCollTag ()      ),
+    _sdmcCollTag           (config().sdmcCollTag()      ),
+    _debugLevel            (config().debugLevel ()      ),
+    _diagLevel             (config().diagLevel  ()      ),
+    _printElectrons        (config().printElectrons()   ),
+    _printElectronsMinNHits(config().printElectronsMinNHits()),
+    _printElectronsMaxFReco(config().printElectronsMaxFReco()),
+    _printElectronHits     (config().printElectronHits     ()),
+    _printComboHits        (config().printComboHits        ()),
+    _printSingleComboHits  (config().printSingleComboHits  ())
   {
     _hlp = HlPrint::Instance();
 
@@ -498,7 +516,7 @@ namespace mu2e {
 
 
 //----Get data------------------------------------------------------------------------------------------------
-  void DeltaFinderAna::beginRun(art::Run& aRun) {
+  void DeltaFinderAna::beginRun(const art::Run& R) {
 
     mu2e::GeomHandle<mu2e::Tracker> ttHandle;
     _tracker = ttHandle.get();
@@ -790,9 +808,6 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
       int nsh = ch->nStrawHits();
       int ch_counted = 0;
       for (int ish=0; ish<nsh; ish++) {
-                                        // 'ind' is not an index in _list_of_mc_hit_info ,
-                                        // how to find it ? - count !
-
         int ind = ch->indexArray().at(ish);
         const ComboHit* ssch = &_sschColl->at(ind);
 
@@ -814,7 +829,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
         if (ssch->correctedTime() < mc->fTime) mc->fTime = ssch->correctedTime();
 //-----------------------------------------------------------------------------
 // remember, this is a combohit flag !
-// delta-wise, all straw hits corresponding to the same combo hits,
+// delta-wise, all straw hits corresponding to the same combo hit,
 // should have the same flags
 //-----------------------------------------------------------------------------
         mc->fListOfFlags.push_back(chf);
@@ -851,18 +866,18 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderAna::produce(art::Event& Event) {
+  void DeltaFinderAna::analyze(const art::Event& E) {
 
-    _eventNum = Event.event();
+    _eventNum = E.event();
     if (_debugLevel) {
       printf("* >>> DeltaFinderAna::%s event number: %10i\n",__func__,_eventNum);
     }
 
-    _hlp->SetEvent(&Event);
+    _hlp->SetEvent(&E);
 //-----------------------------------------------------------------------------
 // process event
 //-----------------------------------------------------------------------------
-    if (! findData(Event)) {
+    if (! findData(E)) {
       throw cet::exception("RECO")
         << "mu2e::DeltaFinderAna_module::produce: missing data" << endl;
     }
