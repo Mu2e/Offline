@@ -51,10 +51,11 @@ namespace mu2e {
       _rdresid(rdresid.value()),_rdresidmvar(rdresid.measurementVariance()),_rdresidpvar(rdresid.parameterVariance()),
       _trklen(0),_hitlen(0),_stime(0.0)
     {
-      // correct for end sign to return to Mu2e convention
-      double endsign = 2.0*(chit.driftEnd()-0.5);
+      // compute position along wire according to Mu2e convention
+      double endsign = chit.driftEnd().endSign();
       _rupos = -endsign*rptca.sensorDirection().Dot(rptca.sensorPoca().Vect() - chit.centerPos());
       _uupos = -endsign*uptca.sensorDirection().Dot(uptca.sensorPoca().Vect() - chit.centerPos());
+      // this signing makes the values consistent with MC truth, but needs to be accomodated when rebuilding the fit
       _udoca *= endsign;
       _rdoca *= endsign;
       // correct flag

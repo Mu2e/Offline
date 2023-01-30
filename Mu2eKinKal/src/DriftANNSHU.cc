@@ -17,18 +17,19 @@ namespace mu2e {
     auto clustermvaWgtsFile = configFile(std::get<2>(config));
     clustermva_ = std::make_shared<TMVA_SOFIE_TrainCluster::Session>(clustermvaWgtsFile);
     clustermvacut_ = std::get<3>(config);
-    std::string nulldvar = std::get<4>(config);
+    clusterdtmvacut_ = std::get<4>(config);
+    std::string nulldvar = std::get<5>(config);
     nulldvar_ = WireHitState::nullDistVar(nulldvar);
-    std::string allowed = std::get<5>(config);
+    std::string allowed = std::get<6>(config);
     allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<6>(config);
+    std::string freeze = std::get<7>(config);
     freeze_ = WHSMask(freeze);
-    std::string totuse = std::get<7>(config);
+    std::string totuse = std::get<8>(config);
     totuse_ = WireHitState::totUse(totuse);
-    diag_ = std::get<8>(config);
+    diag_ = std::get<9>(config);
     if(diag_ > 0)
       std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
-        << " cluster weights " << std::get<0>(config) << " cut " << clustermvacut_
+        << " cluster weights " << std::get<0>(config) << " cuts " << clustermvacut_ << " , " << clusterdtmvacut_
         << " null dist var " << nulldvar
         << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << std::endl;
   }
@@ -66,7 +67,10 @@ namespace mu2e {
       if(diag_ > 1) whstate.algo_  = StrawHitUpdaters::DriftANN;
       if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
-          whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
+          if(clustermvaout[0] > clusterdtmvacut_)
+            whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::rightdt : WireHitState::leftdt;
+          else
+            whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
           whstate.nulldvar_ = nulldvar_;
