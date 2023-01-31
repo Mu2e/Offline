@@ -65,7 +65,20 @@ namespace mu2e {
       whstate.quality_[WireHitState::sign] = signmvaout[0];
       whstate.quality_[WireHitState::drift] = clustermvaout[0];
       if(diag_ > 1) whstate.algo_  = StrawHitUpdaters::DriftANN;
-      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
+      // Compute the cost to benefit ratio of correct vs incorrect LR assignment, and only sign if the propbability of a wrong
+      // assignment (estimated by the MVA) is less than that (times a scale factor)
+      double vr = dinfo.nullHitVar();
+      double vh = dinfo.unsignedDriftVar();
+      double vx = tpdata.docavar_;
+      double vn = vx*vr/(vx+vr); // expected variance assigning a null LR
+      double vc = vx*vh/(vx+vh); // expected variance assigning correct LR
+      double vi = 4.0*vr*vc/(vx+vh); // expected variance assigning incorrect LR
+      double signcost = (vi - vn)/(vn - vc); // net
+//      double signcost = dinfo.nullHitVar()/tpdata.docavar_;
+      // the following should be a calibration function TODO
+      double signprob = 25*tan(1.5*signmvaout[0]); // this is a fit to p/(1-p)
+//      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
+      if(signprob > signcost*signmvacut_ && clustermvaout[0] > clustermvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
           if(clustermvaout[0] > clusterdtmvacut_)
             whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::rightdt : WireHitState::leftdt;

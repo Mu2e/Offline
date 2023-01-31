@@ -166,11 +166,11 @@ Mu2eKinKal : {
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.3, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.5, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.5, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.4, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.4, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2],
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2],
       [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.08, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2]
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "DriftRadius" ,"Null:Drift","", "All", 2]
     ]
     Chi2SHUSettings : [
     ]
