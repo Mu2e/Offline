@@ -69,11 +69,11 @@ namespace mu2e {
       // assignment (estimated by the MVA) is less than that (times a scale factor)
       double vr = dinfo.nullHitVar();
       double vh = dinfo.unsignedDriftVar();
-      double vx = tpdata.docavar_;
-      double vn = vx*vr/(vx+vr); // expected variance assigning a null LR
-      double vc = vx*vh/(vx+vh); // expected variance assigning correct LR
-      double vi = 4.0*vr*vc/(vx+vh); // expected variance assigning incorrect LR
-      double signcost = (vi - vn)/(vn - vc); // net
+      double vx = tpdata.docavar_; // existing measurement variance (from other hits)
+      double vn = vx*vr/(vx+vr); // expected variance after assigning a null LR
+      double vc = vx*vh/(vx+vh); // expected variance after assigning correct LR
+      double vi = vc*(1.0 + 4.0*dinfo.rDrift_*dinfo.rDrift_/(vx+vh) ); // expected variance after assigning incorrect LR
+      double signcost = (vi - vn)/std::max(vn - vc,1.0e-5); // net change in variance.
 //      double signcost = dinfo.nullHitVar()/tpdata.docavar_;
       // the following should be a calibration function TODO
       double signprob = 25*tan(1.5*signmvaout[0]); // this is a fit to p/(1-p)
