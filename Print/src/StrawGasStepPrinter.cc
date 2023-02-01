@@ -44,9 +44,9 @@ void mu2e::StrawGasStepPrinter::Print(
 
 void mu2e::StrawGasStepPrinter::Print(const StrawGasStepCollection& coll,
                                       std::ostream& os) {
-  if (verbose() < 1) return;
+  if (verbose() < 0 ) return;
   os << "StrawGasStepCollection has " << coll.size() << " steps\n";
-  if (verbose() == 1) PrintListHeader();
+  if (verbose() >= 1) PrintListHeader();
   int i = 0;
   for (const auto& obj : coll) Print(obj, i++);
 }
@@ -70,19 +70,14 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
   ConditionsHandle<AcceleratorParams> accPar("ignored");
   double mbtime = accPar->deBuncherPeriod;
 
-  os << " "
-     << std::setw(5)  << pkey << " "
-     << std::setw(8)  << obj.strawId().asUint16() << " "
-     << std::setw(10) << std::setprecision(6) << obj.ionizingEdep() << " "
-     << std::setw(8)  << std::setprecision(3) << obj.stepLength() << " "
-     << std::setw(10) << std::setprecision(1) << obj.time()
-     << std::setw(8)  << std::setprecision(1) << fmod(obj.time(),mbtime)
-     << std::setw(8)  << std::setprecision(1) << obj.momentum().r()
-     << std::setw(8)  << std::setprecision(1) << obj.momentum().z()
-     << std::setw(8)  << std::setprecision(1) << obj.startPosition().x()
-     << std::setw(8)  << std::setprecision(1) << obj.startPosition().y()
-     << std::setw(8)  << std::setprecision(1) << obj.startPosition().z()
-     << std::endl;
+  os << ", " << std::setw(5) << pkey << ", " << std::setw(8)
+     << obj.strawId().asUint16() << ", " << std::setw(5) << std::setprecision(5)
+     << obj.ionizingEdep() << ", " << std::setw(5) << std::setprecision(3)
+     << obj.stepLength() << ", " << std::setw(5) << std::setprecision(2)
+     << obj.time() << ", " << std::setw(7) << std::setprecision(2)
+     << fmod(obj.time(),mbtime) << ", " << std::setw(5) << std::setprecision(2)
+     << obj.momentum().R() << ", " << std::setw(5) << std::setprecision(2)
+     << obj.position() << std::endl;
 }
 
 void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,
@@ -93,5 +88,5 @@ void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::StrawGasStepPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << " ind SimPart StrwInd    eDep     length      time     time%mbtime     ptot     pz       x     y      z \n";
+  os << " ind SimPart StrawID eDep    length    time   time%mbtime momentum position \n";
 }
