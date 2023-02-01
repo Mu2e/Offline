@@ -17,8 +17,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     Data_t::Data_t() {
       for (int i=0; i<kNStations; i++) {
-        listOfSeeds[i] = new TClonesArray("mu2e::DeltaSeed",50);
-        listOfSeeds[i]->SetOwner(kTRUE);
+        fListOfSeeds[i] = new TClonesArray("mu2e::DeltaSeed",50);
+        fListOfSeeds[i]->SetOwner(kTRUE);
+
+        fListOfProtonSeeds [i] = new TObjArray();
+        fListOfComptonSeeds[i] = new TObjArray();
       }
 
       for (int is=0; is<kNStations; is++) {
@@ -34,15 +37,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     Data_t::~Data_t() {
       for (int i=0; i<kNStations; i++) {
-        delete listOfSeeds[i];
+        delete fListOfSeeds[i];
+        delete fListOfProtonSeeds [i];
+        delete fListOfComptonSeeds[i];
       }
 
       for (int is=0; is<kNStations; is++) {
         for (int face=0; face<kNFaces; face++) {
+
           for (int ip=0; ip<kNPanelsPerFace; ip++) {
             PanelZ_t* pz = &oTracker[is][face][ip];
             delete pz->fHitData;
           }
+
         }
       }
     }
@@ -99,13 +106,33 @@ namespace mu2e {
       debugLevel = DebugLevel;
 
       for (int is=0; is<kNStations; is++) {
-        nseeds_per_station[is] = 0;
-        listOfSeeds[is]->Clear();
+        fListOfSeeds       [is]->Clear();
+        fListOfProtonSeeds [is]->Clear();
+        fListOfComptonSeeds[is]->Clear();
+
+        for (int face=0; face<kNFaces; face++) {
+
+          for (int ip=0; ip<kNPanelsPerFace; ip++) {
+            PanelZ_t* pz = &oTracker[is][face][ip];
+            pz->fHitData->clear() ;
+            pz->tmin =  1.e6;
+            pz->tmax = -1.e6;
+          }
+//-----------------------------------------------------------------------------
+// re-initialize faces
+//-----------------------------------------------------------------------------
+          FaceZ_t* fz = &fFaceData[is][face];
+          for (int i=0; i<100; i++) {
+            fz->fFirst[i] = -1;
+          }
+        }
       }
 
-      listOfDeltaCandidates.clear();
+      fListOfDeltaCandidates.clear();
     }
 
+//-----------------------------------------------------------------------------
+// called just once
 //-----------------------------------------------------------------------------
     void Data_t::InitGeometry() {
       mu2e::GeomHandle<mu2e::Tracker> tH;
@@ -321,6 +348,8 @@ namespace mu2e {
     }
 
 //-----------------------------------------------------------------------------
+// used in DeltaFinderAna only
+//-----------------------------------------------------------------------------
     int findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result) {
       double x1, y1, x2, y2, nx1, ny1, nx2, ny2;
 
@@ -361,7 +390,8 @@ namespace mu2e {
     }
 
 //-----------------------------------------------------------------------------
-// testOrderID & testdeOrderID not used in module, only were used to make sure OrderID and deOrderID worked as intended
+// testOrderID & testdeOrderID not used in module, they are only used to make sure
+// OrderID and deOrderID work as intended
 //-----------------------------------------------------------------------------
     void Data_t::testdeOrderID() {
 

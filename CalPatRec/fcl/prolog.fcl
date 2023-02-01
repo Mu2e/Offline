@@ -352,8 +352,9 @@ CalPatRec : { @table::CalPatRec
             minHitTime                  : 350.                  # ns
             minimumTime                 : 400.                  # ns
             maximumTime                 : 1750.                 # ns
-            maxSeedEDep                 : 0.005                 # max allowed <seed hit eDep>
-            maxDeltaEDep                : 0.004                 # max allowed <delta hit eDep>
+            maxDeltaEDep                : 0.004                 # max allowed delta eDep
+            maxSeedEDep                 : 0.005                 # max allowed seed eDep
+            minProtonSeedEDep           : 0.003                 # min allowed proton seed eDep
             minNSeeds                   : 2                     #
             maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
 
@@ -383,6 +384,48 @@ CalPatRec : { @table::CalPatRec
             debugLevel                  : 0
             diagLevel                   : 0
             printErrors                 : 0
+                                                                # finder algorithm parameters
+            finderParameters            : {
+                testHitMask                 : false                 # off by default
+                goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
+                                                                ## out of straw hits with an apriory wrong wdist ?
+                bkgHitMask                  : [  ]                  #
+
+                timeBin                     : 50                    # ns
+                minHitTime                  : 350.                  # ns
+                minimumTime                 : 400.                  # ns
+                maximumTime                 : 1750.                 # ns
+                maxDeltaEDep                : 0.004                 # max allowed delta eDep
+                maxSeedEDep                 : 0.005                 # max allowed seed eDep
+                minProtonSeedEDep           : 0.003                 # min allowed proton seed eDep
+                minNSeeds                   : 2                     #
+                maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
+
+                maxChi2Seed                 : 12. ## 10 16 used by findSeeds, for each hit
+                maxChi2Radial               : 12. ## 10 25 used by recoverStation (wire-to-seed dist)
+                maxChi2All                  : 12. ## 10 16 used by pruneSeeds to mark bad seeds
+                maxChi2SeedDelta            :  3. ##
+                maxDxy                      : 10. ## used by connectSeeds 30 40 mm
+                maxGap                      :  3  ## 3 gap in missing stations along the candidate
+                sigmaR                      :  3. # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+                seedRes                     :  3. # 5 is good just to see what it does
+                maxDriftTime                : 35. ## 40 ns, includes some tolerance (50)
+                maxSeedDt                   : 20. ## time window for checking duplicate seeds
+                maxHitDt                    : 30. ## time window for checking duplicate seeds
+                maxStrawDt                  : 10. # max sensible time difference for a straw, ns, off by default
+                maxDtDs                     :  5. # ns, max allowed T0 shift per station
+                maxDtDc                     : 10. ## 15 20 30 ns, max dT between two delta candidates
+                maxHitSeedDt                : 10  ##
+                minDeltaNHits               :  5
+
+                testOrder                   : 0
+                updateSeedCOG               : 0
+
+                debugLevel                  : 0
+                diagLevel                   : 0
+                printErrors                 : 0
+                maxDriftTime                : 35. ## 40 ns, includes some tolerance (50)
+            }
 #
             diagPlugin                  : { tool_type : "DeltaFinderDiag"
                 diagLevel               : 0

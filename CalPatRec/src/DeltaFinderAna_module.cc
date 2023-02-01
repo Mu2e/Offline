@@ -103,7 +103,7 @@ namespace mu2e {
 
     struct McHist_t {
       TH1F*  fPDGCode;
-      TH1F*  fMom;
+      TH1F*  fMom[2];
       TH1F*  fNCHits;
       TH1F*  fNSSCHits;
       TH2F*  fNCHitsVsMom;
@@ -117,7 +117,7 @@ namespace mu2e {
     struct StrawHitHist_t {
       TH1F*  fType;
       TH1F*  fTime;
-      TH1F*  fMom;                        // momentum of the particle which produced the hit
+      TH1F*  fMom[2];                       // momentum of the particle which produced the hit
       TH1F*  fEnergyDep;
       TH1F*  fDeltaT;
       TH1F*  fPDGCode;
@@ -364,8 +364,6 @@ namespace mu2e {
     Hist->fNSecondHitsT    = Dir->make<TH1F>(Form("nhit2t_%02i",HistSet), "N(second hits) w/ time selection", 100, 0., 100.);
 
     Hist->fNMc             = Dir->make<TH1F>(Form("nmc_%02i"       ,HistSet), "N(MC particles)", 100, 0., 1000.);
-    // Hist->fPDGCode         = Dir->make<TH1F>(Form("pdg_code_%02i"  ,HistSet), "PDG Code"       , 100, 0., 100.);
-    // Hist->fNMcHits         = Dir->make<TH1F>(Form("n_mc_hits_%02i" ,HistSet), "N(MC hits)"     , 250, 0., 500.);
     Hist->fNHitsDeltaT     = Dir->make<TH1F>(Form("n_delta_ht_%02i",HistSet), "N(delta hits T)", 500, 0., 5000.);
     Hist->fNHitsDeltaR     = Dir->make<TH1F>(Form("n_delta_hr_%02i",HistSet), "N(delta hits R)", 500, 0., 5000.);
     Hist->fNCh             = Dir->make<TH1F>(Form("nch_%02i"       ,HistSet), "N(combo hits)"  ,1000, 0., 10000.);
@@ -376,11 +374,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookMcHistograms(McHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
 
-    Hist->fPDGCode     = Dir->make<TH1F>("pdg"         , "PDG code"        , 500, -250., 250.);
-    Hist->fMom         = Dir->make<TH1F>("mom"         , "momentum"        , 200, 0., 200.);
-    Hist->fNCHits      = Dir->make<TH1F>("nch"         , "N(combo hits)"   , 200, 0., 200.);
-    Hist->fNSSCHits    = Dir->make<TH1F>("nssch"       , "N(SS combo hits)", 200, 0., 200.);
-    Hist->fNCHitsDelta = Dir->make<TH1F>("nchitsr"     , "N(chits reco)"   , 200, 0., 200.);
+    Hist->fPDGCode         = Dir->make<TH1F>("pdg"         , "PDG code"        , 500, -250., 250.);
+    Hist->fMom[0]          = Dir->make<TH1F>("mom_0"       , "momentum[0]"     , 500, 0., 500.);
+    Hist->fMom[1]          = Dir->make<TH1F>("mom_1"       , "momentum[1]"     , 100, 0.,  20.);
+    Hist->fNCHits          = Dir->make<TH1F>("nch"         , "N(combo hits)"   , 200, 0., 200.);
+    Hist->fNSSCHits        = Dir->make<TH1F>("nssch"       , "N(SS combo hits)", 200, 0., 200.);
+    Hist->fNCHitsDelta     = Dir->make<TH1F>("nchitsr"     , "N(chits reco)"   , 200, 0., 200.);
 
     Hist->fNCHitsVsMom     = Dir->make<TH2F>("nch_vs_mom" , "N(hits) vs mom"   , 100,0,100, 200, 0., 200.);
     Hist->fNCHitsRVsMom    = Dir->make<TH2F>("nchr_vs_mom", "N(chits R) vs mom", 100,0,100, 200, 0., 200.);
@@ -395,7 +394,8 @@ namespace mu2e {
 
     Hist->fType      = Dir->make<TH1F>("type"  , "Hit type"        ,   10, 0., 10.);
     Hist->fTime      = Dir->make<TH1F>("time"  , "time"            ,  400, 0., 2000.);
-    Hist->fMom       = Dir->make<TH1F>("mom"   , "Momentum"        ,  800, 0., 400.);
+    Hist->fMom[0]    = Dir->make<TH1F>("mom_0" , "Momentum[0]"     ,  100, 0.,  20.);
+    Hist->fMom[1]    = Dir->make<TH1F>("mom_1" , "Momentum[1]"     ,  400, 0., 400.);
     Hist->fEnergyDep = Dir->make<TH1F>("edep"  , "edep"            ,  200, 0., 2e-2);
     Hist->fDeltaT    = Dir->make<TH1F>("dt"    , "DeltaT"          ,  200, -10,10);
     Hist->fPDGCode   = Dir->make<TH1F>("pdg"   , "PDG code"        , 2000, -10000,10000);
@@ -498,6 +498,9 @@ namespace mu2e {
     book_mc_histset[ 17] = 1;                // muons
     book_mc_histset[ 18] = 1;                // else
 
+    book_mc_histset[ 22] = 1;                // e-    p < 2
+    book_mc_histset[ 23] = 1;                // e-    2 < p < 20
+
     for (int i=0; i<kNMcHistSets; i++) {
       if (book_mc_histset[i] != 0) {
         sprintf(folder_name,"mc_%i",i);
@@ -548,7 +551,8 @@ namespace mu2e {
 
     Hist->fType->Fill(McHitInfo->fType);
     Hist->fTime->Fill(Hit->time());
-    Hist->fMom->Fill(mc->Momentum());
+    Hist->fMom[0]->Fill(mc->Momentum());
+    Hist->fMom[1]->Fill(mc->Momentum());
     Hist->fEnergyDep->Fill(Hit->energyDep());
     Hist->fDeltaT->Fill(Hit->dt());
     Hist->fPDGCode->Fill(mc->fSim->pdgId());
@@ -564,7 +568,8 @@ namespace mu2e {
     float mom = Mc->Momentum();
 
     Hist->fPDGCode->Fill(sim->pdgId());
-    Hist->fMom->Fill(mom);
+    Hist->fMom[0]->Fill(mom);
+    Hist->fMom[1]->Fill(mom);
     Hist->fNCHits->Fill(Mc->NComboHits());
     Hist->fNSSCHits->Fill(Mc->NSSCHits());
     Hist->fNCHitsVsMom->Fill(mom,Mc->NComboHits());
@@ -693,6 +698,12 @@ namespace mu2e {
         else if (mc->fType == kPositron     ) fillMcHistograms(_hist.fMc[16],mc);
         else if (mc->fType == kMuon         ) fillMcHistograms(_hist.fMc[17],mc);
         else                                  fillMcHistograms(_hist.fMc[18],mc);
+      }
+
+      if (mc->fType == kLoMomElectron) {
+        float mom = sim->startMomXYZT().P();
+        if (mom < 1.5) fillMcHistograms(_hist.fMc[22],mc);
+        else           fillMcHistograms(_hist.fMc[23],mc);
       }
 //-----------------------------------------------------------------------------
 // a closer look at misreconstructed delta electrons

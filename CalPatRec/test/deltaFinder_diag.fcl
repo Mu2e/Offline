@@ -50,8 +50,12 @@ physics : {
                 printElectronsMaxFReco    : 0.2 ## 0.5
             }
         }
+    }
 
-        DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
+    filters   : { @table::Reconstruction.filters   }
+
+    analyzers : { @table::stntuple.analyzers
+        DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel                    : 0 ## 1
 
             chCollTag                     : "makePH"
@@ -62,22 +66,18 @@ physics : {
         }
     }
 
-    filters   : { @table::Reconstruction.filters   }
-    analyzers : { @table::stntuple.analyzers       }
-
-    p1: [ @sequence::TrkHitReco.PrepareHits, DeltaFinder, DeltaFinderAna ]
+    p1: [ @sequence::TrkHitReco.PrepareHits, DeltaFinder ]
 
     p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder ]
     p3: [                                    CalTimePeakFinder, DeltaFinder ]
     p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
-    p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
     p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloClusterMC.TruthMatch,
-          CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+          CalTimePeakFinder, DeltaFinder ]
 
-    trigger_paths : [ p1            ]
-
-    e1            : [               ] ## MuHitDisplay  ] # defaultOutput ]
-    end_paths     : [ e1            ]
+    trigger_paths : [ p1             ]
+    e1            : [ DeltaFinderAna ] ## MuHitDisplay  ] # defaultOutput ]
+    end_paths     : [ e1             ]
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
