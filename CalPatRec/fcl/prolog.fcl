@@ -599,7 +599,7 @@ CalPatRec : { @table::CalPatRec
              maxDt                  : 25
              minSigma               : 0.1
              t0Calc                 : {}
-             useCC                  : true
+             useCC                  : false
              DiagPlugin : {
                diagLevel                    : 0
                tool_type                    : "PhiClusterFinderDiag"
