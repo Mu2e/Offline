@@ -531,7 +531,54 @@ CalPatRec : { @table::CalPatRec
             cprHelixCollTag : MHFinderCprDmu
         }
 
-        Phiclusterfinder : { module_type : PhiClusterFinder
+        # TZ cluster finder module
+        TZClusterFinder : {
+            module_type                : TZClusterFinder
+            diagLevel                  : 0
+            debugLevel                 : 0
+            printFrequency             : 1000
+            runDisplay                 : 0
+            saveProtCand               : 0
+            useCaloClusters            : 1
+            recoverCaloClusters        : 1
+            ComboHitCollectionLabel    : "makePH"
+            ComboHitCollectionLabel2   : "makeSH"
+            TimeClusterCollectionLabel : TimeClusterFinderDe
+            StrawHitFlagCollection     : "FlagBkgHits:ComboHits"
+            caloClusterModuleLabel     : "CaloClusterMaker"
+            HitBackgroundBits          : ["Noisy","Dead","Background"]
+            chunkSep                   : 5
+            chunkWindow                : 20.0
+            chunkThresh                : 3
+            chi2combineThresh          : 100.0
+            combineWindow              : 30.0
+            maxCombineSep              : 2500.0
+            chunkFitThresh             : 8
+            recoverWindow              : 30.0
+            clusterThresh              : 15
+            doComptonClean             : 0
+            maxIntersectSigma          : 5.0
+            maxApproachSigma           : 5.0
+            maxApproachSigmaTrans      : 5.0
+            comptonThresh              : 8
+            doIsoClean                 : 0
+            isoRad                     : 100.0
+            doPhiClean                 : 0
+            phiCleanPhi                : 45.0
+            phiCleanThresh             : 5
+            minCaloSize                : 2
+            minCaloEnergy              : 50.0
+            caloDtMax                  : 30.0
+            caloTimeOffset             : @local::TrackCaloMatching.DtOffset
+
+            diagPlugin : { tool_type  : "TZClusterFinderDiag"
+                 mcTruth       : 1
+                 simIDThresh : 15
+                 mcUtils       : { @table::TrkReco.McUtils }
+            }
+        }
+
+        PhiClusterFinder : { module_type : PhiClusterFinder
              ComboHitCollection     : "makePH"
              #TimeClusterCollection  : "TimeClusterFinderDmu"
              diag                   : 0
