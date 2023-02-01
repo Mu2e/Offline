@@ -11,10 +11,17 @@ using ROOT::Math::XYZVectorF;
 #include "Offline/CalPatRec/inc/DeltaFinder_enums.hh"
 
 namespace mu2e {
+
+  namespace DeltaFinderTypes {
+    struct HitData_t;
+    struct McPart_t;
+  }
+
+  using  DeltaFinderTypes::HitData_t;
+  using  DeltaFinderTypes::McPart_t;
+
   class  Panel;
   class  SimParticle;
-  struct HitData_t;
-  struct McPart_t;
 
   class DeltaSeed : public TObject {
   public:
@@ -32,7 +39,9 @@ namespace mu2e {
     float        fChi22;
                                       // 0: used in recovery
     int          fFaceProcessed[kNFaces];
+
     HitData_t*   hitData       [kNFaces];
+
     McPart_t*    fMcPart       [kNFaces];
                                       // XY coordinate sums
     double       fSnx2;
@@ -43,7 +52,7 @@ namespace mu2e {
     float        fSumEDep;             // sum over the straw hits
 
     XYZVectorF   CofM;                 // COG
-    float        fPhi;                 // cache to speed up the phi checks
+    //    float        fPhi;                 // cache to speed up the phi checks
     float        fZ;                   // Z-coordinate of the center of the corresponding station
 
     double       fSumT;
@@ -84,8 +93,9 @@ namespace mu2e {
     float            Z       ()         { return fZ;  }
     double           Xc      () const { return CofM.x(); }
     double           Yc      () const { return CofM.y(); }
+    double           R       () const { return CofM.R(); }
 
-    float            Phi     () const   { return fPhi; }
+    //    float            Phi     () const   { return fPhi; }
 //-----------------------------------------------------------------------------
 // drift time can't be < 0
 // fMaxTime < particle T0 < fMinTime

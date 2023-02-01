@@ -40,7 +40,6 @@ namespace mu2e {
 
     struct Config {
       fhicl::Atom<std::string> tool_type             {fhicl::Name("tool_type"             ), fhicl::Comment("tool type: DeltaFinderDiag")     };
-      // fhicl::Atom<art::InputTag> spmcCollTag         {fhicl::Name("spmcCollTag"           ), fhicl::Comment("StepPointMC coll tag"      )     };
       fhicl::Atom<int>         mcTruth               {fhicl::Name("mcTruth"               ), fhicl::Comment("MC truth")                       };
       fhicl::Atom<int>         diagLevel             {fhicl::Name("diagLevel"             ), fhicl::Comment("diagnostic level")               };
       fhicl::Atom<bool>        mcDiag                {fhicl::Name("mcDiag"                ), fhicl::Comment("MC diag")                        };
@@ -62,6 +61,39 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // data structure passed to the diagnostics plugin
 //-----------------------------------------------------------------------------
+    struct PanelZ_t {
+      int                              fID;         // 3*face+panel, for pre-calculating overlaps
+      int                              fNHits  ;    // guess, total number of ComboHits
+      std::vector<HitData_t>*          fHitData;
+      const Panel*                     fPanel;      // backward pointer to the tracker panel
+      double                           wx;          // direction cosines of the wires, assumed to be all the same
+      double                           wy;
+      double                           phi;         // phi angle of the wire
+      double                           nx;          // direction cosines of the normal to the wires, pointing outwards
+      double                           ny;
+      double                           z;           //
+      float                            tmin;        // for hits stored on this panel
+      float                            tmax;
+    };
+
+    struct FaceZ_t {
+      int                              fID;         // 3*face+panel, for pre-calculating overlaps
+      int                              fNHits  ;    // guess, total number of ComboHits
+      std::vector<HitData_t>           fHitData;
+      int                              fFirst[100]; // ** FIXME - need larger dimension for off-spill cosmics...
+      int                              fLast [100];
+      // const Panel*                     fPanel;      // backward pointer to the tracker panel
+      // double                           wx;          // direction cosines of the wires, assumed to be all the same
+      // double                           wy;
+      // double                           phi;         // phi angle of the wire
+      // double                           nx;          // direction cosines of the normal to the wires, pointing outwards
+      // double                           ny;
+      double                           z;           //
+      // float                            tmin;        // for hits stored on this panel
+      // float                            tmax;
+
+    };
+
     struct Data_t {
       const art::Event*             event;
       const Tracker*                tracker;
@@ -78,12 +110,22 @@ namespace mu2e {
 
       int                           debugLevel;              // printout level
 
-      TClonesArray*                 listOfSeeds[kNStations]; // seeds with the first station being this
+      int                           _nComboHits;
+      int                           _nStrawHits;
+      std::vector<const ComboHit*>  _v;                      // sorted
 
-      std::vector<DeltaCandidate>   listOfDeltaCandidates;
+      TClonesArray*                 fListOfSeeds       [kNStations]; // all seeds found in a given station
+      TObjArray*                    fListOfProtonSeeds [kNStations];
+      TObjArray*                    fListOfComptonSeeds[kNStations];
+
+      std::vector<DeltaCandidate>   fListOfDeltaCandidates;
 
       PanelZ_t                      oTracker   [kNStations][kNFaces][kNPanelsPerFace];
       int                           stationUsed[kNStations];
+//-----------------------------------------------------------------------------
+// try to avoid looping over panels
+//-----------------------------------------------------------------------------
+      FaceZ_t                       fFaceData[kNStations][kNFaces];
 //-----------------------------------------------------------------------------
 // station #2 is the same as station #0 etc...
 //-----------------------------------------------------------------------------
@@ -94,16 +136,24 @@ namespace mu2e {
       float                         meanPitchAngle;
 
       int                           fNSeeds;
-      int                           nseeds_per_station[kNStations];
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
       Data_t();
       ~Data_t();
 
-      DeltaCandidate* deltaCandidate(int I)              { return &listOfDeltaCandidates[I]; }
+      DeltaCandidate* deltaCandidate(int I)              { return &fListOfDeltaCandidates[I]; }
+
       DeltaSeed*      deltaSeed     (int Station, int I) {
-        return (DeltaSeed*) listOfSeeds[Station]->UncheckedAt(I);
+        return (DeltaSeed*) fListOfSeeds[Station]->UncheckedAt(I);
+      }
+
+      DeltaSeed*      ComptonSeed   (int Station, int I) {
+        return (DeltaSeed*) fListOfComptonSeeds[Station]->UncheckedAt(I);
+      }
+
+      DeltaSeed*      ProtonSeed    (int Station, int I) {
+        return (DeltaSeed*) fListOfProtonSeeds[Station]->UncheckedAt(I);
       }
 
 
@@ -112,14 +162,20 @@ namespace mu2e {
 
       int  NSeedsTot() { return fNSeeds; }
 
-      int  NSeeds(int Station) {
-        return listOfSeeds[Station]->GetEntriesFast();
-      }
+      int  NSeeds       (int Station) { return fListOfSeeds       [Station]->GetEntriesFast(); }
+      int  NComptonSeeds(int Station) { return fListOfComptonSeeds[Station]->GetEntriesFast(); }
+      int  NProtonSeeds (int Station) { return fListOfProtonSeeds [Station]->GetEntriesFast(); }
+
+      int  nDeltaCandidates() { return fListOfDeltaCandidates.size(); }
+
+      void AddProtonSeed (DeltaSeed* Seed, int Station) { fListOfProtonSeeds [Station]->Add(Seed); }
+      void AddComptonSeed(DeltaSeed* Seed, int Station) { fListOfComptonSeeds[Station]->Add(Seed); }
+
+      void addDeltaCandidate(DeltaCandidate* Delta) { fListOfDeltaCandidates.push_back(*Delta); }
 
       DeltaSeed* NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
-        int loc = nseeds_per_station[Station];
-        DeltaSeed* ds = new ((*listOfSeeds[Station])[loc]) DeltaSeed(loc,Station,Face0,Hd0,Face1,Hd1);
-        nseeds_per_station[Station] += 1;
+        int loc       = NSeeds(Station);
+        DeltaSeed* ds = new ((*fListOfSeeds[Station])[loc]) DeltaSeed(loc,Station,Face0,Hd0,Face1,Hd1);
         fNSeeds++;
         return ds;
       }

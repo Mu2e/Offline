@@ -26,7 +26,16 @@
 using namespace std;
 
 namespace mu2e {
+
   using namespace DeltaFinderTypes;
+
+  // namespace DeltaFinderTypes {
+  //   struct McPart_t;
+  //   struct Data_t;
+  // }
+
+  // using DeltaFinderTypes::McPart_t;
+  // using DeltaFinderTypes::Data_t;
 
   class SimParticle;
   class StrawDigiMCCollection;
@@ -134,10 +143,10 @@ namespace mu2e {
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
 
-    std::vector<McPart_t*>                _list_of_mc_particles; // list_of_particles with hits in the tracker
-    std::vector<McPart_t*>                _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart
+    TObjArray                             _list_of_mc_particles; // list_of_particles with hits in the tracker
+    TObjArray                             _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart
 
-    Data_t*                               _data;                 // diag data, passed from the caller, cached
+    Data_t*                               _data;                 // shared data, passed from the caller
 
     Hist_t                                _hist;
 
@@ -236,10 +245,10 @@ namespace mu2e {
   McPart_t* DeltaFinderDiag::findParticle(const SimParticle* Sim) {
     McPart_t* found(0);
 
-    int n = _list_of_mc_particles.size();
+    int n = _list_of_mc_particles.GetEntriesFast();
 
     for (int i=0; i<n; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
+      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
       if (mc->fSim == Sim) {
         found = mc;
         break;
@@ -470,7 +479,8 @@ namespace mu2e {
 
     for (int is=0; is<kNStations; ++is) {
 
-      Hist->fNSeedsVsStation->Fill(is,_data->nseeds_per_station[is]);
+      int nseeds = _data->NSeeds(is);
+      Hist->fNSeedsVsStation->Fill(is,nseeds);
 
       // for (int f=0; f<kNFaces-1; ++f) { // loop over faces
       //   for (int p=0; p<kNPanelsPerFace; ++p) { // loop over panels
@@ -485,14 +495,14 @@ namespace mu2e {
       // }
     }
 
-    int ndelta = _data->listOfDeltaCandidates.size();
+    int ndelta = _data->nDeltaCandidates();
     Hist->fNDelta->Fill(ndelta);
 //-----------------------------------------------------------------------------
 // fill MC particle histograms
 //-----------------------------------------------------------------------------
-    int nmc = _list_of_mc_particles.size();
+    int nmc = _list_of_mc_particles.GetEntriesFast();
     for (int i=0; i<nmc; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
+      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
       int n_mc_hits = mc->fListOfHits.size();
 
       Hist->fNMcHits->Fill(n_mc_hits);
@@ -671,7 +681,7 @@ namespace mu2e {
 
         seed_par.dt = -1.e6;
         if (seed->fDeltaIndex >= 0) {
-          DeltaCandidate* dc = &_data->listOfDeltaCandidates.at(seed->fDeltaIndex);
+          DeltaCandidate* dc = _data->deltaCandidate(seed->fDeltaIndex);
           seed_par.dt = seed->TMean() - dc->T0(s);
         }
 
@@ -705,7 +715,7 @@ namespace mu2e {
 
           if ((pdg_id == 11) and (mom < 20)) {
             DeltaCandidate* dc(nullptr);
-            if (seed->fDeltaIndex >= 0) dc = &_data->listOfDeltaCandidates[seed->fDeltaIndex];
+            if (seed->fDeltaIndex >= 0) dc = _data->deltaCandidate(seed->fDeltaIndex);
             if (dc) {
 //-----------------------------------------------------------------------------
 // this seed has been associated with a delta
@@ -769,9 +779,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // fill delta histograms
 //-----------------------------------------------------------------------------
-    int ndelta = _data->listOfDeltaCandidates.size();
+    int ndelta = _data->nDeltaCandidates();
     for (int i=0; i<ndelta; i++) {
-      DeltaCandidate* delta = &_data->listOfDeltaCandidates.at(i);
+      DeltaCandidate* delta = _data->deltaCandidate(i);
       int pdg_id = delta->fMcPart->fPdgID;
       float mom  = delta->fMcPart->Momentum();
 
@@ -802,10 +812,10 @@ namespace mu2e {
 // for each delta electron, need to check which fraction of its hits has not been
 // Associated with found DeltaCandidate's
 //-----------------------------------------------------------------------------
-    int nmc = _list_of_mc_particles.size();
+    int nmc = _list_of_mc_particles.GetEntriesFast();
 
     for (int i=0; i<nmc; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
+      McPart_t* mc = (McPart_t*) _list_of_mc_particles.UncheckedAt(i);
 
       fillMcHistograms(_hist.fMc[0],mc);
 //-----------------------------------------------------------------------------
@@ -855,21 +865,21 @@ namespace mu2e {
 // memory cleanup after previous event
 // assume that MC collections have been initialized
 //-----------------------------------------------------------------------------
-    int n = _list_of_mc_particles.size();
+    int n = _list_of_mc_particles.GetEntriesFast();
     for (int i=0; i<n; i++) {
-      McPart_t* p = _list_of_mc_particles.at(i);
+      McPart_t* p = (McPart_t*) _list_of_mc_particles.UncheckedAt(i);
       delete p;
     }
 
-    _list_of_mc_particles.clear();
-    _list_of_mc_part_hit.clear();
+    _list_of_mc_particles.Clear();
+    _list_of_mc_part_hit.Clear();
 
     int   nch           = _data->chcol->size();
     if (nch <= 0) return -1;
 
     const ComboHit* ch0 = &_data->chcol->at(0);
 
-    _list_of_mc_part_hit.resize(nch);
+    _list_of_mc_part_hit.Expand(nch);
 
     for (int ist=0; ist<kNStations; ist++) {
       for (int face=0; face<kNFaces; face++) {
@@ -897,7 +907,7 @@ namespace mu2e {
             if (mc == NULL) {
                                         // add new particle
               mc = new McPart_t(sim);
-              _list_of_mc_particles.push_back(mc);
+              _list_of_mc_particles.Add(mc);
               mc->fID       = _mcUtils->getID(sim);
               mc->fPdgID    = _mcUtils->getPdgID(sim);
               mc->fStartMom = _mcUtils->getStartMom(sim);
@@ -918,7 +928,7 @@ namespace mu2e {
             //-----------------------------------------------------------------------------
             // list of MC particles parallel to StrawHitCollection
             //-----------------------------------------------------------------------------
-            _list_of_mc_part_hit[ich] = mc;
+            _list_of_mc_part_hit.AddAt(mc,ich);
           }
           // }
         }
@@ -926,11 +936,11 @@ namespace mu2e {
     }
 
     if (_data->debugLevel > 10) {
-      int nmc = _list_of_mc_particles.size();
+      int nmc = _list_of_mc_particles.GetEntriesFast();
       printf(" N(MC particles with hits in the tracker: %5i\n",nmc);
       printf("    i     SimID        PdgID  NHits   Momentum  Time   FirstSt LastSt\n");
       for (int i=0; i<nmc; i++) {
-        McPart_t* mc = _list_of_mc_particles.at(i);
+        McPart_t* mc = (McPart_t*)_list_of_mc_particles.At(i);
         if (mc) {
           printf(" %4i  %10i %10i  %5i %10.3f %8.1f %5i %5i\n",
                  i,mc->fID,mc->fPdgID,
@@ -971,14 +981,14 @@ namespace mu2e {
         if (seed->HitData(face0) != nullptr) {
           const HitData_t* hd1 = seed->HitData(face0);
           int loc1 = hd1->fHit-hit0;
-          seed->fPreSeedMcPart[0] = _list_of_mc_part_hit.at(loc1);
+          seed->fPreSeedMcPart[0] = (McPart_t*) _list_of_mc_part_hit.At(loc1);
         }
 
         int face1 = seed->SFace(1);
         if (face1 >= 0) {
           const HitData_t* hd2 = seed->HitData(face1);
           int loc2 = hd2->fHit-hit0;
-          seed->fPreSeedMcPart[1] = _list_of_mc_part_hit.at(loc2);
+          seed->fPreSeedMcPart[1] = (McPart_t*) _list_of_mc_part_hit.At(loc2);
         }
 //-----------------------------------------------------------------------------
 // define MC pointers (McPart_t's) for hits in all faces
@@ -988,7 +998,7 @@ namespace mu2e {
           const HitData_t* hd = seed->HitData(face);
           if (hd == nullptr)                                          continue;
           int loc             = hd->fHit-hit0;         // ComboHit index in the collection
-          McPart_t* mc        = _list_of_mc_part_hit[loc];
+          McPart_t* mc        = (McPart_t*) _list_of_mc_part_hit.At(loc);
           seed->fMcPart[face] = mc;
 //-----------------------------------------------------------------------------
 // count CE hits
@@ -996,7 +1006,7 @@ namespace mu2e {
           if ((mc->fPdgID == PDGCode::e_minus) && (mc->fStartMom > 95) && (mc->fStartMom <110)) {
             seed->fNHitsCE += 1;
             if (seed->fDeltaIndex >= 0) {
-              DeltaCandidate* dc = &_data->listOfDeltaCandidates[seed->fDeltaIndex];
+              DeltaCandidate* dc = _data->deltaCandidate(seed->fDeltaIndex);
               dc->fNHitsCE += 1;
             }
           }
@@ -1010,9 +1020,9 @@ namespace mu2e {
     McPart_t*    part [max_part];
     int          nhits[max_part];
 
-    int ndelta = _data->listOfDeltaCandidates.size();
+    int ndelta = _data->nDeltaCandidates();
     for (int idelta=0; idelta<ndelta; idelta++) {
-      DeltaCandidate* dc = & _data->listOfDeltaCandidates[idelta];
+      DeltaCandidate* dc = _data->deltaCandidate(idelta);
       int npart          = 0;
 
       for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
@@ -1074,13 +1084,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // now, for each MC electron calculate the number of hits flagged as delta
 //-----------------------------------------------------------------------------
-    int nmc    = _list_of_mc_particles.size();
+    int nmc    = _list_of_mc_particles.GetEntriesFast();
 
     _nDeltaHitsTot  = 0;
     _nDeltaHitsReco = 0;
 
     for (int i=0; i<nmc; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
+      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
       mc->fNHitsDelta = 0;
 //-----------------------------------------------------------------------------
 // loop over the hits of MC delta electron and calculate fraction of them which have
@@ -1198,12 +1208,12 @@ namespace mu2e {
 // print reconstructed delta candidates
 //-----------------------------------------------------------------------------
     if (_printDeltaCandidates != 0) {
-      int nd = _data->listOfDeltaCandidates.size();
+      int nd = _data->nDeltaCandidates();
       printf(" [DeltaFinder::debug] N(delta candidates) = %5i\n",nd);
 
       if (nd > 0) {
         for (int i=0; i<nd; i++) {
-          DeltaCandidate* dc = &_data->listOfDeltaCandidates.at(i);
+          DeltaCandidate* dc = _data->deltaCandidate(i);
           int pdg_id = -1;
           if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
           printf("----------------------------------------------------------------------------------------------------------------\n");
@@ -1257,10 +1267,10 @@ namespace mu2e {
 // print MC electrons
 //-----------------------------------------------------------------------------
     if (_printElectrons) {
-      int nmc = _list_of_mc_particles.size();
+      int nmc = _list_of_mc_particles.GetEntriesFast();
 
       for (int i=0; i<nmc; i++) {
-        McPart_t* mc = _list_of_mc_particles.at(i);
+        McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
 
         if ((mc->fPdgID     == PDGCode::e_minus       ) &&
             (mc->Momentum() >  _printElectronsMinMom  ) &&

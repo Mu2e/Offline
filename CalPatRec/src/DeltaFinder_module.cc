@@ -11,6 +11,9 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art_root_io/TFileService.h"
 
+#include "art/Utilities/make_tool.h"
+#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
+
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -31,20 +34,12 @@
 // diagnostics
 
 #include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
-
-// #include "CalPatRec/inc/LsqSums2.hh"
-#include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "art/Utilities/make_tool.h"
+#include "Offline/CalPatRec/inc/DeltaFinderAlg.hh"
 
 #include <algorithm>
 #include <cmath>
-#include "CLHEP/Vector/ThreeVector.h"
-#include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 
 using namespace std;
-
-using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -56,50 +51,51 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>    shCollTag        {Name("shCollTag"        ), Comment("SComboHit collection Name"   ) };
-      fhicl::Atom<art::InputTag>    chCollTag        {Name("chCollTag"        ), Comment("ComboHit collection Name"    ) };
-      fhicl::Atom<art::InputTag>    sdmcCollTag      {Name("sdmcCollTag"      ), Comment("StrawDigiMC collection Name" ) };
-      fhicl::Atom<art::InputTag>    tpeakCollTag     {Name("tpeakCollTag"     ), Comment("Time peak collection Name"   ) };
-      fhicl::Atom<int>              useTimePeaks     {Name("useTimePeaks"     ), Comment("to use time peaks set to 1"  ) };
-      fhicl::Atom<int>              debugLevel       {Name("debugLevel"       ), Comment("debug level"                 ) };
-      fhicl::Atom<int>              diagLevel        {Name("diagLevel"        ), Comment("diag level"                  ) };
-      fhicl::Atom<int>              printErrors      {Name("printErrors"      ), Comment("print errors"                ) };
-      fhicl::Atom<float>            minCaloDt        {Name("minCaloDt"        ), Comment("min Calo Dt"                 ) };
-      fhicl::Atom<float>            maxCaloDt        {Name("maxCaloDt"        ), Comment("max Calo Dt"                 ) };
-      fhicl::Atom<float>            meanPitchAngle   {Name("meanPitchAngle"   ), Comment("mean pitch angle"            ) };
-      fhicl::Atom<float>            minHitTime       {Name("minHitTime"       ), Comment("min hit time"                ) };
-      fhicl::Atom<float>            maxDeltaEDep     {Name("maxDeltaEDep"     ), Comment("max delta candidate <eDep>"  ) };
-      fhicl::Atom<float>            maxSeedEDep      {Name("maxSeedEDep"      ), Comment("max  seed <eDep>"            ) };
-      fhicl::Atom<int>              minNSeeds        {Name("minNSeeds"        ), Comment("min N seeds in a delta cand" ) };
-      fhicl::Atom<int>              minDeltaNHits    {Name("minDeltaNHits"    ), Comment("min N combo  hits in a delta") };
-      fhicl::Atom<float>            maxEleHitEnergy  {Name("maxEleHitEnergy"  ), Comment("max electron hit energy"     ) };
-      fhicl::Atom<float>            minimumTime      {Name("minimumTime"      ), Comment("minimum time"                ) };
-      fhicl::Atom<float>            maximumTime      {Name("maximumTime"      ), Comment("maximum time"                ) };
-      fhicl::Atom<float>            maxHitSeedDt     {Name("maxHitSeedDt"     ), Comment("max DT(hit-seed)"            ) };
-      fhicl::Atom<float>            maxChi2Seed      {Name("maxChi2Seed"      ), Comment("max seed chi2 (stereo)"      ) };
-      fhicl::Atom<float>            maxChi2Radial    {Name("maxChi2Radial"    ), Comment("max chi2 (radial)"           ) };
-      fhicl::Atom<float>            maxChi2All       {Name("maxChi2All"       ), Comment("max chi2 (all)"              ) };
-      fhicl::Atom<float>            maxChi2SeedDelta {Name("maxChi2SeedDelta" ), Comment("max chi2 (seed-delta)"       ) };
-      fhicl::Atom<float>            seedRes          {Name("seedRes"          ), Comment("stereo seed resolution"      ) };
-      fhicl::Atom<float>            maxDxy           {Name("maxDxy"           ), Comment("max Dxy"                     ) };
-      fhicl::Atom<int>              maxGap           {Name("maxGap"           ), Comment("max Gap"                     ) };
-      fhicl::Atom<float>            sigmaR           {Name("sigmaR"           ), Comment("sigmaR"                      ) };
-      fhicl::Atom<float>            maxDriftTime     {Name("maxDriftTime"     ), Comment("maxDriftTime"                ) };
-      fhicl::Atom<float>            maxSeedDt        {Name("maxSeedDt"        ), Comment("maxSeedDt"                   ) };
-      fhicl::Atom<float>            maxHitDt         {Name("maxHitDt"         ), Comment("maxHitDt"                    ) };
-      fhicl::Atom<float>            maxStrawDt       {Name("maxStrawDt"         ), Comment("max straw Dt"                ) };
-      fhicl::Atom<float>            maxDtDs           {Name("maxDtDs"           ), Comment("max Dt/Dstation"             ) };
-      fhicl::Atom<float>            maxDtDc           {Name("maxDtDc"           ), Comment("max deltaT between deltas"   ) };
-      fhicl::Atom<int>              writeComboHits    {Name("writeComboHits"    ), Comment("if 1, write combohit coll"   ) };
-      fhicl::Atom<int>              writeStrawHitFlags{Name("writeStrawHitFlags"), Comment("if 1, write strawhitflag coll"   ) };
-      // fhicl::Atom<int>              filter            {Name("filter"            ), Comment("if 1, write only nonDelta CH") };
-      fhicl::Atom<int>              testOrder         {Name("testOrder"         ), Comment("if 1, test order"            ) };
-      fhicl::Atom<bool>             testHitMask       {Name("testHitMask"       ), Comment("if true, test hit mask"      ) };
-      fhicl::Sequence<std::string>  goodHitMask       {Name("goodHitMask"       ), Comment("good hit mask"               ) };
-      fhicl::Sequence<std::string>  bkgHitMask        {Name("bkgHitMask"        ), Comment("background hit mask"         ) };
-      fhicl::Atom<int>              updateSeedCOG     {Name("updateSeedCOG"     ), Comment("if 1, update seed COG"       ) };
+      fhicl::Atom<art::InputTag>   shCollTag         {Name("shCollTag"         ), Comment("SComboHit collection Name"   ) };
+      fhicl::Atom<art::InputTag>   chCollTag         {Name("chCollTag"         ), Comment("ComboHit collection Name"    ) };
+      fhicl::Atom<art::InputTag>   sdmcCollTag       {Name("sdmcCollTag"       ), Comment("StrawDigiMC collection Name" ) };
+      fhicl::Atom<art::InputTag>   tpeakCollTag      {Name("tpeakCollTag"      ), Comment("Time peak collection Name"   ) };
+      fhicl::Atom<int>             useTimePeaks      {Name("useTimePeaks"      ), Comment("to use time peaks set to 1"  ) };
+      fhicl::Atom<int>             debugLevel        {Name("debugLevel"        ), Comment("debug level"                 ) };
+      fhicl::Atom<int>             diagLevel         {Name("diagLevel"         ), Comment("diag level"                  ) };
+      fhicl::Atom<int>             printErrors       {Name("printErrors"       ), Comment("print errors"                ) };
+      fhicl::Atom<float>           minCaloDt         {Name("minCaloDt"         ), Comment("min Calo Dt"                 ) };
+      fhicl::Atom<float>           maxCaloDt         {Name("maxCaloDt"         ), Comment("max Calo Dt"                 ) };
+      fhicl::Atom<float>           meanPitchAngle    {Name("meanPitchAngle"    ), Comment("mean pitch angle"            ) };
+      fhicl::Atom<float>           minHitTime        {Name("minHitTime"        ), Comment("min hit time"                ) };
+      fhicl::Atom<float>           maxDeltaEDep      {Name("maxDeltaEDep"      ), Comment("max delta candidate  eDep"   ) };
+      fhicl::Atom<float>           maxSeedEDep       {Name("maxSeedEDep"       ), Comment("max seed eDep"               ) };
+      fhicl::Atom<float>           minProtonSeedEDep {Name("minProtonSeedEDep" ), Comment("min proton seed eDep"        ) };
+      fhicl::Atom<int>             minNSeeds         {Name("minNSeeds"         ), Comment("min N seeds in a delta cand" ) };
+      fhicl::Atom<int>             minDeltaNHits     {Name("minDeltaNHits"     ), Comment("min N combo  hits in a delta") };
+      fhicl::Atom<float>           maxEleHitEnergy   {Name("maxEleHitEnergy"   ), Comment("max electron hit energy"     ) };
+      fhicl::Atom<float>           minimumTime       {Name("minimumTime"       ), Comment("minimum time"                ) };
+      fhicl::Atom<float>           maximumTime       {Name("maximumTime"       ), Comment("maximum time"                ) };
+      fhicl::Atom<float>           maxHitSeedDt      {Name("maxHitSeedDt"      ), Comment("max DT(hit-seed)"            ) };
+      fhicl::Atom<float>           maxChi2Seed       {Name("maxChi2Seed"       ), Comment("max seed chi2 (stereo)"      ) };
+      fhicl::Atom<float>           maxChi2Radial     {Name("maxChi2Radial"     ), Comment("max chi2 (radial)"           ) };
+      fhicl::Atom<float>           maxChi2All        {Name("maxChi2All"        ), Comment("max chi2 (all)"              ) };
+      fhicl::Atom<float>           maxChi2SeedDelta  {Name("maxChi2SeedDelta"  ), Comment("max chi2 (seed-delta)"       ) };
+      fhicl::Atom<float>           seedRes           {Name("seedRes"           ), Comment("stereo seed resolution"      ) };
+      fhicl::Atom<float>           maxDxy            {Name("maxDxy"            ), Comment("max Dxy"                     ) };
+      fhicl::Atom<int>             maxGap            {Name("maxGap"            ), Comment("max Gap"                     ) };
+      fhicl::Atom<float>           sigmaR            {Name("sigmaR"            ), Comment("sigmaR"                      ) };
+      fhicl::Atom<float>           maxDriftTime      {Name("maxDriftTime"      ), Comment("maxDriftTime"                ) };
+      fhicl::Atom<float>           maxSeedDt         {Name("maxSeedDt"         ), Comment("maxSeedDt"                   ) };
+      fhicl::Atom<float>           maxHitDt          {Name("maxHitDt"          ), Comment("maxHitDt"                    ) };
+      fhicl::Atom<float>           maxStrawDt        {Name("maxStrawDt"        ), Comment("max straw Dt"                ) };
+      fhicl::Atom<float>           maxDtDs           {Name("maxDtDs"           ), Comment("max Dt/Dstation"             ) };
+      fhicl::Atom<float>           maxDtDc           {Name("maxDtDc"           ), Comment("max deltaT between deltas"   ) };
+      fhicl::Atom<int>             writeComboHits    {Name("writeComboHits"    ), Comment("if 1, write combohit coll"   ) };
+      fhicl::Atom<int>             writeStrawHitFlags{Name("writeStrawHitFlags"), Comment("if 1, write SH flag coll"    ) };
+      fhicl::Atom<int>             testOrder         {Name("testOrder"         ), Comment("if 1, test order"            ) };
+      fhicl::Atom<bool>            testHitMask       {Name("testHitMask"       ), Comment("if true, test hit mask"      ) };
+      fhicl::Sequence<std::string> goodHitMask       {Name("goodHitMask"       ), Comment("good hit mask"               ) };
+      fhicl::Sequence<std::string> bkgHitMask        {Name("bkgHitMask"        ), Comment("background hit mask"         ) };
+      fhicl::Atom<int>             updateSeedCOG     {Name("updateSeedCOG"     ), Comment("if 1, update seed COG"       ) };
 
-      fhicl::Table<DeltaFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
+      fhicl::Table<DeltaFinderTypes::Config> diagPlugin      {Name("diagPlugin"      ), Comment("Diag plugin"           ) };
+      fhicl::Table<DeltaFinderAlg::Config>   finderParameters{Name("finderParameters"), Comment("finder alg parameters" ) };
     };
 
   protected:
@@ -115,9 +111,12 @@ namespace mu2e {
     float           _minCaloDt;
     float           _maxCaloDt;
     float           _meanPitchAngle;
+
+    float           _timeBinWidth;
     float           _minHitTime;           // min hit time
-    float           _maxSeedEDep;          //
     float           _maxDeltaEDep;         //
+    float           _maxSeedEDep;          //
+    float           _minProtonSeedEDep;    //
     int             _minNSeeds;            // min number of seeds in the delta electron cluster
     int             _minDeltaNHits;        // min number of hits of a delta candidate
     float           _maxEleHitEnergy;      //
@@ -167,10 +166,7 @@ namespace mu2e {
     DeltaFinderTypes::Data_t     _data;              // all data used
     int                          _testOrderPrinted;
 
-    int                          _nComboHits;
-    int                          _nStrawHits;
-
-    vector<const ComboHit*>      _v;
+    DeltaFinderAlg*              _finder;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -190,13 +186,13 @@ namespace mu2e {
     void         findSeeds           ();
     void         initTimeCluster     (DeltaCandidate* Delta, TimeCluster* Tc);
     int          mergeDeltaCandidates();
-    int          orderHits           ();
+    // int          orderHits           ();
     void         pruneSeeds          (int Station);
     int          recoverMissingHits  ();
     int          recoverSeed         (DeltaCandidate* Delta, int LastStation, int Station);
     int          recoverStation      (DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds);
     void         runDeltaFinder      ();
-    double       seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta);
+    //    double       seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta);
 //-----------------------------------------------------------------------------
 // overloaded methods of the module class
 //-----------------------------------------------------------------------------
@@ -218,8 +214,9 @@ namespace mu2e {
     _maxCaloDt             (config().maxCaloDt()        ),
     _meanPitchAngle        (config().meanPitchAngle()   ),
     _minHitTime            (config().minHitTime()       ),
-    _maxSeedEDep           (config().maxSeedEDep()      ),
     _maxDeltaEDep          (config().maxDeltaEDep()     ),
+    _maxSeedEDep           (config().maxSeedEDep()      ),
+    _minProtonSeedEDep     (config().minProtonSeedEDep()),
     _minNSeeds             (config().minNSeeds()        ),
     _minDeltaNHits         (config().minDeltaNHits()    ),
     _maxEleHitEnergy       (config().maxEleHitEnergy()  ),
@@ -260,6 +257,8 @@ namespace mu2e {
                                         // this is a list of delta-electron candidates
     produces<TimeClusterCollection>();
 
+    _finder = new DeltaFinderAlg(config().finderParameters,&_data);
+
     _testOrderPrinted = 0;
     _tdbuff           = 80.;                 // mm ... about less than 1 ns
     _sigmaR2          = _sigmaR*_sigmaR;
@@ -270,6 +269,8 @@ namespace mu2e {
     _data.chCollTag      = _chCollTag;
     _data.sdmcCollTag    = _sdmcCollTag;
     _data.meanPitchAngle = _meanPitchAngle;
+
+    _timeBinWidth        = 50.;       // ns
 
   }
 
@@ -337,8 +338,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int station = Seed->Station();
 
-    float xseed = Seed->CofM.x();
-    float yseed = Seed->CofM.y();
+    float xseed = Seed->Xc ();
+    float yseed = Seed->Yc ();
+    float rho   = sqrt(xseed*xseed+yseed*yseed);
+    float nxs   = xseed/rho;
+    float nys   = yseed/rho;
 
     for (int face=0; face<kNFaces; face++) {
       if (Seed->fFaceProcessed[face] == 1)                            continue;
@@ -346,28 +350,23 @@ namespace mu2e {
 // face is different from the two first faces used
 //-----------------------------------------------------------------------------
       for (int p2=0; p2<3; ++p2) {
-        PanelZ_t* panelz = &_data.oTracker[station][face][p2];
-        double dphi      = Seed->Phi()-panelz->phi;
-        if (dphi < -M_PI) dphi += 2*M_PI;
-        if (dphi >  M_PI) dphi -= 2*M_PI;
-        if (fabs(dphi) >= M_PI/3)                                     continue;
+        PanelZ_t* pz = &_data.oTracker[station][face][p2];
+
+        float n1n2 = nxs*pz->nx+nys*pz->ny;
+        if (n1n2 < 0.5)                                               continue;
 //-----------------------------------------------------------------------------
 // panel overlaps with the seed, look at its hits
 //-----------------------------------------------------------------------------
-        double nx    = panelz->wx;
-        double ny    = panelz->wy;
+        double pwx      = pz->wx;
+        double pwy      = pz->wy;
 
-        float sxy_dot_w = xseed*nx+yseed*ny;
-
-        assert(sxy_dot_w != 1.e10);             // test
-        if (sxy_dot_w > 1.e5) {
-          printf("emoe\n"); // test
-        }
+        float sxy_dot_w = xseed*pwx+yseed*pwy;
+        if (sxy_dot_w > 1.e10) printf("emoe! 001 \n");
 
         HitData_t* closest_hit(nullptr);
         float      best_chi2(_maxChi2Radial);
 
-        int    nhits = panelz->fHitData->size();
+        int    nhits = pz->fHitData->size();
         for (int ih=0; ih<nhits; ih++) {
 //-----------------------------------------------------------------------------
 // 2017-10-05 PM: consider all hits
@@ -375,7 +374,7 @@ namespace mu2e {
 // between any two measured hit times should not exceed _maxDriftTime
 // (_maxDriftTime represents the maximal drift time in the straw, should there be some tolerance?)
 //-----------------------------------------------------------------------------
-          HitData_t* hd      = &(*panelz->fHitData)[ih];
+          HitData_t* hd      = &(*pz->fHitData)[ih];
           float corr_time    = hd->fCorrTime;
 
           if (corr_time-Seed->T0Max() > _maxHitSeedDt)                break;
@@ -388,10 +387,10 @@ namespace mu2e {
 // split into wire parallel and perpendicular components
 // assume wire direction vector is normalized to 1
 //-----------------------------------------------------------------------------
-          float dxy_dot_wdir = dx*nx+dy*ny;
+          float dxy_dot_wdir = dx*pwx+dy*pwy;
 
-          float dx_perp      = dx-dxy_dot_wdir*nx;
-          float dy_perp      = dy-dxy_dot_wdir*ny;
+          float dx_perp      = dx-dxy_dot_wdir*pwx;
+          float dy_perp      = dy-dxy_dot_wdir*pwy;
           float d_perp_2     = dx_perp*dx_perp+dy_perp*dy_perp;
 
           // add an uncertainty on the intersection, can do better :
@@ -407,13 +406,13 @@ namespace mu2e {
 // of picking up the right hits
 // OFF by default
 //-----------------------------------------------------------------------------
-            double nr   = ch->pos().x()*ny-ch->pos().y()*nx;
+            double nr   = ch->pos().x()*pwy-ch->pos().y()*pwx;
 
-            double nx2m = (Seed->fSnx2+nx*nx)/(Seed->NHits()+1);
-            double nxym = (Seed->fSnxy+nx*ny)/(Seed->NHits()+1);
-            double ny2m = (Seed->fSny2+ny*ny)/(Seed->NHits()+1);
-            double nxrm = (Seed->fSnxr+nx*nr)/(Seed->NHits()+1);
-            double nyrm = (Seed->fSnyr+ny*nr)/(Seed->NHits()+1);
+            double nx2m = (Seed->fSnx2+pwx*pwx)/(Seed->NHits()+1);
+            double nxym = (Seed->fSnxy+pwx*pwy)/(Seed->NHits()+1);
+            double ny2m = (Seed->fSny2+pwy*pwy)/(Seed->NHits()+1);
+            double nxrm = (Seed->fSnxr+pwx*nr )/(Seed->NHits()+1);
+            double nyrm = (Seed->fSnyr+pwy*nr )/(Seed->NHits()+1);
 
             double d    = nx2m*ny2m-nxym*nxym;
 
@@ -423,10 +422,10 @@ namespace mu2e {
             float dx1   = ch->pos().x()-xc;
             float dy1   = ch->pos().y()-yc;
 
-            float dxy1_dot_wdir = dx1*nx+dy1*ny;
+            float dxy1_dot_wdir = dx1*pwx+dy1*pwy;
 
-            float dx1_perp      = dx1-dxy1_dot_wdir*nx;
-            float dy1_perp      = dy1-dxy1_dot_wdir*ny;
+            float dx1_perp      = dx1-dxy1_dot_wdir*pwx;
+            float dy1_perp      = dy1-dxy1_dot_wdir*pwy;
             float dxy1_perp_2   = dx1_perp*dx1_perp+dy1_perp*dy1_perp;
 
             double chi2_par1(0), chi2_perp1(0);
@@ -435,7 +434,6 @@ namespace mu2e {
             chi2_par1          += (dxy1_dot_wdir*dxy1_dot_wdir)/(hd->fSigW2 + _sigmaR2);
             chi2_perp1         += dxy1_perp_2/_sigmaR2;                        // some radius
             float chi21         = (chi2_par1 + chi2_perp1)/(Seed->NHits()+1);
-
             chi2                = chi21;
           }
 
@@ -475,11 +473,11 @@ namespace mu2e {
 
     for (int is=0; is<kNStations; is++) {
 //-----------------------------------------------------------------------------
-// 1. loop over existing seeds and match them to existing delta candidates
+// 1. loop over existing compton seeds and match them to existing delta candidates
 //-----------------------------------------------------------------------------
-      int nseeds = _data.NSeeds(is);
+      int nseeds = _data.NComptonSeeds(is);
       for (int ids=0; ids<nseeds; ids++) {
-        DeltaSeed* seed = _data.deltaSeed(is,ids);
+        DeltaSeed* seed = _data.ComptonSeed(is,ids);
 
         if (! seed->Good() )                                          continue;
         if (seed->Used()   )                                          continue;
@@ -490,7 +488,7 @@ namespace mu2e {
         DeltaCandidate* closest(nullptr);
         float           chi2min (_maxChi2SeedDelta);
 
-        int ndelta = _data.listOfDeltaCandidates.size();
+        int ndelta = _data.nDeltaCandidates();
         for (int idc=0; idc<ndelta; idc++) {
           DeltaCandidate* dc = _data.deltaCandidate(idc);
 //-----------------------------------------------------------------------------
@@ -514,7 +512,7 @@ namespace mu2e {
 // the time is OK'ish - checks should be implemented more accurately (FIXME)
 // look at the coordinates
 //-----------------------------------------------------------------------------
-          float chi2 = seedDeltaChi2(seed,dc);
+          float chi2 = _finder->seedDeltaChi2(seed,dc);
           if (chi2 < chi2min) {
 //-----------------------------------------------------------------------------
 // everything matches, new closest delta candidate
@@ -557,9 +555,10 @@ namespace mu2e {
 // store only delta candidates with hits in more than 2 stations
 // for each station define expected T0min and T0max
 // to keep _minNSeeds=2 need to look forward...
+// 'addDeltaCandidate' makes a deep copy
 //-----------------------------------------------------------------------------
         if (delta.fNSeeds >= _minNSeeds) {
-          _data.listOfDeltaCandidates.push_back(delta);
+          _data.addDeltaCandidate(&delta);
         }
         else {
 //-----------------------------------------------------------------------------
@@ -576,7 +575,7 @@ namespace mu2e {
 // loop over existing delta candidates which do not have seeds in a given station
 // and see if can pick up single hits
 //-----------------------------------------------------------------------------
-      int ndelta = _data.listOfDeltaCandidates.size();
+      int ndelta = _data.nDeltaCandidates();
       for (int idc=0; idc<ndelta; idc++) {
         DeltaCandidate* dc = _data.deltaCandidate(idc);
         int last = dc->LastStation();
@@ -645,11 +644,6 @@ namespace mu2e {
 // check if the two panels overlap in XY
 // 2D angle between the vectors pointing to the panel centers, can't be greater than 2*pi/3
 //-----------------------------------------------------------------------------
-            // float dphi = pz2->phi - pz1->phi;
-            // if (dphi < -M_PI) dphi += 2*M_PI;
-            // if (dphi >  M_PI) dphi -= 2*M_PI;
-            // bool c1 = fabs(dphi) >= 2*M_PI/3.;
-
             int iss = Station % 2;
 
             // bool c2 = _data.panelOverlap[iss][pz1->fID][pz2->fID] == 0;
@@ -724,7 +718,7 @@ namespace mu2e {
               DeltaSeed* seed   = _data.NewDeltaSeed(Station,Face,hd1,f2,hd2);
 
               seed->CofM.SetXYZ(res_x,res_y,res_z);
-              seed->fPhi = polyAtan2(res_y,res_x);
+              // seed->fPhi = polyAtan2(res_y,res_x);
 //-----------------------------------------------------------------------------
 // mark both hits as a part of a seed, so they would not be used individually
 // - see HitData_t::Used()
@@ -732,14 +726,22 @@ namespace mu2e {
               hd1->fSeed  = seed;
               hd2->fSeed  = seed;
 //-----------------------------------------------------------------------------
-// complete search for hits of this seed, mark it BAD if a proton
+// complete search for hits of this seed, mark it BAD (or 'not-LEE') if a proton
 // in principle, could place "high-charge" seeds into a separate list
 // that should improve the performance
-// make eDep cut value a module parameter
+// if a seed EDep > _maxSeedEDep       (5 keV), can't be a low energy electron (LEE)
+// if a seed EDep > _minProtonSeedEDep (3 keV), could be a proton
 //-----------------------------------------------------------------------------
               completeSeed(seed);
               if (seed->EDep() > _maxSeedEDep) {
                 seed->fGood = -2000-seed->fIndex;
+              }
+              else {
+                _data.AddComptonSeed(seed,Station);
+              }
+
+              if (seed->EDep() > _minProtonSeedEDep) {
+                _data.AddProtonSeed(seed,Station);
               }
             }
           }
@@ -780,7 +782,7 @@ namespace mu2e {
     int rc(0);
     float max_d2(20*20);  // mm^2, to be adjusted FIXME
 
-    int ndelta = _data.listOfDeltaCandidates.size();
+    int ndelta = _data.nDeltaCandidates();
 
     for (int i1=0; i1<ndelta-1; i1++) {
       DeltaCandidate* dc1 = _data.deltaCandidate(i1);
@@ -825,103 +827,108 @@ namespace mu2e {
     return rc;
   }
 
-//-----------------------------------------------------------------------------
-// Custom comparator to sort in ascending order
-//-----------------------------------------------------------------------------
-  bool comparator(const ComboHit*& a, const ComboHit*& b) {
-    return a->correctedTime() < b->correctedTime();
-  }
+// //-----------------------------------------------------------------------------
+// // Custom comparator to sort in ascending order
+// //-----------------------------------------------------------------------------
+//   bool comparator(const ComboHit*& a, const ComboHit*& b) {
+//     return a->correctedTime() < b->correctedTime();
+//   }
 
-//------------------------------------------------------------------------------
-// I'd love to use the hit flags, however that is confusing:
-// - hits with very large deltaT get placed to the middle of the wire and not flagged,
-// - however, some hits within the fiducial get flagged with the ::radsel flag...
-// use only "good" hits
-//-----------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
+// // I'd love to use the hit flags, however that is confusing:
+// // - hits with very large deltaT get placed to the middle of the wire and not flagged,
+// // - however, some hits within the fiducial get flagged with the ::radsel flag...
+// // use only "good" hits
+// //-----------------------------------------------------------------------------
+//   int DeltaFinder::orderHits() {
+//     ChannelID cx, co;
+// //-----------------------------------------------------------------------------
+// // vector of pointers to CH, ordered in time. Initial list is not touched
+// //-----------------------------------------------------------------------------
+//     _data._v.resize(_data._nComboHits);
 
-  int DeltaFinder::orderHits() {
-    ChannelID cx, co;
+//     for (int i=0; i<_data._nComboHits; i++) {
+//       _data._v[i] = &(*_data.chcol)[i];
+//     }
 
-//-----------------------------------------------------------------------------
-// vector of pointers to thecombo hits, ordered in time. Initial list is not touched
-//-----------------------------------------------------------------------------
-    _v.clear();
-    _v.resize(_nComboHits);
+//     std::sort(_data._v.begin(), _data._v.end(), comparator);
+// //-----------------------------------------------------------------------------
+// // at this point hits in '_data._v' are ordered in time
+// //-----------------------------------------------------------------------------
+//     for (int ih=0; ih<_data._nComboHits; ih++) {
+//       const ComboHit* ch = _data._v[ih];
 
-    for (int i=0; i<_nComboHits; i++) {
-      // _v.push_back(&(*_data.chcol)[i]); //  = &(*_chcol)[i];
-      _v[i] = &(*_data.chcol)[i];
-    }
+//       const StrawHitFlag* flag   = &ch->flag();
+//       if (_testHitMask && (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
 
-    std::sort(_v.begin(), _v.end(), comparator);
-//-----------------------------------------------------------------------------
-// at this point all hits are ordered in time
-//-----------------------------------------------------------------------------
-    for (int ih=0; ih<_nComboHits; ih++) {
-      const ComboHit* ch = _v[ih];
+//       float corr_time    = ch->correctedTime();
 
-      const StrawHitFlag* flag   = &ch->flag();
-      if (_testHitMask && (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
+//       if ((corr_time      < _minT) || (corr_time > _maxT))  continue;
 
-      float corr_time    = ch->correctedTime();
+//       cx.Station                 = ch->strawId().station();
+//       cx.Plane                   = ch->strawId().plane() % 2;
+//       cx.Face                    = -1;
+//       cx.Panel                   = ch->strawId().panel();
 
-      if ((corr_time      < _minT) || (corr_time > _maxT))  continue;
+//                                               // get Z-ordered location
+//       Data_t::orderID(&cx, &co);
 
-      cx.Station                 = ch->strawId().station();
-      cx.Plane                   = ch->strawId().plane() % 2;
-      cx.Face                    = -1;
-      cx.Panel                   = ch->strawId().panel();
-      //      cx.Layer                   = ch->strawId().layer();
+//       int os       = co.Station;
+//       int of       = co.Face;
+//       int op       = co.Panel;
 
-                                              // get Z-ordered location
-      Data_t::orderID(&cx, &co);
+//       if (_useTimePeaks == 1) {
+//         bool               intime(false);
+//         int                nTPeaks  = _data.tpeakcol->size();
+//         const CaloCluster* cl(nullptr);
+//         int                iDisk(-1);
 
-      int os       = co.Station;
-      int of       = co.Face;
-      int op       = co.Panel;
+//         for (int i=0; i<nTPeaks; ++i) {
+//           cl    = _data.tpeakcol->at(i).caloCluster().get();
+//           if (cl == nullptr) {
+//             printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
+//             continue;
+//           }
+//           iDisk = cl->diskID();
+//           double    dt = cl->time() - (corr_time + _data.stationToCaloTOF[iDisk][os]);
+//           if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
+//             intime = true;
+//             break;
+//           }
+//         }
+//         if (!intime)                                    continue;
+//       }
 
-      if (_useTimePeaks == 1) {
-        bool               intime(false);
-        int                nTPeaks  = _data.tpeakcol->size();
-        const CaloCluster* cl(nullptr);
-        int                iDisk(-1);
+//       PanelZ_t* pz = &_data.oTracker[os][of][op];
 
-        for (int i=0; i<nTPeaks; ++i) {
-          cl    = _data.tpeakcol->at(i).caloCluster().get();
-          if (cl == nullptr) {
-            printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
-            continue;
-          }
-          iDisk = cl->diskID();
-          double    dt = cl->time() - (corr_time + _data.stationToCaloTOF[iDisk][os]);
-          if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
-            intime = true;
-            break;
-          }
-        }
-        if (!intime)                                    continue;
-      }
+//       if (_printErrors) {
+//         if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
+//         if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
+//         if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
+//       }
 
-      PanelZ_t* pz = &_data.oTracker[os][of][op];
+//       pz->fHitData->push_back(HitData_t(ch));
+//       if (pz->tmin > corr_time) pz->tmin = corr_time;
+//       if (pz->tmax < corr_time) pz->tmax = corr_time;
+// //-----------------------------------------------------------------------------
+// // prototype face-based hit storage
+// // hits are already time-ordered - that makes it easy to define fFirst
+// //-----------------------------------------------------------------------------
+//       FaceZ_t* fz = &_data.fFaceData[os][of];
+//       int loc = fz->fHitData.size();
 
-      if (_printErrors) {
-        if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
-        if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
-        if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
-      }
+//       fz->fHitData.push_back(HitData_t(ch));
+//       int time_bin = int (corr_time/_timeBinWidth) ;
 
-      pz->fHitData->push_back(HitData_t(ch));
+//       if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;
+//       fz->fLast[time_bin] = loc;
+//     }
 
-      if (pz->tmin > corr_time) pz->tmin = corr_time;
-      if (pz->tmax < corr_time) pz->tmax = corr_time;
-    }
-
-    return 0;
-  }
+//     return 0;
+//   }
 
 //-----------------------------------------------------------------------------
   void DeltaFinder::produce(art::Event& Event) {
-
     if (_debugLevel) printf(">>> DeltaFinder::produce  event number: %10i\n",Event.event());
 //-----------------------------------------------------------------------------
 // clear memory in the beginning of event processing and cache event pointer
@@ -935,33 +942,34 @@ namespace mu2e {
       throw cet::exception("RECO")<< message << endl;
     }
 
-    _nComboHits = _data.chcol->size();
-    _nStrawHits = _shColl->size();
+    _data._nComboHits = _data.chcol->size();
+    _data._nStrawHits = _shColl->size();
 
     runDeltaFinder();
+    // _finder->run();
 //-----------------------------------------------------------------------------
 // form output - flag combo hits -
 // if flagged combo hits are written out, likely don't need writing out the flags
 //-----------------------------------------------------------------------------
-    unique_ptr<StrawHitFlagCollection> up_chfcol(new StrawHitFlagCollection(_nComboHits));
+    unique_ptr<StrawHitFlagCollection> up_chfcol(new StrawHitFlagCollection(_data._nComboHits));
     _data.outputChfColl = up_chfcol.get();
 
-    for (int i=0; i<_nComboHits; i++) {
+    for (int i=0; i<_data._nComboHits; i++) {
       const ComboHit* ch = &(*_data.chcol)[i];
       (*_data.outputChfColl)[i].merge(ch->flag());
     }
 
     const ComboHit* ch0(0);
-    if (_nComboHits > 0) ch0 = &_data.chcol->at(0);
+    if (_data._nComboHits > 0) ch0 = &_data.chcol->at(0);
 
     StrawHitFlag deltamask(StrawHitFlag::bkg);
 
     unique_ptr<TimeClusterCollection>  tcColl(new TimeClusterCollection);
 
-    int ndeltas = _data.listOfDeltaCandidates.size();
+    int ndeltas = _data.nDeltaCandidates();
 
     for (int i=0; i<ndeltas; i++) {
-      DeltaCandidate* dc = &_data.listOfDeltaCandidates.at(i);
+      DeltaCandidate* dc = _data.deltaCandidate(i);
 //-----------------------------------------------------------------------------
 // skip merged in delta candidates
 // also require a delta candidate to have at least 5 hits
@@ -1004,10 +1012,10 @@ namespace mu2e {
 // write out collection of ComboHits with right flags, use deep copy
 //-----------------------------------------------------------------------------
       auto outputChColl = std::make_unique<ComboHitCollection>();
-      outputChColl->reserve(_nComboHits);
+      outputChColl->reserve(_data._nComboHits);
 
       outputChColl->setParent(_data.chcol->parent());
-      for (int i=0; i<_nComboHits; i++) {
+      for (int i=0; i<_data._nComboHits; i++) {
         StrawHitFlag const* flag = &(*_data.outputChfColl)[i];
         if (flag->hasAnyProperty(_bkgHitMask))                        continue;
 //-----------------------------------------------------------------------------
@@ -1025,9 +1033,9 @@ namespace mu2e {
     if (_writeStrawHitFlags == 1) {
                                         // first, copy over the original flags
 
-      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(_nStrawHits));
+      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(_data._nStrawHits));
 
-      for(int ich=0; ich<_nComboHits; ich++) {
+      for(int ich=0; ich<_data._nComboHits; ich++) {
         const ComboHit* ch   = &(*_data.chcol )[ich];
         StrawHitFlag    flag =  (*_data.outputChfColl)[ich];
         flag.merge(ch->flag());
@@ -1169,9 +1177,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int DeltaFinder::recoverMissingHits() {
 
-    int ndelta = _data.listOfDeltaCandidates.size();
+    int ndelta = _data.nDeltaCandidates();
     for (int idelta=0; idelta<ndelta; idelta++) {
-      DeltaCandidate* dc = &_data.listOfDeltaCandidates[idelta];
+      DeltaCandidate* dc = _data.deltaCandidate(idelta);
 //-----------------------------------------------------------------------------
 // don't extend candidates made out of one segment - but there is no such
 // start from the first station to define limits
@@ -1215,34 +1223,34 @@ namespace mu2e {
     return 0;
   }
 
-//-----------------------------------------------------------------------------
-// *FIXME* : need a formula for chi2, this simplification may not work well
-// in the corners
-//-----------------------------------------------------------------------------
-  double DeltaFinder::seedDeltaChi2(DeltaSeed* Seed, DeltaCandidate* Delta) {
+// //-----------------------------------------------------------------------------
+// // *FIXME* : need a formula for chi2, this simplification may not work well
+// // in the corners
+// //-----------------------------------------------------------------------------
+//   double DeltaFinder::seedDeltaChi2(DeltaSeed* Seed, DeltaCandidate* Delta) {
 
-    int    nh   = Delta->NHits()+Seed->NHits();
+//     int    nh   = Delta->NHits()+Seed->NHits();
 
-    double nxym = (Delta->fSnxy+Seed->fSnxy)/nh;
-    double nx2m = (Delta->fSnx2+Seed->fSnx2)/nh;
-    double ny2m = (Delta->fSny2+Seed->fSny2)/nh;
-    double nxrm = (Delta->fSnxr+Seed->fSnxr)/nh;
-    double nyrm = (Delta->fSnyr+Seed->fSnyr)/nh;
+//     double nxym = (Delta->fSnxy+Seed->fSnxy)/nh;
+//     double nx2m = (Delta->fSnx2+Seed->fSnx2)/nh;
+//     double ny2m = (Delta->fSny2+Seed->fSny2)/nh;
+//     double nxrm = (Delta->fSnxr+Seed->fSnxr)/nh;
+//     double nyrm = (Delta->fSnyr+Seed->fSnyr)/nh;
 
-    double d    = nx2m*ny2m-nxym*nxym;
-    double xc   = (nyrm*nx2m-nxrm*nxym)/d;
-    double yc   = (nyrm*nxym-nxrm*ny2m)/d;
+//     double d    = nx2m*ny2m-nxym*nxym;
+//     double xc   = (nyrm*nx2m-nxrm*nxym)/d;
+//     double yc   = (nyrm*nxym-nxrm*ny2m)/d;
 
-    double dxs  = xc-Seed->Xc();
-    double dys  = yc-Seed->Yc();
+//     double dxs  = xc-Seed->Xc();
+//     double dys  = yc-Seed->Yc();
 
-    double dxd  = xc-Delta->Xc();
-    double dyd  = yc-Delta->Yc();
+//     double dxd  = xc-Delta->Xc();
+//     double dyd  = yc-Delta->Yc();
 
-    double chi2 = (dxs*dxs+dys*dys+dxd*dxd+dyd*dyd)/(_maxDxy*_maxDxy);
+//     double chi2 = (dxs*dxs+dys*dys+dxd*dxd+dyd*dyd)/(_maxDxy*_maxDxy);
 
-    return chi2;
-  }
+//     return chi2;
+//   }
 
 
 //-----------------------------------------------------------------------------
@@ -1258,9 +1266,9 @@ namespace mu2e {
 
     float dt   = _maxSeedDt + _maxDtDs*fabs(Station-LastStation);
 
-    int nseeds = _data.NSeeds(Station);
+    int nseeds = _data.NComptonSeeds(Station);
     for (int i=0; i<nseeds; i++) {
-      DeltaSeed* seed =  _data.deltaSeed(Station,i);
+      DeltaSeed* seed =  _data.ComptonSeed(Station,i);
       if (seed->Good() == 0)                                          continue;
       if (seed->Used()     )                                          continue;
 //-----------------------------------------------------------------------------
@@ -1268,7 +1276,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       if (fabs(tdelta-seed->TMean()) > dt)                            continue;
 
-      float chi2 = seedDeltaChi2(seed,Delta);
+      float chi2 = _finder->seedDeltaChi2(seed,Delta);
 
       if (chi2 < chi2min) {
                                         // new best seed
@@ -1299,8 +1307,11 @@ namespace mu2e {
 
                                         // predicted time range for this station
     float tdelta = Delta->T0(Station);
-    float xdelta = Delta->CofM.x();
-    float ydelta = Delta->CofM.y();
+    float xdelta = Delta->Xc();
+    float ydelta = Delta->Yc();
+    float rdelta = sqrt(xdelta*xdelta+ydelta*ydelta);
+    float delta_nx = xdelta/rdelta;
+    float delta_ny = ydelta/rdelta;
 //-----------------------------------------------------------------------------
 // first, loop over the existing seeds - need for the forward step
 //-----------------------------------------------------------------------------
@@ -1317,21 +1328,20 @@ namespace mu2e {
 
     for (int face=0; face<kNFaces; face++) {
       for (int ip=0; ip<kNPanelsPerFace; ip++) {
-        PanelZ_t* panelz = &_data.oTracker[Station][face][ip];
-        double dphi      = Delta->phi-panelz->phi;
-
-        if (dphi < -M_PI) dphi += 2*M_PI;
-        if (dphi >  M_PI) dphi -= 2*M_PI;
-        if (fabs(dphi) > M_PI/3)                                      continue;
-
-        if (tdelta-dt_hit > panelz->tmax)                             continue;
-        if (tdelta+dt_hit < panelz->tmin)                             continue;
+        PanelZ_t* pz = &_data.oTracker[Station][face][ip];
+        float n1n2   = delta_nx*pz->nx+delta_ny*pz->ny;
+//-----------------------------------------------------------------------------
+// 0.5 corresponds to delta(phi) = 60 deg
+//-----------------------------------------------------------------------------
+        if (n1n2 < 0.5)                                               continue;
+        if (tdelta-dt_hit > pz->tmax)                                 continue;
+        if (tdelta+dt_hit < pz->tmin)                                 continue;
 //-----------------------------------------------------------------------------
 // panel and Delta overlap in phi and time, loop over hits
 //-----------------------------------------------------------------------------
-        int nhits = panelz->fHitData->size();
+        int nhits = pz->fHitData->size();
         for (int h=0; h<nhits; ++h) {
-          HitData_t* hd = &(*panelz->fHitData)[h];
+          HitData_t* hd = &(*pz->fHitData)[h];
 //-----------------------------------------------------------------------------
 // don't skip hits already included into seeds - a two-hit stereo seed
 // could be random
@@ -1347,9 +1357,9 @@ namespace mu2e {
           const ComboHit*  ch = hd->fHit;
           double dx  = ch->pos().x()-xdelta;
           double dy  = ch->pos().y()-ydelta;
-          double dw  = dx*panelz->wx+dy*panelz->wy; // distance along the wire
-          double dxx = dx-panelz->wx*dw;
-          double dyy = dy-panelz->wy*dw;
+          double dw  = dx*pz->wx+dy*pz->wy; // distance along the wire
+          double dxx = dx-pz->wx*dw;
+          double dyy = dy-pz->wy*dw;
 
           double chi2_par  = (dw*dw)/(hd->fSigW2+_seedRes*_seedRes);
           double chi2_perp = (dxx*dxx+dyy*dyy)/_sigmaR2;
@@ -1435,17 +1445,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void  DeltaFinder::runDeltaFinder() {
 
-    for (int is=0; is<kNStations; is++) {
-      for (int face=0; face<kNFaces; face++) {
-        for (int ip=0; ip<kNPanelsPerFace; ip++) {
-          PanelZ_t* pz = &_data.oTracker[is][face][ip];
-          pz->fHitData->clear() ;
-          pz->tmin =  1.e6;
-          pz->tmax = -1.e6;
-        }
-      }
-    }
-    orderHits();
+    _finder->orderHits();
 //-----------------------------------------------------------------------------
 // loop over all stations and find delta seeds - 2-3-4 combo hit stubs
 // a seed is always a stereo object
