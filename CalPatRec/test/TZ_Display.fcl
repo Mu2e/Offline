@@ -1,0 +1,87 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# read output of reconstruction. run event display
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+  TRIGGER_PATHS : [ p1 ]
+  TIME_MAPS     @protect_ignore: [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
+END_PROLOG
+
+# include "CalPatRec/fcl/prolog.fcl"
+#include "Stntuple/fcl/stntuple.fcl"
+
+process_name : Display
+
+#TrkHitReco.PrepareHits : [@sequence::TrkHitReco.PrepareHits, oldTC, TimeClusterFinderDe, HelixFinderDe, KSFDeM, KFFDeM]
+TrkHitReco.PrepareHits : [@sequence::TrkHitReco.PrepareHits, TZClusterFinder]
+
+source       : { module_type : RootInput   }
+
+#outputs      : { @table::Stntuple.outputs   }
+producers    : { @table::stntuple.producers
+    TZClusterFinder : { @table::CalPatRec.producers.TZClusterFinder}
+}
+
+filters      : { @table::stntuple.filters   }
+analyzers    : { @table::stntuple.analyzers }
+paths        : { @table::stntuple.paths     }
+
+physics : {
+    producers  : {
+
+        #@table::Trigger.producers
+        @table::producers
+        @table::production.producers
+
+    }
+
+    filters    : { @table::filters   }
+    analyzers  : { @table::analyzers }
+
+    @table::paths
+
+
+    p1 : [
+          @sequence::CaloReco.Reco,
+          @sequence::CaloCluster.Reco,
+          #@sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+          @sequence::TrkHitReco.PrepareHits
+
+         ]
+
+    end_p1 : [
+#                    @sequence::Stntuple.gen_g4_time_map,
+#         @sequence::Stntuple.digis          ,
+#         EventFilter                        ,
+#         @sequence::Stntuple.trk_hit_reco   ,
+#         @sequence::Stntuple.calo_reco      ,
+#         @sequence::Stntuple.trk_reco_de    ,
+          #                  @sequence::Stntuple.stnmaker_dem
+             MuHitDisplay
+         ]
+
+    trigger_paths : [ p1 ]
+    #    out : [detectorOutput]  # detectorOutput is defined in Stntuple/fcl/templates.fcl
+    out           : [     ]
+    end_paths     : [ end_p1, out ]
+}
+
+services.TFileService.fileName            : "TZDisplay.root"
+#------------------------------------------------------------------------------
+# uncomment the next 2 lines if you want the DST file to be written out
+#-----------------------------------------------------------------------------
+# physics.out                               : [ detectorOutput ]
+# outputs.detectorOutput.SelectEvents       : [ path_gen_digi_reco_stn_dem ]
+#outputs.detectorOutput.fileName           : "sim.user.photon_stnmaker.xxx.000001.art"
+
+# make sure we aren't flitering protons during TZClusterFinder
+physics.producers.makePH.StrawHitSelectionBits : ["TimeSelection"]
+
+# get rid of radial cut
+#physics.producers.makePH.TestRadius : false
+
+# turn on TZClusterFinder display
+physics.producers.TZClusterFinder.runDisplay : 1
+
+#------------------------------------------------------------------------------
