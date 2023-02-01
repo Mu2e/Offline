@@ -530,6 +530,35 @@ CalPatRec : { @table::CalPatRec
             tprHelixCollTag : MHFinderTprDmu
             cprHelixCollTag : MHFinderCprDmu
         }
+
+        Phiclusterfinder : { module_type : PhiClusterFinder
+             ComboHitCollection     : "makePH"
+             #TimeClusterCollection  : "TimeClusterFinderDmu"
+             diag                   : 0
+             debug                  : 0
+             minNSH                 : 5
+             threshold              : 1 # 4
+             nPhiClusters           : 40
+             phiMin                 : 0.0
+             phiMax                 : 6.3 ## 6.4
+             nPhiBins               : 21  ## 32
+             minDPhi                : 1.5
+             tMin                   : 0.0
+             tMax                   : 100000.0
+             tBin                   : 15.0
+             pitch                  : 0.6
+             yMin                   : 5.0
+             peakWidth              : 100
+             maxDt                  : 25
+             minSigma               : 0.1
+             t0Calc                 : {}
+             useCC                  : true
+             DiagPlugin : {
+               diagLevel                    : 0
+               tool_type                    : "PhiClusterFinderDiag"
+               mcTruth                      : 0
+             }
+         }
     }
 
     filters : {
