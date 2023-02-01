@@ -1,5 +1,7 @@
 #include "Offline/Print/inc/StrawGasStepPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
+#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConditionsService/inc/AcceleratorParams.hh"
 #include <iomanip>
 #include <string>
 
@@ -65,6 +67,8 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
   long unsigned int pkey = 0;
   auto const& pptr = obj.simParticle();
   if (pptr) pkey = pptr->id().asUint();
+  ConditionsHandle<AcceleratorParams> accPar("ignored");
+  double mbtime = accPar->deBuncherPeriod;
 
   os << " "
      << std::setw(5)  << pkey << " "
@@ -72,6 +76,7 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
      << std::setw(10) << std::setprecision(6) << obj.ionizingEdep() << " "
      << std::setw(8)  << std::setprecision(3) << obj.stepLength() << " "
      << std::setw(10) << std::setprecision(1) << obj.time()
+     << std::setw(8)  << std::setprecision(1) << fmod(obj.time(),mbtime)
      << std::setw(8)  << std::setprecision(1) << obj.momentum().r()
      << std::setw(8)  << std::setprecision(1) << obj.momentum().z()
      << std::setw(8)  << std::setprecision(1) << obj.startPosition().x()
@@ -88,5 +93,5 @@ void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::StrawGasStepPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << " ind SimPart StrwInd    eDep     length      time     ptot     pz       x     y      z \n";
+  os << " ind SimPart StrwInd    eDep     length      time     time%mbtime     ptot     pz       x     y      z \n";
 }
