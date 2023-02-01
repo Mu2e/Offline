@@ -98,9 +98,9 @@ physics.analyzers.MuHitDisplay.helixSeedCollTag   : "MHFinderDmu"
 physics.analyzers.MuHitDisplay.trackCollTag       : "KSFDmu"
 physics.analyzers.MuHitDisplay.ksfCollTag         : "KSFDmu"
 physics.analyzers.MuHitDisplay.kffCollTag         : "KFFDmu"
-physics.analyzers.MuHitDisplay.rootMacro          : "Offline/CalPatRec/scripts/display_phi.C"
+physics.analyzers.MuHitDisplay.rootMacro          : "Offline/CalPatRec/test/display_phi.C"
 #------------------------------------------------------------------------------
-services.GeometryService.inputFile    : "Offline/CalPatRec/scripts/geom_baseline.txt"
+#services.GeometryService.inputFile    : "Offline/Mu2eG4/geom/TransportSolenoid_v08.txt"
 services.TFileService.fileName        : "nts.user.pbar1s51b0.pbar2m.001000_00000000.root"
 outputs.defaultOutput.fileName        : "mcs.user.pbar1s51b0.pbar2m.001000_00000000.art"
 
