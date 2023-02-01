@@ -26,7 +26,7 @@
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
-#include "pbar2m/inc/PhiClusterFinder_types.hh"
+#include "Offline/CalPatRec/inc/PhiClusterFinder_types.hh"
 
 #include "TH1.h"
 #include "TF1.h"
