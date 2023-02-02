@@ -112,22 +112,26 @@ namespace mu2e {
 
         for (int face=0; face<kNFaces; face++) {
 
-          for (int ip=0; ip<kNPanelsPerFace; ip++) {
-            PanelZ_t* pz = &oTracker[is][face][ip];
-            pz->fHitData->clear() ;
-            pz->tmin =  1.e6;
-            pz->tmax = -1.e6;
-          }
+          // for (int ip=0; ip<kNPanelsPerFace; ip++) {
+          //   PanelZ_t* pz = &oTracker[is][face][ip];
+          //   pz->fHitData->clear() ;
+          //   pz->tmin =  1.e6;
+          //   pz->tmax = -1.e6;
+          // }
 //-----------------------------------------------------------------------------
 // re-initialize faces
 //-----------------------------------------------------------------------------
           FaceZ_t* fz = &fFaceData[is][face];
+          fz->fHitData.clear() ;
           for (int i=0; i<100; i++) {
             fz->fFirst[i] = -1;
+            fz->fLast [i] = -1;
           }
         }
       }
-
+//-----------------------------------------------------------------------------
+// in case of a vector, 'clear()' erases it
+//-----------------------------------------------------------------------------
       fListOfDeltaCandidates.clear();
     }
 
@@ -166,7 +170,7 @@ namespace mu2e {
         }
       }
 //-----------------------------------------------------------------------------
-// per-panel TOF corrections
+// per-panel constants
 //-----------------------------------------------------------------------------
       float     z_tracker_center(0.);
 
@@ -182,38 +186,37 @@ namespace mu2e {
           if (panel->id().getPanel() % 2 == 0) face = 0;
           else                                 face = 1;
 
-          for (unsigned il=0; il<panel->nLayers(); ++il) {
-            cx.Station   = ist;
-            cx.Plane     = ipl % 2;
-            cx.Face      = face;
-            cx.Panel     = ipn;
-            // cx.Layer     = il;
-            orderID (&cx, &co);
-            int os       = co.Station;
-            int of       = co.Face;
-            int op       = co.Panel;
+          cx.Station   = ist;
+          cx.Plane     = ipl % 2;
+          cx.Face      = face;
+          cx.Panel     = ipn;
+          orderID (&cx, &co);
+          // int os       = co.Station;
+          // int of       = co.Face;
+          // int op       = co.Panel;
 
-            PanelZ_t* pz = &oTracker[os][of][op];
-            pz->fID      = 3*co.Face+co.Panel;
-            pz->fPanel   = panel;
-//-----------------------------------------------------------------------------
-// panel caches phi of its center and the z, phi runs from 0 to 2*pi
-//-----------------------------------------------------------------------------
-            pz->wx  = panel->straw0Direction().x();
-            pz->wy  = panel->straw0Direction().y();
-            pz->phi = panel->straw0MidPoint().phi();
+          FaceZ_t*  fz = &fFaceData[co.Station][co.Face];
+
+          Pzz_t*    pz = fz->Panel(co.Panel);
+          pz->fID      = 3*co.Face+co.Panel;
+          // pz->fPanel   = panel;
+
+          pz->wx  = panel->straw0Direction().x();
+          pz->wy  = panel->straw0Direction().y();
 //-----------------------------------------------------------------------------
 // can't simply define nx,ny via the wx,wy - there is a couple of sign inversions:
 // - plane=0,face=1 is flipped wrt plane=0,face=0
 // - plane=1 is flipped wrt plane-0
 //-----------------------------------------------------------------------------
-            pz->nx  = cos(pz->phi);
-            pz->ny  = sin(pz->phi);
-            pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+          float phi = panel->straw0MidPoint().phi();
+          pz->nx    = cos(phi);
+          pz->ny    = sin(phi);
+          pz->z     = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
 
-            int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
-            faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(meanPitchAngle)/CLHEP::c_light;
-          }
+          if (co.Panel == 0) fz->z = pz->z;
+
+          int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + co.Face;
+          faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(meanPitchAngle)/CLHEP::c_light;
         }
         stationUsed[ist] = 1;
       }
@@ -224,11 +227,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       for (int ich=0; ich<2; ich++) {
         for (int f1=0; f1<3; f1++) {
+          FaceZ_t* fz1 = &fFaceData[ich][f1];
           for (int ip1=0; ip1<3; ip1++) {
-            PanelZ_t* pz1 = &oTracker[ich][f1][ip1];
+            Pzz_t* pz1 = fz1->Panel(ip1);
             for (int f2=f1+1; f2<4; f2++) {
+              FaceZ_t* fz2 = &fFaceData[ich][f2];
               for (int ip2=0; ip2<3; ip2++) {
-                PanelZ_t* pz2 = &oTracker[ich][f2][ip2];
+                Pzz_t* pz2 = fz2->Panel(ip2);
                 float n1n2 = pz1->nx*pz2->nx+pz1->ny*pz2->ny;
                 if (n1n2 >= -0.5-1.e-6) {
                   panelOverlap[ich][pz1->fID][pz2->fID] = 1;
