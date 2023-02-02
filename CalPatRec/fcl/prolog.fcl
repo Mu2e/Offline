@@ -593,12 +593,12 @@ CalPatRec : { @table::CalPatRec
              tMin                   : 0.0
              tMax                   : 100000.0
              tBin                   : 15.0
-             pitch                  : 0.6
+             # pitch                  : 0.6
              yMin                   : 5.0
              peakWidth              : 100
              maxDt                  : 25
              minSigma               : 0.1
-             t0Calc                 : {}
+             # t0Calc                 : {}
              useCC                  : false
              DiagPlugin : {
                diagLevel                    : 0
