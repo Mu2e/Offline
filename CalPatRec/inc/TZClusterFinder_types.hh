@@ -1,21 +1,13 @@
-#ifndef __TrkPatRec_TZClusterFinder_types_hh__
-#define __TrkPatRec_TZClusterFinder_types_hh__
+#ifndef __CalPatRec_TZClusterFinder_types_hh__
+#define __CalPatRec_TZClusterFinder_types_hh__
 
 #include <vector>
-
-namespace art {
-  class Event;
-};
-
-namespace fhicl {
-  class ParameterSet;
-};
-
-class TH1D;
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Sequence.h"
+
+#include "art/Framework/Principal/Event.h"
 
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"

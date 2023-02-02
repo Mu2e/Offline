@@ -1,26 +1,12 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CLHEP/Matrix/Vector.h"
-#include "CLHEP/Matrix/SymMatrix.h"
-#include "CLHEP/Vector/ThreeVector.h"
+#include "pbar2m/inc/TZClusterFinder_types.hh"
 
-#include "BTrk/BbrGeom/HepPoint.h"
-#include "BTrk/KalmanTrack/KalRep.hh"
-
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-
-#include "Offline/CalPatRec/inc/TZClusterFinder_types.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
-
-#include "Offline/TrackerGeom/inc/Tracker.hh"
-
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
-
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
@@ -29,14 +15,8 @@
 #include "art/Framework/Principal/Event.h"
 
 #include "TH1.h"
-#include "TH2.h"
 #include "TProfile.h"
-#include "TEfficiency.h"
 
-#include "TMath.h"
-
-using CLHEP::HepVector;
-using CLHEP::HepSymMatrix;
 
 namespace mu2e {
 
@@ -76,7 +56,7 @@ namespace mu2e {
     Hists                      _hist;
     Data_t*                    _data;
     std::vector<mcSimIDs>       mcHits;
-    int                        _event_number;
+    //int                        _event_number;
     int                        _mcTruth;
     int                        _simIDThresh;
     std::unique_ptr<McUtilsToolBase> _mcUtils;
