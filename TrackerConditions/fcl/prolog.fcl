@@ -239,8 +239,6 @@ StrawResponse : {
   errorFactor : 1.0
   useNonLinearDrift : true
   linearDriftVelocity : 0.0625
-  minT0DOCA : -0.2
-
 
   # Jan 23, 2020 - R. Bonventre, docdb-31095
   defaultPeakMinusPedestalEnergyScale : 0.002

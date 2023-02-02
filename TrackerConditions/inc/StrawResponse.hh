@@ -47,7 +47,7 @@ namespace mu2e {
           std::vector<double> unsignedDriftRMS, double dRdTScale,
           bool driftResIsTime,
           double wbuf, double slfac, double errfac, bool usenonlindrift,
-          double lindriftvel, double mint0doca,
+          double lindriftvel,
           std::array<double, StrawId::_nustraws> pmpEnergyScale,
           double electronicsTimeDelay, double gasGain,
           std::array<double,StrawElectronics::npaths> analognoise,
@@ -77,7 +77,6 @@ namespace mu2e {
         _driftResIsTime(driftResIsTime),
         _wbuf(wbuf), _slfac(slfac), _errfac(errfac),
         _usenonlindrift(usenonlindrift), _lindriftvel(lindriftvel),
-        _mint0doca(mint0doca),
         _pmpEnergyScale(pmpEnergyScale),
         _electronicsTimeDelay(electronicsTimeDelay),
         _gasGain(gasGain), _analognoise(analognoise),
@@ -90,18 +89,14 @@ namespace mu2e {
 
       virtual ~StrawResponse() {}
 
-      double driftDistanceToTime(StrawId strawId, double ddist, double phi,
-          bool forceOld=false) const;
-      double driftInstantSpeed(StrawId strawId, double ddist, double phi,
-          bool forceOld=false) const;
-      double driftTimeError(StrawId strawId, double ddist, double phi,
-          bool forceOld=false) const;
+      double driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
+      double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
+      double driftTimeError(StrawId strawId, double ddist, double phi) const;
 
       bool wireDistance(Straw const& straw, double edep, double dt,
           double& wdist, double& wderr, double& halfpv) const;
       bool useParameterizedDriftError() const { return _usepderr; }
       bool useNonLinearDrift() const { return _usenonlindrift; }
-      double Mint0doca() const { return _mint0doca;}
       double strawGain() const { return _strawPhysics->strawGain();}
 
       double halfPropV(StrawId strawId, double kedep) const;
@@ -122,9 +117,9 @@ namespace mu2e {
 
       DriftInfo driftInfo(StrawId strawId, double dtime, double phi) const;
 
-      double driftTimeToDistance(StrawId strawId, double dtime, double phi, bool forceOld=false) const;
+      double driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
       double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
-      double signedDriftError(StrawId strawId, double ddist, double phi, bool forceOld=false) const;
+      double signedDriftError(StrawId strawId, double ddist, double phi) const;
       double driftDistanceOffset(double DOCA) const;
       double driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const;
 
@@ -166,6 +161,15 @@ namespace mu2e {
 
       // access raw drift information
       auto const& strawDrift() const { return *_strawDrift; }
+      // BTrk legacy functions.  These will be retired with BTrk
+      // DO NOT write any new code referencing these functions, or modify them (except to fix bugs)
+      // values are intentionally hard-coded: no modification is allowed
+      double BTrk_Mint0doca() const { return -0.2; }
+      double BTrk_driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
+      double BTrk_driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
+      double BTrk_driftDistanceError(StrawId strawId, double ddist, double phi) const;
+      double BTrk_driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
+
     private:
 
       // helper functions
