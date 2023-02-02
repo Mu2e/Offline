@@ -9,11 +9,8 @@
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-#include "Offline/GeometryService/inc/GeometryService.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -29,9 +26,6 @@
 #include "Offline/CalPatRec/inc/PhiClusterFinder_types.hh"
 
 #include "TH1.h"
-#include "TF1.h"
-#include "TROOT.h"
-#include "TMath.h"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/weighted_median.hpp>
@@ -191,8 +185,7 @@ namespace mu2e {
     auto const& tcH = event.getValidHandle(_tcToken);
     const TimeClusterCollection& tccol(*tcH);
     // For the diagnostics
-    _data._tccol =const_cast<TimeClusterCollection*>(tcH.product());
-
+    _data._tccol = tcH.product();
     if (tccol.size() > 0) {
       for(size_t ipeak=0; ipeak<tccol.size(); ipeak++) {
         const auto& tc = tccol[ipeak];
@@ -258,7 +251,7 @@ namespace mu2e {
           int ind = ordchcol[i];
           const mu2e::ComboHit* ch = &_chcol->at(ind);
           if(usedhit[i]==true) continue;
-          Double_t phi = ch->phi();
+          float phi = ch->phi();
           // change the range to [0,2pi]
           if(phi < 0) phi += 2*M_PI;
           _hist1->Fill(phi,ch->nStrawHits());
@@ -275,7 +268,7 @@ namespace mu2e {
         if(cluphimax > cluphimin and ((cluphimax-cluphimin) >= (bin+bin))){
           for(int i=0; i<nh; i++){
             const mu2e::ComboHit* ch = &_chcol->at(ordchcol[i]);
-            Double_t phi = ch->phi();
+            float phi = ch->phi();
             if (phi < 0) phi += 2*M_PI;
             // if the phi is between min and max add it to the cluster
             if(phi>=cluphimin and phi<=cluphimax){
@@ -295,7 +288,7 @@ namespace mu2e {
         else if(cluphimax < cluphimin){
           for(int i=0; i<nh; i++){
             const mu2e::ComboHit* ch = &_chcol->at(ordchcol[i]);
-            Double_t phi = ch->phi();
+            float phi = ch->phi();
             if(phi < 0) phi += 2*M_PI;
             if((phi>=cluphimin and phi< _phimax) or (phi<=cluphimax and phi>=0)){
               finalcount++;
@@ -524,14 +517,14 @@ namespace mu2e {
     float meanphi(0),sigphi(0);//,sig(0);
     for(auto ish : tc._strawHitIdxs) {
       const ComboHit* ch = &_chcol->at(ish);
-      Double_t phi = ch->phi();
+      float phi = ch->phi();
       if(phi < 0) phi += 2*M_PI;
       meanphi = meanphi + phi;
     }
     meanphi = meanphi/tc._strawHitIdxs.size();
     for(auto ish :tc._strawHitIdxs) {
       const ComboHit* ch = &_chcol->at(ish);
-      Double_t phi = ch->phi();
+      float phi = ch->phi();
       if(phi < 0) phi += 2*M_PI;
       sigphi = sigphi + fabs(meanphi-phi);
     }

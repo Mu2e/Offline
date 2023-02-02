@@ -1,7 +1,6 @@
 #ifndef __TrkPatRec_PhiClusterFinder_types_hh__
 #define __TrkPatRec_PhiClusterFinder_types_hh__
 
-#include <vector>
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 
@@ -9,27 +8,12 @@ namespace art {
   class Event;
 };
 
-namespace fhicl {
-  class ParameterSet;
-};
-
-class TH1F;
-class TH2F;
-
-#include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/StrawHit.hh"
-#include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
-
-
 
 namespace mu2e {
 
-  class KalFitResultNew;
-
   namespace PhiClusterFinderTypes {
+
     enum { kMaxTimePeaks = 100 };
 
     struct Config {
@@ -42,10 +26,10 @@ namespace mu2e {
 
       const art::Event*               _event;
       const TimeCluster*              _timeCluster;
-      TimeClusterCollection*          _tccol;
+      const TimeClusterCollection*    _tccol;
       TimeClusterCollection*          _tccolnew;
     };
-
   }
+
 }
 #endif
