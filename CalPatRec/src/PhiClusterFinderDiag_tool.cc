@@ -8,18 +8,10 @@
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
-#include "BTrk/BbrGeom/HepPoint.h"
-#include "BTrk/KalmanTrack/KalRep.hh"
-
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 #include "Offline/CalPatRec/inc/PhiClusterFinder_types.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
 #include "art/Utilities/ToolMacros.h"
@@ -27,14 +19,6 @@
 #include "art/Framework/Principal/Event.h"
 
 #include "TH1.h"
-#include "TH2.h"
-#include "TProfile.h"
-#include "TEfficiency.h"
-
-#include "TMath.h"
-
-using CLHEP::HepVector;
-using CLHEP::HepSymMatrix;
 
 namespace mu2e {
 
