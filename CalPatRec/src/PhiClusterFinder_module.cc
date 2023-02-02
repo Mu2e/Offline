@@ -18,7 +18,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
-#include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
+// #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
@@ -65,11 +65,11 @@ namespace mu2e {
         fhicl::Atom<float>                                  phiMax{                  Name("phiMax"),               Comment("Phi histogram end") };
         fhicl::Atom<int>                                    nPhiBins{                Name("nPhiBins"),             Comment("Phi histogram N(bins)") };
         fhicl::Atom<float>                                  minDPhi{                 Name("minDPhi"),              Comment("Minimum delta phi between two phi clusters") };
-        fhicl::Atom<float>                                  pitch{                   Name("pitch"),                Comment("Average helix pitch (= dz/dflight, =sin(lambda)") };
+        // fhicl::Atom<float>                                  pitch{                   Name("pitch"),                Comment("Average helix pitch (= dz/dflight, =sin(lambda)") };
         fhicl::Atom<float>                                  tMin{                    Name("tMin"),                 Comment("Time histogram start") };
         fhicl::Atom<float>                                  tMax{                    Name("tMax"),                 Comment("Time histogram end") };
         fhicl::Atom<float>                                  tBin{                    Name("tBin"),                 Comment("Time histogram bin width") };
-        fhicl::Table<TrkTimeCalculator::Config>             t0Calc{                  Name("t0Calc"),               Comment("TimeTracker calculator config") };
+        // fhicl::Table<TrkTimeCalculator::Config>             t0Calc{                  Name("t0Calc"),               Comment("TimeTracker calculator config") };
         fhicl::Atom<float>                                  yMin{                    Name("yMin"),                 Comment("Minimum hit in time hist bin for peak") };
         fhicl::Atom<float>                                  maxDt{                   Name("maxDt"),                Comment("Maximum time difference between T0 and hit time") };
         fhicl::Atom<float>                                  minSigma{                Name("minSigma"),             Comment("Min sigma cut to remove compton particles") };
@@ -93,9 +93,9 @@ namespace mu2e {
     int                                 _nphiclusters;
     float                               _phimin,_phimax;
     int                                 _nphibins;
-    float                               _mindphi,_pitch;
+    float                               _mindphi;// ,_pitch;
     float                               _tmin, _tmax, _tbin;
-    TrkTimeCalculator                   _t0calc;
+    // TrkTimeCalculator                   _t0calc;
     float                               _ymin,_maxdt,_minsigma;
     int                                 _npeak;
     art::ProductToken<ComboHitCollection> const _chToken;
@@ -135,11 +135,11 @@ namespace mu2e {
     _phimax       (config().phiMax()),
     _nphibins     (config().nPhiBins()),
     _mindphi      (config().minDPhi()),
-    _pitch        (config().pitch()),
+    // _pitch        (config().pitch()),
     _tmin         (config().tMin()),
     _tmax         (config().tMax()),
     _tbin         (config().tBin()),
-    _t0calc       (config().t0Calc()),
+    // _t0calc       (config().t0Calc()),
     _ymin         (config().yMin()),
     _maxdt        (config().maxDt()),
     _minsigma     (config().minSigma()),
@@ -411,7 +411,8 @@ namespace mu2e {
       int i = istr;
       if(_clustno[i]==ClustNo){
         ComboHit const& ch = (*_chcol)[istr];
-        float time = _t0calc.comboHitTime((*_chcol)[istr],_pitch);
+        float time = ch.correctedTime(); // _t0calc.comboHitTime((*_chcol)[istr],_pitch);
+        // std::cout<<"Time = "<<time<<" time = "<<_t0calc.comboHitTime((*_chcol)[istr],_pitch)<<std::endl;
         _timespec.Fill(time,ch.nStrawHits());
       }
     }
@@ -424,7 +425,7 @@ namespace mu2e {
     _timespec.Reset();
     for(unsigned istr=0; istr<ordchcol.size();++istr) {
       ComboHit const& ch = (*_chcol)[istr];
-      float time = _t0calc.comboHitTime((*_chcol)[istr],_pitch);
+      float time = ch.correctedTime(); //_t0calc.comboHitTime((*_chcol)[istr],_pitch);
       _timespec.Fill(time,ch.nStrawHits());
     }
   }
@@ -447,8 +448,8 @@ namespace mu2e {
         nsh += _timespec.GetBinContent(ibin);
         t0 += _timespec.GetBinCenter(ibin)*_timespec.GetBinContent(ibin);
       }
-      t0 /= nsh;
       if (nsh >= _minnsh){
+        t0 /= nsh;
         tc._t0 = TrkT0(t0,_tbin*0.5);
         tc._nsh = nsh;
       }
@@ -462,9 +463,10 @@ namespace mu2e {
   void PhiClusterFinder::assignHits(TimeCluster& otc, const std::vector<StrawHitIndex>& ordchcol) {
     // assign hits to the closest time peak
     for(unsigned istr=0; istr<ordchcol.size();++istr) {
-      float time = _t0calc.comboHitTime((*_chcol)[istr],_pitch);
+      ComboHit const& ch = (*_chcol)[istr];
+      float time = ch.correctedTime(); // _t0calc.comboHitTime((*_chcol)[istr],_pitch);
       float dt = fabs(time - otc._t0._t0);
-      if (dt < _maxdt+otc._t0._t0err){
+      if (dt < _maxdt){
         otc._strawHitIdxs.push_back(istr);
       }
     }
@@ -485,7 +487,7 @@ namespace mu2e {
     for (int i=0; i<nstrs; i++) {
       int loc = tc._strawHitIdxs[i];
       const ComboHit* ch = &_chcol->at(loc);
-      float htime = _t0calc.comboHitTime(*ch,_pitch);
+      float htime = ch->correctedTime(); // _t0calc.comboHitTime(*ch,_pitch);
       unsigned nsh = ch->nStrawHits();
       tc._nsh += nsh;
       const XYZVectorF& pos = ch->pos();
@@ -498,12 +500,12 @@ namespace mu2e {
       zacc(pos.z(),weight=hwt);
     }
 
-    static float invsqrt12(1.0/sqrt(12.0));
-    tc._t0._t0 = extract_result<tag::weighted_median>(tacc);
-    tc._t0._t0err = ( boost::accumulators::extract::max(tmax)-boost::accumulators::extract::min(tmin))*invsqrt12/sqrt(nstrs);
-    tc._pos = XYZVectorF(extract_result<tag::weighted_median>(xacc),
-    extract_result<tag::weighted_median>(yacc),
-    extract_result<tag::weighted_median>(zacc));
+    // static float invsqrt12(1.0/sqrt(12.0));
+    tc._t0._t0 =  boost::accumulators::extract_result<tag::weighted_median>(tacc);
+    // tc._t0._t0err = ( boost::accumulators::extract::max(tmax)-boost::accumulators::extract::min(tmin))*invsqrt12/sqrt(nstrs);
+    tc._pos = XYZVectorF(boost::accumulators::extract_result<tag::weighted_median>(xacc),
+    boost::accumulators::extract_result<tag::weighted_median>(yacc),
+    boost::accumulators::extract_result<tag::weighted_median>(zacc));
     // if (_debug > 2) std::cout<<"Init Cluster T0 = "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<" n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
   }
 
@@ -537,10 +539,11 @@ namespace mu2e {
     for(size_t ipeak=0; ipeak<tccol.size(); ipeak++) {
       auto& tc = tccol[ipeak];
       if (tc.hasCaloCluster()) {
+        float calophi = polyAtan2( tc._caloCluster->cog3Vector().y(), tc._caloCluster->cog3Vector().x());
        // if(_debug>1) std::cout<<"TC calo x = "<<tc._caloCluster->cog3Vector().x()<<" y = "<<tc._caloCluster->cog3Vector().y()<<" time = "<<tc._caloCluster->time()<<" nhits = "<<tc.nhits()<<std::endl;
         for(size_t inewpeak = 0; inewpeak<tccolnew.size();inewpeak++){
          auto& newtc = tccolnew[inewpeak];
-         float dphi = fabs(polyAtan2( newtc._pos.y(), newtc._pos.x()) - polyAtan2( tc._caloCluster->cog3Vector().y(), tc._caloCluster->cog3Vector().x()));
+         float dphi = fabs(polyAtan2( newtc._pos.y(), newtc._pos.x()) - calophi);
          if (dphi > M_PI) dphi = 2*M_PI-dphi;
          if (dphi < _mindphi) {
           newtc._caloCluster = tc._caloCluster;
