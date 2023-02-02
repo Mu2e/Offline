@@ -128,9 +128,8 @@ namespace mu2e {
     return dinfo;
   }
 
-  double StrawResponse::driftDistanceToTime(StrawId strawId,
-      double ddist, double phi, bool forceOld) const {
-    if (!_useOldDrift && !forceOld){
+  double StrawResponse::driftDistanceToTime(StrawId strawId, double ddist, double phi) const {
+    if (!_useOldDrift ){
       if (_driftIgnorePhi)
         phi = 0;
       double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
@@ -147,15 +146,14 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftTimeError(StrawId strawId,
-      double ddist, double phi, bool forceOld) const {
-    if (!_useOldDrift && !forceOld){
+  double StrawResponse::driftTimeError(StrawId strawId, double ddist, double phi) const {
+    if (!_useOldDrift ){
       if (_driftResIsTime){
         ddist = std::max(0.0,std::min(rstraw_,ddist));
         return PieceLineDrift(_driftRMSBins, _signedDriftRMS, ddist);
       }else{
-        double distance_error = signedDriftError(strawId,ddist,phi,forceOld);
-        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
+        double distance_error = signedDriftError(strawId,ddist,phi);
+        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi);
         return distance_error/speed_at_ddist;
       }
     }else{
@@ -164,14 +162,13 @@ namespace mu2e {
         ddist = std::max(0.0,std::min(rstraw_,ddist));
         return PieceLineDrift(_driftRMSBins, _signedDriftRMS, ddist);
       }else{
-        return signedDriftError(strawId, ddist, phi, forceOld) / _lindriftvel;
+        return signedDriftError(strawId, ddist, phi) / _lindriftvel;
       }
     }
   }
 
-  double StrawResponse::driftInstantSpeed(StrawId strawId,
-      double ddist, double phi, bool forceOld) const {
-    if (!_useOldDrift && !forceOld){
+  double StrawResponse::driftInstantSpeed(StrawId strawId, double ddist, double phi) const {
+    if (!_useOldDrift ){
       if (_driftIgnorePhi)
         phi = 0;
 //      double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
@@ -186,9 +183,8 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftTimeToDistance(StrawId strawId,
-      double dtime, double phi, bool forceOld) const {
-    if (!_useOldDrift && !forceOld){
+  double StrawResponse::driftTimeToDistance(StrawId strawId, double dtime, double phi) const {
+    if (!_useOldDrift ){
       if (_driftIgnorePhi)
         phi = 0;
       double ddist = _strawDrift->T2D(dtime,phi,false);
@@ -206,14 +202,13 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::signedDriftError(StrawId strawId,
-      double ddist, double phi, bool forceOld) const {
-    if (!_useOldDrift && !forceOld){
+  double StrawResponse::signedDriftError(StrawId strawId, double ddist, double phi) const {
+    if (!_useOldDrift ){
       if (_driftIgnorePhi)
         phi = 0;
       if (_driftResIsTime){
-        double time_error = driftTimeError(strawId,ddist,phi,forceOld);
-        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi,forceOld);
+        double time_error = driftTimeError(strawId,ddist,phi);
+        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi);
         return time_error*speed_at_ddist;
       }else{
       //  ddist = std::max(0.0,std::min(rstraw_,ddist));
@@ -391,5 +386,32 @@ namespace mu2e {
       }
 
     }
+
+   double StrawResponse::BTrk_driftDistanceToTime(StrawId strawId, double ddist, double phi) const {
+     return _strawDrift->D2T(ddist,phi);
+  }
+
+   double StrawResponse::BTrk_driftInstantSpeed(StrawId strawId, double ddist, double phi) const {
+     return _strawDrift->GetInstantSpeedFromD(ddist);
+   }
+
+   double StrawResponse::BTrk_driftDistanceError(StrawId strawId, double ddist, double phi) const {
+     static const std::vector<double> derr = {0.363559, 0.362685, 0.359959, 0.349385,
+       0.336731, 0.321784, 0.302363, 0.282691, 0.268223, 0.252673, 0.238557,
+       0.229172, 0.2224, 0.219224, 0.217334, 0.212797, 0.210303, 0.209876,
+       0.208739, 0.207411, 0.208738, 0.209646, 0.210073, 0.207101, 0.20431,
+       0.203994, 0.202931, 0.19953, 0.196999, 0.194559, 0.191766, 0.187725,
+       0.185959, 0.181423, 0.17848, 0.171357, 0.171519, 0.168422, 0.161338,
+       0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319,
+       0.132159, 0.130062, 0.123545, 0.120212 };
+     static double rstraw(2.5);
+     double doca = std::min(fabs(ddist),rstraw);
+     size_t idoca = std::min(derr.size()-1,size_t(floor(derr.size()*(doca/rstraw))));
+     return derr[idoca];
+   }
+
+   double StrawResponse::BTrk_driftTimeToDistance(StrawId strawId, double dtime, double phi) const {
+     return _strawDrift->T2D(dtime,phi);
+   }
 
 }
