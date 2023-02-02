@@ -43,7 +43,6 @@
 #include <functional>
 #include <vector>
 
-using namespace std;
 using namespace boost::accumulators;
 
 namespace mu2e {
@@ -237,7 +236,7 @@ namespace mu2e {
     float dphi(0);
     // Mark true if a hit is used to form a cluster
     std::vector<bool> usedhit(ordchcol.size(),false);
-
+    float bin = _hist1->GetBinWidth(0);
     if (nh > (_minnsh/2)) {
       // Check if all the hits are used and keep trying to find peaks until < 5 hits are left in the collection
       while(nh-countusedhit > (_minnsh/2)) {
@@ -262,8 +261,6 @@ namespace mu2e {
         float cluphimin(0),cluphimax(0);
         clusterminmax(cluphimin, cluphimax);
         if (_debug > 2) printf("Min phi = %f Max phi = %f \n",cluphimin,cluphimax);
-        float bin = _hist1->GetBinWidth(0);
-
         // Simple Case : When min phi numerically lower than max phi
         if(cluphimax > cluphimin and ((cluphimax-cluphimin) >= (bin+bin))){
           for(int i=0; i<nh; i++){
@@ -441,7 +438,7 @@ namespace mu2e {
     // loop over spectrum to find peaks
     std::vector<BinContent> bcv;
     for (int ibin=1;ibin < nbins; ++ibin)
-      if (_timespec.GetBinContent(ibin) >= _ymin) bcv.push_back(make_pair(_timespec.GetBinContent(ibin),ibin));
+      if (_timespec.GetBinContent(ibin) >= _ymin) bcv.push_back(std::make_pair(_timespec.GetBinContent(ibin),ibin));
     std::sort(bcv.begin(),bcv.end(),[](const BinContent& x, const BinContent& y){return x.first > y.first;});
     for (const auto& bc : bcv) {
       float nsh(0.0);
