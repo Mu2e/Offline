@@ -78,7 +78,7 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
      << fmod(obj.time(),mbtime) << ", " << std::setw(5) << std::setprecision(2)
      << obj.momentum().R() << ", " << std::setw(5) << std::setprecision(2)
      << obj.momentum().z() << ", " << std::setw(5) << std::setprecision(2)
-     << obj.position << ", " << std::setw(5) << std::setprecision(2)
+     << obj.position() << ", " << std::setw(5) << std::setprecision(2)
      << obj.startPosition().x() << ", " << std::setw(5) << std::setprecision(2)
      << obj.startPosition().y() << ", " << std::setw(5) << std::setprecision(2)
      << obj.startPosition().y() << ", " << std::setw(5) << std::setprecision(2)
