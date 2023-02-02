@@ -186,7 +186,7 @@ namespace mu2e {
     void         findSeeds           ();
     void         initTimeCluster     (DeltaCandidate* Delta, TimeCluster* Tc);
     int          mergeDeltaCandidates();
-    // int          orderHits           ();
+    int          orderHits           ();
     void         pruneSeeds          (int Station);
     int          recoverMissingHits  ();
     int          recoverSeed         (DeltaCandidate* Delta, int LastStation, int Station);
@@ -827,105 +827,105 @@ namespace mu2e {
     return rc;
   }
 
-// //-----------------------------------------------------------------------------
-// // Custom comparator to sort in ascending order
-// //-----------------------------------------------------------------------------
-//   bool comparator(const ComboHit*& a, const ComboHit*& b) {
-//     return a->correctedTime() < b->correctedTime();
-//   }
+//-----------------------------------------------------------------------------
+// Custom comparator to sort in ascending order
+//-----------------------------------------------------------------------------
+  bool comparator(const ComboHit*& a, const ComboHit*& b) {
+    return a->correctedTime() < b->correctedTime();
+  }
 
-// //------------------------------------------------------------------------------
-// // I'd love to use the hit flags, however that is confusing:
-// // - hits with very large deltaT get placed to the middle of the wire and not flagged,
-// // - however, some hits within the fiducial get flagged with the ::radsel flag...
-// // use only "good" hits
-// //-----------------------------------------------------------------------------
-//   int DeltaFinder::orderHits() {
-//     ChannelID cx, co;
-// //-----------------------------------------------------------------------------
-// // vector of pointers to CH, ordered in time. Initial list is not touched
-// //-----------------------------------------------------------------------------
-//     _data._v.resize(_data._nComboHits);
+//------------------------------------------------------------------------------
+// I'd love to use the hit flags, however that is confusing:
+// - hits with very large deltaT get placed to the middle of the wire and not flagged,
+// - however, some hits within the fiducial get flagged with the ::radsel flag...
+// use only "good" hits
+//-----------------------------------------------------------------------------
+  int DeltaFinder::orderHits() {
+    ChannelID cx, co;
+//-----------------------------------------------------------------------------
+// vector of pointers to CH, ordered in time. Initial list is not touched
+//-----------------------------------------------------------------------------
+    _data._v.resize(_data._nComboHits);
 
-//     for (int i=0; i<_data._nComboHits; i++) {
-//       _data._v[i] = &(*_data.chcol)[i];
-//     }
+    for (int i=0; i<_data._nComboHits; i++) {
+      _data._v[i] = &(*_data.chcol)[i];
+    }
 
-//     std::sort(_data._v.begin(), _data._v.end(), comparator);
-// //-----------------------------------------------------------------------------
-// // at this point hits in '_data._v' are ordered in time
-// //-----------------------------------------------------------------------------
-//     for (int ih=0; ih<_data._nComboHits; ih++) {
-//       const ComboHit* ch = _data._v[ih];
+    std::sort(_data._v.begin(), _data._v.end(), comparator);
+//-----------------------------------------------------------------------------
+// at this point hits in '_data._v' are ordered in time
+//-----------------------------------------------------------------------------
+    for (int ih=0; ih<_data._nComboHits; ih++) {
+      const ComboHit* ch = _data._v[ih];
 
-//       const StrawHitFlag* flag   = &ch->flag();
-//       if (_testHitMask && (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
+      const StrawHitFlag* flag   = &ch->flag();
+      if (_testHitMask && (! flag->hasAllProperties(_goodHitMask) || flag->hasAnyProperty(_bkgHitMask)) ) continue;
 
-//       float corr_time    = ch->correctedTime();
+      float corr_time    = ch->correctedTime();
 
-//       if ((corr_time      < _minT) || (corr_time > _maxT))  continue;
+      if ((corr_time      < _minT) || (corr_time > _maxT))  continue;
 
-//       cx.Station                 = ch->strawId().station();
-//       cx.Plane                   = ch->strawId().plane() % 2;
-//       cx.Face                    = -1;
-//       cx.Panel                   = ch->strawId().panel();
+      cx.Station                 = ch->strawId().station();
+      cx.Plane                   = ch->strawId().plane() % 2;
+      cx.Face                    = -1;
+      cx.Panel                   = ch->strawId().panel();
 
-//                                               // get Z-ordered location
-//       Data_t::orderID(&cx, &co);
+                                              // get Z-ordered location
+      Data_t::orderID(&cx, &co);
 
-//       int os       = co.Station;
-//       int of       = co.Face;
-//       int op       = co.Panel;
+      int os       = co.Station;
+      int of       = co.Face;
+      int op       = co.Panel;
 
-//       if (_useTimePeaks == 1) {
-//         bool               intime(false);
-//         int                nTPeaks  = _data.tpeakcol->size();
-//         const CaloCluster* cl(nullptr);
-//         int                iDisk(-1);
+      if (_useTimePeaks == 1) {
+        bool               intime(false);
+        int                nTPeaks  = _data.tpeakcol->size();
+        const CaloCluster* cl(nullptr);
+        int                iDisk(-1);
 
-//         for (int i=0; i<nTPeaks; ++i) {
-//           cl    = _data.tpeakcol->at(i).caloCluster().get();
-//           if (cl == nullptr) {
-//             printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
-//             continue;
-//           }
-//           iDisk = cl->diskID();
-//           double    dt = cl->time() - (corr_time + _data.stationToCaloTOF[iDisk][os]);
-//           if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
-//             intime = true;
-//             break;
-//           }
-//         }
-//         if (!intime)                                    continue;
-//       }
+        for (int i=0; i<nTPeaks; ++i) {
+          cl    = _data.tpeakcol->at(i).caloCluster().get();
+          if (cl == nullptr) {
+            printf(">>> DeltaFinder::orderHits() no CaloCluster found within the time peak %i\n", i);
+            continue;
+          }
+          iDisk = cl->diskID();
+          double    dt = cl->time() - (corr_time + _data.stationToCaloTOF[iDisk][os]);
+          if ( (dt < _maxCaloDt) && (dt > _minCaloDt) ) {
+            intime = true;
+            break;
+          }
+        }
+        if (!intime)                                    continue;
+      }
 
-//       PanelZ_t* pz = &_data.oTracker[os][of][op];
+      PanelZ_t* pz = &_data.oTracker[os][of][op];
 
-//       if (_printErrors) {
-//         if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
-//         if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
-//         if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
-//       }
+      if (_printErrors) {
+        if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
+        if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
+        if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
+      }
 
-//       pz->fHitData->push_back(HitData_t(ch));
-//       if (pz->tmin > corr_time) pz->tmin = corr_time;
-//       if (pz->tmax < corr_time) pz->tmax = corr_time;
-// //-----------------------------------------------------------------------------
-// // prototype face-based hit storage
-// // hits are already time-ordered - that makes it easy to define fFirst
-// //-----------------------------------------------------------------------------
-//       FaceZ_t* fz = &_data.fFaceData[os][of];
-//       int loc = fz->fHitData.size();
+      pz->fHitData->push_back(HitData_t(ch));
+      if (pz->tmin > corr_time) pz->tmin = corr_time;
+      if (pz->tmax < corr_time) pz->tmax = corr_time;
+//-----------------------------------------------------------------------------
+// prototype face-based hit storage
+// hits are already time-ordered - that makes it easy to define fFirst
+//-----------------------------------------------------------------------------
+      FaceZ_t* fz = &_data.fFaceData[os][of];
+      int loc = fz->fHitData.size();
 
-//       fz->fHitData.push_back(HitData_t(ch));
-//       int time_bin = int (corr_time/_timeBinWidth) ;
+      fz->fHitData.push_back(HitData_t(ch));
+      int time_bin = int (corr_time/_timeBinWidth) ;
 
-//       if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;
-//       fz->fLast[time_bin] = loc;
-//     }
+      if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;
+      fz->fLast[time_bin] = loc;
+    }
 
-//     return 0;
-//   }
+    return 0;
+  }
 
 //-----------------------------------------------------------------------------
   void DeltaFinder::produce(art::Event& Event) {
@@ -945,8 +945,8 @@ namespace mu2e {
     _data._nComboHits = _data.chcol->size();
     _data._nStrawHits = _shColl->size();
 
-    runDeltaFinder();
-    // _finder->run();
+    // runDeltaFinder();
+    _finder->run();
 //-----------------------------------------------------------------------------
 // form output - flag combo hits -
 // if flagged combo hits are written out, likely don't need writing out the flags
@@ -1445,7 +1445,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void  DeltaFinder::runDeltaFinder() {
 
-    _finder->orderHits();
+    orderHits();
 //-----------------------------------------------------------------------------
 // loop over all stations and find delta seeds - 2-3-4 combo hit stubs
 // a seed is always a stereo object

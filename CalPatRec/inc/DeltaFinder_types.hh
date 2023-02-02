@@ -76,22 +76,27 @@ namespace mu2e {
       float                            tmax;
     };
 
+    struct Pzz_t {
+      int                              fID;         // 3*face+panel, for pre-calculating overlaps
+      double                           wx;          // direction cosines of the wire, all wires are assumed parallel
+      double                           wy;
+      double                           nx;          // direction cosines of the normal to the wires, pointing outwards
+      double                           ny;
+      float                            z;           // Z-coordinate of the face
+    };
+
     struct FaceZ_t {
       int                              fID;         // 3*face+panel, for pre-calculating overlaps
-      int                              fNHits  ;    // guess, total number of ComboHits
+      int                              fNHits  ;    // guess, total number of ComboHits do we need it ?
       std::vector<HitData_t>           fHitData;
+
       int                              fFirst[100]; // ** FIXME - need larger dimension for off-spill cosmics...
       int                              fLast [100];
-      // const Panel*                     fPanel;      // backward pointer to the tracker panel
-      // double                           wx;          // direction cosines of the wires, assumed to be all the same
-      // double                           wy;
-      // double                           phi;         // phi angle of the wire
-      // double                           nx;          // direction cosines of the normal to the wires, pointing outwards
-      // double                           ny;
-      double                           z;           //
-      // float                            tmin;        // for hits stored on this panel
-      // float                            tmax;
 
+      Pzz_t                            fPanel[3];
+      double                           z;           //
+
+      Pzz_t*                           Panel(int I) { return &fPanel[I]; }
     };
 
     struct Data_t {
