@@ -18,7 +18,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
-// #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
@@ -27,14 +26,6 @@
 
 #include "TH1.h"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/weighted_median.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/max.hpp>
-#include <boost/accumulators/statistics/min.hpp>
-#include <boost/accumulators/statistics/weighted_mean.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <memory>
@@ -42,8 +33,6 @@
 #include <utility>
 #include <functional>
 #include <vector>
-
-using namespace boost::accumulators;
 
 namespace mu2e {
 
@@ -65,11 +54,9 @@ namespace mu2e {
         fhicl::Atom<float>                                  phiMax{                  Name("phiMax"),               Comment("Phi histogram end") };
         fhicl::Atom<int>                                    nPhiBins{                Name("nPhiBins"),             Comment("Phi histogram N(bins)") };
         fhicl::Atom<float>                                  minDPhi{                 Name("minDPhi"),              Comment("Minimum delta phi between two phi clusters") };
-        // fhicl::Atom<float>                                  pitch{                   Name("pitch"),                Comment("Average helix pitch (= dz/dflight, =sin(lambda)") };
         fhicl::Atom<float>                                  tMin{                    Name("tMin"),                 Comment("Time histogram start") };
         fhicl::Atom<float>                                  tMax{                    Name("tMax"),                 Comment("Time histogram end") };
         fhicl::Atom<float>                                  tBin{                    Name("tBin"),                 Comment("Time histogram bin width") };
-        // fhicl::Table<TrkTimeCalculator::Config>             t0Calc{                  Name("t0Calc"),               Comment("TimeTracker calculator config") };
         fhicl::Atom<float>                                  yMin{                    Name("yMin"),                 Comment("Minimum hit in time hist bin for peak") };
         fhicl::Atom<float>                                  maxDt{                   Name("maxDt"),                Comment("Maximum time difference between T0 and hit time") };
         fhicl::Atom<float>                                  minSigma{                Name("minSigma"),             Comment("Min sigma cut to remove compton particles") };
@@ -93,16 +80,15 @@ namespace mu2e {
     int                                 _nphiclusters;
     float                               _phimin,_phimax;
     int                                 _nphibins;
-    float                               _mindphi;// ,_pitch;
+    float                               _mindphi;
     float                               _tmin, _tmax, _tbin;
-    // TrkTimeCalculator                   _t0calc;
     float                               _ymin,_maxdt,_minsigma;
     int                                 _npeak;
     art::ProductToken<ComboHitCollection> const _chToken;
     art::ProductToken<TimeClusterCollection> const _tcToken;
     bool                                _useCC;
     const ComboHitCollection*           _chcol;
-    TH1F*                               _hist1;
+    TH1F                                _hist1;
     TH1F                                _timespec;
     std::vector<int>                    _clustno;
     std::vector<float>                  _phitotal;
@@ -121,7 +107,7 @@ namespace mu2e {
     void assignHits(TimeCluster& otc, const std::vector<StrawHitIndex>& ordchcol);
     void initCluster(TimeCluster& tc);
     float checkdelta(TimeCluster& tc, int ClustNo, const std::vector<StrawHitIndex>& ordchcol);
-    void addCaloClusters(TimeClusterCollection& tccolnew, const TimeClusterCollection& tccol);
+    void addCaloClusters(TimeClusterCollection& tccol1, const TimeClusterCollection& tccol);
 };
 
  PhiClusterFinder::PhiClusterFinder(const art::EDProducer::Table<Config>& config):
@@ -135,11 +121,9 @@ namespace mu2e {
     _phimax       (config().phiMax()),
     _nphibins     (config().nPhiBins()),
     _mindphi      (config().minDPhi()),
-    // _pitch        (config().pitch()),
     _tmin         (config().tMin()),
     _tmax         (config().tMax()),
     _tbin         (config().tBin()),
-    // _t0calc       (config().t0Calc()),
     _ymin         (config().yMin()),
     _maxdt        (config().maxDt()),
     _minsigma     (config().minSigma()),
@@ -148,8 +132,7 @@ namespace mu2e {
     _tcToken      {consumes<TimeClusterCollection>(config().TimeClusterCollection()) },
     _useCC        (config().useCC())
     {
-      art::ServiceHandle<art::TFileService> tfs;
-      _hist1 = tfs->make<TH1F>( "hist1" , "phi spectrum",_nphibins,_phimin,_phimax);
+      _hist1 = TH1F("hist1" , "phi spectrum",_nphibins,_phimin,_phimax);
       unsigned nbinst = (unsigned)rint((_tmax-_tmin)/_tbin);
       _timespec = TH1F("timespec","time spectrum",nbinst,_tmin,_tmax);
       produces<TimeClusterCollection>();
@@ -204,12 +187,11 @@ namespace mu2e {
       printf("Output tccol size = %i Input tccol size =  %i event = %i\n",newsize,oldsize,eventno);
     }
 
-    TimeClusterCollection& tccolnew(*tccol1);
     // if(newsize == 2 and _debug>2) std::cout<<"Event with two phi clusters = "<<_iev<<std::endl;
 
     // Check for calo clusters
     if(_useCC and tccol.size() > 0){
-      addCaloClusters(tccolnew,tccol);
+      addCaloClusters(*tccol1,tccol);
     }
     // Save the output time cluster collection for the diagnostics
     _data._tccolnew = tccol1.get();
@@ -236,13 +218,13 @@ namespace mu2e {
     float dphi(0);
     // Mark true if a hit is used to form a cluster
     std::vector<bool> usedhit(ordchcol.size(),false);
-    float bin = _hist1->GetBinWidth(0);
+    float bin = _hist1.GetBinWidth(0);
     if (nh > (_minnsh/2)) {
       // Check if all the hits are used and keep trying to find peaks until < 5 hits are left in the collection
       while(nh-countusedhit > (_minnsh/2)) {
         int   finalcount(0);
         float phi1(0);
-        _hist1->Reset("ICSEM");
+        _hist1.Reset("ICSEM");
 
         if (_debug > 1) printf("Cluster : %2i\n",counter);
         // Fill the phi histogram with all the unused hits
@@ -253,7 +235,7 @@ namespace mu2e {
           float phi = ch->phi();
           // change the range to [0,2pi]
           if(phi < 0) phi += 2*M_PI;
-          _hist1->Fill(phi,ch->nStrawHits());
+          _hist1.Fill(phi,ch->nStrawHits());
           // if(_debug>3) std::cout<<"Phi "<<phi<<" ch phi "<< phi << "n straw hits = "<<ch->nStrawHits()<<std::endl;
         }
 
@@ -335,8 +317,6 @@ namespace mu2e {
     // Loop through the phi clusters and form time clusters
     for(int j=0;j<counter;j++){
        TimeCluster tc;
-       fillTimeSpectrum(j ,ordchcol);
-       findPeaks       (tc ,ordchcol);
        for(int ih=0; ih<nh; ih++) {
         //Fill the straw hit indices if the cluster number of the hit == j
         if (_clustno[ih]==j) tc._strawHitIdxs.push_back(ordchcol[ih]);
@@ -371,15 +351,15 @@ namespace mu2e {
 // Function to find the min and max phi in the phi spectrum
 //-----------------------------------------------------------------------------
   void PhiClusterFinder::clusterminmax(float& cluphimin, float& cluphimax) {
-    int   nbx = _hist1->GetNbinsX();
-    float bin = _hist1->GetBinWidth(0);
+    int   nbx = _hist1.GetNbinsX();
+    float bin = _hist1.GetBinWidth(0);
 
     int nsteps(0);
-    int max_bin  = _hist1->GetMaximumBin();
+    int max_bin  = _hist1.GetMaximumBin();
     // Check to the left of the peak bin
     int bincheck = max_bin;
-    while(_hist1->GetBinContent(bincheck) >=_threshold) {
-      // if(_debug>3) std::cout<<"bincheck = "<<_hist1->GetBinContent(bincheck)<<" bincontent = "<<bincheck<<"   "<<_hist1->GetBinCenter(bincheck)<<std::endl;
+    while(_hist1.GetBinContent(bincheck) >=_threshold) {
+      // if(_debug>3) std::cout<<"bincheck = "<<_hist1.GetBinContent(bincheck)<<" bincontent = "<<bincheck<<"   "<<_hist1.GetBinCenter(bincheck)<<std::endl;
       if (bincheck > _threshold) bincheck--;
       else bincheck = nbx;
       nsteps++;
@@ -392,20 +372,20 @@ namespace mu2e {
     }
     // Check to the right of the highest bin
     int bincheckr=max_bin;
-    while(_hist1->GetBinContent(bincheckr)>=_threshold){
-      // if(_debug>3) std::cout<<"bincheckr = "<<_hist1->GetBinContent(bincheckr)<<"bincontent = "<<bincheckr<<"  "<<_hist1->GetBinCenter(bincheckr)<<std::endl;
+    while(_hist1.GetBinContent(bincheckr)>=_threshold){
+      // if(_debug>3) std::cout<<"bincheckr = "<<_hist1.GetBinContent(bincheckr)<<"bincontent = "<<bincheckr<<"  "<<_hist1.GetBinCenter(bincheckr)<<std::endl;
       if(bincheckr<nbx) bincheckr++;
       else bincheckr = 1;
     }
-    cluphimax = _hist1->GetXaxis()->GetBinCenter(bincheckr)+bin/2;
-    cluphimin = _hist1->GetXaxis()->GetBinCenter(bincheck )-bin/2;
+    cluphimax = _hist1.GetXaxis()->GetBinCenter(bincheckr)+bin/2;
+    cluphimin = _hist1.GetXaxis()->GetBinCenter(bincheck )-bin/2;
     if (_debug>3) printf("Phi min = %10.3f max : %10.3f\n",cluphimin,cluphimax);
   }
 
 //------------------------------------------------------------------------------
 // Function to fill the time spectrum
 //-----------------------------------------------------------------------------
-  void PhiClusterFinder::fillTimeSpectrum(int ClustNo, const std::vector<StrawHitIndex>& ordchcol) {
+/*  void PhiClusterFinder::fillTimeSpectrum(int ClustNo, const std::vector<StrawHitIndex>& ordchcol) {
     _timespec.Reset();
     for(unsigned istr=0; istr<ordchcol.size();++istr) {
       int i = istr;
@@ -416,7 +396,7 @@ namespace mu2e {
         _timespec.Fill(time,ch.nStrawHits());
       }
     }
-  }
+    }*/
 
 //-----------------------------------------------------------------------------------
 // Function to fill the time spectrum when the hit is not associated to a phi cluster
@@ -436,17 +416,20 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void PhiClusterFinder::findPeaks(TimeCluster& tc, const std::vector<StrawHitIndex>& ordchcol) {
     int nbins = _timespec.GetNbinsX()+1;
+    std::vector<bool> alreadyUsed(nbins,false);
     // loop over spectrum to find peaks
     std::vector<BinContent> bcv;
     for (int ibin=1;ibin < nbins; ++ibin)
       if (_timespec.GetBinContent(ibin) >= _ymin) bcv.push_back(std::make_pair(_timespec.GetBinContent(ibin),ibin));
     std::sort(bcv.begin(),bcv.end(),[](const BinContent& x, const BinContent& y){return x.first > y.first;});
     for (const auto& bc : bcv) {
+      if (alreadyUsed[bc.second]) continue;
       float nsh(0.0);
       float t0(0.0);
       for (int ibin = std::max(1,bc.second-_npeak);ibin < std::min(nbins,bc.second+_npeak+1); ++ibin) {
         nsh += _timespec.GetBinContent(ibin);
         t0 += _timespec.GetBinCenter(ibin)*_timespec.GetBinContent(ibin);
+        alreadyUsed[ibin] = true;
       }
       if (nsh >= _minnsh){
         t0 /= nsh;
@@ -464,7 +447,7 @@ namespace mu2e {
     // assign hits to the closest time peak
     for(unsigned istr=0; istr<ordchcol.size();++istr) {
       ComboHit const& ch = (*_chcol)[istr];
-      float time = ch.correctedTime(); // _t0calc.comboHitTime((*_chcol)[istr],_pitch);
+      float time = ch.correctedTime();
       float dt = fabs(time - otc._t0._t0);
       if (dt < _maxdt){
         otc._strawHitIdxs.push_back(istr);
@@ -476,36 +459,31 @@ namespace mu2e {
 // Function to create the time clusters
 //-----------------------------------------------------------------------------
   void PhiClusterFinder::initCluster(TimeCluster& tc){
-    // use medians to initialize robustly
-    accumulator_set<float, stats<tag::min > > tmin;
-    accumulator_set<float, stats<tag::max > > tmax;
-    accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > tacc, xacc, yacc, zacc;
-    // No. of combo hits in the time cluster
     int nstrs = tc._strawHitIdxs.size();
     tc._nsh = 0;
-
+    float tacc(0),tacc2(0),xacc(0),yacc(0),zacc(0),weight(0);
     for (int i=0; i<nstrs; i++) {
       int loc = tc._strawHitIdxs[i];
       const ComboHit* ch = &_chcol->at(loc);
-      float htime = ch->correctedTime(); // _t0calc.comboHitTime(*ch,_pitch);
-      unsigned nsh = ch->nStrawHits();
-      tc._nsh += nsh;
-      const XYZVectorF& pos = ch->pos();
+      float htime = ch->correctedTime();
       float hwt = ch->nStrawHits();
-      tmin(htime);
-      tmax(htime);
-      tacc(htime,weight=hwt);
-      xacc(pos.x(),weight=hwt);
-      yacc(pos.y(),weight=hwt);
-      zacc(pos.z(),weight=hwt);
+      weight += hwt;
+      tacc   += htime*hwt;
+      tacc2  += htime*htime*hwt;
+      xacc   += ch->pos().x()*hwt;
+      yacc   += ch->pos().y()*hwt;
+      zacc   += ch->pos().z()*hwt;
+      tc._nsh += ch->nStrawHits();
     }
+    tacc/=weight;
+    tacc2/=weight;
+    xacc/=weight;
+    yacc/=weight;
+    zacc/=weight;
 
-    // static float invsqrt12(1.0/sqrt(12.0));
-    tc._t0._t0 =  boost::accumulators::extract_result<tag::weighted_median>(tacc);
-    // tc._t0._t0err = ( boost::accumulators::extract::max(tmax)-boost::accumulators::extract::min(tmin))*invsqrt12/sqrt(nstrs);
-    tc._pos = XYZVectorF(boost::accumulators::extract_result<tag::weighted_median>(xacc),
-    boost::accumulators::extract_result<tag::weighted_median>(yacc),
-    boost::accumulators::extract_result<tag::weighted_median>(zacc));
+    tc._t0._t0    = tacc;
+    tc._t0._t0err = sqrtf(tacc2-tacc*tacc);
+    tc._pos       = XYZVectorF(xacc, yacc, zacc);
     // if (_debug > 2) std::cout<<"Init Cluster T0 = "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<" n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
   }
 
@@ -535,14 +513,14 @@ namespace mu2e {
 //------------------------------------------------------------------------------
 // Function to add calo cluster to the time clusters
 //-----------------------------------------------------------------------------
-  void PhiClusterFinder::addCaloClusters(TimeClusterCollection& tccolnew, const TimeClusterCollection& tccol) {
+  void PhiClusterFinder::addCaloClusters(TimeClusterCollection& tccol1, const TimeClusterCollection& tccol) {
     for(size_t ipeak=0; ipeak<tccol.size(); ipeak++) {
       auto& tc = tccol[ipeak];
       if (tc.hasCaloCluster()) {
         float calophi = polyAtan2( tc._caloCluster->cog3Vector().y(), tc._caloCluster->cog3Vector().x());
        // if(_debug>1) std::cout<<"TC calo x = "<<tc._caloCluster->cog3Vector().x()<<" y = "<<tc._caloCluster->cog3Vector().y()<<" time = "<<tc._caloCluster->time()<<" nhits = "<<tc.nhits()<<std::endl;
-        for(size_t inewpeak = 0; inewpeak<tccolnew.size();inewpeak++){
-         auto& newtc = tccolnew[inewpeak];
+        for(size_t inewpeak = 0; inewpeak<tccol1.size();inewpeak++){
+         auto& newtc = tccol1[inewpeak];
          float dphi = fabs(polyAtan2( newtc._pos.y(), newtc._pos.x()) - calophi);
          if (dphi > M_PI) dphi = 2*M_PI-dphi;
          if (dphi < _mindphi) {
