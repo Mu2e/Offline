@@ -1,6 +1,7 @@
 # -*- mode:tcl -*-
-# differences from test1 :
-# -- sigmaR = seedRes = 4mm
+# variables which need defaults:
+# -----------------------------
+#
 #------------------------------------------------------------------------------
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
@@ -20,25 +21,12 @@ physics : {
         DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
             diagLevel                     :  0  ## 0 ##
             debugLevel                    :  0  ## 1 ##
-            useTimePeaks                  :  0
 
-            maxChi2Seed                   : 12. ## 10 16 used by findSeeds, for each hit
-            maxChi2Radial                 : 12. ## 10 25 used by recoverStation (wire-to-seed dist)
-            maxChi2All                    : 12. ## 10 16 used by pruneSeeds to mark bad seeds
-            maxChi2SeedDelta              : 3.0 ##
-            maxDxy                        : 10. ## used by connectSeeds 30 40 mm
-            maxGap                        :  3  ## 3 gap in missing stations along the candidate
-            updateSeedCOG                 :  0  ## 1
-            sigmaR                        : 3.0 # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-            seedRes                       : 3.0 # 5 is good just to see what it does
-            maxDriftTime                  : 35. ## 40 ns, includes some tolerance (50)
-            maxSeedDt                     : 20. ## time window for checking duplicate seeds
-            maxHitDt                      : 30. ## time window for checking duplicate seeds
-            maxStrawDt                    : 10. # max sensible time difference for a straw, ns, off by default
-            maxDtDs                       :  5. # ns, max allowed T0 shift per station
-            maxDtDc                       : 10. ## 15 20 30 ns, max dT between two delta candidates
-            maxHitSeedDt                  : 10  ##
-            minDeltaNHits                 :  5
+            finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
+                maxChi2Seed  :  12. ## test1:12  used by findSeeds, for each hit
+                sigmaR       :   2.
+                rCore        :   3.
+            }
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
@@ -50,32 +38,32 @@ physics : {
                 printElectronsMaxFReco    : 0.2 ## 0.5
             }
         }
+    }
 
-        DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
+    filters   : { @table::Reconstruction.filters   }
+
+    analyzers : { @table::stntuple.analyzers
+        DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel                    : 0 ## 1
             chCollTag                     : "makePH"
             chfCollTag                    : "DeltaFinder:ComboHits"
             shfCollTag                    : "DeltaFinder:StrawHits"
-            strawDigiMCCollectionTag      : "compressDigiMCs"
+            sdmcCollTag                   : "compressDigiMCs"
         }
     }
 
-    filters   : { @table::Reconstruction.filters   }
-    analyzers : { @table::stntuple.analyzers       }
-
-    p1: [ @sequence::TrkHitReco.PrepareHits,                    DeltaFinder, DeltaFinderAna ]  ## CalTimePeakFinder,
-    p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder                 ]
-    p3: [                                    CalTimePeakFinder, DeltaFinder                 ]
-    p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder                 ]
-
-    p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p1: [ @sequence::TrkHitReco.PrepareHits,                    DeltaFinder ]  ## CalTimePeakFinder,
+    p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder ]
+    p3: [                                    CalTimePeakFinder, DeltaFinder ]
+    p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
+    p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
     p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloClusterMC.TruthMatch,
-          CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+          CalTimePeakFinder, DeltaFinder ]
 
-    trigger_paths : [ p1            ]
+    trigger_paths : [ p1             ]
 
-    e1            : [               ] ## MuHitDisplay  ] # defaultOutput ]
-    end_paths     : [ e1            ]
+    e1            : [ DeltaFinderAna ] ## MuHitDisplay  ] # defaultOutput ]
+    end_paths     : [ e1             ]
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
@@ -84,7 +72,7 @@ physics.producers.makePH.CheckWres                 : true
 # physics.producers.makePH.MinimumRadius             : 370.
 # physics.producers.makePH.MaximumRadius             : 680.
 
-physics.producers.DeltaFinderAna.printElectronHits : 1
+physics.analyzers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # uncomment to write the DST out
 #------------------------------------------------------------------------------
