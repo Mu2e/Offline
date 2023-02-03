@@ -44,12 +44,12 @@ namespace mu2e
       struct Config {
         using Name = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<int> diag{ Name("DiagLevel"), Comment("Diag"),0 };
-        fhicl::Atom<int> debug{ Name("DebugLevel"), Comment("Debug"),0 };
-        fhicl::Atom<bool> mcdiag{ Name("MonteCarloDiag"), Comment("MonteCarloDiag"), true };
-        fhicl::Atom<bool> useflagcol{ Name("UseFlagCollection"), Comment("UseFlagCollection"), false };
-        fhicl::Atom<float> maxdt{ Name("MaxTimeDifference"), Comment("MaxTimeDifference"), 50.0 };
-        fhicl::Atom<float> maxdrho{ Name("MaxRhoDifference"), Comment("MaxRhoDifference"), 50.0 };
+        fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag Level"),0 };
+        fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"),0 };
+        fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true };
+        fhicl::Atom<bool> useflagcol{ Name("useFlagCollection"), Comment("Use Flag Collection"), false };
+        fhicl::Atom<float> maxdt{ Name("maxTimeDifference"), Comment("Max Time Difference"), 50.0 };
+        fhicl::Atom<float> maxdrho{ Name("maxRhoDifference"), Comment("Max Rho Difference"), 50.0 };
         fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
         fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
         fhicl::Atom<art::InputTag> BkgClusterCollection{   Name("BkgClusterCollection"),   Comment("BackgroundCluster collection name") };
@@ -474,10 +474,8 @@ namespace mu2e
     // find the momentum for the first step point from the primary particle in this delta
     for(auto id : dids) {
       StrawDigiMC const& mcdigi = _mcdigis->at(id);
-      // use TDC channel 0 to define the MC match
       auto const& sgsp = mcdigi.earlyStrawGasStep();
       art::Ptr<SimParticle> const& spp = sgsp->simParticle();
-
       if(spp == pptr){
         pmom = sqrt(sgsp->momentum().mag2());
         break;

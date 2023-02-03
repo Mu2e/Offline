@@ -1,5 +1,5 @@
 #
-# Minimal job to create BkgDiag output
+# Minimal job to create and test ComboHits
 #
 # To create a functional job you must add database purpose and version; ie create a fcl stub that #includes this file and
 # adds (for instance):
@@ -21,9 +21,10 @@ physics :
     @sequence::TrkHitReco.PrepareHits
   ]
   analyzers : {
-    BD : {
-      @table::BD
+    CHD : {
+      @table::CHD
       diagLevel : 1
+      digiDiag : false
     }
     evtprint : {
       module_type : RunEventSubRun
@@ -33,8 +34,7 @@ physics :
       printEvent  : true
     }
   }
-  EndPath : [BD]
+  EndPath : [CHD]
 }
-physics.producers.FlagBkgHits.SaveBkgClusters : true
 services.TimeTracker.printSummary: true
-services.TFileService.fileName: "nts.owner.BkgDiag.version.sequence.root"
+services.TFileService.fileName: "nts.owner.ComboDiag.version.sequence.root"

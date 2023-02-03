@@ -1,4 +1,4 @@
-#include "Offline/TrkReco/inc/TNTClusterer.hh"
+#include "Offline/TrkHitReco/inc/TNTClusterer.hh"
 #include <vector>
 #include <algorithm>
 #include <queue>
@@ -46,7 +46,7 @@ namespace mu2e
     if (chcol.empty()) return;
 
     //Loop over hits to find max hit time and define the time binning to index clusters in the clustering algo
-    auto maxTime = std::max_element(chcol.begin(),chcol.end(),[](const auto a, const auto b){return a.time() <b.time();})->time()+1.0f;
+    auto maxTime = std::max_element(chcol.begin(),chcol.end(),[](const auto a, const auto b){return a.correctedTime() <b.correctedTime();})->correctedTime()+1.0f;
     float tbin   = maxTime/float(numBuckets);
     int  ditime  = int(maxHitdt_/tbin);
     hitDtIdx_.clear();
@@ -128,7 +128,7 @@ namespace mu2e
       // -- Find cluster closest to hit
       int minc(-1);
       float mindist(dseed_+1.0f);
-      int itime = int(chcol[hit.chidx_].time()/tbin);
+      int itime = int(chcol[hit.chidx_].correctedTime()/tbin);
 
       for (auto i : hitDtIdx_)
       {
@@ -150,9 +150,9 @@ namespace mu2e
       else if (mindist > dseed_)
       {
         minc = clusters.size();
-        clusters.emplace_back(BkgCluster(chcol[hit.chidx_].pos(),chcol[hit.chidx_].time()));
+        clusters.emplace_back(BkgCluster(chcol[hit.chidx_].pos(),chcol[hit.chidx_].correctedTime()));
         clusters[minc].addHit(ihit);
-        int itimeClu  = int(chcol[hit.chidx_].time()/tbin);
+        int itimeClu  = int(chcol[hit.chidx_].correctedTime()/tbin);
         hitIndex[itimeClu].emplace_back(minc);
       }
       else
@@ -260,7 +260,7 @@ namespace mu2e
 
     if (d2 > md2_) return dseed_+1.0f;
 
-    float dt = std::abs(hit.time()-cluster.time());
+    float dt = std::abs(hit.correctedTime()-cluster.time());
     if (dt > maxHitdt_) return dseed_+1.0f;
 
 
@@ -291,7 +291,7 @@ namespace mu2e
     if (cluster.hits().size()==1)
     {
       int idx = BkgHits[cluster.hits().at(0)].chidx_;
-      cluster.time(chcol[idx].time());
+      cluster.time(chcol[idx].correctedTime());
       cluster.pos(XYZVectorF(chcol[idx].pos().x(),chcol[idx].pos().y(),0.0f));
       return;
     }
@@ -306,7 +306,7 @@ namespace mu2e
       for (auto& hit : cluster.hits())
       {
         int idx  = BkgHits[hit].chidx_;
-        float dt = chcol[idx].time() - ctime;
+        float dt = chcol[idx].correctedTime() - ctime;
         float dr = sqrtf(chcol[idx].pos().perp2()) - crho;
         float dp = chcol[idx].phi() - cphi;
         if (dp > M_PI)  dp -= 2*M_PI;
@@ -337,7 +337,7 @@ namespace mu2e
       {
         int   idx    = BkgHits[hit].chidx_;
         float weight = chcol[idx].nStrawHits();
-        float dt     = chcol[idx].time()-ctime;
+        float dt     = chcol[idx].correctedTime()-ctime;
         float dr     = sqrtf(chcol[idx].pos().perp2()) - crho;
 
         float dp     = chcol[idx].phi()-cphi;
