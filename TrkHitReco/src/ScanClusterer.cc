@@ -1,4 +1,4 @@
-#include "Offline/TrkReco/inc/ScanClusterer.hh"
+#include "Offline/TrkHitReco/inc/ScanClusterer.hh"
 #include <vector>
 #include <queue>
 #include <algorithm>

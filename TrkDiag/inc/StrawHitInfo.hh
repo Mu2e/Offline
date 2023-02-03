@@ -10,7 +10,6 @@ namespace mu2e {
     float _edep = 0.0;
     float _dedx = 0.0;
     float _time = 0.0;
-    float  _rho = 0.0;
     float _wdist = 0.0;
     float _wres = 0.0;
     float _tres = 0.0;

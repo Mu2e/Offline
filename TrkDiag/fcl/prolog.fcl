@@ -11,7 +11,7 @@ BD : {
   BkgQualCollection:"FlagBkgHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
-  UseFlagCollection : true
+  useFlagCollection : true
 }
 
 TRD : {
@@ -56,9 +56,11 @@ HD : {
 
 CHD : {
   module_type : ComboHitDiag
+  digiDiag : true
+  useFlagCollection : true
   StrawDigiMCCollection : "compressDigiMCs"
+  StrawDigiCollection : "makeSD"
   ComboHitCollection : "makePH"
-  UseFlagCollection : true
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 }
 
