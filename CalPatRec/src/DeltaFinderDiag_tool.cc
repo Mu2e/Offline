@@ -174,7 +174,7 @@ namespace mu2e {
     int         InitMcDiag      ();
     int         associateMcTruth();
 
-    void        printHitData(const HitData_t* Hd, int Face, int Panel);
+    void        printHitData(const HitData_t* Hd, int Face);
     void        printOTracker();
 
     void        printComboHit(const ComboHit* Sh, int Index);
@@ -883,54 +883,53 @@ namespace mu2e {
 
     for (int ist=0; ist<kNStations; ist++) {
       for (int face=0; face<kNFaces; face++) {
-        for (int ip=0; ip<kNPanelsPerFace; ip++) {
-          PanelZ_t* panelz = &_data->oTracker[ist][face][ip];
+        FaceZ_t* fz = &_data->fFaceData[ist][face];
+        //for (int ip=0; ip<kNPanelsPerFace; ip++) {
+        // PanelZ_t* panelz = &_data->oTracker[ist][face][ip];
 
           // for (int il=0; il<2; il++) {
-          int nhits = panelz->fHitData->size();
-          for (int ih=0; ih<nhits; ih++) {
-            HitData_t*      hd = &(*panelz->fHitData)[ih];
-            const ComboHit* ch = hd->fHit;
-            size_t ich         = ch-ch0;  // hit index in the collection
+        int nhits = fz->fHitData.size();
+        for (int ih=0; ih<nhits; ih++) {
+          HitData_t*      hd = &fz->fHitData[ih];
+          const ComboHit* ch = hd->fHit;
+          size_t ich         = ch-ch0;  // hit index in the collection
 //-----------------------------------------------------------------------------
 // get MC particle associated with the first hit
 // a combo hit could be made out of the straw hits produced by different particles
 // in the neighbor straws - ignore that for now
 //-----------------------------------------------------------------------------
-            int loc = ch->indexArray()[0];
-            const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,loc);
+          int loc = ch->indexArray()[0];
+          const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,loc);
 //-----------------------------------------------------------------------------
 // search if this particle has already been registered
 //-----------------------------------------------------------------------------
-            McPart_t* mc = findParticle(sim);
+          McPart_t* mc = findParticle(sim);
 
-            if (mc == NULL) {
+          if (mc == NULL) {
                                         // add new particle
-              mc = new McPart_t(sim);
-              _list_of_mc_particles.Add(mc);
-              mc->fID       = _mcUtils->getID(sim);
-              mc->fPdgID    = _mcUtils->getPdgID(sim);
-              mc->fStartMom = _mcUtils->getStartMom(sim);
-            }
+            mc = new McPart_t(sim);
+            _list_of_mc_particles.Add(mc);
+            mc->fID       = _mcUtils->getID(sim);
+            mc->fPdgID    = _mcUtils->getPdgID(sim);
+            mc->fStartMom = _mcUtils->getStartMom(sim);
+          }
 //-----------------------------------------------------------------------------
 // list of hits produced by the particle
 //-----------------------------------------------------------------------------
-            mc->fListOfHits.push_back(hd);
+          mc->fListOfHits.push_back(hd);
 
-            int station        = ch->strawId().station();
+          int station        = ch->strawId().station();
 
-            if (station < mc->fFirstStation) mc->fFirstStation = station;
-            if (station > mc->fLastStation ) mc->fLastStation  = station;
+          if (station < mc->fFirstStation) mc->fFirstStation = station;
+          if (station > mc->fLastStation ) mc->fLastStation  = station;
 
-            if (ch->correctedTime() < mc->fTime   ) mc->fTime    = ch->correctedTime();
-            if (ch->correctedTime() < mc->fHitTMin) mc->fHitTMin = ch->correctedTime();
-            if (ch->correctedTime() > mc->fHitTMax) mc->fHitTMax = ch->correctedTime();
-            //-----------------------------------------------------------------------------
-            // list of MC particles parallel to StrawHitCollection
-            //-----------------------------------------------------------------------------
-            _list_of_mc_part_hit.AddAt(mc,ich);
-          }
-          // }
+          if (ch->correctedTime() < mc->fTime   ) mc->fTime    = ch->correctedTime();
+          if (ch->correctedTime() < mc->fHitTMin) mc->fHitTMin = ch->correctedTime();
+          if (ch->correctedTime() > mc->fHitTMax) mc->fHitTMax = ch->correctedTime();
+//-----------------------------------------------------------------------------
+// list of MC particles parallel to StrawHitCollection
+//-----------------------------------------------------------------------------
+          _list_of_mc_part_hit.AddAt(mc,ich);
         }
       }
     }
@@ -1142,15 +1141,15 @@ namespace mu2e {
 // print combo hits Z-ordered
 //-----------------------------------------------------------------------------
       for (int is=0; is<kNStations; is++) {
-        printHitData(nullptr,-1,-1);
+        printHitData(nullptr,-1);
         for (int face=0; face<kNFaces; face++) {
-          for (int ip=0; ip<kNPanelsPerFace; ip++) {
-            PanelZ_t* pz = &_data->oTracker[is][face][ip];
-            int nhits = pz->fHitData->size();
-            for (int ih=0; ih<nhits; ih++) {
-              HitData_t* hd = &(*pz->fHitData)[ih];
-              printHitData(hd,face,ip);
-            }
+          FaceZ_t* fz = &_data->fFaceData[is][face];
+          //for (int ip=0; ip<kNPanelsPerFace; ip++) {
+          // PanelZ_t* pz = &_data->oTracker[is][face][ip];
+          int nhits = fz->fHitData.size();
+          for (int ih=0; ih<nhits; ih++) {
+            HitData_t* hd = &fz->fHitData[ih];
+            printHitData(hd,face);
           }
         }
       }
@@ -1298,9 +1297,9 @@ namespace mu2e {
 
             if (_printElectronsHits > 0) {
               int nh = mc->fListOfHits.size();
-              if (nh > 0) printHitData(NULL,-1,-1);
+              if (nh > 0) printHitData(NULL,-1);
               for (int ih=0; ih<nh; ih++) {
-                printHitData(mc->fListOfHits[ih],0,0);
+                printHitData(mc->fListOfHits[ih],0);
               }
             }
           }
@@ -1316,12 +1315,12 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Face, int Panel) {
+  void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Face) {
 
-    if (Panel < 0) {
+    if (Face < 0) {
       printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
-      printf("#      SHID    flag nsh    St:F:P:Pl P L Str     Time    TCorr    dt        eDep       wdist     wres   ");
+      printf("#      SHID    flag nsh    St:F:Pl P L Str     Time    TCorr    dt        eDep       wdist     wres   ");
       printf("     PDG        simID       p      X        Y         Z   DeltaID radOK edepOK\n");
       printf("#----------------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------\n");
@@ -1352,9 +1351,9 @@ namespace mu2e {
     printf("%5i",loc);
     printf(" %5i 0x%08x %2i" ,ch->strawId().asUint16(),*((int*) flag),ch->nStrawHits());
 
-    printf("  %2i:%i:%i:%2i %1i %1i %2i   %8.2f %8.2f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
+    printf("  %2i:%i:%2i %1i %1i %2i   %8.2f %8.2f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
            ch->strawId().station(),
-           Face,Panel,
+           Face,
            ch->strawId().plane(),
            ch->strawId().panel(),
            ch->strawId().layer(),
@@ -1384,18 +1383,15 @@ namespace mu2e {
     int nhitso = 0;
     for (int is=0; is<kNStations; is++) {
       for (int face=0; face<kNFaces; face++) {
-        for (int ip=0; ip<kNPanelsPerFace; ip++) {
-          PanelZ_t* pz = &_data->oTracker[is][face][ip];
-          printf("#        --------------- station: %2i face: %2i panel: %2i nhits:%3li\n",
-                 is,face,ip, pz->fHitData->size());
-          int nh2 = pz->fHitData->size();// pz->fHitData[0].size()+pz->fHitData[1].size();
-          if (nh2 > 0) printHitData(NULL,-1,-1);
-          int nh = pz->fHitData->size();
-          for (int ih=0; ih<nh; ih++) {
-            printHitData(&(*pz->fHitData)[ih],face,ip);
-          }
-          nhitso += nh;
+        FaceZ_t* fz = &_data->fFaceData[is][face];
+        printf("#        --------------- station: %2i face: %2i nhits:%3li\n",
+               is,face,fz->fHitData.size());
+        int nh = fz->fHitData.size();
+        if (nh > 0) printHitData(NULL,-1);
+        for (int ih=0; ih<nh; ih++) {
+          printHitData(&fz->fHitData[ih],face);
         }
+        nhitso += nh;
       }
     }
 

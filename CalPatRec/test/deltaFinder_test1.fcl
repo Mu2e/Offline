@@ -40,6 +40,9 @@ physics : {
             maxHitSeedDt                  : 10  ##
             minDeltaNHits                 :  5
 
+            finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
+            }
+
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
                 printElectrons            : 1 ## 0 ##

@@ -23,15 +23,6 @@ namespace mu2e {
         fListOfProtonSeeds [i] = new TObjArray();
         fListOfComptonSeeds[i] = new TObjArray();
       }
-
-      for (int is=0; is<kNStations; is++) {
-        for (int face=0; face<kNFaces; face++) {
-          for (int ip=0; ip<kNPanelsPerFace; ip++) {
-            PanelZ_t* pz = &oTracker[is][face][ip];
-            pz->fHitData = new std::vector<HitData_t> ;
-          }
-        }
-      }
     }
 
 //-----------------------------------------------------------------------------
@@ -40,17 +31,6 @@ namespace mu2e {
         delete fListOfSeeds[i];
         delete fListOfProtonSeeds [i];
         delete fListOfComptonSeeds[i];
-      }
-
-      for (int is=0; is<kNStations; is++) {
-        for (int face=0; face<kNFaces; face++) {
-
-          for (int ip=0; ip<kNPanelsPerFace; ip++) {
-            PanelZ_t* pz = &oTracker[is][face][ip];
-            delete pz->fHitData;
-          }
-
-        }
       }
     }
 
@@ -109,18 +89,10 @@ namespace mu2e {
         fListOfSeeds       [is]->Clear();
         fListOfProtonSeeds [is]->Clear();
         fListOfComptonSeeds[is]->Clear();
-
-        for (int face=0; face<kNFaces; face++) {
-
-          // for (int ip=0; ip<kNPanelsPerFace; ip++) {
-          //   PanelZ_t* pz = &oTracker[is][face][ip];
-          //   pz->fHitData->clear() ;
-          //   pz->tmin =  1.e6;
-          //   pz->tmax = -1.e6;
-          // }
 //-----------------------------------------------------------------------------
 // re-initialize faces
 //-----------------------------------------------------------------------------
+        for (int face=0; face<kNFaces; face++) {
           FaceZ_t* fz = &fFaceData[is][face];
           fz->fHitData.clear() ;
           for (int i=0; i<100; i++) {
@@ -146,15 +118,15 @@ namespace mu2e {
       calorimeter = cH.get();
 
       ChannelID cx, co;
-      int       nDisks    = calorimeter->nDisk();
 
-      double    disk_z[2] = {0, 0};                            // in the tracker frame
+      // int       nDisks    = calorimeter->nDisk();
+      // double    disk_z[2] = {0, 0};                            // in the tracker frame
 
-      for (int i=0; i<nDisks; ++i){
-        Hep3Vector gpos = calorimeter->disk(i).geomInfo().origin();
-        Hep3Vector tpos = calorimeter->geomUtil().mu2eToTracker(gpos);
-        disk_z[i] = tpos.z();
-      }
+      // for (int i=0; i<nDisks; ++i){
+      //   Hep3Vector gpos = calorimeter->disk(i).geomInfo().origin();
+      //   Hep3Vector tpos = calorimeter->geomUtil().mu2eToTracker(gpos);
+      //   disk_z[i] = tpos.z();
+      // }
 //-----------------------------------------------------------------------------
 // define station Z coordinates and calculate the time-of-flight between
 // the station and each calorimeter disk for a typical mu-->e conversion electron
@@ -165,9 +137,9 @@ namespace mu2e {
         int ist         = ipl/2;
         stationZ[ist]   = (p1->origin().z()+p2->origin().z())/2;
 
-        for (int iDisk=0; iDisk<nDisks; ++iDisk){
-          stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - stationZ[ist])/sin(meanPitchAngle)/CLHEP::c_light;
-        }
+      //   for (int iDisk=0; iDisk<nDisks; ++iDisk){
+      //     stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - stationZ[ist])/sin(meanPitchAngle)/CLHEP::c_light;
+      //   }
       }
 //-----------------------------------------------------------------------------
 // per-panel constants
@@ -190,16 +162,12 @@ namespace mu2e {
           cx.Plane     = ipl % 2;
           cx.Face      = face;
           cx.Panel     = ipn;
+
           orderID (&cx, &co);
-          // int os       = co.Station;
-          // int of       = co.Face;
-          // int op       = co.Panel;
 
           FaceZ_t*  fz = &fFaceData[co.Station][co.Face];
-
           Pzz_t*    pz = fz->Panel(co.Panel);
           pz->fID      = 3*co.Face+co.Panel;
-          // pz->fPanel   = panel;
 
           pz->wx  = panel->straw0Direction().x();
           pz->wy  = panel->straw0Direction().y();
