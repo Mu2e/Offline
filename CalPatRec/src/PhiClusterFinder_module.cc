@@ -89,7 +89,6 @@ namespace mu2e {
     bool                                _useCC;
     const ComboHitCollection*           _chcol;
     TH1F                                _hist1;
-    TH1F                                _timespec;
     std::vector<int>                    _clustno;
     std::vector<float>                  _phitotal;
     std::vector<int>                    _nhitotal;
@@ -101,10 +100,6 @@ namespace mu2e {
 
     void findClusters (TimeClusterCollection& tccol1, const std::vector<StrawHitIndex>& ordchcol);
     void clusterminmax(float& cluphimin, float& cluphimax);
-    void fillTimeSpectrum(int ClustNo, const std::vector<StrawHitIndex>& ordchcol);
-    void fillTimeSpectrumAlt(const std::vector<StrawHitIndex>& ordchcol);
-    void findPeaks  (TimeCluster& tc, const std::vector<StrawHitIndex>& ordchcol);
-    void assignHits(TimeCluster& otc, const std::vector<StrawHitIndex>& ordchcol);
     void initCluster(TimeCluster& tc);
     float checkdelta(TimeCluster& tc, int ClustNo, const std::vector<StrawHitIndex>& ordchcol);
     void addCaloClusters(TimeClusterCollection& tccol1, const TimeClusterCollection& tccol);
@@ -133,8 +128,6 @@ namespace mu2e {
     _useCC        (config().useCC())
     {
       _hist1 = TH1F("hist1" , "phi spectrum",_nphibins,_phimin,_phimax);
-      unsigned nbinst = (unsigned)rint((_tmax-_tmin)/_tbin);
-      _timespec = TH1F("timespec","time spectrum",nbinst,_tmin,_tmax);
       produces<TimeClusterCollection>();
 
       if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().DiagPlugin," ");
@@ -186,7 +179,6 @@ namespace mu2e {
       int eventno = _iev;
       printf("Output tccol size = %i Input tccol size =  %i event = %i\n",newsize,oldsize,eventno);
     }
-
     // if(newsize == 2 and _debug>2) std::cout<<"Event with two phi clusters = "<<_iev<<std::endl;
 
     // Check for calo clusters
@@ -304,9 +296,10 @@ namespace mu2e {
     // Events where two phi clusters are found but they are separated < min delta phi.
     if (counter == 2 and dphi < _mindphi){
       TimeCluster otc;
-      fillTimeSpectrumAlt(ordchcol);
-      findPeaks(otc, ordchcol);
-      assignHits(otc, ordchcol);
+      for(int ih=0; ih<nh; ih++) {
+        //Fill the straw hit indices if the cluster number of the hit == j
+        otc._strawHitIdxs.push_back(ordchcol[ih]);
+      }
       initCluster(otc);
       if(otc._nsh > _minnsh) tccol1.push_back(otc);
       if (_debug > 1) {
@@ -343,7 +336,6 @@ namespace mu2e {
           // if(_debug>1) std::cout<<"Delta phi = "<<dphi<<" T0 = "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<"n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
        }
        // if(_debug>2) std::cout<<"No. of time clusters = "<<counter<<" T0 = "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<" n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
-       _timespec.Reset();
     }
   }
 
@@ -380,79 +372,6 @@ namespace mu2e {
     cluphimax = _hist1.GetXaxis()->GetBinCenter(bincheckr)+bin/2;
     cluphimin = _hist1.GetXaxis()->GetBinCenter(bincheck )-bin/2;
     if (_debug>3) printf("Phi min = %10.3f max : %10.3f\n",cluphimin,cluphimax);
-  }
-
-//------------------------------------------------------------------------------
-// Function to fill the time spectrum
-//-----------------------------------------------------------------------------
-/*  void PhiClusterFinder::fillTimeSpectrum(int ClustNo, const std::vector<StrawHitIndex>& ordchcol) {
-    _timespec.Reset();
-    for(unsigned istr=0; istr<ordchcol.size();++istr) {
-      int i = istr;
-      if(_clustno[i]==ClustNo){
-        ComboHit const& ch = (*_chcol)[istr];
-        float time = ch.correctedTime(); // _t0calc.comboHitTime((*_chcol)[istr],_pitch);
-        // std::cout<<"Time = "<<time<<" time = "<<_t0calc.comboHitTime((*_chcol)[istr],_pitch)<<std::endl;
-        _timespec.Fill(time,ch.nStrawHits());
-      }
-    }
-    }*/
-
-//-----------------------------------------------------------------------------------
-// Function to fill the time spectrum when the hit is not associated to a phi cluster
-//-----------------------------------------------------------------------------------
-  void PhiClusterFinder::fillTimeSpectrumAlt(const std::vector<StrawHitIndex>& ordchcol) {
-    _timespec.Reset();
-    for(unsigned istr=0; istr<ordchcol.size();++istr) {
-      ComboHit const& ch = (*_chcol)[istr];
-      float time = ch.correctedTime(); //_t0calc.comboHitTime((*_chcol)[istr],_pitch);
-      _timespec.Fill(time,ch.nStrawHits());
-    }
-  }
-
-
-//------------------------------------------------------------------------------
-// Function to find the peak bin the time spectrum
-//-----------------------------------------------------------------------------
-  void PhiClusterFinder::findPeaks(TimeCluster& tc, const std::vector<StrawHitIndex>& ordchcol) {
-    int nbins = _timespec.GetNbinsX()+1;
-    std::vector<bool> alreadyUsed(nbins,false);
-    // loop over spectrum to find peaks
-    std::vector<BinContent> bcv;
-    for (int ibin=1;ibin < nbins; ++ibin)
-      if (_timespec.GetBinContent(ibin) >= _ymin) bcv.push_back(std::make_pair(_timespec.GetBinContent(ibin),ibin));
-    std::sort(bcv.begin(),bcv.end(),[](const BinContent& x, const BinContent& y){return x.first > y.first;});
-    for (const auto& bc : bcv) {
-      if (alreadyUsed[bc.second]) continue;
-      float nsh(0.0);
-      float t0(0.0);
-      for (int ibin = std::max(1,bc.second-_npeak);ibin < std::min(nbins,bc.second+_npeak+1); ++ibin) {
-        nsh += _timespec.GetBinContent(ibin);
-        t0 += _timespec.GetBinCenter(ibin)*_timespec.GetBinContent(ibin);
-        alreadyUsed[ibin] = true;
-      }
-      if (nsh >= _minnsh){
-        t0 /= nsh;
-        tc._t0 = TrkT0(t0,_tbin*0.5);
-        tc._nsh = nsh;
-      }
-    }
-    // if(_debug>1) std::cout<<"Find peak T0 =   "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<std::endl;
-  }
-
-//------------------------------------------------------------------------------
-// Function to assign hits to the time cluster
-//-----------------------------------------------------------------------------
-  void PhiClusterFinder::assignHits(TimeCluster& otc, const std::vector<StrawHitIndex>& ordchcol) {
-    // assign hits to the closest time peak
-    for(unsigned istr=0; istr<ordchcol.size();++istr) {
-      ComboHit const& ch = (*_chcol)[istr];
-      float time = ch.correctedTime();
-      float dt = fabs(time - otc._t0._t0);
-      if (dt < _maxdt){
-        otc._strawHitIdxs.push_back(istr);
-      }
-    }
   }
 
 //------------------------------------------------------------------------------
