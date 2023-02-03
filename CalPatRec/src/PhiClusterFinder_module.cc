@@ -160,7 +160,7 @@ namespace mu2e {
     auto const& tcH = event.getValidHandle(_tcToken);
     const TimeClusterCollection& tccol(*tcH);
     // For the diagnostics
-    _data._tccol = tcH.product();
+    if(_diag > 0) _data._tccol = tcH.product();
     if (tccol.size() > 0) {
       for(size_t ipeak=0; ipeak<tccol.size(); ipeak++) {
         const auto& tc = tccol[ipeak];
@@ -186,7 +186,7 @@ namespace mu2e {
       addCaloClusters(*tccol1,tccol);
     }
     // Save the output time cluster collection for the diagnostics
-    _data._tccolnew = tccol1.get();
+    if(_diag > 0) _data._tccolnew = tccol1.get();
     // if(_debug>0) std::cout<<"Diag data size = "<<_data._tccolnew->size()<<" old = "<<_data._tccol->size()<<std::endl;
     if (_diag > 0) {
       _hmanager->fillHistograms(&_data);
@@ -422,9 +422,9 @@ namespace mu2e {
       const ComboHit* ch = &_chcol->at(ish);
       float phi = ch->phi();
       if(phi < 0) phi += 2*M_PI;
-      sigphi = sigphi + fabs(meanphi-phi);
+      sigphi = sigphi + (meanphi-phi)*(meanphi-phi);
     }
-    sigphi = sigphi/(tc._strawHitIdxs.size()-1);
+    sigphi = sqrt(sigphi/(tc._strawHitIdxs.size()-1));
     // if(_debug>3) std::cout<<"Check Delta time sigma = "<<sig<<" phi sigma = "<<sigphi<<" t0 = "<<tc._t0._t0<<" n straw hits = "<<tc._nsh<<" n combo hits = "<<tc._strawHitIdxs.size()<<std::endl;
     return sigphi;
   }
