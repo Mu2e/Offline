@@ -70,5 +70,3 @@ namespace mu2e {
   };
 }
 #endif
-
-

@@ -183,9 +183,4 @@ namespace mu2e
       if (blindIdx[idx]>0) clusters.back().addHit(ich);
     }
   }
-
-
 }
-
-
-
