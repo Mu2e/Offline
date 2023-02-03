@@ -366,7 +366,7 @@ CalPatRec : { @table::CalPatRec
             maxGap                      :  3  ## 3 gap in missing stations along the candidate
             sigmaR                      :  3. # 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
             seedRes                     :  3. # 5 is good just to see what it does
-            maxDriftTime                : 35. ## 40 ns, includes some tolerance (50)
+            maxDriftTime                : 40. ## 40 ns, includes some tolerance (50)
             maxSeedDt                   : 20. ## time window for checking duplicate seeds
             maxHitDt                    : 30. ## time window for checking duplicate seeds
             maxStrawDt                  : 10. # max sensible time difference for a straw, ns, off by default
@@ -409,12 +409,12 @@ CalPatRec : { @table::CalPatRec
                 maxGap                      :  3   ## 3 gap in missing stations along the candidate
 #------------------------------------------------------------------------------
 # for moving upstream, the combination sigmaR=2 rCore=3 gives:
-#                     N(delta hits) : 99506 and N(conv hits) : 184
+#                     N(delta hits) : 99256 and N(conv hits) : 180
 # so far, this is the best. <T(CE+2BB)> = 1.2 msec /event
 #------------------------------------------------------------------------------
                 sigmaR                      :  2.  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-                rCore                       :  2.5 ##  not yet sure
-                maxDriftTime                : 35.  ## 40 ns, includes some tolerance (50)
+                rCore                       :  3   ##  'core' of the compton electron trajectory
+                maxDriftTime                : 40.  ## 40 ns, no tolerances ...
                 maxSeedDt                   : 20.  ## time window for checking duplicate seeds
                 maxHitDt                    : 30.  ## time window for checking duplicate seeds
                 maxStrawDt                  : 10.  ## max sensible time difference for a straw, ns, off by default

@@ -23,7 +23,8 @@ physics : {
             debugLevel                    :  0  ## 1 ##
 
             finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
-                maxChi2Seed  :  12. ## test1:12  used by findSeeds, for each hit
+                maxChi2All   :   9.
+                # maxChi2Seed  :  12. ## default: 12  used by findSeeds, for each hit
                 sigmaR       :   2.
                 rCore        :   3.
             }

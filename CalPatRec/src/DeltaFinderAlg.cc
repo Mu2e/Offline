@@ -547,6 +547,11 @@ namespace mu2e {
           for (int h2=first; h2<=last; h2++) {
             HitData_t*      hd2 = &fz2->fHitData[h2];
             const ComboHit* ch2 = hd2->fHit;
+            float t2 = ch2->time();
+            float dt = t2-t1;
+
+            if (dt >  _maxDriftTime) break;
+            if (dt < -_maxDriftTime) continue;
 //-----------------------------------------------------------------------------
 // 'ip2' - panel index within its face
 // check overlap in phi between the panels coresponding to the wires - 120 deg
@@ -555,12 +560,6 @@ namespace mu2e {
             Pzz_t* pz2  = fz2->Panel(ip2);
             double n1n2 = pz1->nx*pz2->nx+pz1->ny*pz2->ny;
             if (n1n2 < -0.5)                                          continue;
-
-            float t2   = ch2->time();
-            float dt = t2-t1;
-
-            if (dt >  _maxDriftTime + 10) break;
-            if (dt < -_maxDriftTime - 10) continue;
 //-----------------------------------------------------------------------------
 // hits are consistent in time,
 // 'counter' is the number of hits in the whole station close to the first one
