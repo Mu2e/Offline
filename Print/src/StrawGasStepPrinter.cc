@@ -77,12 +77,7 @@ void mu2e::StrawGasStepPrinter::Print(const mu2e::StrawGasStep& obj, int ind,
      << obj.time() << ", " << std::setw(7) << std::setprecision(2)
      << fmod(obj.time(),mbtime) << ", " << std::setw(5) << std::setprecision(2)
      << obj.momentum().R() << ", " << std::setw(5) << std::setprecision(2)
-     // << obj.momentum().z() << ", " << std::setw(5) << std::setprecision(2)
-     << obj.position() // << ", " << std::setw(5) << std::setprecision(2)
-     // << obj.startPosition().x() << ", " << std::setw(5) << std::setprecision(2)
-     // << obj.startPosition().y() << ", " << std::setw(5) << std::setprecision(2)
-     // << obj.startPosition().y() << ", " << std::setw(5) << std::setprecision(2)
-     <<std::endl;
+     << obj.position() << std::endl;
 }
 
 void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,
@@ -93,6 +88,5 @@ void mu2e::StrawGasStepPrinter::PrintHeader(const std::string& tag,
 
 void mu2e::StrawGasStepPrinter::PrintListHeader(std::ostream& os) {
   if (verbose() < 1) return;
-  os << " ind SimPart StrawID eDep    length    time   time%mbtime   position \n";
-  // os << " ind SimPart StrawID eDep    length    time   time%mbtime    ptot   pz   position   x   y   z \n";
+  os << " ind SimPart StrawID eDep    length    time   time%mbtime momentum position \n";
 }
