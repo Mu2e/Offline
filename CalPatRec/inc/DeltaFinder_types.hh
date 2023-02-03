@@ -120,8 +120,8 @@ namespace mu2e {
       std::vector<const ComboHit*>  _v;                      // sorted
 
       TClonesArray*                 fListOfSeeds       [kNStations]; // all seeds found in a given station
-      TObjArray*                    fListOfProtonSeeds [kNStations];
-      TObjArray*                    fListOfComptonSeeds[kNStations];
+      std::vector<DeltaSeed*>       fListOfProtonSeeds [kNStations];
+      std::vector<DeltaSeed*>       fListOfComptonSeeds[kNStations];
 
       std::vector<DeltaCandidate>   fListOfDeltaCandidates;
 
@@ -153,13 +153,8 @@ namespace mu2e {
         return (DeltaSeed*) fListOfSeeds[Station]->UncheckedAt(I);
       }
 
-      DeltaSeed*      ComptonSeed   (int Station, int I) {
-        return (DeltaSeed*) fListOfComptonSeeds[Station]->UncheckedAt(I);
-      }
-
-      DeltaSeed*      ProtonSeed    (int Station, int I) {
-        return (DeltaSeed*) fListOfProtonSeeds[Station]->UncheckedAt(I);
-      }
+      DeltaSeed*      ComptonSeed   (int Station, int I) { return fListOfComptonSeeds[Station][I]; }
+      DeltaSeed*      ProtonSeed    (int Station, int I) { return fListOfProtonSeeds [Station][I]; }
 
 
       void InitEvent(const art::Event* Evt, int DebugLevel);
@@ -168,13 +163,13 @@ namespace mu2e {
       int  NSeedsTot() { return fNSeeds; }
 
       int  NSeeds       (int Station) { return fListOfSeeds       [Station]->GetEntriesFast(); }
-      int  NComptonSeeds(int Station) { return fListOfComptonSeeds[Station]->GetEntriesFast(); }
-      int  NProtonSeeds (int Station) { return fListOfProtonSeeds [Station]->GetEntriesFast(); }
+      int  NComptonSeeds(int Station) { return fListOfComptonSeeds[Station].size(); }
+      int  NProtonSeeds (int Station) { return fListOfProtonSeeds [Station].size(); }
 
       int  nDeltaCandidates() { return fListOfDeltaCandidates.size(); }
 
-      void AddProtonSeed (DeltaSeed* Seed, int Station) { fListOfProtonSeeds [Station]->Add(Seed); }
-      void AddComptonSeed(DeltaSeed* Seed, int Station) { fListOfComptonSeeds[Station]->Add(Seed); }
+      void AddProtonSeed (DeltaSeed* Seed, int Station) { fListOfProtonSeeds [Station].push_back(Seed); }
+      void AddComptonSeed(DeltaSeed* Seed, int Station) { fListOfComptonSeeds[Station].push_back(Seed); }
 
       void addDeltaCandidate(DeltaCandidate* Delta) { fListOfDeltaCandidates.push_back(*Delta); }
 

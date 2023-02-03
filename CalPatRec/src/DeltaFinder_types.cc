@@ -19,9 +19,6 @@ namespace mu2e {
       for (int i=0; i<kNStations; i++) {
         fListOfSeeds[i] = new TClonesArray("mu2e::DeltaSeed",50);
         fListOfSeeds[i]->SetOwner(kTRUE);
-
-        fListOfProtonSeeds [i] = new TObjArray();
-        fListOfComptonSeeds[i] = new TObjArray();
       }
     }
 
@@ -29,8 +26,6 @@ namespace mu2e {
     Data_t::~Data_t() {
       for (int i=0; i<kNStations; i++) {
         delete fListOfSeeds[i];
-        delete fListOfProtonSeeds [i];
-        delete fListOfComptonSeeds[i];
       }
     }
 
@@ -87,8 +82,8 @@ namespace mu2e {
 
       for (int is=0; is<kNStations; is++) {
         fListOfSeeds       [is]->Clear();
-        fListOfProtonSeeds [is]->Clear();
-        fListOfComptonSeeds[is]->Clear();
+        fListOfProtonSeeds [is].clear();
+        fListOfComptonSeeds[is].clear();
 //-----------------------------------------------------------------------------
 // re-initialize faces
 //-----------------------------------------------------------------------------
