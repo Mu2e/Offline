@@ -131,16 +131,10 @@ namespace mu2e {
         const Plane* p2 = &tracker->getPlane(ipl+1);
         int ist         = ipl/2;
         stationZ[ist]   = (p1->origin().z()+p2->origin().z())/2;
-
-      //   for (int iDisk=0; iDisk<nDisks; ++iDisk){
-      //     stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - stationZ[ist])/sin(meanPitchAngle)/CLHEP::c_light;
-      //   }
       }
 //-----------------------------------------------------------------------------
 // per-panel constants
 //-----------------------------------------------------------------------------
-      float     z_tracker_center(0.);
-
       int npl = tracker->nPlanes();
       for (int ipl=0; ipl< npl; ipl++) {
         const Plane* pln = &tracker->getPlane(ipl);
@@ -177,9 +171,6 @@ namespace mu2e {
           pz->z     = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
 
           if (co.Panel == 0) fz->z = pz->z;
-
-          int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + co.Face;
-          faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(meanPitchAngle)/CLHEP::c_light;
         }
         stationUsed[ist] = 1;
       }

@@ -9,8 +9,14 @@ namespace mu2e {
   class SimParticle;
 
     struct DeltaCandidate {
+      enum  {
+        kEDepBit   = 0x00000001, // <<  0
+        kNHitsBit  = 0x00000002
+      };
+
     public:
       int                   fIndex;                 // >= 0: index, <0: -1000-index merged
+      int                   fMask;                  // bitmask , if zero, the candiate is good
       int                   fFirstStation;
       int                   fLastStation;
       DeltaSeed*            seed   [kNStations];
@@ -18,9 +24,8 @@ namespace mu2e {
       // float                 fT0Min [kNStations];   // acceptable hit times (no need to account for the drift time!)
       // float                 fT0Max [kNStations];
       XYZVectorF            CofM;
-      //      float                 phi;
       int                   fNSeeds;
-      McPart_t*             fMcPart;
+      McPart_t*             fMcPart;               // "best" MC particle
       int                   fNHits;                // n(combo hits)
       int                   fNStrawHits;           // number of straw hits
       int                   fNHitsMcP;             // N combo hits by the "best" particle"
@@ -52,6 +57,7 @@ namespace mu2e {
 
       int        Active               () const { return (fIndex >= 0); }
       int        Index                () const { return fIndex ; }
+      int        Mask                 () const { return fMask  ; }
       int        NSeeds               () const { return fNSeeds; }
       int        NHits                () const { return fNHits; }
       int        NHitsMcP             () const { return fNHitsMcP; }

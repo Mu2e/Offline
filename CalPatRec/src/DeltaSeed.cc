@@ -204,21 +204,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           const XYZVectorF& wdir = hd->fHit->wdir();
 
-          double dxy_dot_wdir    = dx*wdir.x()+dy*wdir.y();
+          double dxy_dot_w = dx*wdir.x()+dy*wdir.y();
+          double dxy_dot_n = dx*wdir.y()-dy*wdir.x();
 
-          double dx_par          = dxy_dot_wdir*wdir.x();
-          double dy_par          = dxy_dot_wdir*wdir.y();
-
-          double dx_perp         = dx-dx_par;
-          double dy_perp         = dy-dy_par;
-
-          float  dxy2_perp       = dx_perp*dx_perp+dy_perp*dy_perp;
-
-          float  chi2_par        = dxy_dot_wdir*dxy_dot_wdir/(hd->fSigW2+SigmaR2);
-          float  chi2_perp       = dxy2_perp/SigmaR2;
-          float  chi2            = chi2_par + chi2_perp;
-          fChi2All              += chi2;
-          fChi2Perp             += chi2_perp;
+          float  chi2_par  = (dxy_dot_w*dxy_dot_w)/(SigmaR2+hd->fSigW2);
+          float  chi2_perp = (dxy_dot_n*dxy_dot_n)/SigmaR2;
+          float  chi2      = chi2_par + chi2_perp;
+          fChi2All        += chi2;
+          fChi2Perp       += chi2_perp;
         }
       }
     }
@@ -240,21 +233,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         const XYZVectorF& wdir = hd->fHit->wdir();
 
-        double dxy_dot_wdir    = dx*wdir.x()+dy*wdir.y();
+        double dxy_dot_w    = dx*wdir.x()+dy*wdir.y();
+        double dxy_dot_n    = dx*wdir.y()-dy*wdir.x();
 
-        double dx_par          = dxy_dot_wdir*wdir.x();
-        double dy_par          = dxy_dot_wdir*wdir.y();
-
-        double dx_perp         = dx-dx_par;
-        double dy_perp         = dy-dy_par;
-
-        float  dxy2_perp       = dx_perp*dx_perp+dy_perp*dy_perp;
-
-        float  chi2_par        = dxy_dot_wdir*dxy_dot_wdir/(hd->fSigW2+SigmaR2);
-        float  chi2_perp       = dxy2_perp/SigmaR2;
-        float  chi2            = chi2_par + chi2_perp;
-        Chi2All               += chi2;
-        Chi2Perp              += chi2_perp;
+        float  chi2_par     = (dxy_dot_w*dxy_dot_w)/(SigmaR2+hd->fSigW2);
+        float  chi2_perp    = (dxy_dot_n*dxy_dot_n)/SigmaR2;
+        float  chi2         = chi2_par + chi2_perp;
+        Chi2All            += chi2;
+        Chi2Perp           += chi2_perp;
       }
     }
   }
