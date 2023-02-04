@@ -38,8 +38,6 @@ namespace mu2e {
     _maxStrawDt            (config().maxStrawDt()       ),
     _maxDtDs               (config().maxDtDs()          ),
     _maxDtDc               (config().maxDtDc()          ),
-    // _writeComboHits        (config().writeComboHits()   ),
-    // _writeStrawHitFlags    (config().writeStrawHitFlags()),
     _debugLevel            (config().debugLevel()        ),
     _diagLevel             (config().diagLevel()         ),
     _printErrors           (config().printErrors()       ),
@@ -122,7 +120,11 @@ namespace mu2e {
       float      best_chi2  (_maxChi2Radial);
 
       for (int ih=first; ih<=last; ih++) {
+//-----------------------------------------------------------------------------
+// don't try to re-use hits which already made it into a 3- and 4-hit seeds
+//-----------------------------------------------------------------------------
         HitData_t* hd      = &fz->fHitData[ih];
+        if (hd->Used() >= 3)                                       continue;
         float corr_time    = hd->fCorrTime;
         const ComboHit* ch = hd->fHit;
 
@@ -217,8 +219,13 @@ namespace mu2e {
     }
 //-----------------------------------------------------------------------------
 // update seed time and X and Y coordinates, accurate knowledge of Z is not very relevant
+// also define the number of hits on a found seed
 //-----------------------------------------------------------------------------
     Seed->CalculateCogAndChi2(_sigmaR2);
+    for (int face=0; face<kNFaces; face++) {
+      HitData_t* hd = Seed->HitData(face);
+      if (hd) hd->fUsed = Seed->NHits();
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -505,6 +512,7 @@ namespace mu2e {
 // hit has not been used yet to start a seed, however it could've been used as a second seed
 //-----------------------------------------------------------------------------
         HitData_t*      hd1 = &fz1->fHitData[h1];
+        if (hd1->Used() >= 3)                                         continue;
         const ComboHit* ch1 = hd1->fHit;
 //-----------------------------------------------------------------------------
 // panels 0,2,4 are panels 0,1,2 in the first  (#0) face of a plane
@@ -546,6 +554,7 @@ namespace mu2e {
           int last  = fz2->fLast [ltbin];
           for (int h2=first; h2<=last; h2++) {
             HitData_t*      hd2 = &fz2->fHitData[h2];
+            if (hd2->Used() >= 3)                                    continue;
             const ComboHit* ch2 = hd2->fHit;
             float t2 = ch2->time();
             float dt = t2-t1;
@@ -762,11 +771,6 @@ namespace mu2e {
         if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
         if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
       }
-
-      // PanelZ_t* pz = &_data->oTracker[os][of][op];
-      // pz->fHitData->push_back(HitData_t(ch));
-      // if (pz->tmin > corr_time) pz->tmin = corr_time;
-      // if (pz->tmax < corr_time) pz->tmax = corr_time;
 //-----------------------------------------------------------------------------
 // prototype face-based hit storage
 // hits are already time-ordered - that makes it easy to define fFirst
@@ -776,7 +780,7 @@ namespace mu2e {
       FaceZ_t* fz  = &_data->fFaceData[os][of];
       int      loc = fz->fHitData.size();
 
-      fz->fHitData.push_back(HitData_t(ch));
+      fz->fHitData.push_back(HitData_t(ch,of));
       int time_bin = int (ch->time()/_timeBin) ;
 
       if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;
@@ -1080,6 +1084,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       for (int h=first; h<=last; h++) {
         HitData_t* hd = &fz->fHitData[h];
+        if (hd->Used() >= 3)                                          continue;
         if ((UseUsedHits == 0) and hd->Used())                        continue;
 //-----------------------------------------------------------------------------
 // don't skip hits already included into seeds - a two-hit stereo seed

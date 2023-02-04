@@ -43,6 +43,8 @@ namespace mu2e {
     HitData_t*   hitData       [kNFaces];
 
     McPart_t*    fMcPart       [kNFaces];
+    int          fNSim;
+    int          fNMom;
                                       // XY coordinate sums
     double       fSnx2;
     double       fSnxy;
