@@ -22,7 +22,6 @@ namespace mu2e {
       int Plane;
       int Face;
       int Panel;
-      // int Layer;
     };
 //-----------------------------------------------------------------------------
 // intersection of the two hit wires
@@ -38,24 +37,26 @@ namespace mu2e {
     struct HitData_t {
       const ComboHit*         fHit;
       DeltaSeed*              fSeed;           // nullptr if not associated...
-      //      int                     fNSecondHits;
-      int                     fDeltaIndex;
+      int                     fUsed;           // TBD
+      int                     fZFace;          // z-ordered face (for printing)
       float                   fChi2Min;
-      float                   fSigW2;    // cached resolution^2 along the wire
-      float                   fCorrTime; // cache hit corrected time
+      float                   fSigW2;          // cached resolution^2 along the wire
+      float                   fCorrTime;       // cached hit corrected time
+      int                     fDeltaIndex;     // is it really needed? **FIXME**
 
-      HitData_t(const ComboHit* Hit) {
+      HitData_t(const ComboHit* Hit,int ZFace) {
         fHit         = Hit;
+        fSeed        = nullptr;
+        fUsed        = 0;
+        fZFace       = ZFace;
         fChi2Min     = 99999.0;
         float sigw   =  Hit->posRes(ComboHit::wire);
-        fSigW2       = sigw*sigw;  // to be used to calculate chi2...
-        fSeed        = nullptr;
-        // fNSecondHits =  0;
-        fDeltaIndex  = -1;
+        fSigW2       = sigw*sigw;
         fCorrTime    = Hit->correctedTime();
+        fDeltaIndex  = -1;
       }
 
-      int Used() const { return (fSeed != nullptr) ; }
+      int Used() const { return fUsed ; }
     };
 //-----------------------------------------------------------------------------
 // diagnostics structure
@@ -67,6 +68,7 @@ namespace mu2e {
       int                           fFirstStation;
       int                           fLastStation;
       int                           fID;         // SimParticle::id().asInt()
+      int                           fMotherID;
       int                           fPdgID;
       int                           fNHitsCE;
       int                           fNHitsDelta; // number of hits associated with reconstructed delta electrons
@@ -79,6 +81,7 @@ namespace mu2e {
         fSim          = Sim;
         fDelta        = NULL;
         fID           = -1;
+        fMotherID     = -1;
         fPdgID        = 0;
         fNHitsDelta   = 0;
         fNHitsCE      = 0;

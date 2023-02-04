@@ -66,9 +66,11 @@ namespace mu2e {
       virtual const SimParticle* getSimParticle(const art::Event* Event, int HitIndex) override;
       virtual const XYZVectorF*  getMom        (const art::Event* Event, int HitIndex) override;
 
-      int   getID      (const SimParticle* Sim) override;
-      int   getPdgID   (const SimParticle* Sim) override;
-      float getStartMom(const SimParticle* Sim) override;
+      int   getID         (const SimParticle* Sim) override;
+      int   getMotherID   (const SimParticle* Sim) override;
+      int   getMotherPdgID(const SimParticle* Sim) override;
+      int   getPdgID      (const SimParticle* Sim) override;
+      float getStartMom   (const SimParticle* Sim) override;
 
   };
 
@@ -236,6 +238,22 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   int   TrkRecoMcUtils::getID      (const SimParticle* Sim) { return Sim->id().asInt();  }
+
+  //-----------------------------------------------------------------------------
+  int   TrkRecoMcUtils::getMotherID(const SimParticle* Sim) {
+
+    const SimParticle* mother = Sim;
+    while(mother->hasParent()) mother = mother->parent().get();
+    return mother->id().asInt();
+  }
+
+  //-----------------------------------------------------------------------------
+  int   TrkRecoMcUtils::getMotherPdgID(const SimParticle* Sim) {
+
+    const SimParticle* mother = Sim;
+    while(mother->hasParent()) mother = mother->parent().get();
+    return mother->pdgId();
+  }
 
   //-----------------------------------------------------------------------------
   int   TrkRecoMcUtils::getPdgID   (const SimParticle* Sim) { return Sim->pdgId();  }

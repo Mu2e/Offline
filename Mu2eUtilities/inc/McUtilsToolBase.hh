@@ -47,9 +47,11 @@ namespace mu2e {
     virtual const SimParticle* getSimParticle(const art::Event* Event, int IHit);
 
     virtual const XYZVectorF* getMom(const art::Event* Event, int HitIndex) { return NULL; }
-    virtual int   getID      (const SimParticle* Sim) { return -1;  }
-    virtual int   getPdgID   (const SimParticle* Sim) { return -1;  }
-    virtual float getStartMom(const SimParticle* Sim) { return -1.; }
+    virtual int   getID         (const SimParticle* Sim) { return -1;  }
+    virtual int   getMotherID   (const SimParticle* Sim) { return -1;  }
+    virtual int   getMotherPdgID(const SimParticle* Sim) { return -1;  }
+    virtual int   getPdgID      (const SimParticle* Sim) { return -1;  }
+    virtual float getStartMom   (const SimParticle* Sim) { return -1.; }
 
   };
 }

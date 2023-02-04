@@ -231,6 +231,7 @@ namespace mu2e {
     _maxDxy                (config().maxDxy()           ),
     _maxGap                (config().maxGap()           ),
     _sigmaR                (config().sigmaR()           ),
+    _sigmaR2               (_sigmaR*_sigmaR             ),
     _maxDriftTime          (config().maxDriftTime()     ),
     _maxSeedDt             (config().maxSeedDt()        ),
     _maxHitDt              (config().maxHitDt()         ),
@@ -261,7 +262,6 @@ namespace mu2e {
 
     _testOrderPrinted = 0;
     _tdbuff           = 80.;                 // mm ... about less than 1 ns
-    _sigmaR2          = _sigmaR*_sigmaR;
 
     if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(config().diagPlugin.get_PSet());
     else                 _hmanager = std::make_unique<ModuleHistToolBase>();
@@ -907,7 +907,7 @@ namespace mu2e {
         if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
       }
 
-      pz->fHitData->push_back(HitData_t(ch));
+      pz->fHitData->push_back(HitData_t(ch,of));
       if (pz->tmin > corr_time) pz->tmin = corr_time;
       if (pz->tmax < corr_time) pz->tmax = corr_time;
 //-----------------------------------------------------------------------------
@@ -917,7 +917,7 @@ namespace mu2e {
       FaceZ_t* fz = &_data.fFaceData[os][of];
       int loc = fz->fHitData.size();
 
-      fz->fHitData.push_back(HitData_t(ch));
+      fz->fHitData.push_back(HitData_t(ch,of));
       int time_bin = int (corr_time/_timeBinWidth) ;
 
       if (fz->fFirst[time_bin] < 0) fz->fFirst[time_bin] = loc;

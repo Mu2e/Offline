@@ -403,16 +403,16 @@ CalPatRec : { @table::CalPatRec
 
                 maxChi2Seed                 : 12.  ## 10 16 used by findSeeds, for each hit
                 maxChi2Radial               : 12.  ## 10 25 used by recoverStation (wire-to-seed dist)
-                maxChi2All                  : 12.  ## 10 16 used by pruneSeeds to mark bad seeds
+                maxChi2All                  :  9.  ## 10 16 used by pruneSeeds to mark bad seeds
                 maxChi2SeedDelta            :  3.  ##
                 maxDxy                      : 10.  ## used by connectSeeds 30 40 mm
                 maxGap                      :  3   ## 3 gap in missing stations along the candidate
 #------------------------------------------------------------------------------
-# for moving upstream, the combination sigmaR=2 rCore=3 gives:
-#                     N(delta hits) : 99256 and N(conv hits) : 180
-# so far, this is the best. <T(CE+2BB)> = 1.2 msec /event
+# for moving upstream, the combination sigmaR=3 rCore=3 gives:
+#                     N(delta hits) : 996110 and N(conv hits) : 201
+# so far, this is the best. <T(CE+2BB)> = 0.977 msec/event   FlagBkgHits : 0.480 msec/event
 #------------------------------------------------------------------------------
-                sigmaR                      :  2.  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+                sigmaR                      :  3.  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
                 rCore                       :  3   ##  'core' of the compton electron trajectory
                 maxDriftTime                : 40.  ## 40 ns, no tolerances ...
                 maxSeedDt                   : 20.  ## time window for checking duplicate seeds
@@ -447,6 +447,7 @@ CalPatRec : { @table::CalPatRec
                 printDeltaCandidates    : 0
                 printOTracker           : 0                     #
                 printShcol              : 0                     #
+                printSeedNParents       : -1
                 mcUtils                 : { tool_type : "TrkRecoMcUtils"
                     strawDigiMCCollTag : "compressDigiMCs"
                     comboHitCollTag    : "makePH"

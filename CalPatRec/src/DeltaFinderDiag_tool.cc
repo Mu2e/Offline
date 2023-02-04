@@ -8,6 +8,9 @@
 
 #include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
@@ -63,8 +66,9 @@ namespace mu2e {
       TH1F*  fNHitsPerSeed;
       TH1F*  fSeedRadius;
       TH1F*  fSeedMomentum;
-      TH2F*  fSeedSize;
       TH1F*  fNHits;
+      TH1F*  fNSim;
+      TH1F*  fNMom;
       TH1F*  fEDep;
       TH1F*  fDt;
     };
@@ -136,6 +140,7 @@ namespace mu2e {
     int                                   _printDeltaSeeds;
     int                                   _printDeltaCandidates;
     int                                   _printShcol;
+    int                                   _printSeedNParents;   // n(hits) for seeds with > 2 parents
 
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
@@ -153,7 +158,7 @@ namespace mu2e {
   public:
 
     DeltaFinderDiag(const fhicl::ParameterSet& PSet);
-    DeltaFinderDiag(const DeltaFinderTypes::Config& config);
+    DeltaFinderDiag(const fhicl::Table<mu2e::DeltaFinderTypes::Config>& config);
     ~DeltaFinderDiag();
 
   private:
@@ -174,10 +179,12 @@ namespace mu2e {
     int         InitMcDiag      ();
     int         associateMcTruth();
 
-    void        printHitData(const HitData_t* Hd, int Face);
+    void        printDeltaSeed(DeltaSeed* seed, int PrintBanner);
+
+    void        printHitData(const HitData_t* Hd, int PrintBanner);
     void        printOTracker();
 
-    void        printComboHit(const ComboHit* Sh, int Index);
+    void        printComboHit(const ComboHit* Sh, int PrintBanner);
     void        printComboHitCollection();
 //-----------------------------------------------------------------------------
 // overriden virtual functions of the base class
@@ -204,36 +211,39 @@ namespace mu2e {
     _printElectronsMaxMom  (PSet.get<float>        ("printElectronsMaxMom"         )),
     _printDeltaSeeds       (PSet.get<int>          ("printDeltaSeeds"              )),
     _printDeltaCandidates  (PSet.get<int>          ("printDeltaCandidates"         )),
-    _printShcol            (PSet.get<int>          ("printShcol"                   ))
+    _printShcol            (PSet.get<int>          ("printShcol"                   )),
+    _printSeedNParents     (PSet.get<int>          ("printSeedNParents"            ))
   {
-    printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY! \n");
+    printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY PSet! \n");
     //    _firstCall   =  1;
     //    _timeOffsets = NULL;
 
     if (_mcDiag != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
     else              _mcUtils = std::make_unique<McUtilsToolBase>();
   }
+
 //-----------------------------------------------------------------------------
 // this routine is called once per job
 //-----------------------------------------------------------------------------
-  DeltaFinderDiag::DeltaFinderDiag(const DeltaFinderTypes::Config& config):
-    _mcDiag                (config.mcDiag()                ),
-    _printOTracker         (config.printOTracker()         ),
-    _printComboHits        (config.printComboHits()        ),
-    _printElectrons        (config.printElectrons()        ),
-    _printElectronsHits    (config.printElectronsHits()    ),
-    _printElectronsMinNHits(config.printElectronsMinNHits()),
-    _printElectronsMaxFReco(config.printElectronsMaxFReco()),
-    _printElectronsMinMom  (config.printElectronsMinMom()  ),
-    _printElectronsMaxMom  (config.printElectronsMaxMom()  ),
-    _printDeltaSeeds       (config.printDeltaSeeds()       ),
-    _printDeltaCandidates  (config.printDeltaCandidates()  ),
-    _printShcol            (config.printShcol()            )
+  DeltaFinderDiag::DeltaFinderDiag(const fhicl::Table<mu2e::DeltaFinderTypes::Config>& config):
+    _mcDiag                (config().mcDiag()                ),
+    _printOTracker         (config().printOTracker()         ),
+    _printComboHits        (config().printComboHits()        ),
+    _printElectrons        (config().printElectrons()        ),
+    _printElectronsHits    (config().printElectronsHits()    ),
+    _printElectronsMinNHits(config().printElectronsMinNHits()),
+    _printElectronsMaxFReco(config().printElectronsMaxFReco()),
+    _printElectronsMinMom  (config().printElectronsMinMom()  ),
+    _printElectronsMaxMom  (config().printElectronsMaxMom()  ),
+    _printDeltaSeeds       (config().printDeltaSeeds()       ),
+    _printDeltaCandidates  (config().printDeltaCandidates()  ),
+    _printShcol            (config().printShcol()            ),
+    _printSeedNParents     (config().printSeedNParents()     )
   {
-    printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY! \n");
+    printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY Config! \n");
     //    _firstCall   =  1;
 
-    if (_mcDiag != 0) _mcUtils = art::make_tool  <McUtilsToolBase>(config.mcUtils.get_PSet());
+    if (_mcDiag != 0) _mcUtils = art::make_tool  <McUtilsToolBase>(config().mcUtils.get_PSet());
     else              _mcUtils = std::make_unique<McUtilsToolBase>();
   }
 
@@ -285,12 +295,13 @@ namespace mu2e {
     Hist->fChi2Delta       = Dir->make<TH1F>("chi2_delta"  , "Chi2 delta match"  , 1000, 0.,  50.);
     Hist->fNFacesWithHits  = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
     Hist->fNHitsPerFace    = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
-    Hist->fNHitsPerSeed    = Dir->make<TH1F>("nhits_seed"  , "Number of hits per seed", 40, 0., 40.);
+    Hist->fNHits           = Dir->make<TH1F>("nhits"       , "Number of hits"      , 10, 0., 10.);
     Hist->fSeedRadius      = Dir->make<TH1F>("rad"         , "Seed radius", 500, 0., 1000.);
     Hist->fSeedMomentum    = Dir->make<TH1F>("mom"         , "Seed momentum", 400, 0., 400.);
-    Hist->fSeedSize        = Dir->make<TH2F>("seed_size"   , "Seed (nh2+1):(nh1+1)", 20, 0., 20.,20,0,20);
-    Hist->fEDep            = Dir->make<TH1F>("edep"        , "mean E(Dep)"         ,100, 0., 0.01);
-    Hist->fDt              = Dir->make<TH1F>("dt"          , "delta(T)"            ,100, -100, 100);
+    Hist->fNSim            = Dir->make<TH1F>("nsim"        , "N(sim particls)"     , 10,    0.,  10.);
+    Hist->fNMom            = Dir->make<TH1F>("nmom"        , "N(MC moms)"          , 10,    0.,  10.);
+    Hist->fEDep            = Dir->make<TH1F>("edep"        , "mean E(Dep)"         ,100,    0.,   0.01);
+    Hist->fDt              = Dir->make<TH1F>("dt"          , "delta(T)"            ,100, -100., 100.);
   }
 
 //-----------------------------------------------------------------------------
@@ -543,9 +554,8 @@ namespace mu2e {
       Hist->fHitChi2Min->Fill(chi2_1);
       Hist->fHitChi2Min->Fill(chi2_2);
 
-      int nh1 = hd1->fHit->nStrawHits();
-      int nh2 = hd2->fHit->nStrawHits();
-      Hist->fSeedSize->Fill(nh1,nh2);
+      // int nh1 = hd1->fHit->nStrawHits();
+      // int nh2 = hd2->fHit->nStrawHits();
 
       double _sigmaR = 10;
 
@@ -559,6 +569,7 @@ namespace mu2e {
         if (hd == nullptr)                                            continue;
 //-----------------------------------------------------------------------------
 // reproduce DeltaFinder algorithm
+// *FIXME* - replace with the call to the algorithm function...
 //-----------------------------------------------------------------------------
         XYZVectorF dxyz = hd->fHit->pos()-Seed->CofM;
 //-----------------------------------------------------------------------------
@@ -584,7 +595,10 @@ namespace mu2e {
 
     Hist->fSeedMomentum->Fill(mom);
 
-    Hist->fNHitsPerSeed->Fill(Seed->NHits());
+    Hist->fNHits->Fill(Seed->NHits());
+    Hist->fNSim->Fill(Seed->fNSim);
+    Hist->fNMom->Fill(Seed->fNMom);
+
     Hist->fEDep->Fill(Seed->EDep());
 
     Hist->fDt->Fill(Par->dt);
@@ -713,33 +727,6 @@ namespace mu2e {
             fillSeedHistograms(_hist.fSeed[8],seed,&seed_par);
           }
 
-          if ((pdg_id == 11) and (mom < 20)) {
-            DeltaCandidate* dc(nullptr);
-            if (seed->fDeltaIndex >= 0) dc = _data->deltaCandidate(seed->fDeltaIndex);
-            if (dc) {
-//-----------------------------------------------------------------------------
-// this seed has been associated with a delta
-//-----------------------------------------------------------------------------
-              if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[11],seed,&seed_par);
-              else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[12],seed,&seed_par);
-              else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[13],seed,&seed_par);
-              else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[14],seed,&seed_par);
-
-              if (dc->NHits() >= 5) {
-                if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[21],seed,&seed_par);
-                else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[22],seed,&seed_par);
-                else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[23],seed,&seed_par);
-                else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[24],seed,&seed_par);
-              }
-
-              if (dc->NSeeds() > 3) {
-                if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[31],seed,&seed_par);
-                else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[32],seed,&seed_par);
-                else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[33],seed,&seed_par);
-                else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[34],seed,&seed_par);
-              }
-            }
-          }
         }
         else {
 //-----------------------------------------------------------------------------
@@ -753,6 +740,32 @@ namespace mu2e {
           if (seed->Chi2TotN() > 50) {
             printf("* ERROR seed with chi2TotN  > 50\n");
             _data->printDeltaSeed(seed);
+          }
+        }
+
+        if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[11],seed,&seed_par);
+        else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[12],seed,&seed_par);
+        else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[13],seed,&seed_par);
+        else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[14],seed,&seed_par);
+
+        DeltaCandidate* dc(nullptr);
+        if (seed->fDeltaIndex >= 0) dc = _data->deltaCandidate(seed->fDeltaIndex);
+        if (dc) {
+//-----------------------------------------------------------------------------
+// this seed has been associated with a delta
+//-----------------------------------------------------------------------------
+          if (dc->NHits() >= 5) {
+            if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[21],seed,&seed_par);
+            else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[22],seed,&seed_par);
+            else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[23],seed,&seed_par);
+            else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[24],seed,&seed_par);
+          }
+
+          if (dc->NSeeds() > 3) {
+            if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[31],seed,&seed_par);
+            else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[32],seed,&seed_par);
+            else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[33],seed,&seed_par);
+            else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[34],seed,&seed_par);
           }
         }
       }
@@ -884,10 +897,7 @@ namespace mu2e {
     for (int ist=0; ist<kNStations; ist++) {
       for (int face=0; face<kNFaces; face++) {
         FaceZ_t* fz = &_data->fFaceData[ist][face];
-        //for (int ip=0; ip<kNPanelsPerFace; ip++) {
-        // PanelZ_t* panelz = &_data->oTracker[ist][face][ip];
 
-          // for (int il=0; il<2; il++) {
         int nhits = fz->fHitData.size();
         for (int ih=0; ih<nhits; ih++) {
           HitData_t*      hd = &fz->fHitData[ih];
@@ -910,6 +920,7 @@ namespace mu2e {
             mc = new McPart_t(sim);
             _list_of_mc_particles.Add(mc);
             mc->fID       = _mcUtils->getID(sim);
+            mc->fMotherID = _mcUtils->getMotherID(sim);
             mc->fPdgID    = _mcUtils->getPdgID(sim);
             mc->fStartMom = _mcUtils->getStartMom(sim);
           }
@@ -957,14 +968,13 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// for each DeltaSeed, create a list of SimParticle*'s parallel to its list of straw hits
+// for each DeltaSeed, create a list of SimParticle*'s parallel to its list of combo hits
 //-----------------------------------------------------------------------------
   int DeltaFinderDiag::associateMcTruth() {
 
     if (_data->chcol->size() == 0) return 0;
 
     const ComboHit* hit0 = &_data->chcol->at(0);
-
 
     for (int is=0; is<kNStations; is++) {
       int nseeds = _data->NSeeds(is);
@@ -995,6 +1005,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         for (int face=0; face<kNFaces; face++) {
           const HitData_t* hd = seed->HitData(face);
+          seed->fMcPart[face] = nullptr;
           if (hd == nullptr)                                          continue;
           int loc             = hd->fHit-hit0;         // ComboHit index in the collection
           McPart_t* mc        = (McPart_t*) _list_of_mc_part_hit.At(loc);
@@ -1008,6 +1019,56 @@ namespace mu2e {
               DeltaCandidate* dc = _data->deltaCandidate(seed->fDeltaIndex);
               dc->fNHitsCE += 1;
             }
+          }
+        }
+//-----------------------------------------------------------------------------
+// count number of different simID's contributing
+//-----------------------------------------------------------------------------
+        seed->fNSim  = 0;
+        seed->fNMom = 0;
+        int simid[4], nsim(0), momid[4], nmom(0);
+        for (int face=0; face<kNFaces; face++) {
+          McPart_t* mc = seed->fMcPart[face];
+          if (mc == nullptr) continue;
+
+          int found = 0;
+          for (int i=0; i<nsim; i++) {
+            if (mc->fID == simid[i]) {
+              found = 1;
+              break;
+            }
+          }
+
+          if (found == 0) {
+            simid[nsim] = mc->fID;
+            nsim += 1;
+          }
+//-----------------------------------------------------------------------------
+// repeat with mothers
+//-----------------------------------------------------------------------------
+          found = 0;
+          for (int i=0; i<nmom; i++) {
+            if (mc->fMotherID == momid[i]) {
+              found = 1;
+              break;
+            }
+          }
+
+          if (found == 0) {
+            momid[nmom] = mc->fMotherID;
+            nmom += 1;
+          }
+        }
+
+        seed->fNSim = nsim;
+        seed->fNMom = nmom;
+//-----------------------------------------------------------------------------
+// print potentially problematic cases
+//-----------------------------------------------------------------------------
+        if (_printSeedNParents > 0) {
+          if ((seed->fNHits == _printSeedNParents) and (seed->fNSim > 1)) {
+            printf("  >>> WARNING: suspisious DeltaSeed: %i hits, Nmc = %i\n",seed->fNHits,seed->fNSim);
+            printDeltaSeed(seed,0);
           }
         }
       }
@@ -1141,15 +1202,13 @@ namespace mu2e {
 // print combo hits Z-ordered
 //-----------------------------------------------------------------------------
       for (int is=0; is<kNStations; is++) {
-        printHitData(nullptr,-1);
+        printHitData(nullptr,1);
         for (int face=0; face<kNFaces; face++) {
           FaceZ_t* fz = &_data->fFaceData[is][face];
-          //for (int ip=0; ip<kNPanelsPerFace; ip++) {
-          // PanelZ_t* pz = &_data->oTracker[is][face][ip];
           int nhits = fz->fHitData.size();
           for (int ih=0; ih<nhits; ih++) {
             HitData_t* hd = &fz->fHitData[ih];
-            printHitData(hd,face);
+            printHitData(hd,-1);
           }
         }
       }
@@ -1166,39 +1225,12 @@ namespace mu2e {
         int nseeds = _data->NSeeds(st);
         printf("station: %2i N(seeds): %3i\n",st,nseeds);
         if (nseeds > 0) {
-          printf("-------------------------------------------------------------------------------------------");
-          printf("-------------------------------------------------------------------------------\n");
-          printf(" st seed good type delta   SHID:  MCID    SHID:  MCID    SHID:  MCID    SHID:  MCID");
-          printf("  chi2all/N chi2perp/N chi21   chi22 mintime  maxtime  <edep>      ");
-          printf("X        Y         Z   nfwh nch nsh\n");
-          printf("-------------------------------------------------------------------------------------------");
-          printf("-------------------------------------------------------------------------------\n");
+
+          printDeltaSeed(nullptr,0);
+
           for (int iseed=0; iseed<nseeds; ++iseed) {
             DeltaSeed* seed = _data->deltaSeed(st,iseed);
-
-            printf("%2i  %03i %5i %4i",st,iseed,seed->fGood,seed->fType);
-            printf(" %5i",seed->fDeltaIndex);
-//-----------------------------------------------------------------------------
-// print hit ID's in each face
-//-----------------------------------------------------------------------------
-            for (int face=0; face<kNFaces; face++) {
-              const HitData_t* hd = seed->hitData[face];
-              if (hd == nullptr) printf(" (%5i:%6i)",-1,-1);
-              else {
-                const ComboHit* hit = hd->fHit;
-                McPart_t* mcp = seed->fMcPart[face];
-                int mcid = mcp->fID;
-                printf(" (%5i:%6i)",hit->strawId().asUint16(),mcid);
-              }
-            }
-
-            printf(" %8.2f   %7.2f %7.2f %7.2f",seed->Chi2AllN(),seed->Chi2PerpN(),seed->fChi21,seed->fChi22);
-            printf("%8.1f %8.1f %8.5f",seed->MinHitTime(),seed->MaxHitTime(),seed->EDep());
-            printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
-            printf("%4i",seed->fNFacesWithHits);
-            printf("%4i",seed->NHits());
-            printf("%4i",seed->NStrawHits());
-            printf("\n");
+            printDeltaSeed(seed,-1);
           }
         }
       }
@@ -1216,13 +1248,13 @@ namespace mu2e {
           int pdg_id = -1;
           if (dc->fMcPart) pdg_id = dc->fMcPart->fPdgID;
           printf("----------------------------------------------------------------------------------------------------------------\n");
-          printf("      i    nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0    PdgID N(MC hits)\n");
+          printf("* :dc:%05i  nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0    PdgID N(MC hits)\n",
+                 dc->Index());
           printf("----------------------------------------------------------------------------------------------------------------\n");
-          printf(":dc:%05i %3i  %3i",dc->Index(),dc->fNHits,dc->fNHitsCE);
-          printf(" %3i",dc->fNSeeds);
+          printf("            %3i  %3i %3i",dc->fNHits,dc->fNHitsCE,dc->fNSeeds);
           printf(" %2i  %2i %7.2f %7.2f %9.2f",dc->fFirstStation,dc->fLastStation,
                  dc->CofM.x(),dc->CofM.y(),dc->CofM.z());
-          printf("                            %30i %5i",pdg_id,dc->fNHitsMcP);
+          printf("                %30i %5i",pdg_id,dc->fNHitsMcP);
           printf("\n");
           printf("----------------------------------------------------------------------------------------------------------------\n");
 
@@ -1236,7 +1268,7 @@ namespace mu2e {
               const HitData_t* hd0 = ds->HitData(face0);
               const HitData_t* hd1 = (face1 >= 0) ? ds->HitData(face1) : nullptr;
 
-              printf("          %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->Index());
+              printf("            %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->Index());
               printf(" %7.2f %7.2f %9.2f",ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
               float chi22 = (hd1) ? hd1->fChi2Min : -1;
               printf(" %7.1f %7.1f",hd0->fChi2Min, chi22);
@@ -1297,9 +1329,9 @@ namespace mu2e {
 
             if (_printElectronsHits > 0) {
               int nh = mc->fListOfHits.size();
-              if (nh > 0) printHitData(NULL,-1);
+              if (nh > 0) printHitData(NULL,1);
               for (int ih=0; ih<nh; ih++) {
-                printHitData(mc->fListOfHits[ih],0);
+                printHitData(mc->fListOfHits[ih],-1);
               }
             }
           }
@@ -1307,24 +1339,24 @@ namespace mu2e {
       }
     }
 
-    if (_printOTracker > 0) printOTracker();
+    if (_printOTracker) printOTracker();
 
-    if (_printShcol) printComboHitCollection();
+    if (_printShcol   ) printComboHitCollection();
 
     return 0;
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::printHitData(const HitData_t* Hd, int Face) {
+  void DeltaFinderDiag::printHitData(const HitData_t* Hd, int PrintBanner) {
 
-    if (Face < 0) {
-      printf("#----------------------------------------------------------------------------------------");
-      printf("------------------------------------------------------------------------------\n");
-      printf("#      SHID    flag nsh    St:F:Pl P L Str     Time    TCorr    dt        eDep       wdist     wres   ");
-      printf("     PDG        simID       p      X        Y         Z   DeltaID radOK edepOK\n");
-      printf("#----------------------------------------------------------------------------------------");
-      printf("------------------------------------------------------------------------------\n");
-      return;
+    if (PrintBanner >= 0) {
+      printf("#----------------------------------------------------------------------------------------------");
+      printf("--------------------------------------------------------------------------------------\n");
+      printf("#   I  SHID    flag   nsh St:F:Pl:Pn:Str   Time     TCorr     dt     eDep     wdist     wres   ");
+      printf("     PDG simID    mom_PDG mom_ID     p      X        Y         Z   DeltaID   rad  edep\n");
+      printf("#----------------------------------------------------------------------------------------------");
+      printf("--------------------------------------------------------------------------------------\n");
+      if (PrintBanner > 0) return;
     }
 
     const ComboHit* ch0 = &_data->chcol->at(0);
@@ -1337,35 +1369,37 @@ namespace mu2e {
     int edepOK          = (! flag->hasAnyProperty(StrawHitFlag::energysel));
 
     const SimParticle* sim(0);
-    int                pdg_id(-9999), sim_id(-9999);
+    int                pdg_id(-9999), sim_id(-9999), mom_id(-9999), mom_pdg_id(-9999);
     float              mc_mom(-9999.);
 
     if (_mcDiag) {
-      int ind = ch->indexArray()[0];    // first straw hit
-      sim    = _mcUtils->getSimParticle(_data->event,ind);
-      pdg_id = _mcUtils->getPdgID(sim);
-      sim_id = _mcUtils->getID(sim);
-      mc_mom = _mcUtils->getStartMom(sim);
+      sim        = _mcUtils->getSimParticle(_data->event,ch->index(0));
+      pdg_id     = _mcUtils->getPdgID(sim);
+      sim_id     = _mcUtils->getID(sim);
+      mc_mom     = _mcUtils->getStartMom(sim);
+      mom_id     = _mcUtils->getMotherID(sim);
+      mom_pdg_id = _mcUtils->getMotherPdgID(sim);
     }
 
     printf("%5i",loc);
     printf(" %5i 0x%08x %2i" ,ch->strawId().asUint16(),*((int*) flag),ch->nStrawHits());
 
-    printf("  %2i:%i:%2i %1i %1i %2i   %8.2f %8.2f %7.3f  %9.6f   %8.3f %8.3f %10i   %10i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
+    printf(" %2i:%i:%2i %2i %2i %8.2f %8.2f %7.3f %8.5f %8.3f %8.3f %10i %5i %10i %5i %8.3f %8.3f %8.3f %9.3f %5i %5i %5i\n",
            ch->strawId().station(),
-           Face,
+           Hd->fZFace,
            ch->strawId().plane(),
            ch->strawId().panel(),
-           ch->strawId().layer(),
            ch->strawId().straw(),
            ch->time(),
            ch->correctedTime(),
-           -1.,//sh->dt(),// ** FIXME!
+           -1.,                             //sh->dt(),// ** FIXME!
            ch->energyDep(),
            ch->wireDist(),
            ch->posRes(ComboHit::wire),
            pdg_id,
            sim_id,
+           mom_pdg_id,
+           mom_id,
            mc_mom,
            ch->pos().x(),
            ch->pos().y(),
@@ -1399,16 +1433,16 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::printComboHit(const ComboHit* Ch, int Index) {
+  void DeltaFinderDiag::printComboHit(const ComboHit* Ch, int PrintBanner) {
 
-    if (Index <= 0) {
-      printf("#---------------------------------------------------------------------------------");
-      printf("-----------------------------------------------------\n");
-      printf("#S:F  I   SHID    flag  Plane   Panel  Layer   Straw     Time          dt       eDep ");
-      printf("           PDG         ID         p   radselOK edepOK\n");
-      printf("#---------------------------------------------------------------------------------");
-      printf("-----------------------------------------------------\n");
-      if (Index < 0) return;
+    if (PrintBanner >= 0) {
+      printf("#-----------------------------------------------------------------------------");
+      printf("----------------------------------------------------------\n");
+      printf("#  I   SHID    flag   Plane Panel Straw    Time    T(corr)       dt      eDep ");
+      printf("        PDG    ID       mPDG     mID       p  radsel  edep\n");
+      printf("#-----------------------------------------------------------------------------");
+      printf("----------------------------------------------------------\n");
+      if (PrintBanner > 0) return;
     }
 
     const ComboHit* ch0 = &_data->chcol->at(0);
@@ -1416,35 +1450,39 @@ namespace mu2e {
 
     const StrawHitFlag* shf = &_data->outputChfColl->at(loc);
 
-    int radselOK        = (! shf->hasAnyProperty(StrawHitFlag::radsel));
-    int edepOK          = (! shf->hasAnyProperty(StrawHitFlag::energysel));
+    int radsel = shf->hasAnyProperty(StrawHitFlag::radsel);
+    int edep   = shf->hasAnyProperty(StrawHitFlag::energysel);
 
     const SimParticle* sim(nullptr);
-    int                pdg_id(-9999), sim_id(-9999);
+    int                pdg_id(-9999), sim_id(-9999), mom_id(-9999), mom_pdg_id(-9999);
     float              mc_mom(-9999.);
 
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_data->event,loc);
-      pdg_id = _mcUtils->getPdgID(sim);
-      sim_id = _mcUtils->getID(sim);
-      mc_mom = _mcUtils->getStartMom(sim);
+      sim        = _mcUtils->getSimParticle(_data->event,Ch->index(0));
+      pdg_id     = _mcUtils->getPdgID(sim);
+      sim_id     = _mcUtils->getID(sim);
+      mc_mom     = _mcUtils->getStartMom(sim);
+      mom_id     = _mcUtils->getMotherID(sim);
+      mom_pdg_id = _mcUtils->getMotherPdgID(sim);
     }
 
     printf("%5i",loc);
     printf(" %5i 0x%08x" ,Ch->strawId().asUint16(),*((int*) shf));
 
-    printf("  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f   %10i   %10i  %8.3f %5i %5i\n",
+    printf(" %4i %4i %5i  %8.3f  %8.3f  %8.3f  %8.5f %10i %5i %10i    %5i %8.3f %5i %5i\n",
            Ch->strawId().plane(),
            Ch->strawId().panel(),
-           Ch->strawId().layer(),
            Ch->strawId().straw(),
+           Ch->time(),
            Ch->correctedTime(),
            -1.,                //Sh->dt(),//FIXME!
-           -1.,                 // Ch->energyDep(),
+           Ch->energyDep(),
            pdg_id,
            sim_id,
+           mom_pdg_id,
+           mom_id,
            mc_mom,
-           radselOK,edepOK);
+           radsel,edep);
   }
 
 //-----------------------------------------------------------------------------
@@ -1455,9 +1493,62 @@ namespace mu2e {
     int nh = _data->chcol->size();
     printf("[DeltaFinderDiag::printComboHitCollection] : nhits : %6i\n", nh);
 
+    printComboHit(nullptr,1);
     for (int i=0; i<nh; i++) {
       const ComboHit* ch = &_data->chcol->at(i);
-      printComboHit(ch,i);
+      printComboHit(ch,-1);
+    }
+
+  }
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::printDeltaSeed(DeltaSeed* seed, int PrintBanner) {
+
+    if (PrintBanner >= 0) {
+      printf("-------------------------------------------------------------------------------------------");
+      printf("-------------------------------------------------------------------------------\n");
+      printf("  st seed  good type delta  SHID: MCID   SHID: MCID   SHID: MCID   SHID: MCID");
+      printf("  chi2all/N chi2perp/N chi21   chi22 mintime  maxtime  <edep>      ");
+      printf("X        Y         Z   nfwh nch nsh\n");
+      printf("-------------------------------------------------------------------------------------------");
+      printf("-------------------------------------------------------------------------------\n");
+    }
+
+    if (PrintBanner > 0) return;
+
+    printf("* %2i  %03i %5i %4i",seed->Station(),seed->Index(),seed->fGood,seed->fType);
+    printf(" %5i",seed->fDeltaIndex);
+//-----------------------------------------------------------------------------
+// print hit ID's in each face
+//-----------------------------------------------------------------------------
+    for (int face=0; face<kNFaces; face++) {
+      const HitData_t* hd = seed->hitData[face];
+      if (hd == nullptr) printf("(%5i:%5i)",-1,-1);
+      else {
+        const ComboHit* hit = hd->fHit;
+        McPart_t* mcp = seed->fMcPart[face];
+        int mcid = mcp->fID;
+        printf("(%5i:%5i)",hit->strawId().asUint16(),mcid);
+      }
+    }
+
+    printf(" %8.2f   %7.2f %7.2f %7.2f",seed->Chi2AllN(),seed->Chi2PerpN(),seed->fChi21,seed->fChi22);
+    printf("%8.1f %8.1f %8.5f",seed->MinHitTime(),seed->MaxHitTime(),seed->EDep());
+    printf(" %8.3f %8.3f %9.3f",seed->CofM.x(),seed->CofM.y(),seed->CofM.z());
+    printf("%4i",seed->fNFacesWithHits);
+    printf("%4i",seed->NHits());
+    printf("%4i",seed->NStrawHits());
+    printf("\n");
+//-----------------------------------------------------------------------------
+// after that, print combo hits
+//-----------------------------------------------------------------------------
+    printHitData(nullptr,1);
+    for (int face=0; face<kNFaces; face++) {
+      const HitData_t* hd = seed->hitData[face];
+      if (hd == nullptr)                                              continue;
+      printHitData(hd,-1);
     }
 
   }
