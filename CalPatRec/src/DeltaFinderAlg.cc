@@ -135,9 +135,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         float ns_dot_np = seed_nx*pz->nx+seed_ny*pz->ny;
         if (ns_dot_np < 0.5)                                        continue;
-
-        // float sxy_dot_w = xseed*pwx+yseed*pwy;
-        // if (sxy_dot_w > 1.e10) printf("emoe! 001 \n");
 //-----------------------------------------------------------------------------
 // 2017-10-05 PM: consider all hits
 // hit time should be consistent with the already existing times - the difference
@@ -229,145 +226,9 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// loop over stations
-// start with a seed
-// move to next station
-// loop over seeds, look for one with similar xy and time (split into components impractical?)
-// if multiple, select one with best chi2
-// continue, incrementing over stations until all finished
-// what to do if there are gaps in the path?
-// update center of mass?
+// the process moves upstream
 //-----------------------------------------------------------------------------
   void DeltaFinderAlg::connectSeeds() {
-
-    for (int is=0; is<kNStations; is++) {
-//-----------------------------------------------------------------------------
-// 1. loop over existing compton seeds and match them to existing delta candidates
-//-----------------------------------------------------------------------------
-      int nseeds = _data->NComptonSeeds(is);
-      for (int ids=0; ids<nseeds; ids++) {
-        DeltaSeed* seed = _data->ComptonSeed(is,ids);
-
-        if (! seed->Good() )                                          continue;
-        if (seed->Used()   )                                          continue;
-//-----------------------------------------------------------------------------
-// first, loop over existing delta candidates and try to associate the seed
-// with one of them
-//-----------------------------------------------------------------------------
-        DeltaCandidate* closest(nullptr);
-        float           chi2min (_maxChi2SeedDelta);
-
-        int ndelta = _data->nDeltaCandidates();
-        for (int idc=0; idc<ndelta; idc++) {
-          DeltaCandidate* dc = _data->deltaCandidate(idc);
-//-----------------------------------------------------------------------------
-// skip candidates already merged with others
-//-----------------------------------------------------------------------------
-          if (dc->Active() == 0      )                                continue;
-          if (dc->seed[is] != nullptr)                                continue;
-          int last = dc->LastStation();
-//-----------------------------------------------------------------------------
-// a delta candidate starting from a seed in a previous station may already have
-// a seed in this station found, skip such a candidate
-//-----------------------------------------------------------------------------
-          if (last == is)                                             continue;
-          int gap  = is-last;
-          if (gap > _maxGap)                                          continue;
-          float t0 = dc->T0(is);
-          assert(t0 > 0);
-          float dt = t0-seed->TMean();
-          if (fabs(dt) > _maxSeedDt+_maxDtDs*gap)                     continue;
-//-----------------------------------------------------------------------------
-// the time is OK'ish - checks should be implemented more accurately (FIXME)
-// look at the coordinates
-//-----------------------------------------------------------------------------
-          float chi2 = seedDeltaChi2(seed,dc);
-          if (chi2 < chi2min) {
-//-----------------------------------------------------------------------------
-// everything matches, new closest delta candidate
-//-----------------------------------------------------------------------------
-            closest = dc;
-            chi2min = chi2;
-          }
-        }
-//-----------------------------------------------------------------------------
-// if a DeltaSeed has been "attached" to a DeltaCandidate, this is it.
-//-----------------------------------------------------------------------------
-        if (closest) {
-          closest->AddSeed(seed,is);
-          seed->fChi2Delta = chi2min;
-                                                                      continue;
-        }
-//-----------------------------------------------------------------------------
-// DeltaSeed has not been linked to any existing delta candidate, create
-// a new delta candidate and see if it is good enough
-//-----------------------------------------------------------------------------
-        DeltaCandidate delta(ndelta,seed,is);
-//-----------------------------------------------------------------------------
-// first, try to extend it backwards, in a compact way, to pick missing single hits
-// seeds should've already been picked up !
-//-----------------------------------------------------------------------------
-        for (int is2=is-1; is2>=0; is2--) {
-          recoverStation(&delta,delta.fFirstStation,is2,1,0);
-//-----------------------------------------------------------------------------
-// continue only if found something, allow one gap
-//-----------------------------------------------------------------------------
-          if (delta.fFirstStation-is2 > 2) break;
-        }
-//-----------------------------------------------------------------------------
-// next, try to extend it forward, by one step, use of seeds is allowed
-//-----------------------------------------------------------------------------
-        if (is < kNStations-1) {
-          recoverStation(&delta,is,is+1,1,1);
-        }
-//-----------------------------------------------------------------------------
-// store only delta candidates with hits in more than 2 stations
-// for each station define expected T0min and T0max
-// to keep _minNSeeds=2 need to look forward...
-// 'addDeltaCandidate' makes a deep copy
-//-----------------------------------------------------------------------------
-        if (delta.fNSeeds >= _minNSeeds) {
-          _data->addDeltaCandidate(&delta);
-        }
-        else {
-//-----------------------------------------------------------------------------
-// mark all seeds as unassigned, this should be happening only in 1-seed case
-//-----------------------------------------------------------------------------
-          for (int is=delta.fFirstStation; is<=delta.fLastStation; is++) {
-            DeltaSeed* ds = delta.seed[is];
-            if (ds) ds->fDeltaIndex = -1;
-          }
-        }
-      }
-//-----------------------------------------------------------------------------
-// all seeds in a given station processed
-// loop over existing delta candidates which do not have seeds in a given station
-// and see if can pick up single hits
-//-----------------------------------------------------------------------------
-      int ndelta = _data->nDeltaCandidates();
-      for (int idc=0; idc<ndelta; idc++) {
-        DeltaCandidate* dc = _data->deltaCandidate(idc);
-        int last = dc->LastStation();
-        if (last != is-1)                                           continue;
-//-----------------------------------------------------------------------------
-// if a delta candidate has been created in this routine, time limits
-// may not be defined. Make sure they are
-//-----------------------------------------------------------------------------
-        recoverStation(dc,last,is,1,0);
-      }
-    }
-
-//-----------------------------------------------------------------------------
-// at this point we have a set of delta candidates, which might need to be merged
-//-----------------------------------------------------------------------------
-    mergeDeltaCandidates();
-  }
-
-
-//-----------------------------------------------------------------------------
-// same as 'connectSeeds()', but the process moves upstream
-//-----------------------------------------------------------------------------
-  void DeltaFinderAlg::connectSeeds_2() {
 
     for (int is=kNStations-1; is>=0; is--) {
 //-----------------------------------------------------------------------------
@@ -511,122 +372,128 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // hit has not been used yet to start a seed, however it could've been used as a second seed
 //-----------------------------------------------------------------------------
-        HitData_t*      hd1 = &fz1->fHitData[h1];
-        if (hd1->Used() >= 3)                                         continue;
-        const ComboHit* ch1 = hd1->fHit;
+      HitData_t*      hd1 = &fz1->fHitData[h1];
+      if (hd1->Used() >= 3)                                           continue;
+      const ComboHit* ch1 = hd1->fHit;
+      int seed_found = 0;
 //-----------------------------------------------------------------------------
 // panels 0,2,4 are panels 0,1,2 in the first  (#0) face of a plane
 // panels 1,3,5 are panels 0,1,2 in the second (#1) face
 //-----------------------------------------------------------------------------
-        int    ip1 = ch1->strawId().panel() / 2;
-        Pzz_t* pz1 = fz1->Panel(ip1);
-        float  wx1 = pz1->wx;
-        float  wy1 = pz1->wy;
+      int    ip1 = ch1->strawId().panel() / 2;
+      Pzz_t* pz1 = fz1->Panel(ip1);
+      float  wx1 = pz1->wx;
+      float  wy1 = pz1->wy;
 
-        double x1  = ch1->pos().x();
-        double y1  = ch1->pos().y();
-        float  t1  = ch1->time();
+      double x1  = ch1->pos().x();
+      double y1  = ch1->pos().y();
+      float  t1  = ch1->time();
 //-----------------------------------------------------------------------------
 // figure out the first and the last timing bins to loop over
 // loop over 3 bins (out of > 20) - the rest cant contain hits of interest
 //-----------------------------------------------------------------------------
-        int time_bin = (int) t1/_timeBin;
-        int first_tbin(0), last_tbin(_maxT/_timeBin), max_bin(_maxT/_timeBin);
+      int time_bin = (int) t1/_timeBin;
+      int first_tbin(0), last_tbin(_maxT/_timeBin), max_bin(_maxT/_timeBin);
 
-        if (time_bin >       0) first_tbin = time_bin-1;
-        if (time_bin < max_bin) last_tbin  = time_bin+1;
+      if (time_bin >       0) first_tbin = time_bin-1;
+      if (time_bin < max_bin) last_tbin  = time_bin+1;
 
-        int counter         = 0;                // number of stereo candidate hits close to set up counter
+      int counter         = 0;                // number of stereo candidate hits close to set up counter
 //-----------------------------------------------------------------------------
 // loop over 'next' faces
 // timing bins may be empty...
 //-----------------------------------------------------------------------------
-        for (int f2=Face+1; f2<kNFaces; f2++) {
-          FaceZ_t* fz2   = &_data->fFaceData[Station][f2];
-          int      ftbin = first_tbin;
-          int      ltbin = last_tbin;
+      for (int f2=Face+1; f2<kNFaces; f2++) {
+        FaceZ_t* fz2   = &_data->fFaceData[Station][f2];
+        float    zc    = (fz1->z+fz2->z)/2;
 
-          while ((ftbin<ltbin) and (fz2->fFirst[ftbin] < 0)) ftbin++;
-          while ((ltbin>ftbin) and (fz2->fFirst[ltbin] < 0)) ltbin--;
-          int first = fz2->fFirst[ftbin];
-          if (first < 0)                                             continue;
+        int      ftbin = first_tbin;
+        int      ltbin = last_tbin;
 
-          int last  = fz2->fLast [ltbin];
-          for (int h2=first; h2<=last; h2++) {
-            HitData_t*      hd2 = &fz2->fHitData[h2];
-            if (hd2->Used() >= 3)                                    continue;
-            const ComboHit* ch2 = hd2->fHit;
-            float t2 = ch2->time();
-            float dt = t2-t1;
+        while ((ftbin<ltbin) and (fz2->fFirst[ftbin] < 0)) ftbin++;
+        while ((ltbin>ftbin) and (fz2->fFirst[ltbin] < 0)) ltbin--;
+        int first = fz2->fFirst[ftbin];
+        if (first < 0)                                             continue;
 
-            if (dt >  _maxDriftTime) break;
-            if (dt < -_maxDriftTime) continue;
+        int last  = fz2->fLast [ltbin];
+        for (int h2=first; h2<=last; h2++) {
+          HitData_t*      hd2 = &fz2->fHitData[h2];
+          if (hd2->Used() >= 3)                                    continue;
+          const ComboHit* ch2 = hd2->fHit;
+          float t2 = ch2->time();
+          float dt = t2-t1;
+
+          if (dt >  _maxDriftTime) break;
+          if (dt < -_maxDriftTime) continue;
 //-----------------------------------------------------------------------------
 // 'ip2' - panel index within its face
 // check overlap in phi between the panels coresponding to the wires - 120 deg
 //-----------------------------------------------------------------------------
-            int    ip2  = ch2->strawId().panel() / 2;
-            Pzz_t* pz2  = fz2->Panel(ip2);
-            double n1n2 = pz1->nx*pz2->nx+pz1->ny*pz2->ny;
-            if (n1n2 < -0.5)                                          continue;
+          int    ip2  = ch2->strawId().panel() / 2;
+          Pzz_t* pz2  = fz2->Panel(ip2);
+          double n1n2 = pz1->nx*pz2->nx+pz1->ny*pz2->ny;
+          if (n1n2 < -0.5)                                          continue;
 //-----------------------------------------------------------------------------
 // hits are consistent in time,
 // 'counter' is the number of hits in the whole station close to the first one
 // not sure it is needed
 //-----------------------------------------------------------------------------
-            ++counter;
+          ++counter;
 //-----------------------------------------------------------------------------
-            double x2    = ch2->pos().x();
-            double y2    = ch2->pos().y();
+          float x2    = ch2->pos().x();
+          float y2    = ch2->pos().y();
 
-            double wx2   = pz2->wx;
-            double wy2   = pz2->wy;
-            double w1w2  = wx1*wx2+wy1*wy2;
-            double q12   = 1-w1w2*w1w2;
-            double res_z = (fz1->z+fz2->z)/2;
+          double wx2   = pz2->wx;
+          double wy2   = pz2->wy;
+          double w1w2  = wx1*wx2+wy1*wy2;
+          double q12   = 1-w1w2*w1w2;
 //-----------------------------------------------------------------------------
 // hits are ordered in time, so if ct2-ct > _maxDriftTime, can proceed with the next panel
 //-----------------------------------------------------------------------------
 // intersect the two straws, we need coordinates of the intersection point and
 // two distances from hits to the intersection point, 4 numbers in total
 //-----------------------------------------------------------------------------
-            double r12n1 = (x1-x2)*wx1+(y1-y2)*wy1;
-            double r12n2 = (x1-x2)*wx2+(y1-y2)*wy2;
+          double r12n1 = (x1-x2)*wx1+(y1-y2)*wy1;
+          double r12n2 = (x1-x2)*wx2+(y1-y2)*wy2;
 
-            double wd1   = -(r12n2*w1w2-r12n1)/q12;
+          double wd1   = -(r12n2*w1w2-r12n1)/q12;
 
-            double res_x = x1-wx1*wd1;
-            double res_y = y1-wy1*wd1;
+          float  xc    = x1-wx1*wd1;
+          float  yc    = y1-wy1*wd1;
 
-            double wd2   = -(r12n2-w1w2*r12n1)/q12;
+          double wd2   = -(r12n2-w1w2*r12n1)/q12;
 //-----------------------------------------------------------------------------
 // require both hits to be close enough to the intersection point
 //-----------------------------------------------------------------------------
-            float hd1_chi2 = wd1*wd1/hd1->fSigW2;
-            float hd2_chi2 = wd2*wd2/hd2->fSigW2;
-            if (hd1_chi2 > _maxChi2Seed)                            continue;
-            if (hd2_chi2 > _maxChi2Seed)                            continue;
-            if ((hd1_chi2+hd2_chi2)/2 > _maxChi2Seed)               continue;
+          float chi2_hd1 = wd1*wd1/hd1->fSigW2;
+          float chi2_hd2 = wd2*wd2/hd2->fSigW2;
+
+          if (chi2_hd1 > _maxChi2Seed)                            continue;
+          if (chi2_hd2 > _maxChi2Seed)                            continue;
+//-----------------------------------------------------------------------------
+// this may be used with some scale factor sf < 2
+//-----------------------------------------------------------------------------
+          // if ((chi2_hd1+chi2_hd2) > sf*_maxChi2Seed)               continue;
 //-----------------------------------------------------------------------------
 // check whether there already is a seed containing both hits
 //-----------------------------------------------------------------------------
-            int is_duplicate  = checkDuplicates(Station,Face,hd1,f2,hd2);
-            if (is_duplicate)                               continue;
+          int is_duplicate  = checkDuplicates(Station,Face,hd1,f2,hd2);
+          if (is_duplicate)                               continue;
 //-----------------------------------------------------------------------------
 // new seed : an intersection of two wires coresponsing to close in time combo hits
 //-----------------------------------------------------------------------------
-            hd1->fChi2Min     = hd1_chi2;
-            hd2->fChi2Min     = hd2_chi2;
+          hd1->fChi2Min     = chi2_hd1;
+          hd2->fChi2Min     = chi2_hd2;
 
-            DeltaSeed* seed   = _data->NewDeltaSeed(Station,Face,hd1,f2,hd2);
+          DeltaSeed* seed   = _data->NewDeltaSeed(Station,Face,hd1,f2,hd2);
 
-            seed->CofM.SetXYZ(res_x,res_y,res_z);
+          seed->CofM.SetXYZ(xc,yc,zc);
 //-----------------------------------------------------------------------------
 // mark both hits as a part of a seed, so they would not be used individually
 // - see HitData_t::Used()
 //-----------------------------------------------------------------------------
-            hd1->fSeed  = seed;
-            hd2->fSeed  = seed;
+          hd1->fSeed  = seed;
+          hd2->fSeed  = seed;
 //-----------------------------------------------------------------------------
 // complete search for hits of this seed, mark it BAD (or 'not-LEE') if a proton
 // in principle, could place "high-charge" seeds into a separate list
@@ -634,26 +501,26 @@ namespace mu2e {
 // if a seed EDep > _maxSeedEDep       (5 keV), can't be a low energy electron (LEE)
 // if a seed EDep > _minProtonSeedEDep (3 keV), could be a proton
 //-----------------------------------------------------------------------------
-            completeSeed(seed);
-            if (seed->EDep() > _maxSeedEDep) {
-              seed->fGood = -2000-seed->fIndex;
-            }
-            else {
-              _data->AddComptonSeed(seed,Station);
-            }
-
-            if (seed->EDep() > _minProtonSeedEDep) {
-              _data->AddProtonSeed(seed,Station);
-            }
+          completeSeed(seed);
+          if (seed->EDep() > _maxSeedEDep) {
+            seed->fGood = -2000-seed->fIndex;
           }
+          else {
+            _data->AddComptonSeed(seed,Station);
+          }
+
+          if (seed->EDep() > _minProtonSeedEDep) {
+            _data->AddProtonSeed(seed,Station);
+          }
+          seed_found = seed->Used();
+//-----------------------------------------------------------------------------
+// if found seed has hits in 3 or 4 faces, use next first hit
+//-----------------------------------------------------------------------------
+          if (seed_found >= 3) break;
         }
- //-----------------------------------------------------------------------------
- // this is needed for diagnostics only
- //-----------------------------------------------------------------------------
-        // if (_diagLevel > 0) {
-        //   hd1->fNSecondHits  = counter ;
-        // }
+        if (seed_found >= 3) break;
       }
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -741,7 +608,8 @@ namespace mu2e {
       _data->_v[i] = &(*_data->chcol)[i];
     }
 
-    std::sort(_data->_v.begin(), _data->_v.end(), DeltaFinderAlg::less);
+    std::sort(_data->_v.begin(), _data->_v.end(),
+              [](const ComboHit*& a, const ComboHit*& b) { return a->time() < b->time(); });
 //-----------------------------------------------------------------------------
 // at this point hits in '_v' are already ordered in time
 //-----------------------------------------------------------------------------
@@ -1201,7 +1069,6 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void  DeltaFinderAlg::run() {
-
     orderHits();
 //-----------------------------------------------------------------------------
 // loop over all stations and find delta seeds - 2-3-4 combo hit stubs
@@ -1213,8 +1080,7 @@ namespace mu2e {
 // at this stage, extend seeds to pick up single its in neighbor stations
 // for single hits do not allo gaps
 //-----------------------------------------------------------------------------
-    // connectSeeds();
-    connectSeeds_2();
+    connectSeeds();
 //-----------------------------------------------------------------------------
 // for existing delta candidates, pick up single gap-separated single hits
 // no new candidates is created at this step
@@ -1225,5 +1091,22 @@ namespace mu2e {
 // may need to be merged - try again
 //-----------------------------------------------------------------------------
     mergeDeltaCandidates();
+//-----------------------------------------------------------------------------
+// finally, mark deltas
+//-----------------------------------------------------------------------------
+    int ndeltas = _data->nDeltaCandidates();
+
+    for (int i=0; i<ndeltas; i++) {
+      DeltaCandidate* dc = _data->deltaCandidate(i);
+//-----------------------------------------------------------------------------
+// skip merged in delta candidates
+// also require a delta candidate to have at least 5 hits
+// do not consider proton stub candidates (those with <EDep> > 0.004)
+//-----------------------------------------------------------------------------
+      if (dc->Active() == 0)                                          continue;
+
+      if (dc->NHits () < _minDeltaNHits) dc->fMask |= DeltaCandidate::kNHitsBit;
+      if (dc->EDep  () > _maxDeltaEDep ) dc->fMask |= DeltaCandidate::kEDepBit;
+    }
   }
 }

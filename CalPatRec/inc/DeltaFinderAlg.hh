@@ -129,8 +129,7 @@ namespace mu2e {
                                       int Face2, const HitData_t* Hit2);
 
     void         completeSeed        (DeltaSeed* Seed);
-    void         connectSeeds        ();
-    void         connectSeeds_2      ();                        // move in opposite direction
+    void         connectSeeds        ();                        // in upstream direction
     void         findSeeds           (int Station, int Face);
     void         findSeeds           ();
     int          mergeDeltaCandidates();
@@ -140,9 +139,9 @@ namespace mu2e {
 // custom comparator (less) to sort hits in ascending order
 // order hits in time, not correctedTime: TOT has tails...
 //-----------------------------------------------------------------------------
-    static bool  less             (const ComboHit*& a, const ComboHit*& b) {
-      return a->time() < b->time();
-    }
+    // static bool  less             (const ComboHit*& a, const ComboHit*& b) {
+    //   return a->time() < b->time();
+    // }
 
     void         pruneSeeds          (int Station);
     int          recoverMissingHits  ();

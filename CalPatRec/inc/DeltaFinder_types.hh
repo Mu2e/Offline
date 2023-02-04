@@ -32,6 +32,7 @@ namespace fhicl {
 namespace mu2e {
   class Panel;
   class SimParticle;
+  class DeltaFinderAlg;
 //-----------------------------------------------------------------------------
 // delta-electron seed: structure within the station
 // doesn't own anything, no need to delete any pinters
@@ -112,7 +113,8 @@ namespace mu2e {
       const ComboHitCollection*     chcol;
       const StrawHitFlagCollection* chfColl;                 // input  combohit flags
       StrawHitFlagCollection*       outputChfColl;           // output combohit flags
-      const TimeClusterCollection*  tpeakcol;
+
+      DeltaFinderAlg*               _finder;
 
       int                           debugLevel;              // printout level
 
@@ -125,22 +127,15 @@ namespace mu2e {
       std::vector<DeltaSeed*>       fListOfComptonSeeds[kNStations];
 
       std::vector<DeltaCandidate>   fListOfDeltaCandidates;
-
-      PanelZ_t                      oTracker   [kNStations][kNFaces][kNPanelsPerFace];
-      int                           stationUsed[kNStations];
 //-----------------------------------------------------------------------------
 // try to avoid looping over panels
 //-----------------------------------------------------------------------------
       FaceZ_t                       fFaceData[kNStations][kNFaces];
+      int                           stationUsed[kNStations];
 //-----------------------------------------------------------------------------
 // station #2 is the same as station #0 etc...
 //-----------------------------------------------------------------------------
       int                           panelOverlap[2][12][12];
-
-      float                         stationToCaloTOF[2][20];
-      float                         faceTOF[80];
-      float                         meanPitchAngle;
-
       int                           fNSeeds;
 //-----------------------------------------------------------------------------
 // functions
@@ -174,7 +169,7 @@ namespace mu2e {
 
       void addDeltaCandidate(DeltaCandidate* Delta) { fListOfDeltaCandidates.push_back(*Delta); }
 
-      DeltaSeed* NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
+      DeltaSeed*  NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
         int loc       = NSeeds(Station);
         DeltaSeed* ds = new ((*fListOfSeeds[Station])[loc]) DeltaSeed(loc,Station,Face0,Hd0,Face1,Hd1);
         fNSeeds++;
@@ -184,12 +179,12 @@ namespace mu2e {
       static void orderID           (ChannelID* X, ChannelID* Ordered);
       static void deOrderID         (ChannelID* X, ChannelID* Ordered);
 
-      void       printHitData       (HitData_t*      HitData, const char* Option = "");
-      void       printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");
-      void       printDeltaCandidate(DeltaCandidate* Delta  , const char* Option = "");
+      void        printHitData       (HitData_t*      HitData, const char* Option = "");
+      void        printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");
+      void        printDeltaCandidate(DeltaCandidate* Delta  , const char* Option = "");
 
-      void       testOrderID  ();
-      void       testdeOrderID();
+      void        testOrderID  ();
+      void        testdeOrderID();
    };
 
 //-----------------------------------------------------------------------------

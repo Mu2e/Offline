@@ -14,6 +14,7 @@ namespace mu2e {
         // fT0Min [s] = -1.e10;
         // fT0Max [s] =  1.e10;
       }
+      fMask         = 0;
       fFirstStation = 999;
       fLastStation  =  -1;
       fMcPart       = NULL;
@@ -36,6 +37,7 @@ namespace mu2e {
         // fT0Min [s] = -1.e10;
         // fT0Max [s] =  1.e10;
       }
+      fMask         = 0;
       fFirstStation = 999;
       fLastStation  =  -1;
       fMcPart       = NULL;
@@ -49,7 +51,7 @@ namespace mu2e {
     }
 
 //-----------------------------------------------------------------------------
-// first seed added has at least one stereo, so this is safe
+// first added seed has at least one stereo, so the COG calculation COG is safe
 //-----------------------------------------------------------------------------
     void DeltaCandidate::AddSeed(DeltaSeed* Seed, int Station) {
       seed[Station]         = Seed;
@@ -86,8 +88,6 @@ namespace mu2e {
 
       CofM.SetX(xc);
       CofM.SetY(yc);
-                                        // and recalculate phi
-      //      phi  = CofM.phi();
 //-----------------------------------------------------------------------------
 // time
 //-----------------------------------------------------------------------------

@@ -1223,10 +1223,10 @@ namespace mu2e {
     if (_printDeltaSeeds != 0) {
       for (int st=0; st<kNStations; ++st) {
         int nseeds = _data->NSeeds(st);
-        printf("station: %2i N(seeds): %3i\n",st,nseeds);
+        printf("* station: %2i N(seeds): %3i\n",st,nseeds);
         if (nseeds > 0) {
 
-          printDeltaSeed(nullptr,0);
+          printDeltaSeed(nullptr,1);
 
           for (int iseed=0; iseed<nseeds; ++iseed) {
             DeltaSeed* seed = _data->deltaSeed(st,iseed);
@@ -1507,12 +1507,12 @@ namespace mu2e {
   void DeltaFinderDiag::printDeltaSeed(DeltaSeed* seed, int PrintBanner) {
 
     if (PrintBanner >= 0) {
-      printf("-------------------------------------------------------------------------------------------");
+      printf("* -----------------------------------------------------------------------------------------");
       printf("-------------------------------------------------------------------------------\n");
-      printf("  st seed  good type delta  SHID: MCID   SHID: MCID   SHID: MCID   SHID: MCID");
+      printf("* st seed  good type delta  SHID: MCID   SHID: MCID   SHID: MCID   SHID: MCID");
       printf("  chi2all/N chi2perp/N chi21   chi22 mintime  maxtime  <edep>      ");
       printf("X        Y         Z   nfwh nch nsh\n");
-      printf("-------------------------------------------------------------------------------------------");
+      printf("* -------------------------------------------------------------------------------------------");
       printf("-------------------------------------------------------------------------------\n");
     }
 
