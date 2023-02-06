@@ -51,11 +51,11 @@ namespace mu2e {
       fhicl::Atom<float>           maximumTime       {Name("maximumTime"       ), Comment("maximum time"                ) };
       fhicl::Atom<float>           maxHitSeedDt      {Name("maxHitSeedDt"      ), Comment("max DT(hit-seed)"            ) };
       fhicl::Atom<float>           maxChi2Seed       {Name("maxChi2Seed"       ), Comment("max seed chi2 (stereo)"      ) };
+      fhicl::Atom<float>           scaleTwo          {Name("scaleTwo"          ), Comment("scale factor chi2 (stereo)"  ) };
       fhicl::Atom<float>           maxChi2Radial     {Name("maxChi2Radial"     ), Comment("max chi2 (radial)"           ) };
       fhicl::Atom<float>           maxChi2All        {Name("maxChi2All"        ), Comment("max chi2 (all)"              ) };
       fhicl::Atom<float>           maxChi2SeedDelta  {Name("maxChi2SeedDelta"  ), Comment("max chi2 (seed-delta)"       ) };
       fhicl::Atom<float>           rCore             {Name("rCore"             ), Comment("core radius"                 ) };
-      fhicl::Atom<float>           maxDxy            {Name("maxDxy"            ), Comment("max Dxy"                     ) };
       fhicl::Atom<int>             maxGap            {Name("maxGap"            ), Comment("max Gap"                     ) };
       fhicl::Atom<float>           sigmaR            {Name("sigmaR"            ), Comment("sigmaR"                      ) };
       fhicl::Atom<float>           maxDriftTime      {Name("maxDriftTime"      ), Comment("maxDriftTime"                ) };
@@ -88,12 +88,12 @@ namespace mu2e {
     float           _maxT;
     float           _maxHitSeedDt;         //
     float           _maxChi2Seed;          //
+    float           _scaleTwo;
     float           _maxChi2Neighbor;      //
     float           _maxChi2Radial;        //
     float           _maxChi2All;           // max chi2/N of a seed
     float           _maxChi2SeedDelta;     // max delta-seed chi2 for adding a seed to a delta
     float           _rCore;                // represents "core radius" of the conversion trajectory
-    float           _maxDxy;
     int             _maxGap;
     float           _sigmaR;
     float           _sigmaR2;              // _sigmaR^2
@@ -129,7 +129,7 @@ namespace mu2e {
                                       int Face2, const HitData_t* Hit2);
 
     void         completeSeed        (DeltaSeed* Seed);
-    void         connectSeeds        ();                        // in upstream direction
+    void         connectSeeds        ();                        // do it in upstream direction
     void         findSeeds           (int Station, int Face);
     void         findSeeds           ();
     int          mergeDeltaCandidates();
@@ -148,7 +148,8 @@ namespace mu2e {
     int          recoverSeed         (DeltaCandidate* Delta, int LastStation, int Station);
     int          recoverStation      (DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds);
     void         run                 ();
-    double       seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta);
+    void         seedChi2            (DeltaSeed* Seed, float Xc, float Yc, float& Chi2Par, float& Chi2Perp);
+    float        seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta);
   };
 }
 #endif

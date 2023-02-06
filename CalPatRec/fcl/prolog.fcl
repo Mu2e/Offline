@@ -368,20 +368,20 @@ CalPatRec : { @table::CalPatRec
                 minNSeeds                   : 2                     #
                 maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
 
-                maxChi2Seed                 : 12.  ## 10 16 used by findSeeds, for each hit
-                maxChi2Radial               : 12.  ## 10 25 used by recoverStation (wire-to-seed dist)
-                maxChi2All                  :  9.  ## 10 16 used by pruneSeeds to mark bad seeds
-                maxChi2SeedDelta            :  3.  ##
-                maxDxy                      : 10.  ## used by connectSeeds 30 40 mm
+                maxChi2All                  : 16.  ## 10 16 used by pruneSeeds to mark bad seeds
+                maxChi2Seed                 : 16.  ## chi^2 wire, each hit)
+                scaleTwo                    : 1.3  ## sum of the two < maxChi2Seed*scaleTwo
+                maxChi2Radial               : 12.  ## hit pickup chi2
+                maxChi2SeedDelta            : 20.  ##
                 maxGap                      :  3   ## 3 gap in missing stations along the candidate
 #------------------------------------------------------------------------------
 # for moving upstream, the combination sigmaR=3 rCore=3 gives:
-#                     N(delta hits) : 99610 and N(conv hits) : 201
+#                     N(delta hits) : 99611 and N(conv hits) : 201
 # so far, this is the best.
 # timing: <T(CE+2BB)>:0.977 msec/event vs  FlagBkgHits:0.480 msec/event
 #------------------------------------------------------------------------------
-                sigmaR                      :  3.  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-                rCore                       :  3   ##  'core' of the compton electron trajectory
+                sigmaR                      : 2.5  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+                rCore                       : 3.5   ##  'core' of the compton electron trajectory
                 maxDriftTime                : 40.  ## 40 ns, no tolerances ...
                 maxSeedDt                   : 20.  ## time window for checking duplicate seeds
                 maxHitDt                    : 30.  ## time window for checking duplicate seeds
@@ -392,7 +392,7 @@ CalPatRec : { @table::CalPatRec
                 minDeltaNHits               :  5
 
                 testOrder                   : 0
-                updateSeedCOG               : 0
+                updateSeedCOG               : 1
 
                 debugLevel                  : 0
                 diagLevel                   : 0

@@ -8,10 +8,7 @@ namespace mu2e {
   //  namespace DeltaFinderTypes {
 
 //-----------------------------------------------------------------------------
-    // DeltaSeed::DeltaSeed() : TObject() {
-    //   printf("ERROR: DeltaSeed::DeltaSeed() should not be called\n");
-    // }
-
+// Hd1 could be nullptr
 //-----------------------------------------------------------------------------
     DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1):
       TObject(),
@@ -23,19 +20,20 @@ namespace mu2e {
       fGood             =  1;
       fSFace[0]         = Face0;
       fSFace[1]         = Face1;
+
+      fDeltaIndex       = -1;
       fChi2Delta        = -1.;
 
       for (int face=0; face<kNFaces; face++) {
         fFaceProcessed[face] = 0;
-        hitData       [face] = NULL;
-        fMcPart       [face] = NULL;
+        fHitData      [face] = NULL;
       }
 
-      hitData[Face0]    = Hd0;
-      fChi21            = Hd0->fChi2Min;
+      fHitData[Face0]         = Hd0;
+      fChi21                  = Hd0->fChi2Min;
 
       if (Face1 >= 0) {
-        hitData[Face1]        = Hd1;
+        fHitData[Face1]       = Hd1;
         fType                 =  10*Face0+Face1;
         fNHits                =  2;
         fNStrawHits           = Hd0->fHit->nStrawHits()+Hd1->fHit->nStrawHits();
@@ -50,14 +48,11 @@ namespace mu2e {
         fNStrawHits           = Hd0->fHit->nStrawHits();
         fNFacesWithHits       =  1;
         fFaceProcessed[Face0] =  1;
-        fChi22                = -1;
+        fChi22                =  0;
       }
 
-      fNHitsCE          =  0;
-                                        // these ones used by teh diag tool
-      fPreSeedMcPart[0] = nullptr;
-      fPreSeedMcPart[1] = nullptr;
-
+      fChi2Par          = fChi21+fChi22;
+      fChi2Perp         = 0;
       fMinHitTime = Hd0->fHit->correctedTime();
       fMaxHitTime = fMinHitTime;
 
@@ -73,8 +68,8 @@ namespace mu2e {
       for (int i=0; i<2; i++) {
         int face = fSFace[i];
         if (face < 0)                                                 continue;
-        const HitData_t* hd = hitData[face];
-        const ComboHit* ch = hd->fHit;
+        const HitData_t* hd = fHitData[face];
+        const ComboHit*  ch = hd->fHit;
         if (hd) {
           double x0 = ch->pos().x();
           double y0 = ch->pos().y();
@@ -95,21 +90,25 @@ namespace mu2e {
         }
       }
 //-----------------------------------------------------------------------------
-// do't want a chi2 selection to do anything if the chi2 has not been calculated
+// MC truth used by the diag tool - should go at some point
 //-----------------------------------------------------------------------------
-      fDeltaIndex       = -1;
-      fChi2All          = -1;
-      fChi2Perp         = -1;
+      fNHitsCE          =  0;
+      fPreSeedMcPart[0] = nullptr;
+      fPreSeedMcPart[1] = nullptr;
       fNSim             = -1;
       fNMom             = -1;
+      for (int face=0; face<kNFaces; face++) {
+        fMcPart       [face] = NULL;
+      }
     }
+
 
 //-----------------------------------------------------------------------------
 // add hit
 //-----------------------------------------------------------------------------
     void DeltaSeed::AddHit(HitData_t* Hd, int Face) {
 
-      hitData[Face]        = Hd;
+      fHitData[Face]       = Hd;
       fFaceProcessed[Face] = 1;
 
       if (Hd->fCorrTime < fMinHitTime) fMinHitTime = Hd->fCorrTime;
@@ -144,27 +143,27 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     void DeltaSeed::ReplaceFirstHit(HitData_t* Hd) {
 
-      hitData[fSFace[0]] = Hd;
+      fHitData[fSFace[0]] = Hd;
 
-      fChi21             = Hd->fChi2Min;
-      fNStrawHits        = Hd->fHit->nStrawHits();
-      fMinHitTime        = Hd->fHit->correctedTime();
-      fMaxHitTime        = fMinHitTime;
+      fChi21              = Hd->fChi2Min;
+      fNStrawHits         = Hd->fHit->nStrawHits();
+      fMinHitTime         = Hd->fHit->correctedTime();
+      fMaxHitTime         = fMinHitTime;
 
-      fSumEDep           = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
-      fSumT              = Hd->fHit->correctedTime()*Hd->fHit->nStrawHits();
+      fSumEDep            = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
+      fSumT               = Hd->fHit->correctedTime()*Hd->fHit->nStrawHits();
     }
 //-----------------------------------------------------------------------------
 // calculate Com and chi2's
 //-----------------------------------------------------------------------------
-    void DeltaSeed::CalculateCogAndChi2(double SigmaR2) {
+  void DeltaSeed::CalculateCogAndChi2(float RCore, float SigmaR2) {
 //-----------------------------------------------------------------------------
 // update seed time and X and Y coordinates, accurate knowledge of Z is not very relevant
 // if the seed has only two hits from initial intersection, there is no coordinates
 // to redefine, chi2perp = 0 and chi2w is the sum of the two ...
 //-----------------------------------------------------------------------------
       if ((fNHits == 2) and (fSFace[0] >= 0) and (fSFace[1] >= 0)) {
-        fChi2All  = fChi21+fChi22;
+        fChi2Par  = fChi21+fChi22;
         fChi2Perp = 0;
         return;
       }
@@ -173,29 +172,21 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       assert(fNHits > 2);
 
-      double nxym, nx2m, ny2m, nxrm, nyrm;
+      double d  = fSnx2*fSny2-fSnxy*fSnxy;
 
-      nxym = fSnxy/fNHits;
-      nx2m = fSnx2/fNHits;
-      ny2m = fSny2/fNHits;
-      nxrm = fSnxr/fNHits;
-      nyrm = fSnyr/fNHits;
-
-      double d  = nx2m*ny2m-nxym*nxym;
-
-      double xc = (nyrm*nx2m-nxrm*nxym)/d;
-      double yc = (nyrm*nxym-nxrm*ny2m)/d;
+      double xc = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
+      double yc = (fSnyr*fSnxy-fSnxr*fSny2)/d;
 
       CofM.SetX(xc);
       CofM.SetY(yc);
 //-----------------------------------------------------------------------------
 // calculate seed chi2 - can this be optimized ?
 //-----------------------------------------------------------------------------
-      fChi2All  = 0;
+      fChi2Par  = 0;
       fChi2Perp = 0;
 
       for (int face=0; face<kNFaces; face++) {
-        const HitData_t* hd = hitData[face];
+        const HitData_t* hd =fHitData[face];
         if (hd) {
           double dx = hd->fHit->pos().x()-xc;
           double dy = hd->fHit->pos().y()-yc;
@@ -204,44 +195,50 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           const XYZVectorF& wdir = hd->fHit->wdir();
 
-          double dxy_dot_w = dx*wdir.x()+dy*wdir.y();
-          double dxy_dot_n = dx*wdir.y()-dy*wdir.x();
+          float dxy_dot_w = dx*wdir.x()+dy*wdir.y();
+          float dxy_dot_n = dx*wdir.y()-dy*wdir.x();
 
-          float  chi2_par  = (dxy_dot_w*dxy_dot_w)/(SigmaR2+hd->fSigW2);
-          float  chi2_perp = (dxy_dot_n*dxy_dot_n)/SigmaR2;
-          float  chi2      = chi2_par + chi2_perp;
-          fChi2All        += chi2;
-          fChi2Perp       += chi2_perp;
+          float chi2_par  = (dxy_dot_w*dxy_dot_w)/(SigmaR2+hd->fSigW2);
+          float drr       = fmax(fabs(dxy_dot_n)-RCore,0);
+          float chi2_perp = (drr*drr)/SigmaR2;
+          fChi2Par       += chi2_par;
+          fChi2Perp      += chi2_perp;
         }
       }
     }
 //-----------------------------------------------------------------------------
-// utility: calculate Com and chi2's, call for N>= 2 hit seeds
+// utility: calculate chi2's, call for N>= 2 hit seeds
+// if there are only two hits, Chi2Perp = 0
 //-----------------------------------------------------------------------------
-  void DeltaSeed::Chi2(double Xc, double Yc, double SigmaR2, double& Chi2All, double& Chi2Perp) {
+  void DeltaSeed::Chi2(float Xc, float Yc, float RCore, float SigmaR2, float& Chi2Par, float& Chi2Perp) {
 
-    Chi2All  = 0;
+    Chi2Par  = 0;
     Chi2Perp = 0;
 
-    for (int face=0; face<kNFaces; face++) {
-      const HitData_t* hd = hitData[face];
-      if (hd) {
-        double dx = hd->fHit->pos().x()-Xc;
-        double dy = hd->fHit->pos().y()-Yc;
+    if ((fNHits == 2) and (fSFace[0] >= 0) and (fSFace[1] >= 0)) {
+      fChi2Par  = fChi21+fChi22;
+      return;
+    }
+
+   for (int face=0; face<kNFaces; face++) {
+      const HitData_t* hd =fHitData[face];
+      if (hd == nullptr)                                              continue;
+      float dx = hd->fHit->pos().x()-Xc;
+      float dy = hd->fHit->pos().y()-Yc;
 //-----------------------------------------------------------------------------
 // split into wire parallel and perpendicular components
 //-----------------------------------------------------------------------------
-        const XYZVectorF& wdir = hd->fHit->wdir();
+      const XYZVectorF& wdir = hd->fHit->wdir();
 
-        double dxy_dot_w    = dx*wdir.x()+dy*wdir.y();
-        double dxy_dot_n    = dx*wdir.y()-dy*wdir.x();
+      float dxy_dot_w = dx*wdir.x()+dy*wdir.y();
+      float dxy_dot_n = dx*wdir.y()-dy*wdir.x();
 
-        float  chi2_par     = (dxy_dot_w*dxy_dot_w)/(SigmaR2+hd->fSigW2);
-        float  chi2_perp    = (dxy_dot_n*dxy_dot_n)/SigmaR2;
-        float  chi2         = chi2_par + chi2_perp;
-        Chi2All            += chi2;
-        Chi2Perp           += chi2_perp;
-      }
+      float  chi2_par = (dxy_dot_w*dxy_dot_w)/(SigmaR2+hd->fSigW2);
+      float drr       = fmax(fabs(dxy_dot_n)-RCore,0);
+      float chi2_perp = (drr*drr)/SigmaR2;
+
+      Chi2Par        += chi2_par;
+      Chi2Perp       += chi2_perp;
     }
   }
 }
