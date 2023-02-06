@@ -29,7 +29,7 @@ namespace mu2e {
       int                   fNHits;                // n(combo hits)
       int                   fNStrawHits;           // number of straw hits
       int                   fNHitsMcP;             // N combo hits by the "best" particle"
-      int                   fNHitsCE;
+      int                   fNHitsCE;              // N(hits) by CE
       float                 fSumEDep;              //
                                                    // LSQ sums
       double                fSx;

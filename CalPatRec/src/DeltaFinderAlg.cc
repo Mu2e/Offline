@@ -24,11 +24,11 @@ namespace mu2e {
     _maxT                  (config().maximumTime()      ), // nsec
     _maxHitSeedDt          (config().maxHitSeedDt()     ), // nsec
     _maxChi2Seed           (config().maxChi2Seed()      ),
+    _scaleTwo              (config().scaleTwo()         ),
     _maxChi2Radial         (config().maxChi2Radial()    ),
     _maxChi2All            (config().maxChi2All()       ),
     _maxChi2SeedDelta      (config().maxChi2SeedDelta() ),
     _rCore                 (config().rCore()            ),
-    _maxDxy                (config().maxDxy()           ),
     _maxGap                (config().maxGap()           ),
     _sigmaR                (config().sigmaR()           ),
     _sigmaR2               (_sigmaR*_sigmaR             ),
@@ -62,10 +62,9 @@ namespace mu2e {
     int nseeds = _data->NSeeds(Station);
     for (int i=0; i<nseeds; i++) {
       DeltaSeed* seed = _data->deltaSeed(Station,i);
-
-      if ((seed->hitData[Face1] == Hit1) and (seed->hitData[Face2] == Hit2)) {
+      if ((seed->HitData(Face1) == Hit1) and (seed->HitData(Face2) == Hit2)) {
 //-----------------------------------------------------------------------------
-// 'seed' contains both Hit1 and Hit2, done
+// 'seed' contains both Hit1 and Hit2 in faces Face1 and Face2 correspondingly, done
 //-----------------------------------------------------------------------------
         rc = 1;
                                                                           break;
@@ -145,58 +144,71 @@ namespace mu2e {
         if (corr_time-Seed->T0Max() > _maxHitSeedDt)                break;
         if (Seed->T0Min()-corr_time > _maxHitSeedDt)                continue;
 
-        double dx          = ch->pos().x()-xseed;
-        double dy          = ch->pos().y()-yseed;
-//-----------------------------------------------------------------------------
-// split into wire parallel and perpendicular components
-// assume wire direction vector is normalized to 1
-//-----------------------------------------------------------------------------
-        float dxy_dot_w = dx*pz->wx+dy*pz->wy;
-        float dxy_dot_n = dx*pz->nx+dy*pz->ny;
-
-        // add an uncertainty on the intersection, can do better :
-
-        float chi2_par     = (dxy_dot_w*dxy_dot_w)/(hd->fSigW2+_sigmaR2);
-        float chi2_perp(0);
-        if (fabs(dxy_dot_n) > _rCore) {
-          float ddx = fabs(dxy_dot_n)-_rCore;
-          chi2_perp = (ddx*ddx)/_sigmaR2;
-        }
-        float chi2         = chi2_par + chi2_perp;
+        float xc(xseed), yc(yseed), chi2_par(0), chi2_perp(0), chi2(0);
 
         if (_updateSeedCOG != 0) {
 //-----------------------------------------------------------------------------
 // try updating the seed candidate coordinates with the hit added
 // to see if that could speed the code up by improvind the efficiency
 // of picking up the right hits
-// OFF by default
+// from now on, the default
 //-----------------------------------------------------------------------------
           double nr   = ch->pos().x()*pz->wy-ch->pos().y()*pz->wx;
 
-          double nx2m = (Seed->fSnx2+pz->wx*pz->wx)/(Seed->NHits()+1);
-          double nxym = (Seed->fSnxy+pz->wx*pz->wy)/(Seed->NHits()+1);
-          double ny2m = (Seed->fSny2+pz->wy*pz->wy)/(Seed->NHits()+1);
-          double nxrm = (Seed->fSnxr+pz->wx*nr    )/(Seed->NHits()+1);
-          double nyrm = (Seed->fSnyr+pz->wy*nr    )/(Seed->NHits()+1);
+          double nx2m = (Seed->fSnx2+pz->wx*pz->wx);
+          double nxym = (Seed->fSnxy+pz->wx*pz->wy);
+          double ny2m = (Seed->fSny2+pz->wy*pz->wy);
+          double nxrm = (Seed->fSnxr+pz->wx*nr    );
+          double nyrm = (Seed->fSnyr+pz->wy*nr    );
 
           double d    = nx2m*ny2m-nxym*nxym;
 
-          double xc   = (nyrm*nx2m-nxrm*nxym)/d;
-          double yc   = (nyrm*nxym-nxrm*ny2m)/d;
+          xc          = (nyrm*nx2m-nxrm*nxym)/d;
+          yc          = (nyrm*nxym-nxrm*ny2m)/d;
 
-          float dx1   = ch->pos().x()-xc;
-          float dy1   = ch->pos().y()-yc;
+          float dx    = ch->pos().x()-xc;
+          float dy    = ch->pos().y()-yc;
 
-          float dxy1_dot_w = dx1*pz->wx+dy1*pz->wy;
-          float dxy1_dot_n = dx1*pz->nx+dy1*pz->ny;
+          float dxy_dot_w = dx*pz->wx+dy*pz->wy;
+          float dxy_dot_n = dx*pz->nx+dy*pz->ny;
+          float drho      = fmax(fabs(dxy_dot_n)-_rCore,0);
+          chi2_par        = (dxy_dot_w*dxy_dot_w)/(hd->fSigW2+_sigmaR2);
+          chi2_perp       = (drho*drho)/_sigmaR2;
+          chi2            = chi2_par+chi2_perp;
+          if (chi2 < best_chi2) {
 
-          double chi2_par1(0), chi2_perp1(0);
+            float seed_chi2_par(0), seed_chi2_perp(0);
 
-          Seed->Chi2(xc,yc,_sigmaR2,chi2_par1,chi2_perp1);
+            seedChi2(Seed,xc,yc,seed_chi2_par,seed_chi2_perp);
 
-          chi2_par1  += (dxy1_dot_w*dxy1_dot_w)/(hd->fSigW2 + _sigmaR2);
-          chi2_perp1 += (dxy1_dot_n*dxy1_dot_n)/_sigmaR2;                        // some radius
-          chi2        = (chi2_par1 + chi2_perp1)/(Seed->NHits()+1);
+            chi2_par  += seed_chi2_par;
+            chi2_perp += seed_chi2_perp;
+            chi2       = (chi2_par+chi2_perp)/(Seed->NHits()+1);
+          }
+        }
+        else {
+//-----------------------------------------------------------------------------
+// approximate the chi2 based only on the new hit residual from the seed
+// by itself, this calculation is faster, however the approach has a disadvantage
+// of not being symmetric over the hits, which could introduce ghost seeds and
+// a slowdown due to that.... the outcome is difficult to predict,
+// need to check experimentally
+// split into wire parallel and perpendicular components
+// assume wire direction vector is normalized to 1
+//-----------------------------------------------------------------------------
+          float dx        = ch->pos().x()-xc;
+          float dy        = ch->pos().y()-yc;
+
+          float dxy_dot_w = dx*pz->wx+dy*pz->wy;
+          float dxy_dot_n = dx*pz->nx+dy*pz->ny;
+          float drho      = fmax(fabs(dxy_dot_n)-_rCore,0);
+
+          chi2_par        = (dxy_dot_w*dxy_dot_w)/(hd->fSigW2+_sigmaR2);
+          chi2_perp       = (drho*drho)/_sigmaR2;
+//-----------------------------------------------------------------------------
+// in this case, only one hit contributes to the chi^2 , no renormalization
+//-----------------------------------------------------------------------------
+          chi2            = chi2_par+chi2_perp;
         }
 
         if (chi2 < best_chi2) {
@@ -218,7 +230,7 @@ namespace mu2e {
 // update seed time and X and Y coordinates, accurate knowledge of Z is not very relevant
 // also define the number of hits on a found seed
 //-----------------------------------------------------------------------------
-    Seed->CalculateCogAndChi2(_sigmaR2);
+    Seed->CalculateCogAndChi2(_rCore,_sigmaR2);
     for (int face=0; face<kNFaces; face++) {
       HitData_t* hd = Seed->HitData(face);
       if (hd) hd->fUsed = Seed->NHits();
@@ -233,7 +245,9 @@ namespace mu2e {
     for (int is=kNStations-1; is>=0; is--) {
 //-----------------------------------------------------------------------------
 // 1. loop over existing compton seeds and match them to existing delta candidates
+//    number of deltas may increase as the execution moves from one station to another
 //-----------------------------------------------------------------------------
+      int ndelta = _data->nDeltaCandidates();
       int nseeds = _data->NComptonSeeds(is);
       for (int ids=0; ids<nseeds; ids++) {
         DeltaSeed* seed = _data->ComptonSeed(is,ids);
@@ -247,8 +261,7 @@ namespace mu2e {
         DeltaCandidate* closest(nullptr);
         float           chi2min (_maxChi2SeedDelta);
 
-        int ndelta = _data->nDeltaCandidates();
-        for (int idc=0; idc<ndelta; idc++) {
+        for (int idc=0; idc<ndelta; idc++) { // this loop creates new deltas, do not overloop
           DeltaCandidate* dc = _data->deltaCandidate(idc);
 //-----------------------------------------------------------------------------
 // skip candidates already merged with others
@@ -294,11 +307,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         DeltaCandidate delta(ndelta,seed,is);
 //-----------------------------------------------------------------------------
-// first, try to extend it backwards, in a compact way, to pick missing single hits
-// seeds should've already been picked up !
+// first, try to extend it backwards, in a compact way, to pick missing
+// seeds or hits
 //-----------------------------------------------------------------------------
         for (int is2=is+1; is2<kNStations; is2++) {
-          recoverStation(&delta,delta.fLastStation,is2,1,0);
+          recoverStation(&delta,delta.fLastStation,is2,1,1);
 //-----------------------------------------------------------------------------
 // continue only if found something, allow one empty station
 //-----------------------------------------------------------------------------
@@ -334,12 +347,16 @@ namespace mu2e {
 // all seeds in a given station processed
 // loop over existing delta candidates which do not have seeds in a given station
 // and see if can pick up single hits
+// do not extrapolate forward by more than two (?) empty stations - leave it
+// as a constant for the moment
+// 'ndelta' doesn't count deltas starting in this station, but there is no need
+// to loop over them either
 //-----------------------------------------------------------------------------
-      int ndelta = _data->nDeltaCandidates();
       for (int idc=0; idc<ndelta; idc++) {
         DeltaCandidate* dc = _data->deltaCandidate(idc);
         int first = dc->FirstStation();
-        if (first != is+1)                                           continue;
+        if (first == is )                                             continue;
+        if (first-is > 3)                                             continue;
 //-----------------------------------------------------------------------------
 // if a delta candidate has been created in this routine, time limits
 // may not be defined. Make sure they are
@@ -347,7 +364,6 @@ namespace mu2e {
         recoverStation(dc,first,is,1,0);
       }
     }
-
 //-----------------------------------------------------------------------------
 // at this point we have a set of delta candidates, which might need to be merged
 //-----------------------------------------------------------------------------
@@ -366,8 +382,6 @@ namespace mu2e {
 // modulo misalignments, panels in stations 2 and 3 are oriented exactly the same
 // way as in stations 0 and 1, etc
 //-----------------------------------------------------------------------------
-//    int      iss = Station % 2;
-
     for (int h1=0; h1<nh1; ++h1) {
 //-----------------------------------------------------------------------------
 // hit has not been used yet to start a seed, however it could've been used as a second seed
@@ -385,8 +399,8 @@ namespace mu2e {
       float  wx1 = pz1->wx;
       float  wy1 = pz1->wy;
 
-      double x1  = ch1->pos().x();
-      double y1  = ch1->pos().y();
+      float  x1  = ch1->pos().x();
+      float  y1  = ch1->pos().y();
       float  t1  = ch1->time();
 //-----------------------------------------------------------------------------
 // figure out the first and the last timing bins to loop over
@@ -397,8 +411,6 @@ namespace mu2e {
 
       if (time_bin >       0) first_tbin = time_bin-1;
       if (time_bin < max_bin) last_tbin  = time_bin+1;
-
-      int counter         = 0;                // number of stereo candidate hits close to set up counter
 //-----------------------------------------------------------------------------
 // loop over 'next' faces
 // timing bins may be empty...
@@ -431,14 +443,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           int    ip2  = ch2->strawId().panel() / 2;
           Pzz_t* pz2  = fz2->Panel(ip2);
-          double n1n2 = pz1->nx*pz2->nx+pz1->ny*pz2->ny;
+          float  n1n2 = pz1->nx*pz2->nx+pz1->ny*pz2->ny;
           if (n1n2 < -0.5)                                          continue;
 //-----------------------------------------------------------------------------
 // hits are consistent in time,
-// 'counter' is the number of hits in the whole station close to the first one
-// not sure it is needed
-//-----------------------------------------------------------------------------
-          ++counter;
 //-----------------------------------------------------------------------------
           float x2    = ch2->pos().x();
           float y2    = ch2->pos().y();
@@ -468,12 +476,12 @@ namespace mu2e {
           float chi2_hd1 = wd1*wd1/hd1->fSigW2;
           float chi2_hd2 = wd2*wd2/hd2->fSigW2;
 
-          if (chi2_hd1 > _maxChi2Seed)                            continue;
-          if (chi2_hd2 > _maxChi2Seed)                            continue;
+          if (chi2_hd1 > _maxChi2Seed)                                continue;
+          if (chi2_hd2 > _maxChi2Seed)                                continue;
 //-----------------------------------------------------------------------------
 // this may be used with some scale factor sf < 2
 //-----------------------------------------------------------------------------
-          // if ((chi2_hd1+chi2_hd2) > sf*_maxChi2Seed)               continue;
+          if ((chi2_hd1+chi2_hd2) > _scaleTwo*_maxChi2Seed)           continue;
 //-----------------------------------------------------------------------------
 // check whether there already is a seed containing both hits
 //-----------------------------------------------------------------------------
@@ -502,17 +510,26 @@ namespace mu2e {
 // if a seed EDep > _minProtonSeedEDep (3 keV), could be a proton
 //-----------------------------------------------------------------------------
           completeSeed(seed);
-          if (seed->EDep() > _maxSeedEDep) {
-            seed->fGood = -2000-seed->fIndex;
+
+          if (seed->Chi2TotN() > _maxChi2Seed) {
+//-----------------------------------------------------------------------------
+// discard found seed
+//-----------------------------------------------------------------------------
+            seed->fGood = -3000-seed->fIndex;
           }
           else {
-            _data->AddComptonSeed(seed,Station);
-          }
+            if (seed->EDep() > _maxSeedEDep) {
+              seed->fGood = -2000-seed->fIndex;
+            }
+            else {
+              _data->AddComptonSeed(seed,Station);
+            }
 
-          if (seed->EDep() > _minProtonSeedEDep) {
-            _data->AddProtonSeed(seed,Station);
+            if (seed->EDep() > _minProtonSeedEDep) {
+              _data->AddProtonSeed(seed,Station);
+            }
+            seed_found = seed->NHits();
           }
-          seed_found = seed->Used();
 //-----------------------------------------------------------------------------
 // if found seed has hits in 3 or 4 faces, use next first hit
 //-----------------------------------------------------------------------------
@@ -700,8 +717,8 @@ namespace mu2e {
         int noverlap            = 0;
         int nfaces_with_overlap = 0;
         for (int face=0; face<kNFaces; face++) {
-          const HitData_t* hh1 = ds1->hitData[face];
-          const HitData_t* hh2 = ds2->hitData[face];
+          const HitData_t* hh1 = ds1->HitData(face);
+          const HitData_t* hh2 = ds2->HitData(face);
           if (hh1 and (hh1 == hh2)) {
             noverlap            += 1;
             nfaces_with_overlap += 1;
@@ -829,35 +846,6 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// *FIXME* : need a formula for chi2, the simplification below may not work well
-// in the phase space corners
-//-----------------------------------------------------------------------------
-  double DeltaFinderAlg::seedDeltaChi2(DeltaSeed* Seed, DeltaCandidate* Delta) {
-
-    int    nh   = Delta->NHits()+Seed->NHits();
-
-    double nxym = (Delta->fSnxy+Seed->fSnxy)/nh;
-    double nx2m = (Delta->fSnx2+Seed->fSnx2)/nh;
-    double ny2m = (Delta->fSny2+Seed->fSny2)/nh;
-    double nxrm = (Delta->fSnxr+Seed->fSnxr)/nh;
-    double nyrm = (Delta->fSnyr+Seed->fSnyr)/nh;
-
-    double d    = nx2m*ny2m-nxym*nxym;
-    double xc   = (nyrm*nx2m-nxrm*nxym)/d;
-    double yc   = (nyrm*nxym-nxrm*ny2m)/d;
-
-    double dxs  = xc-Seed->Xc();
-    double dys  = yc-Seed->Yc();
-
-    double dxd  = xc-Delta->Xc();
-    double dyd  = yc-Delta->Yc();
-
-    double chi2 = (dxs*dxs+dys*dys+dxd*dxd+dyd*dyd)/(_maxDxy*_maxDxy);
-
-    return chi2;
-  }
-
-//-----------------------------------------------------------------------------
 // return 1 if a seed has been found , 0 otherwise
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::recoverSeed(DeltaCandidate* Delta, int LastStation, int Station) {
@@ -975,21 +963,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         if (n1n2 < 0.5)                                               continue;
 //-----------------------------------------------------------------------------
-// the hit is consitent with the Delta in phi and time, check more accurately
+// the hit is consistent with the Delta in phi and time, check more accurately
 //-----------------------------------------------------------------------------
-        double dx  = ch->pos().x()-xdelta;
-        double dy  = ch->pos().y()-ydelta;
+        double dx       = ch->pos().x()-xdelta;
+        double dy       = ch->pos().y()-ydelta;
 
-        double dw  = dx*pz->wx+dy*pz->wy;           // distance along the wire
-        double dr  = dx*pz->nx+dy*pz->ny;
+        double dw       = dx*pz->wx+dy*pz->wy;           // distance along the wire
+        double dr       = dx*pz->nx+dy*pz->ny;
 
-        double chi2_par = (dw*dw)/(hd->fSigW2+_sigmaR2);
-        double chi2_perp(0);
-        if (fabs(dr) > _rCore) {
-          float ddr = fabs(dr)-_rCore;
-          chi2_perp = (ddr*ddr)/_sigmaR2;
-        }
-        double chi2 = chi2_par + chi2_perp;
+        float chi2_par  = (dw*dw)/(hd->fSigW2+_sigmaR2);
+        float ddr       = fmax(fabs(dr)-_rCore,0);
+        float chi2_perp = (ddr*ddr)/_sigmaR2;
+        float chi2      = chi2_par + chi2_perp;
 
         if (chi2 >= _maxChi2Radial)                                 continue;
         if (hd->Used()) {
@@ -1109,4 +1094,57 @@ namespace mu2e {
       if (dc->EDep  () > _maxDeltaEDep ) dc->fMask |= DeltaCandidate::kEDepBit;
     }
   }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderAlg::seedChi2(DeltaSeed* Seed, float Xc, float Yc, float& Chi2Par, float& Chi2Perp) {
+    Chi2Par  = 0;
+    Chi2Perp = 0;
+
+    for (int face=0; face<kNFaces; face++) {
+      const HitData_t* hd = Seed->HitData(face);
+      if (hd == nullptr)                                              continue;
+      float dx = hd->fHit->pos().x()-Xc;
+      float dy = hd->fHit->pos().y()-Yc;
+//-----------------------------------------------------------------------------
+// split into wire parallel and perpendicular components
+//-----------------------------------------------------------------------------
+      const XYZVectorF& wdir = hd->fHit->wdir();
+
+      float dxy_dot_w = dx*wdir.x()+dy*wdir.y();
+      float dxy_dot_n = dx*wdir.y()-dy*wdir.x();
+
+      float  chi2_par = (dxy_dot_w*dxy_dot_w)/(_sigmaR2+hd->fSigW2);
+      float drr       = fmax(fabs(dxy_dot_n)-_rCore,0);
+      float chi2_perp = (drr*drr)/_sigmaR2;
+
+      Chi2Par        += chi2_par;
+      Chi2Perp       += chi2_perp;
+    }
+  }
+
+//-----------------------------------------------------------------------------
+// in principle, can just use Delta Xc,Yc
+//-----------------------------------------------------------------------------
+  float DeltaFinderAlg::seedDeltaChi2(DeltaSeed* Seed, DeltaCandidate* Delta) {
+
+    // double nxym = (Delta->fSnxy+Seed->fSnxy);
+    // double nx2m = (Delta->fSnx2+Seed->fSnx2);
+    // double ny2m = (Delta->fSny2+Seed->fSny2);
+    // double nxrm = (Delta->fSnxr+Seed->fSnxr);
+    // double nyrm = (Delta->fSnyr+Seed->fSnyr);
+
+    // double d    = nx2m*ny2m-nxym*nxym;
+    // float  xc   = (nyrm*nx2m-nxrm*nxym)/d;
+    // float  yc   = (nyrm*nxym-nxrm*ny2m)/d;
+
+    float  xc   = Delta->Xc();
+    float  yc   = Delta->Yc();
+
+    float chi2, chi2_par, chi2_perp;
+    seedChi2(Seed, xc,yc, chi2_par, chi2_perp);
+    chi2 = (chi2_par+chi2_perp)/Seed->NHits();
+
+    return chi2;
+  }
+
 }

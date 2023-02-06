@@ -243,7 +243,7 @@ namespace mu2e {
 // print hit ID's in each face
 //-----------------------------------------------------------------------------
       for (int face=0; face<kNFaces; face++) {
-        const HitData_t* hd = Seed->hitData[face];
+        const HitData_t* hd = Seed->HitData(face);
         if (hd == nullptr) printf(" %5i",-1);
         else {
           const ComboHit* hit = hd->fHit;

@@ -968,7 +968,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     }
 
     if (_printSingleComboHits) {
-      printf("* Single straw ComboHits \n");
+      printf("* Single straw ComboHits tag:  %s\n",_shCollTag.encode().data());
 //-----------------------------------------------------------------------------
 // print ComboHits
 //-----------------------------------------------------------------------------

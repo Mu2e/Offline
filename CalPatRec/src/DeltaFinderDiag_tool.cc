@@ -56,6 +56,7 @@ namespace mu2e {
     struct SeedHist_t {
       TH1F*  fChi2TotN;
       TH1F*  fChi2AllN;
+      TH1F*  fChi2ParN;
       TH1F*  fChi2PerpN;
       TH1F*  fHitChi2Min;                        // chi2 of the first two hits along the wire
       TH1F*  fChi2Neighbour;
@@ -79,6 +80,7 @@ namespace mu2e {
 
     struct DeltaHist_t {
       TH1F*  fNHits;
+      TH1F*  fNHitsCE;
       TH1F*  fNStrawHits;
       TH1F*  fNSeeds;
       TH1F*  fMcMom;
@@ -269,11 +271,25 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+  void DeltaFinderDiag::bookDeltaHistograms(DeltaHist_t* Hist, art::TFileDirectory* Dir) {
+    Hist->fNSeeds     = Dir->make<TH1F>("nseeds"    , "N(seeds)"        ,  20, 0.,  20.);
+    Hist->fNHits      = Dir->make<TH1F>("nch"       , "N(combo hits)"   , 200, 0., 200.);
+    Hist->fNHitsCE    = Dir->make<TH1F>("nch_ce"    , "N(combo hits CE)",  50, 0.,  50.);
+    Hist->fNStrawHits = Dir->make<TH1F>("nsh"       , "N(straw hits)"   , 200, 0., 200.);
+    Hist->fPDGCode    = Dir->make<TH1F>("pdg"       , "PDG code"        ,1000, -2500., 2500.);
+    Hist->fMcMom      = Dir->make<TH1F>("mc_mom"    , "N(hits)"         , 200, 0., 200.);
+    Hist->fDxy        = Dir->make<TH1F>("dxy"       , "Delta Dxy"       , 500, 0., 200.);
+    Hist->fEDep       = Dir->make<TH1F>("edep"      , "mean E(Dep)"     , 100, 0., 0.01);
+    Hist->fNBestVsN   = Dir->make<TH2F>("nbest_vs_n", "N(bset) vs N"    , 100, 0., 100.,100,0,100);
+    Hist->fFBest      = Dir->make<TH1F>("fbest"     , "N(best)/N"       , 100, 0.,    1);
+  }
+
+//-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
     //    Hist->fNSecondHits     = Dir->make<TH1F>("nhit2" , "N(second hits)", 100, 0., 100.);
     Hist->fNSeeds          = Dir->make<TH1F>("nseeds", "N(seeds)"   , 200, 0., 2000.);
-    Hist->fNSeedsVsStation = Dir->make<TH2F>("ns_vs_st", "N(seeds) vs station", 20, 0., 20.,100,0,100);
+    Hist->fNSeedsVsStation = Dir->make<TH2F>("ns_vs_st", "N(seeds) vs station", 20, 0., 20.,200,0,200);
 
     Hist->fNMc             = Dir->make<TH1F>("nmc"       , "N(MC particles)", 100, 0., 1000.);
     Hist->fPDGCode         = Dir->make<TH1F>("pdg_code"  , "PDG Code"       ,1000, -2500., 2500.);
@@ -281,45 +297,6 @@ namespace mu2e {
     Hist->fNDelta          = Dir->make<TH1F>("n_delta"   , "N(reco deltas)" , 250, 0., 250.);
     Hist->fNDeltaHitsT     = Dir->make<TH1F>("n_delta_ht", "N(delta hits T)", 500, 0., 5000.);
     Hist->fNDeltaHitsR     = Dir->make<TH1F>("n_delta_hr", "N(delta hits R)", 500, 0., 5000.);
-  }
-
-//-----------------------------------------------------------------------------
-  void DeltaFinderDiag::bookSeedHistograms(SeedHist_t* Hist, art::TFileDirectory* Dir) {
-
-    Hist->fChi2TotN        = Dir->make<TH1F>("chi2totn"    , "Chi2Tot/N"         , 1000, 0., 100.);
-    Hist->fChi2PerpN       = Dir->make<TH1F>("chi2perpn"   , "Chi2Perp/N"        , 1000, 0., 100.);
-    Hist->fChi2AllN        = Dir->make<TH1F>("chi2alln"    , "Chi (all)/N"       , 1000, 0., 100.);
-    Hist->fHitChi2Min      = Dir->make<TH1F>("hitchi2min"  , "Hit Chi (min)"     , 1000, 0.,  50.);
-    Hist->fChi2Neighbour   = Dir->make<TH1F>("chi2_nb"     , "Chi2 neighbour"    , 1000, 0.,  50.);
-    Hist->fChi2Radial      = Dir->make<TH1F>("chi2_r"      , "Chi2 radial"       , 1000, 0.,  50.);
-    Hist->fChi2Delta       = Dir->make<TH1F>("chi2_delta"  , "Chi2 delta match"  , 1000, 0.,  50.);
-    Hist->fNFacesWithHits  = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
-    Hist->fNHitsPerFace    = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
-    Hist->fNHits           = Dir->make<TH1F>("nhits"       , "Number of hits"      , 10, 0., 10.);
-    Hist->fSeedRadius      = Dir->make<TH1F>("rad"         , "Seed radius", 500, 0., 1000.);
-    Hist->fSeedMomentum    = Dir->make<TH1F>("mom"         , "Seed momentum", 400, 0., 400.);
-    Hist->fNSim            = Dir->make<TH1F>("nsim"        , "N(sim particls)"     , 10,    0.,  10.);
-    Hist->fNMom            = Dir->make<TH1F>("nmom"        , "N(MC moms)"          , 10,    0.,  10.);
-    Hist->fEDep            = Dir->make<TH1F>("edep"        , "mean E(Dep)"         ,100,    0.,   0.01);
-    Hist->fDt              = Dir->make<TH1F>("dt"          , "delta(T)"            ,100, -100., 100.);
-  }
-
-//-----------------------------------------------------------------------------
-  void DeltaFinderDiag::bookSeed2Histograms(Seed2Hist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->fDt              = Dir->make<TH1F>("dt"          , "delta(T)"            ,100, -100, 100);
-  }
-
-//-----------------------------------------------------------------------------
-  void DeltaFinderDiag::bookDeltaHistograms(DeltaHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->fNSeeds     = Dir->make<TH1F>("nseeds"    , "N(seeds)"     ,  20, 0.,  20.);
-    Hist->fNHits      = Dir->make<TH1F>("nch"       , "N(combo hits)", 200, 0., 200.);
-    Hist->fNStrawHits = Dir->make<TH1F>("nsh"       , "N(straw hits)", 200, 0., 200.);
-    Hist->fPDGCode    = Dir->make<TH1F>("pdg"       , "PDG code"     ,1000, -2500., 2500.);
-    Hist->fMcMom      = Dir->make<TH1F>("mc_mom"    , "N(hits)"      , 200, 0., 200.);
-    Hist->fDxy        = Dir->make<TH1F>("dxy"       , "Delta Dxy"    , 500, 0., 200.);
-    Hist->fEDep       = Dir->make<TH1F>("edep"      , "mean E(Dep)"  , 100, 0., 0.01);
-    Hist->fNBestVsN   = Dir->make<TH2F>("nbest_vs_n", "N(bset) vs N" , 100, 0., 100.,100,0,100);
-    Hist->fFBest      = Dir->make<TH1F>("fbest"     , "N(best)/N"    , 100, 0.,    1);
   }
 
 //-----------------------------------------------------------------------------
@@ -334,6 +311,33 @@ namespace mu2e {
     Hist->fHitDt      = Dir->make<TH1F>("hit_dt" , "Hit TMax-TMin" , 100, 0., 200.);
 
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
+  }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::bookSeedHistograms(SeedHist_t* Hist, art::TFileDirectory* Dir) {
+
+    Hist->fChi2TotN        = Dir->make<TH1F>("chi2totn"    , "Chi2Tot/N"         , 1000, 0., 100.);
+    Hist->fChi2ParN        = Dir->make<TH1F>("chi2parn"    , "Chi2Par/N"         , 1000, 0., 100.);
+    Hist->fChi2PerpN       = Dir->make<TH1F>("chi2perpn"   , "Chi2Perp/N"        , 1000, 0., 100.);
+    Hist->fChi2AllN        = Dir->make<TH1F>("chi2alln"    , "Chi (all)/N"       , 1000, 0., 100.);
+    Hist->fHitChi2Min      = Dir->make<TH1F>("hitchi2min"  , "Hit Chi (min)"     , 1000, 0.,  50.);
+    Hist->fChi2Neighbour   = Dir->make<TH1F>("chi2_nb"     , "Chi2 neighbour"    , 1000, 0.,  50.);
+    Hist->fChi2Radial      = Dir->make<TH1F>("chi2_r"      , "Chi2 radial"       , 1000, 0.,  50.);
+    Hist->fChi2Delta       = Dir->make<TH1F>("chi2_delta"  , "Chi2 delta match"  , 1000, 0.,  50.);
+    Hist->fNFacesWithHits  = Dir->make<TH1F>("nfaces_wh"   , "Number of faces with hits", 5, 0., 5.);
+    Hist->fNHitsPerFace    = Dir->make<TH1F>("nhits_face"  , "Number of hits per face", 20, 0., 20.);
+    Hist->fNHits           = Dir->make<TH1F>("nhits"       , "Number of hits"      , 10, 0., 10.);
+    Hist->fSeedRadius      = Dir->make<TH1F>("rad"         , "Seed radius", 500, 0., 1000.);
+    Hist->fSeedMomentum    = Dir->make<TH1F>("mom"         , "Seed momentum", 400, 0., 400.);
+    Hist->fNSim            = Dir->make<TH1F>("nsim"        , "N(sim particls)"     , 10,    0.,  10.);
+    Hist->fNMom            = Dir->make<TH1F>("nmom"        , "N(MC moms)"          , 10,    0.,  10.);
+    Hist->fEDep            = Dir->make<TH1F>("edep"        , "mean E(Dep)"         ,100,    0.,   0.01);
+    Hist->fDt              = Dir->make<TH1F>("dt"          , "delta(T)"            ,200, -100., 100.);
+  }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::bookSeed2Histograms(Seed2Hist_t* Hist, art::TFileDirectory* Dir) {
+    Hist->fDt              = Dir->make<TH1F>("dt"          , "delta(T)"            ,100, -100, 100);
   }
 
 //-----------------------------------------------------------------------------
@@ -369,19 +373,21 @@ namespace mu2e {
     for (int i=0; i<kNSeedHistSets; i++) book_seed_histset[i] = 0;
 
     book_seed_histset[ 0] = 1;          // all seeds
-    book_seed_histset[ 1] = 1;          // protons + deut
-    book_seed_histset[ 2] = 1;          // e- : p<20
-    book_seed_histset[ 3] = 1;          // e- : 20<p< 80
-    book_seed_histset[ 4] = 1;          // e-  80<p<110
-    book_seed_histset[ 5] = 1;          // e-  110<p
-    book_seed_histset[ 6] = 1;          // e+
-    book_seed_histset[ 7] = 1;          // muons
-    book_seed_histset[ 8] = 1;          // pions
+    book_seed_histset[ 1] = 1;          // nhits=1
+    book_seed_histset[ 2] = 1;          // nhits=2
+    book_seed_histset[ 3] = 1;          // nhits=3
+    book_seed_histset[ 4] = 1;          // nhits=4
 
-    book_seed_histset[11] = 1;          // delta seed nhits=1
-    book_seed_histset[12] = 1;          // delta seed nhits=2
-    book_seed_histset[13] = 1;          // delta seed nhits=3
-    book_seed_histset[14] = 1;          // delta seed nhits=4
+    book_seed_histset[11] = 1;          // MC-2-true, protons + deut
+    book_seed_histset[12] = 1;          // MC-2-true, e-   0 < p <  20
+    book_seed_histset[13] = 1;          // MC-2-true, e-  20 < p <  80
+    book_seed_histset[14] = 1;          // MC-2-true, e-  80 < p < 110
+    book_seed_histset[15] = 1;          // MC-2-true, e- 110 < p < inf
+    book_seed_histset[16] = 1;          // MC-2-true, positrons
+    book_seed_histset[17] = 1;          // MC-2-true, muons
+    book_seed_histset[18] = 1;          // MC-2-true, pions
+
+    book_seed_histset[20] = 1;          // all seeds from deltas
 
     book_seed_histset[21] = 1;          // delta(nhits>=5) seed nhits=1
     book_seed_histset[22] = 1;          // delta(nhits>=5) seed nhits=2
@@ -435,12 +441,14 @@ namespace mu2e {
     book_delta_histset[ 7] = 1;                // muons
     book_delta_histset[ 8] = 1;                // pions
 
-    book_delta_histset[10] = 1;                // long deltas
-    book_delta_histset[11] = 1;                // long prot+deut
-    book_delta_histset[12] = 1;                // long low-mom e-
-    book_delta_histset[16] = 1;                // e+
-    book_delta_histset[17] = 1;                // muons
-    book_delta_histset[18] = 1;                // pions
+    book_delta_histset[10] = 1;                // N(hits)>=5
+    book_delta_histset[11] = 1;                // N(hits)>=5 prot+deut
+    book_delta_histset[12] = 1;                // N(hits)>=5 low-mom e-
+    book_delta_histset[16] = 1;                // N(hits)>=5 e+
+    book_delta_histset[17] = 1;                // N(hits)>=5 muons
+    book_delta_histset[18] = 1;                // N(hits)>=5 pions
+
+    book_delta_histset[20] = 1;                // N(hits)>=5 and NHitsCE>2
 
     for (int i=0; i<kNDeltaHistSets; i++) {
       if (book_delta_histset[i] != 0) {
@@ -478,6 +486,33 @@ namespace mu2e {
       }
     }
     return 0;
+  }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta) {
+    int n_seeds = Delta->fNSeeds;
+    Hist->fNSeeds->Fill(n_seeds);
+    Hist->fNHits->Fill(Delta->fNHits);
+    Hist->fNHitsCE->Fill(Delta->fNHitsCE);
+    Hist->fNStrawHits->Fill(Delta->fNStrawHits);
+
+    float mom(-1), pdg_code(-1.e6);
+    if (Delta->fMcPart) {
+      mom      = Delta->fMcPart->Momentum();
+      pdg_code = Delta->fMcPart->fPdgID;
+    }
+
+    Hist->fPDGCode->Fill(pdg_code);
+    Hist->fMcMom->Fill(mom);
+    Hist->fEDep->Fill(Delta->EDep());
+    Hist->fNBestVsN->Fill(Delta->NHits(),Delta->NHitsMcP());
+
+    float fbest = float(Delta->NHitsMcP())/Delta->NHits();
+    Hist->fFBest->Fill(fbest);
+
+    for(int is=0; is<kNStations; ++is) {
+      Hist->fDxy->Fill(Delta->dxy[is]);
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -528,12 +563,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void  DeltaFinderDiag::fillSeedHistograms(SeedHist_t* Hist, DeltaSeed* Seed, SeedPar_t* Par) {
 
-    //    DeltaFinderTypes::Intersection_t res;
     Intersection_t res;
 
     Hist->fChi2TotN->Fill(Seed->Chi2TotN());
     Hist->fChi2AllN->Fill(Seed->Chi2AllN());
     Hist->fChi2PerpN->Fill(Seed->Chi2PerpN());
+    Hist->fChi2ParN ->Fill(Seed->Chi2ParN ());
     Hist->fChi2Delta->Fill(Seed->Chi2Delta());
 
     int face0 = Seed->SFace(0);
@@ -565,7 +600,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         if ((face == face0) || (face == face1))                       continue;
 
-        const HitData_t* hd  = Seed->hitData[face];
+        const HitData_t* hd  = Seed->HitData(face);
         if (hd == nullptr)                                            continue;
 //-----------------------------------------------------------------------------
 // reproduce DeltaFinder algorithm
@@ -611,32 +646,6 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta) {
-    int n_seeds = Delta->fNSeeds;
-    Hist->fNSeeds->Fill(n_seeds);
-    Hist->fNHits->Fill(Delta->fNHits);
-    Hist->fNStrawHits->Fill(Delta->fNStrawHits);
-
-    float mom(-1), pdg_code(-1.e6);
-    if (Delta->fMcPart) {
-      mom      = Delta->fMcPart->Momentum();
-      pdg_code = Delta->fMcPart->fPdgID;
-    }
-
-    Hist->fPDGCode->Fill(pdg_code);
-    Hist->fMcMom->Fill(mom);
-    Hist->fEDep->Fill(Delta->EDep());
-    Hist->fNBestVsN->Fill(Delta->NHits(),Delta->NHitsMcP());
-
-    float fbest = float(Delta->NHitsMcP())/Delta->NHits();
-    Hist->fFBest->Fill(fbest);
-
-    for(int is=0; is<kNStations; ++is) {
-      Hist->fDxy->Fill(Delta->dxy[is]);
-    }
-  }
-
-//-----------------------------------------------------------------------------
   void DeltaFinderDiag::fillMcHistograms(McHist_t* Hist, McPart_t* Mc) {
 
     float mom = Mc->Momentum();
@@ -671,7 +680,7 @@ namespace mu2e {
     int en = _data->event->event();
     if (_mcDiag) {
       if (_eventNumber != en) {
-          _eventNumber       = en;
+        _eventNumber = en;
         InitMcDiag();
         associateMcTruth();
       }
@@ -701,36 +710,29 @@ namespace mu2e {
 
         fillSeedHistograms(_hist.fSeed[0],seed,&seed_par);
 
-        // if (! seed->Used())            continue;
+        if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[ 1],seed,&seed_par);
+        else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[ 2],seed,&seed_par);
+        else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[ 3],seed,&seed_par);
+        else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[ 4],seed,&seed_par);
+
         if (seed->MCTruth()) {
 //-----------------------------------------------------------------------------
-// real pre-seed - made out of hits produced by the same particle
-// make sure it is electron
+// a delta seed which started by a stereo of two hits produced by the same particle
 //-----------------------------------------------------------------------------
-          if      (pdg_id > 2000) {
-            fillSeedHistograms(_hist.fSeed[1],seed,&seed_par);
+          if      (pdg_id >      2000) fillSeedHistograms(_hist.fSeed[11],seed,&seed_par);
+          else if (pdg_id ==  11) {
+            if      (mom <   20)       fillSeedHistograms(_hist.fSeed[12],seed,&seed_par);
+            else if (mom <   80)       fillSeedHistograms(_hist.fSeed[13],seed,&seed_par);
+            else if (mom <  110)       fillSeedHistograms(_hist.fSeed[14],seed,&seed_par);
+            else                       fillSeedHistograms(_hist.fSeed[15],seed,&seed_par);
           }
-          else if (pdg_id == 11) {
-
-            if      (mom <  20) fillSeedHistograms(_hist.fSeed[2],seed,&seed_par);
-            else if (mom <  80) fillSeedHistograms(_hist.fSeed[3],seed,&seed_par);
-            else if (mom < 110) fillSeedHistograms(_hist.fSeed[4],seed,&seed_par);
-            else                fillSeedHistograms(_hist.fSeed[5],seed,&seed_par);
-          }
-          else if (pdg_id == -11) {
-            fillSeedHistograms(_hist.fSeed[6],seed,&seed_par);
-          }
-          else if (abs(pdg_id) == 13) {
-            fillSeedHistograms(_hist.fSeed[7],seed,&seed_par);
-          }
-          else if (abs(pdg_id) == 211) {
-            fillSeedHistograms(_hist.fSeed[8],seed,&seed_par);
-          }
-
+          else if (pdg_id      == -11) fillSeedHistograms(_hist.fSeed[16],seed,&seed_par);
+          else if (abs(pdg_id) ==  13) fillSeedHistograms(_hist.fSeed[17],seed,&seed_par);
+          else if (abs(pdg_id) == 211) fillSeedHistograms(_hist.fSeed[18],seed,&seed_par);
         }
         else {
 //-----------------------------------------------------------------------------
-// fake pre-seed - made out of hits produced by two different particles
+// perhaps fake seed - made out of hits produced by two different particles
 //-----------------------------------------------------------------------------
           fillSeedHistograms(_hist.fSeed[90],seed,&seed_par);
         }
@@ -742,11 +744,6 @@ namespace mu2e {
             _data->printDeltaSeed(seed);
           }
         }
-
-        if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[11],seed,&seed_par);
-        else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[12],seed,&seed_par);
-        else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[13],seed,&seed_par);
-        else if (seed->NHits() == 4) fillSeedHistograms(_hist.fSeed[14],seed,&seed_par);
 
         DeltaCandidate* dc(nullptr);
         if (seed->fDeltaIndex >= 0) dc = _data->deltaCandidate(seed->fDeltaIndex);
@@ -818,6 +815,8 @@ namespace mu2e {
         else if (pdg_id      == -11) fillDeltaHistograms(_hist.fDelta[16],delta);
         else if (abs(pdg_id) ==  13) fillDeltaHistograms(_hist.fDelta[17],delta);
         else if (abs(pdg_id) == 211) fillDeltaHistograms(_hist.fDelta[18],delta);
+
+        if (delta->fNHitsCE > 2)     fillDeltaHistograms(_hist.fDelta[20],delta);
       }
     }
 //-----------------------------------------------------------------------------
@@ -1092,7 +1091,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // assign delta index to each hit flagged as delta
 //-----------------------------------------------------------------------------
-          HitData_t* hd = (HitData_t*) ds->hitData[face];
+          HitData_t* hd = (HitData_t*) ds->HitData(face);
           if (hd == nullptr)                                          continue;
           hd->fDeltaIndex = idelta;
 //-----------------------------------------------------------------------------
@@ -1524,7 +1523,7 @@ namespace mu2e {
 // print hit ID's in each face
 //-----------------------------------------------------------------------------
     for (int face=0; face<kNFaces; face++) {
-      const HitData_t* hd = seed->hitData[face];
+      const HitData_t* hd = seed->HitData(face);
       if (hd == nullptr) printf("(%5i:%5i)",-1,-1);
       else {
         const ComboHit* hit = hd->fHit;
@@ -1546,7 +1545,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     printHitData(nullptr,1);
     for (int face=0; face<kNFaces; face++) {
-      const HitData_t* hd = seed->hitData[face];
+      const HitData_t* hd = seed->HitData(face);
       if (hd == nullptr)                                              continue;
       printHitData(hd,-1);
     }
