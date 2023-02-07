@@ -42,8 +42,8 @@ namespace mu2e {
 
   public:
 
-    TrkRecoMcUtils(const McUtilsToolBase::Config& config);
-    TrkRecoMcUtils(const fhicl::ParameterSet& PSet);
+    TrkRecoMcUtils(const fhicl::Table<McUtilsToolBase::Config>& config);
+    //    TrkRecoMcUtils(const fhicl::ParameterSet& PSet);
     ~TrkRecoMcUtils();
 
   public:
@@ -74,21 +74,21 @@ namespace mu2e {
 
   };
 
-  //-----------------------------------------------------------------------------
-  TrkRecoMcUtils::TrkRecoMcUtils(const fhicl::ParameterSet& PSet) :
-    _comboHitCollTag   { PSet.get<art::InputTag>("comboHitCollTag"   ) },
-    _strawDigiMCCollTag{ PSet.get<art::InputTag>("strawDigiMCCollTag") }
-  {
-    _lastEvent   = art::EventID();
-    _mcdigis     = nullptr;
-    _chColl      = nullptr;
-    _mbtime      = -1;
-  }
+  // //-----------------------------------------------------------------------------
+  // TrkRecoMcUtils::TrkRecoMcUtils(const fhicl::ParameterSet& PSet) :
+  //   _comboHitCollTag   { PSet.get<art::InputTag>("comboHitCollTag"   ) },
+  //   _strawDigiMCCollTag{ PSet.get<art::InputTag>("strawDigiMCCollTag") }
+  // {
+  //   _lastEvent   = art::EventID();
+  //   _mcdigis     = nullptr;
+  //   _chColl      = nullptr;
+  //   _mbtime      = -1;
+  // }
 
 //-----------------------------------------------------------------------------
-  TrkRecoMcUtils::TrkRecoMcUtils(const McUtilsToolBase::Config& config) :
-    _comboHitCollTag   { config.comboHitCollTag()    },
-    _strawDigiMCCollTag{ config.strawDigiMCCollTag() }
+  TrkRecoMcUtils::TrkRecoMcUtils(const fhicl::Table<McUtilsToolBase::Config>& config) :
+    _comboHitCollTag   { config().comboHitCollTag()    },
+    _strawDigiMCCollTag{ config().strawDigiMCCollTag() }
   {
     _lastEvent   = art::EventID();
     _mcdigis     = nullptr;
