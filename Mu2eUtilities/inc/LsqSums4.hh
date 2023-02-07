@@ -24,7 +24,12 @@ public:
   void   init(const LsqSums4& S);
 
   void   addPoint   (double X, double Y, double W = 1.);
+  void   addPointLine   (double X, double Y, double W = 1.);
   void   removePoint(double X, double Y, double W = 1.);
+  void   removePointLine(double X, double Y, double W = 1.);
+
+  void   addSums4Line(LsqSums4& Lsq);
+  void   removeSums4Line(LsqSums4& Lsq);
 
   double qn      () { return _qn; }
   double xMean   () { return sx/sw; }

@@ -86,6 +86,21 @@ void LsqSums4::addPoint(double XX, double YY, double W) {
   sy4   += Y*Y*Y*Y*W;
 }
 
+void LsqSums4::addPointLine(double XX, double YY, double W) {
+  double X, Y;
+  // move to COG
+  X = XX-fX0;
+  Y = YY-fY0;
+
+  _qn   += 1;
+  sw    += W;
+  sx    += X*W;
+  sy    += Y*W;
+  sx2   += X*X*W;
+  sxy   += X*Y*W;
+  sy2   += Y*Y*W;
+}
+
 void LsqSums4::removePoint(double XX, double YY, double W) {
   // move to COG
   double X, Y;
@@ -108,6 +123,45 @@ void LsqSums4::removePoint(double XX, double YY, double W) {
   sx2y2 -= X*X*Y*Y*W;
   sxy3  -= X*Y*Y*Y*W;
   sy4   -= Y*Y*Y*Y*W;
+}
+
+void LsqSums4::removePointLine(double XX, double YY, double W) {
+  // move to COG
+  double X, Y;
+  X = XX-fX0;
+  Y = YY-fY0;
+
+  _qn   -= 1;
+  sw    -= 1*W;
+  sx    -= X*W;
+  sy    -= Y*W;
+  sx2   -= X*X*W;
+  sxy   -= X*Y*W;
+  sy2   -= Y*Y*W;
+}
+
+void LsqSums4::addSums4Line(LsqSums4& Lsq) {
+
+  _qn   += Lsq._qn;
+  sw    += Lsq.sw;
+  sx    += Lsq.sx;
+  sy    += Lsq.sy;
+  sx2   += Lsq.sx2;
+  sxy   += Lsq.sxy;
+  sy2   += Lsq.sy2;
+
+}
+
+void LsqSums4::removeSums4Line(LsqSums4& Lsq) {
+
+  _qn   -= Lsq._qn;
+  sw    -= Lsq.sw;
+  sx    -= Lsq.sx;
+  sy    -= Lsq.sy;
+  sx2   -= Lsq.sx2;
+  sxy   -= Lsq.sxy;
+  sy2   -= Lsq.sy2;
+
 }
 
 double LsqSums4::x0() {
