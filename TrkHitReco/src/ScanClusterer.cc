@@ -1,4 +1,4 @@
-#include "Offline/TrkReco/inc/ScanClusterer.hh"
+#include "Offline/TrkHitReco/inc/ScanClusterer.hh"
 #include <vector>
 #include <queue>
 #include <algorithm>
@@ -183,9 +183,4 @@ namespace mu2e
       if (blindIdx[idx]>0) clusters.back().addHit(ich);
     }
   }
-
-
 }
-
-
-

@@ -1,5 +1,5 @@
 //
-// Stereo hit diagnostics.  Split out of MakeComboHits
+// Combo hit diagnostics.  Split out of MakeComboHits
 //
 // Original author D. Brown
 //
@@ -31,7 +31,6 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 // Utilities
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 // diagnostics
 #include "Offline/TrkDiag/inc/ComboHitInfo.hh"
@@ -41,55 +40,71 @@ namespace mu2e
 {
   class ComboHitDiag : public art::EDAnalyzer {
     public:
-      explicit ComboHitDiag(fhicl::ParameterSet const&);
+
+      struct Config {
+        using Name = fhicl::Name;
+        using Comment = fhicl::Comment;
+        fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag"),0 };
+        fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug"),0 };
+        fhicl::Atom<bool> mcdiag{ Name("MCDiag"), Comment("MonteCarlo Diag"), true };
+        fhicl::Atom<bool> digidiag{ Name("digiDiag"), Comment("Digi Diag"), true };
+        fhicl::Atom<bool> useflagcol{ Name("useFlagCollection"), Comment("UseFlagCollection"), false };
+        fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
+        fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
+        fhicl::Atom<art::InputTag> StrawDigiCollection{   Name("StrawDigiCollection"),   Comment("StrawDigi collection name") };
+        fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
+      };
+
+      explicit ComboHitDiag(const art::EDAnalyzer::Table<Config>& config);
       virtual ~ComboHitDiag();
       virtual void beginJob();
       virtual void analyze(const art::Event& e);
     private:
       // configuration
       int _diag;
-      bool _mcdiag, _digidiag, _useshfcol;
+      bool _mcdiag, _digidiag, _useflagcol;
       // event object Tags
-      art::InputTag   _chtag;
-      art::InputTag   _shftag;
-      art::InputTag   _mcdigistag;
-      art::InputTag   _digistag;
+      art::ProductToken<ComboHitCollection> _chToken;
+      art::ProductToken<StrawHitFlagCollection> _shfToken;
+      art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
+      art::ProductToken<StrawDigiCollection> _digisToken;
+      art::ProductToken<StrawDigiADCWaveformCollection> _digiadcsToken;
       // event data cache
       const ComboHitCollection* _chcol;
       const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
-      // time offset
-      SimParticleTimeOffset _toff;
       // diagnostics
       TTree *_chdiag;
-      Int_t _evt; // add event id
+      int _evt; // add event id
       XYZVectorF _pos; // average position
       XYZVectorF _wdir; // direction at this position (typically the wire direction)
-      Float_t _wdist; // distance from wire center along this direction
-      Float_t _wres; // estimated error along this direction
-      Float_t _tres; // estimated error perpendicular to this direction
-      Float_t _time; // Average time for these
-      Float_t _correcttime, _dtime, _ptime;
-      Float_t _edep; // average energy deposit for these
-      Float_t _qual; // quality of combination
-      Float_t _dz; // z extent
-      Int_t _nsh, _nch; // number of associated straw hits
-      Int_t _strawid; // strawid info
-      Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
+      float _wdist; // distance from wire center along this direction
+      float _wres; // estimated error along this direction
+      float _tres; // estimated error perpendicular to this direction
+      float _time; // Average time for these
+      float _ctime, _dtime, _ptime;
+      float _edep; // average energy deposit for these
+      float _plen; // path length
+      float _dedx; // average energy deposit for these
+      float _qual; // quality of combination
+      float _dz; // z extent
+      int _nsh, _nch; // number of associated straw hits
+      int _strawid; // strawid info
+      int _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       // mc diag
       XYZVectorF _mcpos; // average MC hit position
 
-      Float_t _mctime, _mcdist;
-      Int_t _mcpdg, _mcproc, _mcgen;
+      float _mctime, _mcdist;
+      int _mcpdg, _mcproc, _mcgen;
 
-      Float_t _delay[2], _threshold[2], _adcgain;
+      float _threshold[2], _adcgain;
       std::vector<short unsigned> _digiadc;
-      Int_t _digifwpmp;
-      Int_t _digipeak;
-      Float_t _digipedestal;
-      Int_t _digitdc[2], _digitot[2];
+      int _digifwpmp;
+      int _digipeak;
+      float _digipedestal;
+      int _digitdc[2], _digitot[2];
       ProditionsHandle<StrawElectronics> _strawele_h;
 
       // per-hit diagnostics
@@ -99,17 +114,17 @@ namespace mu2e
       bool findData(const art::Event& evt);
   };
 
-  ComboHitDiag::ComboHitDiag(fhicl::ParameterSet const& pset) :
-    art::EDAnalyzer(pset),
-    _diag   (pset.get<int>("diagLevel",1)),
-    _mcdiag   (pset.get<bool>("MCdiag",true)),
-    _digidiag           (pset.get<bool>("digidiag",false)),
-    _useshfcol    (pset.get<bool>("UseStrawHitFlagCollection",false)),
-    _chtag    (pset.get<art::InputTag>("ComboHitCollection")),
-    _shftag   (pset.get<art::InputTag>("StrawHitFlagCollection","none")),
-    _mcdigistag   (pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
-    _digistag           (pset.get<art::InputTag>("StrawDigiCollection","makeSD")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+  ComboHitDiag::ComboHitDiag(const art::EDAnalyzer::Table<Config>& config) :
+    art::EDAnalyzer(config),
+    _diag( config().diag() ),
+    _mcdiag( config().mcdiag() ),
+    _digidiag( config().digidiag() ),
+    _useflagcol( config().useflagcol() ),
+    _chToken{ consumes<ComboHitCollection>(config().ComboHitCollection() ) },
+    _shfToken{ consumes<StrawHitFlagCollection>(config().StrawHitFlagCollection() ) },
+    _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
+    _digisToken{ consumes<StrawDigiCollection>(config().StrawDigiCollection() ) },
+    _digiadcsToken{ consumes<StrawDigiADCWaveformCollection>(config().StrawDigiCollection() ) }
   {}
 
   ComboHitDiag::~ComboHitDiag(){}
@@ -128,10 +143,12 @@ namespace mu2e
       _chdiag->Branch("wres",&_wres,"wres/F");
       _chdiag->Branch("tres",&_tres,"tres/F");
       _chdiag->Branch("time",&_time,"time/F");
-      _chdiag->Branch("correcttime",&_correcttime,"correcttime/F");
+      _chdiag->Branch("ctime",&_ctime,"ctime/F");
       _chdiag->Branch("dtime",&_time,"dtime/F");
       _chdiag->Branch("ptime",&_time,"ptime/F");
       _chdiag->Branch("edep",&_edep,"edep/F");
+      _chdiag->Branch("plen",&_plen,"plen/F");
+      _chdiag->Branch("dedx",&_dedx,"dedx/F");
       _chdiag->Branch("qual",&_qual,"qual/F");
       _chdiag->Branch("dz",&_dz,"dz/F");
       _chdiag->Branch("nsh",&_nsh,"nsh/I");
@@ -167,7 +184,6 @@ namespace mu2e
         _chdiag->Branch("digipeak",&_digipeak,"digipeak/I");
         _chdiag->Branch("digipedestal",&_digipedestal,"digipedestal/F");
         _chdiag->Branch("digiadc",&_digiadc);
-        _chdiag->Branch("delay",&_delay,"delaycal/F:delayhv/F");
         _chdiag->Branch("threshold",&_threshold,"thresholdcal/F:thresholdhv/F");
         _chdiag->Branch("adcgain",&_adcgain,"adcgain/F");
       }
@@ -193,13 +209,15 @@ namespace mu2e
       _wres = ch.wireRes();
       _tres = ch.transRes();
       _time = ch.time();
-      _correcttime = ch.correctedTime();
+      _ctime = ch.correctedTime();
       _dtime = ch.driftTime();
       _ptime = ch.propTime();
       _edep = ch.energyDep();
+      _plen = ch.pathLength();
+      _dedx = ch.specificIonization();
       _qual = ch.qual();
       StrawHitFlag flag;
-      if(_useshfcol)
+      if(_useflagcol)
         flag = _shfcol->at(ich);
       else
         flag = ch.flag();
@@ -265,7 +283,7 @@ namespace mu2e
         StrawDigiMC const& mcd1 = _mcdigis->at(shids[0]);
         auto const& spmcp = mcd1.strawGasStep(StrawEnd::cal);
         art::Ptr<SimParticle> spp = spmcp->simParticle();
-        _mctime = _toff.timeWithOffsetsApplied(*spmcp);
+        _mctime = spmcp->time();
         _mcpdg = spp->pdgId();
         _mcproc = spp->creationCode();
         if(spp->genParticle().isNonnull())
@@ -302,8 +320,6 @@ namespace mu2e
         }
         _digifwpmp = digi.PMP();
 
-        _delay[StrawEnd::cal] = strawele.getTimeOffsetStrawCal(ch.strawId().uniqueStraw());
-        _delay[StrawEnd::hv] = strawele.getTimeOffsetStrawHV(ch.strawId().uniqueStraw());
         for (size_t iend=0;iend<2;++iend){
           _threshold[iend] = strawele.threshold(ch.strawId(), static_cast<StrawEnd::End>(iend));
         }
@@ -333,28 +349,25 @@ namespace mu2e
 
   bool ComboHitDiag::findData(const art::Event& evt){
     _chcol = 0;  _shfcol = 0; _mcdigis = 0; _digis = 0; _digiadcs = 0;
-    auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
+    auto chH = evt.getValidHandle(_chToken);
     _chcol = chH.product();
-    if(_useshfcol){
-      auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shftag);
+    if(_mcdiag){
+      auto mcdH = evt.getValidHandle(_mcdigisToken);
+      _mcdigis = mcdH.product();
+    }
+    if(_useflagcol){
+      auto shfH = evt.getValidHandle(_shfToken);
       _shfcol = shfH.product();
     }
-    if(_mcdiag){
-      auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
-      _mcdigis = mcdH.product();
-      // update time offsets
-      _toff.updateMap(evt);
-    }
     if (_digidiag){
-      auto dH = evt.getValidHandle<StrawDigiCollection>(_digistag);
+      auto dH = evt.getValidHandle(_digisToken);
       _digis = dH.product();
-      auto daH = evt.getValidHandle<StrawDigiADCWaveformCollection>(_digistag);
+      auto daH = evt.getValidHandle(_digiadcsToken);
       _digiadcs = daH.product();
     }
-    return _chcol != 0 && (!_useshfcol || _shfcol != 0) && (_mcdigis != 0 || !_mcdiag) && ((_digis != 0 && _digiadcs != 0) || !_digidiag);
+    return _chcol != 0 && (!_useflagcol || _shfcol != 0) && (_mcdigis != 0 || !_mcdiag) && ((_digis != 0 && _digiadcs != 0) || !_digidiag);
   }
 }
 // Part of the magic that makes this class a module.
 using mu2e::ComboHitDiag;
 DEFINE_ART_MODULE(ComboHitDiag);
-
