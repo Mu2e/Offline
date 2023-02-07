@@ -16,16 +16,22 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
     Data_t::Data_t() {
-      for (int i=0; i<kNStations; i++) {
-        fListOfSeeds[i] = new TClonesArray("mu2e::DeltaSeed",50);
-        fListOfSeeds[i]->SetOwner(kTRUE);
+      for (int is=0; is<kNStations; is++) {
+        fNSeeds         [is] = 0;
+        fNAllocatedSlots[is] = 0;
+        fListOfSeeds    [is].reserve(100);
       }
     }
 
 //-----------------------------------------------------------------------------
+// only fListOfSeeds contains new'ed memory
+//-----------------------------------------------------------------------------
     Data_t::~Data_t() {
-      for (int i=0; i<kNStations; i++) {
-        delete fListOfSeeds[i];
+      for (int is=0; is<kNStations; is++) {
+        int nslots = fNAllocatedSlots[is];
+        for (int i=0; i<nslots; i++) {
+          delete fListOfSeeds[is][i];
+        }
       }
     }
 
@@ -77,11 +83,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     void Data_t::InitEvent(const art::Event* Evt, int DebugLevel) {
       event      = Evt;
-      fNSeeds    = 0;
       debugLevel = DebugLevel;
 
       for (int is=0; is<kNStations; is++) {
-        fListOfSeeds       [is]->Clear();
+        fNSeeds[is] = 0;
+
         fListOfProtonSeeds [is].clear();
         fListOfComptonSeeds[is].clear();
 //-----------------------------------------------------------------------------
@@ -204,6 +210,13 @@ namespace mu2e {
       }
     }
 //-----------------------------------------------------------------------------
+    int Data_t::nSeedsTot() {
+      int n(0);
+      for (int i=0; i<kNStations; i++) n += fNSeeds[i];
+      return n;
+    }
+
+//-----------------------------------------------------------------------------
     void Data_t::printHitData(HitData_t* Hd, const char* Option) {
       const mu2e::ComboHit* ch0 = &(*chcol)[0];
 
@@ -234,7 +247,7 @@ namespace mu2e {
       printf("---------------------------------------------");
       printf("-------------------------------------------------------------------------------------\n");
       printf("index good type delta  SHID  SHID  SHID  SHID");
-      printf("  chi2all/N chi2perp/N   chi21   chi22 mintime  maxtime     X        Y         Z   nfwh nch nsh\n");
+      printf("  chi2all/N chi2par/N chi2perp/N   chi21   chi22 mintime  maxtime     X        Y         Z   nch nsh\n");
       printf("---------------------------------------------");
       printf("-------------------------------------------------------------------------------------\n");
 
@@ -251,10 +264,10 @@ namespace mu2e {
         }
       }
 
-      printf(" %8.2f   %7.2f %7.2f %7.2f",Seed->Chi2AllN(),Seed->Chi2PerpN(),Seed->fChi21,Seed->fChi22);
+      printf(" %8.2f   %7.2f %7.2f %7.2f %7.2f",Seed->Chi2TotN(),Seed->Chi2ParN(),Seed->Chi2PerpN(),Seed->fChi21,Seed->fChi22);
       printf("%8.1f %8.1f",Seed->MinHitTime(),Seed->MaxHitTime());
       printf(" %8.3f %8.3f %9.3f",Seed->CofM.x(),Seed->CofM.y(),Seed->CofM.z());
-      printf("%4i",Seed->fNFacesWithHits);
+      // printf("%4i",Seed->fNFacesWithHits);
       printf("%4i",Seed->NHits());
       printf("%4i",Seed->NStrawHits());
       printf("\n");
@@ -283,7 +296,7 @@ namespace mu2e {
           const HitData_t* hd0 = ds->HitData(face0);
           const HitData_t* hd1 = (face1 >= 0) ? ds->HitData(face1) : nullptr;
 
-          printf("          %3i  %3i    %3i:%03i",ds->fNHits,ds->fNHitsCE,is,ds->Index());
+          printf("          %3i    %3i:%03i",ds->fNHits,is,ds->Index());
           printf(" %7.2f %7.2f %9.2f",ds->CofM.x(),ds->CofM.y(),ds->CofM.z());
           float chi22 = (hd1) ? hd1->fChi2Min : -1;
           printf(" %7.1f %7.1f",hd0->fChi2Min, chi22);

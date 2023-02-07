@@ -23,14 +23,7 @@ physics : {
             debugLevel                    :  0  ## 1 ##
 
             finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
-                maxChi2Seed      : 16.  ## 12  (chi^2 wire, per hit)
-                scaleTwo         :  1.3 ## 1.3
-                maxChi2All       : 16.  ## 9
-                maxChi2Radial    : 12.  ## 12 this is the hit pickup chi^2
-                sigmaR           :  2.5 ## 3 mm ~ 1 MeV/c
-                rCore            :  3.5 ## 2 mm -  'core radius' of the compton electron trajectory
-                updateSeedCOG    :  1
-                maxChi2SeedDelta : 20.
+                timeBin : 60
             }
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin

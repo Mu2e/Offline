@@ -148,8 +148,8 @@ namespace mu2e {
     int          recoverSeed         (DeltaCandidate* Delta, int LastStation, int Station);
     int          recoverStation      (DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds);
     void         run                 ();
-    void         seedChi2            (DeltaSeed* Seed, float Xc, float Yc, float& Chi2Par, float& Chi2Perp);
-    float        seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta);
+    void         seedChi2            (DeltaSeed* Seed, float Xc,    float Yc, float& Chi2Par, float& Chi2Perp);
+    void         seedDeltaChi2       (DeltaSeed* Seed, DeltaCandidate* Delta, float& Chi2Par, float& Chi2Perp);
   };
 }
 #endif

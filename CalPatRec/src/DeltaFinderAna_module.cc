@@ -917,7 +917,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
         McPart_t* mc = _list_of_mc_particles.at(i);
         const SimParticle* sim = mc->fSim;
 
-        if ((sim->pdgId() == PDGCode::e_minus) and (mc->NComboHits() >= _printElectronsMinNHits)) {
+        if (((sim->pdgId() == PDGCode::e_minus) or (sim->pdgId() == PDGCode::e_plus)) and (mc->NComboHits() >= _printElectronsMinNHits)) {
 
           float fr_sh = mc->NShTaggedDelta()/(mc->NSSCHits()+1.e-3);
           float fr_ch = mc->NChTaggedDelta()/(mc->NComboHits()+1.e-3);

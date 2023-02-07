@@ -23,13 +23,12 @@ namespace mu2e {
   class  Panel;
   class  SimParticle;
 
-  class DeltaSeed : public TObject {
+  class DeltaSeed {
   public:
     int          fIndex;            // seed index within the station
     int          fStation;          // delta seed station
     int          fType;             // defines indices of the two faces used for preseed seach
     int          fGood;             // <killer number> if not to be used - what about 0 ?
-    int          fNFacesWithHits;   // with 1 CH/face, should be the same as the number of hits, redundant ?
     int          fNHits;            // total number of combo hits
     int          fNStrawHits;       // total number of straw hits
 
@@ -40,12 +39,6 @@ namespace mu2e {
     int          fFaceProcessed[kNFaces];
 
     HitData_t*   fHitData      [kNFaces];
-
-    McPart_t*    fMcPart       [kNFaces];
-    int          fNSim;                 // N different simID's cof the hits
-    int          fNMom;                 // N(mothers) of the particles which produced the hits
-    int          fNHitsCE;              // number of associated CE hits
-    McPart_t*    fPreSeedMcPart[2];     // McPart_t's for initial intersection
 
                                         // XY coordinate sums
     double       fSnx2;
@@ -67,10 +60,14 @@ namespace mu2e {
     float        fChi2Par;
     float        fChi2Perp;
     float        fChi2Delta;           // chi2 when the seed is added to Delta
+    float        fChi2DeltaPar;        //
+    float        fChi2DeltaPerp;       //
 
     DeltaSeed () {}
     DeltaSeed (int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
     ~DeltaSeed() {}
+
+    void             Init(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
 
     int              Station ()         { return fStation; }
     int              Index   ()         { return fIndex; }
@@ -79,12 +76,14 @@ namespace mu2e {
     float            Chi2Par  ()        { return fChi2Par; }
     float            Chi2Perp ()        { return fChi2Perp; }
     float            Chi2Tot  ()        { return (fChi2Par+fChi2Perp); }
-    float            Chi2All  ()        { return (fChi2Par+fChi2Perp); }
     float            Chi2ParN ()        { return fChi2Par /fNHits; }
     float            Chi2PerpN()        { return fChi2Perp/fNHits; }
     float            Chi2TotN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
-    float            Chi2AllN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
-    float            Chi2Delta()        { return fChi2Delta   ; }
+    // float            Chi2All  ()        { return (fChi2Par+fChi2Perp); }
+    // float            Chi2AllN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
+    float            Chi2Delta    ()    { return fChi2Delta       ; }
+    float            Chi2DeltaPar ()    { return fChi2DeltaPar    ; }
+    float            Chi2DeltaPerp()    { return fChi2DeltaPerp   ; }
 
     HitData_t*       HitData (int Face) { return fHitData[Face]; } // no boundary check !
     int              NHits   ()         { return fNHits; }
@@ -102,8 +101,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // MC truth, better move to the analysis module
 //-----------------------------------------------------------------------------
-    int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
-    int              NHitsCE ()         { return fNHitsCE; }
+    // int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
+    // int              NHitsCE ()         { return fNHitsCE; }
 //-----------------------------------------------------------------------------
 // drift time can't be < 0
 // fMaxTime < particle T0 < fMinTime
@@ -123,8 +122,6 @@ namespace mu2e {
     void             ReplaceFirstHit    (HitData_t* Hd);
     void             CalculateCogAndChi2(float RCore, float SigmaR2);
     void             Chi2(float Xc, float Yc, float RCore, float SigmaR2, float& Chi2All, float& Chi2Perp);
-
-    ClassDef(mu2e::DeltaSeed,0)
   };
 }
 #endif

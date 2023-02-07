@@ -79,7 +79,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAlg::completeSeed(DeltaSeed* Seed) {
 
-    assert ((Seed->SFace(1) >= 0) and (Seed->NHits() == 2));
+    // assert ((Seed->SFace(1) >= 0) and (Seed->NHits() == 2));
 //-----------------------------------------------------------------------------
 // loop over remaining faces, 'f2' - face in question
 // bins are 50ns wide, so only need to loop over hits in 3 of them
@@ -246,6 +246,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 1. loop over existing compton seeds and match them to existing delta candidates
 //    number of deltas may increase as the execution moves from one station to another
+//    ignore seeds in the proton list
 //-----------------------------------------------------------------------------
       int ndelta = _data->nDeltaCandidates();
       int nseeds = _data->NComptonSeeds(is);
@@ -259,7 +260,7 @@ namespace mu2e {
 // with one of them
 //-----------------------------------------------------------------------------
         DeltaCandidate* closest(nullptr);
-        float           chi2min (_maxChi2SeedDelta);
+        float           chi2min (_maxChi2SeedDelta), chi2_par_min(-1), chi2_perp_min(-1);
 
         for (int idc=0; idc<ndelta; idc++) { // this loop creates new deltas, do not overloop
           DeltaCandidate* dc = _data->deltaCandidate(idc);
@@ -277,20 +278,23 @@ namespace mu2e {
           int gap  = first-is;
           if (gap > _maxGap)                                          continue;
           float t0 = dc->T0(is);
-          assert(t0 > 0);
           float dt = t0-seed->TMean();
           if (fabs(dt) > _maxSeedDt+_maxDtDs*gap)                     continue;
 //-----------------------------------------------------------------------------
 // the time is OK'ish - checks should be implemented more accurately (FIXME)
 // look at the coordinates
 //-----------------------------------------------------------------------------
-          float chi2 = seedDeltaChi2(seed,dc);
+          float chi2_par, chi2_perp;
+          seedDeltaChi2(seed,dc,chi2_par,chi2_perp);
+          float chi2 = chi2_par+chi2_perp;
           if (chi2 < chi2min) {
 //-----------------------------------------------------------------------------
 // everything matches, new closest delta candidate
 //-----------------------------------------------------------------------------
-            closest = dc;
-            chi2min = chi2;
+            closest       = dc;
+            chi2min       = chi2;
+            chi2_par_min  = chi2_par;
+            chi2_perp_min = chi2_perp;
           }
         }
 //-----------------------------------------------------------------------------
@@ -298,14 +302,21 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         if (closest) {
           closest->AddSeed(seed,is);
-          seed->fChi2Delta = chi2min;
+          seed->fChi2Delta     = chi2min;
+          seed->fChi2DeltaPar  = chi2_par_min;
+          seed->fChi2DeltaPerp = chi2_perp_min;
+          // for (int face=0; face<kNFaces; face++) {
+          //   HitData_t* hd = seed->HitData(face);
+          //   if (hd) hd->fDeltaIndex = closest->Index();
+          // }
                                                                       continue;
         }
 //-----------------------------------------------------------------------------
 // DeltaSeed has not been linked to any existing delta candidate, create
 // a new delta candidate and see if it is good enough
 //-----------------------------------------------------------------------------
-        DeltaCandidate delta(ndelta,seed,is);
+        int nd = _data->nDeltaCandidates();
+        DeltaCandidate delta(nd,seed,is);
 //-----------------------------------------------------------------------------
 // first, try to extend it backwards, in a compact way, to pick missing
 // seeds or hits
@@ -319,6 +330,8 @@ namespace mu2e {
         }
 //-----------------------------------------------------------------------------
 // next, try to extend it upstream, by one step, use of seeds is allowed
+// otherwise, if this seed was the only stereo seed of a delta, may never know
+// about that. First try to pick up a seed, then - a single hit
 //-----------------------------------------------------------------------------
         if (is > 0) {
           recoverStation(&delta,is,is-1,1,1);
@@ -326,11 +339,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // store only delta candidates with hits in 2 stations or more - as the station
 // lever arm is about 8 cm, a normal track segment may look like a delta
-// for each station define expected T0min and T0max
-// to keep _minNSeeds=2 need to look forward...
-// 'addDeltaCandidate' makes a deep copy
+// so _minNSeeds is set to two
+// 'addDeltaCandidate' uses a deep copy
 //-----------------------------------------------------------------------------
         if (delta.fNSeeds >= _minNSeeds) {
+          //  delta.markHitsAsUsed();
           _data->addDeltaCandidate(&delta);
         }
         else {
@@ -358,7 +371,7 @@ namespace mu2e {
         if (first == is )                                             continue;
         if (first-is > 3)                                             continue;
 //-----------------------------------------------------------------------------
-// if a delta candidate has been created in this routine, time limits
+// if a delta candidate has been created in this function, time limits
 // may not be defined. Make sure they are
 //-----------------------------------------------------------------------------
         recoverStation(dc,first,is,1,0);
@@ -518,16 +531,15 @@ namespace mu2e {
             seed->fGood = -3000-seed->fIndex;
           }
           else {
-            if (seed->EDep() > _maxSeedEDep) {
-              seed->fGood = -2000-seed->fIndex;
-            }
-            else {
-              _data->AddComptonSeed(seed,Station);
-            }
+//-----------------------------------------------------------------------------
+// lists of proton and compton seeds are not mutually exclusive -
+// some (3 keV < EDep < 5 keV) could be either
+//-----------------------------------------------------------------------------
+            if (seed->EDep() > _maxSeedEDep)        seed->fGood = -2000-seed->fIndex;
+            else                                   _data->AddComptonSeed(seed,Station);
 
-            if (seed->EDep() > _minProtonSeedEDep) {
-              _data->AddProtonSeed(seed,Station);
-            }
+            if (seed->EDep() > _minProtonSeedEDep) _data->AddProtonSeed (seed,Station);
+
             seed_found = seed->NHits();
           }
 //-----------------------------------------------------------------------------
@@ -689,7 +701,7 @@ namespace mu2e {
       DeltaSeed* ds1 = _data->deltaSeed(Station,i1);
       if (ds1->fGood < 0)                                             continue;
 
-      if (ds1->Chi2AllN() > _maxChi2All) {
+      if (ds1->Chi2TotN() > _maxChi2All) {
         ds1->fGood = -1000-i1;
                                                                       continue;
       }
@@ -700,7 +712,7 @@ namespace mu2e {
         DeltaSeed* ds2 = _data->deltaSeed(Station,i2);
         if (ds2->fGood < 0)                                           continue;
 
-        if (ds2->Chi2AllN() > _maxChi2All) {
+        if (ds2->Chi2TotN() > _maxChi2All) {
           ds2->fGood = -1000-i2;
                                                                       continue;
         }
@@ -729,10 +741,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // overlap significant, leave in only one DeltaSeed - which one?
 //-----------------------------------------------------------------------------
-          if (ds1->fNFacesWithHits > ds2->fNFacesWithHits) {
+//          if (ds1->fNFacesWithHits > ds2->fNFacesWithHits) {
+          if (ds1->fNHits > ds2->fNHits) {
             ds2->fGood = -1000-i1;
           }
-          else if (ds2->fNFacesWithHits > ds1->fNFacesWithHits) {
+          //          else if (ds2->fNFacesWithHits > ds1->fNFacesWithHits) {
+          else if (ds2->fNHits > ds1->fNHits) {
             ds1->fGood = -1000-i2;
             break;
           }
@@ -740,7 +754,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //both seeds have the same number of hits - compare chi2's
 //-----------------------------------------------------------------------------
-            if (ds1->Chi2AllN() <  ds2->Chi2AllN()) {
+            if (ds1->Chi2TotN() <  ds2->Chi2TotN()) {
               ds2->fGood = -1000-i1;
             }
             else {
@@ -754,8 +768,10 @@ namespace mu2e {
 // only one overlapping hit
 // special treatment of 2-hit seeds to reduce the number of ghosts
 //-----------------------------------------------------------------------------
-          if (ds1->fNFacesWithHits == 2) {
-            if (ds2->fNFacesWithHits > 2) {
+          // if (ds1->fNFacesWithHits == 2) {
+          //   if (ds2->fNFacesWithHits > 2) {
+          if (ds1->fNHits == 2) {
+            if (ds2->fNHits > 2) {
               ds1->fGood = -1000-i2;
               break;
             }
@@ -763,7 +779,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the second seed also has 2 faces with hits
 //-----------------------------------------------------------------------------
-              if (ds1->Chi2AllN() <  ds2->Chi2AllN()) ds2->fGood = -1000-i1;
+              if (ds1->Chi2TotN() <  ds2->Chi2TotN()) ds2->fGood = -1000-i1;
               else {
                 ds1->fGood = -1000-i2;
                 break;
@@ -774,7 +790,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the first seed has N>2 hits
 //-----------------------------------------------------------------------------
-            if (ds2->fNFacesWithHits == 2) {
+//            if (ds2->fNFacesWithHits == 2) {
+            if (ds2->fNHits == 2) {
 //-----------------------------------------------------------------------------
 // the 2nd seed has only 2 hits and there is an overlap
 //-----------------------------------------------------------------------------
@@ -853,7 +870,7 @@ namespace mu2e {
                                         // predicted time range for this station
     float tdelta = Delta->T0(Station);
 
-    float      chi2min(_maxChi2SeedDelta);
+    float      chi2min(_maxChi2SeedDelta), chi2_par_min(-1), chi2_perp_min(-1);
     DeltaSeed* closest_seed(nullptr);
 
     float dt   = _maxSeedDt + _maxDtDs*fabs(Station-LastStation);
@@ -868,22 +885,43 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       if (fabs(tdelta-seed->TMean()) > dt)                            continue;
 
-      float chi2 = seedDeltaChi2(seed,Delta);
+      float  chi2_par, chi2_perp;
+      seedDeltaChi2(seed,Delta,chi2_par,chi2_perp);
+
+      float chi2 = (chi2_par+chi2_perp);
 
       if (chi2 < chi2min) {
                                         // new best seed
-        closest_seed = seed;
-        chi2min      = chi2;
+        closest_seed  = seed;
+        chi2min       = chi2;
+        chi2_par_min  = chi2_par;
+        chi2_perp_min = chi2_perp;
       }
     }
 
     if (closest_seed) {
 //-----------------------------------------------------------------------------
 // the closest seed found, add it to the delta candidate and exit
-// it is marked as associated with the delta candidate in DeltaCandidate::AddSeed
+// the seed is marked as associated with the delta candidate in DeltaCandidate::AddSeed
+// however the hits still need to be marked
 //-----------------------------------------------------------------------------
       Delta->AddSeed(closest_seed,Station);
-      closest_seed->fChi2Delta = chi2min;
+
+      closest_seed->fChi2Delta     = chi2min;
+      closest_seed->fChi2DeltaPar  = chi2_par_min;
+      closest_seed->fChi2DeltaPerp = chi2_perp_min;
+//-----------------------------------------------------------------------------
+// for the moment, keep this part commented out - uncommenting lowers the false
+// positive rate by another 20\% but also reduces the efficiency of compton hit
+// flagging by a couple of percent.
+// for now, leave it as is,  however the impact of uncommenting on the overall
+// tracking performance it is worth investigating
+// track reco efficiency vs timing...
+//-----------------------------------------------------------------------------
+      // for (int face=0; face<kNFaces; face++) {
+      //   HitData_t* hd = closest_seed->HitData(face);
+      //   if (hd) hd->fDeltaIndex = Delta->Index();
+      // }
     }
 
     return (closest_seed != nullptr);
@@ -892,7 +930,7 @@ namespace mu2e {
 //------------------------------------------------------------------------------
 // try to recover hits of a 'Delta' candidate in a given 'Station'
 // 'Delta' doesn't have hits in this station, check all hits here
-// when predicting time, use the same value of Z for both layers of a given face
+// when predicting the time, use the same value of Z for both layers of a given face
 // return 1 if something has been found
 //-----------------------------------------------------------------------------
   int DeltaFinderAlg::recoverStation(DeltaCandidate* Delta, int LastStation, int Station, int UseUsedHits, int RecoverSeeds) {
@@ -940,6 +978,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       for (int h=first; h<=last; h++) {
         HitData_t* hd = &fz->fHitData[h];
+//-----------------------------------------------------------------------------
+// do not use hits already assigned to another DeltaCandidate
+//-----------------------------------------------------------------------------
+        if (hd->DeltaIndex() > 0)                                     continue;
         if (hd->Used() >= 3)                                          continue;
         if ((UseUsedHits == 0) and hd->Used())                        continue;
 //-----------------------------------------------------------------------------
@@ -976,7 +1018,7 @@ namespace mu2e {
         float chi2_perp = (ddr*ddr)/_sigmaR2;
         float chi2      = chi2_par + chi2_perp;
 
-        if (chi2 >= _maxChi2Radial)                                 continue;
+        if (chi2 >= _maxChi2Radial)                                   continue;
         if (hd->Used()) {
 //-----------------------------------------------------------------------------
 // hit is a part of a seed. if the seed has 2 or less hits, don't check the chi2
@@ -984,7 +1026,7 @@ namespace mu2e {
 // if the seed has 3 or more hits, check the chi2
 //-----------------------------------------------------------------------------
           int nh = hd->fSeed->NHits();
-          if ((nh >= 3) and (chi2 > hd->fChi2Min))                   continue;
+          if ((nh >= 3) and (chi2 > hd->fChi2Min))                    continue;
         }
 //-----------------------------------------------------------------------------
 // new hit needs to be added, create a special 1-hit seed for that
@@ -993,25 +1035,33 @@ namespace mu2e {
 // ** FIXME ..in principle, at this point may want to check if the hit was used...
 //-----------------------------------------------------------------------------
         if (new_seed == nullptr) {
-          hd->fChi2Min = chi2;
-          new_seed = _data->NewDeltaSeed(Station,face,hd,-1,nullptr);
+          hd->fChi2Min             = chi2;
+          new_seed                 = _data->NewDeltaSeed(Station,face,hd,-1,nullptr);
+          new_seed->fChi2Delta     = chi2;
+          new_seed->fChi2DeltaPar  = chi2_par;
+          new_seed->fChi2DeltaPerp = chi2_perp;
         }
         else {
           if (face == new_seed->SFace(0)) {
 //-----------------------------------------------------------------------------
 // another close hit in the same panel, choose the best
 //-----------------------------------------------------------------------------
-            if (chi2 >= new_seed->HitData(face)->fChi2Min)          continue;
+            if (chi2 >= new_seed->HitData(face)->fChi2Min)            continue;
 //-----------------------------------------------------------------------------
 // new best hit in the same face
 //-----------------------------------------------------------------------------
-            hd->fChi2Min = chi2;
+            hd->fChi2Min             = chi2;
             new_seed->ReplaceFirstHit(hd);
+
+            new_seed->fChi2Delta     = chi2;
+            new_seed->fChi2DeltaPar  = chi2_par;
+            new_seed->fChi2DeltaPerp = chi2_perp;
           }
           else {
 //-----------------------------------------------------------------------------
-// more than one hit added in the hit pickup mode. The question is why a seed,
-// constructed out of those two hits has not been added (or created)
+// more than one hit added in the hit pickup mode.
+// One question here is whether a seed constructed out of those two hits has been found
+// and if it was, why it has not been added to the 'Delta' as a segment... **TODO**
 //-----------------------------------------------------------------------------
             if (_printErrors) {
               printf("ERROR in DeltaFinderAlg::recoverStation: ");
@@ -1046,6 +1096,10 @@ namespace mu2e {
       new_seed->HitData(face0)->fSeed = new_seed;
 
       Delta->AddSeed(new_seed,Station);
+      // for (int face=0; face<kNFaces; face++) {
+      //   HitData_t* hd = new_seed->HitData(face);
+      //   if (hd) hd->fDeltaIndex = Delta->Index();
+      // }
       rc = 1;
     }
                                         // return 1 if hits were added
@@ -1124,8 +1178,9 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
 // in principle, can just use Delta Xc,Yc
+// returns chi2 normalized to the number of hits
 //-----------------------------------------------------------------------------
-  float DeltaFinderAlg::seedDeltaChi2(DeltaSeed* Seed, DeltaCandidate* Delta) {
+  void DeltaFinderAlg::seedDeltaChi2(DeltaSeed* pSeed, DeltaCandidate* pDelta, float& pChi2Par, float& pChi2Perp) {
 
     // double nxym = (Delta->fSnxy+Seed->fSnxy);
     // double nx2m = (Delta->fSnx2+Seed->fSnx2);
@@ -1137,14 +1192,13 @@ namespace mu2e {
     // float  xc   = (nyrm*nx2m-nxrm*nxym)/d;
     // float  yc   = (nyrm*nxym-nxrm*ny2m)/d;
 
-    float  xc   = Delta->Xc();
-    float  yc   = Delta->Yc();
+    float  xc   = pDelta->Xc();
+    float  yc   = pDelta->Yc();
 
-    float chi2, chi2_par, chi2_perp;
-    seedChi2(Seed, xc,yc, chi2_par, chi2_perp);
-    chi2 = (chi2_par+chi2_perp)/Seed->NHits();
+    seedChi2(pSeed, xc,yc, pChi2Par, pChi2Perp);
 
-    return chi2;
+    pChi2Par  = pChi2Par /pSeed->NHits();
+    pChi2Perp = pChi2Perp/pSeed->NHits();
   }
 
 }
