@@ -51,12 +51,18 @@ namespace mu2e {
       Name("totDriftError"), Comment(" totDriftError ")};
     fhicl::Sequence<double> driftFit {
       Name("driftFit"), Comment("Drift fit")};
-    fhicl::Sequence<double> driftResBins {
-      Name("driftResBins"), Comment("Drift response Bin edges (time in ns or doca in mm)")};
-    fhicl::Sequence<double> driftResRMS {
-      Name("driftResRMS"), Comment("Drift response RMS (time in ns or doca in mm)")};
-    fhicl::Sequence<double> driftResOffset {
-      Name("driftResOffset"), Comment("Drift response Offset (ns or mm)")};
+    fhicl::Sequence<double> driftOffBins {
+      Name("driftOffBins"), Comment("Drift Offset Bin edges (mm)")};
+    fhicl::Sequence<double> driftOffset {
+      Name("driftOffset"), Comment("Drift Offset (mm)")};
+    fhicl::Sequence<double> driftRMSBins {
+      Name("driftRMSBins"), Comment("Drift RMS Bin edges (mm)")};
+    fhicl::Sequence<double> signedDriftRMS {
+      Name("signedDriftRMS"), Comment("Signed Drift RMS (mm)")};
+    fhicl::Sequence<double> unsignedDriftRMS {
+      Name("unsignedDriftRMS"), Comment("Unsigned Drift RMS (mm)")};
+    fhicl::Atom<double> dRdTScale {
+      Name("dRdTScale"), Comment("Scale factor for dRdT")};
     fhicl::Atom<bool> driftResIsTime {
       Name("driftResIsTime"), Comment("Drift res is given in units of time (ns)")};
 
@@ -85,8 +91,6 @@ namespace mu2e {
       Name("useNonLinearDrift"), Comment(" useNonLinearDrift ")};
     fhicl::Atom<double> linearDriftVelocity {
       Name("linearDriftVelocity"), Comment(" mm/ns, only used if nonlindrift= ")};
-    fhicl::Atom<double> minT0DOCA {
-      Name("minT0DOCA"), Comment("FIXME should be moved to a reconstruction configuration ")};
     fhicl::Atom<double> defaultPeakMinusPedestalEnergyScale {
       Name("defaultPeakMinusPedestalEnergyScale"), Comment("default constant value for pmp energy method calibration")};
     fhicl::Sequence<double> peakMinusPedestalEnergyScale {
