@@ -33,7 +33,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
-using namespace std;
+using std::string;
 using namespace ROOT::Math::VectorUtil;
 namespace mu2e
 {
@@ -204,10 +204,10 @@ namespace mu2e
 
   void BkgDiag::analyze(const art::Event& event ) {
     if(!findData(event))
-      throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< endl;
+      throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< std::endl;
     // check consistency
     if(_bkgccol->size() != _bkgqcol->size())
-      throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< endl;
+      throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< std::endl;
     // loop over background clusters
 
     _nhits=0;
