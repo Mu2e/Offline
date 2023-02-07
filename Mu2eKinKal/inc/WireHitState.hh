@@ -11,12 +11,15 @@ namespace mu2e {
     enum State { unusable=-3, inactive=-2, left=-1, null=0, right=1};  // drift state
     enum TOTUse { unused=0, nullonly=1, driftonly=2, all=3}; // how to use TOT time constraint
     enum NullDistVar { rstraw=0, rdrift=1}; // how to assign null variance
+    enum QualityIndex { bkg=0, sign=1, drift=2, chi2=3};// quality info index
     State state_ = null;
     StrawHitUpdaters::algorithm algo_ = StrawHitUpdaters::unknown; // algorithm used to set this state
     NullDistVar nulldvar_ = rstraw; // distance variance for null hits
+    double dVar_; // drift distance variance value
+    double dDdT_; // drift distance time derivative, crudely the drift velocity
     bool frozen_ = false; // if set, state not allowed to change during update
     TOTUse totuse_ = all;
-    double quality_ = -1.0; // algorithm-dependent, dimensionless quality of this state assignment
+    std::array<double,4> quality_ = {-1.0,-1.0,-1.0,-1.0}; // algorithm-dependent, dimensionless quality of this state assignment
 // convenience functions
     bool frozen() const { return frozen_; }
     bool wireConstraint() const { return state_ == null; }
@@ -24,7 +27,7 @@ namespace mu2e {
     bool isInactive() const { return state_ == inactive; }
     bool active() const { return state_ > inactive; }
     bool usable() const { return state_ > unusable; }
-    bool updateable(StrawHitUpdaters::algorithm algo) const { return usable() && (!frozen_ || algo_ == algo); } // allow algorithms to update themselves, even if frozen
+    bool updateable(StrawHitUpdaters::algorithm algo) const { return usable() && ( (!frozen_) || algo_ == algo); } // allow algorithms to update themselves, even if frozen
     bool constrainTOT() const {
       return totuse_ == all ||
         (wireConstraint() && totuse_ == nullonly) ||
@@ -53,6 +56,7 @@ namespace mu2e {
     static std::vector<std::string> StateNames_;
     static std::vector<std::string> TOTUseNames_;
     static std::vector<std::string> NullDistVarNames_;
+    double quality(QualityIndex qid) const { return quality_[static_cast<size_t>(qid)]; }
   };
   std::ostream& operator <<(std::ostream& ost, WireHitState const& whs);
 }

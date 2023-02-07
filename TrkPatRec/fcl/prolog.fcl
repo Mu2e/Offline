@@ -78,6 +78,7 @@ TimeAndPhiClusterFinder : {
   MinTimeYbin            : 6
   MaxTimeDT              : 35.0
   FilterMVA              : true
+  MinHitSelect           : 50
   MinCutMVA              : 0.1
   SplitPhi               : true
   MaxDeltaPhi            : 0.3
