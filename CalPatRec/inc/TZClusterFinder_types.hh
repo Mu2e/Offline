@@ -39,6 +39,7 @@ namespace mu2e {
       cHit():hIndex(-1),hTime(0.),hZpos(0.),nStrawHits(0),hIsUsed(0){}
       int    hIndex;
       double hTime;
+      double hWeight;
       double hZpos;
       int    nStrawHits;
       int    hIsUsed;
@@ -50,6 +51,7 @@ namespace mu2e {
 
     struct chunkInfo {
       std::vector<int> hIndices;
+      ::LsqSums4 fitter;
       double avgTime;
       double avgZpos;
       int nHits; // combo hits
@@ -57,9 +59,6 @@ namespace mu2e {
       int nrgSelection; // 1 if passes energy selection (CE), 0 if not (protons)
       int nCombines;
       int caloIndex = -1;
-      double lSlope;
-      double lIntercept;
-      double chi2Dof;
     };
 
     struct Data_t {
@@ -99,16 +98,17 @@ namespace mu2e {
       std::vector<chunkInfo> chunks;
       chunkInfo _chunkInfo;
       TimeCluster _clusterInfo;
-      ::LsqSums4 fitHits;
       std::vector<pair> holdIndices;
       int seedIndice;
       double seedTime;
+      double seedWeight;
       double seedZpos;
       int seedNRGselection;
       pair indicePair;
       int startIndex;
       int testIndice;
       double testTime;
+      double testWeight;
       double testZpos;
       int testNRGselection;
       int nHitsInChunk;
@@ -124,7 +124,7 @@ namespace mu2e {
 
       void clear_cHits() { for (size_t i=0; i<cHits.size(); i++) cHits[i].plnHits.clear(); }
       void clear_clusterInfo() { _clusterInfo._strawHitIdxs.clear(); }
-      void clear_chunkInfo() { _chunkInfo.hIndices.clear(); }
+      void clear_chunkInfo() { _chunkInfo.hIndices.clear(); _chunkInfo.fitter.clear(); }
       void clear_chunks() { chunks.clear(); }
 
     };
