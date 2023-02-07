@@ -32,14 +32,6 @@ namespace mu2e {
 
   using namespace DeltaFinderTypes;
 
-  // namespace DeltaFinderTypes {
-  //   struct McPart_t;
-  //   struct Data_t;
-  // }
-
-  // using DeltaFinderTypes::McPart_t;
-  // using DeltaFinderTypes::Data_t;
-
   class SimParticle;
   class StrawDigiMCCollection;
 
@@ -63,7 +55,6 @@ namespace mu2e {
       TH1F*  fHitChi2Min;                        // chi2 of the first two hits along the wire
       TH1F*  fChi2Neighbour;
       TH1F*  fChi2Radial;
-      // TH1F*  fNFacesWithHits;
       TH1F*  fNHitsPerFace;
       TH1F*  fNHitsPerSeed;
       TH1F*  fSeedRadius;
@@ -171,7 +162,6 @@ namespace mu2e {
 
   public:
 
-    DeltaFinderDiag(const fhicl::ParameterSet& PSet);
     DeltaFinderDiag(const fhicl::Table<mu2e::DeltaFinderTypes::Config>& config);
     ~DeltaFinderDiag();
 
@@ -210,32 +200,6 @@ namespace mu2e {
     virtual int debug         (void* Data, int Mode = -1 ) override ;
   };
 
-
-//-----------------------------------------------------------------------------
-// this routine is called once per job
-//-----------------------------------------------------------------------------
-  DeltaFinderDiag::DeltaFinderDiag(const fhicl::ParameterSet& PSet):
-    _mcDiag                (PSet.get<bool>         ("mcDiag"                       )),
-    _printOTracker         (PSet.get<int>          ("printOTracker"                )),
-    _printElectrons        (PSet.get<int>          ("printElectrons"               )),
-    _printElectronsHits    (PSet.get<int>          ("printElectronsHits"           )),
-    _printElectronsMinNHits(PSet.get<int>          ("printElectronsMinNHits"       )),
-    _printElectronsMaxFReco(PSet.get<float>        ("printElectronsMaxFReco"       )),
-    _printElectronsMinMom  (PSet.get<float>        ("printElectronsMinMom"         )),
-    _printElectronsMaxMom  (PSet.get<float>        ("printElectronsMaxMom"         )),
-    _printDeltaSeeds       (PSet.get<int>          ("printDeltaSeeds"              )),
-    _printDeltaCandidates  (PSet.get<int>          ("printDeltaCandidates"         )),
-    _printShcol            (PSet.get<int>          ("printShcol"                   )),
-    _printSeedNParents     (PSet.get<int>          ("printSeedNParents"            ))
-  {
-    printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY PSet! \n");
-    //    _firstCall   =  1;
-    //    _timeOffsets = NULL;
-
-    if (_mcDiag != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
-    else              _mcUtils = std::make_unique<McUtilsToolBase>();
-  }
-
 //-----------------------------------------------------------------------------
 // this routine is called once per job
 //-----------------------------------------------------------------------------
@@ -255,9 +219,8 @@ namespace mu2e {
     _printSeedNParents     (config().printSeedNParents()     )
   {
     printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY Config! \n");
-    //    _firstCall   =  1;
 
-    if (_mcDiag != 0) _mcUtils = art::make_tool  <McUtilsToolBase>(config().mcUtils.get_PSet());
+    if (_mcDiag != 0) _mcUtils = art::make_tool  <McUtilsToolBase>(config().mcUtils,"mcUtils");
     else              _mcUtils = std::make_unique<McUtilsToolBase>();
   }
 
@@ -299,7 +262,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
-    //    Hist->fNSecondHits     = Dir->make<TH1F>("nhit2" , "N(second hits)", 100, 0., 100.);
     Hist->fNSeeds          = Dir->make<TH1F>("nseeds", "N(seeds)"   , 200, 0., 2000.);
     Hist->fNSeedsVsStation = Dir->make<TH2F>("ns_vs_st", "N(seeds) vs station", 20, 0., 20.,200,0,200);
 
@@ -540,18 +502,6 @@ namespace mu2e {
 
       int nseeds = _data->NSeeds(is);
       Hist->fNSeedsVsStation->Fill(is,nseeds);
-
-      // for (int f=0; f<kNFaces-1; ++f) { // loop over faces
-      //   for (int p=0; p<kNPanelsPerFace; ++p) { // loop over panels
-      //     PanelZ_t* panelz = &_data->oTracker[is][f][p];
-
-      //     // int nhits =  panelz->fHitData.size();
-      //     // for (int i=0; i<nhits; i++) {
-      //     //   int counter  = panelz->fHitData.at(i).fNSecondHits;
-      //     //   Hist->fNSecondHits->Fill(counter);
-      //     // }
-      //   }
-      // }
     }
 
     int ndelta = _data->nDeltaCandidates();
@@ -603,9 +553,6 @@ namespace mu2e {
       Hist->fHitChi2Min->Fill(chi2_1);
       Hist->fHitChi2Min->Fill(chi2_2);
 
-      // int nh1 = hd1->fHit->nStrawHits();
-      // int nh2 = hd2->fHit->nStrawHits();
-
       double _sigmaR = 10;
 
       for (int face=0; face<kNFaces; face++) {
@@ -636,7 +583,6 @@ namespace mu2e {
       }
     }
 
-    // Hist->fNFacesWithHits->Fill(Seed->fNFacesWithHits);
     Hist->fSeedRadius->Fill    (Seed->CofM.rho());
 
     double mom (-1.);
