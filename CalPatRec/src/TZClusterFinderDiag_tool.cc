@@ -66,8 +66,7 @@ namespace mu2e {
 
   public:
 
-    TZClusterFinderDiag(const fhicl::ParameterSet& PSet);
-    TZClusterFinderDiag(const TZClusterFinderTypes::Config& config);
+    TZClusterFinderDiag(const fhicl::Table<mu2e::TZClusterFinderTypes::Config>& config);
     ~TZClusterFinderDiag();
 
   private:
@@ -84,21 +83,11 @@ namespace mu2e {
   };
 
 //-----------------------------------------------------------------------------
-  TZClusterFinderDiag::TZClusterFinderDiag(const fhicl::ParameterSet& PSet) {
-    _mcTruth = PSet.get<int >("mcTruth");
-    _simIDThresh = PSet.get<int>("simIDThresh");
-
-    if (_mcTruth != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
-    else               _mcUtils = std::make_unique<McUtilsToolBase>();
-
-  }
-
-//-----------------------------------------------------------------------------
-  TZClusterFinderDiag::TZClusterFinderDiag(const TZClusterFinderTypes::Config& config):
-    _mcTruth               (config.mcTruth()               ),
-    _simIDThresh           (config.simIDThresh()           )
+  TZClusterFinderDiag::TZClusterFinderDiag(const fhicl::Table<mu2e::TZClusterFinderTypes::Config>& config):
+    _mcTruth               (config().mcTruth()               ),
+    _simIDThresh           (config().simIDThresh()           )
   {
-    if (_mcTruth != 0) _mcUtils = art::make_tool<McUtilsToolBase>(config.mcUtils.get_PSet());
+    if (_mcTruth != 0) _mcUtils = art::make_tool<McUtilsToolBase>(config().mcUtils,"mcUtils");
     else               _mcUtils = std::make_unique<McUtilsToolBase>();
   }
 
