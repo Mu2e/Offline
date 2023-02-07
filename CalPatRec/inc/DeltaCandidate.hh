@@ -78,6 +78,7 @@ namespace mu2e {
       double     Ny                   () const { return CofM.y()/CofM.R() ; }
 
       void       AddSeed            (DeltaSeed*      Ds   , int Station);
+      void       markHitsAsUsed     ();
       void       MergeDeltaCandidate(DeltaCandidate* Delta, int PrintErrors);
 
       void       SetIndex(int Index) { fIndex = Index; }

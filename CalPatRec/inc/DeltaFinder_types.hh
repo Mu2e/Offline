@@ -122,7 +122,12 @@ namespace mu2e {
       int                           _nStrawHits;
       std::vector<const ComboHit*>  _v;                      // sorted
 
-      TClonesArray*                 fListOfSeeds       [kNStations]; // all seeds found in a given station
+      //      TClonesArray*                 fListOfSeeds       [kNStations]; // all seeds found in a given station
+
+      int                           fNSeeds         [kNStations];
+      int                           fNAllocatedSlots[kNStations];
+      std::vector<DeltaSeed*>       fListOfSeeds    [kNStations];
+
       std::vector<DeltaSeed*>       fListOfProtonSeeds [kNStations];
       std::vector<DeltaSeed*>       fListOfComptonSeeds[kNStations];
 
@@ -130,13 +135,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // try to avoid looping over panels
 //-----------------------------------------------------------------------------
-      FaceZ_t                       fFaceData[kNStations][kNFaces];
+      FaceZ_t                       fFaceData  [kNStations][kNFaces];
       int                           stationUsed[kNStations];
 //-----------------------------------------------------------------------------
 // station #2 is the same as station #0 etc...
 //-----------------------------------------------------------------------------
       int                           panelOverlap[2][12][12];
-      int                           fNSeeds;
+      //      int                           fNSeeds;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -145,10 +150,7 @@ namespace mu2e {
 
       DeltaCandidate* deltaCandidate(int I)              { return &fListOfDeltaCandidates[I]; }
 
-      DeltaSeed*      deltaSeed     (int Station, int I) {
-        return (DeltaSeed*) fListOfSeeds[Station]->UncheckedAt(I);
-      }
-
+      DeltaSeed*      deltaSeed     (int Station, int I) { return fListOfSeeds       [Station][I]; }
       DeltaSeed*      ComptonSeed   (int Station, int I) { return fListOfComptonSeeds[Station][I]; }
       DeltaSeed*      ProtonSeed    (int Station, int I) { return fListOfProtonSeeds [Station][I]; }
 
@@ -156,9 +158,10 @@ namespace mu2e {
       void InitEvent(const art::Event* Evt, int DebugLevel);
       void InitGeometry();
 
-      int  NSeedsTot() { return fNSeeds; }
+      int  nSeedsTot();
 
-      int  NSeeds       (int Station) { return fListOfSeeds       [Station]->GetEntriesFast(); }
+      int  NSeeds       (int Station) { return fNSeeds[Station]; }
+
       int  NComptonSeeds(int Station) { return fListOfComptonSeeds[Station].size(); }
       int  NProtonSeeds (int Station) { return fListOfProtonSeeds [Station].size(); }
 
@@ -169,10 +172,26 @@ namespace mu2e {
 
       void addDeltaCandidate(DeltaCandidate* Delta) { fListOfDeltaCandidates.push_back(*Delta); }
 
+      // DeltaSeed*  NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
+      //   int loc       = NSeeds(Station);
+      //   DeltaSeed* ds = new ((*fListOfSeeds[Station])[loc]) DeltaSeed(loc,Station,Face0,Hd0,Face1,Hd1);
+      //   fNSeeds++;
+      //   return ds;
+      // }
+
       DeltaSeed*  NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
-        int loc       = NSeeds(Station);
-        DeltaSeed* ds = new ((*fListOfSeeds[Station])[loc]) DeltaSeed(loc,Station,Face0,Hd0,Face1,Hd1);
-        fNSeeds++;
+        DeltaSeed* ds;
+        int ns = fNSeeds[Station];
+        if (ns < (int) fListOfSeeds[Station].size()) {
+          ds = fListOfSeeds[Station][ns];
+          ds->Init(ns,Station,Face0,Hd0,Face1,Hd1);
+        }
+        else {
+          ds = new DeltaSeed(ns,Station,Face0,Hd0,Face1,Hd1);
+          fListOfSeeds[Station].push_back(ds);
+          fNAllocatedSlots[Station]++;
+        }
+        fNSeeds[Station]++;
         return ds;
       }
 

@@ -39,10 +39,10 @@ namespace mu2e {
       DeltaSeed*              fSeed;           // nullptr if not associated...
       int                     fUsed;           // TBD
       int                     fZFace;          // z-ordered face (for printing)
+      int                     fDeltaIndex;     // is it really needed? **FIXME**
       float                   fChi2Min;
       float                   fSigW2;          // cached resolution^2 along the wire
       float                   fCorrTime;       // cached hit corrected time
-      int                     fDeltaIndex;     // is it really needed? **FIXME**
 
       HitData_t(const ComboHit* Hit,int ZFace) {
         fHit         = Hit;
@@ -56,7 +56,8 @@ namespace mu2e {
         fDeltaIndex  = -1;
       }
 
-      int Used() const { return fUsed ; }
+      int Used      () const { return fUsed      ; }
+      int DeltaIndex() const { return fDeltaIndex; }
     };
 //-----------------------------------------------------------------------------
 // diagnostics structure

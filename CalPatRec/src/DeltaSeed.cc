@@ -2,106 +2,106 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 #include "Offline/CalPatRec/inc/DeltaFinder_types.hh"
-ClassImp(mu2e::DeltaSeed)
 
 namespace mu2e {
-  //  namespace DeltaFinderTypes {
+  using  DeltaFinderTypes::HitData_t;
+//-----------------------------------------------------------------------------
+// 'Hd1' could be nullptr - this is the case when a single hit is picked up
+// in a station based on a prediction made from another station
+// the hit could be overlapping with a hit associated with a found seed
+// such 'picked-up' seeds could be identified ... how ?
+//-----------------------------------------------------------------------------
+  DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
+    Init(Index,Station,Face0,Hd0,Face1,Hd1);
+  }
+
 
 //-----------------------------------------------------------------------------
-// Hd1 could be nullptr
+// initialization body
 //-----------------------------------------------------------------------------
-    DeltaSeed::DeltaSeed(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1):
-      TObject(),
-      fSnx2(0), fSnxy(0), fSny2(0),fSnxr(0),fSnyr(0),
-      fSumEDep(0), fSumT(0)
-    {
-      fIndex            = Index;
-      fStation          = Station;
-      fGood             =  1;
-      fSFace[0]         = Face0;
-      fSFace[1]         = Face1;
+  void DeltaSeed::Init(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
+    fSnx2             = 0;
+    fSnxy             = 0;
+    fSny2             = 0;
+    fSnxr             = 0;
+    fSnyr             = 0;
 
-      fDeltaIndex       = -1;
-      fChi2Delta        = -1.;
+    fSumEDep          = 0;
+    fSumT             = 0;
 
-      for (int face=0; face<kNFaces; face++) {
-        fFaceProcessed[face] = 0;
-        fHitData      [face] = NULL;
-      }
+    fIndex            = Index;
+    fStation          = Station;
+    fGood             =  1;
+    fSFace[0]         = Face0;
+    fSFace[1]         = Face1;
 
-      fHitData[Face0]         = Hd0;
-      fChi21                  = Hd0->fChi2Min;
+    fDeltaIndex       = -1;
+    fChi2Delta        = -1.;
 
-      if (Face1 >= 0) {
-        fHitData[Face1]       = Hd1;
-        fType                 =  10*Face0+Face1;
-        fNHits                =  2;
-        fNStrawHits           = Hd0->fHit->nStrawHits()+Hd1->fHit->nStrawHits();
-        fNFacesWithHits       =  2;
-        fFaceProcessed[Face0] = 1;
-        fFaceProcessed[Face1] = 1;
-        fChi22                = Hd1->fChi2Min;
-      }
-      else {
-        fType                 =  10*Face0;  // may want to revisit
-        fNHits                =  1;
-        fNStrawHits           = Hd0->fHit->nStrawHits();
-        fNFacesWithHits       =  1;
-        fFaceProcessed[Face0] =  1;
-        fChi22                =  0;
-      }
+    for (int face=0; face<kNFaces; face++) {
+      fFaceProcessed[face] = 0;
+      fHitData      [face] = NULL;
+    }
 
-      fChi2Par          = fChi21+fChi22;
-      fChi2Perp         = 0;
-      fMinHitTime = Hd0->fHit->correctedTime();
-      fMaxHitTime = fMinHitTime;
+    fHitData[Face0]         = Hd0;
+    fChi21                  = Hd0->fChi2Min;
 
-      if (Hd1) {
-        float ct2 = Hd1->fHit->correctedTime();
+    if (Face1 >= 0) {
+      fHitData[Face1]       = Hd1;
+      fType                 =  10*Face0+Face1;
+      fNHits                =  2;
+      fNStrawHits           = Hd0->fHit->nStrawHits()+Hd1->fHit->nStrawHits();
+      fFaceProcessed[Face0] = 1;
+      fFaceProcessed[Face1] = 1;
+      fChi22                = Hd1->fChi2Min;
+    }
+    else {
+      fType                 =  10*Face0;  // may want to revisit
+      fNHits                =  1;
+      fNStrawHits           = Hd0->fHit->nStrawHits();
+      fFaceProcessed[Face0] =  1;
+      fChi22                =  0;
+    }
 
-        if (ct2 >= fMinHitTime) fMaxHitTime = ct2;
-        else                    fMinHitTime = ct2;
-      }
+    fChi2Par          = fChi21+fChi22;
+    fChi2Perp         = 0;
+    fMinHitTime       = Hd0->fHit->correctedTime();
+    fMaxHitTime       = fMinHitTime;
+
+    if (Hd1) {
+      float ct2 = Hd1->fHit->correctedTime();
+
+      if (ct2 >= fMinHitTime) fMaxHitTime = ct2;
+      else                    fMinHitTime = ct2;
+    }
 //-----------------------------------------------------------------------------
 // coordinate information
 //-----------------------------------------------------------------------------
-      for (int i=0; i<2; i++) {
-        int face = fSFace[i];
-        if (face < 0)                                                 continue;
-        const HitData_t* hd = fHitData[face];
-        const ComboHit*  ch = hd->fHit;
-        if (hd) {
-          double x0 = ch->pos().x();
-          double y0 = ch->pos().y();
-          double nx = ch->wdir().x();
-          double ny = ch->wdir().y();
+    for (int i=0; i<2; i++) {
+      int face = fSFace[i];
+      if (face < 0)                                                 continue;
+      const HitData_t* hd = fHitData[face];
+      const ComboHit*  ch = hd->fHit;
+      if (hd) {
+        double x0 = ch->pos().x();
+        double y0 = ch->pos().y();
+        double nx = ch->wdir().x();
+        double ny = ch->wdir().y();
 
-          // this should be the hit wdir - check...
-          double nr = x0*ny-y0*nx;
+        // this should be the hit wdir - check...
+        double nr = x0*ny-y0*nx;
 
-          fSnx2 += nx*nx;
-          fSnxy += nx*ny;
-          fSny2 += ny*ny;
-          fSnxr += nx*nr;
-          fSnyr += ny*nr;
+        fSnx2 += nx*nx;
+        fSnxy += nx*ny;
+        fSny2 += ny*ny;
+        fSnxr += nx*nr;
+        fSnyr += ny*nr;
 
-          fSumEDep += ch->energyDep()*ch->nStrawHits();
-          fSumT    += ch->correctedTime()*ch->nStrawHits();
-        }
-      }
-//-----------------------------------------------------------------------------
-// MC truth used by the diag tool - should go at some point
-//-----------------------------------------------------------------------------
-      fNHitsCE          =  0;
-      fPreSeedMcPart[0] = nullptr;
-      fPreSeedMcPart[1] = nullptr;
-      fNSim             = -1;
-      fNMom             = -1;
-      for (int face=0; face<kNFaces; face++) {
-        fMcPart       [face] = NULL;
+        fSumEDep += ch->energyDep()*ch->nStrawHits();
+        fSumT    += ch->correctedTime()*ch->nStrawHits();
       }
     }
-
+  }
 
 //-----------------------------------------------------------------------------
 // add hit
@@ -116,18 +116,17 @@ namespace mu2e {
 
       const ComboHit* ch = Hd->fHit;
 
-      fNFacesWithHits += 1;
       fNHits          += 1;
       fNStrawHits     += ch->nStrawHits();
 //-----------------------------------------------------------------------------
 // in parallel, update coordinate sums
 //-----------------------------------------------------------------------------
-      double x0                = ch->pos().x();
-      double y0                = ch->pos().y();
-      double nx                = ch->wdir().x();
-      double ny                = ch->wdir().y();
+      double x0        = ch->pos().x();
+      double y0        = ch->pos().y();
+      double nx        = ch->wdir().x();
+      double ny        = ch->wdir().y();
 
-      double nr                = x0*ny-y0*nx;
+      double nr        = x0*ny-y0*nx;
 
       fSnx2 += nx*nx;
       fSnxy += nx*ny;

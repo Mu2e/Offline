@@ -74,17 +74,9 @@ namespace mu2e {
       fSnxr          += Seed->fSnxr;
       fSnyr          += Seed->fSnyr;
 
-      double nxny_mean, nx2_mean, ny2_mean, nxnr_mean, nynr_mean;
-
-      nxny_mean = fSnxy/fNHits;
-      nx2_mean  = fSnx2/fNHits;
-      ny2_mean  = fSny2/fNHits;
-      nxnr_mean = fSnxr/fNHits;
-      nynr_mean = fSnyr/fNHits;
-
-      double d  = nx2_mean*ny2_mean-nxny_mean*nxny_mean;
-      double xc = (nynr_mean*nx2_mean-nxnr_mean*nxny_mean)/d;
-      double yc = (nynr_mean*nxny_mean-nxnr_mean*ny2_mean)/d;
+      double d  = fSnx2*fSny2-fSnxy*fSnxy;
+      double xc = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
+      double yc = (fSnyr*fSnxy-fSnxr*fSny2)/d;
 
       CofM.SetX(xc);
       CofM.SetY(yc);
@@ -131,7 +123,8 @@ namespace mu2e {
       // fT0Min[Station] = t0-dt;
       // fT0Max[Station] = t0+dt;
 //-----------------------------------------------------------------------------
-// finally, set fDeltaIndex, this marks the 'Seed' as used
+// finally, set fDeltaIndex, this marks the 'Seed' as used,
+// marking  its hits as associated with the DeltaCandidate will happen later
 //-----------------------------------------------------------------------------
       Seed->fDeltaIndex = fIndex;
     }
@@ -172,23 +165,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // and recalculate the center-of-mass XY position
 //-----------------------------------------------------------------------------
-      double nxym, nx2m, ny2m, nxrm, nyrm;
-
-      nxym  = fSnxy/fNHits;
-      nx2m  = fSnx2/fNHits;
-      ny2m  = fSny2/fNHits;
-      nxrm  = fSnxr/fNHits;
-      nyrm  = fSnyr/fNHits;
-
-      double d  = nx2m*ny2m-nxym*nxym;
-
-      double xc = (nyrm*nx2m-nxrm*nxym)/d;
-      double yc = (nyrm*nxym-nxrm*ny2m)/d;
+      double d  = fSnx2*fSny2-fSnxy*fSnxy;
+      double xc = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
+      double yc = (fSnyr*fSnxy-fSnxr*fSny2)/d;
 
       CofM.SetX(xc);
       CofM.SetY(yc);
-                                        // and recalculate phi
-      //      phi             = CofM.phi();
 //-----------------------------------------------------------------------------
 // time
 //-----------------------------------------------------------------------------
@@ -211,4 +193,15 @@ namespace mu2e {
       fSigT0 = sqrt((t2m-tm*tm)/(fNSeeds-0.9999));
     }
 
+//-----------------------------------------------------------------------------
+  void DeltaCandidate::markHitsAsUsed() {
+      for (int is=fFirstStation; is<=fLastStation; is++) {
+        DeltaSeed* s = seed[is];
+        if (s == nullptr)                                            continue;
+        for (int face=0; face<kNFaces; face++) {
+          HitData_t* hd = s->HitData(face);
+          if (hd) hd->fDeltaIndex = fIndex;
+        }
+      }
+  }
 }
