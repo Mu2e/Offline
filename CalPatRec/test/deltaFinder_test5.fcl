@@ -23,7 +23,8 @@ physics : {
             debugLevel                    :  0  ## 1 ##
 
             finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
-                timeBin : 60
+                timeBin   : 50
+                maxSeedDt : 40
             }
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
