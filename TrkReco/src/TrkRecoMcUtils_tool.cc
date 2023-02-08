@@ -43,7 +43,6 @@ namespace mu2e {
   public:
 
     TrkRecoMcUtils(const fhicl::Table<McUtilsToolBase::Config>& config);
-    //    TrkRecoMcUtils(const fhicl::ParameterSet& PSet);
     ~TrkRecoMcUtils();
 
   public:
@@ -73,17 +72,6 @@ namespace mu2e {
       float getStartMom   (const SimParticle* Sim) override;
 
   };
-
-  // //-----------------------------------------------------------------------------
-  // TrkRecoMcUtils::TrkRecoMcUtils(const fhicl::ParameterSet& PSet) :
-  //   _comboHitCollTag   { PSet.get<art::InputTag>("comboHitCollTag"   ) },
-  //   _strawDigiMCCollTag{ PSet.get<art::InputTag>("strawDigiMCCollTag") }
-  // {
-  //   _lastEvent   = art::EventID();
-  //   _mcdigis     = nullptr;
-  //   _chColl      = nullptr;
-  //   _mbtime      = -1;
-  // }
 
 //-----------------------------------------------------------------------------
   TrkRecoMcUtils::TrkRecoMcUtils(const fhicl::Table<McUtilsToolBase::Config>& config) :
