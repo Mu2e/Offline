@@ -84,9 +84,10 @@ namespace mu2e {
     enum { kmax_gap        = 1  };
 
     enum {
+      kNComboHitHistSets = 100,
       kNEventHistSets    =  10,
-      kNStrawHitHistSets = 100,
-      kNMcHistSets       = 200
+      kNMcHistSets       = 200,
+      kNStrawHitHistSets = 100
     };
 
     enum { kProtonOrDeut  = 0,
@@ -99,7 +100,22 @@ namespace mu2e {
            kOther         = 7,
     };
 
-  protected:
+    struct ComboHitHist_t {
+      TH1F*  fNSh;                     // number of straw hits per CH
+    };
+
+    struct EventHist_t {
+      TH1F*  fEventNumber;
+      TH1F*  fRunNumber;
+      TH1F*  fNSecondHits;
+      TH1F*  fNSecondHitsT;
+      TH1F*  fNMc;
+      TH1F*  fNHitsDeltaT;
+      TH1F*  fNHitsDeltaR;
+      TH1F*  fNSSh;                    // total number of straw hits
+      TH1F*  fNCh;                     // number of combo hits
+      TH1F*  fNSh;                     // number of straw hits in combo hits
+    };
 
     struct McHist_t {
       TH1F*  fPDGCode;
@@ -124,20 +140,8 @@ namespace mu2e {
       TH1F*  fDeltaFlag;
     };
 
-    struct EventHist_t {
-      TH1F*  fEventNumber;
-      TH1F*  fRunNumber;
-      TH1F*  fNSecondHits;
-      TH1F*  fNSecondHitsT;
-      TH1F*  fNMc;
-      TH1F*  fNHitsDeltaT;
-      TH1F*  fNHitsDeltaR;
-      TH1F*  fNSSh;                    // total number of straw hits
-      TH1F*  fNCh;                     // number of combo hits
-      TH1F*  fNSh;                     // number of straw hits in combo hits
-    };
-
     struct Hist_t {
+      ComboHitHist_t* fComboHit[kNComboHitHistSets];
       EventHist_t*    fEvent   [kNEventHistSets   ];
       StrawHitHist_t* fStrawHit[kNStrawHitHistSets];
       McHist_t*       fMc      [kNMcHistSets      ];
@@ -183,8 +187,8 @@ namespace mu2e {
       const ComboHit*     Ch   (int I) const { return fListOfComboHits[I] ;    }
 
                                         // these are single-hit SCH's
-      int                 NSSCHits  () const { return fListOfSSCHits.size(); }
-      int                 NComboHits() const { return fListOfComboHits.size(); }
+      int                 NSSCHits      () const { return fListOfSSCHits.size(); }
+      int                 NComboHits    () const { return fListOfComboHits.size(); }
 
       int                 NShTaggedDelta() const { return fNShTaggedDelta; }
       int                 NChTaggedDelta() const { return fNChTaggedDelta; }
@@ -285,6 +289,7 @@ namespace mu2e {
 
     int       associateMcTruth();
 
+    void      bookComboHitHistograms(ComboHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir);
     void      bookEventHistograms   (EventHist_t*    Hist, int HistSet, art::TFileDirectory* Dir);
     void      bookStrawHitHistograms(StrawHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir);
     void      bookMcHistograms      (McHist_t*       Hist, int HistSet, art::TFileDirectory* Dir);
@@ -292,6 +297,7 @@ namespace mu2e {
 
     void      debug();
 
+    void      fillComboHitHistograms(ComboHitHist_t* Hist, const ComboHit* Hit, McHitInfo_t* McHitInfo);
     void      fillEventHistograms   (EventHist_t*    Hist);
     void      fillMcHistograms      (McHist_t*       Hist, McPart_t* Mc );
     void      fillStrawHitHistograms(StrawHitHist_t* Hist, const StrawHit* Hit, McHitInfo_t* McHitInfo);
@@ -356,6 +362,11 @@ namespace mu2e {
     }
 
     return 0;
+  }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderAna::bookComboHitHistograms(ComboHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
+    Hist->fNSh      = Dir->make<TH1F>("nsh"  , "N(SH)"        ,   10, 0., 10.);
   }
 
 //-----------------------------------------------------------------------------
@@ -426,6 +437,31 @@ namespace mu2e {
 
         _hist.fEvent[i] = new EventHist_t;
         bookEventHistograms(_hist.fEvent[i],i,&tfdir);
+      }
+    }
+//-----------------------------------------------------------------------------
+// book combo hit histograms
+//-----------------------------------------------------------------------------
+    int book_combo_hit_histset[kNComboHitHistSets];
+    for (int i=0; i<kNComboHitHistSets; i++) book_combo_hit_histset[i] = 0;
+
+    book_combo_hit_histset[  0] = 1;                // all
+    book_combo_hit_histset[  1] = 1;                // all prot and deut
+    book_combo_hit_histset[  2] = 1;                // all e-: p<20
+    book_combo_hit_histset[  3] = 1;                // all e- 20<p<80
+    book_combo_hit_histset[  4] = 1;                // all e-: 80<p<110
+    book_combo_hit_histset[  5] = 1;                // all e-  p > 110
+    book_combo_hit_histset[  6] = 1;                // all e+
+    book_combo_hit_histset[  7] = 1;                // all mu- and mu+
+    book_combo_hit_histset[  8] = 1;                // all everything else
+
+    for (int i=0; i<kNComboHitHistSets; i++) {
+      if (book_combo_hit_histset[i] != 0) {
+        sprintf(folder_name,"ch_%i",i);
+        art::TFileDirectory tfdir = tfs->mkdir(folder_name);
+
+        _hist.fComboHit[i] = new ComboHitHist_t;
+        bookComboHitHistograms(_hist.fComboHit[i],i,&tfdir);
       }
     }
 //-----------------------------------------------------------------------------
@@ -528,6 +564,17 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+// assume that, for a ComboHit,all hits are from the same particle
+//-----------------------------------------------------------------------------
+  void  DeltaFinderAna::fillComboHitHistograms(ComboHitHist_t* Hist, const ComboHit* Hit, McHitInfo_t* McHitInfo) {
+
+    //    const McPart_t* mc = McHitInfo->fMc;
+
+    // Hist->fType->Fill(McHitInfo->fType);
+    Hist->fNSh->Fill(Hit->nStrawHits());
+  }
+
+//-----------------------------------------------------------------------------
   void  DeltaFinderAna::fillEventHistograms(EventHist_t* Hist) {
     Hist->fEventNumber->Fill(_eventNum);
 
@@ -601,6 +648,7 @@ namespace mu2e {
     int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit* ch         = &_chColl->at(i);
+
       int nsh = ch->nStrawHits();
       for (int ish=0; ish<nsh; ish++) {
         int ind = ch->indexArray().at(ish);
@@ -619,6 +667,22 @@ namespace mu2e {
         mc_hit_info.fMc   = &mc;
         mc_hit_info.fType = mc_type;
         mc_hit_info.fFlag = &_chfColl->at(i);
+
+//-----------------------------------------------------------------------------
+// fill combo hit histograms in the same loop
+//-----------------------------------------------------------------------------
+        if (ish == 0) {
+          fillComboHitHistograms(_hist.fComboHit[0],ch,&mc_hit_info);  // all
+
+          if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[1],ch,&mc_hit_info);
+          else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[2],ch,&mc_hit_info);
+          else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[3],ch,&mc_hit_info);
+          else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[4],ch,&mc_hit_info);
+          else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[5],ch,&mc_hit_info);
+          else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[6],ch,&mc_hit_info);
+          else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[7],ch,&mc_hit_info);
+          else                                fillComboHitHistograms(_hist.fComboHit[8],ch,&mc_hit_info);
+        }
 
         fillStrawHitHistograms(_hist.fStrawHit[0],sh,&mc_hit_info);  // all
 
