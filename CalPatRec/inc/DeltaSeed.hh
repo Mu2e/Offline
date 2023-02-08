@@ -64,10 +64,10 @@ namespace mu2e {
     float        fChi2DeltaPerp;       //
 
     DeltaSeed () {}
-    DeltaSeed (int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
+    DeltaSeed (int Index, int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yc, float Zc);
     ~DeltaSeed() {}
 
-    void             Init(int Index, int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1);
+    void             Init(int Index, int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yx, float Zc);
 
     int              Station ()         { return fStation; }
     int              Index   ()         { return fIndex; }
@@ -116,9 +116,9 @@ namespace mu2e {
     float            T0Min     () { return (fMinHitTime+fMaxHitTime)/2-20; }
     float            T0Max     () { return (fMinHitTime+fMaxHitTime)/2+20; }
 //-----------------------------------------------------------------------------
-// less trivial functions
+// less trivial functions .. HitData_t knows its ZFace
 //-----------------------------------------------------------------------------
-    void             AddHit             (HitData_t* Hd, int Face);
+    void             AddHit             (HitData_t* Hd);
     void             ReplaceFirstHit    (HitData_t* Hd);
     void             CalculateCogAndChi2(float RCore, float SigmaR2);
     void             Chi2(float Xc, float Yc, float RCore, float SigmaR2, float& Chi2All, float& Chi2Perp);

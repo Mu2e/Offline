@@ -43,6 +43,16 @@ namespace mu2e {
       float                   fChi2Min;
       float                   fSigW2;          // cached resolution^2 along the wire
       float                   fCorrTime;       // cached hit corrected time
+      float                   fX;
+      float                   fY;
+      float                   fWx;
+      float                   fWy;
+      float                   fNr;
+      float                   fNx2;
+      float                   fNxy;
+      float                   fNy2;
+      float                   fNxr;
+      float                   fNyr;
 
       HitData_t(const ComboHit* Hit,int ZFace) {
         fHit         = Hit;
@@ -53,6 +63,16 @@ namespace mu2e {
         float sigw   =  Hit->posRes(ComboHit::wire);
         fSigW2       = sigw*sigw;
         fCorrTime    = Hit->correctedTime();
+        fX           = Hit->pos ().x();
+        fY           = Hit->pos ().y();
+        fWx          = Hit->wdir().x();
+        fWy          = Hit->wdir().y();
+        fNr          = fX*fWy-fY*fWx;
+        fNx2         = fWx*fWx;
+        fNxy         = fWx*fWy;
+        fNy2         = fWy*fWy;
+        fNxr         = fWx*fNr;
+        fNyr         = fWy*fNr;
         fDeltaIndex  = -1;
       }
 

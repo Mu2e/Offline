@@ -20,10 +20,12 @@ namespace mu2e {
       int                   fFirstStation;
       int                   fLastStation;
       DeltaSeed*            seed   [kNStations];
-      float                 dxy    [kNStations];   // used only for diagnostics
+      // float                 dxy    [kNStations];   // used only for diagnostics
       // float                 fT0Min [kNStations];   // acceptable hit times (no need to account for the drift time!)
       // float                 fT0Max [kNStations];
       XYZVectorF            CofM;
+      float                 fNx;                   //
+      float                 fNy;                   //
       int                   fNSeeds;
       McPart_t*             fMcPart;               // "best" MC particle
       int                   fNHits;                // n(combo hits)
@@ -73,9 +75,9 @@ namespace mu2e {
       float      FBest                () const { return float(fNHitsMcP)/fNHits; }
       double     Xc                   () const { return CofM.x(); }
       double     Yc                   () const { return CofM.y(); }
-      double     R                    () const { return CofM.R(); }
-      double     Nx                   () const { return CofM.x()/CofM.R() ; }
-      double     Ny                   () const { return CofM.y()/CofM.R() ; }
+      double     Rho                  () const { return CofM.Rho(); }
+      double     Nx                   () const { return fNx ; }
+      double     Ny                   () const { return fNy ; }
 
       void       AddSeed            (DeltaSeed*      Ds   , int Station);
       void       markHitsAsUsed     ();

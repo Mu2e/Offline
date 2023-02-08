@@ -116,6 +116,14 @@ namespace mu2e {
       McHist_t*    fMc   [kNMcHistSets   ];
     };
 //-----------------------------------------------------------------------------
+// additional parameters of the DeltaCandidate , for analysis
+//-----------------------------------------------------------------------------
+    struct DeltaCandidatePar_t {
+      float dxy[kNStations];                        // coordinate residuals ... TBD
+    };
+
+    std::vector<DeltaCandidatePar_t>  _deltaPar;
+//-----------------------------------------------------------------------------
 // additional parameters of the DeltaSeed , for analysis
 //-----------------------------------------------------------------------------
     struct DeltaSeedPar_t {
@@ -176,7 +184,7 @@ namespace mu2e {
     void        fillEventHistograms(EventHist_t* Hist);
     void        fillSeedHistograms (SeedHist_t*  Hist, DeltaSeed*      Seed , DeltaSeedPar_t* SeedPar);
     void        fillSeed2Histograms(Seed2Hist_t* Hist, DeltaSeed*      Seed1, DeltaSeed* Seed2  );
-    void        fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta);
+    void        fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta, DeltaCandidatePar_t* Dcp);
     void        fillMcHistograms   (McHist_t*    Hist, McPart_t*       Mc   );
 
     McPart_t*   findParticle (const SimParticle* Sim);
@@ -464,7 +472,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta) {
+  void DeltaFinderDiag::fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta, DeltaCandidatePar_t* Dcp) {
     int n_seeds = Delta->fNSeeds;
     Hist->fNSeeds->Fill(n_seeds);
     Hist->fNHits->Fill(Delta->fNHits);
@@ -486,7 +494,7 @@ namespace mu2e {
     Hist->fFBest->Fill(fbest);
 
     for(int is=0; is<kNStations; ++is) {
-      Hist->fDxy->Fill(Delta->dxy[is]);
+      Hist->fDxy->Fill(Dcp->dxy[is]);
     }
   }
 
@@ -575,7 +583,6 @@ namespace mu2e {
         XYZVectorF        d_par    = (dxyz.Dot(wdir))/(wdir.Dot(wdir))*wdir;
         XYZVectorF        d_perp_z = dxyz-d_par;
         float  d_perp              = d_perp_z.rho();
-        // double sigw                = hd->fSigW;
         float  chi2_par            = (d_par.R()*d_par.R())/hd->fSigW2;
         float  chi2_perp           = (d_perp/_sigmaR)*(d_perp/_sigmaR);
         float  chi2r               = chi2_par + chi2_perp;
@@ -765,32 +772,34 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int ndelta = _data->nDeltaCandidates();
     for (int i=0; i<ndelta; i++) {
-      DeltaCandidate* delta = _data->deltaCandidate(i);
+      DeltaCandidate*      delta = _data->deltaCandidate(i);
+      DeltaCandidatePar_t* dcp   = &_deltaPar[i];
+
       int pdg_id = delta->fMcPart->fPdgID;
       float mom  = delta->fMcPart->Momentum();
 
-      fillDeltaHistograms(_hist.fDelta[0],delta);
+      fillDeltaHistograms(_hist.fDelta[0],delta,dcp);
 
-      if      (pdg_id > 2000)    fillDeltaHistograms(_hist.fDelta[1],delta);
+      if      (pdg_id > 2000)    fillDeltaHistograms(_hist.fDelta[1],delta,dcp);
       else if (pdg_id ==  11) {
-        if (mom < 20)            fillDeltaHistograms(_hist.fDelta[2],delta);
+        if (mom < 20)            fillDeltaHistograms(_hist.fDelta[2],delta,dcp);
       }
-      else if (pdg_id      == -11)    fillDeltaHistograms(_hist.fDelta[6],delta);
-      else if (abs(pdg_id) ==  13)    fillDeltaHistograms(_hist.fDelta[7],delta);
-      else if (abs(pdg_id) == 211)    fillDeltaHistograms(_hist.fDelta[8],delta);
+      else if (pdg_id      == -11)    fillDeltaHistograms(_hist.fDelta[6],delta,dcp);
+      else if (abs(pdg_id) ==  13)    fillDeltaHistograms(_hist.fDelta[7],delta,dcp);
+      else if (abs(pdg_id) == 211)    fillDeltaHistograms(_hist.fDelta[8],delta,dcp);
 
       if (delta->NHits() >= 5) {
-        fillDeltaHistograms(_hist.fDelta[10],delta);
+        fillDeltaHistograms(_hist.fDelta[10],delta,dcp);
 
-        if      (pdg_id      > 2000) fillDeltaHistograms(_hist.fDelta[11],delta);
+        if      (pdg_id      > 2000) fillDeltaHistograms(_hist.fDelta[11],delta,dcp);
         else if (pdg_id ==  11) {
-          if (mom < 20)              fillDeltaHistograms(_hist.fDelta[12],delta);
+          if (mom < 20)              fillDeltaHistograms(_hist.fDelta[12],delta,dcp);
         }
-        else if (pdg_id      == -11) fillDeltaHistograms(_hist.fDelta[16],delta);
-        else if (abs(pdg_id) ==  13) fillDeltaHistograms(_hist.fDelta[17],delta);
-        else if (abs(pdg_id) == 211) fillDeltaHistograms(_hist.fDelta[18],delta);
+        else if (pdg_id      == -11) fillDeltaHistograms(_hist.fDelta[16],delta,dcp);
+        else if (abs(pdg_id) ==  13) fillDeltaHistograms(_hist.fDelta[17],delta,dcp);
+        else if (abs(pdg_id) == 211) fillDeltaHistograms(_hist.fDelta[18],delta,dcp);
 
-        if (delta->fNHitsCE > 2)     fillDeltaHistograms(_hist.fDelta[20],delta);
+        if (delta->fNHitsCE > 2)     fillDeltaHistograms(_hist.fDelta[20],delta,dcp);
       }
     }
 //-----------------------------------------------------------------------------
@@ -1060,10 +1069,19 @@ namespace mu2e {
     int          nhits[max_part];
 
     int ndelta = _data->nDeltaCandidates();
+
+    _deltaPar.resize(ndelta);
+
     for (int idelta=0; idelta<ndelta; idelta++) {
       DeltaCandidate* dc = _data->deltaCandidate(idelta);
-      int npart          = 0;
 
+//-----------------------------------------------------------------------------
+// initializa residuals, whatever they are, to zero
+//-----------------------------------------------------------------------------
+      DeltaCandidatePar_t* dcp = &_deltaPar[idelta];
+      for (int is=0; is<kNStations; is++) dcp->dxy[is] = 0;
+
+      int npart          = 0;
       for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
         DeltaSeed* ds = dc->Seed(is);
         if (ds == 0) continue;
