@@ -128,8 +128,8 @@ namespace mu2e {
       tots[iend] = tot[iend]*srep.totLSB();
     }
     // choose earliest end TOT: maybe average later?
-//    float selected_tot = tots[eend.end()];
-    float selected_tot = 0.5*(tots[0] + tots[1]);
+    float selected_tot = tots[eend.end()];
+//    float selected_tot = 0.5*(tots[0] + tots[1]);
     // filter on specific ionization TODO!
     // filter based on composite e/P separation TODO!
     const mu2e::Straw& straw  = tt.getStraw( sid );
