@@ -15,7 +15,7 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 
 namespace mu2e {
@@ -51,7 +51,7 @@ namespace mu2e {
 
     struct chunkInfo {
       std::vector<int> hIndices;
-      ::LsqSums4 fitter;
+      ::LsqSums2 fitter;
       double avgTime;
       double avgZpos;
       int nHits; // combo hits

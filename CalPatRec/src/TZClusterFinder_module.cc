@@ -18,7 +18,7 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include <vector>
@@ -470,7 +470,7 @@ namespace mu2e {
     _f.indicePair.second = seedPlnHit;
     _f.holdIndices.push_back(_f.indicePair);
     _f._chunkInfo.hIndices.push_back(_f.seedIndice);
-    _f._chunkInfo.fitter.addPointLine(_f.seedZpos, _f.seedTime, _f.seedWeight);
+    _f._chunkInfo.fitter.addPoint(_f.seedZpos, _f.seedTime, _f.seedWeight);
     _f.nHitsInChunk = 1;
     _f.nStrawHitsInChunk =  _f.cHits[seedPln].plnHits[seedPlnHit].nStrawHits;
     _f.totalTime = _f.seedTime;
@@ -516,7 +516,7 @@ namespace mu2e {
       _f.indicePair.second = testPlnHit;
       _f.holdIndices.push_back(_f.indicePair);
       _f._chunkInfo.hIndices.push_back(_f.testIndice);
-      _f._chunkInfo.fitter.addPointLine(_f.testZpos, _f.testTime, _f.testWeight);
+      _f._chunkInfo.fitter.addPoint(_f.testZpos, _f.testTime, _f.testWeight);
       _f.nHitsInChunk++;
       _f.nStrawHitsInChunk = _f.nStrawHitsInChunk + _f.cHits[testPln].plnHits[testPlnHit].nStrawHits;
       _f.totalTime += _f.testTime;
@@ -588,7 +588,7 @@ namespace mu2e {
     // set seed chunk
     for (size_t i=0; i<_f.chunks.size()-1; i++) {
       // add seed to fitter
-      _f.chi2seed = _f.chunks[i].fitter.chi2DofLine()*_f.chunks[i].fitter.qn()/(_f.chunks[i].fitter.qn()-2);
+      _f.chi2seed = _f.chunks[i].fitter.chi2Dof();
       _f.seedTime = _f.chunks[i].avgTime;
       _f.seedZpos = _f.chunks[i].avgZpos;
       // now set test chunk
@@ -600,8 +600,8 @@ namespace mu2e {
         if (_f.chunks[i].nCombines == 0 && _f.chunks[k].nCombines == 0
             && std::abs(_f.seedZpos-_f.testZpos) > _maxCombineSep) {continue;}
         // add test to fitter
-        _f.chunks[i].fitter.addSums4Line(_f.chunks[k].fitter);
-        _f.chi2combineTest = _f.chunks[i].fitter.chi2DofLine()*_f.chunks[i].fitter.qn()/(_f.chunks[i].fitter.qn()-2);
+        _f.chunks[i].fitter.addSum(_f.chunks[k].fitter);
+        _f.chi2combineTest = _f.chunks[i].fitter.chi2Dof();
         if (_f.chi2combineTest < _chi2combineThresh) {
           if (_f.chi2combineTest < _f.biggestChi2combine) {
             _f.biggestChi2combine = _f.chi2combineTest;
@@ -610,7 +610,7 @@ namespace mu2e {
           }
         }
         // remove test from fitter
-        _f.chunks[i].fitter.removeSums4Line(_f.chunks[k].fitter);
+        _f.chunks[i].fitter.removeSum(_f.chunks[k].fitter);
       }
     }
 
@@ -618,7 +618,7 @@ namespace mu2e {
       for (size_t i=0; i<_f.chunks[_f.chunkTwoIdx].hIndices.size(); i++) {
         _f.chunks[_f.chunkOneIdx].hIndices.push_back(_f.chunks[_f.chunkTwoIdx].hIndices[i]);
       }
-      _f.chunks[_f.chunkOneIdx].fitter.addSums4Line(_f.chunks[_f.chunkTwoIdx].fitter);
+      _f.chunks[_f.chunkOneIdx].fitter.addSum(_f.chunks[_f.chunkTwoIdx].fitter);
       _f.chunks[_f.chunkOneIdx].avgTime = _f.chunks[_f.chunkOneIdx].avgTime * _f.chunks[_f.chunkOneIdx].nHits;
       _f.chunks[_f.chunkOneIdx].avgTime += _f.chunks[_f.chunkTwoIdx].avgTime * _f.chunks[_f.chunkTwoIdx].nHits;
       _f.chunks[_f.chunkOneIdx].avgTime /= _f.chunks[_f.chunkOneIdx].nHits + _f.chunks[_f.chunkTwoIdx].nHits;
@@ -659,7 +659,7 @@ namespace mu2e {
         for (size_t k=0; k<_f.chunks.size(); k++) {
           if ((int)_f.chunks[k].hIndices.size() < _chunkFitThresh) {continue;}
           if (_f.testNRGselection != _f.chunks[k].nrgSelection) {continue;}
-          deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dfdz()*_f.testZpos + _f.chunks[k].fitter.phi0()));
+          deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dydx()*_f.testZpos + _f.chunks[k].fitter.y0()));
           if (deltaTtest < smallestDeltaT) {
             smallestDeltaT = deltaTtest;
             chunkIndex = k;
@@ -669,7 +669,7 @@ namespace mu2e {
           _f.chunks[chunkIndex].hIndices.push_back(_f.testIndice);
           _f.chunks[chunkIndex].nStrawHits = _f.chunks[chunkIndex].nStrawHits + strawhits;
           _f.chunks[chunkIndex].nHits++;
-          _f.chunks[chunkIndex].fitter.addPointLine(_f.testZpos, _f.testTime, _f.testWeight);
+          _f.chunks[chunkIndex].fitter.addPoint(_f.testZpos, _f.testTime, _f.testWeight);
         }
       }
     }
@@ -892,7 +892,7 @@ namespace mu2e {
       addedToTC = 0;
       for (int j=0; j<nchunks; j++) {
         if ((int)_f.chunks[j].hIndices.size() < _chunkFitThresh) {continue;}
-        double dT = std::abs((double)_f.chunks[j].fitter.phi0() - ccTime);
+        double dT = std::abs((double)_f.chunks[j].fitter.y0() - ccTime);
         if (dT < _caloDtMax) {
           if (_f.chunks[j].caloIndex != -1) {
             _f._chunkInfo = _f.chunks[j];
@@ -917,7 +917,7 @@ namespace mu2e {
             hit = &_data.chcol->at(k);
             if (std::abs(hit->correctedTime() - ccTime) < _caloDtMax) {
               _f._chunkInfo.hIndices.push_back(k);
-              _f._chunkInfo.fitter.addPointLine(hit->pos().z(), hit->correctedTime(), 1/(hit->driftTimeRes()*hit->driftTimeRes()));
+              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1/(hit->driftTimeRes()*hit->driftTimeRes()));
               _f._chunkInfo.nHits++;
               _f._chunkInfo.nStrawHits = _f._chunkInfo.nStrawHits + hit->nStrawHits();
             }
@@ -976,7 +976,7 @@ namespace mu2e {
       for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
         _f._clusterInfo._strawHitIdxs.push_back(StrawHitIndex(_f.chunks[i].hIndices[j]));
       }
-      _f._clusterInfo._t0 = TrkT0(_f.chunks[i].fitter.phi0(), 0.);
+      _f._clusterInfo._t0 = TrkT0(_f.chunks[i].fitter.y0(), 0.);
       int caloIdx = _f.chunks[i].caloIndex;
       if (caloIdx != -1) {
         _f._clusterInfo._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccHandle, caloIdx);
@@ -985,9 +985,9 @@ namespace mu2e {
         _f._clusterInfo._caloCluster = art::Ptr<mu2e::CaloCluster>();
       }
       TimeClusterColl.push_back(_f._clusterInfo);
-      _data.lineSlope.push_back(_f.chunks[i].fitter.dfdz());
-      _data.lineIntercept.push_back(_f.chunks[i].fitter.phi0());
-      _data.chi2DOF.push_back(_f.chunks[i].fitter.chi2DofLine()*_f.chunks[i].fitter.qn()/(_f.chunks[i].fitter.qn()-2));
+      _data.lineSlope.push_back(_f.chunks[i].fitter.dydx());
+      _data.lineIntercept.push_back(_f.chunks[i].fitter.y0());
+      _data.chi2DOF.push_back(_f.chunks[i].fitter.chi2Dof());
     }
 
 
