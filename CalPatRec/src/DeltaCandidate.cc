@@ -9,15 +9,15 @@ namespace mu2e {
     {
       fIndex  = -1;
       for(int s=0; s<kNStations; ++s) {
-        dxy    [s] = -1;
-        seed   [s] = NULL;
+        // dxy    [s] = -1;
+        seed   [s] = nullptr;
         // fT0Min [s] = -1.e10;
         // fT0Max [s] =  1.e10;
       }
       fMask         = 0;
       fFirstStation = 999;
       fLastStation  =  -1;
-      fMcPart       = NULL;
+      fMcPart       = nullptr;
       fNHits        = 0;
       fNStrawHits   = 0;
       fNHitsCE      = 0;
@@ -32,15 +32,15 @@ namespace mu2e {
     {
       fIndex  = Index;
       for(int s=0; s<kNStations; ++s) {
-        dxy    [s] = -1;
-        seed   [s] = NULL;
+        // dxy    [s] = -1;
+        seed   [s] = nullptr;
         // fT0Min [s] = -1.e10;
         // fT0Max [s] =  1.e10;
       }
       fMask         = 0;
       fFirstStation = 999;
       fLastStation  =  -1;
-      fMcPart       = NULL;
+      fMcPart       = nullptr;
       fNHits        = 0;
       fNStrawHits   = 0;
       fNHitsCE      = 0;
@@ -80,6 +80,10 @@ namespace mu2e {
 
       CofM.SetX(xc);
       CofM.SetY(yc);
+
+      double rho = sqrt(xc*xc+yc*yc);
+      fNx        = xc/rho;
+      fNy        = yc/rho;
 //-----------------------------------------------------------------------------
 // time
 //-----------------------------------------------------------------------------
@@ -171,6 +175,10 @@ namespace mu2e {
 
       CofM.SetX(xc);
       CofM.SetY(yc);
+
+      double rho = sqrt(xc*xc+yc*yc);
+      fNx        = xc/rho;
+      fNy        = yc/rho;
 //-----------------------------------------------------------------------------
 // time
 //-----------------------------------------------------------------------------

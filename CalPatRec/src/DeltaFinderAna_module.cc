@@ -232,8 +232,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // NStations stations, 4-1=3 faces (for hit w/ lower z), 3 panels (for hit w/ lower z)
 // 2017-07-27 P.Murat: the 2nd dimension should be 3, right?
+// _list_of_mc_particles : list of MC particles with at least one digitized tracker hit
+// SSH : single-straw hit
 //-----------------------------------------------------------------------------
-    std::vector<McPart_t*>    _list_of_mc_particles; // list_of_particles with hits in the tracker
+    std::vector<McPart_t*>    _list_of_mc_particles;
     std::vector<McHitInfo_t>  _list_of_mc_hit_info ; // for each 1-straw hit, pointer to the MC info
 //-----------------------------------------------------------------------------
 // talk-to parameters
@@ -790,7 +792,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 
     _list_of_mc_hit_info.resize(_nSingleSH);
 //-----------------------------------------------------------------------------
-// create list of MC particles - of all particles which made at least one hit
+// create list of MC particles - all particles with at least one digitized tracker hit
 //-----------------------------------------------------------------------------
     for (int i=0; i<_nSingleSH; i++) {
       const StrawDigiMC*  sdmc = &_sdmcColl->at(i);

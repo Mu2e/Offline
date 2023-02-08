@@ -124,7 +124,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         HitData_t* hd      = &fz->fHitData[ih];
         if (hd->Used() >= 3)                                       continue;
-        float corr_time    = hd->fCorrTime;
         const ComboHit* ch = hd->fHit;
 
         int ip = ch->strawId().panel()/2;
@@ -141,6 +140,7 @@ namespace mu2e {
 // (_maxDriftTime represents the maximal drift time in the straw, should there be some tolerance?)
 // FIXME need some timing checks here !
 //-----------------------------------------------------------------------------
+        float corr_time    = hd->fCorrTime;
         if (corr_time-Seed->T0Max() > _maxHitSeedDt)                break;
         if (Seed->T0Min()-corr_time > _maxHitSeedDt)                continue;
 
@@ -153,21 +153,19 @@ namespace mu2e {
 // of picking up the right hits
 // from now on, the default
 //-----------------------------------------------------------------------------
-          double nr   = ch->pos().x()*pz->wy-ch->pos().y()*pz->wx;
+          double snx2     = Seed->fSnx2+hd->fNx2;
+          double snxy     = Seed->fSnxy+hd->fNxy;
+          double sny2     = Seed->fSny2+hd->fNy2;
+          double snxr     = Seed->fSnxr+hd->fNxr;
+          double snyr     = Seed->fSnyr+hd->fNyr;
 
-          double nx2m = (Seed->fSnx2+pz->wx*pz->wx);
-          double nxym = (Seed->fSnxy+pz->wx*pz->wy);
-          double ny2m = (Seed->fSny2+pz->wy*pz->wy);
-          double nxrm = (Seed->fSnxr+pz->wx*nr    );
-          double nyrm = (Seed->fSnyr+pz->wy*nr    );
+          double d        = snx2*sny2-snxy*snxy;
 
-          double d    = nx2m*ny2m-nxym*nxym;
+          xc              = (snyr*snx2-snxr*snxy)/d;
+          yc              = (snyr*snxy-snxr*sny2)/d;
 
-          xc          = (nyrm*nx2m-nxrm*nxym)/d;
-          yc          = (nyrm*nxym-nxrm*ny2m)/d;
-
-          float dx    = ch->pos().x()-xc;
-          float dy    = ch->pos().y()-yc;
+          float dx        = hd->fX-xc;
+          float dy        = hd->fY-yc;
 
           float dxy_dot_w = dx*pz->wx+dy*pz->wy;
           float dxy_dot_n = dx*pz->nx+dy*pz->ny;
@@ -196,8 +194,8 @@ namespace mu2e {
 // split into wire parallel and perpendicular components
 // assume wire direction vector is normalized to 1
 //-----------------------------------------------------------------------------
-          float dx        = ch->pos().x()-xc;
-          float dy        = ch->pos().y()-yc;
+          float dx        = hd->fX-xc;
+          float dy        = hd->fY-yc;
 
           float dxy_dot_w = dx*pz->wx+dy*pz->wy;
           float dxy_dot_n = dx*pz->nx+dy*pz->ny;
@@ -223,7 +221,7 @@ namespace mu2e {
 // add hit
 //-----------------------------------------------------------------------------
         closest_hit->fChi2Min = best_chi2;
-        Seed->AddHit(closest_hit,face);
+        Seed->AddHit(closest_hit);
       }
     }
 //-----------------------------------------------------------------------------
@@ -260,7 +258,7 @@ namespace mu2e {
 // with one of them
 //-----------------------------------------------------------------------------
         DeltaCandidate* closest(nullptr);
-        float           chi2min (_maxChi2SeedDelta), chi2_par_min(-1), chi2_perp_min(-1);
+        float           chi2min (_maxChi2SeedDelta); // , chi2_par_min(-1), chi2_perp_min(-1);
 
         for (int idc=0; idc<ndelta; idc++) { // this loop creates new deltas, do not overloop
           DeltaCandidate* dc = _data->deltaCandidate(idc);
@@ -284,17 +282,22 @@ namespace mu2e {
 // the time is OK'ish - checks should be implemented more accurately (FIXME)
 // look at the coordinates
 //-----------------------------------------------------------------------------
-          float chi2_par, chi2_perp;
-          seedDeltaChi2(seed,dc,chi2_par,chi2_perp);
-          float chi2 = chi2_par+chi2_perp;
+          float chi2_par, chi2_perp, xc, yc;
+          xc = dc->Xc();
+          yc = dc->Yc();
+
+          seedChi2(seed,xc,yc,chi2_par,chi2_perp);
+
+          float chi2 = (chi2_par+chi2_perp)/seed->NHits();
+
           if (chi2 < chi2min) {
 //-----------------------------------------------------------------------------
 // everything matches, new closest delta candidate
 //-----------------------------------------------------------------------------
             closest       = dc;
             chi2min       = chi2;
-            chi2_par_min  = chi2_par;
-            chi2_perp_min = chi2_perp;
+            // chi2_par_min  = chi2_par /seed->NHits();
+            // chi2_perp_min = chi2_perp/seed->NHits();
           }
         }
 //-----------------------------------------------------------------------------
@@ -303,8 +306,9 @@ namespace mu2e {
         if (closest) {
           closest->AddSeed(seed,is);
           seed->fChi2Delta     = chi2min;
-          seed->fChi2DeltaPar  = chi2_par_min;
-          seed->fChi2DeltaPerp = chi2_perp_min;
+          // seed->fChi2DeltaPar  = chi2_par_min;
+          // seed->fChi2DeltaPerp = chi2_perp_min;
+
           // for (int face=0; face<kNFaces; face++) {
           //   HitData_t* hd = seed->HitData(face);
           //   if (hd) hd->fDeltaIndex = closest->Index();
@@ -401,26 +405,28 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       HitData_t*      hd1 = &fz1->fHitData[h1];
       if (hd1->Used() >= 3)                                           continue;
+
+      float  wx1 = hd1->fWx;
+      float  wy1 = hd1->fWy;
+      float  x1  = hd1->fX;
+      float  y1  = hd1->fY;
+
       const ComboHit* ch1 = hd1->fHit;
-      int seed_found = 0;
+      int   seed_found    = 0;
 //-----------------------------------------------------------------------------
 // panels 0,2,4 are panels 0,1,2 in the first  (#0) face of a plane
 // panels 1,3,5 are panels 0,1,2 in the second (#1) face
 //-----------------------------------------------------------------------------
       int    ip1 = ch1->strawId().panel() / 2;
       Pzz_t* pz1 = fz1->Panel(ip1);
-      float  wx1 = pz1->wx;
-      float  wy1 = pz1->wy;
-
-      float  x1  = ch1->pos().x();
-      float  y1  = ch1->pos().y();
-      float  t1  = ch1->time();
 //-----------------------------------------------------------------------------
 // figure out the first and the last timing bins to loop over
 // loop over 3 bins (out of > 20) - the rest cant contain hits of interest
 //-----------------------------------------------------------------------------
-      int time_bin = (int) t1/_timeBin;
-      int first_tbin(0), last_tbin(_maxT/_timeBin), max_bin(_maxT/_timeBin);
+      float  t1       = ch1->time();
+      int    time_bin = (int) t1/_timeBin;
+
+      int    first_tbin(0), last_tbin(_maxT/_timeBin), max_bin(_maxT/_timeBin);
 
       if (time_bin >       0) first_tbin = time_bin-1;
       if (time_bin < max_bin) last_tbin  = time_bin+1;
@@ -438,18 +444,18 @@ namespace mu2e {
         while ((ftbin<ltbin) and (fz2->fFirst[ftbin] < 0)) ftbin++;
         while ((ltbin>ftbin) and (fz2->fFirst[ltbin] < 0)) ltbin--;
         int first = fz2->fFirst[ftbin];
-        if (first < 0)                                             continue;
+        if (first < 0)                                                continue;
 
         int last  = fz2->fLast [ltbin];
         for (int h2=first; h2<=last; h2++) {
           HitData_t*      hd2 = &fz2->fHitData[h2];
-          if (hd2->Used() >= 3)                                    continue;
+          if (hd2->Used() >= 3)                                       continue;
           const ComboHit* ch2 = hd2->fHit;
           float t2 = ch2->time();
           float dt = t2-t1;
 
-          if (dt >  _maxDriftTime) break;
-          if (dt < -_maxDriftTime) continue;
+          if (dt >  _maxDriftTime)                                    break;
+          if (dt < -_maxDriftTime)                                    continue;
 //-----------------------------------------------------------------------------
 // 'ip2' - panel index within its face
 // check overlap in phi between the panels coresponding to the wires - 120 deg
@@ -461,11 +467,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // hits are consistent in time,
 //-----------------------------------------------------------------------------
-          float x2    = ch2->pos().x();
-          float y2    = ch2->pos().y();
+          float x2    = hd2->fX;
+          float y2    = hd2->fY;
 
-          double wx2   = pz2->wx;
-          double wy2   = pz2->wy;
+          double wx2   = hd2->fWx;
+          double wy2   = hd2->fWy;
           double w1w2  = wx1*wx2+wy1*wy2;
           double q12   = 1-w1w2*w1w2;
 //-----------------------------------------------------------------------------
@@ -506,9 +512,9 @@ namespace mu2e {
           hd1->fChi2Min     = chi2_hd1;
           hd2->fChi2Min     = chi2_hd2;
 
-          DeltaSeed* seed   = _data->NewDeltaSeed(Station,Face,hd1,f2,hd2);
+          DeltaSeed* seed   = _data->NewDeltaSeed(Station,hd1,hd2,xc,yc,zc);
 
-          seed->CofM.SetXYZ(xc,yc,zc);
+          // seed->CofM.SetXYZ(xc,yc,zc);
 //-----------------------------------------------------------------------------
 // mark both hits as a part of a seed, so they would not be used individually
 // - see HitData_t::Used()
@@ -580,13 +586,13 @@ namespace mu2e {
     for (int i1=0; i1<ndelta-1; i1++) {
       DeltaCandidate* dc1 = _data->deltaCandidate(i1);
       if (dc1->Active() == 0)                                          continue;
-      float x1 = dc1->CofM.x();
-      float y1 = dc1->CofM.y();
+      float x1 = dc1->Xc();
+      float y1 = dc1->Xc();
       for (int i2=i1+1; i2<ndelta; i2++) {
         DeltaCandidate* dc2 = _data->deltaCandidate(i2);
         if (dc2->Active() == 0)                                        continue;
-        float x2 = dc2->CofM.x();
-        float y2 = dc2->CofM.y();
+        float x2 = dc2->Xc();
+        float y2 = dc2->Yc();
         float d2 = (x1-x2)*(x1-x2)+(y1-y2)*(y1-y2);
         if (d2 > max_d2)                                               continue;
 //-----------------------------------------------------------------------------
@@ -869,8 +875,10 @@ namespace mu2e {
     // int rc(0);
                                         // predicted time range for this station
     float tdelta = Delta->T0(Station);
+    float xc     = Delta->Xc();
+    float yc     = Delta->Yc();
 
-    float      chi2min(_maxChi2SeedDelta), chi2_par_min(-1), chi2_perp_min(-1);
+    float      chi2min(_maxChi2SeedDelta) ; // , chi2_par_min(-1), chi2_perp_min(-1);
     DeltaSeed* closest_seed(nullptr);
 
     float dt   = _maxSeedDt + _maxDtDs*fabs(Station-LastStation);
@@ -886,16 +894,19 @@ namespace mu2e {
       if (fabs(tdelta-seed->TMean()) > dt)                            continue;
 
       float  chi2_par, chi2_perp;
-      seedDeltaChi2(seed,Delta,chi2_par,chi2_perp);
 
-      float chi2 = (chi2_par+chi2_perp);
+      //      seedDeltaChi2(seed,Delta,chi2_par,chi2_perp);
+
+      seedChi2(seed,xc,yc,chi2_par,chi2_perp);
+
+      float chi2 = (chi2_par+chi2_perp)/seed->NHits();
 
       if (chi2 < chi2min) {
                                         // new best seed
         closest_seed  = seed;
         chi2min       = chi2;
-        chi2_par_min  = chi2_par;
-        chi2_perp_min = chi2_perp;
+        // chi2_par_min  = chi2_par;
+        // chi2_perp_min = chi2_perp;
       }
     }
 
@@ -908,8 +919,8 @@ namespace mu2e {
       Delta->AddSeed(closest_seed,Station);
 
       closest_seed->fChi2Delta     = chi2min;
-      closest_seed->fChi2DeltaPar  = chi2_par_min;
-      closest_seed->fChi2DeltaPerp = chi2_perp_min;
+      // closest_seed->fChi2DeltaPar  = chi2_par_min;
+      // closest_seed->fChi2DeltaPerp = chi2_perp_min;
 //-----------------------------------------------------------------------------
 // for the moment, keep this part commented out - uncommenting lowers the false
 // positive rate by another 20\% but also reduces the efficiency of compton hit
@@ -939,9 +950,8 @@ namespace mu2e {
     float tdelta   = Delta->T0(Station);
     float xdelta   = Delta->Xc();
     float ydelta   = Delta->Yc();
-    float rdelta   = sqrt(xdelta*xdelta+ydelta*ydelta);
-    float delta_nx = xdelta/rdelta;
-    float delta_ny = ydelta/rdelta;
+    float delta_nx = Delta->Nx();
+    float delta_ny = Delta->Ny();
 
     int first_tbin(0), last_tbin(_maxT/_timeBin), max_bin(_maxT/_timeBin);
 
@@ -961,7 +971,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     DeltaSeed*  new_seed (nullptr);
 
-    float dt_hit = _maxHitDt+_maxDtDs*fabs(Station-LastStation);
+    float max_hit_dt = _maxHitDt+_maxDtDs*fabs(Station-LastStation);
 
     for (int face=0; face<kNFaces; face++) {
       FaceZ_t* fz = &_data->fFaceData[Station][face];
@@ -993,25 +1003,25 @@ namespace mu2e {
 // can gain a little bit by checking the time, leave the check in
 // predicted time is the particle time, the drift time should be larger
 //-----------------------------------------------------------------------------
-        if (corr_time > tdelta+dt_hit)                              break;
-        if (corr_time < tdelta-dt_hit)                              continue;
+        if (corr_time > tdelta+max_hit_dt)                            break;
+        if (corr_time < tdelta-max_hit_dt)                            continue;
 
         const ComboHit*  ch = hd->fHit;
         int    ip   = ch->strawId().panel()/2;
         Pzz_t* pz   = fz->Panel(ip);
         float  n1n2 = pz->nx*delta_nx+pz->ny*delta_ny;
 //-----------------------------------------------------------------------------
-// 0.5 corresponds to delta(phi) = 60 deg
+// figure out the panel : 0.5 corresponds to delta(phi) = +/- 60 deg
 //-----------------------------------------------------------------------------
         if (n1n2 < 0.5)                                               continue;
 //-----------------------------------------------------------------------------
 // the hit is consistent with the Delta in phi and time, check more accurately
 //-----------------------------------------------------------------------------
-        double dx       = ch->pos().x()-xdelta;
-        double dy       = ch->pos().y()-ydelta;
+        double dx       = hd->fX-xdelta;
+        double dy       = hd->fY-ydelta;
 
-        double dw       = dx*pz->wx+dy*pz->wy;           // distance along the wire
-        double dr       = dx*pz->nx+dy*pz->ny;
+        double dw       = dx*hd->fWx+dy*hd->fWy;           // distance along the wire
+        double dr       = dx*hd->fWy-dy*hd->fWx;           // distance perp to the wire
 
         float chi2_par  = (dw*dw)/(hd->fSigW2+_sigmaR2);
         float ddr       = fmax(fabs(dr)-_rCore,0);
@@ -1036,10 +1046,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         if (new_seed == nullptr) {
           hd->fChi2Min             = chi2;
-          new_seed                 = _data->NewDeltaSeed(Station,face,hd,-1,nullptr);
+          new_seed                 = _data->NewDeltaSeed(Station,hd,nullptr,0,0,0);
           new_seed->fChi2Delta     = chi2;
-          new_seed->fChi2DeltaPar  = chi2_par;
-          new_seed->fChi2DeltaPerp = chi2_perp;
+          // new_seed->fChi2DeltaPar  = chi2_par;
+          // new_seed->fChi2DeltaPerp = chi2_perp;
         }
         else {
           if (face == new_seed->SFace(0)) {
@@ -1054,8 +1064,8 @@ namespace mu2e {
             new_seed->ReplaceFirstHit(hd);
 
             new_seed->fChi2Delta     = chi2;
-            new_seed->fChi2DeltaPar  = chi2_par;
-            new_seed->fChi2DeltaPerp = chi2_perp;
+            // new_seed->fChi2DeltaPar  = chi2_par;
+            // new_seed->fChi2DeltaPerp = chi2_perp;
           }
           else {
 //-----------------------------------------------------------------------------
@@ -1076,7 +1086,7 @@ namespace mu2e {
               _data->printHitData  (hd      ,"");
             }
 
-            new_seed->AddHit(hd,face);
+            new_seed->AddHit(hd);
           }
 
           if (corr_time < new_seed->fMinHitTime) new_seed->fMinHitTime = corr_time;
@@ -1156,49 +1166,24 @@ namespace mu2e {
 
     for (int face=0; face<kNFaces; face++) {
       const HitData_t* hd = Seed->HitData(face);
-      if (hd == nullptr)                                              continue;
-      float dx = hd->fHit->pos().x()-Xc;
-      float dy = hd->fHit->pos().y()-Yc;
+      if (hd) {
 //-----------------------------------------------------------------------------
-// split into wire parallel and perpendicular components
+// split chi^2 into parallel and perpendicular to the wire components
 //-----------------------------------------------------------------------------
-      const XYZVectorF& wdir = hd->fHit->wdir();
+        float dx        = hd->fX-Xc;
+        float dy        = hd->fY-Yc;
 
-      float dxy_dot_w = dx*wdir.x()+dy*wdir.y();
-      float dxy_dot_n = dx*wdir.y()-dy*wdir.x();
+        float dxy_dot_w = dx*hd->fWx+dy*hd->fWy;
+        float dxy_dot_n = dx*hd->fWy-dy*hd->fWx;
 
-      float  chi2_par = (dxy_dot_w*dxy_dot_w)/(_sigmaR2+hd->fSigW2);
-      float drr       = fmax(fabs(dxy_dot_n)-_rCore,0);
-      float chi2_perp = (drr*drr)/_sigmaR2;
+        float chi2_par  = (dxy_dot_w*dxy_dot_w)/(_sigmaR2+hd->fSigW2);
+        float drr       = fmax(fabs(dxy_dot_n)-_rCore,0);
+        float chi2_perp = (drr*drr)/_sigmaR2;
 
-      Chi2Par        += chi2_par;
-      Chi2Perp       += chi2_perp;
+        Chi2Par        += chi2_par;
+        Chi2Perp       += chi2_perp;
+      }
     }
-  }
-
-//-----------------------------------------------------------------------------
-// in principle, can just use Delta Xc,Yc
-// returns chi2 normalized to the number of hits
-//-----------------------------------------------------------------------------
-  void DeltaFinderAlg::seedDeltaChi2(DeltaSeed* pSeed, DeltaCandidate* pDelta, float& pChi2Par, float& pChi2Perp) {
-
-    // double nxym = (Delta->fSnxy+Seed->fSnxy);
-    // double nx2m = (Delta->fSnx2+Seed->fSnx2);
-    // double ny2m = (Delta->fSny2+Seed->fSny2);
-    // double nxrm = (Delta->fSnxr+Seed->fSnxr);
-    // double nyrm = (Delta->fSnyr+Seed->fSnyr);
-
-    // double d    = nx2m*ny2m-nxym*nxym;
-    // float  xc   = (nyrm*nx2m-nxrm*nxym)/d;
-    // float  yc   = (nyrm*nxym-nxrm*ny2m)/d;
-
-    float  xc   = pDelta->Xc();
-    float  yc   = pDelta->Yc();
-
-    seedChi2(pSeed, xc,yc, pChi2Par, pChi2Perp);
-
-    pChi2Par  = pChi2Par /pSeed->NHits();
-    pChi2Perp = pChi2Perp/pSeed->NHits();
   }
 
 }

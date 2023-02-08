@@ -179,15 +179,15 @@ namespace mu2e {
       //   return ds;
       // }
 
-      DeltaSeed*  NewDeltaSeed(int Station, int Face0, HitData_t* Hd0, int Face1, HitData_t* Hd1) {
+      DeltaSeed*  NewDeltaSeed(int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yc, float Zc) {
         DeltaSeed* ds;
         int ns = fNSeeds[Station];
         if (ns < (int) fListOfSeeds[Station].size()) {
           ds = fListOfSeeds[Station][ns];
-          ds->Init(ns,Station,Face0,Hd0,Face1,Hd1);
+          ds->Init(ns,Station,Hd0,Hd1,Xc,Yc,Zc);
         }
         else {
-          ds = new DeltaSeed(ns,Station,Face0,Hd0,Face1,Hd1);
+          ds = new DeltaSeed(ns,Station,Hd0,Hd1,Xc,Yc,Zc);
           fListOfSeeds[Station].push_back(ds);
           fNAllocatedSlots[Station]++;
         }
