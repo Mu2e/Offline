@@ -19,8 +19,7 @@ namespace mu2e {
       int                   fMask;                  // bitmask , if zero, the candiate is good
       int                   fFirstStation;
       int                   fLastStation;
-      DeltaSeed*            seed   [kNStations];
-      // float                 dxy    [kNStations];   // used only for diagnostics
+      DeltaSeed*            fSeed   [kNStations];
       // float                 fT0Min [kNStations];   // acceptable hit times (no need to account for the drift time!)
       // float                 fT0Max [kNStations];
       XYZVectorF            CofM;
@@ -55,7 +54,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
       DeltaCandidate();
-      DeltaCandidate(int Index, DeltaSeed* Seed, int Station);
+      DeltaCandidate(int Index, DeltaSeed* Seed);
 
       int        Active               () const { return (fIndex >= 0); }
       int        Index                () const { return fIndex ; }
@@ -64,8 +63,8 @@ namespace mu2e {
       int        NHits                () const { return fNHits; }
       int        NHitsMcP             () const { return fNHitsMcP; }
       int        NStrawHits           () const { return fNStrawHits; }
-      DeltaSeed* Seed            (int I) const { return seed[I]; }
-      bool       StationUsed     (int I) const { return (seed[I] != NULL); }
+      DeltaSeed* Seed            (int I) const { return fSeed[I]; }
+      bool       StationUsed     (int I) const { return (fSeed[I] != NULL); }
       // float      T0Min           (int I) const { return fT0Min[I]; }
       // float      T0Max           (int I) const { return fT0Max[I]; }
       // float      Time            (int I) const { return (fT0Max[I]+fT0Min[I])/2.; }
@@ -78,8 +77,15 @@ namespace mu2e {
       double     Rho                  () const { return CofM.Rho(); }
       double     Nx                   () const { return fNx ; }
       double     Ny                   () const { return fNy ; }
-
-      void       AddSeed            (DeltaSeed*      Ds   , int Station);
+//-----------------------------------------------------------------------------
+// add Seed  (station is defined by the Seed
+//-----------------------------------------------------------------------------
+      void       AddSeed            (DeltaSeed*      Ds);
+//-----------------------------------------------------------------------------
+// diagnostics: fill 'this' with the parameters of 'Delta' w/o segment in a
+//              given 'Station'
+//-----------------------------------------------------------------------------
+      void       removeSeed         (const DeltaCandidate* Delta, int Station);
       void       markHitsAsUsed     ();
       void       MergeDeltaCandidate(DeltaCandidate* Delta, int PrintErrors);
 

@@ -1,11 +1,8 @@
 # -*- mode:tcl -*-
 # variables which need defaults:
 # -----------------------------
-# :DEFAULT: TRIGGER_PATH=p6
+#
 #------------------------------------------------------------------------------
-#include "Offline/fcl/minimalMessageService.fcl"
-#include "Offline/fcl/standardProducers.fcl"
-#include "Offline/fcl/standardServices.fcl"
 BEGIN_PROLOG
   INPUT_MODULE  @protect_ignore: RootInput        # choices: EmptyEvent / RootInput
   TRIGGER_PATHS @protect_ignore: [ p1       ]     # defined below
@@ -25,15 +22,19 @@ physics : {
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
                 printElectrons            : 0 ## 1 ##
-                printElectronsHits        : 0 ## 1 ##
+                printElectronsHits        : 1 ## 1 ##
                 printElectronsMinMom      : 0.
                 printElectronsMaxMom      : 20.
                 printElectronsMinNHits    : 1   ## 30
                 printElectronsMaxFReco    : 1.1 ## 0.5
             }
         }
+    }
 
-        DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
+    filters   : { @table::Reconstruction.filters   }
+
+    analyzers : { @table::stntuple.analyzers
+        DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel     : 0 ## 1
             # tcCollTag    : "DeltaFinder"
             chCollTag      : "makePH"
@@ -43,15 +44,12 @@ physics : {
         }
     }
 
-    filters   : { @table::Reconstruction.filters   }
-    analyzers : { @table::stntuple.analyzers       }
-
-    p1: [ @sequence::TrkHitReco.PrepareHits, DeltaFinder, DeltaFinderAna ]
-    p2: [ @sequence::TrkHitReco.PrepareHits, DeltaFinderAna ]
+    p1: [ @sequence::TrkHitReco.PrepareHits, DeltaFinder ]
+    p2: [ @sequence::TrkHitReco.PrepareHits              ]
 
     trigger_paths : [ p2            ]
 
-    e1            : [               ] ## MuHitDisplay  ] # defaultOutput ]
+    e1            : [ DeltaFinderAna ] ## MuHitDisplay  ] # defaultOutput ]
     end_paths     : [ e1            ]
 }
 
@@ -61,7 +59,6 @@ physics.producers.makePH.MaxDS                     : 4
 ## physics.producers.makePH.MaximumRadius             : 680.
 physics.producers.FlagBkgHits.TNTClustering.SignalMask : ["TimeSelection", "RadiusSelection" ] ## , "EnergySelection" ]
 #
-physics.producers.DeltaFinderAna.printElectronHits : 1
 #------------------------------------------------------------------------------
 # uncomment to write the DST out
 #------------------------------------------------------------------------------

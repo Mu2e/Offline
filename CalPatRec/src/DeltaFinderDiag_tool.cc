@@ -21,6 +21,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "Offline/CalPatRec/inc/HlPrint.hh"
+#include "Offline/CalPatRec/inc/DeltaFinderAlg.hh"
 
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
@@ -133,6 +134,9 @@ namespace mu2e {
       int          fNMom;                 // N(mothers) of the particles which produced the hits
       int          fNHitsCE;              // number of associated CE hits
       McPart_t*    fPreSeedMcPart[2];     // McPart_t's for initial stereo intersection
+      float        fDeltaChi2;
+      float        fDeltaChi2Par;
+      float        fDeltaChi2Perp;
 
       int MCTruth () { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
     };
@@ -451,13 +455,13 @@ namespace mu2e {
     book_mc_histset[  0] = 1;                // all particles
     book_mc_histset[  1] = 1;                // electrons
     book_mc_histset[  2] = 1;                // electrons fTime > 550
-    book_mc_histset[  3] = 1;                // electrons fTime > 550 with last>first
-    book_mc_histset[  4] = 1;                // electrons fTime > 550 with last>first and 4+ hits
-    book_mc_histset[  5] = 1;                // electrons fTime > 550 with last>first, 5+ hits, and reco delta
-    book_mc_histset[  6] = 1;                // electrons fTime > 550 with last>first, 5+ hits, and p < 20
+    book_mc_histset[  3] = 1;                // electrons with last>first
+    book_mc_histset[  4] = 1;                // electrons with last>first and 4+ hits
+    book_mc_histset[  5] = 1;                // electrons with last>first, 5+ hits, and reco delta
+    book_mc_histset[  6] = 1;                // electrons with last>first, 5+ hits, and p < 20
 
-    book_mc_histset[100] = 1;                // electrons fTime > 550 and 20 < p < 80 MeV/c
-    book_mc_histset[101] = 1;                // electrons fTime > 550 and p > 80 MeV/c
+    book_mc_histset[100] = 1;                // electrons and 20 < p < 80 MeV/c
+    book_mc_histset[101] = 1;                // electrons and p > 80 MeV/c
 
     for (int i=0; i<kNMcHistSets; i++) {
       if (book_mc_histset[i] != 0) {
@@ -536,12 +540,13 @@ namespace mu2e {
 
     Intersection_t res;
 
-    Hist->fChi2TotN->Fill(Seed->Chi2TotN());
+    Hist->fChi2TotN ->Fill(Seed->Chi2TotN ());
     Hist->fChi2PerpN->Fill(Seed->Chi2PerpN());
     Hist->fChi2ParN ->Fill(Seed->Chi2ParN ());
-    Hist->fChi2Delta->Fill(Seed->Chi2Delta());
-    Hist->fChi2DeltaPar->Fill(Seed->Chi2DeltaPar());
-    Hist->fChi2DeltaPerp->Fill(Seed->Chi2DeltaPerp());
+
+    Hist->fChi2Delta    ->Fill(Par->fDeltaChi2    );
+    Hist->fChi2DeltaPar ->Fill(Par->fDeltaChi2Par );
+    Hist->fChi2DeltaPerp->Fill(Par->fDeltaChi2Perp);
 
     int face0 = Seed->SFace(0);
     int face1 = Seed->SFace(1);
@@ -811,6 +816,7 @@ namespace mu2e {
 
     for (int i=0; i<nmc; i++) {
       McPart_t* mc = (McPart_t*) _list_of_mc_particles.UncheckedAt(i);
+      float mc_mom = mc->Momentum();
 
       fillMcHistograms(_hist.fMc[0],mc);
 //-----------------------------------------------------------------------------
@@ -819,33 +825,21 @@ namespace mu2e {
       if (mc->fPdgID == PDGCode::e_minus) {
         fillMcHistograms(_hist.fMc[1],mc);
 
-        if (mc->Time() > 550) {
-          fillMcHistograms(_hist.fMc[2],mc);
+        if (mc->Time() > 550)             fillMcHistograms(_hist.fMc[2],mc);
 
-          if (mc->fLastStation > mc->fFirstStation) {
-            fillMcHistograms(_hist.fMc[3],mc);
+        if (mc->fLastStation > mc->fFirstStation) {
+          fillMcHistograms(_hist.fMc[3],mc);
 
-            if (mc->NHits() >= 5) {
-              fillMcHistograms(_hist.fMc[4],mc);
+          if (mc->NHits() >= 5)  {
+            fillMcHistograms(_hist.fMc[4],mc);
 
-              if (mc->fDelta != NULL) {
-                fillMcHistograms(_hist.fMc[5],mc);
-              }
-
-              if (mc->Momentum() < 20) {
-                fillMcHistograms(_hist.fMc[6],mc);
-              }
-            }
-          }
-
-          if ((mc->Momentum() > 20) && (mc->Momentum() < 80)) {
-            fillMcHistograms(_hist.fMc[100],mc);
-          }
-
-          if (mc->Momentum() > 80) {
-            fillMcHistograms(_hist.fMc[101],mc);
+            if (mc->fDelta != NULL) fillMcHistograms(_hist.fMc[5],mc);
+            if (mc_mom     <    20) fillMcHistograms(_hist.fMc[6],mc);
           }
         }
+
+        if ((mc_mom > 20) && (mc_mom < 80)) fillMcHistograms(_hist.fMc[100],mc);
+        if (mc_mom > 80                   ) fillMcHistograms(_hist.fMc[101],mc);
       }
     }
     return 0;
@@ -962,11 +956,12 @@ namespace mu2e {
       int nseeds = _data->NSeeds(is);
 
       _seedPar[is].resize(nseeds);
-
+//-----------------------------------------------------------------------------
+// pre-calculate seed parameters
+//-----------------------------------------------------------------------------
       for (int i=0; i<nseeds; ++i) {
-        DeltaSeed* seed = _data->deltaSeed(is,i);
-
-        DeltaSeedPar_t* sp = &_seedPar[is].at(i);
+        DeltaSeed*      seed = _data->deltaSeed(is,i);
+        DeltaSeedPar_t* sp   = &_seedPar[is].at(i);
 //-----------------------------------------------------------------------------
 // define MC pointers (SimParticle's) for the first two, "pre-seed", hits
 //-----------------------------------------------------------------------------
@@ -976,8 +971,8 @@ namespace mu2e {
 
         int face0 = seed->SFace(0);
         if (seed->HitData(face0) != nullptr) {
-          const HitData_t* hd1 = seed->HitData(face0);
-          int loc1 = hd1->fHit-hit0;
+          const HitData_t* hd1  = seed->HitData(face0);
+          int loc1              = hd1->fHit-hit0;
           sp->fPreSeedMcPart[0] = (McPart_t*) _list_of_mc_part_hit.At(loc1);
         }
 
@@ -1074,9 +1069,8 @@ namespace mu2e {
 
     for (int idelta=0; idelta<ndelta; idelta++) {
       DeltaCandidate* dc = _data->deltaCandidate(idelta);
-
 //-----------------------------------------------------------------------------
-// initializa residuals, whatever they are, to zero
+// initialize residuals, whatever they are, to zero
 //-----------------------------------------------------------------------------
       DeltaCandidatePar_t* dcp = &_deltaPar[idelta];
       for (int is=0; is<kNStations; is++) dcp->dxy[is] = 0;
@@ -1084,9 +1078,21 @@ namespace mu2e {
       int npart          = 0;
       for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
         DeltaSeed* ds = dc->Seed(is);
-        if (ds == 0) continue;
+        if (ds == 0)                                                  continue;
 
         DeltaSeedPar_t* sp = &_seedPar[is].at(ds->Index());
+
+        DeltaCandidate dc1;                     // delta w/o this seed
+        dc1.removeSeed(dc,is);
+//-----------------------------------------------------------------------------
+// calculate seed residuals and chi2 wrt dc1
+//-----------------------------------------------------------------------------
+        float    chi2_par, chi2_perp;
+        _data->_finder->seedChi2(ds,dc1.Xc(),dc1.Yc(),chi2_par,chi2_perp);
+
+        sp->fDeltaChi2Par  = chi2_par /ds->NHits();
+        sp->fDeltaChi2Perp = chi2_perp/ds->NHits();
+        sp->fDeltaChi2     = (chi2_par+chi2_perp)/ds->NHits();
 
         for (int face=0; face<kNFaces; face++) {
 //-----------------------------------------------------------------------------
@@ -1265,7 +1271,7 @@ namespace mu2e {
           printf("----------------------------------------------------------------------------------------------------------------\n");
 
           for (int is=dc->fFirstStation;is<=dc->fLastStation; is++) {
-            DeltaSeed* ds = dc->seed[is];
+            DeltaSeed* ds = dc->Seed(is);
             if (ds != NULL) {
 
               DeltaSeedPar_t* sp = &_seedPar[is].at(ds->Index());

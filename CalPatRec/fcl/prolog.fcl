@@ -384,7 +384,7 @@ CalPatRec : { @table::CalPatRec
                 rCore                       : 3.5   ##  'core' of the compton electron trajectory
                 maxDriftTime                : 40.  ## 40 ns, no tolerances ...
                 maxSeedDt                   : 20.  ## time window for checking duplicate seeds
-                maxHitDt                    : 30.  ## time window for checking duplicate seeds
+                maxHitDt                    : 30.  ##
                 maxStrawDt                  : 10.  ## max sensible time difference for a straw, ns, off by default
                 maxDtDs                     :  5.  ## ns, max allowed T0 shift per station
                 maxDtDc                     : 10.  ## 15 20 30 ns, max dT between two delta candidates
@@ -397,7 +397,6 @@ CalPatRec : { @table::CalPatRec
                 debugLevel                  : 0
                 diagLevel                   : 0
                 printErrors                 : 0
-                maxDriftTime                : 35. ## 40 ns, includes some tolerance (50)
             }
 #
             diagPlugin                  : { tool_type : "DeltaFinderDiag"
