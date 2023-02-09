@@ -59,9 +59,9 @@ namespace mu2e {
                                        // chi2's
     float        fChi2Par;
     float        fChi2Perp;
-    float        fChi2Delta;           // chi2 when the seed is added to Delta
-    float        fChi2DeltaPar;        //
-    float        fChi2DeltaPerp;       //
+    // float        fChi2Delta;           // chi2 when the seed is added to Delta
+    // float        fChi2DeltaPar;        //
+    // float        fChi2DeltaPerp;       //
 
     DeltaSeed () {}
     DeltaSeed (int Index, int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yc, float Zc);
@@ -81,9 +81,9 @@ namespace mu2e {
     float            Chi2TotN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
     // float            Chi2All  ()        { return (fChi2Par+fChi2Perp); }
     // float            Chi2AllN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
-    float            Chi2Delta    ()    { return fChi2Delta       ; }
-    float            Chi2DeltaPar ()    { return fChi2DeltaPar    ; }
-    float            Chi2DeltaPerp()    { return fChi2DeltaPerp   ; }
+    // float            Chi2Delta    ()    { return fChi2Delta       ; }
+    // float            Chi2DeltaPar ()    { return fChi2DeltaPar    ; }
+    // float            Chi2DeltaPerp()    { return fChi2DeltaPerp   ; }
 
     HitData_t*       HitData (int Face) { return fHitData[Face]; } // no boundary check !
     int              NHits   ()         { return fNHits; }
@@ -115,6 +115,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     float            T0Min     () { return (fMinHitTime+fMaxHitTime)/2-20; }
     float            T0Max     () { return (fMinHitTime+fMaxHitTime)/2+20; }
+
+    void             SetDeltaIndex(int Index) { fDeltaIndex = Index; }
 //-----------------------------------------------------------------------------
 // less trivial functions .. HitData_t knows its ZFace
 //-----------------------------------------------------------------------------

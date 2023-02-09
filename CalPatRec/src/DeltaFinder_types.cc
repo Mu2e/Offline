@@ -115,19 +115,9 @@ namespace mu2e {
       mu2e::GeomHandle<mu2e::Tracker> tH;
       tracker     = tH.get();
 
-      mu2e::GeomHandle<mu2e::DiskCalorimeter> cH;
-      calorimeter = cH.get();
+      // mu2e::GeomHandle<mu2e::DiskCalorimeter> cH;
+      // calorimeter = cH.get();
 
-      ChannelID cx, co;
-
-      // int       nDisks    = calorimeter->nDisk();
-      // double    disk_z[2] = {0, 0};                            // in the tracker frame
-
-      // for (int i=0; i<nDisks; ++i){
-      //   Hep3Vector gpos = calorimeter->disk(i).geomInfo().origin();
-      //   Hep3Vector tpos = calorimeter->geomUtil().mu2eToTracker(gpos);
-      //   disk_z[i] = tpos.z();
-      // }
 //-----------------------------------------------------------------------------
 // define station Z coordinates and calculate the time-of-flight between
 // the station and each calorimeter disk for a typical mu-->e conversion electron
@@ -141,6 +131,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // per-panel constants
 //-----------------------------------------------------------------------------
+      ChannelID cx, co;
+
       int npl = tracker->nPlanes();
       for (int ipl=0; ipl< npl; ipl++) {
         const Plane* pln = &tracker->getPlane(ipl);
@@ -287,7 +279,7 @@ namespace mu2e {
       printf("------------------------------------------------------------------------------------------------------\n");
 
       for (int is=Delta->fFirstStation;is<=Delta->fLastStation; is++) {
-        DeltaSeed* ds = Delta->seed[is];
+        DeltaSeed* ds = Delta->Seed(is);
         if (ds != NULL) {
 
           int face0 = ds->SFace(0);

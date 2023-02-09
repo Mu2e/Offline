@@ -23,7 +23,6 @@ physics : {
             debugLevel                    :  0  ## 1 ##
 
             finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
-                timeBin   : 40
                 # maxSeedDt : 40
             }
 
@@ -58,8 +57,8 @@ physics : {
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
-physics.producers.makePH.MaxDS                     : 5 ## 4
-physics.producers.makePH.CheckWres                 : true # true
+physics.producers.makePH.MaxDS                     : 4 ## 4
+physics.producers.makePH.CheckWres                 : true ## true
 # physics.producers.makePH.MinimumRadius           : 370.
 # physics.producers.makePH.MaximumRadius           : 680.
 
