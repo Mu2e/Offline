@@ -151,7 +151,7 @@ namespace mu2e {
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
-        if(whstate_.driftDTConstraint())
+        if(whstate_.constrainDt())
           dDdT_ = dinfo.driftVelocity_;
         else
           dDdT_ = 0.0;

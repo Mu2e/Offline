@@ -24,18 +24,18 @@ namespace mu2e {
     allowed_ = WHSMask(allowed);
     std::string freeze = std::get<7>(config);
     freeze_ = WHSMask(freeze);
-    std::string totuse = std::get<8>(config);
-    totuse_ = WireHitState::totUse(totuse);
+    std::string tcon = std::get<8>(config);
+    tcon_ = WireHitState::timeConstraint(tcon);
     diag_ = std::get<9>(config);
     if(diag_ > 0)
       std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
         << " cluster weights " << std::get<0>(config) << " cuts " << clustermvacut_ << " , " << clusterdtmvacut_
         << " null dist var " << nulldvar
-        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << std::endl;
+        << " allowing " << allowed_ << " freezing " << freeze_ << " time constraint " << tcon << std::endl;
   }
 
   std::string const& DriftANNSHU::configDescription() {
-    static std::string descrip( "Weight file, ANN cut, null hit doca, allowed states, TOT use, states to freeze, diag level");
+    static std::string descrip( "LR ANN file, LR ANN cut, Drift ANN file, Drift ANN dresid cut, Drift ANN tresid cut, null hit doca, allowed states, freeze states, diag level");
     return descrip;
   }
 
@@ -80,19 +80,23 @@ namespace mu2e {
 //      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
       if(signprob > signcost*signmvacut_ && clustermvaout[0] > clustermvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
-          if(clustermvaout[0] > clusterdtmvacut_)
-            whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::rightdt : WireHitState::leftdt;
-          else
-            whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
+          whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
-          whstate.totuse_ = totuse_;
+          whstate.tcon_ = tcon_;
+          // don't use drift dt if the clusterMVA is below the cut
+          if(clustermvaout[0] < clusterdtmvacut_){
+            if(tcon_ == WireHitState::driftonly)
+              whstate.tcon_ = WireHitState::none;
+            else if(tcon_ == WireHitState::both)
+              whstate.tcon_ = WireHitState::TOTonly;
+          }
           whstate.nulldvar_ = nulldvar_;
         }
       } else {
         if(allowed_.hasAnyProperty(WHSMask::null)){
           whstate.state_ = WireHitState::null;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
-          whstate.totuse_ = totuse_;
+          whstate.tcon_ = tcon_;
           whstate.nulldvar_ = nulldvar_;
         }
       }

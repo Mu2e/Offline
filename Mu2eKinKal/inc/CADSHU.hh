@@ -29,7 +29,7 @@ namespace mu2e {
       WHSMask allowed_; // allowed states
       WHSMask freeze_; // states to freeze
       WireHitState::NullDistVar nulldvar_; // null hit distance variance setting
-      WireHitState::TOTUse totuse_; // TOT time constraint use
+      WireHitState::TimeConstraint tcon_; // time constraint
       int diag_ =0; // diag print level
   };
 }
