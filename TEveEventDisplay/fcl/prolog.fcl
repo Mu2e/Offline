@@ -33,6 +33,7 @@ TEveEventDisplayBase : {
       addClusters                  : true
       addTrkExtTrajs                  : false
       addMCTraj                  : true
+      addKKTracks                : false
     }
     gdmlname :    "Offline/TEveEventDisplay/src/mu2e.gdml"
     particles :   [11,13,2212,2112,211,22,212]

@@ -20,9 +20,10 @@ class STMEnergyCalib : virtual public ProditionsEntity {
 
   typedef std::map<STMChannel, STMEnergyCorr> CalibMap;
   typedef std::map<STMChannel, float> PedestalMap;
+  typedef std::map<STMChannel, float> SamplingFrequencyMap;
 
-  STMEnergyCalib(CalibMap const& cmap, PedestalMap const& pmap) :
-      ProditionsEntity(cxname), _cmap(cmap), _pmap(pmap) {}
+  STMEnergyCalib(CalibMap const& cmap, PedestalMap const& pmap, SamplingFrequencyMap const& sfmap) :
+    ProditionsEntity(cxname), _cmap(cmap), _pmap(pmap), _sfmap(sfmap) {}
 
   // the calibration struct for a given channel
   STMEnergyCorr const& calib(STMChannel const& channel) const {
@@ -30,10 +31,16 @@ class STMEnergyCalib : virtual public ProditionsEntity {
   }
 
   float pedestal(STMChannel const& channel) const { return _pmap.at(channel); }
+  float samplingFrequency(STMChannel const& channel) const { return _sfmap.at(channel); }
+  float nsPerCt(STMChannel const& channel) const { return (1.0/_sfmap.at(channel))*1e3; } // converting from MHz to ns
+
+  void setCalib(CalibMap cmap) { _cmap = cmap; }
+  void setPedestal(PedestalMap pmap) { _pmap = pmap; }
 
  private:
   CalibMap _cmap;
   PedestalMap _pmap;
+  SamplingFrequencyMap _sfmap;
 };
 
 }  // namespace mu2e

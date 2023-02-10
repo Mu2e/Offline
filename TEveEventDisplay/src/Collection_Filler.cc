@@ -24,6 +24,7 @@ namespace mu2e{
     RecoOnly_(conf.RecoOnly()),
     FillAll_(conf.FillAll()),
     addMCTraj_(conf.addMCTraj()),
+    addKKTracks_(conf.addKKTracks()),
     MCOnly_(conf.MCOnly())
   {}
 #endif
