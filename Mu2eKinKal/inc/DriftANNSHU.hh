@@ -32,7 +32,7 @@ namespace mu2e {
       double clustermvacut_ =0; // cut value for cluster MVA
       double clusterdtmvacut_ =0; // cut value for using dt constraint with cluster MVA
       WireHitState::NullDistVar nulldvar_; // null hit doca
-      WireHitState::TOTUse totuse_ = WireHitState::all; // use TOT time as a residual for all hits
+      WireHitState::TimeConstraint tcon_ = WireHitState::TOTonly; // use TOT time as a residual for all hits
       WHSMask allowed_; // allowed states
       WHSMask freeze_; // states to freeze
       int diag_; // diag print level
