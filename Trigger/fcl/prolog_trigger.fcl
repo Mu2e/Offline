@@ -183,11 +183,11 @@ Trigger : {
         triggerOutput : {
             module_type: RootOutput
             fileName: "filteredOutput.root"
-            SelectEvents : [ unbiasedTrigger,
-                             minBiasSDCountTrigger,
-                             largeSDCountTrigger,
-                             caloMVACETrigger,
-                             tprDeMHighPStopTargTrigger, tprDePHighPStopTargTrigger, cprDeMHighPStopTargTrigger, cprDePHighPStopTargTrigger ]
+            SelectEvents : [
+                            "tpr*",
+                            "cpr*",
+                            "calo*"
+                           ]
 #            Compressionlevel: 0
             # fileProperties : {
             #         maxEvents : 1000

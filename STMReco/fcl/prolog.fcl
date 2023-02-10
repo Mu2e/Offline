@@ -1,0 +1,26 @@
+#
+# prolog.fcl for fcl paramaters that will be used in STM modules
+#
+BEGIN_PROLOG
+
+STM : {
+
+  HPGe : {
+    # zero-suppression parameters
+    tbefore : 2000 # ns
+    tafter : 10000 # ns
+    threshold : -100
+    window : 100
+    naverage : 5
+  }
+  LaBr : {
+    # zero-suppression parameters
+    tbefore : 2000 # ns
+    tafter : 10000 # ns
+    threshold : -100
+    window : 100
+    naverage : 5
+  }
+}
+
+END_PROLOG

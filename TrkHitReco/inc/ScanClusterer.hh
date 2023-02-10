@@ -9,7 +9,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
-#include "Offline/TrkReco/inc/BkgClusterer.hh"
+#include "Offline/TrkHitReco/inc/BkgClusterer.hh"
 
 
 namespace mu2e {
@@ -70,5 +70,3 @@ namespace mu2e {
   };
 }
 #endif
-
-

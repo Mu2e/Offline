@@ -119,7 +119,6 @@ namespace mu2e {
         _config.wireLengthBuffer(), _config.strawLengthFactor(),
         _config.errorFactor(), _config.useNonLinearDrift(),
         _config.linearDriftVelocity(),
-        _config.minT0DOCA(),
         pmpEnergyScale,
         electronicsTimeDelay,
         gasGain, analognoise, dVdI, vsat, ADCped,

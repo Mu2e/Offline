@@ -91,8 +91,6 @@ namespace mu2e {
       Name("useNonLinearDrift"), Comment(" useNonLinearDrift ")};
     fhicl::Atom<double> linearDriftVelocity {
       Name("linearDriftVelocity"), Comment(" mm/ns, only used if nonlindrift= ")};
-    fhicl::Atom<double> minT0DOCA {
-      Name("minT0DOCA"), Comment("FIXME should be moved to a reconstruction configuration ")};
     fhicl::Atom<double> defaultPeakMinusPedestalEnergyScale {
       Name("defaultPeakMinusPedestalEnergyScale"), Comment("default constant value for pmp energy method calibration")};
     fhicl::Sequence<double> peakMinusPedestalEnergyScale {
