@@ -231,14 +231,19 @@ namespace mu2e {
     combohit._tres       = _terr/sqrt(combohit._nsh); // error proportional to # of straws (roughly)
     //      float wvar           = sqrtf((wacc2/weights-wacc/weights*wacc/weights));//define quality as variance/average ratio
     combohit._qual       = 1.0; // quality isn't used and should be removed FIXME
-//-----------------------------------------------------------------------------
-// if combohit._wres is not consistent with the spread of the individual hits,
-// increase it
-//-----------------------------------------------------------------------------
+
     if (_checkWres) {
+//-----------------------------------------------------------------------------
+// for combohits made out of 2 and more straw hits:
+// if combohit._wres is less than the sigma calculated on the individual hit positions,
+// use the PDG prescription : scale the resolution to the sigma
+//-----------------------------------------------------------------------------
       float wdist2 = wacc2/weights;
-      float sigw   = sqrt((wdist2-combohit._wdist*combohit._wdist)/(combohit.nCombo()-1+1e-12));
-      if (combohit._wres < sigw/2) combohit._wres = sigw;
+      float sigw(-1.);
+      if (combohit.nCombo() > 1) {
+        sigw = sqrt((wdist2-combohit._wdist*combohit._wdist)*comboHit.nCombo()/(combohit.nCombo()-1));
+      }
+      if (combohit._wres < sigw) combohit._wres = sigw;
     }
   }
 }
