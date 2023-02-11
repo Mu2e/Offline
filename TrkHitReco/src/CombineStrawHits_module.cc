@@ -241,7 +241,7 @@ namespace mu2e {
       float wdist2 = wacc2/weights;
       float sigw(-1.);
       if (combohit.nCombo() > 1) {
-        sigw = sqrt((wdist2-combohit._wdist*combohit._wdist)*comboHit.nCombo()/(combohit.nCombo()-1));
+        sigw = sqrt((wdist2-combohit._wdist*combohit._wdist)/(combohit.nCombo()-1));
       }
       if (combohit._wres < sigw) combohit._wres = sigw;
     }
