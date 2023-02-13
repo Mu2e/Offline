@@ -152,6 +152,7 @@ TimeClusterFinderUpi : {
 RobustHelixFinder : {
   module_type   : RobustHelixFinder
   ComboHitCollection     : "makePH"
+  chfCollTag             : "FlagBkgHits:ComboHits"
   HelixStereoHitMVA      : { MVAWeights : "Offline/TrkPatRec/data/HelixStereoHitMVA.weights.xml" }
   HelixNonStereoHitMVA   : { MVAWeights : "Offline/TrkPatRec/data/HelixNonStereoHitMVA.weights.xml" }
   DiagPlugin : {
