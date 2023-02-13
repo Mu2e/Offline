@@ -55,7 +55,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>     chCollLabel2     {Name("chCollLabel2"     ), Comment("for MC tool"                 ) };
       fhicl::Atom<art::InputTag>     tcCollLabel      {Name("tcCollLabel"      ), Comment("time cluster coll label"     ) };
       fhicl::Atom<art::InputTag>     shfCollLabel     {Name("shfCollLabel"     ), Comment("straw hit flag coll label"   ) };
-      fhicl::Atom<art::InputTag>     ccModuleLabel    {Name("ccModuleLabel"    ), Comment("Calo Cluster module label"   ) };
+      fhicl::Atom<art::InputTag>     ccCollLabel      {Name("ccCollLabel"      ), Comment("Calo Cluster coll label"     ) };
       fhicl::Sequence<std::string>   hitBkgBits       {Name("hitBkgBits"       ), Comment("background bits"             ) };
       fhicl::Atom<int>               chunkSep         {Name("chunkSep"         ), Comment("max # of planes for chunk"   ) };
       fhicl::Atom<double>            chunkWindow      {Name("chunkWindow"      ), Comment("time window in ns"           ) };
@@ -104,7 +104,7 @@ namespace mu2e {
     art::InputTag   _chLabel2;
     art::InputTag   _tcLabel ;
     art::InputTag   _shfLabel;
-    art::InputTag   _ccmLabel;
+    art::InputTag   _ccLabel;
     StrawHitFlag    _hbkg;
 
     //-----------------------------------------------------------------------------
@@ -195,7 +195,7 @@ namespace mu2e {
     _chLabel2               (config().chCollLabel2()                            ),
     _tcLabel                (config().tcCollLabel()                             ),
     _shfLabel               (config().shfCollLabel()                            ),
-    _ccmLabel               (config().ccModuleLabel()                           ),
+    _ccLabel                (config().ccCollLabel()                             ),
     _hbkg                   (config().hitBkgBits()                              ),
     _chunkSep               (config().chunkSep()                                ),
     _chunkWindow            (config().chunkWindow()                             ),
@@ -222,7 +222,7 @@ namespace mu2e {
     {
 
       consumes<ComboHitCollection>(_chLabel);
-      consumes<CaloClusterCollection>(_ccmLabel);
+      consumes<CaloClusterCollection>(_ccLabel);
       produces<TimeClusterCollection>();
       produces<IntensityInfoTimeCluster>();
 
@@ -279,7 +279,7 @@ namespace mu2e {
     }
 
     if (_useCaloClusters == 1) {
-      if (evt.getByLabel(_ccmLabel, _ccHandle)) {
+      if (evt.getByLabel(_ccLabel, _ccHandle)) {
         _data._ccColl = _ccHandle.product();
       }
       else {
