@@ -139,6 +139,7 @@ namespace mu2e {
         fhicl::Atom<float>                    MinMVA{               Name("MinMVA"),               Comment("Minimum MVA output to define an outlier") };
         fhicl::Atom<bool>                     UseTripletArea{       Name("UseTripletArea"),       Comment("Use triplet area flag") };
         fhicl::Atom<art::InputTag>            ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
+        fhicl::Atom<art::InputTag>            chfCollTag          { Name("chfCollTag")          , Comment("ComboHit flag collection tag") };
         fhicl::Atom<art::InputTag>            TimeClusterCollection{Name("TimeClusterCollection"),Comment("TimeCluster collection name") };
         fhicl::Sequence<std::string>          HitSelectionBits{     Name("HitSelectionBits"),     Comment("Hit selection bits") };
         fhicl::Sequence<std::string>          HitBackgroundBits{    Name("HitBackgroundBits"),    Comment("Hit background bits") };
@@ -186,8 +187,9 @@ namespace mu2e {
       float                               _minmva; // outlier cut on MVA
       bool                                _useTripletAreaWt;
 
-      art::ProductToken<ComboHitCollection> const _chToken;
-      art::ProductToken<TimeClusterCollection> const _tcToken;
+      art::ProductToken<ComboHitCollection>     const _chToken;
+      art::ProductToken<TimeClusterCollection>  const _tcToken;
+      art::InputTag                                   _chfCollTag;
 
       StrawHitFlag  _hsel, _hbkg;
 
@@ -262,6 +264,7 @@ namespace mu2e {
     _useTripletAreaWt(config().UseTripletArea()),
     _chToken     {consumes<ComboHitCollection>(config().ComboHitCollection()) },
     _tcToken     {consumes<TimeClusterCollection>(config().TimeClusterCollection()) },
+    _chfCollTag  {config().chfCollTag()},
     _hsel        (config().HitSelectionBits()),
     _hbkg        (config().HitBackgroundBits()),
     _stmva       (config().HelixStereoHitMVA()),
@@ -271,6 +274,8 @@ namespace mu2e {
     _outlier     (StrawHitFlag::outlier),
     _updateStereo(config().UpdateStereo())
     {
+      consumes<StrawHitFlagCollection>(_chfCollTag);
+
       std::vector<int> helvals = config().Helicities();
       for(auto hv : helvals) {
         Helicity hel(hv);
@@ -325,8 +330,16 @@ namespace mu2e {
 
     auto const& chH = event.getValidHandle(_chToken);
     const ComboHitCollection& chcol(*chH);
+    _hfResult._chcol  = &chcol;
 
-    // create output: seperate by helicity
+    _hfResult._chfcol = nullptr;
+    if (! _chfCollTag.empty()) {
+      art::Handle<mu2e::StrawHitFlagCollection> chfcH;
+      event.getByLabel(_chfCollTag,chfcH);
+      if (chfcH.isValid()) _hfResult._chfcol = chfcH.product();
+    }
+
+   // create output: separate by helicity
     std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
     int counter(0);
     for( auto const& hel : _hels) {
@@ -336,10 +349,7 @@ namespace mu2e {
     }
 
     _data.event       = &event;
-    //    _data.result      = &_hfit;
     _data.nTimePeaks  = tccol.size();
-
-    _hfResult._chcol  = &chcol;
 
     // create initial helicies from time clusters: to begin, don't specificy helicity
     for (size_t index=0;index< tccol.size();++index) {
@@ -789,19 +799,27 @@ namespace mu2e {
     int     size  = shIndices.size();
     int     nFiltComboHits(0), nFiltStrawHits(0);
     // int nTotalStations = _tracker->nStations();
-    //--------------------------------------------------------------------------------
-    int loc;
-    StrawHitFlag flag;
-
-    //sort the hits by z coordinate
+//--------------------------------------------------------------------------------
+//  sort hits by z coordinate
+//--------------------------------------------------------------------------------
     ComboHitCollection ordChCol;
     ordChCol.reserve(size);
 
     for (int i=0; i<size; ++i) {
-      loc = shIndices[i];
-      const ComboHit& ch  = (*_hfResult._chcol)[loc];
-      if(ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg) ) {
-        ordChCol.push_back(ComboHit(ch));
+      int loc             = shIndices[i];
+      ComboHit ch((*_hfResult._chcol )[loc]);
+//-----------------------------------------------------------------------------
+// if external flag collection defined, merge the flags from there
+// by default, it is assumed that the compton hit tagger, FlagBkgHits or DeltaFinder,
+// writes out a filtered combo hit collection which consists only of 'good' hits
+// before the definition of 'good' is understood, need to write out all hits
+// that is supposed to reduce the collection length and improve the performance
+// make sure can do comparisons
+//-----------------------------------------------------------------------------
+      if (_hfResult._chfcol != nullptr) ch._flag.merge((*_hfResult._chfcol)[loc]);
+
+      if (ch.flag().hasAnyProperty(_hsel) && !ch.flag().hasAnyProperty(_hbkg) ) {
+        ordChCol.push_back(ch);
       }
     }
     std::sort(ordChCol.begin(), ordChCol.end(),panelcomp());//zcomp());
