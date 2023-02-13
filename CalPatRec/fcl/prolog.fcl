@@ -561,7 +561,7 @@ CalPatRec : { @table::CalPatRec
             chCollLabel2               : "makeSH"
             tcCollLabel                : "TimeClusterFinderDe"
             shfCollLabel               : "FlagBkgHits:ComboHits"
-            ccModuleLabel              : "CaloClusterMaker"
+            ccCollLabel                : "CaloClusterMaker"
             hitBkgBits                 : ["Noisy","Dead","Background"]
             chunkSep                   : 5
             chunkWindow                : 20.0
