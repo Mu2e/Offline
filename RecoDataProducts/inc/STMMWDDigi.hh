@@ -28,5 +28,15 @@ namespace mu2e {
   };
 
   typedef std::vector<STMMWDDigi> STMMWDDigiCollection;
+
+  bool sortByTime(const STMMWDDigi& a, const STMMWDDigi& b) {
+    if (a.time() < b.time()) { return true; }
+    else { return false; }
+  }
+
+  bool sortByEnergy(const STMMWDDigi& a, const STMMWDDigi& b) {
+    if (a.energy() < b.energy()) { return true; }
+    else { return false; }
+  }
 }
 #endif
