@@ -1,0 +1,8 @@
+# 
+
+
+* module DeltaFinder                                  
+
+  - a seed: an intersection of hits in two panels of the same station corresponding 
+            to two hits close in time
+* ------------------------------------------------------------------------------
