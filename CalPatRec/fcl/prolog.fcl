@@ -355,9 +355,10 @@ CalPatRec : { @table::CalPatRec
             finderParameters            : {
                 testHitMask                 : false                 # off by default
                 goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
-                                                                ## out of straw hits with an apriory wrong wdist ?
+                                                                    ## out of straw hits with an apriory wrong wdist ?
                 bkgHitMask                  : [  ]                  #
 
+                flagProtonHits              : 0                     #
                 timeBin                     : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
                 minHitTime                  : 350.                  # ns
                 minimumTime                 : 400.                  # ns
@@ -365,34 +366,36 @@ CalPatRec : { @table::CalPatRec
                 maxDeltaEDep                : 0.004                 # max allowed delta eDep
                 maxSeedEDep                 : 0.005                 # max allowed seed eDep
                 minProtonSeedEDep           : 0.003                 # min allowed proton seed eDep
-                minNSeeds                   : 2                     #
+                minProtonHitEDep            : 0.003                 # min allowed proton hit  eDep
                 maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
-
-                maxChi2All                  : 16.  ## 10 16 used by pruneSeeds to mark bad seeds
-                maxChi2Seed                 : 16.  ## chi^2 wire, each hit)
-                scaleTwo                    : 1.3  ## sum of the two < maxChi2Seed*scaleTwo
-                maxChi2Radial               : 12.  ## hit pickup chi2
-                maxChi2SeedDelta            : 20.  ##
-                maxGap                      :  3   ## 3 gap in missing stations along the candidate
 #------------------------------------------------------------------------------
-# for moving upstream, the combination sigmaR=3 rCore=3 gives:
-#                     N(delta hits) : 99611 and N(conv hits) : 201
+# for moving upstream, the combination sigmaR=2.6 rCore=4.2 gives:
+#                     N(delta hits) : 98749 and N(conv hits) : 184
 # so far, this is the best.
-# timing: <T(CE+2BB)>:0.977 msec/event vs  FlagBkgHits:0.480 msec/event
+# timing: <T(CE+2BB)>:0.977 msec/event vs FlagBkgHits:0.480 msec/event
+# timing: <T(CE+2BB)>:0.806 msec/event vs FlagBkgHits:0.472 msec/event
+# timing: <T(CE+2BB)>:0.917 msec/event vs FlagBkgHits:0.471 msec/event 98336:181
 #------------------------------------------------------------------------------
-                sigmaR                      : 2.5  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-                rCore                       : 3.5   ##  'core' of the compton electron trajectory
+                maxChi2Seed                 : 12.  ## chi^2 wire, each hit)
+                maxChi2Par                  : 12.  ## hit pickup chi2
+                maxChi2Perp                 : 12.  ## hit pickup in recoverStation
+                maxChi2SeedDelta            : 20.  ##
+                sigmaR                      : 1.5  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+                rCore                       : 2.0  ## 'core' of the compton electron trajectory
+                maxSeedDt                   : 30.  ## time window for checking duplicate seeds
+                maxDtDs                     : 10.  ## ns, max allowed T0 shift per station
+
+                maxGap                      :  3   ## 3 gap in missing stations along the candidate
                 maxDriftTime                : 40.  ## 40 ns, no tolerances ...
-                maxSeedDt                   : 20.  ## time window for checking duplicate seeds
                 maxHitDt                    : 30.  ##
-                maxStrawDt                  : 10.  ## max sensible time difference for a straw, ns, off by default
-                maxDtDs                     :  5.  ## ns, max allowed T0 shift per station
+
                 maxDtDc                     : 10.  ## 15 20 30 ns, max dT between two delta candidates
                 maxHitSeedDt                : 10   ##
-                minDeltaNHits               :  5
+#
+                minNSeeds                   :  2   ## delta candidate has to have at least two seeds
+                minDeltaNHits               :  5   ## and 5 combo hits
 
                 testOrder                   : 0
-                updateSeedCOG               : 1
 
                 debugLevel                  : 0
                 diagLevel                   : 0

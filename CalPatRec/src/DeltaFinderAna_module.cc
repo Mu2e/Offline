@@ -28,25 +28,21 @@
 #include "TH1.h"
 #include "TTree.h"
 #include "TH2.h"
-#include "TVector2.h"
-// data
+
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
-// Utilities
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-// diagnostics
 
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
 #include "Offline/CalPatRec/inc/HlPrint.hh"
+// #include "Offline/CalPatRec/inc/McPart_t.hh"  .. so far, duplicating...
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -977,6 +973,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 // print MC electrons
 //-----------------------------------------------------------------------------
     if (_printElectrons) {
+      printf("* DeltaFinderAna::debug : printElectrons\n");
       int nmc = _list_of_mc_particles.size();
 
       for (int i=0; i<nmc; i++) {
@@ -1024,7 +1021,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     }
 
     if (_printComboHits) {
-      printf("* ComboHits \n");
+      printf("* DeltaFinderAna::debug : print ComboHits \n");
 //-----------------------------------------------------------------------------
 // print ComboHits
 //-----------------------------------------------------------------------------
@@ -1034,7 +1031,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     }
 
     if (_printSingleComboHits) {
-      printf("* Single straw ComboHits tag:  %s\n",_shCollTag.encode().data());
+      printf("* DeltaFinderAna::debug : single straw ComboHits tag:  %s\n",_shCollTag.encode().data());
 //-----------------------------------------------------------------------------
 // print ComboHits
 //-----------------------------------------------------------------------------

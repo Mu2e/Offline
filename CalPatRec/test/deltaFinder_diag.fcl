@@ -29,10 +29,10 @@ physics : {
                 mcDiag                    : true
                 printElectrons            : 1    ## 0 ##
                 printElectronsHits        : 1    ## 1 ##
-                printElectronsMinMom      : 0.
-                printElectronsMaxMom      : 20.
+                printElectronsMinMom      : 80.
+                printElectronsMaxMom      : 110.
                 printElectronsMinNHits    : 10   ## 30
-                printElectronsMaxFReco    : 0.2  ## 0.5
+                printElectronsMaxFReco    : 1.1  ## 0.5
                 printSeedNParents         : -1   ## 2
             }
         }
@@ -59,7 +59,7 @@ physics : {
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
-physics.producers.makePH.MaxDS                     : 4
+physics.producers.makePH.MaxDS                     : 5
 physics.producers.makePH.CheckWres                 : true
 # physics.producers.makePH.MinimumRadius             : 370.
 # physics.producers.makePH.MaximumRadius             : 680.
