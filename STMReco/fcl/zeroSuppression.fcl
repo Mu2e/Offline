@@ -55,7 +55,7 @@ outputs: {
   STMOutput : {
     module_type: RootOutput
     outputCommands:   [ "keep *_*_*_*" ]
-    SelectEvents: [ HPGePath, LaBrPath ]
+    SelectEvents: [ ]
     fileName : "dig.owner.ZPWaveformDigis.version.sequencer.art"
   }
 }
