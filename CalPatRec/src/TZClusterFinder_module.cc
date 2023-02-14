@@ -598,10 +598,10 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::combineChunks() {
 
-    double smallestDeltaTime = 10000.;
-    int    foundValidCombine = 0;
-    size_t chunkOneIdx       = 0;
-    size_t chunkTwoIdx       = 0;
+    double minValidDtFound    = 0.0;
+    size_t validCombinesFound = 0;
+    size_t chunkOneIdx        = 0;
+    size_t chunkTwoIdx        = 0;
 
     for (size_t i=0; i<_f.chunks.size()-1; i++) {
       if (_f.chunks[i].nrgSelection != _f.chunks[i+1].nrgSelection) {continue;}
@@ -613,18 +613,18 @@ namespace mu2e {
       _f.testTime = _f.chunks[i+1].avgTime;
       double deltaTime = std::abs(_f.seedTime - _f.testTime);
       if (deltaTime > _combineWindow) {
-        if (foundValidCombine == 1) {break;}
+        if (validCombinesFound != 0) {break;}
         else {continue;}
       }
-      foundValidCombine = 1;
-      if (deltaTime < smallestDeltaTime) {
-        smallestDeltaTime = deltaTime;
+      validCombinesFound++;
+      if (validCombinesFound == 1 || deltaTime < minValidDtFound) {
+        minValidDtFound = deltaTime;
         chunkOneIdx = i;
         chunkTwoIdx = i+1;
       }
     }
 
-    if (smallestDeltaTime < 10000.) {
+    if (validCombinesFound != 0) {
       for (size_t i=0; i<_f.chunks[chunkTwoIdx].hIndices.size(); i++) {
         _f.chunks[chunkOneIdx].hIndices.push_back(_f.chunks[chunkTwoIdx].hIndices[i]);
       }
@@ -650,10 +650,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::recoverHits() {
 
-    double smallestDeltaT;
-    double deltaTtest;
-    int    strawhits = 0;
-    int    chunkIndex = 0;
+    double minValidDtFound = 0.0;
+    size_t validLinesFound = 0;
+    size_t chunkIndex      = 0;
 
     for (int i=(int)_f.cHits.size()-1; i>=0; i--) {
       for (size_t j=0; j<_f.cHits[i].plnHits.size(); j++) {
@@ -662,22 +661,24 @@ namespace mu2e {
         _f.testWeight = _f.cHits[i].plnHits[j].hWeight;
         _f.testZpos = _f.cHits[i].plnHits[j].hZpos;
         _f.testIndice = _f.cHits[i].plnHits[j].hIndex;
-        strawhits = _f.cHits[i].plnHits[j].nStrawHits;
         if ((*_data._shfColl)[_f.testIndice].hasAnyProperty(StrawHitFlag::energysel)) { _f.testNRGselection = 1; }
         else { _f.testNRGselection = 0; }
-        smallestDeltaT = 1000.;
+        validLinesFound = 0;
+        minValidDtFound = 0.0;
         for (size_t k=0; k<_f.chunks.size(); k++) {
           if ((int)_f.chunks[k].hIndices.size() < _chunkFitThresh) {continue;}
           if (_f.testNRGselection != _f.chunks[k].nrgSelection) {continue;}
-          deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dydx()*_f.testZpos + _f.chunks[k].fitter.y0()));
-          if (deltaTtest < smallestDeltaT) {
-            smallestDeltaT = deltaTtest;
+          double deltaTtest = std::abs(_f.testTime - (_f.chunks[k].fitter.dydx()*_f.testZpos + _f.chunks[k].fitter.y0()));
+          if (deltaTtest > _recoverWindow) {continue;}
+          validLinesFound++;
+          if (validLinesFound == 1 || deltaTtest < minValidDtFound) {
+            minValidDtFound = deltaTtest;
             chunkIndex = k;
           }
         }
-        if (smallestDeltaT <= _recoverWindow) {
+        if (validLinesFound != 0) {
           _f.chunks[chunkIndex].hIndices.push_back(_f.testIndice);
-          _f.chunks[chunkIndex].nStrawHits = _f.chunks[chunkIndex].nStrawHits + strawhits;
+          _f.chunks[chunkIndex].nStrawHits = _f.chunks[chunkIndex].nStrawHits + _f.cHits[i].plnHits[j].nStrawHits;
           _f.chunks[chunkIndex].nHits++;
           _f.chunks[chunkIndex].fitter.addPoint(_f.testZpos, _f.testTime, _f.testWeight);
         }
