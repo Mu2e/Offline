@@ -43,16 +43,14 @@ namespace mu2e {
     void beginJob() override;
     void analyze(const art::Event& e) override;
 
-    art::InputTag _stmMWDDigisTag;
     TH1D* _mwdSpectrum;
+    art::ProductToken<STMMWDDigiCollection> _stmMWDDigisToken;
   };
 
   PlotSTMMWDSpectrum::PlotSTMMWDSpectrum(const Parameters& config )  :
     art::EDAnalyzer{config},
-    _stmMWDDigisTag(config().stmMWDDigisTag())
-  {
-    consumes<STMMWDDigiCollection>(_stmMWDDigisTag);
-  }
+    _stmMWDDigisToken(consumes<STMMWDDigiCollection>(config().stmMWDDigisTag()))
+  { }
 
   void PlotSTMMWDSpectrum::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
@@ -62,7 +60,7 @@ namespace mu2e {
 
   void PlotSTMMWDSpectrum::analyze(const art::Event& event) {
 
-    auto mwdDigisHandle = event.getValidHandle<STMMWDDigiCollection>(_stmMWDDigisTag);
+    auto mwdDigisHandle = event.getValidHandle(_stmMWDDigisToken);
 
     for (const auto& mwdDigi : *mwdDigisHandle) {
       auto energy = mwdDigi.energy();

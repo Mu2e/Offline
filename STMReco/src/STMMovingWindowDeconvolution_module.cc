@@ -66,7 +66,7 @@ namespace mu2e {
     void find_peaks(const std::vector<double>& averaged_data, std::vector<double>& peak_heights, std::vector<double>& peak_times, const double baseline_mean, const double baseline_stddev);
 
     int _verbosityLevel;
-    art::InputTag _stmWaveformDigisTag;
+    art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
     STMChannel _channel;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
 
@@ -82,17 +82,15 @@ namespace mu2e {
   STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& config ) :
     art::EDProducer{config}
     ,_verbosityLevel(config().verbosityLevel())
-    ,_stmWaveformDigisTag(config().stmWaveformDigisTag())
+    ,_stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(config().stmWaveformDigisTag()))
+    ,_channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
     ,_tau(config().tau())
     ,_M(config().M())
     ,_L(config().L())
     ,_nsigma_cut(config().nsigma_cut())
     ,_thresholdgrad(config().thresholdgrad())
   {
-    consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     produces<STMMWDDigiCollection>();
-
-    _channel = STMUtils::getChannel(_stmWaveformDigisTag);
 
     if (!config().xAxis(_xAxis)) {
       if (_verbosityLevel >= 5) {
@@ -107,7 +105,7 @@ namespace mu2e {
   void STMMovingWindowDeconvolution::produce(art::Event& event) {
     // create output
     unique_ptr<STMMWDDigiCollection> outputMWDDigis(new STMMWDDigiCollection);
-    auto waveformDigisHandle = event.getValidHandle<STMWaveformDigiCollection>(_stmWaveformDigisTag);
+    auto waveformDigisHandle = event.getValidHandle(_stmWaveformDigisToken);
 
     STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get prodition
 
