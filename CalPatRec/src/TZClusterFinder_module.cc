@@ -29,10 +29,6 @@
 #include "TMultiGraph.h"
 #include "TGraph.h"
 
-using CLHEP::HepVector;
-using CLHEP::HepSymMatrix;
-using CLHEP::Hep3Vector;
-
 namespace mu2e {
 
   using namespace TZClusterFinderTypes;
