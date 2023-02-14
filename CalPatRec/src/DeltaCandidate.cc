@@ -18,9 +18,6 @@ namespace mu2e {
       fNStrawHits   = 0;
       fNSeeds       = 0;
       fSumEDep      = 0;
-
-      fMcPart       = nullptr;
-      fNHitsCE      = 0;
     }
 
 //-----------------------------------------------------------------------------
@@ -39,9 +36,6 @@ namespace mu2e {
       fNStrawHits   = 0;
       fNSeeds       = 0;
       fSumEDep      = 0;
-
-      fMcPart       = nullptr;
-      fNHitsCE      = 0;
 
       if (Seed) AddSeed(Seed);
     }
@@ -190,24 +184,7 @@ namespace mu2e {
       fT0    = tm;
       fSigT0 = 0;
     }
-//-----------------------------------------------------------------------------
-// update t0min and t0max
-// FIXME - need more reasonable limits
-//-----------------------------------------------------------------------------
-    // float t0min     = Seed->MinHitTime();
-    // float t0max     = Seed->MaxHitTime();
-    // float t0        = (t0min+t0max)/2;
-    // float dt        = (t0max-t0min)/2;
 
-    // double kMinDt(30.) ; // was 20 before
-    // if (dt < kMinDt) dt = kMinDt;
-    // fT0Min[Station] = t0-dt;
-    // fT0Max[Station] = t0+dt;
-//-----------------------------------------------------------------------------
-// finally, set fDeltaIndex, this marks the 'Seed' as used,
-// marking  its hits as associated with the DeltaCandidate will happen later
-//-----------------------------------------------------------------------------
-//    Seed->fDeltaIndex = fIndex;
   }
 
 //-----------------------------------------------------------------------------

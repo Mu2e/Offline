@@ -23,24 +23,23 @@ physics : {
             debugLevel                    :  1  ## 1 ##
 
            finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
-                maxChi2All       : 8.
-                sigmaR           : 4.
-                rCore            : 4.
-                updateSeedCOG    : 0
-                maxChi2SeedDelta : 4.
-                maxDxy           : 5.
-                # maxChi2Seed  :  12. ## default: 12  used by findSeeds, for each hit
-            }
+                maxChi2Seed                 : 20.  ## chi^2 wire, each hit)
+                maxChi2Par                  : 12.  ## hit pickup chi2
+                maxChi2Perp                 : 12.  ## hit pickup in recoverStation
+                maxChi2SeedDelta            : 20.  ##
+                sigmaR                      : 1.5  ##
+                rCore                       : 2.0  ## 'core' of the compton electron trajectory
+           }
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
                 printElectrons            : 1    ## 0 ##
                 printElectronsHits        : 1    ## 1 ##
-                printElectronsMinMom      : 0.
-                printElectronsMaxMom      : 20.
+                printElectronsMinMom      :  80.
+                printElectronsMaxMom      : 110.
                 printElectronsMinNHits    : 10   ## 30
-                printElectronsMaxFReco    : 0.2  ## 0.5
-                printSeedNParents         : -1   ## 2
+                printElectronsMaxFReco    : 1.1  ## 0.5
+                printSeedNParents         :  -1  ## 2
             }
         }
     }

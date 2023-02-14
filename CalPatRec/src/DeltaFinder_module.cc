@@ -190,8 +190,8 @@ namespace mu2e {
     auto chcH   = Evt.getValidHandle<mu2e::ComboHitCollection>(_chCollTag);
     _data.chcol = chcH.product();
 
-    auto shcH = Evt.getValidHandle<mu2e::StrawHitCollection>(_shCollTag);
-    _shColl   = shcH.product();
+    auto shcH   = Evt.getValidHandle<mu2e::StrawHitCollection>(_shCollTag);
+    _shColl     = shcH.product();
 
     return (_data.chcol != nullptr) and (_shColl != nullptr);
   }
@@ -219,34 +219,39 @@ namespace mu2e {
 
     _data._nComboHits = _data.chcol->size();
     _data._nStrawHits = _shColl->size();
-
+//-----------------------------------------------------------------------------
+// run delta finder, it also finds proton time clusters
+//-----------------------------------------------------------------------------
     _finder->run();
 //-----------------------------------------------------------------------------
 // form output - flag combo hits -
 // if flagged combo hits are written out, likely don't need writing out the flags
+// need to drop previously set 'energy' flag
 //-----------------------------------------------------------------------------
     unique_ptr<StrawHitFlagCollection> up_chfcol(new StrawHitFlagCollection(_data._nComboHits));
     _data.outputChfColl = up_chfcol.get();
 
     for (int i=0; i<_data._nComboHits; i++) {
       const ComboHit* ch = &(*_data.chcol)[i];
-      (*_data.outputChfColl)[i].merge(ch->flag());
+      StrawHitFlag* flag = &(*_data.outputChfColl)[i];
+      flag->merge(ch->flag());
+      flag->clear(StrawHitFlag::energysel);
     }
 
     const ComboHit* ch0(0);
     if (_data._nComboHits > 0) ch0 = &_data.chcol->at(0);
 
-    StrawHitFlag deltamask(StrawHitFlag::bkg);
-
     unique_ptr<TimeClusterCollection>  tcColl(new TimeClusterCollection);
-
+//-----------------------------------------------------------------------------
+// set delta flags
+//-----------------------------------------------------------------------------
     int ndeltas = _data.nDeltaCandidates();
-
     for (int i=0; i<ndeltas; i++) {
       DeltaCandidate* dc = _data.deltaCandidate(i);
 //-----------------------------------------------------------------------------
 // skip merged in delta candidates
-// also require a delta candidate to have at least 5 hits
+// also require a delta candidate to have at least 5 hits (in the mask, set by
+// the delta finder)
 // do not consider proton stub candidates (those with <EDep> > 0.004)
 //-----------------------------------------------------------------------------
       if (dc->Active() == 0)                                          continue;
@@ -261,16 +266,34 @@ namespace mu2e {
             const HitData_t* hd = ds->HitData(face);
             if (hd == nullptr)                                        continue;
             int loc = hd->fHit-ch0;
-            _data.outputChfColl->at(loc).merge(deltamask);
+            _data.outputChfColl->at(loc).merge(StrawHitFlag::bkg); // deltamask
+          }
+        }
+      }
+    }
+//-----------------------------------------------------------------------------
+// set proton flags, 'energy' now means 'proton'
+//-----------------------------------------------------------------------------
+    int nprotons = _data.nProtonCandidates();
+    for (int i=0; i<nprotons; i++) {
+      ProtonCandidate* pc = _data.protonCandidate(i);
+
+      for (int is=pc->fFirstStation; is<=pc->fLastStation; is++) {
+        for (int face=0; face<kNFaces; face++) {
+          int nh = pc->nHits(is,face);
+          for (int ih=0; ih<nh; ih++) {
+            const HitData_t* hd = pc->hitData(is,face,ih);
+            int loc = hd->fHit-ch0;
+            _data.outputChfColl->at(loc).merge(StrawHitFlag::energysel);
           }
         }
       }
 //-----------------------------------------------------------------------------
-// make a time cluster out of each active DeltaCandidate
+// (later) make a time cluster out of each ProtonCandidate
 //-----------------------------------------------------------------------------
-      TimeCluster new_tc;
-      initTimeCluster(dc,&new_tc);
-      tcColl->push_back(new_tc);
+      // TimeCluster new_tc;
+      // initTimeCluster(dc,&new_tc);
+      // tcColl->push_back(new_tc);
     }
 
     Event.put(std::move(tcColl));
@@ -326,7 +349,7 @@ namespace mu2e {
     Event.put(std::move(up_chfcol),"ComboHits");
   }
 
-}
+  }
 //-----------------------------------------------------------------------------
 // magic that makes this class a module.
 //-----------------------------------------------------------------------------

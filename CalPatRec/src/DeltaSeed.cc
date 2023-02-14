@@ -5,21 +5,16 @@
 
 namespace mu2e {
   using  DeltaFinderTypes::HitData_t;
+
+  float DeltaSeed::fSigT2 = 8*8;    // resolution in tCorr, squared, ns^2
 //-----------------------------------------------------------------------------
 // 'Hd1' could be nullptr - this is the case when a single hit is picked up
 // in a station based on a prediction made from another station
 // the hit could be overlapping with a hit associated with a found seed
 // such 'picked-up' seeds could be identified ... how ?
+// fIndex and fStation are assumed to be already set
 //-----------------------------------------------------------------------------
-  DeltaSeed::DeltaSeed(int Index, int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yc, float Zc) {
-    Init(Index,Station,Hd0,Hd1,Xc,Yc,Zc);
-  }
-
-
-//-----------------------------------------------------------------------------
-// initialization body
-//-----------------------------------------------------------------------------
-  void DeltaSeed::Init(int Index, int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yc, float Zc) {
+  void DeltaSeed::Init(HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yc, float Zc) {
     fSnx2             = 0;
     fSnxy             = 0;
     fSny2             = 0;
@@ -28,9 +23,8 @@ namespace mu2e {
 
     fSumEDep          = 0;
     fSumT             = 0;
+    fSumT2            = 0;
 
-    fIndex            = Index;
-    fStation          = Station;
     fGood             =  1;
 
     int face0         = Hd0->fZFace;
@@ -87,21 +81,15 @@ namespace mu2e {
       const HitData_t* hd = fHitData[face];
       const ComboHit*  ch = hd->fHit;
       if (hd) {
-        // double x0 = hd->fX;
-        // double y0 = hd->fY;
-        // double nx = hd->fWx;
-        // double ny = hd->fWy;
-
-        // double nr = x0*ny-y0*nx;
-
-        fSnx2    += hd->fNx2;  // nx*nx;
-        fSnxy    += hd->fNxy;  // nx*ny;
-        fSny2    += hd->fNy2;  // ny*ny;
-        fSnxr    += hd->fNxr;  // nx*hd->fNr;
-        fSnyr    += hd->fNyr;  // ny*hd->fNr;
+        fSnx2    += hd->fNx2;
+        fSnxy    += hd->fNxy;
+        fSny2    += hd->fNy2;
+        fSnxr    += hd->fNxr;
+        fSnyr    += hd->fNyr;
 
         fSumEDep += ch->energyDep()*ch->nStrawHits();
-        fSumT    += ch->correctedTime()*ch->nStrawHits();
+        fSumT    += hd->fCorrTime;
+        fSumT2   += hd->fCorrTime*hd->fCorrTime;
       }
     }
   }
@@ -125,21 +113,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // in parallel, update coordinate sums
 //-----------------------------------------------------------------------------
-      // double x0        = Hd->fX;
-      // double y0        = Hd->fY;
-      // double nx        = Hd->fWx;
-      // double ny        = Hd->fWy;
-
-      // double nr        = x0*ny-y0*nx;
-
-      fSnx2    += Hd->fNx2; // nx*nx;
-      fSnxy    += Hd->fNxy; // nx*ny;
-      fSny2    += Hd->fNy2; // ny*ny;
-      fSnxr    += Hd->fNxr; // nx*Hd->fNr;
-      fSnyr    += Hd->fNyr; // ny*Hd->fNr;
+      fSnx2    += Hd->fNx2;
+      fSnxy    += Hd->fNxy;
+      fSny2    += Hd->fNy2;
+      fSnxr    += Hd->fNxr;
+      fSnyr    += Hd->fNyr;
 
       fSumEDep += ch->energyDep()*ch->nStrawHits();
-      fSumT    += ch->correctedTime()*ch->nStrawHits();
+      fSumT    += Hd->fCorrTime;
+      fSumT2   += Hd->fCorrTime*Hd->fCorrTime;
     }
 //-----------------------------------------------------------------------------
 // replace first hit with another one founce in the same face..
@@ -157,6 +139,7 @@ namespace mu2e {
 
       fSumEDep            = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
       fSumT               = Hd->fCorrTime*Hd->fHit->nStrawHits();
+      fSumT2              = Hd->fCorrTime*Hd->fCorrTime;
     }
 //-----------------------------------------------------------------------------
 // calculate Com and chi2's

@@ -17,22 +17,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     Data_t::Data_t() {
       for (int is=0; is<kNStations; is++) {
-        fNSeeds         [is] = 0;
-        fNAllocatedSlots[is] = 0;
         fListOfSeeds    [is].reserve(100);
       }
     }
-
 //-----------------------------------------------------------------------------
-// only fListOfSeeds contains new'ed memory
+// only fListOfSeeds contains new'ed memory,
+// the ManagedList destructor should handle that
 //-----------------------------------------------------------------------------
     Data_t::~Data_t() {
-      for (int is=0; is<kNStations; is++) {
-        int nslots = fNAllocatedSlots[is];
-        for (int i=0; i<nslots; i++) {
-          delete fListOfSeeds[is][i];
-        }
-      }
     }
 
 //-----------------------------------------------------------------------------
@@ -81,13 +73,14 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+// do not deallocate memory used by fListOfSeeds, re-use it
+//-----------------------------------------------------------------------------
     void Data_t::InitEvent(const art::Event* Evt, int DebugLevel) {
       event      = Evt;
       debugLevel = DebugLevel;
 
       for (int is=0; is<kNStations; is++) {
-        fNSeeds[is] = 0;
-
+        fListOfSeeds       [is].clear();
         fListOfProtonSeeds [is].clear();
         fListOfComptonSeeds[is].clear();
 //-----------------------------------------------------------------------------
@@ -96,9 +89,12 @@ namespace mu2e {
         for (int face=0; face<kNFaces; face++) {
           FaceZ_t* fz = &fFaceData[is][face];
           fz->fHitData.clear() ;
+          fz->fProtonHitData.clear() ;
           for (int i=0; i<100; i++) {
-            fz->fFirst[i] = -1;
-            fz->fLast [i] = -1;
+            fz->fFirst [i] = -1;
+            fz->fLast  [i] = -1;
+            fz->fPFirst[i] = -1;
+            fz->fPLast [i] = -1;
           }
         }
       }
@@ -106,6 +102,18 @@ namespace mu2e {
 // in case of a vector, 'clear()' erases it
 //-----------------------------------------------------------------------------
       fListOfDeltaCandidates.clear();
+
+      int nprot = fListOfProtonCandidates.N();
+
+      for (int i=0; i<nprot; i++) {
+        ProtonCandidate* p = fListOfProtonCandidates.at(i);
+        for (int is=0;is<kNStations; is++) {
+          for (int face=0; face<kNFaces; face++) {
+            p->fHitData[is][face].clear();
+          }
+        }
+      }
+      fListOfProtonCandidates.clear();
     }
 
 //-----------------------------------------------------------------------------
@@ -204,7 +212,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int Data_t::nSeedsTot() {
       int n(0);
-      for (int i=0; i<kNStations; i++) n += fNSeeds[i];
+      for (int i=0; i<kNStations; i++) n += fListOfSeeds[i].N();
       return n;
     }
 

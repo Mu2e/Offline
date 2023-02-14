@@ -9,6 +9,7 @@
 using ROOT::Math::XYZVectorF;
 
 #include "Offline/CalPatRec/inc/DeltaFinder_enums.hh"
+#include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
 
 namespace mu2e {
 
@@ -24,6 +25,8 @@ namespace mu2e {
   class  SimParticle;
 
   class DeltaSeed {
+  public:
+    static       float fSigT2;      // resolution in Tcorr, per hit (8 ns^2)
   public:
     int          fIndex;            // seed index within the station
     int          fStation;          // delta seed station
@@ -51,7 +54,8 @@ namespace mu2e {
     XYZVectorF   CofM;                 // COG
     float        fZ;                   // Z-coordinate of the center of the corresponding station
 
-    double       fSumT;
+    float        fSumT;
+    float        fSumT2;
 
     float        fMinHitTime;          // min and max times of the included hits
     float        fMaxHitTime;
@@ -59,15 +63,14 @@ namespace mu2e {
                                        // chi2's
     float        fChi2Par;
     float        fChi2Perp;
-    // float        fChi2Delta;           // chi2 when the seed is added to Delta
-    // float        fChi2DeltaPar;        //
-    // float        fChi2DeltaPerp;       //
+//-----------------------------------------------------------------------------
+// constructors and destructor
+//-----------------------------------------------------------------------------
+    DeltaSeed (int Index) { fIndex = Index; }
 
-    DeltaSeed () {}
-    DeltaSeed (int Index, int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yc, float Zc);
     ~DeltaSeed() {}
 
-    void             Init(int Index, int Station, HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yx, float Zc);
+    void             Init(HitData_t* Hd0, HitData_t* Hd1, float Xc, float Yx, float Zc);
 
     int              Station ()         { return fStation; }
     int              Index   ()         { return fIndex; }
@@ -79,11 +82,6 @@ namespace mu2e {
     float            Chi2ParN ()        { return fChi2Par /fNHits; }
     float            Chi2PerpN()        { return fChi2Perp/fNHits; }
     float            Chi2TotN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
-    // float            Chi2All  ()        { return (fChi2Par+fChi2Perp); }
-    // float            Chi2AllN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
-    // float            Chi2Delta    ()    { return fChi2Delta       ; }
-    // float            Chi2DeltaPar ()    { return fChi2DeltaPar    ; }
-    // float            Chi2DeltaPerp()    { return fChi2DeltaPerp   ; }
 
     HitData_t*       HitData (int Face) { return fHitData[Face]; } // no boundary check !
     int              NHits   ()         { return fNHits; }
@@ -93,16 +91,14 @@ namespace mu2e {
     float            EDep    ()         { return fSumEDep/fNStrawHits ; }
     bool             Used    ()         { return (fDeltaIndex >= 0); }
     int              Good    ()         { return (fGood       >= 0); }
-    float            TMean   ()         { return fSumT/fNStrawHits;  }
+
+    float            TMean   ()         { return fSumT/fNHits;  }
+    float            Chi2Time ()        { return (fSumT2/fNHits-(fSumT/fNHits)*(fSumT/fNHits))/fSigT2; }
+
     float            Z       ()         { return fZ;  }
-    double           Xc      () const { return CofM.x(); }
-    double           Yc      () const { return CofM.y(); }
-    double           R       () const { return CofM.R(); }
-//-----------------------------------------------------------------------------
-// MC truth, better move to the analysis module
-//-----------------------------------------------------------------------------
-    // int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
-    // int              NHitsCE ()         { return fNHitsCE; }
+    double           Xc      () const   { return CofM.x(); }
+    double           Yc      () const   { return CofM.y(); }
+    double           Rho     () const   { return CofM.Rho(); }
 //-----------------------------------------------------------------------------
 // drift time can't be < 0
 // fMaxTime < particle T0 < fMinTime
@@ -116,7 +112,16 @@ namespace mu2e {
     float            T0Min     () { return (fMinHitTime+fMaxHitTime)/2-20; }
     float            T0Max     () { return (fMinHitTime+fMaxHitTime)/2+20; }
 
-    void             SetDeltaIndex(int Index) { fDeltaIndex = Index; }
+    float            Dt12      () {
+      return fHitData[fSFace[0]]->fHit->time()-fHitData[fSFace[1]]->fHit->time();
+    }
+
+    float            DtCorr12      () {
+      return fHitData[fSFace[0]]->fCorrTime-fHitData[fSFace[1]]->fCorrTime;
+    }
+
+    void             SetStation   (int Station) { fStation    = Station; }
+    void             SetDeltaIndex(int Index  ) { fDeltaIndex = Index  ; }
 //-----------------------------------------------------------------------------
 // less trivial functions .. HitData_t knows its ZFace
 //-----------------------------------------------------------------------------
