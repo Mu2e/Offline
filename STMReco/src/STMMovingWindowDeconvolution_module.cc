@@ -65,6 +65,8 @@ namespace mu2e {
     void calculate_baseline(const std::vector<double>& averaged_data, double& mean, double& stddev);
     void find_peaks(const std::vector<double>& averaged_data, std::vector<double>& peak_heights, std::vector<double>& peak_times, const double baseline_mean, const double baseline_stddev);
 
+    void make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times);
+
     int _verbosityLevel;
     art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
     STMChannel _channel;
@@ -140,38 +142,7 @@ namespace mu2e {
       }
 
       if (_verbosityLevel >= 5) {
-        art::ServiceHandle<art::TFileService> tfs;
-        std::stringstream histsuffix;
-        histsuffix.str("");
-        histsuffix << "_evt" << event.event() << "_wvf" << count;
-
-        const auto pedestal = stmEnergyCalib.pedestal(_channel);
-        const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-        Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
-        TH1D* h_waveform = tfs->make<TH1D>(("h_waveform"+histsuffix.str()).c_str(), "Waveform", binning.nbins(),binning.low(),binning.high());
-        TH1D* h_deconvolved = tfs->make<TH1D>(("h_deconvolved"+histsuffix.str()).c_str(), "Deconvolution", binning.nbins(),binning.low(),binning.high());
-        TH1D* h_differentiated = tfs->make<TH1D>(("h_differentiated"+histsuffix.str()).c_str(), "Differentiated", binning.nbins(),binning.low(),binning.high());
-        TH1D* h_averaged = tfs->make<TH1D>(("h_averaged"+histsuffix.str()).c_str(), "Averaged", binning.nbins(),binning.low(),binning.high());
-        TH1D* h_baseline_mean = tfs->make<TH1D>(("h_baseline_mean"+histsuffix.str()).c_str(), "Baseline Mean", binning.nbins(),binning.low(),binning.high());
-        TH1D* h_baseline_mean_plus_stddev = tfs->make<TH1D>(("h_baseline_mean_plus_stddev"+histsuffix.str()).c_str(), "Baseline Mean + StdDev", binning.nbins(),binning.low(),binning.high());
-        TH1D* h_baseline_mean_minus_stddev = tfs->make<TH1D>(("h_baseline_mean_minus_stddev"+histsuffix.str()).c_str(), "Baseline Mean - StdDev", binning.nbins(),binning.low(),binning.high());
-        TH1D* h_peak_threshold = tfs->make<TH1D>(("h_peak_threshold"+histsuffix.str()).c_str(), "Threshold", binning.nbins(),binning.low(),binning.high());
-
-        for (size_t i = 0; i < deconvolved_data.size(); ++i) {
-          h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
-          h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
-          h_differentiated->SetBinContent(i+1, differentiated_data[i]);
-          h_averaged->SetBinContent(i+1, averaged_data[i]);
-          h_baseline_mean->SetBinContent(i+1, baseline_mean);
-          h_baseline_mean_plus_stddev->SetBinContent(i+1, baseline_mean + baseline_stddev);
-          h_baseline_mean_minus_stddev->SetBinContent(i+1, baseline_mean - baseline_stddev);
-          h_peak_threshold->SetBinContent(i+1, baseline_mean - _nsigma_cut*baseline_stddev);
-        }
-        TH1D* h_peaks = tfs->make<TH1D>(("h_peaks"+histsuffix.str()).c_str(), "Peaks", binning.nbins(),binning.low(),binning.high());
-        for (size_t i_peak = 0; i_peak < peak_heights.size(); ++i_peak) {
-          std::cout << "t = " << peak_times[i_peak] << ", E = " << peak_heights[i_peak] << std::endl;
-          h_peaks->SetBinContent(peak_times[i_peak]+1, peak_heights[i_peak]);
-        }
+        make_debug_histogram(event, count, waveform, stmEnergyCalib, deconvolved_data, differentiated_data, averaged_data, baseline_mean, baseline_stddev, peak_heights, peak_times);
       }
 
       ++count;
@@ -284,6 +255,41 @@ namespace mu2e {
         lowest_height = 0;
       }
       //      std::cout << std::endl;
+    }
+  }
+
+  void STMMovingWindowDeconvolution::make_debug_histogram(const art::Event& event, int count, const STMWaveformDigi& waveform, const STMEnergyCalib& stmEnergyCalib, const std::vector<double>& deconvolved_data, const std::vector<double>& differentiated_data, const std::vector<double>& averaged_data, const double baseline_mean, const double baseline_stddev, const std::vector<double>& peak_heights, const std::vector<double>& peak_times) {
+    art::ServiceHandle<art::TFileService> tfs;
+    std::stringstream histsuffix;
+    histsuffix.str("");
+    histsuffix << "_evt" << event.event() << "_wvf" << count;
+
+    const auto pedestal = stmEnergyCalib.pedestal(_channel);
+    const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
+    Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
+    TH1D* h_waveform = tfs->make<TH1D>(("h_waveform"+histsuffix.str()).c_str(), "Waveform", binning.nbins(),binning.low(),binning.high());
+    TH1D* h_deconvolved = tfs->make<TH1D>(("h_deconvolved"+histsuffix.str()).c_str(), "Deconvolution", binning.nbins(),binning.low(),binning.high());
+    TH1D* h_differentiated = tfs->make<TH1D>(("h_differentiated"+histsuffix.str()).c_str(), "Differentiated", binning.nbins(),binning.low(),binning.high());
+    TH1D* h_averaged = tfs->make<TH1D>(("h_averaged"+histsuffix.str()).c_str(), "Averaged", binning.nbins(),binning.low(),binning.high());
+    TH1D* h_baseline_mean = tfs->make<TH1D>(("h_baseline_mean"+histsuffix.str()).c_str(), "Baseline Mean", binning.nbins(),binning.low(),binning.high());
+    TH1D* h_baseline_mean_plus_stddev = tfs->make<TH1D>(("h_baseline_mean_plus_stddev"+histsuffix.str()).c_str(), "Baseline Mean + StdDev", binning.nbins(),binning.low(),binning.high());
+    TH1D* h_baseline_mean_minus_stddev = tfs->make<TH1D>(("h_baseline_mean_minus_stddev"+histsuffix.str()).c_str(), "Baseline Mean - StdDev", binning.nbins(),binning.low(),binning.high());
+    TH1D* h_peak_threshold = tfs->make<TH1D>(("h_peak_threshold"+histsuffix.str()).c_str(), "Threshold", binning.nbins(),binning.low(),binning.high());
+
+    for (size_t i = 0; i < deconvolved_data.size(); ++i) {
+      h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
+      h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
+      h_differentiated->SetBinContent(i+1, differentiated_data[i]);
+      h_averaged->SetBinContent(i+1, averaged_data[i]);
+      h_baseline_mean->SetBinContent(i+1, baseline_mean);
+      h_baseline_mean_plus_stddev->SetBinContent(i+1, baseline_mean + baseline_stddev);
+      h_baseline_mean_minus_stddev->SetBinContent(i+1, baseline_mean - baseline_stddev);
+      h_peak_threshold->SetBinContent(i+1, baseline_mean - _nsigma_cut*baseline_stddev);
+    }
+    TH1D* h_peaks = tfs->make<TH1D>(("h_peaks"+histsuffix.str()).c_str(), "Peaks", binning.nbins(),binning.low(),binning.high());
+    for (size_t i_peak = 0; i_peak < peak_heights.size(); ++i_peak) {
+      //      std::cout << "t = " << peak_times[i_peak] << ", E = " << peak_heights[i_peak] << std::endl;
+      h_peaks->SetBinContent(peak_times[i_peak]+1, peak_heights[i_peak]);
     }
   }
 }
