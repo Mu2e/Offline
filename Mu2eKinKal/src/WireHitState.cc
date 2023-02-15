@@ -2,14 +2,11 @@
 #include "cetlib_except/exception.h"
 namespace mu2e {
   std::vector<std::string> WireHitState::StateNames_ = {"Unusable", "Inactive", "Left", "Right", "Null"};
-  std::vector<std::string> WireHitState::TimeConstraintNames_ = { "None", "TOTOnly", "DriftOnly", "Both"};
-  std::vector<std::string> WireHitState::NullDistVarNames_ = { "StrawRadius", "DriftRadius" };
   std::ostream& operator <<(std::ostream& ost, WireHitState const& whs) {
     ost << "WireHitState ";
     if(whs.frozen()) ost << " Frozen ";
     ost << WireHitState::StateNames_[whs.state_+3];
-    ost << " TimeConstraint "  << WireHitState::TimeConstraintNames_[whs.tcon_];
-    ost << " Null Dist Var " << WireHitState::NullDistVarNames_[whs.nulldvar_];
+    ost << " Flags "  << whs.flag_;
     return ost;
   }
 
@@ -24,23 +21,5 @@ namespace mu2e {
       default:
         return false;
     }
-  }
-
-  WireHitState::TimeConstraint WireHitState::timeConstraint(std::string const& tcon){
-    for (size_t index=0;index < TimeConstraintNames_.size(); ++index){
-      if(TimeConstraintNames_[index].compare(tcon) == 0){
-        return static_cast<TimeConstraint>(index);
-      }
-    }
-    throw cet::exception("RECO")<<"mu2e::WireHitState: unknown TimeConstraint " << tcon << std::endl;
-  }
-
-  WireHitState::NullDistVar WireHitState::nullDistVar(std::string const& ndvar){
-    for (size_t index=0;index < NullDistVarNames_.size(); ++index){
-      if(NullDistVarNames_[index].compare(ndvar) == 0){
-        return static_cast<NullDistVar>(index);
-      }
-    }
-    throw cet::exception("RECO")<<"mu2e::WireHitState: unknown NullDistVar" << ndvar << std::endl;
   }
 }

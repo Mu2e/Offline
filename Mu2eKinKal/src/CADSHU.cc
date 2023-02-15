@@ -10,19 +10,16 @@ namespace mu2e {
     maxdvar_ = maxdocaerr*maxdocaerr;
     minrdrift_ = std::get<2>(config);
     maxrdrift_ = std::get<3>(config);
-    std::string tcon = std::get<4>(config);
-    std::string nulldvar = std::get<5>(config);
-    tcon_ = WireHitState::timeConstraint(tcon);
-    nulldvar_ = WireHitState::nullDistVar(nulldvar);
-    std::string allowed = std::get<6>(config);
+    std::string flag = std::get<4>(config);
+    flag_ = KKSHFlag(flag);
+    std::string allowed = std::get<5>(config);
     allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<7>(config);
+    std::string freeze = std::get<6>(config);
     freeze_ = WHSMask(freeze);
-    diag_ = std::get<8>(config);
+    diag_ = std::get<7>(config);
     if(diag_ > 0)std::cout << "CADSHU max doca, doca error " << maxdoca_ << " " << maxdocaerr
       << " rdrift range [" << minrdrift_ << "," << maxrdrift_ << "] Allowing "
-        << allowed_ << " Freezing " << freeze_
-        << " NullDistVar " << nulldvar << " Time Constraint " << tcon
+        << allowed_ << " Freezing " << freeze_ << " Flags " << flag
         << std::endl;
   }
 
@@ -48,8 +45,7 @@ namespace mu2e {
       }
       if(updated){
         whstate.algo_ = StrawHitUpdaters::CAD;
-        whstate.tcon_ = tcon_;
-        whstate.nulldvar_ = nulldvar_;
+        whstate.flag_ = flag_;
         whstate.frozen_ = whstate.isIn(freeze_);
       }
     }

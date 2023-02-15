@@ -39,9 +39,9 @@ namespace mu2e {
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
-      using CADSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,std::string,std::string,int>>;
-      CADSHUSettings cashuConfig{ Name("CADSHUSettings"), Comment(CADSHU::configDescription()) };
-      using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,float,float,std::string,std::string,std::string,std::string,int>>;
+      using CADSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,std::string,int>>;
+      CADSHUSettings cadshuConfig{ Name("CADSHUSettings"), Comment(CADSHU::configDescription()) };
+      using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,float,float,std::string,std::string,int>>;
       DriftANNSHUSettings annshuConfig{ Name("DriftANNSHUSettings"), Comment(DriftANNSHU::configDescription()) };
       using BkgANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
       BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
