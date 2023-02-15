@@ -1,6 +1,4 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
-#include "Offline/TrackerConditions/inc/StrawResponse.hh"
-#include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include <cmath>
@@ -17,32 +15,28 @@ namespace mu2e {
     auto clustermvaWgtsFile = configFile(std::get<2>(config));
     clustermva_ = std::make_shared<TMVA_SOFIE_TrainCluster::Session>(clustermvaWgtsFile);
     clustermvacut_ = std::get<3>(config);
-    clusterdtmvacut_ = std::get<4>(config);
-    std::string nulldvar = std::get<5>(config);
-    nulldvar_ = WireHitState::nullDistVar(nulldvar);
-    std::string allowed = std::get<6>(config);
-    allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<7>(config);
+    dtmvacut_ = std::get<4>(config);
+    std::string freeze = std::get<5>(config);
     freeze_ = WHSMask(freeze);
-    std::string tcon = std::get<8>(config);
-    tcon_ = WireHitState::timeConstraint(tcon);
-    diag_ = std::get<9>(config);
+    std::string flag = std::get<6>(config);
+    flag_ = KKSHFlag(flag);
+    diag_ = std::get<7>(config);
     if(diag_ > 0)
       std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
-        << " cluster weights " << std::get<0>(config) << " cuts " << clustermvacut_ << " , " << clusterdtmvacut_
-        << " null dist var " << nulldvar
-        << " allowing " << allowed_ << " freezing " << freeze_ << " time constraint " << tcon << std::endl;
+        << " cluster weights " << std::get<0>(config) << " cut " << clustermvacut_ << " dt cut " << dtmvacut_
+        << " freezing " << freeze_ << " flags " << flag << std::endl;
   }
 
   std::string const& DriftANNSHU::configDescription() {
-    static std::string descrip( "LR ANN file, LR ANN cut, Drift ANN file, Drift ANN dresid cut, Drift ANN tresid cut, null hit doca, allowed states, freeze states, diag level");
+    static std::string descrip( "LR ANN file, LR ANN cut, Drift ANN file, Drift ANN dresid cut, ANN dt cut, freeze states, flags, diag level");
     return descrip;
   }
 
   WireHitState DriftANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::DriftANN)){
-      // invoke the ANN
+      bool setLR(false);
+      // infer the ANN values
       std::array<float,5> spars;
       std::array<float,4> cpars;
       // this order is given by the training
@@ -64,43 +58,36 @@ namespace mu2e {
       auto clustermvaout = clustermva_->infer(cpars.data());
       whstate.quality_[WireHitState::sign] = signmvaout[0];
       whstate.quality_[WireHitState::drift] = clustermvaout[0];
-      if(diag_ > 1) whstate.algo_  = StrawHitUpdaters::DriftANN;
-      // Compute the cost to benefit ratio of correct vs incorrect LR assignment, and only sign if the propbability of a wrong
-      // assignment (estimated by the MVA) is less than that (times a scale factor)
-      double vr = dinfo.nullHitVar();
-      double vh = dinfo.unsignedDriftVar();
-      double vx = tpdata.docavar_; // existing measurement variance (from other hits)
-      double vn = vx*vr/(vx+vr); // expected variance after assigning a null LR
-      double vc = vx*vh/(vx+vh); // expected variance after assigning correct LR
-      double vi = vc*(1.0 + 4.0*dinfo.rDrift_*dinfo.rDrift_/(vx+vh) ); // expected variance after assigning incorrect LR
-      double signcost = (vi - vn)/std::max(vn - vc,1.0e-5); // net change in variance.
-//      double signcost = dinfo.nullHitVar()/tpdata.docavar_;
-      // the following should be a calibration function TODO
-      double signprob = 25*tan(1.5*signmvaout[0]); // this is a fit to p/(1-p)
-//      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
-      if(signprob > signcost*signmvacut_ && clustermvaout[0] > clustermvacut_){
-        if(allowed_.hasAnyProperty(WHSMask::drift)){
-          whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-          whstate.algo_ = StrawHitUpdaters::DriftANN;
-          whstate.tcon_ = tcon_;
-          // don't use drift dt if the clusterMVA is below the cut
-          if(clustermvaout[0] < clusterdtmvacut_){
-            if(tcon_ == WireHitState::driftonly)
-              whstate.tcon_ = WireHitState::none;
-            else if(tcon_ == WireHitState::both)
-              whstate.tcon_ = WireHitState::TOTonly;
-          }
-          whstate.nulldvar_ = nulldvar_;
-        }
+      whstate.algo_  = StrawHitUpdaters::DriftANN;
+      whstate.flag_ = flag_;
+      setLR = clustermvaout[0] > clustermvacut_;
+      bool annprob = flag_.hasAllProperties(KKSHFlag::annprob);
+      if(!annprob){ // inteprept cut directly against the MVA output
+        setLR &= signmvaout[0] > signmvacut_;
       } else {
-        if(allowed_.hasAnyProperty(WHSMask::null)){
-          whstate.state_ = WireHitState::null;
-          whstate.algo_ = StrawHitUpdaters::DriftANN;
-          whstate.tcon_ = tcon_;
-          whstate.nulldvar_ = nulldvar_;
-        }
+        // interpret cut as scale for net benefit of LR assignment relative to null
+        // Compute the expected variances for different scenarios
+        double vr = dinfo.nullHitVar(); // variance assigned to a wire position constraint (null LR)
+        double vs = dinfo.driftHitVar(); // variance used in weighting LR assigned hits
+        double vx = tpdata.docavar_; // unsigned radius variance from other hits (existing fit)
+        double vn = vx*vr/(vx+vr); // expected variance after assigning a null LR
+        double vc = vx*vs/(vx+vs); // expected variance after assigning correct LR
+        double ri = 2.0*dinfo.rDrift_*vx/(vs+vx); // weighted average unsigned radius from incorrect LR
+        double vi = ri*ri + vc; // expected variance after assigning incorrect LR
+        double relprob = 25*tan(1.5*signmvaout[0]); // this comes from a fit to p/(1-p): move this function to TrackerConditions TODO
+        double lrprob = relprob/(1.0+relprob);// Probability LR assignment will be correct
+        double vnet = lrprob*vc + (1.0-lrprob)*vi; // expected net radius variance if LR is assigned
+        // use LR information if the (scaled) net variance assigning LR is smaller than the net variance adding a null hit
+        setLR &= vnet*signmvacut_ < vn;
       }
-      if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);
+      if(setLR){
+        whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
+        // only use dt constraint if the MVA are below the tighter cut.  This should be split for cluster, sign TODO
+        if(clustermvaout[0] < dtmvacut_ || signmvaout[0] < dtmvacut_ ) whstate.flag_.clear(KKSHFlag::driftdt);
+      } else {
+        whstate.state_ = WireHitState::null;
+      }
+      whstate.frozen_ = whstate.isIn(freeze_);
     }
     return whstate;
   }

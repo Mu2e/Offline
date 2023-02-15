@@ -30,7 +30,7 @@ namespace mu2e {
         DriftInfo const& dinfo,
         WireHitState const& whs) :
       _index(index), _sid(chit.strawId()),_end(chit.driftEnd()),
-      _flag(chit.flag()),
+      _flag(chit.flag()),_kkshflag(whs.flag_),
       _ambig(whs.state_), _algo(whs.algo_), _frozen(whs.frozen_),
       _bkgqual(whs.quality(WireHitState::bkg)),
       _signqual(whs.quality(WireHitState::sign)),
@@ -115,6 +115,7 @@ namespace mu2e {
     StrawId         _sid;   // which straw has the hit
     StrawEnd        _end;         // straw end used for hit time measurement
     StrawHitFlag    _flag;    // flag describing the status of this hit (active, ....)
+    KKSHFlag        _kkshflag; // flag from KinKal fit
     Int_t           _ambig =0;   // hit state, including LR ambiguity
     Int_t           _algo =0;     // hit updater algorithm
     Bool_t          _frozen =0; // hit state was frozen
