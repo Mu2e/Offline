@@ -30,7 +30,7 @@ namespace mu2e {
       std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
         << " cluster weights " << std::get<0>(config) << " cut " << clustermvacut_
         << " null dist var " << nulldvar
-        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << std::endl;
+        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << " diag " << diag_ << std::endl;
   }
 
   std::string const& DriftANNSHU::configDescription() {
@@ -63,7 +63,15 @@ namespace mu2e {
       auto clustermvaout = clustermva_->infer(cpars.data());
       whstate.quality_[WireHitState::sign] = signmvaout[0];
       whstate.quality_[WireHitState::drift] = clustermvaout[0];
-      if(diag_ > 1) whstate.algo_  = StrawHitUpdaters::DriftANN;
+      if(diag_ > 1)std::cout << std::setw(8) << std::setprecision(5)
+        << "ANN inputs: doca, cdrift, sigdoca, TOTdrift, EDep "
+          << spars[0] << " , "
+          << spars[1] << " , "
+          << spars[2] << " , "
+          << spars[3] << " , "
+          << spars[4] << " , "
+          << " sign output " << signmvaout[0]
+          << " drift output " << clustermvaout[0] << std::endl;
       if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
           whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
