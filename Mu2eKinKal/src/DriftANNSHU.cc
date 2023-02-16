@@ -24,7 +24,7 @@ namespace mu2e {
     if(diag_ > 0)
       std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
         << " cluster weights " << std::get<0>(config) << " cut " << clustermvacut_ << " dt cut " << dtmvacut_
-        << " freezing " << freeze_ << " flags " << flag <<< " diag " << diag_ << std::endl;
+        << " freezing " << freeze_ << " flags " << flag << " diag " << diag_ << std::endl;
   }
 
   std::string const& DriftANNSHU::configDescription() {
@@ -35,7 +35,6 @@ namespace mu2e {
   WireHitState DriftANNSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::DriftANN)){
-      bool setLR(false);
       // infer the ANN values
       std::array<float,5> spars;
       std::array<float,4> cpars;
@@ -69,11 +68,10 @@ namespace mu2e {
       whstate.quality_[WireHitState::drift] = clustermvaout[0];
       whstate.algo_  = StrawHitUpdaters::DriftANN;
       whstate.flag_ = flag_;
-      setLR = clustermvaout[0] > clustermvacut_;
+      bool setLR = clustermvaout[0] > clustermvacut_;
       bool annprob = flag_.hasAllProperties(KKSHFlag::annprob);
       if(!annprob){ // inteprept cut directly against the MVA output
         setLR &= signmvaout[0] > signmvacut_;
-      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
       } else {
         // interpret cut as scale for net benefit of LR assignment relative to null
         // Compute the expected variances for different scenarios
