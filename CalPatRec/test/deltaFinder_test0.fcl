@@ -1,0 +1,67 @@
+# -*- mode:tcl -*-
+# variables which need defaults:
+# -----------------------------
+# :DEFAULT: TRIGGER_PATH=p6
+#------------------------------------------------------------------------------
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+BEGIN_PROLOG
+  INPUT_MODULE  @protect_ignore: RootInput        # choices: EmptyEvent / RootInput
+  TRIGGER_PATHS @protect_ignore: [ p1       ]     # defined below
+END_PROLOG
+
+#include "Stntuple/fcl/stntuple.fcl"
+
+process_name : TestDeltaFinder
+
+physics : {
+
+    producers : { @table::Reconstruction.producers
+        DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
+            useTimePeaks                  :  0
+        }
+
+        DeltaFinderAna: { @table::CalPatRec.producers.DeltaFinderAna
+            debugLevel                    : 0 ## 1
+            chCollTag                     : "makePH"
+            shCollTag                     : "makeSH"
+            chfCollTag                    : "DeltaFinder:ComboHits"
+            shfCollTag                    : "DeltaFinder:StrawHits"
+            strawDigiMCCollectionTag      : "compressDigiMCs"
+        }
+    }
+
+    filters   : { @table::Reconstruction.filters   }
+    analyzers : { @table::stntuple.analyzers       }
+
+    p1: [ @sequence::TrkHitReco.PrepareHits, DeltaFinder, DeltaFinderAna ]  ## CalTimePeakFinder,
+    p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder ]
+    p3: [                                    CalTimePeakFinder, DeltaFinder ]
+    p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
+    p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloClusterMC.TruthMatch,
+          CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+
+    trigger_paths : [ p1            ]
+
+    e1            : [               ] ## MuHitDisplay  ] # defaultOutput ]
+    end_paths     : [ e1            ]
+}
+
+physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
+# physics.producers.makePH.MaxDS                     : 4
+physics.producers.makePH.CheckWres                 : true
+# physics.producers.makePH.MinimumRadius             : 370.
+# physics.producers.makePH.MaximumRadius             : 680.
+
+physics.producers.DeltaFinderAna.printElectronHits : 1
+#------------------------------------------------------------------------------
+# uncomment to write the DST out
+#------------------------------------------------------------------------------
+# physics.out : [detectorOutput]
+# outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
+services.TFileService.fileName            : "deltaFinder_test0.root"
+#------------------------------------------------------------------------------
+# everything below is appended by murat/scripts/submit_mu2e_job
+#------------------------------------------------------------------------------

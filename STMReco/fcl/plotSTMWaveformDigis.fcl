@@ -58,7 +58,5 @@ physics: {
   end_paths: [anaPath]
 }
 
-# Can define pedestals in fcl like the commented line below
-# services.ProditionsService.stmEnergyCalib.pedestals : [ ["HPGe",100.0], ["LaBr",2000.0] ]
-
+services.ProditionsService.stmEnergyCalib.pedestals : @local::STMTestBeam.Conditions.pedestals
 services.ProditionsService.stmEnergyCalib.samplingFrequencies : @local::STMTestBeam.Conditions.samplingFrequencies
