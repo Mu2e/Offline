@@ -167,11 +167,11 @@ Mu2eKinKal : {
 
     DriftANNSHUSettings : [
       # sign ANN weights, cut, cluster ANN weights, cut, dt cut, freeze, flag, diag
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.5, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.5, 1.1, "", "TOT:NullDriftVar", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.4, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.4, 1.1, "", "TOT:NullDriftVar", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, 1.1, "", "TOT:NullDriftVar", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "", "TOT:NullDriftVar", 2],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "", "TOT:NullDriftVar", 2]
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.5, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.5, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.4, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.4, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "", "TOT:NullDriftVar", 1]
     ]
     Chi2SHUSettings : [
     ]
