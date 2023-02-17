@@ -145,7 +145,7 @@ void art::CaloHitsFromFragments::addPulse(
       float eMean  = (eDep+pulse.energyDep())/2.0;
       float sigmaR = 0.707*sqrt(1.0/eMean/nPEperMeV_ + noise2_/eMean/eMean);
 
-      if (abs(ratio) > nSigmaNoise_*sigmaR) {
+      if (abs(ratio) <= nSigmaNoise_*sigmaR) {
         // combine the pulses
         pulse.setTime((pulse.time() + time) / 2.); // probably not necessary
         pulse.setEDep((pulse.energyDep() + eDep) / 2.);

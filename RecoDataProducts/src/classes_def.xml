@@ -379,5 +379,8 @@
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMWaveformDigiCollection>"/>
+ <class name="mu2e::STMMWDDigi"/>
+ <class name="mu2e::STMMWDDigiCollection"/>
+ <class name="art::Wrapper<mu2e::STMMWDDigiCollection>"/>
 
 </lcgdict>

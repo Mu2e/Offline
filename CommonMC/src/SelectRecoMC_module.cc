@@ -253,8 +253,8 @@ namespace mu2e {
       auto const& spc = spcc[isp];
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
         auto const& sdmc = sdmcc[isdmc];
-        auto const& mcstep = *(sdmc.earlyStrawGasStep());
-        if(mcstep.simParticle() == spc._spp){
+        auto const& sgs = *(sdmc.earlyStrawGasStep());
+        if(sgs.simParticle() == spc._spp){
           // search to see if the associated digi is already on the track
           bool used(false);
           for(auto const& tshmc : mcseed._tshmcs ) {
@@ -278,24 +278,24 @@ namespace mu2e {
     tshmc._sdmcindex = isdmc;
     tshmc._spindex = isp;
     tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
-    const auto& mcstep = *(sdmc.earlyStrawGasStep());
+    const auto& sgs = *(sdmc.earlyStrawGasStep());
     tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
-    tshmc._mom = mcstep.momentum();
-    tshmc._time = fmod(mcstep.time(),_mbtime);
+    tshmc._mom = sgs.momentum();
+    tshmc._time = fmod(sgs.time(),_mbtime);
     tshmc._strawId = sdmc.strawId();
     tshmc._earlyend = sdmc.earlyEnd();
     // compute the signal propagation time and drift time
     double vprop = 2.0*srep->halfPropV(sdmc.strawId(),1000.0*tshmc._energySum);
     auto const& straw = tracker.straw(sdmc.strawId());
-    double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).mag();
-    tshmc._tprop = pdist/vprop;
-    tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
     auto wdir = XYZVectorF(straw.wireDirection());
-    auto tdir = mcstep.momentum().Unit();
+    auto tdir = sgs.momentum().Unit();
+    double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
+    tshmc._tprop = fabs(pdist)/vprop;
+    tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
     auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
     const static XYZVectorF bdir(0.0,0.0,1.0);
     double phi = acos(tperp.Dot(bdir)); // Lorentz angle
-    tshmc._rdrift = srep->driftTimeToDistance(sdmc.strawId(),tshmc._tdrift,phi);
+    tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,phi);
   }
 
   void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SHIS& shindices) {

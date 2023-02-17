@@ -2,26 +2,35 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include <cmath>
+#include <array>
 
 namespace mu2e {
   using KinKal::ClosestApproachData;
   using KinKal::VEC3;
   DriftANNSHU::DriftANNSHU(Config const& config) {
-    mva_  = new MVATools(std::get<0>(config));
-    mva_->initMVA();
-    mvacut_ = std::get<1>(config);
-    nulldoca_ = std::get<2>(config);
-    std::string allowed = std::get<3>(config);
+    ConfigFileLookupPolicy configFile;
+    auto signmvaWgtsFile = configFile(std::get<0>(config));
+    signmva_ = std::make_shared<TMVA_SOFIE_TrainSign::Session>(signmvaWgtsFile);
+    signmvacut_ = std::get<1>(config);
+    auto clustermvaWgtsFile = configFile(std::get<2>(config));
+    clustermva_ = std::make_shared<TMVA_SOFIE_TrainCluster::Session>(clustermvaWgtsFile);
+    clustermvacut_ = std::get<3>(config);
+    std::string nulldvar = std::get<4>(config);
+    nulldvar_ = WireHitState::nullDistVar(nulldvar);
+    std::string allowed = std::get<5>(config);
     allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<4>(config);
+    std::string freeze = std::get<6>(config);
     freeze_ = WHSMask(freeze);
-    totuse_ = (WireHitState::TOTUse)std::get<5>(config);
-    diag_ = std::get<6>(config);
+    std::string totuse = std::get<7>(config);
+    totuse_ = WireHitState::totUse(totuse);
+    diag_ = std::get<8>(config);
     if(diag_ > 0)
-      std::cout << "DriftANNSHU weights" << std::get<0>(config) << " cut " << mvacut_ << " null doca " << nulldoca_
-        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse_ << std::endl;
-    if(diag_ > 1)mva_->showMVA();
+      std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
+        << " cluster weights " << std::get<0>(config) << " cut " << clustermvacut_
+        << " null dist var " << nulldvar
+        << " allowing " << allowed_ << " freezing " << freeze_ << " TOT use " << totuse << " diag " << diag_ << std::endl;
   }
 
   std::string const& DriftANNSHU::configDescription() {
@@ -33,37 +42,49 @@ namespace mu2e {
     WireHitState whstate = input;
     if(input.updateable(StrawHitUpdaters::DriftANN)){
       // invoke the ANN
-      std::vector<Float_t> pars(7,0.0);
+      std::array<float,5> spars;
+      std::array<float,4> cpars;
       // this order is given by the training
-      double derr = sqrt(std::max(tpdata.docaVar(),0.0) + dinfo.driftDistanceError_*dinfo.driftDistanceError_);
-      double dvar = derr*derr;
-      double totvar = dvar + tpdata.docaVar();
-      double udoca = fabs(tpdata.doca());
-      pars[0] = udoca;
-      pars[1] = dinfo.driftDistance_;
-      pars[2] = (dinfo.driftDistance_ - udoca)/sqrt(totvar);
-      pars[3] = chit.driftTime();
-      pars[4] = 1000.0*chit.energyDep();
-      pars[5] = derr;
-      pars[6] =4.0*dinfo.driftDistance_*udoca/totvar;
-      float mvaout = mva_->evalMVA(pars);
-      whstate.quality_ = mvaout;
-      if(mvaout > mvacut_){
+      spars[0] = fabs(tpdata.doca());
+      spars[1] = dinfo.cDrift_;
+      spars[2] = sqrt(std::max(0.0,tpdata.docaVar()));
+      spars[3] = chit.driftTime();
+      // normalize edep.
+      // For sign, noralize only to the crossing angle, as there it serves as an estimate of the drift radius
+      double sint = sqrt(1.0-tpdata.dirDot()*tpdata.dirDot());
+      spars[4] = chit.energyDep()*sint;
+      auto signmvaout = signmva_->infer(spars.data());
+      cpars[0] = fabs(tpdata.doca());
+      cpars[1] = dinfo.cDrift_;
+      cpars[2] = chit.driftTime();
+      // For drift quality, normalize to the estimated path length through the straw, as that measures the clustering effects
+      double plen = sqrt(std::max(0.25, 6.25-dinfo.rDrift_*dinfo.rDrift_))/sint;
+      cpars[3] = chit.energyDep()/plen;
+      auto clustermvaout = clustermva_->infer(cpars.data());
+      whstate.quality_[WireHitState::sign] = signmvaout[0];
+      whstate.quality_[WireHitState::drift] = clustermvaout[0];
+      if(diag_ > 1)std::cout << std::setw(8) << std::setprecision(5)
+        << "ANN inputs: doca, cdrift, sigdoca, TOTdrift, EDep "
+          << spars[0] << " , "
+          << spars[1] << " , "
+          << spars[2] << " , "
+          << spars[3] << " , "
+          << spars[4] << " , "
+          << " sign output " << signmvaout[0]
+          << " drift output " << clustermvaout[0] << std::endl;
+      if(signmvaout[0] > signmvacut_ && clustermvaout[0] > clustermvacut_){
         if(allowed_.hasAnyProperty(WHSMask::drift)){
           whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
+          whstate.nulldvar_ = nulldvar_;
         }
       } else {
         if(allowed_.hasAnyProperty(WHSMask::null)){
           whstate.state_ = WireHitState::null;
           whstate.algo_ = StrawHitUpdaters::DriftANN;
           whstate.totuse_ = totuse_;
-          if(nulldoca_ > 0.0)
-            whstate.nulldvar_ = nulldoca_*nulldoca_/3.0; // assumes a flat distribution over [-nulldoca_,nulldoca_]
-          else
-            // interpret negative nulldoca as the minimum drift distance
-            whstate.nulldvar_ = std::max(nulldoca_*nulldoca_,dinfo.driftDistance_*dinfo.driftDistance_)/3.0;
+          whstate.nulldvar_ = nulldvar_;
         }
       }
       if(whstate.algo_ == StrawHitUpdaters::DriftANN)whstate.frozen_ = whstate.isIn(freeze_);

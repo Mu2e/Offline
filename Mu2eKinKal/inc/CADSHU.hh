@@ -6,7 +6,7 @@
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/WHSMask.hh"
-#include "Offline/Mu2eKinKal/inc/DriftInfo.hh"
+#include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include <tuple>
 #include <string>
@@ -16,7 +16,7 @@ namespace mu2e {
   // Update based just on PTCA to the wire
   class CADSHU {
     public:
-      using Config = std::tuple<float,float,float,float,std::string,std::string,int>;
+      using Config = std::tuple<float,float,float,float,std::string,std::string,std::string,std::string,int>;
       CADSHU(Config const& config);
       static std::string const& configDescription(); // description of the variables
       // set the state based on the current PTCA value
@@ -28,7 +28,8 @@ namespace mu2e {
       double maxrdrift_ =0; // maximum rdrift to use hit
       WHSMask allowed_; // allowed states
       WHSMask freeze_; // states to freeze
-      double nulldvar_;
+      WireHitState::NullDistVar nulldvar_; // null hit distance variance setting
+      WireHitState::TOTUse totuse_; // TOT time constraint use
       int diag_ =0; // diag print level
   };
 }

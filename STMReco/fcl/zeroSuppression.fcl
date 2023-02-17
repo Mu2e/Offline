@@ -1,0 +1,61 @@
+#
+# Apply zero-suppression to unsuppressed STMWaveformDigis
+#
+
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
+
+process_name: STMZeroSuppression
+
+source : {
+  module_type : RootInput
+}
+
+services : {
+  @table::Services.Core
+}
+
+physics: {
+  producers : {
+    zeroSuppressHPGe : {
+      module_type : STMZeroSuppression
+      stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
+      tbefore : @local::STM.HPGe.tbefore
+      tafter : @local::STM.HPGe.tafter
+      threshold : @local::STM.HPGe.threshold
+      window : @local::STM.HPGe.window
+      naverage : @local::STM.HPGe.naverage
+      verbosityLevel : 1
+    }
+
+    zeroSuppressLaBr : {
+      module_type : STMZeroSuppression
+      stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
+      tbefore : @local::STM.LaBr.tbefore
+      tafter : @local::STM.LaBr.tafter
+      threshold : @local::STM.LaBr.threshold
+      window : @local::STM.LaBr.window
+      naverage : @local::STM.LaBr.naverage
+      verbosityLevel : 1
+    }
+  }
+  filters : {  }
+  analyzers : {  }
+
+  # setup paths
+  HPGePath : [ zeroSuppressHPGe ]
+  LaBrPath : [ zeroSuppressLaBr ]
+  trigger_paths: [ HPGePath, LaBrPath ]
+  outPath : [ STMOutput ]
+  end_paths: [outPath]
+}
+
+outputs: {
+
+  STMOutput : {
+    module_type: RootOutput
+    outputCommands:   [ "keep *_*_*_*" ]
+    SelectEvents: [ ]
+    fileName : "dig.owner.ZPWaveformDigis.version.sequencer.art"
+  }
+}

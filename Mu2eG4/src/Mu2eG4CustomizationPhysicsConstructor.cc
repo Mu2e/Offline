@@ -79,6 +79,46 @@ namespace mu2e {
       params->SetMuHadLateralDisplacement(true);
     }
 
+    { bool disableEnergyLossFluctuations = false; // they are enabled by deafult
+      if (phys_->disableEnergyLossFluctuations(disableEnergyLossFluctuations)) {
+        if (disableEnergyLossFluctuations) {
+          if (debug_->diagLevel()>0) {
+            G4cout << __func__
+                   << " Turning off energy loss fluctuations "
+                   << G4endl;
+          }
+          G4EmParameters* params = G4EmParameters::Instance();
+          params->SetLossFluctuations(!disableEnergyLossFluctuations);
+        }
+      }
+    }
+
+#if G4VERSION>4110
+    { unsigned int energyLossFluctuationModel = 2; // 2 is geant4 11.1 default
+      if (phys_->setEnergyLossFluctuationModel(energyLossFluctuationModel)) {
+        if (debug_->diagLevel()>0) {
+          G4cout << __func__
+                 << " Setting energy loss fluctuations model to: "
+                 << energyLossFluctuationModel
+                 << G4endl;
+        }
+        G4EmParameters* params = G4EmParameters::Instance();
+        // a potential maintance point, 3 options as of Geant4 11.1
+        G4EmFluctuationType fluctType = fDummyFluctuation; // actually a model
+        if (energyLossFluctuationModel == 0) { fluctType = fDummyFluctuation; }
+        else if (energyLossFluctuationModel == 1) { fluctType = fUniversalFluctuation; }
+        else if (energyLossFluctuationModel == 2) { fluctType = fUrbanFluctuation; }
+        else {
+          throw cet::exception("BADINPUT")
+            << "Mu2eG4CustomizationPhysicsConstructor::ConstructProcess() Error: unknown energyLossFluctuationModel: "
+            << energyLossFluctuationModel
+            << "\n";
+        }
+        params->SetFluctuationType(fluctType);
+      }
+    }
+#endif
+
   }
 
 }

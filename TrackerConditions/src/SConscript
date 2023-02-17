@@ -37,6 +37,7 @@ mainlib = helper.make_mainlib ( [
   'fhiclcpp',
   'fhiclcpp_types',
   'tbb',
+  'gsl',
   'cetlib',
   'cetlib_except',
   'CLHEP',

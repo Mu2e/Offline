@@ -85,13 +85,13 @@ CstTrigger : {
         cstTCFilter       : {
             module_type : TimeClusterFilter
             timeClusterCollection  : "CstSimpleTimeCluster"
-            minNHits               : 8
+            minNStrawHits          : 8
         }
 
         cstTimeClusterTCFilter : {
             module_type : TimeClusterFilter
             timeClusterCollection  : "CstSimpleTimeCluster"
-            minNHits               : 8
+            minNStrawHits          : 8
         }
 
         #From Filter, only by hits currently:

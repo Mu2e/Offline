@@ -60,6 +60,7 @@
 #include "Geant4/G4MaterialCutsCouple.hh"
 #include "Geant4/G4ParticleChange.hh"
 #include "Geant4/G4DynamicParticle.hh"
+#include "Geant4/G4Exp.hh"
 #include "Geant4/G4Log.hh"
 #include "Geant4/Randomize.hh"
 

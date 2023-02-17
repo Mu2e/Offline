@@ -10,39 +10,48 @@ namespace mu2e {
     maxdvar_ = maxdocaerr*maxdocaerr;
     minrdrift_ = std::get<2>(config);
     maxrdrift_ = std::get<3>(config);
-    std::string allowed = std::get<4>(config);
+    std::string totuse = std::get<4>(config);
+    std::string nulldvar = std::get<5>(config);
+    totuse_ = WireHitState::totUse(totuse);
+    nulldvar_ = WireHitState::nullDistVar(nulldvar);
+    std::string allowed = std::get<6>(config);
     allowed_ = WHSMask(allowed);
-    std::string freeze = std::get<5>(config);
+    std::string freeze = std::get<7>(config);
     freeze_ = WHSMask(freeze);
-    // set the null hit variance
-    double rd = std::min(minrdrift_,2.4); // limit to the effective straw radius. this value should be configurable TODO
-    nulldvar_ = rd*rd/3.0;
-    diag_ = std::get<6>(config);
+    diag_ = std::get<8>(config);
     if(diag_ > 0)std::cout << "CADSHU max doca, doca error " << maxdoca_ << " " << maxdocaerr
-      << " rdrift range [" << minrdrift_ << "," << maxrdrift_ << "] Allowing " << allowed_ << " Freezing " << freeze_ << std::endl;
+      << " rdrift range [" << minrdrift_ << "," << maxrdrift_ << "] Allowing "
+        << allowed_ << " Freezing " << freeze_
+        << " NullDistVar " << nulldvar << " TOTUse " << totuse
+        << std::endl;
   }
 
   WireHitState CADSHU::wireHitState(WireHitState const& input, ClosestApproachData const& tpdata,DriftInfo const& dinfo) const {
     WireHitState whstate = input;
+    bool updated(false);
     if(input.updateable(StrawHitUpdaters::CAD)){
       double absdoca = fabs(tpdata.doca());
-      if(dinfo.driftDistance_ < maxrdrift_ && absdoca < maxdoca_ && tpdata.docaVar() > 0.0 && tpdata.docaVar() < maxdvar_ ){
-        if(dinfo.driftDistance_ > minrdrift_){
+      if(dinfo.rDrift_ < maxrdrift_ && absdoca < maxdoca_ && tpdata.docaVar() > 0.0 && tpdata.docaVar() < maxdvar_ ){
+        if(dinfo.rDrift_ > minrdrift_){
           // in the sweet spot: use the DOCA to sign the ambiguity
           if(allowed_.hasAnyProperty(WHSMask::drift)) {
             whstate.state_ = tpdata.doca() > 0.0 ? WireHitState::right : WireHitState::left;
-            whstate.algo_ = StrawHitUpdaters::CAD;
+            updated = true;
           }
         } else if(allowed_.hasAnyProperty(WHSMask::null)) {
           whstate.state_ = WireHitState::null;
-          whstate.algo_ = StrawHitUpdaters::CAD;
-          whstate.nulldvar_ = nulldvar_;
+          updated = true;
         }
       } else if(allowed_.hasAnyProperty(WHSMask::inactive)) {
         whstate.state_ = WireHitState::inactive;
-        whstate.algo_ = StrawHitUpdaters::CAD;
+        updated = true;
       }
-      if(whstate.algo_ == StrawHitUpdaters::CAD)whstate.frozen_ = whstate.isIn(freeze_);
+      if(updated){
+        whstate.algo_ = StrawHitUpdaters::CAD;
+        whstate.totuse_ = totuse_;
+        whstate.nulldvar_ = nulldvar_;
+        whstate.frozen_ = whstate.isIn(freeze_);
+      }
     }
     return whstate;
   }

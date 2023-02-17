@@ -28,7 +28,7 @@ namespace mu2e
         using Comment = fhicl::Comment;
         fhicl::Atom<art::InputTag>      timeClusterCollection{    Name("timeClusterCollection"),      Comment("TimeClusterCollection label") };
         fhicl::Atom<bool>               requireCaloCluster   {    Name("requireCaloCluster"),         Comment("Require caloCluster") };
-        fhicl::Atom<unsigned>           minNHits             {    Name("minNHits"),                   Comment("minNHits")};
+        fhicl::Atom<unsigned>           minNStrawHits        {    Name("minNStrawHits"),                   Comment("minNStrawHits")};
         fhicl::Atom<int>                debugLevel           {    Name("debugLevel"),                 Comment("Debug"),0 };
       };
 
@@ -52,7 +52,7 @@ namespace mu2e
     : art::EDFilter{conf},
     _tcTag   (conf().timeClusterCollection()),
     _hascc   (conf().requireCaloCluster()),
-    _minnhits(conf().minNHits()),
+    _minnhits(conf().minNStrawHits()),
     _debug   (conf().debugLevel()),
     _nevt    (0),
     _npass   (0)
@@ -72,10 +72,10 @@ namespace mu2e
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
       if(_debug > 2){
-        std::cout << moduleDescription().moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << std::endl;
+        std::cout << moduleDescription().moduleLabel() << " nStrawHits = " << tc.nStrawHits() << " t0 = " << tc.t0().t0() << std::endl;
       }
       if( (!_hascc || tc.caloCluster().isNonnull()) &&
-          tc.hits().size() >= _minnhits) {
+          tc.nStrawHits() >= _minnhits) {
         retval = true;
         ++_npass;
         // Fill the trigger info object
