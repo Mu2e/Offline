@@ -84,9 +84,10 @@ namespace mu2e{
     bool addTimeClusters = false;
     bool addCryHits = false;
     bool addMCTraj = false;
+    bool addKKTracks = false;
     DrawOptions(){};
-    DrawOptions(bool crv, bool cosmictracks, bool tracks, bool clusters, bool combohits, bool trkhits, bool timeclusters, bool cryhits, bool mctraj)
-    : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addTrkHits(trkhits), addTimeClusters(timeclusters), addCryHits(cryhits), addMCTraj(mctraj) {};
+    DrawOptions(bool crv, bool cosmictracks, bool tracks, bool clusters, bool combohits, bool trkhits, bool timeclusters, bool cryhits, bool mctraj, bool kktracks)
+    : addCRVInfo(crv), addCosmicTracks(cosmictracks), addTracks(tracks), addClusters(clusters), addComboHits(combohits), addTrkHits(trkhits), addTimeClusters(timeclusters), addCryHits(cryhits), addMCTraj(mctraj), addKKTracks(kktracks) {};
    };
 
 

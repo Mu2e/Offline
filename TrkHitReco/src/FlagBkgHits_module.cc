@@ -18,8 +18,8 @@
 #include "Offline/RecoDataProducts/inc/BkgQual.hh"
 
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
-#include "Offline/TrkReco/inc/TNTClusterer.hh"
-#include "Offline/TrkReco/inc/ScanClusterer.hh"
+#include "Offline/TrkHitReco/inc/TNTClusterer.hh"
+#include "Offline/TrkHitReco/inc/ScanClusterer.hh"
 
 #include <string>
 #include <vector>

@@ -162,7 +162,7 @@ void FragmentAna::analyze(const art::Event& event) {
             analyze_calorimeter_(cc);
 
             totalSize += pair.second;
-            numTrkFrags++;
+            numCalFrags++;
           }
         }
       }

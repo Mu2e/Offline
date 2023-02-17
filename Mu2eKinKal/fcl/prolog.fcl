@@ -20,8 +20,8 @@ Mu2eKinKal : {
     AddMaterial : true
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
-    StrawHitClusterLevel : "uniquepanel"
-    CaloTrackerTimeOffset : -1.2 #ns
+    StrawHitClusterLevel : "none"
+    CaloTrackerTimeOffset : -0.85 #ns
     CaloPositionResolution : 9.0 #mm
     CaloTimeResolution : 0.5 #ns
     CaloPropagationSpeed : 200.0 #mm/ns
@@ -31,9 +31,10 @@ Mu2eKinKal : {
     AddHitSelect : []
     AddHitReject : ["Dead"]
     MaxStrawHitDOCA : 10.0 # mm
-    MaxStrawHitDt : 20.0 # ns
+    MaxStrawHitDt : 50.0 # ns
     StrawBuffer : 2 #
-    MaxStrawDOCA : 3.0 # mm
+    MaxStrawDOCA : 5.0 # mm
+    MaxStrawDOCAConsistency : 1.0 # units of chi
   }
 
   KKSEEDFIT: {
@@ -46,8 +47,8 @@ Mu2eKinKal : {
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
     BFieldCorrection : false
+    BCorrTolerance : 1e-2 # momemntum fraction
     ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
       [ 5.0, "CADSHU" ],
@@ -55,10 +56,10 @@ Mu2eKinKal : {
       [ 1.0, "CADSHU" ]
     ]
     CADSHUSettings : [
-      # maxdoca, maxderr, minrdrift, maxrdrift, allowed, freeze, diag
-      [ 40.0, 80.0, 5.0, 5.0, "Null:Inactive", "", 0 ],
-      [ 20.0, 40.0, 5.0, 4.0, "Null:Inactive", "", 0 ],
-      [ 10.0, 20.0, 5.0, 3.0, "Null:Inactive", "", 0 ]
+      # maxdoca, maxderr, minrdrift, maxrdrift, TOTUse, nullDistVar, allowed, freeze, diag
+      [ 40.0, 80.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
+      [ 20.0, 40.0, 5.0, 4.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 3.0, "All", "StrawRadius", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
@@ -105,11 +106,11 @@ Mu2eKinKal : {
       [ 0.0, "CADSHU:BkgANNSHU" ]
     ]
     CADSHUSettings : [
-      # maxdoca, maderr, minrdrift, maxrdrift, allow, tofreeze, diag
-      [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  16.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  12.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
+      # maxdoca, maderr, minrdrift, maxrdrift, TOTUse, nullDistVar, allow, tofreeze, diag
+      [ 10.0, 20.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
@@ -118,7 +119,7 @@ Mu2eKinKal : {
       [3.0, 3.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/Bkg_stage1.weights.xml",0.9,"Inactive",1]
+      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",0.2,"Inactive", 1]
     ]
   }
 
@@ -132,40 +133,44 @@ Mu2eKinKal : {
     DivergenceDeltaParams : 1e6
     DivergenceGap : 10 # mm
     BFieldCorrection : true
-    ProcessEnds : false
+    ProcessEnds : true
     BCorrTolerance : 1e-4 # momemntum fraction
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
       [ 1.0, "CADSHU" ],
-      [ 0.0, "CADSHU" ],
+      [ 0.3, "CADSHU" ],
       [ 0.0, "CADSHU:BkgANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ],
+      [ 0.0, "CADSHU:DriftANNSHU:BkgANNSHU" ],
       [ 0.0, "CADSHU:DriftANNSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
-      [ 10.0, 20.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 10.0, 20.0, 5.0, 4.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  16.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  12.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 4.0,  8.0, 5.0, 2.8, "Null:Inactive", "", 1 ],
-      [ 4.0,  8.0, 5.0, 2.8, "Null:Inactive", "", 1 ]
+      [ 10.0, 20.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 1 ],
+      [ 10.0, 20.0, 5.0, 4.0, "All", "StrawRadius", "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 6.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ]
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/Bkg_stage1.weights.xml",0.9,"Inactive",1]
+      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",0.1,"Inactive", 1],
+      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage1.dat",0.1,"Inactive", 1]
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.5,-0.5,"Null:Drift","", 3, 1]
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.08, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 1]
     ]
     Chi2SHUSettings : [
     ]
@@ -173,66 +178,15 @@ Mu2eKinKal : {
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
       [ 10.0, -1.0, -1.0, true, 0 ],
       [ 5.0,  -1.0, -1.0, true, 0 ],
-      [ 3.0,   2.5, 1.0,  false, 0 ]
+      [ 4.0,  -1.0, -1.0, true, 0 ],
+      [ 4.0,  -1.0, -1.0, false, 0 ],
+      [ 4.0,   2.0, 0.2,  false, 0 ],
+      [ 3.5,   2.0, 0.2,  false, 0 ],
+      [ 3.0,   2.0, 0.2,  false, 0 ],
+      [ 3.0,   2.3, 0.1,  false, 0 ],
+      [ 3.0,   2.3, 0.1,  false, 0 ]
     ]
   }
-
-  KKLINEDRIFTEXT: {
-    PrintLevel : 0
-    MinNDOF : 1
-    MaxNIter : 10
-    Deweight : 1.0e6
-    ConvergenceDeltaChisq : 0.1
-    DivergenceDeltaChisq : 10.0
-    DivergenceDeltaParams : 1e6
-    DivergenceGap : 10 # mm
-    BFieldCorrection : false
-    ProcessEnds : false
-    BCorrTolerance : 1e-4 # momemntum fraction
-    MetaIterationSettings : [
-      # annealing temp, strawhit updater algorithms
-      [ 2.0, "CADSHU" ],
-      [ 1.0, "CADSHU" ],
-      [ 0.0, "CADSHU" ],
-      [ 0.0, "CADSHU:BkgANNSHU" ],
-      [ 1.0, "CADSHU:DriftANNSHU" ],
-      [ 0.5, "CADSHU:DriftANNSHU" ],
-      [ 0.2, "CADSHU:DriftANNSHU" ],
-      [ 0.0, "CADSHU:DriftANNSHU" ]
-    ]
-    CADSHUSettings : [
-      # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 10.0, 10.0, 5.0, 5.0, "Null:Inactive", "", 1 ],
-      [ 8.0,  8.0, 5.0, 3.0, "Null:Inactive", "", 1 ],
-      [ 6.0,  6.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 5.0,  3.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ],
-      [ 4.0,  2.0, 5.0, 2.8, "Inactive", "Inactive", 1 ]
-    ]
-
-    BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/Bkg_stage1.weights.xml",0.9,"Inactive",1]
-    ]
-
-    DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage1.weights.xml",0.4,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage2.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage3.weights.xml",0.6,-0.5,"Null:Drift","", 3, 1],
-      [ "Offline/Mu2eKinKal/data/LRDrift_stage4.weights.xml",0.4,-0.5,"Null:Drift","", 3, 1]
-    ]
-    Chi2SHUSettings : [
-    ]
-    StrawXingUpdaterSettings : [
-      # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?
-      [ 10.0, -1.0, -1.0, true, 0 ],
-      [ 5.0,  -1.0, -1.0, true, 0 ],
-      [ 3.0,   2.5, 1.0,  false, 0 ]
-    ]
-  }
-
-
 
   KKPrecursors : {
     ComboHitCollection : "makeSH"
@@ -244,7 +198,7 @@ Mu2eKinKal : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
     SaveFullFit : true
-    #    ZSavePositions : [-1522.0,0.0,1522.0]
+    ZSavePositions : [-1635.1,-1522.0,0.0,1522.0,1635.1,1671,2371] # VDs, tracker front, mid, and end, and calo disks
   }
 
   KKKINEMATICLINE : {
@@ -296,7 +250,21 @@ Mu2eKinKal : {
     MaterialSettings : @local::Mu2eKinKal.KKMAT
     Mu2eSettings: @local::Mu2eKinKal.KKMU2E
     KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKal.KKLINEDRIFTEXT
+    KinKalExtensionSettings : {
+      @table::Mu2eKinKal.KKDRIFTEXT
+      BFieldCorrection : false
+      MetaIterationSettings : [
+        # annealing temp, strawhit updater algorithms
+        [ 2.0, "CADSHU" ],
+        [ 1.0, "CADSHU" ],
+        [ 0.0, "CADSHU" ],
+        [ 0.0, "CADSHU:BkgANNSHU" ],
+        [ 1.0, "CADSHU:DriftANNSHU" ],
+        [ 0.5, "CADSHU:DriftANNSHU" ],
+        [ 0.2, "CADSHU:DriftANNSHU" ],
+        [ 0.0, "CADSHU:DriftANNSHU" ]
+      ]
+    }
     ModuleSettings : @local::Mu2eKinKal.KKKINEMATICLINE
   }
 

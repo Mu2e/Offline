@@ -80,6 +80,7 @@ namespace mu2e{
       fhicl::Atom<bool> RecoOnly{Name("RecoOnly"), Comment("set to see only Reco Data Products"), false};
       fhicl::Atom<bool> FillAll{Name("FillAll"), Comment("to see all available products"), false};
       fhicl::Atom<bool> addMCTraj{Name("addMCTraj"), Comment("set to add MC trajectories"), false};
+      fhicl::Atom<bool> addKKTracks{Name("addKKTracks"), Comment("set to add KinKal traj"), false};
       fhicl::Atom<bool> MCOnly{Name("MCOnly"), Comment("set to see only MC Data Products"), false};
     };
 
@@ -104,7 +105,7 @@ namespace mu2e{
 
     art::Event *_event;
     art::Run *_run;
-    bool addHits_, addTimeClusters_, addTrkHits_, addTracks_, addClusters_, addCrvHits_, addCosmicSeedFit_, isCosmic_, addTrkExtTrajs_, RecoOnly_,  FillAll_, addMCCaloDigis_, addMCTraj_, MCOnly_;
+    bool addHits_, addTimeClusters_, addTrkHits_, addTracks_, addClusters_, addCrvHits_, addCosmicSeedFit_, isCosmic_, addTrkExtTrajs_, RecoOnly_,  FillAll_, addMCCaloDigis_, addMCTraj_, addKKTracks_, MCOnly_;
     void FillRecoCollections(const art::Event& evt, Data_Collections &data, RecoDataProductName code);
     void FillMCCollections(const art::Event& evt, Data_Collections &data, MCDataProductName code);
     virtual ~Collection_Filler(){};
