@@ -56,10 +56,10 @@ Mu2eKinKal : {
       [ 1.0, "CADSHU" ]
     ]
     CADSHUSettings : [
-      # maxdoca, maxderr, minrdrift, maxrdrift, TOTUse, nullDistVar, allowed, freeze, diag
-      [ 40.0, 80.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
-      [ 20.0, 40.0, 5.0, 4.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
-      [ 10.0, 20.0, 5.0, 3.0, "All", "StrawRadius", "Null:Inactive", "", 0 ]
+      # maxdoca, maxderr, minrdrift, maxrdrift, flag, , allowed, freeze, diag
+      [ 40.0, 80.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 20.0, 40.0, 5.0, 4.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 3.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
@@ -106,11 +106,11 @@ Mu2eKinKal : {
       [ 0.0, "CADSHU:BkgANNSHU" ]
     ]
     CADSHUSettings : [
-      # maxdoca, maderr, minrdrift, maxrdrift, TOTUse, nullDistVar, allow, tofreeze, diag
-      [ 10.0, 20.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
-      [ 10.0, 20.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ],
-      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 0 ],
-      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 0 ]
+      # maxdoca, maderr, minrdrift, maxrdrift, flag, allow, tofreeze, diag
+      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       # maxdoca, maxdoca unaveraged, maxdoca error unaveraged,  scale with temp?, diag
@@ -148,16 +148,16 @@ Mu2eKinKal : {
       [ 0.0, "CADSHU:DriftANNSHU" ]
     ]
     CADSHUSettings : [
-      # maxdoca, maxderr, minrdrift, maxrdrift, allow, freeze, diag
-      [ 10.0, 20.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 1 ],
-      [ 10.0, 20.0, 5.0, 4.0, "All", "StrawRadius", "Null:Inactive", "", 1 ],
-      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 6.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ],
-      [ 5.0,  10.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 1 ]
+      # maxdoca, maxderr, minrdrift, maxrdrift, flag, allow, freeze, diag
+      [ 10.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 1 ],
+      [ 10.0, 20.0, 5.0, 4.0, "TOT", "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 8.0,  16.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 6.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ],
+      [ 5.0,  10.0, 5.0, 3.0, "TOT:NullDriftVar", "Null:Inactive", "", 1 ]
     ]
 
     BkgANNSHUSettings : [
@@ -166,11 +166,12 @@ Mu2eKinKal : {
     ]
 
     DriftANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, "DriftRadius" ,"Null:Drift","", "All", 1],
-      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.08, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, "DriftRadius" ,"Null:Drift","", "All", 1]
+      # sign ANN weights, cut, cluster ANN weights, cut, dt cut, freeze, flag, diag
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage0.dat",0.5, "Offline/Mu2eKinKal/data/TrainCluster_Stage0.dat",0.5, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.4, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.4, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.3, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.3, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.2, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.2, 1.1, "", "TOT:NullDriftVar", 1],
+      [ "Offline/Mu2eKinKal/data/TrainSign_Stage1.dat",0.1, "Offline/Mu2eKinKal/data/TrainCluster_Stage1.dat",0.1, 1.1, "", "TOT:NullDriftVar", 1]
     ]
     Chi2SHUSettings : [
     ]

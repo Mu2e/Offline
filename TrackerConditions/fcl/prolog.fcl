@@ -274,7 +274,7 @@ StrawResponse : {
   useOldDrift: false
   driftFit : [0.0,1.0,0.001]
   driftResIsTime : false
-  dRdTScale : 0.0
+  dRdTScale : 1.0
 
 
 #  KinKal drift fit calibration
