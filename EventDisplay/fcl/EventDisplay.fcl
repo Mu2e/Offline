@@ -25,8 +25,9 @@ physics :
     eventdisplay:
     {
       module_type               : EventDisplay
-      g4ModuleLabel             : "g4run"
-      physicalVolumesMultiLabel : "compressPV"
+#      g4ModuleLabel             : "g4run"
+      g4ModuleLabel             : "compressRecoMCs"
+#      physicalVolumesMultiLabel : "compressPV"
       kalSeedStepSize           : 0.1
       timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
 #      timeOffsets               : { inputs : [ @sequence::CommonMC.TimeMaps ] }
@@ -40,4 +41,4 @@ physics :
 }
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
-source.readParameterSets : false
+#source.readParameterSets : false
