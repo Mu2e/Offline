@@ -358,7 +358,7 @@ namespace mu2e {
       cHit comboHit;
       comboHit.hIndex = i;
       comboHit.hTime = hit->correctedTime();
-      comboHit.hWeight = 1/(hit->driftTimeRes()*hit->driftTimeRes());
+      comboHit.hWeight = 1/(hit->timeVar());
       comboHit.hZpos = hit->pos().z();
       comboHit.nStrawHits = hit->nStrawHits();
       comboHit.hIsUsed = 0;
@@ -917,7 +917,7 @@ namespace mu2e {
             hit = &_data.chcol->at(k);
             if (std::abs(hit->correctedTime() - ccTime) < _caloDtMax) {
               _f._chunkInfo.hIndices.push_back(k);
-              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1/(hit->driftTimeRes()*hit->driftTimeRes()));
+              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1/(hit->timeVar()));
               _f._chunkInfo.nHits++;
               _f._chunkInfo.nStrawHits = _f._chunkInfo.nStrawHits + hit->nStrawHits();
             }

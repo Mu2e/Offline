@@ -26,24 +26,15 @@ namespace mu2e {
     }
   }
 
-  ComboHit::ComboHit() : _wres(-1.0),_tres(-1.0), _wdist(0.), _time(0.0), _edep(0.0), _qual(0.0), _dtime(0.0), _ptime(0.0), _pathlength(0.0), _hphi(0.0), _ncombo(0), _nsh(0), _pind{0} {}
-
-  ComboHit::ComboHit(ComboHit const& shp, StrawDigiIndex hi, double phi) : ComboHit(shp)
-  {
-    _hphi = phi;
-  }
+//  ComboHit::ComboHit(ComboHit const& shp, StrawDigiIndex hi, double phi) : ComboHit(shp)
+//  {
+//    _hphi = phi;
+//  }
 
   void ComboHit::init(ComboHit const& other, uint16_t index) {
     *this = other;
     _ncombo = 1;
     _pind[0] = index;
-  }
-
-  uint16_t ComboHit::index(uint16_t ish) const {
-    if(ish < _ncombo)
-      return _pind[ish];
-    else
-      throw cet::exception("RECO")<<"mu2e::ComboHit: invalid index" << std::endl;
   }
 
   bool ComboHit::addIndex(uint16_t shi) {
@@ -226,20 +217,17 @@ namespace mu2e {
     ost << " ComboHit:"
         << " id "      << _sid
         << " time "     << _time
-        << " drift time " << _dtime
-        << " prop time " << _ptime
-        << " path length " << _pathlength
+        << " wdist " << _wdist
         << " position " << _pos
-        << " end " << _tend
+        << " early end " << _eend
         << " flag " << _flag
-        << " eDep "     << _edep
+        << " dedx "     << _dedx
         << " ncombo " << _ncombo
         << " nStrawHit " << _nsh;
 
     if ( doEndl ){
       ost << std::endl;
     }
-
 
   }
 }

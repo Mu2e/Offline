@@ -206,7 +206,7 @@ namespace mu2e {
                   float terr2 = terr*terr;
                   float dw1 = pca.s1();
                   float dw2 = pca.s2();
-                  float chisq = dw1*dw1/(ch1.wireErr2()+terr2) + dw2*dw2/(ch2.wireErr2()+terr2);
+                  float chisq = dw1*dw1/(ch1.wireVar()+terr2) + dw2*dw2/(ch2.wireVar()+terr2);
                   if(_debug > 3) cout << " chisq = " << chisq;
                   if (chisq < _maxChisq){
                     if(_debug > 3) cout << " added ";
@@ -249,7 +249,7 @@ namespace mu2e {
         size_t index = combohit.index(ich);
         ComboHit const& ch = (*_chcol)[index];
         combohit._flag.merge(ch.flag());
-        eacc(ch.energyDep(),weight=ch.nStrawHits());
+        eacc(ch.dEdx(),weight=ch.pathLength()*ch.nStrawHits());
         tacc(ch.time(),weight=ch.nStrawHits());
         dtacc(ch.driftTime(),weight=ch.nStrawHits());
         placc(ch.pathLength(),weight=ch.nStrawHits());
@@ -262,7 +262,7 @@ namespace mu2e {
       combohit._time = extract_result<tag::weighted_mean>(tacc);
       combohit._dtime = extract_result<tag::weighted_mean>(dtacc);
       combohit._pathlength = extract_result<tag::weighted_mean>(placc);
-      combohit._edep = extract_result<tag::weighted_mean>(eacc);
+      combohit._dedx = extract_result<tag::weighted_mean>(eacc);
       float dz = (maxz-minz);
       combohit._wdist = dz;
       combohit._tres = dz*_tfac;

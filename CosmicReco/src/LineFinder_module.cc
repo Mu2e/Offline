@@ -191,7 +191,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
                 double dist = (pca.point1()-strawk.getMidPoint()).mag();
                 if (pca.dca() < _maxDOCA && dist < strawk.halfLength()){
                   count += 1;
-                  ll += pow(dist-shC[k].wireDist(),2)/shC[k].wireErr2();
+                  ll += pow(dist-shC[k].wireDist(),2)/shC[k].wireVar();
                 }
               }
               if (count == (int) shC.size())

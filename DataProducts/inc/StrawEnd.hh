@@ -12,6 +12,7 @@ namespace mu2e {
     End end() const { return static_cast<End>(_end); }
     End otherEnd() const { return (_end == cal) ? hv : cal; }
     StrawEnd(End end=cal) : _end(static_cast<int8_t>(end)) {}
+    double endSign() const { return 2.0*(static_cast<double>(_end) - 0.5); }
     bool operator == (End end) const { return _end == end; }
     bool operator != (End end) const { return _end != end; }
     bool operator == (StrawEnd const& other) const { return other._end == _end; }
