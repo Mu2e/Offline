@@ -8,6 +8,8 @@ namespace mu2e {
   class Panel;
   class SimParticle;
 
+  using DeltaFinderTypes::PhiPrediction_t;
+
     struct ProtonCandidate {
       enum  {
         kEDepBit   = 0x00000001, // <<  0
@@ -19,14 +21,18 @@ namespace mu2e {
       int                     fMask;                  // bitmask , if zero, the candiate is good
       int                     fFirstStation;
       int                     fLastStation;
-      std::vector<HitData_t*> fHitData[kNStations][kNFaces];
-      int                     fPanelID[kNStations][kNFaces];
+      std::vector<HitData_t*> fHitData     [kNStations][kNFaces];
+      int                     fPanelID     [kNStations][kNFaces];
       int                     fNHitsStation[kNStations];
-      float                   fMean        [kNStations];
+      int                     fMinHitTime  [kNStations];
+      int                     fMaxHitTime  [kNStations];
+      float                   fSumX        [kNStations];
+      float                   fSumY        [kNStations];
+      float                   fPhi         [kNStations];
 
       int                     fNStationsWithHits;
-      int                     fNHits;              // total N(combo hits)
-      int                     fNStrawHits;         // total N(straw hits)
+      int                     fNHitsTot;           // total N(combo hits)
+      int                     fNStrawHitsTot;      // total N(straw hits)
 
                                                    // LSQ sumz for TZ
       double                  fSt;
@@ -35,15 +41,18 @@ namespace mu2e {
       double                  fStz;
       double                  fSz2;
 
+      float                   fTMid;               // time in the station closest to the center
+
       float                   fSumEDep;
 
-      double                  fT0;
-      double                  fDtDz;
-      double                  fSigT0;
+      float                   fT0;
+      float                   fDtDz;
+      float                   fSigT0;
 
       McPart_t*               fMcPart;             // "best" MC particle
       int                     fNHitsMcP;           // N combo hits by the "best" particle"
       int                     fNHitsCE;            // N(hits) by CE
+      int                     fTimeIndex;
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
@@ -52,35 +61,51 @@ namespace mu2e {
       int        Active               () const { return (fIndex >= 0); }
       int        Index                () const { return fIndex ; }
       int        Mask                 () const { return fMask  ; }
-      int        NStationsWithHits    () const { return fNStationsWithHits; }
-      int        NHitsTotal           () const { return fNHits; }
+      int        nStationsWithHits    () const { return fNStationsWithHits; }
+      int        nHitsTot             () const { return fNHitsTot; }
 
       int        nHits     (int Station, int Face) const  { return fHitData[Station][Face].size(); }
       HitData_t* hitData   (int Station, int Face, int I) { return fHitData[Station][Face][I]; }
 
+      int        nHitsStation(int Station) const  { return fNHitsStation[Station]; }
+
 
       int        NHitsMcP             () const { return fNHitsMcP; }
-      int        NStrawHits           () const { return fNStrawHits; }
-      // float      T0Min           (int I) const { return fT0Min[I]; }
-      // float      T0Max           (int I) const { return fT0Max[I]; }
+      int        nStrawHitsTot        () const { return fNStrawHitsTot; }
+
+      float      minHitTime(int Station) const { return fMinHitTime[Station]; }
+      float      maxHitTime(int Station) const { return fMaxHitTime[Station]; }
       int        LastStation          () const { return fLastStation ; }
       int        FirstStation         () const { return fFirstStation; }
-      float      EDep                 () const { return fSumEDep/fNStrawHits; }
-      float      FBest                () const { return float(fNHitsMcP)/fNHits; }
+      float      EDep                 () const { return fSumEDep/fNStrawHitsTot; }
+      float      FBest                () const { return float(fNHitsMcP)/fNHitsTot; }
+
+      float      xMean(int Station)  { return fSumX[Station]/fNHitsStation[Station]; }
+      float      yMean(int Station)  { return fSumY[Station]/fNHitsStation[Station]; }
+      float      phi  (int Station)  { return fPhi[Station] ; }
+      float      t0   (int Station)  { return fT0 + fDtDz*DeltaFinderTypes::stationZ[Station]; }
+      float      tMid()              { return fTMid; }
+      int        timeIndex()         { return fTimeIndex; }
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+      void       setIndex(int Index) { fIndex = Index; }
 //-----------------------------------------------------------------------------
 // add Seed  (station is defined by the Seed
 //-----------------------------------------------------------------------------
       void       addSeed            (DeltaSeed* Seed);
       void       addHit             (int Station, HitData_t* Hit, int UpdateTime = 1);
+      void       removeHit          (int Station, HitData_t* Hit, int UpdateTime = 1);
+      void       updateTime         ();
 //-----------------------------------------------------------------------------
 // in case of one station, fDtDz = 0
 //-----------------------------------------------------------------------------
-      float      T0(int Station)     { return fT0 + fDtDz*DeltaFinderTypes::stationZ[Station]; }
 
 //-----------------------------------------------------------------------------
 // an attempt to predict phi in a given station, returns -100 if no prediction
+// if the panel ID can be predicted, use that
 //-----------------------------------------------------------------------------
-      float      Phi(int Station);
+      void       predictPhi(int Station, PhiPrediction_t* Prediction);
     };
 }
 #endif

@@ -13,16 +13,24 @@ namespace mu2e {
 // start building proton candidates from high-eDep delta seeds
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::createProtonCandidates() {
+    int kMaxProtonGap(1);                                // inefficiency gap
 
     for (int station=kNStations-1; station>=0; station--) {
 
       int nseeds = _data->nProtonSeeds(station);
       for (int iseed=0; iseed<nseeds; iseed++) {
         DeltaSeed* seed = _data->protonSeed(station,iseed);
+//-----------------------------------------------------------------------------
+// skip segments considered to be duplicates of others
+// fGood<-2000 : proton segment candidates
+//-----------------------------------------------------------------------------
+        if ((seed->fGood < 0) and (seed->fGood > -2000))              continue;
+//-----------------------------------------------------------------------------
+// some of the 'proton' seeds could be already flagged as delta's,
+// skip them and do not try to count them as protons
+//-----------------------------------------------------------------------------
+        if (seed->deltaIndex() >= 0)                                  continue;
         float t         = seed->TMean();
-        float rho       = seed->Rho();
-        float seed_nx   = seed->Xc()/rho;
-        float seed_ny   = seed->Yc()/rho;
         int   found{0};
 //-----------------------------------------------------------------------------
 // check if 'seed' is consistent in time with any of existing proton candidates
@@ -32,29 +40,39 @@ namespace mu2e {
         int npc = _data->nProtonCandidates();
         for (int ipc=0; ipc<npc; ipc++) {
           ProtonCandidate* pc = _data->protonCandidate(ipc);
-          float tpc = pc->T0(station);
-          if (fabs(tpc-t) > 20)                                       continue;
+          if (pc->fFirstStation-station >  kMaxProtonGap)             continue;
+          float tpc = pc->t0(station);
+          if (fabs(tpc-t) > 30)                                       continue;
 //-----------------------------------------------------------------------------
 // the proton candidate and the seed are close in time, see if can compare phi
 // if predicted phi = -100, prediction couldn't be made
 //-----------------------------------------------------------------------------
-          float phi_pc = pc->Phi(station);
-          if (phi_pc < -99)                                           continue;
+          int consistent(1);
+          PhiPrediction_t pred;
+          pc->predictPhi(station,&pred);
+          if (pred.fPhi > -99) {
 //-----------------------------------------------------------------------------
-// prediction exists, check
+// phi prediction exists, check
 //-----------------------------------------------------------------------------
-          float nx = cos(phi_pc);
-          float ny = sin(phi_pc);
+            consistent = 0;
 
-          float n1n2 = nx*seed_nx+ny*seed_ny;
-          if (n1n2 < 0)                                               continue;
+            float dphi = pred.fPhi-seed->CofM.phi();
+            if (dphi < -M_PI) dphi += 2*M_PI;
+            if (dphi >  M_PI) dphi -= 2*M_PI;
+
+            if (fabs(dphi) < pred.fErr)  consistent = 1;
+          }
 //-----------------------------------------------------------------------------
 // add hits of the seed to the proton candidate. Remember that there could
 // seeds with the overlapping hits
+// the same segment can be associated with several proton candidates -
+// shooting for efficiency, don't need to be exclusive
 //-----------------------------------------------------------------------------
-          pc->addSeed(seed);
-          found = 1;
-                                                                      break;
+          if (consistent) {
+            pc->addSeed(seed);
+            found +=1;
+            seed->setProtonIndex(pc->Index());
+          }
         }
 //-----------------------------------------------------------------------------
 // if the seed has been associated with an existing proton candidate,
@@ -66,12 +84,136 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           ProtonCandidate* pc = _data->newProtonCandidate();
           pc->addSeed(seed);
+          seed->setProtonIndex(pc->Index());
         }
       }
     }
 
     return 0;
   }
+
+//-----------------------------------------------------------------------------
+// merge proton candidates with overlapping hit patterns
+//-----------------------------------------------------------------------------
+  int  DeltaFinderAlg::mergeProtonCandidates() {
+//-----------------------------------------------------------------------------
+// to speed up the execution, start from time-ordering the list
+//-----------------------------------------------------------------------------
+    int nprot = _data->nProtonCandidates();
+
+    std::vector<ProtonCandidate*> pc (_data->fListOfProtonCandidates.fList);
+
+    std::sort(pc.begin(),pc.end(),
+              [](const ProtonCandidate* a, const ProtonCandidate* b) { return a->fTMid < b->fTMid; });
+//-----------------------------------------------------------------------------
+// for debugging purposes, set index corresponding to time ordering
+//-----------------------------------------------------------------------------
+    for (int i=0; i<nprot; i++) {
+      pc[i]->fTimeIndex = i;
+    }
+//-----------------------------------------------------------------------------
+// assume no more than 100 overlapping hits per face
+//-----------------------------------------------------------------------------
+    HitData_t* ohit[kNStations][kNFaces][100];
+    int        novr[kNStations][kNFaces];
+
+    for (int i1=0; i1<nprot-1; i1++) {
+      ProtonCandidate* p1 = pc[i1];
+      float t1 = p1->tMid();
+      for (int i2=i1+1; i2<nprot; i2++) {
+        ProtonCandidate* p2 = pc[i2];
+        float t2 = p2->tMid();
+//-----------------------------------------------------------------------------
+// by construction, p2->time >= p1->time()
+//-----------------------------------------------------------------------------
+        float dt = t2-t1;
+
+        int ds = 0;
+        if (p1->fLastStation >= p2->fFirstStation) {
+          if (p2->fLastStation <= p1->fFirstStation) {
+            ds = p1->fFirstStation-p2->fLastStation;
+          }
+        }
+        else {
+          ds = p2->fFirstStation-p1->fLastStation;
+        }
+        if (dt > 60 + 5*ds)                                           break;
+//-----------------------------------------------------------------------------
+// the two candidates are close enough in time, count overlapping hits
+//-----------------------------------------------------------------------------
+        int noverlap = 0;
+
+        for (int is=p1->fFirstStation; is<=p1->fLastStation; is++) {
+          int nh1 = p1->nHitsStation(is);
+          if (nh1 == 0)                                               continue;
+          int nh2 = p2->nHitsStation(is);
+          if (nh2 == 0)                                               continue;
+          for (int face=0; face<kNFaces; face++) {
+            novr[is][face] = 0;
+            int nhf1 = p1->nHits(is,face);
+            int nhf2 = p2->nHits(is,face);
+            if ((nhf1 == 0) or (nhf2 == 0))                           continue;
+            for (int ih1=0; ih1<nhf1; ih1++) {
+              HitData_t* h1 = p1->hitData(is,face,ih1);
+              for (int ih2=0; ih2<nhf2; ih2++) {
+                HitData_t* h2 = p2->hitData(is,face,ih2);
+                if (h1 == h2) {
+                  ohit[is][face][novr[is][face]] = h1;
+                  novr[is][face] += 1;
+                  noverlap       += 1;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        int nh1tot = p1->nHitsTot();
+        int nh2tot = p2->nHitsTot();
+
+        if      (noverlap > 2) {
+          if (nh2tot >= nh1tot) {
+//-----------------------------------------------------------------------------
+// more than 50% of p1 hits are in the overlap - merge p1 into p2 by
+// removinv overlapping hits from p1
+//-----------------------------------------------------------------------------
+            for (int is=p1->fFirstStation; is<=p1->fLastStation; is++) {
+              for (int face=0; face<kNFaces; face++) {
+                int nhf = novr[is][face];
+                for (int ih=0; ih<nhf; ih++) {
+                HitData_t* h = ohit[is][face][ih];
+                p1->removeHit(is,h,0);
+                }
+              }
+            }
+            p1->updateTime();
+            p1->setIndex(-1000-p2->Index());
+            break;
+          }
+          else {
+//-----------------------------------------------------------------------------
+// more than 50% of p2 hits are in the overlap - merge p2 into p1
+// overlapping hits only within the p1 range of stations
+//-----------------------------------------------------------------------------
+            for (int is=p1->fFirstStation; is<=p1->fLastStation; is++) {
+              for (int face=0; face<kNFaces; face++) {
+                int nhf = novr[is][face];
+                for (int ih=0; ih<nhf; ih++) {
+                  HitData_t* h = ohit[is][face][ih];
+                  p2->removeHit(is,h,0);
+                }
+              }
+            }
+            p2->updateTime();
+            p2->setIndex(-1000-p1->Index());
+          }
+        }
+      }
+    }
+
+    return 0;
+  }
+
 
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::findProtons() {
@@ -84,9 +226,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     createProtonCandidates();
 //-----------------------------------------------------------------------------
+// merge proton candidates with overlapping hit lists
+//-----------------------------------------------------------------------------
+    mergeProtonCandidates();
+//-----------------------------------------------------------------------------
 // last step - check stations without found segments and try to pick up missing hits
 //-----------------------------------------------------------------------------
-    recoverMissingProtonHits();
+//    recoverMissingProtonHits();
 
     return 0;
   }
@@ -114,8 +260,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // predict proton time and try to predict phi, very roughly
 //-----------------------------------------------------------------------------
-        float proton_time = pc->T0(station);
-        float proton_phi  = pc->Phi(station);
+        float proton_time = pc->t0(station);
+
+        PhiPrediction_t pred;
+        pc->predictPhi(station,&pred);
 
         for (int face=0; face<kNFaces; face++) {
           FaceZ_t* fz = _data->faceData(station,face);
@@ -123,16 +271,16 @@ namespace mu2e {
           int nph = fz->nProtonHits();
           for (int iph=0; iph<nph; iph++) {
             HitData_t* hd = fz->protonHitData(iph);
-            if (fabs(hd->fCorrTime-proton_time) > _maxDriftTime)     continue;
-            if (proton_phi > -99) {
+            if (fabs(hd->fCorrTime-proton_time) > _maxDriftTime)      continue;
+            if (pred.fPhi > -99) {
 //-----------------------------------------------------------------------------
 // an idea of phi prediction exists, check the hit phi
 //-----------------------------------------------------------------------------
-              float nx = cos(proton_phi);
-              float ny = sin(proton_phi);
+              float dphi = pred.fPhi-hd->Phi();
+              if (dphi < -M_PI) dphi += 2*M_PI;
+              if (dphi >  M_PI) dphi -= 2*M_PI;
 
-              float n1n2 = nx*hd->fX+ny*hd->fY;
-              if (n1n2 < 0)                                          continue;
+              if (fabs(dphi) > pred.fErr)                             continue;
             }
             int panel_id = pc->fPanelID[station][face];
             if ((panel_id == -1) or (hd->panelID() == panel_id)) {
@@ -165,7 +313,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // require hit to have EDep consistent with 95+% of the protons and not to
 // be a part of a reconstructed delta electron candidate
-// this shoudl significantly reduce the number of candidate hits to consider
+// this should significantly reduce the number of candidate hits to consider
 //-----------------------------------------------------------------------------
           if ((hd->fHit->energyDep() > _minProtonHitEDep) and (hd->fDeltaIndex < 0)) {
 

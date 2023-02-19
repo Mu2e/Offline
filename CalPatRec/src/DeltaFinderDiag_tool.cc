@@ -40,11 +40,44 @@ namespace mu2e {
   class DeltaFinderDiag: public ModuleHistToolBase {
 
     enum {
-      kNEventHistSets =  10,
-      kNSeedHistSets  = 100,
-      kNSeed2HistSets = 100,
-      kNDeltaHistSets = 100,
-      kNMcHistSets    = 200
+      kNEventHistSets  =  10,
+      kNSeedHistSets   = 100,
+      kNSeed2HistSets  = 100,
+      kNDeltaHistSets  = 100,
+      kNProtonHistSets = 100,
+      kNMcHistSets     = 500
+    };
+
+    struct DeltaHist_t {
+      TH1F*  fNHits;
+      TH1F*  fNHitsCE;
+      TH1F*  fNStrawHits;
+      TH1F*  fNSeeds;
+      TH1F*  fMcMom;
+      TH1F*  fPDGCode;
+      TH1F*  fDxy;
+      TH1F*  fEDep;
+      TH2F*  fNBestVsN;
+      TH1F*  fFBest;
+      TH1F*  fChi2N;
+      TH1F*  fChi2ParN;
+      TH1F*  fChi2PerpN;
+    };
+
+    struct EventHist_t {
+      TH1F*  fEventNumber;
+      TH1F*  fRunNumber;
+      TH1F*  fNSeeds;
+      TH2F*  fNSeedsVsStation;
+      TH1F*  fNMc;
+      TH1F*  fPDGCode;
+      TH1F*  fNMcHits;
+      TH1F*  fNDelta;
+      TH1F*  fNDeltaHitsT;
+      TH1F*  fNDeltaHitsR;
+      TH2F*  fNPRecoVsMc;
+      TH2F*  fNP10RecoVsMc;
+      TH2F*  fNP15RecoVsMc;
     };
 
     struct SeedHist_t {
@@ -79,20 +112,15 @@ namespace mu2e {
       TH1F*  fDt;                       // dt between the two seeds in teh same station
     };
 
-    struct DeltaHist_t {
-      TH1F*  fNHits;
-      TH1F*  fNHitsCE;
+    struct ProtonHist_t {
+      TH1F*  fNComboHits;
       TH1F*  fNStrawHits;
-      TH1F*  fNSeeds;
+      TH1F*  fNHitsCE;
+      TH1F*  fNHitsF;
+      TH1F*  fNStationsWithHits;
       TH1F*  fMcMom;
       TH1F*  fPDGCode;
-      TH1F*  fDxy;
-      TH1F*  fEDep;
-      TH2F*  fNBestVsN;
-      TH1F*  fFBest;
-      TH1F*  fChi2N;
-      TH1F*  fChi2ParN;
-      TH1F*  fChi2PerpN;
+      TH1F*  fFFlagged;
     };
 
     struct McHist_t {
@@ -106,25 +134,13 @@ namespace mu2e {
       TH1F*  fHitDt;
     };
 
-    struct EventHist_t {
-      TH1F*  fEventNumber;
-      TH1F*  fRunNumber;
-      TH1F*  fNSeeds;
-      TH2F*  fNSeedsVsStation;
-      TH1F*  fNMc;
-      TH1F*  fPDGCode;
-      TH1F*  fNMcHits;
-      TH1F*  fNDelta;
-      TH1F*  fNDeltaHitsT;
-      TH1F*  fNDeltaHitsR;
-    };
-
     struct Hist_t {
-      EventHist_t* fEvent[kNEventHistSets];
-      SeedHist_t*  fSeed [kNSeedHistSets ];
-      Seed2Hist_t* fSeed2[kNSeed2HistSets];
-      DeltaHist_t* fDelta[kNDeltaHistSets];
-      McHist_t*    fMc   [kNMcHistSets   ];
+      EventHist_t*  fEvent [kNEventHistSets ];
+      DeltaHist_t*  fDelta [kNDeltaHistSets ];
+      McHist_t*     fMc    [kNMcHistSets    ];
+      ProtonHist_t* fProton[kNProtonHistSets];
+      SeedHist_t*   fSeed  [kNSeedHistSets  ];
+      Seed2Hist_t*  fSeed2 [kNSeed2HistSets ];
     };
 //-----------------------------------------------------------------------------
 // additional parameters of the DeltaCandidate , for analysis
@@ -140,6 +156,20 @@ namespace mu2e {
     };
 
     std::vector<DeltaCandidatePar_t>  _deltaPar;
+//-----------------------------------------------------------------------------
+// additional parameters of the ProtonCandidate, for analysis
+//-----------------------------------------------------------------------------
+    struct ProtonCandidatePar_t {
+      McPart_t*    fMcPart;               // "best" MC particle
+      int          fNHitsMcP;             // N combo hits by the "best" particle"
+      int          fNHitsCE;              // N(hits) produced by CE
+      int          fNFlaggedHits;         // N(hits) flagged as proton
+
+      std::vector<McPart_t*> fHitMcPart[kNStations][kNFaces]; // reset properly !
+    };
+
+    std::vector<ProtonCandidatePar_t>  _protonPar;
+    TObjArray                          _list_of_mc_protons;
 //-----------------------------------------------------------------------------
 // additional parameters of the DeltaSeed , for analysis
 //-----------------------------------------------------------------------------
@@ -167,60 +197,84 @@ namespace mu2e {
 
   protected:
 
-    bool                                  _mcDiag;
-    int                                   _printOTracker;
-    int                                   _printComboHits;
-    int                                   _printElectrons;
-    int                                   _printElectronsHits;
-    int                                   _printElectronsMinNHits;
-    float                                 _printElectronsMaxFReco;
-    float                                 _printElectronsMinMom;
-    float                                 _printElectronsMaxMom;
-    int                                   _printDeltaSeeds;
-    int                                   _printDeltaCandidates;
-    int                                   _printShcol;
-    int                                   _printSeedNParents;   // n(hits) for seeds with > 2 parents
+    bool           _mcDiag;
+    int            _printOTracker;
+    int            _printComboHits;
+    int            _printGoodComboHits;
+    int            _printElectrons;
+    int            _printElectronsHits;
+    int            _printElectronsMinNHits;
+    float          _printElectronsMaxFReco;
+    float          _printElectronsMinMom;
+    float          _printElectronsMaxMom;
+    int            _printDeltaSeeds;
+    int            _printDeltaCandidates;
+    int            _printShcol;
+    int            _printSeedNParents;   // n(hits) for seeds with > 2 parents
+
+    int            _printMcProtons;
+    int            _printProtonHits;
+    int            _printProtonSeeds;
+    int            _printProtonCandidates;
+
+    int            _eventNumber;
+    int            _nDeltaHitsTot;
+    int            _nDeltaHitsReco;
+
+    TObjArray      _list_of_mc_particles; // list_of_particles with hits in the tracker
+    TObjArray      _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart
+
+    TObjArray      _list_of_protons;
+    int            _nMcProtons;
+    int            _nMcProtons10;
+    int            _nMcProtons15;
+    int            _nRecoProtons;
+    int            _nRecoProtons10;
+    int            _nRecoProtons15;
+
+    Data_t*        _data;                 // shared data, passed from the caller
+    Hist_t         _hist;
 
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
-
-    int                                   _eventNumber;
-    int                                   _nDeltaHitsTot;
-    int                                   _nDeltaHitsReco;
-
-    TObjArray                             _list_of_mc_particles; // list_of_particles with hits in the tracker
-    TObjArray                             _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart
-
-    Data_t*                               _data;                 // shared data, passed from the caller
-
-    Hist_t                                _hist;
 
   public:
 
     DeltaFinderDiag(const fhicl::Table<mu2e::DeltaFinderTypes::Config>& config);
     ~DeltaFinderDiag();
+//-----------------------------------------------------------------------------
+// accessors
+//-----------------------------------------------------------------------------
+    McPart_t*   mcPart(int I) { return (McPart_t*) _list_of_mc_part_hit.At(I); }
+//-----------------------------------------------------------------------------
+// other functions
+//-----------------------------------------------------------------------------
+    void        bookDeltaHistograms (DeltaHist_t*  Hist, art::TFileDirectory* Dir);
+    void        bookEventHistograms (EventHist_t*  Hist, art::TFileDirectory* Dir);
+    void        bookMcHistograms    (McHist_t*     Hist, art::TFileDirectory* Dir);
+    void        bookSeedHistograms  (SeedHist_t*   Hist, art::TFileDirectory* Dir);
+    void        bookSeed2Histograms (Seed2Hist_t*  Hist, art::TFileDirectory* Dir);
+    void        bookProtonHistograms(ProtonHist_t* Hist, art::TFileDirectory* Dir);
 
-  private:
-
-    void        bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir);
-    void        bookSeedHistograms (SeedHist_t*  Hist, art::TFileDirectory* Dir);
-    void        bookSeed2Histograms(Seed2Hist_t* Hist, art::TFileDirectory* Dir);
-    void        bookDeltaHistograms(DeltaHist_t* Hist, art::TFileDirectory* Dir);
-    void        bookMcHistograms   (McHist_t*    Hist, art::TFileDirectory* Dir);
-
-    void        fillEventHistograms(EventHist_t* Hist);
-    void        fillSeedHistograms (SeedHist_t*  Hist, DeltaSeed*      Seed , DeltaSeedPar_t* SeedPar);
-    void        fillSeed2Histograms(Seed2Hist_t* Hist, DeltaSeed*      Seed1, DeltaSeed* Seed2  );
-    void        fillDeltaHistograms(DeltaHist_t* Hist, DeltaCandidate* Delta, DeltaCandidatePar_t* Dcp);
-    void        fillMcHistograms   (McHist_t*    Hist, McPart_t*       Mc   );
+    void        fillEventHistograms (EventHist_t*  Hist);
+    void        fillDeltaHistograms (DeltaHist_t*  Hist, DeltaCandidate*  Delta, DeltaCandidatePar_t*  Dcp);
+    void        fillMcHistograms    (McHist_t*     Hist, McPart_t*        Mc   );
+    void        fillSeedHistograms  (SeedHist_t*   Hist, DeltaSeed*       Seed , DeltaSeedPar_t* SeedPar);
+    void        fillSeed2Histograms (Seed2Hist_t*  Hist, DeltaSeed*       Seed1, DeltaSeed* Seed2  );
+    void        fillProtonHistograms(ProtonHist_t* Hist, ProtonCandidate* Prot , ProtonCandidatePar_t* Pcp);
 
     McPart_t*   findParticle (const SimParticle* Sim);
-    int         InitMcDiag      ();
+
     int         associateMcTruth();
+    int         initDeltaCandMcParameters ();
+    int         initDeltaSeedMcParameters ();
+    int         initProtonCandMcParameters();
+    int         initMcDiag                ();
+
     int         precalculateRecoParameters();
 
-    void        printDeltaSeed(DeltaSeed* Seed, DeltaSeedPar_t* Sp, int PrintBanner);
-    void        printHitData  (const HitData_t* Hd, int PrintBanner);
-    void        printOTracker ();
+    void        printSegment (DeltaSeed* Seed, DeltaSeedPar_t* Sp, int PrintBanner);
+    void        printHitData (const HitData_t* Hd, int PrintBanner);
+    void        printOTracker();
 
     void        printComboHit (const ComboHit* Sh, int PrintBanner);
     void        printComboHitCollection();
@@ -241,6 +295,7 @@ namespace mu2e {
     _mcDiag                (config().mcDiag()                ),
     _printOTracker         (config().printOTracker()         ),
     _printComboHits        (config().printComboHits()        ),
+    _printGoodComboHits    (config().printGoodComboHits()    ),
     _printElectrons        (config().printElectrons()        ),
     _printElectronsHits    (config().printElectronsHits()    ),
     _printElectronsMinNHits(config().printElectronsMinNHits()),
@@ -250,7 +305,11 @@ namespace mu2e {
     _printDeltaSeeds       (config().printDeltaSeeds()       ),
     _printDeltaCandidates  (config().printDeltaCandidates()  ),
     _printShcol            (config().printShcol()            ),
-    _printSeedNParents     (config().printSeedNParents()     )
+    _printSeedNParents     (config().printSeedNParents()     ),
+    _printMcProtons        (config().printMcProtons()        ),
+    _printProtonHits       (config().printProtonHits()       ),
+    _printProtonSeeds      (config().printProtonSeeds()      ),
+    _printProtonCandidates (config().printProtonCandidates() )
   {
     printf(" DeltaFinderDiag::DeltaFinderDiag : HOORAY Config! \n");
 
@@ -260,6 +319,51 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   DeltaFinderDiag::~DeltaFinderDiag() {
+  }
+
+//-----------------------------------------------------------------------------
+// for each DeltaSeed, create a list of SimParticle*'s parallel to its list of combo hits
+//-----------------------------------------------------------------------------
+  int DeltaFinderDiag::associateMcTruth() {
+
+    if (_data->chcol->size() == 0) return 0;
+
+    initDeltaSeedMcParameters();
+
+    initDeltaCandMcParameters();
+
+    initProtonCandMcParameters();
+//-----------------------------------------------------------------------------
+// now, for each MC electron calculate the number of hits flagged as delta
+//-----------------------------------------------------------------------------
+    int nmc    = _list_of_mc_particles.GetEntriesFast();
+
+    _nDeltaHitsTot  = 0;
+    _nDeltaHitsReco = 0;
+
+    for (int i=0; i<nmc; i++) {
+      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
+      mc->fNHitsDelta = 0;
+//-----------------------------------------------------------------------------
+// loop over the hits of MC delta electron and calculate fraction of them which have
+// been reconstructed as hits of reconstructed delta electrons
+//-----------------------------------------------------------------------------
+      int nh = mc->fListOfHits.size();
+      for (int ih=0; ih<nh; ih++) {
+        const HitData_t* hit = mc->fListOfHits[ih];
+        if (hit->fDeltaIndex >= 0) mc->fNHitsDelta += 1;
+      }
+
+      if (mc->fPdgID == PDGCode::e_minus) {
+        float mom = mc->Momentum();
+        if (mom < 20) {
+          _nDeltaHitsTot  += mc->NHits();
+          _nDeltaHitsReco += mc->fNHitsDelta;
+        }
+      }
+    }
+
+    return 0;
   }
 
 //-----------------------------------------------------------------------------
@@ -297,6 +401,17 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+  void DeltaFinderDiag::bookProtonHistograms(ProtonHist_t* Hist, art::TFileDirectory* Dir) {
+    Hist->fNComboHits = Dir->make<TH1F>("nch"       , "N(combo hits)"   , 200, 0., 200.);
+    Hist->fNStrawHits = Dir->make<TH1F>("nsh"       , "N(straw hits)"   , 200, 0., 200.);
+    Hist->fNHitsCE    = Dir->make<TH1F>("nch_ce"    , "N(combo hits CE)",  50, 0.,  50.);
+    Hist->fNHitsF     = Dir->make<TH1F>("nchf"      , "N(flagged CH)"   ,  50, 0.,  50.);
+    Hist->fPDGCode    = Dir->make<TH1F>("pdg"       , "PDG code"        ,1000, -2500., 2500.);
+    Hist->fMcMom      = Dir->make<TH1F>("mc_mom"    , "N(hits)"         , 200, 0., 200.);
+    Hist->fFFlagged   = Dir->make<TH1F>("fflagged"  , "N(flagged)/N"    , 100, 0.,    1);
+  }
+
+//-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
     Hist->fNSeeds          = Dir->make<TH1F>("nseeds", "N(seeds)"   , 200, 0., 2000.);
@@ -308,6 +423,10 @@ namespace mu2e {
     Hist->fNDelta          = Dir->make<TH1F>("n_delta"   , "N(reco deltas)" , 250, 0., 250.);
     Hist->fNDeltaHitsT     = Dir->make<TH1F>("n_delta_ht", "N(delta hits T)", 500, 0., 5000.);
     Hist->fNDeltaHitsR     = Dir->make<TH1F>("n_delta_hr", "N(delta hits R)", 500, 0., 5000.);
+
+    Hist->fNPRecoVsMc   = Dir->make<TH2F>("np_reco_vs_mc"  , "Nprot: reco vs MC)"  , 100, 0., 100.,100,0,100);
+    Hist->fNP10RecoVsMc = Dir->make<TH2F>("np10_reco_vs_mc", "Nprot10: reco vs MC)", 100, 0., 100.,100,0,100);
+    Hist->fNP15RecoVsMc = Dir->make<TH2F>("np15_reco_vs_mc", "Nprot15: reco vs MC)", 100, 0., 100.,100,0,100);
   }
 
 //-----------------------------------------------------------------------------
@@ -495,6 +614,10 @@ namespace mu2e {
     book_mc_histset[100] = 1;                // electrons and 20 < p < 80 MeV/c
     book_mc_histset[101] = 1;                // electrons and p > 80 MeV/c
 
+    book_mc_histset[200] = 1;                // all protons
+    book_mc_histset[201] = 1;                // protons with N(hits) > 10
+    book_mc_histset[202] = 1;                // protons with N(hits) > 15
+
     for (int i=0; i<kNMcHistSets; i++) {
       if (book_mc_histset[i] != 0) {
         sprintf(folder_name,"mc_%i",i);
@@ -504,6 +627,28 @@ namespace mu2e {
         bookMcHistograms(_hist.fMc[i],&dir);
       }
     }
+//-----------------------------------------------------------------------------
+// book proton histograms
+//-----------------------------------------------------------------------------
+    int book_proton_histset[kNProtonHistSets];
+    for (int i=0; i<kNProtonHistSets; i++) book_proton_histset[i] = 0;
+
+    book_proton_histset[ 0] = 1;                // all proton candidates
+    book_proton_histset[ 1] = 1;                // proton candidates N(combo hits) >= 10
+    book_proton_histset[ 2] = 1;                // proton candidates N(combo hits) >= 15
+
+    for (int i=0; i<kNProtonHistSets; i++) {
+      if (book_proton_histset[i] != 0) {
+        sprintf(folder_name,"proton_%i",i);
+        art::TFileDirectory dir = Tfs->mkdir(folder_name);
+
+        _hist.fProton[i] = new ProtonHist_t;
+        bookProtonHistograms(_hist.fProton[i],&dir);
+      }
+    }
+//-----------------------------------------------------------------------------
+// done
+//-----------------------------------------------------------------------------
     return 0;
   }
 
@@ -569,6 +714,54 @@ namespace mu2e {
     Hist->fNMc->Fill(nmc);
     Hist->fNDeltaHitsT->Fill(_nDeltaHitsTot);
     Hist->fNDeltaHitsR->Fill(_nDeltaHitsReco);
+
+    Hist->fNPRecoVsMc  ->Fill(_nMcProtons  ,_nRecoProtons  );
+    Hist->fNP10RecoVsMc->Fill(_nMcProtons10,_nRecoProtons10);
+    Hist->fNP15RecoVsMc->Fill(_nMcProtons15,_nRecoProtons15);
+  }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::fillMcHistograms(McHist_t* Hist, McPart_t* Mc) {
+
+    float mom = Mc->Momentum();
+
+    Hist->fPDGCode->Fill(Mc->fPdgID);
+    Hist->fMom->Fill(mom);
+    Hist->fNHits->Fill(Mc->NHits());
+    Hist->fNHitsDelta->Fill(Mc->fNHitsDelta);
+
+    float freco = Mc->fNHitsDelta/(Mc->NHits()+1.e-4);
+
+    Hist->fFractReco->Fill(freco);
+
+    Hist->fFractRecoVsNHits->Fill(Mc->NHits(),freco);
+
+    int max_nseg = Mc->fLastStation-Mc->fFirstStation+1;
+    Hist->fMaxSeg->Fill(max_nseg);
+
+    float dt = Mc->HitDt();
+    Hist->fHitDt->Fill(dt);
+  }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::fillProtonHistograms(ProtonHist_t* Hist, ProtonCandidate* Pc, ProtonCandidatePar_t* Pcp) {
+
+    Hist->fNComboHits->Fill(Pc->nHitsTot());
+    Hist->fNStrawHits->Fill(Pc->nStrawHitsTot());
+    Hist->fNHitsCE->Fill(Pcp->fNHitsCE);
+    Hist->fNHitsF->Fill(Pcp->fNFlaggedHits);
+
+    float mom(-1), pdg_code(-1.e6);
+    if (Pcp->fMcPart) {
+      mom      = Pcp->fMcPart->Momentum();
+      pdg_code = Pcp->fMcPart->fPdgID;
+    }
+
+    Hist->fPDGCode->Fill(pdg_code);
+    Hist->fMcMom->Fill(mom);
+
+    float f_flagged = float(Pcp->fNFlaggedHits)/Pc->nHitsTot();
+    Hist->fFFlagged->Fill(f_flagged);
   }
 
 //-----------------------------------------------------------------------------
@@ -638,119 +831,15 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::fillMcHistograms(McHist_t* Hist, McPart_t* Mc) {
-
-    float mom = Mc->Momentum();
-
-    Hist->fPDGCode->Fill(Mc->fPdgID);
-    Hist->fMom->Fill(mom);
-    Hist->fNHits->Fill(Mc->NHits());
-    Hist->fNHitsDelta->Fill(Mc->fNHitsDelta);
-
-    float freco = Mc->fNHitsDelta/(Mc->NHits()+1.e-4);
-
-    Hist->fFractReco->Fill(freco);
-
-    Hist->fFractRecoVsNHits->Fill(Mc->NHits(),freco);
-
-    int max_nseg = Mc->fLastStation-Mc->fFirstStation+1;
-    Hist->fMaxSeg->Fill(max_nseg);
-
-    float dt = Mc->HitDt();
-    Hist->fHitDt->Fill(dt);
-  }
-
-  //-----------------------------------------------------------------------------
-  int DeltaFinderDiag::precalculateRecoParameters() {
-
-    for (int s=kNStations-1; s>=0; s--) {
-      int nseeds = _data->NSeeds(s);
-      for(int se=0; se<nseeds; ++se) {
-        DeltaSeed*      seed = _data->deltaSeed(s,se);
-        DeltaSeedPar_t* sp   = &_seedPar[s].at(se);
-
-        float xc = seed->Xc();
-        float yc = seed->Yc();
-
-        sp->fDt12     = -1.e6;
-        sp->fDtCorr12 = -1.e6;
-        sp->fDtDelta  = -1.e6;
-
-        if (seed->SFace(1) >= 0) {
-          sp->fDt12     = seed->Dt12();
-          sp->fDtCorr12 = seed->DtCorr12();
-        }
-
-        // float chi2_par, chi2_perp, chi2;
-        for (int face=0; face<kNFaces; face++) {
-          HitData_t* hd = seed->HitData(face);
-          if (hd) {
-//-----------------------------------------------------------------------------
-// use DeltaFinderAlg
-//-----------------------------------------------------------------------------
-            _data->_finder->hitChi2(hd,xc,yc,sp->fChi2HPar[face],sp->fChi2HPerp[face]);
-            sp->fChi2H[face] = sp->fChi2HPar[face] + sp->fChi2HPerp[face];
-          }
-          else {
-            sp->fChi2H    [face] = -1;
-            sp->fChi2HPar [face] = -1;
-            sp->fChi2HPerp[face] = -1;
-          }
-        }
-        if (seed->Chi2ParN() > _data->_finder->_maxChi2Par) {
-          if (_data->_finder->_printErrors) {
-            printf("* ERROR .. should never happen! seed chi2par/N = %10.3f\n",seed->Chi2ParN());
-            printDeltaSeed(seed,sp,0);
-          }
-        }
-      }
-    }
-
-    int ndelta = _data->nDeltaCandidates();
-
-    _deltaPar.resize(ndelta);
-
-    for (int idelta=0; idelta<ndelta; idelta++) {
-      DeltaCandidate*      dc  = _data->deltaCandidate(idelta);
-      DeltaCandidatePar_t* dcp = &_deltaPar[idelta];
-//-----------------------------------------------------------------------------
-// initialize residuals, whatever they are, to zero
-//-----------------------------------------------------------------------------
-      for (int is=0; is<kNStations; is++) dcp->dxy[is] = 0;
-
-      // int npart          = 0;
-      for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
-        DeltaSeed* ds = dc->Seed(is);
-        if (ds == 0)                                                  continue;
-//-----------------------------------------------------------------------------
-// to calculate the seed residuals wrt the delta, exclude the seed
-//-----------------------------------------------------------------------------
-        DeltaSeedPar_t* sp = &_seedPar[is].at(ds->Index());
-        DeltaCandidate dc1;                     // delta w/o this seed
-        dc1.removeSeed(dc,is);
-//-----------------------------------------------------------------------------
-// calculate seed residuals and chi2 wrt dc1
-//-----------------------------------------------------------------------------
-        float    chi2_par, chi2_perp;
-        _data->_finder->seedChi2(ds,dc1.Xc(),dc1.Yc(),chi2_par,chi2_perp);
-
-        sp->fDeltaChi2Par  = chi2_par /ds->NHits();
-        sp->fDeltaChi2Perp = chi2_perp/ds->NHits();
-        sp->fDeltaChi2     = (chi2_par+chi2_perp)/ds->NHits();
-
-        sp->fDtDelta       = ds->TMean() - dc1.T0(is);
-      }
-    }
-    return 0;
-  }
-
-
-//-----------------------------------------------------------------------------
 // main fill histograms function called once per event
 // 'Mode' not used
 //-----------------------------------------------------------------------------
   int DeltaFinderDiag::fillHistograms(void* Data, int Mode) {
     _data = (Data_t*) Data;
+//-----------------------------------------------------------------------------
+// precalculate reco parameters - do it *before* precalculating MC parameters
+//-----------------------------------------------------------------------------
+    precalculateRecoParameters();
 //-----------------------------------------------------------------------------
 // precalculate MC-specific info
 //-----------------------------------------------------------------------------
@@ -758,14 +847,10 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
         _eventNumber = en;
-        InitMcDiag();
+        initMcDiag();
         associateMcTruth();
       }
     }
-//-----------------------------------------------------------------------------
-// precalculate reco parameters
-//-----------------------------------------------------------------------------
-    precalculateRecoParameters();
 //-----------------------------------------------------------------------------
 // event histograms - just one set
 //-----------------------------------------------------------------------------
@@ -815,12 +900,13 @@ namespace mu2e {
           fillSeedHistograms(_hist.fSeed[91],seed,sp);
           if (seed->Chi2TotN() > 50) {
             printf("* ERROR seed with chi2TotN  > 50\n");
-            printDeltaSeed(seed,sp,0);
+            printSegment(seed,sp,0);
           }
         }
-
         DeltaCandidate* dc(nullptr);
-        if (seed->fDeltaIndex >= 0) dc = _data->deltaCandidate(seed->fDeltaIndex);
+        if ((seed->deltaIndex() >= 0) and (seed->fDeltaIndex < 10000)) {
+          dc = _data->deltaCandidate(seed->deltaIndex());
+        }
         if (dc) {
 //-----------------------------------------------------------------------------
 // this seed has been associated with a delta
@@ -944,7 +1030,33 @@ namespace mu2e {
         if ((mc_mom > 20) && (mc_mom < 80)) fillMcHistograms(_hist.fMc[100],mc);
         if (mc_mom > 80                   ) fillMcHistograms(_hist.fMc[101],mc);
       }
+      else if (mc->fPdgID > 2000) {
+//-----------------------------------------------------------------------------
+// protons and such
+// hits are the single-straw hits
+//-----------------------------------------------------------------------------
+        fillMcHistograms(_hist.fMc[200],mc);
+        if (mc->NHits() > 10) fillMcHistograms(_hist.fMc[201],mc);
+        if (mc->NHits() > 15) fillMcHistograms(_hist.fMc[202],mc);
+      }
     }
+//-----------------------------------------------------------------------------
+// reconstructed protons
+//-----------------------------------------------------------------------------
+    int nprot = _data->nProtonCandidates();
+    for (int i=0; i<nprot; i++) {
+      ProtonCandidate*      pc  = _data->protonCandidate(i);
+      ProtonCandidatePar_t* pcp = &_protonPar[i];
+
+      fillProtonHistograms(_hist.fProton[0],pc,pcp);
+
+      int nch = pc->nHitsTot();
+      if (nch >= 10) fillProtonHistograms(_hist.fProton[0],pc,pcp);
+      if (nch >= 15) fillProtonHistograms(_hist.fProton[1],pc,pcp);
+    }
+//-----------------------------------------------------------------------------
+// done
+//-----------------------------------------------------------------------------
     return 0;
   }
 
@@ -952,7 +1064,7 @@ namespace mu2e {
 // create a list of MC particles with hits in the tracker
 // the hope is that it is shorter than the list of all particles
 //-----------------------------------------------------------------------------
-  int DeltaFinderDiag::InitMcDiag() {
+  int DeltaFinderDiag::initMcDiag() {
 //-----------------------------------------------------------------------------
 // memory cleanup after previous event
 // assume that MC collections have been initialized
@@ -965,6 +1077,7 @@ namespace mu2e {
 
     _list_of_mc_particles.Clear();
     _list_of_mc_part_hit.Clear();
+    _list_of_mc_protons.Clear();
 
     int   nch           = _data->chcol->size();
     if (nch <= 0) return -1;
@@ -983,9 +1096,9 @@ namespace mu2e {
           const ComboHit* ch = hd->fHit;
           size_t ich         = ch-ch0;  // hit index in the collection
 //-----------------------------------------------------------------------------
-// get MC particle associated with the particle hitting the first straw
-// a combo hit could be made out of the straw hits produced by different particles
-// in a neighbor straws - ignore that for now
+// associate combo hit with the MC particle hitting the first straw of a combo hit
+// a combo hit could be made out of straw hits produced by different particles
+// in neighboring strawa, so there could be an uncertainty - ignore that for now
 //-----------------------------------------------------------------------------
           int loc = ch->index(0);
           const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,loc);
@@ -1029,6 +1142,19 @@ namespace mu2e {
       }
     }
 
+    _nMcProtons10 = 0;
+    _nMcProtons15 = 0;
+    _nMcProtons   = _list_of_mc_particles.GetEntriesFast();
+
+    for (int i=0; i<_nMcProtons; i++) {
+      McPart_t* mc = mcPart(i);
+      if (mc->PdgID() > 2000) {
+        _list_of_protons.Add(mc);
+        if (mc->NHits() >= 10) _nMcProtons10++;
+        if (mc->NHits() >= 15) _nMcProtons15++;
+      }
+    }
+
     if (_data->debugLevel > 10) {
       int nmc = _list_of_mc_particles.GetEntriesFast();
       printf(" N(MC particles with hits in the tracker: %5i\n",nmc);
@@ -1052,33 +1178,16 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// for each DeltaSeed, create a list of SimParticle*'s parallel to its list of combo hits
+// initialize MC parameters of the reconstructed DeltaSeed's
 //-----------------------------------------------------------------------------
-  int DeltaFinderDiag::associateMcTruth() {
-
-    if (_data->chcol->size() == 0) return 0;
+  int DeltaFinderDiag::initDeltaSeedMcParameters() {
 
     const ComboHit* hit0 = &_data->chcol->at(0);
 //-----------------------------------------------------------------------------
-// initialize additional delta parameters to be calculated
-//-----------------------------------------------------------------------------
-    int ndelta = _data->nDeltaCandidates();
-    _deltaPar.resize(ndelta);
-
-    for (int idelta=0; idelta<ndelta; idelta++) {
-      DeltaCandidatePar_t* dcp = &_deltaPar[idelta];
-      dcp->fMcPart   = nullptr;
-      dcp->fNHitsMcP = 0;
-      dcp->fNHitsCE  = 0;
-    }
-
-    for (int is=0; is<kNStations; is++) {
-      int nseeds = _data->NSeeds(is);
-
-      _seedPar[is].resize(nseeds);
-//-----------------------------------------------------------------------------
 // pre-calculate seed parameters
 //-----------------------------------------------------------------------------
+    for (int is=0; is<kNStations; is++) {
+      int nseeds = _data->NSeeds(is);
       for (int i=0; i<nseeds; ++i) {
         DeltaSeed*      seed = _data->deltaSeed(is,i);
         DeltaSeedPar_t* sp   = &_seedPar[is].at(i);
@@ -1093,14 +1202,14 @@ namespace mu2e {
         if (seed->HitData(face0) != nullptr) {
           const HitData_t* hd1  = seed->HitData(face0);
           int loc1              = hd1->fHit-hit0;
-          sp->fPreSeedMcPart[0] = (McPart_t*) _list_of_mc_part_hit.At(loc1);
+          sp->fPreSeedMcPart[0] = mcPart(loc1);
         }
 
         int face1 = seed->SFace(1);
         if (face1 >= 0) {
           const HitData_t* hd2 = seed->HitData(face1);
           int loc2 = hd2->fHit-hit0;
-          sp->fPreSeedMcPart[1] = (McPart_t*) _list_of_mc_part_hit.At(loc2);
+          sp->fPreSeedMcPart[1] = mcPart(loc2);
         }
 //-----------------------------------------------------------------------------
 // define MC pointers (McPart_t's) for hits in all faces
@@ -1111,7 +1220,7 @@ namespace mu2e {
           sp->fMcPart[face] = nullptr;
           if (hd == nullptr)                                          continue;
           int loc           = hd->fHit-hit0;         // ComboHit index in the collection
-          McPart_t* mc      = (McPart_t*) _list_of_mc_part_hit.At(loc);
+          McPart_t* mc      = mcPart(loc);
           sp->fMcPart[face] = mc;
 //-----------------------------------------------------------------------------
 // count CE hits
@@ -1119,7 +1228,7 @@ namespace mu2e {
           if ((mc->fPdgID == PDGCode::e_minus) && (mc->fStartMom > 95) && (mc->fStartMom <110)) {
             sp->fNHitsCE += 1;
             if (seed->fDeltaIndex >= 0) {
-              DeltaCandidatePar_t* dcp = &_deltaPar[seed->fDeltaIndex];
+              DeltaCandidatePar_t* dcp = &_deltaPar[seed->deltaIndex()];
               dcp->fNHitsCE           += 1;
             }
           }
@@ -1127,7 +1236,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // count number of different simID's contributing
 //-----------------------------------------------------------------------------
-        sp->fNSim  = 0;
+        sp->fNSim = 0;
         sp->fNMom = 0;
         int simid[4], nsim(0), momid[4], nmom(0);
         for (int face=0; face<kNFaces; face++) {
@@ -1171,17 +1280,33 @@ namespace mu2e {
         if (_printSeedNParents > 0) {
           if ((seed->fNHits == _printSeedNParents) and (sp->fNSim > 1)) {
             printf("  >>> WARNING: suspisious DeltaSeed: %i hits, Nmc = %i\n",seed->fNHits,sp->fNSim);
-            printDeltaSeed(seed,sp,0);
+            printSegment(seed,sp,0);
           }
         }
       }
     }
+    return 0;
+  }
+
+//-----------------------------------------------------------------------------
+  int DeltaFinderDiag::initDeltaCandMcParameters() {
 //-----------------------------------------------------------------------------
 // proceed with the reconstructed delta candidates
+// a) initialize additional delta parameters to be calculated
 //-----------------------------------------------------------------------------
     int const    max_part(1000);
     McPart_t*    part [max_part];
     int          nhits[max_part];
+
+    int ndelta = _data->nDeltaCandidates();
+    _deltaPar.resize(ndelta);
+
+    for (int idelta=0; idelta<ndelta; idelta++) {
+      DeltaCandidatePar_t* dcp = &_deltaPar[idelta];
+      dcp->fMcPart   = nullptr;
+      dcp->fNHitsMcP = 0;
+      dcp->fNHitsCE  = 0;
+    }
 
     for (int idelta=0; idelta<ndelta; idelta++) {
       DeltaCandidate* dc = _data->deltaCandidate(idelta);
@@ -1211,12 +1336,8 @@ namespace mu2e {
         DeltaSeedPar_t* sp = &_seedPar[is].at(ds->Index());
 
         for (int face=0; face<kNFaces; face++) {
-//-----------------------------------------------------------------------------
-// assign delta index to each hit flagged as delta
-//-----------------------------------------------------------------------------
           HitData_t* hd = (HitData_t*) ds->HitData(face);
           if (hd == nullptr)                                          continue;
-          hd->fDeltaIndex = idelta;
 //-----------------------------------------------------------------------------
 // try to identify a reconstructed delta-electron with the MC particle
 //-----------------------------------------------------------------------------
@@ -1239,7 +1360,7 @@ namespace mu2e {
               npart += 1;
             }
             else {
-              printf("* DeltaFinder::associateMcTruth ERROR: npart >= max_part (%i)\n",max_part);
+              printf("* ERROR DeltaFinder::%s: npart >= max_part (%i)\n",__func__,max_part);
             }
           }
         }
@@ -1263,36 +1384,114 @@ namespace mu2e {
         dcp->fMcPart->fDelta = dc;
       }
     }
-//-----------------------------------------------------------------------------
-// now, for each MC electron calculate the number of hits flagged as delta
-//-----------------------------------------------------------------------------
-    int nmc    = _list_of_mc_particles.GetEntriesFast();
+    return 0;
+  }
 
-    _nDeltaHitsTot  = 0;
-    _nDeltaHitsReco = 0;
 
-    for (int i=0; i<nmc; i++) {
-      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
-      mc->fNHitsDelta = 0;
 //-----------------------------------------------------------------------------
-// loop over the hits of MC delta electron and calculate fraction of them which have
-// been reconstructed as hits of reconstructed delta electrons
+// proceed with the reconstructed proton candidates
+// proton candidate is a time cluster - doesn't necessarily have to contain
+// hits of only one particle
+// however want to know !
 //-----------------------------------------------------------------------------
-      int nh = mc->fListOfHits.size();
-      for (int ih=0; ih<nh; ih++) {
-        const HitData_t* hit = mc->fListOfHits[ih];
-        if (hit->fDeltaIndex >= 0) mc->fNHitsDelta += 1;
-      }
+  int DeltaFinderDiag::initProtonCandMcParameters() {
+    int const    max_part(1000);
+    McPart_t*    part [max_part];
+    int          nhits[max_part];
 
-      if (mc->fPdgID == PDGCode::e_minus) {
-        float mom = mc->Momentum();
-        if (mom < 20) {
-          _nDeltaHitsTot  += mc->NHits();
-          _nDeltaHitsReco += mc->fNHitsDelta;
-        }
+    const ComboHit* ch_hit_0 = &_data->chcol->at(0);
+
+    int _nRecoProtons = _data->nProtonCandidates();
+    _protonPar.resize(_nRecoProtons);
+
+    _nRecoProtons10 = 0;
+    _nRecoProtons15 = 0;
+
+    for (int i=0; i<_nRecoProtons; i++) {
+      ProtonCandidatePar_t* pcp = &_protonPar[i];
+      pcp->fMcPart   = nullptr;
+      pcp->fNHitsMcP = 0;
+      pcp->fNHitsCE  = 0;
+
+      for (int is=0; is<kNStations; is++) {
+        for (int face=0; face<kNFaces; face++) pcp->fHitMcPart[is][face].clear();
       }
     }
 
+    for (int iprot=0; iprot<_nRecoProtons; iprot++) {
+      ProtonCandidate*      pc  = _data->protonCandidate(iprot);
+      ProtonCandidatePar_t* pcp = &_protonPar[iprot];
+//-----------------------------------------------------------------------------
+// two reconstructed proton counters - with 10+ and 15+ hits
+//-----------------------------------------------------------------------------
+      if (pc->nHitsTot() >= 10) _nRecoProtons10++;
+      if (pc->nHitsTot() >= 15) _nRecoProtons15++;
+//-----------------------------------------------------------------------------
+// npart - the number of particles in the 'proton' time cluster
+//-----------------------------------------------------------------------------
+      int npart = 0;
+      for (int is=pc->fFirstStation; is<=pc->fLastStation; is++) {
+        int nh_station = pc->nHitsStation(is);
+        if (nh_station == 0)                                          continue;
+        for (int face=0; face<kNFaces; face++) {
+//-----------------------------------------------------------------------------
+// number of hits in this face
+//-----------------------------------------------------------------------------
+          int nh = pc->nHits(is,face);
+          for (int ih=0; ih<nh; ih++) {
+//-----------------------------------------------------------------------------
+// assign 'proton' index to each hit in a proton time cluster
+//-----------------------------------------------------------------------------
+            HitData_t* hd = (HitData_t*) pc->hitData(is,face,ih);
+            hd->fProtonIndex = iprot;
+//-----------------------------------------------------------------------------
+// try to identify a reconstructed delta-electron with the MC particle
+//-----------------------------------------------------------------------------
+            int loc = hd->fHit-ch_hit_0;
+            McPart_t* mc = mcPart(loc);  // list parallel to the list of hits
+
+            int found(0);
+
+            for (int ip=0; ip<npart; ip++) {
+              if (mc == part[ip]) {
+                found = 1;
+                nhits[ip]++;
+                break;
+              }
+            }
+
+            if (found == 0) {
+              if (npart < max_part) {
+                part [npart] = mc;
+                nhits[npart] = 1;
+                npart += 1;
+              }
+              else {
+                printf("* DeltaFinder::%s ERROR: npart >= max_part (%i)\n",__func__,max_part);
+              }
+            }
+          }
+        }
+      }
+//-----------------------------------------------------------------------------
+// look at the particles contributed to the cluster and determine
+// the "best" one - the one contributed the most number of hits
+//-----------------------------------------------------------------------------
+      int max_hits(-1), ibest(-1);
+
+      for (int i=0; i<npart; i++) {
+        if (nhits[i] > max_hits) {
+          max_hits = nhits[i];
+          ibest    = i;
+        }
+      }
+
+      if (ibest >= 0) {
+        pcp->fMcPart          = part [ibest];
+        pcp->fNHitsMcP        = nhits[ibest];
+        pcp->fMcPart->fProton = pc;
+      }
+    }
     return 0;
   }
 
@@ -1312,8 +1511,8 @@ namespace mu2e {
     int en = _data->event->event();
     if (_mcDiag) {
       if (_eventNumber != en) {
-        _eventNumber       = en;
-        int rc = InitMcDiag();
+        _eventNumber = en;
+        int rc = initMcDiag();
         if (rc < 0) return -1;
         associateMcTruth();
       }
@@ -1324,7 +1523,7 @@ namespace mu2e {
 // print combo hits Z-ordered
 //-----------------------------------------------------------------------------
       printf("* ----------------------------------------------------------------------------------------------------------------\n");
-      printf("* DeltaFinderDiag::debug: print combo hit data\n");
+      printf("* DeltaFinderDiag::debug: all combo hit data\n");
 
       for (int is=0; is<kNStations; is++) {
         printHitData(nullptr,1);
@@ -1345,6 +1544,34 @@ namespace mu2e {
       //                              _data->sdmcCollTag.encode().data());
     }
 
+    if (_printGoodComboHits) {
+//-----------------------------------------------------------------------------
+// print combo hits Z-ordered
+//-----------------------------------------------------------------------------
+      printf("* ----------------------------------------------------------------------------------------------------------------\n");
+      printf("* DeltaFinderDiag::debug: good (non-delta and non-proton) combo hit data\n");
+
+      const ComboHit* ch_hit_0 = &_data->chcol->at(0);
+
+      for (int is=0; is<kNStations; is++) {
+        printHitData(nullptr,1);
+        for (int face=0; face<kNFaces; face++) {
+          FaceZ_t* fz = &_data->fFaceData[is][face];
+          int nhits = fz->fHitData.size();
+          for (int ih=0; ih<nhits; ih++) {
+            HitData_t* hd = &fz->fHitData[ih];
+            int loc = hd->fHit-ch_hit_0;
+            const StrawHitFlag* flag = &_data->outputChfColl->at(loc);
+
+            if (  flag->hasAnyProperty(StrawHitFlag::bkg      )) continue;
+            if (! flag->hasAnyProperty(StrawHitFlag::energysel)) continue;
+
+            printHitData(hd,-1);
+          }
+        }
+      }
+    }
+
     if (_printDeltaSeeds != 0) {
       printf("* ----------------------------------------------------------------------------------------------------------------\n");
       printf("* DeltaFinderDiag::debug: print delta seeds\n");
@@ -1353,12 +1580,12 @@ namespace mu2e {
         printf("* station: %2i N(seeds): %3i\n",st,nseeds);
         if (nseeds > 0) {
 
-          printDeltaSeed(nullptr,nullptr,1);
+          printSegment(nullptr,nullptr,1);
 
           for (int iseed=0; iseed<nseeds; ++iseed) {
             DeltaSeed* seed = _data->deltaSeed(st,iseed);
             DeltaSeedPar_t* sp = &_seedPar[st].at(iseed);
-            printDeltaSeed(seed,sp,-1);
+            printSegment(seed,sp,-1);
           }
         }
       }
@@ -1382,8 +1609,9 @@ namespace mu2e {
             pdg_id = dcp->fMcPart->fPdgID;
             sim_id = dcp->fMcPart->fID;
           }
-          printf("* :dc:%05i  nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0    PdgID N(MC hits) simID=%5i pdgID=%10i \n",
-                 dc->Index(),sim_id,pdg_id);
+          printf("* :dc:%05i",dc->Index());
+          printf("  nh n(CE) ns s1  s2     X        Y        Z     chi21   chi22   htmin   htmax   t0    PdgID N(MC hits)");
+          printf(" simID=%5i pdgID=%10i \n",sim_id,pdg_id);
           printf("----------------------------------------------------------------------------------------------------------------\n");
           printf("            %3i  %3i %3i",dc->fNHits,dcp->fNHitsCE,dc->fNSeeds);
           printf(" %2i  %2i %7.2f %7.2f %9.2f",dc->fFirstStation,dc->fLastStation,
@@ -1476,14 +1704,242 @@ namespace mu2e {
         }
       }
     }
+//-----------------------------------------------------------------------------
+// print proton segments
+//-----------------------------------------------------------------------------
+    if (_printProtonSeeds != 0) {
+      printf("* ----------------------------------------------------------------------------------------------------------------\n");
+      printf("* DeltaFinderDiag::debug: print proton segments\n");
+      printf("* ----------------------------------------------------------------------------------------------------------------\n");
+      for (int st=0; st<kNStations; ++st) {
+        int nseg = _data->nProtonSeeds(st);
+        printf("* station: %2i N(proton segments): %3i\n",st,nseg);
+        if (nseg > 0) {
+
+          printSegment(nullptr,nullptr,1);
+
+          for (int iseg=0; iseg<nseg; ++iseg) {
+            DeltaSeed*      seg = _data->protonSeed(st,iseg);
+            DeltaSeedPar_t* sp  = &_seedPar[st].at(seg->Index());
+            printSegment(seg,sp,-1);
+          }
+        }
+      }
+    }
+//-----------------------------------------------------------------------------
+// print reconstructed proton candidates
+// protons are more like time clusters
+//-----------------------------------------------------------------------------
+    if (_printProtonCandidates != 0) {
+      const ComboHit* ch_hit_0 = &_data->chcol->at(0);
+      int np = _data->nProtonCandidates();
+      printf("* ----------------------------------------------------------------------------------------------------------------\n");
+      printf("* [DeltaFinder::debug] N(proton candidates) = %5i\n",np);
+      printf("* ----------------------------------------------------------------------------------------------------------------\n");
+
+      if (np > 0) {
+        for (int i=0; i<np; i++) {
+          ProtonCandidate* pc       = _data->protonCandidate(i);
+          ProtonCandidatePar_t* pcp = &_protonPar[i];
+          int   pdg_id = -1;
+          int   sim_id = -1;
+          float mom    = -1.;
+          if (pcp->fMcPart) {
+            pdg_id = pcp->fMcPart->fPdgID;
+            sim_id = pcp->fMcPart->fID;
+            mom    = pcp->fMcPart->Momentum();
+          }
+          printf("* :pc:%05i itime:%3i",pc->Index(),pc->timeIndex());
+          printf("  nh:nCE %3i:%2i", pc->nHitsTot(),pcp->fNHitsCE);
+          printf(" s1:s2 : %02i:%02i",pc->fFirstStation,pc->fLastStation);
+          printf(" simID=%5i pdgID=%10i mom=%8.2f\n",sim_id,pdg_id,mom);
+          printf("----------------------------------------------------------------------------------------------------------------\n");
+          printf(" is  nh      Xc      Yc      Phi   Tmean     face=0       face=1       face=2      face=3\n");
+          printf("----------------------------------------------------------------------------------------------------------------\n");
+
+          for (int is=pc->fFirstStation;is<=pc->fLastStation; is++) {
+            if (pc->nHitsStation(is) == 0) continue;
+
+            printf("%3i  %3i ",is,pc->nHitsStation(is));
+            printf("%7.1f %7.1f %7.2f %7.1f ",pc->xMean(is), pc->yMean(is), pc->phi(is), pc->t0(is));
+
+            int nhits_face_max=0;
+            for (int face=0; face<kNFaces; face++) {
+              int nh = pc->nHits(is,face);
+              if (nh > nhits_face_max) nhits_face_max = nh;
+            }
+
+            for (int i=0; i<nhits_face_max; i++) {
+              if (i>0) printf("                                         ");
+              for (int face=0; face<kNFaces; face++) {
+                int nh = pc->nHits(is,face);
+//-----------------------------------------------------------------------------
+// form line to print
+//-----------------------------------------------------------------------------
+                if (nh <= i) printf("(           )");
+                else {
+                  // std::vector<McPart_t*>* hit_mcp = &pcp->fHitMcPart[is][face];
+                  const HitData_t* hd = pc->hitData(is,face,i);
+                  const ComboHit* hit = hd->fHit;
+                  int loc = hit-ch_hit_0;
+                  McPart_t* mcp = mcPart(loc);
+                  int mcid      = mcp->fID;
+                  printf("(%5i:%5i)",hit->strawId().asUint16(),mcid);
+                }
+              }
+              printf(" \n");
+            }
+          }
+        }
+      }
+    }
+//-----------------------------------------------------------------------------
+// print MC protons and such .. PDG codes of all baryons are > 2000
+//-----------------------------------------------------------------------------
+    // constexpr PDGCode::enum_type kBaryon = PDGCode::enum_type(2000);
+
+    if (_printMcProtons) {
+      int nmc = _list_of_mc_particles.GetEntriesFast();
+
+      for (int i=0; i<nmc; i++) {
+        McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
+
+        int pdg_id = (int) mc->fPdgID;
+        if (pdg_id > 2000) {
+          // &&
+          //   (mc->Momentum() >  _printElectronsMinMom  ) &&
+          //   (mc->Momentum() <  _printElectronsMaxMom  ) &&
+          //   (mc->NHits()    >= _printElectronsMinNHits)    ) {
+
+          float fr   = mc->fNHitsProton/(mc->NHits()+1.e-3);
+          float fbkg = mc->fNHitsFlaggedProt/(mc->NHits()+1.e-3);
+
+          if (fr < _printElectronsMaxFReco) {
+
+            int proton_id(-1), proton_nseg(0), proton_nh(0), proton_nsh(0);
+            if (mc->fProton) {
+              proton_id    = mc->fProton->Index();
+              proton_nseg  = mc->fProton->nStationsWithHits();
+              proton_nh    = mc->fProton->nHitsTot();
+              proton_nsh   = mc->fProton->nStrawHitsTot();
+            }
+
+            printf("* event: %4i proton.sim.id:%6i",_data->event->event(),mc->fID);
+            printf(" mom:%7.3f time:%8.3f (nhits:nd:nf %3i:%2i:%2i) (ProtonID:%5i nseg:nh:nsh:nf %2i:%2i:%2i) stations:%2i:%2i",
+                   mc->Momentum(), mc->Time(),
+                   mc->NHits(), mc->fNHitsProton, mc->fNHitsFlaggedProt,
+                   proton_id, proton_nseg, proton_nh, proton_nsh,
+                   mc->fFirstStation, mc->fLastStation);
+            printf(" freco:fbkg %5.3f:%5.3f \n",fr,fbkg);
+
+            if (_printProtonHits > 0) {
+              int nh = mc->fListOfHits.size();
+              if (nh > 0) printHitData(NULL,1);
+              for (int ih=0; ih<nh; ih++) {
+                printHitData(mc->fListOfHits[ih],-1);
+              }
+            }
+          }
+        }
+      }
+    }
 
     if (_printOTracker) printOTracker();
-
     if (_printShcol   ) printComboHitCollection();
 
     return 0;
   }
 
+//-----------------------------------------------------------------------------
+// this function also resizes the array of delta candidate parameters
+//-----------------------------------------------------------------------------
+  int DeltaFinderDiag::precalculateRecoParameters() {
+
+    for (int is=0; is<kNStations; is++) {
+      int nseeds = _data->NSeeds(is);
+      _seedPar[is].resize(nseeds);
+    }
+
+    for (int s=kNStations-1; s>=0; s--) {
+      int nseeds = _data->NSeeds(s);
+      for(int se=0; se<nseeds; ++se) {
+        DeltaSeed*      seed = _data->deltaSeed(s,se);
+        DeltaSeedPar_t* sp   = &_seedPar[s].at(se);
+
+        float xc = seed->Xc();
+        float yc = seed->Yc();
+
+        sp->fDt12     = -1.e6;
+        sp->fDtCorr12 = -1.e6;
+        sp->fDtDelta  = -1.e6;
+
+        if (seed->SFace(1) >= 0) {
+          sp->fDt12     = seed->Dt12();
+          sp->fDtCorr12 = seed->DtCorr12();
+        }
+
+        // float chi2_par, chi2_perp, chi2;
+        for (int face=0; face<kNFaces; face++) {
+          HitData_t* hd = seed->HitData(face);
+          if (hd) {
+//-----------------------------------------------------------------------------
+// use DeltaFinderAlg to calculate chi2
+//-----------------------------------------------------------------------------
+            _data->_finder->hitChi2(hd,xc,yc,sp->fChi2HPar[face],sp->fChi2HPerp[face]);
+            sp->fChi2H[face] = sp->fChi2HPar[face] + sp->fChi2HPerp[face];
+          }
+          else {
+            sp->fChi2H    [face] = -1;
+            sp->fChi2HPar [face] = -1;
+            sp->fChi2HPerp[face] = -1;
+          }
+        }
+        if (seed->Chi2ParN() > _data->_finder->_maxChi2Par) {
+          if (_data->_finder->printErrors()) {
+            printf("* ERROR .. should never happen! seed chi2par/N = %10.3f\n",seed->Chi2ParN());
+            printSegment(seed,sp,0);
+          }
+        }
+      }
+    }
+
+    int ndelta = _data->nDeltaCandidates();
+    _deltaPar.resize(ndelta);
+
+    for (int idelta=0; idelta<ndelta; idelta++) {
+      DeltaCandidate*      dc  = _data->deltaCandidate(idelta);
+      DeltaCandidatePar_t* dcp = &_deltaPar[idelta];
+//-----------------------------------------------------------------------------
+// initialize residuals, whatever they are, to zero
+//-----------------------------------------------------------------------------
+      for (int is=0; is<kNStations; is++) dcp->dxy[is] = 0;
+
+      for (int is=dc->fFirstStation; is<=dc->fLastStation; is++) {
+        DeltaSeed* ds = dc->Seed(is);
+        if (ds == 0)                                                  continue;
+//-----------------------------------------------------------------------------
+// to calculate the seed residuals wrt the delta, exclude the seed
+//-----------------------------------------------------------------------------
+        DeltaSeedPar_t* sp = &_seedPar[is].at(ds->Index());
+        DeltaCandidate dc1;                     // delta w/o this seed
+        dc1.removeSeed(dc,is);
+//-----------------------------------------------------------------------------
+// calculate seed residuals and chi2 wrt dc1
+//-----------------------------------------------------------------------------
+        float    chi2_par, chi2_perp;
+        _data->_finder->seedChi2(ds,dc1.Xc(),dc1.Yc(),chi2_par,chi2_perp);
+
+        sp->fDeltaChi2Par  = chi2_par /ds->NHits();
+        sp->fDeltaChi2Perp = chi2_perp/ds->NHits();
+        sp->fDeltaChi2     = (chi2_par+chi2_perp)/ds->NHits();
+
+        sp->fDtDelta       = ds->TMean() - dc1.T0(is);
+      }
+    }
+    return 0;
+  }
+//-----------------------------------------------------------------------------
+// print flag stored in the ComboHit output hit flag collection
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::printHitData(const HitData_t* Hd, int PrintBanner) {
 
@@ -1491,7 +1947,7 @@ namespace mu2e {
       printf("#----------------------------------------------------------------------------------------------");
       printf("---------------------------------------------------------------------------------------------\n");
       printf("#   I  SHID    flag   nsh St:F:Pl:Pn:Str   Time     TCorr     dt     eDep     wdist     wres   ");
-      printf("     PDG simID    mom_PDG mom_ID   pStart      p       pz       X        Y         Z  DeltaID\n");
+      printf("     PDG simID    mom_PDG mom_ID   pStart      p       pz       X        Y         Z  DeltaID ProtID\n");
       printf("#----------------------------------------------------------------------------------------------");
       printf("---------------------------------------------------------------------------------------------\n");
       if (PrintBanner > 0) return;
@@ -1524,7 +1980,7 @@ namespace mu2e {
     printf("%5i",loc);
     printf(" %5i 0x%08x %2i" ,ch->strawId().asUint16(),*((int*) flag),ch->nStrawHits());
 
-    printf(" %2i:%i:%02i %2i %2i %8.2f %8.2f %7.3f %8.5f %8.3f %8.3f %10i %5i %10i %5i %8.3f %8.3f %8.3f %8.3f %8.3f %9.3f %5i\n",
+    printf(" %2i:%i:%02i %2i %2i %8.2f %8.2f %7.3f %8.5f %8.3f %8.3f %10i %5i %10i %5i %8.3f %8.3f %8.3f %8.3f %8.3f %9.3f %5i %6i\n",
            ch->strawId().station(),
            Hd->fZFace,
            ch->strawId().plane(),
@@ -1546,9 +2002,8 @@ namespace mu2e {
            ch->pos().x(),
            ch->pos().y(),
            ch->pos().z(),
-           Hd->fDeltaIndex
-           // ,radselOK,
-           // ,edepOK
+           Hd->DeltaIndex(),
+           Hd->ProtonIndex()
            );
   }
 
@@ -1591,7 +2046,7 @@ namespace mu2e {
     const ComboHit* ch0 = &_data->chcol->at(0);
     int loc             = Ch-ch0;
 
-    const StrawHitFlag* shf = &_data->outputChfColl->at(loc);
+    const StrawHitFlag* shf = &Ch->flag(); // _data->outputChfColl->at(loc);
 
     int radsel = shf->hasAnyProperty(StrawHitFlag::radsel);
     int edep   = shf->hasAnyProperty(StrawHitFlag::energysel);
@@ -1647,12 +2102,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::printDeltaSeed(DeltaSeed* seed, DeltaSeedPar_t* Sp, int PrintBanner) {
+  void DeltaFinderDiag::printSegment(DeltaSeed* seed, DeltaSeedPar_t* Sp, int PrintBanner) {
 
     if (PrintBanner >= 0) {
       printf("* -----------------------------------------------------------------------------------------");
       printf("-------------------------------------------------------------------------------\n");
-      printf("* st seed  good type delta  SHID: MCID   SHID: MCID   SHID: MCID   SHID: MCID");
+      printf("* st seed  good type delta proton SHID: MCID   SHID: MCID   SHID: MCID   SHID: MCID");
       printf("   chi21  chi22 chi2all/N chipar/N ch2prp/N mintime  maxtime  <edep>      ");
       printf("X        Y         Z   nch nsh\n");
       printf("* -------------------------------------------------------------------------------------------");
@@ -1662,7 +2117,11 @@ namespace mu2e {
     if (PrintBanner > 0) return;
 
     printf("* %2i  %03i %5i   %02i",seed->Station(),seed->Index(),seed->fGood,seed->fType);
-    printf(" %5i",seed->fDeltaIndex);
+//-----------------------------------------------------------------------------
+// it is important to print seed->fDeltaIndex, not seed->deltaIndex(),
+// as the latter performs the truncation: fDeltaIndex % 10000
+//-----------------------------------------------------------------------------
+    printf(" %5i %5i",seed->deltaIndex(),seed->protonIndex());
 //-----------------------------------------------------------------------------
 // print hit ID's in each face
 //-----------------------------------------------------------------------------
@@ -1672,8 +2131,9 @@ namespace mu2e {
       else {
         const ComboHit* hit = hd->fHit;
         McPart_t* mcp = Sp->fMcPart[face];
-        int mcid      = mcp->fID;
-        printf("(%5i:%5i)",hit->strawId().asUint16(),mcid);
+        if (mcp) printf("(%5i:%5i)",hit->strawId().asUint16(),mcp->fID);
+        else     printf("(%5i:XXXXX)",hit->strawId().asUint16());
+
       }
     }
 

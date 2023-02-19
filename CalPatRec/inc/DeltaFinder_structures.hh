@@ -18,6 +18,12 @@ namespace mu2e {
 
     extern float  stationZ   [kNStations];
 
+    struct PhiPrediction_t {
+      float fPhi;                       // predicted phi itself, -100 if no prediction
+      float fErr;                       // uncertainty, defines the window
+      int   fPanelID;                   // if can predict the panel, -1 otherwise
+    };
+
     struct ChannelID {
       int Station;
       int Plane;

@@ -1181,6 +1181,40 @@ namespace mu2e {
       if (dc->fMask == 0) dc->markHitsAsUsed();
     }
 //-----------------------------------------------------------------------------
+// mark segments (mostly, 2-hitters), all hits of which have been independently
+// included into deltas
+//-----------------------------------------------------------------------------
+    for (int is=0; is<kNStations; is++) {
+      int nseeds = _data->NSeeds(is);
+      for (int i=0; i<nseeds; i++) {
+        DeltaSeed* seed = _data->deltaSeed(is,i);
+        if (seed->deltaIndex() >= 0)                                  continue;
+//-----------------------------------------------------------------------------
+// 'seed' has not been associated with delta as a whole, look at its hits
+//-----------------------------------------------------------------------------
+        int delta_id(-1);
+        for (int face=0; face<kNFaces; face++) {
+          HitData_t* hd = seed->HitData(face);
+          if (hd == nullptr)                                          continue;
+          if (hd->DeltaIndex() < 0) break;
+          if (delta_id < 0) {
+            delta_id = hd->DeltaIndex();
+          }
+          else if (delta_id != hd->DeltaIndex()) {
+            delta_id = -1;
+            break;
+          }
+        }
+        if (delta_id >= 0) {
+//-----------------------------------------------------------------------------
+// a seed has not been included as a part of a delta, however all its hits
+// individually have been picked up be the same delta candidate
+//-----------------------------------------------------------------------------
+          seed->fDeltaIndex = 10000+delta_id;
+        }
+      }
+    }
+//-----------------------------------------------------------------------------
 // last step: find protons (time clusters of high-ionization hits
 //-----------------------------------------------------------------------------
     if (_flagProtonHits != 0) findProtons();

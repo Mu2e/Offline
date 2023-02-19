@@ -33,6 +33,7 @@ namespace mu2e {
     fSFace[1]         = face1;
 
     fDeltaIndex       = -1;
+    fProtonIndex      = -1;
 
     for (int face=0; face<kNFaces; face++) {
       fFaceProcessed[face] = 0;

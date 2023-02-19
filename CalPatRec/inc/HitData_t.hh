@@ -4,6 +4,8 @@
 #ifndef __CalPatRec_HitData_t_hh__
 #define __CalPatRec_HitData_t_hh__
 
+#include "cmath"
+
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
@@ -17,6 +19,7 @@ namespace mu2e {
       int                     fUsed;           // TBD
       int                     fZFace;          // z-ordered face (for printing)
       int                     fDeltaIndex;     // is it really needed? - yes!
+      int                     fProtonIndex;    //
       float                   fChi2Min;
       float                   fSigW2;          // cached resolution^2 along the wire
       float                   fCorrTime;       // cached hit corrected time
@@ -51,13 +54,20 @@ namespace mu2e {
         fNxr         = fWx*fNr;
         fNyr         = fWy*fNr;
         fDeltaIndex  = -1;
+        fProtonIndex = -1;
       }
 
-      int Used      () const { return fUsed      ; }
-      int DeltaIndex() const { return fDeltaIndex; }
-      int panelID   () const {
-        printf("HitData_t::panelID : write me!\n");
-        return -1;
+      int   Used       () const { return fUsed       ; }
+      int   DeltaIndex () const { return fDeltaIndex ; }
+      int   ProtonIndex() const { return fProtonIndex; }
+      float Phi      () const { return atan2(fY,fX); }
+//-----------------------------------------------------------------------------
+// panel ID :
+//-----------------------------------------------------------------------------
+      int   panelID    () const {
+        int sid = fHit->strawId().asUint16();
+        int panel_id = (sid >> 7) & 0x1ff;
+        return panel_id;
       }
     };
   }
