@@ -232,10 +232,18 @@ namespace mu2e {
     _data.outputChfColl = up_chfcol.get();
 
     for (int i=0; i<_data._nComboHits; i++) {
+//-----------------------------------------------------------------------------
+// initialize output flags to the flags of the input combo hits
+//-----------------------------------------------------------------------------
       const ComboHit* ch = &(*_data.chcol)[i];
       StrawHitFlag* flag = &(*_data.outputChfColl)[i];
       flag->merge(ch->flag());
-      flag->clear(StrawHitFlag::energysel);
+//-----------------------------------------------------------------------------
+// always flag delta hits here, don't need previously set delta bits
+// if flag protons, flag all hits as good
+//-----------------------------------------------------------------------------
+      flag->clear(StrawHitFlag::bkg);
+      if (_finder->flagProtonHits()) flag->merge(StrawHitFlag::energysel);
     }
 
     const ComboHit* ch0(0);
@@ -266,7 +274,8 @@ namespace mu2e {
             const HitData_t* hd = ds->HitData(face);
             if (hd == nullptr)                                        continue;
             int loc = hd->fHit-ch0;
-            _data.outputChfColl->at(loc).merge(StrawHitFlag::bkg); // deltamask
+            StrawHitFlag* flag = &(*_data.outputChfColl)[loc];
+            flag->merge(StrawHitFlag::bkg);           // set delta-electron bit
           }
         }
       }
@@ -284,7 +293,8 @@ namespace mu2e {
           for (int ih=0; ih<nh; ih++) {
             const HitData_t* hd = pc->hitData(is,face,ih);
             int loc = hd->fHit-ch0;
-            _data.outputChfColl->at(loc).merge(StrawHitFlag::energysel);
+            StrawHitFlag* flag = &(*_data.outputChfColl)[loc];
+            flag->clear(StrawHitFlag::energysel);
           }
         }
       }
@@ -316,6 +326,7 @@ namespace mu2e {
         if (flag->hasAnyProperty(_bkgHitMask))                        continue;
 //-----------------------------------------------------------------------------
 // for the moment, assume bkgHitMask to be empty, so write out all hits
+// normally, don't need delta and proton hits
 //-----------------------------------------------------------------------------
         const ComboHit* ch = &(*_data.chcol)[i];
         outputChColl->push_back(*ch);
@@ -325,6 +336,8 @@ namespace mu2e {
     }
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
+// why would that be needed? - straw hits are also combo hits and have flags
+// stored in their data
 //-----------------------------------------------------------------------------
     if (_writeStrawHitFlags == 1) {
                                         // first, copy over the original flags

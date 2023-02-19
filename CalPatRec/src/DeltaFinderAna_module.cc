@@ -179,8 +179,8 @@ namespace mu2e {
       ~McPart_t() {
       }
 
-      const ComboHit*     SSCh (int I) const { return fListOfSSCHits[I] ;    }
-      const ComboHit*     Ch   (int I) const { return fListOfComboHits[I] ;    }
+      const ComboHit*     SSCh (int I) const { return fListOfSSCHits  [I] ; }
+      const ComboHit*     Ch   (int I) const { return fListOfComboHits[I] ; }
 
                                         // these are single-hit SCH's
       int                 NSSCHits      () const { return fListOfSSCHits.size(); }
@@ -995,7 +995,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
                    mc->fFirstStation, mc->fLastStation);
             printf(" \n");
 //-----------------------------------------------------------------------------
-// check if want to print hits - print 1-straw hits....
+// check if want to print hits - print single-straw combo hits....
 //-----------------------------------------------------------------------------
             if (_printElectronHits != 0) {
                                         // these are 'combo' ComboHits
@@ -1005,10 +1005,10 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 
               for (int i=0; i<nh; i++) {
                 const ComboHit* ch = mc->Ch(i);
-                                        // flags here are the combo hit flags, not 1-straw hit flags
+                                        // flags here are the combo hit flags, not single-straw hit flags
                 int flags  = *((int*) mc->ChFlag(i));
                                         // use sim_id of the first SSCH ...
-                int ind    = ch->indexArray()[0];
+                int ind    = ch->index(0);
 
                 const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
                 const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
@@ -1023,7 +1023,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     if (_printComboHits) {
       printf("* DeltaFinderAna::debug : print ComboHits \n");
 //-----------------------------------------------------------------------------
-// print ComboHits
+// print ComboHits with flags stored in the external hit collection
 //-----------------------------------------------------------------------------
       _hlp->printComboHitCollection(_chCollTag.encode().data(),
                                     _chfCollTag.encode().data(),
@@ -1033,7 +1033,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     if (_printSingleComboHits) {
       printf("* DeltaFinderAna::debug : single straw ComboHits tag:  %s\n",_shCollTag.encode().data());
 //-----------------------------------------------------------------------------
-// print ComboHits
+// print single-straw ComboHits with flags stored in the external hit collection
 //-----------------------------------------------------------------------------
       _hlp->printComboHitCollection(_shCollTag.encode().data(),
                                     _shfCollTag.encode().data(),

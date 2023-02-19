@@ -407,6 +407,7 @@ CalPatRec : { @table::CalPatRec
                 mcDiag                  : false
                 mcTruth                 : 0
                 printComboHits          : 0
+                printGoodComboHits      : 0
                 printElectrons          : 0
                 printElectronsHits      : 0
                 printElectronsMinNHits  : 0
@@ -418,6 +419,10 @@ CalPatRec : { @table::CalPatRec
                 printOTracker           : 0                     #
                 printShcol              : 0                     #
                 printSeedNParents       : -1
+                printMcProtons          : 0
+                printProtonHits         : 0
+                printProtonSeeds        : 0
+                printProtonCandidates   : 0
                 mcUtils                 : { tool_type : "TrkRecoMcUtils"
                     strawDigiMCCollTag : "compressDigiMCs"
                     comboHitCollTag    : "makePH"

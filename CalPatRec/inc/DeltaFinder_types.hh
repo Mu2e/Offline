@@ -105,6 +105,7 @@ namespace mu2e {
       fhicl::Atom<bool>        mcDiag                {fhicl::Name("mcDiag"                ), fhicl::Comment("MC diag")                        };
       fhicl::Atom<int>         printOTracker         {fhicl::Name("printOTracker"         ), fhicl::Comment("print ordered Tracker")          };
       fhicl::Atom<int>         printComboHits        {fhicl::Name("printComboHits"        ), fhicl::Comment("print combo hits")               };
+      fhicl::Atom<int>         printGoodComboHits    {fhicl::Name("printGoodComboHits"    ), fhicl::Comment("print good combo hits")          };
       fhicl::Atom<int>         printElectrons        {fhicl::Name("printElectrons"        ), fhicl::Comment("print electrons")                };
       fhicl::Atom<int>         printElectronsHits    {fhicl::Name("printElectronsHits"    ), fhicl::Comment("print electron hits")            };
       fhicl::Atom<int>         printElectronsMinNHits{fhicl::Name("printElectronsMinNHits"), fhicl::Comment("minNhhits for printed electrons")};
@@ -115,6 +116,11 @@ namespace mu2e {
       fhicl::Atom<int>         printDeltaCandidates  {fhicl::Name("printDeltaCandidates"  ), fhicl::Comment("if 1, print delta candidates"   )};
       fhicl::Atom<int>         printShcol            {fhicl::Name("printShcol"            ), fhicl::Comment("if 1, print shColl"             )};
       fhicl::Atom<int>         printSeedNParents     {fhicl::Name("printSeedNParents"     ), fhicl::Comment("if>0, print seeds with N hits"  )};
+
+      fhicl::Atom<int>         printMcProtons        {fhicl::Name("printMcProtons"        ), fhicl::Comment("if>0, print MC protons"         )};
+      fhicl::Atom<int>         printProtonHits       {fhicl::Name("printProtonHits"       ), fhicl::Comment("if>0, print proton hits"        )};
+      fhicl::Atom<int>         printProtonSeeds      {fhicl::Name("printProtonSeeds"      ), fhicl::Comment("if>0, print proton seeds"       )};
+      fhicl::Atom<int>         printProtonCandidates {fhicl::Name("printProtonCandidates" ), fhicl::Comment("if>0, print proton candidates"  )};
 
       fhicl::Table<McUtilsToolBase::Config> mcUtils  {fhicl::Name("mcUtils"               ), fhicl::Comment("MC Diag plugin"                 )};
     };
@@ -174,12 +180,7 @@ namespace mu2e {
       int                           _nStrawHits;
       std::vector<const ComboHit*>  _v;                      // sorted
 
-      // int                           fNSeeds         [kNStations];
-      // int                           fNAllocatedSlots[kNStations];
-      // std::vector<DeltaSeed*>       fListOfSeeds    [kNStations];
-
-      ManagedList<DeltaSeed>        fListOfSeeds[kNStations];
-
+      ManagedList<DeltaSeed>        fListOfSeeds       [kNStations];
       std::vector<DeltaSeed*>       fListOfProtonSeeds [kNStations];
       std::vector<DeltaSeed*>       fListOfComptonSeeds[kNStations];
 

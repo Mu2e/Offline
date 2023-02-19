@@ -127,8 +127,12 @@ namespace mu2e {
 
     explicit     DeltaFinderAlg(const fhicl::Table<DeltaFinderAlg::Config>& config, Data_t* _data);
 
-    float        timeBin()           { return _timeBin; }
-
+    float        flagProtonHits()    { return _flagProtonHits; }
+    float        printErrors   ()    { return _printErrors   ; }
+    float        timeBin       ()    { return _timeBin       ; }
+//-----------------------------------------------------------------------------
+// other functions
+//-----------------------------------------------------------------------------
     int          checkDuplicates     (int Station,
                                       int Face1, const HitData_t* Hit1,
                                       int Face2, const HitData_t* Hit2);
@@ -170,6 +174,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int          createProtonCandidates  ();
     int          findProtons             ();
+    int          mergeProtonCandidates   ();
     int          prepareProtonHits       ();
     int          recoverMissingProtonHits();
   };

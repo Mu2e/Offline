@@ -60,6 +60,7 @@ namespace mu2e {
     float        fMinHitTime;          // min and max times of the included hits
     float        fMaxHitTime;
     int          fDeltaIndex;
+    int          fProtonIndex;
                                        // chi2's
     float        fChi2Par;
     float        fChi2Perp;
@@ -82,6 +83,12 @@ namespace mu2e {
     float            Chi2ParN ()        { return fChi2Par /fNHits; }
     float            Chi2PerpN()        { return fChi2Perp/fNHits; }
     float            Chi2TotN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
+//-----------------------------------------------------------------------------
+// 10000+idelta means that all hits of this segments, one by one, have been
+// picked up by the same delta candidate 'idelta'
+//-----------------------------------------------------------------------------
+    int              deltaIndex ()      { return fDeltaIndex  % 10000 ; }
+    int              protonIndex()      { return fProtonIndex ; }
 
     HitData_t*       HitData (int Face) { return fHitData[Face]; } // no boundary check !
     int              NHits   ()         { return fNHits; }
@@ -120,8 +127,9 @@ namespace mu2e {
       return fHitData[fSFace[0]]->fCorrTime-fHitData[fSFace[1]]->fCorrTime;
     }
 
-    void             SetStation   (int Station) { fStation    = Station; }
-    void             SetDeltaIndex(int Index  ) { fDeltaIndex = Index  ; }
+    void             SetStation    (int Station) { fStation     = Station; }
+    void             SetDeltaIndex (int Index  ) { fDeltaIndex  = Index  ; }
+    void             setProtonIndex(int Index  ) { fProtonIndex = Index  ; }
 //-----------------------------------------------------------------------------
 // less trivial functions .. HitData_t knows its ZFace
 //-----------------------------------------------------------------------------
