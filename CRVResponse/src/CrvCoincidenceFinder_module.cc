@@ -1,7 +1,6 @@
 //
 // A module to find clusters of coincidences of CRV pulses
 //
-//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"

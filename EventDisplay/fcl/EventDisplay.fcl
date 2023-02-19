@@ -41,4 +41,5 @@ physics :
 }
 
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+#services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_common_current.txt"
 #source.readParameterSets : false
