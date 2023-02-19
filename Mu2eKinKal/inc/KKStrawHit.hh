@@ -187,8 +187,7 @@ namespace mu2e {
     if(whstate.active()){
       // optionally constrain DeltaT using the ComboHit TOT drift time
       if(whstate.constrainTOT()){
-        double tdres = chit_.driftTimeRes();
-        double tvar = tdres*tdres;
+        double tvar = chit_.timeVar();
         double dt = ca_.deltaT() - chit_.driftTime();
         resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
       }

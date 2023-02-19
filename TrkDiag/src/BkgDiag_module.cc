@@ -253,9 +253,9 @@ namespace mu2e
           BkgCluster const& ocluster = _bkgccol->at(jbkg);
           double dt = fabs(ocluster.time() - cluster.time());
           double drho = sqrt((ocluster.pos()-cluster.pos()).Perp2());
-          // only look at differences whtn the other dimension difference is small
-          if(drho < _maxdrho && dt < _mindt) _mindt = dt;
-          if(dt < _maxdt && drho < _mindrho) _mindrho = drho;
+//          // only look at differences whtn the other dimension difference is small
+          if(dt < _mindt) _mindt = dt;
+          if(drho < _mindrho) _mindrho = drho;
         }
       }
       // fill mc info
@@ -539,7 +539,7 @@ namespace mu2e
     // info depending on stereo hits
     shinfo._chisq = ch.qual();
     shinfo._edep = ch.energyDep();
-    shinfo._dedx = ch.specificIonization();
+    shinfo._dedx = ch.dEdx();
     StrawId const& sid = ch.strawId();
     shinfo._plane = sid.plane();
     shinfo._panel = sid.panel();

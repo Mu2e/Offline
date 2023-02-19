@@ -160,7 +160,7 @@ namespace mu2e {
         float dt = _useTOT ? fabs(hit1.correctedTime() - hit2.correctedTime()) : fabs(hit1.time() - hit2.time());
         if (dt > _maxdt) continue;
 
-        float wderr = sqrtf(hit1.wireErr2() + hit2.wireErr2());
+        float wderr = sqrtf(hit1.wireVar() + hit2.wireVar());
         float wdchi = fabs(hit1.wireDist() - hit2.wireDist())/wderr;
         if (wdchi > _maxwdchi) continue;
 
@@ -184,6 +184,7 @@ namespace mu2e {
     combohit._mask = _mask;
     combohit._flag.merge(StrawHitFlag::panelcombo);
 
+    // simple sums to speed up the trigger
     float eacc(0),tacc(0),dtacc(0),dtweights(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
     XYZVectorF midpos;
     combohit._nsh = 0;
@@ -198,18 +199,18 @@ namespace mu2e {
 
       const ComboHit& ch = (*chcolOrig)[index];
       combohit._flag.merge(ch.flag());
-      float wt = 1.0/(ch.wireErr2());
+      float wt = 1.0/(ch.wireVar());
       eacc += ch.energyDep();
-      tacc += ch.time();// time is an unweighted average
+      tacc += ch.time();
       dtacc += ch.driftTime();
-      dtweights += 1.0/(ch.driftTimeRes()*ch.driftTimeRes());
+      dtweights += 1.0/(ch.timeVar());
       ptacc += ch.propTime();
       placc += ch.pathLength();
       werracc += ch.wireRes();
       weights += wt;
       wacc  += ch.wireDist()*wt;
       wacc2 += ch.wireDist()*ch.wireDist()*wt;
-      midpos += ch.centerPos(); // simple average for position
+      midpos += ch.centerPos();
       combohit._nsh += ch.nStrawHits();
     }
 
@@ -219,10 +220,10 @@ namespace mu2e {
     if(_debug > 2) std::cout << std::endl;
 
     midpos /= combohit._nsh;
-    combohit._edep       = eacc/float(combohit.nCombo());
+    combohit._dedx       = eacc/placc; // sum energy/sum pathlen
     combohit._time       = tacc/float(combohit.nCombo());
     combohit._dtime      = dtacc/float(combohit.nCombo());
-    combohit._dtimeres   = sqrt(1.0/dtweights);
+    combohit._timeres   = sqrt(1.0/dtweights);
     combohit._ptime      = ptacc/float(combohit.nCombo());
     combohit._pathlength = placc/float(combohit.nCombo());
     combohit._wdist      = wacc/weights;

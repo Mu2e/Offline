@@ -109,7 +109,7 @@ namespace mu2e {
       if (hit->_flag.hasAnyProperty(StrawHitFlag::outlier))     continue;
       double hitTime = hit->correctedTime();
       double hitZpos = hit->pos().z();
-      double timeErrSquared = hit->driftTimeRes()*hit->driftTimeRes();//ns^2
+      double timeErrSquared = hit->timeVar();//ns^2
       double hitWeight      = 1./timeErrSquared;
       fitDtDz.addPoint(hitZpos,hitTime, hitWeight);
     }

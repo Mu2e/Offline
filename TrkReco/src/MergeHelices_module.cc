@@ -198,9 +198,9 @@ namespace mu2e {
         float dxn = dx*hh._sdir.x()+dy*hh._sdir.y();
         float costh2 = dxn*dxn/(dx*dx+dy*dy);
         float sinth2 = 1-costh2;
-        float e2xy = hh.wireErr2()*sinth2+hh.transErr2()*costh2;
+        float e2xy = hh.wireVar()*sinth2+hh.transVar()*costh2;
         float wtxy = 1./e2xy;
-        float e2zphi = hh.wireErr2()*costh2+hh.transErr2()*sinth2;
+        float e2zphi = hh.wireVar()*costh2+hh.transVar()*sinth2;
         float wtzphi = h1.helix().radius()*h1.helix().radius()/e2zphi;
         wtxy *= _scaleXY;
         wtzphi *= _scaleZPhi;

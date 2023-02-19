@@ -136,69 +136,67 @@ namespace mu2e
 
   void ComboHitDiag::beginJob() {
     // create diagnostics if requested
-    if(_diag > 0){
-      art::ServiceHandle<art::TFileService> tfs;
-      // detailed diagnostics
-      _chdiag=tfs->make<TTree>("chdiag","combo hit diagnostics");
-      _chdiag->Branch("evt",&_evt,"evt/I");  // add event id
-      _chdiag->Branch("wdist",&_wdist,"wdist/F");
-      _chdiag->Branch("pos.",&_pos);
-      _chdiag->Branch("wdir.",&_wdir);
-      _chdiag->Branch("wdist",&_wdist,"wdist/F");
-      _chdiag->Branch("wres",&_wres,"wres/F");
-      _chdiag->Branch("tres",&_tres,"tres/F");
-      _chdiag->Branch("dtres",&_dtres,"dtres/F");
-      _chdiag->Branch("time",&_time,"time/F");
-      _chdiag->Branch("ctime",&_ctime,"ctime/F");
-      _chdiag->Branch("dtime",&_time,"dtime/F");
-      _chdiag->Branch("ptime",&_time,"ptime/F");
-      _chdiag->Branch("edep",&_edep,"edep/F");
-      _chdiag->Branch("plen",&_plen,"plen/F");
-      _chdiag->Branch("dedx",&_dedx,"dedx/F");
-      _chdiag->Branch("qual",&_qual,"qual/F");
-      _chdiag->Branch("dz",&_dz,"dz/F");
-      _chdiag->Branch("tot",&_tot,"totcal/F:tothv/F");
-      _chdiag->Branch("nsh",&_nsh,"nsh/I");
-      _chdiag->Branch("nch",&_nch,"nch/I");
-      _chdiag->Branch("esel",&_esel,"esel/I");
-      _chdiag->Branch("rsel",&_rsel,"rsel/I");
-      _chdiag->Branch("tsel",&_tsel,"tsel/I");
-      _chdiag->Branch("bkgclust",&_bkgclust,"bkgclust/I");
-      _chdiag->Branch("bkg",&_bkg,"bkg/I");
-      _chdiag->Branch("stereo",&_stereo,"stereo/I");
-      _chdiag->Branch("tdiv",&_tdiv,"tdiv/I");
-      _chdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
-      _chdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
-      _chdiag->Branch("isolated",&_isolated,"isolated/I");
-      _chdiag->Branch("calosel",&_calosel,"calosel/I");
-      _chdiag->Branch("strawid",&_strawid,"strawid/I");
-      _chdiag->Branch("straw",&_straw,"straw/I");
-      _chdiag->Branch("panel",&_panel,"panel/I");
-      _chdiag->Branch("plane",&_plane,"plane/I");
-      _chdiag->Branch("earlyend",&_eend,"eend/I");
-      if(_diag > 1)
-        _chdiag->Branch("chinfo",&_chinfo);
-      if(_mcdiag){
-        _chdiag->Branch("mcpos.",&_mcpos);
-        _chdiag->Branch("mcmom",&_mcmom,"mcmom/F");
-        _chdiag->Branch("mctime",&_mctime,"mctime/F");
-        _chdiag->Branch("mcdist",&_mcdist,"mcdist/F");
-        _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
-        _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-        _chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
-        if(_diag > 1)
-          _chdiag->Branch("chinfomc",&_chinfomc);
-      }
-      if (_digidiag){
-        _chdiag->Branch("digitdc",&_digitdc,"digitdccal/I:digitdchv/I");
-        _chdiag->Branch("digitot",&_digitot,"digitotcal/I:digitothv/I");
-        _chdiag->Branch("digifwpmp",&_digifwpmp,"digifwpmp/I");
-        _chdiag->Branch("digipeak",&_digipeak,"digipeak/I");
-        _chdiag->Branch("digipedestal",&_digipedestal,"digipedestal/F");
-        _chdiag->Branch("digiadc",&_digiadc);
-        _chdiag->Branch("threshold",&_threshold,"thresholdcal/F:thresholdhv/F");
-        _chdiag->Branch("adcgain",&_adcgain,"adcgain/F");
-      }
+    art::ServiceHandle<art::TFileService> tfs;
+    // detailed diagnostics
+    _chdiag=tfs->make<TTree>("chdiag","combo hit diagnostics");
+    _chdiag->Branch("evt",&_evt,"evt/I");  // add event id
+    _chdiag->Branch("wdist",&_wdist,"wdist/F");
+    _chdiag->Branch("pos.",&_pos);
+    _chdiag->Branch("wdir.",&_wdir);
+    _chdiag->Branch("wdist",&_wdist,"wdist/F");
+    _chdiag->Branch("wres",&_wres,"wres/F");
+    _chdiag->Branch("tres",&_tres,"tres/F");
+    _chdiag->Branch("dtres",&_dtres,"dtres/F");
+    _chdiag->Branch("time",&_time,"time/F");
+    _chdiag->Branch("ctime",&_ctime,"ctime/F");
+    _chdiag->Branch("dtime",&_time,"dtime/F");
+    _chdiag->Branch("ptime",&_time,"ptime/F");
+    _chdiag->Branch("edep",&_edep,"edep/F");
+    _chdiag->Branch("plen",&_plen,"plen/F");
+    _chdiag->Branch("dedx",&_dedx,"dedx/F");
+    _chdiag->Branch("qual",&_qual,"qual/F");
+    _chdiag->Branch("dz",&_dz,"dz/F");
+    _chdiag->Branch("tot",&_tot,"totcal/F:tothv/F");
+    _chdiag->Branch("nsh",&_nsh,"nsh/I");
+    _chdiag->Branch("nch",&_nch,"nch/I");
+    _chdiag->Branch("esel",&_esel,"esel/I");
+    _chdiag->Branch("rsel",&_rsel,"rsel/I");
+    _chdiag->Branch("tsel",&_tsel,"tsel/I");
+    _chdiag->Branch("bkgclust",&_bkgclust,"bkgclust/I");
+    _chdiag->Branch("bkg",&_bkg,"bkg/I");
+    _chdiag->Branch("stereo",&_stereo,"stereo/I");
+    _chdiag->Branch("tdiv",&_tdiv,"tdiv/I");
+    _chdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
+    _chdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
+    _chdiag->Branch("isolated",&_isolated,"isolated/I");
+    _chdiag->Branch("calosel",&_calosel,"calosel/I");
+    _chdiag->Branch("strawid",&_strawid,"strawid/I");
+    _chdiag->Branch("straw",&_straw,"straw/I");
+    _chdiag->Branch("panel",&_panel,"panel/I");
+    _chdiag->Branch("plane",&_plane,"plane/I");
+    _chdiag->Branch("earlyend",&_eend,"eend/I");
+    if(_diag > 0)
+      _chdiag->Branch("chinfo",&_chinfo);
+    if(_mcdiag){
+      _chdiag->Branch("mcpos.",&_mcpos);
+      _chdiag->Branch("mcmom",&_mcmom,"mcmom/F");
+      _chdiag->Branch("mctime",&_mctime,"mctime/F");
+      _chdiag->Branch("mcdist",&_mcdist,"mcdist/F");
+      _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
+      _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
+      _chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
+      if(_diag > 0)
+        _chdiag->Branch("chinfomc",&_chinfomc);
+    }
+    if (_digidiag){
+      _chdiag->Branch("digitdc",&_digitdc,"digitdccal/I:digitdchv/I");
+      _chdiag->Branch("digitot",&_digitot,"digitotcal/I:digitothv/I");
+      _chdiag->Branch("digifwpmp",&_digifwpmp,"digifwpmp/I");
+      _chdiag->Branch("digipeak",&_digipeak,"digipeak/I");
+      _chdiag->Branch("digipedestal",&_digipedestal,"digipedestal/F");
+      _chdiag->Branch("digiadc",&_digiadc);
+      _chdiag->Branch("threshold",&_threshold,"thresholdcal/F:thresholdhv/F");
+      _chdiag->Branch("adcgain",&_adcgain,"adcgain/F");
     }
   }
 
@@ -223,14 +221,14 @@ namespace mu2e
       _wdist = ch.wireDist();
       _wres = ch.wireRes();
       _tres = ch.transRes();
-      _dtres = ch.driftTimeRes();
+      _dtres = ch.timeRes();
       _time = ch.time();
       _ctime = ch.correctedTime();
       _dtime = ch.driftTime();
       _ptime = ch.propTime();
       _edep = ch.energyDep();
       _plen = ch.pathLength();
-      _dedx = ch.specificIonization();
+      _dedx = ch.dEdx();
       _qual = ch.qual();
       StrawHitFlag flag;
       if(_useflagcol)
@@ -295,7 +293,7 @@ namespace mu2e
         _chcol->fillStrawDigiIndices(evt,ich,shids);
         if(shids.size() != ch.nStrawHits())
           throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
-// find the SimParticle responsable for most of the hits
+        // find the SimParticle responsable for most of the hits
         SPM spmap;
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
@@ -379,7 +377,6 @@ namespace mu2e
         }
         _digipedestal /= (float) strawele.nADCPreSamples();
       }
-
       _chdiag->Fill();
     }
   }

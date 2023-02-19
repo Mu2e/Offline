@@ -9,15 +9,25 @@ PBTFSD : {
 
 makeSH : {
   module_type             : StrawHitReco
-  minimumTime             : 0.0 # accept all digis
-  maximumTime             : 100.0e3 # allow offspill events
+  minimumTime             : 450.0 # reject early digitizations
+  maximumTime             : 1695.0 #
+  minimumEnergy           : 0.0 # MeV
+  maximumEnergy           : 0.0035 # MeV
+  minimumRho              : 350.0 # mm
+  maximumRho              : 650.0 # mm
   FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
-  ProtonBunchTimeTag  : "EWMProducer"
+  ProtonBunchTimeTag      : "EWMProducer"
   StrawDigiCollectionTag  : "makeSD"
   StrawDigiADCWaveformCollectionTag : "makeSD"
-  CaloClusterCollectionTag  : "CaloClusterFast"
+  UseCalorimeter           : false
+  clusterDt                : 100.0 # ns
+  CaloClusterCollectionTag : "CaloClusterFast"
+  FlagCrossTalk            : false
+  crossTalkEnergy          : 0.007
+  crossTalkMinimumTime     : -1
+  crossTalkMaximumTime     : 100
 }
 
 # combine hits in a panel
