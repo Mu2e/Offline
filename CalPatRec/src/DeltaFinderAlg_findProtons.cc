@@ -83,6 +83,7 @@ namespace mu2e {
 // at this point, the number of proton candidates is incremented by one
 //-----------------------------------------------------------------------------
           ProtonCandidate* pc = _data->newProtonCandidate();
+          pc->init();
           pc->addSeed(seed);
           seed->setProtonIndex(pc->Index());
         }
@@ -128,22 +129,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         float dt = t2-t1;
 
-        int ds = 0;
-        if (p1->fLastStation >= p2->fFirstStation) {
-          if (p2->fLastStation <= p1->fFirstStation) {
-            ds = p1->fFirstStation-p2->fLastStation;
-          }
-        }
-        else {
-          ds = p2->fFirstStation-p1->fLastStation;
-        }
+        int os1 = std::max(p1->fFirstStation,p2->fFirstStation);
+        int os2 = std::min(p1->fLastStation ,p2->fLastStation );
+        int ds  = os2-os1;
+        if (ds < 0) ds=0;
+
         if (dt > 60 + 5*ds)                                           break;
 //-----------------------------------------------------------------------------
 // the two candidates are close enough in time, count overlapping hits
 //-----------------------------------------------------------------------------
         int noverlap = 0;
 
-        for (int is=p1->fFirstStation; is<=p1->fLastStation; is++) {
+        for (int is=os1; is<=os2; is++) {
           int nh1 = p1->nHitsStation(is);
           if (nh1 == 0)                                               continue;
           int nh2 = p2->nHitsStation(is);
@@ -177,12 +174,12 @@ namespace mu2e {
 // more than 50% of p1 hits are in the overlap - merge p1 into p2 by
 // removinv overlapping hits from p1
 //-----------------------------------------------------------------------------
-            for (int is=p1->fFirstStation; is<=p1->fLastStation; is++) {
+            for (int is=os1; is<=os2; is++) {
               for (int face=0; face<kNFaces; face++) {
                 int nhf = novr[is][face];
                 for (int ih=0; ih<nhf; ih++) {
-                HitData_t* h = ohit[is][face][ih];
-                p1->removeHit(is,h,0);
+                  HitData_t* h = ohit[is][face][ih];
+                  p1->removeHit(is,h,0);
                 }
               }
             }
@@ -195,7 +192,7 @@ namespace mu2e {
 // more than 50% of p2 hits are in the overlap - merge p2 into p1
 // overlapping hits only within the p1 range of stations
 //-----------------------------------------------------------------------------
-            for (int is=p1->fFirstStation; is<=p1->fLastStation; is++) {
+            for (int is=os1; is<=os2; is++) {
               for (int face=0; face<kNFaces; face++) {
                 int nhf = novr[is][face];
                 for (int ih=0; ih<nhf; ih++) {

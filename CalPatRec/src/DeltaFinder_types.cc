@@ -102,17 +102,10 @@ namespace mu2e {
 // in case of a vector, 'clear()' erases it
 //-----------------------------------------------------------------------------
       fListOfDeltaCandidates.clear();
-
-      int nprot = fListOfProtonCandidates.N();
-
-      for (int i=0; i<nprot; i++) {
-        ProtonCandidate* p = fListOfProtonCandidates.at(i);
-        for (int is=0;is<kNStations; is++) {
-          for (int face=0; face<kNFaces; face++) {
-            p->fHitData[is][face].clear();
-          }
-        }
-      }
+//-----------------------------------------------------------------------------
+// proton candidates will be reinitialized one by one, as needed
+// just set the number of used ones to zero...
+//-----------------------------------------------------------------------------
       fListOfProtonCandidates.clear();
     }
 

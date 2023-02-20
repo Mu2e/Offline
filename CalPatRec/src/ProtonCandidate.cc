@@ -3,10 +3,16 @@
 
 namespace mu2e {
 //-----------------------------------------------------------------------------
-  ProtonCandidate::ProtonCandidate(int Index) :
-    fSt(0), fSz(0), fSt2(0), fStz(0), fSz2(0)
-  {
-    fIndex             = Index;
+// fIndex is set just once upon construction
+//-----------------------------------------------------------------------------
+  ProtonCandidate::ProtonCandidate(int Index) {
+    fIndex = Index;
+    init();
+  }
+
+//-----------------------------------------------------------------------------
+  void ProtonCandidate::init() {
+
     fFirstStation      = 999;
     fLastStation       =  -1;
     fNStationsWithHits = 0;
@@ -23,11 +29,17 @@ namespace mu2e {
       fSumY        [is] = 0.;
       fNHitsStation[is] = 0.;
       for (int face=0; face<kNFaces; face++) {
+        fHitData[is][face].clear();
         fPanelID[is][face] = -1;
       }
     }
-  }
 
+    fSt  = 0;
+    fSz  = 0;
+    fSt2 = 0;
+    fStz = 0;
+    fSz2 = 0;
+  }
 //-----------------------------------------------------------------------------
 // first added seed has at least one stereo, so the COG calculation COG is safe
 //-----------------------------------------------------------------------------
@@ -247,6 +259,14 @@ namespace mu2e {
         float dphi       = phi2-phi1;
         Prediction->fPhi = phi2+dphi;
         Prediction->fErr = 0.5; // fmax(0.2,fabs(dphi));
+      }
+      else {
+//-----------------------------------------------------------------------------
+// just one station
+//-----------------------------------------------------------------------------
+        float phi = fPhi[fFirstStation  ];
+        Prediction->fPhi = phi+0.15;
+        Prediction->fErr = 0.65;
       }
     }
     else {

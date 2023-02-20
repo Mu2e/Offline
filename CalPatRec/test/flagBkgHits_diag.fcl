@@ -41,7 +41,11 @@ physics : {
 
     analyzers : { @table::stntuple.analyzers
         DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
-            debugLevel                    : 0 ## 1
+            debugLevel                    : 1 ## 1
+            printElectrons                : 1
+            printElectronsMinNHits        : 10
+            printElectronsMaxFReco        : 1.1
+            printElectronHits             : 1
 
             chCollTag                     : "makePH"
             shCollTag                     : "makeSH"
@@ -57,9 +61,9 @@ physics : {
     end_paths     : [ e1             ]
 }
 
-physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
-physics.producers.makePH.MaxDS                     : 5
-physics.producers.makePH.CheckWres                 : true
+# physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" , "EnergySelection" ]
+# physics.producers.makePH.MaxDS                     : 5
+# physics.producers.makePH.CheckWres                 : true
 # physics.producers.makePH.MinimumRadius             : 370.
 # physics.producers.makePH.MaximumRadius             : 680.
 # physics.producers.DeltaFinderAna.printElectronHits : 1
