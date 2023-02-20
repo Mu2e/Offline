@@ -358,7 +358,7 @@ CalPatRec : { @table::CalPatRec
                                                                     ## out of straw hits with an apriory wrong wdist ?
                 bkgHitMask                  : [  ]                  #
 
-                flagProtonHits              : 0                     #
+                flagProtonHits              : 1                     #
                 timeBin                     : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
                 minHitTime                  : 350.                  # ns
                 minimumTime                 : 400.                  # ns
