@@ -286,7 +286,14 @@ namespace mu2e {
     int nprotons = _data.nProtonCandidates();
     for (int i=0; i<nprotons; i++) {
       ProtonCandidate* pc = _data.protonCandidate(i);
-
+      if (pc->nStationsWithHits() == 1) {
+//-----------------------------------------------------------------------------
+// for proton candidates with just one station require eDep > 4 KeV
+// this adds a little inefficiency for proton reco,
+// but reduces overefficiency of flagging the CE hits
+//-----------------------------------------------------------------------------
+        if (pc->eDep() < 0.004) continue;
+      }
       for (int is=pc->fFirstStation; is<=pc->fLastStation; is++) {
         for (int face=0; face<kNFaces; face++) {
           int nh = pc->nHits(is,face);

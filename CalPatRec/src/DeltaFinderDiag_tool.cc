@@ -121,6 +121,7 @@ namespace mu2e {
       TH1F*  fMcMom;
       TH1F*  fPDGCode;
       TH1F*  fFFlagged;
+      TH1F*  fDPhi;
     };
 
     struct McHist_t {
@@ -401,17 +402,6 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void DeltaFinderDiag::bookProtonHistograms(ProtonHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->fNComboHits = Dir->make<TH1F>("nch"       , "N(combo hits)"   , 200, 0., 200.);
-    Hist->fNStrawHits = Dir->make<TH1F>("nsh"       , "N(straw hits)"   , 200, 0., 200.);
-    Hist->fNHitsCE    = Dir->make<TH1F>("nch_ce"    , "N(combo hits CE)",  50, 0.,  50.);
-    Hist->fNHitsF     = Dir->make<TH1F>("nchf"      , "N(flagged CH)"   ,  50, 0.,  50.);
-    Hist->fPDGCode    = Dir->make<TH1F>("pdg"       , "PDG code"        ,1000, -2500., 2500.);
-    Hist->fMcMom      = Dir->make<TH1F>("mc_mom"    , "N(hits)"         , 200, 0., 200.);
-    Hist->fFFlagged   = Dir->make<TH1F>("fflagged"  , "N(flagged)/N"    , 100, 0.,    1);
-  }
-
-//-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->fEventNumber     = Dir->make<TH1F>("event" , "Event Number", 100, 0., 100000.);
     Hist->fNSeeds          = Dir->make<TH1F>("nseeds", "N(seeds)"   , 200, 0., 2000.);
@@ -433,7 +423,7 @@ namespace mu2e {
   void DeltaFinderDiag::bookMcHistograms(McHist_t* Hist, art::TFileDirectory* Dir) {
 
     Hist->fPDGCode    = Dir->make<TH1F>("pdg"  , "PDG code"        ,1000, -2500, 2500);
-    Hist->fMom        = Dir->make<TH1F>("mom"  , "momentum"        , 200, 0., 200.);
+    Hist->fMom        = Dir->make<TH1F>("mom"  , "momentum"        , 500, 0.,1000.);
     Hist->fNHits      = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
     Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr", "N(hits reco)"   , 200, 0., 200.);
     Hist->fFractReco  = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
@@ -441,6 +431,18 @@ namespace mu2e {
     Hist->fHitDt      = Dir->make<TH1F>("hit_dt" , "Hit TMax-TMin" , 100, 0., 200.);
 
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
+  }
+
+//-----------------------------------------------------------------------------
+  void DeltaFinderDiag::bookProtonHistograms(ProtonHist_t* Hist, art::TFileDirectory* Dir) {
+    Hist->fNComboHits = Dir->make<TH1F>("nch"       , "N(combo hits)"   , 200, 0., 200.);
+    Hist->fNStrawHits = Dir->make<TH1F>("nsh"       , "N(straw hits)"   , 200, 0., 200.);
+    Hist->fNHitsCE    = Dir->make<TH1F>("nch_ce"    , "N(combo hits CE)",  50, 0.,  50.);
+    Hist->fNHitsF     = Dir->make<TH1F>("nchf"      , "N(flagged CH)"   ,  50, 0.,  50.);
+    Hist->fPDGCode    = Dir->make<TH1F>("pdg"       , "PDG code"        ,1000, -2500., 2500.);
+    Hist->fMcMom      = Dir->make<TH1F>("mc_mom"    , "N(hits)"         , 500, 0., 1000.);
+    Hist->fFFlagged   = Dir->make<TH1F>("fflagged"  , "N(flagged)/N"    , 100, 0.,    1);
+    Hist->fDPhi       = Dir->make<TH1F>("dphi"      , "Delta Phi"       , 200, -1.,   1);
   }
 
 //-----------------------------------------------------------------------------
@@ -762,6 +764,13 @@ namespace mu2e {
 
     float f_flagged = float(Pcp->fNFlaggedHits)/Pc->nHitsTot();
     Hist->fFFlagged->Fill(f_flagged);
+
+    for (int is=Pc->fFirstStation+1; is<=Pc->fLastStation; is++) {
+      if ((Pc->nHitsStation(is-1) > 0) and (Pc->nHitsStation(is) > 0)) {
+        float dphi = Pc->phi(is)-Pc->phi(is-1);
+        Hist->fDPhi->Fill(dphi);
+      }
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -1051,8 +1060,8 @@ namespace mu2e {
       fillProtonHistograms(_hist.fProton[0],pc,pcp);
 
       int nch = pc->nHitsTot();
-      if (nch >= 10) fillProtonHistograms(_hist.fProton[0],pc,pcp);
-      if (nch >= 15) fillProtonHistograms(_hist.fProton[1],pc,pcp);
+      if (nch >= 10) fillProtonHistograms(_hist.fProton[1],pc,pcp);
+      if (nch >= 15) fillProtonHistograms(_hist.fProton[2],pc,pcp);
     }
 //-----------------------------------------------------------------------------
 // done
@@ -1144,12 +1153,14 @@ namespace mu2e {
 
     _nMcProtons10 = 0;
     _nMcProtons15 = 0;
-    _nMcProtons   = _list_of_mc_particles.GetEntriesFast();
+    _nMcProtons   = 0;
 
-    for (int i=0; i<_nMcProtons; i++) {
+    int np = _list_of_mc_particles.GetEntriesFast();
+    for (int i=0; i<np; i++) {
       McPart_t* mc = mcPart(i);
       if (mc->PdgID() > 2000) {
         _list_of_protons.Add(mc);
+        if (mc->NHits() >=  0) _nMcProtons++;
         if (mc->NHits() >= 10) _nMcProtons10++;
         if (mc->NHits() >= 15) _nMcProtons15++;
       }

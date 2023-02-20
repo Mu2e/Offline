@@ -58,6 +58,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       ProtonCandidate(int Index);
 
+      void       init                 ();
+
       int        Active               () const { return (fIndex >= 0); }
       int        Index                () const { return fIndex ; }
       int        Mask                 () const { return fMask  ; }
@@ -77,7 +79,7 @@ namespace mu2e {
       float      maxHitTime(int Station) const { return fMaxHitTime[Station]; }
       int        LastStation          () const { return fLastStation ; }
       int        FirstStation         () const { return fFirstStation; }
-      float      EDep                 () const { return fSumEDep/fNStrawHitsTot; }
+      float      eDep                 () const { return fSumEDep/fNStrawHitsTot; }
       float      FBest                () const { return float(fNHitsMcP)/fNHitsTot; }
 
       float      xMean(int Station)  { return fSumX[Station]/fNHitsStation[Station]; }

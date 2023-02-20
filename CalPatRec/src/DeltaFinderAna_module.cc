@@ -111,6 +111,9 @@ namespace mu2e {
       TH1F*  fNSSh;                    // total number of straw hits
       TH1F*  fNCh;                     // number of combo hits
       TH1F*  fNSh;                     // number of straw hits in combo hits
+      TH1F*  fNChProton;               // N(combo hits) produced by protons
+      TH1F*  fNChProtonFP;             // N(proton combo hits flagged as such)
+      TH1F*  fNChNonProtonFP;          // N(non-proton combo hits flagged as such)
     };
 
     struct McHist_t {
@@ -151,46 +154,51 @@ namespace mu2e {
     struct McPart_t {
       int   fFirstStation;
       int   fLastStation;
-      int   fNShTaggedDelta;      // number of single straw combo hits (SSCH) tagged as delta
+      int   fNShFlaggedDelta;     // number of single straw combo hits (SSCH) tagged as delta
+      int   fNShFlaggedProton;    // number of single straw combo hits (SSCH) tagged as delta
       int   fTime;                // lowest out of the hit times
-      int   fNChTaggedDelta;
+      int   fNChFlaggedDelta;
+      int   fNChFlaggedProton;
       int   fType;
-
-      const SimParticle*               fSim;
 //-----------------------------------------------------------------------------
 // a hit and its flag here could be inconsistent - the flag comes from the 'combo' combohit
 //-----------------------------------------------------------------------------
-      std::vector<const ComboHit*>     fListOfSSCHits; // 1-straw combo hits (SSCH)
-      std::vector<const StrawHitFlag*> fListOfFlags;   // a parallel list, but the flags are those of "Combo" ComboHits
+      const SimParticle*               fSim;
 
-      std::vector<const ComboHit*>     fListOfComboHits; // combo hits (SSCH)
-      std::vector<const StrawHitFlag*> fListOfChFlags;   // a parallel list, but the flags are those of "Combo" ComboHits
+      std::vector<const ComboHit*>     fListOfSsComboHits;     // 1-straw combo hits (SSCH)
+      std::vector<const StrawHitFlag*> fListOfSsComboHitFlags; // a parallel list, flags are those of SS ComboHits
+
+      std::vector<const ComboHit*>     fListOfComboHits;       // "combo" combo hits
+      std::vector<const StrawHitFlag*> fListOfChFlags;         // a parallel list, the flags are those of "Combo" ComboHits
 
       McPart_t(const SimParticle* Sim = NULL) {
-        fSim          = Sim;
-        fFirstStation = 999;
-        fLastStation  = -1;
-        fNChTaggedDelta = 0;
-        fNShTaggedDelta = 0;
-        fTime           = 1.e6;
-        fType           = MC_Type();
+        fSim              = Sim;
+        fFirstStation     = 999;
+        fLastStation      = -1;
+        fNChFlaggedDelta  = 0;
+        fNShFlaggedDelta  = 0;
+        fNChFlaggedProton = 0;
+        fNShFlaggedProton = 0;
+        fTime             = 1.e6;
+        fType             = MC_Type();
       }
 
       ~McPart_t() {
       }
 
-      const ComboHit*     SSCh (int I) const { return fListOfSSCHits  [I] ; }
+      const ComboHit*     SSCh (int I) const { return fListOfSsComboHits[I] ; }
       const ComboHit*     Ch   (int I) const { return fListOfComboHits[I] ; }
 
-                                        // these are single-hit SCH's
-      int                 NSSCHits      () const { return fListOfSSCHits.size(); }
-      int                 NComboHits    () const { return fListOfComboHits.size(); }
+      int                 nSsComboHits    () const { return fListOfSsComboHits.size(); }
+      int                 nComboHits      () const { return fListOfComboHits.size(); }
 
-      int                 NShTaggedDelta() const { return fNShTaggedDelta; }
-      int                 NChTaggedDelta() const { return fNChTaggedDelta; }
+      int                 nShFlaggedDelta () const { return fNShFlaggedDelta; }
+      int                 nChFlaggedDelta () const { return fNChFlaggedDelta; }
 
-      const StrawHitFlag* ShFlag(int I) const { return fListOfFlags[I];    }
-      const StrawHitFlag* ChFlag(int I) const { return fListOfChFlags[I];  }
+      int                 nShFlaggedProton() const { return fNShFlaggedProton; }
+      int                 nChFlaggedProton() const { return fNChFlaggedProton; }
+
+      const StrawHitFlag* ChFlag     (int I) const { return fListOfChFlags[I];  }
 
       float Momentum() const {
         float px = fSim->startMomentum().px();
@@ -225,18 +233,19 @@ namespace mu2e {
     };
 
     struct McHitInfo_t {
-      const  McPart_t*     fMc;
+      McPart_t*            fMc;
       const  StrawHitFlag* fFlag;
       int                  fType;   // 0:p, 1:ele p<20, 2:ele 20<p<80  3:ele 100<p<110 4:everything else
     };
 //-----------------------------------------------------------------------------
 // NStations stations, 4-1=3 faces (for hit w/ lower z), 3 panels (for hit w/ lower z)
 // 2017-07-27 P.Murat: the 2nd dimension should be 3, right?
-// _list_of_mc_particles : list of MC particles with at least one digitized tracker hit
+// _listOfMcParticles : list of MC particles with at least one digitized tracker hit
 // SSH : single-straw hit
 //-----------------------------------------------------------------------------
-    std::vector<McPart_t*>    _list_of_mc_particles;
-    std::vector<McHitInfo_t>  _list_of_mc_hit_info ; // for each 1-straw hit, pointer to the MC info
+    std::vector<McPart_t*>    _listOfMcParticles;
+    std::vector<McHitInfo_t>  _listOfMcHitInfo ; // for each 1-straw hit, pointer to the MC info
+    std::vector<McPart_t*>    _listOfProtons;
 //-----------------------------------------------------------------------------
 // talk-to parameters
 //-----------------------------------------------------------------------------
@@ -261,17 +270,29 @@ namespace mu2e {
     const ComboHitCollection*      _sschColl; // one straw hit per combo hit
     const StrawHitCollection*      _shColl;
     const StrawHitFlagCollection*  _chfColl;
+    const StrawHitFlagCollection*  _shfColl;
     const StrawDigiMCCollection*   _sdmcColl;
 
     const Tracker*                 _tracker;
     int                            _eventNum;
-    int                            _nSingleSH;  // true number of straw hits
+    int                            _nSingleSH;          // true number of straw hits
     int                            _nComboHits;
-    int                            _nStrawHits; // not the total number of straw hits, but the
-                                                // number of straw hits from combohits
+                                                        // not the total number of straw hits,
+    int                            _nStrawHits;         // but the number of straw hits from combohitse
 
-    int                            fNHitsDeltaTot;
-    int                            fNHitsDeltaReco;
+
+    int                            _nChFlaggedDelta;
+    int                            _nChFlaggedProton;
+
+    int                            _nChDelta;           // total number of CH by e- and e+ P<20 MeV/c
+    int                            _nShDelta;
+    int                            _nChDeltaFD;         //
+    int                            _nChNonDeltaFD;      //
+
+    int                            _nChProton;          // total number of CH by protons
+    int                            _nShProton;
+    int                            _nChProtonFP;        // number of proton hits flagged as such
+    int                            _nChNonProtonFP;     // number of non-proton htis
 
     HlPrint*                       _hlp;
 
@@ -282,8 +303,6 @@ namespace mu2e {
   public:
     explicit  DeltaFinderAna(const art::EDAnalyzer::Table<Config>& config);
     virtual   ~DeltaFinderAna();
-
-    int       associateMcTruth();
 
     void      bookComboHitHistograms(ComboHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir);
     void      bookEventHistograms   (EventHist_t*    Hist, int HistSet, art::TFileDirectory* Dir);
@@ -316,7 +335,7 @@ namespace mu2e {
     _shCollTag             (config().shCollTag  ()      ),
     _chCollTag             (config().chCollTag  ()      ),
     _sschCollTag           (config().sschCollTag()      ),
-    _shfCollTag            (config().shfCollTag ()      ),
+    _shfCollTag            (config().shfCollTag ()      ),  // what are those flags ? - any assumption about which module sets them?
     _chfCollTag            (config().chfCollTag ()      ),
     _sdmcCollTag           (config().sdmcCollTag()      ),
     _debugLevel            (config().debugLevel ()      ),
@@ -329,36 +348,11 @@ namespace mu2e {
     _printSingleComboHits  (config().printSingleComboHits  ())
   {
     _hlp = HlPrint::Instance();
-
   }
 
   DeltaFinderAna::~DeltaFinderAna() {
   }
 
-//-----------------------------------------------------------------------------
-// form a list of MC particles with hits in the tracker
-//-----------------------------------------------------------------------------
-  int DeltaFinderAna::associateMcTruth() {
-//-----------------------------------------------------------------------------
-// for each MC electron calculate the number of reconstructed hits
-//-----------------------------------------------------------------------------
-    int nmc    = _list_of_mc_particles.size();
-
-    fNHitsDeltaTot  = 0;
-
-    for (int i=0; i<nmc; i++) {
-      McPart_t* mc    = _list_of_mc_particles.at(i);
-
-      if (mc->fType == kLoMomElectron) {
-//-----------------------------------------------------------------------------
-// call this "a delta electron"
-//-----------------------------------------------------------------------------
-        fNHitsDeltaTot += mc->NSSCHits();
-      }
-    }
-
-    return 0;
-  }
 
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookComboHitHistograms(ComboHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
@@ -378,6 +372,9 @@ namespace mu2e {
     Hist->fNCh             = Dir->make<TH1F>(Form("nch_%02i"       ,HistSet), "N(combo hits)"  ,1000, 0., 10000.);
     Hist->fNSh             = Dir->make<TH1F>(Form("nsh_%02i"       ,HistSet), "N(straw hits)"  ,1000, 0., 10000.);
     Hist->fNSSh            = Dir->make<TH1F>(Form("nssh_%02i"      ,HistSet), "N(1-straw hits)",1000, 0., 10000.);
+    Hist->fNChProton       = Dir->make<TH1F>(Form("nch_p_%02i"     ,HistSet), "N(CH prot)"     , 200, 0.,  1000.);
+    Hist->fNChProtonFP     = Dir->make<TH1F>(Form("nch_p_fp_%02i"  ,HistSet), "N(CH prot FP)"  , 200, 0.,  1000.);
+    Hist->fNChNonProtonFP  = Dir->make<TH1F>(Form("nch_np_fp_%02i" ,HistSet), "N(CH NP FP)"    , 200, 0.,  1000.);
   }
 
 //-----------------------------------------------------------------------------
@@ -554,7 +551,6 @@ namespace mu2e {
 
 //----Get data------------------------------------------------------------------------------------------------
   void DeltaFinderAna::beginRun(const art::Run& R) {
-
     mu2e::GeomHandle<mu2e::Tracker> ttHandle;
     _tracker = ttHandle.get();
   }
@@ -577,11 +573,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // fill MC particle histograms
 //-----------------------------------------------------------------------------
-    int nmc = _list_of_mc_particles.size();
+    int nmc = _listOfMcParticles.size();
 
     Hist->fNMc->Fill(nmc);
-    Hist->fNHitsDeltaT->Fill(fNHitsDeltaTot);
-    Hist->fNHitsDeltaR->Fill(fNHitsDeltaReco);
+    Hist->fNHitsDeltaT->Fill(_nChDelta);
+    Hist->fNHitsDeltaR->Fill(_nChFlaggedDelta);
+    Hist->fNChProton->Fill(_nChProton);
+    Hist->fNChProtonFP->Fill(_nChProtonFP);
+    Hist->fNChNonProtonFP->Fill(_nChNonProtonFP);
     Hist->fNCh->Fill (_nComboHits);
     Hist->fNSh->Fill (_nStrawHits);
     Hist->fNSSh->Fill(_nSingleSH );
@@ -615,18 +614,18 @@ namespace mu2e {
     Hist->fPDGCode->Fill(sim->pdgId());
     Hist->fMom[0]->Fill(mom);
     Hist->fMom[1]->Fill(mom);
-    Hist->fNCHits->Fill(Mc->NComboHits());
-    Hist->fNSSCHits->Fill(Mc->NSSCHits());
-    Hist->fNCHitsVsMom->Fill(mom,Mc->NComboHits());
-    Hist->fNCHitsDelta->Fill(Mc->NChTaggedDelta());
-    Hist->fNCHitsRVsMom->Fill(mom,Mc->NChTaggedDelta());
-    Hist->fNCHitsRVsNCHits->Fill(Mc->NComboHits(),Mc->NChTaggedDelta());
+    Hist->fNCHits->Fill(Mc->nComboHits());
+    Hist->fNSSCHits->Fill(Mc->nSsComboHits());
+    Hist->fNCHitsVsMom->Fill(mom,Mc->nComboHits());
+    Hist->fNCHitsDelta->Fill(Mc->nChFlaggedDelta());
+    Hist->fNCHitsRVsMom->Fill(mom,Mc->nChFlaggedDelta());
+    Hist->fNCHitsRVsNCHits->Fill(Mc->nComboHits(),Mc->nChFlaggedDelta());
 
-    float freco = Mc->NChTaggedDelta()/(Mc->NComboHits()+1.e-4);
+    float freco = Mc->nChFlaggedDelta()/(Mc->nComboHits()+1.e-4);
 
     Hist->fFractReco->Fill(freco);
 
-    Hist->fFractRecoVsNCHits->Fill(Mc->NComboHits(),freco);
+    Hist->fFractRecoVsNCHits->Fill(Mc->nComboHits(),freco);
   }
 
 //-----------------------------------------------------------------------------
@@ -732,10 +731,10 @@ namespace mu2e {
 // for each delta electron, need to check which fraction of its hits has not been
 // Associated with found DeltaCandidate's
 //-----------------------------------------------------------------------------
-    int nmc = _list_of_mc_particles.size();
+    int nmc = _listOfMcParticles.size();
 
     for (int i=0; i<nmc; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
+      McPart_t* mc = _listOfMcParticles.at(i);
       const SimParticle* sim = mc->fSim;
 
       fillMcHistograms(_hist.fMc[0],mc);
@@ -751,7 +750,7 @@ namespace mu2e {
       else if (mc->fType == kMuon         ) fillMcHistograms(_hist.fMc[7],mc);
       else                                  fillMcHistograms(_hist.fMc[8],mc);
 
-      if (mc->NComboHits() >= 5) {
+      if (mc->nComboHits() >= 5) {
         if      (mc->fType == kProtonOrDeut ) fillMcHistograms(_hist.fMc[11],mc);
         else if (mc->fType == kLoMomElectron) fillMcHistograms(_hist.fMc[12],mc);
         else if (mc->fType == kMdMomElectron) fillMcHistograms(_hist.fMc[13],mc);
@@ -770,13 +769,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // a closer look at misreconstructed delta electrons
 //-----------------------------------------------------------------------------
-      float fr_ch = mc->NChTaggedDelta()/(mc->NComboHits()+1.e-3);
+      float fr_ch = mc->nChFlaggedDelta()/(mc->nComboHits()+1.e-3);
 
-      if ((mc->Momentum() < 5) && (mc->Time() > 550) && (mc->NComboHits() > 40) && (fr_ch < 0.5)) {
+      if ((mc->Momentum() < 5) && (mc->Time() > 550) && (mc->nComboHits() > 40) && (fr_ch < 0.5)) {
         printf(" event: %6i missed delta: sim.id = %10li mom = %10.3f time= %9.3f ",
                _eventNum, sim->id().asInt(), mc->Momentum(), mc->Time());
         printf("nch:nch(delta) = %3i:%3i stations(first:last): %2i:%2i",
-               mc->NComboHits(), mc->NChTaggedDelta(), mc->fFirstStation, mc->fLastStation);
+               mc->nComboHits(), mc->nChFlaggedDelta(), mc->fFirstStation, mc->fLastStation);
         printf(" fraction(ch): %6.3f\n",fr_ch);
       }
     }
@@ -786,10 +785,10 @@ namespace mu2e {
   DeltaFinderAna::McPart_t* DeltaFinderAna::findParticle(const SimParticle* Sim) {
     McPart_t* found(0);
 
-    int n = _list_of_mc_particles.size();
+    int n = _listOfMcParticles.size();
 
     for (int i=0; i<n; i++) {
-      McPart_t* mc = _list_of_mc_particles.at(i);
+      McPart_t* mc = _listOfMcParticles.at(i);
       if (mc->fSim == Sim) {
         found = mc;
         break;
@@ -819,10 +818,13 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     auto chfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_chfCollTag);
     _chfColl    = chfcH.product();
 
+    auto shfcH  = Evt.getValidHandle<StrawHitFlagCollection>(_shfCollTag);
+    _shfColl    = shfcH.product();
+
     auto sdmccH = Evt.getValidHandle<StrawDigiMCCollection>(_sdmcCollTag);
     _sdmcColl   = sdmccH.product();
 
-    return (_chColl != 0) && (_chfColl != 0) && (_sdmcColl != 0) ;
+    return (_chColl != 0) && (_chfColl != 0) && (_shfColl != 0) && (_sdmcColl != 0) ;
   }
 
 //-----------------------------------------------------------------------------
@@ -831,14 +833,15 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 //-----------------------------------------------------------------------------
   int DeltaFinderAna::initMcDiag() {
 
-    int n = _list_of_mc_particles.size();
+    int n = _listOfMcParticles.size();
     for (int i=0; i<n; i++) {
-      McPart_t* p = _list_of_mc_particles.at(i);
+      McPart_t* p = _listOfMcParticles.at(i);
       delete p;
     }
 
-    _list_of_mc_particles.clear();
-    _list_of_mc_hit_info.clear();
+    _listOfMcParticles.clear();
+    _listOfMcHitInfo.clear();
+    _listOfProtons.clear();
 //-----------------------------------------------------------------------------
 // count the number of participating straw hits (remember, it could be less than
 // the total number of straw hits :participating are only the straw hits from
@@ -849,10 +852,9 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
       const ComboHit* ch = &_chColl->at(i);
       _nStrawHits       += ch->nStrawHits();
     }
-
-    _list_of_mc_hit_info.resize(_nSingleSH);
 //-----------------------------------------------------------------------------
-// create list of MC particles - all particles with at least one digitized tracker hit
+// create list of MC particles - all particles with at least one digitized
+// single straw tracker hit
 //-----------------------------------------------------------------------------
     for (int i=0; i<_nSingleSH; i++) {
       const StrawDigiMC*  sdmc = &_sdmcColl->at(i);
@@ -864,70 +866,105 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
       if (mc == NULL) {
                                         // add new particle
         mc = new McPart_t(sim);
-        _list_of_mc_particles.push_back(mc);
+        _listOfMcParticles.push_back(mc);
+        if (mc->fType == kProtonOrDeut) _listOfProtons.push_back(mc);
       }
     }
-
-    fNHitsDeltaReco = 0;
 //-----------------------------------------------------------------------------
-// 'shf' is also a mu2e::ComboHit flag, despite the name
+// count total numbers of delta-electron and proton hits
+//-----------------------------------------------------------------------------
+    _nShDelta  = 0;
+    _nChDelta  = 0;
+    _nShProton = 0;
+    _nChProton = 0;
+
+    int nmc    = _listOfMcParticles.size();
+    for (int i=0; i<nmc; i++) {
+      McPart_t* mc    = _listOfMcParticles.at(i);
+      if (mc->fType == kLoMomElectron) {
+//-----------------------------------------------------------------------------
+// call this "a delta electron"
+//-----------------------------------------------------------------------------
+        _nShDelta += mc->nSsComboHits();
+        _nChDelta += mc->nComboHits();
+      }
+      else if (mc->fType == kProtonOrDeut) {
+        _nShProton += mc->nSsComboHits();
+        _nChProton += mc->nComboHits();
+      }
+    }
+//-----------------------------------------------------------------------------
+// initialize single-straw level information
+//-----------------------------------------------------------------------------
+    _listOfMcHitInfo.resize(_nSingleSH);
+    for (int i=0; i<_nSingleSH; i++) {
+      const StrawDigiMC*  sdmc = &_sdmcColl->at(i);
+      const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+      const SimParticle*  sim  = sgs->simParticle().get();
+      McPart_t*           mc   = findParticle(sim);
+//-----------------------------------------------------------------------------
+// at this point, all MC particles should already be registered
+//-----------------------------------------------------------------------------
+      const ComboHit* ssch    = &_sschColl->at(i);
+      const StrawHitFlag* shf = &_shfColl->at(i);
+//-----------------------------------------------------------------------------
+// the SSCH flags from the flag collection could be redefined and different
+// from the ones stored in the hit payload
+//-----------------------------------------------------------------------------
+      mc->fListOfSsComboHits.push_back(ssch);     // these come with their own flags in payload
+      mc->fListOfSsComboHitFlags.push_back(shf);
+
+      int station = ssch->strawId().getStation();
+
+      if (station < mc->fFirstStation) mc->fFirstStation = station;
+      if (station > mc->fLastStation ) mc->fLastStation  = station;
+
+      if (ssch->correctedTime() < mc->fTime) mc->fTime = ssch->correctedTime();
+
+      McHitInfo_t* mc_hit_info = &_listOfMcHitInfo.at(i);
+
+      mc_hit_info->fMc   = mc;
+      mc_hit_info->fType = mc->Type();
+    }
+//-----------------------------------------------------------------------------
+// 1) 'shf' is also a mu2e::ComboHit flag, despite the name
 // so some straw hits may have flags not consistent with their origin
 //-----------------------------------------------------------------------------
+    _nChFlaggedDelta  = 0;
+    _nChFlaggedProton = 0;
+
     int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit*     ch   = &_chColl->at(i);
       const StrawHitFlag* chf  = &_chfColl->at(i);
+//-----------------------------------------------------------------------------
+// delta and proton flagging is done using combo hits
+//-----------------------------------------------------------------------------
+      int flagged_delta  = chf->hasAnyProperty(StrawHitFlag::bkg);
+      int flagged_proton = (chf->hasAnyProperty(StrawHitFlag::energysel) == 0);
+
+      if (flagged_delta ) _nChFlaggedDelta  += 1;
+      if (flagged_proton) _nChFlaggedProton += 1;
 
       int nsh = ch->nStrawHits();
       int ch_counted = 0;
       for (int ish=0; ish<nsh; ish++) {
-        int ind = ch->indexArray().at(ish);
-        const ComboHit* ssch = &_sschColl->at(ind);
+        int       ind = ch->index(ish);
+        McPart_t* mc  = _listOfMcHitInfo.at(ind).fMc;
 
-        const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
-        const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
-        const SimParticle*  sim  = sgs->simParticle().get();
-//-----------------------------------------------------------------------------
-// at this poit, all MC particles should already be registered
-//-----------------------------------------------------------------------------
-        McPart_t* mc = findParticle(sim);
-
-        mc->fListOfSSCHits.push_back(ssch);
-
-        int station = ssch->strawId().getStation();
-
-        if (station < mc->fFirstStation) mc->fFirstStation = station;
-        if (station > mc->fLastStation ) mc->fLastStation  = station;
-
-        if (ssch->correctedTime() < mc->fTime) mc->fTime = ssch->correctedTime();
-//-----------------------------------------------------------------------------
-// remember, this is a combohit flag !
-// delta-wise, all straw hits corresponding to the same combo hit,
-// should have the same flags
-//-----------------------------------------------------------------------------
-        mc->fListOfFlags.push_back(chf);
-
-        McHitInfo_t* mc_hit_info = &_list_of_mc_hit_info.at(loc);
-
-        mc_hit_info->fMc   = mc;
-        mc_hit_info->fFlag = chf;
-
-        mc_hit_info->fType = mc->Type();
-
-        int flagged_as_delta = chf->hasAnyProperty(StrawHitFlag::bkg);
-
-        if (flagged_as_delta) {
-          mc->fNShTaggedDelta += 1;
-          fNHitsDeltaReco++;
-        }
+        if (flagged_delta ) mc->fNShFlaggedDelta  += 1;
+        if (flagged_proton) mc->fNShFlaggedProton += 1;
 
         if (ch_counted == 0) {
+//-----------------------------------------------------------------------------
+// store combohit and its flag just once
+//-----------------------------------------------------------------------------
           mc->fListOfComboHits.push_back(ch);
-          mc->fListOfChFlags.push_back(chf);
+          mc->fListOfChFlags.push_back  (chf);
 
-          if (flagged_as_delta) {
-            mc->fNChTaggedDelta += 1;
-          }
+          if (flagged_delta ) mc->fNChFlaggedDelta  += 1;
+          if (flagged_proton) mc->fNChFlaggedProton += 1;
+
           ch_counted = 1;
         }
 
@@ -956,7 +993,6 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     }
 
     initMcDiag      ();
-    associateMcTruth();
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------
@@ -974,24 +1010,24 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 //-----------------------------------------------------------------------------
     if (_printElectrons) {
       printf("* DeltaFinderAna::debug : printElectrons\n");
-      int nmc = _list_of_mc_particles.size();
+      int nmc = _listOfMcParticles.size();
 
       for (int i=0; i<nmc; i++) {
-        McPart_t* mc = _list_of_mc_particles.at(i);
+        McPart_t* mc = _listOfMcParticles.at(i);
         const SimParticle* sim = mc->fSim;
 
-        if (((sim->pdgId() == PDGCode::e_minus) or (sim->pdgId() == PDGCode::e_plus)) and (mc->NComboHits() >= _printElectronsMinNHits)) {
+        if (((sim->pdgId() == PDGCode::e_minus) or (sim->pdgId() == PDGCode::e_plus)) and (mc->nComboHits() >= _printElectronsMinNHits)) {
 
-          float fr_sh = mc->NShTaggedDelta()/(mc->NSSCHits()+1.e-3);
-          float fr_ch = mc->NChTaggedDelta()/(mc->NComboHits()+1.e-3);
+          float fr_sh = mc->nShFlaggedDelta()/(mc->nSsComboHits()+1.e-3);
+          float fr_ch = mc->nChFlaggedDelta()/(mc->nComboHits  ()+1.e-3);
 
           if (fr_ch < _printElectronsMaxFReco) {
 
             printf("* electron: sim.id: %6li mom: %8.3f time: %8.2f ",
                    sim->id().asInt(), mc->Momentum(), mc->Time());
             printf("nch:nchd:fr: %3i:%3i:%6.3f  nsh:nshd:fr %3i:%3i:%6.3f stations: %2i:%2i",
-                   mc->NComboHits(),mc->NChTaggedDelta(),fr_ch,
-                   mc->NSSCHits  (),mc->NShTaggedDelta(),fr_sh,
+                   mc->nComboHits(),mc->nChFlaggedDelta(),fr_ch,
+                   mc->nSsComboHits  (),mc->nShFlaggedDelta(),fr_sh,
                    mc->fFirstStation, mc->fLastStation);
             printf(" \n");
 //-----------------------------------------------------------------------------
@@ -999,7 +1035,7 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
 //-----------------------------------------------------------------------------
             if (_printElectronHits != 0) {
                                         // these are 'combo' ComboHits
-              int nh  = mc->NComboHits();
+              int nh  = mc->nComboHits();
 
               _hlp->printComboHit(0,0,"banner",0,0);
 
