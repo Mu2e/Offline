@@ -17,7 +17,7 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
 #include "Offline/Mu2eUtilities/inc/HelixTool.hh"
-#include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 
 
 namespace mu2e {
@@ -101,8 +101,8 @@ namespace mu2e {
   }
 
 
-  void   HelixTool::dirOfProp(float& Slope, float& Chi2ndof){
-    ::LsqSums4 fitDtDz;
+  void   HelixTool::dirOfProp(float& Slope, float& SlopeErr, float& Chi2ndof){
+    ::LsqSums2 fitDtDz;
     const mu2e::ComboHit* hit;
     for (size_t j=0; j<_hel->_hhits.size(); j++) {
       hit = &_hel->_hhits[j];
@@ -113,8 +113,9 @@ namespace mu2e {
       double hitWeight      = 1./timeErrSquared;
       fitDtDz.addPoint(hitZpos,hitTime, hitWeight);
     }
-    Slope    = fitDtDz.dfdz();
-    Chi2ndof = fitDtDz.chi2DofLine();
+    Slope    = fitDtDz.dydx();
+    Chi2ndof = fitDtDz.chi2Dof();
+    SlopeErr = fitDtDz.dydxErr();
   }
 
 
