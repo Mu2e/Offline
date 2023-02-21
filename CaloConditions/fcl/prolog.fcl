@@ -1,4 +1,13 @@
 BEGIN_PROLOG
+
+calEnergyCalib : {
+  roid : 0
+  verbose: 0
+  useDb: false
+  algorithm: 0
+
+}
+
 CaloDAQConditions : {
     verbose : 0
     useDb : false

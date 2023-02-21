@@ -15,24 +15,26 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(uint16_t roid, float EPeak, float Esource, float chisq):
-	_roid(roid),_EPeak(EPeak),_Esource(Esource), _chisq(chisq) {}
+      Row(uint16_t roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
       uint16_t  roid() const { return _roid;} 
-      float     EPeak() const { return _EPeak; }
-      float     Esource() const { return _Esource; }
-      float     chisq() const { return _chisq; }
+      float EPeak() const { return _EPeak; }
+      float ErrEPeak() const { return _ErrEPeak; }
+      float Width() const { return _Width; }
+      float ErrWidth() const { return _ErrWidth; }
+      float chisq() const { return _chisq; }
 
     private:
       uint16_t  _roid; 
       float _EPeak;
-      float _Esource;
+      float _ErrEPeak;
+      float _Width;
+      float _ErrWidth;
       float _chisq;
     };
 
     constexpr static const char* cxname = "CalSourceCalibTable";
 
-    CalSourceCalibTable():DbTable(cxname,"cal.sourcecalib",
-			"roid,EPeak,Esource,chisq") {}
+    CalSourceCalibTable():DbTable(cxname,"cal.sourcecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int roid) const { 
@@ -49,10 +51,7 @@ namespace mu2e {
 	        << "CalSourceCalibTable::addRow found index out of order: " 
 	        <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
-       _rows.emplace_back(roid,
-			 std::stoi(columns[1]),
-			 std::stof(columns[2]),
-			 std::stof(columns[3]) );
+       _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
       // add this channel to the map index - optional
       _chanIndex[_rows.back().roid()] = _rows.size()-1;
     }
@@ -62,7 +61,9 @@ namespace mu2e {
       sstream << std::fixed << std::setprecision(5);
       sstream << r.roid()<<",";
       sstream << r.EPeak()<<",";
-      sstream << r.Esource()<<",";
+      sstream << r.ErrEPeak()<<",";
+      sstream << r.Width()<<",";
+      sstream << r.ErrWidth()<<",";
       sstream << r.chisq();
     }
 
