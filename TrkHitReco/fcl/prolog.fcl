@@ -23,7 +23,7 @@ makeSH : {
   StrawDigiADCWaveformCollectionTag : "makeSD"
   UseCalorimeter          : false
   clusterDt               : 100.0 # ns
-  CaloClusterCollectionTag: "CaloClusterFast"
+  CaloClusterCollectionTag: "notUsed"
   FlagCrossTalk           : false
   crossTalkEnergy         : 0.007
   crossTalkMinimumTime    : -1

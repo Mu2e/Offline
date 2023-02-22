@@ -15,6 +15,7 @@ namespace mu2e {
     double driftHitVar() const { return signedDriftError_*signedDriftError_; } // variance for hits constrained to the signed drift distance
     double nullHitVar() const; // variance for hits constrained to the wire position (null hits)
     double unsignedDriftVar() const { return unsignedDriftError_*unsignedDriftError_; }
+    double driftTimeVar() const { return unsignedDriftVar()/(driftVelocity_*driftVelocity_); }
   };
 }
 #endif
