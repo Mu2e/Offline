@@ -9,43 +9,51 @@ PBTFSD : {
 
 makeSH : {
   module_type             : StrawHitReco
-  minimumTime             : 450.0 # reject early digitizations
-  maximumTime             : 1695.0 #
-  minimumEnergy           : 0.0 # MeV
-  maximumEnergy           : 0.0035 # MeV
-  minimumRho              : 350.0 # mm
-  maximumRho              : 650.0 # mm
+  MinimumTime             : 420.0 # configuration for OnSpill
+  MaximumTime             : 1690.0 #
+  MinimumEnergy           : 0.0001 # MeV
+  MaximumEnergy           : 0.005 # MeV
+  MinimumRadius           : 350.0 # mm
+  MaximumRadius           : 700.0 # mm
   FitType                 : 1
   FilterHits              : false
-  WriteStrawHitCollection : true
+  WriteStrawHitCollection : false
   ProtonBunchTimeTag      : "EWMProducer"
   StrawDigiCollectionTag  : "makeSD"
   StrawDigiADCWaveformCollectionTag : "makeSD"
-  UseCalorimeter           : false
-  clusterDt                : 100.0 # ns
-  CaloClusterCollectionTag : "CaloClusterFast"
-  FlagCrossTalk            : false
-  crossTalkEnergy          : 0.007
-  crossTalkMinimumTime     : -1
-  crossTalkMaximumTime     : 100
+  UseCalorimeter          : false
+  clusterDt               : 100.0 # ns
+  CaloClusterCollectionTag: "CaloClusterFast"
+  FlagCrossTalk           : false
+  crossTalkEnergy         : 0.007
+  crossTalkMinimumTime    : -1
+  crossTalkMaximumTime    : 100
 }
 
 # combine hits in a panel
 makePH : {
   module_type           : CombineStrawHits
   TestFlag              : true
-  TestRadius            : true
+  FilterHits            : true
   ComboHitCollection    : makeSH
-  StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
-  StrawHitMask          : []
+  StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+  StrawHitMask          : ["Noisy"]
   MaxDt                 : 40
-  UseTOT                : false
+  UseTOT                : true
   MaxWireDistDiffPull   : 4.0
   TransError            : 8.0
   MaxDS                 : 3
   WireError             : 10.0
-  MinimumRadius         : 395.0
-  MaximumRadius         : 650.0
+  MinimumTime           : 420.0 # configuration for OnSpill
+  MaximumTime           : 1680.0 #
+  MinimumEnergy         : 0.0002 # MeV
+  MaximumEnergy         : 0.005 # MeV
+  MinimumRadius         : 380.0
+  MaximumRadius         : 680.0
+  MinimumNHits          : 1
+  MaximumNHits          : 3
+  CheckWres             : false
+  Unsorted              : false # sim data are sorted, VST currently not
 }
 
 # combine panel hits in a station
@@ -105,9 +113,8 @@ FlagBkgHits : {
   ClusterPositionError : 10
   BkgMVA               : { MVAWeights : "Offline/TrkHitReco/data/BkgMVAPanel.weights.xml" }
   BkgMVACut            : 0.5
-  FilterOutput         : false
-  FlagComboHits        : true
-  FlagStrawHits        : true
+  FilterHits           : true
+  FlagStrawHits        : false
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
 }

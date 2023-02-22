@@ -28,22 +28,28 @@ namespace mu2e {
       {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<int>              debug   { Name("debugLevel"),            Comment("Diagnosis level"),0 };
-        fhicl::Atom<art::InputTag>    chTag   { Name("ComboHitCollection"),    Comment(" ") };
-        fhicl::Atom<bool>             testflag{ Name("TestFlag"),              Comment("test flag or not") };
-        fhicl::Atom<bool>             testrad { Name("TestRadius"),            Comment("test position radius") };
-        fhicl::Sequence<std::string>  shsel   { Name("StrawHitSelectionBits"), Comment("flag selection") };
-        fhicl::Sequence<std::string>  shmask  { Name("StrawHitMask"),          Comment("flag anti-selection") };
-        fhicl::Atom<float>            maxdt   { Name("MaxDt"),                 Comment("maximum time separation between hits in ns") };
+        fhicl::Atom<int>              debug   { Name("debugLevel"),            Comment("Debug level"),0 };
+        fhicl::Atom<art::InputTag>    chTag   { Name("ComboHitCollection"),    Comment("Input single-straw ComboHit collection") };
+        fhicl::Atom<bool>             testflag{ Name("TestFlag"),              Comment("test input collection flag or not") };
+        fhicl::Sequence<std::string>  shsel   { Name("StrawHitSelectionBits"), Comment("Input flag selection") };
+        fhicl::Sequence<std::string>  shmask  { Name("StrawHitMask"),          Comment("Input flag anti-selection") };
         fhicl::Atom<bool>             useTOT  { Name("UseTOT"),                Comment("use tot to estimate drift time") };
-        fhicl::Atom<float>            maxwdchi{ Name("MaxWireDistDiffPull"),   Comment("maximum wire distance separation chi") };
-        fhicl::Atom<float>            werr    { Name("WireError"),             Comment("intrinsic error on wire distance squared") };
-        fhicl::Atom<float>            terr    { Name("TransError"),            Comment("intrinsic error transverse to wire (per straw)") };
-        fhicl::Atom<float>            minR    { Name("MinimumRadius"),         Comment("Minimum transverse radius squared") };
-        fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverseradius squared") };
+        fhicl::Atom<float>            werr    { Name("WireError"),             Comment("intrinsic error on wire distance (mm)") };
+        fhicl::Atom<float>            terr    { Name("TransError"),            Comment("intrinsic error transverse to wire (per straw)(mm)") };
+        fhicl::Atom<bool>             unsorted{ Name("Unsorted"),              Comment("Digi data unsorted by StrawId")};
         fhicl::Atom<int>              maxds   { Name("MaxDS"),                 Comment("maximum straw number difference") };
-        fhicl::Atom<bool>             isVSTdata{ Name("IsVSTData"),            Comment("Data from VST and needs sorting"), false };
-        fhicl::Atom<bool>             checkWres{ Name("CheckWres"),            Comment("Check Wres for consistency"), false };
+        fhicl::Atom<float>            maxdt   { Name("MaxDt"),                 Comment("maximum time separation between hits in ns") };
+        fhicl::Atom<float>            maxwdchi{ Name("MaxWireDistDiffPull"),   Comment("maximum wire distance separation chi") };
+        fhicl::Atom<bool>             filter  { Name("FilterHits"),            Comment("Filter hits (alternative is to just flag)") };
+        fhicl::Atom<int>              minN    { Name("MinimumNHits"),          Comment("Minimum number of hits")};
+        fhicl::Atom<int>              maxN    { Name("MaximumNHits"),          Comment("Maximum number of hits")};
+        fhicl::Atom<float>            minE    { Name("MinimumEnergy"),         Comment("Minimum straw energy deposit (MeV)")};
+        fhicl::Atom<float>            maxE    { Name("MaximumEnergy"),         Comment("Maximum straw energy deposit (MeV)")};
+        fhicl::Atom<float>            minR    { Name("MinimumRadius"),         Comment("Minimum transverse radius (mm)")};
+        fhicl::Atom<float>            maxR    { Name("MaximumRadius"),         Comment("Maximum transverse radius (mm)")};
+        fhicl::Atom<float>            minT    { Name("MinimumTime"),           Comment("Earliest StrawDigi time to process (nsec)")};
+        fhicl::Atom<float>            maxT    { Name("MaximumTime"),           Comment("Latest StrawDigi time to process (nsec)")};
+        fhicl::Atom<bool>             checkWres{ Name("CheckWres"),            Comment("Check Wres for consistency") };
       };
 
       explicit CombineStrawHits(const art::EDProducer::Table<Config>& config);
@@ -56,7 +62,6 @@ namespace mu2e {
       int           _debug;
       art::InputTag _chTag;
       bool          _testflag;
-      bool          _testrad;
       StrawHitFlag  _shsel;
       StrawHitFlag  _shmask;
       float         _maxdt;
@@ -64,11 +69,14 @@ namespace mu2e {
       float         _maxwdchi;
       float         _werr2;
       float         _terr;
-      float         _minR2;
-      float         _maxR2;
+      float         _minR2,_maxR2;
+      float         _minT, _maxT;
+      float         _minE, _maxE;
+      int           _minN, _maxN;
       int           _maxds;
-      bool          _isVSTdata;
+      bool          _unsorted;
       bool          _checkWres;
+      bool          _filter;
       StrawIdMask   _mask;
   };
 
@@ -77,7 +85,6 @@ namespace mu2e {
     _debug(     config().debug()),
     _chTag(     config().chTag()),
     _testflag(  config().testflag()),
-    _testrad(   config().testrad()),
     _shsel(     config().shsel()),
     _shmask(    config().shmask()),
     _maxdt(     config().maxdt()),
@@ -87,9 +94,16 @@ namespace mu2e {
     _terr(      config().terr()),
     _minR2(     config().minR()*config().minR()),
     _maxR2(     config().maxR()*config().maxR()),
+    _minT(      config().minT()),
+    _maxT(      config().maxT()),
+    _minE(      config().minE()),
+    _maxE(      config().maxE()),
+    _minN(      config().minN()),
+    _maxN(      config().maxN()),
     _maxds(     config().maxds()),
-    _isVSTdata( config().isVSTdata()),
+    _unsorted( config().unsorted()),
     _checkWres( config().checkWres()),
+    _filter(    config().filter()),
     _mask(      "uniquepanel")     // define the mask: ComboHits are made from straws in the same unique panel
     {
       consumes<ComboHitCollection>(_chTag);
@@ -108,7 +122,7 @@ namespace mu2e {
     chcolNew->reserve(chcolOrig->size());
     chcolNew->setParent(chH);
 
-    if (_isVSTdata){
+    if (_unsorted){
       // currently VST data is not sorted by panel number so we must sort manually
       // sort hits by panel
       ComboHitCollection* chcolsort = new ComboHitCollection();
@@ -137,8 +151,7 @@ namespace mu2e {
   void CombineStrawHits::combine(const ComboHitCollection* chcolOrig, ComboHitCollection& chcol)
   {
     std::vector<bool> isUsed(chcolOrig->size(),false);
-    for (size_t ich=0;ich<chcolOrig->size();++ich)
-    {
+    for (size_t ich=0;ich<chcolOrig->size();++ich) {
       if (isUsed[ich]) continue;
       isUsed[ich] = true;
 
@@ -148,8 +161,7 @@ namespace mu2e {
       combohit.init(hit1,ich);
       int panel1 = hit1.strawId().uniquePanel();
 
-      for (size_t jch=ich+1;jch<chcolOrig->size();++jch)
-      {
+      for (size_t jch=ich+1;jch<chcolOrig->size();++jch) {
         if (isUsed[jch]) continue;
         const ComboHit& hit2 = (*chcolOrig)[jch];
 
@@ -168,13 +180,35 @@ namespace mu2e {
         if (!ok) std::cout << "CombineStrawHits past limit" << std::endl;
         isUsed[jch]= true;
       }
+      // clear the flag bits; they are reset later
+      combohit._flag = StrawHitFlag(StrawHitFlag::panelcombo);
+      int nch = combohit.nCombo();
+      if(nch  < _minN || nch > _maxN){
+        if(_filter)break;
+      } else
+        combohit._flag.merge(StrawHitFlag::nhitsel);
+      // actually combine the hits if necessar, and make the cuts
+      if (nch > 1) combineHits(chcolOrig, combohit);
 
-      if (combohit.nCombo() > 1) combineHits(chcolOrig, combohit);
+      auto time = _useTOT ? combohit.correctedTime() : combohit.time();
+      if (time < _minT || time > _maxT ){
+        if(_filter)break;
+      } else
+        combohit._flag.merge(StrawHitFlag::timesel);
 
-      float r2     = combohit.pos().Perp2();
-      bool goodrad = r2 < _maxR2 && r2 > _minR2;
-      if (goodrad) combohit._flag.merge(StrawHitFlag::radsel);
-      if (!_testrad || goodrad) chcol.push_back(std::move(combohit));
+      auto energy = combohit.energyDep(); // switch to dE/dx TODO
+      if( energy > _maxE || energy < _minE ) {
+        if(_filter)break;
+      } else
+        combohit._flag.merge(StrawHitFlag::energysel);
+
+      auto r2 = combohit.pos().Perp2();
+      if( r2 < _minR2 || r2 > _maxR2 ) {
+        if(_filter)break;
+      } else
+        combohit._flag.merge(StrawHitFlag::radsel);
+
+      chcol.push_back(std::move(combohit));
     }
   }
 
@@ -182,7 +216,6 @@ namespace mu2e {
   void CombineStrawHits::combineHits(const ComboHitCollection* chcolOrig, ComboHit& combohit)
   {
     combohit._mask = _mask;
-    combohit._flag.merge(StrawHitFlag::panelcombo);
 
     // simple sums to speed up the trigger
     float eacc(0),tacc(0),dtacc(0),dtweights(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
@@ -198,7 +231,6 @@ namespace mu2e {
         throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<<std::endl;
 
       const ComboHit& ch = (*chcolOrig)[index];
-      combohit._flag.merge(ch.flag());
       float wt = 1.0/(ch.wireVar());
       eacc += ch.energyDep();
       tacc += ch.time();
@@ -230,22 +262,16 @@ namespace mu2e {
     combohit._pos        = midpos + combohit._wdist*combohit._wdir;
     combohit._wres       = sqrt(1.0/weights + _werr2);
     combohit._tres       = _terr/sqrt(combohit._nsh); // error proportional to # of straws (roughly)
-    //      float wvar           = sqrtf((wacc2/weights-wacc/weights*wacc/weights));//define quality as variance/average ratio
-    combohit._qual       = 1.0; // quality isn't used and should be removed FIXME
-
-    if (_checkWres) {
+    float wdist2 = wacc2/weights;
+    float sigw(combohit._wres);
+    if (combohit.nCombo() > 1) sigw = sqrt((wdist2-combohit._wdist*combohit._wdist)/(combohit.nCombo()-1));
+    combohit._qual       = sigw/combohit._wres; // set to ratio of original to reduced chisquared
 //-----------------------------------------------------------------------------
 // for combohits made out of 2 and more straw hits:
 // if combohit._wres is less than the sigma calculated on the individual hit positions,
 // use the PDG prescription : scale the resolution to the sigma
 //-----------------------------------------------------------------------------
-      float wdist2 = wacc2/weights;
-      float sigw(-1.);
-      if (combohit.nCombo() > 1) {
-        sigw = sqrt((wdist2-combohit._wdist*combohit._wdist)/(combohit.nCombo()-1));
-      }
-      if (combohit._wres < sigw) combohit._wres = sigw;
-    }
+   if (_checkWres && combohit._wres < sigw)combohit._wres = sigw;
   }
 }
 

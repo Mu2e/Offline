@@ -27,32 +27,36 @@ namespace mu2e {
 
 
   void StrawHitRecoUtils::flagCrossTalk(std::unique_ptr<StrawHitCollection> const& shCol, std::unique_ptr<ComboHitCollection> const& chCol) const {
-//    size_t numDigis = shCol->size();
-//    hits_by_panel = std::vector<std::vector<size_t> >(StrawId::_nupanels,std::vector<size_t>());
-//    largeHits.clear();
-//    largeHitPanels.clear();
-//    largeHits.reserve(numDigis);
-//    largeHitPanels.reserve(numDigis);
+    std::vector<std::vector<size_t> > hits_by_panel(StrawId::_nupanels,std::vector<size_t>());
+    std::vector<size_t> largeHits;
+    std::vector<size_t> largeHitPanels;
+
+    size_t numDigis = shCol->size();
+    largeHits.reserve(numDigis/10);
+    largeHitPanels.reserve(numDigis/10);
 //
-//    //buffer large hit for cross-talk analysis
-//    size_t upanel = straw.id().uniquePanel();
-//      hits_by_panel[upanel].push_back(shCol->size());
-//      if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(upanel);}
-//
-//      for (size_t ilarge=0; ilarge < largeHits.size();++ilarge)
-//    {
-//      const StrawHit& sh = (*shCol)[largeHits[ilarge]];
-//      for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]])
-//      {
-//        if (jsh==largeHits[ilarge]) continue;
-//        const StrawHit& sh2 = (*shCol)[jsh];
-//        if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT)
-//        {
-//          if (sh.strawId().samePreamp(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::elecxtalk);
-//          if (sh.strawId().nearestNeighbor(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::strawxtalk);
-//        }
-//      }
-//    }
+    //identify large hit for cross-talk analysis
+    for(size_t ish =0; ish < shCol->size(); ++ish){
+      auto& sh = (*shCol)[ish];
+      size_t upanel = sh.strawId().uniquePanel();
+      hits_by_panel[upanel].push_back(ish);
+      if (sh.energyDep() >= _ctE) {
+        largeHits.push_back(ish);
+        largeHitPanels.push_back(upanel);
+      }
+    }
+// loop over large hits and check for correlation with other hits in this panel
+    for (size_t ilarge=0; ilarge < largeHits.size();++ilarge) {
+      const StrawHit& sh = (*shCol)[largeHits[ilarge]];
+      for (size_t jsh : hits_by_panel[largeHitPanels[ilarge]]) {
+        if (jsh==largeHits[ilarge]) continue;
+        const StrawHit& sh2 = (*shCol)[jsh];
+        if (sh2.time()-sh.time() > _ctMinT && sh2.time()-sh.time() < _ctMaxT) {
+          if (sh.strawId().samePreamp(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::elecxtalk);
+          if (sh.strawId().nearestNeighbor(sh2.strawId())) (*chCol)[jsh]._flag.merge(StrawHitFlag::strawxtalk);
+        }
+      }
+    }
   }
 
   double StrawHitRecoUtils::peakMinusPedWF(TrkTypes::ADCWaveform const& adcData, StrawResponse const& srep, ADCWFIter& maxiter) const {
@@ -78,7 +82,10 @@ namespace mu2e {
     // flag digis that shouldn't be here or we don't want
     StrawHitFlag flag;
     if (trackerStatus.noSignal(sid) || trackerStatus.suppress(sid)) {
-      flag.merge(StrawHitFlag::dead); // hits from these straws will not be used in track reconstruction
+      if(_filter)
+        return false;
+      else
+        flag.merge(StrawHitFlag::dead); // hits from these straws will not be used in track reconstruction
     } else if ( trackerStatus.noisy(sid)) {
       flag.merge(StrawHitFlag::noisy); // these hits may be used in track reconstruction but not pattern recognition
     }
@@ -117,11 +124,15 @@ namespace mu2e {
     for(size_t iend=0;iend<2;++iend){
       tots[iend] = tot[iend]*srep.totLSB();
     }
+    // choose earliest end TOT: maybe average later?
+    float selected_tot = tots[eend.end()];
+
+    // reconstruct wire position
     double dt = times[StrawEnd::hv] - times[StrawEnd::cal];
     double halfpv;
     // get distance along wire from the straw center and it's estimated error
-    auto const& straw  = tt.getStraw( sid );
     double dw, dwerr;
+    auto const& straw  = tt.getStraw( sid );
     bool td = srep.wireDistance(straw,energy,dt, dw,dwerr,halfpv);
     float propd = straw.halfLength()+eend.endSign()*dw;
     float ptime = propd/(2*halfpv); // propagation time to the early end
@@ -133,9 +144,6 @@ namespace mu2e {
     } else
       flag.merge(StrawHitFlag::radsel);
 
-    // choose earliest end TOT: maybe average later?
-    float selected_tot = tots[eend.end()];
-    //    float selected_tot = 0.5*(tots[0] + tots[1]);
     // compute corrected time, and use that for selections.  eventually average the times from both ends TODO
     double dtime = srep.TOTdriftTime(straw,selected_tot,energy);
     double tres = srep.TOTdriftTimeError(straw,selected_tot,energy);
@@ -144,7 +152,6 @@ namespace mu2e {
       if(_filter) return false;
     } else
       flag.merge(StrawHitFlag::timesel);
-    double plen = srep.pathLength(straw,selected_tot);
 
     //calorimeter filtering
     if (_usecc && caloClusters) {
@@ -168,7 +175,8 @@ namespace mu2e {
     ch._wres = dwerr;
     ch._time = time;
     ch._timeres = tres;
-    ch._dedx = energy/plen;
+    ch._pathlength = srep.pathLength(straw,selected_tot);
+    ch._dedx = energy/ch._pathlength;
     ch._sid = straw.id();
     ch._dtime = dtime;
     ch._tot[0] = tots[0];
@@ -176,7 +184,6 @@ namespace mu2e {
     ch._ttdc[0] = times[0];
     ch._ttdc[1] = times[1];
     ch._ptime = ptime;
-    ch._pathlength = plen;
     ch.addIndex(isd);
     // initial estimate of the transverse error is the straw diameter/sqrt(12)
     static const float invsqrt3 = 1.0/sqrt(3.0);
@@ -192,7 +199,6 @@ namespace mu2e {
       StrawHit hit(sid,times,tots,energy);
       shCol->push_back(std::move(hit));
     }
-
     return true;
   }
 
