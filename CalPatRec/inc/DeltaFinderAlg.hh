@@ -177,6 +177,7 @@ namespace mu2e {
     int          mergeProtonCandidates   ();
     int          prepareProtonHits       ();
     int          recoverMissingProtonHits();
+    int          resolveProtonOverlaps(std::vector<ProtonCandidate*>& Pc);
   };
 }
 #endif

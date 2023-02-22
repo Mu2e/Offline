@@ -84,7 +84,7 @@ namespace mu2e {
           fHitData[station][face].push_back(hd);
           fNHitsTot      += 1;
           fNStrawHitsTot += hd->fHit->nStrawHits();
-          fSumEDep       += hd->fHit->energyDep();
+          fSumEDep       += hd->fHit->energyDep()*hd->fHit->nStrawHits();
 
           fSumX[station] += hd->fX;
           fSumY[station] += hd->fY;
@@ -140,7 +140,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     fNHitsTot      += 1;
     fNStrawHitsTot += Hd->fHit->nStrawHits();
-    fSumEDep       += Hd->fHit->energyDep();
+    fSumEDep       += Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
 //-----------------------------------------------------------------------------
 // time: the sums need to be updated always
 //-----------------------------------------------------------------------------
@@ -199,8 +199,9 @@ namespace mu2e {
 // have been picked up individually, the intersection doesn't matter
 //-----------------------------------------------------------------------------
         fNHitsTot      -= 1;
-        fNStrawHitsTot -= Hd->fHit->nStrawHits();
-        fSumEDep       -= Hd->fHit->energyDep();
+        int nsh         = Hd->fHit->nStrawHits();
+        fNStrawHitsTot -= nsh;
+        fSumEDep       -= Hd->fHit->energyDep()*nsh;
 //-----------------------------------------------------------------------------
 // time: the sums need to be updated always
 //-----------------------------------------------------------------------------
@@ -249,14 +250,17 @@ namespace mu2e {
 // prediction right into the next station, make sure thre are hits in the two
 // previous ones
 //-----------------------------------------------------------------------------
-      if (fNHitsStation[fFirstStation+1] > 0) {
+      if (fNStationsWithHits > 1) {
 //-----------------------------------------------------------------------------
 // there are hits in the two last consecutive stations
 //-----------------------------------------------------------------------------
-        float phi1 = fPhi[fFirstStation+1];
-        float phi2 = fPhi[fFirstStation  ];
+        float phi1       = fPhi[fLastStation ];
+        float phi2       = fPhi[fFirstStation];
+        float dphi       = (phi2-phi1);
+        if (dphi < M_PI) dphi += 2*M_PI;
+        if (dphi > M_PI) dphi -= 2*M_PI;
 
-        float dphi       = phi2-phi1;
+        dphi             = dphi/(fLastStation-fFirstStation);
         Prediction->fPhi = phi2+dphi;
         Prediction->fErr = 0.5; // fmax(0.2,fabs(dphi));
       }
@@ -283,6 +287,12 @@ namespace mu2e {
       }
       else {
         printf("ProtonCandidate::%s in between the first and the last stations - IMPLEMENT ME\n",__func__);
+
+        float phi1       = fPhi[fLastStation ];
+        float phi2       = fPhi[fFirstStation];
+        float dphi       = (phi2-phi1)/(fLastStation-fFirstStation);
+        Prediction->fPhi = phi2-dphi*(Station-fFirstStation);
+        Prediction->fErr = 0.5; // fmax(0.2,fabs(dphi));
       }
     }
   }

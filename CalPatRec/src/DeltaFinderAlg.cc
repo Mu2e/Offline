@@ -1038,8 +1038,8 @@ namespace mu2e {
 
         deltaChi2(Delta,xc,yc,seed_chi2_par,seed_chi2_perp);
 
-        chi2_par   = (chi2_par + seed_chi2_par)/(Delta->NHits()+1);
-        chi2_perp  = (chi2_perp+seed_chi2_perp)/(Delta->NHits()+1);
+        chi2_par   = (chi2_par + seed_chi2_par)/(Delta->nHits()+1);
+        chi2_perp  = (chi2_perp+seed_chi2_perp)/(Delta->nHits()+1);
 
         float dtcorr    = corr_time-tdelta;
         float chi2_time = (dtcorr*dtcorr)/(10*10);
@@ -1175,7 +1175,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       if (dc->Active() == 0)                                          continue;
 
-      if (dc->NHits () < _minDeltaNHits) dc->fMask |= DeltaCandidate::kNHitsBit;
+      if (dc->nHits () < _minDeltaNHits) dc->fMask |= DeltaCandidate::kNHitsBit;
       if (dc->EDep  () > _maxDeltaEDep ) dc->fMask |= DeltaCandidate::kEDepBit;
 
       if (dc->fMask == 0) dc->markHitsAsUsed();

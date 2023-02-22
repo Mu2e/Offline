@@ -61,7 +61,7 @@ namespace mu2e {
       void       init                 ();
 
       int        Active               () const { return (fIndex >= 0); }
-      int        Index                () const { return fIndex ; }
+      int        index                () const { return fIndex ; }
       int        Mask                 () const { return fMask  ; }
       int        nStationsWithHits    () const { return fNStationsWithHits; }
       int        nHitsTot             () const { return fNHitsTot; }

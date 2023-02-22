@@ -27,18 +27,18 @@ namespace mu2e {
       std::vector<const HitData_t*> fListOfHits;
       int                           fFirstStation;
       int                           fLastStation;
-      int                           fID;              // SimParticle::id().asInt()
+      int                           fID;                // SimParticle::id().asInt()
       int                           fMotherID;
       int                           fPdgID;
-      int                           fNHitsCE;         // N(hits) flagged as 'bkg'
-      int                           fNHitsFlaggedBkg;
-      int                           fNHitsDelta;      // N(hits)associated with reconstructed delta electron(s)
+      int                           fNHitsCE;           // N(hits) flagged as 'bkg'
+      int                           fNChFlaggedDelta;   // (observable)
+      int                           fNHitsDelta;        // N(hits)associated with reconstructed delta electron(s)
 
-      int                           fNHitsFlaggedProt;
-      int                           fNHitsProton;     // N(hits) associated with reconstructed proton(s)
+      int                           fNChFlaggedProton;  // number of hits flagged as proton (observable)
+      int                           fNHitsProton;       // N(hits) associated with reconstructed proton(s)
 
       float                         fTime;
-      float                         fHitTMin;         // min and max times of the straw hits
+      float                         fHitTMin;           // min and max times of the straw hits
       float                         fHitTMax;
 
       float                         fStartMom;
@@ -53,8 +53,8 @@ namespace mu2e {
         fNHitsDelta       = 0;
         fNHitsProton      = 0;
         fNHitsCE          = 0;
-        fNHitsFlaggedBkg  = 0;
-        fNHitsFlaggedProt = 0;
+        fNChFlaggedDelta  = 0;
+        fNChFlaggedProton = 0;
         fFirstStation = 999;
         fLastStation  = -1;
         fStartMom     = -1;

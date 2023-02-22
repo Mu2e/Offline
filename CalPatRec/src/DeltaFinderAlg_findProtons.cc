@@ -70,8 +70,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           if (consistent) {
             pc->addSeed(seed);
+            seed->setProtonIndex(pc->index());
+            for (int face=0; face<kNFaces; face++) {
+              if (seed->HitData(face)) seed->HitData(face)->fProtonIndex = pc->index();
+            }
             found +=1;
-            seed->setProtonIndex(pc->Index());
           }
         }
 //-----------------------------------------------------------------------------
@@ -85,7 +88,10 @@ namespace mu2e {
           ProtonCandidate* pc = _data->newProtonCandidate();
           pc->init();
           pc->addSeed(seed);
-          seed->setProtonIndex(pc->Index());
+          seed->setProtonIndex(pc->index());
+          for (int face=0; face<kNFaces; face++) {
+            if (seed->HitData(face)) seed->HitData(face)->fProtonIndex = pc->index();
+          }
         }
       }
     }
@@ -96,33 +102,20 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // merge proton candidates with overlapping hit patterns
 //-----------------------------------------------------------------------------
-  int  DeltaFinderAlg::mergeProtonCandidates() {
-//-----------------------------------------------------------------------------
-// to speed up the execution, start from time-ordering the list
-//-----------------------------------------------------------------------------
-    int nprot = _data->nProtonCandidates();
-
-    std::vector<ProtonCandidate*> pc (_data->fListOfProtonCandidates.fList);
-
-    std::sort(pc.begin(),pc.end(),
-              [](const ProtonCandidate* a, const ProtonCandidate* b) { return a->fTMid < b->fTMid; });
-//-----------------------------------------------------------------------------
-// for debugging purposes, set index corresponding to time ordering
-//-----------------------------------------------------------------------------
-    for (int i=0; i<nprot; i++) {
-      pc[i]->fTimeIndex = i;
-    }
+  int  DeltaFinderAlg::resolveProtonOverlaps(std::vector<ProtonCandidate*>& Pc) {
 //-----------------------------------------------------------------------------
 // assume no more than 100 overlapping hits per face
 //-----------------------------------------------------------------------------
     HitData_t* ohit[kNStations][kNFaces][100];
     int        novr[kNStations][kNFaces];
 
+    int nprot = Pc.size();
+
     for (int i1=0; i1<nprot-1; i1++) {
-      ProtonCandidate* p1 = pc[i1];
+      ProtonCandidate* p1 = Pc[i1];
       float t1 = p1->tMid();
       for (int i2=i1+1; i2<nprot; i2++) {
-        ProtonCandidate* p2 = pc[i2];
+        ProtonCandidate* p2 = Pc[i2];
         float t2 = p2->tMid();
 //-----------------------------------------------------------------------------
 // by construction, p2->time >= p1->time()
@@ -180,11 +173,16 @@ namespace mu2e {
                 for (int ih=0; ih<nhf; ih++) {
                   HitData_t* h = ohit[is][face][ih];
                   p1->removeHit(is,h,0);
+                  h->fProtonIndex = p2->index();
                 }
               }
             }
             p1->updateTime();
-            p1->setIndex(-1000-p2->Index());
+            // p1->setIndex(-1000-p2->index());
+            if (_debugLevel > 0) {
+              printf("* DeltaFinderAlg::%s:001: overlapping hits hits proton segments %3i:%3i, delete them from %3i\n",
+                     __func__,p1->index(),p2->index(),p1->index());
+            }
             break;
           }
           else {
@@ -198,11 +196,16 @@ namespace mu2e {
                 for (int ih=0; ih<nhf; ih++) {
                   HitData_t* h = ohit[is][face][ih];
                   p2->removeHit(is,h,0);
+                  h->fProtonIndex = p1->index();
                 }
               }
             }
             p2->updateTime();
-            p2->setIndex(-1000-p1->Index());
+            // p2->setIndex(-1000-p1->index());
+            if (_debugLevel > 0) {
+              printf("* DeltaFinderAlg::%s:001: overlapping hits hits proton segments %3i:%3i, delete them from %3i\n",
+                     __func__,p1->index(),p2->index(),p2->index());
+            }
           }
         }
       }
@@ -211,6 +214,129 @@ namespace mu2e {
     return 0;
   }
 
+//-----------------------------------------------------------------------------
+  int  DeltaFinderAlg::mergeProtonCandidates() {
+//-----------------------------------------------------------------------------
+// to speed up the execution, start from time-ordering the list
+//-----------------------------------------------------------------------------
+    int nprot = _data->nProtonCandidates();
+
+    std::vector<ProtonCandidate*> pc;
+    pc.reserve(nprot);
+    for (int i=0; i<nprot; i++) pc.push_back(_data->protonCandidate(i));
+
+    std::sort(pc.begin(),pc.end(),
+              [](const ProtonCandidate* a, const ProtonCandidate* b) { return a->fTMid < b->fTMid; });
+//-----------------------------------------------------------------------------
+// for debugging purposes, set index corresponding to time ordering
+//-----------------------------------------------------------------------------
+    for (int i=0; i<nprot; i++) {
+      pc[i]->fTimeIndex = i;
+    }
+//-----------------------------------------------------------------------------
+// step one: resolve overlaps: if two proton candidates have the same segment,
+// assigne it to the one with more hits
+// usually, it happens with candiates which are 2-station long,
+// and it is the right thing to do
+//-----------------------------------------------------------------------------
+    resolveProtonOverlaps(pc);
+//-----------------------------------------------------------------------------
+// step two: merge (supposedly, non-overlapping) parts of the same proton trajectory
+// consider only candidates which have segments in at least two stations
+//-----------------------------------------------------------------------------
+    for (int i1=0; i1<nprot-1; i1++) {
+      ProtonCandidate* p1 = pc[i1];
+      if (p1->nStationsWithHits() < 2)                                continue;
+      float t1 = p1->tMid();
+      for (int i2=i1+1; i2<nprot; i2++) {
+        ProtonCandidate* p2 = pc[i2];
+        if (p2->nStationsWithHits() < 2)                              continue;
+        float t2 = p2->tMid();
+//-----------------------------------------------------------------------------
+// by construction, p2->time >= p1->time()
+//-----------------------------------------------------------------------------
+        float dt = t2-t1;
+        int os1  = std::max(p1->fFirstStation,p2->fFirstStation);
+        int os2  = std::min(p1->fLastStation ,p2->fLastStation );
+        int gap  = os1-os2;
+//------------------------------------------------------------------------------
+// require the two candidates to be close enough in time
+//-----------------------------------------------------------------------------
+        if (gap > 0) {
+//-----------------------------------------------------------------------------
+// segments do not overlap, assume proton propagation speed 5 ns/station
+//-----------------------------------------------------------------------------
+          float t1, t1_pred;
+
+          if (p1->fFirstStation > p2->fLastStation) {
+            t1 = p1->t0(p1->fFirstStation);
+            float t2 = p2->t0(p2->fLastStation);
+            t1_pred = t2 + 5*(p1->fFirstStation-p2->fLastStation);
+          }
+          else {
+            t1 = p1->t0(p1->fLastStation);
+            float t2 = p2->t0(p2->fFirstStation);
+            t1_pred = t2 - 5*(p2->fFirstStation-p1->fLastStation);
+          }
+
+          if (t1_pred-t1 > 40)                                          break;
+//-----------------------------------------------------------------------------
+// check gap (in units of stations) between the candidates
+// 'pl' - long, 'ps' - short
+//-----------------------------------------------------------------------------
+          ProtonCandidate  *pl(p1), *ps(p2);
+
+          int l1 = p1->fLastStation-p1->fFirstStation+1;
+          int l2 = p2->fLastStation-p2->fFirstStation+1;
+
+          int lmax = std::max(l1,l2);
+          if (l2 > l1) {
+            pl = p2;
+            ps = p1;
+          }
+//-----------------------------------------------------------------------------
+// if gap is too largs, can't reliably extrapolate and predict phi, so do nothing
+//-----------------------------------------------------------------------------
+          if      (lmax < gap)                                        continue;
+//-----------------------------------------------------------------------------
+// gap is not too large, 'p' is the longest, use it to predict phi
+// figure the station to predict it to
+//-----------------------------------------------------------------------------
+          PhiPrediction_t pred;
+          int s0 = ps->fLastStation;
+          if (pl->fLastStation < ps->fFirstStation) s0 = ps->fFirstStation;
+          pl->predictPhi(s0,&pred);
+          float phi_s = ps->phi(s0);
+          float dphi  = pred.fPhi-phi_s;
+          if (dphi >  M_PI) dphi -= 2*M_PI;
+          if (dphi < -M_PI) dphi += 2*M_PI;
+
+          if (fabs(dphi) > 0.3)                                       continue;
+          printf("* close non-overlapping in Z segments segments: p1, p2: %5i %5i \n",
+                 p1->index(),p2->index());
+        }
+        else {
+//-----------------------------------------------------------------------------
+// segments do overlap
+//-----------------------------------------------------------------------------
+          if (dt > 30)                                                  break;
+//-----------------------------------------------------------------------------
+// segments are close in time, check phi in station=os1 (in the overlap region)
+//-----------------------------------------------------------------------------
+          float phi1 = p1->phi(os1);
+          float phi2 = p2->phi(os1);
+          if (fabs(phi1-phi2) > 0.3)                                  continue;
+//-----------------------------------------------------------------------------
+// the two segments are close in time- see how many false positives are there..
+//-----------------------------------------------------------------------------
+          printf("* close     overlapping in Z segments segments: p1, p2: %5i %5i \n",
+                 p1->index(),p2->index());
+        }
+      }
+    }
+
+    return 0;
+  }
 
 //-----------------------------------------------------------------------------
   int  DeltaFinderAlg::findProtons() {

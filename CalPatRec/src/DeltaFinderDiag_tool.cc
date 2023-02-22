@@ -78,6 +78,9 @@ namespace mu2e {
       TH2F*  fNPRecoVsMc;
       TH2F*  fNP10RecoVsMc;
       TH2F*  fNP15RecoVsMc;
+      TH1F*  fNch;
+      TH1F*  fNChFlaggedDelta;
+      TH1F*  fNChFlaggedProton;
     };
 
     struct SeedHist_t {
@@ -123,12 +126,17 @@ namespace mu2e {
       TH1F*  fFFlagged;
       TH1F*  fDPhi;
     };
-
+                                        // hits referred to here are the combo hits
     struct McHist_t {
       TH1F*  fPDGCode;
       TH1F*  fMom;
       TH1F*  fNHits;
       TH1F*  fNHitsDelta;
+      TH1F*  fNHitsProton;
+      TH1F*  fNChFlaggedDelta;
+      TH1F*  fNChFlaggedProton;
+      TH2F*  fNHfdVsNH;
+      TH2F*  fNHfpVsNH;
       TH1F*  fFractReco;
       TH1F*  fMaxSeg;
       TH2F*  fFractRecoVsNHits;
@@ -170,7 +178,7 @@ namespace mu2e {
     };
 
     std::vector<ProtonCandidatePar_t>  _protonPar;
-    TObjArray                          _list_of_mc_protons;
+    TObjArray                          _listOfMcProtons;
 //-----------------------------------------------------------------------------
 // additional parameters of the DeltaSeed , for analysis
 //-----------------------------------------------------------------------------
@@ -222,16 +230,18 @@ namespace mu2e {
     int            _nDeltaHitsTot;
     int            _nDeltaHitsReco;
 
-    TObjArray      _list_of_mc_particles; // list_of_particles with hits in the tracker
-    TObjArray      _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart
+    TObjArray      _listOfMcParticles; // list of particles with at least one ComboHit in the tracker
+    TObjArray      _listOfMcPartHit ;  // for each ComboHit, pointer to its McPart
 
-    TObjArray      _list_of_protons;
     int            _nMcProtons;
     int            _nMcProtons10;
     int            _nMcProtons15;
     int            _nRecoProtons;
     int            _nRecoProtons10;
     int            _nRecoProtons15;
+
+    int            _nChFlaggedDelta;
+    int            _nChFlaggedProton;
 
     Data_t*        _data;                 // shared data, passed from the caller
     Hist_t         _hist;
@@ -245,7 +255,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-    McPart_t*   mcPart(int I) { return (McPart_t*) _list_of_mc_part_hit.At(I); }
+    McPart_t*   mcPart   (int I) { return (McPart_t*) _listOfMcParticles.At(I); }
+    McPart_t*   mcPartHit(int I) { return (McPart_t*) _listOfMcPartHit.At  (I); }
+    McPart_t*   mcProton (int I) { return (McPart_t*) _listOfMcProtons.At  (I); }
 //-----------------------------------------------------------------------------
 // other functions
 //-----------------------------------------------------------------------------
@@ -337,23 +349,51 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // now, for each MC electron calculate the number of hits flagged as delta
 //-----------------------------------------------------------------------------
-    int nmc    = _list_of_mc_particles.GetEntriesFast();
+    int nmc    = _listOfMcParticles.GetEntriesFast();
 
-    _nDeltaHitsTot  = 0;
-    _nDeltaHitsReco = 0;
+    _nDeltaHitsTot    = 0;
+    _nDeltaHitsReco   = 0;
+
+    _nChFlaggedProton = 0;
+    _nChFlaggedDelta  = 0;
+
+    const ComboHit* ch_hit_0 = &_data->chcol->at(0);
 
     for (int i=0; i<nmc; i++) {
-      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
-      mc->fNHitsDelta = 0;
+      McPart_t* mc = (McPart_t*) _listOfMcParticles.At(i);
+      mc->fNHitsDelta       = 0;
+      mc->fNHitsProton      = 0;
+      mc->fNChFlaggedDelta  = 0;
+      mc->fNChFlaggedProton = 0;
 //-----------------------------------------------------------------------------
 // loop over the hits of MC delta electron and calculate fraction of them which have
 // been reconstructed as hits of reconstructed delta electrons
 //-----------------------------------------------------------------------------
       int nh = mc->fListOfHits.size();
       for (int ih=0; ih<nh; ih++) {
-        const HitData_t* hit = mc->fListOfHits[ih];
-        if (hit->fDeltaIndex >= 0) mc->fNHitsDelta += 1;
+        const HitData_t* hd = mc->fListOfHits[ih];
+        int loc = hd->fHit-ch_hit_0;
+        const StrawHitFlag* flag = &_data->outputChfColl->at(loc);
+
+        if (flag->hasAnyProperty(StrawHitFlag::bkg)) mc->fNChFlaggedDelta += 1;
+
+        assert ((hd->fDeltaIndex >= 0) == flag->hasAnyProperty(StrawHitFlag::bkg));
+
+        if (! flag->hasAnyProperty(StrawHitFlag::energysel)) mc->fNChFlaggedProton += 1;
+
+        if (hd->fProtonIndex > 0) {
+          ProtonCandidate* pc = _data->protonCandidate(hd->fProtonIndex);
+          if (pc->eDep() > 0.004) {
+            assert (not flag->hasAnyProperty(StrawHitFlag::energysel));
+          }
+        }
       }
+
+      _nChFlaggedDelta  += mc->fNChFlaggedDelta;
+      _nChFlaggedProton += mc->fNChFlaggedProton;
+
+      if (mc->fDelta ) mc->fNHitsDelta  = mc->fDelta->nHits();
+      if (mc->fProton) mc->fNHitsProton = mc->fProton->nHitsTot();
 
       if (mc->fPdgID == PDGCode::e_minus) {
         float mom = mc->Momentum();
@@ -371,10 +411,10 @@ namespace mu2e {
   McPart_t* DeltaFinderDiag::findParticle(const SimParticle* Sim) {
     McPart_t* found(0);
 
-    int n = _list_of_mc_particles.GetEntriesFast();
+    int n = _listOfMcParticles.GetEntriesFast();
 
     for (int i=0; i<n; i++) {
-      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
+      McPart_t* mc = (McPart_t*) _listOfMcParticles.At(i);
       if (mc->fSim == Sim) {
         found = mc;
         break;
@@ -417,20 +457,32 @@ namespace mu2e {
     Hist->fNPRecoVsMc   = Dir->make<TH2F>("np_reco_vs_mc"  , "Nprot: reco vs MC)"  , 100, 0., 100.,100,0,100);
     Hist->fNP10RecoVsMc = Dir->make<TH2F>("np10_reco_vs_mc", "Nprot10: reco vs MC)", 100, 0., 100.,100,0,100);
     Hist->fNP15RecoVsMc = Dir->make<TH2F>("np15_reco_vs_mc", "Nprot15: reco vs MC)", 100, 0., 100.,100,0,100);
+
+    Hist->fNch              = Dir->make<TH1F>("nch"   , "N(CH) total"             , 500, 0., 10000.);
+    Hist->fNChFlaggedDelta  = Dir->make<TH1F>("nch_fd", "N(CH) flagged as delta"  , 500, 0., 10000.);
+    Hist->fNChFlaggedProton = Dir->make<TH1F>("nch_fp", "N(CH) flagged as proton)", 500, 0., 10000.);
   }
 
 //-----------------------------------------------------------------------------
   void DeltaFinderDiag::bookMcHistograms(McHist_t* Hist, art::TFileDirectory* Dir) {
 
-    Hist->fPDGCode    = Dir->make<TH1F>("pdg"  , "PDG code"        ,1000, -2500, 2500);
-    Hist->fMom        = Dir->make<TH1F>("mom"  , "momentum"        , 500, 0.,1000.);
-    Hist->fNHits      = Dir->make<TH1F>("nhits", "N(hits)"         , 200, 0., 200.);
-    Hist->fNHitsDelta = Dir->make<TH1F>("nhitsr", "N(hits reco)"   , 200, 0., 200.);
+    Hist->fPDGCode     = Dir->make<TH1F>("pdg"  , "PDG code"        ,1000, -2500, 2500);
+    Hist->fMom         = Dir->make<TH1F>("mom"  , "momentum"        , 500, 0.,1000.);
+    Hist->fNHits       = Dir->make<TH1F>("nhits", "N(hits)"         , 100, 0., 100.);
+    Hist->fNHitsDelta  = Dir->make<TH1F>("nh_rd", "N(hits on a matching reconstructed delta)" , 100, 0., 100.);
+    Hist->fNHitsProton = Dir->make<TH1F>("nh_rp", "N(hits on a matching reconstructed proton)", 100, 0., 100.);
+
+    Hist->fNChFlaggedDelta  = Dir->make<TH1F>("nch_fd", "N(CH) flagged as delta"  , 100, 0., 100.);
+    Hist->fNChFlaggedProton = Dir->make<TH1F>("nch_fp", "N(CH) flagged as proton)", 100, 0., 100.);
+
     Hist->fFractReco  = Dir->make<TH1F>("fractr", "NR/N"           , 100, 0.,   1.);
     Hist->fMaxSeg     = Dir->make<TH1F>("max_seg", "Max N Segments",  20, 0.,  20.);
     Hist->fHitDt      = Dir->make<TH1F>("hit_dt" , "Hit TMax-TMin" , 100, 0., 200.);
 
     Hist->fFractRecoVsNHits = Dir->make<TH2F>("freco_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
+
+    Hist->fNHfpVsNH = Dir->make<TH2F>("nhfp_vs_nh", "Nh flagged P vs nh", 100, 0., 100.,100,0,100);
+    Hist->fNHfdVsNH = Dir->make<TH2F>("nhfd_vs_nh", "Nh flagged D vs nh", 100, 0., 100.,100,0,100);
   }
 
 //-----------------------------------------------------------------------------
@@ -671,9 +723,9 @@ namespace mu2e {
     Hist->fPDGCode->Fill(pdg_code);
     Hist->fMcMom->Fill(mom);
     Hist->fEDep->Fill(Delta->EDep());
-    Hist->fNBestVsN->Fill(Delta->NHits(),Dcp->fNHitsMcP);
+    Hist->fNBestVsN->Fill(Delta->nHits(),Dcp->fNHitsMcP);
 
-    float fbest = float(Dcp->fNHitsMcP)/Delta->NHits();
+    float fbest = float(Dcp->fNHitsMcP)/Delta->nHits();
     Hist->fFBest->Fill(fbest);
 
     for(int is=0; is<kNStations; ++is) {
@@ -704,9 +756,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // fill MC particle histograms
 //-----------------------------------------------------------------------------
-    int nmc = _list_of_mc_particles.GetEntriesFast();
+    int nmc = _listOfMcParticles.GetEntriesFast();
     for (int i=0; i<nmc; i++) {
-      McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
+      McPart_t* mc = (McPart_t*) _listOfMcParticles.At(i);
       int n_mc_hits = mc->fListOfHits.size();
 
       Hist->fNMcHits->Fill(n_mc_hits);
@@ -720,6 +772,11 @@ namespace mu2e {
     Hist->fNPRecoVsMc  ->Fill(_nMcProtons  ,_nRecoProtons  );
     Hist->fNP10RecoVsMc->Fill(_nMcProtons10,_nRecoProtons10);
     Hist->fNP15RecoVsMc->Fill(_nMcProtons15,_nRecoProtons15);
+
+    int nch = _data->chcol->size();
+    Hist->fNch->Fill(nch);
+    Hist->fNChFlaggedDelta->Fill(_nChFlaggedDelta);
+    Hist->fNChFlaggedProton->Fill(_nChFlaggedProton);
   }
 
 //-----------------------------------------------------------------------------
@@ -730,7 +787,15 @@ namespace mu2e {
     Hist->fPDGCode->Fill(Mc->fPdgID);
     Hist->fMom->Fill(mom);
     Hist->fNHits->Fill(Mc->NHits());
+
     Hist->fNHitsDelta->Fill(Mc->fNHitsDelta);
+    Hist->fNHitsProton->Fill(Mc->fNHitsProton);
+
+    Hist->fNChFlaggedDelta->Fill(Mc->fNChFlaggedDelta);
+    Hist->fNChFlaggedProton->Fill(Mc->fNChFlaggedProton);
+
+    Hist->fNHfdVsNH->Fill(Mc->NHits(),Mc->fNChFlaggedDelta);
+    Hist->fNHfpVsNH->Fill(Mc->NHits(),Mc->fNChFlaggedProton);
 
     float freco = Mc->fNHitsDelta/(Mc->NHits()+1.e-4);
 
@@ -920,7 +985,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // this seed has been associated with a delta
 //-----------------------------------------------------------------------------
-          if (dc->NHits() >= 5) {
+          if (dc->nHits() >= 5) {
             if      (seed->NHits() == 1) fillSeedHistograms(_hist.fSeed[21],seed,sp);
             else if (seed->NHits() == 2) fillSeedHistograms(_hist.fSeed[22],seed,sp);
             else if (seed->NHits() == 3) fillSeedHistograms(_hist.fSeed[23],seed,sp);
@@ -991,7 +1056,7 @@ namespace mu2e {
       else if (abs(pdg_id) ==  13)    fillDeltaHistograms(_hist.fDelta[7],delta,dcp);
       else if (abs(pdg_id) == 211)    fillDeltaHistograms(_hist.fDelta[8],delta,dcp);
 
-      if (delta->NHits() >= 5) {
+      if (delta->nHits() >= 5) {
         fillDeltaHistograms(_hist.fDelta[10],delta,dcp);
 
         if      (pdg_id      > 2000) fillDeltaHistograms(_hist.fDelta[11],delta,dcp);
@@ -1010,10 +1075,10 @@ namespace mu2e {
 // for each delta electron, need to check which fraction of its hits has not been
 // Associated with found DeltaCandidate's
 //-----------------------------------------------------------------------------
-    int nmc = _list_of_mc_particles.GetEntriesFast();
+    int nmc = _listOfMcParticles.GetEntriesFast();
 
     for (int i=0; i<nmc; i++) {
-      McPart_t* mc = (McPart_t*) _list_of_mc_particles.UncheckedAt(i);
+      McPart_t* mc = (McPart_t*) _listOfMcParticles.UncheckedAt(i);
       float mc_mom = mc->Momentum();
 
       fillMcHistograms(_hist.fMc[0],mc);
@@ -1078,22 +1143,22 @@ namespace mu2e {
 // memory cleanup after previous event
 // assume that MC collections have been initialized
 //-----------------------------------------------------------------------------
-    int n = _list_of_mc_particles.GetEntriesFast();
+    int n = _listOfMcParticles.GetEntriesFast();
     for (int i=0; i<n; i++) {
-      McPart_t* p = (McPart_t*) _list_of_mc_particles.UncheckedAt(i);
+      McPart_t* p = (McPart_t*) _listOfMcParticles.UncheckedAt(i);
       delete p;
     }
 
-    _list_of_mc_particles.Clear();
-    _list_of_mc_part_hit.Clear();
-    _list_of_mc_protons.Clear();
+    _listOfMcParticles.Clear();
+    _listOfMcPartHit.Clear  ();
+    _listOfMcProtons.Clear  ();
 
     int   nch           = _data->chcol->size();
     if (nch <= 0) return -1;
 
     const ComboHit* ch0 = &_data->chcol->at(0);
 
-    _list_of_mc_part_hit.Expand(nch);
+    _listOfMcPartHit.Expand(nch);
 
     for (int ist=0; ist<kNStations; ist++) {
       for (int face=0; face<kNFaces; face++) {
@@ -1119,11 +1184,15 @@ namespace mu2e {
           if (mc == NULL) {
                                         // add new particle
             mc = new McPart_t(sim);
-            _list_of_mc_particles.Add(mc);
+            _listOfMcParticles.Add(mc);
             mc->fID       = _mcUtils->getID(sim);
             mc->fMotherID = _mcUtils->getMotherID(sim);
             mc->fPdgID    = _mcUtils->getPdgID(sim);
             mc->fStartMom = _mcUtils->getStartMom(sim);
+            if (mc->fPdgID > 2000) {
+                                        // add new proton
+              _listOfMcProtons.Add(mc);
+            }
           }
 //-----------------------------------------------------------------------------
 // list of hits produced by the particle
@@ -1133,7 +1202,7 @@ namespace mu2e {
 // count N(hits) flagged as delta
 //-----------------------------------------------------------------------------
           const StrawHitFlag* flag = &_data->outputChfColl->at(ich);
-          if (flag->hasAnyProperty(StrawHitFlag::bkg)) mc->fNHitsFlaggedBkg += 1;
+          if (flag->hasAnyProperty(StrawHitFlag::bkg)) mc->fNChFlaggedDelta += 1;
 
           int station        = ch->strawId().station();
 
@@ -1146,32 +1215,27 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // list of MC particles parallel to StrawHitCollection
 //-----------------------------------------------------------------------------
-          _list_of_mc_part_hit.AddAt(mc,ich);
+          _listOfMcPartHit.AddAt(mc,ich);
         }
       }
     }
 
     _nMcProtons10 = 0;
     _nMcProtons15 = 0;
-    _nMcProtons   = 0;
+    _nMcProtons   = _listOfMcProtons.GetEntriesFast();
 
-    int np = _list_of_mc_particles.GetEntriesFast();
-    for (int i=0; i<np; i++) {
-      McPart_t* mc = mcPart(i);
-      if (mc->PdgID() > 2000) {
-        _list_of_protons.Add(mc);
-        if (mc->NHits() >=  0) _nMcProtons++;
-        if (mc->NHits() >= 10) _nMcProtons10++;
-        if (mc->NHits() >= 15) _nMcProtons15++;
-      }
+    for (int i=0; i<_nMcProtons; i++) {
+      McPart_t* mcp = mcProton(i);
+      if (mcp->NHits() >= 10) _nMcProtons10++;
+      if (mcp->NHits() >= 15) _nMcProtons15++;
     }
 
     if (_data->debugLevel > 10) {
-      int nmc = _list_of_mc_particles.GetEntriesFast();
+      int nmc = _listOfMcParticles.GetEntriesFast();
       printf(" N(MC particles with hits in the tracker: %5i\n",nmc);
       printf("    i     SimID        PdgID  NHits   Momentum  Time   FirstSt LastSt\n");
       for (int i=0; i<nmc; i++) {
-        McPart_t* mc = (McPart_t*)_list_of_mc_particles.At(i);
+        McPart_t* mc = (McPart_t*)_listOfMcParticles.At(i);
         if (mc) {
           printf(" %4i  %10i %10i  %5i %10.3f %8.1f %5i %5i\n",
                  i,mc->fID,mc->fPdgID,
@@ -1213,14 +1277,14 @@ namespace mu2e {
         if (seed->HitData(face0) != nullptr) {
           const HitData_t* hd1  = seed->HitData(face0);
           int loc1              = hd1->fHit-hit0;
-          sp->fPreSeedMcPart[0] = mcPart(loc1);
+          sp->fPreSeedMcPart[0] = mcPartHit(loc1);
         }
 
         int face1 = seed->SFace(1);
         if (face1 >= 0) {
           const HitData_t* hd2 = seed->HitData(face1);
           int loc2 = hd2->fHit-hit0;
-          sp->fPreSeedMcPart[1] = mcPart(loc2);
+          sp->fPreSeedMcPart[1] = mcPartHit(loc2);
         }
 //-----------------------------------------------------------------------------
 // define MC pointers (McPart_t's) for hits in all faces
@@ -1231,7 +1295,7 @@ namespace mu2e {
           sp->fMcPart[face] = nullptr;
           if (hd == nullptr)                                          continue;
           int loc           = hd->fHit-hit0;         // ComboHit index in the collection
-          McPart_t* mc      = mcPart(loc);
+          McPart_t* mc      = mcPartHit(loc);
           sp->fMcPart[face] = mc;
 //-----------------------------------------------------------------------------
 // count CE hits
@@ -1333,8 +1397,8 @@ namespace mu2e {
 
       _data->_finder->deltaChi2(dc,xc,yc,chi2_par,chi2_perp);
 
-      dcp->fChi2ParN  = chi2_par/dc->NHits();
-      dcp->fChi2PerpN = chi2_perp/dc->NHits();
+      dcp->fChi2ParN  = chi2_par /dc->nHits();
+      dcp->fChi2PerpN = chi2_perp/dc->nHits();
       dcp->fChi2N     = dcp->fChi2ParN+dcp->fChi2PerpN;
 
       for (int is=0; is<kNStations; is++) dcp->dxy[is] = 0;
@@ -1412,7 +1476,7 @@ namespace mu2e {
 
     const ComboHit* ch_hit_0 = &_data->chcol->at(0);
 
-    int _nRecoProtons = _data->nProtonCandidates();
+    _nRecoProtons = _data->nProtonCandidates();
     _protonPar.resize(_nRecoProtons);
 
     _nRecoProtons10 = 0;
@@ -1454,12 +1518,12 @@ namespace mu2e {
 // assign 'proton' index to each hit in a proton time cluster
 //-----------------------------------------------------------------------------
             HitData_t* hd = (HitData_t*) pc->hitData(is,face,ih);
-            hd->fProtonIndex = iprot;
+            // already done : hd->fProtonIndex = iprot;
 //-----------------------------------------------------------------------------
-// try to identify a reconstructed delta-electron with the MC particle
+// try to identify a reconstructed proton with some MC particle
 //-----------------------------------------------------------------------------
             int loc = hd->fHit-ch_hit_0;
-            McPart_t* mc = mcPart(loc);  // list parallel to the list of hits
+            McPart_t* mc = mcPartHit(loc);  // list parallel to the list of CH
 
             int found(0);
 
@@ -1671,10 +1735,10 @@ namespace mu2e {
 // print MC electrons
 //-----------------------------------------------------------------------------
     if (_printElectrons) {
-      int nmc = _list_of_mc_particles.GetEntriesFast();
+      int nmc = _listOfMcParticles.GetEntriesFast();
 
       for (int i=0; i<nmc; i++) {
-        McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
+        McPart_t* mc = (McPart_t*) _listOfMcParticles.At(i);
 
         if (((mc->fPdgID     == PDGCode::e_minus      ) or (mc->fPdgID     == PDGCode::e_plus)) &&
             (mc->Momentum() >  _printElectronsMinMom  ) &&
@@ -1682,7 +1746,7 @@ namespace mu2e {
             (mc->NHits()    >= _printElectronsMinNHits)    ) {
 
           float fr   = mc->fNHitsDelta/(mc->NHits()+1.e-3);
-          float fbkg = mc->fNHitsFlaggedBkg/(mc->NHits()+1.e-3);
+          float fbkg = mc->fNChFlaggedDelta/(mc->NHits()+1.e-3);
 
           if (fr < _printElectronsMaxFReco) {
 
@@ -1690,8 +1754,8 @@ namespace mu2e {
             if (mc->fDelta) {
               delta_id   = mc->fDelta->Index();
               nseeds     = mc->fDelta->NSeeds();
-              delta_nh   = mc->fDelta->NHits();
-              delta_nsh  = mc->fDelta->NStrawHits();
+              delta_nh   = mc->fDelta->nHits();
+              delta_nsh  = mc->fDelta->nStrawHits();
             }
 
             printf("* event: %4i electron.sim.id:%6i",_data->event->event(),mc->fID);
@@ -1700,7 +1764,7 @@ namespace mu2e {
                    delta_id, nseeds, delta_nh, delta_nsh,
                    mc->NHits(),
                    mc->fNHitsDelta,
-                   mc->fNHitsFlaggedBkg,
+                   mc->fNChFlaggedDelta,
                    mc->fFirstStation, mc->fLastStation);
             printf(" freco:fbkg %5.3f:%5.3f \n",fr,fbkg);
 
@@ -1760,7 +1824,7 @@ namespace mu2e {
             sim_id = pcp->fMcPart->fID;
             mom    = pcp->fMcPart->Momentum();
           }
-          printf("* :pc:%05i itime:%3i",pc->Index(),pc->timeIndex());
+          printf("* :pc:%05i itime:%3i",pc->index(),pc->timeIndex());
           printf("  nh:nCE %3i:%2i", pc->nHitsTot(),pcp->fNHitsCE);
           printf(" s1:s2 : %02i:%02i",pc->fFirstStation,pc->fLastStation);
           printf(" simID=%5i pdgID=%10i mom=%8.2f\n",sim_id,pdg_id,mom);
@@ -1793,7 +1857,7 @@ namespace mu2e {
                   const HitData_t* hd = pc->hitData(is,face,i);
                   const ComboHit* hit = hd->fHit;
                   int loc = hit-ch_hit_0;
-                  McPart_t* mcp = mcPart(loc);
+                  McPart_t* mcp = mcPartHit(loc);
                   int mcid      = mcp->fID;
                   printf("(%5i:%5i)",hit->strawId().asUint16(),mcid);
                 }
@@ -1810,10 +1874,10 @@ namespace mu2e {
     // constexpr PDGCode::enum_type kBaryon = PDGCode::enum_type(2000);
 
     if (_printMcProtons) {
-      int nmc = _list_of_mc_particles.GetEntriesFast();
+      int nmc = _listOfMcParticles.GetEntriesFast();
 
       for (int i=0; i<nmc; i++) {
-        McPart_t* mc = (McPart_t*) _list_of_mc_particles.At(i);
+        McPart_t* mc = (McPart_t*) _listOfMcParticles.At(i);
 
         int pdg_id = (int) mc->fPdgID;
         if (pdg_id > 2000) {
@@ -1823,13 +1887,13 @@ namespace mu2e {
           //   (mc->NHits()    >= _printElectronsMinNHits)    ) {
 
           float fr   = mc->fNHitsProton/(mc->NHits()+1.e-3);
-          float fbkg = mc->fNHitsFlaggedProt/(mc->NHits()+1.e-3);
+          float fbkg = mc->fNChFlaggedProton/(mc->NHits()+1.e-3);
 
           if (fr < _printElectronsMaxFReco) {
 
             int proton_id(-1), proton_nseg(0), proton_nh(0), proton_nsh(0);
             if (mc->fProton) {
-              proton_id    = mc->fProton->Index();
+              proton_id    = mc->fProton->index();
               proton_nseg  = mc->fProton->nStationsWithHits();
               proton_nh    = mc->fProton->nHitsTot();
               proton_nsh   = mc->fProton->nStrawHitsTot();
@@ -1838,7 +1902,7 @@ namespace mu2e {
             printf("* event: %4i proton.sim.id:%6i",_data->event->event(),mc->fID);
             printf(" mom:%7.3f time:%8.3f (nhits:nd:nf %3i:%2i:%2i) (ProtonID:%5i nseg:nh:nsh:nf %2i:%2i:%2i) stations:%2i:%2i",
                    mc->Momentum(), mc->Time(),
-                   mc->NHits(), mc->fNHitsProton, mc->fNHitsFlaggedProt,
+                   mc->NHits(), mc->fNHitsProton, mc->fNChFlaggedProton,
                    proton_id, proton_nseg, proton_nh, proton_nsh,
                    mc->fFirstStation, mc->fLastStation);
             printf(" freco:fbkg %5.3f:%5.3f \n",fr,fbkg);
