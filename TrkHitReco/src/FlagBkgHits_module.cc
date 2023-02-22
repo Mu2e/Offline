@@ -42,8 +42,7 @@ namespace mu2e
         fhicl::Atom<unsigned>                 minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
         fhicl::Atom<float>                    clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
         fhicl::Atom<int>                      clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
-        fhicl::Atom<bool>                     filterOutput{         Name("FilterOutput"),         Comment("Produce filtered ComboHit collection")  };
-        fhicl::Atom<bool>                     flagComboHits{        Name("FlagComboHits"),        Comment("Produce filtered flag comboHit collection") };
+        fhicl::Atom<bool>                     filterHits{         Name("FilterHits"),         Comment("Produce filtered ComboHit collection (the alternative is to flag)")  };
         fhicl::Atom<bool>                     flagStrawHits {       Name("FlagStrawHits"),        Comment("Produce filtered flag strawHit collection") };
         fhicl::Sequence<std::string>          backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
         fhicl::Sequence<std::string>          stereoSelection{      Name("StereoSelection"),      Comment("Stereo hit selection mask") };
@@ -66,7 +65,7 @@ namespace mu2e
       const art::ProductToken<StrawHitCollection> shtoken_;
       unsigned                                    minnhits_;
       unsigned                                    minnp_;
-      bool                                        filter_, flagch_, flagsh_;
+      bool                                        filter_, flagsh_;
       bool                                        savebkg_;
       StrawHitFlag                                bkgmsk_, stereo_;
       BkgClusterer*                               clusterer_;
@@ -93,8 +92,7 @@ namespace mu2e
     shtoken_{     consumes<StrawHitCollection>(config().strawHitCollection()) },
     minnhits_(    config().minActiveHits() ),
     minnp_(       config().minNPlanes()),
-    filter_(      config().filterOutput()),
-    flagch_(      config().flagComboHits()),
+    filter_(      config().filterHits()),
     flagsh_(      config().flagStrawHits()),
     savebkg_(     config().saveBkgClusters()),
     bkgmsk_(      config().backgroundMask()),
@@ -108,9 +106,12 @@ namespace mu2e
       // Must call consumesMany because fillStrawHitIndices calls getManyByType.
       consumesMany<ComboHitCollection>();
 
-      if (flagch_) produces<StrawHitFlagCollection>("ComboHits");
       if (flagsh_) produces<StrawHitFlagCollection>("StrawHits");
-      if (filter_) produces<ComboHitCollection>();
+      if (filter_)
+        produces<ComboHitCollection>();
+      else
+        produces<StrawHitFlagCollection>("ComboHits");
+
       if (savebkg_)
       {
         produces<BkgClusterHitCollection>();
@@ -227,7 +228,7 @@ namespace mu2e
     }
 
     //produce ComboHit flags
-    if (flagch_)
+    if (!filter_)
     {
       for(size_t ich=0;ich < nch; ++ich) chfcol[ich].merge(chcol[ich].flag());
       event.put(std::make_unique<StrawHitFlagCollection>(std::move(chfcol)),"ComboHits");

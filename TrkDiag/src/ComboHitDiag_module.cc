@@ -96,7 +96,7 @@ namespace mu2e
       int _nsh, _nch; // number of associated straw hits
       int _strawid, _straw, _panel, _plane; // strawid info
       int _eend;
-      int _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
+      int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       // mc diag
       XYZVectorF _mcpos; // average MC hit position
       float _mcmom;
@@ -162,6 +162,7 @@ namespace mu2e
     _chdiag->Branch("esel",&_esel,"esel/I");
     _chdiag->Branch("rsel",&_rsel,"rsel/I");
     _chdiag->Branch("tsel",&_tsel,"tsel/I");
+    _chdiag->Branch("nsel",&_nsel,"nsel/I");
     _chdiag->Branch("bkgclust",&_bkgclust,"bkgclust/I");
     _chdiag->Branch("bkg",&_bkg,"bkg/I");
     _chdiag->Branch("stereo",&_stereo,"stereo/I");
@@ -240,6 +241,7 @@ namespace mu2e
       _esel = flag.hasAllProperties(StrawHitFlag::energysel);
       _rsel = flag.hasAllProperties(StrawHitFlag::radsel);
       _tsel = flag.hasAllProperties(StrawHitFlag::timesel);
+      _nsel = flag.hasAllProperties(StrawHitFlag::nhitsel);
       _calosel = flag.hasAllProperties(StrawHitFlag::calosel);
       _strawxtalk = flag.hasAllProperties(StrawHitFlag::strawxtalk);
       _elecxtalk = flag.hasAllProperties(StrawHitFlag::elecxtalk);

@@ -19,6 +19,7 @@
 #ifndef __ROOTCLING__
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #endif
 // C++ includes
 #include <array>
@@ -103,7 +104,7 @@ namespace mu2e {
     // bookkeeping info
     uint16_t _ncombo = 0; // number of associated input objects
     uint16_t _nsh = 0; // number of underlying straw hits
-    PIArray _pind; // Indices back to parent objects
+    PIArray _pind = {0,0,0,0,0,0,0,0}; // Indices back to parent objects
     // information specific to hits associated with a helix
     float _hphi = 0.0; // azimuth relative to a helix center
     float _xyWeight = 0.0;       // weight used to perform the x-y circle fit
