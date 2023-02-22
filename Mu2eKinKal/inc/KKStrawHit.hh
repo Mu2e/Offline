@@ -79,6 +79,8 @@ namespace mu2e {
     private:
       BFieldMap const& bfield_; // drift calculation requires the BField for ExB effects
       WireHitState whstate_; // current state
+      double dVar_; // drift distance variance value
+      double dDdT_; // drift distance time derivative, crudely the drift velocity
       Line wire_; // local linear approximation to the wire of this hit, encoding all (local) position and time information.
       // the start time is the measurement time, the direction is from
       // the physical source of the signal (particle) to the measurement recording location (electronics), the direction magnitude
@@ -149,13 +151,16 @@ namespace mu2e {
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
-        whstate_.dDdT_ = dinfo.driftVelocity_;
-        whstate_.dVar_ = dinfo.driftHitVar();
+        if(whstate_.constrainDriftDt())
+          dDdT_ = dinfo.driftVelocity_;
+        else
+          dDdT_ = 0.0;
+        dVar_ = dinfo.driftHitVar();
       } else {
-        if(whstate_.nulldvar_ == WireHitState::rdrift){
-          whstate_.dVar_ = dinfo.nullHitVar();
+        if(whstate_.nullDriftVar()) {
+          dVar_ = dinfo.nullHitVar();
         } else {
-          whstate_.dVar_ = DriftInfo::maxdvar_;
+          dVar_ = DriftInfo::maxdvar_;
         }
       }
     } else {
@@ -185,7 +190,8 @@ namespace mu2e {
     // reset the residuals, using the fixed state from the last update
     resids[Mu2eKinKal::tresid] = resids[Mu2eKinKal::dresid] = Residual();
     if(whstate.active()){
-      // optionally constrain DeltaT using the ComboHit TOT drift time
+      auto dinfo = fillDriftInfo();
+      // optionally constrain DeltaT using the ComboHit TOT drift time or the absolute drift time
       if(whstate.constrainTOT()){
         double tvar = chit_.timeVar();
         double dt = ca_.deltaT() - chit_.driftTime();
@@ -193,13 +199,19 @@ namespace mu2e {
       }
       // distance residual
       if(whstate.driftConstraint()){
-        auto dinfo = fillDriftInfo();
         double dr = whstate.lrSign()*dinfo.rDrift_ - ca_.doca();
-        DVEC dRdP = whstate.lrSign()*whstate.dDdT_*ca_.dTdP() -ca_.dDdP();
-        resids[Mu2eKinKal::dresid] = Residual(dr,whstate.dVar_,0.0,true,dRdP);
+        DVEC dRdP = whstate.lrSign()*dDdT_*ca_.dTdP() -ca_.dDdP();
+        resids[Mu2eKinKal::dresid] = Residual(dr,dVar_,0.0,true,dRdP);
       } else {
-        // Null LR ambiguity. interpret DOCA against the wire directly as a residual
-        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),whstate.dVar_,0.0,true,ca_.dDdP());
+        // Null LR ambiguity. interpret DOCA against the wire directly as the spatial residual
+        resids[Mu2eKinKal::dresid] = Residual(ca_.doca(),dVar_,0.0,true,ca_.dDdP());
+        // optionally use the null hit time measurement to constrain t0
+        if(whstate.constrainAbsDriftDt()){
+          double dt = ca_.deltaT() - sresponse_.strawDrift().D2T(fabs(ca_.doca()),dinfo.LorentzAngle_);
+          double tvar = dinfo.driftTimeVar();
+          // this overwrites the TOT time constraint, in principle both can be used TODO
+          resids[Mu2eKinKal::tresid] = Residual(dt,tvar,0.0,true,ca_.dTdP());
+        }
       }
     }
   }
