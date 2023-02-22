@@ -68,14 +68,13 @@ namespace mu2e {
 
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
     const auto& pars = stmEnergyCalib.calib(_channel);
-    std::cout << _channel.name() << ": p0 = " << pars.p0 << ", p1 = " << pars.p1 << ", p2 = " << pars.p2 << std::endl;
 
     for (const auto& mwd_digi : *mwdDigisHandle) {
       auto uncalib_time = mwd_digi.time();
       auto uncalib_energy = mwd_digi.energy();
       float time = uncalib_time*nsPerCt;
       float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
-      std::cout << "Calibrated energy: " << energy << ", uncalibrated: " << uncalib_energy << std::endl;
+
       STMHit stm_hit(time,energy);
       outputSTMHits->push_back(stm_hit);
     }
