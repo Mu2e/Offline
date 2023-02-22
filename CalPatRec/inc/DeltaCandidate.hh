@@ -57,9 +57,9 @@ namespace mu2e {
       int        Index                () const { return fIndex ; }
       int        Mask                 () const { return fMask  ; }
       int        NSeeds               () const { return fNSeeds; }
-      int        NHits                () const { return fNHits; }
+      int        nHits                () const { return fNHits; }
       // int        NHitsMcP             () const { return fNHitsMcP; }
-      int        NStrawHits           () const { return fNStrawHits; }
+      int        nStrawHits           () const { return fNStrawHits; }
       DeltaSeed* Seed            (int I) const { return fSeed[I]; }
       bool       StationUsed     (int I) const { return (fSeed[I] != NULL); }
       // float      T0Min           (int I) const { return fT0Min[I]; }
