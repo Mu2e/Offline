@@ -1,7 +1,7 @@
 //Use with Mu2eG4/geom/crv_counters_v09.txt (e.g. CRVResponse/test/CRVResponse.fcl)
 //The CRV-Cryo-Inner modules get a scintillation yield of 0 to disable these modules.
 //These modules cannot be removed from the geometry because it would make older files incompatible with the new geometry.
-//The geometry in Mu2eG4/geom/crv_counters_v08.txt uses a CRV counter cross section of 51.30mm x 19.80mm,
+//The geometry in Mu2eG4/geom/crv_counters_v09.txt uses a CRV counter cross section of 51.30mm x 19.80mm,
 //while the v6_0 lookup tables use a cross section of 51.34mm x 19.78mm.
 //The TiO2 coating of the CRV counters has a thickness of 0.25mm so that the active volume of the lookup table counters
 //is fully covered by the Offline counters.
@@ -23,8 +23,8 @@ BEGIN_PROLOG
       module_type               : CrvPhotonGenerator
       crvStepModuleLabels       : @nil
       crvStepProcessNames       : @nil
-      CRVSectors                : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
-      reflectors                : [  0 ,  0 , -1 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  1 ,  1 ,  0 ,  0 , -1 , -1 , 1  ,  0 ,  1 , -1 ,  0 ,  1 , -1 , -1 , -1 ]
+      CRVSectors                : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","T5","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
+      reflectors                : [  0 ,  0 , -1 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  1 ,  1 ,  0 ,  0 ,  0 , -1 , -1 , 1  ,  0 ,  1 , -1 ,  0 ,  1 , -1 , -1 , -1 ]
       lookupTableFileNames      : ["CRVConditions/v6_0/LookupTable_4550_0",  //R1
                                    "CRVConditions/v6_0/LookupTable_4550_0",  //R2
                                    "CRVConditions/v6_0/LookupTable_1045_1",  //R3
@@ -38,6 +38,7 @@ BEGIN_PROLOG
                                    "CRVConditions/v6_0/LookupTable_6000_1",  //T2
                                    "CRVConditions/v6_0/LookupTable_6000_0",  //T3
                                    "CRVConditions/v6_0/LookupTable_6000_0",  //T4
+                                   "CRVConditions/v6_0/LookupTable_6000_0",  //T5
                                    "CRVConditions/v6_0/LookupTable_5000_1",  //E1
                                    "CRVConditions/v6_0/LookupTable_5000_1",  //E2
                                    "CRVConditions/v6_0/LookupTable_6900_1",  //U
@@ -55,7 +56,7 @@ BEGIN_PROLOG
                                 //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
       scintillationYields       : [39400,39400,39400,39400,39400,39400,  //R1...6
                                    39400,39400,39400,                    //L1...3
-                                   39400,39400,39400,39400,              //T1...4
+                                   39400,39400,39400,39400,39400,        //T1...5
                                    39400,39400,                          //E1,E2
                                    39400,                                //U
                                    39400,39400,39400,39400,              //D1...4
@@ -326,6 +327,19 @@ BEGIN_PROLOG
         },
         {
           CRVSector : "T4"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 20  //to increase veto efficiency
+          maxTimeDifference : 20  //to increase veto efficiency
+          minOverlapTimeAdjacentPulses : 30
+          minOverlapTime : 30
+          minSlope :-11
+          maxSlope : 11
+          maxSlopeDifference : 4
+          coincidenceLayers : 3
+          minClusterPEs : 0
+        },
+        {
+          CRVSector : "T5"
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 20  //to increase veto efficiency
           maxTimeDifference : 20  //to increase veto efficiency
