@@ -60,7 +60,10 @@ namespace mu2e {
       int   Used       () const { return fUsed       ; }
       int   DeltaIndex () const { return fDeltaIndex ; }
       int   ProtonIndex() const { return fProtonIndex; }
-      float Phi      () const { return atan2(fY,fX); }
+      float Phi        () const { return atan2(fY,fX)  ; }
+
+      void  setDeltaIndex (int Index) { fDeltaIndex  = Index; }
+      void  setProtonIndex(int Index) { fProtonIndex = Index; }
 //-----------------------------------------------------------------------------
 // panel ID :
 //-----------------------------------------------------------------------------

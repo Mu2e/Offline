@@ -19,6 +19,7 @@
 #include "art/Framework/Principal/Event.h"
 
 #include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Offline/CalPatRec/inc/HlPrint.hh"
 #include "Offline/CalPatRec/inc/DeltaFinderAlg.hh"
@@ -27,6 +28,8 @@
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+
+#include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 using namespace std;
 
@@ -78,6 +81,8 @@ namespace mu2e {
       TH2F*  fNPRecoVsMc;
       TH2F*  fNP10RecoVsMc;
       TH2F*  fNP15RecoVsMc;
+      TH2F*  fNP10RecoVsPpi;
+      TH2F*  fNP15RecoVsPpi;
       TH1F*  fNch;
       TH1F*  fNChFlaggedDelta;
       TH1F*  fNChFlaggedProton;
@@ -247,6 +252,8 @@ namespace mu2e {
     Hist_t         _hist;
 
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
+
+    float          _ppi;                // proton pulse intensity
 
   public:
 
@@ -454,9 +461,11 @@ namespace mu2e {
     Hist->fNDeltaHitsT     = Dir->make<TH1F>("n_delta_ht", "N(delta hits T)", 500, 0., 5000.);
     Hist->fNDeltaHitsR     = Dir->make<TH1F>("n_delta_hr", "N(delta hits R)", 500, 0., 5000.);
 
-    Hist->fNPRecoVsMc   = Dir->make<TH2F>("np_reco_vs_mc"  , "Nprot: reco vs MC)"  , 100, 0., 100.,100,0,100);
-    Hist->fNP10RecoVsMc = Dir->make<TH2F>("np10_reco_vs_mc", "Nprot10: reco vs MC)", 100, 0., 100.,100,0,100);
-    Hist->fNP15RecoVsMc = Dir->make<TH2F>("np15_reco_vs_mc", "Nprot15: reco vs MC)", 100, 0., 100.,100,0,100);
+    Hist->fNPRecoVsMc    = Dir->make<TH2F>("np_reco_vs_mc"  , "Nprot: reco vs MC)"  , 100, 0., 100.,100,0,100);
+    Hist->fNP10RecoVsMc  = Dir->make<TH2F>("np10_reco_vs_mc", "Np10: reco vs MC)", 100, 0., 100.,100,0,100);
+    Hist->fNP15RecoVsMc  = Dir->make<TH2F>("np15_reco_vs_mc", "Np15: reco vs MC)", 100, 0., 100.,100,0,100);
+    Hist->fNP10RecoVsPpi = Dir->make<TH2F>("np10_reco_vs_ppi", "Np10r vs PPI)", 20, 0., 20.,50,0,50);
+    Hist->fNP15RecoVsPpi = Dir->make<TH2F>("np15_reco_vs_ppi", "Np15r vs PPI)", 20, 0., 20.,50,0,50);
 
     Hist->fNch              = Dir->make<TH1F>("nch"   , "N(CH) total"             , 500, 0., 10000.);
     Hist->fNChFlaggedDelta  = Dir->make<TH1F>("nch_fd", "N(CH) flagged as delta"  , 500, 0., 10000.);
@@ -773,6 +782,9 @@ namespace mu2e {
     Hist->fNP10RecoVsMc->Fill(_nMcProtons10,_nRecoProtons10);
     Hist->fNP15RecoVsMc->Fill(_nMcProtons15,_nRecoProtons15);
 
+    Hist->fNP10RecoVsPpi->Fill(_ppi/1.e7,_nRecoProtons10);
+    Hist->fNP15RecoVsPpi->Fill(_ppi/1.e7,_nRecoProtons15);
+
     int nch = _data->chcol->size();
     Hist->fNch->Fill(nch);
     Hist->fNChFlaggedDelta->Fill(_nChFlaggedDelta);
@@ -917,6 +929,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // precalculate MC-specific info
 //-----------------------------------------------------------------------------
+    art::Handle<mu2e::ProtonBunchIntensity> ppiH;
+    _data->event->getByLabel("PBISim", ppiH);
+
+    if (!ppiH.isValid()) {
+      mf::LogWarning("DeltaFinderDiag::fillHistograms") << "no ProtonBunchIntensity objects found";
+      _ppi = -1;
+    }
+    else {
+      _ppi = ppiH->intensity();
+    }
+
     int en = _data->event->event();
     if (_mcDiag) {
       if (_eventNumber != en) {

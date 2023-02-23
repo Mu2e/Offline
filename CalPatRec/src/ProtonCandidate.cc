@@ -113,6 +113,13 @@ namespace mu2e {
 // recalculate the timing parameterization
 //-----------------------------------------------------------------------------
     updateTime();
+//-----------------------------------------------------------------------------
+// update hit indices
+//-----------------------------------------------------------------------------
+    Seed->setProtonIndex(pc->index());
+    for (int face=0; face<kNFaces; face++) {
+      if (Seed->HitData(face)) Seed->HitData(face)->setProtonIndex(fIndex);
+    }
   }
 
 //-----------------------------------------------------------------------------
@@ -155,6 +162,7 @@ namespace mu2e {
 // by default, update the time .. but may want to skip this step
 //-----------------------------------------------------------------------------
     if (UpdateTime) updateTime();
+    Hd->setProtonIndex(fIndex);
   }
 
 //-----------------------------------------------------------------------------

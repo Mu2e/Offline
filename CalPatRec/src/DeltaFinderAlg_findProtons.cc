@@ -70,10 +70,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
           if (consistent) {
             pc->addSeed(seed);
-            seed->setProtonIndex(pc->index());
-            for (int face=0; face<kNFaces; face++) {
-              if (seed->HitData(face)) seed->HitData(face)->fProtonIndex = pc->index();
-            }
             found +=1;
           }
         }
@@ -88,10 +84,6 @@ namespace mu2e {
           ProtonCandidate* pc = _data->newProtonCandidate();
           pc->init();
           pc->addSeed(seed);
-          seed->setProtonIndex(pc->index());
-          for (int face=0; face<kNFaces; face++) {
-            if (seed->HitData(face)) seed->HitData(face)->fProtonIndex = pc->index();
-          }
         }
       }
     }
@@ -161,11 +153,10 @@ namespace mu2e {
         int nh1tot = p1->nHitsTot();
         int nh2tot = p2->nHitsTot();
 
-        if      (noverlap > 2) {
+        if      (noverlap >= 2) {
           if (nh2tot >= nh1tot) {
 //-----------------------------------------------------------------------------
-// more than 50% of p1 hits are in the overlap - merge p1 into p2 by
-// removinv overlapping hits from p1
+// merge p1 into p2 by removing overlapping hits from p1
 //-----------------------------------------------------------------------------
             for (int is=os1; is<=os2; is++) {
               for (int face=0; face<kNFaces; face++) {
@@ -173,12 +164,11 @@ namespace mu2e {
                 for (int ih=0; ih<nhf; ih++) {
                   HitData_t* h = ohit[is][face][ih];
                   p1->removeHit(is,h,0);
-                  h->fProtonIndex = p2->index();
+                  h->setProtonIndex(p2->index());
                 }
               }
             }
             p1->updateTime();
-            // p1->setIndex(-1000-p2->index());
             if (_debugLevel > 0) {
               printf("* DeltaFinderAlg::%s:001: overlapping hits hits proton segments %3i:%3i, delete them from %3i\n",
                      __func__,p1->index(),p2->index(),p1->index());
@@ -187,8 +177,7 @@ namespace mu2e {
           }
           else {
 //-----------------------------------------------------------------------------
-// more than 50% of p2 hits are in the overlap - merge p2 into p1
-// overlapping hits only within the p1 range of stations
+// merge p2 into p1
 //-----------------------------------------------------------------------------
             for (int is=os1; is<=os2; is++) {
               for (int face=0; face<kNFaces; face++) {
@@ -196,12 +185,11 @@ namespace mu2e {
                 for (int ih=0; ih<nhf; ih++) {
                   HitData_t* h = ohit[is][face][ih];
                   p2->removeHit(is,h,0);
-                  h->fProtonIndex = p1->index();
+                  h->setProtonIndex(p1->index());
                 }
               }
             }
             p2->updateTime();
-            // p2->setIndex(-1000-p1->index());
             if (_debugLevel > 0) {
               printf("* DeltaFinderAlg::%s:001: overlapping hits hits proton segments %3i:%3i, delete them from %3i\n",
                      __func__,p1->index(),p2->index(),p2->index());
@@ -328,6 +316,7 @@ namespace mu2e {
           if (fabs(phi1-phi2) > 0.3)                                  continue;
 //-----------------------------------------------------------------------------
 // the two segments are close in time- see how many false positives are there..
+// not many, can use...
 //-----------------------------------------------------------------------------
           printf("* close     overlapping in Z segments segments: p1, p2: %5i %5i \n",
                  p1->index(),p2->index());
@@ -355,7 +344,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // last step - check stations without found segments and try to pick up missing hits
 //-----------------------------------------------------------------------------
-//    recoverMissingProtonHits();
+    recoverMissingProtonHits();
 
     return 0;
   }
@@ -374,8 +363,8 @@ namespace mu2e {
 // don't extend candidates made out of one segment - but there is no such
 // start from the first station to define limits
 //-----------------------------------------------------------------------------
-      int s1 = pc->fFirstStation;
-      int s2 = pc->fLastStation;
+      int s1 = std::max(pc->fFirstStation-1,0);
+      int s2 = std::min(pc->fLastStation+1,kNStations);
 //-----------------------------------------------------------------------------
 // check inside "holes"
 //-----------------------------------------------------------------------------
@@ -390,6 +379,10 @@ namespace mu2e {
 
         for (int face=0; face<kNFaces; face++) {
           FaceZ_t* fz = _data->faceData(station,face);
+//-----------------------------------------------------------------------------
+// consider only faces where the candidate so far has no hits
+//-----------------------------------------------------------------------------
+          if (pc->nHits(is,face) > 0)                                 continue;
 
           int nph = fz->nProtonHits();
           for (int iph=0; iph<nph; iph++) {
@@ -409,8 +402,8 @@ namespace mu2e {
             if ((panel_id == -1) or (hd->panelID() == panel_id)) {
 //-----------------------------------------------------------------------------
 // ** FIXME** here we add the first hit possible - this is a room for a mistake
-// add hit to the list of proton hits, does the hit need to be marked ?
-// what do we do in case of confusion ?
+// add hit to the list of proton hits, does the hit need to be marked ? - YES
+// what do we do in case of confusion ? - NOTHING, keep the last one
 // hit knows about its Z-face.. a hit could be a part of more than one time cluster,
 // so need to check explicitly
 //-----------------------------------------------------------------------------
