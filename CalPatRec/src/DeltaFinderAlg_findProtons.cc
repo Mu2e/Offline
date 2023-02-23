@@ -94,20 +94,20 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // merge proton candidates with overlapping hit patterns
 //-----------------------------------------------------------------------------
-  int  DeltaFinderAlg::resolveProtonOverlaps(std::vector<ProtonCandidate*>& Pc) {
+  int  DeltaFinderAlg::resolveProtonOverlaps(std::vector<ProtonCandidate*>* Pc) {
 //-----------------------------------------------------------------------------
 // assume no more than 100 overlapping hits per face
 //-----------------------------------------------------------------------------
     HitData_t* ohit[kNStations][kNFaces][100];
     int        novr[kNStations][kNFaces];
 
-    int nprot = Pc.size();
+    int nprot = Pc->size();
 
     for (int i1=0; i1<nprot-1; i1++) {
-      ProtonCandidate* p1 = Pc[i1];
+      ProtonCandidate* p1 = Pc->at(i1);
       float t1 = p1->tMid();
       for (int i2=i1+1; i2<nprot; i2++) {
-        ProtonCandidate* p2 = Pc[i2];
+        ProtonCandidate* p2 = Pc->at(i2);
         float t2 = p2->tMid();
 //-----------------------------------------------------------------------------
 // by construction, p2->time >= p1->time()
@@ -203,41 +203,16 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  int  DeltaFinderAlg::mergeProtonCandidates() {
-//-----------------------------------------------------------------------------
-// to speed up the execution, start from time-ordering the list
-//-----------------------------------------------------------------------------
-    int nprot = _data->nProtonCandidates();
+  int  DeltaFinderAlg::mergeNonOverlappingCandidates(std::vector<ProtonCandidate*>* Pc) {
 
-    std::vector<ProtonCandidate*> pc;
-    pc.reserve(nprot);
-    for (int i=0; i<nprot; i++) pc.push_back(_data->protonCandidate(i));
+    int nprot = Pc->size();
 
-    std::sort(pc.begin(),pc.end(),
-              [](const ProtonCandidate* a, const ProtonCandidate* b) { return a->fTMid < b->fTMid; });
-//-----------------------------------------------------------------------------
-// for debugging purposes, set index corresponding to time ordering
-//-----------------------------------------------------------------------------
-    for (int i=0; i<nprot; i++) {
-      pc[i]->fTimeIndex = i;
-    }
-//-----------------------------------------------------------------------------
-// step one: resolve overlaps: if two proton candidates have the same segment,
-// assigne it to the one with more hits
-// usually, it happens with candiates which are 2-station long,
-// and it is the right thing to do
-//-----------------------------------------------------------------------------
-    resolveProtonOverlaps(pc);
-//-----------------------------------------------------------------------------
-// step two: merge (supposedly, non-overlapping) parts of the same proton trajectory
-// consider only candidates which have segments in at least two stations
-//-----------------------------------------------------------------------------
     for (int i1=0; i1<nprot-1; i1++) {
-      ProtonCandidate* p1 = pc[i1];
+      ProtonCandidate* p1 = Pc->at(i1);
       if (p1->nStationsWithHits() < 2)                                continue;
       float t1 = p1->tMid();
       for (int i2=i1+1; i2<nprot; i2++) {
-        ProtonCandidate* p2 = pc[i2];
+        ProtonCandidate* p2 = Pc->at(i2);
         if (p2->nStationsWithHits() < 2)                              continue;
         float t2 = p2->tMid();
 //-----------------------------------------------------------------------------
@@ -300,8 +275,10 @@ namespace mu2e {
           if (dphi < -M_PI) dphi += 2*M_PI;
 
           if (fabs(dphi) > 0.3)                                       continue;
-          printf("* close non-overlapping in Z segments segments: p1, p2: %5i %5i \n",
-                 p1->index(),p2->index());
+          if (_debugLevel > 0) {
+            printf("* close non-overlapping in Z segments segments: p1, p2: %5i %5i \n",
+                   p1->index(),p2->index());
+          }
         }
         else {
 //-----------------------------------------------------------------------------
@@ -318,11 +295,48 @@ namespace mu2e {
 // the two segments are close in time- see how many false positives are there..
 // not many, can use...
 //-----------------------------------------------------------------------------
-          printf("* close     overlapping in Z segments segments: p1, p2: %5i %5i \n",
-                 p1->index(),p2->index());
+          if (_debugLevel > 0) {
+            printf("* close     overlapping in Z segments segments: p1, p2: %5i %5i \n",
+                   p1->index(),p2->index());
+          }
         }
       }
     }
+
+    return 0;
+  }
+
+//-----------------------------------------------------------------------------
+  int  DeltaFinderAlg::mergeProtonCandidates() {
+//-----------------------------------------------------------------------------
+// to speed up the execution, start from time-ordering the list
+//-----------------------------------------------------------------------------
+    int nprot = _data->nProtonCandidates();
+
+    std::vector<ProtonCandidate*> pc;
+    pc.reserve(nprot);
+    for (int i=0; i<nprot; i++) pc.push_back(_data->protonCandidate(i));
+
+    std::sort(pc.begin(),pc.end(),
+              [](const ProtonCandidate* a, const ProtonCandidate* b) { return a->fTMid < b->fTMid; });
+//-----------------------------------------------------------------------------
+// for debugging purposes, set index corresponding to time ordering
+//-----------------------------------------------------------------------------
+    for (int i=0; i<nprot; i++) {
+      pc[i]->fTimeIndex = i;
+    }
+//-----------------------------------------------------------------------------
+// step one: resolve overlaps: if two proton candidates have the same segment,
+// assigne it to the one with more hits
+// usually, it happens with candiates which are 2-station long,
+// and it is the right thing to do
+//-----------------------------------------------------------------------------
+    resolveProtonOverlaps(&pc);
+//-----------------------------------------------------------------------------
+// step two: merge (supposedly, non-overlapping) parts of the same proton trajectory
+// consider only candidates which have segments in at least two stations
+//-----------------------------------------------------------------------------
+    if (_mergePC) mergeNonOverlappingCandidates(&pc);
 
     return 0;
   }
@@ -344,7 +358,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // last step - check stations without found segments and try to pick up missing hits
 //-----------------------------------------------------------------------------
-    recoverMissingProtonHits();
+    if (_pickupProtonHits) recoverMissingProtonHits();
 
     return 0;
   }
@@ -364,7 +378,7 @@ namespace mu2e {
 // start from the first station to define limits
 //-----------------------------------------------------------------------------
       int s1 = std::max(pc->fFirstStation-1,0);
-      int s2 = std::min(pc->fLastStation+1,kNStations);
+      int s2 = std::min(pc->fLastStation+1,(int)kNStations-1);
 //-----------------------------------------------------------------------------
 // check inside "holes"
 //-----------------------------------------------------------------------------
@@ -382,7 +396,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // consider only faces where the candidate so far has no hits
 //-----------------------------------------------------------------------------
-          if (pc->nHits(is,face) > 0)                                 continue;
+          if (pc->nHits(station,face) > 0)                            continue;
 
           int nph = fz->nProtonHits();
           for (int iph=0; iph<nph; iph++) {
@@ -401,13 +415,17 @@ namespace mu2e {
             int panel_id = pc->fPanelID[station][face];
             if ((panel_id == -1) or (hd->panelID() == panel_id)) {
 //-----------------------------------------------------------------------------
-// ** FIXME** here we add the first hit possible - this is a room for a mistake
+// ** FIXME** here we add the first hit possible - this is a room for a mistake - SURE
 // add hit to the list of proton hits, does the hit need to be marked ? - YES
 // what do we do in case of confusion ? - NOTHING, keep the last one
 // hit knows about its Z-face.. a hit could be a part of more than one time cluster,
 // so need to check explicitly
 //-----------------------------------------------------------------------------
               pc->addHit(station,hd);
+              if (_debugLevel > 0) {
+                printf("DeltaFinderAlg::%s: add combo hit sid=%5i station:face: %2i:%i to pc:%3i\n",
+                       __func__,hd->fHit->strawId().asUint16(),station,face,pc->index());
+              }
             }
           }
         }

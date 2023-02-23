@@ -75,12 +75,16 @@ namespace mu2e {
         fNHitsStation[station] += 1;
 
         if (fHitData[station][face].size() == 0) {
-          // adding first hit
+//-----------------------------------------------------------------------------
+// adding first hit
+//-----------------------------------------------------------------------------
           fPanelID[station][face] = hd->panelID();
         }
 
         if (fPanelID[station][face] == hd->panelID()) {
-          // adding hit
+//-----------------------------------------------------------------------------
+// adding not first hit
+//-----------------------------------------------------------------------------
           fHitData[station][face].push_back(hd);
           fNHitsTot      += 1;
           fNStrawHitsTot += hd->fHit->nStrawHits();
@@ -116,7 +120,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // update hit indices
 //-----------------------------------------------------------------------------
-    Seed->setProtonIndex(pc->index());
+    Seed->setProtonIndex(fIndex);
     for (int face=0; face<kNFaces; face++) {
       if (Seed->HitData(face)) Seed->HitData(face)->setProtonIndex(fIndex);
     }
@@ -132,6 +136,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     int face = Hd->fZFace;
     for (auto & hd: fHitData[Station][face]) { if (hd == Hd) return; }
+
+    fHitData[Station][face].push_back(Hd);
 
     if (fNHitsStation[Station] == 0) fNStationsWithHits++;
     fNHitsStation[Station] += 1;
@@ -294,8 +300,9 @@ namespace mu2e {
         Prediction->fErr = 0.2;
       }
       else {
-        printf("ProtonCandidate::%s in between the first and the last stations - IMPLEMENT ME\n",__func__);
-
+//-----------------------------------------------------------------------------
+// if a proton candidate has enough hits, one could use a parabola **FIXME**
+//-----------------------------------------------------------------------------
         float phi1       = fPhi[fLastStation ];
         float phi2       = fPhi[fFirstStation];
         float dphi       = (phi2-phi1)/(fLastStation-fFirstStation);

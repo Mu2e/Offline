@@ -9,6 +9,8 @@ namespace mu2e {
 
   DeltaFinderAlg::DeltaFinderAlg(const fhicl::Table<DeltaFinderAlg::Config>& config, Data_t* Data) :
     _flagProtonHits        (config().flagProtonHits()   ),
+    _mergePC               (config().mergePC       ()   ),
+    _pickupProtonHits      (config().pickupProtonHits() ),
     _timeBin               (config().timeBin()          ),
     _minHitTime            (config().minHitTime()       ),
     _maxDeltaEDep          (config().maxDeltaEDep()     ),

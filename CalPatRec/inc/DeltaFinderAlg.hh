@@ -39,7 +39,9 @@ namespace mu2e {
       fhicl::Atom<int>             debugLevel        {Name("debugLevel"        ), Comment("debug level"                 ) };
       fhicl::Atom<int>             diagLevel         {Name("diagLevel"         ), Comment("diag level"                  ) };
       fhicl::Atom<int>             printErrors       {Name("printErrors"       ), Comment("print errors"                ) };
-      fhicl::Atom<int>             flagProtonHits    {Name("flagProtonHits"    ), Comment("if 1, flag proton hits"      ) };
+      fhicl::Atom<int>             flagProtonHits    {Name("flagProtonHits"    ), Comment("1: flag proton hits"         ) };
+      fhicl::Atom<int>             mergePC           {Name("mergePC"           ), Comment("1: merge proton candidates"  ) };
+      fhicl::Atom<int>             pickupProtonHits  {Name("pickupProtonHits"  ), Comment("1: pickup single proton hits") };
       fhicl::Atom<float>           timeBin           {Name("timeBin"           ), Comment("time bin for storing hits"   ) };
       fhicl::Atom<float>           minHitTime        {Name("minHitTime"        ), Comment("min hit time"                ) };
       fhicl::Atom<float>           maxDeltaEDep      {Name("maxDeltaEDep"      ), Comment("max delta candidate  eDep"   ) };
@@ -79,6 +81,8 @@ namespace mu2e {
     Data_t*         _data;
 
     int             _flagProtonHits;       // if 1, find protons and flag proton hits
+    int             _mergePC;              //
+    int             _pickupProtonHits;     //
     float           _timeBin;              // binning
     float           _minHitTime;           // min hit time
     float           _maxDeltaEDep;         //
@@ -172,12 +176,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // proton section of the algorithm
 //-----------------------------------------------------------------------------
-    int          createProtonCandidates  ();
-    int          findProtons             ();
-    int          mergeProtonCandidates   ();
-    int          prepareProtonHits       ();
-    int          recoverMissingProtonHits();
-    int          resolveProtonOverlaps(std::vector<ProtonCandidate*>& Pc);
+    int          createProtonCandidates       ();
+    int          findProtons                  ();
+    int          mergeNonOverlappingCandidates(std::vector<ProtonCandidate*>* Pc);
+    int          mergeProtonCandidates        ();
+    int          prepareProtonHits            ();
+    int          recoverMissingProtonHits     ();
+    int          resolveProtonOverlaps        (std::vector<ProtonCandidate*>* Pc);
   };
 }
 #endif
