@@ -19,7 +19,7 @@ TTmakeSH : {
 # combine hits in a panel
 TTmakePH : {
   @table::makePH
-  filter                : true
+  FilterHits            : true
   ComboHitCollection    : "TTmakeSH"
   StrawHitSelectionBits : []
   StrawHitMask          : []

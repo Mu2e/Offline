@@ -17,7 +17,7 @@ makeSH : {
   MaximumRadius           : 700.0 # mm
   FitType                 : 1
   FilterHits              : false
-  WriteStrawHitCollection : false
+  WriteStrawHitCollection : true
   ProtonBunchTimeTag      : "EWMProducer"
   StrawDigiCollectionTag  : "makeSD"
   StrawDigiADCWaveformCollectionTag : "makeSD"
@@ -34,7 +34,7 @@ makeSH : {
 makePH : {
   module_type           : CombineStrawHits
   TestFlag              : true
-  FilterHits            : true
+  FilterHits            : false
   ComboHitCollection    : makeSH
   StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
   StrawHitMask          : ["Noisy"]
@@ -113,8 +113,8 @@ FlagBkgHits : {
   ClusterPositionError : 10
   BkgMVA               : { MVAWeights : "Offline/TrkHitReco/data/BkgMVAPanel.weights.xml" }
   BkgMVACut            : 0.5
-  FilterHits           : true
-  FlagStrawHits        : false
+  FilterHits           : false
+  FlagStrawHits        : true
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
 }
