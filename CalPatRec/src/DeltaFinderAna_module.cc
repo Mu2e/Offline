@@ -124,7 +124,8 @@ namespace mu2e {
       TH2F*  fNCHitsVsMom;
       TH2F*  fNCHitsRVsMom;
       TH2F*  fNCHitsRVsNCHits;
-      TH1F*  fNCHitsDelta;
+      TH1F*  fNChFlaggedDelta;
+      TH1F*  fNChFlaggedProton;
       TH1F*  fFractReco;
       TH2F*  fFractRecoVsNCHits;
     };
@@ -380,17 +381,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookMcHistograms(McHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
 
-    Hist->fPDGCode         = Dir->make<TH1F>("pdg"         , "PDG code"        , 500, -250., 250.);
-    Hist->fMom[0]          = Dir->make<TH1F>("mom_0"       , "momentum[0]"     , 500, 0., 500.);
-    Hist->fMom[1]          = Dir->make<TH1F>("mom_1"       , "momentum[1]"     , 100, 0.,  20.);
-    Hist->fNCHits          = Dir->make<TH1F>("nch"         , "N(combo hits)"   , 200, 0., 200.);
-    Hist->fNSSCHits        = Dir->make<TH1F>("nssch"       , "N(SS combo hits)", 200, 0., 200.);
-    Hist->fNCHitsDelta     = Dir->make<TH1F>("nchitsr"     , "N(chits reco)"   , 200, 0., 200.);
+    Hist->fPDGCode          = Dir->make<TH1F>("pdg"         , "PDG code"            , 500, -250., 250.);
+    Hist->fMom[0]           = Dir->make<TH1F>("mom_0"       , "momentum[0]"         , 500, 0., 500.);
+    Hist->fMom[1]           = Dir->make<TH1F>("mom_1"       , "momentum[1]"         , 100, 0.,  20.);
+    Hist->fNCHits           = Dir->make<TH1F>("nch"         , "N(combo hits)"       , 200, 0., 200.);
+    Hist->fNSSCHits         = Dir->make<TH1F>("nssch"       , "N(SS combo hits)"    , 200, 0., 200.);
 
-    Hist->fNCHitsVsMom     = Dir->make<TH2F>("nch_vs_mom" , "N(hits) vs mom"   , 100,0,100, 200, 0., 200.);
-    Hist->fNCHitsRVsMom    = Dir->make<TH2F>("nchr_vs_mom", "N(chits R) vs mom", 100,0,100, 200, 0., 200.);
-    Hist->fNCHitsRVsNCHits = Dir->make<TH2F>("nchr_vs_nh" , "N(chits R) vs cNH", 100,0,100, 100, 0., 100.);
-    Hist->fFractReco       = Dir->make<TH1F>("fr"         , "NCHR/NCH"         , 100, 0.,   1.);
+    Hist->fNChFlaggedDelta  = Dir->make<TH1F>("nch_fd"      , "N(ch flagged delta)" , 200, 0., 200.);
+    Hist->fNChFlaggedProton = Dir->make<TH1F>("nch_fp"      , "N(ch flagged Prot )" , 200, 0., 200.);
+
+    Hist->fNCHitsVsMom      = Dir->make<TH2F>("nch_vs_mom" , "N(hits) vs mom"   , 100,0,100, 200, 0., 200.);
+    Hist->fNCHitsRVsMom     = Dir->make<TH2F>("nchr_vs_mom", "N(chits R) vs mom", 100,0,100, 200, 0., 200.);
+    Hist->fNCHitsRVsNCHits  = Dir->make<TH2F>("nchr_vs_nh" , "N(chits R) vs cNH", 100,0,100, 100, 0., 100.);
+    Hist->fFractReco        = Dir->make<TH1F>("fr"         , "NCHR/NCH"         , 100, 0.,   1.);
 
     Hist->fFractRecoVsNCHits = Dir->make<TH2F>("fr_vs_nhits", "F(Reco) vs nhits", 100, 0., 200.,100,0,1);
   }
@@ -617,7 +620,10 @@ namespace mu2e {
     Hist->fNCHits->Fill(Mc->nComboHits());
     Hist->fNSSCHits->Fill(Mc->nSsComboHits());
     Hist->fNCHitsVsMom->Fill(mom,Mc->nComboHits());
-    Hist->fNCHitsDelta->Fill(Mc->nChFlaggedDelta());
+
+    Hist->fNChFlaggedDelta->Fill (Mc->nChFlaggedDelta());
+    Hist->fNChFlaggedProton->Fill(Mc->nChFlaggedProton());
+
     Hist->fNCHitsRVsMom->Fill(mom,Mc->nChFlaggedDelta());
     Hist->fNCHitsRVsNCHits->Fill(Mc->nComboHits(),Mc->nChFlaggedDelta());
 

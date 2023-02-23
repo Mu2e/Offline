@@ -359,6 +359,8 @@ CalPatRec : { @table::CalPatRec
                 bkgHitMask                  : [  ]                  #
 
                 flagProtonHits              : 1                     #
+                mergePC                     : 0                     # by default, don't merge proton candidates
+                pickupProtonHits            : 1                     #
                 timeBin                     : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
                 minHitTime                  : 350.                  # ns
                 minimumTime                 : 400.                  # ns
