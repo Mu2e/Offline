@@ -69,6 +69,7 @@ void mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind,
       << std::setw(8) << std::setprecision(3) << obj.pos().y() << " "
       << std::setw(9) << std::setprecision(3) << obj.pos().z() << " "
       << std::setw(7) << std::setprecision(1) << obj.time() << " "
+      << std::setw(7) << std::setprecision(1) << obj.correctedTime() << " "
       << std::setw(8) << std::setprecision(5) << obj.energyDep() << " "
       << std::setw(8) << std::setprecision(4) << obj.qual() << std::endl;
   } else if (verbose() == 2) {
@@ -77,6 +78,7 @@ void mu2e::ComboHitPrinter::Print(const mu2e::ComboHit& obj, int ind,
     os << " nCombo: " << std::setw(2) << obj.nCombo()
       << " nStraw: " << std::setw(2) << obj.nStrawHits()
       << " time: " << std::setw(7) << std::setprecision(1) << obj.time()
+      << " correctedTime: " << std::setw(7) << std::setprecision(1) << obj.correctedTime()
       << " E: " << std::setw(8) << std::setprecision(5) << obj.energyDep()
       << " qual: " << std::setw(7) << std::setprecision(4) << obj.qual()
       << std::endl;

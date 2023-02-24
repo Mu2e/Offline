@@ -181,7 +181,8 @@ namespace mu2e {
         isUsed[jch]= true;
       }
       // clear the flag bits; they are reset later
-      combohit._flag = StrawHitFlag(StrawHitFlag::panelcombo);
+      const static StrawHitFlag initialFlag("TimeDivision");
+      combohit._flag = initialFlag;
       int nch = combohit.nCombo();
       if(nch  < _minN || nch > _maxN){
         if(_filter)break;
@@ -216,9 +217,11 @@ namespace mu2e {
   void CombineStrawHits::combineHits(const ComboHitCollection* chcolOrig, ComboHit& combohit)
   {
     combohit._mask = _mask;
+    combohit._flag.merge(StrawHitFlag::panelcombo);
 
     // simple sums to speed up the trigger
-    float eacc(0),tacc(0),dtacc(0),dtweights(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
+    double eacc(0),ctacc(0),dtacc(0),dtweights(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
+    double etacc[2] = {0,0};
     XYZVectorF midpos;
     combohit._nsh = 0;
     if (_debug > 2) std::cout << "Combining " << combohit.nCombo() << " hits: ";
@@ -231,12 +234,12 @@ namespace mu2e {
         throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<<std::endl;
 
       const ComboHit& ch = (*chcolOrig)[index];
-      float wt = 1.0/(ch.wireVar());
-      eacc += ch.energyDep();
-      tacc += ch.time();
-      dtacc += ch.driftTime();
+      double wt = 1.0/(ch.wireVar());
+      eacc += ch.energyDep(); // dEdx*pathlen
+      etacc[StrawEnd::cal] += ch.endTime(StrawEnd::cal);
+      etacc[StrawEnd::hv] += ch.endTime(StrawEnd::hv);
+      ctacc += ch.correctedTime();
       dtweights += 1.0/(ch.timeVar());
-      ptacc += ch.propTime();
       placc += ch.pathLength();
       werracc += ch.wireRes();
       weights += wt;
@@ -244,6 +247,9 @@ namespace mu2e {
       wacc2 += ch.wireDist()*ch.wireDist()*wt;
       midpos += ch.centerPos();
       combohit._nsh += ch.nStrawHits();
+      dtacc += ch.driftTime();
+      ptacc += ch.propTime();
+
     }
 
     if(combohit.nStrawHits() < combohit.nCombo())
@@ -252,12 +258,13 @@ namespace mu2e {
     if(_debug > 2) std::cout << std::endl;
 
     midpos /= combohit._nsh;
+    double nch = static_cast<double>(combohit.nCombo());
     combohit._dedx       = eacc/placc; // sum energy/sum pathlen
-    combohit._time       = tacc/float(combohit.nCombo());
-    combohit._dtime      = dtacc/float(combohit.nCombo());
+    combohit._time       = ctacc/nch;
+    combohit._ttdc[StrawEnd::cal] = etacc[StrawEnd::cal]/nch;
+    combohit._ttdc[StrawEnd::hv] = etacc[StrawEnd::hv]/nch;
     combohit._timeres   = sqrt(1.0/dtweights);
-    combohit._ptime      = ptacc/float(combohit.nCombo());
-    combohit._pathlength = placc/float(combohit.nCombo());
+    combohit._pathlength = placc/nch;
     combohit._wdist      = wacc/weights;
     combohit._pos        = midpos + combohit._wdist*combohit._wdir;
     combohit._wres       = sqrt(1.0/weights + _werr2);
@@ -265,13 +272,17 @@ namespace mu2e {
     float wdist2 = wacc2/weights;
     float sigw(combohit._wres);
     if (combohit.nCombo() > 1) sigw = sqrt((wdist2-combohit._wdist*combohit._wdist)/(combohit.nCombo()-1));
-    combohit._qual       = sigw/combohit._wres; // set to ratio of original to reduced chisquared
+    combohit._qual       = sigw/combohit._wres; // set to ratio of original to reduced chi
+
 //-----------------------------------------------------------------------------
 // for combohits made out of 2 and more straw hits:
 // if combohit._wres is less than the sigma calculated on the individual hit positions,
 // use the PDG prescription : scale the resolution to the sigma
 //-----------------------------------------------------------------------------
    if (_checkWres && combohit._wres < sigw)combohit._wres = sigw;
+// the below should be removed if possible
+    combohit._dtime      = dtacc/nch;
+    combohit._ptime      = ptacc/nch;
   }
 }
 
