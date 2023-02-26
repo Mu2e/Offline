@@ -570,7 +570,8 @@ namespace mu2e
     //we want to collect all hits belonging to coincidence groups,
     //but avoid collecting hits multiple times, if they belong to different coincidence groups.
     //can be done by placing the hit interator into a set.
-    std::set<std::vector<CrvHit>::const_iterator> coincidenceHitSet;
+    auto setComp = [](const std::vector<CrvHit>::const_iterator &a, const std::vector<CrvHit>::const_iterator &b) {return a->_crvRecoPulse < b->_crvRecoPulse;};
+    std::set<std::vector<CrvHit>::const_iterator,decltype(setComp)> coincidenceHitSet(setComp);
 
     int minCoincidenceLayers = std::min_element(hits.begin(),hits.end(),
                                [](const CrvHit &a, const CrvHit &b){return a._coincidenceLayers < b._coincidenceLayers;})->_coincidenceLayers;
