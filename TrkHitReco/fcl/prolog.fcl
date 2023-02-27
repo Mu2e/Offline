@@ -117,10 +117,12 @@ FlagBkgHits : {
   FlagStrawHits        : true
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
+  SaveBkgClusters      : false
+  DebugLevel           : 0
 }
 
 
-SflagBkgHits : {
+SFlagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection : "makeSTH"
 }
@@ -134,13 +136,13 @@ TrkHitReco : {
     makePH        : { @table::makePH       }
     makeSTH       : { @table::makeSTH      }
     FlagBkgHits   : { @table::FlagBkgHits  }
-    SflagBkgHits  : { @table::SflagBkgHits }
+    SFlagBkgHits  : { @table::SFlagBkgHits }
   }
 
   # SEQUENCES
   # production sequence to prepare hits for tracking
   PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
-  SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SflagBkgHits ]
+  SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SFlagBkgHits ]
 }
 
 END_PROLOG
