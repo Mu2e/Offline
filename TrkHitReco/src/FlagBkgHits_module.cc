@@ -48,9 +48,8 @@ namespace mu2e
         fhicl::Sequence<std::string>          stereoSelection{      Name("StereoSelection"),      Comment("Stereo hit selection mask") };
         fhicl::Atom<float>                    bkgMVAcut{            Name("BkgMVACut"),            Comment("Bkg MVA cut") };
         fhicl::Table<MVATools::Config>        bkgMVA{               Name("BkgMVA"),               Comment("MVA Configuration") };
-        fhicl::Atom<bool>                     saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters"),false };
+        fhicl::Atom<bool>                     saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters") };
         fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
-        fhicl::Atom<int>                      printFrequency{       Name("PrintFrequency"),       Comment("Print frequency"),100 };
         fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
         fhicl::Table<ScanClusterer::Config>   ScanClustering{       Name("ScanClustering"),       Comment("Scan Clusterer config") };
       };
@@ -73,7 +72,6 @@ namespace mu2e
       float                                       bkgMVAcut_;
       MVATools                                    bkgMVA_;
       int const                                   debug_;
-      int const                                   printfreq_;
       int                                         iev_;
 
       void classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol,
@@ -100,7 +98,6 @@ namespace mu2e
     bkgMVAcut_(   config().bkgMVAcut()),
     bkgMVA_(      config().bkgMVA()),
     debug_(       config().debugLevel()),
-    printfreq_(   config().printFrequency()),
     iev_(0)
     {
       // Must call consumesMany because fillStrawHitIndices calls getManyByType.
@@ -146,9 +143,6 @@ namespace mu2e
   //------------------------------------------------------------------------------------------
   void FlagBkgHits::produce(art::Event& event )
   {
-
-    //unsigned iev=event.event();
-    if (debug_ > 0 && iev_%printfreq_==0) std::cout<<"FlagBkgHits: event="<<iev_<<std::endl;
 
     auto chH = event.getValidHandle(chtoken_);
     const ComboHitCollection& chcol = *chH.product();
