@@ -15,6 +15,19 @@ END_PROLOG
 
 process_name : TestDeltaFinder
 
+#------------------------------------------------------------------------------
+# the following file is the very first file of the
+# dig.mu2e.CeEndpointMix2BBSignal.MDC2020r_perfect_v1_0.art dataset,
+# just cached locally. Input is configured for a quick test
+#------------------------------------------------------------------------------
+source: { module_type : RootInput
+#    firstRun    : 1210
+#    firstSubRun :    0
+#    firstEvent  :    1
+    fileNames   : [ "/mu2e/data2/users/murat/datasets/mdc2020/CeEndpointMix2BBSignal/dig.mu2e.CeEndpointMix2BBSignal.MDC2020r_perfect_v1_0.001210_00000000.art" ]
+    maxEvents   :  100
+}
+
 physics : {
 
     producers : { @table::Reconstruction.producers
@@ -44,11 +57,8 @@ physics : {
         DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel                    : 0 ## 1
 
-            chCollTag                     : "makePH"
-            shCollTag                     : "makeSH"
             chfCollTag                    : "DeltaFinder:ComboHits"
             shfCollTag                    : "DeltaFinder:StrawHits"
-            sdmcCollTag                   : "compressDigiMCs"
         }
     }
 
