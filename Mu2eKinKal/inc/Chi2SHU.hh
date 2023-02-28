@@ -8,6 +8,7 @@
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/General/Weights.hh"
 #include "Offline/Mu2eKinKal/inc/WHSIterator.hh"
+#include "Offline/Mu2eKinKal/inc/KKSHFlag.hh"
 #include <tuple>
 #include <vector>
 #include <memory>
@@ -32,7 +33,7 @@ namespace mu2e {
 
   class Chi2SHU {
     public:
-      using Config = std::tuple<unsigned,float,float,float,float,std::string,std::string,std::string,int>;
+      using Config = std::tuple<unsigned,float,float,float,std::string,std::string,std::string,std::string,int>;
       static std::string const& configDescription(); // description of the variables
       // struct to sort hit states by chisquared value
       struct ClusterStateComp {
@@ -49,7 +50,7 @@ namespace mu2e {
       double inactivep_ =0; // chisquared penalty for inactive hits
       double nullp_ =0; // chisquared penalty for null hits
       double mindchi2_ =0; // minimum chisquared separation to consider 'significant'
-      double nulldvar_ =0; // null hit variance
+      KKSHFlag kkshflag_; // flags
       WHSCOL allowed_; // states to allow
       WHSMask freeze_; // states to freeze
       WHSMask unfreeze_; // states to unfreeze

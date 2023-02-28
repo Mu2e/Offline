@@ -1,0 +1,27 @@
+//
+// Original author David Brown
+//
+// Mu2e includes
+#include "Offline/Mu2eKinKal/inc/KKSHFlag.hh"
+#include <stdexcept>
+#include <iostream>
+#include <stdio.h>
+
+namespace mu2e {
+  std::string const& KKSHFlagDetail::typeName() {
+    static std::string type("KKSHFlag");
+    return type;
+  }
+
+  std::map<std::string,KKSHFlagDetail::mask_type> const& KKSHFlagDetail::bitNames() {
+    static std::map<std::string,mask_type> bitnames;
+    if(bitnames.size()==0){
+      bitnames[std::string("TOT")]              = bit_to_mask(tot);
+      bitnames[std::string("AbsDrift")]         = bit_to_mask(absdrift);
+      bitnames[std::string("DriftDt")]          = bit_to_mask(driftdt);
+      bitnames[std::string("NullDriftVar")]     = bit_to_mask(nhdrift);
+      bitnames[std::string("ANNProb")]          = bit_to_mask(annprob);
+    }
+    return bitnames;
+  }
+}

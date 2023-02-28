@@ -43,6 +43,8 @@ namespace mu2e {
       // extend the track according to new configuration, hits, and/or exings
       void extendTrack(Config const& config,
           KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits );
+      // extend the track to cover a new set of material Xings.  This will reuse the existing config object
+      void extendTrack(EXINGCOL const& xings);
       // accessors
       PDGCode::type fitParticle() const { return tpart_;}
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
@@ -192,6 +194,11 @@ namespace mu2e {
     for(auto const& strawhit : strawhits)strawhits_.emplace_back(strawhit);
     for(auto const& calohit : calohits)calohits_.emplace_back(calohit);
     for(auto const& strawxing : strawxings)strawxings_.emplace_back(strawxing);
+  }
+
+  template <class KTRAJ> void KKTrack<KTRAJ>::extendTrack( EXINGCOL const& exings) {
+    MEASCOL nohits;
+    this->extend(this->config(),nohits,exings);
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::printFit(std::ostream& ost,int printlevel) const {

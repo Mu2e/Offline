@@ -46,6 +46,9 @@ namespace mu2e{
     // Number of processes that are not known to the ProcessCode enum.
     int nUnknownProcesses(0);
 
+    // a special process
+    G4String gammaGP = G4String("GammaGeneralProc");
+
     // Get an iterator over existing particles. See note 1.
     G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
@@ -73,7 +76,22 @@ namespace mu2e{
       for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
 
         G4VProcess const* proc = (*pVector)[j];
-        nUnknownProcesses+=insertIfNotFound(proc->GetProcessName(),particleName);
+        G4String const& processName = proc->GetProcessName();
+        nUnknownProcesses+=insertIfNotFound(processName,particleName);
+
+        if ( processName == gammaGP ){
+          // special case for G4GammaGeneralProcess as of Geant4 11
+          // if the process name is GammaGeneralProc then one has to
+          // insert all its component processes:
+          // phot, Rayl, compt, conv, GammaToMuPair, photonNuclear
+          nUnknownProcesses+=insertIfNotFound(G4String("phot"),particleName);
+          nUnknownProcesses+=insertIfNotFound(G4String("Rayl"),particleName);
+          nUnknownProcesses+=insertIfNotFound(G4String("compt"),particleName);
+          nUnknownProcesses+=insertIfNotFound(G4String("conv"),particleName);
+          nUnknownProcesses+=insertIfNotFound(G4String("GammaToMuPair"),particleName);
+          nUnknownProcesses+=insertIfNotFound(G4String("photonNuclear"),particleName);
+        }
+
         // we will artificially attach "mu2eFieldPropagator" to all charged particles
         if( (particle->GetPDGCharge())!=0.0 ) {
           nUnknownProcesses+=insertIfNotFound(G4String("mu2eFieldPropagator"),particleName);

@@ -175,10 +175,8 @@ namespace mu2e {
     config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings()))
     {
-
-
-      // test: only 1 of saveFull and zsave should be set
-      if((savefull_ && zsave_.size() > 0) || ((!savefull_) && zsave_.size() == 0))
+      // should always save something
+      if((!savefull_) && zsave_.size() == 0)
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit:Segment saving configuration error"<< endl;
       // collection handling
       for(const auto& hseedtag : settings().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }

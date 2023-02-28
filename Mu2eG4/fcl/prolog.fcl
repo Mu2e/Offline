@@ -23,8 +23,19 @@ mu2eg4DefaultPhysics: {
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
 
+    // the following option is to be used mainly as an extention of
+    // the physics lists activating HP neutron physics e.g., Shielding, ShieldingM
+    // or any of the _HP ones
+    turnOnThermalNeutronPhysics: false
+
     setMuHadLateralDisplacement: true // improves accuracy of boundary
                                       // crossing for muons and common charged hadrons
+
+    // disableEnergyLossFluctuations: false // only disable it for testing pourposes
+    // the following parameter works with Geant4 11.1 and above
+    // setEnergyLossFluctuationModel: 2 // the deafult changes with Geant4 version; it is 2 for 11.1
+    // enum G4EmFluctuationType { fDummyFluctuation = 0, fUniversalFluctuation, fUrbanFluctuation };
+
 
     useDensityEffectInIonizationLossCalc: false // improves accuracy of energy loss calculations;
                                                 // done for the materials listed below, for now

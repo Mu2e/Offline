@@ -24,6 +24,8 @@ public:
 
   void   addPoint   (double X, double Y, double W = 1.);
   void   removePoint(double X, double Y, double W = 1.);
+  void   addSum     (LsqSums2& Lsq);
+  void   removeSum  (LsqSums2& Lsq);
 
   double qn      () { return _qn; }
   double xMean   () { return sx/sw; }
@@ -40,6 +42,7 @@ public:
 
   // reconstructed parameters of the line
   double dydx();
+  double y0();
 
   double chi2Dof();
   //  ClassDef(LsqSums2,0)

@@ -38,6 +38,8 @@ namespace mu2e {
     //models the tracker as a perfect cylinder
     float  hitRatio         () const { return _hitRatio;          }
 
+    void   dirOfProp(float& slope, float& chi2ndof);
+
 
   private:
     const HelixSeed* _hel;

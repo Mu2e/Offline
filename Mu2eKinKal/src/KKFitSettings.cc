@@ -28,14 +28,14 @@ namespace mu2e {
       std::vector<BkgANNSHU::Config> bkgannshusettings;
       std::vector<Chi2SHU::Config> chi2shusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
-      cadshusettings = fitconfig.cashuConfig().value_or(cadshusettings);
+      cadshusettings = fitconfig.cadshuConfig().value_or(cadshusettings);
       driftannshusettings = fitconfig.annshuConfig().value_or(driftannshusettings);
       bkgannshusettings = fitconfig.bkgshuConfig().value_or(bkgannshusettings);
       chi2shusettings = fitconfig.combishuConfig().value_or(chi2shusettings);
       // straw material updater must always be here
       auto const& sxusettings = fitconfig.sxuConfig();
       // set the schedule for the meta-iterations
-      unsigned ncashu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0);
+      unsigned ncadshu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0);
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig miconfig(std::get<0>(misetting));
         // parse StrawHit updaters, and add to the config of this meta-iteraion
@@ -44,7 +44,7 @@ namespace mu2e {
         for(auto const& aname : anames) {
           auto alg = StrawHitUpdaters::algo(aname);
           if(alg == StrawHitUpdaters::CAD) {
-            miconfig.addUpdater(std::any(CADSHU(cadshusettings.at(ncashu++))));
+            miconfig.addUpdater(std::any(CADSHU(cadshusettings.at(ncadshu++))));
           } else if(alg == StrawHitUpdaters::DriftANN) {
             miconfig.addUpdater(std::any(DriftANNSHU(driftannshusettings.at(nann++))));
           } else if(alg == StrawHitUpdaters::BkgANN) {
@@ -63,7 +63,7 @@ namespace mu2e {
         config.schedule_.push_back(miconfig);
       }
       // consistency checks
-      if(cadshusettings.size() != ncashu)
+      if(cadshusettings.size() != ncadshu)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of CA StrawHit updaters" <<  std::endl;
       if(driftannshusettings.size() != nann)
         throw cet::exception("RECO")<<"mu2e::KKFitSettings: inconsistent number of ANN StrawHit updaters" <<  std::endl;
