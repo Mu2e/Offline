@@ -98,6 +98,7 @@ namespace mu2e {
 
     struct ComboHitHist_t {
       TH1F*  fNSh;                     // number of straw hits per CH
+      TH1F*  fEDep;
     };
 
     struct EventHist_t {
@@ -358,6 +359,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DeltaFinderAna::bookComboHitHistograms(ComboHitHist_t* Hist, int HistSet, art::TFileDirectory* Dir) {
     Hist->fNSh      = Dir->make<TH1F>("nsh"  , "N(SH)"        ,   10, 0., 10.);
+    Hist->fEDep     = Dir->make<TH1F>("edep" , "edep"         ,  200, 0., 2e-2);
   }
 
 //-----------------------------------------------------------------------------
@@ -562,11 +564,8 @@ namespace mu2e {
 // assume that, for a ComboHit,all hits are from the same particle
 //-----------------------------------------------------------------------------
   void  DeltaFinderAna::fillComboHitHistograms(ComboHitHist_t* Hist, const ComboHit* Hit, McHitInfo_t* McHitInfo) {
-
-    //    const McPart_t* mc = McHitInfo->fMc;
-
-    // Hist->fType->Fill(McHitInfo->fType);
     Hist->fNSh->Fill(Hit->nStrawHits());
+    Hist->fEDep->Fill(Hit->energyDep());
   }
 
 //-----------------------------------------------------------------------------
@@ -939,42 +938,36 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     _nChFlaggedDelta  = 0;
     _nChFlaggedProton = 0;
 
-    int loc = 0;
+    // int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit*     ch   = &_chColl->at(i);
       const StrawHitFlag* chf  = &_chfColl->at(i);
+
+      int       ind = ch->index(0);
+      McPart_t* mc  = _listOfMcHitInfo.at(ind).fMc;
+
+      mc->fListOfComboHits.push_back(ch);
+      mc->fListOfChFlags.push_back  (chf);
 //-----------------------------------------------------------------------------
 // delta and proton flagging is done using combo hits
 //-----------------------------------------------------------------------------
       int flagged_delta  = chf->hasAnyProperty(StrawHitFlag::bkg);
       int flagged_proton = (chf->hasAnyProperty(StrawHitFlag::energysel) == 0);
 
-      if (flagged_delta ) _nChFlaggedDelta  += 1;
-      if (flagged_proton) _nChFlaggedProton += 1;
+      if (flagged_delta ) {
+        _nChFlaggedDelta      += 1;
+        mc->fNChFlaggedDelta  += 1;
+      }
+
+      if (flagged_proton) {
+        _nChFlaggedProton     += 1;
+        mc->fNChFlaggedProton += 1;
+      }
 
       int nsh = ch->nStrawHits();
-      int ch_counted = 0;
       for (int ish=0; ish<nsh; ish++) {
-        int       ind = ch->index(ish);
-        McPart_t* mc  = _listOfMcHitInfo.at(ind).fMc;
-
         if (flagged_delta ) mc->fNShFlaggedDelta  += 1;
         if (flagged_proton) mc->fNShFlaggedProton += 1;
-
-        if (ch_counted == 0) {
-//-----------------------------------------------------------------------------
-// store combohit and its flag just once
-//-----------------------------------------------------------------------------
-          mc->fListOfComboHits.push_back(ch);
-          mc->fListOfChFlags.push_back  (chf);
-
-          if (flagged_delta ) mc->fNChFlaggedDelta  += 1;
-          if (flagged_proton) mc->fNChFlaggedProton += 1;
-
-          ch_counted = 1;
-        }
-
-        loc++;
       }
     }
 

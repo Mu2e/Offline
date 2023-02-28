@@ -30,6 +30,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 
 // diagnostics
 
@@ -135,6 +136,7 @@ namespace mu2e {
 
     consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
 
+    produces<IntensityInfoTimeCluster>();
     produces<StrawHitFlagCollection>("ComboHits");
     if (_writeStrawHitFlags == 1) produces<StrawHitFlagCollection>("StrawHits");
     if (_writeComboHits     == 1) produces<ComboHitCollection>    ("");
@@ -283,9 +285,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // set proton flags, 'energy' now means 'proton'
 //-----------------------------------------------------------------------------
+    int np15(0);
     int nprotons = _data.nProtonCandidates();
     for (int i=0; i<nprotons; i++) {
       ProtonCandidate* pc = _data.protonCandidate(i);
+      if (pc->nHitsTot() >= 15) np15++;
       if (pc->nStationsWithHits() == 1) {
 //-----------------------------------------------------------------------------
 // for proton candidates with just one station require eDep > 4 KeV
@@ -314,6 +318,11 @@ namespace mu2e {
     }
 
     Event.put(std::move(tcColl));
+//-----------------------------------------------------------------------------
+// 'ppii' - proton counting-based proxy to the stopped muon rate
+//-----------------------------------------------------------------------------
+    std::unique_ptr<IntensityInfoTimeCluster> ppii(new IntensityInfoTimeCluster(np15));
+    Event.put(std::move(ppii));
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------
