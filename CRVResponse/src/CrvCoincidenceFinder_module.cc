@@ -1,7 +1,6 @@
 //
 // A module to find clusters of coincidences of CRV pulses
 //
-//
 // Original Author: Ralf Ehrlich
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -37,9 +36,13 @@ namespace mu2e
       fhicl::Atom<int> PEthreshold{Name("PEthreshold"), Comment("PE threshold required for a coincidence")};
       fhicl::Atom<double> maxTimeDifferenceAdjacentPulses{Name("maxTimeDifferenceAdjacentPulses"), Comment("maximum time difference of pulses of adjacent channels considered for coincidences")};
       fhicl::Atom<double> maxTimeDifference{Name("maxTimeDifference"), Comment("maximum time difference of a coincidence hit combination")};
+      fhicl::Atom<double> minOverlapTimeAdjacentPulses{Name("minOverlapTimeAdjacentPulses"), Comment("minimum overlap time between pulses of adjacent channels to be considered for coincidences")};
+      fhicl::Atom<double> minOverlapTime{Name("minOverlapTime"), Comment("minimum overlap time between pulses of a coincidence hit combination")};
+      fhicl::Atom<double> minSlope{Name("minSlope"), Comment("minimum slope allowed for a coincidence")};
       fhicl::Atom<double> maxSlope{Name("maxSlope"), Comment("maximum slope allowed for a coincidence")};
       fhicl::Atom<double> maxSlopeDifference{Name("maxSlopeDifference"), Comment("maximum slope difference between layers allowed for a coincidence")};
       fhicl::Atom<int> coincidenceLayers{Name("coincidenceLayers"), Comment("number of layers required for a coincidence")};
+      fhicl::Atom<double> minClusterPEs{Name("minClusterPEs"), Comment("minimum number of PEs in a cluster required for storage")};
     };
     struct Config
     {
@@ -55,8 +58,6 @@ namespace mu2e
       fhicl::Sequence<fhicl::Table<SectorConfig> > sectorConfig{Name("sectorConfig"), Comment("sector-specific settings")};
       //coincidence settings for overlap option
       fhicl::Atom<bool> usePulseOverlaps{Name("usePulseOverlaps"), Comment("use pulse overlaps instead of peak times to determine coincidences")};
-      fhicl::Atom<double> minOverlapTimeAdjacentPulses{Name("minOverlapTimeAdjacentPulses"), Comment("minimum overlap time between pulses of adjacent channels to be considered for coincidences")};
-      fhicl::Atom<double> minOverlapTime{Name("minOverlapTime"), Comment("minimum overlap time between pulses of a coincidence hit combination")};
       //other settings
       fhicl::Atom<bool> useNoFitReco{Name("useNoFitReco"), Comment("use pulse reco results not based on a Gumbel fit")};
       fhicl::Atom<bool> usePEsPulseHeight{Name("usePEsPulseHeight"), Comment("use PEs determined by pulse height instead of pulse area")};
@@ -84,8 +85,6 @@ namespace mu2e
     std::vector<SectorConfig> _sectorConfig;
 
     bool        _usePulseOverlaps;
-    double      _minOverlapTimeAdjacentPulses;
-    double      _minOverlapTime;
     bool        _useNoFitReco;
     bool        _usePEsPulseHeight;
     size_t      _bigClusterThreshold;
@@ -104,8 +103,11 @@ namespace mu2e
       int         PEthreshold;
       double      maxTimeDifferenceAdjacentPulses;
       double      maxTimeDifference;
-      double      maxSlope, maxSlopeDifference;
+      double      minOverlapTimeAdjacentPulses;
+      double      minOverlapTime;
+      double      minSlope, maxSlope, maxSlopeDifference;
       int         coincidenceLayers;
+      double      minClusterPEs;
     };
     std::map<int,sectorCoincidenceProperties> _sectorMap;
 
@@ -122,8 +124,11 @@ namespace mu2e
       int    _PEthreshold;
       double _maxTimeDifferenceAdjacentPulses;
       double _maxTimeDifference;
-      double _maxSlope, _maxSlopeDifference;
+      double _minOverlapTimeAdjacentPulses;
+      double _minOverlapTime;
+      double _minSlope, _maxSlope, _maxSlopeDifference;
       int    _coincidenceLayers;
+      double _minClusterPEs;
       mutable double _maxDistance; //initially set to initialClusterMaxDistance, which is just an estimate
                                    //used for the initial clustering process (to keep the number of
                                    //hit combinations down that need to be checked for coincidendes).
@@ -134,13 +139,15 @@ namespace mu2e
              double x, double y, double time, double timePulseStart, double timePulseEnd,
              double PEs, int layer, int counter, int SiPM, int PEthreshold,
              double maxTimeDifferenceAdjacentPulses, double maxTimeDifference,
-             double maxSlope, double maxSlopeDifference, int coincidenceLayers, double maxDistance) :
+             double minOverlapTimeAdjacentPulses, double minOverlapTime,
+             double minSlope, double maxSlope, double maxSlopeDifference, int coincidenceLayers, double minClusterPEs, double maxDistance) :
                _crvRecoPulse(crvRecoPulse), _pos(pos),
                _x(x), _y(y), _time(time), _timePulseStart(timePulseStart), _timePulseEnd(timePulseEnd),
                _PEs(PEs), _layer(layer), _counter(counter), _SiPM(SiPM), _PEthreshold(PEthreshold),
                _maxTimeDifferenceAdjacentPulses(maxTimeDifferenceAdjacentPulses), _maxTimeDifference(maxTimeDifference),
-               _maxSlope(maxSlope), _maxSlopeDifference(maxSlopeDifference), _coincidenceLayers(coincidenceLayers),
-               _maxDistance(maxDistance) {}
+               _minOverlapTimeAdjacentPulses(minOverlapTimeAdjacentPulses), _minOverlapTime(minOverlapTime),
+               _minSlope(minSlope), _maxSlope(maxSlope), _maxSlopeDifference(maxSlopeDifference), _coincidenceLayers(coincidenceLayers),
+               _minClusterPEs(minClusterPEs), _maxDistance(maxDistance) {}
     };
 
     void clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
@@ -164,8 +171,6 @@ namespace mu2e
     _clusterMinOverlapTime(conf().clusterMinOverlapTime()),
     _sectorConfig(conf().sectorConfig()),
     _usePulseOverlaps(conf().usePulseOverlaps()),
-    _minOverlapTimeAdjacentPulses(conf().minOverlapTimeAdjacentPulses()),
-    _minOverlapTime(conf().minOverlapTime()),
     _useNoFitReco(conf().useNoFitReco()),
     _usePEsPulseHeight(conf().usePEsPulseHeight()),
     _bigClusterThreshold(conf().bigClusterThreshold()),
@@ -178,7 +183,9 @@ namespace mu2e
     _initialClusterMaxTimeDifference=std::max_element(_sectorConfig.begin(), _sectorConfig.end(),
                               [](const SectorConfig &a, const SectorConfig &b)
                               {return a.maxTimeDifference() < b.maxTimeDifference();})->maxTimeDifference();
-    _initialClusterMinOverlapTime=_minOverlapTime;
+    _initialClusterMinOverlapTime=std::min_element(_sectorConfig.begin(), _sectorConfig.end(),
+                              [](const SectorConfig &a, const SectorConfig &b)
+                              {return a.minOverlapTime() < b.minOverlapTime();})->minOverlapTime();
   }
 
   void CrvCoincidenceFinder::beginJob()
@@ -232,9 +239,13 @@ namespace mu2e
       s.PEthreshold                     = sectorConfigIter->PEthreshold();
       s.maxTimeDifferenceAdjacentPulses = sectorConfigIter->maxTimeDifferenceAdjacentPulses();
       s.maxTimeDifference               = sectorConfigIter->maxTimeDifference();
+      s.minOverlapTimeAdjacentPulses    = sectorConfigIter->minOverlapTimeAdjacentPulses();
+      s.minOverlapTime                  = sectorConfigIter->minOverlapTime();
+      s.minSlope                        = sectorConfigIter->minSlope();
       s.maxSlope                        = sectorConfigIter->maxSlope();
       s.maxSlopeDifference              = sectorConfigIter->maxSlopeDifference();
       s.coincidenceLayers               = sectorConfigIter->coincidenceLayers();
+      s.minClusterPEs                   = sectorConfigIter->minClusterPEs();
 
       _sectorMap[i]=s;
     }
@@ -299,8 +310,9 @@ namespace mu2e
                                                     x, y, time, timePulseStart, timePulseEnd, PEs,
                                                     layerNumber, counterNumber, SiPM, sector.PEthreshold,
                                                     sector.maxTimeDifferenceAdjacentPulses, sector.maxTimeDifference,
-                                                    sector.maxSlope, sector.maxSlopeDifference, sector.coincidenceLayers,
-                                                    _initialClusterMaxDistance);
+                                                    sector.minOverlapTimeAdjacentPulses, sector.minOverlapTime,
+                                                    sector.minSlope, sector.maxSlope, sector.maxSlopeDifference, sector.coincidenceLayers,
+                                                    sector.minClusterPEs,_initialClusterMaxDistance);
     }
 
     //loop through all crv sectors types
@@ -383,6 +395,7 @@ namespace mu2e
       double sumY =0;
       double sumYY=0;
       double sumXY=0;
+      double minClusterPEs=cluster.front()._minClusterPEs;  //find the minimum of all minClusterPEs of the cluster hits
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         crvRecoPulses.push_back(hit->_crvRecoPulse);
@@ -414,7 +427,9 @@ namespace mu2e
           if(startTime>hit->_time) startTime=hit->_time;
           if(endTime<hit->_time) endTime=hit->_time;
         }
-      }
+
+        if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
+      } //loop over hits of the cluster
 
       assert(PEs>0);
       assert(layerSet.size()>1);
@@ -423,6 +438,9 @@ namespace mu2e
       avgCounterPos/=PEs;
       double slope=(PEs*sumXY-sumX*sumY)/(PEs*sumYY-sumY*sumY);
       std::vector<int> layers(layerSet.begin(), layerSet.end());
+
+      //don't store clusters that are below the minimum number of PEs for this sector (or sectors, if the cluster involves multiple sectors)
+      if(PEs<minClusterPEs) continue;
 
       //insert the cluster information into the vector of the crv coincidence clusters
       crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses, slope, layers);
@@ -444,6 +462,7 @@ namespace mu2e
 
       int    PEthreshold=iterHit->_PEthreshold;
       double maxTimeDifferenceAdjacentPulses=iterHit->_maxTimeDifferenceAdjacentPulses;
+      double minOverlapTimeAdjacentPulses=iterHit->_minOverlapTimeAdjacentPulses;
 
       //check other SiPM and the SiPMs at the adjacent counters
       double PEs_thisCounter=0;
@@ -463,7 +482,7 @@ namespace mu2e
         else
         {
           double overlapTime=std::min(iterHitAdjacent->_timePulseEnd,timePulseEnd)-std::max(iterHitAdjacent->_timePulseStart,timePulseStart);
-          if(overlapTime<_minOverlapTimeAdjacentPulses) continue; //no overlap or overlap time too short
+          if(overlapTime<minOverlapTimeAdjacentPulses) continue; //no overlap or overlap time too short
         }
 
         //collect all PEs of this and the adjacent counters
@@ -723,13 +742,17 @@ namespace mu2e
     }
     else
     {
+      double minOverlapTime = (*std::min_element(layerIterators,layerIterators+n,
+                                 [](L &a, L &b){return a->_minOverlapTime < b->_minOverlapTime;}))->_minOverlapTime;
       double timeMaxPulseStart = (*std::max_element(layerIterators,layerIterators+n,
                                  [](L &a, L &b){return a->_timePulseStart < b->_timePulseStart;}))->_timePulseStart;
       double timeMinPulseEnd   = (*std::min_element(layerIterators,layerIterators+n,
                                  [](L &a, L &b){return a->_timePulseEnd < b->_timePulseEnd;}))->_timePulseEnd;
-      if(timeMinPulseEnd-timeMaxPulseStart<_minOverlapTime) return false;  //pulses don't overlap, or overlap time too short
+      if(timeMinPulseEnd-timeMaxPulseStart<minOverlapTime) return false;  //pulses don't overlap, or overlap time too short
     }
 
+    double minSlope = (*std::min_element(layerIterators,layerIterators+n,
+                      [](L &a, L &b){return a->_minSlope < b->_minSlope;}))->_minSlope;
     double maxSlope = (*std::max_element(layerIterators,layerIterators+n,
                       [](L &a, L &b){return a->_maxSlope < b->_maxSlope;}))->_maxSlope;
     double maxSlopeDifference = (*std::max_element(layerIterators,layerIterators+n,
@@ -739,7 +762,7 @@ namespace mu2e
     {
       //slope = width direction / thickness direction
       slopes[d]=(layerIterators[d+1]->_x-layerIterators[d]->_x)/(layerIterators[d+1]->_y-layerIterators[d]->_y);
-      if(fabs(slopes[d])>maxSlope) return false;  //not more than maxSlope allowed for coincidence;
+      if(slopes[d]<minSlope || slopes[d]>maxSlope) return false; //slopes need to be within minSlope and maxSlope
     }
 
     if(n>2)
