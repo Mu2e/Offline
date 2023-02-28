@@ -117,8 +117,7 @@ namespace mu2e {
     // subtract proton bunch time
     for(auto iend=0;iend<2;++iend)times[iend] -= pbtOffset;
     // find the end with the earliest time
-    StrawEnd eend = (times[StrawEnd::hv] < times[StrawEnd::cal]) ?
-      StrawEnd(StrawEnd::hv) : StrawEnd(StrawEnd::cal);
+    StrawEnd eend = (times[StrawEnd::hv] < times[StrawEnd::cal]) ?  StrawEnd(StrawEnd::hv) : StrawEnd(StrawEnd::cal);
     // time-over-threshold
     TrkTypes::TOTTimes tots{0.0,0.0};
     for(size_t iend=0;iend<2;++iend){
@@ -179,10 +178,8 @@ namespace mu2e {
     ch._dedx = energy/ch._pathlength;
     ch._sid = straw.id();
     ch._dtime = dtime;
-    ch._tot[0] = tots[0];
-    ch._tot[1] = tots[1];
-    ch._ttdc[0] = times[0];
-    ch._ttdc[1] = times[1];
+    ch._tot = tots;
+    ch._ttdc = times;
     ch._ptime = ptime;
     ch.addIndex(isd);
     // initial estimate of the transverse error is the straw diameter/sqrt(12)

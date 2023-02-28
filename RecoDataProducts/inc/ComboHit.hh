@@ -66,6 +66,7 @@ namespace mu2e {
      // compatibility constructor (deprecated)
     float endTime(StrawEnd end=StrawEnd::cal)     const { return _ttdc[end];}
     auto const& TOTs() const { return _tot; }
+    auto const& endTimes() const { return _ttdc; }
     StrawEnd const& earlyEnd() const { return _eend; } // End with earliest tdc time
     StrawEnd lateEnd() const { return _eend.otherEnd(); } // End with later tdc time
     // Accessors for hits used in helices
@@ -77,7 +78,6 @@ namespace mu2e {
     // legacy functions
     //  No new code should use these accessors, they should be removed soon TODO
 //    ComboHit(const ComboHit&, StrawHitIndex, double);
-    StrawEnd const& driftEnd() const { return _eend; }
     float time() const { return _ttdc[_eend]; }
     CLHEP::Hep3Vector posCLHEP() const { return GenVector::Hep3Vec(pos()); }
     // persistent payload
