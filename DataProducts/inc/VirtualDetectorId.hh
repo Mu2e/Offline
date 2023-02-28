@@ -142,6 +142,14 @@ namespace mu2e {
       _id(id)
     {}
 
+    // Constructor from a string;
+    //  - if throwIfUnknown is true, the c'tor will throw an exception if the string is "unknown".
+    //  - if throwIfUndefined is true, the c'tor will throw an exception if the string is not
+    //    found among the known strings.
+    explicit VirtualDetectorId( std::string const& idName,
+                                bool throwIfUnknown=true,
+                                bool throwIfUndefined=true);
+
     enum_type id() const { return _id;}
 
     // Member function version of the name function.
@@ -281,7 +289,7 @@ namespace mu2e {
   private:
 
     // The one and only per-instance member datum.
-    enum_type _id;
+    enum_type _id = unknown;
 
   };
 

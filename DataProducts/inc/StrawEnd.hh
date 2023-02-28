@@ -16,6 +16,8 @@ namespace mu2e {
     bool operator != (End end) const { return _end != end; }
     bool operator == (StrawEnd const& other) const { return other._end == _end; }
     bool operator != (StrawEnd const& other) const { return other._end != _end; }
+    // convention for signing directions according to the end
+    double endSign() const { return 2.0*(static_cast<double>(_end)-0.5); }
 
     friend std::ostream& operator << (std::ostream& os, StrawEnd const& end) {
       switch ( end._end ) {

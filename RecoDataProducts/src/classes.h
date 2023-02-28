@@ -98,5 +98,6 @@
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

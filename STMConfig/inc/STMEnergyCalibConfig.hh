@@ -19,6 +19,9 @@ struct STMEnergyCalibConfig {
   fhicl::Sequence<fhicl::Tuple<std::string, float>, 2> pedestals{
       Name("pedestals"),
       Comment("sequence of tuples of channel_name and value")};
+  fhicl::Sequence<fhicl::Tuple<std::string, float>, 2> samplingFrequencies{
+      Name("samplingFrequencies"),
+      Comment("sequence of tuples of channel_name and value")};
 };
 
 }  // namespace mu2e

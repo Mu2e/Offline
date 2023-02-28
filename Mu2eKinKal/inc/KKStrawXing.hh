@@ -84,7 +84,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(KTRAJPTR const& ktrajptr) {
     if(shptr_){
-     ca_ = shptr_->closestApproach();
+      ca_ = shptr_->closestApproach();
     } else {
       CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(axis_.range().mid(),axis_.range().mid());
       ca_ = CA(ktrajptr,axis_,tphint,precision());
@@ -120,9 +120,9 @@ namespace mu2e {
       auto cad = ca_.tpData();
       if(shptr_ && shptr_->hitState().active()){
         // if we have an associated hit, overwrite the DOCA and DOCAVAR using the drift info, which is much more accurate
-        auto dinfo = shptr_->fillDriftInfo(false);
-        cad.doca_ = dinfo.driftDistance_;
-        cad.docavar_ = dinfo.driftDistanceError_*dinfo.driftDistanceError_;
+        auto dinfo = shptr_->fillDriftInfo();
+        cad.doca_ = dinfo.rDrift_;
+        cad.docavar_ = dinfo.unsignedDriftVar();
       }
       smat_.findXings(cad,sxconfig_,mxings_);
     }

@@ -91,7 +91,7 @@ Qualifiers = "${qualifiers_value}:${MUSE_BUILD}"
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD} )
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD}:+$MUSE_PYTHON )
       setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD}:+$MUSE_PYTHON )
-      setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD} )
+      setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers} )
 
 Flavor     = ANY
 Qualifiers = "${qualifiers_value}:trig:${MUSE_BUILD}"
@@ -105,7 +105,7 @@ Qualifiers = "${qualifiers_value}:trig:${MUSE_BUILD}"
       setupRequired( art  ${art_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD} )
       setupRequired( BTrk  ${btrk_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD}:+$MUSE_PYTHON )
       setupRequired( KinKal  ${kinkal_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD}:+$MUSE_PYTHON )
-      setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers}:+${MUSE_BUILD} )
+      setupRequired( xerces_c  ${xerces_ver} -q +${mu2e_ups_qualifiers} )
       setupRequired( artdaq_core_mu2e ${artdaq_core_mu2e_ver} -q ${mu2e_ups_qualifiers}:+${MUSE_ART}:+${MUSE_BUILD} )
 
 EOG

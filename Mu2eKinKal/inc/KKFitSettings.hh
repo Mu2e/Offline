@@ -39,13 +39,13 @@ namespace mu2e {
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
-      using CADSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,int>>;
-      CADSHUSettings cashuConfig{ Name("CADSHUSettings"), Comment(CADSHU::configDescription()) };
-      using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,float,std::string,std::string,int,int>>;
+      using CADSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,std::string,int>>;
+      CADSHUSettings cadshuConfig{ Name("CADSHUSettings"), Comment(CADSHU::configDescription()) };
+      using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,float,float,std::string,std::string,int>>;
       DriftANNSHUSettings annshuConfig{ Name("DriftANNSHUSettings"), Comment(DriftANNSHU::configDescription()) };
       using BkgANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,int>>;
       BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
-      using Chi2SHUSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,float,std::string,std::string,std::string,int>>;
+      using Chi2SHUSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,std::string,std::string,std::string,std::string,int>>;
       Chi2SHUSettings combishuConfig{ Name("Chi2SHUSettings"), Comment(Chi2SHU::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
@@ -79,6 +79,7 @@ namespace mu2e {
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
       fhicl::Atom<int> strawBuffer { Name("StrawBuffer"), Comment("Buffer to add when searching for straws") };
       fhicl::Atom<float> maxStrawDOCA { Name("MaxStrawDOCA"), Comment("Max DOCA to add straw material (mm)") };
+      fhicl::Atom<float> maxStrawDOCAConsistency { Name("MaxStrawDOCAConsistency"), Comment("Max DOCA chi-consistency to add straw material") };
     };
   }
 }
