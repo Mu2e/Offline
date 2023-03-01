@@ -10,61 +10,29 @@ TTPBTFSD : {
 }
 
 TTmakeSH : {
-  module_type             : StrawHitReco
-  minimumTime             : 0.0 # accept all digis
-  maximumTime             : 100.0e3 # allow offspill events
+  @table::makeSH
   FitType                 : 5
   FilterHits              : true
   WriteStrawHitCollection : false
-  ProtonBunchTimeTag      : "EWMProducer"
-  StrawDigiCollectionTag  : "makeSD"
-  CaloClusterCollectionTag  : "CaloClusterFast"
   StrawDigiADCWaveformCollectionTag : "notUsed"
 }
 # combine hits in a panel
 TTmakePH : {
-  module_type             : CombineStrawHits
-  TestFlag                : false
-  TestRadius              : true
-  ComboHitCollection      : "TTmakeSH"
-  StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
+  @table::makePH
+  FilterHits            : true
+  ComboHitCollection    : "TTmakeSH"
+  StrawHitSelectionBits : []
   StrawHitMask          : []
-  MaxDt                 : 40
-  UseTOT                : false
-  MaxWireDistDiffPull   : 4.0
-  TransError            : 8.0
-  MaxDS                 : 3
-  WireError             : 10.0
-  MinimumRadius         : 395.0
-  MaximumRadius         : 650.0
 }
 TTmakeSHUCC : {
-  module_type             : StrawHitReco
-  FitType                 : 5
+  @table::TTmakeSH
   UseCalorimeter          : true
-  FilterHits              : true
-  WriteStrawHitCollection : false
-  ProtonBunchTimeTag      : "EWMProducer"
-  StrawDigiCollectionTag  : "makeSD"
-  StrawDigiADCWaveformCollectionTag : "makeSD"
   CaloClusterCollectionTag  : "CaloClusterFast"
 }
 # combine hits in a panel
 TTmakePHUCC : {
-  module_type             : CombineStrawHits
-  TestFlag                : false
-  TestRadius              : true
+  @table::TTmakePH
   ComboHitCollection      : "TTmakeSHUCC"
-  StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
-  StrawHitMask          : []
-  MaxDt                 : 40
-  UseTOT                : false
-  MaxWireDistDiffPull   : 4.0
-  TransError            : 8.0
-  MaxDS                 : 3
-  WireError             : 10.0
-  MinimumRadius         : 395.0
-  MaximumRadius         : 650.0
 }
 # stereo version: defer the radius test
 TTSmakePH : {
@@ -81,8 +49,7 @@ TTflagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection   : "TTmakePH"
   StrawHitCollection   : "TTmakeSH"
-  FilterOutput         : true
-  FlagComboHits        : true
+  FilterHits         : true
   FlagStrawHits        : false
 }
 
