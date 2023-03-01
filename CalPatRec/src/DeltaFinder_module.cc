@@ -52,18 +52,18 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>   shCollTag         {Name("shCollTag"         ), Comment("SComboHit collection Name"   ) };
-      fhicl::Atom<art::InputTag>   chCollTag         {Name("chCollTag"         ), Comment("ComboHit collection Name"    ) };
-      fhicl::Atom<art::InputTag>   sdmcCollTag       {Name("sdmcCollTag"       ), Comment("StrawDigiMC collection Name" ) };
-      fhicl::Atom<int>             debugLevel        {Name("debugLevel"        ), Comment("debug level"                 ) };
-      fhicl::Atom<int>             diagLevel         {Name("diagLevel"         ), Comment("diag level"                  ) };
-      fhicl::Atom<int>             printErrors       {Name("printErrors"       ), Comment("print errors"                ) };
-      fhicl::Atom<int>             writeComboHits    {Name("writeComboHits"    ), Comment("if 1, write combohit coll"   ) };
-      fhicl::Atom<int>             writeStrawHitFlags{Name("writeStrawHitFlags"), Comment("if 1, write SH flag coll"    ) };
-      fhicl::Atom<int>             testOrder         {Name("testOrder"         ), Comment("if 1, test order"            ) };
-      fhicl::Atom<bool>            testHitMask       {Name("testHitMask"       ), Comment("if true, test hit mask"      ) };
-      fhicl::Sequence<std::string> goodHitMask       {Name("goodHitMask"       ), Comment("good hit mask"               ) };
-      fhicl::Sequence<std::string> bkgHitMask        {Name("bkgHitMask"        ), Comment("background hit mask"         ) };
+      fhicl::Atom<art::InputTag>   sschCollTag            {Name("sschCollTag"       )    , Comment("SS ComboHit collection name") };
+      fhicl::Atom<art::InputTag>   chCollTag              {Name("chCollTag"         )    , Comment("ComboHit collection Name"   ) };
+      fhicl::Atom<art::InputTag>   sdmcCollTag            {Name("sdmcCollTag"       )    , Comment("StrawDigiMC collection Name") };
+      fhicl::Atom<int>             debugLevel             {Name("debugLevel"        )    , Comment("debug level"                ) };
+      fhicl::Atom<int>             diagLevel              {Name("diagLevel"         )    , Comment("diag level"                 ) };
+      fhicl::Atom<int>             printErrors            {Name("printErrors"       )    , Comment("print errors"               ) };
+      fhicl::Atom<int>             writeFilteredComboHits {Name("writeFilteredComboHits"), Comment("1: write filtered CH coll"  ) };
+      fhicl::Atom<int>             writeStrawHitFlags     {Name("writeStrawHitFlags")    , Comment("1: write SH flag coll"      ) };
+      fhicl::Atom<int>             testOrder              {Name("testOrder"         )    , Comment("1: test order"              ) };
+      fhicl::Atom<bool>            testHitMask            {Name("testHitMask"       )    , Comment("true: test hit mask"        ) };
+      fhicl::Sequence<std::string> goodHitMask            {Name("goodHitMask"       )    , Comment("good hit mask"              ) };
+      fhicl::Sequence<std::string> bkgHitMask             {Name("bkgHitMask"        )    , Comment("background hit mask"        ) };
 
       fhicl::Table<DeltaFinderTypes::Config> diagPlugin      {Name("diagPlugin"      ), Comment("Diag plugin"           ) };
       fhicl::Table<DeltaFinderAlg::Config>   finderParameters{Name("finderParameters"), Comment("finder alg parameters" ) };
@@ -73,11 +73,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // talk-to parameters: input collections and algorithm parameters
 //-----------------------------------------------------------------------------
-    art::InputTag   _shCollTag;
+    art::InputTag   _sschCollTag;
     art::InputTag   _chCollTag;
     art::InputTag   _sdmcCollTag;
 
-    int             _writeComboHits;       // write (filtered ?) combo hits
+    int             _writeFilteredComboHits;   // write filtered combo hits
     int             _writeStrawHitFlags;
 
     int             _debugLevel;
@@ -91,7 +91,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache event/geometry objects
 //-----------------------------------------------------------------------------
-    const StrawHitCollection*    _shColl ;
+    const ComboHitCollection*    _sschColl ;
 
     const Tracker*               _tracker;
     const DiskCalorimeter*       _calorimeter;
@@ -122,10 +122,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   DeltaFinder::DeltaFinder(const art::EDProducer::Table<Config>& config):
     art::EDProducer{config},
-    _shCollTag             (config().shCollTag()         ),
+    _sschCollTag           (config().sschCollTag()       ),
     _chCollTag             (config().chCollTag()         ),
     _sdmcCollTag           (config().sdmcCollTag()       ),
-    _writeComboHits        (config().writeComboHits()    ),
+    _writeFilteredComboHits(config().writeFilteredComboHits()    ),
     _writeStrawHitFlags    (config().writeStrawHitFlags()),
     _debugLevel            (config().debugLevel()        ),
     _diagLevel             (config().diagLevel()         ),
@@ -134,12 +134,12 @@ namespace mu2e {
     _bkgHitMask            (config().bkgHitMask()        )
   {
 
-    consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
+    consumesMany<ComboHitCollection>(); // ??? Necessary because fillStrawHitIndices calls getManyByType.
 
     produces<IntensityInfoTimeCluster>();
     produces<StrawHitFlagCollection>("ComboHits");
-    if (_writeStrawHitFlags == 1) produces<StrawHitFlagCollection>("StrawHits");
-    if (_writeComboHits     == 1) produces<ComboHitCollection>    ("");
+    if (_writeStrawHitFlags     == 1) produces<StrawHitFlagCollection>("StrawHits");
+    if (_writeFilteredComboHits == 1) produces<ComboHitCollection>    ("");
 
                                         // this is a list of delta-electron candidates
     produces<TimeClusterCollection>();
@@ -192,14 +192,14 @@ namespace mu2e {
     auto chcH   = Evt.getValidHandle<mu2e::ComboHitCollection>(_chCollTag);
     _data.chcol = chcH.product();
 
-    auto shcH   = Evt.getValidHandle<mu2e::StrawHitCollection>(_shCollTag);
-    _shColl     = shcH.product();
+    auto sschcH = Evt.getValidHandle<mu2e::ComboHitCollection>(_sschCollTag);
+    _sschColl   = sschcH.product();
 
-    return (_data.chcol != nullptr) and (_shColl != nullptr);
+    return (_data.chcol != nullptr) and (_sschColl != nullptr);
   }
 
 //-----------------------------------------------------------------------------
-// define the time cluster parameters starting from a DeltaCandidate
+// define the time cluster parameters for found DeltaCandidates
 //-----------------------------------------------------------------------------
   void DeltaFinder::initTimeCluster(DeltaCandidate* Dc, TimeCluster* Tc) {
   }
@@ -220,7 +220,7 @@ namespace mu2e {
     }
 
     _data._nComboHits = _data.chcol->size();
-    _data._nStrawHits = _shColl->size();
+    _data._nStrawHits = _sschColl->size();
 //-----------------------------------------------------------------------------
 // run delta finder, it also finds proton time clusters
 //-----------------------------------------------------------------------------
@@ -235,7 +235,8 @@ namespace mu2e {
 
     for (int i=0; i<_data._nComboHits; i++) {
 //-----------------------------------------------------------------------------
-// initialize output flags to the flags of the input combo hits
+// initialize output flags to the flags of the input combo hits, in parallel
+// count the number of hits in the potentially to be written out straw hit collection
 //-----------------------------------------------------------------------------
       const ComboHit* ch = &(*_data.chcol)[i];
       StrawHitFlag* flag = &(*_data.outputChfColl)[i];
@@ -329,9 +330,10 @@ namespace mu2e {
     if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
     if (_debugLevel > 0) _hmanager->debug(&_data,2);
 
-    if (_writeComboHits) {
+    if (_writeFilteredComboHits) {
 //-----------------------------------------------------------------------------
-// write out collection of ComboHits with right flags, use deep copy
+// write out filtered out collection of ComboHits with right flags, use deep copy
+// the output ComboHit collection doesn't need a parallel flag collection
 //-----------------------------------------------------------------------------
       auto outputChColl = std::make_unique<ComboHitCollection>();
       outputChColl->reserve(_data._nComboHits);
@@ -360,12 +362,23 @@ namespace mu2e {
 
       std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(_data._nStrawHits));
 
-      for(int ich=0; ich<_data._nComboHits; ich++) {
+      for (int i=0; i<_data._nStrawHits; i++) {
+        StrawHitFlag&   flag =  (*shfcol)[i]; // should be empty at this point
+        flag.merge((*_sschColl)[i].flag());     // merge in the original flag
+        flag.clear(StrawHitFlag::bkg       ); // clear delta selection
+        flag.merge(StrawHitFlag::energysel ); // and assume all hits are not from protons
+      }
+//-----------------------------------------------------------------------------
+// after that, loop over [flagged] combo hits and update 'delta'(bkg) and 'proton'(energysel)
+// flags for flagged hits
+//-----------------------------------------------------------------------------
+      for (int ich=0; ich<_data._nComboHits; ich++) {
         const ComboHit* ch   = &(*_data.chcol )[ich];
         StrawHitFlag    flag =  (*_data.outputChfColl)[ich];
         flag.merge(ch->flag());
         for (auto ish : ch->indexArray()) {
-          (*shfcol)[ish] = flag;
+          if (not flag.hasAnyProperty(StrawHitFlag::energysel)) (*shfcol)[ish].clear(StrawHitFlag::energysel);
+          if (    flag.hasAnyProperty(StrawHitFlag::bkg      )) (*shfcol)[ish].merge(StrawHitFlag::energysel);
         }
       }
 
@@ -377,10 +390,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     Event.put(std::move(up_chfcol),"ComboHits");
   }
-
-  }
+}
 //-----------------------------------------------------------------------------
-// magic that makes this class a module.
+// macro that makes this class a module.
 //-----------------------------------------------------------------------------
 DEFINE_ART_MODULE(mu2e::DeltaFinder)
 //-----------------------------------------------------------------------------
