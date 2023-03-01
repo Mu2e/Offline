@@ -28,7 +28,7 @@ namespace mu2e {
 
   struct ComboHit {
     enum edir{wire=0,trans};
-    constexpr static size_t MaxNCombo = 8; // needs tuning FIXME!
+    constexpr static size_t MaxNCombo = 8; // needs tuning TODO
     using PIArray = std::array<uint16_t,MaxNCombo>; // array of indices into parent collection
     // General accessors that apply to all kinds of combo hits
     XYZVectorF const& pos() const { return _pos; }
@@ -37,9 +37,7 @@ namespace mu2e {
     XYZVectorF centerPos() const { return _pos - _wdist*_wdir; }
 //
     float posRes(edir dir) const;
-    float dEdx() const { return _dedx; }
-    float energyDep() const { return _dedx*_pathlength; }
-    float pathLength() const { return _pathlength; }
+    float energyDep() const { return _edep; }
     float phi() const { return _pos.phi();} // legacy function
     float timeRes() const { return _timeres; }
     float timeVar() const { return _timeres*_timeres; }
@@ -56,17 +54,17 @@ namespace mu2e {
     uint16_t nCombo() const { return _ncombo; }
     uint16_t nStrawHits() const { return _nsh; }
     StrawIdMask const& mask() const { return _mask;}
-    void init(ComboHit const& other, uint16_t index);
+    void init(ComboHit const& other, size_t index);
     uint16_t index(uint16_t ish=0) const { return _pind.at(ish); }
-    bool addIndex(uint16_t shi); // append an index to the
+    bool addIndex(size_t shi); // append an index to the
     PIArray const& indexArray() const { return _pind; }
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     // Accessors that only make sense for single-straw Combo hits
     float TOT(StrawEnd end=StrawEnd::cal)       const { return _tot[end];}
      // compatibility constructor (deprecated)
-    float endTime(StrawEnd end=StrawEnd::cal)     const { return _ttdc[end];}
+    float endTime(StrawEnd end=StrawEnd::cal)     const { return _etime[end];}
     auto const& TOTs() const { return _tot; }
-    auto const& endTimes() const { return _ttdc; }
+    auto const& endTimes() const { return _etime; }
     StrawEnd const& earlyEnd() const { return _eend; } // End with earliest tdc time
     StrawEnd lateEnd() const { return _eend.otherEnd(); } // End with later tdc time
     // Accessors for hits used in helices
@@ -78,7 +76,7 @@ namespace mu2e {
     // legacy functions
     //  No new code should use these accessors, they should be removed soon TODO
 //    ComboHit(const ComboHit&, StrawHitIndex, double);
-    float time() const { return _ttdc[_eend]; }
+    float time() const { return _etime[_eend]; }
     CLHEP::Hep3Vector posCLHEP() const { return GenVector::Hep3Vec(pos()); }
     // persistent payload
     // vector information.  These are stored explicitly even though they are reducible to a
@@ -91,8 +89,7 @@ namespace mu2e {
     float _wdist = 0.0; // distance from wire center along the wire direction: this can be derived from _pos and _wdir
     float _time = 0.0; // best estimate of time the physical particle created this hit: aggregate and calibrated
     float _timeres = -1.0; // estimated resolution of time measurement
-    float _dedx = 0.0; // average energy loss per unit length
-    float _pathlength = 0.0; // straw gas volume path length estimate
+    float _edep = 0.0; // average energy deposition
     float _qual = 0.0;; // quality of hit or combination
     StrawHitFlag _flag; // condition of this hit
     StrawId _sid; // straw identifier; for composites, not all fields are complete, use in conjunction with mask
@@ -100,7 +97,7 @@ namespace mu2e {
     StrawEnd _eend; // early tdc end
     // low-level quantities needed for calibration.  These only make sense for single-straw hits
     TrkTypes::TOTTimes  _tot = {0.0, 0.0 };   // TOT times in ns from each end
-    TrkTypes::TDCTimes _ttdc = {0.0, 0.0 }; // threshold crossing times in ns from each end
+    TrkTypes::TDCTimes _etime = {0.0, 0.0 }; // threshold crossing times in ns from each end
     // bookkeeping info
     uint16_t _ncombo = 0; // number of associated input objects
     uint16_t _nsh = 0; // number of underlying straw hits

@@ -85,11 +85,10 @@ namespace mu2e
       float _wres; // estimated error along this direction
       float _tres; // estimated error perpendicular to this direction
       float _dtres; // estimated drift time error
-      float _time; // Average time for these
-      float _ctime, _dtime, _ptime;
+      float _etime[2]; // end times
+      float _ctime; // corrected time
+      float _dtime, _ptime; // drift and propagation times: these should be end-specific, TODO
       float _edep; // average energy deposit for these
-      float _plen; // path length
-      float _dedx; // average energy deposit for these
       float _qual; // quality of combination
       float _dz; // z extent
       float _tot[2]; // tot values
@@ -147,13 +146,11 @@ namespace mu2e
     _chdiag->Branch("wres",&_wres,"wres/F");
     _chdiag->Branch("tres",&_tres,"tres/F");
     _chdiag->Branch("dtres",&_dtres,"dtres/F");
-    _chdiag->Branch("time",&_time,"time/F");
+    _chdiag->Branch("etime",&_etime,"etimecal/F:etimehv");
     _chdiag->Branch("ctime",&_ctime,"ctime/F");
-    _chdiag->Branch("dtime",&_time,"dtime/F");
-    _chdiag->Branch("ptime",&_time,"ptime/F");
+    _chdiag->Branch("dtime",&_dtime,"dtime/F");
+    _chdiag->Branch("ptime",&_ptime,"ptime/F");
     _chdiag->Branch("edep",&_edep,"edep/F");
-    _chdiag->Branch("plen",&_plen,"plen/F");
-    _chdiag->Branch("dedx",&_dedx,"dedx/F");
     _chdiag->Branch("qual",&_qual,"qual/F");
     _chdiag->Branch("dz",&_dz,"dz/F");
     _chdiag->Branch("tot",&_tot,"totcal/F:tothv/F");
@@ -223,13 +220,15 @@ namespace mu2e
       _wres = ch.wireRes();
       _tres = ch.transRes();
       _dtres = ch.timeRes();
-      _time = ch.time();
+      _eend = ch.earlyEnd().end();
+      _etime[StrawEnd::cal] = ch.endTime(StrawEnd::cal);
+      _etime[StrawEnd::hv] = ch.endTime(StrawEnd::hv);
+      _tot[StrawEnd::cal] = ch.TOT(StrawEnd::cal);
+      _tot[StrawEnd::hv] = ch.TOT(StrawEnd::hv);
       _ctime = ch.correctedTime();
       _dtime = ch.driftTime();
       _ptime = ch.propTime();
       _edep = ch.energyDep();
-      _plen = ch.pathLength();
-      _dedx = ch.dEdx();
       _qual = ch.qual();
       StrawHitFlag flag;
       if(_useflagcol)
@@ -294,7 +293,7 @@ namespace mu2e
         std::vector<StrawDigiIndex> shids;
         _chcol->fillStrawDigiIndices(evt,ich,shids);
         if(shids.size() != ch.nStrawHits())
-          throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
+          throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit Nesting" << std::endl;
         // find the SimParticle responsable for most of the hits
         SPM spmap;
         for(auto shi : shids) {

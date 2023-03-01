@@ -166,7 +166,7 @@ namespace mu2e {
     // create combo hit
     static const XYZVectorF _zdir(0.0,0.0,1.0);
     ComboHit ch;
-    ch._nsh = 1; // 'combo' of 1 hit
+    ch._nsh = 1; // 'combo' of 1 digi
     ch._pos = pos;
     ch._wdir = straw.getDirection();
     ch._sdir = _zdir.Cross(ch._wdir);
@@ -174,12 +174,11 @@ namespace mu2e {
     ch._wres = dwerr;
     ch._time = time;
     ch._timeres = tres;
-    ch._pathlength = srep.pathLength(straw,selected_tot);
-    ch._dedx = energy/ch._pathlength;
+    ch._edep = energy;
     ch._sid = straw.id();
     ch._dtime = dtime;
     ch._tot = tots;
-    ch._ttdc = times;
+    ch._etime = times;
     ch._ptime = ptime;
     ch.addIndex(isd);
     // initial estimate of the transverse error is the straw diameter/sqrt(12)

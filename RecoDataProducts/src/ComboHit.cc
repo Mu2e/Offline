@@ -9,6 +9,7 @@
 #include "cetlib_except/exception.h"
 // c++ includes
 #include <iostream>
+#include <limits>
 using std::vector;
 namespace mu2e {
 
@@ -26,19 +27,16 @@ namespace mu2e {
     }
   }
 
-//  ComboHit::ComboHit(ComboHit const& shp, StrawDigiIndex hi, double phi) : ComboHit(shp)
-//  {
-//    _hphi = phi;
-//  }
-
-  void ComboHit::init(ComboHit const& other, uint16_t index) {
+  void ComboHit::init(ComboHit const& other, size_t index) {
+    if(index > std::numeric_limits<uint16_t>::max())
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid index" << std::endl;
     *this = other;
     _ncombo = 1;
     _pind[0] = index;
   }
 
-  bool ComboHit::addIndex(uint16_t shi) {
-    if(_ncombo < MaxNCombo){
+  bool ComboHit::addIndex(size_t shi) {
+    if(shi < std::numeric_limits<uint16_t>::max() && _ncombo < MaxNCombo){
       _pind[_ncombo] = shi;
       ++_ncombo;
       return true;
@@ -221,7 +219,7 @@ namespace mu2e {
         << " position " << _pos
         << " early end " << _eend
         << " flag " << _flag
-        << " dedx "     << _dedx
+        << " edep "     << _edep
         << " ncombo " << _ncombo
         << " nStrawHit " << _nsh;
 

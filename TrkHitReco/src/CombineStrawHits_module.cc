@@ -220,7 +220,7 @@ namespace mu2e {
     combohit._flag.merge(StrawHitFlag::panelcombo);
 
     // simple sums to speed up the trigger
-    double eacc(0),ctacc(0),dtacc(0),dtweights(0),ptacc(0),placc(0),werracc(0),wacc(0),wacc2(0),weights(0);
+    double eacc(0),ctacc(0),dtacc(0),dtweights(0),ptacc(0),werracc(0),wacc(0),wacc2(0),weights(0);
     double etacc[2] = {0,0};
     XYZVectorF midpos;
     combohit._nsh = 0;
@@ -235,12 +235,11 @@ namespace mu2e {
 
       const ComboHit& ch = (*chcolOrig)[index];
       double wt = 1.0/(ch.wireVar());
-      eacc += ch.energyDep(); // dEdx*pathlen
+      eacc += ch.energyDep();
       etacc[StrawEnd::cal] += ch.endTime(StrawEnd::cal);
       etacc[StrawEnd::hv] += ch.endTime(StrawEnd::hv);
       ctacc += ch.correctedTime();
       dtweights += 1.0/(ch.timeVar());
-      placc += ch.pathLength();
       werracc += ch.wireRes();
       weights += wt;
       wacc  += ch.wireDist()*wt;
@@ -259,12 +258,11 @@ namespace mu2e {
 
     midpos /= combohit._nsh;
     double nch = static_cast<double>(combohit.nCombo());
-    combohit._dedx       = eacc/placc; // sum energy/sum pathlen
+    combohit._edep       = eacc; // sum energy/sum pathlen
     combohit._time       = ctacc/nch;
-    combohit._ttdc[StrawEnd::cal] = etacc[StrawEnd::cal]/nch;
-    combohit._ttdc[StrawEnd::hv] = etacc[StrawEnd::hv]/nch;
+    combohit._etime[StrawEnd::cal] = etacc[StrawEnd::cal]/nch;
+    combohit._etime[StrawEnd::hv] = etacc[StrawEnd::hv]/nch;
     combohit._timeres   = sqrt(1.0/dtweights);
-    combohit._pathlength = placc/nch;
     combohit._wdist      = wacc/weights;
     combohit._pos        = midpos + combohit._wdist*combohit._wdir;
     combohit._wres       = sqrt(1.0/weights + _werr2);
