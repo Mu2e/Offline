@@ -1417,13 +1417,13 @@ float RobustHelixFit::evalWeightXY(const ComboHit& Hit, XYVec& Center){
   // float wdot = rdir.Dot(XYVec(Hit.wdir().x(),Hit.wdir().y()));
   // float wdot2 = wdot*wdot;
   // float tdot2 = 1.0 - wdot2;
-  // float err2 = wdot2*Hit.wireErr2() + tdot2*Hit.transErr2();
+  // float err2 = wdot2*Hit.wireVar() + tdot2*Hit.transVar();
   // float wt = 1/err2;// or 1.0/sqrtf(err2); // or 1/err2?
 
   float    transErr = 5./sqrt(12.);
   //scale the error based on the number of the strawHits that are within teh ComboHit
   if (Hit.nStrawHits() > 1) transErr *= 1.5;
-  float    transErr2 = transErr*transErr;
+  float    transVar = transErr*transErr;
 
   static const XYZVectorF _zdir(0.0,0.0,1.0);
   XYZVectorF _sdir  = _zdir.Cross(Hit._wdir);
@@ -1438,7 +1438,7 @@ float RobustHelixFit::evalWeightXY(const ComboHit& Hit, XYVec& Center){
   float sinth2 = 1-costh2;
 
   // float e2     = _ew*_ew*sinth2+rs*rs*costh2;
-  float e2     = Hit.wireErr2()*sinth2+transErr2*costh2;
+  float e2     = Hit.wireVar()*sinth2+transVar*costh2;
   float wt     = 1./e2;
 
   return wt;
@@ -1448,7 +1448,7 @@ float RobustHelixFit::evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float R
   float    transErr = 5./sqrt(12.);
   //scale the error based on the number of the strawHits that are within teh ComboHit
   if (Hit.nStrawHits() > 1) transErr *= 1.5;
-  float    transErr2 = transErr*transErr;
+  float    transVar = transErr*transErr;
 
   float x  = Hit.pos().x();
   float y  = Hit.pos().y();
@@ -1464,7 +1464,7 @@ float RobustHelixFit::evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float R
   float sinth2 = 1-costh2;
 
   // float e2     = _ew*_ew*costh2+rs*rs*sinth2;
-  float e2     = Hit.wireErr2()*costh2+transErr2*sinth2;
+  float e2     = Hit.wireVar()*costh2+transVar*sinth2;
   float wt     = Radius*Radius/e2;
   //    wt           *= 0.025;//_weightZPhi;
 

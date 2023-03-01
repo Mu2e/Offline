@@ -2189,7 +2189,7 @@ namespace mu2e {
     float    transErr = 5./sqrt(12.);
     //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
-    float    transErr2 = transErr*transErr;
+    float    transVar = transErr*transErr;
 
     float x   = Hit.pos().x();
     float y   = Hit.pos().y();
@@ -2200,7 +2200,7 @@ namespace mu2e {
     float costh2 = dxn*dxn/(dx*dx+dy*dy);
     float sinth2 = 1-costh2;
 
-    float e2     = Hit.wireErr2()*sinth2+transErr2*costh2;
+    float e2     = Hit.wireVar()*sinth2+transVar*costh2;
     float wt     = 1./e2;
                                                     // scale the weight for having chi2/ndof distribution peaking at 1
     wt *= _weightXY;
@@ -2219,7 +2219,7 @@ namespace mu2e {
     //    float    transErr = 5./sqrt(12.);
     //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     //    if (Hit.nStrawHits() > 1) transErr *= 1.5;
-    //    float    transErr2 = transErr*transErr;
+    //    float    transVar = transErr*transErr;
 
     float x  = Hit.pos().x();
     float y  = Hit.pos().y();
@@ -2233,8 +2233,8 @@ namespace mu2e {
     float costh2 = dxn*dxn/(dx*dx+dy*dy);
     float sinth2 = 1-costh2;
 
-    //    float e2     = Hit.wireErr2()*costh2+transErr2*sinth2;
-    float e2     = Hit.wireErr2()*costh2+Hit.transErr2()*sinth2;
+    //    float e2     = Hit.wireVar()*costh2+transVar*sinth2;
+    float e2     = Hit.wireVar()*costh2+Hit.transVar()*sinth2;
     float wt     = Radius*Radius/e2;
     wt           *= _weightZPhi;
 

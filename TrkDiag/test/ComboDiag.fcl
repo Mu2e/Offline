@@ -26,14 +26,7 @@ physics :
       diagLevel : 2
       digiDiag : true
     }
-    evtprint : {
-      module_type : RunEventSubRun
-      printSam    : false
-      printRun    : false
-      printSubrun : false
-      printEvent  : true
-    }
-  }
+ }
   EndPath : [CHD]
 }
 services.TimeTracker.printSummary: true
