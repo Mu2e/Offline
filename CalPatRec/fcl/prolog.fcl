@@ -335,17 +335,17 @@ CalPatRec : { @table::CalPatRec
         }
 #------------------------------------------------------------------------------
         DeltaFinder : { module_type:DeltaFinder
-            chCollTag                   : "makePH"                ## input coll
-            shCollTag                   : "makeSH"                ## input coll
-            sdmcCollTag                 : "compressDigiMCs"       ## used for debug only
+            chCollTag                   : "makePH"              ## input CH coll
+            sschCollTag                 : "makeSH"              ## input single-straw CH coll
+            sdmcCollTag                 : "compressDigiMCs"     ## used for debug only
 
-            testHitMask                 : false                 # off by default
+            testHitMask                 : false                 ## off by default
             goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
                                                                 ## out of straw hits with an apriory wrong wdist ?
-            bkgHitMask                  : [  ]                  #
-            writeComboHits              : 0
-            writeStrawHitFlags          : 1                     # used by the track fit
-                                                                # debugging/diagnostics/testing
+            bkgHitMask                  : [  ]                  ##
+            writeFilteredComboHits      : 0                     ##
+            writeStrawHitFlags          : 1                     ## used by the track fit
+                                                                ## debugging/diagnostics/testing
             testOrder                   : 0
 
             debugLevel                  : 0
@@ -353,23 +353,24 @@ CalPatRec : { @table::CalPatRec
             printErrors                 : 0
                                                                 # finder algorithm parameters
             finderParameters            : {
-                testHitMask                 : false                 # off by default
-                goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
+                testHitMask             : false                 # off by default
+                goodHitMask             : [ "TimeDivision" ]    ## is there a point in using combohits made
                                                                     ## out of straw hits with an apriory wrong wdist ?
-                bkgHitMask                  : [  ]                  #
+                bkgHitMask              : [  ]                  #
 
-                flagProtonHits              : 1                     #
-                mergePC                     : 0                     # by default, don't merge proton candidates
-                pickupProtonHits            : 1                     #
-                timeBin                     : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
-                minHitTime                  : 350.                  # ns
-                minimumTime                 : 400.                  # ns
-                maximumTime                 : 1750.                 # ns
-                maxDeltaEDep                : 0.004                 # max allowed delta eDep
-                maxSeedEDep                 : 0.005                 # max allowed seed eDep
-                minProtonSeedEDep           : 0.003                 # min allowed proton seed eDep
-                minProtonHitEDep            : 0.003                 # min allowed proton hit  eDep
-                maxEleHitEnergy             : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
+                flagProtonHits          : 1                     #
+                mergePC                 : 0                     # by default, don't merge proton candidates
+                pickupProtonHits        : 1                     # the third step of proton finding
+
+                timeBin                 : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
+                minHitTime              : 350.                  # ns
+                minimumTime             : 400.                  # ns
+                maximumTime             : 1750.                 # ns
+                maxDeltaEDep            : 0.004                 # max allowed delta eDep
+                maxSeedEDep             : 0.005                 # max allowed seed eDep
+                minProtonSeedEDep       : 0.003                 # min allowed proton seed eDep
+                minProtonHitEDep        : 0.003                 # min allowed proton hit  eDep
+                maxEleHitEnergy         : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
 #------------------------------------------------------------------------------
 # for moving upstream, the combination sigmaR=2.6 rCore=4.2 gives:
 #                     N(delta hits) : 98749 and N(conv hits) : 184
@@ -378,30 +379,30 @@ CalPatRec : { @table::CalPatRec
 # timing: <T(CE+2BB)>:0.806 msec/event vs FlagBkgHits:0.472 msec/event
 # timing: <T(CE+2BB)>:0.917 msec/event vs FlagBkgHits:0.471 msec/event 98336:181
 #------------------------------------------------------------------------------
-                maxChi2Seed                 : 12.  ## chi^2 wire, each hit)
-                maxChi2Par                  : 12.  ## hit pickup chi2
-                maxChi2Perp                 : 12.  ## hit pickup in recoverStation
-                maxChi2SeedDelta            : 20.  ##
-                sigmaR                      : 1.5  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
-                rCore                       : 2.0  ## 'core' of the compton electron trajectory
-                maxSeedDt                   : 30.  ## time window for checking duplicate seeds
-                maxDtDs                     : 10.  ## ns, max allowed T0 shift per station
+                maxChi2Seed             : 12.  ## chi^2 wire, each hit)
+                maxChi2Par              : 12.  ## hit pickup chi2
+                maxChi2Perp             : 12.  ## hit pickup in recoverStation
+                maxChi2SeedDelta        : 20.  ##
+                sigmaR                  : 1.5  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+                rCore                   : 2.0  ## 'core' of the compton electron trajectory
+                maxSeedDt               : 30.  ## time window for checking duplicate seeds
+                maxDtDs                 : 10.  ## ns, max allowed T0 shift per station
 
-                maxGap                      :  3   ## 3 gap in missing stations along the candidate
-                maxDriftTime                : 40.  ## 40 ns, no tolerances ...
-                maxHitDt                    : 30.  ##
+                maxGap                  :  3   ## 3 gap in missing stations along the candidate
+                maxDriftTime            : 40.  ## 40 ns, no tolerances ...
+                maxHitDt                : 30.  ##
 
-                maxDtDc                     : 10.  ## 15 20 30 ns, max dT between two delta candidates
-                maxHitSeedDt                : 10   ##
+                maxDtDc                 : 10.  ## 15 20 30 ns, max dT between two delta candidates
+                maxHitSeedDt            : 10   ##
 #
-                minNSeeds                   :  2   ## delta candidate has to have at least two seeds
-                minDeltaNHits               :  5   ## and 5 combo hits
+                minNSeeds               :  2   ## delta candidate has to have at least two seeds
+                minDeltaNHits           :  5   ## and 5 combo hits
 
-                testOrder                   : 0
+                testOrder               : 0
 
-                debugLevel                  : 0
-                diagLevel                   : 0
-                printErrors                 : 0
+                debugLevel              : 0
+                diagLevel               : 0
+                printErrors             : 0
             }
 #
             diagPlugin                  : { tool_type : "DeltaFinderDiag"
