@@ -27,16 +27,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 
     struct Config {
-      fhicl::Atom<std::string> tool_type             {fhicl::Name("tool_type"             ), fhicl::Comment("tool type: TZClusterFinderDiag") };
-      fhicl::Atom<int>         mcTruth               {fhicl::Name("mcTruth"               ), fhicl::Comment("MC truth")                       };
-      fhicl::Atom<int>         simIDThresh           {fhicl::Name("simIDThresh"           ), fhicl::Comment("number of straw hits")           };
-
-      fhicl::Table<McUtilsToolBase::Config> mcUtils{fhicl::Name("mcUtils"       ), fhicl::Comment("MC Diag plugin") };
+      fhicl::Atom<std::string>              tool_type   {fhicl::Name("tool_type"  ), fhicl::Comment("tool type: TZClusterFinderDiag") };
+      fhicl::Atom<int>                      mcTruth     {fhicl::Name("mcTruth"    ), fhicl::Comment("MC truth")                       };
+      fhicl::Atom<int>                      simIDThresh {fhicl::Name("simIDThresh"), fhicl::Comment("number of straw hits")           };
+      fhicl::Table<McUtilsToolBase::Config> mcUtils     {fhicl::Name("mcUtils"    ), fhicl::Comment("MC Diag plugin")                 };
     };
 
 
     struct cHit {
-      cHit():hIndex(-1),hTime(0.),hZpos(0.),nStrawHits(0),hIsUsed(0){}
       int    hIndex;
       double hTime;
       double hWeight;
@@ -51,42 +49,42 @@ namespace mu2e {
 
     struct chunkInfo {
       std::vector<int> hIndices;
-      ::LsqSums2 fitter;
-      double avgTime;
-      double avgZpos;
-      int nHits; // combo hits
-      int nStrawHits;
-      int nrgSelection; // 1 if passes energy selection (CE), 0 if not (protons)
-      int nCombines;
-      int caloIndex = -1;
+      ::LsqSums2       fitter;
+      double           avgTime;
+      double           avgZpos;
+      int              nHits; // combo hits
+      int              nStrawHits;
+      int              nrgSelection; // 1 if passes energy selection (CE), 0 if not (protons)
+      int              nCombines;
+      int              caloIndex;
     };
 
     struct Data_t {
 
       const art::Event*               _event;
       const TimeCluster*              _timeCluster;
-      const ComboHitCollection*       chcol;
-      const ComboHitCollection*       chcol2; // for tool to get simID info before selection cuts
-      const CaloClusterCollection*    ccCollection;
-      const StrawHitFlagCollection*   shfcol;
-      TimeClusterCollection*          _tcColl;       // 'tcColl': time cluster collection
+      const ComboHitCollection*       _chColl;
+      const ComboHitCollection*       _chColl2; // for tool to get simID info before selection cuts
+      const CaloClusterCollection*    _ccColl;
+      const StrawHitFlagCollection*   _shfColl;
+      TimeClusterCollection*          _tcColl; // 'tcColl': time cluster collection
       IntensityInfoTimeCluster*       _iiTC;
       int                             _nTZClusters;
 
-      // members that may eventually be moved to TimeCluster.hh
+      // diagnostic data members used in TZ tool
       std::vector<double> lineSlope;
       std::vector<double> lineIntercept;
       std::vector<double> chi2DOF;
 
-      // clear function for members that need to be cleared before processing new event
-      void clearRelevant() {
+      // clear diagnostic information used in TZ tool
+      void clearDiagInfo() {
         lineSlope.clear();
         lineIntercept.clear();
         chi2DOF.clear();
       }
     };
 
-    struct pair {
+    struct cPair {
       int first;
       int second;
     };
@@ -95,37 +93,32 @@ namespace mu2e {
     struct facilitateVars {
 
       std::array<plnData, StrawId::_nplanes> cHits;
-      std::vector<chunkInfo> chunks;
-      chunkInfo _chunkInfo;
+      std::vector<chunkInfo>                 chunks;
+      std::vector<cPair>                     holdIndices;
+      chunkInfo   _chunkInfo;
       TimeCluster _clusterInfo;
-      std::vector<pair> holdIndices;
-      int seedIndice;
-      double seedTime;
-      double seedWeight;
-      double seedZpos;
-      int seedNRGselection;
-      pair indicePair;
-      int startIndex;
-      int testIndice;
-      double testTime;
-      double testWeight;
-      double testZpos;
-      int testNRGselection;
-      int nHitsInChunk;
-      int nStrawHitsInChunk;
-      double totalTime;
-      double totalZpos;
-      bool moreCombines;
-      int chunkOneIdx;
-      int chunkTwoIdx;
-      double chi2seed;
-      double chi2combineTest;
-      double biggestChi2combine;
+      cPair       _indicePair;
+      int         seedIndice;
+      double      seedTime;
+      double      seedWeight;
+      double      seedZpos;
+      int         seedNRGselection;
+      int         startIndex;
+      int         testIndice;
+      double      testTime;
+      double      testWeight;
+      double      testZpos;
+      int         testNRGselection;
+      int         nHitsInChunk;
+      int         nStrawHitsInChunk;
+      double      totalTime;
+      double      totalZpos;
+      bool        moreCombines;
 
-      void clear_cHits() { for (size_t i=0; i<cHits.size(); i++) cHits[i].plnHits.clear(); }
-      void clear_clusterInfo() { _clusterInfo._strawHitIdxs.clear(); }
-      void clear_chunkInfo() { _chunkInfo.hIndices.clear(); _chunkInfo.fitter.clear(); }
-      void clear_chunks() { chunks.clear(); }
+      void clear_cHits()       { for (size_t i=0; i<cHits.size(); i++) cHits[i].plnHits.clear(); }
+      void clear_clusterInfo() { _clusterInfo._strawHitIdxs.clear();                             }
+      void clear_chunkInfo()   { _chunkInfo.hIndices.clear(); _chunkInfo.fitter.clear();         }
+      void clear_chunks()      { chunks.clear();                                                 }
 
     };
 

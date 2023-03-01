@@ -8,7 +8,6 @@ namespace mu2e {
   struct StrawHitInfo {
     XYZVectorF _pos;
     float _edep = 0.0;
-    float _dedx = 0.0;
     float _time = 0.0;
     float _wdist = 0.0;
     float _wres = 0.0;
