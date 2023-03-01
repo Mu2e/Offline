@@ -137,8 +137,6 @@ namespace mu2e {
       // approximate drift distatnce from ToT value
       double TOTdriftTime(Straw const& straw, double tot, double edep) const;
       double TOTdriftTimeError(Straw const& straw, double tot, double edep) const;
-      double pathLength(Straw const& straw, double tot) const;
-      //      double pathLength(StrawHit const& strawhit, double theta) const;
 
       void print(std::ostream& os) const;
       void printVector(std::ostream& os, std::string const& name,

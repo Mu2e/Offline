@@ -63,20 +63,21 @@ makeSTH : {
   MVA                   : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
   ComboHitCollection    : "makePH"
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
-  StrawHitMask          : []
+  StrawHitRejectionBits : []
   MaxDt                 : 40 # ns
   UseTOT                : true
   MaxDPerp              : 500
-  MinWdot               : 0.6
+  MaxWdot               : 0.9
   MaxChisquared         : 5.0
   MinMVA                : 0.6
-  ZErrorFactor          : 0.3
-  TErrorFactor          : 1.0
+  WErrorFactor          : 0.3 # mm
+  ZErrorFactor          : 1.0 # mm
   MinRho                : 330 # mm
   MaxRho                : 700 # mm
   DoMVA                 : false
   MaxFaceSeparation     : 3
-  SelectionMask         : "Station"
+  MaxDz                 : 100.0 # mm
+  SelectionMask         : "station"
 }
 
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)

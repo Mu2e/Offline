@@ -539,7 +539,6 @@ namespace mu2e
     // info depending on stereo hits
     shinfo._chisq = ch.qual();
     shinfo._edep = ch.energyDep();
-    shinfo._dedx = ch.dEdx();
     StrawId const& sid = ch.strawId();
     shinfo._plane = sid.plane();
     shinfo._panel = sid.panel();
