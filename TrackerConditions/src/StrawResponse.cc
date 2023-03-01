@@ -315,11 +315,6 @@ namespace mu2e {
     return _totderror[totbin*_totEBins+ebin];
   }
 
-  double StrawResponse::pathLength(Straw const& straw, double tot) const {
-    // needs to be implemented, FIXME!!
-    return 5.0;
-  }
-
   void StrawResponse::print(std::ostream& os) const {
     os << endl << "StrawResponse parameters: "  << std::endl;
 
