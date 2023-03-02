@@ -285,13 +285,13 @@ def generate(configFileText="allPaths", verbose=True, doWrite=True):
 
             new_path = ("\nphysics."+pathName+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+" ] \nphysics.trigger_paths["+str(pathID)+"] : "+pathName+"_trigger \n")
             timing_paths = []
-            if "Seed" in pathName:
+            if "tprDe" in pathName or "cprDe" in pathName:
                 nFilters = 3
                 if "cst" in pathName:
                     nFilters = 2
                 for ind in range(nFilters):
-                    timing_label = "Timing{:d}".format(ind)
-                    timing_paths.append("\nphysics."+pathName+"_"+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+timing_label+" ] \n")
+                    timing_label = "_timing{:d}".format(ind)
+                    timing_paths.append("\nphysics."+pathName+timing_label+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+pathNameNoTags+timing_label+" ] \n")
 
             #now append the epilog files for setting the filters in the path
             subEpilogInclude = appendEpilog(pathNameNoTags, relProjectDir,
