@@ -151,13 +151,11 @@ namespace mu2e {
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(annshu)whstate_ = annshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(whstate_.driftConstraint()){
-        if(whstate_.constrainDriftDt()){
+        if(whstate_.constrainDriftDt())
           dDdT_ = dinfo.driftVelocity_;
-          dVar_ = dinfo.unsignedDriftVar();
-        } else{
+        else
           dDdT_ = 0.0;
-          dVar_ = dinfo.driftHitVar();
-        }
+        dVar_ = dinfo.driftHitVar();
       } else {
         if(whstate_.nullDriftVar()) {
           dVar_ = dinfo.nullHitVar();
