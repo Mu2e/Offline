@@ -19,7 +19,6 @@ TTmakeSH : {
 # combine hits in a panel
 TTmakePH : {
   @table::makePH
-  FilterHits            : true
   ComboHitCollection    : "TTmakeSH"
   StrawHitSelectionBits : []
   StrawHitMask          : []
@@ -49,8 +48,9 @@ TTflagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection   : "TTmakePH"
   StrawHitCollection   : "TTmakeSH"
-  FilterHits         : true
+  FilterHits           : true
   FlagStrawHits        : false
+  FlagComboHits        : true
 }
 
 # stereo versions
