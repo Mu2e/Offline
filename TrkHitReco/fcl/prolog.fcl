@@ -131,6 +131,7 @@ FlagBkgHits : {
   BkgMVACut            : 0.5
   FilterHits           : false
   FlagStrawHits        : true
+  FlagComboHits        : true
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
   SaveBkgClusters      : false
