@@ -12,9 +12,9 @@ makeSH : {
   MinimumTime             : 420.0 # ns configuration for OnSpill
   MaximumTime             : 1690.0 # ns
   MinimumEnergy           : 0.0001 # MeV
-  MaximumEnergy           : 0.005 # MeV
+  MaximumEnergy           : 0.0035 # MeV
   MinimumRadius           : 0.0 # mm
-  MaximumRadius           : 1000.0 # mm
+  MaximumRadius           : 800.0 # mm
   FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
@@ -45,11 +45,11 @@ makePH : {
   MaxDS                 : 3
   WireError             : 10.0 # mm
   MinimumTime           : 420.0 # ns
-  MaximumTime           : 1680.0 # ns
-  MinimumEnergy         : 0.0002 # MeV
-  MaximumEnergy         : 0.005 # MeV
-  MinimumRadius         : 380.0 # mm
-  MaximumRadius         : 680.0 # mm
+  MaximumTime           : 1690.0 # ns
+  MinimumEnergy         : 0.0 # MeV
+  MaximumEnergy         : 1.0 # MeV
+  MinimumRadius         : 395.0 # mm
+  MaximumRadius         : 650.0 # mm
   MinimumNHits          : 1
   MaximumNHits          : 3
   CheckWres             : false

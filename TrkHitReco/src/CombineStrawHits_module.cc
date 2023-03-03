@@ -258,7 +258,7 @@ namespace mu2e {
 
     midpos /= combohit._nsh;
     double nch = static_cast<double>(combohit.nCombo());
-    combohit._edep       = eacc; // sum energy/sum pathlen
+    combohit._edep       = eacc/nch; // average
     combohit._time       = ctacc/nch;
     combohit._etime[StrawEnd::cal] = etacc[StrawEnd::cal]/nch;
     combohit._etime[StrawEnd::hv] = etacc[StrawEnd::hv]/nch;
