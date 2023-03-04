@@ -261,8 +261,8 @@ namespace mu2e {
       printf("%8.1f %8.1f",Seed->MinHitTime(),Seed->MaxHitTime());
       printf(" %8.3f %8.3f %9.3f",Seed->CofM.x(),Seed->CofM.y(),Seed->CofM.z());
       // printf("%4i",Seed->fNFacesWithHits);
-      printf("%4i",Seed->NHits());
-      printf("%4i",Seed->NStrawHits());
+      printf("%4i",Seed->nHits());
+      printf("%4i",Seed->nStrawHits());
       printf("\n");
     }
 

@@ -52,8 +52,8 @@ namespace mu2e {
 // general case: the 'seed' needs to be removed
 //-----------------------------------------------------------------------------
     fNSeeds       -= 1;
-    fNHits        -= seed->NHits();
-    fNStrawHits   -= seed->NStrawHits();
+    fNHits        -= seed->nHits();
+    fNStrawHits   -= seed->nStrawHits();
 //-----------------------------------------------------------------------------
 // update the first and the last station numbers
 //-----------------------------------------------------------------------------
@@ -135,8 +135,8 @@ namespace mu2e {
 // seeds with SFace(1) < 0 don't have their center of gravity defined - their hits
 // have been picked up individually, the intersection doesn't matter
 //-----------------------------------------------------------------------------
-    fNHits      += Seed->NHits();
-    fNStrawHits += Seed->NStrawHits();
+    fNHits      += Seed->nHits();
+    fNStrawHits += Seed->nStrawHits();
     fSumEDep    += Seed->SumEDep();
 
     fSnx2       += Seed->fSnx2;
@@ -205,8 +205,8 @@ namespace mu2e {
 // increment hit count only if a seed has been addded
 //-----------------------------------------------------------------------------
       fNSeeds               += 1;
-      fNHits                += fSeed[is]->NHits();
-      fNStrawHits           += fSeed[is]->NStrawHits();
+      fNHits                += fSeed[is]->nHits();
+      fNStrawHits           += fSeed[is]->nStrawHits();
       fSumEDep              += fSeed[is]->SumEDep();
 
       if (fFirstStation > is) fFirstStation = is;

@@ -2,7 +2,7 @@
 * ------------------------------------------------------------------------------
 * quick help on CalPatRec modules
 * ------------------------------------------------------------------------------
-* module [[file:../src/DeltaFinder_module.cc][DeltaFinder]]                                  
+* module [[file:../src/DeltaFinder_module.cc][DeltaFinder]]                                                         
 
   - defaults : [file:../fcl/prolog.fcl::/DeltaFinder/::]
 
@@ -10,6 +10,13 @@
 
   - a seed: an intersection of hits in two panels of the same station corresponding 
             to two hits close in time
+
+  - to see what is found: 
+
+    mu2e -c CalPatRec/test/deltaFinder_debug.fcl -e r:sr:ev -n 1 ...
+
+    use emacs to open the log file, and switch to org mode to see conveniently 
+    the printout of reconstructed DeltaCandidate's
 * ------------------------------------------------------------------------------
 * the following is an example for TrkHitReco package
 * ------------------------------------------------------------------------------
