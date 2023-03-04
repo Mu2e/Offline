@@ -91,8 +91,8 @@ namespace mu2e {
     int              protonIndex()      { return fProtonIndex ; }
 
     HitData_t*       HitData (int Face) { return fHitData[Face]; } // no boundary check !
-    int              NHits   ()         { return fNHits; }
-    int              NStrawHits()       { return fNStrawHits; }
+    int              nHits   ()         { return fNHits; }
+    int              nStrawHits()       { return fNStrawHits; }
 
     float            SumEDep ()         { return fSumEDep ; }
     float            EDep    ()         { return fSumEDep/fNStrawHits ; }

@@ -181,7 +181,7 @@ namespace mu2e {
 
           chi2_par  += seed_chi2_par;
           chi2_perp += seed_chi2_perp;
-          chi2       = (chi2_par+chi2_perp)/(Seed->NHits()+1);
+          chi2       = (chi2_par+chi2_perp)/(Seed->nHits()+1);
 
           if (chi2 < best_chi2) {
                                         // new best hit
@@ -206,7 +206,7 @@ namespace mu2e {
     Seed->CalculateCogAndChi2(_rCore,_sigmaR2);
     for (int face=0; face<kNFaces; face++) {
       HitData_t* hd = Seed->HitData(face);
-      if (hd) hd->fUsed = Seed->NHits();
+      if (hd) hd->fUsed = Seed->nHits();
     }
   }
 
@@ -381,7 +381,7 @@ namespace mu2e {
 
             if (seed->EDep() > _minProtonSeedEDep) _data->AddProtonSeed (seed,Station);
 
-            seed_found = seed->NHits();
+            seed_found = seed->nHits();
           }
 //-----------------------------------------------------------------------------
 // if found seed has hits in 3 or 4 faces, use next first hit
@@ -476,7 +476,7 @@ namespace mu2e {
 
           seedChi2(seed,xc,yc,chi2_par,chi2_perp);
 
-          float chi2 = (chi2_par+chi2_perp)/seed->NHits();
+          float chi2 = (chi2_par+chi2_perp)/seed->nHits();
 
           if (chi2 < chi2min) {
 //-----------------------------------------------------------------------------
@@ -890,7 +890,7 @@ namespace mu2e {
 
       seedChi2(seed,xc,yc,chi2_par,chi2_perp);
 
-      float chi2 = (chi2_par+chi2_perp)/seed->NHits();
+      float chi2 = (chi2_par+chi2_perp)/seed->nHits();
 
       if (chi2 < chi2min) {
                                         // new best seed
@@ -1061,7 +1061,7 @@ namespace mu2e {
 // if the seed has 2 or less hits, don't check the chi2 - that could be a random overlap
 // if the seed has 3 or more hits, check the chi2
 //-----------------------------------------------------------------------------
-          int nh = hd->fSeed->NHits();
+          int nh = hd->fSeed->nHits();
           if ((nh >= 3) and (chi2_hit > hd->fChi2Min))                continue;
         }
 //-----------------------------------------------------------------------------
