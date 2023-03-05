@@ -42,20 +42,22 @@ namespace mu2e {
     KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, KKbnom(),timeRange()); }
     Float_t tmin() const { return _tmin; }
     Float_t tmax() const { return _tmax; }
-    KinKal::TimeRange timeRange() const { return KinKal::TimeRange(_tmin,_tmax); }
+    KinKal::TimeRange timeRange() const;
     auto tref() const { return _pstate.time(); }
-    // t0 = time (and error) for when particle goes through z=0;
-    HitT0 t0() const;
     XYZVectorF const& bnom() const { return _bnom; }
     KinKal::VEC3 KKbnom() const { return KinKal::VEC3(_bnom); }
+// convenience function
+    double t0Val() const;
+
     Float_t _tmin, _tmax; // time range
 // main payload is the particle state estimate.  this includes all the kinematic information to
 // interpret as anything else.  BField is needed to interpret geometrically
     XYZVectorF _bnom; // Bfield associated with this segment, needed to reconstitute helix
     KinKal::ParticleStateEstimate _pstate; // particle state at this sample
- // the following are deprecated legacy functions specific to the BTrk fit and will go away eventually
+ // the following are deprecated legacy functions specific to the BTrk fit and will go away once we migrate to KinKal
     HelixVal helix() const;
     HelixCov covar() const;
+    HitT0 t0() const;
     void mom(double flt, XYZVectorF& momvec) const;
     double fmin() const { return timeToFlt(_tmin); } // local 3D flight range
     double fmax() const { return timeToFlt(_tmax); }
