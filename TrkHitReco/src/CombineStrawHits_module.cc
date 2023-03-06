@@ -268,8 +268,8 @@ namespace mu2e {
     combohit._wres       = sqrt(1.0/weights + _werr2);
     combohit._tres       = _terr/sqrt(combohit._nsh); // error proportional to # of straws (roughly)
     float wdist2 = wacc2/weights;
-    float sigw(combohit._wres);
-    if (combohit.nCombo() > 1) sigw = sqrt((wdist2-combohit._wdist*combohit._wdist)/(combohit.nCombo()-1));
+    float nc2 = pow(combohit.nCombo()-1,2);
+    float sigw = sqrt(std::max(_werr2,(wdist2-combohit._wdist*combohit._wdist)/nc2));
     combohit._qual       = sigw/combohit._wres; // set to ratio of original to reduced chi
 
 //-----------------------------------------------------------------------------
