@@ -23,17 +23,22 @@ physics : {
             debugLevel                    :  0  ## 1 ##
 
             finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
-                # maxSeedDt : 40
+                maxChi2Seed                 : 12.  ## chi^2 wire, each hit)
+                maxChi2Par                  : 12.  ## hit pickup chi2
+                maxChi2Perp                 : 12.  ## hit pickup in recoverStation
+                maxChi2SeedDelta            : 20.  ##
+                sigmaR                      : 1.5  ##
+                rCore                       : 2.0  ## 'core' of the compton electron trajectory
             }
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
-                printElectrons            : 1 ## 0 ##
-                printElectronsHits        : 0 ## 1 ##
-                printElectronsMinMom      : 0.
-                printElectronsMaxMom      : 20.
+                printElectrons            : 1    ## 0 ##
+                printElectronsHits        : 1    ## 1 ##
+                printElectronsMinMom      :  80.
+                printElectronsMaxMom      : 110.
                 printElectronsMinNHits    : 10   ## 30
-                printElectronsMaxFReco    : 0.2 ## 0.5
+                printElectronsMaxFReco    : 1.1  ## 0.5
             }
         }
     }
@@ -57,7 +62,7 @@ physics : {
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
-physics.producers.makePH.MaxDS                     : 4 ## 4
+physics.producers.makePH.MaxDS                     : 5 ## 4
 physics.producers.makePH.CheckWres                 : true ## true
 # physics.producers.makePH.MinimumRadius           : 370.
 # physics.producers.makePH.MaximumRadius           : 680.

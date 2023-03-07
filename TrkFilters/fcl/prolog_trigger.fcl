@@ -927,15 +927,15 @@ TrkFilters : {
     tprDeM_lowP_stopTarg_timing0      : [ tprDeMLowPStopTargEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
       TTtimeClusterFinder, tprDeMLowPStopTargTCFilter, TThelixFinder, TTHelixMergerDeM, tprDeMLowPStopTargHSFilter,
-      TTKSFDeM, tprDeMLowPStopTargPrescale, tprDeMLowPStopTargTriggerInfoMerger ]
+      TTKSFDeM, tprDeMLowPStopTargTriggerInfoMerger ]
 
     tprDeM_lowP_stopTarg_timing1      : [ tprDeMLowPStopTargEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-      TTtimeClusterFinder, tprDeMLowPStopTargTCFilter, TThelixFinder, TTHelixMergerDeM, tprDeMLowPStopTargPrescale ]
+      TTtimeClusterFinder, tprDeMLowPStopTargTCFilter, TThelixFinder, TTHelixMergerDeM ]
 
     tprDeM_lowP_stopTarg_timing2      : [ tprDeMLowPStopTargEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-      TTtimeClusterFinder, tprDeMLowPStopTargPrescale ]
+      TTtimeClusterFinder ]
 
 
     tprDeP_lowP_stopTarg_timing0      : [ tprDePLowPStopTargEventPrescale,  @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
@@ -945,11 +945,11 @@ TrkFilters : {
 
     tprDeP_lowP_stopTarg_timing1      : [ tprDePLowPStopTargEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-      TTtimeClusterFinder, tprDePLowPStopTargTCFilter, TThelixFinder, TTHelixMergerDeP, tprDePLowPStopTargPrescale ]
+      TTtimeClusterFinder, tprDePLowPStopTargTCFilter, TThelixFinder, TTHelixMergerDeP ]
 
     tprDeP_lowP_stopTarg_timing2      : [ tprDePLowPStopTargEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-      TTtimeClusterFinder, tprDePLowPStopTargPrescale ]
+      TTtimeClusterFinder ]
 
 
     cprDeM_lowP_stopTarg_timing0      : [ cprDeMLowPStopTargEventPrescale, @sequence::CaloHitRecoTrigger.prepareHits,  @sequence::CaloClusterTrigger.Reco,
