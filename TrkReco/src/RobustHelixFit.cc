@@ -1420,51 +1420,46 @@ float RobustHelixFit::evalWeightXY(const ComboHit& Hit, XYVec& Center){
   // float err2 = wdot2*Hit.wireVar() + tdot2*Hit.transVar();
   // float wt = 1/err2;// or 1.0/sqrtf(err2); // or 1/err2?
 
-  float    transErr = 5./sqrt(12.);
-  //scale the error based on the number of the strawHits that are within teh ComboHit
-  if (Hit.nStrawHits() > 1) transErr *= 1.5;
-  float    transVar = transErr*transErr;
+//  float    transErr = 5./sqrt(12.);
+//  //scale the error based on the number of the strawHits that are within teh ComboHit
+//  if (Hit.nStrawHits() > 1) transErr *= 1.5;
+//  float    transVar = transErr*transErr;
 
-  static const XYZVectorF _zdir(0.0,0.0,1.0);
-  XYZVectorF _sdir  = _zdir.Cross(Hit._wdir);
 
   float x   = Hit.pos().x();
   float y   = Hit.pos().y();
   float dx  = x-Center.x();
   float dy  = y-Center.y();
-  float dxn = dx*_sdir.x()+dy*_sdir.y();
+  float dxn = dx*Hit.vDir().x()+dy*Hit.vDir().y();
 
   float costh2 = dxn*dxn/(dx*dx+dy*dy);
   float sinth2 = 1-costh2;
 
   // float e2     = _ew*_ew*sinth2+rs*rs*costh2;
-  float e2     = Hit.wireVar()*sinth2+transVar*costh2;
+  float e2     = Hit.uVar()*sinth2+Hit.vVar()*costh2;
   float wt     = 1./e2;
 
   return wt;
 }
 
 float RobustHelixFit::evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius){
-  float    transErr = 5./sqrt(12.);
-  //scale the error based on the number of the strawHits that are within teh ComboHit
-  if (Hit.nStrawHits() > 1) transErr *= 1.5;
-  float    transVar = transErr*transErr;
+//  float    transErr = 5./sqrt(12.);
+//  //scale the error based on the number of the strawHits that are within teh ComboHit
+//  if (Hit.nStrawHits() > 1) transErr *= 1.5;
+//  float    transVar = transErr*transErr;
 
   float x  = Hit.pos().x();
   float y  = Hit.pos().y();
   float dx = x-Center.x();
   float dy = y-Center.y();
 
-  static const XYZVectorF _zdir(0.0,0.0,1.0);
-  XYZVectorF _sdir  = _zdir.Cross(Hit._wdir);
-
-  float dxn    = dx*_sdir.x()+dy*_sdir.y();
+  float dxn    = dx*Hit.vDir().x()+dy*Hit.vDir().y();
 
   float costh2 = dxn*dxn/(dx*dx+dy*dy);
   float sinth2 = 1-costh2;
 
   // float e2     = _ew*_ew*costh2+rs*rs*sinth2;
-  float e2     = Hit.wireVar()*costh2+transVar*sinth2;
+  float e2     = Hit.uVar()*costh2+Hit.vVar()*sinth2;
   float wt     = Radius*Radius/e2;
   //    wt           *= 0.025;//_weightZPhi;
 

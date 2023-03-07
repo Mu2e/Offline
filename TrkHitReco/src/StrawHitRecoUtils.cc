@@ -168,10 +168,14 @@ namespace mu2e {
     ComboHit ch;
     ch._nsh = 1; // 'combo' of 1 digi
     ch._pos = pos;
-    ch._wdir = straw.getDirection();
-    ch._sdir = _zdir.Cross(ch._wdir);
+    ch._udir = straw.getDirection();
+    ch._vdir = _zdir.Cross(ch._udir);
     ch._wdist = dw;
-    ch._wres = dwerr;
+    ch._ures = dwerr;
+    // initial estimate of the transverse error is the straw diameter/sqrt(12)
+    static const float invsqrt3 = 1.0/sqrt(3.0);
+    ch._vres = tt.strawOuterRadius()*invsqrt3;
+    ch._wres = ch._vres;
     ch._time = time;
     ch._timeres = tres;
     ch._edep = energy;
@@ -181,9 +185,6 @@ namespace mu2e {
     ch._etime = times;
     ch._ptime = ptime;
     ch.addIndex(isd);
-    // initial estimate of the transverse error is the straw diameter/sqrt(12)
-    static const float invsqrt3 = 1.0/sqrt(3.0);
-    ch._tres = tt.strawOuterRadius()*invsqrt3;
     // set flags
     ch._mask = _mask;
     ch._flag = flag;

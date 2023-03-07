@@ -80,11 +80,12 @@ namespace mu2e
       TTree *_chdiag;
       int _evt; // add event id
       XYZVectorF _pos; // average position
-      XYZVectorF _wdir; // direction at this position (typically the wire direction)
-      float _wdist; // distance from wire center along this direction
-      float _wres; // estimated error along this direction
-      float _tres; // estimated error perpendicular to this direction
-      float _dtres; // estimated drift time error
+      XYZVectorF _udir; // direction at this position (typically the wire direction)
+      float _udist; // distance from wire center along this direction
+      float _ures; // estimated error along this direction
+      float _vres; // estimated error
+      float _wres; // estimated error perpendicular to this direction
+      float _tres; // estimated time error
       float _etime[2]; // end times
       float _ctime; // corrected time
       float _dtime, _ptime; // drift and propagation times: these should be end-specific, TODO
@@ -100,8 +101,9 @@ namespace mu2e
       XYZVectorF _mcpos; // average MC hit position
       float _mcmom;
 
-      float _mctime, _mcdist;
+      float _mctime, _mcudist;
       int _mcpdg, _mcproc, _mcgen;
+      float _mcfrac;
 
       float _threshold[2], _adcgain;
       std::vector<short unsigned> _digiadc;
@@ -139,13 +141,14 @@ namespace mu2e
     // detailed diagnostics
     _chdiag=tfs->make<TTree>("chdiag","combo hit diagnostics");
     _chdiag->Branch("evt",&_evt,"evt/I");  // add event id
-    _chdiag->Branch("wdist",&_wdist,"wdist/F");
+    _chdiag->Branch("udist",&_udist,"udist/F");
     _chdiag->Branch("pos.",&_pos);
-    _chdiag->Branch("wdir.",&_wdir);
-    _chdiag->Branch("wdist",&_wdist,"wdist/F");
+    _chdiag->Branch("udir.",&_udir);
+    _chdiag->Branch("udist",&_udist,"udist/F");
+    _chdiag->Branch("ures",&_ures,"ures/F");
+    _chdiag->Branch("vres",&_vres,"vres/F");
     _chdiag->Branch("wres",&_wres,"wres/F");
     _chdiag->Branch("tres",&_tres,"tres/F");
-    _chdiag->Branch("dtres",&_dtres,"dtres/F");
     _chdiag->Branch("etime",&_etime,"etimecal/F:etimehv");
     _chdiag->Branch("ctime",&_ctime,"ctime/F");
     _chdiag->Branch("dtime",&_dtime,"dtime/F");
@@ -179,7 +182,8 @@ namespace mu2e
       _chdiag->Branch("mcpos.",&_mcpos);
       _chdiag->Branch("mcmom",&_mcmom,"mcmom/F");
       _chdiag->Branch("mctime",&_mctime,"mctime/F");
-      _chdiag->Branch("mcdist",&_mcdist,"mcdist/F");
+      _chdiag->Branch("mcudist",&_mcudist,"mcudist/F");
+      _chdiag->Branch("mcfrac",&_mcfrac,"mcfrac/F");
       _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
       _chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
@@ -215,11 +219,12 @@ namespace mu2e
       _plane = ch.strawId().plane();
       _pos = ch.pos();
 
-      _wdir = ch.wdir();
-      _wdist = ch.wireDist();
-      _wres = ch.wireRes();
-      _tres = ch.transRes();
-      _dtres = ch.timeRes();
+      _udir = ch.uDir();
+      _udist = ch.uPos();
+      _ures = ch.uRes();
+      _vres = ch.vRes();
+      _wres = ch.wRes();
+      _tres = ch.timeRes();
       _eend = ch.earlyEnd().end();
       _etime[StrawEnd::cal] = ch.endTime(StrawEnd::cal);
       _etime[StrawEnd::hv] = ch.endTime(StrawEnd::hv);
@@ -249,7 +254,7 @@ namespace mu2e
       _bkgclust = flag.hasAllProperties(StrawHitFlag::bkgclust);
       _dz = 0.0;
       // center of this wire
-      XYZVectorF cpos = _pos - _wdist*_wdir;
+      XYZVectorF cpos = _pos - _udist*_udir;
       // now hit-by-hit info
       _chinfo.clear();
       if(_diag > 1){
@@ -264,23 +269,16 @@ namespace mu2e
           ComboHitInfo chi;
 
           chi._pos= comp.pos();
-          chi._wdist = comp.wireDist();
-          chi._wres = comp.wireRes();
-          chi._tres = comp.transRes();
-          chi._tdrift = comp.driftTime();
+          auto dp = comp.pos()-ch.pos();
+          chi._du = dp.Dot(comp.uDir());
+          chi._dv = dp.Dot(comp.vDir());
+          chi._dw = dp.Dot(comp.wDir());
+          chi._ures = comp.uRes();
+          chi._vres = comp.vRes();
+          chi._tres = comp.timeRes();
           chi._thit = comp.time();
           chi._strawid = comp.strawId().straw();
           chi._panelid = comp.strawId().panel();
-
-          XYZVectorF dpos = comp.pos()-ch.pos();
-          chi._dwire = dpos.Dot(ch.wdir());
-          chi._dwerr = comp.wireRes();
-          chi._dterr = comp.transRes();
-          chi._dperp = sqrt(dpos.mag2() - chi._dwire*chi._dwire);
-          chi._dtime = comp.time()- ch.time();
-          chi._dedep = comp.energyDep() - ch.energyDep();
-          chi._ds = comp.strawId().straw() - compis.front()->strawId().straw();
-          chi._dp = comp.strawId().panel() - compis.front()->strawId().panel();
           chi._nch = comp.nCombo();
           chi._nsh = comp.nStrawHits();
           _chinfo.push_back(chi);
@@ -315,6 +313,7 @@ namespace mu2e
         // use that to define the relationships
         _mcpdg = spmax->pdgId();
         _mcproc = spmax->creationCode();
+        _mcfrac = ispmax->second/static_cast<float>(shids.size());
         auto upar = spmax;
         while (upar->genParticle().isNull() && upar->parent().isNonnull()) {
           upar = upar->parent();
@@ -342,7 +341,7 @@ namespace mu2e
         _mcpos /= shids.size();
         _mctime /= shids.size();
         _mcmom /= shids.size();
-        _mcdist = (_mcpos - cpos).Dot(_wdir);
+        _mcudist = (_mcpos - cpos).Dot(_udir);
 
       }
       if (_digis != 0){

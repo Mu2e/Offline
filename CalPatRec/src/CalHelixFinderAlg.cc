@@ -1757,7 +1757,7 @@ namespace mu2e {
           if (Helix._hitsUsed[index] >= 1)                    continue;
           hit       = &Helix._chHitsToProcess[index];
           shPos     = hit->_pos;
-          strawDir  = hit->_sdir;
+          strawDir  = hit->vDir();
 
           dx        = hePos.x() - shPos.x();
           dy        = hePos.y() - shPos.y();
@@ -2195,7 +2195,7 @@ namespace mu2e {
     float y   = Hit.pos().y();
     float dx  = x-HelCenter.x();
     float dy  = y-HelCenter.y();
-    float dxn = dx*Hit._sdir.x()+dy*Hit._sdir.y();
+    float dxn = dx*Hit.vDir().x()+dy*Hit.vDir().y();
 
     float costh2 = dxn*dxn/(dx*dx+dy*dy);
     float sinth2 = 1-costh2;
@@ -2229,7 +2229,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // if dr(dx,dy) is orthogonal to the wire, costh = 1
 //-----------------------------------------------------------------------------
-    float dxn    = dx*Hit._sdir.x()+dy*Hit._sdir.y();
+    float dxn    = dx*Hit.vDir().x()+dy*Hit.vDir().y();
     float costh2 = dxn*dxn/(dx*dx+dy*dy);
     float sinth2 = 1-costh2;
 
@@ -2328,7 +2328,7 @@ namespace mu2e {
 
           if (_debug > 10) {
             printf("[CalHelixFinderAlg::doWeightedCircleFit:LOOP] %4i %10.3f %10.3f %10.3f %10.3e %10.4f %10.4f\n",
-                   (int)hit->index(), hit->_pos.x(), hit->_pos.y(), hit->_pos.z(), wt, hit->_sdir.x(), hit->_sdir.y());
+                   (int)hit->index(), hit->_pos.x(), hit->_pos.y(), hit->_pos.z(), wt, hit->vDir().x(), hit->vDir().y());
           }
         }
       }//end panels loop
@@ -2758,7 +2758,7 @@ namespace mu2e {
           if (Helix._hitsUsed[index] >= 1)                    continue;
 
           hitPos    = hit->_pos;
-          strawDir  = hit->_sdir;
+          strawDir  = hit->vDir();
 
           dr = calculateRadialDist(hitPos,helCenter,r);
           wt = calculateWeight    (*hit,helCenter,r);

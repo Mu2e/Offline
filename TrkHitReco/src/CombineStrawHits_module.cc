@@ -34,8 +34,7 @@ namespace mu2e {
         fhicl::Sequence<std::string>  shsel   { Name("StrawHitSelectionBits"), Comment("Input flag selection") };
         fhicl::Sequence<std::string>  shmask  { Name("StrawHitMask"),          Comment("Input flag anti-selection") };
         fhicl::Atom<bool>             useTOT  { Name("UseTOT"),                Comment("use tot to estimate drift time") };
-        fhicl::Atom<float>            werr    { Name("WireError"),             Comment("intrinsic error on wire distance (mm)") };
-        fhicl::Atom<float>            terr    { Name("TransError"),            Comment("intrinsic error transverse to wire (per straw)(mm)") };
+        fhicl::Atom<float>            uerr    { Name("UError"),                Comment("intrinsic error along the straw (mm)") };
         fhicl::Atom<bool>             unsorted{ Name("Unsorted"),              Comment("Digi data unsorted by StrawId")};
         fhicl::Atom<int>              maxds   { Name("MaxDS"),                 Comment("maximum straw number difference") };
         fhicl::Atom<float>            maxdt   { Name("MaxDt"),                 Comment("maximum time separation between hits in ns") };
@@ -67,8 +66,7 @@ namespace mu2e {
       float         _maxdt;
       bool          _useTOT;
       float         _maxwdchi;
-      float         _werr2;
-      float         _terr;
+      float         _uerr2;
       float         _minR2,_maxR2;
       float         _minT, _maxT;
       float         _minE, _maxE;
@@ -90,8 +88,7 @@ namespace mu2e {
     _maxdt(     config().maxdt()),
     _useTOT(    config().useTOT()),
     _maxwdchi(  config().maxwdchi()),
-    _werr2(     config().werr()*config().werr()),
-    _terr(      config().terr()),
+    _uerr2(     config().uerr()*config().uerr()),
     _minR2(     config().minR()*config().minR()),
     _maxR2(     config().maxR()*config().maxR()),
     _minT(      config().minT()),
@@ -220,7 +217,7 @@ namespace mu2e {
     combohit._flag.merge(StrawHitFlag::panelcombo);
 
     // simple sums to speed up the trigger
-    double eacc(0),ctacc(0),dtacc(0),dtweights(0),ptacc(0),werracc(0),wacc(0),wacc2(0),weights(0);
+    double eacc(0),ctacc(0),dtacc(0),twtsum(0),ptacc(0),wacc(0),wacc2(0),wwtsum(0);
     double etacc[2] = {0,0};
     XYZVectorF midpos;
     combohit._nsh = 0;
@@ -234,53 +231,55 @@ namespace mu2e {
         throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<<std::endl;
 
       const ComboHit& ch = (*chcolOrig)[index];
-      double wt = 1.0/(ch.wireVar());
+      // simple average of basic quantities.  End times cannot take advantage of corrected time resolution
+      combohit._nsh += ch.nStrawHits();
       eacc += ch.energyDep();
       etacc[StrawEnd::cal] += ch.endTime(StrawEnd::cal);
       etacc[StrawEnd::hv] += ch.endTime(StrawEnd::hv);
-      ctacc += ch.correctedTime();
-      dtweights += 1.0/(ch.timeVar());
-      werracc += ch.wireRes();
-      weights += wt;
-      wacc  += ch.wireDist()*wt;
-      wacc2 += ch.wireDist()*ch.wireDist()*wt;
-      midpos += ch.centerPos();
-      combohit._nsh += ch.nStrawHits();
       dtacc += ch.driftTime();
       ptacc += ch.propTime();
-
+      midpos += ch.centerPos();
+      // weight time values by time error
+      double twt = 1.0/(ch.timeVar());
+      twtsum += twt;
+      ctacc += ch.correctedTime()*twt;
+      // weight position values by U (wire direction) error
+      double wwt = 1.0/(ch.wireVar());
+      wwtsum += wwt;
+      wacc  += ch.wireDist()*wwt;
+      wacc2 += ch.wireDist()*ch.wireDist()*wwt;
     }
 
-    if(combohit.nStrawHits() < combohit.nCombo())
+    if(combohit.nStrawHits() != combohit.nCombo())
       throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent count "<< std::endl;
 
     if(_debug > 2) std::cout << std::endl;
 
-    midpos /= combohit._nsh;
-    double nch = static_cast<double>(combohit.nCombo());
-    combohit._edep       = eacc/nch; // average
-    combohit._time       = ctacc/nch;
-    combohit._etime[StrawEnd::cal] = etacc[StrawEnd::cal]/nch;
-    combohit._etime[StrawEnd::hv] = etacc[StrawEnd::hv]/nch;
-    combohit._timeres   = sqrt(1.0/dtweights);
-    combohit._wdist      = wacc/weights;
-    combohit._pos        = midpos + combohit._wdist*combohit._wdir;
-    combohit._wres       = sqrt(1.0/weights + _werr2);
-    combohit._tres       = _terr/sqrt(combohit._nsh); // error proportional to # of straws (roughly)
-    float wdist2 = wacc2/weights;
+    double nsh = static_cast<double>(combohit.nStrawHits());
+    combohit._edep       = eacc/nsh; // simple averages
+    combohit._etime[StrawEnd::cal] = etacc[StrawEnd::cal]/nsh;
+    combohit._etime[StrawEnd::hv] = etacc[StrawEnd::hv]/nsh;
+    // these next should be removed if possible
+    midpos /= nsh;
+    combohit._dtime      = dtacc/nsh;
+    combohit._ptime      = ptacc/nsh;
+    combohit._time       = ctacc/twtsum;
+    combohit._timeres   = sqrt(1.0/twtsum);
+    combohit._wdist      = wacc/wwtsum;
+    combohit._pos        = midpos + combohit._wdist*combohit.uDir();
+    combohit._ures       = sqrt(1.0/wwtsum + _uerr2);
+    combohit._vres       = sqrt(1.0/twtsum );
+    float wdist2 = wacc2/wwtsum;
     float nc2 = pow(combohit.nCombo()-1,2);
-    float sigw = sqrt(std::max(_werr2,(wdist2-combohit._wdist*combohit._wdist)/nc2));
-    combohit._qual       = sigw/combohit._wres; // set to ratio of original to reduced chi
+    float sigw = sqrt(std::max(_uerr2,(wdist2-combohit._wdist*combohit._wdist)/nc2));
+    combohit._qual       = sigw/combohit._ures; // set to ratio of original to reduced chi
 
 //-----------------------------------------------------------------------------
 // for combohits made out of 2 and more straw hits:
-// if combohit._wres is less than the sigma calculated on the individual hit positions,
+// if combohit._ures is less than the sigma calculated on the individual hit positions,
 // use the PDG prescription : scale the resolution to the sigma
 //-----------------------------------------------------------------------------
-   if (_checkWres && combohit._wres < sigw)combohit._wres = sigw;
-// the below should be removed if possible
-    combohit._dtime      = dtacc/nch;
-    combohit._ptime      = ptacc/nch;
+   if (_checkWres && combohit._ures < sigw)combohit._ures = sigw;
   }
 }
 
