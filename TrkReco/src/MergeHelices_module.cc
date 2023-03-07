@@ -195,12 +195,12 @@ namespace mu2e {
         // Calculate the transverse and z-phi weights of the hits
         float dx = hh.pos().x() - h1.helix().center().x();
         float dy = hh.pos().y() - h1.helix().center().y();
-        float dxn = dx*hh._sdir.x()+dy*hh._sdir.y();
+        float dxn = dx*hh.vDir().x()+dy*hh.vDir().y();
         float costh2 = dxn*dxn/(dx*dx+dy*dy);
         float sinth2 = 1-costh2;
-        float e2xy = hh.wireVar()*sinth2+hh.transVar()*costh2;
+        float e2xy = hh.uVar()*sinth2+hh.vVar()*costh2;
         float wtxy = 1./e2xy;
-        float e2zphi = hh.wireVar()*costh2+hh.transVar()*sinth2;
+        float e2zphi = hh.uVar()*costh2+hh.vVar()*sinth2;
         float wtzphi = h1.helix().radius()*h1.helix().radius()/e2zphi;
         wtxy *= _scaleXY;
         wtzphi *= _scaleZPhi;
