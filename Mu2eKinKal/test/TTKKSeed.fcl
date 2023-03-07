@@ -45,6 +45,18 @@ physics :
         PrintLevel             : 0
       }
     }
+    TTCalSeedFitDem : {
+      @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
+      ModuleSettings : {
+        @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
+        HelixSeedCollections   : [ "TTCalHelixMergerDeM" ]
+        ComboHitCollection     : "TTmakeSH"
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        SaveAllFits            : false
+        PrintLevel             : 0
+      }
+    }
   }
   filters : {
     @table::CprTrigger.filters
@@ -77,8 +89,7 @@ physics :
 
 }
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
-outputs : {}
-physics.trigger_paths : [tprDeM_highP_stopTarg ]
+physics.trigger_paths : [tprDeM_highP_stopTarg, cprDeM_highP_stopTarg]
 
 physics.analyzers.TAKK.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
