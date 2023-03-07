@@ -4,14 +4,19 @@
 # services.DbService.purpose: MDC2020_perfect
 # services.DbService.version: v1_0
 #
-# To convert the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
-# physics.producers.KKDeMDriftFit.module_type : CentralHelixFit
-
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/reco/prolog.fcl"
 #include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
+#include "Offline/TrkHitReco/fcl/prolog_trigger.fcl"
+#include "Offline/TrkReco/fcl/prolog_trigger.fcl"
+#include "Offline/TrkPatRec/fcl/prolog_trigger.fcl"
+#include "Offline/TrkFilters/fcl/prolog_trigger.fcl"
+#include "Offline/CalPatRec/fcl/prolog.fcl"
+#include "Offline/CalPatRec/fcl/prolog_trigger.fcl"
+#include "Offline/Trigger/fcl/prolog_trigger.fcl"
 #include "TrkAna/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
 
 process_name: TTKKSeed
 source : { module_type : RootInput }
@@ -19,30 +24,36 @@ services : @local::Services.Reco
 physics :
 {
   producers : {
-    @table::TrkHitReco.producers
-    @table::Tracking.producers
-    @table::CalPatRec.producers
-    @table::CaloReco.producers
-    @table::CaloCluster.producers
-    @table::CaloMC.TruthProducers
-    @table::CrvResponsePackage.producers
-    @table::Reconstruction.producers
-    @table::TrkAnaReco.producers
+    @table::CaloHitRecoTrigger.producers
+    @table::CaloClusterTrigger.producers
+    @table::TrkHitRecoTrigger.producers
+    @table::TrkRecoTrigger.producers
+    @table::TrkHitRecoTrigger.producers
+    @table::TprTrigger.producers
+    @table::CprTrigger.producers
     @table::TTMu2eKinKal.producers
+
+    TTKSFDeM : {
+      @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
+      ModuleSettings : {
+        @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
+        HelixSeedCollections   : [ "TTHelixMergerDeM" ]
+        ComboHitCollection     : "TTmakeSH"
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        SaveAllFits            : false
+        PrintLevel             : 0
+      }
+    }
   }
   filters : {
-    @table::CalPatRec.filters
+    @table::CprTrigger.filters
+    @table::CaloFilters.filters
+    @table::TrkFilters.filters
+    @table::CstTrigger.filters
+    @table::Trigger.filters
   }
-  RecoPath : [
-    @sequence::Reconstruction.CaloReco,
-    @sequence::Reconstruction.TrkReco,
-    @sequence::Reconstruction.CrvReco,
-    TimeClusterFinderDe, HelixFinderDe,
-    CalTimePeakFinder, CalHelixFinderDe,
-    MHDeM,
-    TTKKDeMSeedFit,
-    @sequence::Reconstruction.MCReco
-  ]
+
   analyzers : {
     TAKK : @local::TrkAnaReco.analyzers.TrkAnaNeg
     evtprint : {
@@ -54,44 +65,38 @@ physics :
     }
   }
   EndPath : [TAKK]
+
+  tprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
+    @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+    TTtimeClusterFinder, tprDeMHighPStopTargTCFilter, TThelixFinder, TTHelixMergerDeM, tprDeMHighPStopTargHSFilter, TTKSFDeM, tprDeMHighPStopTargTSFilter ]
+
+  cprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
+    @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+    TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprDeMHighPStopTargHSFilter,
+    TTCalSeedFitDem, cprDeMHighPStopTargTSFilter ]
+
 }
-outputs : {
-  Output : {
-    @table::Reconstruction.Output
-    SelectEvents : [ "RecoPath" ]
-  }
-}
+#include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
+outputs : {}
+physics.trigger_paths : [tprDeM_highP_stopTarg ]
 
-#include "Production/JobConfig/reco/epilog.fcl"
-physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
-physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
-physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
-physics.producers.SelectRecoMC.KalSeedCollections  : ["TTKKDeMSeedFit"]
-physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
-physics.producers.SelectRecoMC.debugLevel : 0
-
-physics.producers.TTKKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.TTKKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.TTKKDeMSeedFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.TTKKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-physics.producers.TTKKDeMSeedFit.ModuleSettings.PrintLevel : 0
-physics.producers.TTKKDeMSeedFit.ModuleSettings.SaveAllFits : true
-
+physics.analyzers.TAKK.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.candidate.options.fillBestCrv : false
 physics.analyzers.TAKK.diagLevel : 2
 physics.analyzers.TAKK.FillCRV : false
-physics.analyzers.TAKK.FillMCInfo : true
+physics.analyzers.TAKK.FillMCInfo : false
+physics.analyzers.TAKK.RecoCountTag : ""
 physics.analyzers.TAKK.FillTriggerInfo : true
 physics.analyzers.TAKK.FillTrkQualInfo : false
 physics.analyzers.TAKK.FillTrkPIDInfo : false
 physics.analyzers.TAKK.FillHitInfo : true
 physics.analyzers.TAKK.FillTriggerInfo : false
-physics.analyzers.TAKK.candidate.input : "TTKK"
-physics.analyzers.TAKK.candidate.suffix : "DeMSeedFit"
+physics.analyzers.TAKK.candidate.input : "TTKSF"
+physics.analyzers.TAKK.candidate.suffix : "DeM"
 physics.analyzers.TAKK.candidate.options.fillHits : true
 physics.analyzers.TAKK.supplements : []
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.TimeTracker.printSummary: true
-services.TFileService.fileName: "nts.owner.KKSeed.version.sequence.root"
+services.TFileService.fileName: "nts.owner.TTKKSeed.version.sequence.root"
