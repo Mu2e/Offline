@@ -30,6 +30,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 
 // diagnostics
 
@@ -51,18 +52,18 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag>   shCollTag         {Name("shCollTag"         ), Comment("SComboHit collection Name"   ) };
-      fhicl::Atom<art::InputTag>   chCollTag         {Name("chCollTag"         ), Comment("ComboHit collection Name"    ) };
-      fhicl::Atom<art::InputTag>   sdmcCollTag       {Name("sdmcCollTag"       ), Comment("StrawDigiMC collection Name" ) };
-      fhicl::Atom<int>             debugLevel        {Name("debugLevel"        ), Comment("debug level"                 ) };
-      fhicl::Atom<int>             diagLevel         {Name("diagLevel"         ), Comment("diag level"                  ) };
-      fhicl::Atom<int>             printErrors       {Name("printErrors"       ), Comment("print errors"                ) };
-      fhicl::Atom<int>             writeComboHits    {Name("writeComboHits"    ), Comment("if 1, write combohit coll"   ) };
-      fhicl::Atom<int>             writeStrawHitFlags{Name("writeStrawHitFlags"), Comment("if 1, write SH flag coll"    ) };
-      fhicl::Atom<int>             testOrder         {Name("testOrder"         ), Comment("if 1, test order"            ) };
-      fhicl::Atom<bool>            testHitMask       {Name("testHitMask"       ), Comment("if true, test hit mask"      ) };
-      fhicl::Sequence<std::string> goodHitMask       {Name("goodHitMask"       ), Comment("good hit mask"               ) };
-      fhicl::Sequence<std::string> bkgHitMask        {Name("bkgHitMask"        ), Comment("background hit mask"         ) };
+      fhicl::Atom<art::InputTag>   sschCollTag            {Name("sschCollTag"       )    , Comment("SS ComboHit collection name") };
+      fhicl::Atom<art::InputTag>   chCollTag              {Name("chCollTag"         )    , Comment("ComboHit collection Name"   ) };
+      fhicl::Atom<art::InputTag>   sdmcCollTag            {Name("sdmcCollTag"       )    , Comment("StrawDigiMC collection Name") };
+      fhicl::Atom<int>             debugLevel             {Name("debugLevel"        )    , Comment("debug level"                ) };
+      fhicl::Atom<int>             diagLevel              {Name("diagLevel"         )    , Comment("diag level"                 ) };
+      fhicl::Atom<int>             printErrors            {Name("printErrors"       )    , Comment("print errors"               ) };
+      fhicl::Atom<int>             writeFilteredComboHits {Name("writeFilteredComboHits"), Comment("1: write filtered CH coll"  ) };
+      fhicl::Atom<int>             writeStrawHitFlags     {Name("writeStrawHitFlags")    , Comment("1: write SH flag coll"      ) };
+      fhicl::Atom<int>             testOrder              {Name("testOrder"         )    , Comment("1: test order"              ) };
+      fhicl::Atom<bool>            testHitMask            {Name("testHitMask"       )    , Comment("true: test hit mask"        ) };
+      fhicl::Sequence<std::string> goodHitMask            {Name("goodHitMask"       )    , Comment("good hit mask"              ) };
+      fhicl::Sequence<std::string> bkgHitMask             {Name("bkgHitMask"        )    , Comment("background hit mask"        ) };
 
       fhicl::Table<DeltaFinderTypes::Config> diagPlugin      {Name("diagPlugin"      ), Comment("Diag plugin"           ) };
       fhicl::Table<DeltaFinderAlg::Config>   finderParameters{Name("finderParameters"), Comment("finder alg parameters" ) };
@@ -72,11 +73,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // talk-to parameters: input collections and algorithm parameters
 //-----------------------------------------------------------------------------
-    art::InputTag   _shCollTag;
+    art::InputTag   _sschCollTag;
     art::InputTag   _chCollTag;
     art::InputTag   _sdmcCollTag;
 
-    int             _writeComboHits;       // write (filtered ?) combo hits
+    int             _writeFilteredComboHits;   // write filtered combo hits
     int             _writeStrawHitFlags;
 
     int             _debugLevel;
@@ -90,7 +91,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // cache event/geometry objects
 //-----------------------------------------------------------------------------
-    const StrawHitCollection*    _shColl ;
+    const ComboHitCollection*    _sschColl ;
 
     const Tracker*               _tracker;
     const DiskCalorimeter*       _calorimeter;
@@ -121,10 +122,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   DeltaFinder::DeltaFinder(const art::EDProducer::Table<Config>& config):
     art::EDProducer{config},
-    _shCollTag             (config().shCollTag()         ),
+    _sschCollTag           (config().sschCollTag()       ),
     _chCollTag             (config().chCollTag()         ),
     _sdmcCollTag           (config().sdmcCollTag()       ),
-    _writeComboHits        (config().writeComboHits()    ),
+    _writeFilteredComboHits(config().writeFilteredComboHits()    ),
     _writeStrawHitFlags    (config().writeStrawHitFlags()),
     _debugLevel            (config().debugLevel()        ),
     _diagLevel             (config().diagLevel()         ),
@@ -133,11 +134,12 @@ namespace mu2e {
     _bkgHitMask            (config().bkgHitMask()        )
   {
 
-    consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
+    consumesMany<ComboHitCollection>(); // ??? Necessary because fillStrawHitIndices calls getManyByType.
 
+    produces<IntensityInfoTimeCluster>();
     produces<StrawHitFlagCollection>("ComboHits");
-    if (_writeStrawHitFlags == 1) produces<StrawHitFlagCollection>("StrawHits");
-    if (_writeComboHits     == 1) produces<ComboHitCollection>    ("");
+    if (_writeStrawHitFlags     == 1) produces<StrawHitFlagCollection>("StrawHits");
+    if (_writeFilteredComboHits == 1) produces<ComboHitCollection>    ("");
 
                                         // this is a list of delta-electron candidates
     produces<TimeClusterCollection>();
@@ -190,21 +192,21 @@ namespace mu2e {
     auto chcH   = Evt.getValidHandle<mu2e::ComboHitCollection>(_chCollTag);
     _data.chcol = chcH.product();
 
-    auto shcH = Evt.getValidHandle<mu2e::StrawHitCollection>(_shCollTag);
-    _shColl   = shcH.product();
+    auto sschcH = Evt.getValidHandle<mu2e::ComboHitCollection>(_sschCollTag);
+    _sschColl   = sschcH.product();
 
-    return (_data.chcol != nullptr) and (_shColl != nullptr);
+    return (_data.chcol != nullptr) and (_sschColl != nullptr);
   }
 
 //-----------------------------------------------------------------------------
-// define the time cluster parameters starting from a DeltaCandidate
+// define the time cluster parameters for found DeltaCandidates
 //-----------------------------------------------------------------------------
   void DeltaFinder::initTimeCluster(DeltaCandidate* Dc, TimeCluster* Tc) {
   }
 
 //-----------------------------------------------------------------------------
   void DeltaFinder::produce(art::Event& Event) {
-    if (_debugLevel) printf(">>> DeltaFinder::produce  event number: %10i\n",Event.event());
+    if (_debugLevel) printf("* >>> DeltaFinder::produce  event number: %10i\n",Event.event());
 //-----------------------------------------------------------------------------
 // clear memory in the beginning of event processing and cache event pointer
 //-----------------------------------------------------------------------------
@@ -218,35 +220,49 @@ namespace mu2e {
     }
 
     _data._nComboHits = _data.chcol->size();
-    _data._nStrawHits = _shColl->size();
-
+    _data._nStrawHits = _sschColl->size();
+//-----------------------------------------------------------------------------
+// run delta finder, it also finds proton time clusters
+//-----------------------------------------------------------------------------
     _finder->run();
 //-----------------------------------------------------------------------------
 // form output - flag combo hits -
 // if flagged combo hits are written out, likely don't need writing out the flags
+// need to drop previously set 'energy' flag
 //-----------------------------------------------------------------------------
     unique_ptr<StrawHitFlagCollection> up_chfcol(new StrawHitFlagCollection(_data._nComboHits));
     _data.outputChfColl = up_chfcol.get();
 
     for (int i=0; i<_data._nComboHits; i++) {
+//-----------------------------------------------------------------------------
+// initialize output flags to the flags of the input combo hits, in parallel
+// count the number of hits in the potentially to be written out straw hit collection
+//-----------------------------------------------------------------------------
       const ComboHit* ch = &(*_data.chcol)[i];
-      (*_data.outputChfColl)[i].merge(ch->flag());
+      StrawHitFlag* flag = &(*_data.outputChfColl)[i];
+      flag->merge(ch->flag());
+//-----------------------------------------------------------------------------
+// always flag delta hits here, don't need previously set delta bits
+// if flag protons, flag all hits as good
+//-----------------------------------------------------------------------------
+      flag->clear(StrawHitFlag::bkg);
+      if (_finder->flagProtonHits()) flag->merge(StrawHitFlag::energysel);
     }
 
     const ComboHit* ch0(0);
     if (_data._nComboHits > 0) ch0 = &_data.chcol->at(0);
 
-    StrawHitFlag deltamask(StrawHitFlag::bkg);
-
     unique_ptr<TimeClusterCollection>  tcColl(new TimeClusterCollection);
-
+//-----------------------------------------------------------------------------
+// set delta flags
+//-----------------------------------------------------------------------------
     int ndeltas = _data.nDeltaCandidates();
-
     for (int i=0; i<ndeltas; i++) {
       DeltaCandidate* dc = _data.deltaCandidate(i);
 //-----------------------------------------------------------------------------
 // skip merged in delta candidates
-// also require a delta candidate to have at least 5 hits
+// also require a delta candidate to have at least 5 hits (in the mask, set by
+// the delta finder)
 // do not consider proton stub candidates (those with <EDep> > 0.004)
 //-----------------------------------------------------------------------------
       if (dc->Active() == 0)                                          continue;
@@ -261,28 +277,63 @@ namespace mu2e {
             const HitData_t* hd = ds->HitData(face);
             if (hd == nullptr)                                        continue;
             int loc = hd->fHit-ch0;
-            _data.outputChfColl->at(loc).merge(deltamask);
+            StrawHitFlag* flag = &(*_data.outputChfColl)[loc];
+            flag->merge(StrawHitFlag::bkg);           // set delta-electron bit
+          }
+        }
+      }
+    }
+//-----------------------------------------------------------------------------
+// set proton flags, 'energy' now means 'proton'
+//-----------------------------------------------------------------------------
+    int np15(0);
+    int nprotons = _data.nProtonCandidates();
+    for (int i=0; i<nprotons; i++) {
+      ProtonCandidate* pc = _data.protonCandidate(i);
+      if (pc->nHitsTot() >= 15) np15++;
+      if (pc->nStationsWithHits() == 1) {
+//-----------------------------------------------------------------------------
+// for proton candidates with just one station require eDep > 4 KeV
+// this adds a little inefficiency for proton reco,
+// but reduces overefficiency of flagging the CE hits
+//-----------------------------------------------------------------------------
+        if (pc->eDep() < 0.004) continue;
+      }
+      for (int is=pc->fFirstStation; is<=pc->fLastStation; is++) {
+        for (int face=0; face<kNFaces; face++) {
+          int nh = pc->nHits(is,face);
+          for (int ih=0; ih<nh; ih++) {
+            const HitData_t* hd = pc->hitData(is,face,ih);
+            int loc = hd->fHit-ch0;
+            StrawHitFlag* flag = &(*_data.outputChfColl)[loc];
+            flag->clear(StrawHitFlag::energysel);
           }
         }
       }
 //-----------------------------------------------------------------------------
-// make a time cluster out of each active DeltaCandidate
+// (later) make a time cluster out of each ProtonCandidate
 //-----------------------------------------------------------------------------
-      TimeCluster new_tc;
-      initTimeCluster(dc,&new_tc);
-      tcColl->push_back(new_tc);
+      // TimeCluster new_tc;
+      // initTimeCluster(dc,&new_tc);
+      // tcColl->push_back(new_tc);
     }
 
     Event.put(std::move(tcColl));
+//-----------------------------------------------------------------------------
+// 'ppii' - proton counting-based proxy to the stopped muon rate
+//-----------------------------------------------------------------------------
+    std::unique_ptr<IntensityInfoTimeCluster> ppii(new IntensityInfoTimeCluster(np15));
+    Event.put(std::move(ppii));
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms
 //-----------------------------------------------------------------------------
     if (_diagLevel  > 0) _hmanager->fillHistograms(&_data);
     if (_debugLevel > 0) _hmanager->debug(&_data,2);
 
-    if (_writeComboHits) {
+    if (_writeFilteredComboHits) {
 //-----------------------------------------------------------------------------
-// write out collection of ComboHits with right flags, use deep copy
+// write out filtered out collection of ComboHits with right flags, use deep copy
+// the output ComboHit collection doesn't need a parallel flag collection
 //-----------------------------------------------------------------------------
       auto outputChColl = std::make_unique<ComboHitCollection>();
       outputChColl->reserve(_data._nComboHits);
@@ -293,6 +344,7 @@ namespace mu2e {
         if (flag->hasAnyProperty(_bkgHitMask))                        continue;
 //-----------------------------------------------------------------------------
 // for the moment, assume bkgHitMask to be empty, so write out all hits
+// normally, don't need delta and proton hits
 //-----------------------------------------------------------------------------
         const ComboHit* ch = &(*_data.chcol)[i];
         outputChColl->push_back(*ch);
@@ -302,18 +354,31 @@ namespace mu2e {
     }
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
+// why would that be needed? - straw hits are also combo hits and have flags
+// stored in their data
 //-----------------------------------------------------------------------------
     if (_writeStrawHitFlags == 1) {
                                         // first, copy over the original flags
 
       std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(_data._nStrawHits));
 
-      for(int ich=0; ich<_data._nComboHits; ich++) {
+      for (int i=0; i<_data._nStrawHits; i++) {
+        StrawHitFlag&   flag =  (*shfcol)[i]; // should be empty at this point
+        flag.merge((*_sschColl)[i].flag());     // merge in the original flag
+        flag.clear(StrawHitFlag::bkg       ); // clear delta selection
+        flag.merge(StrawHitFlag::energysel ); // and assume all hits are not from protons
+      }
+//-----------------------------------------------------------------------------
+// after that, loop over [flagged] combo hits and update 'delta'(bkg) and 'proton'(energysel)
+// flags for flagged hits
+//-----------------------------------------------------------------------------
+      for (int ich=0; ich<_data._nComboHits; ich++) {
         const ComboHit* ch   = &(*_data.chcol )[ich];
         StrawHitFlag    flag =  (*_data.outputChfColl)[ich];
         flag.merge(ch->flag());
         for (auto ish : ch->indexArray()) {
-          (*shfcol)[ish] = flag;
+          if (not flag.hasAnyProperty(StrawHitFlag::energysel)) (*shfcol)[ish].clear(StrawHitFlag::energysel);
+          if (    flag.hasAnyProperty(StrawHitFlag::bkg      )) (*shfcol)[ish].merge(StrawHitFlag::energysel);
         }
       }
 
@@ -325,10 +390,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     Event.put(std::move(up_chfcol),"ComboHits");
   }
-
 }
 //-----------------------------------------------------------------------------
-// magic that makes this class a module.
+// macro that makes this class a module.
 //-----------------------------------------------------------------------------
 DEFINE_ART_MODULE(mu2e::DeltaFinder)
 //-----------------------------------------------------------------------------

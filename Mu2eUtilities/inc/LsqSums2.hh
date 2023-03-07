@@ -42,6 +42,7 @@ public:
 
   // reconstructed parameters of the line
   double dydx();
+  double dydxErr();
   double y0();
 
   double chi2Dof();
