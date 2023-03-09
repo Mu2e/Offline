@@ -1,7 +1,5 @@
 # -*- mode:tcl -*-
 # variables which need defaults:
-# -----------------------------
-# :DEFAULT: TRIGGER_PATH=p6
 #------------------------------------------------------------------------------
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
@@ -13,33 +11,39 @@ END_PROLOG
 
 #include "Stntuple/fcl/stntuple.fcl"
 
-process_name : TestDeltaFinder
+process_name : TestFlagBkgHits
+
+#------------------------------------------------------------------------------
+# the following file is the very first file of the
+# dig.mu2e.CeEndpointMix2BBSignal.MDC2020r_perfect_v1_0.art dataset,
+# just cached locally. Input is configured for a quick test
+#------------------------------------------------------------------------------
+source: { module_type : RootInput
+    firstRun    : 1210
+    firstSubRun :    0
+    firstEvent  :    1
+    fileNames   : [ "/mu2e/data2/users/murat/datasets/mdc2020/CeEndpointMix2BBSignal/dig.mu2e.CeEndpointMix2BBSignal.MDC2020r_perfect_v1_0.001210_00000000.art" ]
+    maxEvents   :  100
+}
 
 physics : {
 
     producers : { @table::Reconstruction.producers
         DeltaFinder: { @table::CalPatRec.producers.DeltaFinder
             diagLevel                     :  1  ## 0 ##
-            debugLevel                    :  1  ## 1 ##
+            debugLevel                    :  0  ## 1 ##
 
-           finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters
-                maxChi2Seed                 : 20.  ## chi^2 wire, each hit)
-                maxChi2Par                  : 12.  ## hit pickup chi2
-                maxChi2Perp                 : 12.  ## hit pickup in recoverStation
-                maxChi2SeedDelta            : 20.  ##
-                sigmaR                      : 1.5  ##
-                rCore                       : 2.0  ## 'core' of the compton electron trajectory
-           }
+            finderParameters : { @table::CalPatRec.producers.DeltaFinder.finderParameters }
 
             diagPlugin : { @table::CalPatRec.producers.DeltaFinder.diagPlugin
                 mcDiag                    : true
                 printElectrons            : 1    ## 0 ##
                 printElectronsHits        : 1    ## 1 ##
-                printElectronsMinMom      :  80.
+                printElectronsMinMom      : 80.
                 printElectronsMaxMom      : 110.
                 printElectronsMinNHits    : 10   ## 30
                 printElectronsMaxFReco    : 1.1  ## 0.5
-                printSeedNParents         :  -1  ## 2
+                printSeedNParents         : -1   ## 2
             }
         }
     }
@@ -49,24 +53,25 @@ physics : {
     analyzers : { @table::stntuple.analyzers
         DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel                    : 0 ## 1
+            printElectrons                : 1
+            printElectronsMinNHits        : 10
+            printElectronsMaxFReco        : 1.1
+            printElectronHits             : 1
 
-            chCollTag                     : "makePH"
-            shCollTag                     : "makeSH"
-            chfCollTag                    : "DeltaFinder:ComboHits"
-            shfCollTag                    : "DeltaFinder:StrawHits"
-            sdmcCollTag                   : "compressDigiMCs"
+            chfCollTag                    : "FlagBkgHits:ComboHits"
+            shfCollTag                    : "FlagBkgHits:StrawHits"
         }
     }
 
-    p1            : [ @sequence::TrkHitReco.PrepareHits, DeltaFinder ]
+    p1            : [ @sequence::TrkHitReco.PrepareHits , DeltaFinder ]
     trigger_paths : [ p1             ]
     e1            : [ DeltaFinderAna ] ## MuHitDisplay  ] # defaultOutput ]
     end_paths     : [ e1             ]
 }
 
-physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
-physics.producers.makePH.MaxDS                     : 4
-physics.producers.makePH.CheckWres                 : true
+# physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection", "EnergySelection" ]
+# physics.producers.makePH.MaxDS                     : 5
+# physics.producers.makePH.CheckWres                 : true
 # physics.producers.makePH.MinimumRadius             : 370.
 # physics.producers.makePH.MaximumRadius             : 680.
 # physics.producers.DeltaFinderAna.printElectronHits : 1
@@ -75,7 +80,7 @@ physics.producers.makePH.CheckWres                 : true
 #------------------------------------------------------------------------------
 # physics.out : [detectorOutput]
 # outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
-services.TFileService.fileName            : "deltaFinder_diag5.root"
+services.TFileService.fileName            : "flagBkgHits_diag.root"
 #------------------------------------------------------------------------------
 # everything below is appended by murat/scripts/submit_mu2e_job
 #------------------------------------------------------------------------------

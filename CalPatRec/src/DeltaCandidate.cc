@@ -18,9 +18,6 @@ namespace mu2e {
       fNStrawHits   = 0;
       fNSeeds       = 0;
       fSumEDep      = 0;
-
-      fMcPart       = nullptr;
-      fNHitsCE      = 0;
     }
 
 //-----------------------------------------------------------------------------
@@ -40,9 +37,6 @@ namespace mu2e {
       fNSeeds       = 0;
       fSumEDep      = 0;
 
-      fMcPart       = nullptr;
-      fNHitsCE      = 0;
-
       if (Seed) AddSeed(Seed);
     }
 
@@ -58,8 +52,8 @@ namespace mu2e {
 // general case: the 'seed' needs to be removed
 //-----------------------------------------------------------------------------
     fNSeeds       -= 1;
-    fNHits        -= seed->NHits();
-    fNStrawHits   -= seed->NStrawHits();
+    fNHits        -= seed->nHits();
+    fNStrawHits   -= seed->nStrawHits();
 //-----------------------------------------------------------------------------
 // update the first and the last station numbers
 //-----------------------------------------------------------------------------
@@ -141,8 +135,8 @@ namespace mu2e {
 // seeds with SFace(1) < 0 don't have their center of gravity defined - their hits
 // have been picked up individually, the intersection doesn't matter
 //-----------------------------------------------------------------------------
-    fNHits      += Seed->NHits();
-    fNStrawHits += Seed->NStrawHits();
+    fNHits      += Seed->nHits();
+    fNStrawHits += Seed->nStrawHits();
     fSumEDep    += Seed->SumEDep();
 
     fSnx2       += Seed->fSnx2;
@@ -190,24 +184,7 @@ namespace mu2e {
       fT0    = tm;
       fSigT0 = 0;
     }
-//-----------------------------------------------------------------------------
-// update t0min and t0max
-// FIXME - need more reasonable limits
-//-----------------------------------------------------------------------------
-    // float t0min     = Seed->MinHitTime();
-    // float t0max     = Seed->MaxHitTime();
-    // float t0        = (t0min+t0max)/2;
-    // float dt        = (t0max-t0min)/2;
 
-    // double kMinDt(30.) ; // was 20 before
-    // if (dt < kMinDt) dt = kMinDt;
-    // fT0Min[Station] = t0-dt;
-    // fT0Max[Station] = t0+dt;
-//-----------------------------------------------------------------------------
-// finally, set fDeltaIndex, this marks the 'Seed' as used,
-// marking  its hits as associated with the DeltaCandidate will happen later
-//-----------------------------------------------------------------------------
-//    Seed->fDeltaIndex = fIndex;
   }
 
 //-----------------------------------------------------------------------------
@@ -228,8 +205,8 @@ namespace mu2e {
 // increment hit count only if a seed has been addded
 //-----------------------------------------------------------------------------
       fNSeeds               += 1;
-      fNHits                += fSeed[is]->NHits();
-      fNStrawHits           += fSeed[is]->NStrawHits();
+      fNHits                += fSeed[is]->nHits();
+      fNStrawHits           += fSeed[is]->nStrawHits();
       fSumEDep              += fSeed[is]->SumEDep();
 
       if (fFirstStation > is) fFirstStation = is;

@@ -74,11 +74,10 @@ CprTrigger : { @table::CprTrigger
         }
 
         TTDeltaFinder : { @table::CalPatRec.producers.DeltaFinder
-            comboHitCollectionTag         : TTmakePH                # input coll
-            strawHitCollectionTag         : TTmakeSH                # input coll
-            timePeakCollectionTag         : TTfastTimeClusterFinder
-            writeStrawHits                : 0
-            filter                        : 1
+            chCollTag                     : TTmakePH                # input coll
+            shCollTag                     : TTmakeSH                # input coll
+            writeStrawHitFlags           : 0
+            writeComboHits                : 1
         }
 
 #------------------------------------------------------------------------------

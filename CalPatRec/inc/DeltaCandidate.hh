@@ -26,11 +26,8 @@ namespace mu2e {
       float                 fNx;                   //
       float                 fNy;                   //
       int                   fNSeeds;
-      McPart_t*             fMcPart;               // "best" MC particle
       int                   fNHits;                // n(combo hits)
       int                   fNStrawHits;           // number of straw hits
-      int                   fNHitsMcP;             // N combo hits by the "best" particle"
-      int                   fNHitsCE;              // N(hits) by CE
       float                 fSumEDep;              //
                                                    // LSQ sums
       double                fSx;
@@ -60,9 +57,9 @@ namespace mu2e {
       int        Index                () const { return fIndex ; }
       int        Mask                 () const { return fMask  ; }
       int        NSeeds               () const { return fNSeeds; }
-      int        NHits                () const { return fNHits; }
-      int        NHitsMcP             () const { return fNHitsMcP; }
-      int        NStrawHits           () const { return fNStrawHits; }
+      int        nHits                () const { return fNHits; }
+      // int        NHitsMcP             () const { return fNHitsMcP; }
+      int        nStrawHits           () const { return fNStrawHits; }
       DeltaSeed* Seed            (int I) const { return fSeed[I]; }
       bool       StationUsed     (int I) const { return (fSeed[I] != NULL); }
       // float      T0Min           (int I) const { return fT0Min[I]; }
@@ -71,7 +68,7 @@ namespace mu2e {
       int        LastStation          () const { return fLastStation ; }
       int        FirstStation         () const { return fFirstStation; }
       float      EDep                 () const { return fSumEDep/fNStrawHits; }
-      float      FBest                () const { return float(fNHitsMcP)/fNHits; }
+      // float      FBest                () const { return float(fNHitsMcP)/fNHits; }
       double     Xc                   () const { return CofM.x(); }
       double     Yc                   () const { return CofM.y(); }
       double     Rho                  () const { return CofM.Rho(); }
