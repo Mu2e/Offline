@@ -12,20 +12,20 @@ Mu2eKinKalTrigger : {
     @table::Mu2eKinKal.KKMU2E
     AddHits : false
     AddMaterial : false
+    MaterialCorrection : false
   }
 
   KKSEEDFIT: {
     @table::Mu2eKinKal.KKSEEDFIT
-    MaxNIter : 3
-    #    DivergenceDeltaChisq : 1e6
-    # DivergenceDeltaParams : 1e6
-    # DivergenceGap : 100 # mm
+    MaxNIter : 2
     MetaIterationSettings : [
       [ 4.0, "CADSHU" ]
+      #      [ 2.0, "CADSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, flag, , allowed, freeze, diag
       [ 60.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+      #      [ 40.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       [10.0, -1.0, -1.0, true, 0 ]
@@ -34,7 +34,9 @@ Mu2eKinKalTrigger : {
 
   KKSEEDEXT: {
     @table::Mu2eKinKal.KKSEEDEXT
-    MaxNIter : 3
+    MaxNIter : 2
+    BFieldCorrection : false
+
     CADSHUSettings : [
       #      [ 40.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
@@ -51,6 +53,15 @@ Mu2eKinKalTrigger : {
 
   KKLOOPHELIX : {
     @table::Mu2eKinKal.KKLOOPHELIX
+    SeedErrors: [
+      5,
+      5,
+      5,
+      5,
+      2e-2,
+      5
+    ]
+    ZSavePositions: [ 0 ]
     SaveFullFit : false
   }
 
