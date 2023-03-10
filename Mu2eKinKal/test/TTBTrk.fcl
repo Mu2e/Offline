@@ -18,7 +18,7 @@
 #include "TrkAna/fcl/prolog.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
 
-process_name: TTKKSeed
+process_name: TTBTrk
 source : { module_type : RootInput }
 services : @local::Services.Reco
 physics :
