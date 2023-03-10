@@ -27,52 +27,64 @@
 namespace mu2e {
 
   struct ComboHit {
-    enum edir{wire=0,trans};
+    enum edir{wire=0,trans,z}; // should switch to  UVW TODO
     constexpr static size_t MaxNCombo = 8; // needs tuning TODO
     using PIArray = std::array<uint16_t,MaxNCombo>; // array of indices into parent collection
     // General accessors that apply to all kinds of combo hits
-    XYZVectorF const& pos() const { return _pos; }
-    XYZVectorF const& wdir() const { return _wdir; } // along wire
-    XYZVectorF const& sdir() const { return _sdir; } // perp to wire and Z
-    XYZVectorF centerPos() const { return _pos - _wdist*_wdir; }
+    auto const& pos() const { return _pos; }
+    auto const& wdir() const { return _udir; } // legacy function
+    // in UVW coordinate system
+    auto const& uDir() const { return _udir; } // along wire
+    auto const& vDir() const { return _vdir; } // perp to wire and Z
+    auto wDir() const { return XYZVectorF(0.0,0.0,1.0); }
+    auto centerPos() const { return _pos - _wdist*_udir; }
 //
     float posRes(edir dir) const;
-    float energyDep() const { return _edep; }
-    float phi() const { return _pos.phi();} // legacy function
-    float timeRes() const { return _timeres; }
-    float timeVar() const { return _timeres*_timeres; }
-    float correctedTime() const { return _time; }
-    float qual() const { return _qual; }
+    auto energyDep() const { return _edep; }
+    auto phi() const { return _pos.phi();} // legacy function
+    auto timeRes() const { return _timeres; }
+    auto timeVar() const { return _timeres*_timeres; }
+    auto correctedTime() const { return _time; }
+    auto qual() const { return _qual; }
     StrawHitFlag const& flag() const { return _flag; }
     StrawId const& strawId() const { return _sid; }
-    float wireRes() const { return _wres; }
-    float transRes() const { return _tres; }
-    float transVar() const { return _tres*_tres; }
-    float wireVar() const { return _wres*_wres; }
-    float wireDist() const { return _wdist; }
+    auto uRes() const { return _ures; }
+    auto uVar() const { return _ures*_ures; }
+    auto wireRes() const { return uRes(); }
+    auto wireVar() const { return uVar(); }
+    auto vRes() const { return _vres; }
+    auto vVar() const { return _vres*_vres; }
+    auto wRes() const { return _wres; }
+    auto wVar() const { return _wres*_wres; }
+    auto transRes() const { return vRes(); }
+    auto transVar() const { return vVar(); }
+
+    auto uPos() const { return _wdist; }
+    auto wireDist() const { return _wdist; }
+    auto vPos() const { return _pos.Dot(vDir()); }
     // book-keeping accessors
-    uint16_t nCombo() const { return _ncombo; }
-    uint16_t nStrawHits() const { return _nsh; }
-    StrawIdMask const& mask() const { return _mask;}
+    auto nCombo() const { return _ncombo; }
+    auto nStrawHits() const { return _nsh; }
+    auto const& mask() const { return _mask;}
     void init(ComboHit const& other, size_t index);
-    uint16_t index(uint16_t ish=0) const { return _pind.at(ish); }
+    auto index(uint16_t ish=0) const { return _pind.at(ish); }
     bool addIndex(size_t shi); // append an index to the
-    PIArray const& indexArray() const { return _pind; }
+    auto const& indexArray() const { return _pind; }
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     // Accessors that only make sense for single-straw Combo hits
-    float TOT(StrawEnd end=StrawEnd::cal)       const { return _tot[end];}
+    auto TOT(StrawEnd end=StrawEnd::cal)       const { return _tot[end];}
      // compatibility constructor (deprecated)
-    float endTime(StrawEnd end=StrawEnd::cal)     const { return _etime[end];}
+    auto endTime(StrawEnd end=StrawEnd::cal)     const { return _etime[end];}
     auto const& TOTs() const { return _tot; }
     auto const& endTimes() const { return _etime; }
     StrawEnd const& earlyEnd() const { return _eend; } // End with earliest tdc time
     StrawEnd lateEnd() const { return _eend.otherEnd(); } // End with later tdc time
     // Accessors for hits used in helices
-    float helixPhi() const { return _hphi;}
+    auto helixPhi() const { return _hphi;}
     // interface returning calibration info: these should be refactored to
     // use StrawResponse TODO
-    float driftTime() const { return _dtime; }
-    float propTime() const { return _ptime; }
+    auto driftTime() const { return _dtime; }
+    auto propTime() const { return _ptime; }
     // legacy functions
     //  No new code should use these accessors, they should be removed soon TODO
 //    ComboHit(const ComboHit&, StrawHitIndex, double);
@@ -82,11 +94,12 @@ namespace mu2e {
     // vector information.  These are stored explicitly even though they are reducible to a
     // smaller payload as the processing time cost of reconstituting them is higher than the memory access time cost
     XYZVectorF _pos; // best estimate of the position of this hit in space
-    XYZVectorF _wdir; // 'direction' of this hit, used to define error elipsoid axis
-    XYZVectorF _sdir; // straw radial direction, perp to Z and wire direction
-    float _wres = -1.0;
-    float _tres = -1.0; // resolution along and transverse to the 'wire' direction
-    float _wdist = 0.0; // distance from wire center along the wire direction: this can be derived from _pos and _wdir
+    XYZVectorF _udir; // wire direction of this hit
+    XYZVectorF _vdir; // direction perp to hit and Z
+    float _ures = -1.0; // resolution along U direction (wire direction)
+    float _vres = -1.0; // resolution along V direction
+    float _wres = -1.0; // resolution along W direction
+    float _wdist = 0.0; // distance from wire center along the wire direction
     float _time = 0.0; // best estimate of time the physical particle created this hit: aggregate and calibrated
     float _timeres = -1.0; // estimated resolution of time measurement
     float _edep = 0.0; // average energy deposition

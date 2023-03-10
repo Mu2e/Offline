@@ -66,7 +66,7 @@ namespace mu2e {
         fhicl::Atom<float>               maxwdot  { Name("MaxWdot"),   Comment("maximum cos of angle between straws") };
         fhicl::Atom<float>               maxChisq { Name("MaxChisquared"),   Comment("position matching") };
         fhicl::Atom<float>               minMVA   { Name("MinMVA"),   Comment("MVA cut") };
-        fhicl::Atom<float>               wfac     { Name("WErrorFactor"),   Comment("Scaling for wire-direction error component") };
+        fhicl::Atom<float>               uvres    { Name("UVRes"),   Comment("Resolution in U,V (X,Y) plane") };
         fhicl::Atom<float>               zfac     { Name("ZErrorFactor"),   Comment("Scaling for Z direction error component") };
         fhicl::Atom<float>               minRho   { Name("MinRho"),   Comment("Minimum transverse radius of combination (mm)") };
         fhicl::Atom<float>               maxRho   { Name("MaxRho"),   Comment("Maximum transverse radius of combination (mm)") };
@@ -96,7 +96,8 @@ namespace mu2e {
       float         _maxwdot;    // minimum dot product of straw directions
       float         _maxChisq;   // maximum chisquared to allow making stereo hits
       float         _minMVA;     // minimum MVA output
-      float         _wfac;       // resolution factor along the wire
+      float         _uvres;      // resolution in UV plane
+      float         _wres;       // resolution in W (Z) direction
       float         _zfac;       // resolution transverse to the wire
       float  _minrho, _maxrho;   // transverse radius range
       bool          _doMVA;      // do MVA eval or simply use chi2 cut
@@ -125,7 +126,8 @@ namespace mu2e {
     _maxwdot(config().maxwdot()),
     _maxChisq(config().maxChisq()),
     _minMVA(config().minMVA()),
-    _wfac(config().wfac()),
+    _uvres(config().uvres()),
+    _wres(config().maxDz()/sqrt(12.0)), // might be better to compute this per-hit TODO
     _zfac(config().zfac()),
     _minrho(config().minRho()),
     _maxrho(config().maxRho()),
@@ -245,11 +247,13 @@ namespace mu2e {
   }
 
   ComboHit MakeStereoHits::createComboHit(std::vector<size_t> const& indices, ComboHitCollection const& inchcol) {
-    if(_debug > 1)std::cout << "Combining indices ";
-    for(auto ind : indices) {
-      std::cout << ind << " , ";
+    if(_debug > 1){
+      std::cout << "Combining indices ";
+      for(auto ind : indices) {
+        std::cout << ind << " , ";
+      }
+      std::cout << std::endl;
     }
-    std::cout << std::endl;
     if(indices.size() > ComboHit::MaxNCombo){
       // choose the best hits to combine: TODO!
     }
@@ -259,50 +263,50 @@ namespace mu2e {
       combohit.init(inchcol[indices[0]],indices[0]);
     } else {
       combohit._mask = _smask;
-      combohit._wdir = XYZVectorF(0.0,0.0,1.0); // not clear if there's a better answer here
-      combohit._sdir = XYZVectorF(0.0,0.0,1.0);
-      double ts2(0), xs2(0), ys2(0);
+      combohit._udir = inchcol[0].uDir(); // take directions from the 1st hit
+      combohit._vdir = inchcol[0].vDir();
+      double wtsum(0), twtsum(0);
       for(size_t iind=0;iind <nind;++iind){
         auto ihit = indices[iind];
         if(combohit.addIndex(ihit)) {
           auto const& ch = inchcol[ihit];
           if(iind==0)combohit._sid = _smask.maskStrawId(ch.strawId()); // take the first hit for the StrawId: all should be equivalent
-          double wt = ch.nStrawHits(); // not sure if there's a better way to weight
           combohit._nsh += ch.nStrawHits();
+          double wt = ch.nStrawHits(); // not sure if there's a better way to weight
+          wtsum += wt;
           combohit._flag.merge(ch.flag());
           combohit._pos += ch._pos*wt;
           combohit._edep += ch.energyDep()*wt;
-          combohit._time += ch.correctedTime()*wt;
-          ts2 += ch.correctedTime()*ch.correctedTime()*wt;
-          xs2 += ch._pos.X()*ch._pos.X()*wt;
-          ys2 += ch._pos.Y()*ch._pos.Y()*wt;
           // the following have unclear meaning for stereo hits, but we fill them anyways
           for(size_t iend=0;iend<2;++iend){
             combohit._etime[iend] += ch._etime[iend]*wt;
             combohit._tot[iend] += ch._tot[iend]*wt;
           }
-          combohit._dtime += ch._dtime*wt;
-          combohit._ptime += ch._ptime*wt;
+          double twt = 1.0/ch.timeVar();
+          twtsum += twt;
+          combohit._time += ch.correctedTime()*twt;
+// to remove
+          combohit._dtime += ch._dtime*twt;
+          combohit._ptime += ch._ptime*twt;
         } else {
           std::cout << "MakeStereoHits past limit" << std::endl;
         }
       }
-      double wsum = combohit.nStrawHits();
-      combohit._pos /= wsum;
-      combohit._time /= wsum;
-      combohit._edep /= wsum;
+      combohit._pos /= wtsum;
+      combohit._time /= twtsum;
+      combohit._edep /= wtsum;
       for(size_t iend=0;iend<2;++iend){
-        combohit._etime[iend] /= wsum;
-        combohit._tot[iend] /= wsum;
+        combohit._etime[iend] /= wtsum;
+        combohit._tot[iend] /= wtsum;
       }
-      combohit._dtime /= wsum;
-      combohit._ptime  /= wsum;
+      combohit._dtime /= wtsum;
+      combohit._ptime  /= wtsum;
       // compute resolutions as RMS
-      combohit._timeres = sqrt(ts2/wsum - combohit._time*combohit._time);
-      double perpres = sqrt(xs2/wsum - combohit._pos.X()*combohit._pos.X() +
-          ys2/wsum - combohit._pos.Y()*combohit._pos.Y());
-      combohit._wres = perpres;
-      combohit._tres = perpres;
+      combohit._timeres       = sqrt(1.0/twtsum);
+      // transverse and wire directions are equivalent for stereo hits
+      combohit._ures = _uvres;
+      combohit._vres = _uvres;
+      combohit._wres = _wres;
     }
     return combohit;
  }
