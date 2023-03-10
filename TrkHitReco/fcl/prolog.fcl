@@ -41,9 +41,8 @@ makePH : {
   MaxDt                 : 40 # ns
   UseTOT                : true
   MaxWireDistDiffPull   : 4.0
-  TransError            : 8.0 #mm
   MaxDS                 : 3
-  WireError             : 10.0 # mm
+  UError                : 10.0 # mm
   MinimumTime           : 420.0 # ns
   MaximumTime           : 1690.0 # ns
   MinimumEnergy         : 0.0 # MeV
@@ -70,7 +69,7 @@ makeSTH : {
   MaxWdot               : 0.9
   MaxChisquared         : 5.0
   MinMVA                : 0.6
-  WErrorFactor          : 0.3 # mm
+  UVRes                 : 10.0 # mm
   ZErrorFactor          : 1.0 # mm
   MinRho                : 330 # mm
   MaxRho                : 700 # mm

@@ -348,8 +348,8 @@ namespace mu2e {
 
             hhinfo._dwire = dwire;
             hhinfo._dtrans = dtrans;
-            hhinfo._wres = sqrt(wres2);
-            hhinfo._wtres = sqrt(wtres2);
+            hhinfo._werr = sqrt(wres2);
+            hhinfo._terr = sqrt(wtres2);
             hhinfo._chisq = dwire*dwire/wres2 + dtrans*dtrans/wtres2;
             hhinfo._hqual = hhit.qual();
 
@@ -460,7 +460,7 @@ namespace mu2e {
       double proj = that.Dot(hhit.wdir());
       double fcent = rhel.circleAzimuth(hhit.pos().z());
       TEllipse* te = new TEllipse(hhit.pos().z(),hhit.helixPhi()-fcent,
-          hhit._tres, hhit._wres*proj/rhel.radius());
+          hhit.vRes(), hhit.uRes()*proj/rhel.radius());
 
       // mc truth
       if(_mcdiag){
@@ -500,7 +500,7 @@ namespace mu2e {
         XYZVectorF that = XYZVectorF(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
         double proj = that.Dot(ch.wdir());
         TEllipse* te = new TEllipse(ch.pos().z(),dphi,
-            ch._tres, ch._wres*proj/rhel.radius());
+            ch.vRes(), ch.uRes()*proj/rhel.radius());
         te->SetLineColor(kGreen);
         te->SetFillColor(kGreen);
         tc_list->Add(te);
@@ -516,13 +516,13 @@ namespace mu2e {
       XYZVectorF that = XYZVectorF(-rpos.y(),rpos.x(),0.0).unit(); // local phi direction at this hit
       double proj = that.Dot(ch.wdir());
       TEllipse* te = new TEllipse(ch.pos().z(),dphi,
-          ch._tres, ch._wres*proj/rhel.radius());
+          ch.vRes(), ch.uRes()*proj/rhel.radius());
       te->SetLineColor(kYellow);
       te->SetFillColor(kYellow);
       notselected_list->Add(te);
       if(selectedHit(ich)){
         TEllipse* tes = new TEllipse(ch.pos().z(),dphi,
-            ch._tres, ch._wres*proj/rhel.radius());
+            ch.vRes(), ch.uRes()*proj/rhel.radius());
         tes->SetLineColor(kOrange);
         tes->SetFillColor(kOrange);
         selected_list->Add(tes);
@@ -653,7 +653,7 @@ namespace mu2e {
       ComboHit const& hhit = hhits[ihit];
       // create an elipse for this hit
       TEllipse* te = new TEllipse(hhit.pos().x()-pcent.x(),hhit.pos().y()-pcent.y(),
-          hhit._wres, hhit._tres,0.0,360.0, hhit.wdir().phi()*180.0/TMath::Pi());
+          hhit.uRes(), hhit.vRes(),0.0,360.0, hhit.wdir().phi()*180.0/TMath::Pi());
       // mc truth
       if(_mcdiag){
         std::vector<StrawDigiIndex> sdis;
@@ -684,7 +684,7 @@ namespace mu2e {
       for(auto ih : timec->hits()){
         auto const& ch = _chcol->at(ih);
         TEllipse* te = new TEllipse(ch._pos.x()-pcent.x(),ch._pos.y()-pcent.y(),
-            ch._wres, ch._tres,0.0,360.0, ch._wdir.phi()*180.0/TMath::Pi());
+            ch.uRes(), ch.vRes(),0.0,360.0, ch.uDir().phi()*180.0/TMath::Pi());
         te->SetLineColor(kGreen);
         te->SetFillColor(kGreen);
         tc_list->Add(te);
@@ -695,7 +695,7 @@ namespace mu2e {
       auto const& ch = _chcol->at(ich);
       // create an elipse for this hit
       TEllipse* te = new TEllipse(ch._pos.x()-pcent.x(),ch._pos.y()-pcent.y(),
-          ch._wres, ch._tres,0.0,360.0, ch._wdir.phi()*180.0/TMath::Pi());
+          ch.uRes(), ch.vRes(),0.0,360.0, ch.uDir().phi()*180.0/TMath::Pi());
       // draw all hits
       te->SetLineColor(kYellow);
       te->SetFillColor(kYellow);
@@ -703,7 +703,7 @@ namespace mu2e {
       // selected hits; this overlaps with those below
       if(selectedHit(ich)){
         TEllipse* tes = new TEllipse(ch._pos.x()-pcent.x(),ch._pos.y()-pcent.y(),
-            ch._wres, ch._tres,0.0,360.0, ch._wdir.phi()*180.0/TMath::Pi());
+            ch.uRes(), ch.vRes(),0.0,360.0, ch.uDir().phi()*180.0/TMath::Pi());
         tes->SetLineColor(kOrange);
         tes->SetFillColor(kOrange);
         selected_list->Add(tes);
