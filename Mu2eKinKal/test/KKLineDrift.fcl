@@ -62,6 +62,8 @@ physics :
           bestCrvInstances : [ "first" ]
           bestCrvBranches : [ "bestcrv" ]
         }
+        segmentSuffixes : [ "ent", "mid", "xit" ]
+        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"] ]
       }
       diagLevel : 2
       FillMCInfo : true
@@ -86,13 +88,10 @@ physics :
 }
 
 #include "Production/JobConfig/reco/epilog.fcl"
-#include "Offline/CRVResponse/fcl/epilog_extracted_v02.fcl"
+#include "Offline/CRVResponse/fcl/epilog_extracted_v03.fcl"
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
-services.ProditionsService.strawResponse.useParameterizedDriftErrors : true
-services.ProditionsService.strawResponse.truncateLongitudinal : false
-services.ProditionsService.strawResponse.rmsLongErrors : true
 
 physics.producers.KKLine.ModuleSettings.SaveAllFits : true
 physics.producers.SelectRecoMC.HelixSeedCollections: []
