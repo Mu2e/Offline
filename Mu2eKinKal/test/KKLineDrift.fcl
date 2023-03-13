@@ -88,6 +88,7 @@ physics :
 }
 
 #include "Production/JobConfig/reco/epilog.fcl"
+#include "Production/JobConfig/reco/offspill_epilog.fcl"
 #include "Offline/CRVResponse/fcl/epilog_extracted_v03.fcl"
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
