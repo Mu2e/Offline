@@ -166,10 +166,10 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
     double endTime;
     while (true) {
       endIndex++;
-      endTime = ordChCol[endIndex].correctedTime();
-      count += ordChCol[endIndex].nStrawHits();
       if (endIndex >= ordChCol.size())
         break;
+      endTime = ordChCol[endIndex].correctedTime();
+      count += ordChCol[endIndex].nStrawHits();
       if (_usetimeStep && endTime - ordChCol[endIndex - 1].correctedTime() > _timeStep)
         break;
       if (endTime - startTime < 0)
@@ -177,7 +177,8 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
       if (_usetimeWindow && endTime - startTime > _timeWindow)
         break;
     }
-    count -= ordChCol[endIndex].nStrawHits();
+    if (endIndex < ordChCol.size())
+      count -= ordChCol[endIndex].nStrawHits();
     endIndex--;
     endTime = ordChCol[endIndex].correctedTime();
     if (_hasmaxnsh && count > _maxnsh)
