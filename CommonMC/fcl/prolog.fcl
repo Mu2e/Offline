@@ -18,7 +18,6 @@ CommonMC: {
       RecoFromMCTruthErr : 0.5
     }
   }
-  TimeMaps : [ ]
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0
