@@ -85,7 +85,7 @@ namespace mu2e {
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
-  using Mu2eConfig = Mu2eKinKal::Mu2eConfig;
+  using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKMaterialConfig = KKMaterial::Config;
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
@@ -106,7 +106,7 @@ namespace mu2e {
 
   struct GlobalConfig {
     fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
-    fhicl::Table<Mu2eConfig> mu2eSettings { Name("Mu2eSettings") };
+    fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
     fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
@@ -157,7 +157,7 @@ namespace mu2e {
     savefull_(settings().modSettings().saveFull()),
     zsave_(settings().modSettings().zsave()),
     print_(settings().modSettings().printLevel()),
-    kkfit_(settings().mu2eSettings()),
+    kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings())),

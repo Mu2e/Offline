@@ -90,7 +90,7 @@ physics :
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTtimeClusterFinder, tprDeMHighPStopTargTCFilter, TThelixFinder,
     TTHelixMergerDeM, tprDeMHighPStopTargHSFilter,
-    TTKSFDeM, tprDeMHighPStopTargTSFilter ]
+    TTKSFDeM, tprDeMHighPStopTargTSFilter]
   cprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,
