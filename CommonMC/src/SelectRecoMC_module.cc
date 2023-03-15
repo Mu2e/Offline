@@ -40,7 +40,6 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -79,7 +78,6 @@ namespace mu2e {
         fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),                  Comment("KalSeedCollections")};
         fhicl::Sequence<std::string> HelixSeeds   { Name("HelixSeedCollections"),                  Comment("HelixSeedCollections")};
         fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
-        fhicl::Sequence<art::InputTag> SPTO       { Name("TimeOffsets"),                          Comment("Sim Particle Time Offset Maps")};
         fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save digis (MeV)")};
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -105,7 +103,6 @@ namespace mu2e {
       bool _saveallenergy, _saveunused, _saveallunused;
       art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
       std::vector<std::string> _kscs, _hscs;
-      SimParticleTimeOffset _toff;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
@@ -134,7 +131,6 @@ namespace mu2e {
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
     _hscs(config().HelixSeeds()),
-    _toff(config().SPTO()),
     _ccme(config().CCME())
     {
       consumes<StrawDigiCollection>(_sdc);
@@ -178,7 +174,6 @@ namespace mu2e {
   void SelectRecoMC::produce(art::Event& event) {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
-    _toff.updateMap(event);
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
     auto pbtmc = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
@@ -316,7 +311,7 @@ namespace mu2e {
             << " time " << vdsp.time() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
         VDStep vds(det->toDetector(vdsp.position()),
             vdsp.momentum() ,
-            _toff.timeWithOffsetsApplied(vdsp),
+            vdsp.time(),
             vdsp.virtualDetectorId());
         mcseed._vdsteps.push_back(vds);
       }
