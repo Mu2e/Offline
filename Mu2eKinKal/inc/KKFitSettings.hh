@@ -53,8 +53,8 @@ namespace mu2e {
     // function to convert fhicl configuration to KinKal Config object
     KinKal::Config makeConfig(KinKalConfig const& fconfig);
 
-    // struct for configuring Mu2e-specific fit settings
-    struct Mu2eConfig {
+    // struct for configuring KKFit object
+    struct KKFitConfig {
       fhicl::Atom<int> printLevel { Name("PrintLevel"), Comment("Diagnostic printout Level") };
       fhicl::Atom<float> tpocaPrec { Name("TPOCAPrecision"), Comment("TPOCA calculation precision (ns)") };
       fhicl::Atom<int> fitParticle {  Name("FitParticle"), Comment("Particle type to fit: e-, e+, mu-, ...")};
