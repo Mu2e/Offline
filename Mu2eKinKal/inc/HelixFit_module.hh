@@ -107,8 +107,8 @@ namespace mu2e {
   struct GlobalConfig {
     fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
-    fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
-    fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
+    fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
+    fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
   };
 
@@ -159,8 +159,8 @@ namespace mu2e {
     print_(settings().modSettings().printLevel()),
     kkfit_(settings().kkfitSettings()),
     kkmat_(settings().matSettings()),
-    config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
-    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings())),
+    config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
+    exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
     fixedfield_(false)
     {
       if((!savefull_) && zsave_.size() == 0)

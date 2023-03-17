@@ -2,7 +2,7 @@ BEGIN_PROLOG
 Mu2eKinKal : {
   # general configuration
   #
-  KKMAT: {
+  MAT: {
     elements  : "Offline/TrackerConditions/data/ElementsList.data"
     isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
     materials : "Offline/TrackerConditions/data/MaterialsList.data"
@@ -11,7 +11,7 @@ Mu2eKinKal : {
     strawWireMaterialName : "straw-wire"
     dahlLynchScatteringFraction : 0.995
   }
-  KKMU2E: {
+  KKFIT: {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
     UseCaloCluster : true
@@ -37,7 +37,7 @@ Mu2eKinKal : {
     MaxStrawDOCAConsistency : 1.0 # units of chi
   }
 
-  KKSEEDFIT: {
+  SEEDFIT: {
     PrintLevel : 0
     MinNDOF : 1
     MaxNIter : 10
@@ -86,7 +86,7 @@ Mu2eKinKal : {
     StrawXingUpdaterSettings : []
   }
 
-  KKSEEDEXT: {
+  SEEDEXT: {
     PrintLevel : 0
     MinNDOF : 1
     MaxNIter : 10
@@ -123,7 +123,7 @@ Mu2eKinKal : {
     ]
   }
 
-  KKDRIFTEXT: {
+  DRIFTEXT: {
     PrintLevel : 0
     MinNDOF : 1
     MaxNIter : 10
@@ -195,14 +195,14 @@ Mu2eKinKal : {
     CaloClusterCollection : "CaloClusterMaker"
   }
 
-  KKLOOPHELIX : {
+  LOOPHELIX : {
     SeedErrors : [5.0, 5.0, 5.0, 5.0, 0.02, 5.0] # R(mm), Lambda(mm), Cx(mm), Cy(mm), phi0, t0 (ns)
     HelixFlags : [ "HelixOK" ] # why doesn't "HitsOK" work?? FIXME!
     SaveFullFit : true
     ZSavePositions : [-1635.1,-1522.0,0.0,1522.0,1635.1,1671,2371] # VDs, tracker front, mid, and end, and calo disks
   }
 
-  KKKINEMATICLINE : {
+  KINEMATICLINE : {
     SeedMomentum : 2000.0
     SeedErrors : [15, 0.05, 10, 0.02, 2.0, 1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,theta_ = 3,t0_ = 4,mom_ = 5,
     ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,1e-4]
@@ -221,38 +221,38 @@ Mu2eKinKal : {
 
   KKSeedFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.KKMAT
-    KKFitSettings: @local::Mu2eKinKal.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKal.KKSEEDEXT
-    ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
   }
 
   KKDriftFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.KKMAT
-    KKFitSettings: @local::Mu2eKinKal.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKal.KKDRIFTEXT
-    ModuleSettings : @local::Mu2eKinKal.KKLOOPHELIX
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.DRIFTEXT
+    ModuleSettings : @local::Mu2eKinKal.LOOPHELIX
   }
 
   KKLineSeedFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.KKMAT
-    KKFitSettings: @local::Mu2eKinKal.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKal.KKSEEDEXT
-    ModuleSettings : @local::Mu2eKinKal.KKKINEMATICLINE
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
   }
 
   KKLineDriftFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.KKMAT
-    KKFitSettings: @local::Mu2eKinKal.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKal.KKSEEDFIT
-    KinKalExtensionSettings : {
-      @table::Mu2eKinKal.KKDRIFTEXT
+    MaterialSettings : @local::Mu2eKinKal.MAT
+    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    FitSettings : @local::Mu2eKinKal.SEEDFIT
+    ExtensionSettings : {
+      @table::Mu2eKinKal.DRIFTEXT
       BFieldCorrection : false
       MetaIterationSettings : [
         # annealing temp, strawhit updater algorithms
@@ -267,7 +267,7 @@ Mu2eKinKal : {
         [ 0.0, "CADSHU:DriftANNSHU" ]
       ]
     }
-    ModuleSettings : @local::Mu2eKinKal.KKKINEMATICLINE
+    ModuleSettings : @local::Mu2eKinKal.KINEMATICLINE
   }
 
   CosmicFilter : {
@@ -299,7 +299,7 @@ Mu2eKinKal : {
   }
 }
 
-Mu2eKinKal.producers.KKLineSeedFit.KinKalExtensionSettings.BFieldCorrection : false
+Mu2eKinKal.producers.KKLineSeedFit.ExtensionSettings.BFieldCorrection : false
 Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitParticle : 13
 Mu2eKinKal.producers.KKLineSeedFit.KKFitSettings.FitDirection : 1
 Mu2eKinKal.producers.KKLineDriftFit.KKFitSettings.FitParticle : 13
