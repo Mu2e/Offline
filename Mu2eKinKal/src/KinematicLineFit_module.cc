@@ -119,8 +119,8 @@ namespace mu2e {
     struct GlobalConfig {
       fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
       fhicl::Table<KKFitConfig> mu2eSettings { Name("KKFitSettings") };
-      fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
-      fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
+      fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
+      fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     };
 
@@ -170,8 +170,8 @@ namespace mu2e {
     seedmom_(settings().modSettings().seedmom()),
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
-    config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
-    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings()))
+    config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
+    exconfig_(Mu2eKinKal::makeConfig(settings().extSettings()))
     {
       // should always save something
       if((!savefull_) && zsave_.size() == 0)
