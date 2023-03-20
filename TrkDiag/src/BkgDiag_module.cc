@@ -316,7 +316,7 @@ namespace mu2e
       for(auto const& ich : cluster.hits()){
         ComboHit const& ch = _chcol->at(ich);
         BkgClusterHit const& bhit = _bkghitcol->at(ich);
-        sumEdep +=  ch.energyDep();
+        sumEdep +=  ch.energyDep()/ch.nStrawHits();
         sqrSumDeltaX += std::pow(ch.pos().X() - _cpos.X(),2);
         sqrSumDeltaY += std::pow(ch.pos().Y() - _cpos.Y(),2);
         sqrSumDeltaTime += std::pow(ch.time() - _ctime,2);
@@ -371,7 +371,7 @@ namespace mu2e
         _bkghinfo.push_back(bkghinfo);
       }
       _avecedep = sumEdep/_nchits;
-      _rmscposx = sdt::sqrt(sqrSumDeltaX/_nchits);
+      _rmscposx = std::sqrt(sqrSumDeltaX/_nchits);
       _rmscposy = std::sqrt(sqrSumDeltaY/_nchits);
       _rmsctime = std::sqrt(sqrSumDeltaTime/_nchits);
       _bcdiag->Fill();
