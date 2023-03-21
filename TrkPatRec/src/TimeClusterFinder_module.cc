@@ -246,7 +246,9 @@ namespace mu2e {
     if (_debug > 1){
       for(auto const& tc : *tccol) {
         std::cout << "Time Cluster time = " << tc.t0().t0() << " +- " << tc.t0().t0Err()
-          << " position = " << tc._pos << std::endl;
+          << " position = " << tc._pos << " NStrawHits " << tc._nsh;
+        if(tc._caloCluster.isNonnull()) std::cout << " With CaloCluster, time " << tc._caloCluster->time();
+        std::cout << std::endl;
         if(_debug > 3){
           for (auto shi : tc._strawHitIdxs ) {
             std::cout << "Time Cluster hit at index " << shi << std::endl;

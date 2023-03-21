@@ -1,0 +1,10 @@
+#
+# Apply mpoving window deconvolution algorithm to zero-suppressed STMWaveformDigis
+#
+
+#include "Offline/STMReco/fcl/prolog_testbeam.fcl"
+#include "Offline/STMReco/fcl/mwd.fcl"
+
+# Can define pedestals in fcl like the line below
+services.ProditionsService.stmEnergyCalib.pedestals : @local::STMTestBeam.Conditions.pedestals
+services.ProditionsService.stmEnergyCalib.samplingFrequencies : @local::STMTestBeam.Conditions.samplingFrequencies

@@ -124,7 +124,7 @@ void HlPrint::printComboHit(const mu2e::ComboHit* Hit, const mu2e::StrawGasStep*
            Hit->energyDep());
 
     printf("  %3i %7.2f %7.2f %5.2f %8.3f %8.3f",
-           (int) Hit->driftEnd(),
+           (int) Hit->earlyEnd(),
            Hit->driftTime(),
            Hit->propTime(),
            Hit->transRes(),

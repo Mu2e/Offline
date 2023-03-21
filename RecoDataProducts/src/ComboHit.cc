@@ -9,16 +9,20 @@
 #include "cetlib_except/exception.h"
 // c++ includes
 #include <iostream>
+#include <limits>
 using std::vector;
 namespace mu2e {
 
   Float_t ComboHit::posRes(edir dir) const {
     switch ( dir ) {
       case ComboHit::wire : {
-        return _wres;
+        return _ures;
       }
       case ComboHit::trans : {
-        return _tres;
+        return _vres;
+      }
+      case ComboHit::z : {
+        return _wres;
       }
       default : {
         return -1.0;
@@ -26,28 +30,16 @@ namespace mu2e {
     }
   }
 
-  ComboHit::ComboHit() : _wres(-1.0),_tres(-1.0), _wdist(0.), _time(0.0), _edep(0.0), _qual(0.0), _dtime(0.0), _ptime(0.0), _pathlength(0.0), _hphi(0.0), _ncombo(0), _nsh(0), _pind{0} {}
-
-  ComboHit::ComboHit(ComboHit const& shp, StrawDigiIndex hi, double phi) : ComboHit(shp)
-  {
-    _hphi = phi;
-  }
-
-  void ComboHit::init(ComboHit const& other, uint16_t index) {
+  void ComboHit::init(ComboHit const& other, size_t index) {
+    if(index > std::numeric_limits<uint16_t>::max())
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid index" << std::endl;
     *this = other;
     _ncombo = 1;
     _pind[0] = index;
   }
 
-  uint16_t ComboHit::index(uint16_t ish) const {
-    if(ish < _ncombo)
-      return _pind[ish];
-    else
-      throw cet::exception("RECO")<<"mu2e::ComboHit: invalid index" << std::endl;
-  }
-
-  bool ComboHit::addIndex(uint16_t shi) {
-    if(_ncombo < MaxNCombo){
+  bool ComboHit::addIndex(size_t shi) {
+    if(shi < std::numeric_limits<uint16_t>::max() && _ncombo < MaxNCombo){
       _pind[_ncombo] = shi;
       ++_ncombo;
       return true;
@@ -226,20 +218,17 @@ namespace mu2e {
     ost << " ComboHit:"
         << " id "      << _sid
         << " time "     << _time
-        << " drift time " << _dtime
-        << " prop time " << _ptime
-        << " path length " << _pathlength
+        << " wdist " << _wdist
         << " position " << _pos
-        << " end " << _tend
+        << " early end " << _eend
         << " flag " << _flag
-        << " eDep "     << _edep
+        << " edep "     << _edep
         << " ncombo " << _ncombo
         << " nStrawHit " << _nsh;
 
     if ( doEndl ){
       ost << std::endl;
     }
-
 
   }
 }

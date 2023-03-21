@@ -9,41 +9,74 @@ PBTFSD : {
 
 makeSH : {
   module_type             : StrawHitReco
-  minimumTime             : 0.0 # accept all digis
-  maximumTime             : 100.0e3 # allow offspill events
+  MinimumTime             : 420.0 # ns configuration for OnSpill
+  MaximumTime             : 1690.0 # ns
+  MinimumEnergy           : 0.0001 # MeV
+  MaximumEnergy           : 0.0035 # MeV
+  MinimumRadius           : 0.0 # mm
+  MaximumRadius           : 800.0 # mm
   FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
-  ProtonBunchTimeTag  : "EWMProducer"
+  ProtonBunchTimeTag      : "EWMProducer"
   StrawDigiCollectionTag  : "makeSD"
   StrawDigiADCWaveformCollectionTag : "makeSD"
-  CaloClusterCollectionTag  : "CaloClusterFast"
+  UseCalorimeter          : false
+  clusterDt               : 100.0 # ns
+  CaloClusterCollectionTag: "notUsed"
+  FlagCrossTalk           : false
+  crossTalkEnergy         : 0.007 # MeV
+  crossTalkMinimumTime    : -1 # ns
+  crossTalkMaximumTime    : 100 # ns
 }
 
 # combine hits in a panel
 makePH : {
   module_type           : CombineStrawHits
   TestFlag              : true
-  TestRadius            : true
+  FilterHits            : false
   ComboHitCollection    : makeSH
-  StrawHitSelectionBits : ["EnergySelection","TimeSelection"]
-  StrawHitMask          : []
-  MaxDt                 : 40
-  UseTOT                : false
+  StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+  StrawHitMask          : ["Noisy"]
+  MaxDt                 : 40 # ns
+  UseTOT                : true
   MaxWireDistDiffPull   : 4.0
-  TransError            : 8.0
   MaxDS                 : 3
-  WireError             : 10.0
-  MinimumRadius         : 395.0
-  MaximumRadius         : 650.0
+  UError                : 10.0 # mm
+  MinimumTime           : 420.0 # ns
+  MaximumTime           : 1690.0 # ns
+  MinimumEnergy         : 0.0 # MeV
+  MaximumEnergy         : 1.0 # MeV
+  MinimumRadius         : 395.0 # mm
+  MaximumRadius         : 650.0 # mm
+  MinimumNHits          : 1
+  MaximumNHits          : 3
+  CheckWres             : false
+  Unsorted              : false # sim data are sorted, VST currently not
 }
 
 # combine panel hits in a station
 makeSTH : {
-  module_type         : MakeStereoHits
-  TestFlag            : true
-  MVATool             : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
-  ComboHitCollection  : "makePH"
+  module_type           : MakeStereoHits
+  TestFlag              : true
+  MVA                   : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
+  ComboHitCollection    : "makePH"
+  StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
+  StrawHitRejectionBits : []
+  MaxDt                 : 40 # ns
+  UseTOT                : true
+  MaxDPerp              : 500
+  MaxWdot               : 0.9
+  MaxChisquared         : 5.0
+  MinMVA                : 0.6
+  UVRes                 : 10.0 # mm
+  ZErrorFactor          : 1.0 # mm
+  MinRho                : 330 # mm
+  MaxRho                : 700 # mm
+  DoMVA                 : false
+  MaxFaceSeparation     : 3
+  MaxDz                 : 100.0 # mm
+  SelectionMask         : "station"
 }
 
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
@@ -95,15 +128,17 @@ FlagBkgHits : {
   ClusterPositionError : 10
   BkgMVA               : { MVAWeights : "Offline/TrkHitReco/data/BkgMVAPanel.weights.xml" }
   BkgMVACut            : 0.5
-  FilterOutput         : false
-  FlagComboHits        : true
+  FilterHits           : false
   FlagStrawHits        : true
+  FlagComboHits        : true
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
+  SaveBkgClusters      : false
+  DebugLevel           : 0
 }
 
 
-SflagBkgHits : {
+SFlagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection : "makeSTH"
 }
@@ -117,13 +152,13 @@ TrkHitReco : {
     makePH        : { @table::makePH       }
     makeSTH       : { @table::makeSTH      }
     FlagBkgHits   : { @table::FlagBkgHits  }
-    SflagBkgHits  : { @table::SflagBkgHits }
+    SFlagBkgHits  : { @table::SFlagBkgHits }
   }
 
   # SEQUENCES
   # production sequence to prepare hits for tracking
   PrepareHits  : [ PBTFSD, makeSH, makePH, FlagBkgHits ]
-  SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SflagBkgHits ]
+  SPrepareHits : [ PBTFSD, makeSH, makePH, makeSTH, SFlagBkgHits ]
 }
 
 END_PROLOG

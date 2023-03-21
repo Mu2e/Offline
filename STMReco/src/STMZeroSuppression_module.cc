@@ -56,7 +56,7 @@ namespace mu2e {
     void chooseStartsAndEnds(); // taking into account any overlapping data
 
     int _verbosityLevel;
-    art::InputTag _stmWaveformDigisTag;
+    art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
     STMChannel _channel;
 
@@ -80,17 +80,15 @@ namespace mu2e {
   STMZeroSuppression::STMZeroSuppression(const Parameters& config )  :
     art::EDProducer{config}
     ,_verbosityLevel(config().verbosityLevel())
-    ,_stmWaveformDigisTag(config().stmWaveformDigisTag())
+    ,_stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(config().stmWaveformDigisTag()))
+    ,_channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
     ,_tbefore(config().tbefore())
     ,_tafter(config().tafter())
     ,_threshold(config().threshold())
     ,_window(config().window())
     ,_naverage(config().naverage())
   {
-    consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
     produces<STMWaveformDigiCollection>();
-
-    _channel = STMUtils::getChannel(_stmWaveformDigisTag);
   }
 
   void STMZeroSuppression::beginJob() {
@@ -98,7 +96,7 @@ namespace mu2e {
 
   void STMZeroSuppression::produce(art::Event& event) {
     // create output
-    auto waveformsHandle = event.getValidHandle<STMWaveformDigiCollection>(_stmWaveformDigisTag);
+    auto waveformsHandle = event.getValidHandle(_stmWaveformDigisToken);
     std::unique_ptr<STMWaveformDigiCollection> outputSTMWaveformDigis(new STMWaveformDigiCollection());
 
 

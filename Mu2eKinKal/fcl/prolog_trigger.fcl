@@ -12,16 +12,20 @@ Mu2eKinKalTrigger : {
     @table::Mu2eKinKal.KKMU2E
     AddHits : false
     AddMaterial : false
+    MaterialCorrection : false
   }
 
   KKSEEDFIT: {
     @table::Mu2eKinKal.KKSEEDFIT
     MaxNIter : 2
-    CADSHUSettings : [
-      [ 40.0, 80.0, 5.0, 5.0, "All", "StrawRadius", "Null:Inactive", "", 0 ]
-    ]
     MetaIterationSettings : [
-      [ 5.0, "CADSHU" ]
+      [ 4.0, "CADSHU" ]
+      #      [ 2.0, "CADSHU" ]
+    ]
+    CADSHUSettings : [
+      # maxdoca, maxderr, minrdrift, maxrdrift, flag, , allowed, freeze, diag
+      [ 60.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+      #      [ 40.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       [10.0, -1.0, -1.0, true, 0 ]
@@ -31,14 +35,17 @@ Mu2eKinKalTrigger : {
   KKSEEDEXT: {
     @table::Mu2eKinKal.KKSEEDEXT
     MaxNIter : 2
+    BFieldCorrection : false
+
     CADSHUSettings : [
-      [ 8.0,  16.0, 5.0, 3.0, "All", "DriftRadius", "Null:Inactive", "", 0 ]
+      #      [ 40.0, 20.0, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     MetaIterationSettings : [
-      [ 0.0, "CADSHU" ]
+      # annealing temp, strawhit updater algorithm
+      # [ 3.0, "CADSHU" ]
     ]
     StrawXingUpdaterSettings : [
-      [3.0, 3.0, -1.0, true, 0 ]
+      # [10.0, -1.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
     ]
@@ -46,6 +53,15 @@ Mu2eKinKalTrigger : {
 
   KKLOOPHELIX : {
     @table::Mu2eKinKal.KKLOOPHELIX
+    SeedErrors: [
+      5,
+      5,
+      5,
+      5,
+      2e-2,
+      5
+    ]
+    ZSavePositions: [ 0 ]
     SaveFullFit : false
   }
 
