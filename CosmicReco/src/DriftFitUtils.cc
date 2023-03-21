@@ -170,7 +170,7 @@ using namespace mu2e;
         Straw const& straw = tracker->getStraw(chit.strawId());
 
         double tprop = 0.;
-        switch (chit.driftEnd()) {
+        switch (chit.earlyEnd()) {
         case StrawEnd::cal:
           tprop = (straw.halfLength()+chit.wireDist())/vprop;
           break;

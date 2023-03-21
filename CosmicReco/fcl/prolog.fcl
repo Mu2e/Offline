@@ -129,7 +129,6 @@ CosmicTrackDetails : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 CosmicMCRecoDiff  : {
@@ -139,7 +138,6 @@ CosmicMCRecoDiff  : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 
@@ -150,7 +148,6 @@ CosmicAnalysis : {
     #TimeClusterCollection : TimeClusterFinderCosmics
     CosmicTrackSeedCollection : CosmicTrackFinder
     StrawDigiMCCollection : "compressDigiMCs"
-    TimeOffsets : {inputs : [ @sequence::DigiCompression.TimeMaps ]}
 }
 
 CosmicFitDisplay : {
@@ -173,7 +170,7 @@ CosmicTrackDiag : {
     TimeClusterCollection : SimpleTimeCluster
     StrawDigiMCCollection : "compressDigiMCs"
     ProtonBunchTimeMC : "EWMProducer"
-    CosmicTrackSeedCollection : "CosmicTrackFinder"
+    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 }
 
 CosmicShowerFilter : {

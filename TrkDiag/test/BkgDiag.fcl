@@ -17,9 +17,6 @@ physics :
   producers : {
     @table::TrkHitReco.producers
   }
-  RecoPath : [
-    @sequence::TrkHitReco.PrepareHits
-  ]
   analyzers : {
     BD : {
       @table::BD
@@ -34,7 +31,10 @@ physics :
     }
   }
   EndPath : [BD]
+  RecoPath : [ @sequence::TrkHitReco.PrepareHits ]
 }
+physics.end_paths : [ EndPath ]
+physics.trigger_paths : [ RecoPath ]
 physics.producers.FlagBkgHits.SaveBkgClusters : true
 services.TimeTracker.printSummary: true
 services.TFileService.fileName: "nts.owner.BkgDiag.version.sequence.root"

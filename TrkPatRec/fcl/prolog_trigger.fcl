@@ -9,7 +9,6 @@
 
 BEGIN_PROLOG
 
-# FIXME! IXME! this is necessary because CaloClusterFast returns an uncalibrated time!
 TTTimeCalculator : {
   TrkToCaloTimeOffset : 0.
   CaloTimeErr : 0.5

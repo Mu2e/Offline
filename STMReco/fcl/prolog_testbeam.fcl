@@ -8,6 +8,7 @@ BEGIN_PROLOG
 
 STMTestBeam : {
   Conditions : {
+    pedestals : [ ["HPGe",700.0], ["LaBr",3810.0] ]
     samplingFrequencies : [ ["HPGe",320.0520833313], ["LaBr",370.370370370] ]
   }
 }

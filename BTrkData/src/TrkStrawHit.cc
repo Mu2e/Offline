@@ -38,7 +38,7 @@ namespace mu2e
     _maxdriftpull(maxdriftpull)
   {
 // make sure this ComboHit represents only a single straw hit
-    if(_combohit.nStrawHits() != 1 || _combohit.driftEnd() == StrawEnd::unknown)
+    if(_combohit.nStrawHits() != 1 || _combohit.earlyEnd() == StrawEnd::unknown)
       throw cet::exception("RECO")<<"mu2e::TrkStrawHit: ComboHit > 1 StrawHit"<< endl;
     // The StrawResponse should be passsed in from outside FIXME!
     Hep3Vector const& wiredir = _straw.getDirection();
@@ -172,7 +172,7 @@ namespace mu2e
 // compute the electronics propagation time for the 2 ends.
 // note: the wire (U) direction points from HV to Cal (Duke convention)
     if( poca().status().success()){
-      switch (_combohit.driftEnd()) {
+      switch (_combohit.earlyEnd()) {
         case StrawEnd::cal:
           _stime = (straw().halfLength()+hitLen())/_vprop;
           break;
@@ -182,7 +182,7 @@ namespace mu2e
       }
     } else {
 // if we're missing poca information, use time division instead
-      switch (_combohit.driftEnd()) {
+      switch (_combohit.earlyEnd()) {
         case StrawEnd::cal:
           _stime = (straw().halfLength()+timeDiffDist())/_vprop;
           break;
