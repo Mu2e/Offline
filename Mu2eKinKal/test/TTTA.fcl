@@ -26,6 +26,27 @@ physics :
     @table::TprTrigger.producers
     @table::CprTrigger.producers
     @table::TTMu2eKinKal.producers
+    SelectRecoMCtpr : {
+      @table::CommonMC.SelectRecoMC
+      TrkOnly : true
+      CaloClusterMinE : 10.0
+      SaveEnergySteps : false
+      SaveUnusedDigiMCs : false
+      SaveAllUnusedDigiMCs : false
+      PrimaryParticle : "compressDigiMCs"
+      StrawDigiCollection : "makeSD"
+      StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+      ComboHitCollection : "makeSH"
+      CaloDigiCollection : "CaloDigiMaker"
+      CrvDigiCollection : "CrvDigi"
+      CaloClusterCollection : "CaloClusterMaker"
+      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+      StrawDigiMCCollection : "compressDigiMCs"
+      CrvDigiMCCollection : "compressDigiMCs"
+      KalSeedCollections  : [ "TTKSFDeM" ]
+      HelixSeedCollections  : ["TTHelixMergerDeM" ]
+      VDSPCollection : "compressDigiMCs:virtualdetector"
+    }
 
     TTKSFDeM : {
       @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
@@ -84,12 +105,12 @@ physics :
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTtimeClusterFinder, tprDeMHighPStopTargTCFilter, TThelixFinder,
     TTHelixMergerDeM, tprDeMHighPStopTargHSFilter,
-    TTKSFDeM, tprDeMHighPStopTargTSFilter]
+    TTKSFDeM, tprDeMHighPStopTargTSFilter, SelectRecoMCtpr]
   cprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,
     TTCalHelixMergerDeM, cprDeMHighPStopTargHSFilter,
-    TTCalSeedFitDem, cprDeMHighPStopTargTSFilter]
+    TTCalSeedFitDem, cprDeMHighPStopTargTSFilter, SelectRecoMCcpr]
 
 }
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
@@ -101,7 +122,7 @@ physics.analyzers.TAtpr.candidate.options : @local::AllOpt
 physics.analyzers.TAtpr.candidate.options.fillBestCrv : false
 physics.analyzers.TAtpr.diagLevel : 2
 physics.analyzers.TAtpr.FillCRV : false
-physics.analyzers.TAtpr.FillMCInfo : false
+physics.analyzers.TAtpr.FillMCInfo : true
 physics.analyzers.TAtpr.RecoCountTag : ""
 physics.analyzers.TAtpr.FillTriggerInfo : true
 physics.analyzers.TAtpr.FillTrkQualInfo : false
