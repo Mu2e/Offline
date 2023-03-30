@@ -170,7 +170,7 @@ CosmicTrackDiag : {
     TimeClusterCollection : SimpleTimeCluster
     StrawDigiMCCollection : "compressDigiMCs"
     ProtonBunchTimeMC : "EWMProducer"
-    CosmicTrackSeedCollection : "CosmicTrackFinder"
+    CosmicTrackSeedCollection : "CosmicTrackFinderTimeFit"
 }
 
 CosmicShowerFilter : {
