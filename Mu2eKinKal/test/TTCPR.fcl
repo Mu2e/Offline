@@ -231,7 +231,6 @@ outputs.triggerOutput.fileName : "debug_20210619.art"
 services.DbService.purpose: MDC2020_perfect
 services.DbService.version: v1_0
 services.DbService.verbose : 2
-services.ProditionsService.strawResponse.useOldDrift: true
 
 ###### #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/cprDeM_highP_stopTarg.fcl"

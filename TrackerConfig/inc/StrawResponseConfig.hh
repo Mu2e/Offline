@@ -49,8 +49,14 @@ namespace mu2e {
       Name("totDriftTime"), Comment(" totDriftTime ")};
     fhicl::Sequence<double>  totDriftError {
       Name("totDriftError"), Comment(" totDriftError ")};
-    fhicl::Sequence<double> driftFit {
-      Name("driftFit"), Comment("Drift fit")};
+    fhicl::Sequence<double> llDriftTimeOffBins {
+      Name("llDriftTimeOffBins"), Comment("Drift time Offset Bin edges for likelihood fit (mm)")};
+    fhicl::Sequence<double> llDriftTimeOffset {
+      Name("llDriftTimeOffset"), Comment("Drift time offset for likelihood fit (ns)")};
+    fhicl::Sequence<double> llDriftTimeRMSBins {
+      Name("llDriftTimeRMSBins"), Comment("Drift time RMS Bin edges for likelihood fit (mm)")};
+    fhicl::Sequence<double> llDriftTimeRMS {
+      Name("llDriftTimeRMS"), Comment("Drift time RMS for likelihood fit (ns)")};
     fhicl::Sequence<double> driftOffBins {
       Name("driftOffBins"), Comment("Drift Offset Bin edges (mm)")};
     fhicl::Sequence<double> driftOffset {
@@ -63,30 +69,16 @@ namespace mu2e {
       Name("unsignedDriftRMS"), Comment("Unsigned Drift RMS (mm)")};
     fhicl::Atom<double> dRdTScale {
       Name("dRdTScale"), Comment("Scale factor for dRdT")};
-    fhicl::Atom<bool> driftResIsTime {
-      Name("driftResIsTime"), Comment("Drift res is given in units of time (ns)")};
 
-    fhicl::Atom<bool> useOldDrift {
-      Name("useOldDrift"), Comment("Use old drift calibration (for backwards compatibility)")};
     fhicl::Atom<bool> driftIgnorePhi {
       Name("driftIgnorePhi"), Comment("Ignore phi for no field reco")};
-
-
-    fhicl::Sequence<double> driftErrorParameters {
-      Name("driftErrorParameters"), Comment(" driftErrorParameters ")};
-    fhicl::Atom<bool>  useParameterizedDriftErrors {
-      Name("useParameterizedDriftErrors"), Comment(" use errors calculated from formula instead of numbers from fcl ")};
-    fhicl::Atom<double> parameterizedDriftSigma {
-      Name("parameterizedDriftSigma"), Comment(" sigma for calculating drift error and offset ")};
-    fhicl::Atom<double> parameterizedDriftTau {
-      Name("parameterizedDriftTau"), Comment(" tau for calculating drift error and offset ")};
 
     fhicl::Atom<double> wireLengthBuffer {
       Name("wireLengthBuffer"), Comment(" wireLengthBuffer ")};
     fhicl::Atom<double> strawLengthFactor {
       Name("strawLengthFactor"), Comment(" strawLengthFactor ")};
     fhicl::Atom<double> errorFactor {
-      Name("errorFactor"), Comment(" errorFactor ")};
+      Name("errorFactor"), Comment("Error scaling for longitudinal reco outside straw length")};
     fhicl::Atom<bool> useNonLinearDrift {
       Name("useNonLinearDrift"), Comment(" useNonLinearDrift ")};
     fhicl::Atom<double> linearDriftVelocity {

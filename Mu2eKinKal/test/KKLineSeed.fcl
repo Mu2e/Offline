@@ -1,4 +1,4 @@
-# Minimal KinKal job that fits digis to a Kinematic Line using digital hit information, and analyzes the output with TrkAna
+# Minimal KinKal job that fits digis to a Kinematic Line using drift information, and analyzes the output with TrkAna
 # To create a functional job you must add database purpose and version; ie create a fcl stub that #includes this file and
 # adds (for instance):
 # services.DbService.purpose: MDC2020_perfect
@@ -10,7 +10,7 @@
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 
-process_name: KKSeed
+process_name: KKDrift
 source : { module_type : RootInput }
 services : @local::Services.Reco
 physics :
@@ -26,9 +26,13 @@ physics :
     @table::Reconstruction.producers
     @table::TrkAnaReco.producers
     @table::Mu2eKinKal.producers
+    BestCrvLine : {
+      module_type : BestCrvHitDeltaT
+      crvCoincidenceTag : "SelectRecoMC"
+      kalSeedTag : "KKLine"
+    }
   }
   filters : {
-    @table::CalPatRec.filters
     RecoFilter : {
       module_type   : RecoMomFilter
       KalFinalTagRoot : ""
@@ -37,7 +41,8 @@ physics :
    }
   }
   RecoPath : [
-    @sequence::Reconstruction.LineRecoMCPath
+    @sequence::Reconstruction.LineRecoMCPath,
+    BestCrvLine
   ]
   analyzers : {
     TAKK : {
@@ -52,12 +57,18 @@ physics :
           fillTrkQual : false
           fillTrkPID : false
           genealogyDepth : 5
-          fillBestCrv : false
+          fillBestCrv : true
+          bestCrvModules : [ "BestCrv" ]
+          bestCrvInstances : [ "first" ]
+          bestCrvBranches : [ "bestcrv" ]
         }
+        segmentSuffixes : [ "ent", "mid", "xit" ]
+        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"] ]
       }
       diagLevel : 2
       FillMCInfo : true
-      FillCRV : false
+      FillCRV : true
+
       FillTrkQualInfo : false
       FillTrkPIDInfo : false
       FillHitInfo : true
@@ -75,21 +86,22 @@ physics :
   }
   EndPath : [TAKK]
 }
-outputs : {
-  Output : {
-    @table::Reconstruction.Output
-    SelectEvents : [ "RecoPath" ]
-  }
+
+physics.producers.KKLine : {
+  @table::Mu2eKinKal.producers.KKLineSeedFit
+    ModuleSettings : {
+      @table::Mu2eKinKal.producers.KKLineSeedFit.ModuleSettings
+        @table::Mu2eKinKal.KKPrecursors
+        CosmicTrackSeedCollections : ["LineFinder"]
+    }
 }
 
 #include "Production/JobConfig/reco/epilog.fcl"
-#include "Offline/CRVResponse/fcl/epilog_extracted_v02.fcl"
+#include "Production/JobConfig/reco/offspill_epilog.fcl"
+#include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
-services.ProditionsService.strawResponse.useParameterizedDriftErrors : true
-services.ProditionsService.strawResponse.truncateLongitudinal : false
-services.ProditionsService.strawResponse.rmsLongErrors : true
 
 physics.producers.KKLine.ModuleSettings.SaveAllFits : true
 physics.producers.SelectRecoMC.HelixSeedCollections: []
@@ -100,4 +112,4 @@ physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.TimeTracker.printSummary: true
-services.TFileService.fileName: "nts.owner.KKSeed.version.sequence.root"
+services.TFileService.fileName: "nts.owner.KKDrift.version.sequence.root"
