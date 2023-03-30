@@ -92,6 +92,7 @@ physics.analyzers.TAKK.candidate.input : "KK"
 physics.analyzers.TAKK.candidate.suffix : "DeMDriftFit"
 physics.analyzers.TAKK.candidate.options.fillHits : true
 physics.analyzers.TAKK.supplements : []
+physics.analyzers.TAKK.ExtraMCStepCollectionTags : [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 services.TimeTracker.printSummary: true
