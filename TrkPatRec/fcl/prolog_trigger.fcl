@@ -38,6 +38,7 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
   TimeClusterCollection : "TTtimeClusterFinder"
   RPullScaleF           : 1.0
   HelixFitter           : { @table::TrkRecoTrigger.TTrobustHelixFit}
+  chfCollTag            : "TTflagBkgHits:ComboHits"
 }
 
 TTrobustHelixFinderUe : { @table::RobustHelixFinder
