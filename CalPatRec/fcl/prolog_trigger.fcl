@@ -41,6 +41,7 @@ CprTrigger : {
         maxZTripletSearch     : 0. # mm
         maxDfDz               : 0.025
         initDfDz              : 0
+        chfCollTag            : "TTflagBkgHits:ComboHits"
     }
 #------------------------------------------------------------------------------
 # SeedFitter(SeedFitHackNew) configuration for the final track fit: NOT USED ANYMORE
