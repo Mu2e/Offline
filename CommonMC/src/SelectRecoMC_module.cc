@@ -64,6 +64,7 @@ namespace mu2e {
         fhicl::Atom<bool> saveEnergySteps         { Name("SaveEnergySteps"),                  Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
         fhicl::Atom<bool> saveUnused              { Name("SaveUnusedDigiMCs"),                  Comment("Save StrawDigiMCs from particles used in any fit"), true};
         fhicl::Atom<bool> saveAllUnused           { Name("SaveAllUnusedDigiMCs"),                  Comment("Save all StrawDigiMCs from particles used in any fit"), false};
+        fhicl::Atom<bool> useSHFC                 { Name("UseStrawHitFlagCollection"),                  Comment("Use the StrawHitFlag collection"), false};
         fhicl::Atom<art::InputTag> PP             { Name("PrimaryParticle"),                  Comment("PrimaryParticle")};
         fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
         fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollection")};
@@ -94,13 +95,13 @@ namespace mu2e {
       void fillVDSP          (GeomHandle<DetectorSystem>const& det, art::Ptr<SimParticle> const& psp, StepPointMCCollection const& vdspc, KalSeedMC& mcseed);
       void fillSPStubs       (SPCC const& spcc, PrimaryParticle const& pp, KalSeedMC& mcseed);
       void fillSDMCI         (KalSeedMC const& mcseed,SHIS& shindices);
-      void fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec);
+      void fillStrawHitCounts(ComboHitCollection const& chc, const StrawHitFlagCollection* shfc, RecoCount& nrec);
       void fillTrk           (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, PrimaryParticle const& pp, RecoCount& nrec);
       void fillCrv           (art::Event& event, PrimaryParticle const& pp, RecoCount& nrec);
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,PrimaryParticle const& pp, RecoCount& nrec);
       int _debug;
       bool _trkonly;
-      bool _saveallenergy, _saveunused, _saveallunused;
+      bool _saveallenergy, _saveunused, _saveallunused, _useSHFC;
       art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
       std::vector<std::string> _kscs, _hscs;
       double _ccme;
@@ -117,6 +118,7 @@ namespace mu2e {
     _saveallenergy(config().saveEnergySteps()),
     _saveunused(config().saveUnused()),
     _saveallunused(config().saveAllUnused()),
+    _useSHFC(config().useSHFC()),
     _pp(config().PP()),
     _ccc(config().CCC()),
     _crvccc(config().CrvCCC()),
@@ -135,7 +137,7 @@ namespace mu2e {
     {
       consumes<StrawDigiCollection>(_sdc);
       consumes<StrawDigiADCWaveformCollection>(_sdc);
-      consumes<StrawHitFlagCollection>(_shfc);
+      if(_useSHFC)consumes<StrawHitFlagCollection>(_shfc);
       consumes<ComboHitCollection>(_chc);
       consumes<CaloDigiCollection>(_cdc);
       consumes<CaloClusterCollection>(_ccc);
@@ -158,7 +160,7 @@ namespace mu2e {
       produces <KalSeedMCAssns>();
       produces <StrawDigiCollection>();
       produces <StrawDigiADCWaveformCollection>();
-      produces <StrawHitFlagCollection>();
+      if(_useSHFC)produces <StrawHitFlagCollection>();
       produces <RecoCount>();
 
       if (_debug > 0)
@@ -318,16 +320,28 @@ namespace mu2e {
     }
   }
 
-  void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec) {
+  void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, const StrawHitFlagCollection* shfc, RecoCount& nrec) {
     // test
-    if(chc.size() != shfc.size())
-      throw cet::exception("Reco")<<"mu2e::SelectRecoMC: inconsistent collections"<< std::endl;
-    for(const auto& shf : shfc) {
-      if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
-      if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
-      if(shf.hasAllProperties(StrawHitFlag::timesel))++nrec._nshftsel;
-      if(shf.hasAllProperties(StrawHitFlag::bkg))++nrec._nshfbkg;
-      if(shf.hasAllProperties(StrawHitFlag::trksel))++nrec._nshftpk;
+
+    if(_useSHFC){
+      if(!shfc || chc.size() != shfc->size())
+        throw cet::exception("Reco")<<"mu2e::SelectRecoMC: inconsistent collections"<< std::endl;
+      for(const auto& shf : *shfc) {
+        if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
+        if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
+        if(shf.hasAllProperties(StrawHitFlag::timesel))++nrec._nshftsel;
+        if(shf.hasAllProperties(StrawHitFlag::bkg))++nrec._nshfbkg;
+        if(shf.hasAllProperties(StrawHitFlag::trksel))++nrec._nshftpk;
+      }
+    } else {
+      for(const auto& ch : chc) {
+        auto const& shf = ch.flag();
+        if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
+        if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
+        if(shf.hasAllProperties(StrawHitFlag::timesel))++nrec._nshftsel;
+        if(shf.hasAllProperties(StrawHitFlag::bkg))++nrec._nshfbkg;
+        if(shf.hasAllProperties(StrawHitFlag::trksel))++nrec._nshftpk;
+      }
     }
     nrec._nstrawdigi = chc.size();
     // fill straw hit time histogram
@@ -345,8 +359,13 @@ namespace mu2e {
     auto const& sdc = *sdch;
     auto sdadcch = event.getValidHandle<StrawDigiADCWaveformCollection>(_sdc);
     auto const& sdadcc = *sdadcch;
-    auto shfch = event.getValidHandle<StrawHitFlagCollection>(_shfc);
-    auto const& shfc = *shfch;
+    StrawHitFlagCollection const* shfc(0);
+    std::unique_ptr<StrawHitFlagCollection> sshfc;
+    if(_useSHFC){
+      auto shfch = event.getValidHandle<StrawHitFlagCollection>(_shfc);
+      shfc = shfch.product();
+      sshfc = std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection);
+    }
     auto chch = event.getValidHandle<ComboHitCollection>(_chc);
     auto const& chc = *chch;
     auto sdmcch = event.getValidHandle<StrawDigiMCCollection>(_sdmcc);
@@ -362,7 +381,6 @@ namespace mu2e {
     std::unique_ptr<KalSeedMCAssns> ksmca(new KalSeedMCAssns);
     std::unique_ptr<StrawDigiCollection> ssdc(new StrawDigiCollection);
     std::unique_ptr<StrawDigiADCWaveformCollection> ssdadcc(new StrawDigiADCWaveformCollection);
-    std::unique_ptr<StrawHitFlagCollection> sshfc(new StrawHitFlagCollection);
     // index maps between original collections and pruned collections
     std::unique_ptr<IndexMap> sdmcim(new IndexMap);
     // straw hit (indices) that are referenced by the tracks, or particles
@@ -445,7 +463,7 @@ namespace mu2e {
       // deep-copy the selected StrawDigis and StrawHitFlags
       ssdc->push_back(sdc[shindex]);
       ssdadcc->push_back(sdadcc[shindex]);
-      sshfc->push_back(shfc[shindex]);
+      if(_useSHFC) sshfc->push_back(shfc->at(shindex));
     }
     if(_debug > 1) std::cout << "Selected " << shcount << " StrawDigis" << std::endl;
 
@@ -454,7 +472,7 @@ namespace mu2e {
     event.put(std::move(sdmcim),"StrawDigiMap");
     event.put(std::move(ssdc));
     event.put(std::move(ssdadcc));
-    event.put(std::move(sshfc));
+    if(_useSHFC)event.put(std::move(sshfc));
     event.put(std::move(ksmcc));
     event.put(std::move(ksmca));
   }
