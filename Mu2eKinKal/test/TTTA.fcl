@@ -13,7 +13,15 @@
 #include "Offline/CommonMC/fcl/prolog.fcl"
 
 process_name: TTKKSeed
-source : { module_type : RootInput }
+source : {module_type : RootInput
+  inputCommands: ["keep *",
+    "drop mu2e::HelixSeeds_*_*_*",
+    "drop mu2e::KalSeeds_*_*_*",
+    "drop mu2e::TriggerInfo_*_*_*",
+    "drop mu2e::CaloClusters_*_*_*",
+    "drop mu2e::TimeClusters_*_*_*"
+  ]
+}
 services : @local::Services.Reco
 physics :
 {
@@ -26,6 +34,29 @@ physics :
     @table::TprTrigger.producers
     @table::CprTrigger.producers
     @table::TTMu2eKinKal.producers
+    SelectRecoMCcpr : {
+      @table::CommonMC.SelectRecoMC
+      TrkOnly : true
+      CaloClusterMinE : 10.0
+      SaveEnergySteps : false
+      SaveUnusedDigiMCs : false
+      SaveAllUnusedDigiMCs : false
+      UseStrawHitFlagCollection: false
+      PrimaryParticle : "compressDigiMCs"
+      StrawDigiCollection : "makeSD"
+      StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+      ComboHitCollection : "TTmakeSH"
+      CaloDigiCollection : "CaloDigiMaker"
+      CaloClusterCollection : "CaloClusterFast"
+      StrawDigiMCCollection : "compressDigiMCs"
+      CrvDigiCollection : "CrvDigi"
+      CrvDigiMCCollection : "compressDigiMCs"
+      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+      KalSeedCollections  : [ "TTCalSeedFitDem" ]
+      HelixSeedCollections  : ["TTCalHelixMergerDeM" ]
+      VDSPCollection : "compressDigiMCs:virtualdetector"
+    }
+
     SelectRecoMCtpr : {
       @table::CommonMC.SelectRecoMC
       TrkOnly : true
@@ -35,14 +66,14 @@ physics :
       SaveAllUnusedDigiMCs : false
       PrimaryParticle : "compressDigiMCs"
       StrawDigiCollection : "makeSD"
-      StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-      ComboHitCollection : "makeSH"
+      StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+      ComboHitCollection : "TTmakeSH"
       CaloDigiCollection : "CaloDigiMaker"
-      CrvDigiCollection : "CrvDigi"
-      CaloClusterCollection : "CaloClusterMaker"
-      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+      CaloClusterCollection : "CaloClusterFast"
       StrawDigiMCCollection : "compressDigiMCs"
+      CrvDigiCollection : "CrvDigi"
       CrvDigiMCCollection : "compressDigiMCs"
+      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
       KalSeedCollections  : [ "TTKSFDeM" ]
       HelixSeedCollections  : ["TTHelixMergerDeM" ]
       VDSPCollection : "compressDigiMCs:virtualdetector"
@@ -99,7 +130,6 @@ physics :
       printEvent  : true
     }
   }
-  EndPath : [TAtpr, TAcpr]
 
   tprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
@@ -111,11 +141,27 @@ physics :
     TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,
     TTCalHelixMergerDeM, cprDeMHighPStopTargHSFilter,
     TTCalSeedFitDem, cprDeMHighPStopTargTSFilter, SelectRecoMCcpr]
-
+  EndPath : [TAtpr]
+  #  EndPath : [Output]
+}
+outputs : {
+  Output : {
+    module_type : RootOutput
+    fileName    : "TTTA_test.art"
+    outputCommands : [ "keep *_*_*_*" ]
+    SelectEvents : [ "tprDeM_highP_stopTarg" ]
+  }
 }
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
-physics.trigger_paths : [tprDeM_highP_stopTarg, cprDeM_highP_stopTarg ]
+#physics.trigger_paths : [tprDeM_highP_stopTarg, cprDeM_highP_stopTarg ]
+physics.trigger_paths : [tprDeM_highP_stopTarg ]
 physics.end_paths : [ EndPath ]
+
+# this will slow down the trigger considerably: don't use for timing studies
+#physics.producers.TTmakeSH.WriteStrawHitCollection : true
+#physics.producers.TTmakeSH.FilterHits : false
+#physics.producers.TTflagBkgHits.FlagStrawHits : true
+#physics.producers.TTflagBkgHits.FilterHits : true
 
 physics.analyzers.TAtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAtpr.candidate.options : @local::AllOpt
@@ -123,6 +169,7 @@ physics.analyzers.TAtpr.candidate.options.fillBestCrv : false
 physics.analyzers.TAtpr.diagLevel : 2
 physics.analyzers.TAtpr.FillCRV : false
 physics.analyzers.TAtpr.FillMCInfo : true
+physics.analyzers.TAtpr.FillCaloMC : false
 physics.analyzers.TAtpr.RecoCountTag : ""
 physics.analyzers.TAtpr.FillTriggerInfo : true
 physics.analyzers.TAtpr.FillTrkQualInfo : false
@@ -133,6 +180,12 @@ physics.analyzers.TAtpr.candidate.input : "TTKSF"
 physics.analyzers.TAtpr.candidate.suffix : "DeM"
 physics.analyzers.TAtpr.candidate.options.fillHits : true
 physics.analyzers.TAtpr.supplements : []
+physics.analyzers.TAtpr.PrimaryParticleTag: "compressDigiMCs"
+physics.analyzers.TAtpr.SimParticleLabel: "compressDigiMCs"
+physics.analyzers.TAtpr.KalSeedMCAssns: "SelectRecoMCtpr"
+physics.analyzers.TAtpr.MCTrajectoryLabel: "compressDigiMCs"
+physics.analyzers.TAtpr.ExtraMCStepCollectionTags: [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
+physics.analyzers.TAtpr.InfoMCStructHelper.SimParticleCollectionTag: "compressDigiMCs"
 
 physics.analyzers.TAcpr.SelectEvents : [  cprDeM_highP_stopTarg  ]
 physics.analyzers.TAcpr.candidate.options : @local::AllOpt
