@@ -93,7 +93,7 @@ namespace mu2e {
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
-  using Mu2eConfig = Mu2eKinKal::Mu2eConfig;
+  using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKMaterialConfig = KKMaterial::Config;
 
   class KinematicLineFit : public art::EDProducer {
@@ -118,12 +118,10 @@ namespace mu2e {
 
     struct GlobalConfig {
       fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
-      fhicl::Table<Mu2eConfig> mu2eSettings { Name("Mu2eSettings") };
-      fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
-      fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
+      fhicl::Table<KKFitConfig> mu2eSettings { Name("KKFitSettings") };
+      fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
+      fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-      //      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
-      //      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
     };
 
     public:
@@ -172,8 +170,8 @@ namespace mu2e {
     seedmom_(settings().modSettings().seedmom()),
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
-    config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
-    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings()))
+    config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
+    exconfig_(Mu2eKinKal::makeConfig(settings().extSettings()))
     {
       // should always save something
       if((!savefull_) && zsave_.size() == 0)
