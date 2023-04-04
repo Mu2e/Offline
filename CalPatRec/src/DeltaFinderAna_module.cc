@@ -453,6 +453,26 @@ namespace mu2e {
     book_combo_hit_histset[  7] = 1;                // all mu- and mu+
     book_combo_hit_histset[  8] = 1;                // all everything else
 
+    book_combo_hit_histset[ 10] = 1;                // all flagged as delta
+    book_combo_hit_histset[ 11] = 1;                // all flagged as delta prot and deut
+    book_combo_hit_histset[ 12] = 1;                // all flagged as delta e-: p<20
+    book_combo_hit_histset[ 13] = 1;                // all flagged as delta e- 20<p<80
+    book_combo_hit_histset[ 14] = 1;                // all flagged as delta e-: 80<p<110
+    book_combo_hit_histset[ 15] = 1;                // all flagged as delta e-  p > 110
+    book_combo_hit_histset[ 16] = 1;                // all flagged as delta e+
+    book_combo_hit_histset[ 17] = 1;                // all flagged as delta mu- and mu+
+    book_combo_hit_histset[ 18] = 1;                // all flagged as delta everything else
+
+    book_combo_hit_histset[ 20] = 1;                // all not flagged as delta
+    book_combo_hit_histset[ 21] = 1;                // all not flagged as delta prot and deut
+    book_combo_hit_histset[ 22] = 1;                // all not flagged as delta e-: p<20
+    book_combo_hit_histset[ 23] = 1;                // all not flagged as delta e- 20<p<80
+    book_combo_hit_histset[ 24] = 1;                // all not flagged as delta e-: 80<p<110
+    book_combo_hit_histset[ 25] = 1;                // all not flagged as delta e-  p > 110
+    book_combo_hit_histset[ 26] = 1;                // all not flagged as delta e+
+    book_combo_hit_histset[ 27] = 1;                // all not flagged as delta mu- and mu+
+    book_combo_hit_histset[ 28] = 1;                // all not flagged as delta everything else
+
     for (int i=0; i<kNComboHitHistSets; i++) {
       if (book_combo_hit_histset[i] != 0) {
         sprintf(folder_name,"ch_%i",i);
@@ -645,16 +665,16 @@ namespace mu2e {
 // straw hit histograms, mc_hit_info relates to the straw hit type
 // 0:p, 1:ele p<20, 2:ele 20<p<80  3:ele 100<p<110 4:everything else
 //-----------------------------------------------------------------------------
-    int loc = 0;
     for (int i=0; i<_nComboHits; i++) {
-      const ComboHit* ch         = &_chColl->at(i);
+      const ComboHit*     ch  = &_chColl ->at(i);
+      const StrawHitFlag* chf = &_chfColl->at(i);
 
-      int nsh = ch->nStrawHits();
-      for (int ish=0; ish<nsh; ish++) {
-        int ind = ch->indexArray().at(ish);
-
-        const StrawHit* sh = &_shColl->at(ind);
-
+      //      int nsh = ch->nStrawHits();
+//-----------------------------------------------------------------------------
+// 'mark' CH by its first straw hit - with some unavoidable uncertainties
+//-----------------------------------------------------------------------------
+        int ind                  = ch->index(0);
+        // const StrawHit*     sh   = &_shColl->at(ind);
         const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
         const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
         const SimParticle*  sim  = sgs->simParticle().get();
@@ -668,68 +688,112 @@ namespace mu2e {
         mc_hit_info.fType = mc_type;
         mc_hit_info.fFlag = &_chfColl->at(i);
 
-//-----------------------------------------------------------------------------
-// fill combo hit histograms in the same loop
-//-----------------------------------------------------------------------------
-        if (ish == 0) {
-          fillComboHitHistograms(_hist.fComboHit[0],ch,&mc_hit_info);  // all
+        fillComboHitHistograms(_hist.fComboHit[0],ch,&mc_hit_info);  // all
 
-          if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[1],ch,&mc_hit_info);
-          else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[2],ch,&mc_hit_info);
-          else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[3],ch,&mc_hit_info);
-          else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[4],ch,&mc_hit_info);
-          else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[5],ch,&mc_hit_info);
-          else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[6],ch,&mc_hit_info);
-          else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[7],ch,&mc_hit_info);
-          else                                fillComboHitHistograms(_hist.fComboHit[8],ch,&mc_hit_info);
-        }
+        if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[1],ch,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[2],ch,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[3],ch,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[4],ch,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[5],ch,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[6],ch,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[7],ch,&mc_hit_info);
+        else                                fillComboHitHistograms(_hist.fComboHit[8],ch,&mc_hit_info);
 
-        fillStrawHitHistograms(_hist.fStrawHit[0],sh,&mc_hit_info);  // all
-
-        if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[1],sh,&mc_hit_info);
-        else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[2],sh,&mc_hit_info);
-        else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[3],sh,&mc_hit_info);
-        else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[4],sh,&mc_hit_info);
-        else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[5],sh,&mc_hit_info);
-        else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[6],sh,&mc_hit_info);
-        else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[7],sh,&mc_hit_info);
-        else                                fillStrawHitHistograms(_hist.fStrawHit[8],sh,&mc_hit_info);
-
-        const StrawHitFlag* flag = mc_hit_info.fFlag;
-
-        // int edepOK = flag->hasAllProperties(StrawHitFlag::energysel);
-        int delta  = flag->hasAllProperties(StrawHitFlag::bkg);
+        int delta  = chf->hasAllProperties(StrawHitFlag::bkg);
 
         if (delta) {
+          fillComboHitHistograms(_hist.fComboHit[10],ch,&mc_hit_info);  // all
+
+          if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[11],ch,&mc_hit_info);
+          else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[12],ch,&mc_hit_info);
+          else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[13],ch,&mc_hit_info);
+          else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[14],ch,&mc_hit_info);
+          else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[15],ch,&mc_hit_info);
+          else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[16],ch,&mc_hit_info);
+          else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[17],ch,&mc_hit_info);
+          else                                fillComboHitHistograms(_hist.fComboHit[18],ch,&mc_hit_info);
+        }
+        else {
+          fillComboHitHistograms(_hist.fComboHit[20],ch,&mc_hit_info);  // all
+
+          if      (mc_type == kProtonOrDeut ) fillComboHitHistograms(_hist.fComboHit[21],ch,&mc_hit_info);
+          else if (mc_type == kLoMomElectron) fillComboHitHistograms(_hist.fComboHit[22],ch,&mc_hit_info);
+          else if (mc_type == kMdMomElectron) fillComboHitHistograms(_hist.fComboHit[23],ch,&mc_hit_info);
+          else if (mc_type == kCeMomElectron) fillComboHitHistograms(_hist.fComboHit[24],ch,&mc_hit_info);
+          else if (mc_type == kHiMomElectron) fillComboHitHistograms(_hist.fComboHit[25],ch,&mc_hit_info);
+          else if (mc_type == kPositron     ) fillComboHitHistograms(_hist.fComboHit[26],ch,&mc_hit_info);
+          else if (mc_type == kMuon         ) fillComboHitHistograms(_hist.fComboHit[27],ch,&mc_hit_info);
+          else                                fillComboHitHistograms(_hist.fComboHit[28],ch,&mc_hit_info);
+        }
+
+    }
+
+    for (int i=0; i<_nSingleSH; i++) {
+      const ComboHit*     ssch  = &_sschColl ->at(i);
+      const StrawHitFlag* sschf = &_sschfColl->at(i);
+
+      int ind = ssch->index(0);
+
+      const StrawHit*     sh   = &_shColl->at(ind);
+      const StrawDigiMC*  sdmc = &_sdmcColl->at(ind);
+      const StrawGasStep* sgs  = sdmc->earlyStrawGasStep().get();
+      const SimParticle*  sim  = sgs->simParticle().get();
+
+      McPart_t mc(sim);
+      McHitInfo_t    mc_hit_info;
+
+      int mc_type = mc.Type();
+
+      mc_hit_info.fMc   = &mc;
+      mc_hit_info.fType = mc_type;
+      mc_hit_info.fFlag = &_chfColl->at(i);
+//-----------------------------------------------------------------------------
+// fill single straw histograms
+//-----------------------------------------------------------------------------
+      fillStrawHitHistograms(_hist.fStrawHit[0],sh,&mc_hit_info);  // all
+
+      if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[1],sh,&mc_hit_info);
+      else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[2],sh,&mc_hit_info);
+      else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[3],sh,&mc_hit_info);
+      else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[4],sh,&mc_hit_info);
+      else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[5],sh,&mc_hit_info);
+      else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[6],sh,&mc_hit_info);
+      else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[7],sh,&mc_hit_info);
+      else                                fillStrawHitHistograms(_hist.fStrawHit[8],sh,&mc_hit_info);
+
+      const StrawHitFlag* flag = mc_hit_info.fFlag;
+
+      int delta  = flag->hasAllProperties(StrawHitFlag::bkg);
+
+      if (delta) {
 //-----------------------------------------------------------------------------
 // set 2: all hits flagged as delta electrons
 //-----------------------------------------------------------------------------
-          fillStrawHitHistograms(_hist.fStrawHit[10],sh,&mc_hit_info);
+        fillStrawHitHistograms(_hist.fStrawHit[10],sh,&mc_hit_info);
 
-          if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[11],sh,&mc_hit_info);
-          else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[12],sh,&mc_hit_info);
-          else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[13],sh,&mc_hit_info);
-          else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[14],sh,&mc_hit_info);
-          else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[15],sh,&mc_hit_info);
-          else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[16],sh,&mc_hit_info);
-          else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[17],sh,&mc_hit_info);
-          else                                fillStrawHitHistograms(_hist.fStrawHit[18],sh,&mc_hit_info);
-        }
-        else {
-          fillStrawHitHistograms(_hist.fStrawHit[20],sh,&mc_hit_info);
-
-          if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[21],sh,&mc_hit_info);
-          else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[22],sh,&mc_hit_info);
-          else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[23],sh,&mc_hit_info);
-          else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[24],sh,&mc_hit_info);
-          else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[25],sh,&mc_hit_info);
-          else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[26],sh,&mc_hit_info);
-          else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[27],sh,&mc_hit_info);
-          else                                fillStrawHitHistograms(_hist.fStrawHit[28],sh,&mc_hit_info);
-        }
-
-        loc++;
+        if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[11],sh,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[12],sh,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[13],sh,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[14],sh,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[15],sh,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[16],sh,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[17],sh,&mc_hit_info);
+        else                                fillStrawHitHistograms(_hist.fStrawHit[18],sh,&mc_hit_info);
       }
+      else {
+        fillStrawHitHistograms(_hist.fStrawHit[20],sh,&mc_hit_info);
+
+        if      (mc_type == kProtonOrDeut ) fillStrawHitHistograms(_hist.fStrawHit[21],sh,&mc_hit_info);
+        else if (mc_type == kLoMomElectron) fillStrawHitHistograms(_hist.fStrawHit[22],sh,&mc_hit_info);
+        else if (mc_type == kMdMomElectron) fillStrawHitHistograms(_hist.fStrawHit[23],sh,&mc_hit_info);
+        else if (mc_type == kCeMomElectron) fillStrawHitHistograms(_hist.fStrawHit[24],sh,&mc_hit_info);
+        else if (mc_type == kHiMomElectron) fillStrawHitHistograms(_hist.fStrawHit[25],sh,&mc_hit_info);
+        else if (mc_type == kPositron     ) fillStrawHitHistograms(_hist.fStrawHit[26],sh,&mc_hit_info);
+        else if (mc_type == kMuon         ) fillStrawHitHistograms(_hist.fStrawHit[27],sh,&mc_hit_info);
+        else                                fillStrawHitHistograms(_hist.fStrawHit[28],sh,&mc_hit_info);
+      }
+
+      //      loc++;
     }
 //-----------------------------------------------------------------------------
 // fill MC histograms
