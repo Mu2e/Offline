@@ -87,14 +87,14 @@ namespace mu2e {
 
     private:
       typedef std::vector<TrkMCTools::spcount>SPCC;
-      typedef std::set<StrawHitIndex> SHIS;
+      typedef std::set<StrawDigiIndex> SDIS;
       // utility functions
       void fillTSHMC         (KalSeed const& seed, SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
       void fillUnusedTSHMC   (SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
       void fillTSHMC        (TrkStrawHitMC& tshmc, size_t isdmc, size_t isp,StrawDigiMC const& sdmc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep );
       void fillVDSP          (GeomHandle<DetectorSystem>const& det, art::Ptr<SimParticle> const& psp, StepPointMCCollection const& vdspc, KalSeedMC& mcseed);
       void fillSPStubs       (SPCC const& spcc, PrimaryParticle const& pp, KalSeedMC& mcseed);
-      void fillSDMCI         (KalSeedMC const& mcseed,SHIS& shindices);
+      void fillSDMCI         (KalSeedMC const& mcseed,SDIS& sdindices);
       void fillStrawHitCounts(ComboHitCollection const& chc, const StrawHitFlagCollection* shfc, RecoCount& nrec);
       void fillTrk           (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, PrimaryParticle const& pp, RecoCount& nrec);
       void fillCrv           (art::Event& event, PrimaryParticle const& pp, RecoCount& nrec);
@@ -289,15 +289,16 @@ namespace mu2e {
     double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
     tshmc._tprop = fabs(pdist)/vprop;
     tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
+    if(tshmc._tdrift>_mbtime)tshmc._tdrift -= _mbtime; // correct for times that rolled over into the 'next' mb.
     auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
     const static XYZVectorF bdir(0.0,0.0,1.0);
     double phi = acos(tperp.Dot(bdir)); // Lorentz angle
     tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,phi);
   }
 
-  void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SHIS& shindices) {
+  void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SDIS& sdindices) {
     for(auto tshmc : mcseed.trkStrawHitMCs()) {
-      shindices.insert(tshmc.strawDigiMCIndex());
+      sdindices.insert(tshmc.strawDigiMCIndex());
     }
   }
 
@@ -383,9 +384,9 @@ namespace mu2e {
     std::unique_ptr<StrawDigiADCWaveformCollection> ssdadcc(new StrawDigiADCWaveformCollection);
     // index maps between original collections and pruned collections
     std::unique_ptr<IndexMap> sdmcim(new IndexMap);
-    // straw hit (indices) that are referenced by the tracks, or particles
+    // straw digi indices that are referenced by the tracks, or particles
     // that contributed to the track
-    SHIS shindices;
+    SDIS sdindices;
     // set of SimParticles to save for this event
     std::set<art::Ptr<SimParticle> > simps;
     // add the MC primary SimParticles
@@ -420,7 +421,7 @@ namespace mu2e {
           }
           ksmcc->push_back(mcseed);
           // fill indices from all digis; those on the track and those from the MC true particle too
-          fillSDMCI(mcseed,shindices);
+          fillSDMCI(mcseed,sdindices);
           // fill the Assns; this needs Ptrs
           auto mcseedp = art::Ptr<KalSeedMC>(KalSeedMCCollectionPID,ksmcc->size()-1,KalSeedMCCollectionGetter);
           auto seedp = art::Ptr<KalSeed>(seedh,std::distance(seedc.begin(),iseed));
@@ -432,7 +433,7 @@ namespace mu2e {
         }
       }
     }
-    // get straw indices from all helices too
+    // get digi indices from all helices too
     for (auto const& hsc : _hscs) {
       // get all products from this
       art::ModuleLabelSelector hscsel(hsc);
@@ -444,28 +445,28 @@ namespace mu2e {
         if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << hsc << std::endl;
         for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
           auto const& seed = *iseed;
-          // go back to StrawHit indices (== digi indices for reco)
-          std::vector<StrawHitIndex> shids;
+          // go back to StrawDigi indices
+          std::vector<StrawDigiIndex> shids;
           for(size_t ihit = 0; ihit < seed.hits().size(); ihit++)
-            seed.hits().fillStrawHitIndices(event,ihit,shids);
+            seed.hits().fillStrawDigiIndices(event,ihit,shids);
           // add these to the set (duplicates are suppressed)
           for(auto shid : shids)
-            shindices.insert(shid);
+            sdindices.insert(shid);
         }
       }
     }
     // fill the StrawIndex map with the complete list of indices.
-    StrawHitIndex shcount(0);
-    ssdc->reserve(shindices.size());
-    ssdadcc->reserve(shindices.size());
-    for(auto shindex : shindices){
-      sdmcim->addElement(shindex,shcount++);
+    StrawDigiIndex sdcount(0);
+    ssdc->reserve(sdindices.size());
+    ssdadcc->reserve(sdindices.size());
+    for(auto sdindex : sdindices){
+      sdmcim->addElement(sdindex,sdcount++);
       // deep-copy the selected StrawDigis and StrawHitFlags
-      ssdc->push_back(sdc[shindex]);
-      ssdadcc->push_back(sdadcc[shindex]);
-      if(_useSHFC) sshfc->push_back(shfc->at(shindex));
+      ssdc->push_back(sdc[sdindex]);
+      ssdadcc->push_back(sdadcc[sdindex]);
+      if(_useSHFC) sshfc->push_back(shfc->at(sdindex));
     }
-    if(_debug > 1) std::cout << "Selected " << shcount << " StrawDigis" << std::endl;
+    if(_debug > 1) std::cout << "Selected " << sdcount << " StrawDigis" << std::endl;
 
     // fill detailed StrawHit counts
     fillStrawHitCounts(chc,shfc,nrec);

@@ -154,14 +154,11 @@ outputs : {
 }
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 physics.trigger_paths : [tprDeM_highP_stopTarg, cprDeM_highP_stopTarg ]
-#physics.trigger_paths : [tprDeM_highP_stopTarg ]
 physics.end_paths : [ EndPath ]
 
-# this will slow down the trigger considerably: don't use for timing studies
-#physics.producers.TTmakeSH.WriteStrawHitCollection : true
-#physics.producers.TTmakeSH.FilterHits : false
-#physics.producers.TTflagBkgHits.FlagStrawHits : true
-#physics.producers.TTflagBkgHits.FilterHits : true
+# this next is currently needed to get correct hit-level MC truth matching.  It needs to be fixed at the
+# ComboHitCollection.  This setting works, but will slow down the trigger: don't use this script for timing studies
+physics.producers.TTmakeSH.FilterHits : false
 
 physics.analyzers.TAtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAtpr.candidate.options : @local::AllOpt
