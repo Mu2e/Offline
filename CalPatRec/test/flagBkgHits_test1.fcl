@@ -56,7 +56,7 @@ physics : {
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection", "EnergySelection" ] ## default
-physics.producers.makePH.MaxDS                     : 4
+# physics.producers.makePH.MaxDS                     : 4
 # physics.producers.makePH.MinimumRadius             : 370.
 ## physics.producers.makePH.MaximumRadius             : 680.
 physics.producers.DeltaFinderAna.printElectronHits : 1
