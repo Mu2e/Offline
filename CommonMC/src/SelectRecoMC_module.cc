@@ -279,6 +279,8 @@ namespace mu2e {
     tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
     tshmc._mom = sgs.momentum();
     tshmc._time = fmod(sgs.time(),_mbtime);
+    // fix for DAQ wrapping
+    if(tshmc._time < -_pbtimemc)tshmc._time += _mbtime;
     tshmc._strawId = sdmc.strawId();
     tshmc._earlyend = sdmc.earlyEnd();
     // compute the signal propagation time and drift time
@@ -289,7 +291,6 @@ namespace mu2e {
     double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
     tshmc._tprop = fabs(pdist)/vprop;
     tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
-    if(tshmc._tdrift>_mbtime)tshmc._tdrift -= _mbtime; // correct for times that rolled over into the 'next' mb.
     auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
     const static XYZVectorF bdir(0.0,0.0,1.0);
     double phi = acos(tperp.Dot(bdir)); // Lorentz angle
