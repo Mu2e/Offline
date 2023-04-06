@@ -106,9 +106,11 @@ namespace mu2e {
          void produce(art::Event& e)   override;
          void beginRun(art::Run& aRun) override;
 
+
     private:
+
        void makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&);
-       void fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&,
+       bool fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&,
                                const ConditionsHandle<CalorimeterCalibrations>&, const ProtonBunchTimeMC&);
        void generateNoise     (std::vector<double>& waveform, unsigned iRO, const ConditionsHandle<CalorimeterCalibrations>&);
        void buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection&);
@@ -143,8 +145,7 @@ namespace mu2e {
   void CaloDigiMaker::beginRun(art::Run& aRun)
   {
       pulseShape_.buildShapes();
-
-      noiseGenerator_.initialize(wfExtractor_);
+      if (addNoise_) noiseGenerator_.initialize(wfExtractor_);
   }
 
 
@@ -190,7 +191,6 @@ namespace mu2e {
       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
       if (calorimeter_->nCrystal()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1) return;
-
       int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill)
       {
@@ -199,11 +199,15 @@ namespace mu2e {
 
       int nWaveforms   = calorimeter_->nCrystal()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");
       if (waveformSize<1) throw cet::exception("Rethrow")<< "[CaloMC/CaloDigiMaker] digitization size too short " << std::endl;
+      bool resetWaveform(false);
+      std::vector<double> waveform(waveformSize,0.0);
 
       for (int iRO=0;iRO<nWaveforms;++iRO)
       {
-          std::vector<double> waveform(waveformSize,0.0);
-          fillROHits(iRO, waveform, CaloShowerROs, calorimeterCalibrations, pbtmc);
+          if (resetWaveform) std::fill(waveform.begin(), waveform.end(), 0.0);
+          bool isEmpty = fillROHits(iRO, waveform, CaloShowerROs, calorimeterCalibrations, pbtmc);
+          resetWaveform = (addNoise_ || !isEmpty);
+
           if (addNoise_)
           {
               if (generateSpotNoise_) generateNoise(waveform, iRO, calorimeterCalibrations);
@@ -212,22 +216,25 @@ namespace mu2e {
           }
           else
           {
-              buildOutputDigi(iRO, waveform, 0, caloDigiColl);
+              if (!isEmpty) buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
           }
      }
   }
 
 
   //--------------------------------------------------------------------------
-  void CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
-                                 const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations, const ProtonBunchTimeMC& pbtmc)
+  bool CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
+                                     const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations, const ProtonBunchTimeMC& pbtmc)
   {
+      bool  isEmpty(true);
       float scaleFactor = calorimeterCalibrations->MeV2ADC(iRO)/calorimeterCalibrations->peMeV(iRO);
 
       for (const auto& CaloShowerRO : CaloShowerROs)
       {
           unsigned SiPMID = CaloShowerRO.SiPMID();
           if (SiPMID != iRO) continue;
+
+          isEmpty = false;
           for (const auto PEtime : CaloShowerRO.PETime())
           {
               //PE time is given in DR frame, we need to subtract the event window start and the digi Start time
@@ -240,6 +247,7 @@ namespace mu2e {
                  waveform.at(timeSample) += pulse.at(timeSample - startSample)*scaleFactor;
           }
       }
+      return isEmpty;
   }
 
 
@@ -294,13 +302,8 @@ namespace mu2e {
   void CaloDigiMaker::buildOutputDigi(unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection& caloDigiColl)
   {
        // round the waveform into non-null integers and apply maxADC cut
-       std::vector<int> wf;
-       wf.reserve(waveform.size());
-       for (const auto& val : waveform)
-       {
-          if (val < pedestal) wf.emplace_back(0);
-          else                wf.emplace_back(std::min(maxADCCounts_, int(val - pedestal)) );
-       }
+       std::vector<int> wf(waveform.size(),0);
+       for (unsigned i=0; i<waveform.size(); ++i) {if (waveform[i] > pedestal) wf[i] = std::min(maxADCCounts_, int(waveform[i] - pedestal));}
        if (diagLevel_ > 2) diag0(iRO, wf);
 
        //extract hits start / stop times
