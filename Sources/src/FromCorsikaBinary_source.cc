@@ -149,7 +149,7 @@ namespace mu2e {
                                        art::EventPrincipal*& outE)
     {
       std::unique_ptr<GenParticleCollection> particles(new GenParticleCollection());
-      unsigned int primaries;
+      unsigned long long primaries;
       bool still_data = _corsikaGen.generate(*particles, primaries);
 
       if (!still_data) {

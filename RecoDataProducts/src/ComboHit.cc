@@ -87,9 +87,9 @@ namespace mu2e {
         throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
-      if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
+      if(ch.nCombo() != 1 || ch.nStrawHits() != 1 || ch.mask().level() != StrawIdMask::uniquestraw)
         throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
-      // if not, it is the bottom and references StrawHits; fill the index vector with the content
+      // if not, it is the bottom and the index references the StrawDigis; fill the index vector with the content
       shids.push_back(ch.index(0));
     }
   }
