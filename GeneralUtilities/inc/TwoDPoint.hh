@@ -15,7 +15,7 @@ namespace mu2e {
       using VEC3 = ROOT::Math::XYZVectorF; // spatial only 3D vector
       using VEC2 = ROOT::Math::XYVectorF; // spatial only 2D vector
       using SVEC = ROOT::Math::SVector<float,2>; // 2D algebraic vector
-      using SMAT = ROOT::Math::SMatrix<float,2,2,ROOT::Math::MatRepSym<float,2>>; // 2D covariance matrix
+      using SMAT = ROOT::Math::SMatrix<float,2,2,ROOT::Math::MatRepSym<float,2>>; // 2D symmetric matrix
       TwoDPoint() {}
       TwoDPoint(SVEC const& pos, SMAT const& cov) : pos_(pos), cov_(cov) {} // explicit construct
       TwoDPoint(VEC2 const& pos,float ucos, float uvar, float vvar); // construct from a point, semi-major direction cosine to the X axis, and semi-major and minor variances
@@ -27,7 +27,7 @@ namespace mu2e {
       VEC2 pos2() const { return VEC2(pos_[0],pos_[1]); } // physical vector
       VEC3 pos3() const { return VEC3(pos_[0],pos_[1],0.0); } // physical vector; Z coordinate is meaningless
     private:
-      SVEC pos_; // position in XY cartesian coordinates, expvarsed as an algebraic vector
+      SVEC pos_; // position in XY cartesian coordinates represented as an algebraic vector
       SMAT cov_; // covariance matrix in XY cartesian coordinates
   };
 }
