@@ -2,16 +2,15 @@
 #include <stdexcept>
 #include <limits>
 namespace mu2e {
-  using SMAT = ROOT::Math::SMatrix<float,2,2,ROOT::Math::MatRepSym<float,2>>; // 2D covariance matrix
+  using SMAT = ROOT::Math::SMatrix<float,2,2,ROOT::Math::MatRepSym<float,2>>;
   TwoDPoint::TwoDPoint(VEC2 const& pos,float ucos, float uvar, float vvar) : pos_(pos.X(),pos.Y()) {
     if(fabs(ucos)>1.0) throw std::invalid_argument( "Unphysical covariance orientation" );
     if( uvar < std::numeric_limits<float>::min() || vvar < std::numeric_limits<float>::min())
       throw std::invalid_argument( "Unphysical variance" );
-    float uc = ucos;
-    float uc2 = ucos*ucos;
-    float us2 = 1.0-uc2;
-    float us = sqrt(us2);
-    float cov[3] = {uc2*uvar + us2*vvar, uc*us*(uvar -vvar),us2*uvar + uc2*vvar};
+    float ucos2 = ucos*ucos;
+    float usin2 = 1.0-ucos2;
+    float usin = sqrt(usin2);
+    float cov[3] = {ucos2*uvar + usin2*vvar, ucos*usin*(uvar -vvar),usin2*uvar + ucos2*vvar};
     cov_ = SMAT(cov,cov+3);
   }
 
