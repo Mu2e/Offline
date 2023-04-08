@@ -57,8 +57,9 @@ namespace mu2e {
   }
 
   double CombinedTwoDPoints::probability() const{
-    if( nDOF() > 0 && chisq_ > 0.0)
-      return TMath::Prob(chisq_,ndof_);
+    auto ndof = nDOF();
+    if( ndof > 0 && chisq_ > 0.0)
+      return TMath::Prob(chisq_,ndof);
     else
       return -1.0;
   }
