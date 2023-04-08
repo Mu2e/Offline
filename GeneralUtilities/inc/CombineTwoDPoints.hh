@@ -42,6 +42,8 @@ namespace mu2e {
       auto const& point() const { return point_; }
       auto const& weight() const { return wt_; }
       auto nPoints() const { return wts_.size(); }
+      unsigned nDOF() const { return 2*(wts_.size()-1); }
+      double probability() const;
       auto chisquared() const { return chisq_; }
       // compute the chisquared from this object to a point
       float dChi2(TwoDPoint const& point) const;

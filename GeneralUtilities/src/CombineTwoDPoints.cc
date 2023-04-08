@@ -1,4 +1,5 @@
 #include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
+#include "TMath.h"
 #include <stdexcept>
 namespace mu2e {
   using SVEC = ROOT::Math::SVector<float,2>;
@@ -53,5 +54,12 @@ namespace mu2e {
     TwoDPoint dpoint(dpt,cov);
     TwoDWeight wt(dpoint,ivar_);
     return ROOT::Math::Similarity(dpoint.pos(),wt.wt());
+  }
+
+  double CombinedTwoDPoints::probability() const{
+    if( nDOF() > 0 && chisq_ > 0.0)
+      return TMath::Prob(chisq_,ndof_);
+    else
+      return -1.0;
   }
 }
