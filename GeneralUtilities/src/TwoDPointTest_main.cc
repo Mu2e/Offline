@@ -19,13 +19,19 @@ static struct option long_options[] = {
   {"p2vres",     required_argument, 0, 'V'  },
   {"p1cos",     required_argument, 0, 'c'  },
   {"p2cos",     required_argument, 0, 'C'  },
+  {"inres",     required_argument, 0, 'i'  },
   {NULL, 0,0,0}
 };
+
+void print_usage() {
+  printf("Usage: TwoDPointTest  --p1x --p1y (point1 (x,y) --p1ures --p1vres (point1 u,v resolution) --p1cos (point1 u_x) (same for point2) --inres (circular intrinsic resolution) ");
+}
+
 int main(int argc, char** argv) {
 
   int opt;
   int long_index =0;
-  float p1x(2.0), p1y(0.0), p2x(1.0), p2y(0.0), p1ures(1.0), p2ures(1.0);
+  float p1x(2.0), p1y(0.0), p2x(1.0), p2y(0.0), p1ures(1.0), p2ures(1.0), ires(0.0);
   float p1vres(1.0), p2vres(1.0), p1cos(1.0), p2cos(1.0);
   while ((opt = getopt_long_only(argc, argv,"",
           long_options, &long_index )) != -1) {
@@ -50,6 +56,8 @@ int main(int argc, char** argv) {
                  break;
       case 'C' : p2cos = atof(optarg);
                  break;
+      case 'i' : ires = atof(optarg);
+                 break;
       default: exit(EXIT_FAILURE);
     }
   }
@@ -59,15 +67,38 @@ int main(int argc, char** argv) {
   std::vector<TwoDPoint> points;
   points.push_back(TwoDPoint(p1,p1cos, p1ures*p1ures,p1vres*p1vres));
   points.push_back(TwoDPoint(p2,p2cos, p2ures*p2ures,p2vres*p2vres));
-  CombinedTwoDPoints cp(points);
+  CombinedTwoDPoints cp(points,ires*ires);
   cp.print(std::cout);
-  CombinedTwoDPoints cp2(points.front());
+  std::cout << "DChi2 point1 " << cp.dChi2(0) << " DChi2 point2 " << cp.dChi2(1) << std::endl;
+
+  CombinedTwoDPoints cp2(points.front(),ires);
   cp2.addPoint(points.back());
   cp2.print(std::cout);
 
-  CombinedTwoDPoints cp3(points.front());
+  CombinedTwoDPoints cp3(points.front(),ires);
   double dchi2 = cp3.dChi2(points.back());
   std::cout << "DChisquared = " << dchi2 << std::endl;
+  // outlier search:e
+  //
+  VEC2 p3(2*p2x,2*p2y);
+  cp.addPoint(TwoDPoint(p3,p2cos,p2ures*p2ures,p2vres*p2vres));
+  std::cout << "After Adding point" << std::endl;
+  cp.print(std::cout);
+  auto const& wts = cp.weights();
+  double maxdchi2(-1.0);
+  size_t maxkey(0);
+  for(auto iwt = wts.begin(); iwt != wts.end(); ++iwt){
+    double dchi2 = cp.dChi2(iwt->first);
+    std::cout << "Key " << iwt->first << " Weight " << iwt->second.wt_ << " dchisq " << dchi2 << std::endl;
+    if(dchi2 > maxdchi2){
+      maxkey = iwt->first;
+      maxdchi2 = dchi2;
+    }
+  }
+  cp.removePoint(maxkey);
+  std::cout << "After removing point " << maxkey << std::endl;
+  cp.print(std::cout);
+
 
   return 0;
 }
