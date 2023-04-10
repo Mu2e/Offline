@@ -25,8 +25,8 @@ int main(int argc, char** argv) {
 
   int opt;
   int long_index =0;
-  float p1x(2.0), p1y(2.0), p2x(1.0), p2y(1.0), p1ures(1.0), p2ures(1.0);
-  float p1vres(1.0), p2vres(1.0), p1cos(0.0), p2cos(0.0);
+  float p1x(2.0), p1y(0.0), p2x(1.0), p2y(0.0), p1ures(1.0), p2ures(1.0);
+  float p1vres(1.0), p2vres(1.0), p1cos(1.0), p2cos(1.0);
   while ((opt = getopt_long_only(argc, argv,"",
           long_options, &long_index )) != -1) {
     switch (opt) {
@@ -60,10 +60,14 @@ int main(int argc, char** argv) {
   points.push_back(TwoDPoint(p1,p1cos, p1ures*p1ures,p1vres*p1vres));
   points.push_back(TwoDPoint(p2,p2cos, p2ures*p2ures,p2vres*p2vres));
   CombinedTwoDPoints cp(points);
-  std::cout << " point 1 " << points[0].pos2() << " point 2 " << points[1].pos2() << std::endl;
-  std::cout << "average point " << cp.point().pos2()
-    << " covariance " << cp.point().cov()
-    << " chisq " << cp.chisquared() << std::endl;
+  cp.print(std::cout);
+  CombinedTwoDPoints cp2(points.front());
+  cp2.addPoint(points.back());
+  cp2.print(std::cout);
+
+  CombinedTwoDPoints cp3(points.front());
+  double dchi2 = cp3.dChi2(points.back());
+  std::cout << "DChisquared = " << dchi2 << std::endl;
 
   return 0;
 }

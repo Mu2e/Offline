@@ -5,12 +5,13 @@
 #ifndef GeneralUtilities_CombineTwoDPoints_hh
 #define GeneralUtilities_CombineTwoDPoints_hh
 #include "Offline/GeneralUtilities/inc/TwoDPoint.hh"
+#include <iostream>
 
 namespace mu2e {
   class TwoDWeight{
     public:
-      using SVEC = ROOT::Math::SVector<float,2>; // 2D algebraic vector
-      using SMAT = ROOT::Math::SMatrix<float,2,2,ROOT::Math::MatRepSym<float,2>>; // 2D covariance matrix
+      using SVEC = ROOT::Math::SVector<double,2>; // 2D algebraic vector
+      using SMAT = ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>>; // 2D covariance matrix
       TwoDWeight() {}
       TwoDWeight(SVEC const& wtpos, SMAT const& wt) : wtpos_(wtpos), wt_(wt) {} // explicit constructor
       TwoDWeight(TwoDPoint const& pos,float ivar=0.0); // construct from a position
@@ -24,7 +25,8 @@ namespace mu2e {
       TwoDWeight& operator +=(TwoDWeight const& other);
       // re-create the original point
       TwoDPoint point() const;
-    private:
+      void print(std::ostream& os) const;
+   private:
       SVEC wtpos_; // weighted position
       SMAT wt_; // weight
   };
@@ -38,21 +40,26 @@ namespace mu2e {
       // add a point (running average)
       void addPoint(TwoDPoint const& point);
       // allow removing an existing point: not sure how to identify points TODO
-      // accessors
-      auto const& point() const { return point_; }
+      // accessors; point is lazy-evaluated
+      TwoDPoint const& point() const;
       auto const& weight() const { return wt_; }
       auto nPoints() const { return wts_.size(); }
       unsigned nDOF() const { return 2*(wts_.size()-1); }
-      double probability() const;
-      auto chisquared() const { return chisq_; }
+      // lazy-evaluated chisquared
+      double consistency() const;
+      double chisquared() const;
       // compute the chisquared from this object to a point
-      float dChi2(TwoDPoint const& point) const;
+      double dChi2(TwoDPoint const& point) const;
+      void print(std::ostream& os) const;
     private:
-      float ivar_; // intrinsic variance
-      TwoDPoint point_; // current point
+      double ivar_ = 0.0; // intrinsic variance
+      mutable bool ptcalc_, chicalc_;
+      mutable TwoDPoint point_; // current point
       TwoDWeight wt_; // current weight sum
-      float chi0_, chisq_; // chisquared of current combination
+      double chi0_ = 0.0;
+      mutable double chisq_; // chisquared of current combination
       std::vector<TwoDWeight> wts_; // weights used in this combination
   };
 }
+std::ostream& operator << (std::ostream& ost, mu2e::TwoDWeight const& pt);
 #endif
