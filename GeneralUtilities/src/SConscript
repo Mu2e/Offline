@@ -23,11 +23,12 @@ mainlib = helper.make_mainlib ( [ 'art_Persistency_Common',
                                   'CLHEP',
                                   'boost_regex',
                                   'boost_filesystem',
-                                  rootlibs
+                                  'GenVector',
+                                  'MathCore'
                                 ]
                               )
 
-BINLIBS   = [ mainlib, rootlibs]
+BINLIBS   = [ mainlib, 'GenVector', 'MathCore']
 helper.make_bin("TwoDPointTest",BINLIBS,[])
 
 
