@@ -16,17 +16,6 @@ namespace mu2e {
 
   TwoDPoint::TwoDPoint(VEC3 const& pos,VEC3 const& udir, float uvar, float vvar) : TwoDPoint(VEC2(pos.X(),pos.Y()),udir.Dot(VEC3(1.0,0.0,0.0)),uvar,vvar){}
 
-  SMAT TwoDPoint::weight(float ires) const {
-    SMAT cov(cov_);
-    double ivar = ires*ires;
-    cov(0,0) += ivar;
-    cov(1,1) += ivar;
-    int ifail(0);
-    SMAT retval = cov.Inverse(ifail);
-    if(ifail != 0)throw std::invalid_argument( "Inversion Failure" );
-    return retval;
-  }
-
   void TwoDPoint::print(std::ostream& os) const {
     os << *this << std::endl;
   }
