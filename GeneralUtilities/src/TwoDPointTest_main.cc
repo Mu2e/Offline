@@ -6,7 +6,7 @@
 #include <getopt.h>
 
 using mu2e::TwoDPoint;
-using mu2e::CombinedTwoDPoints;
+using mu2e::CombineTwoDPoints;
 using VEC2 = ROOT::Math::XYVectorF;
 static struct option long_options[] = {
   {"p1x",     required_argument, 0, 'x' },
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
   int opt;
   int long_index =0;
-  float p1x(2.0), p1y(0.0), p2x(1.0), p2y(0.0), p1ures(1.0), p2ures(1.0), ires(0.0);
+  float p1x(2.0), p1y(0.0), p2x(1.0), p2y(0.0), p1ures(1.0), p2ures(1.0), inres(0.0);
   float p1vres(1.0), p2vres(1.0), p1cos(1.0), p2cos(1.0);
   while ((opt = getopt_long_only(argc, argv,"",
           long_options, &long_index )) != -1) {
@@ -56,32 +56,38 @@ int main(int argc, char** argv) {
                  break;
       case 'C' : p2cos = atof(optarg);
                  break;
-      case 'i' : ires = atof(optarg);
+      case 'i' : inres = atof(optarg);
                  break;
-      default: exit(EXIT_FAILURE);
+      default: print_usage();
+               exit(EXIT_FAILURE);
     }
   }
 
   VEC2 p1(p1x,p1y);
   VEC2 p2(p2x,p2y);
+  float invar = inres*inres;
+  float p1uvar = p1ures*p1ures;
+  float p2uvar = p2ures*p2ures;
+  float p1vvar = p1vres*p1vres;
+  float p2vvar = p2vres*p2vres;
   std::vector<TwoDPoint> points;
-  points.push_back(TwoDPoint(p1,p1cos, p1ures*p1ures,p1vres*p1vres));
-  points.push_back(TwoDPoint(p2,p2cos, p2ures*p2ures,p2vres*p2vres));
-  CombinedTwoDPoints cp(points,ires*ires);
+  points.push_back(TwoDPoint(p1,p1cos, p1uvar, p1vvar));
+  points.push_back(TwoDPoint(p2,p2cos, p2uvar, p2vvar));
+  CombineTwoDPoints cp(points,invar);
   cp.print(std::cout);
   std::cout << "DChi2 point1 " << cp.dChi2(0) << " DChi2 point2 " << cp.dChi2(1) << std::endl;
 
-  CombinedTwoDPoints cp2(points.front(),ires);
+  CombineTwoDPoints cp2(points.front(),invar);
   cp2.addPoint(points.back());
   cp2.print(std::cout);
 
-  CombinedTwoDPoints cp3(points.front(),ires);
+  CombineTwoDPoints cp3(points.front(),invar);
   double dchi2 = cp3.dChi2(points.back());
   std::cout << "DChisquared = " << dchi2 << std::endl;
   // outlier search:e
   //
   VEC2 p3(2*p2x,2*p2y);
-  cp.addPoint(TwoDPoint(p3,p2cos,p2ures*p2ures,p2vres*p2vres));
+  cp.addPoint(TwoDPoint(p3,p2cos,p2uvar,p2vvar));
   std::cout << "After Adding point" << std::endl;
   cp.print(std::cout);
   auto const& wts = cp.weights();
