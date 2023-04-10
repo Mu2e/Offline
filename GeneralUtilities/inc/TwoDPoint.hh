@@ -24,7 +24,6 @@ namespace mu2e {
       // accessors
       auto const& pos() const { return pos_; }
       auto const& cov() const { return cov_; }
-      SMAT weight(float intrinsicvar=0.0) const; // invert the covariance to create the weight matrix.  Optionaly add a constant variance
       VEC2 pos2() const { return VEC2(pos_[0],pos_[1]); } // physical vector
       VEC3 pos3() const { return VEC3(pos_[0],pos_[1],0.0); } // physical vector; Z coordinate is meaningless
       void print(std::ostream& os) const;
