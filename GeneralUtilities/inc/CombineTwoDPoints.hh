@@ -10,7 +10,7 @@
 #include <iostream>
 
 namespace mu2e {
-  class CombinedTwoDPoints{
+  class CombineTwoDPoints{
     struct CWT {
       TwoDWeight wt_; // weight
       double dchi0_; // chisquared contribution
@@ -18,9 +18,9 @@ namespace mu2e {
     };
     public:
       // construct from a point.  Optionally define an intrinsic, circular variance
-      CombinedTwoDPoints(TwoDPoint const& point,float intrinsicvar=0.0);
+      CombineTwoDPoints(TwoDPoint const& point,float intrinsicvar=0.0);
       // construct from a vector of points; each points key is the index into the vector
-      CombinedTwoDPoints(std::vector<TwoDPoint> points,float intrinsicvar=0.0);
+      CombineTwoDPoints(std::vector<TwoDPoint> points,float intrinsicvar=0.0);
       // add a point (running average); returns the key to this object
       size_t addPoint(TwoDPoint const& point);
       // remove a point by its key
