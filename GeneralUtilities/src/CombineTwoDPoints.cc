@@ -48,7 +48,7 @@ namespace mu2e {
     auto const& ptwt = cwt.wt_;
     auto wt = wt_; wt -= ptwt;
     int ifail(0);
-    auto cov = wt.wt().Inverse(ifail);
+    auto cov = wt.wt().InverseFast(ifail);
     if(ifail != 0)throw std::invalid_argument( "Inversion Failure" );
     double chisq = chi0 - ROOT::Math::Similarity(wt.wtPos(),cov);
     return chisquared() - chisq;
@@ -59,7 +59,7 @@ namespace mu2e {
     double chi0 = chi0_ + ROOT::Math::Similarity(pt.pos(),pwt.weight());
     auto wt = wt_; wt += pwt;
     int ifail(0);
-    auto cov = wt.wt().Inverse(ifail);
+    auto cov = wt.wt().InverseFast(ifail);
     if(ifail != 0)throw std::invalid_argument( "Inversion Failure" );
     return chi0 - ROOT::Math::Similarity(wt.wtPos(),cov);
   }
