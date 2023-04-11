@@ -235,12 +235,12 @@ namespace mu2e {
       std::cout << "Combining " << cpts.nPoints() << " hits" << std::endl;
     }
     ComboHit combohit;
-    combohit._mask = _smask;
-    auto const& ch = inchcol[cpts.weights().begin()->first];
-    combohit._sid = _smask.maskStrawId(ch.strawId()); // take the first hit for the StrawId: all should be equivalent
     if(cpts.nPoints() == 1){
-      // just set equal to the referenced hit
-      combohit = ch;
+      auto iwt = cpts.weights().begin();
+      auto ihit = iwt->first;
+      auto const& ch = inchcol[ihit];
+      combohit._sid = _smask.maskStrawId(ch.strawId());
+      combohit.init(ch,ihit);
     } else {
       double wtsum(0), twtsum(0), zsum(0), zmin(1.0e6), zmax(-1e6);
       // fill the remaining variables
@@ -248,6 +248,7 @@ namespace mu2e {
         auto ihit = iwt->first;
         if(combohit.addIndex(ihit)) {
           auto const& ch = inchcol[ihit];
+          combohit._sid = _smask.maskStrawId(ch.strawId());
           combohit._nsh += ch.nStrawHits();
           double wt = ch.nStrawHits(); // not sure if there's a better way to weight
           wtsum += wt;
@@ -255,7 +256,7 @@ namespace mu2e {
           double z = ch._pos.Z();
           zsum += z*wt;
           zmin = std::min(zmin,z);
-          zmax = std::min(zmax,z);
+          zmax = std::max(zmax,z);
           combohit._edep += ch.energyDep()*wt;
           // the following have unclear meaning for stereo hits, but we fill them anyways
           for(size_t iend=0;iend<2;++iend){
@@ -280,21 +281,27 @@ namespace mu2e {
       combohit._vdir = XYZVectorF(-uvres.udir_.Y(),uvres.udir_.X(),0.0);
       combohit._ures = uvres.ures_;
       combohit._vres = uvres.vres_;
+      combohit._qual = cpts.chisquared();
+//      combohit._qual = cpts.consistency();
+      // define w error from range
       static const double invsqrt12 = 1.0/sqrt(12.0);
       combohit._wres = invsqrt12*(zmax-zmin);
-      combohit._time /= twtsum;
+      // simple average for edep
       combohit._edep /= wtsum;
+      // average time
+      combohit._time /= twtsum;
+      combohit._dtime /= wtsum;
+      combohit._ptime  /= wtsum;
+      combohit._timeres = sqrt(1.0/twtsum);
       for(size_t iend=0;iend<2;++iend){
         combohit._etime[iend] /= wtsum;
         combohit._tot[iend] /= wtsum;
       }
-      combohit._dtime /= wtsum;
-      combohit._ptime  /= wtsum;
-      // compute resolutions as RMS
-      combohit._timeres       = sqrt(1.0/twtsum);
     }
+    // update the mask
+    combohit._mask = _smask;
     return combohit;
- }
+  }
 
   // generate the overlap map
   void MakeStereoHits::genMap() {
