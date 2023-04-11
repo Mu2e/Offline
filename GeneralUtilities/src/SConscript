@@ -8,8 +8,6 @@
 import os
 Import('env')
 Import('mu2e_helper')
-rootlibs = env['ROOTLIBS']
-
 helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [ 'art_Persistency_Common',
@@ -30,7 +28,6 @@ mainlib = helper.make_mainlib ( [ 'art_Persistency_Common',
 
 BINLIBS   = [ mainlib, 'GenVector', 'MathCore']
 helper.make_bin("TwoDPointTest",BINLIBS,[])
-
 
 # turn pywrap.i into a python interface
 helper.make_pywrap ()
