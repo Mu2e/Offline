@@ -11,13 +11,13 @@ namespace mu2e {
       wt_(0,0) += ivar;
       wt_(1,1) += ivar;
     }
-    if(!wt_.Invert())throw std::invalid_argument( "Inversion Failure" );
+    if(!wt_.InvertFast())throw std::invalid_argument( "Inversion Failure" );
     wtpos_ = wt_*pos.pos();
   }
 
   TwoDPoint TwoDWeight::point(float ivar) const {
     int ifail(0);
-    SMAT cov = wt_.Inverse(ifail);
+    SMAT cov = wt_.InverseFast(ifail);
     if(ifail != 0)throw std::invalid_argument( "Inversion Failure" );
     auto pos = cov*wtpos_;
     if(ivar>0.0){
