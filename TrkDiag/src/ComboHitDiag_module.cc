@@ -291,7 +291,8 @@ namespace mu2e
         std::vector<StrawDigiIndex> shids;
         _chcol->fillStrawDigiIndices(evt,ich,shids);
         if(shids.size() != ch.nStrawHits())
-          throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit Nesting" << std::endl;
+          throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit Nesting, nshids = "
+            << shids.size() << " , n strawhits = " << ch.nStrawHits() << std::endl;
         // find the SimParticle responsable for most of the hits
         SPM spmap;
         for(auto shi : shids) {
