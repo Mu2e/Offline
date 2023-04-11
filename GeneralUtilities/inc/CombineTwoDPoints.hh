@@ -7,6 +7,7 @@
 #include "Offline/GeneralUtilities/inc/TwoDPoint.hh"
 #include "Offline/GeneralUtilities/inc/TwoDWeight.hh"
 #include <map>
+#include <vector>
 #include <iostream>
 
 namespace mu2e {
@@ -16,13 +17,13 @@ namespace mu2e {
       double dchi0_; // chisquared contribution
       CWT(TwoDWeight const& wt, double dchi0) : wt_(wt), dchi0_(dchi0) {}
     };
+
     public:
-      // construct from a point.  Optionally define an intrinsic, circular variance
-      CombineTwoDPoints(TwoDPoint const& point,float intrinsicvar=0.0);
-      // construct from a vector of points; each points key is the index into the vector
-      CombineTwoDPoints(std::vector<TwoDPoint> points,float intrinsicvar=0.0);
-      // add a point (running average); returns the key to this object
-      size_t addPoint(TwoDPoint const& point);
+      CombineTwoDPoints(float intrinsicvar=0.0) : ivar_(intrinsicvar) {} // empty constructor
+      // construct from a vector of points; each points index into the vector is its key
+      CombineTwoDPoints(std::vector<TwoDPoint> const& points,float intrinsicvar=0.0);
+      // add a point (running average) with a key
+      void addPoint(TwoDPoint const& point, size_t key);
       // remove a point by its key
       void removePoint(size_t key);
       // accessors; aggregate point is lazy-evaluated due to inversion
@@ -46,11 +47,11 @@ namespace mu2e {
       void print(std::ostream& os) const;
     private:
       double ivar_ = 0.0; // intrinsic variance
-      mutable bool ptcalc_, chicalc_;
+      mutable bool ptcalc_ = false, chicalc_ = false;
       mutable TwoDPoint point_; // current combined point
       TwoDWeight wt_; // current combined weight
       double chi0_ = 0.0;
-      mutable double chisq_; // chisquared of current combination
+      mutable double chisq_ = 0.0; // chisquared of current combination
       std::map<size_t,CWT> wts_; // weights used in this combo
   };
 }

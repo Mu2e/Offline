@@ -5,20 +5,10 @@ namespace mu2e {
   using SVEC = ROOT::Math::SVector<double,2>;
   using SMAT = ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>>;
 
- CombineTwoDPoints::CombineTwoDPoints(TwoDPoint const& point, float ivar) : ivar_(ivar), ptcalc_(true), chicalc_(true), point_(point), wt_(point,ivar),  chisq_(0.0) {
-    chi0_ = ROOT::Math::Similarity(point.pos(),wt_.weight());
-    wts_.emplace(std::make_pair(0,CWT(wt_,chi0_)));
-  }
-
-  CombineTwoDPoints::CombineTwoDPoints(std::vector<TwoDPoint> points, float ivar) : ivar_(ivar), ptcalc_(false), chicalc_(false), chi0_(0.0), chisq_(0.0){
-//    wts_.reserve(points.size());
+  CombineTwoDPoints::CombineTwoDPoints(std::vector<TwoDPoint> const& points, float ivar) : ivar_(ivar) {
     for(size_t key=0; key < points.size(); ++key) {
       auto const& point = points[key];
-      auto wt = TwoDWeight(point,ivar_);
-      double dchi0 = ROOT::Math::Similarity(point.pos(),wt.weight());
-      wts_.emplace(std::make_pair(key,CWT(wt,dchi0)));
-      wt_ += wt;
-      chi0_ += dchi0;
+      addPoint(point,key);
     }
   }
 
@@ -30,16 +20,14 @@ namespace mu2e {
     return point_;
   }
 
-  size_t CombineTwoDPoints::addPoint(TwoDPoint const& point) {
+  void CombineTwoDPoints::addPoint(TwoDPoint const& point,size_t key) {
     auto wt = TwoDWeight(point,ivar_);
     double dchi0 = ROOT::Math::Similarity(point.pos(),wt.weight());
-    auto key = wts_.size();
     wts_.emplace(std::make_pair(key,CWT(wt,dchi0)));
     wt_ += wt;
     chi0_ += dchi0;
     chicalc_ = false;
     ptcalc_ = false;
-    return key;
   }
 
   void CombineTwoDPoints::removePoint(size_t key) {
@@ -50,7 +38,7 @@ namespace mu2e {
       chi0_ -= cwt.dchi0_;
       chicalc_ = false;
       ptcalc_ = false;
-   wts_.erase(ifnd);
+      wts_.erase(ifnd);
     }
   }
 

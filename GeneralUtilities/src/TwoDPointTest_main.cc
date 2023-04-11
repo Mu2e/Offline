@@ -17,32 +17,32 @@ static struct option long_options[] = {
   {"p1vres",     required_argument, 0, 'v'  },
   {"p2ures",     required_argument, 0, 'U'  },
   {"p2vres",     required_argument, 0, 'V'  },
-  {"p1cos",     required_argument, 0, 'c'  },
-  {"p2cos",     required_argument, 0, 'C'  },
+  {"p1uphi",     required_argument, 0, 'p'  },
+  {"p2uphi",     required_argument, 0, 'P'  },
   {"inres",     required_argument, 0, 'i'  },
   {NULL, 0,0,0}
 };
 
 void print_usage() {
-  printf("Usage: TwoDPointTest  --p1x --p1y (point1 (x,y) --p1ures --p1vres (point1 u,v resolution) --p1cos (point1 u_x) (same for point2) --inres (circular intrinsic resolution) ");
+  printf("Usage: TwoDPointTest  --p1x --p1y (point1 (x,y) --p1ures --p1vres (point1 u,v resolution) --p1uphi (point1 u phi) (same for point2) --inres (circular intrinsic resolution) ");
 }
 
 int main(int argc, char** argv) {
 
   int opt;
   int long_index =0;
-  float p1x(2.0), p1y(0.0), p2x(1.0), p2y(0.0), p1ures(1.0), p2ures(1.0), inres(0.0);
-  float p1vres(1.0), p2vres(1.0), p1cos(1.0), p2cos(1.0);
+  VEC2 p1(0.0,0.0), p2(1.0,0.0), u1(1.0,0.0), u2(1.0,0.0);
+  float p1ures(1.0), p2ures(1.0), inres(0.0), p1vres(1.0), p2vres(1.0);
   while ((opt = getopt_long_only(argc, argv,"",
           long_options, &long_index )) != -1) {
     switch (opt) {
-      case 'x' : p1x = atof(optarg);
+      case 'x' : p1.SetX(atof(optarg));
                  break;
-      case 'X' : p2x = atof(optarg);
+      case 'X' : p2.SetX(atof(optarg));
                  break;
-      case 'y' : p1y = atof(optarg);
+      case 'y' : p1.SetY(atof(optarg));
                  break;
-      case 'Y' : p2y = atof(optarg);
+      case 'Y' : p2.SetY(atof(optarg));
                  break;
       case 'u' : p1ures = atof(optarg);
                  break;
@@ -52,9 +52,9 @@ int main(int argc, char** argv) {
                  break;
       case 'V' : p2vres = atof(optarg);
                  break;
-      case 'c' : p1cos = atof(optarg);
+      case 'p' : u1 = VEC2(cos(atof(optarg)),sin(atof(optarg)));;
                  break;
-      case 'C' : p2cos = atof(optarg);
+      case 'P' : u2 = VEC2(cos(atof(optarg)),sin(atof(optarg)));;
                  break;
       case 'i' : inres = atof(optarg);
                  break;
@@ -63,31 +63,34 @@ int main(int argc, char** argv) {
     }
   }
 
-  VEC2 p1(p1x,p1y);
-  VEC2 p2(p2x,p2y);
   float invar = inres*inres;
   float p1uvar = p1ures*p1ures;
   float p2uvar = p2ures*p2ures;
   float p1vvar = p1vres*p1vres;
   float p2vvar = p2vres*p2vres;
   std::vector<TwoDPoint> points;
-  points.push_back(TwoDPoint(p1,p1cos, p1uvar, p1vvar));
-  points.push_back(TwoDPoint(p2,p2cos, p2uvar, p2vvar));
+  points.push_back(TwoDPoint(p1,u1, p1uvar, p1vvar));
+  points.push_back(TwoDPoint(p2,u2, p2uvar, p2vvar));
+
+  for(auto const& pt : points) {
+    auto uvres = pt.uvRes();
+    std::cout << "Input point " << pt << " uvres " << uvres.ures_ << "," << uvres.vres_ << ", udir " <<  uvres.udir_ << std::endl;
+  }
+
   CombineTwoDPoints cp(points,invar);
   cp.print(std::cout);
   std::cout << "DChi2 point1 " << cp.dChi2(0) << " DChi2 point2 " << cp.dChi2(1) << std::endl;
 
-  CombineTwoDPoints cp2(points.front(),invar);
-  cp2.addPoint(points.back());
+  CombineTwoDPoints cp2(invar);
+  cp2.addPoint(points[0],0);
+  double dchi2 = cp2.dChi2(points.back());
+  std::cout << "DChisquared = " << dchi2 << std::endl;
+  cp2.addPoint(points[1],1);
   cp2.print(std::cout);
 
-  CombineTwoDPoints cp3(points.front(),invar);
-  double dchi2 = cp3.dChi2(points.back());
-  std::cout << "DChisquared = " << dchi2 << std::endl;
-  // outlier search:e
   //
-  VEC2 p3(2*p2x,2*p2y);
-  cp.addPoint(TwoDPoint(p3,p2cos,p2uvar,p2vvar));
+  VEC2 p3(2*p2.X(),2*p2.Y());
+  cp.addPoint(TwoDPoint(p3,u2,p2uvar,p2vvar),2);
   std::cout << "After Adding point" << std::endl;
   cp.print(std::cout);
   auto const& wts = cp.weights();
@@ -104,7 +107,6 @@ int main(int argc, char** argv) {
   cp.removePoint(maxkey);
   std::cout << "After removing point " << maxkey << std::endl;
   cp.print(std::cout);
-
 
   return 0;
 }
