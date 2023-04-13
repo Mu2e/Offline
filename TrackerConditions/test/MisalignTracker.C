@@ -151,9 +151,9 @@ void MisalignTracker(int seed,
         << dU << ", "
         << dV << ", "
         << dW << ", "
-        << dalphax << ", "
-        << dalphay << ", "
-        << dalphaz << endl;
+        << dalphaU << ", "
+        << dalphaV << ", "
+        << dalphaW << endl;
       index++;
     }
   }
