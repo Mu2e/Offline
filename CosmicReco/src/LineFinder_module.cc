@@ -118,6 +118,7 @@ void LineFinder::produce(art::Event& event ) {
     int nhits = 0;
     std::vector<ComboHitCollection::const_iterator> chids;
     chcol.fillComboHits(event, tclust.hits(), chids);
+    tchits.setParent(chcol.parent());
     for (auto const& it : chids){
       tchits.push_back(it[0]);
       nhits += it[0].nStrawHits();
@@ -233,6 +234,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
     }
   }
   avg_t0 /= good_hits;
+  tseed._straw_chits.setParent(shC.parent());
 
   tseed._t0._t0 = avg_t0-_t0offset;
 
