@@ -65,6 +65,7 @@ namespace mu2e {
   using KTRAJ= KinKal::KinematicLine;
   using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
   using KKTRK = KKTrack<KTRAJ>;
+  using KKTRKCOL = OwningPointerCollection<KKTRK>;
   using KKSTRAWHIT = KKStrawHit<KTRAJ>;
   using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
   using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
@@ -178,7 +179,7 @@ namespace mu2e {
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit:Segment saving configuration error"<< endl;
       // collection handling
       for(const auto& hseedtag : settings().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
-      produces<KKLineCollection>();
+      produces<KKTRKCOL>();
       produces<KalSeedCollection>();
       produces<KalLineAssns>();
       // build the initial seed covariance
@@ -226,7 +227,7 @@ namespace mu2e {
     auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // create output
-    unique_ptr<KKLineCollection> kktrkcol(new KKLineCollection );
+    unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection ); //Needs to return a KalSeed
     unique_ptr<KalLineAssns> kkseedassns(new KalLineAssns());
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
