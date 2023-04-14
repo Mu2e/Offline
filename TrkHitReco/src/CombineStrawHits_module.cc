@@ -205,7 +205,8 @@ namespace mu2e {
         if(_filter)break;
       } else
         combohit._flag.merge(StrawHitFlag::radsel);
-
+      combohit._mask = _mask;
+      combohit._flag.merge(StrawHitFlag::panelcombo);
       chcol.push_back(std::move(combohit));
     }
   }
@@ -213,9 +214,6 @@ namespace mu2e {
 
   void CombineStrawHits::combineHits(const ComboHitCollection* chcolOrig, ComboHit& combohit)
   {
-    combohit._mask = _mask;
-    combohit._flag.merge(StrawHitFlag::panelcombo);
-
     // simple sums to speed up the trigger
     double eacc(0),ctacc(0),dtacc(0),twtsum(0),ptacc(0),wacc(0),wacc2(0),wwtsum(0);
     double etacc[2] = {0,0};
