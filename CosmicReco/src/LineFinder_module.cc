@@ -118,7 +118,6 @@ void LineFinder::produce(art::Event& event ) {
     int nhits = 0;
     std::vector<ComboHitCollection::const_iterator> chids;
     chcol.fillComboHits(event, tclust.hits(), chids);
-    tchits.setParent(chcol.parent());
     for (auto const& it : chids){
       tchits.push_back(it[0]);
       nhits += it[0].nStrawHits();
@@ -140,7 +139,7 @@ void LineFinder::produce(art::Event& event ) {
       tseed._status.merge(TrkFitFlag::helixOK);
       tseed._status.merge(TrkFitFlag::helixConverged);
       tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
-
+      tseed._straw_chits.setParent(chcol.parent());
       CosmicTrackSeedCollection*  tcol  = seed_col.get();
       tcol->push_back(tseed);
     }
@@ -234,7 +233,6 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
     }
   }
   avg_t0 /= good_hits;
-  tseed._straw_chits.setParent(shC.parent());
 
   tseed._t0._t0 = avg_t0-_t0offset;
 
