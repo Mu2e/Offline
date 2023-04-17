@@ -139,7 +139,7 @@ void LineFinder::produce(art::Event& event ) {
       tseed._status.merge(TrkFitFlag::helixOK);
       tseed._status.merge(TrkFitFlag::helixConverged);
       tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
-
+      tseed._straw_chits.setParent(chcol.parent());
       CosmicTrackSeedCollection*  tcol  = seed_col.get();
       tcol->push_back(tseed);
     }
