@@ -160,6 +160,14 @@ physics.end_paths : [ EndPath ]
 # ComboHitCollection.  This setting works, but will slow down the trigger: don't use this script for timing studies
 physics.producers.TTmakeSH.FilterHits : false
 
+physics.producers.TTKSFDeM.FitSettings.BkgANNSHUSettings : [
+  [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
+]
+physics.producers.TTCalSeedFitDem.FitSettings.BkgANNSHUSettings : [
+  [ "Offline/Mu2eKinKal/data/TrainBkgTTcpr.dat",0.01,"Inactive", 1]
+]
+
+
 physics.analyzers.TAtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAtpr.candidate.options : @local::AllOpt
 physics.analyzers.TAtpr.candidate.options.fillBestCrv : false
