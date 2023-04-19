@@ -35,7 +35,8 @@ Mu2eKinKalTrigger : {
       [10.0, -1.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",1e-6,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
+      #  [ "Offline/Mu2eKinKal/data/TrainBkgTTcpr.dat",0.01,"Inactive", 1]  This should be used for cpr FIXME
     ]
   }
 
