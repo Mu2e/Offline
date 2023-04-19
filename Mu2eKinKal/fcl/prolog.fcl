@@ -119,7 +119,7 @@ Mu2eKinKal : {
       [3.0, 3.0, -1.0, true, 0 ]
     ]
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",0.2,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.2,"Inactive", 1]
     ]
   }
 
@@ -161,8 +161,8 @@ Mu2eKinKal : {
     ]
 
     BkgANNSHUSettings : [
-      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",0.1,"Inactive", 1],
-      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage1.dat",0.1,"Inactive", 1]
+      [ "Offline/Mu2eKinKal/data/TrainBkgSeed.dat",0.1,"Inactive", 1],
+      [ "Offline/Mu2eKinKal/data/TrainBkgFinal.dat",0.1,"Inactive", 1]
     ]
 
     DriftANNSHUSettings : [
