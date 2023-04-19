@@ -34,6 +34,9 @@ Mu2eKinKalTrigger : {
     StrawXingUpdaterSettings : [
       [10.0, -1.0, -1.0, true, 0 ]
     ]
+    BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/TrainBkg_Stage0.dat",1e-6,"Inactive", 1]
+    ]
   }
 
   SEEDEXT: {

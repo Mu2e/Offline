@@ -167,7 +167,6 @@ physics.producers.TTCalSeedFitDem.FitSettings.BkgANNSHUSettings : [
   [ "Offline/Mu2eKinKal/data/TrainBkgTTcpr.dat",0.01,"Inactive", 1]
 ]
 
-
 physics.analyzers.TAtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAtpr.candidate.options : @local::AllOpt
 physics.analyzers.TAtpr.candidate.options.fillBestCrv : false
