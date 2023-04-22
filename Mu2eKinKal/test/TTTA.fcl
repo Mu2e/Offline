@@ -10,7 +10,7 @@
 #include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
 #include "Offline/Trigger/fcl/prolog_trigger.fcl"
 #include "TrkAna/fcl/prolog.fcl"
-#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog_trigger.fcl"
 
 process_name: TTKKSeed
 source : {module_type : RootInput
@@ -35,48 +35,14 @@ physics :
     @table::CprTrigger.producers
     @table::TTMu2eKinKal.producers
     SelectRecoMCcpr : {
-      @table::CommonMC.SelectRecoMC
-      TrkOnly : true
-      CaloClusterMinE : 10.0
-      SaveEnergySteps : false
-      SaveUnusedDigiMCs : false
-      SaveAllUnusedDigiMCs : false
-      UseStrawHitFlagCollection: false
-      PrimaryParticle : "compressDigiMCs"
-      StrawDigiCollection : "makeSD"
-      StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-      ComboHitCollection : "TTmakeSH"
-      CaloDigiCollection : "CaloDigiMaker"
-      CaloClusterCollection : "CaloClusterFast"
-      StrawDigiMCCollection : "compressDigiMCs"
-      CrvDigiCollection : "CrvDigi"
-      CrvDigiMCCollection : "compressDigiMCs"
-      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+      @table::CommonMCTrigger.TTSelectRecoMC
       KalSeedCollections  : [ "TTCalSeedFitDem" ]
       HelixSeedCollections  : ["TTCalHelixMergerDeM" ]
-      VDSPCollection : "compressDigiMCs:virtualdetector"
     }
-
     SelectRecoMCtpr : {
-      @table::CommonMC.SelectRecoMC
-      TrkOnly : true
-      CaloClusterMinE : 10.0
-      SaveEnergySteps : false
-      SaveUnusedDigiMCs : false
-      SaveAllUnusedDigiMCs : false
-      PrimaryParticle : "compressDigiMCs"
-      StrawDigiCollection : "makeSD"
-      StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-      ComboHitCollection : "TTmakeSH"
-      CaloDigiCollection : "CaloDigiMaker"
-      CaloClusterCollection : "CaloClusterFast"
-      StrawDigiMCCollection : "compressDigiMCs"
-      CrvDigiCollection : "CrvDigi"
-      CrvDigiMCCollection : "compressDigiMCs"
-      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+      @table::CommonMCTrigger.TTSelectRecoMC
       KalSeedCollections  : [ "TTKSFDeM" ]
       HelixSeedCollections  : ["TTHelixMergerDeM" ]
-      VDSPCollection : "compressDigiMCs:virtualdetector"
     }
 
     TTKSFDeM : {
