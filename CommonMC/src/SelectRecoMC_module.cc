@@ -67,7 +67,7 @@ namespace mu2e {
         fhicl::Atom<bool> useSHFC                 { Name("UseStrawHitFlagCollection"),                  Comment("Use the StrawHitFlag collection"), false};
         fhicl::Atom<art::InputTag> PP             { Name("PrimaryParticle"),                  Comment("PrimaryParticle")};
         fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
-        fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollection")};
+        fhicl::Sequence<art::InputTag> CrvCCCs    { Name("CrvCoincidenceClusterCollections"),Comment("CrvCoincidenceClusterCollections")};
         fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),                  Comment("StrawDigiCollection")};
         fhicl::Atom<art::InputTag> SHFC           { Name("StrawHitFlagCollection"),         Comment("StrawHitFlagCollection")};
         fhicl::Atom<art::InputTag> CHC            { Name("ComboHitCollection"),                  Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
@@ -102,8 +102,9 @@ namespace mu2e {
       int _debug;
       bool _trkonly;
       bool _saveallenergy, _saveunused, _saveallunused, _useSHFC;
-      art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
+      art::InputTag _pp, _ccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
       std::vector<std::string> _kscs, _hscs;
+    std::vector<art::InputTag> _crvcccs;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
@@ -121,7 +122,6 @@ namespace mu2e {
     _useSHFC(config().useSHFC()),
     _pp(config().PP()),
     _ccc(config().CCC()),
-    _crvccc(config().CrvCCC()),
     _sdc(config().SDC()),
     _shfc(config().SHFC()),
     _chc(config().CHC()),
@@ -133,6 +133,7 @@ namespace mu2e {
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
     _hscs(config().HelixSeeds()),
+    _crvcccs(config().CrvCCCs()),
     _ccme(config().CCME())
     {
       consumes<StrawDigiCollection>(_sdc);
@@ -143,7 +144,9 @@ namespace mu2e {
       consumes<CaloClusterCollection>(_ccc);
       consumes<CrvDigiCollection>(_crvdc);
       consumesMany<KalSeedCollection>();
-      consumes<CrvCoincidenceClusterCollection>(_crvccc);
+      for (const auto& i_tag : _crvcccs) {
+        consumes<CrvCoincidenceClusterCollection>(i_tag);
+      }
       consumes<PrimaryParticle>(_pp);
       consumes<StrawDigiMCCollection>(_sdmcc);
       consumes<CrvDigiMCCollection>(_crvdmcc);
@@ -154,7 +157,9 @@ namespace mu2e {
         produces <CaloDigiCollection>();
         produces <CrvDigiCollection>();
         produces <CrvRecoPulseCollection>();
-        produces <CrvCoincidenceClusterCollection>();
+        for (const auto& i_tag : _crvcccs) {
+          produces <CrvCoincidenceClusterCollection>(i_tag.label());
+        }
       }
       produces <KalSeedMCCollection>();
       produces <KalSeedMCAssns>();
@@ -482,8 +487,6 @@ namespace mu2e {
   void SelectRecoMC::fillCrv(art::Event& event,
       PrimaryParticle const& pp, RecoCount& nrec) {
     // find Crv data in event
-    auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(_crvccc);
-    auto const& crvccc = *crvccch;
     auto crvdch = event.getValidHandle<CrvDigiCollection>(_crvdc);
     auto const& crvdc = *crvdch;
     auto crvdmcch = event.getValidHandle<CrvDigiMCCollection>(_crvdmcc);
@@ -493,26 +496,32 @@ namespace mu2e {
     // create new Crv collections
     std::unique_ptr<CrvDigiCollection> scrvdc(new CrvDigiCollection);
     std::unique_ptr<CrvRecoPulseCollection> scrvrpc(new CrvRecoPulseCollection);
-    std::unique_ptr<CrvCoincidenceClusterCollection> scrvccc(new CrvCoincidenceClusterCollection);
     std::unique_ptr<IndexMap> crvdmcim(new IndexMap);
-    // loop over CrvCoincidenceClusters
+    std::vector<std::unique_ptr<CrvCoincidenceClusterCollection>> scrvcccs;
+
     std::set<uint16_t> crvindices;
-    for(auto const& crvcc: crvccc) {
-      std::vector<art::Ptr<CrvRecoPulse>> pulses;
-      for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
-        // deep-copy the pulses used in coincidences: the digi indices are updated later
-        // the map must be used to connect them
-        scrvrpc->push_back(*crvrp);
-        auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
-        pulses.push_back(crvrpp);
-        for(auto index : crvrp->GetWaveformIndices()){
-          crvindices.insert(index);
+    for (size_t i_tag = 0; i_tag < _crvcccs.size(); ++i_tag) {
+      auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(_crvcccs.at(i_tag));
+      auto const& crvccc = *crvccch;
+      scrvcccs.push_back(std::unique_ptr<CrvCoincidenceClusterCollection>(new CrvCoincidenceClusterCollection));
+      // loop over CrvCoincidenceClusters
+      for(auto const& crvcc: crvccc) {
+        std::vector<art::Ptr<CrvRecoPulse>> pulses;
+        for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
+          // deep-copy the pulses used in coincidences: the digi indices are updated later
+          // the map must be used to connect them
+          scrvrpc->push_back(*crvrp);
+          auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
+          pulses.push_back(crvrpp);
+          for(auto index : crvrp->GetWaveformIndices()){
+            crvindices.insert(index);
+          }
         }
+        // deep-copy the coincidence-cluster with updated Reco Pulses
+        CrvCoincidenceCluster scrvcc(crvcc);
+        scrvcc.SetCrvRecoPulses(pulses);
+        scrvcccs.at(i_tag)->push_back(scrvcc);
       }
-      // deep-copy the coincidence-cluster with updated Reco Pulses
-      CrvCoincidenceCluster scrvcc(crvcc);
-      scrvcc.SetCrvRecoPulses(pulses);
-      scrvccc->push_back(scrvcc);
     }
     // add indices for digis associated with the MC primary particle(s)
     for(auto icrv = crvdmcc.begin(); icrv != crvdmcc.end();++icrv) {
@@ -542,7 +551,9 @@ namespace mu2e {
     // put new data in event
     event.put(std::move(scrvdc));
     event.put(std::move(scrvrpc));
-    event.put(std::move(scrvccc));
+    for (size_t i_tag = 0; i_tag < _crvcccs.size(); ++i_tag) {
+      event.put(std::move(scrvcccs.at(i_tag)), _crvcccs.at(i_tag).label());
+    }
     event.put(std::move(crvdmcim),"CrvDigiMap");
   }
 
