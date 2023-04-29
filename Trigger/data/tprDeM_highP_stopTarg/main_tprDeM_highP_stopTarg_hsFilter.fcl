@@ -4,7 +4,7 @@ physics.filters.tprDeMHighPStopTargHSFilter.helicity      : 1
 physics.filters.tprDeMHighPStopTargHSFilter.minNStrawHits : 15.0
 physics.filters.tprDeMHighPStopTargHSFilter.minHitRatio   : 0.4
 physics.filters.tprDeMHighPStopTargHSFilter.minMomentum   : 70.0
-physics.filters.tprDeMHighPStopTargHSFilter.maxMomentum   : 120.0
+physics.filters.tprDeMHighPStopTargHSFilter.maxMomentum   : 200.0
 physics.filters.tprDeMHighPStopTargHSFilter.minPt         : 0.0
 physics.filters.tprDeMHighPStopTargHSFilter.maxChi2XY     : 8.0
 physics.filters.tprDeMHighPStopTargHSFilter.maxChi2PhiZ   : 8.0
