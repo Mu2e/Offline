@@ -1,7 +1,7 @@
 physics.filters.minBiasSDCountFilter.caloDigiCollection  : notUSed
 physics.filters.minBiasSDCountFilter.useStrawDigi        : true
 physics.filters.minBiasSDCountFilter.useCaloDigi         : false
-physics.filters.minBiasSDCountFilter.minNStrawDigi       : 500
+physics.filters.minBiasSDCountFilter.minNStrawDigi       : 10
 physics.filters.minBiasSDCountFilter.maxNStrawDigi       : 10000
 physics.filters.minBiasSDCountFilter.minNCaloDigi        : -1
 physics.filters.minBiasSDCountFilter.maxNCaloDigi        : -1
