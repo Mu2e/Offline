@@ -68,7 +68,7 @@ public:
         fhicl::Name("nSigmaNoise"),
         fhicl::Comment("Maxnumber of sigma Noise to combine digi") };
     fhicl::Atom<float> hitEDepMax{
-        fhicl::Name("hitEDepMin"),
+        fhicl::Name("hitEDepMax"),
         fhicl::Comment("Maximum hit energy in MeV (to reject saturated pulses)")};
     fhicl::Atom<float> hitEDepMin{
         fhicl::Name("hitEDepMin"),
