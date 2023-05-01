@@ -1,7 +1,7 @@
 physics.filters.cprCosmicSeedDeMHSFilter.requireCaloCluster   : false
 physics.filters.cprCosmicSeedDeMHSFilter.doHelicityCheck  : true
 physics.filters.cprCosmicSeedDeMHSFilter.helicity      : 1
-physics.filters.cprCosmicSeedDeMHSFilter.minNStrawHits : 15.0
+physics.filters.cprCosmicSeedDeMHSFilter.minNStrawHits : 15
 physics.filters.cprCosmicSeedDeMHSFilter.minHitRatio   : 0.4
 physics.filters.cprCosmicSeedDeMHSFilter.minMomentum   : 50.0
 physics.filters.cprCosmicSeedDeMHSFilter.maxMomentum   : 300.0
