@@ -13,8 +13,8 @@ makeSH : {
   MaximumTime             : 1690.0 # ns
   MinimumEnergy           : 0.0001 # MeV
   MaximumEnergy           : 0.0035 # MeV
-  MinimumRadius           : 0.0 # mm
-  MaximumRadius           : 800.0 # mm
+  MinimumRadius           : 395.0 # mm
+  MaximumRadius           : 650.0 # mm
   FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
