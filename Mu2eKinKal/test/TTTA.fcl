@@ -10,7 +10,8 @@
 #include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
 #include "Offline/Trigger/fcl/prolog_trigger.fcl"
 #include "TrkAna/fcl/prolog.fcl"
-#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog_trigger.fcl"
 
 process_name: TTKKSeed
 source : {module_type : RootInput
@@ -35,48 +36,14 @@ physics :
     @table::CprTrigger.producers
     @table::TTMu2eKinKal.producers
     SelectRecoMCcpr : {
-      @table::CommonMC.SelectRecoMC
-      TrkOnly : true
-      CaloClusterMinE : 10.0
-      SaveEnergySteps : false
-      SaveUnusedDigiMCs : false
-      SaveAllUnusedDigiMCs : false
-      UseStrawHitFlagCollection: false
-      PrimaryParticle : "compressDigiMCs"
-      StrawDigiCollection : "makeSD"
-      StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-      ComboHitCollection : "TTmakeSH"
-      CaloDigiCollection : "CaloDigiMaker"
-      CaloClusterCollection : "CaloClusterFast"
-      StrawDigiMCCollection : "compressDigiMCs"
-      CrvDigiCollection : "CrvDigi"
-      CrvDigiMCCollection : "compressDigiMCs"
-      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+      @table::CommonMCTrigger.TTSelectRecoMC
       KalSeedCollections  : [ "TTCalSeedFitDem" ]
       HelixSeedCollections  : ["TTCalHelixMergerDeM" ]
-      VDSPCollection : "compressDigiMCs:virtualdetector"
     }
-
     SelectRecoMCtpr : {
-      @table::CommonMC.SelectRecoMC
-      TrkOnly : true
-      CaloClusterMinE : 10.0
-      SaveEnergySteps : false
-      SaveUnusedDigiMCs : false
-      SaveAllUnusedDigiMCs : false
-      PrimaryParticle : "compressDigiMCs"
-      StrawDigiCollection : "makeSD"
-      StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-      ComboHitCollection : "TTmakeSH"
-      CaloDigiCollection : "CaloDigiMaker"
-      CaloClusterCollection : "CaloClusterFast"
-      StrawDigiMCCollection : "compressDigiMCs"
-      CrvDigiCollection : "CrvDigi"
-      CrvDigiMCCollection : "compressDigiMCs"
-      CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+      @table::CommonMCTrigger.TTSelectRecoMC
       KalSeedCollections  : [ "TTKSFDeM" ]
       HelixSeedCollections  : ["TTHelixMergerDeM" ]
-      VDSPCollection : "compressDigiMCs:virtualdetector"
     }
 
     TTKSFDeM : {
@@ -129,6 +96,20 @@ physics :
       printSubrun : false
       printEvent  : true
     }
+    CHDS : {
+      @table::CHD
+      diagLevel : 2
+      digiDiag : true
+      ComboHitCollection : "TTmakeSH"
+      useFlagCollection : false
+    }
+    CHDP : {
+      @table::CHD
+      diagLevel : 2
+      digiDiag : true
+      ComboHitCollection : "TTmakePH"
+      useFlagCollection : false
+    }
   }
 
   tprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
@@ -141,8 +122,8 @@ physics :
     TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,
     TTCalHelixMergerDeM, cprDeMHighPStopTargHSFilter,
     TTCalSeedFitDem, cprDeMHighPStopTargTSFilter, SelectRecoMCcpr]
+  #  EndPath : [TAtpr, TAcpr, CHDS, CHDP]
   EndPath : [TAtpr, TAcpr]
-  #  EndPath : [Output]
 }
 outputs : {
   Output : {
@@ -159,6 +140,10 @@ physics.end_paths : [ EndPath ]
 # this next is currently needed to get correct hit-level MC truth matching.  It needs to be fixed at the
 # ComboHitCollection.  This setting works, but will slow down the trigger: don't use this script for timing studies
 physics.producers.TTmakeSH.FilterHits : false
+physics.producers.TTmakePH.TestFlag : true
+#physics.producers.TTmakePH.FilterHits : true
+physics.producers.TTmakePH.StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+physics.producers.TTmakePH.StrawHitMask          : ["Noisy"]
 
 physics.producers.TTKSFDeM.FitSettings.BkgANNSHUSettings : [
   [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
