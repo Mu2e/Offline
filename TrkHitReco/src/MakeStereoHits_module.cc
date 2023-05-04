@@ -275,6 +275,7 @@ namespace mu2e {
           double wt = ch.nStrawHits(); // not sure if there's a better way to weight
           wtsum += wt;
           combohit._flag.merge(ch.flag());
+          combohit._flag.merge(StrawHitFlag::stereo);
           combohit._pos += ch._pos*wt;
           combohit._edep += ch.energyDep()*wt;
           // the following have unclear meaning for stereo hits, but we fill them anyways
