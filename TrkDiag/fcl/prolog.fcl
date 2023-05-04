@@ -8,7 +8,7 @@ BD : {
   StrawDigiMCCollection : "compressDigiMCs"
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  BkgQualCollection:"FlagBkgHits"
+  # BkgQualCollection:"FlagBkgHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
   useFlagCollection : true
