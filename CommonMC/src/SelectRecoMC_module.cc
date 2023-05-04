@@ -16,6 +16,7 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/DataProducts/inc/IndexMap.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
@@ -76,6 +77,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),                  Comment("CrvDigiCollection")};
         fhicl::Atom<art::InputTag> CRVDMCC        { Name("CrvDigiMCCollection"),                  Comment("CrvDigiMCCollection")};
         fhicl::Atom<art::InputTag> PBTMC          { Name("PBTMC"),                  Comment("ProtonBunchTimeMC")};
+        fhicl::Atom<art::InputTag> EWM            { Name("EventWindowMarker"), Comment("EventWindowMarker")};
         fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),                  Comment("KalSeedCollections")};
         fhicl::Sequence<std::string> HelixSeeds   { Name("HelixSeedCollections"),                  Comment("HelixSeedCollections")};
         fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
@@ -102,13 +104,14 @@ namespace mu2e {
       int _debug;
       bool _trkonly;
       bool _saveallenergy, _saveunused, _saveallunused, _useSHFC;
-      art::InputTag _pp, _ccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
+      art::InputTag _pp, _ccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _ewm, _vdspc;
       std::vector<std::string> _kscs, _hscs;
     std::vector<art::InputTag> _crvcccs;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
       double _pbtimemc; // mc true proton bunch time
+      bool _onSpill;
       ProditionsHandle<StrawResponse> _strawResponse_h;
   };
 
@@ -130,6 +133,7 @@ namespace mu2e {
     _crvdc(config().CRVDC()),
     _crvdmcc(config().CRVDMCC()),
     _pbtmc(config().PBTMC()),
+    _ewm(config().EWM()),
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
     _hscs(config().HelixSeeds()),
@@ -151,6 +155,7 @@ namespace mu2e {
       consumes<StrawDigiMCCollection>(_sdmcc);
       consumes<CrvDigiMCCollection>(_crvdmcc);
       consumes<ProtonBunchTimeMC>(_pbtmc);
+      consumes<EventWindowMarker>(_ewm);
       produces <IndexMap>("StrawDigiMap");
       if (!_trkonly){
         produces <IndexMap>("CrvDigiMap");
@@ -185,6 +190,8 @@ namespace mu2e {
     auto const& pp = *pph;
     auto pbtmc = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
     _pbtimemc = pbtmc->pbtime_;
+    auto  ewmh = event.getValidHandle<EventWindowMarker>(_ewm);
+    _onSpill = (ewmh->spillType() == EventWindowMarker::SpillType::onspill);
 
     std::unique_ptr<RecoCount> nrec(new RecoCount);
     std::set<art::Ptr<CaloCluster> > ccptrs;
@@ -283,9 +290,12 @@ namespace mu2e {
     const auto& sgs = *(sdmc.earlyStrawGasStep());
     tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
     tshmc._mom = sgs.momentum();
-    tshmc._time = fmod(sgs.time(),_mbtime);
-    // fix for DAQ wrapping
-    if(tshmc._time < -_pbtimemc)tshmc._time += _mbtime;
+    tshmc._time = sgs.time();
+    if (_onSpill){
+      tshmc._time = fmod(tshmc._time,_mbtime);
+      // fix for DAQ wrapping
+      if(tshmc._time < -_pbtimemc)tshmc._time += _mbtime;
+    }
     tshmc._strawId = sdmc.strawId();
     tshmc._earlyend = sdmc.earlyEnd();
     // compute the signal propagation time and drift time
@@ -295,7 +305,9 @@ namespace mu2e {
     auto tdir = sgs.momentum().Unit();
     double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
     tshmc._tprop = fabs(pdist)/vprop;
-    tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
+    tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge offset FIXME!
+    if (_onSpill)
+      tshmc._tdrift = fmod(tshmc._tdrift,_mbtime);
     auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
     const static XYZVectorF bdir(0.0,0.0,1.0);
     double phi = acos(tperp.Dot(bdir)); // Lorentz angle
