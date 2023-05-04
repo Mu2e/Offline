@@ -20,10 +20,16 @@
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
 #include "Offline/TrkHitReco/inc/ScanClusterer.hh"
+#include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"//NEW ADD
 
 #include <string>
 #include <vector>
 
+
+//NEW CLASS
+namespace TMVA_SOFIE_TrainBkgDiag {
+  class Session;
+}
 
 namespace mu2e
 {
@@ -74,13 +80,15 @@ namespace mu2e
       MVATools                                    bkgMVA_;
       int const                                   debug_;
       int                                         iev_;
+      std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr;
 
       void classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol,
           StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
       void fillBkgQual(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
       void fillMVA(        BkgQual& cqual) const;
       void countHits(      const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const;
-      void countPlanes(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
+      //void countPlanes(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
+      void countPlanes(    const BkgCluster& cluster, std::vector<float>& kerasvars, const ComboHitCollection& chcol) const;
       int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
   };
 
@@ -104,6 +112,7 @@ namespace mu2e
     {
       // Must call consumesMany because fillStrawHitIndices calls getManyByType.
       consumesMany<ComboHitCollection>();
+      sofiePtr = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>("Offline/TrkHitReco/data/TrainBkgDiag.dat");//NEW ADD
 
       if (flagsh_) produces<StrawHitFlagCollection>("StrawHits");
       if (flagch_) produces<StrawHitFlagCollection>("ComboHits");
@@ -255,19 +264,77 @@ namespace mu2e
 
     for (auto& cluster : bkgccol)
     {
-      BkgQual cqual;
-      fillBkgQual(cluster, cqual, chcol);
-      fillMVA(cqual);
+      //BkgQual cqual;
+      //fillBkgQual(cluster, cqual, chcol);
+      //fillMVA(cqual);
+      //Previous 3 lines are commented. We are going to blow out fillBkgQual and fillMVA and eliminate BkgQual
+      unsigned nactive, nstereo;
+      countHits(cluster, nactive, nstereo,chcol);
+      unsigned nhits = nstereo > 0 ? nstereo : nactive;
+      if (nhits < minnhits_) return;
+      //countPlanes(cluster,cqual,chcol);
+      std::vector<float> kerasvars(11,0.0);// NEW ADD
+      kerasvars.at(0) = sqrtf(cluster.pos().perp2());// NEW ADD
+      kerasvars.at(6) = nhits;// NEW ADD
+      countPlanes(cluster,kerasvars,chcol);
+
+      if (kerasvars.at(4) >= minnp_)
+      {
+        std::vector<float> hz;
+        for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
+
+        // find the min, max and largest gap from the sorted Z positions
+        std::sort(hz.begin(),hz.end());
+        float zgap = 0.0;
+        for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
+        kerasvars.at(1) = hz.front(); // Z min
+        kerasvars.at(2) = hz.back(); // Z max
+        kerasvars.at(3) = zgap; // max Z gap
+
+        //cqual.setMVAStatus(MVAStatus::filled);
+      }
+      else
+      {
+        kerasvars.at(1) = -1.0;
+        kerasvars.at(2)  = -1.0;
+        kerasvars.at(3)  = -1.0;
+      }
+
+      // Newly added parameters
+      double sumEdep(0.);
+      double sqrSumDeltaTime(0.);
+      double sqrSumDeltaX(0.);
+      double sqrSumDeltaY(0.);
+      for (const auto& chit : cluster.hits())
+      {
+        sumEdep +=  chcol[chit].energyDep()/chcol[chit].nStrawHits();
+        sqrSumDeltaX += std::pow(chcol[chit].pos().x() - cluster.pos().x(),2);
+        //sqrSumDeltaX += std::pow(std::sqrt(chcol[chit].pos().Perp2())-std::sqrt(cluster.pos().Perp2()),2);
+        sqrSumDeltaY += std::pow(chcol[chit].pos().y() - cluster.pos().y(),2);
+        sqrSumDeltaTime += std::pow(chcol[chit].time() - cluster.time(),2);
+      }
+
+      kerasvars.at(7) = sumEdep/nhits;// NEW ADD
+      kerasvars.at(8) = std::sqrt(sqrSumDeltaX/nhits);// NEW ADD
+      kerasvars.at(9) = std::sqrt(sqrSumDeltaY/nhits);// NEW ADD
+      kerasvars.at(10) = std::sqrt(sqrSumDeltaTime/nhits); // NEW ADD
+
+      auto kerasout = sofiePtr->infer(kerasvars.data());//NEW ADD
 
       StrawHitFlag flag(StrawHitFlag::bkgclust);
-      if (cqual.MVAOutput() > bkgMVAcut_)
+      //if (cqual.MVAOutput() > bkgMVAcut_)
+      if (kerasout[0] > bkgMVAcut_)
       {
         flag.merge(StrawHitFlag::bkg);
-        if (savebkg_) cluster._flag.merge(BkgClusterFlag::bkg);
+        if (savebkg_)
+        {
+          cluster._flag.merge(BkgClusterFlag::bkg);
+          if(nstereo > 0) cluster._flag.merge(BkgClusterFlag::stereo);
+        }
       }
 
       for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
-      if (savebkg_) bkgqcol.push_back(std::move(cqual));
+      //if (savebkg_) bkgqcol.push_back(std::move(cqual));
     }
   }
 
@@ -280,7 +347,7 @@ namespace mu2e
     cqual.setMVAStatus(MVAStatus::unset);
 
     if (nactive < minnhits_) return;
-    countPlanes(cluster,cqual,chcol);
+    //countPlanes(cluster,cqual,chcol);// DEFINITION CHANGED
 
     cqual[BkgQual::hrho]  = 0;
     cqual[BkgQual::shrho] = 0;
@@ -334,7 +401,7 @@ namespace mu2e
 
 
   //-------------------------------------------------------------------------------------------------------------
-  void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const
+  void FlagBkgHits::countPlanes(const BkgCluster& cluster, std::vector<float> & kerasvars/*BkgQual& cqual*/, const ComboHitCollection& chcol) const
   {
     std::array<int,StrawId::_nplanes> hitplanes{0};
     for (const auto& chit : cluster.hits())
@@ -355,10 +422,13 @@ namespace mu2e
       nphits += hitplanes[ip];
     }
 
-    cqual[BkgQual::np]     = np;
-    cqual[BkgQual::npexp]  = npexp;
-    cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp);
-    cqual[BkgQual::nphits] = static_cast<float>(nphits)/static_cast<float>(np);
+    kerasvars.at(4) = np;// # of planes NEW ADD
+    kerasvars.at(5) = static_cast<float>(np)/static_cast<float>(npexp);// fraction of planes NEW ADD
+    //kerasvars.at(6) = static_cast<float>(nphits);// # of hits NEW ADD
+    //cqual[BkgQual::np]     = np;
+    //cqual[BkgQual::npexp]  = npexp;
+    //cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp);
+    //cqual[BkgQual::nphits] = static_cast<float>(nphits)/static_cast<float>(np);
   }
 
 
@@ -370,7 +440,7 @@ namespace mu2e
     {
       const ComboHit& ch = chcol[chit];
       nactive += ch.nStrawHits();
-      if (ch.flag().hasAnyProperty(stereo_)) nstereo += ch.nStrawHits();
+      if (ch.flag().hasAllProperties(stereo_)) nstereo += ch.nStrawHits();
     }
   }
 
