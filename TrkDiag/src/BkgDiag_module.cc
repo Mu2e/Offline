@@ -53,7 +53,7 @@ namespace mu2e
         fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
         fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
         fhicl::Atom<art::InputTag> BkgClusterCollection{   Name("BkgClusterCollection"),   Comment("BackgroundCluster collection name") };
-        fhicl::Atom<art::InputTag> BkgQualCollection{   Name("BkgQualCollection"),   Comment("BackgroundQual collection name") };
+        //fhicl::Atom<art::InputTag> BkgQualCollection{   Name("BkgQualCollection"),   Comment("BackgroundQual collection name") };
         fhicl::Atom<art::InputTag> BkgClusterHitCollection{   Name("BkgClusterHitCollection"),   Comment("BackgroundClusterHit collection name") };
         fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
       };
@@ -77,7 +77,7 @@ namespace mu2e
       art::ProductToken<ComboHitCollection> _chToken;
       art::ProductToken<StrawHitFlagCollection> _shfToken;
       art::ProductToken<BkgClusterCollection> _bkgcToken;
-      art::ProductToken<BkgQualCollection> _bkgqToken;
+      //art::ProductToken<BkgQualCollection> _bkgqToken;
       art::ProductToken<BkgClusterHitCollection> _bkghToken;
       art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
       // time offset
@@ -86,7 +86,7 @@ namespace mu2e
       const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
       const BkgClusterCollection *_bkgccol;
-      const BkgQualCollection *_bkgqcol;
+      //const BkgQualCollection *_bkgqcol;
       const BkgClusterHitCollection *_bkghitcol;
 
       // background diagnostics
@@ -106,9 +106,15 @@ namespace mu2e
       bool _stereo = false;
       int _cluIdx, _nactive, _nchits, _nshits, _nstereo, _nsactive, _nbkg;
       // BkgQual vars
-      float _bkgqualvars[BkgQual::n_vars];
-      int _mvastat;
-      float _mvaout;
+      //float _bkgqualvars[BkgQual::n_vars];
+      //int _mvastat;
+      //float _mvaout;
+      float _crho;
+      float _zmin;
+      float _zmax;
+      float _zgap;
+      int _np;
+      float _npfrac;
 
       // MC truth variables
       int _ppid, _ppdg, _pgen, _pproc, _ncontrib, _icontrib[512];
@@ -133,7 +139,7 @@ namespace mu2e
     _chToken{ consumes<ComboHitCollection>(config().ComboHitCollection() ) },
     _shfToken{ consumes<StrawHitFlagCollection>(config().StrawHitFlagCollection() ) },
     _bkgcToken{ consumes<BkgClusterCollection>(config().BkgClusterCollection() ) },
-    _bkgqToken{ consumes<BkgQualCollection>(config().BkgQualCollection() ) },
+    //_bkgqToken{ consumes<BkgQualCollection>(config().BkgQualCollection() ) },
     _bkghToken{ consumes<BkgClusterHitCollection>(config().BkgClusterHitCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) }
   {}
@@ -174,13 +180,20 @@ namespace mu2e
     if(_diag > 0)
       _bcdiag->Branch("bkghinfo",&_bkghinfo);
     // Bkg qual info
-    for(int ivar=0;ivar < BkgQual::n_vars; ++ivar){
+    /*for(int ivar=0;ivar < BkgQual::n_vars; ++ivar){
       string vname = BkgQual::varName(static_cast<BkgQual::MVA_varindex>(ivar));
       string bname = vname+string("/F");
       _bcdiag->Branch(vname.c_str(),&_bkgqualvars[ivar],bname.c_str());
-    }
-    _bcdiag->Branch("mvaout", &_mvaout,"mvaout/F");
-    _bcdiag->Branch("mvastat", &_mvastat,"mvastat/I");
+    }*/
+    _bcdiag->Branch("crho",&_crho,"crho/F");
+    _bcdiag->Branch("zmin",&_zmin,"zmin/F");
+    _bcdiag->Branch("zmax",&_zmax,"zmax/F");
+    _bcdiag->Branch("zgap",&_zgap,"zgap/F");
+    _bcdiag->Branch("np",&_np,"np/I");
+    _bcdiag->Branch("npfrac",&_npfrac,"npfrac/F");
+    _bcdiag->Branch("nhits",&_nhits,"nhits/I");
+    //_bcdiag->Branch("mvaout", &_mvaout,"mvaout/F");
+    //_bcdiag->Branch("mvastat", &_mvastat,"mvastat/I");
     // mc truth branches
     if(_mcdiag){
       _bcdiag->Branch("pmom",&_pmom,"pmom/F");
@@ -214,8 +227,8 @@ namespace mu2e
     if(!findData(event))
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< std::endl;
     // check consistency
-    if(_bkgccol->size() != _bkgqcol->size())
-      throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< std::endl;
+    //if(_bkgccol->size() != _bkgqcol->size())
+    //  throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< std::endl;
     // loop over background clusters
 
     _nhits=0;
@@ -241,8 +254,9 @@ namespace mu2e
     _cluIdx=0;
     for (size_t ibkg=0;ibkg<_bkgccol->size();++ibkg){
       BkgCluster const& cluster = _bkgccol->at(ibkg);
-      BkgQual const& qual = _bkgqcol->at(ibkg);
+      //BkgQual const& qual = _bkgqcol->at(ibkg);
       // fill cluster info
+      _crho = sqrtf(cluster.pos().perp2());// NEW ADD
       _cpos = cluster.pos();
       _ctime = cluster.time();
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
@@ -250,11 +264,11 @@ namespace mu2e
       _isolated = cluster.flag().hasAllProperties(BkgClusterFlag::iso);
       _stereo = cluster.flag().hasAllProperties(BkgClusterFlag::stereo);
       // fill Bkg qual info
-      for(int ivar=0;ivar < BkgQual::n_vars; ++ivar){
-        _bkgqualvars[ivar] = qual[static_cast<BkgQual::MVA_varindex>(ivar)];
-      }
-      _mvaout = qual.MVAOutput();
-      _mvastat = qual.status();
+      //for(int ivar=0;ivar < BkgQual::n_vars; ++ivar){
+      //  _bkgqualvars[ivar] = qual[static_cast<BkgQual::MVA_varindex>(ivar)];
+      //}
+      //_mvaout = qual.MVAOutput();
+      //_mvastat = qual.status();
       // info on nearest cluster
       _mindt = _mindrho = 1.0e3;
       for(size_t jbkg = 0; jbkg < _bkgccol->size(); ++jbkg){
@@ -313,8 +327,16 @@ namespace mu2e
       double sqrSumDeltaTime(0.);
       double sqrSumDeltaX(0.);
       double sqrSumDeltaY(0.);
+      float zmin(0.);//NEW ADD
+      float zmax(0.);//NEW ADD
+      std::vector<float> hz;//NEW ADD
+      std::vector<int> hp;//NEW ADD
       for(auto const& ich : cluster.hits()){
         ComboHit const& ch = _chcol->at(ich);
+        if(ch.pos().Z() < zmin) zmin = ch.pos().Z();//NEW ADD
+        if(ch.pos().Z() > zmax) zmax = ch.pos().Z();//NEW ADD
+        hz.push_back(ch.pos().Z());//NEW ADD
+        hp.push_back(ch.strawId().plane());//NEW ADD
         BkgClusterHit const& bhit = _bkghitcol->at(ich);
         sumEdep +=  ch.energyDep()/ch.nStrawHits();
         sqrSumDeltaX += std::pow(ch.pos().X() - _cpos.X(),2);
@@ -370,6 +392,22 @@ namespace mu2e
         if(bkghinfo._mcpdg == PDGCode::proton)_nprot += ch.nStrawHits();
         _bkghinfo.push_back(bkghinfo);
       }
+      std::sort(hz.begin(),hz.end());
+      float zgap(0.0);
+      for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
+      _zmin = hz.front();
+      _zmax = hz.back();
+      _zgap = zgap;
+      std::sort(hp.begin(),hp.end());
+      int lpc(-1);//last plane in cluster
+      int np(0);//# of planes
+      for(unsigned ip=1;ip<hp.size();++ip){
+        if(lpc == hp.at(ip)) continue;
+        lpc = hp.at(ip);
+        np++;
+      }
+      _np = np;
+      _npfrac = float(np)/float(StrawId::_nplanes);
       _avecedep = sumEdep/_nchits;
       _rmscposx = std::sqrt(sqrSumDeltaX/_nchits);
       _rmscposy = std::sqrt(sqrSumDeltaY/_nchits);
@@ -381,7 +419,7 @@ namespace mu2e
   }
 
   bool BkgDiag::findData(const art::Event& evt){
-    _chcol = 0; _shfcol = 0; _bkgccol = 0; _bkgqcol = 0; _mcdigis = 0;
+    _chcol = 0; _shfcol = 0; _bkgccol = 0; /*_bkgqcol = 0;*/ _mcdigis = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto chH = evt.getValidHandle(_chToken);
     _chcol = chH.product();
@@ -391,13 +429,13 @@ namespace mu2e
     _bkgccol = bkgcH.product();
     auto bkghH = evt.getValidHandle(_bkghToken);
     _bkghitcol = bkghH.product();
-    auto bkgqH = evt.getValidHandle(_bkgqToken);
-    _bkgqcol = bkgqH.product();
+    //auto bkgqH = evt.getValidHandle(_bkgqToken);
+    //_bkgqcol = bkgqH.product();
     if(_mcdiag){
       auto mcdH = evt.getValidHandle(_mcdigisToken);
       _mcdigis = mcdH.product();
     }
-    return _chcol != 0 && _shfcol != 0 && _bkgccol != 0 && _bkgqcol != 0
+    return _chcol != 0 && _shfcol != 0 && _bkgccol != 0 /*&& _bkgqcol != 0*/
       && (_mcdigis != 0  || !_mcdiag);
   }
 
