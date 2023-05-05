@@ -5,7 +5,7 @@
 # services.DbService.version: v1_0
 #
 # To convert the fit to use CentralHelix instead of LoopHelix, add the following line to the stub:
-# physics.producers.KKDeMDriftFit.module_type : CentralHelixFit
+# physics.producers.KKDeM.module_type : CentralHelixFit
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -38,9 +38,16 @@ physics :
     @sequence::Reconstruction.TrkReco,
     @sequence::Reconstruction.CrvReco,
     TimeClusterFinderDe, HelixFinderDe,
+    TimeClusterFinderUe, HelixFinderUe,
+    TimeClusterFinderDmu, HelixFinderDmu,
     CalTimePeakFinder, CalHelixFinderDe,
+    CalTimePeakFinderMu, CalHelixFinderDmu,
     MHDeM,
-    KKDeMDriftFit,
+    MHUeP,
+    MHDmuM,
+    KKDeM,
+    KKUeP,
+    KKDmuM,
     @sequence::Reconstruction.MCReco
   ]
   analyzers : {
@@ -67,17 +74,34 @@ outputs : {
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
-physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeMDriftFit"]
+physics.filters.CalHelixFinderDmu.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
+physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeM", "KKDmuM", "KKUeP"]
 physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
 physics.producers.SelectRecoMC.debugLevel : 0
 
-physics.producers.KKDeMDriftFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.KKDeMDriftFit.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.KKDeMDriftFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.KKDeMDriftFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-physics.producers.KKDeMDriftFit.ModuleSettings.PrintLevel : 0
-physics.producers.KKDeMDriftFit.ModuleSettings.SaveAllFits : true
-physics.producers.KKDeMDriftFit.FitSettings.PrintLevel : 0
+physics.producers.KKDeM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKDeM.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDeM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
+physics.producers.KKDeM.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+physics.producers.KKDeM.ModuleSettings.PrintLevel : 0
+physics.producers.KKDeM.ModuleSettings.SaveAllFits : true
+physics.producers.KKDeM.FitSettings.PrintLevel : 0
+
+physics.producers.KKUeP.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKUeP.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKUeP.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
+physics.producers.KKUeP.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+physics.producers.KKUeP.ModuleSettings.PrintLevel : 0
+physics.producers.KKUeP.ModuleSettings.SaveAllFits : true
+physics.producers.KKUeP.FitSettings.PrintLevel : 0
+
+physics.producers.KKDmuM.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKDmuM.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDmuM.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
+physics.producers.KKDmuM.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+physics.producers.KKDmuM.ModuleSettings.PrintLevel : 0
+physics.producers.KKDmuM.ModuleSettings.SaveAllFits : true
+physics.producers.KKDmuM.FitSettings.PrintLevel : 0
 
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.candidate.options.fillBestCrv : false
@@ -89,9 +113,9 @@ physics.analyzers.TAKK.FillTrkPIDInfo : false
 physics.analyzers.TAKK.FillHitInfo : true
 physics.analyzers.TAKK.FillTriggerInfo : false
 physics.analyzers.TAKK.candidate.input : "KK"
-physics.analyzers.TAKK.candidate.suffix : "DeMDriftFit"
+physics.analyzers.TAKK.candidate.suffix : "DeM"
 physics.analyzers.TAKK.candidate.options.fillHits : true
-physics.analyzers.TAKK.supplements : []
+physics.analyzers.TAKK.supplements : [@local::UeP, @local::DmuM]
 physics.analyzers.TAKK.ExtraMCStepCollectionTags : [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
