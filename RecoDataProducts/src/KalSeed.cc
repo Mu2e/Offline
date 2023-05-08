@@ -174,7 +174,7 @@ namespace mu2e {
         }
       }
     }
-    return iseg->t0();
+    return HitT0(iseg->t0Val(),1.0); //FIXME
   }
 }
 
