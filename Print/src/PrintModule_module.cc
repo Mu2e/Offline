@@ -61,6 +61,9 @@ namespace mu2e {
 class PrintModule : public art::EDAnalyzer {
  public:
   struct Config {
+    fhicl::Atom<bool> printEvent { fhicl::Name("PrintEvent"), fhicl::Comment("Print Event Products"),true};
+    fhicl::Atom<bool> printSubRun { fhicl::Name("PrintSubRun"), fhicl::Comment("Print SubRun Products"),true};
+
     fhicl::Table<ProductPrinter::Config> statusG4Printer{
         fhicl::Name("statusG4Printer")};
     fhicl::Table<ProductPrinter::Config> ProtonBunchTimePrinter{
@@ -159,15 +162,15 @@ class PrintModule : public art::EDAnalyzer {
   void beginSubRun(art::SubRun const& subrun) override;
 
  private:
-  // set by fcl, turn all prints on (1) or off (0)
-  int _verbose;
+  bool _printevent, _printsubrun;
   // each of these object prints a different product
   vector<unique_ptr<mu2e::ProductPrinter> > _printers;
 };
 
 }  // namespace mu2e
 
-mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf) {
+mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
+  _printevent(conf().printEvent()), _printsubrun(conf().printSubRun()){
   // cout << "start main pset\n"<< pset.to_string() << "\n end main pset"<<
   // endl;
 
@@ -249,24 +252,28 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf) {
 }
 
 void mu2e::PrintModule::analyze(art::Event const& event) {
-  cout << "\n"
-       << " ###############  PrintModule Run/Subrun/Event " << setw(9)
-       << event.run() << setw(9) << event.subRun() << setw(9) << event.event()
-       << endl;
+  if(_printevent) {
+    cout << "\n"
+      << " ###############  PrintModule Run/Subrun/Event " << setw(9)
+      << event.run() << setw(9) << event.subRun() << setw(9) << event.event()
+      << endl;
 
-  for (auto& prod_printer : _printers) prod_printer->Print(event);
+    for (auto& prod_printer : _printers) prod_printer->Print(event);
 
-  cout << endl;
+    cout << endl;
+  }
 }
 
 void mu2e::PrintModule::beginSubRun(art::SubRun const& subrun) {
-  cout << "\n"
-       << " ###############  PrintModule Run/Subrun " << setw(9) << subrun.run()
-       << setw(9) << subrun.subRun() << endl;
+  if(_printsubrun) {
+    cout << "\n"
+      << " ###############  PrintModule Run/Subrun " << setw(9) << subrun.run()
+      << setw(9) << subrun.subRun() << endl;
 
-  for (auto& prod_printer : _printers) prod_printer->PrintSubRun(subrun);
+    for (auto& prod_printer : _printers) prod_printer->PrintSubRun(subrun);
 
-  cout << endl;
+    cout << endl;
+  }
 }
 
 DEFINE_ART_MODULE(mu2e::PrintModule)

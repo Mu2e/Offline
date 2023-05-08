@@ -16,6 +16,7 @@
 #include "Offline/DataProducts/inc/GenVector.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/DataProducts/inc/IndexMap.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
@@ -40,7 +41,6 @@
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
-#include "Offline/Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
@@ -65,9 +65,10 @@ namespace mu2e {
         fhicl::Atom<bool> saveEnergySteps         { Name("SaveEnergySteps"),                  Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
         fhicl::Atom<bool> saveUnused              { Name("SaveUnusedDigiMCs"),                  Comment("Save StrawDigiMCs from particles used in any fit"), true};
         fhicl::Atom<bool> saveAllUnused           { Name("SaveAllUnusedDigiMCs"),                  Comment("Save all StrawDigiMCs from particles used in any fit"), false};
+        fhicl::Atom<bool> useSHFC                 { Name("UseStrawHitFlagCollection"),                  Comment("Use the StrawHitFlag collection"), false};
         fhicl::Atom<art::InputTag> PP             { Name("PrimaryParticle"),                  Comment("PrimaryParticle")};
         fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
-        fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollection")};
+        fhicl::Sequence<art::InputTag> CrvCCCs    { Name("CrvCoincidenceClusterCollections"),Comment("CrvCoincidenceClusterCollections")};
         fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),                  Comment("StrawDigiCollection")};
         fhicl::Atom<art::InputTag> SHFC           { Name("StrawHitFlagCollection"),         Comment("StrawHitFlagCollection")};
         fhicl::Atom<art::InputTag> CHC            { Name("ComboHitCollection"),                  Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
@@ -76,10 +77,10 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),                  Comment("CrvDigiCollection")};
         fhicl::Atom<art::InputTag> CRVDMCC        { Name("CrvDigiMCCollection"),                  Comment("CrvDigiMCCollection")};
         fhicl::Atom<art::InputTag> PBTMC          { Name("PBTMC"),                  Comment("ProtonBunchTimeMC")};
+        fhicl::Atom<art::InputTag> EWM            { Name("EventWindowMarker"), Comment("EventWindowMarker")};
         fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),                  Comment("KalSeedCollections")};
         fhicl::Sequence<std::string> HelixSeeds   { Name("HelixSeedCollections"),                  Comment("HelixSeedCollections")};
         fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
-        fhicl::Sequence<art::InputTag> SPTO       { Name("TimeOffsets"),                          Comment("Sim Particle Time Offset Maps")};
         fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save digis (MeV)")};
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -88,28 +89,29 @@ namespace mu2e {
 
     private:
       typedef std::vector<TrkMCTools::spcount>SPCC;
-      typedef std::set<StrawHitIndex> SHIS;
+      typedef std::set<StrawDigiIndex> SDIS;
       // utility functions
       void fillTSHMC         (KalSeed const& seed, SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
       void fillUnusedTSHMC   (SPCC const& spcc, StrawDigiMCCollection const& sdmcc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep, KalSeedMC& mcseed);
       void fillTSHMC        (TrkStrawHitMC& tshmc, size_t isdmc, size_t isp,StrawDigiMC const& sdmc, Tracker const& tracker, std::shared_ptr<const StrawResponse>const& srep );
       void fillVDSP          (GeomHandle<DetectorSystem>const& det, art::Ptr<SimParticle> const& psp, StepPointMCCollection const& vdspc, KalSeedMC& mcseed);
       void fillSPStubs       (SPCC const& spcc, PrimaryParticle const& pp, KalSeedMC& mcseed);
-      void fillSDMCI         (KalSeedMC const& mcseed,SHIS& shindices);
-      void fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec);
+      void fillSDMCI         (KalSeedMC const& mcseed,SDIS& sdindices);
+      void fillStrawHitCounts(ComboHitCollection const& chc, const StrawHitFlagCollection* shfc, RecoCount& nrec);
       void fillTrk           (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, PrimaryParticle const& pp, RecoCount& nrec);
       void fillCrv           (art::Event& event, PrimaryParticle const& pp, RecoCount& nrec);
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,PrimaryParticle const& pp, RecoCount& nrec);
       int _debug;
       bool _trkonly;
-      bool _saveallenergy, _saveunused, _saveallunused;
-      art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _vdspc;
+      bool _saveallenergy, _saveunused, _saveallunused, _useSHFC;
+      art::InputTag _pp, _ccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _ewm, _vdspc;
       std::vector<std::string> _kscs, _hscs;
-      SimParticleTimeOffset _toff;
+    std::vector<art::InputTag> _crvcccs;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
       double _pbtimemc; // mc true proton bunch time
+      bool _onSpill;
       ProditionsHandle<StrawResponse> _strawResponse_h;
   };
 
@@ -120,9 +122,9 @@ namespace mu2e {
     _saveallenergy(config().saveEnergySteps()),
     _saveunused(config().saveUnused()),
     _saveallunused(config().saveAllUnused()),
+    _useSHFC(config().useSHFC()),
     _pp(config().PP()),
     _ccc(config().CCC()),
-    _crvccc(config().CrvCCC()),
     _sdc(config().SDC()),
     _shfc(config().SHFC()),
     _chc(config().CHC()),
@@ -131,38 +133,44 @@ namespace mu2e {
     _crvdc(config().CRVDC()),
     _crvdmcc(config().CRVDMCC()),
     _pbtmc(config().PBTMC()),
+    _ewm(config().EWM()),
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
     _hscs(config().HelixSeeds()),
-    _toff(config().SPTO()),
+    _crvcccs(config().CrvCCCs()),
     _ccme(config().CCME())
     {
       consumes<StrawDigiCollection>(_sdc);
       consumes<StrawDigiADCWaveformCollection>(_sdc);
-      consumes<StrawHitFlagCollection>(_shfc);
+      if(_useSHFC)consumes<StrawHitFlagCollection>(_shfc);
       consumes<ComboHitCollection>(_chc);
       consumes<CaloDigiCollection>(_cdc);
       consumes<CaloClusterCollection>(_ccc);
       consumes<CrvDigiCollection>(_crvdc);
       consumesMany<KalSeedCollection>();
-      consumes<CrvCoincidenceClusterCollection>(_crvccc);
+      for (const auto& i_tag : _crvcccs) {
+        consumes<CrvCoincidenceClusterCollection>(i_tag);
+      }
       consumes<PrimaryParticle>(_pp);
       consumes<StrawDigiMCCollection>(_sdmcc);
       consumes<CrvDigiMCCollection>(_crvdmcc);
       consumes<ProtonBunchTimeMC>(_pbtmc);
+      consumes<EventWindowMarker>(_ewm);
       produces <IndexMap>("StrawDigiMap");
       if (!_trkonly){
         produces <IndexMap>("CrvDigiMap");
         produces <CaloDigiCollection>();
         produces <CrvDigiCollection>();
         produces <CrvRecoPulseCollection>();
-        produces <CrvCoincidenceClusterCollection>();
+        for (const auto& i_tag : _crvcccs) {
+          produces <CrvCoincidenceClusterCollection>(i_tag.label());
+        }
       }
       produces <KalSeedMCCollection>();
       produces <KalSeedMCAssns>();
       produces <StrawDigiCollection>();
       produces <StrawDigiADCWaveformCollection>();
-      produces <StrawHitFlagCollection>();
+      if(_useSHFC)produces <StrawHitFlagCollection>();
       produces <RecoCount>();
 
       if (_debug > 0)
@@ -178,11 +186,12 @@ namespace mu2e {
   void SelectRecoMC::produce(art::Event& event) {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
-    _toff.updateMap(event);
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
     auto pbtmc = event.getValidHandle<ProtonBunchTimeMC>(_pbtmc);
     _pbtimemc = pbtmc->pbtime_;
+    auto  ewmh = event.getValidHandle<EventWindowMarker>(_ewm);
+    _onSpill = (ewmh->spillType() == EventWindowMarker::SpillType::onspill);
 
     std::unique_ptr<RecoCount> nrec(new RecoCount);
     std::set<art::Ptr<CaloCluster> > ccptrs;
@@ -281,7 +290,12 @@ namespace mu2e {
     const auto& sgs = *(sdmc.earlyStrawGasStep());
     tshmc._cpos = XYZVectorF(sdmc.clusterPosition(sdmc.earlyEnd()));
     tshmc._mom = sgs.momentum();
-    tshmc._time = fmod(sgs.time(),_mbtime);
+    tshmc._time = sgs.time();
+    if (_onSpill){
+      tshmc._time = fmod(tshmc._time,_mbtime);
+      // fix for DAQ wrapping
+      if(tshmc._time < -_pbtimemc)tshmc._time += _mbtime;
+    }
     tshmc._strawId = sdmc.strawId();
     tshmc._earlyend = sdmc.earlyEnd();
     // compute the signal propagation time and drift time
@@ -291,16 +305,18 @@ namespace mu2e {
     auto tdir = sgs.momentum().Unit();
     double pdist = (straw.wireEnd(sdmc.earlyEnd())-sdmc.clusterPosition(sdmc.earlyEnd())).dot(straw.wireDirection());
     tshmc._tprop = fabs(pdist)/vprop;
-    tshmc._tdrift = fmod(sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4,_mbtime); // temporary kludge offset FIXME!
+    tshmc._tdrift = sdmc.wireEndTime(sdmc.earlyEnd()) -tshmc._time - tshmc._tprop - _pbtimemc - 2.4; // temporary kludge offset FIXME!
+    if (_onSpill)
+      tshmc._tdrift = fmod(tshmc._tdrift,_mbtime);
     auto tperp = (tdir - tdir.Dot(wdir)*wdir).Unit();
     const static XYZVectorF bdir(0.0,0.0,1.0);
     double phi = acos(tperp.Dot(bdir)); // Lorentz angle
     tshmc._rdrift = srep->strawDrift().T2D(tshmc._tdrift,phi);
   }
 
-  void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SHIS& shindices) {
+  void SelectRecoMC::fillSDMCI(KalSeedMC const& mcseed, SDIS& sdindices) {
     for(auto tshmc : mcseed.trkStrawHitMCs()) {
-      shindices.insert(tshmc.strawDigiMCIndex());
+      sdindices.insert(tshmc.strawDigiMCIndex());
     }
   }
 
@@ -316,23 +332,35 @@ namespace mu2e {
             << " time " << vdsp.time() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
         VDStep vds(det->toDetector(vdsp.position()),
             vdsp.momentum() ,
-            _toff.timeWithOffsetsApplied(vdsp),
+            vdsp.time(),
             vdsp.virtualDetectorId());
         mcseed._vdsteps.push_back(vds);
       }
     }
   }
 
-  void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec) {
+  void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, const StrawHitFlagCollection* shfc, RecoCount& nrec) {
     // test
-    if(chc.size() != shfc.size())
-      throw cet::exception("Reco")<<"mu2e::SelectRecoMC: inconsistent collections"<< std::endl;
-    for(const auto& shf : shfc) {
-      if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
-      if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
-      if(shf.hasAllProperties(StrawHitFlag::timesel))++nrec._nshftsel;
-      if(shf.hasAllProperties(StrawHitFlag::bkg))++nrec._nshfbkg;
-      if(shf.hasAllProperties(StrawHitFlag::trksel))++nrec._nshftpk;
+
+    if(_useSHFC){
+      if(!shfc || chc.size() != shfc->size())
+        throw cet::exception("Reco")<<"mu2e::SelectRecoMC: inconsistent collections"<< std::endl;
+      for(const auto& shf : *shfc) {
+        if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
+        if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
+        if(shf.hasAllProperties(StrawHitFlag::timesel))++nrec._nshftsel;
+        if(shf.hasAllProperties(StrawHitFlag::bkg))++nrec._nshfbkg;
+        if(shf.hasAllProperties(StrawHitFlag::trksel))++nrec._nshftpk;
+      }
+    } else {
+      for(const auto& ch : chc) {
+        auto const& shf = ch.flag();
+        if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
+        if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
+        if(shf.hasAllProperties(StrawHitFlag::timesel))++nrec._nshftsel;
+        if(shf.hasAllProperties(StrawHitFlag::bkg))++nrec._nshfbkg;
+        if(shf.hasAllProperties(StrawHitFlag::trksel))++nrec._nshftpk;
+      }
     }
     nrec._nstrawdigi = chc.size();
     // fill straw hit time histogram
@@ -350,8 +378,13 @@ namespace mu2e {
     auto const& sdc = *sdch;
     auto sdadcch = event.getValidHandle<StrawDigiADCWaveformCollection>(_sdc);
     auto const& sdadcc = *sdadcch;
-    auto shfch = event.getValidHandle<StrawHitFlagCollection>(_shfc);
-    auto const& shfc = *shfch;
+    StrawHitFlagCollection const* shfc(0);
+    std::unique_ptr<StrawHitFlagCollection> sshfc;
+    if(_useSHFC){
+      auto shfch = event.getValidHandle<StrawHitFlagCollection>(_shfc);
+      shfc = shfch.product();
+      sshfc = std::unique_ptr<StrawHitFlagCollection>(new StrawHitFlagCollection);
+    }
     auto chch = event.getValidHandle<ComboHitCollection>(_chc);
     auto const& chc = *chch;
     auto sdmcch = event.getValidHandle<StrawDigiMCCollection>(_sdmcc);
@@ -367,12 +400,11 @@ namespace mu2e {
     std::unique_ptr<KalSeedMCAssns> ksmca(new KalSeedMCAssns);
     std::unique_ptr<StrawDigiCollection> ssdc(new StrawDigiCollection);
     std::unique_ptr<StrawDigiADCWaveformCollection> ssdadcc(new StrawDigiADCWaveformCollection);
-    std::unique_ptr<StrawHitFlagCollection> sshfc(new StrawHitFlagCollection);
     // index maps between original collections and pruned collections
     std::unique_ptr<IndexMap> sdmcim(new IndexMap);
-    // straw hit (indices) that are referenced by the tracks, or particles
+    // straw digi indices that are referenced by the tracks, or particles
     // that contributed to the track
-    SHIS shindices;
+    SDIS sdindices;
     // set of SimParticles to save for this event
     std::set<art::Ptr<SimParticle> > simps;
     // add the MC primary SimParticles
@@ -407,7 +439,7 @@ namespace mu2e {
           }
           ksmcc->push_back(mcseed);
           // fill indices from all digis; those on the track and those from the MC true particle too
-          fillSDMCI(mcseed,shindices);
+          fillSDMCI(mcseed,sdindices);
           // fill the Assns; this needs Ptrs
           auto mcseedp = art::Ptr<KalSeedMC>(KalSeedMCCollectionPID,ksmcc->size()-1,KalSeedMCCollectionGetter);
           auto seedp = art::Ptr<KalSeed>(seedh,std::distance(seedc.begin(),iseed));
@@ -419,7 +451,7 @@ namespace mu2e {
         }
       }
     }
-    // get straw indices from all helices too
+    // get digi indices from all helices too
     for (auto const& hsc : _hscs) {
       // get all products from this
       art::ModuleLabelSelector hscsel(hsc);
@@ -431,35 +463,35 @@ namespace mu2e {
         if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << hsc << std::endl;
         for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
           auto const& seed = *iseed;
-          // go back to StrawHit indices (== digi indices for reco)
-          std::vector<StrawHitIndex> shids;
+          // go back to StrawDigi indices
+          std::vector<StrawDigiIndex> shids;
           for(size_t ihit = 0; ihit < seed.hits().size(); ihit++)
-            seed.hits().fillStrawHitIndices(event,ihit,shids);
+            seed.hits().fillStrawDigiIndices(event,ihit,shids);
           // add these to the set (duplicates are suppressed)
           for(auto shid : shids)
-            shindices.insert(shid);
+            sdindices.insert(shid);
         }
       }
     }
     // fill the StrawIndex map with the complete list of indices.
-    StrawHitIndex shcount(0);
-    ssdc->reserve(shindices.size());
-    ssdadcc->reserve(shindices.size());
-    for(auto shindex : shindices){
-      sdmcim->addElement(shindex,shcount++);
+    StrawDigiIndex sdcount(0);
+    ssdc->reserve(sdindices.size());
+    ssdadcc->reserve(sdindices.size());
+    for(auto sdindex : sdindices){
+      sdmcim->addElement(sdindex,sdcount++);
       // deep-copy the selected StrawDigis and StrawHitFlags
-      ssdc->push_back(sdc[shindex]);
-      ssdadcc->push_back(sdadcc[shindex]);
-      sshfc->push_back(shfc[shindex]);
+      ssdc->push_back(sdc[sdindex]);
+      ssdadcc->push_back(sdadcc[sdindex]);
+      if(_useSHFC) sshfc->push_back(shfc->at(sdindex));
     }
-    if(_debug > 1) std::cout << "Selected " << shcount << " StrawDigis" << std::endl;
+    if(_debug > 1) std::cout << "Selected " << sdcount << " StrawDigis" << std::endl;
 
     // fill detailed StrawHit counts
     fillStrawHitCounts(chc,shfc,nrec);
     event.put(std::move(sdmcim),"StrawDigiMap");
     event.put(std::move(ssdc));
     event.put(std::move(ssdadcc));
-    event.put(std::move(sshfc));
+    if(_useSHFC)event.put(std::move(sshfc));
     event.put(std::move(ksmcc));
     event.put(std::move(ksmca));
   }
@@ -467,8 +499,6 @@ namespace mu2e {
   void SelectRecoMC::fillCrv(art::Event& event,
       PrimaryParticle const& pp, RecoCount& nrec) {
     // find Crv data in event
-    auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(_crvccc);
-    auto const& crvccc = *crvccch;
     auto crvdch = event.getValidHandle<CrvDigiCollection>(_crvdc);
     auto const& crvdc = *crvdch;
     auto crvdmcch = event.getValidHandle<CrvDigiMCCollection>(_crvdmcc);
@@ -478,26 +508,32 @@ namespace mu2e {
     // create new Crv collections
     std::unique_ptr<CrvDigiCollection> scrvdc(new CrvDigiCollection);
     std::unique_ptr<CrvRecoPulseCollection> scrvrpc(new CrvRecoPulseCollection);
-    std::unique_ptr<CrvCoincidenceClusterCollection> scrvccc(new CrvCoincidenceClusterCollection);
     std::unique_ptr<IndexMap> crvdmcim(new IndexMap);
-    // loop over CrvCoincidenceClusters
+    std::vector<std::unique_ptr<CrvCoincidenceClusterCollection>> scrvcccs;
+
     std::set<uint16_t> crvindices;
-    for(auto const& crvcc: crvccc) {
-      std::vector<art::Ptr<CrvRecoPulse>> pulses;
-      for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
-        // deep-copy the pulses used in coincidences: the digi indices are updated later
-        // the map must be used to connect them
-        scrvrpc->push_back(*crvrp);
-        auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
-        pulses.push_back(crvrpp);
-        for(auto index : crvrp->GetWaveformIndices()){
-          crvindices.insert(index);
+    for (size_t i_tag = 0; i_tag < _crvcccs.size(); ++i_tag) {
+      auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(_crvcccs.at(i_tag));
+      auto const& crvccc = *crvccch;
+      scrvcccs.push_back(std::unique_ptr<CrvCoincidenceClusterCollection>(new CrvCoincidenceClusterCollection));
+      // loop over CrvCoincidenceClusters
+      for(auto const& crvcc: crvccc) {
+        std::vector<art::Ptr<CrvRecoPulse>> pulses;
+        for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
+          // deep-copy the pulses used in coincidences: the digi indices are updated later
+          // the map must be used to connect them
+          scrvrpc->push_back(*crvrp);
+          auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
+          pulses.push_back(crvrpp);
+          for(auto index : crvrp->GetWaveformIndices()){
+            crvindices.insert(index);
+          }
         }
+        // deep-copy the coincidence-cluster with updated Reco Pulses
+        CrvCoincidenceCluster scrvcc(crvcc);
+        scrvcc.SetCrvRecoPulses(pulses);
+        scrvcccs.at(i_tag)->push_back(scrvcc);
       }
-      // deep-copy the coincidence-cluster with updated Reco Pulses
-      CrvCoincidenceCluster scrvcc(crvcc);
-      scrvcc.SetCrvRecoPulses(pulses);
-      scrvccc->push_back(scrvcc);
     }
     // add indices for digis associated with the MC primary particle(s)
     for(auto icrv = crvdmcc.begin(); icrv != crvdmcc.end();++icrv) {
@@ -527,7 +563,9 @@ namespace mu2e {
     // put new data in event
     event.put(std::move(scrvdc));
     event.put(std::move(scrvrpc));
-    event.put(std::move(scrvccc));
+    for (size_t i_tag = 0; i_tag < _crvcccs.size(); ++i_tag) {
+      event.put(std::move(scrvcccs.at(i_tag)), _crvcccs.at(i_tag).label());
+    }
     event.put(std::move(crvdmcim),"CrvDigiMap");
   }
 

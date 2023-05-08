@@ -24,19 +24,13 @@ namespace mu2e {
   }
 
   double StrawResponse::PieceLineDrift(std::vector<double> const& bins,std::vector<double> const& yvals, double xval){
-      int imax = yvals.size()-1;
+      int imax = yvals.size()-2;
     double xbin = (bins[1]-bins[0])/yvals.size();
     int ibin = min(imax,max(0,int(floor((xval-bins[0])/xbin))));
     double yval = yvals[ibin];
-    double slope;
-    if(ibin < imax) {
-      auto jbin = ibin+1;
-      slope = (yvals[jbin]-yvals[ibin])/xbin;
-    } else {
-      auto jbin = ibin-1;
-      slope = (yvals[ibin]-yvals[jbin])/xbin;
-    }
-    yval += (xval-(ibin+0.5)*xbin)*slope;
+    auto jbin = ibin+1;
+    double slope = (yvals[jbin]-yvals[ibin])/xbin;
+    yval += (xval-(bins[0]+xbin*ibin))*slope;
     return yval;
   }
 
@@ -74,43 +68,6 @@ namespace mu2e {
     return phi;
   }
 
-  double StrawResponse::calibrateDriftDistanceToT2D(double ddist) const {
-    if (ddist <= 0)
-      return _dc[0] + ddist*calibrateDriftDistanceToT2DDerivative(ddist);
-
-    return sqrt(pow(_dc[1]*ddist+_dc[2],2.0)+_dc[0]*(_dc[0]+2*_dc[2]))-_dc[2];
-  }
-
-  double StrawResponse::calibrateT2DToDriftDistance(double t2d) const {
-    if (t2d <= _dc[0])
-      return (t2d-_dc[0])*calibrateT2DToDriftDistanceDerivative(t2d);
-
-    return (sqrt( pow(t2d+_dc[2],2) - _dc[0]*(_dc[0]+2*_dc[2]))-_dc[2])/_dc[1];
-  }
-
-  double StrawResponse::calibrateDriftDistanceToT2DDerivative(double ddist) const {
-    if (ddist <= 0){
-      if (_dc[2] + _dc[0] == 0)
-        return _dc[1];
-      else
-        return _dc[1]*_dc[2]/(_dc[2]+_dc[0]);
-    }
-
-    return _dc[1]*(_dc[1]*ddist+_dc[2])/sqrt(pow(_dc[1]*ddist+_dc[2],2.0)+_dc[0]*(_dc[0]+2*_dc[2]));
-  }
-
-  double StrawResponse::calibrateT2DToDriftDistanceDerivative(double t2d) const {
-    if (t2d <= _dc[0]){
-      if (_dc[2] == 0 && _dc[0] == 0)
-        return 1.0/_dc[1];
-      else if (_dc[2]== 0)
-        return 1.0e8;
-      else
-        return (_dc[2]+_dc[0])/(_dc[1]*_dc[2]);
-    }
-    return (_dc[2] + t2d)/sqrt(pow(_dc[1],2)*(-1*pow(_dc[0],2)-2*_dc[0]*_dc[2]+pow(_dc[2]+t2d,2)));
-  }
-
   DriftInfo StrawResponse::driftInfo(StrawId strawId, double dtime, double phi) const {
     if (_driftIgnorePhi) phi = 0;
     DriftInfo dinfo;
@@ -129,112 +86,43 @@ namespace mu2e {
   }
 
   double StrawResponse::driftDistanceToTime(StrawId strawId, double ddist, double phi) const {
-    if (!_useOldDrift ){
-      if (_driftIgnorePhi)
-        phi = 0;
-      double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
-      double dtime = _strawDrift->D2T(calibrated_ddist,phi);
-      return dtime;
+    if (_driftIgnorePhi)
+      phi = 0;
+    if(_usenonlindrift){
+      return  _strawDrift->D2T(ddist,phi);
     }else{
-      //FIXME to be deprecated
-      if(_usenonlindrift){
-        return _strawDrift->D2T(ddist,phi);
-      }
-      else{
-        return ddist/_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
-      }
+      return ddist/_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
     }
+  }
+
+  double StrawResponse::driftTimeOffset(StrawId strawId, double ddist, double phi) const {
+    return PieceLineDrift(_llDriftTimeOffBins,_llDriftTimeOffset, ddist);
   }
 
   double StrawResponse::driftTimeError(StrawId strawId, double ddist, double phi) const {
-    if (!_useOldDrift ){
-      if (_driftResIsTime){
-        ddist = std::max(0.0,std::min(rstraw_,ddist));
-        return PieceLineDrift(_driftRMSBins, _signedDriftRMS, ddist);
-      }else{
-        double distance_error = signedDriftError(strawId,ddist,phi);
-        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi);
-        return distance_error/speed_at_ddist;
-      }
-    }else{
-      //FIXME to be deprecated
-      if (useParameterizedDriftError()){
-        ddist = std::max(0.0,std::min(rstraw_,ddist));
-        return PieceLineDrift(_driftRMSBins, _signedDriftRMS, ddist);
-      }else{
-        return signedDriftError(strawId, ddist, phi) / _lindriftvel;
-      }
-    }
+    ddist = std::max(0.0,std::min(rstraw_,ddist));
+    return PieceLineDrift(_llDriftTimeRMSBins, _llDriftTimeRMS, ddist);
   }
 
   double StrawResponse::driftInstantSpeed(StrawId strawId, double ddist, double phi) const {
-    if (!_useOldDrift ){
-      if (_driftIgnorePhi)
-        phi = 0;
-//      double calibrated_ddist = calibrateDriftDistanceToT2D(ddist);
-      return _strawDrift->GetInstantSpeedFromD(ddist)/calibrateDriftDistanceToT2DDerivative(ddist);
+    if (_driftIgnorePhi)
+      phi = 0;
+    if(_usenonlindrift){
+      return _strawDrift->GetInstantSpeedFromD(ddist);
     }else{
-      // FIXME to be deprecated
-      if(_usenonlindrift){
-        return _strawDrift->GetInstantSpeedFromD(ddist);
-      }else{
-        return _lindriftvel;
-      }
+      return _lindriftvel;
     }
   }
 
   double StrawResponse::driftTimeToDistance(StrawId strawId, double dtime, double phi) const {
-    if (!_useOldDrift ){
-      if (_driftIgnorePhi)
-        phi = 0;
-      double ddist = _strawDrift->T2D(dtime,phi,false);
-//      double ddist = calibrateT2DToDriftDistance(t2d_driftonly);
-      ddist -= driftDistanceOffset(ddist);
-      ddist = std::min(std::max(ddist,0.0),rstraw_); // truncate
-      return ddist;
-    }else{
-      if(_usenonlindrift){
-        return _strawDrift->T2D(dtime,phi);
-      }
-      else{
-        return dtime*_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
-      }
+    if (_driftIgnorePhi)
+      phi = 0;
+    if(_usenonlindrift){
+      return _strawDrift->T2D(dtime,phi,false);
     }
-  }
-
-  double StrawResponse::signedDriftError(StrawId strawId, double ddist, double phi) const {
-    if (!_useOldDrift ){
-      if (_driftIgnorePhi)
-        phi = 0;
-      if (_driftResIsTime){
-        double time_error = driftTimeError(strawId,ddist,phi);
-        double speed_at_ddist = driftInstantSpeed(strawId,ddist,phi);
-        return time_error*speed_at_ddist;
-      }else{
-      //  ddist = std::max(0.0,std::min(rstraw_,ddist));
-        return PieceLineDrift(_driftRMSBins,_signedDriftRMS, ddist);
-      }
-    }else{
-      // maximum drift is the straw radius.  should come from conditions FIXME!
-      ddist = std::min(fabs(ddist),rstraw_);
-      size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(ddist/rstraw_))));
-      return _derr[idoca];
-    }
-  }
-
-  double StrawResponse::driftDistanceOffset(double ddist) const {
-    if(_driftResIsTime)
-      return 0;
     else{
-      ddist = std::max(0.0,std::min(rstraw_,ddist));
-      return PieceLineDrift(_driftOffBins,_driftOffset, ddist);
+      return dtime*_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
     }
-  }
-
-
-  // FIXME to be deprecated
-  double StrawResponse::driftTimeOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
-    return 0;
   }
 
   bool StrawResponse::wireDistance(Straw const& straw, double edep,
@@ -315,11 +203,6 @@ namespace mu2e {
     return _totderror[totbin*_totEBins+ebin];
   }
 
-  double StrawResponse::pathLength(Straw const& straw, double tot) const {
-    // needs to be implemented, FIXME!!
-    return 5.0;
-  }
-
   void StrawResponse::print(std::ostream& os) const {
     os << endl << "StrawResponse parameters: "  << std::endl;
 
@@ -330,7 +213,6 @@ namespace mu2e {
     printVector(os,"centres",_centres);
     printVector(os,"resslope",_resslope);
     printVector(os,"totdtime",_totdtime);
-    printVector(os,"derr",_derr);
     os << "wbuf = " << _wbuf << endl;
     os << "slfac = " << _slfac << endl;
     os << "errfac = " << _errfac << endl;

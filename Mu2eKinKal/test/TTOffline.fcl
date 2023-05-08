@@ -1,4 +1,4 @@
-# Minimal KinKal job that fits digis to a downstream electron as a trigger seed fit , and analyzes the output with TrkAna
+# Minimal KinKal job that fits digis to a downstream electron as a seed fit , and analyzes the output with TrkAna
 # To create a functional job you must add database purpose and version; ie create a fcl stub that #includes this file and
 # adds (for instance):
 # services.DbService.purpose: MDC2020_perfect
@@ -10,10 +10,10 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/reco/prolog.fcl"
-#include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
+#include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 
-process_name: TTKKSeed
+process_name: KKSeed
 source : { module_type : RootInput }
 services : @local::Services.Reco
 physics :
@@ -28,7 +28,7 @@ physics :
     @table::CrvResponsePackage.producers
     @table::Reconstruction.producers
     @table::TrkAnaReco.producers
-    @table::TTMu2eKinKal.producers
+    @table::Mu2eKinKal.producers
   }
   filters : {
     @table::CalPatRec.filters
@@ -40,7 +40,7 @@ physics :
     TimeClusterFinderDe, HelixFinderDe,
     CalTimePeakFinder, CalHelixFinderDe,
     MHDeM,
-    TTKKDeMSeedFit,
+    KKDeMSeedFit,
     @sequence::Reconstruction.MCReco
   ]
   analyzers : {
@@ -61,21 +61,52 @@ outputs : {
     SelectEvents : [ "RecoPath" ]
   }
 }
+physics.producers.KKDeMSeedFit.KKFitSettings.AddHits : false
+physics.producers.KKDeMSeedFit.KKFitSettings.AddMaterial : false
+physics.producers.KKDeMSeedFit.KKFitSettings.MaterialCorrection : false
+
+physics.producers.KKDeMSeedFit.FitSettings.MaxNIter : 2
+physics.producers.KKDeMSeedFit.FitSettings.MetaIterationSettings : [
+  [ 4.0, "CADSHU" ]
+]
+physics.producers.KKDeMSeedFit.FitSettings.CADSHUSettings : [
+  [ 60.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+]
+physics.producers.KKDeMSeedFit.FitSettings.StrawXingUpdaterSettings : [
+  [10.0, -1.0, -1.0, true, 0 ]
+]
+
+physics.producers.KKDeMSeedFit.ExtensionSettings.MaxNIter : 2
+physics.producers.KKDeMSeedFit.ExtensionSettings.BFieldCorrection : false
+physics.producers.KKDeMSeedFit.ExtensionSettings.CADSHUSettings : [
+    ]
+physics.producers.KKDeMSeedFit.ExtensionSettings.MetaIterationSettings : [
+    ]
+physics.producers.KKDeMSeedFit.ExtensionSettings.StrawXingUpdaterSettings : [
+    ]
+physics.producers.KKDeMSeedFit.ExtensionSettings.BkgANNSHUSettings : [
+    ]
+
+physics.producers.KKDeMSeedFit.ModuleSettings.ZSavePositions: [ 0  ]
+physics.producers.KKDeMSeedFit.ModuleSettings.SaveFullFit : false
+physics.producers.KKDeMSeedFit.ModuleSettings.SeedErrors: [ 5, 5, 5, 5, 2e-2, 5 ]
+
+
 
 #include "Production/JobConfig/reco/epilog.fcl"
 physics.producers.CaloHitTruthMatch.primaryParticle : "compressDigiMCs"
 physics.producers.CaloHitTruthMatch.caloShowerSimCollection : "compressDigiMCs"
 physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel                 : "FlagBkgHits:ComboHits"
-physics.producers.SelectRecoMC.KalSeedCollections  : ["TTKKDeMSeedFit"]
+physics.producers.SelectRecoMC.KalSeedCollections  : ["KKDeMSeedFit"]
 physics.producers.SelectRecoMC.HelixSeedCollections  : ["MHDeM"]
 physics.producers.SelectRecoMC.debugLevel : 0
 
-physics.producers.TTKKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
-physics.producers.TTKKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
-physics.producers.TTKKDeMSeedFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
-physics.producers.TTKKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-physics.producers.TTKKDeMSeedFit.ModuleSettings.PrintLevel : 0
-physics.producers.TTKKDeMSeedFit.ModuleSettings.SaveAllFits : true
+physics.producers.KKDeMSeedFit.ModuleSettings.HelixSeedCollections : [ "MHDeM" ]
+physics.producers.KKDeMSeedFit.ModuleSettings.ComboHitCollection : "makeSH"
+physics.producers.KKDeMSeedFit.ModuleSettings.CaloClusterCollection : "CaloClusterMaker"
+physics.producers.KKDeMSeedFit.ModuleSettings.StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+physics.producers.KKDeMSeedFit.ModuleSettings.PrintLevel : 0
+physics.producers.KKDeMSeedFit.ModuleSettings.SaveAllFits : true
 
 physics.analyzers.TAKK.candidate.options : @local::AllOpt
 physics.analyzers.TAKK.candidate.options.fillBestCrv : false
@@ -87,7 +118,7 @@ physics.analyzers.TAKK.FillTrkQualInfo : false
 physics.analyzers.TAKK.FillTrkPIDInfo : false
 physics.analyzers.TAKK.FillHitInfo : true
 physics.analyzers.TAKK.FillTriggerInfo : false
-physics.analyzers.TAKK.candidate.input : "TTKK"
+physics.analyzers.TAKK.candidate.input : "KK"
 physics.analyzers.TAKK.candidate.suffix : "DeMSeedFit"
 physics.analyzers.TAKK.candidate.options.fillHits : true
 physics.analyzers.TAKK.supplements : []

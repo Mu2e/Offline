@@ -86,7 +86,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection& coll,
     }
 
     _hflt0->Fill(ks.flt0());
-    double t0 = ks.t0().t0();
+    double t0 = ks.t0Val();
     _ht0->Fill(t0);
     _hchi2->Fill(ks.chisquared() / std::max(1.0, double(ks.hits().size() - 5)));
     int q = ks.hasCaloCluster();

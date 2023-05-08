@@ -93,7 +93,11 @@ namespace mu2e
       TTree* _bcdiag,*_bhdiag;
       int _iev = 0;
       XYZVectorF _cpos;
+      float _rmscposx = 0;
+      float _rmscposy = 0;
       float _ctime = 0;
+      float _rmsctime = 0;
+      float _avecedep = 0;
       float _mindt = 0;
       float _mindrho = 0;
       bool _isbkg = false;
@@ -146,7 +150,11 @@ namespace mu2e
     _bcdiag->Branch("iev",&_iev,"iev/I");
     // cluster info branches
     _bcdiag->Branch("cpos",&_cpos);
+    _bcdiag->Branch("rmscposx",&_rmscposx,"rmscposx/F");
+    _bcdiag->Branch("rmscposy",&_rmscposy,"rmscposy/F");
     _bcdiag->Branch("ctime",&_ctime,"ctime/F");
+    _bcdiag->Branch("rmsctime",&_rmsctime,"rmsctime/F");
+    _bcdiag->Branch("avecedep",&_avecedep,"avecedep/F");
     _bcdiag->Branch("isbkg",&_isbkg,"isbkg/B");
     _bcdiag->Branch("isref",&_isref,"isref/B");
     _bcdiag->Branch("isolated",&_isolated,"isolated/B");
@@ -227,6 +235,7 @@ namespace mu2e
       }
       ++_nhits;
     }
+
     _bhdiag->Fill();
 
     _cluIdx=0;
@@ -253,9 +262,9 @@ namespace mu2e
           BkgCluster const& ocluster = _bkgccol->at(jbkg);
           double dt = fabs(ocluster.time() - cluster.time());
           double drho = sqrt((ocluster.pos()-cluster.pos()).Perp2());
-          // only look at differences whtn the other dimension difference is small
-          if(drho < _maxdrho && dt < _mindt) _mindt = dt;
-          if(dt < _maxdt && drho < _mindrho) _mindrho = drho;
+//          // only look at differences whtn the other dimension difference is small
+          if(dt < _mindt) _mindt = dt;
+          if(drho < _mindrho) _mindrho = drho;
         }
       }
       // fill mc info
@@ -300,9 +309,17 @@ namespace mu2e
       _nactive = _nstereo = _nsactive = _nbkg = 0;
       bool pce = _pgen==2; // primary from a CE
       _nindex=0;
+      double sumEdep(0.);
+      double sqrSumDeltaTime(0.);
+      double sqrSumDeltaX(0.);
+      double sqrSumDeltaY(0.);
       for(auto const& ich : cluster.hits()){
         ComboHit const& ch = _chcol->at(ich);
         BkgClusterHit const& bhit = _bkghitcol->at(ich);
+        sumEdep +=  ch.energyDep()/ch.nStrawHits();
+        sqrSumDeltaX += std::pow(ch.pos().X() - _cpos.X(),2);
+        sqrSumDeltaY += std::pow(ch.pos().Y() - _cpos.Y(),2);
+        sqrSumDeltaTime += std::pow(ch.time() - _ctime,2);
         _hitidx[_nindex]=ich;
         ++_nindex;
         _nshits += ch.nStrawHits();
@@ -353,6 +370,10 @@ namespace mu2e
         if(bkghinfo._mcpdg == PDGCode::proton)_nprot += ch.nStrawHits();
         _bkghinfo.push_back(bkghinfo);
       }
+      _avecedep = sumEdep/_nchits;
+      _rmscposx = std::sqrt(sqrSumDeltaX/_nchits);
+      _rmscposy = std::sqrt(sqrSumDeltaY/_nchits);
+      _rmsctime = std::sqrt(sqrSumDeltaTime/_nchits);
       _bcdiag->Fill();
       ++_cluIdx;
     }
@@ -539,7 +560,6 @@ namespace mu2e
     // info depending on stereo hits
     shinfo._chisq = ch.qual();
     shinfo._edep = ch.energyDep();
-    shinfo._dedx = ch.specificIonization();
     StrawId const& sid = ch.strawId();
     shinfo._plane = sid.plane();
     shinfo._panel = sid.panel();

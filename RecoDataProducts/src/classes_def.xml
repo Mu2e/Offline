@@ -178,6 +178,8 @@
  <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
  <class name="mu2e::KalSegment"/>
+ <class name="mu2e::KKSHFlag"/>
+ <class name="mu2e::KKSHFlagDetail"/>
  <class name="std::vector<mu2e::TrkStrawHitSeed>"/>
  <class name="std::vector<mu2e::TrkCaloHitSeed>"/>
  <class name="std::vector<mu2e::TrkStraw>"/>
@@ -382,5 +384,8 @@
  <class name="mu2e::STMMWDDigi"/>
  <class name="mu2e::STMMWDDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMMWDDigiCollection>"/>
+ <class name="mu2e::STMHit"/>
+ <class name="mu2e::STMHitCollection"/>
+ <class name="art::Wrapper<mu2e::STMHitCollection>"/>
 
 </lcgdict>
