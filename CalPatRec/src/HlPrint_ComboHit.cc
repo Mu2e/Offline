@@ -124,7 +124,7 @@ void HlPrint::printComboHit(const mu2e::ComboHit* Hit, const mu2e::StrawGasStep*
            Hit->energyDep());
 
     printf("  %3i %7.2f %7.2f %5.2f %8.3f %8.3f",
-           (int) Hit->driftEnd(),
+           (int) Hit->earlyEnd(),
            Hit->driftTime(),
            Hit->propTime(),
            Hit->transRes(),
@@ -142,7 +142,8 @@ void HlPrint::printComboHit(const mu2e::ComboHit* Hit, const mu2e::StrawGasStep*
 }
 
 //-----------------------------------------------------------------------------
-//
+// if 'ShfCollTag' is defined, print hit flags stored in the flag collection
+// otherwise, print flags stored in the hit payload
 //-----------------------------------------------------------------------------
 void HlPrint::printComboHitCollection(const char* ChCollTag   ,
                                       const char* ShfCollTag  ,
@@ -165,13 +166,15 @@ void HlPrint::printComboHitCollection(const char* ChCollTag   ,
 
   art::Handle<mu2e::StrawHitFlagCollection> shfcH;
   const mu2e::StrawHitFlagCollection*       shfc(nullptr);
-  _event->getByLabel(ShfCollTag,shfcH);
+  if (*ShfCollTag != 0) {
+    _event->getByLabel(ShfCollTag,shfcH);
 
-  if (shfcH.isValid()) shfc = shfcH.product();
-  else {
-    printf("ERROR: cant find StrawHitFlagCollection tag=%s, EXIT\n",ShfCollTag);
-    // print_shf_colls();
-    return;
+    if (shfcH.isValid()) shfc = shfcH.product();
+    else {
+      printf("HlPrint::%s: ERROR: cant find StrawHitFlagCollection tag=%s, EXIT\n",__func__,ShfCollTag);
+      // print_shf_colls();
+      return;
+    }
   }
 
   art::Handle<mu2e::StrawDigiMCCollection> sdmccH;
@@ -179,7 +182,7 @@ void HlPrint::printComboHitCollection(const char* ChCollTag   ,
   _event->getByLabel<mu2e::StrawDigiMCCollection>(SdmcCollTag,sdmccH);
   if (sdmccH.isValid())   sdmcc = sdmccH.product();
   else {
-    printf("ERROR: cant find StrawDigiMCCollection tag=%s, EXIT\n",SdmcCollTag);
+    printf("HlPrint::%s: ERROR: cant find StrawDigiMCCollection tag=%s, EXIT\n",__func__,SdmcCollTag);
     // print_sdmc_colls();
     return;
   }
@@ -191,24 +194,27 @@ void HlPrint::printComboHitCollection(const char* ChCollTag   ,
   int banner_printed = 0;
   for (int i=0; i<nhits; i++) {
     const ComboHit* hit = &chc->at(i);
-    // size_t ish  = hit-hit0;
-
-    int ind = hit->indexArray()[0];
+    int ind = hit->index(0);
 
     const mu2e::StrawDigiMC*  sdmc = &sdmcc->at(ind);
     const mu2e::StrawGasStep* step (nullptr);
 
     step = sdmc->earlyStrawGasStep().get();
-
-                                        // flags back to a separate coll
-    int flags(0);
-    if (shfc) flags = *((int*) &shfc->at(i));
+//-----------------------------------------------------------------------------
+// if SHF collection name is defined, print flags from that collection
+// if not, print flags stored in the hit
+// this is especially important for single-straw combo hits, as they are flagged
+// only once - in MakeStrawHits module
+//-----------------------------------------------------------------------------
+    int flag(0);
+    if (shfc) flag = *((int*) &shfc->at(i));
+    else      flag = *((int*) &hit->flag());
     if (banner_printed == 0) {
       printComboHit(hit, step, "banner");
       banner_printed = 1;
     }
     if ((hit->time() >= TMin) && (hit->time() <= TMax)) {
-      printComboHit(hit, step, "data", i, flags);
+      printComboHit(hit, step, "data", i, flag);
     }
   }
 

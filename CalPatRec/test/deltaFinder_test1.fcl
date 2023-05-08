@@ -15,6 +15,14 @@ END_PROLOG
 
 process_name : TestDeltaFinder
 
+source: { module_type : RootInput
+    firstRun    : 1210
+    firstSubRun :    0
+    firstEvent  :    1
+    fileNames   : [ "/mu2e/data2/users/murat/datasets/mdc2020/CeEndpointMix2BBSignal/dig.mu2e.CeEndpointMix2BBSignal.MDC2020r_perfect_v1_0.001210_00000000.art" ]
+    #    maxEvents   :  100
+}
+
 physics : {
 
     producers : { @table::Reconstruction.producers
@@ -48,22 +56,14 @@ physics : {
         }
     }
 
-    p1: [ @sequence::TrkHitReco.PrepareHits,                    DeltaFinder ]  ## CalTimePeakFinder,
-    p2: [ @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder ]
-    p3: [                                    CalTimePeakFinder, DeltaFinder ]
-    p4: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
-    p5: [ PrefetchData,                      CalTimePeakFinder, DeltaFinder ]
-    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloClusterMC.TruthMatch,
-          CalTimePeakFinder, DeltaFinder ]
-
+    p1            : [ @sequence::TrkHitReco.PrepareHits, DeltaFinder ]  ## CalTimePeakFinder,
     trigger_paths : [ p1             ]
-
     e1            : [ DeltaFinderAna ] ## MuHitDisplay  ] # defaultOutput ]
     end_paths     : [ e1             ]
 }
 
 physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ## take out "EnergySelection"
-physics.producers.makePH.MaxDS                     : 4  ## prev: 4
+physics.producers.makePH.MaxDS                     : 5  ## prev: 4
 physics.producers.makePH.CheckWres                 : true
 # physics.producers.makePH.MinimumRadius             : 370.
 # physics.producers.makePH.MaximumRadius             : 680.

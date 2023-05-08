@@ -185,7 +185,8 @@ namespace mu2e
       float hRatio     = helTool.hitRatio();
 
       if(_debug > 2){
-        std::cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << std::endl;
+        std::cout << moduleDescription().moduleLabel() << ": status = " << hs.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl;
+        std::cout << moduleDescription().moduleLabel() << ": chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda << " nLoops = " << nLoops << " hRatio = "<< hRatio << std::endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&

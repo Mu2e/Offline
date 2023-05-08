@@ -515,6 +515,9 @@ void DataInterface::fillGeometry()
     {
       mu2e::CRSScintillatorShield const& shield = *ishield;
       std::string const& shieldName = shield.getName();
+//if(shieldName.find("CRV_C1")!=std::string::npos) continue;
+//if(shieldName.find("CRV_C2")!=std::string::npos) continue;
+//if(shieldName.find("CRV_T")!=std::string::npos) continue;
 
       mu2e::CRSScintillatorBarDetail const& barDetail = shield.getCRSScintillatorBarDetail();
       double dx=barDetail.getHalfLengths()[0];

@@ -6,6 +6,7 @@
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/WHSMask.hh"
+#include "Offline/Mu2eKinKal/inc/KKSHFlag.hh"
 #include "Offline/TrackerConditions/inc/DriftInfo.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/TrainSign.hxx"
@@ -21,7 +22,7 @@ namespace mu2e {
   // Update based just on ANN to the wire
   class DriftANNSHU {
     public:
-      using Config = std::tuple<std::string,float,std::string,float,std::string,std::string,std::string,std::string,int>;
+      using Config = std::tuple<std::string,float,std::string,float,float,std::string,std::string,int>;
       DriftANNSHU(Config const& config);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
       static std::string const& configDescription(); // description of the variables
@@ -30,9 +31,8 @@ namespace mu2e {
       std::shared_ptr<TMVA_SOFIE_TrainCluster::Session> clustermva_; // ANN for selecting good cluster behavior
       double signmvacut_ =0; // cut value for sign MVA
       double clustermvacut_ =0; // cut value for cluster MVA
-      WireHitState::NullDistVar nulldvar_; // null hit doca
-      WireHitState::TOTUse totuse_ = WireHitState::all; // use TOT time as a residual for all hits
-      WHSMask allowed_; // allowed states
+      double dtmvacut_ =0; // cut value for using dt constraint
+      KKSHFlag flag_ = KKSHFlag(KKSHFlag::tot); // constrain time with TOT by default
       WHSMask freeze_; // states to freeze
       int diag_; // diag print level
   };

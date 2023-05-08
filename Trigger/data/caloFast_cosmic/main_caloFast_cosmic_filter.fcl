@@ -4,6 +4,6 @@ physics.filters.caloFastCosmicFilter.MinEnergy        : 120.0
 physics.filters.caloFastCosmicFilter.MaxEnergy        : 600.0
 physics.filters.caloFastCosmicFilter.MinNumCelinout   : 6
 physics.filters.caloFastCosmicFilter.MinNumCeldiagver : 6
-physics.filters.caloFastCosmicFilter.MinCelEneCut     : 15.0
+physics.filters.caloFastCosmicFilter.MinCelEneCut     : 15
 physics.filters.caloFastCosmicFilter.OutRadius        : 580.0
 physics.filters.caloFastCosmicFilter.InnerRadius      : 460.0

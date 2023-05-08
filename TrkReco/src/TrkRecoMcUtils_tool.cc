@@ -64,6 +64,7 @@ namespace mu2e {
 
       virtual const SimParticle* getSimParticle(const art::Event* Event, int HitIndex) override;
       virtual const XYZVectorF*  getMom        (const art::Event* Event, int HitIndex) override;
+      virtual const XYZVectorF*  getPos        (const art::Event* Event, int HitIndex) override;
 
       int   getID         (const SimParticle* Sim) override;
       int   getMotherID   (const SimParticle* Sim) override;
@@ -222,6 +223,14 @@ namespace mu2e {
     if (Event->id() != _lastEvent) initEvent(Event);
 
     return &(*_mcdigis)[HitIndex].earlyStrawGasStep()->momentum();
+  }
+
+  //-----------------------------------------------------------------------------
+  const XYZVectorF* TrkRecoMcUtils::getPos(const art::Event* Event, int HitIndex) {
+
+    if (Event->id() != _lastEvent) initEvent(Event);
+
+    return &(*_mcdigis)[HitIndex].earlyStrawGasStep()->startPosition();
   }
 
   //-----------------------------------------------------------------------------

@@ -139,7 +139,7 @@ void LineFinder::produce(art::Event& event ) {
       tseed._status.merge(TrkFitFlag::helixOK);
       tseed._status.merge(TrkFitFlag::helixConverged);
       tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
-
+      tseed._straw_chits.setParent(chcol.parent());
       CosmicTrackSeedCollection*  tcol  = seed_col.get();
       tcol->push_back(tseed);
     }
@@ -191,7 +191,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
                 double dist = (pca.point1()-strawk.getMidPoint()).mag();
                 if (pca.dca() < _maxDOCA && dist < strawk.halfLength()){
                   count += 1;
-                  ll += pow(dist-shC[k].wireDist(),2)/shC[k].wireErr2();
+                  ll += pow(dist-shC[k].wireDist(),2)/shC[k].wireVar();
                 }
               }
               if (count == (int) shC.size())

@@ -26,16 +26,8 @@ physics :
 {
 producers :
   {
-    @table::EventMixing.producers
-    @table::TrackerMC.producers
     @table::TrkHitReco.producers
-    @table::EventMixing.producers
     @table::Tracking.producers
-  }
-
-filters :
-  {
-    @table::EventMixing.filters
   }
 
 analyzers :
@@ -46,9 +38,6 @@ analyzers :
 
 physics.BkgEndPath : [BD]
 physics.BkgTriggerPath  : [
-  @sequence::EventMixing.CD3Mixers,
-  @sequence::EventMixing.TimeMaps,
-  @sequence::TrackerMC.DigiSim,
   @sequence::TrkHitReco.PrepareHits
 ]
 
@@ -57,4 +46,4 @@ physics.producers.FlagBkgHits.SaveBkgClusters : true
 # on the grid with mu2eart and do not need to be removed.
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
-#include "Offline/EventMixing/fcl/epilog.fcl"
+# #include "Offline/EventMixing/fcl/epilog.fcl"

@@ -65,6 +65,7 @@ namespace mu2e {
   using KTRAJ= KinKal::KinematicLine;
   using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
   using KKTRK = KKTrack<KTRAJ>;
+  using KKTRKCOL = OwningPointerCollection<KKTRK>;
   using KKSTRAWHIT = KKStrawHit<KTRAJ>;
   using KKSTRAWHITPTR = std::shared_ptr<KKSTRAWHIT>;
   using KKSTRAWHITCOL = std::vector<KKSTRAWHITPTR>;
@@ -93,7 +94,7 @@ namespace mu2e {
   using StrawHitIndexCollection = std::vector<StrawHitIndex>;
 
   using KKConfig = Mu2eKinKal::KinKalConfig;
-  using Mu2eConfig = Mu2eKinKal::Mu2eConfig;
+  using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKMaterialConfig = KKMaterial::Config;
 
   class KinematicLineFit : public art::EDProducer {
@@ -118,12 +119,10 @@ namespace mu2e {
 
     struct GlobalConfig {
       fhicl::Table<ModuleConfig> modSettings { Name("ModuleSettings") };
-      fhicl::Table<Mu2eConfig> mu2eSettings { Name("Mu2eSettings") };
-      fhicl::Table<KKConfig> kkFitSettings { Name("KinKalFitSettings") };
-      fhicl::Table<KKConfig> kkExtSettings { Name("KinKalExtensionSettings") };
+      fhicl::Table<KKFitConfig> mu2eSettings { Name("KKFitSettings") };
+      fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
+      fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-      //      StrawHitUpdateSettings shuconfig { Name("StrawHitUpdateSettings"), Comment("Setting sequence for updating StrawHits, format: \n"
-      //      " 'MinDoca', 'MaxDoca', First Meta-iteration', 'Last Meta-iteration'") };
     };
 
     public:
@@ -172,15 +171,15 @@ namespace mu2e {
     seedmom_(settings().modSettings().seedmom()),
     kkfit_(settings().mu2eSettings()),
     kkmat_(settings().matSettings()),
-    config_(Mu2eKinKal::makeConfig(settings().kkFitSettings())),
-    exconfig_(Mu2eKinKal::makeConfig(settings().kkExtSettings()))
+    config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
+    exconfig_(Mu2eKinKal::makeConfig(settings().extSettings()))
     {
       // should always save something
       if((!savefull_) && zsave_.size() == 0)
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit:Segment saving configuration error"<< endl;
       // collection handling
       for(const auto& hseedtag : settings().modSettings().cosmicTrackSeedCollections()) { hseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(hseedtag)); }
-      produces<KKLineCollection>();
+      produces<KKTRKCOL>();
       produces<KalSeedCollection>();
       produces<KalLineAssns>();
       // build the initial seed covariance
@@ -228,7 +227,7 @@ namespace mu2e {
     auto cc_H = event.getValidHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // create output
-    unique_ptr<KKLineCollection> kktrkcol(new KKLineCollection );
+    unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection ); //Needs to return a KalSeed
     unique_ptr<KalLineAssns> kkseedassns(new KalLineAssns());
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();

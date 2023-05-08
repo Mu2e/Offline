@@ -43,7 +43,7 @@ namespace mu2e {
     std::vector<TrkStraw> const& straws() const { return _straws;}
     std::vector<KalSegment> const& segments() const { return _segments; }
     TrkFitFlag const& status() const { return _status; }
-    HitT0 t0() const;
+    double t0Val() const;
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
     UInt_t nTrajSegments() const { return _nseg; }
@@ -85,6 +85,7 @@ namespace mu2e {
     std::vector<KalSegment>::const_iterator nearestSegmentFlt(float fltlen)  const;
     std::vector<KalSegment>::const_iterator nearestSegment(const XYZVectorF& pos)  const; // find nearest segment to a GLOBAL position
     Float_t flt0() const { return _flt0; }
+    HitT0 t0() const;
     Float_t         _flt0 = 0.0; // flight distance where the track crosses the tracker midplane (z=0).  Redundant with t0 in KinKal fits, and in the wrong unit
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
