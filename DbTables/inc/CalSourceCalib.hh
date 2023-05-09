@@ -1,5 +1,5 @@
-#ifndef DbTables_CalSourceCalibTable_hh
-#define DbTables_CalSourceCalibTable_hh
+#ifndef DbTables_CalSourceCalib_hh
+#define DbTables_CalSourceCalib_hh
 
 
 #include <string>
@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-  class CalSourceCalibTable : public DbTable {
+  class CalSourceCalib : public DbTable {
   public:
 
     class Row {
@@ -32,9 +32,9 @@ namespace mu2e {
       float _chisq;
     };
 
-    constexpr static const char* cxname = "CalSourceCalibTable";
+    constexpr static const char* cxname = "CalSourceCalib";
 
-    CalSourceCalibTable():DbTable(cxname,"cal.sourcecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
+    CalSourceCalib():DbTable(cxname,"cal.sourcecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int roid) const { 
@@ -48,7 +48,7 @@ namespace mu2e {
       // enforce a strict sequential order - optional
       if(roid!=int(_rows.size())) {
 	      throw cet::exception("CALOSOURCECALIB_BAD_INDEX") 
-	        << "CalSourceCalibTable::addRow found index out of order: " 
+	        << "CalSourceCalib::addRow found index out of order: " 
 	        <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
        _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));

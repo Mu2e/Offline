@@ -1,5 +1,5 @@
-#ifndef DbTables_CalEnergyCalibTable_hh
-#define DbTables_CalEnergyCalibTable_hh
+#ifndef DbTables_CalEnergyCalib_hh
+#define DbTables_CalEnergyCalib_hh
 
 // FIXME - placeholder for the energy calib reco table
 // author : S. Middleton 2022
@@ -13,7 +13,7 @@
 
 namespace mu2e {
 
-  class CalEnergyCalibTable : public DbTable {
+  class CalEnergyCalib : public DbTable {
   public:
 
     class Row {
@@ -28,9 +28,9 @@ namespace mu2e {
     //TODO - decide what goes in the combined class
     };
 
-    constexpr static const char* cxname = "CalEnergyCalibTable";
+    constexpr static const char* cxname = "CalEnergyCalib";
 
-    CalEnergyCalibTable():DbTable(cxname,"cal.energycalib",
+    CalEnergyCalib():DbTable(cxname,"cal.energycalib",
 			"roid,algName") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
@@ -45,7 +45,7 @@ namespace mu2e {
       // enforce a strict sequential order - optional
       if(roid!=int(_rows.size())) {
 	      throw cet::exception("CALENERGYCALIB_BAD_INDEX") 
-	        << "CalEnergyCalibTable::addRow found index out of order: " 
+	        << "CalEnergyCalib::addRow found index out of order: " 
 	        <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
        _rows.emplace_back(roid,
