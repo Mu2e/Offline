@@ -1,9 +1,10 @@
+// Large Steel door, East side
 // SimpleConfig geometry file automatically produced for original file:
 //
 
 string building.remote.handling.Interior.Wall.6.name     = "remoteHandlingInteriorWall6";
 
-string building.remote.handling.Interior.Wall.6.material = "CONCRETE_MARS";
+string building.remote.handling.Interior.Wall.6.material = "G4_STAINLESS-STEEL";
 
 double building.remote.handling.Interior.Wall.6.offsetFromMu2eOrigin.x   = 947.4;
 double building.remote.handling.Interior.Wall.6.offsetFromFloorSurface.y = 1981.0;
@@ -11,11 +12,12 @@ double building.remote.handling.Interior.Wall.6.offsetFromMu2eOrigin.z   = -3581
 
 double building.remote.handling.Interior.Wall.6.yHalfThickness           = 1981.0;
 
+// Steel Door thickness assumed to be 1-3/4"
 vector<double> building.remote.handling.Interior.Wall.6.xPositions = {
-  3251.2,   // P0
+  3663.95,   // P0
   3708.4,   // P1
   3708.4,   // P2
-  3251.2    // P3
+  3663.95    // P3
 };
 
 vector<double> building.remote.handling.Interior.Wall.6.yPositions = {
@@ -24,11 +26,6 @@ vector<double> building.remote.handling.Interior.Wall.6.yPositions = {
   13716,   //P2
   13716    //P3
 };
-
- int building.remote.handling.Interior.Wall.6.Notch.numberOfNotches = 1;
- vector<double> building.remote.handling.Interior.Wall.6.Notch.halfDims.1 = {250.,250.,406.};
- vector<double> building.remote.handling.Interior.Wall.6.Notch.position.1 = {3500.0,11000.0,110.0};
- string  building.remote.handling.Interior.Wall.6.Notch.orientation.1 = "000";
 
 // Local Variables:
 // mode:c++

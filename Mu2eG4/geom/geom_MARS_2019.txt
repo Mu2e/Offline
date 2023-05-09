@@ -55,7 +55,7 @@ double    ds.CableRunTrkCore.dPhiFraction    = 0.1051;
 #include "Offline/Mu2eG4/geom/TransportSolenoid_v05.txt"
 
 // External Shielding
-#include "Offline/Mu2eG4/geom/ExtShieldUpstream_v06.txt"
+#include "Offline/Mu2eG4/geom/ExtShieldUpstream_v07.txt"
 #include "Offline/Mu2eG4/geom/ExtShieldDownstream_v06.txt"
 #include "Offline/Mu2eG4/geom/Saddle_v02.txt"
 #include "Offline/Mu2eG4/geom/Pipe_v04.txt"
