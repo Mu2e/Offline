@@ -10,8 +10,8 @@
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
 #include "Offline/DbTables/inc/SimEfficiencies2.hh"
 
-#include "Offline/DbTables/inc/CalSourceCalibTable.hh"
-#include "Offline/DbTables/inc/CalEnergyCalibTable.hh"
+#include "Offline/DbTables/inc/CalSourceCalib.hh"
+#include "Offline/DbTables/inc/CalEnergyCalib.hh"
 
 #include "Offline/DbTables/inc/TrkAlignElement.hh"
 #include "Offline/DbTables/inc/TrkAlignStraw.hh"
@@ -76,10 +76,10 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVSiPM());
   } else if (name == "CRVTime") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVTime());
-  }  else if (name=="CalSourceCalibTable") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSourceCalibTable());    
-  } else if (name=="CalEnergyCalibTable") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalibTable());    
+  }  else if (name=="CalSourceCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSourceCalib());
+  } else if (name=="CalEnergyCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalib());
   }else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
         << "DbTableFactory::newTable call with bad table name: " + name + "\n";
