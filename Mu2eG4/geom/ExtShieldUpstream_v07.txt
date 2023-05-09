@@ -158,6 +158,23 @@ vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,2952.0,  202.4};
 // Remote handling room door
 vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -11931};
 
+
+//---------------------------------Remote Handling Door---------------------------------
+// To move the from Working position (A small gap open for communication cables) in two directions.
+// To move in Z-direction (East-West) : apply 'DoorParameterA' (double) between 5933.6 (fully open) and -314.8 (fully closed).
+// DoorParameterA = 0.0; default case (working position)
+// To move in X-direction (towards north) : apply 'DoorParameterB' (double) between 0.0 (closed) and 254.0 (10" open).
+// DoorParameterB = 0.0; default case (closed position)
+
+
+double ExtShieldUpstream.DoorParameterA = 0.0;
+double ExtShieldUpstream.DoorParameterB = 0.0;
+
+
+
+
+
+
 // The orientation of each detector.  See docdb xxx for details.
 string ExtShieldUpstream.orientationType1Box1 = "000";
 string ExtShieldUpstream.orientationType10Box2 = "010";

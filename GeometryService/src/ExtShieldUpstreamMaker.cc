@@ -44,7 +44,7 @@ namespace mu2e {
     std::string materialBaseName = "ExtShieldUpstream.materialType";
     std::string centerBaseName   = "ExtShieldUpstream.center";
     std::string orientBaseName   = "ExtShieldUpstream.orientation";
-
+    //std::string orient   =ExtShieldUpstream.DoorParameter
     // Some temporary holders
     std::vector<double> tempDoubleVec;
 
@@ -139,7 +139,14 @@ namespace mu2e {
 
       } // end loop over boxes of type...
     } // end loop over types...
-
+    //------------------Remote Handling Door-------------------------
+    // get DoorParameterA and DoorParameterB from simple config.
+    const double DParamA = c.getDouble("ExtShieldUpstream.DoorParameterA");
+    const double DParamB = c.getDouble("ExtShieldUpstream.DoorParameterB");
+    CLHEP::Hep3Vector WorkingPosition = sites.back();
+    CLHEP::Hep3Vector ShieldDoorCenter = {WorkingPosition.x()+DParamB,WorkingPosition.y(),WorkingPosition.z()+DParamA};
+    sites.pop_back();
+    sites.push_back(ShieldDoorCenter);
     // Now make the pointer to the object itself.
     std::unique_ptr<ExtShieldUpstream> res(new ExtShieldUpstream(
                                                                      dims,
