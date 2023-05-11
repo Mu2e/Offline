@@ -12,7 +12,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-#include "artdaq-core-mu2e/Overlays/Mu2eEventFragment.hh"
 #include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
 
 #include "Offline/DataProducts/inc/TrkTypes.hh"
@@ -126,47 +125,21 @@ void art::StrawAndCaloDigisFromFragments::produce(Event& event) {
       continue;
     }
 
-    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
-      for (const auto& cont : *handle) {
-        mu2e::Mu2eEventFragment mef(cont);
-        if (parseTRK_) {
-          for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
-            auto pair = mef.trackerAtPtr(ii);
-            mu2e::TrackerFragment cc(pair);
-            analyze_tracker_(cc, straw_digis, straw_digi_adcs);
+    if (handle->front().type() == mu2e::detail::FragmentType::TRK && parseTRK_) {
+      for (auto frag : *handle) {
+        mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+        analyze_tracker_(cc, straw_digis, straw_digi_adcs);
 
-            totalSize += pair.second;
-            numTrkFrags++;
-          }
-        }
-        if (parseCAL_) {
-          for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
-            auto pair = mef.calorimeterAtPtr(ii);
-            mu2e::CalorimeterFragment cc(pair);
-            analyze_calorimeter_(cc, calo_digis);
-
-            totalSize += pair.second;
-            numTrkFrags++;
-          }
-        }
+        totalSize += frag.dataSizeBytes();
+        numTrkFrags++;
       }
-    } else {
-      if (handle->front().type() == mu2e::detail::FragmentType::TRK && parseTRK_) {
-        for (auto frag : *handle) {
-          mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_tracker_(cc, straw_digis, straw_digi_adcs);
+    } else if (handle->front().type() == mu2e::detail::FragmentType::CAL && parseCAL_) {
+      for (auto frag : *handle) {
+        mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+        analyze_calorimeter_(cc, calo_digis);
 
-          totalSize += frag.dataSizeBytes();
-          numTrkFrags++;
-        }
-      } else if (handle->front().type() == mu2e::detail::FragmentType::CAL && parseCAL_) {
-        for (auto frag : *handle) {
-          mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_calorimeter_(cc, calo_digis);
-
-          totalSize += frag.dataSizeBytes();
-          numCalFrags++;
-        }
+        totalSize += frag.dataSizeBytes();
+        numCalFrags++;
       }
     }
   }
@@ -349,7 +322,7 @@ void art::StrawAndCaloDigisFromFragments::analyze_tracker_(
     }
   }
 
-  //cc.ClearUpgradedPackets();
+  // cc.ClearUpgradedPackets();
 }
 
 void art::StrawAndCaloDigisFromFragments::analyze_calorimeter_(
