@@ -167,7 +167,7 @@ vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
 
 
 double ExtShieldUpstream.OpenDistance = 314.8;
-double ExtShieldUpstream.FrameGap = -30.0;
+double ExtShieldUpstream.FrameGap = 0.0;
 
 
 // The orientation of each detector.  See docdb xxx for details.

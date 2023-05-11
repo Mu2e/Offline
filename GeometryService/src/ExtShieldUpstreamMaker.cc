@@ -17,15 +17,15 @@
 
 namespace mu2e {
 
-namespace {
-   void validDoorParametersOrThrow(const double OD,const double FG){
-     if ( OD<0.0 || FG<0.0 ) {
-       throw cet::exception("GEOM")
-       << "Free Parameters, OpenDistance or FrameGap can't be negative"
-       << "\nYou supplied: OpenDistance = "<<OD<<" and FrameGap = "<<FG;
-     }
-   } // validDoorParameterOrThrow ends
-} //namespace ends
+  namespace {
+    void validDoorParametersOrThrow(const double OD,const double FG){
+      if ( OD<0.0 || FG<0.0 ) {
+         throw cet::exception("GEOM")
+          << "Free Parameters, OpenDistance or FrameGap can't be negative"
+          << "\nYou supplied: OpenDistance = "<<OD<<" and FrameGap = "<<FG;
+      }
+    } // validDoorParameterOrThrow ends
+  } //namespace ends
 
   std::unique_ptr<ExtShieldUpstream>  ExtShieldUpstreamMaker::make(const
                                                               SimpleConfig& c)
@@ -116,11 +116,10 @@ namespace {
     mats.reserve(nBoxesTot);
     sites.reserve(nBoxesTot);
     orients.reserve(nBoxesTot);
-//------------------Remote Handling Door-------------------------
-// get OpenDistance and FrameGap from simple config.
-const double OD = c.getDouble("ExtShieldUpstream.OpenDistance");
-const double FG = c.getDouble("ExtShieldUpstream.FrameGap");
-validDoorParametersOrThrow (OD,FG);
+    //------------------Remote Handling Door-------------------------
+    const double OD = c.getDouble("ExtShieldUpstream.OpenDistance");
+    const double FG = c.getDouble("ExtShieldUpstream.FrameGap");
+    validDoorParametersOrThrow (OD,FG);
 
     // Loop over all the boxes and fill the vectors used to build them
     for ( int it = 0; it < nType; it++ ) {
@@ -152,11 +151,11 @@ validDoorParametersOrThrow (OD,FG);
 
       } // end loop over boxes of type...
     } // end loop over types...
- //--------------------------------------------------------------
- CLHEP::Hep3Vector WorkingPosition = sites.back();
- CLHEP::Hep3Vector ShieldDoorCenter = {WorkingPosition.x()+FG,WorkingPosition.y(),WorkingPosition.z()+OD};
- sites.pop_back();
- sites.push_back(ShieldDoorCenter);
+    //--------------------------------------------------------------
+    CLHEP::Hep3Vector WorkingPosition = sites.back();
+    CLHEP::Hep3Vector ShieldDoorCenter = {WorkingPosition.x()+FG,WorkingPosition.y(),WorkingPosition.z()+OD};
+    sites.pop_back();
+    sites.push_back(ShieldDoorCenter);
 
     // Now make the pointer to the object itself.
     std::unique_ptr<ExtShieldUpstream> res(new ExtShieldUpstream(
