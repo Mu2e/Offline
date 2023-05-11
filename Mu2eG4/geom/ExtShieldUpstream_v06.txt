@@ -158,15 +158,15 @@ vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,2952.0,  202.4};
 // Remote handling room door
 vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
 
-// To move the from working position (A small gap during remote handling operations) in two directions.
+// To move the shielding door in two directions to allow a small gap during remote handling operations.
 // To move in Z-direction (East-West) : apply 'OpenDistance' (double) between 0.0 (fully closed) and 6248.4 (fully open).
-// OpenDistance = 314.8; default case (working position)
+// OpenDistance = 0.0; default case (fully closed)
 // To move in X-direction (towards north) : apply 'FrameGap' (double) between 0.0 (closed) and 254.0 (10" open).
 // FrameGap = 0.0; default case (closed position)
 //NB: Neither OpenDistance nor FrameGap can be supplied a negative value.
 
 
-double ExtShieldUpstream.OpenDistance = 314.8;
+double ExtShieldUpstream.OpenDistance = 0.0;
 double ExtShieldUpstream.FrameGap = 0.0;
 
 
