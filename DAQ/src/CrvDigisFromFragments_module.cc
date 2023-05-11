@@ -9,11 +9,11 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/CRVFragment.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
+#include "art/Framework/Principal/Handle.h"
+#include "artdaq-core-mu2e/Overlays/CRVFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>
@@ -49,7 +49,7 @@ public:
   virtual void produce(Event&);
 
 private:
-//  int decompressCrvDigi(uint8_t adc);
+  //  int decompressCrvDigi(uint8_t adc);
   int16_t decompressCrvDigi(int16_t adc);
 
   int diagLevel_;
@@ -69,10 +69,7 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
 
 // ----------------------------------------------------------------------
 
-int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc)
-{
-  return adc;
-}
+int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc) { return adc; }
 
 void CrvDigisFromFragments::produce(Event& event) {
 
@@ -160,9 +157,8 @@ void CrvDigisFromFragments::produce(Event& event) {
           int SiPMNumber = (FEB * 64 + channel) % 4;
 
           // TODO: This is a temporary implementation.
-          if(crvHit.NumSamples!=8)
-          {
-            std::cerr<<"Number of samples is not 8!"<<std::endl;
+          if (crvHit.NumSamples != 8) {
+            std::cerr << "Number of samples is not 8!" << std::endl;
             continue;
           }
 
@@ -179,12 +175,11 @@ void CrvDigisFromFragments::produce(Event& event) {
           for (auto const& crvHit : crvHits) {
 
             // TODO: This is a temporary implementation.
-            if(crvHit.NumSamples!=8)
-            {
-              std::cerr<<"Number of samples is not 8!"<<std::endl;
+            if (crvHit.NumSamples != 8) {
+              std::cerr << "Number of samples is not 8!" << std::endl;
               continue;
             }
-              #if LONG_FORM_CRV
+#if LONG_FORM_CRV
             // TODO: This is a temporary implementation.
             // There will be a major change on the barIndex+SiPMNumber system,
             // which will be replaced by a channel ID system
@@ -197,7 +192,8 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "MAKEDIGI: " << SiPMNumber << " " << crvBarIndex << " " << crvHit.HitTime
                       << " " << crvHits.size() << " ";
 
-            std::cout << "timestamp: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+            std::cout << "timestamp: " << hdr->GetEventWindowTag().GetEventWindowTag(true)
+                      << std::endl;
             std::cout << "hdr->SubsystemID: " << hdr->GetSubsystemID() << std::endl;
             std::cout << "hdr->DTCID: " << hdr->GetID() << std::endl;
             std::cout << "rocID: " << hdr->GetLinkID() << std::endl;
@@ -209,25 +205,25 @@ void CrvDigisFromFragments::produce(Event& event) {
             std::cout << "TDC: " << crvHit.HitTime << std::endl;
             std::cout << "Waveform: {";
             // TODO: This is a temporary implementation.
-            for (size_t j = 0; j < 8; j++)
-            {
+            for (size_t j = 0; j < 8; j++) {
               std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
-              if (j+1 < 8) std::cout << " ";
+              if (j + 1 < 8)
+                std::cout << " ";
             }
             std::cout << "}" << std::endl;
-            #else
+#else
             // Text format: timestamp sipmID tdc nsamples sample_list
             std::cout << "GREPMECRV: " << hdr->GetEventWindowTag().GetEventWindowTag(true) << " ";
             std::cout << crvHit.SiPMID << " ";
             std::cout << crvHit.HitTime << " ";
             // TODO: This is a temporary implementation.
-            for (size_t j = 0; j < 8; j++)
-            {
+            for (size_t j = 0; j < 8; j++) {
               std::cout << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
-              if (j+1 < 8) std::cout << " ";
+              if (j + 1 < 8)
+                std::cout << " ";
             }
             std::cout << std::endl;
-            #endif
+#endif
           }
 
           std::cout << "LOOP: " << eventNumber << " " << curBlockIdx << " "

@@ -12,7 +12,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-#include "artdaq-core-mu2e/Overlays/Mu2eEventFragment.hh"
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
@@ -58,15 +57,12 @@ public:
         fhicl::Name("deltaTPulses"),
         fhicl::Comment(
             "time-gate between two signal from different SiPMs coupled with the same crystal")};
-    fhicl::Atom<float> nPEperMeV{
-        fhicl::Name("nPEperMeV"),
-        fhicl::Comment("number of photo-electrons per MeV") };
-    fhicl::Atom<float> noiseLevelMeV{
-        fhicl::Name("noiseLevelMeV"),
-        fhicl::Comment("Noise level in MeV") };
-    fhicl::Atom<float> nSigmaNoise{
-        fhicl::Name("nSigmaNoise"),
-        fhicl::Comment("Maxnumber of sigma Noise to combine digi") };
+    fhicl::Atom<float> nPEperMeV{fhicl::Name("nPEperMeV"),
+                                 fhicl::Comment("number of photo-electrons per MeV")};
+    fhicl::Atom<float> noiseLevelMeV{fhicl::Name("noiseLevelMeV"),
+                                     fhicl::Comment("Noise level in MeV")};
+    fhicl::Atom<float> nSigmaNoise{fhicl::Name("nSigmaNoise"),
+                                   fhicl::Comment("Maxnumber of sigma Noise to combine digi")};
     fhicl::Atom<float> hitEDepMax{
         fhicl::Name("hitEDepMax"),
         fhicl::Comment("Maximum hit energy in MeV (to reject saturated pulses)")};
@@ -95,7 +91,7 @@ private:
 
   art::InputTag caloFragmentsTag_;
   float digiSampling_;
-  float deltaTPulses_, hitEDepMax_,nPEperMeV_,noise2_,nSigmaNoise_;
+  float deltaTPulses_, hitEDepMax_, nPEperMeV_, noise2_, nSigmaNoise_;
 
   const int hexShiftPrint = 7;
 
@@ -141,11 +137,11 @@ void art::CaloHitsFromFragments::addPulse(
     ++counter;
     if (std::fabs(pulse.time() - time) < deltaTPulses_) {
 
-      float ratio  = (eDep-pulse.energyDep())/(eDep+pulse.energyDep());
-      float eMean  = (eDep+pulse.energyDep())/2.0;
-      float sigmaR = 0.707*sqrt(1.0/eMean/nPEperMeV_ + noise2_/eMean/eMean);
+      float ratio = (eDep - pulse.energyDep()) / (eDep + pulse.energyDep());
+      float eMean = (eDep + pulse.energyDep()) / 2.0;
+      float sigmaR = 0.707 * sqrt(1.0 / eMean / nPEperMeV_ + noise2_ / eMean / eMean);
 
-      if (abs(ratio) <= nSigmaNoise_*sigmaR) {
+      if (abs(ratio) <= nSigmaNoise_ * sigmaR) {
         // combine the pulses
         pulse.setTime((pulse.time() + time) / 2.); // probably not necessary
         pulse.setEDep((pulse.energyDep() + eDep) / 2.);
@@ -175,7 +171,7 @@ art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<C
     art::EDProducer{config}, diagLevel_(config().diagLevel()),
     caloFragmentsTag_(config().caloTag()), digiSampling_(config().digiSampling()),
     deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
-    nPEperMeV_(config().nPEperMeV()), noise2_(config().noiseLevelMeV()*config().noiseLevelMeV()),
+    nPEperMeV_(config().nPEperMeV()), noise2_(config().noiseLevelMeV() * config().noiseLevelMeV()),
     nSigmaNoise_(config().nSigmaNoise()), caloDAQUtil_("CaloHitsFromFragments") {
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
@@ -194,13 +190,14 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   std::unique_ptr<mu2e::CaloHitCollection> calo_hits(new mu2e::CaloHitCollection);
   std::unique_ptr<mu2e::CaloHitCollection> caphri_hits(new mu2e::CaloHitCollection);
 
-  //IntensityInfoCalo
-  std::unique_ptr<mu2e::IntensityInfoCalo>     int_info(new mu2e::IntensityInfoCalo);
+  // IntensityInfoCalo
+  std::unique_ptr<mu2e::IntensityInfoCalo> int_info(new mu2e::IntensityInfoCalo);
 
-  size_t         totalSize(0), numCalFrags(0);
+  size_t totalSize(0), numCalFrags(0);
   unsigned short evtEnergy(0);
 
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
@@ -208,29 +205,17 @@ void art::CaloHitsFromFragments::produce(Event& event) {
     }
 
     if (diagLevel_ > 1) {
-      std::cout << "[CaloHitsFromFragments::produce] Fragment type of first Fragment in handle: " << static_cast<int>(handle->front().type()) << std::endl;
+      std::cout << "[CaloHitsFromFragments::produce] Fragment type of first Fragment in handle: "
+                << static_cast<int>(handle->front().type()) << std::endl;
     }
-    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
-      for (const auto& cont : *handle) {
-        mu2e::Mu2eEventFragment mef(cont);
-        for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
-          auto pair = mef.calorimeterAtPtr(ii);
-          mu2e::CalorimeterFragment cc(pair);
-          analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
 
-          totalSize += pair.second;
-          numCalFrags++;
-        }
-      }
-    } else {
-      if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
-        for (auto frag : *handle) {
-          mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
+    if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
+      for (auto frag : *handle) {
+        mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+        analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
 
-          totalSize += frag.dataSizeBytes();
-          numCalFrags++;
-        }
+        totalSize += frag.dataSizeBytes();
+        numCalFrags++;
       }
     }
   }

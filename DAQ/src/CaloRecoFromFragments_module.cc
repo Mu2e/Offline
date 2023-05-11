@@ -11,7 +11,6 @@
 
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
-#include "artdaq-core-mu2e/Overlays/Mu2eEventFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 //-- insert calls to proditions ..for calodmap-----
@@ -83,34 +82,21 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
+  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
+      event.getMany<std::vector<artdaq::Fragment>>();
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
       continue;
     }
 
-    if (handle->front().type() == mu2e::detail::FragmentType::MU2EEVENT) {
-      for (const auto& cont : *handle) {
-        mu2e::Mu2eEventFragment mef(cont);
-        for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
-          auto pair = mef.calorimeterAtPtr(ii);
-          mu2e::CalorimeterFragment cc(pair);
-          analyze_calorimeter_(calodaqconds, cc, calo_digis);
+    if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
+      for (auto frag : *handle) {
+        mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
+        analyze_calorimeter_(calodaqconds, cc, calo_digis);
 
-          totalSize += pair.second;
-          numCalFrags++;
-        }
-      }
-    } else {
-      if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
-        for (auto frag : *handle) {
-          mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_calorimeter_(calodaqconds, cc, calo_digis);
-
-          totalSize += frag.dataSizeBytes();
-          numCalFrags++;
-        }
+        totalSize += frag.dataSizeBytes();
+        numCalFrags++;
       }
     }
   }
@@ -142,7 +128,6 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 void art::CaloRecoFromFragments::analyze_calorimeter_(
     mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterFragment& cc,
     std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
-
 
   if (diagLevel_ > 1) {
     std::cout << std::endl;
@@ -241,8 +226,8 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
                     << std::endl;
           std::cout << "[CaloRecoFromFragments] \tErrorFlags " << (int)hits[hitIdx].first.ErrorFlags
                     << std::endl;
-          std::cout << "[CaloRecoFromFragments] \tTime              " << (int)hits[hitIdx].first.Time
-                    << std::endl;
+          std::cout << "[CaloRecoFromFragments] \tTime              "
+                    << (int)hits[hitIdx].first.Time << std::endl;
           std::cout << "[CaloRecoFromFragments] \tNSamples   "
                     << (int)hits[hitIdx].first.NumberOfSamples << std::endl;
           std::cout << "[CaloRecoFromFragments] \tIndexMax   "
