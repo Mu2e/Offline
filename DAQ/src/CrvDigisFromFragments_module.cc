@@ -14,6 +14,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -54,6 +56,8 @@ class art::CrvDigisFromFragments : public EDProducer
 
   art::InputTag _fragmentsTag;
 
+  mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
+
 }; // CrvDigisFromFragments
 
 CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config>& config) :
@@ -74,6 +78,8 @@ int16_t CrvDigisFromFragments::decompressCrvDigi(int16_t adc)
 void CrvDigisFromFragments::produce(Event& event)
 {
   std::unique_ptr<mu2e::CrvDigiCollection> crvDigis(new mu2e::CrvDigiCollection);
+
+  auto const& channelMap = _channelMap_h.get(event.id());
 
   auto fragments = event.getValidHandle<artdaq::Fragments>(_fragmentsTag);
   for(auto fragment=fragments->begin(); fragment!=fragments->end(); ++fragment)
@@ -115,11 +121,15 @@ void CrvDigisFromFragments::produce(Event& event)
             auto crvHits = crvFragment.GetCRVHitReadoutPackets(iDataBlock);
             for(auto const& crvHit : crvHits)
             {
-              //TODO: This is a temporary implementation.
-              int channel = crvHit.SiPMID & 0x7F; // right 7 bits
-              int FEB = crvHit.SiPMID >> 7;
-              int crvBarIndex = (FEB * 64 + channel) / 4;
-              int SiPMNumber = (FEB * 64 + channel) % 4;
+              uint16_t rocID      = header->GetLinkID()+1;  //FIXME
+              uint16_t rocPort    = crvHit.portNumber;
+              uint16_t febChannel = crvHit.febChannel;
+              mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+
+              uint16_t offlineChannel = channelMap.offline(onlineChannel);
+              int crvBarIndex = offlineChannel / 4;
+              int SiPMNumber  = offlineChannel % 4;
+
               if(crvHit.NumSamples!=8)
               {
                 std::cerr<<"Number of samples is not 8!"<<std::endl;
@@ -145,21 +155,26 @@ void CrvDigisFromFragments::produce(Event& event)
                   std::cout << "ROCID: " << (uint16_t)header->GetLinkID() << std::endl;
                   std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
                   std::cout << "EVB mode: " << header->GetEVBMode() << std::endl;
+                  std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
                 }
 
-                // TODO: This is a temporary implementation.
-                int channel = crvHit.SiPMID & 0x7F; // right 7 bits
-                int FEB = crvHit.SiPMID >> 7;
-                int crvBarIndex = (FEB * 64 + channel) / 4;
-                int SiPMNumber = (FEB * 64 + channel) % 4;
+                uint16_t rocID      = header->GetLinkID()+1; //FIXME
+                uint16_t rocPort    = crvHit.portNumber;
+                uint16_t febChannel = crvHit.febChannel;
+                mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+
+                uint16_t offlineChannel = channelMap.offline(onlineChannel);
+                int crvBarIndex = offlineChannel / 4;
+                int SiPMNumber  = offlineChannel % 4;
+
                 if(crvHit.NumSamples!=8)
                 {
                   std::cerr<<"Number of samples is not 8!"<<std::endl;
                   continue;
                 }
-                std::cout << "SiPMID "<<crvHit.SiPMID
-                          << "   channel "<< channel
-                          << "   FEB "<< FEB
+                std::cout << "ROCID "<<rocID
+                          << "   rocPort "<<rocPort
+                          << "   febChannel "<< febChannel
                           << "   crvBarIndex "<< crvBarIndex
                           << "   SiPMNumber "<< SiPMNumber << std::endl;
                 std::cout << "TDC: " << crvHit.HitTime << std::endl;

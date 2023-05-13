@@ -61,8 +61,6 @@ public:
 			, unused5(0)
 			, Errors(0)
 			, EventType(0)
-//			, MicroBunchNumberLow(0)
-//			, MicroBunchNumberHigh(0)
 		{}
 	};
 
@@ -78,15 +76,19 @@ public:
 
 	struct CRVHitReadoutPacket
 	{
-		uint16_t SiPMID;
+		uint16_t febChannel : 6;
+		uint16_t portNumber : 5;
+		uint16_t controllerNumber : 5;
 
 		uint16_t HitTime : 12;
 		uint16_t NumSamples : 4;
 
-		CRVHitWaveformSample  WaveformSamples[8];
+                CRVHitWaveformSample WaveformSamples[8]; //FIXME: should not have hard-coded size
 
 		CRVHitReadoutPacket()
-			: SiPMID(0)
+			: febChannel(0)
+			, portNumber(0)
+			, controllerNumber(0)
 			, HitTime(0)
 			, NumSamples(0)
                 {}
