@@ -6,8 +6,14 @@
 # Contact person G. Pezzullo, R. Ehrlich
 
 #include "Offline/DAQ/fcl/prolog_trigger.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : FragmentToDigi
+
+services :
+{
+  @table::Services.Core
+}
 
 source :
 {
