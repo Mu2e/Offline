@@ -79,7 +79,7 @@ DAQ : {
       {
          module_type: CrvDigisFromFragments
          diagLevel: 0
-         crvTag   : "daq:crv"
+         fragmentsTag   : "daq:crv"
       }
 
       FastMakeSH:
