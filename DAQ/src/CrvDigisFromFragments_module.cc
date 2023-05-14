@@ -52,8 +52,7 @@ class art::CrvDigisFromFragments : public EDProducer
 //  int decompressCrvDigi(uint8_t adc);
   int16_t decompressCrvDigi(int16_t adc);
 
-  int _diagLevel;
-
+  int           _diagLevel;
   art::InputTag _fragmentsTag;
 
   mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
@@ -65,7 +64,6 @@ CrvDigisFromFragments::CrvDigisFromFragments(const art::EDProducer::Table<Config
     _diagLevel(config().diagLevel()),
     _fragmentsTag(config().fragmentsTag())
 {
-  produces<EventNumber_t>();
   produces<mu2e::CrvDigiCollection>();
 }
 
@@ -118,28 +116,31 @@ void CrvDigisFromFragments::produce(Event& event)
               continue;
             }
 
-            auto crvHits = crvFragment.GetCRVHitReadoutPackets(iDataBlock);
+            auto crvHits = crvFragment.GetCRVHits(iDataBlock);
             for(auto const& crvHit : crvHits)
             {
+              const auto &crvHitInfo = crvHit.first;
+              const auto &waveform   = crvHit.second;
+
               uint16_t rocID      = header->GetLinkID()+1;  //FIXME
-              uint16_t rocPort    = crvHit.portNumber;
-              uint16_t febChannel = crvHit.febChannel;
+              uint16_t rocPort    = crvHitInfo.portNumber;
+              uint16_t febChannel = crvHitInfo.febChannel;
               mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
               uint16_t offlineChannel = channelMap.offline(onlineChannel);
               int crvBarIndex = offlineChannel / 4;
               int SiPMNumber  = offlineChannel % 4;
 
-              if(crvHit.NumSamples!=8)
+              for(int i=0; i<crvHitInfo.NumSamples; i+=8)
               {
-                std::cerr<<"Number of samples is not 8!"<<std::endl;
-                continue;
-              }
+                std::array<int16_t, 8> adc={0};
+                for(int j=i; j<i+8 && j<crvHitInfo.NumSamples; ++j) adc[j] = decompressCrvDigi(waveform.at(j).ADC);
 
-              //TODO: This is a temporary implementation.
-              std::array<int16_t, 8> adc;
-              for(int j = 0; j < 8; j++) adc[j] = decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
-              crvDigis->emplace_back(adc, crvHit.HitTime, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+                //CrvDigis use a constant array size of 8 samples
+                //waveforms with more than 8 samples need to be written to multiple CrvDigis
+                //the TDC increases by 8 for every subsequent CrvDigi
+                crvDigis->emplace_back(adc, crvHitInfo.HitTime+i, mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
+              }
             } //loop over all crvHits
 
             if(_diagLevel > 0)
@@ -149,41 +150,40 @@ void CrvDigisFromFragments::produce(Event& event)
                 std::cout << "iCrvBlock/iDataBlock: " << iCrvBlock<<"/"<<iDataBlock << std::endl;
                 if(_diagLevel > 1)
                 {
-                  std::cout << "timestamp: " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
+                  std::cout << "EventWindowTag (TDC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
                   std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
                   std::cout << "DTCID: " << (uint16_t)header->GetID() << std::endl;
                   std::cout << "ROCID: " << (uint16_t)header->GetLinkID() << std::endl;
                   std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
                   std::cout << "EVB mode: " << header->GetEVBMode() << std::endl;
                   std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
+                  std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
                 }
 
-                uint16_t rocID      = header->GetLinkID()+1; //FIXME
-                uint16_t rocPort    = crvHit.portNumber;
-                uint16_t febChannel = crvHit.febChannel;
+                const auto &crvHitInfo = crvHit.first;
+                const auto &waveform   = crvHit.second;
+
+                uint16_t rocID      = header->GetLinkID()+1; //FIXME  //ROC IDs are between 1 and 17
+                uint16_t rocPort    = crvHitInfo.portNumber;
+                uint16_t febChannel = crvHitInfo.febChannel;
                 mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
 
                 uint16_t offlineChannel = channelMap.offline(onlineChannel);
                 int crvBarIndex = offlineChannel / 4;
                 int SiPMNumber  = offlineChannel % 4;
 
-                if(crvHit.NumSamples!=8)
-                {
-                  std::cerr<<"Number of samples is not 8!"<<std::endl;
-                  continue;
-                }
                 std::cout << "ROCID "<<rocID
                           << "   rocPort "<<rocPort
                           << "   febChannel "<< febChannel
                           << "   crvBarIndex "<< crvBarIndex
                           << "   SiPMNumber "<< SiPMNumber << std::endl;
-                std::cout << "TDC: " << crvHit.HitTime << std::endl;
-                std::cout << "nSamples "<<crvHit.NumSamples<<"  ";
+                std::cout << "TDC: " << crvHitInfo.HitTime << std::endl;
+                std::cout << "nSamples "<<crvHitInfo.NumSamples<<"  ";
                 std::cout << "Waveform: {";
-                for (size_t j = 0; j < 8; j++) std::cout << "  " << crvHit.WaveformSamples[j].ADC;
+                for (size_t i = 0; i < crvHitInfo.NumSamples; i++) std::cout << "  " << waveform.at(i).ADC;
                 std::cout << "}" << std::endl;
                 std::cout << "Waveform decompressed: {";
-                for (size_t j = 0; j < 8; j++) std::cout << "  " << decompressCrvDigi(crvHit.WaveformSamples[j].ADC);
+                for (size_t i = 0; i < crvHitInfo.NumSamples; i++) std::cout << "  " << decompressCrvDigi(waveform.at(i).ADC);
                 std::cout << "}" << std::endl;
                 std::cout << std::endl;
               } //loop over hits
@@ -193,8 +193,6 @@ void CrvDigisFromFragments::produce(Event& event)
       } //loop over SubsystemDataBlocks for the CRV
     } //fragment type: DTCEVT
   } //loop over fragments
-
-  event.put(std::unique_ptr<EventNumber_t>(new EventNumber_t(event.event())));
 
   event.put(std::move(crvDigis));
 
