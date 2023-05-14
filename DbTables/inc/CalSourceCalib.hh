@@ -53,7 +53,7 @@ namespace mu2e {
       }
        _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
       // add this channel to the map index - optional
-      _chanIndex[_rows.back().roid()] = _rows.size()-1;
+      //_chanIndex[_rows.back().roid()] = _rows.size()-1;
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
@@ -71,7 +71,7 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
-    std::map<int,std::size_t> _chanIndex;
+    //std::map<int,std::size_t> _chanIndex;
   };
   
 };
