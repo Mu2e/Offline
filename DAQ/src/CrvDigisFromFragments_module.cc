@@ -157,6 +157,7 @@ void CrvDigisFromFragments::produce(Event& event)
                   std::cout << "packetCount: " << header->GetPacketCount() << std::endl;
                   std::cout << "EVB mode: " << header->GetEVBMode() << std::endl;
                   std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
+                  std::cout << "ActiveFEBFlags: " << crvRocHeader->GetActiveFEBFlags() << std::endl;
                   std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
                 }
 

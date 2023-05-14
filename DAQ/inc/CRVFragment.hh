@@ -3,9 +3,8 @@
 #define MU2E_ARTDAQ_CORE_OVERLAYS_CRVFRAGMENT_HH
 
 #include "artdaq-core-mu2e/Overlays/ArtFragment.hh"
-#include <memory>
 #include <vector>
-#include <array>
+#include <bitset>
 
 namespace mu2e {
 class CRVFragment : public ArtFragment
@@ -56,6 +55,16 @@ public:
 			, EventWindowTag1(0)
 			, EventWindowTag0(0)
 		{}
+
+                std::bitset<24> GetActiveFEBFlags()
+                {
+                  uint32_t ActiveFEBFlags = ActiveFEBFlags2;
+                  ActiveFEBFlags<<=8;
+                  ActiveFEBFlags|=ActiveFEBFlags1;
+                  ActiveFEBFlags<<=8;
+                  ActiveFEBFlags|=ActiveFEBFlags0;
+                  return std::bitset<24>(ActiveFEBFlags);  //only need the 24 lowest bits
+                }
 
                 uint32_t GetEventWindowTag()
                 {
