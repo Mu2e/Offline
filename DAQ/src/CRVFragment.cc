@@ -10,19 +10,31 @@ std::unique_ptr<mu2e::CRVFragment::CRVROCStatusPacket> mu2e::CRVFragment::GetCRV
 	return output;
 }
 
-std::vector<mu2e::CRVFragment::CRVHitReadoutPacket> mu2e::CRVFragment::GetCRVHitReadoutPackets(size_t blockIndex) const
+std::vector<mu2e::CRVFragment::CRVHit> mu2e::CRVFragment::GetCRVHits(size_t blockIndex) const
 {
 	auto dataPtr = dataAtBlockIndex(blockIndex);
-	if (dataPtr == nullptr) return std::vector<CRVHitReadoutPacket>();
+	if (dataPtr == nullptr) return std::vector<CRVHit>();
 
 	auto crvRocHdr = reinterpret_cast<CRVROCStatusPacket const*>(dataPtr->GetData());
-        size_t nHits = 0;
-        if(2*crvRocHdr->ControllerEventWordCount>sizeof(CRVROCStatusPacket))
-	       nHits = (2*crvRocHdr->ControllerEventWordCount-sizeof(CRVROCStatusPacket)) / sizeof(CRVHitReadoutPacket);
+        size_t totalEventSize = 2*crvRocHdr->ControllerEventWordCount;
+        size_t usedEventSize = sizeof(CRVROCStatusPacket);
 
-	std::vector<CRVHitReadoutPacket> output(nHits);
+        std::vector<mu2e::CRVFragment::CRVHit> output;
+        auto hitInfoPtr = reinterpret_cast<CRVHitInfo const*>(crvRocHdr+1);
+        while(usedEventSize<totalEventSize)
+        {
+          output.resize(output.size()+1);
 
-	memcpy(&output[0], reinterpret_cast<CRVHitReadoutPacket const*>(crvRocHdr + 1), nHits * sizeof(CRVHitReadoutPacket));
+	  memcpy(&output.back().first, hitInfoPtr, sizeof(CRVHitInfo));
+          size_t nWaveformSamples = output.back().first.NumSamples;
+          auto waveformPtr = reinterpret_cast<CRVHitWaveformSample const*>(hitInfoPtr+1);
+
+          output.back().second.resize(nWaveformSamples);
+	  memcpy(&output.back().second[0], waveformPtr, nWaveformSamples*sizeof(CRVHitWaveformSample));
+          hitInfoPtr = reinterpret_cast<CRVHitInfo const*>(waveformPtr+nWaveformSamples);
+
+          usedEventSize+=sizeof(CRVHitInfo) + nWaveformSamples*sizeof(CRVHitWaveformSample);
+        }
 
 	return output;
 }
