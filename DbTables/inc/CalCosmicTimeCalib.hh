@@ -39,7 +39,7 @@ namespace mu2e {
     "roid,Peak,ErrPeak,Width,ErrWidth,Chi2") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    const Row& row(const int roid) const { return _rows.at(_chanIndex.at(roid)); }
+    const Row& row(const int roid) const { return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };

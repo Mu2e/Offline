@@ -1,5 +1,5 @@
-#ifndef DbTables_CalSourceCalib_hh
-#define DbTables_CalSourceCalib_hh
+#ifndef DbTables_CalSourceEnergyCalib_hh
+#define DbTables_CalSourceEnergyCalib_hh
 
 
 #include <string>
@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-  class CalSourceCalib : public DbTable {
+  class CalSourceEnergyCalib : public DbTable {
   public:
 
     class Row {
@@ -32,13 +32,13 @@ namespace mu2e {
       float _chisq;
     };
 
-    constexpr static const char* cxname = "CalSourceCalib";
+    constexpr static const char* cxname = "CalSourceEnergyCalib";
 
-    CalSourceCalib():DbTable(cxname,"cal.sourcecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
+    CalSourceEnergyCalib():DbTable(cxname,"cal.sourcecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int roid) const { 
-                return _rows.at(_chanIndex.at(roid)); }
+                return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };
@@ -48,7 +48,7 @@ namespace mu2e {
       // enforce a strict sequential order - optional
       if(roid!=int(_rows.size())) {
 	      throw cet::exception("CALOSOURCECALIB_BAD_INDEX") 
-	        << "CalSourceCalib::addRow found index out of order: " 
+	        << "CalSourceEnergyCalib::addRow found index out of order: " 
 	        <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
        _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
