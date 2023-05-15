@@ -1087,7 +1087,7 @@ void ArtBinaryPacketsFromDigis::processCrvData(art::Event& evt, uint64_t& eventN
   }
 
   // Loop over all ROCs, fill headers for each ROC - even for ROCs without hits
-  for (uint8_t rocID = 1; rocID <= number_of_crv_rocs; rocID++) {
+  for (uint8_t rocID = 1; rocID <= number_of_crv_rocs; ++rocID) {
     fillCrvHeaderPacket(crvChannelMap, crvDataBlocks[rocID], rocID,
                         eventNum); // this will create a new entry for ROCs without hits
   }
@@ -1117,7 +1117,7 @@ void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CRVOrdinal& crvChannelMa
 
   hit.first.febChannel = febChannel;
   hit.first.portNumber = rocPort;
-  hit.first.controllerNumber = 0;  //FIXME is this the ROCID?
+  hit.first.controllerNumber = rocID;
   hit.first.HitTime    = digi.GetStartTDC();
   hit.first.NumSamples = CrvDigi::NSamples;
   hit.second.resize(CrvDigi::NSamples);
@@ -1197,7 +1197,7 @@ void ArtBinaryPacketsFromDigis::fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent
                                                  const crv_data_block_list_t& crvDataBlocks) {
   // Loop over all ROCs
   uint8_t currentDTCID = 0;
-  for (uint8_t rocID = 1; rocID <= number_of_crv_rocs; rocID++) {
+  for (uint8_t rocID = 1; rocID <= number_of_crv_rocs; ++rocID) {
     // Add the current DataBlock to the current SuperBlock
     // curDataBlock.setTimestamp(ts); // Overwrite the timestamp
     const CrvDataPacket& crvData = crvDataBlocks.at(rocID);

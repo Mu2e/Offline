@@ -122,7 +122,7 @@ void CrvDigisFromFragments::produce(Event& event)
               const auto &crvHitInfo = crvHit.first;
               const auto &waveform   = crvHit.second;
 
-              uint16_t rocID      = header->GetLinkID()+1;  //FIXME
+              uint16_t rocID      = crvHitInfo.controllerNumber+1; //FIXME ROC IDs between 1 and 17   //also: header->GetLinkID()+1;
               uint16_t rocPort    = crvHitInfo.portNumber;
               uint16_t febChannel = crvHitInfo.febChannel;
               mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
@@ -158,13 +158,14 @@ void CrvDigisFromFragments::produce(Event& event)
                   std::cout << "EVB mode: " << header->GetEVBMode() << std::endl;
                   std::cout << "TriggerCount: " << crvRocHeader->TriggerCount << std::endl;
                   std::cout << "ActiveFEBFlags: " << crvRocHeader->GetActiveFEBFlags() << std::endl;
+                  std::cout << "ROCID (ROC header): " << (uint16_t)crvRocHeader->ControllerID << std::endl;
                   std::cout << "EventWindowTag (ROC header): " << crvRocHeader->GetEventWindowTag() << std::endl;
                 }
 
                 const auto &crvHitInfo = crvHit.first;
                 const auto &waveform   = crvHit.second;
 
-                uint16_t rocID      = header->GetLinkID()+1; //FIXME  //ROC IDs are between 1 and 17
+                uint16_t rocID      = crvHitInfo.controllerNumber+1; //FIXME  //ROC IDs are between 1 and 17
                 uint16_t rocPort    = crvHitInfo.portNumber;
                 uint16_t febChannel = crvHitInfo.febChannel;
                 mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
@@ -173,7 +174,7 @@ void CrvDigisFromFragments::produce(Event& event)
                 int crvBarIndex = offlineChannel / 4;
                 int SiPMNumber  = offlineChannel % 4;
 
-                std::cout << "ROCID "<<rocID
+                std::cout << "ROCID (increased by 1 to match the Online/Offline-Channel Map) "<<rocID
                           << "   rocPort "<<rocPort
                           << "   febChannel "<< febChannel
                           << "   crvBarIndex "<< crvBarIndex

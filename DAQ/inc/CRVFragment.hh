@@ -56,7 +56,7 @@ public:
 			, EventWindowTag0(0)
 		{}
 
-                std::bitset<24> GetActiveFEBFlags()
+                std::bitset<24> GetActiveFEBFlags() const
                 {
                   uint32_t ActiveFEBFlags = ActiveFEBFlags2;
                   ActiveFEBFlags<<=8;
@@ -66,7 +66,7 @@ public:
                   return std::bitset<24>(ActiveFEBFlags);  //only need the 24 lowest bits
                 }
 
-                uint32_t GetEventWindowTag()
+                uint32_t GetEventWindowTag() const
                 {
                   uint32_t EventWindowTag = EventWindowTag1;
                   EventWindowTag<<=16;
