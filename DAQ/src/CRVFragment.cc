@@ -31,6 +31,16 @@ std::vector<mu2e::CRVFragment::CRVHit> mu2e::CRVFragment::GetCRVHits(size_t bloc
           output.back().second.resize(nWaveformSamples);
 	  memcpy(&output.back().second[0], reinterpret_cast<const uint8_t*>(dataPtr->GetData())+pos, nWaveformSamples*sizeof(CRVHitWaveformSample));
           pos += sizeof(CRVHitWaveformSample)*nWaveformSamples;
+
+          if(pos>eventSize)
+          {
+            std::cerr << "************************************************" << std::endl;
+            std::cerr << "Corrupted data in blockIndex " << blockIndex << std::endl;
+            std::cerr << "ROCID " << (uint16_t)crvRocHdr->ControllerID << std::endl;
+            std::cerr << "TriggerCount " << crvRocHdr->TriggerCount << std::endl;
+            std::cerr << "EventWindowTag " << crvRocHdr->GetEventWindowTag() << std::endl;
+            std::cerr << "************************************************" << std::endl;
+          }
         }
 
 	return output;
