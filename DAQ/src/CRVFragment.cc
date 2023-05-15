@@ -24,13 +24,11 @@ std::vector<mu2e::CRVFragment::CRVHit> mu2e::CRVFragment::GetCRVHits(size_t bloc
         {
           output.resize(output.size()+1);
 
-//	  memcpy(&output.back().first, dataPtr->GetData()+pos, sizeof(CRVHitInfo));
 	  memcpy(&output.back().first, reinterpret_cast<const uint8_t*>(dataPtr->GetData())+pos, sizeof(CRVHitInfo));
           pos += sizeof(CRVHitInfo);
 
           size_t nWaveformSamples = output.back().first.NumSamples;
           output.back().second.resize(nWaveformSamples);
-//	  memcpy(&output.back().second[0], dataPtr->GetData()+pos, nWaveformSamples*sizeof(CRVHitWaveformSample));
 	  memcpy(&output.back().second[0], reinterpret_cast<const uint8_t*>(dataPtr->GetData())+pos, nWaveformSamples*sizeof(CRVHitWaveformSample));
           pos += sizeof(CRVHitWaveformSample)*nWaveformSamples;
         }
