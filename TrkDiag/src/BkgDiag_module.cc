@@ -303,14 +303,10 @@ namespace mu2e
       double sqrSumDeltaTime(0.);
       double sqrSumDeltaX(0.);
       double sqrSumDeltaY(0.);
-      float zmin(0.);
-      float zmax(0.);
       std::vector<float> hz;
       std::vector<int> hp;
       for(auto const& ich : cluster.hits()){
         ComboHit const& ch = _chcol->at(ich);
-        if(ch.pos().Z() < zmin) zmin = ch.pos().Z();
-        if(ch.pos().Z() > zmax) zmax = ch.pos().Z();
         hz.push_back(ch.pos().Z());
         hp.push_back(ch.strawId().plane());
         BkgClusterHit const& bhit = _bkghitcol->at(ich);
