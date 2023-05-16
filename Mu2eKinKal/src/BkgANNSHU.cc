@@ -2,7 +2,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Offline/Mu2eKinKal/inc/TrainBkgDiag.hxx"
+#include "Offline/Mu2eKinKal/inc/TrainBkg.hxx"
 #include <cmath>
 #include <array>
 
@@ -12,7 +12,7 @@ namespace mu2e {
   BkgANNSHU::BkgANNSHU(Config const& config) {
     ConfigFileLookupPolicy configFile;
     auto mvaWgtsFile = configFile(std::get<0>(config));
-    mva_ = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>(mvaWgtsFile);
+    mva_ = std::make_shared<TMVA_SOFIE_TrainBkg::Session>(mvaWgtsFile);
     mvacut_ = std::get<1>(config);
     std::string freeze = std::get<2>(config);
     diag_ = std::get<3>(config);
