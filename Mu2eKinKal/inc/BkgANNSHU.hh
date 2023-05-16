@@ -14,7 +14,7 @@
 #include <cstddef>
 #include <memory>
 
-namespace TMVA_SOFIE_TrainBkgDiag {
+namespace TMVA_SOFIE_TrainBkg {
   class Session;
 }
 
@@ -28,7 +28,7 @@ namespace mu2e {
       BkgANNSHU(Config const& config);
       WireHitState wireHitState(WireHitState const& input, KinKal::ClosestApproachData const& tpdata, DriftInfo const& dinfo, ComboHit const& chit) const;
     private:
-      std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> mva_;
+      std::shared_ptr<TMVA_SOFIE_TrainBkg::Session> mva_;
       double mvacut_ =0; // cut value to decide if drift information is usable
       WHSMask freeze_; // states to freeze
       int diag_ =0; // diag print level
