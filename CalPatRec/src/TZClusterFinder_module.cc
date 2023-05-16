@@ -998,6 +998,7 @@ namespace mu2e {
       else {
         _f._clusterInfo._caloCluster = art::Ptr<mu2e::CaloCluster>();
       }
+      _f._clusterInfo._nsh = _f.chunks[i].nStrawHits;
       TimeClusterColl.push_back(_f._clusterInfo);
       if (_diagLevel != 0 || _runDisplay != 0) {
         _data.lineSlope.push_back(_f.chunks[i].fitter.dydx());
