@@ -36,24 +36,24 @@ analyzers :
     BD :
     {
       @table::BD
-      StrawHitFlagCollection : "SFlagBkgHits:ComboHits"
-      BkgClusterCollection:"SFlagBkgHits"
-      BkgClusterHitCollection:"SFlagBkgHits"
+      StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+      BkgClusterCollection:"FlagBkgHits"
+      BkgClusterHitCollection:"FlagBkgHits"
     }
   }
 }
 
 physics.BkgEndPath : [BD]
 physics.BkgTriggerPath  : [
-  # @sequence::TrkHitReco.PrepareHits
-  @sequence::TrkHitReco.SPrepareHits
+  @sequence::TrkHitReco.PrepareHits
+  # @sequence::TrkHitReco.SPrepareHits
 ]
 #include "no_preselection.fcl"
 
-# physics.producers.FlagBkgHits.SaveBkgClusters : true
-physics.producers.SFlagBkgHits.SaveBkgClusters : true
+physics.producers.FlagBkgHits.SaveBkgClusters : true
+# physics.producers.SFlagBkgHits.SaveBkgClusters : true
 
-physics.producers.makeSTH.DebugLevel : 0
+# physics.producers.makeSTH.DebugLevel : 0
 
 # the following are needed for interactive running.  They will be overwritten if you submit this job
 # on the grid with mu2eart and do not need to be removed.
