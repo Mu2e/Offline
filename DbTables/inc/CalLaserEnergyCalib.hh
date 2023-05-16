@@ -1,5 +1,5 @@
-#ifndef DbTables_CalLaserCalib_hh
-#define DbTables_CalLaserCalib_hh
+#ifndef DbTables_CalLaserEnergyCalib_hh
+#define DbTables_CalLaserEnergyCalib_hh
 
 
 #include <string>
@@ -10,7 +10,7 @@
 
 namespace mu2e {
 
-  class CalLaserCalib : public DbTable {
+  class CalLaserEnergyCalib : public DbTable {
   public:
 
     class Row {
@@ -28,9 +28,9 @@ namespace mu2e {
       float _chisq;
     };
 
-    constexpr static const char* cxname = "CalLaserCalib";
+    constexpr static const char* cxname = "CalLaserEnergyCalib";
 
-    CalLaserCalib():DbTable(cxname,"cal.sourcecalib","roid,LAS,ErrLAS,chisq"){}
+    CalLaserEnergyCalib():DbTable(cxname,"cal.laserenergycalib","roid,LAS,ErrLAS,chisq"){}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int roid) const { return _rows.at(roid); }
@@ -42,8 +42,8 @@ namespace mu2e {
       int roid = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(roid!=int(_rows.size())) {
-        throw cet::exception("CALOSOURCECALIB_BAD_INDEX")
-        << "CalLaserCalib::addRow found index out of order: "
+        throw cet::exception("CALOLaserEnergyCALIB_BAD_INDEX")
+        << "CalLaserEnergyCalib::addRow found index out of order: "
         <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
        _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));

@@ -12,8 +12,10 @@
 
 #include "Offline/DbTables/inc/CalSourceEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalib.hh"
-#include "Offline/DbTables/inc/CalLaserCalib.hh"
+#include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicTimeCalib.hh"
+#include "Offline/DbTables/inc/CalLaserTimeCalib.hh"
+#include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalEnergyCalib.hh"
 
 #include "Offline/DbTables/inc/TrkAlignElement.hh"
@@ -85,9 +87,11 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicTimeCalib());
   } else if (name=="CalCosmicEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicEnergyCalib());
-  } else if (name=="CalCLaserCalib") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserCalib());
-  }else if (name=="CalEnergyCalib") {
+  } else if (name=="CalLaserEnergyCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserEnergyCalib());
+  } else if (name=="CalLaserTimeCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserTimeCalib());
+  } else if (name=="CalEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalib());
   }else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")

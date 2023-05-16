@@ -34,7 +34,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalCosmicEnergyCalib";
 
-    CalCosmicEnergyCalib():DbTable(cxname,"cal.sourcecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
+    CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int roid) const { return _rows.at(roid); }
@@ -46,7 +46,7 @@ namespace mu2e {
       int roid = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(roid!=int(_rows.size())) {
-        throw cet::exception("CALOSOURCECALIB_BAD_INDEX")
+        throw cet::exception("CALOCOSMICCALIB_BAD_INDEX")
         << "CalCosmicEnergyCalib::addRow found index out of order: "
         <<roid << " != " << _rows.back().roid()+1 <<"\n";
       }
