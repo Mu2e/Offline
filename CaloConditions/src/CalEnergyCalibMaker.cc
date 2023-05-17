@@ -7,15 +7,15 @@ Written by S. Middleton
 FIXME - placeholder
 */
 namespace mu2e {
-  typedef std::shared_ptr<CalCalibConstant> ptr_t;
+  typedef std::shared_ptr<CalEnergyCalibConstant> ptr_t;
 
   ptr_t CalEnergyCalibMaker::fromFcl() {
-    auto ptr = std::make_shared<CalCalibConstant>(_config.roid());
+    auto ptr = std::make_shared<CalEnergyCalibConstant>(_config.roid());
     return ptr;
 
   } // end fromFcl
 
-  ptr_t CalEnergyCalibMaker::fromDb(CalCalibConstant::cptr_t) {
+  ptr_t CalEnergyCalibMaker::fromDb(CalEnergyCalibConstant::cptr_t) {
     // initially fill from fcl to get all the constants
     auto ptr = fromFcl();
     return ptr;

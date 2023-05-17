@@ -128,7 +128,7 @@ namespace mu2e {
            double baseline(0);
            for (size_t i=0; i<nSamPed; ++i){ baseline += caloDigi.waveform().at(i);}
            baseline /= nSamPed;
-           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*calorimeterCalibrations->ADC2MeV(caloDigi.SiPMID());//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez
+           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*calorimeterCalibrations->ADC2MeV(caloDigi.SiPMID());//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez TODO
            double time     = caloDigi.t0() + caloDigi.peakpos()*digiSampling_ - pbtOffset;                      //Giani's definition
            //double time     = caloDigi.t0() + (caloDigi.peakpos()+0.5)*digiSampling_ - shiftTime_; //Bertrand's definition
 
