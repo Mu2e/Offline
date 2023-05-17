@@ -19,7 +19,7 @@ namespace mu2e {
 
     void initialize() {
      if(_useDb) {
-        _calenergycalib_p = std::make_unique<DbHandle<CalCalibConstant>>();
+        _calenergycalib_p = std::make_unique<DbHandle<CalEnergyCalibConstant>>();
       }
     }
     
@@ -53,7 +53,7 @@ namespace mu2e {
   private:
     bool _useDb;
     CalEnergyCalibMaker _maker;
-    std::unique_ptr<DbHandle<CalCalibConstant>> _calenergycalib_p;
+    std::unique_ptr<DbHandle<CalEnergyCalibConstant>> _calenergycalib_p;
   };
 };
 

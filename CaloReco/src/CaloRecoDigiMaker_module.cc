@@ -131,7 +131,7 @@ namespace mu2e {
   {
 
       const auto& caloDigis = *caloDigisHandle;
-      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
+      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");//TODO this is where constantd read in
 
       double totEnergyReco(0);
       std::vector<double> x{},y{};

@@ -1,7 +1,7 @@
 #ifndef CaloConditions_CalEnergyCalib_hh
 #define CaloConditions_CalEnergyCalib_hh
 //
-// CalCalibConstant collects the net response features of crystal
+// CalEnergyCalibConstant collects the net response features of crystal
 // used in reconstruction 
 // FIXME - this is currently just a place holder
 // author: S. Middleton 2022
@@ -14,7 +14,7 @@
 
 namespace mu2e {
 
-  class CalCalibConstant : public ProditionsEntity {
+  class CalEnergyCalibConstant : public ProditionsEntity {
     public:
     
       struct CalEnergyCorr { //the info here forms the basis of energy fix for each unique calo id
@@ -24,14 +24,14 @@ namespace mu2e {
         CalEnergyCorr(double scale, double offset) : _scale(scale), _offset(offset) {};
       };
       
-      typedef std::shared_ptr<CalCalibConstant> ptr_t;
-      typedef std::shared_ptr<const CalCalibConstant> cptr_t;
-      constexpr static const char* cxname = {"CalCalibConstant"};
+      typedef std::shared_ptr<CalEnergyCalibConstant> ptr_t;
+      typedef std::shared_ptr<const CalEnergyCalibConstant> cptr_t;
+      constexpr static const char* cxname = {"CalEnergyCalibConstant"};
       
       // TODO some construction:
-      explicit CalCalibConstant(uint16_t roid) : ProditionsEntity(cxname), _roid(roid){};
+      explicit CalEnergyCalibConstant(uint16_t roid) : ProditionsEntity(cxname), _roid(roid){};
       
-      virtual ~CalCalibConstant(){};
+      virtual ~CalEnergyCalibConstant(){};
 
       // TODO here there will be accessors and functions
       uint16_t roid(){ return _roid; }
@@ -49,7 +49,7 @@ namespace mu2e {
       };*/
       
     void print(std::ostream& os) const {
-      os << "CalCalibConstant parameters: "  << std::endl;
+      os << "CalEnergyCalibConstant parameters: "  << std::endl;
       os << "  readout ID = " << _roid << " " << std::endl;
       os << "  algorithm used = " << _algName << " " << std::endl;
     }

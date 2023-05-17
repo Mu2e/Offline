@@ -49,7 +49,7 @@ namespace mu2e {
       endTimeBuffer_(      pset.get<double>("endTimeBuffer")),
       minEnergy_(          pset.get<float>("minEnergy")),
       timeCorrection_(     pset.get<double>("timeCorrection")),
-      adcToEnergy_(        pset.get<double>("adcToEnergy")),
+      adcToEnergy_(        pset.get<double>("adcToEnergy")), //TODO
       diagLevel_(          pset.get<int>("diagLevel",0)),
       DNTBINs_(          pset.get<int>("dntbins",1)),
       window_(2*windowPeak_+1),
