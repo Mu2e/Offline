@@ -55,6 +55,7 @@ namespace mu2e
         fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
         fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
         fhicl::Table<ScanClusterer::Config>   ScanClustering{       Name("ScanClustering"),       Comment("Scan Clusterer config") };
+        fhicl::Atom<std::string>              kerasWeights{         Name("KerasWeights"),         Comment("Weights for keras model") };
         fhicl::Atom<float>                    kerasQuality{         Name("KerasQuality"),         Comment("Keras quality cut") };
       };
 
@@ -74,6 +75,7 @@ namespace mu2e
       BkgClusterer*                               clusterer_;
       float                                       cperr2_;
       int const                                   debug_;
+      std::string                                 kerasW_;
       float                                       kerasQ_;
       int                                         iev_;
       std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr;
@@ -81,7 +83,7 @@ namespace mu2e
       void classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol,
           StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
       void countHits(      const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const;
-      void countPlanes(    const BkgCluster& cluster, std::vector<float>& kerasvars, const ComboHitCollection& chcol) const;
+      void countPlanes(    const BkgCluster& cluster, std::array<float,11>& kerasvars, const ComboHitCollection& chcol) const;
       int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
   };
 
@@ -99,12 +101,15 @@ namespace mu2e
     bkgmsk_(      config().backgroundMask()),
     stereo_(      config().stereoSelection()),
     debug_(       config().debugLevel()),
+    kerasW_(      config().kerasWeights()),
     kerasQ_(      config().kerasQuality()),
     iev_(0)
     {
       // Must call consumesMany because fillStrawHitIndices calls getManyByType.
       consumesMany<ComboHitCollection>();
-      sofiePtr = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>("Offline/TrkHitReco/data/TrainBkgDiag.dat");
+      ConfigFileLookupPolicy configFile;
+      auto kerasWgtsFile = configFile(kerasW_);
+      sofiePtr = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>(kerasWgtsFile);
 
       if (flagsh_) produces<StrawHitFlagCollection>("StrawHits");
       if (flagch_) produces<StrawHitFlagCollection>("ComboHits");
@@ -256,12 +261,12 @@ namespace mu2e
       countHits(cluster, nactive, nstereo,chcol);
       unsigned nhits = nstereo > 0 ? nstereo : nactive;
       if (nhits < minnhits_) return;
-      std::vector<float> kerasvars(11,0.0);
-      kerasvars.at(0) = sqrtf(cluster.pos().perp2());
-      kerasvars.at(6) = nhits;
+      std::array<float,11> kerasvars;
+      kerasvars[0] = sqrtf(cluster.pos().perp2());
+      kerasvars[6] = nhits;
       countPlanes(cluster,kerasvars,chcol);
 
-      if (kerasvars.at(4) >= minnp_)
+      if (kerasvars[4] >= minnp_)
       {
         std::vector<float> hz;
         for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
@@ -270,15 +275,15 @@ namespace mu2e
         std::sort(hz.begin(),hz.end());
         float zgap = 0.0;
         for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
-        kerasvars.at(1) = hz.front(); // Z min
-        kerasvars.at(2) = hz.back(); // Z max
-        kerasvars.at(3) = zgap; // max Z gap
+        kerasvars[1] = hz.front(); // Z min
+        kerasvars[2] = hz.back(); // Z max
+        kerasvars[3] = zgap; // max Z gap
       }
       else
       {
-        kerasvars.at(1) = -1.0;
-        kerasvars.at(2)  = -1.0;
-        kerasvars.at(3)  = -1.0;
+        kerasvars[1] = -1.0;
+        kerasvars[2]  = -1.0;
+        kerasvars[3]  = -1.0;
       }
 
       double sumEdep(0.);
@@ -293,10 +298,10 @@ namespace mu2e
         sqrSumDeltaTime += std::pow(chcol[chit].time() - cluster.time(),2);
       }
 
-      kerasvars.at(7) = sumEdep/nhits;
-      kerasvars.at(8) = std::sqrt(sqrSumDeltaX/nhits);
-      kerasvars.at(9) = std::sqrt(sqrSumDeltaY/nhits);
-      kerasvars.at(10) = std::sqrt(sqrSumDeltaTime/nhits);
+      kerasvars[7] = sumEdep/nhits;
+      kerasvars[8] = std::sqrt(sqrSumDeltaX/nhits);
+      kerasvars[9] = std::sqrt(sqrSumDeltaY/nhits);
+      kerasvars[10] = std::sqrt(sqrSumDeltaTime/nhits);
 
       auto kerasout = sofiePtr->infer(kerasvars.data());
 
@@ -316,7 +321,7 @@ namespace mu2e
   }
 
   //-------------------------------------------------------------------------------------------------------------
-  void FlagBkgHits::countPlanes(const BkgCluster& cluster, std::vector<float> & kerasvars, const ComboHitCollection& chcol) const
+  void FlagBkgHits::countPlanes(const BkgCluster& cluster, std::array<float,11> & kerasvars, const ComboHitCollection& chcol) const
   {
     std::array<int,StrawId::_nplanes> hitplanes{0};
     for (const auto& chit : cluster.hits())
@@ -337,8 +342,8 @@ namespace mu2e
       nphits += hitplanes[ip];
     }
 
-    kerasvars.at(4) = np;// # of planes
-    kerasvars.at(5) = static_cast<float>(np)/static_cast<float>(npexp);// fraction of planes
+    kerasvars[4] = np;// # of planes
+    kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);// fraction of planes
 
   }
 
