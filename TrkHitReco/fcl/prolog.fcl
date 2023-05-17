@@ -134,6 +134,7 @@ FlagBkgHits : {
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
   SaveBkgClusters      : false
+  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
   KerasQuality         : 0.5
   DebugLevel           : 0
 }
