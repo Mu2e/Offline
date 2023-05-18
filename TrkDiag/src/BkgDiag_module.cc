@@ -105,8 +105,7 @@ namespace mu2e
       bool _isolated = false;
       bool _stereo = false;
       int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg;
-//      int _mvastat;
-//      float _mvaout;
+      float _mvaout;
       float _crho;
       float _zmin;
       float _zmax;
@@ -170,6 +169,7 @@ namespace mu2e
     _bcdiag->Branch("nactive",&_nactive,"nactive/I");
     _bcdiag->Branch("nbkg",&_nbkg,"nbkg/I");
     _bcdiag->Branch("cluIdx",&_cluIdx,"cluIdx/I");
+    _bcdiag->Branch("mvaout",&_mvaout,"mvaout/F");
     // cluster hit info branch
     if(_diag > 0)
       _bcdiag->Branch("bkghinfo",&_bkghinfo);
@@ -248,6 +248,7 @@ namespace mu2e
       _crho = sqrtf(cluster.pos().perp2());
       _cpos = cluster.pos();
       _ctime = cluster.time();
+      _mvaout = cluster.mvaout();
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
       _isolated = cluster.flag().hasAllProperties(BkgClusterFlag::iso);

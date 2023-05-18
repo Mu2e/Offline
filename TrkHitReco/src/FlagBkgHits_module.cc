@@ -304,19 +304,17 @@ namespace mu2e
       kerasvars[10] = std::sqrt(sqrSumDeltaTime/nhits);
 
       auto kerasout = sofiePtr->infer(kerasvars.data());
+      cluster._mvaout = kerasout[0];
+
 
       StrawHitFlag flag(StrawHitFlag::bkgclust);
-      if (kerasout[0] > kerasQ_)
+      if (cluster._mvaout > kerasQ_)
       {
-        flag.merge(StrawHitFlag::bkg);
-        if (savebkg_)
-        {
-          cluster._flag.merge(BkgClusterFlag::bkg);
-          if(nstereo > 0) cluster._flag.merge(BkgClusterFlag::stereo);
-        }
+        StrawHitFlag flag(StrawHitFlag::bkg);
+        flag.merge(flag);
+        for (const auto& chit : cluster.hits()) chfcol[chit].merge(flag);
       }
-
-      for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
+      if(nstereo > 0) cluster._flag.merge(BkgClusterFlag::stereo);
     }
   }
 
