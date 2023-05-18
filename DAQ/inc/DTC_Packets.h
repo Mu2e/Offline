@@ -6,7 +6,7 @@
 #include <vector>
 #include <cassert>
 
-#include "mu2e_pcie_utils/dtcInterfaceLib/DTC_Types.h"
+#include "dtcInterfaceLib/DTC_Types.h"
 
 #include "mu2e_driver/mu2e_mmap_ioctl.h"
 
