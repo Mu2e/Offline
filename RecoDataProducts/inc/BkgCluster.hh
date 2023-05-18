@@ -17,11 +17,12 @@ namespace mu2e
        BkgCluster()                              : _pos(),    _time(0.0),  _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}
        BkgCluster(XYZVectorF const& pos, float time) : _pos(pos), _time(time), _hits(), _flag(BkgClusterFlag::update)  {_hits.reserve(16);}
 
-       BkgClusterFlag const&        flag() const {return _flag; }
-       XYZVectorF const&                pos()  const {return _pos;  }
-       float                        time() const {return _time; }
-       std::vector<unsigned> const& hits() const {return _hits; }
-       std::vector<unsigned>&       hits()       {return _hits; }
+       auto const&        flag() const {return _flag; }
+       auto const&                pos()  const {return _pos;  }
+       auto const& time() const {return _time; }
+       auto const& mvaout() const { return _mvaout; }
+       auto const& hits() const {return _hits; }
+       auto &       hits()       {return _hits; }
 
        void pos(XYZVectorF const& pos)               {_pos = pos;}
        void time(float time)                     {_time = time;}
@@ -32,6 +33,7 @@ namespace mu2e
        float                 _time;
        std::vector<unsigned> _hits;
        BkgClusterFlag        _flag;
+       float                _mvaout; // MVA otuput
    };
 
    typedef std::vector<mu2e::BkgCluster> BkgClusterCollection;
