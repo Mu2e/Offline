@@ -23,7 +23,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
-#include "Offline/RecoDataProducts/inc/BkgQual.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
@@ -54,7 +53,6 @@ namespace mu2e
         fhicl::Atom<art::InputTag> ComboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
         fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
         fhicl::Atom<art::InputTag> BkgClusterCollection{   Name("BkgClusterCollection"),   Comment("BackgroundCluster collection name") };
-        fhicl::Atom<art::InputTag> BkgQualCollection{   Name("BkgQualCollection"),   Comment("BackgroundQual collection name") };
         fhicl::Atom<art::InputTag> BkgClusterHitCollection{   Name("BkgClusterHitCollection"),   Comment("BackgroundClusterHit collection name") };
         fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
         fhicl::Atom<art::InputTag> MCPrimary{ Name("MCPrimary"),Comment("MC Primary Particle") };
@@ -79,7 +77,6 @@ namespace mu2e
       art::ProductToken<ComboHitCollection> _chToken;
       art::ProductToken<StrawHitFlagCollection> _shfToken;
       art::ProductToken<BkgClusterCollection> _bkgcToken;
-      art::ProductToken<BkgQualCollection> _bkgqToken;
       art::ProductToken<BkgClusterHitCollection> _bkghToken;
       art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
       art::ProductToken<PrimaryParticle> _mcprimaryToken;
@@ -90,7 +87,6 @@ namespace mu2e
       const StrawDigiMCCollection *_mcdigis;
       const PrimaryParticle *_mcprimary;
       const BkgClusterCollection *_bkgccol;
-      const BkgQualCollection *_bkgqcol;
       const BkgClusterHitCollection *_bkghitcol;
 
       // background diagnostics
@@ -109,10 +105,14 @@ namespace mu2e
       bool _isolated = false;
       bool _stereo = false;
       int _cluIdx, _nactive, _nch, _nsh, _nsha, _nbkg;
-      // BkgQual vars
-      float _bkgqualvars[BkgQual::n_vars];
-      int _mvastat;
-      float _mvaout;
+//      int _mvastat;
+//      float _mvaout;
+      float _crho;
+      float _zmin;
+      float _zmax;
+      float _zgap;
+      int _np;
+      float _npfrac;
 
       // MC truth variables
       int _mpdg, _mproc, _ncontrib, _icontrib[512];
@@ -137,7 +137,6 @@ namespace mu2e
     _chToken{ consumes<ComboHitCollection>(config().ComboHitCollection() ) },
     _shfToken{ consumes<StrawHitFlagCollection>(config().StrawHitFlagCollection() ) },
     _bkgcToken{ consumes<BkgClusterCollection>(config().BkgClusterCollection() ) },
-    _bkgqToken{ consumes<BkgQualCollection>(config().BkgQualCollection() ) },
     _bkghToken{ consumes<BkgClusterHitCollection>(config().BkgClusterHitCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
     _mcprimaryToken{ consumes<PrimaryParticle>(config().MCPrimary() ) }
@@ -174,14 +173,13 @@ namespace mu2e
     // cluster hit info branch
     if(_diag > 0)
       _bcdiag->Branch("bkghinfo",&_bkghinfo);
-    // Bkg qual info
-    for(int ivar=0;ivar < BkgQual::n_vars; ++ivar){
-      string vname = BkgQual::varName(static_cast<BkgQual::MVA_varindex>(ivar));
-      string bname = vname+string("/F");
-      _bcdiag->Branch(vname.c_str(),&_bkgqualvars[ivar],bname.c_str());
-    }
-    _bcdiag->Branch("mvaout", &_mvaout,"mvaout/F");
-    _bcdiag->Branch("mvastat", &_mvastat,"mvastat/I");
+    _bcdiag->Branch("crho",&_crho,"crho/F");
+    _bcdiag->Branch("zmin",&_zmin,"zmin/F");
+    _bcdiag->Branch("zmax",&_zmax,"zmax/F");
+    _bcdiag->Branch("zgap",&_zgap,"zgap/F");
+    _bcdiag->Branch("np",&_np,"np/I");
+    _bcdiag->Branch("npfrac",&_npfrac,"npfrac/F");
+    _bcdiag->Branch("nhits",&_nhits,"nhits/I");
     // mc truth branches
     if(_mcdiag){
       _bcdiag->Branch("mmom",&_mmom,"mmom/F");
@@ -216,9 +214,9 @@ namespace mu2e
   void BkgDiag::analyze(const art::Event& event ) {
     if(!findData(event))
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< std::endl;
-    // check consistency
-    if(_bkgccol->size() != _bkgqcol->size())
-      throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< std::endl;
+    // check consistency,bkgqcol is eliminated from the code, we should add a different check TO DO
+    //if(_bkgccol->size() != _bkgqcol->size())
+    //  throw cet::exception("RECO")<<"mu2e::BkgDiag: data inconsistent"<< std::endl;
     // loop over background clusters
 
     _nhits=0;
@@ -246,20 +244,14 @@ namespace mu2e
     _cluIdx=0;
     for (size_t ibkg=0;ibkg<_bkgccol->size();++ibkg){
       BkgCluster const& cluster = _bkgccol->at(ibkg);
-      BkgQual const& qual = _bkgqcol->at(ibkg);
       // fill cluster info
+      _crho = sqrtf(cluster.pos().perp2());
       _cpos = cluster.pos();
       _ctime = cluster.time();
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
       _isolated = cluster.flag().hasAllProperties(BkgClusterFlag::iso);
       _stereo = cluster.flag().hasAllProperties(BkgClusterFlag::stereo);
-      // fill Bkg qual info
-      for(int ivar=0;ivar < BkgQual::n_vars; ++ivar){
-        _bkgqualvars[ivar] = qual[static_cast<BkgQual::MVA_varindex>(ivar)];
-      }
-      _mvaout = qual.MVAOutput();
-      _mvastat = qual.status();
       // info on nearest cluster
       _mindt = _mindrho = 1.0e3;
       for(size_t jbkg = 0; jbkg < _bkgccol->size(); ++jbkg){
@@ -319,8 +311,12 @@ namespace mu2e
       double sqrSumDeltaTime(0.);
       double sqrSumDeltaX(0.);
       double sqrSumDeltaY(0.);
+      std::vector<float> hz;
+      std::vector<int> hp;
       for(auto const& ich : cluster.hits()){
         ComboHit const& ch = _chcol->at(ich);
+        hz.push_back(ch.pos().Z());
+        hp.push_back(ch.strawId().plane());
         BkgClusterHit const& bhit = _bkghitcol->at(ich);
         sumEdep +=  ch.energyDep()/ch.nStrawHits();
         sqrSumDeltaX += std::pow(ch.pos().X() - _cpos.X(),2);
@@ -365,6 +361,22 @@ namespace mu2e
       _rmscposx = std::sqrt(sqrSumDeltaX/_nch);
       _rmscposy = std::sqrt(sqrSumDeltaY/_nch);
       _rmsctime = std::sqrt(sqrSumDeltaTime/_nch);
+      std::sort(hz.begin(),hz.end());
+      float zgap(0.0);
+      for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
+      _zmin = hz.front();
+      _zmax = hz.back();
+      _zgap = zgap;
+      std::sort(hp.begin(),hp.end());
+      int lpc(-1);//last plane in cluster
+      int np(0);//# of planes
+      for(unsigned ip=1;ip<hp.size();++ip){
+        if(lpc == hp.at(ip)) continue;
+        lpc = hp.at(ip);
+        np++;
+      }
+      _np = np;
+      _npfrac = float(np)/float(StrawId::_nplanes);
       _bcdiag->Fill();
       ++_cluIdx;
     }
@@ -372,7 +384,7 @@ namespace mu2e
   }
 
   bool BkgDiag::findData(const art::Event& evt){
-    _chcol = 0; _shfcol = 0; _bkgccol = 0; _bkgqcol = 0; _mcdigis = 0;
+    _chcol = 0; _shfcol = 0; _bkgccol = 0; _mcdigis = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto chH = evt.getValidHandle(_chToken);
     _chcol = chH.product();
@@ -382,15 +394,13 @@ namespace mu2e
     _bkgccol = bkgcH.product();
     auto bkghH = evt.getValidHandle(_bkghToken);
     _bkghitcol = bkghH.product();
-    auto bkgqH = evt.getValidHandle(_bkgqToken);
-    _bkgqcol = bkgqH.product();
     if(_mcdiag){
       auto mcdH = evt.getValidHandle(_mcdigisToken);
       _mcdigis = mcdH.product();
       auto mcpH = evt.getValidHandle(_mcprimaryToken);
       _mcprimary = mcpH.product();
     }
-    return _chcol != 0 && _shfcol != 0 && _bkgccol != 0 && _bkgqcol != 0
+    return _chcol != 0 && _shfcol != 0 && _bkgccol != 0
       && ( (_mcdigis != 0 && _mcprimary != 0)  || !_mcdiag);
   }
 
