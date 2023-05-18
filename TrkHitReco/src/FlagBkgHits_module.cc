@@ -262,7 +262,7 @@ namespace mu2e
       unsigned nhits = nstereo > 0 ? nstereo : nactive;
       if (nhits < minnhits_) return;
       std::array<float,11> kerasvars;
-      kerasvars[0] = sqrtf(cluster.pos().perp2());
+      kerasvars[0] = sqrtf(cluster.pos().Rho());
       kerasvars[6] = nhits;
       countPlanes(cluster,kerasvars,chcol);
 
