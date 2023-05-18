@@ -11,6 +11,7 @@ BD : {
   BkgQualCollection:"FlagBkgHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
+  MCPrimary : compressDigiMCs
   useFlagCollection : true
 }
 
