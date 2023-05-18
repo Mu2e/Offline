@@ -257,6 +257,8 @@ namespace mu2e {
           zsum += z*wt;
           zmin = std::min(zmin,z);
           zmax = std::max(zmax,z);
+          combohit._flag.merge(StrawHitFlag::stereo);
+          combohit._pos += ch._pos*wt;
           combohit._edep += ch.energyDep()*wt;
           // the following have unclear meaning for stereo hits, but we fill them anyways
           for(size_t iend=0;iend<2;++iend){

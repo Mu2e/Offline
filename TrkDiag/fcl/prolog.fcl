@@ -8,7 +8,6 @@ BD : {
   StrawDigiMCCollection : "compressDigiMCs"
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  BkgQualCollection:"FlagBkgHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
   MCPrimary : compressDigiMCs
