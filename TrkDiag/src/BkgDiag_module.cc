@@ -110,8 +110,7 @@ namespace mu2e
       float _zmin;
       float _zmax;
       float _zgap;
-      int _np;
-      float _npfrac;
+      int _np, _fp, _lp, _pgap;
 
       // MC truth variables
       int _mpdg, _mproc, _ncontrib, _icontrib[512];
@@ -178,7 +177,9 @@ namespace mu2e
     _bcdiag->Branch("zmax",&_zmax,"zmax/F");
     _bcdiag->Branch("zgap",&_zgap,"zgap/F");
     _bcdiag->Branch("np",&_np,"np/I");
-    _bcdiag->Branch("npfrac",&_npfrac,"npfrac/F");
+    _bcdiag->Branch("fp",&_fp,"fp/I");
+    _bcdiag->Branch("lp",&_lp,"lp/I");
+    _bcdiag->Branch("pgap",&_pgap,"pgap/I");
     _bcdiag->Branch("nhits",&_nhits,"nhits/I");
     // mc truth branches
     if(_mcdiag){
@@ -313,11 +314,11 @@ namespace mu2e
       double sqrSumDeltaX(0.);
       double sqrSumDeltaY(0.);
       std::vector<float> hz;
-      std::vector<int> hp;
+      std::array<bool,StrawId::_nplanes> hp{false};
       for(auto const& ich : cluster.hits()){
         ComboHit const& ch = _chcol->at(ich);
         hz.push_back(ch.pos().Z());
-        hp.push_back(ch.strawId().plane());
+        hp[ch.strawId().plane()] = true;
         BkgClusterHit const& bhit = _bkghitcol->at(ich);
         sumEdep +=  ch.energyDep()/ch.nStrawHits();
         sqrSumDeltaX += std::pow(ch.pos().X() - _cpos.X(),2);
@@ -368,16 +369,19 @@ namespace mu2e
       _zmin = hz.front();
       _zmax = hz.back();
       _zgap = zgap;
-      std::sort(hp.begin(),hp.end());
-      int lpc(-1);//last plane in cluster
-      int np(0);//# of planes
-      for(unsigned ip=1;ip<hp.size();++ip){
-        if(lpc == hp.at(ip)) continue;
-        lpc = hp.at(ip);
-        np++;
+      _lp = -1; // last plane in cluster
+      _fp = StrawId::_nplanes; // first plane in cluster
+      _np = 0;//# of planes
+      _pgap = 0; // largest plane gap
+      int lp(0); // last plane seen
+      for(int ip=0;ip < StrawId::_nplanes; ++ip){
+        if(hp[ip]){
+          _np++;
+          if(ip - lp > _pgap)_pgap = ip - lp;
+          if(ip > _lp)_lp = ip;
+          if(ip < _fp)_fp = ip;
+        }
       }
-      _np = np;
-      _npfrac = float(np)/float(StrawId::_nplanes);
       _bcdiag->Fill();
       ++_cluIdx;
     }
