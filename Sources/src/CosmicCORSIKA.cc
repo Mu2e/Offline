@@ -244,7 +244,7 @@ namespace mu2e {
       return true;
   }
 
-  bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned int &primaries)
+  bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned long long &primaries)
   {
     // loop over particles in the truth object
     bool passed = false;

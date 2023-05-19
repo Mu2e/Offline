@@ -5,10 +5,10 @@
 namespace mu2e {
   namespace Mu2eKinKal {
     KinKal::Line hitLine(ComboHit const& ch, Straw const& straw,StrawResponse const& strawresponse) {
-      double sprop = 2*strawresponse.halfPropV(ch.strawId(),1000.0*ch.energyDep());
-      // construct a kinematic line trajectory from this straw. the measurement point is the signal end
-      KinKal::VEC3 vp0(straw.wireEnd(ch.driftEnd()));
-      KinKal::VEC3 vp1(straw.wireEnd(StrawEnd(ch.driftEnd().otherEnd())));
+      double sprop = 2*strawresponse.halfPropV(ch.strawId(),1000.0*ch.energyDep()); // calibration uses EDep in KeV
+      // construct a kinematic line trajectory from this straw. the measurement point is at the earlier signal
+      KinKal::VEC3 vp0(straw.wireEnd(ch.earlyEnd()));
+      KinKal::VEC3 vp1(straw.wireEnd(ch.lateEnd()));
       return KinKal::Line(vp0,vp1,ch.time(),sprop);
     }
     bool inDetector(KinKal::VEC3 const& point) {

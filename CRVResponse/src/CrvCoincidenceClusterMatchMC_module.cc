@@ -123,7 +123,7 @@ namespace mu2e
 
         //add the MC information (sim particle, dep. energy) of this reco pulse to the collection of pulses
         //unless the reco pulse was caused by a noise hit (and doesn't have an associated simParticle)
-        if(simParticleThisPulse.isAvailable()) pulses.emplace_back(simParticleThisPulse,visibleEnergyDepositedThisPulse);
+        pulses.emplace_back(simParticleThisPulse,visibleEnergyDepositedThisPulse);
       }//loop over reco pulses
 
       //based on all step points, get the most likely sim particle, total energy, etc.
@@ -132,8 +132,7 @@ namespace mu2e
 
       //insert the cluster information into the vector of the crv coincidence clusters (collection of pulses, most likely sim particle, etc.)
       //unless the reco pulse was caused by a noise hit (and doesn't have an associated simParticle)
-      if(simParticle.isAvailable()) crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle,
-                                                                                    visibleEnergyDeposited, earliestHitTime, earliestHitPos);
+      crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, visibleEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 
     event.put(std::move(crvCoincidenceClusterMCCollection));

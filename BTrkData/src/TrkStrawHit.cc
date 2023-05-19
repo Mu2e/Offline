@@ -38,7 +38,7 @@ namespace mu2e
     _maxdriftpull(maxdriftpull)
   {
 // make sure this ComboHit represents only a single straw hit
-    if(_combohit.nStrawHits() != 1 || _combohit.driftEnd() == StrawEnd::unknown)
+    if(_combohit.nStrawHits() != 1 || _combohit.earlyEnd() == StrawEnd::unknown)
       throw cet::exception("RECO")<<"mu2e::TrkStrawHit: ComboHit > 1 StrawHit"<< endl;
     // The StrawResponse should be passsed in from outside FIXME!
     Hep3Vector const& wiredir = _straw.getDirection();
@@ -104,15 +104,15 @@ namespace mu2e
       else
         doca = _rdrift + _iamb*resid;
     // restrict the range, symmetrically to avoid bias
-      double mint0doca = _strawResponse->Mint0doca();
+      double mint0doca = _strawResponse->BTrk_Mint0doca();
       if(doca > mint0doca && doca < _rstraw-mint0doca){
         // compute phi WRT BField for lorentz drift.
         CLHEP::Hep3Vector trjDir(parentRep()->traj().direction(fltLen()));
         Hep3Vector tperp = trjDir - trjDir.dot(straw().getDirection())*straw().getDirection();
         double phi = tperp.theta();   // This assumes B along z, FIXME!
         // translate the DOCA into a time
-        double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), doca, phi,true);
-        double vdrift = _strawResponse->driftInstantSpeed(_combohit.strawId(),doca, phi,true);
+        double tdrift = _strawResponse->BTrk_driftDistanceToTime(_combohit.strawId(), doca, phi);
+        double vdrift = _strawResponse->BTrk_driftInstantSpeed(_combohit.strawId(),doca, phi);
         t0._t0 = tdrift + _stime;
         t0._t0err = residerr/vdrift;// instantaneous velocity to translate the error on the residual
       } else {
@@ -137,10 +137,10 @@ namespace mu2e
 
    Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
    _phi = tperp.theta();
-   _rdrift = _strawResponse->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
-   _vdriftinst = _strawResponse->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi,true);
+   _rdrift = _strawResponse->BTrk_driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
+   _vdriftinst = _strawResponse->BTrk_driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
    double vdriftconst = _strawResponse->driftConstantSpeed();
-   _rdrifterr = _strawResponse->signedDriftError(_combohit.strawId(),fabs(poca().doca()),_phi);
+   _rdrifterr = _strawResponse->BTrk_driftDistanceError(_combohit.strawId(),fabs(poca().doca()),_phi);
 
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_vdriftinst;
@@ -172,7 +172,7 @@ namespace mu2e
 // compute the electronics propagation time for the 2 ends.
 // note: the wire (U) direction points from HV to Cal (Duke convention)
     if( poca().status().success()){
-      switch (_combohit.driftEnd()) {
+      switch (_combohit.earlyEnd()) {
         case StrawEnd::cal:
           _stime = (straw().halfLength()+hitLen())/_vprop;
           break;
@@ -182,7 +182,7 @@ namespace mu2e
       }
     } else {
 // if we're missing poca information, use time division instead
-      switch (_combohit.driftEnd()) {
+      switch (_combohit.earlyEnd()) {
         case StrawEnd::cal:
           _stime = (straw().halfLength()+timeDiffDist())/_vprop;
           break;

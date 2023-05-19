@@ -1,7 +1,7 @@
 physics.filters.cprHelixDePHSFilter.requireCaloCluster   : false
 physics.filters.cprHelixDePHSFilter.doHelicityCheck  : true
 physics.filters.cprHelixDePHSFilter.helicity      : -1
-physics.filters.cprHelixDePHSFilter.minNStrawHits : 15.0
+physics.filters.cprHelixDePHSFilter.minNStrawHits : 15
 physics.filters.cprHelixDePHSFilter.minHitRatio   : 0.4
 physics.filters.cprHelixDePHSFilter.minMomentum   : 50.0
 physics.filters.cprHelixDePHSFilter.maxMomentum   : 300.0

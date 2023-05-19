@@ -48,7 +48,7 @@ namespace mu2e
         fhicl::Atom<double>             maxD0             {     Name("maxD0"),                   Comment("maxD0             ") };
         fhicl::Atom<double>             minT0             {     Name("minT0"),                   Comment("minT0             ") };
         fhicl::Sequence<std::string>    seedFitFlag       {     Name("seedFitFlag"),             Comment("seedFitFlag       ") , std::vector<std::string>{"SeedOK"}};
-        fhicl::Atom<int>                debugLevel        {     Name("debugLevel "),             Comment("debugLevel        ") , 0};
+        fhicl::Atom<int>                debugLevel        {     Name("debugLevel"),             Comment("debugLevel        ") , 0};
 
 
       };
@@ -107,6 +107,9 @@ namespace mu2e
     auto ksH = evt.getValidHandle<KalSeedCollection>(_ksTag);
     const KalSeedCollection* kscol = ksH.product();
     // loop over the collection: if any pass the selection, pass this event
+    if(_debug > 2){
+      if (kscol->size()>0) printf("[SeedFilter::filter]   nhits     mom     momErr    chi2ndof     fitCon   tanDip    d0      \n");
+    }
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
       //check particle type and fitdirection
@@ -120,7 +123,8 @@ namespace mu2e
       // get the first segment
       KalSegment const& fseg = ks.segments().front();
       if(_debug > 2){
-        std::cout << moduleDescription().moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << std::endl;
+        printf("[SeedFilter::filter] %4d %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n", nactive, fseg.mom(), fseg.momerr(),ks.chisquared()/ndof, ks.fitConsistency(), fseg.helix().tanDip(), fseg.helix().d0());
+
       }
       if( ks.status().hasAllProperties(_goods) &&
           (!_hascc || ks.caloCluster().isNonnull()) &&

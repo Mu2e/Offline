@@ -1,8 +1,7 @@
 #ifndef RecoDataProducts_TimeCluster_hh
 #define RecoDataProducts_TimeCluster_hh
 //
-// Defin a
-//
+//  Time cluster of straw hits (and calo cluster)
 //
 // Original author G. Tassielli
 //

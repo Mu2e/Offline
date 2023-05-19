@@ -15,15 +15,19 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
-#include "Offline/RecoDataProducts/inc/BkgQual.hh"
 
-#include "Offline/Mu2eUtilities/inc/MVATools.hh"
-#include "Offline/TrkReco/inc/TNTClusterer.hh"
-#include "Offline/TrkReco/inc/ScanClusterer.hh"
+#include "Offline/TrkHitReco/inc/TNTClusterer.hh"
+#include "Offline/TrkHitReco/inc/ScanClusterer.hh"
+#include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"
 
 #include <string>
 #include <vector>
 
+
+//NEW CLASS
+namespace TMVA_SOFIE_TrainBkgDiag {
+  class Session;
+}
 
 namespace mu2e
 {
@@ -42,18 +46,17 @@ namespace mu2e
         fhicl::Atom<unsigned>                 minNPlanes{           Name("MinNPlanes"),           Comment("Minumim number of planes in a cluster") };
         fhicl::Atom<float>                    clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
         fhicl::Atom<int>                      clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
-        fhicl::Atom<bool>                     filterOutput{         Name("FilterOutput"),         Comment("Produce filtered ComboHit collection")  };
-        fhicl::Atom<bool>                     flagComboHits{        Name("FlagComboHits"),        Comment("Produce filtered flag comboHit collection") };
-        fhicl::Atom<bool>                     flagStrawHits {       Name("FlagStrawHits"),        Comment("Produce filtered flag strawHit collection") };
+        fhicl::Atom<bool>                     filterHits{           Name("FilterHits"),           Comment("Produce filtered ComboHit collection")  };
+        fhicl::Atom<bool>                     flagComboHits {       Name("FlagComboHits"),        Comment("Produce ComboHit-levelflag collection") };
+        fhicl::Atom<bool>                     flagStrawHits {       Name("FlagStrawHits"),        Comment("Produce StrawHit-level flag collection") };
         fhicl::Sequence<std::string>          backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
         fhicl::Sequence<std::string>          stereoSelection{      Name("StereoSelection"),      Comment("Stereo hit selection mask") };
-        fhicl::Atom<float>                    bkgMVAcut{            Name("BkgMVACut"),            Comment("Bkg MVA cut") };
-        fhicl::Table<MVATools::Config>        bkgMVA{               Name("BkgMVA"),               Comment("MVA Configuration") };
-        fhicl::Atom<bool>                     saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters"),false };
+        fhicl::Atom<bool>                     saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters") };
         fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
-        fhicl::Atom<int>                      printFrequency{       Name("PrintFrequency"),       Comment("Print frequency"),100 };
         fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
         fhicl::Table<ScanClusterer::Config>   ScanClustering{       Name("ScanClustering"),       Comment("Scan Clusterer config") };
+        fhicl::Atom<std::string>              kerasWeights{         Name("KerasWeights"),         Comment("Weights for keras model") };
+        fhicl::Atom<float>                    kerasQuality{         Name("KerasQuality"),         Comment("Keras quality cut") };
       };
 
       enum clusterer {TwoNiveauThreshold=1, ComptonKiller=2};
@@ -66,23 +69,21 @@ namespace mu2e
       const art::ProductToken<StrawHitCollection> shtoken_;
       unsigned                                    minnhits_;
       unsigned                                    minnp_;
-      bool                                        filter_, flagch_, flagsh_;
+      bool                                        filter_, flagsh_, flagch_;
       bool                                        savebkg_;
       StrawHitFlag                                bkgmsk_, stereo_;
       BkgClusterer*                               clusterer_;
       float                                       cperr2_;
-      float                                       bkgMVAcut_;
-      MVATools                                    bkgMVA_;
       int const                                   debug_;
-      int const                                   printfreq_;
+      std::string                                 kerasW_;
+      float                                       kerasQ_;
       int                                         iev_;
+      std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr;
 
-      void classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol,
+      void classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol,
           StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
-      void fillBkgQual(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
-      void fillMVA(        BkgQual& cqual) const;
       void countHits(      const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const;
-      void countPlanes(    const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const;
+      void countPlanes(    const BkgCluster& cluster, std::array<float,11>& kerasvars, const ComboHitCollection& chcol) const;
       int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
   };
 
@@ -93,29 +94,31 @@ namespace mu2e
     shtoken_{     consumes<StrawHitCollection>(config().strawHitCollection()) },
     minnhits_(    config().minActiveHits() ),
     minnp_(       config().minNPlanes()),
-    filter_(      config().filterOutput()),
-    flagch_(      config().flagComboHits()),
+    filter_(      config().filterHits()),
     flagsh_(      config().flagStrawHits()),
+    flagch_(      config().flagComboHits()),
     savebkg_(     config().saveBkgClusters()),
     bkgmsk_(      config().backgroundMask()),
     stereo_(      config().stereoSelection()),
-    bkgMVAcut_(   config().bkgMVAcut()),
-    bkgMVA_(      config().bkgMVA()),
     debug_(       config().debugLevel()),
-    printfreq_(   config().printFrequency()),
+    kerasW_(      config().kerasWeights()),
+    kerasQ_(      config().kerasQuality()),
     iev_(0)
     {
       // Must call consumesMany because fillStrawHitIndices calls getManyByType.
       consumesMany<ComboHitCollection>();
+      ConfigFileLookupPolicy configFile;
+      auto kerasWgtsFile = configFile(kerasW_);
+      sofiePtr = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>(kerasWgtsFile);
 
-      if (flagch_) produces<StrawHitFlagCollection>("ComboHits");
       if (flagsh_) produces<StrawHitFlagCollection>("StrawHits");
+      if (flagch_) produces<StrawHitFlagCollection>("ComboHits");
       if (filter_) produces<ComboHitCollection>();
+
       if (savebkg_)
       {
         produces<BkgClusterHitCollection>();
         produces<BkgClusterCollection>();
-        produces<BkgQualCollection>();
       }
       float cperr = config().clusterPositionError();
       cperr2_ = cperr*cperr;
@@ -138,16 +141,12 @@ namespace mu2e
   void FlagBkgHits::beginJob()
   {
     clusterer_->init();
-    bkgMVA_.initMVA();
   }
 
 
   //------------------------------------------------------------------------------------------
   void FlagBkgHits::produce(art::Event& event )
   {
-
-    //unsigned iev=event.event();
-    if (debug_ > 0 && iev_%printfreq_==0) std::cout<<"FlagBkgHits: event="<<iev_<<std::endl;
 
     auto chH = event.getValidHandle(chtoken_);
     const ComboHitCollection& chcol = *chH.product();
@@ -157,10 +156,8 @@ namespace mu2e
     // the primary output is either a deep copy of selected inputs or a flag collection on those
     // intermediate results: keep these on the heap unless requested for diagnostics later
     BkgClusterCollection bkgccol,bkgccolFast;
-    BkgQualCollection bkgqcol;
     BkgClusterHitCollection bkghitcol;
     bkgccol.reserve(nch/2);
-    if (savebkg_) bkgqcol.reserve(bkgccol.size());
     if (savebkg_) bkghitcol.reserve(nch);
 
 
@@ -171,8 +168,8 @@ namespace mu2e
 
     // classify clusters
     StrawHitFlagCollection chfcol(nch);
-    classifyCluster(bkgccolFast, bkgccol, bkgqcol, chfcol,chcol);
-
+    //classifyCluster(bkgccolFast, bkgccol, bkgqcol, chfcol,chcol);
+    classifyCluster(bkgccolFast, bkgccol, chfcol, chcol);
 
     //produce BkgClusterHit info collection
     if (savebkg_)
@@ -238,7 +235,6 @@ namespace mu2e
     {
       event.put(std::make_unique<BkgClusterHitCollection>(bkghitcol));
       event.put(std::make_unique<BkgClusterCollection>(bkgccol));
-      event.put(std::make_unique<BkgQualCollection>(bkgqcol));
     }
 
     ++iev_;
@@ -247,7 +243,7 @@ namespace mu2e
 
 
   //------------------------------------------------------------------------------------------
-  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol, BkgQualCollection& bkgqcol,
+  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol,
       StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
 
@@ -260,86 +256,70 @@ namespace mu2e
 
     for (auto& cluster : bkgccol)
     {
-      BkgQual cqual;
-      fillBkgQual(cluster, cqual, chcol);
-      fillMVA(cqual);
 
-      StrawHitFlag flag(StrawHitFlag::bkgclust);
-      if (cqual.MVAOutput() > bkgMVAcut_)
+      unsigned nactive, nstereo;
+      countHits(cluster, nactive, nstereo,chcol);
+      unsigned nhits = nstereo > 0 ? nstereo : nactive;
+      if (nhits < minnhits_) return;
+      std::array<float,11> kerasvars;
+      kerasvars[0] = sqrtf(cluster.pos().Rho());
+      kerasvars[6] = nhits;
+      countPlanes(cluster,kerasvars,chcol);
+
+      if (kerasvars[4] >= minnp_)
       {
-        flag.merge(StrawHitFlag::bkg);
-        if (savebkg_) cluster._flag.merge(BkgClusterFlag::bkg);
+        std::vector<float> hz;
+        for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
+
+        // find the min, max and largest gap from the sorted Z positions
+        std::sort(hz.begin(),hz.end());
+        float zgap = 0.0;
+        for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
+        kerasvars[1] = hz.front(); // Z min
+        kerasvars[2] = hz.back(); // Z max
+        kerasvars[3] = zgap; // max Z gap
+      }
+      else
+      {
+        kerasvars[1] = -1.0;
+        kerasvars[2]  = -1.0;
+        kerasvars[3]  = -1.0;
       }
 
-      for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
-      if (savebkg_) bkgqcol.push_back(std::move(cqual));
+      double sumEdep(0.);
+      double sqrSumDeltaTime(0.);
+      double sqrSumDeltaX(0.);
+      double sqrSumDeltaY(0.);
+      for (const auto& chit : cluster.hits())
+      {
+        sumEdep +=  chcol[chit].energyDep()/chcol[chit].nStrawHits();
+        sqrSumDeltaX += std::pow(chcol[chit].pos().x() - cluster.pos().x(),2);
+        sqrSumDeltaY += std::pow(chcol[chit].pos().y() - cluster.pos().y(),2);
+        sqrSumDeltaTime += std::pow(chcol[chit].time() - cluster.time(),2);
+      }
+
+      kerasvars[7] = sumEdep/nhits;
+      kerasvars[8] = std::sqrt(sqrSumDeltaX/nhits);
+      kerasvars[9] = std::sqrt(sqrSumDeltaY/nhits);
+      kerasvars[10] = std::sqrt(sqrSumDeltaTime/nhits);
+
+      auto kerasout = sofiePtr->infer(kerasvars.data());
+      cluster._mvaout = kerasout[0];
+      if(debug_>0)std::cout << "kerasout = " << kerasout[0] << std::endl;
+
+      StrawHitFlag flag(StrawHitFlag::bkgclust);
+      if (cluster._mvaout > kerasQ_)
+      {
+        StrawHitFlag flag(StrawHitFlag::bkg);
+        flag.merge(flag);
+        for (const auto& chit : cluster.hits()) chfcol[chit].merge(flag);
+      }
+      if(nstereo > 0) cluster._flag.merge(BkgClusterFlag::stereo);
     }
   }
-
-
-  //--------------------------------------------------------------------------------------------------------------
-  void FlagBkgHits::fillBkgQual(const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const
-  {
-    unsigned nactive, nstereo;
-    countHits(cluster, nactive, nstereo,chcol);
-    cqual.setMVAStatus(MVAStatus::unset);
-
-    if (nactive < minnhits_) return;
-    countPlanes(cluster,cqual,chcol);
-
-    cqual[BkgQual::hrho]  = 0;
-    cqual[BkgQual::shrho] = 0;
-    cqual[BkgQual::nhits] = nactive;
-    cqual[BkgQual::sfrac] = static_cast<float>(nstereo)/nactive;
-    cqual[BkgQual::crho] = sqrtf(cluster.pos().perp2());
-
-    if (cqual[BkgQual::np] >= minnp_)
-    {
-      std::vector<float> hz;
-      for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
-
-      // find the min, max and largest gap from the sorted Z positions
-      std::sort(hz.begin(),hz.end());
-      float zgap = 0.0;
-      for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
-      cqual[BkgQual::zmin] = hz.front();
-      cqual[BkgQual::zmax] = hz.back();
-      cqual[BkgQual::zgap] = zgap;
-
-      cqual.setMVAStatus(MVAStatus::filled);
-    }
-    else
-    {
-      cqual[BkgQual::zmin]  = -1.0;
-      cqual[BkgQual::zmax]  = -1.0;
-      cqual[BkgQual::zgap]  = -1.0;
-    }
-  }
-
-
-  //----------------------------------------------
-  void FlagBkgHits::fillMVA(BkgQual& cqual) const
-  {
-    if (cqual.status() == MVAStatus::unset) return;
-
-    std::vector<float> mvavars(7,0.0);
-    mvavars[0] = cqual.varValue(BkgQual::crho);
-    mvavars[1] = cqual.varValue(BkgQual::zmin);
-    mvavars[2] = cqual.varValue(BkgQual::zmax);
-    mvavars[3] = cqual.varValue(BkgQual::zgap);
-    mvavars[4] = cqual.varValue(BkgQual::np);
-    mvavars[5] = cqual.varValue(BkgQual::npfrac);
-    mvavars[6] = cqual.varValue(BkgQual::nhits);
-    float mvaout = bkgMVA_.evalMVA(mvavars);
-
-    cqual.setMVAValue(mvaout);
-    cqual.setMVAStatus(MVAStatus::calculated);
-  }
-
-
 
   //-------------------------------------------------------------------------------------------------------------
-  void FlagBkgHits::countPlanes(const BkgCluster& cluster, BkgQual& cqual, const ComboHitCollection& chcol) const
+  void FlagBkgHits::countPlanes(const BkgCluster& cluster, std::array<float,11> & kerasvars, const ComboHitCollection& chcol) const
   {
     std::array<int,StrawId::_nplanes> hitplanes{0};
     for (const auto& chit : cluster.hits())
@@ -360,10 +340,9 @@ namespace mu2e
       nphits += hitplanes[ip];
     }
 
-    cqual[BkgQual::np]     = np;
-    cqual[BkgQual::npexp]  = npexp;
-    cqual[BkgQual::npfrac] = static_cast<float>(np)/static_cast<float>(npexp);
-    cqual[BkgQual::nphits] = static_cast<float>(nphits)/static_cast<float>(np);
+    kerasvars[4] = np;// # of planes
+    kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);// fraction of planes
+
   }
 
 
@@ -375,7 +354,7 @@ namespace mu2e
     {
       const ComboHit& ch = chcol[chit];
       nactive += ch.nStrawHits();
-      if (ch.flag().hasAnyProperty(stereo_)) nstereo += ch.nStrawHits();
+      if (ch.flag().hasAllProperties(stereo_)) nstereo += ch.nStrawHits();
     }
   }
 

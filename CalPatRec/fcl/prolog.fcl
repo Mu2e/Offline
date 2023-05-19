@@ -235,9 +235,6 @@ CalPatRec : { @table::CalPatRec
         printUtils                              : { @table::TrkReco.PrintUtils }
     }
 
-
-
-
 #------------------------------------------------------------------------------
 # KalFitter (KalFitHackNew) configuration for the final track fit
 #------------------------------------------------------------------------------
@@ -329,81 +326,131 @@ CalPatRec : { @table::CalPatRec
                 mcUtils       : { @table::TrkReco.McUtils }
     }
         }
-
+#------------------------------------------------------------------------------
         MergeHelixFinder : { module_type:MergeHelixFinder
             diagLevel                    : 0
             debugLevel                   : 0
             tprHelixCollTag    : "HelixFinderDe:Positive"
             cprHelixCollTag    : "CalHelixFinder:Positive"
         }
-
 #------------------------------------------------------------------------------
         DeltaFinder : { module_type:DeltaFinder
-            comboHitCollectionTag         : makePH                # input coll
-            strawHitCollectionTag         : makeSH                # input coll
-            strawHitFlagCollectionTag     : shouldNotBeUsed       # input coll
-            # strawHitPositionCollectionTag : makePH                # input coll
-            timePeakCollectionTag         : CalTimePeakFinder
-            useTimePeaks                  : 1
-                                                                  # +/-70 to provide 100% efficiency for delta tagging + +/- 5
-                                                                  # accounting for the drift time of a delta electron
-            minCaloDt                     : -75.
-            maxCaloDt                     :  75.
-            particleMeanPitchAngle        : 0.67                  # mean pitch for CE
-            strawDigiMCCollectionTag      : makeSD                # input coll
-            minHitTime                    : 450.                  # ns
-            minNFacesWithHits             : 2                     #
-            minNSeeds                     : 2                     #
-            maxElectronHitEnergy          : 0.0200                # means: use all hits
-            minimumTime                   : 500.                  # ns
-            maximumTime                   : 1750.                 # ns
-            maxChi2Stereo                 : 10.                   # 50.                   #
-            maxChi2Neighbor               : 15.                   # 2018-01-24: 25 --> 15
-            maxChi2Radial                 : 15.                   # 2018-01-24: 25 --> 15
-            maxChi2Tot                    : 15.                   # 2018-01-24: 25 --> 15
-            maxDxy                        : 40.                   # mm
-            maxGap                        : 1                     # gap in missing stations along the candidate
-            sigmaR                        : 10.                   # mm, roughly 3 MeV/c
-            maxDriftTime                  : 50.                   # ns, includes some tolerance
-            maxStrawDt                    : 50.                   # max sensible time difference for a straw, ns, off by default
-            maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
-            writeStrawHits                : 1
-            filter                        : 0
-            # debugging/diagnostics
-            testOrder                     : 0
-            debugLevel                    : 0
-            diagLevel                     : 0
-            diagPlugin : { tool_type : "DeltaFinderDiag"
-                stepPointMcCollTag        : makeSD
-                debugLevel                : 0
-                mcDiag                    : false
-                mcTruth                   : 0
-                printElectrons            : 0
-                printElectronsHits        : 0
-                printElectronsMinNHits    : 0
-                printElectronsMaxFReco    : 1.1                   # if print, then print all
-                printElectronsMinMom      : 0                     # by default, print all
-                printElectronsMaxMom      : 500.                  # in MeV/c, by default, print all
-                printDeltaSeeds           : 0
-                printDeltaCandidates      : 0
-                printOTracker             : 0                     #
-                printShcol                : 0                     #
-                testOrder                 : 0                     #
-                mcUtils                   : { tool_type : "TrkPatRecMcUtils"
+            chCollTag                   : "makePH"              ## input CH coll
+            sschCollTag                 : "makeSH"              ## input single-straw CH coll
+            sdmcCollTag                 : "compressDigiMCs"     ## used for debug only
+
+            testHitMask                 : false                 ## off by default
+            goodHitMask                 : [ "TimeDivision" ]    ## is there a point in using combohits made
+                                                                ## out of straw hits with an apriory wrong wdist ?
+            bkgHitMask                  : [  ]                  ##
+            writeFilteredComboHits      : 0                     ##
+            writeStrawHitFlags          : 1                     ## used by the track fit
+                                                                ## debugging/diagnostics/testing
+            testOrder                   : 0
+
+            debugLevel                  : 0
+            diagLevel                   : 0
+            printErrors                 : 0
+                                                                # finder algorithm parameters
+            finderParameters            : {
+                testHitMask             : false                 # off by default
+                goodHitMask             : [ "TimeDivision" ]    ## is there a point in using combohits made
+                                                                    ## out of straw hits with an apriory wrong wdist ?
+                bkgHitMask              : [  ]                  #
+
+                flagProtonHits          : 1                     #
+                mergePC                 : 0                     # by default, don't merge proton candidates
+                pickupProtonHits        : 1                     # the third step of proton finding
+
+                timeBin                 : 40                    # ns, prev: 50 (use 40 with makePH.maxDS=5)
+                minHitTime              : 350.                  # ns
+                minimumTime             : 400.                  # ns
+                maximumTime             : 1750.                 # ns
+                maxDeltaEDep            : 0.004                 # max allowed delta eDep
+                maxSeedEDep             : 0.005                 # max allowed seed eDep
+                minProtonSeedEDep       : 0.003                 # min allowed proton seed eDep
+                minProtonHitEDep        : 0.003                 # min allowed proton hit  eDep
+                maxEleHitEnergy         : 0.0200                # [MeV] , 0.02 means: 'use all hits' (emax ~ 6 keV)
+#------------------------------------------------------------------------------
+# for moving upstream, the combination sigmaR=2.6 rCore=4.2 gives:
+#                     N(delta hits) : 98749 and N(conv hits) : 184
+# so far, this is the best.
+# timing: <T(CE+2BB)>:0.977 msec/event vs FlagBkgHits:0.480 msec/event
+# timing: <T(CE+2BB)>:0.806 msec/event vs FlagBkgHits:0.472 msec/event
+# timing: <T(CE+2BB)>:0.917 msec/event vs FlagBkgHits:0.471 msec/event 98336:181
+#------------------------------------------------------------------------------
+                maxChi2Seed             : 12.  ## chi^2 wire, each hit)
+                maxChi2Par              : 12.  ## hit pickup chi2
+                maxChi2Perp             : 12.  ## hit pickup in recoverStation
+                maxChi2SeedDelta        : 20.  ##
+                sigmaR                  : 1.5  ## 10 mm, used in the calculation of chi2Radial, roughly 3 MeV/c
+                rCore                   : 2.0  ## 'core' of the compton electron trajectory
+                maxSeedDt               : 30.  ## time window for checking duplicate seeds
+                maxDtDs                 : 10.  ## ns, max allowed T0 shift per station
+
+                maxGap                  :  3   ## 3 gap in missing stations along the candidate
+                maxDriftTime            : 40.  ## 40 ns, no tolerances ...
+                maxHitDt                : 30.  ##
+
+                maxDtDc                 : 10.  ## 15 20 30 ns, max dT between two delta candidates
+                maxHitSeedDt            : 10   ##
+#
+                minNSeeds               :  2   ## delta candidate has to have at least two seeds
+                minDeltaNHits           :  5   ## and 5 combo hits
+
+                testOrder               : 0
+
+                debugLevel              : 0
+                diagLevel               : 0
+                printErrors             : 0
+            }
+#
+            diagPlugin                  : { tool_type : "DeltaFinderDiag"
+                diagLevel               : 0
+                mcDiag                  : false
+                mcTruth                 : 0
+                printComboHits          : 0
+                printGoodComboHits      : 0
+                printElectrons          : 0
+                printElectronsHits      : 0
+                printElectronsMinNHits  : 0
+                printElectronsMaxFReco  : 1.1                   # if print, then print all
+                printElectronsMinMom    : 0                     # by default, print all
+                printElectronsMaxMom    : 500.                  # in MeV/c, by default, print all
+                printDeltaSeeds         : 0
+                printDeltaCandidates    : 0
+                printOTracker           : 0                     #
+                printShcol              : 0                     #
+                printSeedNParents       : -1
+                printMcProtons          : 0
+                printProtonHits         : 0
+                printProtonSeeds        : 0
+                printProtonCandidates   : 0
+                mcUtils                 : { tool_type : "TrkRecoMcUtils"
                     strawDigiMCCollTag : "compressDigiMCs"
+                    comboHitCollTag    : "makePH"
                 }
             }
         }
+    }
 
+#------------------------------------------------------------------------------
+    analyzers : {
         DeltaFinderAna : { module_type:DeltaFinderAna
-            strawHitCollectionTag         : makeSH
-            strawHitFlagCollectionTag     : DeltaFinder
-            strawDigiMCCollectionTag      : makeSD
-            debugLevel                    : 0
-            diagLevel                     : 0
-            printElectrons                : 1
-            printElectronsMinNHits        : 0
-            printElectronsMaxFReco        : 1.1                   # if print, then print all
+            chCollTag              : "makePH"                # use combo hits
+            chfCollTag             : "DeltaFinder:ComboHits" #
+            shCollTag              : "makeSH"                # assume StrawHits have been written out
+            shfCollTag             : "DeltaFinder:StrawHits" ## input coll, so far - debugging
+            sschCollTag            : "makeSH"                # 1-straw combohits
+            sdmcCollTag            : "compressDigiMCs"
+            debugLevel             : 0
+            diagLevel              : 0
+            printElectrons         : 1
+            printElectronsMinNHits : 0
+            printElectronsMaxFReco : 1.1                   # if print, then print all
+            printElectronHits      : 0
+            printComboHits         : 0
+            printSingleComboHits   : 0
 #            maxElectronHitEnergy          : 0.0035                # for comparisons
         }
     }
@@ -433,7 +480,6 @@ CalPatRec : { @table::CalPatRec
             strawHitFlagCollectionTag     : makeSH
             comboHitCollectionTag         : makePH # MakeStereoHits
         }
-
 #------------------------------------------------------------------------------
 # default configuration: DEM
 # CalPatRec, so far, has been validated only for e-
@@ -455,7 +501,15 @@ CalPatRec : { @table::CalPatRec
             ParameterErrors                             : [10.0,0.05,0.001,10.0,0.05]
             KalFit                                      : { @table::CalPatRec.KalSeedFitter }
         }
-
+#------------------------------------------------------------------------------
+        ComboHitFilter : { module_type : ComboHitFilter
+            chCollTag                                   : "makePH"
+            chfCollTag                                  : "FlagBkgHits:ComboHits"
+            sdmcCollTag                                 : "compressDigiMCs"
+            simID                                       : -1                ##
+            debugLevel                                  : 0
+        }
+#------------------------------------------------------------------------------
         MHSeedFit : { module_type:KalSeedFit
             debugLevel                                  : 0
             printFrequency                              : 100
@@ -503,6 +557,81 @@ CalPatRec : { @table::CalPatRec
             tprHelixCollTag : MHFinderTprDmu
             cprHelixCollTag : MHFinderCprDmu
         }
+
+        # TZ cluster finder module
+        TZClusterFinder : {
+            module_type                : TZClusterFinder
+            diagLevel                  : 0
+            debugLevel                 : 0
+            printFrequency             : 1000
+            runDisplay                 : 0
+            saveProtCand               : 0
+            useCCs                     : 1
+            recoverCCs                 : 1
+            chCollLabel                : "makePH"
+            chCollLabel2               : "makeSH"
+            tcCollLabel                : "TimeClusterFinderDe"
+            shfCollLabel               : "FlagBkgHits:ComboHits"
+            ccCollLabel                : "CaloClusterMaker"
+            hitBkgBits                 : ["Noisy","Dead","Background"]
+            chunkSep                   : 5
+            chunkWindow                : 20.0
+            chunkThresh                : 3
+            combineWindow              : 30.0
+            maxCombineSep              : 2500.0
+            chunkFitThresh             : 8
+            recoverWindow              : 30.0
+            clusterThresh              : 15
+            minCaloSize                : 2
+            minCaloEnergy              : 50.0
+            caloDtMax                  : 30.0
+            caloTimeOffset             : @local::TrackCaloMatching.DtOffset
+            doComptonClean             : 0
+            maxIntersectSig            : 5.0
+            maxApproachSigma           : 5.0
+            maxAppSigmaTrans           : 5.0
+            comptonThresh              : 8
+            doIsoClean                 : 0
+            isoRad                     : 100.0
+            doPhiClean                 : 0
+            phiCleanPhi                : 45.0
+            phiCleanThresh             : 5
+
+            diagPlugin : { tool_type  : "TZClusterFinderDiag"
+                 mcTruth       : 1
+                 simIDThresh   : 15
+                 mcUtils       : { @table::TrkReco.McUtils }
+            }
+        }
+
+        PhiClusterFinder : { module_type : PhiClusterFinder
+             ComboHitCollection     : "makePH"
+             #TimeClusterCollection  : "TimeClusterFinderDmu"
+             diag                   : 0
+             debug                  : 0
+             minNSH                 : 5
+             threshold              : 1 # 4
+             nPhiClusters           : 40
+             phiMin                 : 0.0
+             phiMax                 : 6.3 ## 6.4
+             nPhiBins               : 21  ## 32
+             minDPhi                : 1.5
+             tMin                   : 0.0
+             tMax                   : 100000.0
+             tBin                   : 15.0
+             # pitch                  : 0.6
+             yMin                   : 5.0
+             peakWidth              : 100
+             maxDt                  : 25
+             minSigma               : 0.1
+             # t0Calc                 : {}
+             useCC                  : false
+             DiagPlugin : {
+               diagLevel                    : 0
+               tool_type                    : "PhiClusterFinderDiag"
+               mcTruth                      : 0
+             }
+         }
     }
 
     filters : {
@@ -642,7 +771,7 @@ CalPatRec: { @table::CalPatRec
             StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
         }
     }
-
+#------------------------------------------------------------------------------
     filters : { @table::CalPatRec.filters
         CalTimePeakFinderUe            : { @table::CalPatRec.filters.CalTimePeakFinder   pitchAngle: -0.67                }
         CalTimePeakFinderMu            : { @table::CalPatRec.filters.CalTimePeakFinder   beta: 0.7                        }

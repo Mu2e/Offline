@@ -9,252 +9,248 @@ namespace fhicl {
   class ParameterSet;
 };
 
+#include "TObject.h"
+#include "TClonesArray.h"
+
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Table.h"
+
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/RecoDataProducts/inc/StereoHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+
+#include "Offline/Mu2eUtilities/inc/McUtilsToolBase.hh"
+
+#include "Offline/CalPatRec/inc/DeltaFinder_structures.hh"
+#include "Offline/CalPatRec/inc/DeltaSeed.hh"
+#include "Offline/CalPatRec/inc/DeltaCandidate.hh"
+#include "Offline/CalPatRec/inc/ProtonCandidate.hh"
 
 namespace mu2e {
   class Panel;
   class SimParticle;
+  class DeltaFinderAlg;
+//-----------------------------------------------------------------------------
+// assume that class T has, say, Init method, which reinitialize an object
+// allocated before
+// in particular, that assumes that T owns all its pointers (if any) and Init
+// handles them correctly
+// T is supposed to have a constructor T(int N) , wher N is the element index in the list
+// light-weight and crippled version of TClonesArray
+//-----------------------------------------------------------------------------
+    template <class T> struct ManagedList {
+      int              fN;
+      int              fNAllocated;
+      std::vector<T*>  fList;
+
+      ManagedList() {
+        fN          = 0;
+        fNAllocated = 0;
+      }
+
+      ~ManagedList() {
+        for (int i=0; i<fNAllocated; i++) delete fList[i];
+      }
+
+      T* at(int I) { return fList[I]; }
+
+      void clear () { fN = 0; }
+
+      void reserve (int N) { fList.reserve(N); }
+
+      void reinitialize() {
+        for (int i=0; i<fNAllocated; i++) delete fList[i];
+        fList.clear();
+        fN          = 0;
+        fNAllocated = 0;
+      }
+
+      int N() { return fN; }
+
+      T* New() {
+        T* ds;
+        if (fN < (int) fList.size()) {
+//-----------------------------------------------------------------------------
+// reuse already allocated slot
+//-----------------------------------------------------------------------------
+          ds = fList[fN];
+        }
+        else {
+//-----------------------------------------------------------------------------
+// allocate new slot
+//-----------------------------------------------------------------------------
+          ds = new T(fN);
+          fList.push_back(ds);
+          fNAllocated++;
+        }
+        fN++;
+        return ds;
+      }
+
+    };
 //-----------------------------------------------------------------------------
 // delta-electron seed: structure within the station
 // doesn't own anything, no need to delete any pinters
 //-----------------------------------------------------------------------------
   namespace DeltaFinderTypes {
+
+    struct Config {
+      fhicl::Atom<std::string> tool_type             {fhicl::Name("tool_type"             ), fhicl::Comment("tool type: DeltaFinderDiag")     };
+      fhicl::Atom<int>         mcTruth               {fhicl::Name("mcTruth"               ), fhicl::Comment("MC truth")                       };
+      fhicl::Atom<int>         diagLevel             {fhicl::Name("diagLevel"             ), fhicl::Comment("diagnostic level")               };
+      fhicl::Atom<bool>        mcDiag                {fhicl::Name("mcDiag"                ), fhicl::Comment("MC diag")                        };
+      fhicl::Atom<int>         printOTracker         {fhicl::Name("printOTracker"         ), fhicl::Comment("print ordered Tracker")          };
+      fhicl::Atom<int>         printComboHits        {fhicl::Name("printComboHits"        ), fhicl::Comment("print combo hits")               };
+      fhicl::Atom<int>         printGoodComboHits    {fhicl::Name("printGoodComboHits"    ), fhicl::Comment("print good combo hits")          };
+      fhicl::Atom<int>         printElectrons        {fhicl::Name("printElectrons"        ), fhicl::Comment("print electrons")                };
+      fhicl::Atom<int>         printElectronsHits    {fhicl::Name("printElectronsHits"    ), fhicl::Comment("print electron hits")            };
+      fhicl::Atom<int>         printElectronsMinNHits{fhicl::Name("printElectronsMinNHits"), fhicl::Comment("minNhhits for printed electrons")};
+      fhicl::Atom<float>       printElectronsMaxFReco{fhicl::Name("printElectronsMaxFReco"), fhicl::Comment("maxFReco for printed electrons" )};
+      fhicl::Atom<float>       printElectronsMinMom  {fhicl::Name("printElectronsMinMom"  ), fhicl::Comment("min mom for printed electrons"  )};
+      fhicl::Atom<float>       printElectronsMaxMom  {fhicl::Name("printElectronsMaxMom"  ), fhicl::Comment("max mom for printed electrons"  )};
+      fhicl::Atom<int>         printDeltaSeeds       {fhicl::Name("printDeltaSeeds"       ), fhicl::Comment("if 1, print delta seeds"        )};
+      fhicl::Atom<int>         printDeltaCandidates  {fhicl::Name("printDeltaCandidates"  ), fhicl::Comment("if 1, print delta candidates"   )};
+      fhicl::Atom<int>         printShcol            {fhicl::Name("printShcol"            ), fhicl::Comment("if 1, print shColl"             )};
+      fhicl::Atom<int>         printSeedNParents     {fhicl::Name("printSeedNParents"     ), fhicl::Comment("if>0, print seeds with N hits"  )};
+
+      fhicl::Atom<int>         printMcProtons        {fhicl::Name("printMcProtons"        ), fhicl::Comment("if>0, print MC protons"         )};
+      fhicl::Atom<int>         printProtonHits       {fhicl::Name("printProtonHits"       ), fhicl::Comment("if>0, print proton hits"        )};
+      fhicl::Atom<int>         printProtonSeeds      {fhicl::Name("printProtonSeeds"      ), fhicl::Comment("if>0, print proton seeds"       )};
+      fhicl::Atom<int>         printProtonCandidates {fhicl::Name("printProtonCandidates" ), fhicl::Comment("if>0, print proton candidates"  )};
+
+      fhicl::Table<McUtilsToolBase::Config> mcUtils  {fhicl::Name("mcUtils"               ), fhicl::Comment("MC Diag plugin"                 )};
+    };
 //-----------------------------------------------------------------------------
-// intersection of the two hit wires
+// data structures passed to the diagnostics plugin
 //-----------------------------------------------------------------------------
-    struct Intersection_t {
-      double     x;                        // x-coordinate of the intersection point
-      double     y;                        // y-coordinate of the intersection point
-      double     t1;                        // distanCe from the center of the 1st wire
-      double     t2;                        // distance from the center of the 2nd wire
-      double     wd1;                   // distance btw the 1st hit and the intersection
-      double     wd2;                        // distance btw the 2nd hit and the intersection
-    };
-
-    struct DeltaCandidate;
-
-    enum {
-      kNStations      = StrawId::_nplanes/2,   // number of tracking stations
-      kNFaces         = StrawId::_nfaces*2 ,   // N(faces) per station (4)
-      kNPanelsPerFace = StrawId::_npanels/2    // = 3
-    };
-
-    struct HitData_t {
-      const ComboHit*         fHit;
-      // const StrawHitPosition* fPos;
-      // const Straw*            fStraw;
-      int                     fSeedNumber;
-      int                     fNSecondHits;
-      int                     fDeltaIndex;
-      float                   fChi2Min;
-      float                   fSigW;     // cached resolution along the wire
-      float                   fRMid;
-      float                   fDr;        // work variable
-
-      HitData_t(const ComboHit* Hit, /*const StrawHitPosition* Pos, const Straw* aStraw,*/ float SigW) {
-        fHit         = Hit;
-        // fPos         = Pos;
-        // fStraw       = aStraw;
-        fChi2Min     = 1.1e10;
-        fSigW        = SigW;
-        fSeedNumber  = -1;
-        fNSecondHits = -1;
-        fDeltaIndex  = -1;
-        fRMid        = sqrt(fHit->centerPos().Mag2());//FIXME! crosscheck  fStraw->getMidPoint().perp();
-        fDr          = 1.1e10;
-      }
-
-      int Used() { return (fChi2Min < 1.e10) ; }
-    };
-
-    struct PanelZ_t {
-      int                              fNHits  ; // guess, total number of ComboHits
-      std::vector<HitData_t>           fHitData;
-      const Panel*                     fPanel;      // backward pointer to the tracker panel
-      double                           wx;          // direction cosines of the wires, assumed to be all the same
+    struct Pzz_t {
+      int                              fID;         // 3*face+panel, for pre-calculating overlaps
+      double                           wx;          // direction cosines of the wire, all wires are assumed parallel
       double                           wy;
-      double                           phi;         // phi angle of the wire
-      double                           z;           //
+      double                           nx;          // direction cosines of the normal to the wires, pointing outwards
+      double                           ny;
+      float                            z;           // Z-coordinate of the face
     };
 
-//-----------------------------------------------------------------------------
-// diagnostics structure
-//-----------------------------------------------------------------------------
-    struct McPart_t {
-      const SimParticle*            fSim;        // type undefined here
-      const DeltaCandidate*         fDelta;
-      std::vector<const HitData_t*> fListOfHits;
-      int                           fFirstStation;
-      int                           fLastStation;
-      int                           fID;                   // SimParticle::id().asInt()
-      int                           fPdgID;
-      int                           fNHitsCE;
-      int                           fNHitsDelta;           // number of hits associated with reconstructed delta electrons
-      float                         fTime;
-      float                         fHitTMin;          // min and max times of the straw hits
-      float                         fHitTMax;
-      float                         fStartMom;
+    struct FaceZ_t {
+      int                     fID;         // 3*face+panel, for pre-calculating overlaps
 
-      McPart_t(const SimParticle* Sim = NULL) {
-        fSim          = Sim;
-        fDelta        = NULL;
-        fID           = -1;
-        fPdgID        = 0;
-        fNHitsDelta   = 0;
-        fNHitsCE      = 0;
-        fFirstStation = 999;
-        fLastStation  = -1;
-        fStartMom     = -1;
-        fTime         = 1.e6;                 // at initialization, make it absurd
-        fHitTMin      = 1.e6;
-        fHitTMax      = -1.e6;
-      }
+      std::vector<HitData_t>  fHitData;
+      int                     fFirst[100];   // ** FIXME - need larger dimension for off-spill cosmics...
+      int                     fLast [100];
 
-      ~McPart_t() { fListOfHits.clear(); }
+      std::vector<HitData_t*> fProtonHitData;
+      int                     fPFirst[100];  // ** FIXME - need larger dimension for off-spill cosmics...
+      int                     fPLast [100];
 
-      int NHits() { return fListOfHits.size(); }
+      Pzz_t                   fPanel[3];
+      double                  z;           //
 
-      float Momentum () { return fStartMom; }
-      float Time     () { return fTime; }
-      float HitDt    () { return fHitTMax-fHitTMin; }
+      Pzz_t*                  Panel(int I) { return &fPanel[I]; }
+
+      int                     nHits        () { return fHitData.size(); }
+      int                     nProtonHits  () { return fProtonHitData.size(); }
+
+      HitData_t*              hitData      (int I) { return &fHitData     [I]; }
+      HitData_t*              protonHitData(int I) { return fProtonHitData[I]; }
     };
 
-    class DeltaSeed {
-    public:
-      int                            fNumber;                // number within the station
-      int                            fStation;                // station
-      int                            fType;             // defines indices of the two faces used for preseed seach
-                                                        // 0: used in recovery
-      int                            fFaceProcessed[kNFaces];
-      int                            fGood;             // <-killer number> if not to be used - what about 0 ?
-      int                            fNFacesWithHits;
-      int                            fNHitsTot;         // total number of hits
-      int                            fNHitsCE;
-      const HitData_t*               fHitData[2];       // stereo hit seeding the seed search
-      // const StrawHitPosition*        fPos[2];
-      float                          fChi21;             // chi2's of the two initial hits
-      float                          fChi22;
-      PanelZ_t*                      panelz   [kNFaces];
-      std::vector<const HitData_t*>  hitlist  [kNFaces];
-      std::vector<McPart_t*>         fMcPart  [kNFaces];
-      CLHEP::Hep3Vector              CofM;
-      float                          fMinTime;          // min and max times of the included hits
-      float                          fMaxTime;
-      float                          fMaxDriftTime;
-      McPart_t*                      fPreSeedMcPart[2]; // McPart_t's corresponding to initial intersection
-      int                            fDeltaIndex;
-      float                          fChi2All;
-
-      DeltaSeed() {
-        fType             =  0;
-        fGood             =  1;
-        fNHitsTot         =  0;
-        fNHitsCE          =  0;
-        fNFacesWithHits   =  0;
-        fStation          = -1;
-        fNumber           = -1;
-        fPreSeedMcPart[0] = NULL;
-        fPreSeedMcPart[1] = NULL;
-        //        used              = false;
-        fMinTime          = 1.e10;
-        fMaxTime          = -1.;
-        fMaxDriftTime     = -1.;
-        for (int face=0; face<kNFaces; face++) {
-          fFaceProcessed[face] = 0;
-          panelz        [face] = NULL;
-        }
-        fDeltaIndex       = -1;
-        fChi21            = -1;
-        fChi22            = -1;
-        fChi2All          = 1.e10;
-      }
-      //------------------------------------------------------------------------------
-      // dont need a copy constructor
-      //------------------------------------------------------------------------------
-      ~DeltaSeed() {}
-
-      float            Chi2N   ()         { return (fChi21+fChi22)/fNHitsTot; }
-      float            Chi2Tot ()         { return (fChi21+fChi22); }
-      float            Chi2All ()         { return fChi2All; }
-      float            Chi2AllDof ()      { return fChi2All/fNHitsTot; }
-      int              NHits   (int Face) { return hitlist[Face].size(); }
-      const HitData_t* HitData (int Face, int I) { return hitlist[Face][I]; } // no boundary check !
-      int              NHitsTot()         { return fNHitsTot; }
-      int              MCTruth ()         { return (fPreSeedMcPart[0] != NULL) && (fPreSeedMcPart[0] == fPreSeedMcPart[1]) ; }
-      bool             Used    ()         { return (fDeltaIndex >= 0); }
-      //-----------------------------------------------------------------------------
-      // drift time can't be < 0, so it is the minimal measured time which represents
-      // best the 'particle time'
-      // keep in mind that fMaxTime < particle T0 < fMinTime
-      //-----------------------------------------------------------------------------
-      float            Time()     { return fMinTime; }
-      float            T0Min()    { return fMaxTime-fMaxDriftTime;   }
-      float            T0Max()    { return fMinTime; }
-    };
-
-    struct DeltaCandidate {
-    public:
-      int                   fNumber;
-      int                   fFirstStation;
-      int                   fLastStation;
-      DeltaSeed*            seed   [kNStations];
-      float                 dxy    [kNStations];   // used only for diagnostics
-      float                 fT0Min [kNStations];
-      float                 fT0Max [kNStations];
-      CLHEP::Hep3Vector     CofM;
-      float                 phi;
-      int                   n_seeds;
-      McPart_t*             fMcPart;
-      int                   fNHits;
-      int                   fNHitsMcP;               // Nhits by the "best" particle"
-      int                   fNHitsCE;
-
-      DeltaCandidate() {
-        fNumber = -1;
-        for(int s=0; s<kNStations; ++s) {
-          dxy    [s] = -1;
-          seed   [s] = NULL;
-        }
-        fFirstStation = -1;
-        fLastStation  = -1;
-        fMcPart       = NULL;
-        fNHits        = 0;
-        fNHitsCE      = 0;
-      }
-
-      int        NSeeds               () { return n_seeds; }
-      DeltaSeed* Seed            (int I) { return seed[I]; }
-      bool       StationUsed     (int I) { return (seed[I] != NULL); }
-      float      T0Min           (int I) { return fT0Min[I]; }
-      float      T0Max           (int I) { return fT0Max[I]; }
-    };
-//-----------------------------------------------------------------------------
-// data structure passed to the histogramming routine
-//-----------------------------------------------------------------------------
     struct Data_t {
       const art::Event*             event;
       const Tracker*                tracker;
-      std::string                   strawDigiMCCollectionTag;
-      std::string                   ptrStepPointMCVectorCollectionTag;
-      std::vector<DeltaSeed*>       seedHolder [kNStations];
-      std::vector<DeltaCandidate>   deltaCandidateHolder;
-      PanelZ_t                      oTracker[kNStations][kNFaces][kNPanelsPerFace];
-      int                           stationUsed[kNStations];
-      int                           nseeds;
-      int                           nseeds_per_station[kNStations];
+      const DiskCalorimeter*        calorimeter;
+
+      art::InputTag                 chCollTag;
+      art::InputTag                 chfCollTag;
+      art::InputTag                 sdmcCollTag;
+
       const ComboHitCollection*     chcol;
-      const StrawHitFlagCollection* shfcol;
-      const TimeClusterCollection*  tpeakcol;
-      int                           debugLevel;             // printout level
-    };
+      const StrawHitFlagCollection* chfColl;                 // input  combohit flags
+      StrawHitFlagCollection*       outputChfColl;           // output combohit flags
+
+      DeltaFinderAlg*               _finder;
+
+      int                           debugLevel;              // printout level
+
+      int                           _nComboHits;
+      int                           _nStrawHits;
+      std::vector<const ComboHit*>  _v;                      // sorted
+
+      ManagedList<DeltaSeed>        fListOfSeeds       [kNStations];
+      std::vector<DeltaSeed*>       fListOfProtonSeeds [kNStations];
+      std::vector<DeltaSeed*>       fListOfComptonSeeds[kNStations];
+
+      std::vector<DeltaCandidate>   fListOfDeltaCandidates;
+
+      ManagedList<ProtonCandidate>  fListOfProtonCandidates;
+//-----------------------------------------------------------------------------
+// try to avoid looping over panels
+//-----------------------------------------------------------------------------
+      FaceZ_t                       fFaceData      [kNStations][kNFaces];
+      int                           stationUsed    [kNStations];
+//-----------------------------------------------------------------------------
+// station #2 is the same as station #0 etc...
+//-----------------------------------------------------------------------------
+      int                           panelOverlap[2][12][12];
+//-----------------------------------------------------------------------------
+// functions
+//-----------------------------------------------------------------------------
+      Data_t();
+      ~Data_t();
+
+      DeltaCandidate*  deltaCandidate (int I)             { return &fListOfDeltaCandidates [I]; }
+
+      ProtonCandidate* protonCandidate(int I)             { return fListOfProtonCandidates.at(I); }
+
+      DeltaSeed*       deltaSeed  (int Station, int    I) { return fListOfSeeds       [Station].at(I); }
+      DeltaSeed*       ComptonSeed(int Station, int    I) { return fListOfComptonSeeds[Station][I]; }
+      DeltaSeed*       protonSeed (int Station, int    I) { return fListOfProtonSeeds [Station][I]; }
+
+      FaceZ_t*         faceData   (int Station, int Face) { return &fFaceData[Station][Face]; }
+
+
+      void InitEvent(const art::Event* Evt, int DebugLevel);
+      void InitGeometry();
+
+      int  nSeedsTot();
+
+      int  NSeeds       (int Station) { return fListOfSeeds[Station].N(); }
+      int  NComptonSeeds(int Station) { return fListOfComptonSeeds[Station].size(); }
+      int  nProtonSeeds (int Station) { return fListOfProtonSeeds [Station].size(); }
+
+      int  nDeltaCandidates ()        { return fListOfDeltaCandidates.size (); }
+      int  nProtonCandidates()        { return fListOfProtonCandidates.N(); }
+
+      void AddProtonSeed (DeltaSeed* Seed, int Station) { fListOfProtonSeeds [Station].push_back(Seed); }
+      void AddComptonSeed(DeltaSeed* Seed, int Station) { fListOfComptonSeeds[Station].push_back(Seed); }
+
+      void addDeltaCandidate(DeltaCandidate* Delta) { fListOfDeltaCandidates.push_back(*Delta); }
+
+      DeltaSeed*  newDeltaSeed(int Station) {
+        DeltaSeed* ds = fListOfSeeds[Station].New();
+        ds->SetStation(Station);
+        return ds;
+      }
+
+      ProtonCandidate* newProtonCandidate() { return fListOfProtonCandidates.New(); }
+
+      static void orderID           (ChannelID* X, ChannelID* Ordered);
+      static void deOrderID         (ChannelID* X, ChannelID* Ordered);
+
+      void        printHitData       (HitData_t*      HitData, const char* Option = "");
+      void        printDeltaSeed     (DeltaSeed*      Seed   , const char* Option = "");
+      void        printDeltaCandidate(DeltaCandidate* Delta  , const char* Option = "");
+
+      void        testOrderID  ();
+      void        testdeOrderID();
+   };
 
 //-----------------------------------------------------------------------------
-// finally, utility functions
+// finally, utility functions still used by the diag tool
 //-----------------------------------------------------------------------------
     int findIntersection(const HitData_t* Hd1, const HitData_t* Hd2, Intersection_t* Result);
   }
