@@ -305,7 +305,7 @@ namespace mu2e
 
       auto kerasout = sofiePtr->infer(kerasvars.data());
       cluster._mvaout = kerasout[0];
-
+      if(debug_>0)std::cout << "kerasout = " << kerasout[0] << std::endl;
 
       StrawHitFlag flag(StrawHitFlag::bkgclust);
       if (cluster._mvaout > kerasQ_)
