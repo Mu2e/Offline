@@ -2,6 +2,7 @@
 // LsqSums2
 //-----------------------------------------------------------------------------
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
+#include <cmath>
 
 
 LsqSums2::LsqSums2() {
@@ -72,6 +73,28 @@ void LsqSums2::removePoint(double XX, double YY, double W) {
   sy2   -= Y*Y*W;
 }
 
+void LsqSums2::addSum(LsqSums2& Lsq) {
+
+  _qn   += Lsq._qn;
+  sw    += Lsq.sw;
+  sx    += Lsq.sx;
+  sy    += Lsq.sy;
+  sx2   += Lsq.sx2;
+  sxy   += Lsq.sxy;
+  sy2   += Lsq.sy2;
+}
+
+void LsqSums2::removeSum(LsqSums2& Lsq) {
+
+  _qn   -= Lsq._qn;
+  sw    -= Lsq.sw;
+  sx    -= Lsq.sx;
+  sy    -= Lsq.sy;
+  sx2   -= Lsq.sx2;
+  sxy   -= Lsq.sxy;
+  sy2   -= Lsq.sy2;
+}
+
 double LsqSums2::dydx() {
 
   double dfdz(0), D;
@@ -85,15 +108,40 @@ double LsqSums2::dydx() {
   return dfdz;
 }
 
+
+double LsqSums2::dydxErr(){
+  double slopeErr(0), D;
+  if (_qn > 2) {
+    D = sw*sx2 - sx*sx;
+
+    slopeErr = (sy2 - y0()*sy - dydx()*sxy)/(_qn - 2.);
+    slopeErr = std::sqrt(slopeErr);
+    slopeErr /= std::sqrt(D);
+  }
+
+  return slopeErr;
+}
+
+double LsqSums2::y0(){
+  double y0, D;
+  D = sw*sx2 - sx*sx;
+
+  y0 = sx2*sy - sx*sxy;
+  y0 /= D;
+
+  return y0;
+}
+
 double LsqSums2::chi2Dof() {
 
-  double chi2;
-  chi2  = sigYY()*sigXX() - sigXY()*sigXY();
-  chi2 /= sigXX();
-  chi2 *= sw/_qn;
-
- //  double chi2_new = sigYY() - dfdz()*sigXY();
-//   printf("[LsqSum4::chi2rphiDofCircle] chi2 = %5.3e chi2_new = %5.3e\n", chi2 , chi2_new);
+  double chi2(0);
+  if (_qn > 2) {
+    chi2  = sigYY()*sigXX() - sigXY()*sigXY();
+    chi2 /= sigXX();
+    chi2 *= sw/(_qn-2);
+  }
+  //  double chi2_new = sigYY() - dfdz()*sigXY();
+  //  printf("[LsqSum4::chi2rphiDofCircle] chi2 = %5.3e chi2_new = %5.3e\n", chi2 , chi2_new);
 
   return chi2;
 }

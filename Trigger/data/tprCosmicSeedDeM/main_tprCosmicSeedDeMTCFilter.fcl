@@ -1,2 +1,2 @@
 physics.filters.tprCosmicSeedDeMTCFilter.requireCaloCluster : false
-physics.filters.tprCosmicSeedDeMTCFilter.minNStrawHits : 10.0
+physics.filters.tprCosmicSeedDeMTCFilter.minNStrawHits : 15

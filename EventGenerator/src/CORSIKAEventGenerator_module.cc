@@ -94,7 +94,7 @@ namespace mu2e {
 
       float _intDist = 0;
 
-      unsigned int _primaries = 0;
+      unsigned long long _primaries = 0;
       float _area = 0;
       float _lowE = 0;
       float _highE = 0;

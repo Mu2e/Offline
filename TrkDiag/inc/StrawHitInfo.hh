@@ -1,23 +1,43 @@
 //
-//
 // struct for hit diagnostics
 #ifndef StrawHitInfo_hh
 #define StrawHitInfo_hh
-//#include "BTrk/BaBar/BaBar.hh"
 #include "Offline/DataProducts/inc/GenVector.hh"
-#include "Rtypes.h"
 
 namespace mu2e {
   struct StrawHitInfo {
     XYZVectorF _pos;
-    Float_t _edep, _time, _rho;
-    Float_t _wres, _tres, _chisq, _stdt, _dist;
-    Int_t _plane, _panel, _layer, _straw;
-    Bool_t _bkg, _isolated, _tsel, _esel, _rsel, _stereo, _tdiv, _strawxtalk, _elecxtalk;
-    Int_t _relation;
+    float _edep = 0.0;
+    float _time = 0.0;
+    float _wdist = 0.0;
+    float _wres = 0.0;
+    float _tres = 0.0;
+    float _chisq = 0.0;
+    float _stdt = 0.0;
+    float _dist = 0.0;
+    int _plane = 0.0;
+    int _panel = 0.0;
+    int _layer = 0.0;
+    int _straw = 0.0;
+    bool _bkg = false;
+    bool _isolated = false;
+    bool _tsel = false;
+    bool _esel = false;
+    bool _rsel = false;
+    bool _stereo = false;
+    bool _tdiv = false;
+    bool _strawxtalk = false;
+    bool _elecxtalk = false;
     XYZVectorF _mcpos;
-    Int_t _mcpdg, _mcgen, _mcproc, _mcid;
-    Float_t _mcedep, _mctime, _mct0, _mcht, _mcmom, _mctd;
+    int _mcpdg = 0;
+    int _mcproc = 0;
+    float _mcedep = 0.0;
+    float _mctime = 0.0;
+    float _mcht = 0.0;
+    float _mcmom = 0.0;
+    float _mctd = 0.0;
+    int _prel = -1;
+    int _mrel = -1;
   };
 }
 #endif

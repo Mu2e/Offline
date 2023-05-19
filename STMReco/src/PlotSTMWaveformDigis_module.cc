@@ -43,7 +43,7 @@ namespace mu2e {
     private:
     void analyze(const art::Event& e) override;
 
-    art::InputTag _stmWaveformDigisTag;
+    art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
     bool _subtractPedestal;
     std::string _xAxis;
     int _verbosityLevel;
@@ -53,19 +53,17 @@ namespace mu2e {
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
     art::EDAnalyzer{config},
-    _stmWaveformDigisTag(config().stmWaveformDigisTag()),
+    _stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(config().stmWaveformDigisTag())),
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
-    _verbosityLevel(config().verbosityLevel())
-  {
-    consumes<STMWaveformDigiCollection>(_stmWaveformDigisTag);
-    _channel = STMUtils::getChannel(_stmWaveformDigisTag);
-  }
+    _verbosityLevel(config().verbosityLevel()),
+    _channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
+  { }
 
   void PlotSTMWaveformDigis::analyze(const art::Event& event) {
 
     art::ServiceHandle<art::TFileService> tfs;
-    auto waveformsHandle = event.getValidHandle<STMWaveformDigiCollection>(_stmWaveformDigisTag);
+    auto waveformsHandle = event.getValidHandle(_stmWaveformDigisToken);
 
     std::stringstream histname, histtitle;
     int count = 0;

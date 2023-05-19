@@ -108,7 +108,7 @@ public:
 
     // Reco objects
     fhicl::Atom<art::InputTag> caloClusterMCTag{Name("caloClusterMCTag"), Comment("InputTag for CaloClusterMCCollection")};
-    fhicl::Atom<art::InputTag> crvCoincClusterMCTag{Name("crvCoincClusterMCTag"), Comment("InputTag for CrvCoincidenceClusterMCCollection")};
+    fhicl::Sequence<art::InputTag> crvCoincClusterMCTags{Name("crvCoincClusterMCTags"), Comment("InputTags for CrvCoincidenceClusterMCCollections")};
 
     fhicl::Atom<art::InputTag> primaryParticleTag{Name("primaryParticleTag"), Comment("InputTag for PrimarParticle")};
     fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("mcTrajectoryTag"), Comment("InputTag for the MCTrajectoryCollection")};
@@ -140,7 +140,7 @@ public:
   void keepSimParticle(const art::Ptr<SimParticle>& sim_ptr);
   void copyCaloClusterMC(const mu2e::CaloClusterMC& old_calo_cluster_mc);
   art::Ptr<CaloHitMC> copyCaloHitMC(const mu2e::CaloHitMC& old_calo_hit_mc);
-  void copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClusterMC& old_crv_coinc_cluster_mc);
+  void copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClusterMC& old_crv_coinc_cluster_mc, size_t i_tag);
   void copyPrimaryParticle(const mu2e::PrimaryParticle& old_primary_particle);
 
 private:
@@ -151,7 +151,7 @@ private:
   std::vector<art::InputTag> _extraStepPointMCTags;
   std::vector<art::InputTag> _timeMapTags;
   art::InputTag _caloClusterMCTag;
-  art::InputTag _crvCoincClusterMCTag;
+  std::vector<art::InputTag> _crvCoincClusterMCTags;
   art::InputTag _primaryParticleTag;
   art::InputTag _mcTrajectoryTag;
   bool _keepAllGenParticles;
@@ -210,8 +210,8 @@ private:
   art::Handle<CaloClusterMCCollection> _caloClusterMCsHandle;
   std::unique_ptr<CaloClusterMCCollection> _newCaloClusterMCs;
   std::unique_ptr<CaloHitMCCollection> _newCaloHitMCs;
-  art::Handle<CrvCoincidenceClusterMCCollection> _crvCoincClusterMCsHandle;
-  std::unique_ptr<CrvCoincidenceClusterMCCollection> _newCrvCoincClusterMCs;
+  std::vector<art::Handle<CrvCoincidenceClusterMCCollection>> _crvCoincClusterMCsHandles;
+  std::vector<std::unique_ptr<CrvCoincidenceClusterMCCollection>> _newCrvCoincClusterMCs;
   art::Handle<PrimaryParticle> _primaryParticleHandle;
   std::unique_ptr<PrimaryParticle> _newPrimaryParticle;
 
@@ -248,7 +248,7 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
     _extraStepPointMCTags(conf().extraStepPointMCTags()),
     _timeMapTags(conf().timeMapTags()),
     _caloClusterMCTag(conf().caloClusterMCTag()),
-    _crvCoincClusterMCTag(conf().crvCoincClusterMCTag()),
+    _crvCoincClusterMCTags(conf().crvCoincClusterMCTags()),
     _primaryParticleTag(conf().primaryParticleTag()),
     _mcTrajectoryTag(conf().mcTrajectoryTag()),
     _keepAllGenParticles(conf().keepAllGenParticles()),
@@ -295,8 +295,9 @@ mu2e::CompressDigiMCs::CompressDigiMCs(const Parameters& conf)
     produces<CaloClusterMCCollection>();
     produces<CaloHitMCCollection>();
   }
-  if (_crvCoincClusterMCTag != "") {
-    produces<CrvCoincidenceClusterMCCollection>();
+  for (const auto& crvCoincClusterMCTag : _crvCoincClusterMCTags) {
+    produces<CrvCoincidenceClusterMCCollection>(crvCoincClusterMCTag.label());
+    _crvCoincClusterMCsHandles.push_back(art::Handle<CrvCoincidenceClusterMCCollection>());
   }
   if (_primaryParticleTag != "") {
     produces<PrimaryParticle>();
@@ -395,9 +396,13 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     _newCaloHitMCGetter = event.productGetter(_newCaloHitMCsPID);
   }
   // If we have a CrvCoincClusterMC collection, use that
-  if (_crvCoincClusterMCTag != "") {
-    event.getByLabel(_crvCoincClusterMCTag, _crvCoincClusterMCsHandle);
-    _newCrvCoincClusterMCs = std::unique_ptr<CrvCoincidenceClusterMCCollection>(new CrvCoincidenceClusterMCCollection);
+  if (_crvCoincClusterMCTags.size() > 0) {
+    _newCrvCoincClusterMCs.clear();
+    for (size_t i_tag = 0; i_tag < _crvCoincClusterMCTags.size(); ++i_tag) {
+      const auto & crvCoincClusterMCTag = _crvCoincClusterMCTags.at(i_tag);
+      event.getByLabel(crvCoincClusterMCTag, _crvCoincClusterMCsHandles.at(i_tag));
+      _newCrvCoincClusterMCs.push_back(std::unique_ptr<CrvCoincidenceClusterMCCollection>(new CrvCoincidenceClusterMCCollection));
+    }
   }
   // If we have a PrimaryParticle, use that
   if (_primaryParticleTag != "") {
@@ -500,10 +505,10 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   }
 
   // Optional CrvCoincidenceClusterMCs
-  if (_crvCoincClusterMCTag != "") {
-    const auto& crvCoincClusterMCs = *_crvCoincClusterMCsHandle;
+  for (size_t i_tag = 0; i_tag < _crvCoincClusterMCTags.size(); ++i_tag) {
+    const auto& crvCoincClusterMCs = *_crvCoincClusterMCsHandles.at(i_tag);
     for (const auto& i_crvCoincClusterMC : crvCoincClusterMCs) {
-      copyCrvCoincClusterMC(i_crvCoincClusterMC);
+      copyCrvCoincClusterMC(i_crvCoincClusterMC, i_tag);
     }
   }
 
@@ -663,17 +668,19 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     i_crvDigiMC.setSimParticle(newSimPtr);
   }
   // Update CrvCoincClusterMCs if needs be
-  if (_crvCoincClusterMCTag != "") {
-    for (auto& i_crvCoincClusterMC : *_newCrvCoincClusterMCs) {
-      for (auto& i_pulseInfo : i_crvCoincClusterMC.GetModifiablePulses()) {
-        art::Ptr<SimParticle> oldSimPtr = i_pulseInfo._simParticle;
-        art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,oldSimPtr,__LINE__);
-        i_pulseInfo._simParticle = newSimPtr;
-      }
+  for (size_t i_tag = 0; i_tag < _crvCoincClusterMCTags.size(); ++i_tag) {
+    for (auto& i_crvCoincClusterMC : *_newCrvCoincClusterMCs.at(i_tag)) {
+      if (i_crvCoincClusterMC.HasMCInfo()) {
+        for (auto& i_pulseInfo : i_crvCoincClusterMC.GetModifiablePulses()) {
+          art::Ptr<SimParticle> oldSimPtr = i_pulseInfo._simParticle;
+          art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,oldSimPtr,__LINE__);
+          i_pulseInfo._simParticle = newSimPtr;
+        }
 
-      art::Ptr<SimParticle> oldSimPtr = i_crvCoincClusterMC.GetMostLikelySimParticle();
-      art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,oldSimPtr,__LINE__);
-      i_crvCoincClusterMC.SetMostLikelySimParticle(newSimPtr);
+        art::Ptr<SimParticle> oldSimPtr = i_crvCoincClusterMC.GetMostLikelySimParticle();
+        art::Ptr<SimParticle> newSimPtr = safeRemapRef(remap,oldSimPtr,__LINE__);
+        i_crvCoincClusterMC.SetMostLikelySimParticle(newSimPtr);
+      }
     }
   }
   // Update PrimaryParticle if needs be
@@ -725,8 +732,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     event.put(std::move(_newCaloHitMCs));
   }
 
-  if (_crvCoincClusterMCTag != "") {
-    event.put(std::move(_newCrvCoincClusterMCs));
+  for (size_t i_tag = 0; i_tag < _crvCoincClusterMCTags.size(); ++i_tag) {
+    const auto& crvCoincClusterMCTag = _crvCoincClusterMCTags.at(i_tag);
+    event.put(std::move(_newCrvCoincClusterMCs.at(i_tag)), crvCoincClusterMCTag.label());
   }
   if (_primaryParticleTag != "") {
     event.put(std::move(_newPrimaryParticle));
@@ -871,15 +879,17 @@ void mu2e::CompressDigiMCs::copyCaloClusterMC(const mu2e::CaloClusterMC& old_cal
   _newCaloClusterMCs->push_back(new_calo_cluster_mc);
 }
 
-void mu2e::CompressDigiMCs::copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClusterMC& old_crv_coinc_cluster_mc) {
+void mu2e::CompressDigiMCs::copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClusterMC& old_crv_coinc_cluster_mc, size_t i_tag) {
 
-  for (const auto& i_pulseInfo : old_crv_coinc_cluster_mc.GetPulses()) {
-    keepSimParticle(i_pulseInfo._simParticle);
+  if (old_crv_coinc_cluster_mc.HasMCInfo()) { // sometimes CrvCoincidenceClusterMC doesn't have MC information e.g. when it is a noise hit
+    for (const auto& i_pulseInfo : old_crv_coinc_cluster_mc.GetPulses()) {
+      keepSimParticle(i_pulseInfo._simParticle);
+    }
+    keepSimParticle(old_crv_coinc_cluster_mc.GetMostLikelySimParticle());
   }
-  keepSimParticle(old_crv_coinc_cluster_mc.GetMostLikelySimParticle());
 
   CrvCoincidenceClusterMC new_crv_coinc_cluster_mc(old_crv_coinc_cluster_mc);
-  _newCrvCoincClusterMCs->push_back(new_crv_coinc_cluster_mc);
+  _newCrvCoincClusterMCs.at(i_tag)->push_back(new_crv_coinc_cluster_mc);
 }
 
 void mu2e::CompressDigiMCs::copyPrimaryParticle(const mu2e::PrimaryParticle& old_primary_particle) {

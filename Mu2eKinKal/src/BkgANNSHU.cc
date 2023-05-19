@@ -34,7 +34,7 @@ namespace mu2e {
       double plen = sqrt(std::max(0.25, 6.25-dinfo.rDrift_*dinfo.rDrift_))/sint;
       pars[4] = chit.energyDep()/plen;
       // compare the delta-t based U position with the fit U position; requires relative end
-      double endsign = 2.0*(chit.driftEnd()-0.5);
+      double endsign = chit.earlyEnd().endSign();
       double upos = -endsign*tpdata.sensorDirection().Dot(tpdata.sensorPoca().Vect() - chit.centerPos());
       pars[5] = fabs(chit.wireDist() - upos);
       pars[6] = tpdata.particlePoca().Vect().Rho();

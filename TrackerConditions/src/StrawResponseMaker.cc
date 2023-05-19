@@ -60,10 +60,6 @@ namespace mu2e {
     }
     pmpEnergyScaleAvg /= (double) pmpEnergyScale.size();
 
-    //FIXME deprecated
-//    double sigma = _config.parameterizedDriftSigma();
-//    double tau = _config.parameterizedDriftTau();
-
     if ( _config.unsignedDriftRMS().size() != _config.signedDriftRMS().size()
         || _config.driftOffBins().size() != 2
         || _config.driftRMSBins().size() != 2){
@@ -100,8 +96,6 @@ namespace mu2e {
         << "StrawResponse calibration vector lengths incorrect" << "\n";
     }
 
-    std::array<double, 3> dc = {_config.driftFit()[0],_config.driftFit()[1],_config.driftFit()[2]};
-
     auto ptr = std::make_shared<StrawResponse>(
         strawDrift,strawElectronics,strawPhysics,
         _config.eBins(), _config.eBinWidth(), edep, _config.ehalfPVScale(),
@@ -110,22 +104,19 @@ namespace mu2e {
         _config.rmsLongErrors(), _config.totTBins(), _config.totTBinWidth(),
         _config.totEBins(), _config.totEBinWidth(), _config.totDriftTime(),
         _config.totDriftError(),
-        _config.driftErrorParameters(),
-        _config.useParameterizedDriftErrors(),
+        _config.llDriftTimeOffBins(),_config.llDriftTimeOffset(),
+        _config.llDriftTimeRMSBins(),_config.llDriftTimeRMS(),
         _config.driftOffBins(),_config.driftOffset(),
         _config.driftRMSBins(),_config.signedDriftRMS(),
         _config.unsignedDriftRMS(),_config.dRdTScale(),
-        _config.driftResIsTime(),
         _config.wireLengthBuffer(), _config.strawLengthFactor(),
         _config.errorFactor(), _config.useNonLinearDrift(),
         _config.linearDriftVelocity(),
-        _config.minT0DOCA(),
         pmpEnergyScale,
         electronicsTimeDelay,
         gasGain, analognoise, dVdI, vsat, ADCped,
         pmpEnergyScaleAvg, strawHalfPropVelocity,
-        _config.useOldDrift(), _config.driftIgnorePhi(),
-        dc);
+        _config.driftIgnorePhi());
 
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;

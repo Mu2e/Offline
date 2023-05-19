@@ -10,8 +10,8 @@ namespace mu2e {
     inactivep_ = std::get<1>(config);
     nullp_ = std::get<2>(config);
     mindchi2_ = std::get<3>(config);
-    std::string nulldvar = std::get<4>(config);
-    nulldvar_ = WireHitState::nullDistVar(nulldvar);
+    std::string flag = std::get<4>(config);
+    kkshflag_ = KKSHFlag(flag);
     std::string states = std::get<5>(config);
     WHSMask allowed(states);
     std::string freeze = std::get<6>(config);
@@ -19,13 +19,13 @@ namespace mu2e {
     std::string unfreeze = std::get<7>(config);
     unfreeze_ = WHSMask(unfreeze);
     diag_ = std::get<8>(config);
-    if(allowed.hasAnyProperty(WHSMask::inactive)) allowed_.emplace_back(WireHitState::inactive,StrawHitUpdaters::Chi2,nulldvar_);
-    if(allowed.hasAnyProperty(WHSMask::null)) allowed_.emplace_back(WireHitState::null,StrawHitUpdaters::Chi2,nulldvar_);
+    if(allowed.hasAnyProperty(WHSMask::inactive)) allowed_.emplace_back(WireHitState::inactive,StrawHitUpdaters::Chi2,kkshflag_);
+    if(allowed.hasAnyProperty(WHSMask::null)) allowed_.emplace_back(WireHitState::null,StrawHitUpdaters::Chi2,kkshflag_);
     if(allowed.hasAnyProperty(WHSMask::drift)){
-      allowed_.emplace_back(WireHitState::left,StrawHitUpdaters::Chi2,nulldvar_);
-      allowed_.emplace_back(WireHitState::right,StrawHitUpdaters::Chi2,nulldvar_);
+      allowed_.emplace_back(WireHitState::left,StrawHitUpdaters::Chi2,kkshflag_);
+      allowed_.emplace_back(WireHitState::right,StrawHitUpdaters::Chi2,kkshflag_);
     }
-    if(diag_ > 0)std::cout << "Chi2SHU, inactive penalty " << inactivep_ << " null penalty " << nullp_ << " min dchi2 " << mindchi2_ << " null dist var " << nulldvar << " allowed states" << allowed << " states to freeze " << freeze_  << " states to unfreeze" << unfreeze_ << std::endl;
+    if(diag_ > 0)std::cout << "Chi2SHU, inactive penalty " << inactivep_ << " null penalty " << nullp_ << " min dchi2 " << mindchi2_ << " flag " << flag << " allowed states" << allowed << " states to freeze " << freeze_  << " states to unfreeze" << unfreeze_ << std::endl;
   }
 
   // set the state of unambiguous hits to their drift value.

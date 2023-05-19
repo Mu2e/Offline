@@ -54,7 +54,7 @@ physics : {
 
     @table::Mu2eKinKal.producers
     TTCalSeedFitDem : { @table::Mu2eKinKal.producers.KKDeMSeedFit
-      Mu2eSettings   : { @table::Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings
+      KKFitSettings   : { @table::Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings
         AddMaterial    : false
         MaterialCorrection : true
         #MaterialCorrection : false
@@ -65,7 +65,7 @@ physics : {
         MaxCaloClusterDOCA : 500 #mm
         AddHits : false
       }
-      KinKalExtensionSettings: { @table::Mu2eKinKal.producers.KKDeMSeedFit.KinKalExtensionSettings
+      ExtensionSettings: { @table::Mu2eKinKal.producers.KKDeMSeedFit.ExtensionSettings
         #MaxNIter : 3
         BFieldCorrection         : true
         BCorrTolerance           : 1e-2
@@ -85,7 +85,7 @@ physics : {
         BkgANNSHUSettings        : []
         Chi2SHUSettings          : []
       }
-      KinKalFitSettings : { @table::Mu2eKinKal.producers.KKDeMSeedFit.KinKalFitSettings
+      FitSettings : { @table::Mu2eKinKal.producers.KKDeMSeedFit.FitSettings
         PrintLevel : 0
         #BFieldCorrection         : true
         BFieldCorrection         : false
@@ -104,10 +104,10 @@ physics : {
     }
 
     TTCalSeedFitDep : { @table::Mu2eKinKal.producers.KKDePSeedFit
-      Mu2eSettings   : {@table::Mu2eKinKal.producers.KKDePSeedFit.Mu2eSettings
+      KKFitSettings   : {@table::Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings
         AddMaterial : false
       }
-      KinKalExtensionSettings: {@table::Mu2eKinKal.producers.KKDePSeedFit.KinKalExtensionSettings
+      ExtensionSettings: {@table::Mu2eKinKal.producers.KKDePSeedFit.ExtensionSettings
         BFieldCorrection : false
 
       }
@@ -122,17 +122,17 @@ physics : {
     }
 
     TTKSFDeM : { @table::Mu2eKinKal.producers.KKDeMSeedFit
-      Mu2eSettings   : {@table::Mu2eKinKal.producers.KKDeMSeedFit.Mu2eSettings
+      KKFitSettings   : {@table::Mu2eKinKal.producers.KKDeMSeedFit.KKFitSettings
         AddMaterial : false
         PrintLevel : 0
         UseCaloCluster : false
 
       }
-      KinKalExtensionSettings: {@table::Mu2eKinKal.producers.KKDeMSeedFit.KinKalExtensionSettings
+      ExtensionSettings: {@table::Mu2eKinKal.producers.KKDeMSeedFit.ExtensionSettings
         BFieldCorrection : false
 
       }
-      KinKalFitSettings : { @table::Mu2eKinKal.producers.KKDeMSeedFit.KinKalFitSettings
+      FitSettings : { @table::Mu2eKinKal.producers.KKDeMSeedFit.FitSettings
         PrintLevel : 0
       }
       ModuleSettings : {@table::Mu2eKinKal.producers.KKDeMSeedFit.ModuleSettings
@@ -146,10 +146,10 @@ physics : {
     }
 
     TTKSFDeP : { @table::Mu2eKinKal.producers.KKDePSeedFit
-      Mu2eSettings   : {@table::Mu2eKinKal.producers.KKDePSeedFit.Mu2eSettings
+      KKFitSettings   : {@table::Mu2eKinKal.producers.KKDePSeedFit.KKFitSettings
         AddMaterial : false
       }
-      KinKalExtensionSettings: {@table::Mu2eKinKal.producers.KKDePSeedFit.KinKalExtensionSettings
+      ExtensionSettings: {@table::Mu2eKinKal.producers.KKDePSeedFit.ExtensionSettings
         BFieldCorrection : false
       }
       ModuleSettings : {@table::Mu2eKinKal.producers.KKDePSeedFit.ModuleSettings
@@ -231,7 +231,6 @@ outputs.triggerOutput.fileName : "debug_20210619.art"
 services.DbService.purpose: MDC2020_perfect
 services.DbService.version: v1_0
 services.DbService.verbose : 2
-services.ProditionsService.strawResponse.useOldDrift: true
 
 ###### #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/cprDeM_highP_stopTarg.fcl"
