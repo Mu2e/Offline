@@ -72,7 +72,7 @@ BEGIN_PROLOG
       digitizationStart                     :  400.0    //400ns
       digitizationEnd                       : 1750.0    //1750ns
       digitizationStartMargin               :   50.0    //50ns
-      timeOffsets                           : [ @sequence::CommonMC.TimeMaps ]
+      timeOffsets                           : [ ]
     }
     CrvSiPMCharges:
     {
@@ -506,7 +506,7 @@ BEGIN_PROLOG
       module_type                            : CrvCoincidenceClusterMatchMC
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvWaveformsModuleLabel                : "CrvWaveforms"
-      timeOffsets                            : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+      timeOffsets                            : { inputs : [ ] }
     }
     CrvPlot:
     {

@@ -94,15 +94,14 @@ namespace mu2e
       float _dz; // z extent
       float _tot[2]; // tot values
       int _nsh, _nch; // number of associated straw hits
-      int _strawid, _straw, _panel, _plane; // strawid info
+      int _strawid, _straw, _panel, _plane, _level; // strawid info
       int _eend;
       int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       // mc diag
       XYZVectorF _mcpos; // average MC hit position
       float _mcmom;
-
       float _mctime, _mcudist;
-      int _mcpdg, _mcproc, _mcgen;
+      int _mcpdg, _mcproc, _mcgen, _mcndigi;
       float _mcfrac;
 
       float _threshold[2], _adcgain;
@@ -175,6 +174,7 @@ namespace mu2e
     _chdiag->Branch("straw",&_straw,"straw/I");
     _chdiag->Branch("panel",&_panel,"panel/I");
     _chdiag->Branch("plane",&_plane,"plane/I");
+    _chdiag->Branch("level",&_level,"level/I");
     _chdiag->Branch("earlyend",&_eend,"eend/I");
     if(_diag > 0)
       _chdiag->Branch("chinfo",&_chinfo);
@@ -187,6 +187,7 @@ namespace mu2e
       _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
       _chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
+      _chdiag->Branch("mcndigi",&_mcndigi,"mcndigi/I");
       if(_diag > 0)
         _chdiag->Branch("chinfomc",&_chinfomc);
     }
@@ -217,6 +218,7 @@ namespace mu2e
       _straw = ch.strawId().straw();
       _panel = ch.strawId().panel();
       _plane = ch.strawId().plane();
+      _level = ch.mask().level();
       _pos = ch.pos();
 
       _udir = ch.uDir();
@@ -291,7 +293,8 @@ namespace mu2e
         std::vector<StrawDigiIndex> shids;
         _chcol->fillStrawDigiIndices(evt,ich,shids);
         if(shids.size() != ch.nStrawHits())
-          throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit Nesting" << std::endl;
+          throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit Nesting, nshids = "
+            << shids.size() << " , n strawhits = " << ch.nStrawHits() << std::endl;
         // find the SimParticle responsable for most of the hits
         SPM spmap;
         for(auto shi : shids) {
@@ -328,7 +331,7 @@ namespace mu2e
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
           StrawDigiMC const& mcd = _mcdigis->at(shi);
-          auto sgsp = mcd.earlyStrawGasStep();
+          auto const& sgsp = mcd.earlyStrawGasStep();
           chimc._mcpos = XYZVectorF(sgsp->position().x(),sgsp->position().y(), sgsp->position().z() );
           MCRelationship rel(mcd,spmax);
           chimc._rel = rel.relationship();
@@ -342,7 +345,11 @@ namespace mu2e
         _mctime /= shids.size();
         _mcmom /= shids.size();
         _mcudist = (_mcpos - cpos).Dot(_udir);
-
+        // count mcdigis with the same StrawId as this hit
+        _mcndigi = 0;
+        for(auto const& mcdigi : *_mcdigis) {
+          if(ch._mask.equal(mcdigi.strawId(),ch.strawId()) && spmax == mcdigi.earlyStrawGasStep()->simParticle())++_mcndigi;
+        }
       }
       if (_digis != 0){
         std::vector<StrawDigiIndex> shids;

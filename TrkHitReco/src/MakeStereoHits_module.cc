@@ -23,6 +23,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/GeneralUtilities/inc/CombineTwoDPoints.hh"
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
@@ -61,13 +62,11 @@ namespace mu2e {
         fhicl::Sequence<std::string>     shsel    { Name("StrawHitSelectionBits"),    Comment("Mask for selecting hits") };
         fhicl::Sequence<std::string>     shrej    { Name("StrawHitRejectionBits"),   Comment("Mask for rejecting hits") };
         fhicl::Atom<float>               maxDt    { Name("MaxDt"),   Comment("Maximum time separation (ns)") };
-        fhicl::Atom<bool>                useTOT   { Name("UseTOT"),   Comment("Use corrected time") };
         fhicl::Atom<float>               maxDPerp { Name("MaxDPerp"),   Comment("maximum perpendicular distance (mm)") };
         fhicl::Atom<float>               maxwdot  { Name("MaxWdot"),   Comment("maximum cos of angle between straws") };
         fhicl::Atom<float>               maxChisq { Name("MaxChisquared"),   Comment("position matching") };
         fhicl::Atom<float>               minMVA   { Name("MinMVA"),   Comment("MVA cut") };
         fhicl::Atom<float>               uvres    { Name("UVRes"),   Comment("Resolution in U,V (X,Y) plane") };
-        fhicl::Atom<float>               zfac     { Name("ZErrorFactor"),   Comment("Scaling for Z direction error component") };
         fhicl::Atom<float>               minRho   { Name("MinRho"),   Comment("Minimum transverse radius of combination (mm)") };
         fhicl::Atom<float>               maxRho   { Name("MaxRho"),   Comment("Maximum transverse radius of combination (mm)") };
         fhicl::Atom<bool>                doMVA    { Name("DoMVA"),   Comment("Use MVA") };
@@ -91,14 +90,11 @@ namespace mu2e {
       StrawHitFlag   _shsel;     // input flag selection
       StrawHitFlag   _shrej;     // input flag rejection
       float         _maxDt;      // maximum time separation between hits
-      bool          _useTOT;     // use TOT to estimate drift time
       float         _maxDPerp;   // maximum transverse separation
       float         _maxwdot;    // minimum dot product of straw directions
       float         _maxChisq;   // maximum chisquared to allow making stereo hits
       float         _minMVA;     // minimum MVA output
-      float         _uvres;      // resolution in UV plane
-      float         _wres;       // resolution in W (Z) direction
-      float         _zfac;       // resolution transverse to the wire
+      float         _uvvar;      // intrinsic variance in UV plane
       float  _minrho, _maxrho;   // transverse radius range
       bool          _doMVA;      // do MVA eval or simply use chi2 cut
       unsigned      _maxfsep;    // max face separation
@@ -111,7 +107,7 @@ namespace mu2e {
 
       std::array<std::vector<StrawId>,StrawId::_nupanels > _panelOverlap;   // which panels overlap each other
       void genMap();
-      ComboHit  createComboHit(std::vector<size_t> const& indices, ComboHitCollection const& inchcol);
+      ComboHit  createComboHit(CombineTwoDPoints const& cpts, ComboHitCollection const& inchcol) const;
   };
 
   MakeStereoHits::MakeStereoHits(const art::EDProducer::Table<Config>& config) :
@@ -121,14 +117,11 @@ namespace mu2e {
     _shsel(config().shsel()),
     _shrej(config().shrej()),
     _maxDt(config().maxDt()),
-    _useTOT(config().useTOT()),
     _maxDPerp(config().maxDPerp()),
     _maxwdot(config().maxwdot()),
     _maxChisq(config().maxChisq()),
     _minMVA(config().minMVA()),
-    _uvres(config().uvres()),
-    _wres(config().maxDz()/sqrt(12.0)), // might be better to compute this per-hit TODO
-    _zfac(config().zfac()),
+    _uvvar(config().uvres()*config().uvres()),
     _minrho(config().minRho()),
     _maxrho(config().maxRho()),
     _doMVA(config().doMVA()),
@@ -188,23 +181,19 @@ namespace mu2e {
     for (size_t ihit=0;ihit<nch;++ihit) {
       if(used[ihit])continue;
       used[ihit] = true;
-      // create an output combo hit for every hit; initialize it with this hit
+      // create a combiner seeded on this hit
       ComboHit const& ch1 = inchcol[ihit];
-      std::vector<size_t> indices;
-      indices.reserve(ComboHit::MaxNCombo);
-      indices.push_back(ihit);
+      CombineTwoDPoints cpts(_uvvar);
+      cpts.addPoint(TwoDPoint(ch1.pos(),ch1.uDir(),ch1.uVar(),ch1.vVar()),ihit);
       // loop over the panels which overlap this hit's panel
       for (auto sid : _panelOverlap[ch1.strawId().uniquePanel()]) {
         // loop over hits in the overlapping panel
         for (auto jhit : phits[sid.uniquePanel()]) {
           const ComboHit& ch2 = inchcol[jhit];
           if(_debug > 3) std::cout << " comparing hits in panels " << ch1.strawId().uniquePanel() << " and " << ch2.strawId().uniquePanel() << std::endl;
-          if (!used[jhit] ){
+          if (!used[jhit] && cpts.nPoints() < ComboHit::MaxNCombo){
             float dt;
-            if (_useTOT)
-              dt = fabs(ch1.correctedTime()-ch2.correctedTime());
-            else
-              dt = fabs(ch1.time()-ch2.time());
+            dt = fabs(ch1.correctedTime()-ch2.correctedTime());
             if(_debug > 4) std::cout << " dt = " << dt;
             if (dt < _maxDt){
               XYZVectorF dp = ch1.pos()-ch2.pos();
@@ -212,27 +201,21 @@ namespace mu2e {
               // negative crosings are in opposite quadrants and longitudinal separation isn't too big
               if(_debug > 4) std::cout << " dperp = " << dperp;
               if (dperp < _maxDPerp ) {
-                // solve for the POCA.
-                TwoLinePCA_XYZ pca(ch1.pos(),ch1.wdir(),ch2.pos(),ch2.wdir());
-                if(pca.closeToParallel()){
-                  cet::exception("RECO")<<"mu2e::StereoHit: parallel wires" << std::endl;
-                }
-                // check the intersection is inside the tracker active volume
-                float rho = pca.point1().Rho();
-                if(_debug > 4) std::cout << " rho = " << rho;
-                if(rho < _maxrho && rho > _minrho ){
-                  // compute chisquared; include error for particle angle
-                  // should be a cumulative linear regression TODO!
-                  float zerr = _zfac*fabs(ch1.pos().z()-ch2.pos().z());
-                  float zerr2 = zerr*zerr;
-                  float dw1 = pca.s1();
-                  float dw2 = pca.s2();
-                  float chisq = dw1*dw1/(ch1.wireVar()+zerr2) + dw2*dw2/(ch2.wireVar()+zerr2);
-                  if(_debug > 3) std::cout << " chisq = " << chisq;
-                  if (chisq < _maxChisq){
+                // compute chisq WRT this point
+                TwoDPoint twodpt(ch2.pos(),ch2.uDir(),ch2.uVar(),ch2.vVar());
+                double dchi2 = cpts.dChi2(twodpt);
+                if(_debug > 3) std::cout << " dchisq = " << dchi2;
+                if(dchi2 < _maxChisq){
+                  // provisionally add this hit
+                  cpts.addPoint(twodpt,jhit);
+                  auto rho = cpts.point().pos2().R();
+                  if(_debug > 4) std::cout << " rho = " << rho << std::endl;
+                  if(rho < _maxrho && rho > _minrho ){
                     if(_debug > 3) std::cout << " added index";
-                    indices.push_back(jhit);
                     used[jhit] = true;
+                  } else {
+                    // remove the point
+                    cpts.removePoint(jhit);
                   }
                 }
               }
@@ -241,41 +224,39 @@ namespace mu2e {
           if(_debug > 3) std::cout << std::endl;
         }
       }
-      if(indices.size() > 0)chcol->push_back(std::move(createComboHit(indices,inchcol)));
+      // do a final outlier filter: TODO
+      chcol->push_back(std::move(createComboHit(cpts,inchcol)));
     }
     event.put(std::move(chcol));
   }
 
-  ComboHit MakeStereoHits::createComboHit(std::vector<size_t> const& indices, ComboHitCollection const& inchcol) {
+  ComboHit MakeStereoHits::createComboHit(CombineTwoDPoints const& cpts, ComboHitCollection const& inchcol) const {
     if(_debug > 1){
-      std::cout << "Combining indices ";
-      for(auto ind : indices) {
-        std::cout << ind << " , ";
-      }
-      std::cout << std::endl;
+      std::cout << "Combining " << cpts.nPoints() << " hits" << std::endl;
     }
-    if(indices.size() > ComboHit::MaxNCombo){
-      // choose the best hits to combine: TODO!
-    }
-    size_t nind = std::min(indices.size(),ComboHit::MaxNCombo);
     ComboHit combohit;
-    if(nind == 1){
-      combohit.init(inchcol[indices[0]],indices[0]);
+    if(cpts.nPoints() == 1){
+      auto iwt = cpts.weights().begin();
+      auto ihit = iwt->first;
+      auto const& ch = inchcol[ihit];
+      combohit._sid = _smask.maskStrawId(ch.strawId());
+      combohit.init(ch,ihit);
     } else {
-      combohit._mask = _smask;
-      combohit._udir = inchcol[0].uDir(); // take directions from the 1st hit
-      combohit._vdir = inchcol[0].vDir();
-      double wtsum(0), twtsum(0);
-      for(size_t iind=0;iind <nind;++iind){
-        auto ihit = indices[iind];
+      double wtsum(0), twtsum(0), zsum(0), zmin(1.0e6), zmax(-1e6);
+      // fill the remaining variables
+      for(auto iwt = cpts.weights().begin(); iwt != cpts.weights().end(); ++iwt){
+        auto ihit = iwt->first;
         if(combohit.addIndex(ihit)) {
           auto const& ch = inchcol[ihit];
-          if(iind==0)combohit._sid = _smask.maskStrawId(ch.strawId()); // take the first hit for the StrawId: all should be equivalent
+          combohit._sid = _smask.maskStrawId(ch.strawId());
           combohit._nsh += ch.nStrawHits();
           double wt = ch.nStrawHits(); // not sure if there's a better way to weight
           wtsum += wt;
           combohit._flag.merge(ch.flag());
-          combohit._pos += ch._pos*wt;
+          double z = ch._pos.Z();
+          zsum += z*wt;
+          zmin = std::min(zmin,z);
+          zmax = std::max(zmax,z);
           combohit._edep += ch.energyDep()*wt;
           // the following have unclear meaning for stereo hits, but we fill them anyways
           for(size_t iend=0;iend<2;++iend){
@@ -292,24 +273,35 @@ namespace mu2e {
           std::cout << "MakeStereoHits past limit" << std::endl;
         }
       }
-      combohit._pos /= wtsum;
-      combohit._time /= twtsum;
+      // fill position and variance from combined info
+      auto const& pt = cpts.point();
+      auto uvres = pt.uvRes();
+      combohit._pos = pt.pos3(zsum/wtsum);
+      combohit._udir = XYZVectorF(uvres.udir_.X(),uvres.udir_.Y(),0.0);
+      combohit._vdir = XYZVectorF(-uvres.udir_.Y(),uvres.udir_.X(),0.0);
+      combohit._ures = uvres.ures_;
+      combohit._vres = uvres.vres_;
+      combohit._qual = cpts.chisquared();
+//      combohit._qual = cpts.consistency();
+      // define w error from range
+      static const double invsqrt12 = 1.0/sqrt(12.0);
+      combohit._wres = invsqrt12*(zmax-zmin);
+      // simple average for edep
       combohit._edep /= wtsum;
+      // average time
+      combohit._time /= twtsum;
+      combohit._dtime /= wtsum;
+      combohit._ptime  /= wtsum;
+      combohit._timeres = sqrt(1.0/twtsum);
       for(size_t iend=0;iend<2;++iend){
         combohit._etime[iend] /= wtsum;
         combohit._tot[iend] /= wtsum;
       }
-      combohit._dtime /= wtsum;
-      combohit._ptime  /= wtsum;
-      // compute resolutions as RMS
-      combohit._timeres       = sqrt(1.0/twtsum);
-      // transverse and wire directions are equivalent for stereo hits
-      combohit._ures = _uvres;
-      combohit._vres = _uvres;
-      combohit._wres = _wres;
     }
+    // update the mask
+    combohit._mask = _smask;
     return combohit;
- }
+  }
 
   // generate the overlap map
   void MakeStereoHits::genMap() {

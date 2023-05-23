@@ -4,36 +4,44 @@
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
 BEGIN_PROLOG
 Mu2eKinKalTrigger : {
-   KKMAT: {
-     @table::Mu2eKinKal.KKMAT
+   MAT: {
+     @table::Mu2eKinKal.MAT
   }
 
-  KKMU2E: {
-    @table::Mu2eKinKal.KKMU2E
+  KKFIT: {
+    @table::Mu2eKinKal.KKFIT
     AddHits : false
     AddMaterial : false
-    MaterialCorrection : false
+    MaterialCorrection : true
+    MaxCaloClusterDt : 10.0
+    MaxCaloClusterDOCA : 150.0 # mm
   }
 
-  KKSEEDFIT: {
-    @table::Mu2eKinKal.KKSEEDFIT
+  SEEDFIT: {
+    @table::Mu2eKinKal.SEEDFIT
     MaxNIter : 2
     MetaIterationSettings : [
-      [ 4.0, "CADSHU" ]
-      #      [ 2.0, "CADSHU" ]
+      [ 4.0, "CADSHU" ],
+      [ 2.0, "CADSHU" ],
+      [ 1.0, "CADSHU:BkgANNSHU" ]
     ]
     CADSHUSettings : [
       # maxdoca, maxderr, minrdrift, maxrdrift, flag, , allowed, freeze, diag
-      [ 60.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
-      #      [ 40.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
+      [ 60.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 40.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ],
+      [ 30.0, 1e6, 5.0, 5.0, "TOT", "Null:Inactive", "", 0 ]
     ]
     StrawXingUpdaterSettings : [
       [10.0, -1.0, -1.0, true, 0 ]
     ]
+    BkgANNSHUSettings : [
+      [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
+      #  [ "Offline/Mu2eKinKal/data/TrainBkgTTcpr.dat",0.01,"Inactive", 1]  This should be used for cpr FIXME
+    ]
   }
 
-  KKSEEDEXT: {
-    @table::Mu2eKinKal.KKSEEDEXT
+  SEEDEXT: {
+    @table::Mu2eKinKal.SEEDEXT
     MaxNIter : 2
     BFieldCorrection : false
 
@@ -51,22 +59,15 @@ Mu2eKinKalTrigger : {
     ]
  }
 
-  KKLOOPHELIX : {
-    @table::Mu2eKinKal.KKLOOPHELIX
-    SeedErrors: [
-      5,
-      5,
-      5,
-      5,
-      2e-2,
-      5
-    ]
+  LOOPHELIX : {
+    @table::Mu2eKinKal.LOOPHELIX
+    SeedErrors: [ 5, 5, 5, 5, 2e-2, 5 ]
     ZSavePositions: [ 0 ]
     SaveFullFit : false
   }
 
-  KKKINEMATICLINE : {
-    @table::Mu2eKinKal.KKKINEMATICLINE
+  KINEMATICLINE : {
+    @table::Mu2eKinKal.KINEMATICLINE
   }
 }
 
@@ -76,20 +77,20 @@ TTMu2eKinKal : {
 
   TTKKSeedFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKalTrigger.KKMAT
-    Mu2eSettings: @local::Mu2eKinKalTrigger.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKalTrigger.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKalTrigger.KKSEEDEXT
-    ModuleSettings : @local::Mu2eKinKalTrigger.KKLOOPHELIX
+    MaterialSettings : @local::Mu2eKinKalTrigger.MAT
+    KKFitSettings: @local::Mu2eKinKalTrigger.KKFIT
+    FitSettings : @local::Mu2eKinKalTrigger.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKalTrigger.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKalTrigger.LOOPHELIX
   }
 
   TTKKLineSeedFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKalTrigger.KKMAT
-    Mu2eSettings: @local::Mu2eKinKalTrigger.KKMU2E
-    KinKalFitSettings : @local::Mu2eKinKalTrigger.KKSEEDFIT
-    KinKalExtensionSettings : @local::Mu2eKinKalTrigger.KKSEEDEXT
-    ModuleSettings : @local::Mu2eKinKalTrigger.KKKINEMATICLINE
+    MaterialSettings : @local::Mu2eKinKalTrigger.MAT
+    KKFitSettings: @local::Mu2eKinKalTrigger.KKFIT
+    FitSettings : @local::Mu2eKinKalTrigger.SEEDFIT
+    ExtensionSettings : @local::Mu2eKinKalTrigger.SEEDEXT
+    ModuleSettings : @local::Mu2eKinKalTrigger.KINEMATICLINE
   }
 
   CosmicFilter : {
@@ -114,16 +115,16 @@ TTMu2eKinKal : {
   }
 }
 
-TTMu2eKinKal.producers.TTKKLineSeedFit.KinKalExtensionSettings.BFieldCorrection : false
-TTMu2eKinKal.producers.TTKKLineSeedFit.Mu2eSettings.FitParticle : 13
-TTMu2eKinKal.producers.TTKKLineSeedFit.Mu2eSettings.FitDirection : 1
-TTMu2eKinKal.producers.TTKKDeMSeedFit.Mu2eSettings.FitParticle : 11
-TTMu2eKinKal.producers.TTKKDeMSeedFit.Mu2eSettings.FitDirection : 0
-TTMu2eKinKal.producers.TTKKDePSeedFit.Mu2eSettings.FitParticle : -11
-TTMu2eKinKal.producers.TTKKDePSeedFit.Mu2eSettings.FitDirection : 0
-TTMu2eKinKal.producers.TTKKUeMSeedFit.Mu2eSettings.FitParticle : 11
-TTMu2eKinKal.producers.TTKKUeMSeedFit.Mu2eSettings.FitDirection : 1
-TTMu2eKinKal.producers.TTKKUePSeedFit.Mu2eSettings.FitParticle : -11
-TTMu2eKinKal.producers.TTKKUePSeedFit.Mu2eSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKLineSeedFit.ExtensionSettings.BFieldCorrection : false
+TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitParticle : 13
+TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitDirection : 1
 
 END_PROLOG
