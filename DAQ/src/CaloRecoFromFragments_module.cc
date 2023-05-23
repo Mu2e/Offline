@@ -10,7 +10,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 //-- insert calls to proditions ..for calodmap-----

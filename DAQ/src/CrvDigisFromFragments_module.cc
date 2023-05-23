@@ -13,7 +13,7 @@
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/CRVFragment.hh"
+#include "artdaq-core-mu2e/Data/CRVFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <iostream>

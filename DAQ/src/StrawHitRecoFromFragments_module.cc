@@ -35,9 +35,9 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <memory>
