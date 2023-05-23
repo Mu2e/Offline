@@ -10,10 +10,19 @@
 #include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
 #include "Offline/Trigger/fcl/prolog_trigger.fcl"
 #include "TrkAna/fcl/prolog.fcl"
-#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/TrkDiag/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog_trigger.fcl"
 
 process_name: TTKKSeed
-source : { module_type : RootInput }
+source : {module_type : RootInput
+  inputCommands: ["keep *",
+    "drop mu2e::HelixSeeds_*_*_*",
+    "drop mu2e::KalSeeds_*_*_*",
+    "drop mu2e::TriggerInfo_*_*_*",
+    "drop mu2e::CaloClusters_*_*_*",
+    "drop mu2e::TimeClusters_*_*_*"
+  ]
+}
 services : @local::Services.Reco
 physics :
 {
@@ -26,6 +35,16 @@ physics :
     @table::TprTrigger.producers
     @table::CprTrigger.producers
     @table::TTMu2eKinKal.producers
+    SelectRecoMCcpr : {
+      @table::CommonMCTrigger.TTSelectRecoMC
+      KalSeedCollections  : [ "TTCalSeedFitDem" ]
+      HelixSeedCollections  : ["TTCalHelixMergerDeM" ]
+    }
+    SelectRecoMCtpr : {
+      @table::CommonMCTrigger.TTSelectRecoMC
+      KalSeedCollections  : [ "TTKSFDeM" ]
+      HelixSeedCollections  : ["TTHelixMergerDeM" ]
+    }
 
     TTKSFDeM : {
       @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
@@ -77,31 +96,69 @@ physics :
       printSubrun : false
       printEvent  : true
     }
+    CHDS : {
+      @table::CHD
+      diagLevel : 2
+      digiDiag : true
+      ComboHitCollection : "TTmakeSH"
+      useFlagCollection : false
+    }
+    CHDP : {
+      @table::CHD
+      diagLevel : 2
+      digiDiag : true
+      ComboHitCollection : "TTmakePH"
+      useFlagCollection : false
+    }
   }
-  EndPath : [TAtpr, TAcpr]
 
   tprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTtimeClusterFinder, tprDeMHighPStopTargTCFilter, TThelixFinder,
     TTHelixMergerDeM, tprDeMHighPStopTargHSFilter,
-    TTKSFDeM, tprDeMHighPStopTargTSFilter]
+    TTKSFDeM, tprDeMHighPStopTargTSFilter, SelectRecoMCtpr]
   cprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,
     TTCalHelixMergerDeM, cprDeMHighPStopTargHSFilter,
-    TTCalSeedFitDem, cprDeMHighPStopTargTSFilter]
-
+    TTCalSeedFitDem, cprDeMHighPStopTargTSFilter, SelectRecoMCcpr]
+  #  EndPath : [TAtpr, TAcpr, CHDS, CHDP]
+  EndPath : [TAtpr, TAcpr]
+}
+outputs : {
+  Output : {
+    module_type : RootOutput
+    fileName    : "TTTA_test.art"
+    outputCommands : [ "keep *_*_*_*" ]
+    SelectEvents : [ "tprDeM_highP_stopTarg" ]
+  }
 }
 #include "Offline/gen/fcl/Trigger/OnSpillTrigMenu/OnSpillTrigMenu.fcl"
 physics.trigger_paths : [tprDeM_highP_stopTarg, cprDeM_highP_stopTarg ]
 physics.end_paths : [ EndPath ]
+
+# this next is currently needed to get correct hit-level MC truth matching.  It needs to be fixed at the
+# ComboHitCollection.  This setting works, but will slow down the trigger: don't use this script for timing studies
+physics.producers.TTmakeSH.FilterHits : false
+physics.producers.TTmakePH.TestFlag : true
+#physics.producers.TTmakePH.FilterHits : true
+physics.producers.TTmakePH.StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+physics.producers.TTmakePH.StrawHitMask          : ["Noisy"]
+
+physics.producers.TTKSFDeM.FitSettings.BkgANNSHUSettings : [
+  [ "Offline/Mu2eKinKal/data/TrainBkgTTtpr.dat",0.01,"Inactive", 1]
+]
+physics.producers.TTCalSeedFitDem.FitSettings.BkgANNSHUSettings : [
+  [ "Offline/Mu2eKinKal/data/TrainBkgTTcpr.dat",0.01,"Inactive", 1]
+]
 
 physics.analyzers.TAtpr.SelectEvents : [  tprDeM_highP_stopTarg  ]
 physics.analyzers.TAtpr.candidate.options : @local::AllOpt
 physics.analyzers.TAtpr.candidate.options.fillBestCrv : false
 physics.analyzers.TAtpr.diagLevel : 2
 physics.analyzers.TAtpr.FillCRV : false
-physics.analyzers.TAtpr.FillMCInfo : false
+physics.analyzers.TAtpr.FillMCInfo : true
+physics.analyzers.TAtpr.FillCaloMC : false
 physics.analyzers.TAtpr.RecoCountTag : ""
 physics.analyzers.TAtpr.FillTriggerInfo : true
 physics.analyzers.TAtpr.FillTrkQualInfo : false
@@ -112,13 +169,20 @@ physics.analyzers.TAtpr.candidate.input : "TTKSF"
 physics.analyzers.TAtpr.candidate.suffix : "DeM"
 physics.analyzers.TAtpr.candidate.options.fillHits : true
 physics.analyzers.TAtpr.supplements : []
+physics.analyzers.TAtpr.PrimaryParticleTag: "compressDigiMCs"
+physics.analyzers.TAtpr.SimParticleLabel: "compressDigiMCs"
+physics.analyzers.TAtpr.KalSeedMCAssns: "SelectRecoMCtpr"
+physics.analyzers.TAtpr.MCTrajectoryLabel: "compressDigiMCs"
+physics.analyzers.TAtpr.ExtraMCStepCollectionTags: [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
+physics.analyzers.TAtpr.InfoMCStructHelper.SimParticleCollectionTag: "compressDigiMCs"
 
 physics.analyzers.TAcpr.SelectEvents : [  cprDeM_highP_stopTarg  ]
 physics.analyzers.TAcpr.candidate.options : @local::AllOpt
 physics.analyzers.TAcpr.candidate.options.fillBestCrv : false
 physics.analyzers.TAcpr.diagLevel : 2
 physics.analyzers.TAcpr.FillCRV : false
-physics.analyzers.TAcpr.FillMCInfo : false
+physics.analyzers.TAcpr.FillMCInfo : true
+physics.analyzers.TAcpr.FillCaloMC : false
 physics.analyzers.TAcpr.RecoCountTag : ""
 physics.analyzers.TAcpr.FillTriggerInfo : true
 physics.analyzers.TAcpr.FillTrkQualInfo : false
@@ -129,6 +193,12 @@ physics.analyzers.TAcpr.candidate.input : "TTCalSeedFit"
 physics.analyzers.TAcpr.candidate.suffix : "Dem"
 physics.analyzers.TAcpr.candidate.options.fillHits : true
 physics.analyzers.TAcpr.supplements : []
+physics.analyzers.TAcpr.PrimaryParticleTag: "compressDigiMCs"
+physics.analyzers.TAcpr.SimParticleLabel: "compressDigiMCs"
+physics.analyzers.TAcpr.KalSeedMCAssns: "SelectRecoMCcpr"
+physics.analyzers.TAcpr.MCTrajectoryLabel: "compressDigiMCs"
+physics.analyzers.TAcpr.ExtraMCStepCollectionTags: [ "compressDigiMCs:protonabsorber", "compressDigiMCs:stoppingtarget" ]
+physics.analyzers.TAcpr.InfoMCStructHelper.SimParticleCollectionTag: "compressDigiMCs"
 
 services.TimeTracker.printSummary: true
 services.TFileService.fileName: "nts.owner.TTKKSeed.version.sequence.root"

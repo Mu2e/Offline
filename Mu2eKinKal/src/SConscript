@@ -9,8 +9,6 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-extrarootlibs = [ ]
-
 rootlibs = env['ROOTLIBS']
 
 helper = mu2e_helper(env)
@@ -51,6 +49,7 @@ mainlib = helper.make_mainlib([
   'KinKal_MatEnv',
   'KinKal_General',
   rootlibs,
+  'ROOTTMVASofie',
   'CLHEP',
   'boost_system',
   'xerces-c'
@@ -98,7 +97,6 @@ helper.make_plugins([mainlib,
   'KinKal_MatEnv',
   'KinKal_General',
   rootlibs,
-  extrarootlibs,
   'ROOTTMVASofie',
   'xerces-c',
   'boost_filesystem',
