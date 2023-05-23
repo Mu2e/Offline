@@ -34,7 +34,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalSourceEnergyCalib";
 
-    CalSourceEnergyCalib():DbTable(cxname,"cal.sourcecalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
+    CalSourceEnergyCalib():DbTable(cxname,"cal.sourceenergycalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int roid) const { 
