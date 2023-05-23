@@ -29,9 +29,9 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // artdaq-core-mu2e includes
-#include "artdaq-core-mu2e/Overlays/CRVFragment.hh"
-#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
-#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/CRVFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
 
 // pci_linux_kernel_module includes
 #include "dtcInterfaceLib/DTC_Packets.h"
