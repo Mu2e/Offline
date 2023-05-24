@@ -1,0 +1,50 @@
+//
+// config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
+//
+// Original author K. Genser based on the "standard particle Gun"
+// added ParticleGun process
+
+// enable process
+bool particleGun.do = true;
+
+// Limits on cos(polar angle):
+double particleGun.czmin =  1.0;
+double particleGun.czmax =  1.0;
+
+// Limits on phi angle:
+double particleGun.phimin = 0.0;
+double particleGun.phimax = 0.0;
+
+// Time limits in ns, relative to protons on target.
+double particleGun.tmin  =  0.0;
+double particleGun.tmax  =  0.0;
+
+// position
+vector<double> particleGun.point = {0., 0., -0.5};
+
+vector<double> particleGun.halfLength = { 0., 0., 0. };
+
+// Limits on momentum: (MeV)
+double particleGun.pmin = 40.;
+double particleGun.pmax = 40.;
+
+// Particle Id, see e.g. GlobalConstantsService/data/mass_width_2008.mc
+// pi  211
+// p  2212
+// mu   13
+
+int particleGun.id = 13;
+
+// Mean particle number
+double particleGun.mean =  -1; // -n exactly n
+
+// Control of histograms.
+bool particleGun.doHistograms = false;
+
+bool particleGun.verbose = false;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
