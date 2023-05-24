@@ -1,25 +1,25 @@
-#ifndef CaloConditions_CalEnergyCalibCache_hh
-#define CaloConditions_CalEnergyCalibCache_hh
+#ifndef CaloConditions_CalCalibCache_hh
+#define CaloConditions_CalCalibCache_hh
 
 
 // This Proditions entitiy cache is for the combined calorimeter calibration output
 // author: S. Middleton 2022
 
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
-#include "Offline/CaloConditions/inc/CalEnergyCalibMaker.hh"
+#include "Offline/CaloConditions/inc/CalCalibMaker.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 
 namespace mu2e {
-  class CalEnergyCalibCache : public ProditionsCache {
+  class CalCalibCache : public ProditionsCache {
   public: 
-    CalEnergyCalibCache(CalEnergyCalibConfig const& config):
+    CalCalibCache(CalCalibConfig const& config):
       ProditionsCache(CalEnergyCalib::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
      if(_useDb) {
-        _calenergycalib_p = std::make_unique<DbHandle<CalEnergyCalibConstant>>();
+        _calenergycalib_p = std::make_unique<DbHandle<CalEnergyCalib>>();
       }
     }
     
@@ -52,8 +52,8 @@ namespace mu2e {
 
   private:
     bool _useDb;
-    CalEnergyCalibMaker _maker;
-    std::unique_ptr<DbHandle<CalEnergyCalibConstant>> _calenergycalib_p;
+    CalCalibMaker _maker;
+    std::unique_ptr<DbHandle<CalEnergyCalib>> _calenergycalib_p;
   };
 };
 

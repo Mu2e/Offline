@@ -1,4 +1,4 @@
-#include "Offline/CaloConditions/inc/CalEnergyCalibMaker.hh"
+#include "Offline/CaloConditions/inc/CalCalibMaker.hh"
 #include "Offline/DataProducts/inc/CaloId.hh"
 #include <vector>
 
@@ -8,7 +8,7 @@ Written by S. Middleton
 namespace mu2e {
   typedef std::shared_ptr<CalCalib> ptr_t;
 
-  ptr_t CalEnergyCalibMaker::fromFcl() {
+  ptr_t CalCalibMaker::fromFcl() {
   CalCalibPar nominal(_config.ADC2MeV(), _config.timeoffset(), _config.algName());
 
   size_t nChan = 1; //FIXME
@@ -19,7 +19,7 @@ namespace mu2e {
 
   } // end fromFcl
 
-  ptr_t CalEnergyCalibMaker::fromDb(CalEnergyCalib::cptr_t) {
+  ptr_t CalCalibMaker::fromDb(CalEnergyCalib::cptr_t) {
     // initially fill from fcl to get all the constants
 
     auto ptr = fromFcl();
