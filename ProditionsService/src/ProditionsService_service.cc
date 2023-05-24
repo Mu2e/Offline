@@ -12,7 +12,7 @@
 #include "Offline/ProditionsService/inc/ProditionsService.hh"
 
 #include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
-#include "Offline/CaloConditions/inc/CalEnergyCalibCache.hh"
+#include "Offline/CaloConditions/inc/CalCalibCache.hh"
 
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
 #include "Offline/STMConditions/inc/STMEnergyCalibCache.hh"
@@ -91,7 +91,7 @@ ProditionsService::ProditionsService(Parameters const& sTable,
       std::make_shared<mu2e::SimBookkeeperCache>(_config.simbookkeeper());
   _caches[bkc->name()] = bkc;
   auto cec = 
-      std::make_shared<mu2e::CalEnergyCalibCache>(_config.calEnergyCalib());
+      std::make_shared<mu2e::CalCalibCache>(_config.calCalib());
   _caches[cec->name()] = cec;
   if (_config.verbose() > 0) {
     cout << "Proditions built caches:" << endl;

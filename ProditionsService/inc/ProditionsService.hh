@@ -28,7 +28,7 @@
 
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
-#include "Offline/CaloConfig/inc/CalEnergyCalibConfig.hh"
+#include "Offline/CaloConfig/inc/CalCalibConfig.hh"
 
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
@@ -88,8 +88,8 @@ class ProditionsService {
         Name("trkQualCatalog"), Comment("Catalog of TrkQual trainings")};
     fhicl::Table<SimBookkeeperConfig> simbookkeeper{
         Name("simbookkeeper"), Comment("simulation bookkeeping")};
-    fhicl::Table<CalEnergyCalibConfig> calEnergyCalib{
-          Name("calEnergyCalib"),
+    fhicl::Table<CalCalibConfig> calCalib{
+          Name("calCalib"),
           Comment("calorimeter energy calib") };
           
   };

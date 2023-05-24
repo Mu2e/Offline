@@ -2,16 +2,25 @@
 #define DbTables_CalEnergyCalib_hh
 
 
+/*
+per SiPM calibration constants reco table -
+S Middleton 2023
+
+*/
+
 #include <string>
 #include <iomanip>
 #include <sstream>
 #include <map>
+#include "cetlib_except/exception.h"
 #include "Offline/DbTables/inc/DbTable.hh"
 
 namespace mu2e {
 
   class CalEnergyCalib : public DbTable {
   public:
+  typedef std::shared_ptr<CalEnergyCalib> ptr_t;
+  typedef std::shared_ptr<const CalEnergyCalib> cptr_t;
 
     class Row {
     public:
