@@ -10,47 +10,36 @@
 #include <array>
 #include "Offline/CalorimeterGeom/inc/Crystal.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
-#include "Offline/DataProducts/inc/CaloId.hh"
+#include "Offline/DbTables/inc/CalEnergyCalib.hh"
 
 namespace mu2e {
 
   class CalEnergyCalibConstant : public ProditionsEntity {
     public:
     
-      struct CalEnergyCorr { //the info here forms the basis of energy fix for each unique calo id
-        double _scale;
-        double _offset;
-        CalEnergyCorr();
-        CalEnergyCorr(double scale, double offset) : _scale(scale), _offset(offset) {};
-      };
       
       typedef std::shared_ptr<CalEnergyCalibConstant> ptr_t;
       typedef std::shared_ptr<const CalEnergyCalibConstant> cptr_t;
       constexpr static const char* cxname = {"CalEnergyCalibConstant"};
       
-      // TODO some construction:
       explicit CalEnergyCalibConstant(uint16_t roid) : ProditionsEntity(cxname), _roid(roid){};
       
       virtual ~CalEnergyCalibConstant(){};
 
-      // TODO here there will be accessors and functions
       uint16_t roid(){ return _roid; }
-      std::string algName() { return _algName; }
+      float ADC2MeV() { return _ADC2MeV; }
+      int algName() { return _algName; }
+
+      float  GetCalibConstant(uint16_t roid) const {
+         // TODO - needs to look up by ID
+        return 1.0;
+      };
       
-      // TODO add more functionality as required
-      /*const CalEnergyCorr&  calibrateEnergy(CaloId& id) const { 
-        // TODO - needs to look up the id
-        CalEnergyCorr corr; 
-        return corr;
-      };   
-      double getPed(CaloId& id){
-        // TODO - needs to look up the id
-        return 0.0; 
-      };*/
       
     void print(std::ostream& os) const {
       os << "CalEnergyCalibConstant parameters: "  << std::endl;
       os << "  readout ID = " << _roid << " " << std::endl;
+      os << "  ADC2MeV = " << _ADC2MeV << " " << std::endl;
       os << "  algorithm used = " << _algName << " " << std::endl;
     }
 
@@ -61,7 +50,8 @@ namespace mu2e {
   private:
 
       uint16_t _roid;
-      std::string _algName;
+      float _ADC2MeV;
+      int _algName;
       
   };
 }
