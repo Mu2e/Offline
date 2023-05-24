@@ -4,21 +4,27 @@
 
 /*
 Written by S. Middleton
-FIXME - placeholder
 */
 namespace mu2e {
-  typedef std::shared_ptr<CalEnergyCalibConstant> ptr_t;
+  typedef std::shared_ptr<CalCalib> ptr_t;
 
   ptr_t CalEnergyCalibMaker::fromFcl() {
-    auto ptr = std::make_shared<CalEnergyCalibConstant>(_config.roid());
-    return ptr;
+  CalCalibPar nominal(_config.ADC2MeV(), _config.timeoffset(), _config.algName());
+
+  size_t nChan = 1; //FIXME
+
+  CalCalib::CalibVec cvec(nChan, nominal);
+  auto ptr = std::make_shared<CalCalib>(cvec);
+  return ptr;
 
   } // end fromFcl
 
-  ptr_t CalEnergyCalibMaker::fromDb(CalEnergyCalibConstant::cptr_t) {
+  ptr_t CalEnergyCalibMaker::fromDb(CalEnergyCalib::cptr_t) {
     // initially fill from fcl to get all the constants
+
     auto ptr = fromFcl();
     return ptr;
+
   } // end fromDb
 
 }
