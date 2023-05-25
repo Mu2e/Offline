@@ -98,24 +98,9 @@ TNTClusterer : {
   ComboInit        : true
   TestFlag         : true
   BackgroundMask   : []
-  SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
+  SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
 }
 
-#FilterAlgo: 1 for next neighbor version, 2 for clustering version
-ScanClusterer: {
-  Pbin             : 0.08
-  Tbin             : 20
-  Rbin             : 50
-  Rmin             : 350
-  Rmax             : 650
-  MinPeakHit       : 3
-  MinSeedHit       : 2
-  MinRadHit        : 50
-  FilterAlgo       : 1
-  TestFlag         : true
-  BackgroundMask   : []
-  SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
-}
 
 # Now configure the module
 FlagBkgHits : {
@@ -123,8 +108,7 @@ FlagBkgHits : {
   ComboHitCollection   : "makePH"
   StrawHitCollection   : "makeSH"
   ClusterAlgorithm     : 1
-  TNTClustering        : { @table::TNTClusterer }
-  ScanClustering       : { @table::ScanClusterer }
+  TNTClustering        : {@table::TNTClusterer}
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10
