@@ -1,5 +1,5 @@
 # prefer to build with this environment
-ENVSET p040
+ENVSET p041
 # add these to python path
 PYTHONPATH Trigger/python
 # add Offline/bin to path
