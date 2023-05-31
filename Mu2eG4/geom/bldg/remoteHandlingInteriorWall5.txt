@@ -1,0 +1,40 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+
+
+string building.remote.handling.Interior.Wall.5.name     = "remoteHandlingInteriorWall5";
+
+string building.remote.handling.Interior.Wall.5.material = "CONCRETE_MARS";
+
+double building.remote.handling.Interior.Wall.5.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.Interior.Wall.5.offsetFromFloorSurface.y = 2209.8;
+double building.remote.handling.Interior.Wall.5.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.Interior.Wall.5.yHalfThickness           = 2209.8;
+
+vector<double> building.remote.handling.Interior.Wall.5.xPositions = {
+  -3785,   // P3'
+  1468.12,   // P3
+  3251.2,   // P4
+  3251.2,   // P5
+  3708.4,   // P6
+  3708.4,   // P7
+  1544.32,   // P8
+  -4039   // P4'
+};
+
+vector<double> building.remote.handling.Interior.Wall.5.yPositions = {
+  6858,   // P3'
+  6858,   // P3
+  7289.8,   // P4
+  8674.1,   // P5
+  8674.1,   // P6
+  6771.64,   // P7
+  6248.4,   // P8
+  6248.4   // P4'
+};
+
+
+// Local Variables:
+// mode:c++
+// End:
