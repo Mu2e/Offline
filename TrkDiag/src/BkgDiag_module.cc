@@ -107,6 +107,7 @@ namespace mu2e
       float _zgap;
       int _np;
       float _npfrac;
+      float _kQ;
 
       // MC truth variables
       int _ppid, _ppdg, _pgen, _pproc, _ncontrib, _icontrib[512];
@@ -177,6 +178,7 @@ namespace mu2e
     _bcdiag->Branch("np",&_np,"np/I");
     _bcdiag->Branch("npfrac",&_npfrac,"npfrac/F");
     _bcdiag->Branch("nhits",&_nhits,"nhits/I");
+    _bcdiag->Branch("kQ",&_kQ,"kQ/F");
     // mc truth branches
     if(_mcdiag){
       _bcdiag->Branch("pmom",&_pmom,"pmom/F");
@@ -238,6 +240,7 @@ namespace mu2e
     for (size_t ibkg=0;ibkg<_bkgccol->size();++ibkg){
       BkgCluster const& cluster = _bkgccol->at(ibkg);
       // fill cluster info
+      _kQ = cluster.getKerasQ();
       _crho = sqrtf(cluster.pos().perp2());
       _cpos = cluster.pos();
       _ctime = cluster.time();
