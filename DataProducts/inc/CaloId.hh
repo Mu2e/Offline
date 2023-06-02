@@ -1,13 +1,11 @@
 #ifndef DataProducts_CaloId_hh
 #define DataProducts_CaloId_hh
 //
-// Identifier of one straw in a tracker.
-// Original author Rob Kutschke
-// Re-implemented as integer bitfields by Dave Brown (LBNL)
+// Offline identifier of one calorimeter SiPM channel
+// Online numbering is in CaloRawId
 //
-#include <iosfwd>
-#include <string>
-#include <math.h>
+#include <array>
+#include <algorithm>
 
 namespace mu2e {
 
@@ -15,19 +13,42 @@ namespace mu2e {
 
     // define the bit field shifts and masks
   public:
-    constexpr static uint16_t _nDIRAC          = 136;
-    constexpr static uint16_t _nChPerDIRAC     = 20;
     constexpr static uint16_t _nCrystalPerDisk = 674;
     constexpr static uint16_t _nSiPMPerCrystal = 2;
     constexpr static uint16_t _nDisk           = 2;
-    constexpr static uint16_t _nCrystalCAPHRI  = 4;
+    // PIN diodes are each one SiPM channel
     constexpr static uint16_t _nPINDiodPerDisk = 8;
-    constexpr static uint16_t _nTotChannel     = _nChPerDIRAC*_nDIRAC;
-    constexpr static uint16_t _nCrystalChannel = _nCrystalPerDisk*_nSiPMPerCrystal; //total number of readout channels associated to the CsI and CAPHRI crystals
+    constexpr static uint16_t _nCrystal        = _nCrystalPerDisk*_nDisk;
+    constexpr static uint16_t _nCrystalChannel = _nCrystalPerDisk*_nSiPMPerCrystal;
+    constexpr static uint16_t _nCaphriCrystal  = 4;
+    // crystal numbers, not SiPM channels. Only in disk 0.
+    constexpr static std::array<uint16_t,_nCaphriCrystal> _caphriId = {582,609,610,637};
+    constexpr static uint16_t _nChannel        = _nCrystalChannel + _nPINDiodPerDisk*_nDisk;
 
-    CaloId(){}
+    explicit CaloId(uint16_t id) { _id = id; }
 
+    uint16_t channel() { return _id; }
+    uint16_t SiPM() { return _id%2; }
+    uint16_t crystal() { return _id/2; }
+    uint16_t disk() {
+      if(crystal()<_nCrystalPerDisk ||
+         (_id >= _nCrystalChannel && _id < _nCrystalChannel+_nPINDiodPerDisk) ) {
+        return 0;
+      } else {
+        return 1;
+      }
+    }
+
+    bool isValid() { return _id < _nChannel; }
+    bool isCrystal() { return _id < _nCrystal; }
+    bool isCaphri() {
+      if(std::find(_caphriId.begin(),_caphriId.end(),crystal())==_caphriId.end()) return false;
+      return true;
+    }
+    bool isPINDiode() { return _id >= _nCrystal; }
+
+    uint16_t _id;
   };
 
-}
+};
 #endif /* DataProducts_CaloId_hh */
