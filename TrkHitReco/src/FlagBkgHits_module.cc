@@ -304,6 +304,7 @@ namespace mu2e
       kerasvars[10] = std::sqrt(sqrSumDeltaTime/nhits);
 
       auto kerasout = sofiePtr->infer(kerasvars.data());
+      cluster.setKerasQ(kerasout[0]);
 
       StrawHitFlag flag(StrawHitFlag::bkgclust);
       if (kerasout[0] > kerasQ_)
