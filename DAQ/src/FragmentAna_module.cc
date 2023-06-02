@@ -133,31 +133,24 @@ void FragmentAna::analyze(const art::Event& event) {
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
   size_t numCalFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
-      event.getMany<std::vector<artdaq::Fragment>>();
 
-  for (const auto& handle : fragmentHandles) {
-    if (!handle.isValid() || handle->empty()) {
-      continue;
+  auto caloFragmentsH = event.getValidHandle<std::vector<mu2e::CalorimeterFragment>>(caloFragmentsTag_);
+  auto trkFragmentsH  = event.getValidHandle<std::vector<mu2e::TrackerFragment>>    (trkFragmentsTag_);
+
+  for (auto frag : *trkFragmentsH) {
+    analyze_tracker_(frag);
+    for(size_t i=0;i<frag.block_count();++i){
+      totalSize += frag.blockSizeBytes(i);
     }
+    numTrkFrags++;
+  }
 
-    if (handle->front().type() == mu2e::detail::FragmentType::TRK && parseTRK_) {
-      for (auto frag : *handle) {
-        mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-        analyze_tracker_(cc);
-
-        totalSize += frag.dataSizeBytes();
-        numTrkFrags++;
-      }
-    } else if (handle->front().type() == mu2e::detail::FragmentType::CAL && parseCAL_) {
-      for (auto frag : *handle) {
-        mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-        analyze_calorimeter_(cc);
-
-        totalSize += frag.dataSizeBytes();
-        numCalFrags++;
-      }
+  for (auto frag : *caloFragmentsH) {
+    analyze_calorimeter_(frag);
+    for(size_t i=0;i<frag.block_count();++i){
+      totalSize += frag.blockSizeBytes(i);
     }
+    numCalFrags++;
   }
 
   if (parseTRK_) {

@@ -75,7 +75,7 @@ void CrvDigisFromFragments::produce(Event& event) {
 
   art::EventNumber_t eventNumber = event.event();
 
-  auto crvFragments = event.getValidHandle<artdaq::Fragments>(crvFragmentsTag_);
+  auto crvFragments = event.getValidHandle<std::vector<mu2e::CRVFragment> >(crvFragmentsTag_);
   size_t numCrvFrags = crvFragments->size();
 
   if (diagLevel_ > 1) {
@@ -84,9 +84,11 @@ void CrvDigisFromFragments::produce(Event& event) {
     std::cout << crvFragments->size() << " CRV fragments." << std::endl;
 
     size_t totalSize = 0;
-    for (size_t idx = 0; idx < crvFragments->size(); ++idx) {
-      auto size = ((*crvFragments)[idx]).size() * sizeof(artdaq::RawDataType);
-      totalSize += size;
+    for (auto frag : *crvFragments) {
+      for (size_t i=0; i<frag.block_count(); ++i){
+      	auto size = frag.blockSizeBytes(i);//((*crvFragments)[idx]) * sizeof(artdaq::RawDataType);
+	totalSize += size;
+      }
       //      std::cout << "\tCRV Fragment " << idx << " has size " << size << std::endl;
     }
 
@@ -106,7 +108,7 @@ void CrvDigisFromFragments::produce(Event& event) {
       std::cout << std::endl;
       std::cout << "ArtFragmentReader: ";
       std::cout << "\tBlock Count: " << std::dec << cc.block_count() << std::endl;
-      std::cout << "\tByte Count: " << fragment.dataSizeBytes() << std::endl;
+      //std::cout << "\tByte Count: " << fragment.dataSizeBytes() << std::endl;
       std::cout << std::endl;
       std::cout << "\t"
                 << "====== Example Block Sizes ======" << std::endl;

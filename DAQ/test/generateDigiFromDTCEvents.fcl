@@ -10,7 +10,7 @@
 
 #include "Offline/CaloCluster/fcl/prolog_trigger.fcl"
 
-process_name : FragmentToDigi
+process_name : DTCEventsToFrags
 
 source : {
    module_type : RootInput
@@ -41,10 +41,26 @@ physics : {
           trkFragmentTag         : "daq:trk"
       }
 
+       genFrags : {
+	   module_type : ArtFragmentsFromDTCEvents
+	   diagLevel   : 10
+	   makeCaloFrag : 1
+	   makeTrkFrag  : 1
+	   makeCRVFrag  : 0
+	   makeSTMFrag  : 0
+
+       }
+       
       makeSD:
       {
          @table::DAQ.producers.makeSD
       }
+
+       makeSH:
+       {
+	   @table::DAQ.producers.makeSH
+	   TrackerFragmentTag : ""
+       }
 
        CaloDigiMaker:
        {
@@ -60,14 +76,17 @@ physics : {
            @table::CaloClusterTrigger.producers.CaloClusterFast
        }
 
-       EWMProducer : { module_type : EventWindowMarkerProducer }	
+       EWMProducer : { module_type : EventWindowMarkerProducer
+	   SpillType : 0
+       }	
+
    }
 
    analyzers  : {
       readFragments : {
          module_type : FragmentAna
          diagLevel   : 0
-         parseCAL    : 1
+         parseCAL    : 0
          parseTRK    : 1
          caloTag     : "daq:calo"
          trkTag      : "daq:trk"
@@ -76,29 +95,33 @@ physics : {
 
    #  t1 : [ makeSD ]
    #   t1 : [ fetchData, makeSD , CaloDigiMaker, CaloHitMaker, CaloClusterFast]
-   t1 : [ EWMProducer, makeSD , CaloHitMaker, CaloClusterFast]
+   t1 : [ genFrags ] #,  makeSD , CaloHitMaker ] #, CaloClusterFast]
    #e1 : [ outfile, readFragments]
-   e1 : []
+   #e1 : [outfile]
+e1 : [dump, outfile]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
-   #  end_paths      : []
+#     end_paths      : []
 
 }
 
 outputs:  {
    outfile :  {
       module_type   :   RootOutput
-      fileName      :   "digis_from_frags_debug.art"
+      fileName      :   "digis_from_dtcevts_debug.art"
 
       outputCommands: [
          "drop *_*_*_*",
          "keep *_*_*_*"
       ]
    }
+    dump: { module_type: FileDumperOutput
+wantProductFriendlyClassName: true
+	onlyIfPresent: true }
 }
 
-services.TFileService.fileName : "generateDigiFromFragment_test.root"
+services.TFileService.fileName : "generateDigiFromDTCEvts_test.root"
 services.TimeTracker : {
     dbOutput : {
         filename : "timing.csv"

@@ -147,19 +147,10 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event) {
   //_tfTag = art::InputTag("test");
 
   size_t numTrkFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
-      event.getMany<std::vector<artdaq::Fragment>>();
+  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::TrackerFragment> >(_tfTag);
 
-  for (const auto& handle : fragmentHandles) {
-    if (!handle.isValid() || handle->empty()) {
-      continue;
-    }
-
-    if (handle->front().type() == mu2e::detail::FragmentType::TRK) {
-      for (auto frag : *handle) {
-        numTrkFrags++;
-      }
-    }
+  for (auto frag : *fragmentHandle) {
+    numTrkFrags++;
   }
 
   const mu2e::CaloClusterCollection* caloClusters(0);
@@ -194,18 +185,8 @@ void art::StrawHitRecoFromFragments::produce(art::Event& event) {
   }
   chCol->reserve(numTrkFrags);
 
-  for (const auto& handle : fragmentHandles) {
-    if (!handle.isValid() || handle->empty()) {
-      continue;
-    }
-
-    if (handle->front().type() == mu2e::detail::FragmentType::TRK) {
-      for (auto frag : *handle) {
-        mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-
-        analyze_tracker_(cc, shCol, chCol, pbtOffset, trackerStatus, srep, caloClusters, tt);
-      }
-    }
+  for (auto frag : *fragmentHandle) {
+    analyze_tracker_(frag, shCol, chCol, pbtOffset, trackerStatus, srep, caloClusters, tt);
   }
 
   if (_writesh)

@@ -97,24 +97,16 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
-      event.getMany<std::vector<artdaq::Fragment>>();
-
-  for (const auto& handle : fragmentHandles) {
-    if (!handle.isValid() || handle->empty()) {
-      continue;
+  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::TrackerFragment> >(trkFragmentsTag_);
+  
+  for (auto frag : *fragmentHandle) {
+    analyze_tracker_(frag, straw_digis, straw_digi_adcs);
+    for(size_t i=0;i<frag.block_count();++i){
+      totalSize += frag.blockSizeBytes(i);
     }
-
-    if (handle->front().type() == mu2e::detail::FragmentType::TRK) {
-      for (auto frag : *handle) {
-        mu2e::TrackerFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-        analyze_tracker_(cc, straw_digis, straw_digi_adcs);
-
-        totalSize += frag.dataSizeBytes();
-        numTrkFrags++;
-      }
-    }
+    numTrkFrags++;
   }
+
 
   if (numTrkFrags == 0) {
     std::cout << "[StrawRecoFromFragmnets::produce] found no Tracker fragments!" << std::endl;

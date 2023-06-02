@@ -13,7 +13,7 @@
 #include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
 #include "artdaq-core-mu2e/Data/CRVFragment.hh"
 #include "artdaq-core-mu2e/Data/TrackerFragment.hh"
-#include "artdaq-core-mu2e/Data/DTCEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include <artdaq-core/Data/ContainerFragment.hh>
@@ -72,9 +72,9 @@ art::ArtFragmentsFromDTCEvents::ArtFragmentsFromDTCEvents(const art::EDProducer:
   makeCRVFrag_(config().makeCRVFrag()),
   makeSTMFrag_(config().makeSTMFrag()){
     
-    if (config().makeCaloFrag() > 0) { produces<mu2e::CalorimeterFragment>();}
-    if (config().makeTrkFrag()  > 0) { produces<mu2e::TrackerFragment>();}
-    if (config().makeCRVFrag()  > 0) { produces<mu2e::CRVFragment>();}
+    if (config().makeCaloFrag() > 0) { produces<std::vector<mu2e::CalorimeterFragment> >();}
+    if (config().makeTrkFrag()  > 0) { produces<std::vector<mu2e::TrackerFragment> >();}
+    if (config().makeCRVFrag()  > 0) { produces<std::vector<mu2e::CRVFragment> >();}
     //if (config().makeSTMFrag() > 0) { produces<std::vector<mu2e::STMFragment>>();}
 }
 
@@ -85,9 +85,9 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
   // Collection of CaloHits for the event
-  std::unique_ptr<mu2e::CalorimeterFragment> caloFragColl(new mu2e::CalorimeterFragment);
-  std::unique_ptr<mu2e::TrackerFragment>     trkFragColl (new mu2e::TrackerFragment);
-  std::unique_ptr<mu2e::CRVFragment>         crvFragColl (new mu2e::CRVFragment);
+  std::unique_ptr<std::vector<mu2e::CalorimeterFragment> >caloFragColl(new std::vector<mu2e::CalorimeterFragment>);
+  std::unique_ptr<std::vector<mu2e::TrackerFragment> >    trkFragColl (new std::vector<mu2e::TrackerFragment>);
+  std::unique_ptr<std::vector<mu2e::CRVFragment> >        crvFragColl (new std::vector<mu2e::CRVFragment>);
 
   //std::unique_ptr<std::vector<mu2e::STMFragment>>         stm_frags(new std::vector<mu2e::STMFragment>);
   //if (makeSTMFrag_ > 0) { 
@@ -144,27 +144,27 @@ void art::ArtFragmentsFromDTCEvents::produce(Event& event) {
     mu2e::DTCEventFragment bb(frag);
       
     if (makeTrkFrag_ > 0) {// TRACKER
-      auto trkBlocks = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);
-      for(auto& block : trkBlocks) {
-	mu2e::TrackerFragment tf(block.blockPointer, block.byteSize);
+      auto trkSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);
+      for (auto const& subevent : trkSEvents) {
+	mu2e::TrackerFragment tf(subevent);
 	trkFragColl->emplace_back(tf);
 	++nFrags;
       }
     }
       
     if (makeCaloFrag_ > 0) { // CALORIMETER
-      auto caloBlocks = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
-      for(auto& block : caloBlocks) {
-	mu2e::CalorimeterFragment cf(block.blockPointer, block.byteSize);
+      auto caloSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
+      for (auto& subevent : caloSEvents) {
+	mu2e::CalorimeterFragment cf(subevent);
 	caloFragColl->emplace_back(cf);
 	++nFrags;
       }
     }
       
     if (makeCRVFrag_ > 0) {// CRV
-      auto crvBlocks = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_CRV);
-      for(auto& block : crvBlocks) {
-	mu2e::CRVFragment cf(block.blockPointer, block.byteSize);
+      auto crvSEvents = bb.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_CRV);
+      for (auto& subevent : crvSEvents) {
+	mu2e::CRVFragment cf(subevent);
 	crvFragColl->emplace_back(cf);
 	++nFrags;
       }
