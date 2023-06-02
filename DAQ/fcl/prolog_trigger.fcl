@@ -51,7 +51,7 @@ DAQ : {
          module_type: StrawRecoFromFragments
          diagLevel : 0
          useTrkADC : 0
-         trkTag    : "" #"daq:trk"
+         trkTag    : "genFrags:" #"daq:trk"
       }
 
       CaloDigiMaker:

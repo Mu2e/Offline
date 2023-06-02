@@ -196,30 +196,16 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   size_t totalSize(0), numCalFrags(0);
   unsigned short evtEnergy(0);
 
-  std::vector<art::Handle<artdaq::Fragments>> fragmentHandles =
-      event.getMany<std::vector<artdaq::Fragment>>();
+  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::CalorimeterFragment> > (caloFragmentsTag_);
 
-  for (const auto& handle : fragmentHandles) {
-    if (!handle.isValid() || handle->empty()) {
-      continue;
+  for (auto frag : *fragmentHandle) {
+    analyze_calorimeter_(frag, calo_hits, caphri_hits, evtEnergy);
+    for(size_t i=0;i<frag.block_count();++i){
+      totalSize += frag.blockSizeBytes(i);
     }
-
-    if (diagLevel_ > 1) {
-      std::cout << "[CaloHitsFromFragments::produce] Fragment type of first Fragment in handle: "
-                << static_cast<int>(handle->front().type()) << std::endl;
-    }
-
-    if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
-      for (auto frag : *handle) {
-        mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-        analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
-
-        totalSize += frag.dataSizeBytes();
-        numCalFrags++;
-      }
-    }
+    numCalFrags++;
   }
-
+    
   if (numCalFrags == 0) {
     std::cout << "[CaloHitsFromFragments::produce] found no Calorimeter fragments!" << std::endl;
   }
