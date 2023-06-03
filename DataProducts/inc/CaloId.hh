@@ -28,23 +28,12 @@ namespace mu2e {
     explicit CaloId(uint16_t id) { _id = id; }
 
     uint16_t channel() { return _id; }
-    uint16_t SiPM() { return _id%2; }
-    uint16_t crystal() { return _id/2; }
-    uint16_t disk() {
-      if(crystal()<_nCrystalPerDisk ||
-         (_id >= _nCrystalChannel && _id < _nCrystalChannel+_nPINDiodPerDisk) ) {
-        return 0;
-      } else {
-        return 1;
-      }
-    }
-
+    uint16_t SiPM01() { return _id%_nSiPMPerCrystal; }
+    uint16_t crystal() { return _id/_nSiPMPerCrystal; }
+    uint16_t disk();
     bool isValid() { return _id < _nChannel; }
     bool isCrystal() { return _id < _nCrystal; }
-    bool isCaphri() {
-      if(std::find(_caphriId.begin(),_caphriId.end(),crystal())==_caphriId.end()) return false;
-      return true;
-    }
+    bool isCaphri();
     bool isPINDiode() { return _id >= _nCrystal; }
 
     uint16_t _id;

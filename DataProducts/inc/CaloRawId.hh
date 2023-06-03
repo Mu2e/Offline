@@ -21,8 +21,8 @@ namespace mu2e {
     explicit CaloRawId(uint16_t id) { _id = id; }
 
     uint16_t channel() { return _id; }
-    uint16_t dirac() { return _id/20; }
-    uint16_t ROCchannel() { return _id%20; }
+    uint16_t dirac() { return _id/_nChPerDIRAC; }
+    uint16_t ROCchannel() { return _id%_nChPerDIRAC; }
 
     bool isValid() { return _id < _nChannel; }
 
