@@ -17,14 +17,12 @@
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
 
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
-#include "Offline/TrkHitReco/inc/ScanClusterer.hh"
 #include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"
 
 #include <string>
 #include <vector>
 
-
-//NEW CLASS
+//Inference class
 namespace TMVA_SOFIE_TrainBkgDiag {
   class Session;
 }
@@ -54,12 +52,11 @@ namespace mu2e
         fhicl::Atom<bool>                     saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters") };
         fhicl::Atom<int>                      debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
         fhicl::Table<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
-        fhicl::Table<ScanClusterer::Config>   ScanClustering{       Name("ScanClustering"),       Comment("Scan Clusterer config") };
         fhicl::Atom<std::string>              kerasWeights{         Name("KerasWeights"),         Comment("Weights for keras model") };
         fhicl::Atom<float>                    kerasQuality{         Name("KerasQuality"),         Comment("Keras quality cut") };
       };
 
-      enum clusterer {TwoNiveauThreshold=1, ComptonKiller=2};
+      enum clusterer {TwoNiveauThreshold=1};
       explicit FlagBkgHits(const art::EDProducer::Table<Config>& config);
       void beginJob() override;
       void produce(art::Event& event) override;
@@ -80,8 +77,7 @@ namespace mu2e
       int                                         iev_;
       std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr;
 
-      void classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol,
-          StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
+      void classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
       void countHits(      const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const;
       void countPlanes(    const BkgCluster& cluster, std::array<float,11>& kerasvars, const ComboHitCollection& chcol) const;
       int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
@@ -129,9 +125,6 @@ namespace mu2e
         case TwoNiveauThreshold:
           clusterer_ = new TNTClusterer(config().TNTClustering());
           break;
-        case ComptonKiller:
-          clusterer_ = new ScanClusterer(config().ScanClustering());
-          break;
         default:
           throw cet::exception("RECO")<< "Unknown clusterer" << ctype << std::endl;
       }
@@ -155,27 +148,23 @@ namespace mu2e
 
     // the primary output is either a deep copy of selected inputs or a flag collection on those
     // intermediate results: keep these on the heap unless requested for diagnostics later
-    BkgClusterCollection bkgccol,bkgccolFast;
+    BkgClusterCollection bkgccol;
     BkgClusterHitCollection bkghitcol;
     bkgccol.reserve(nch/2);
     if (savebkg_) bkghitcol.reserve(nch);
 
 
     // find clusters, sort is needed for recovery algorithm. bkgccolFast has hits that are autmoatically marked as bkg.
-    clusterer_->findClusters(bkgccolFast,bkgccol,chcol, iev_);
+    clusterer_->findClusters(bkgccol,chcol, iev_);
     sort(bkgccol.begin(),bkgccol.end(),[](const BkgCluster& c1,const BkgCluster& c2) {return c1.time() < c2.time();});
-
 
     // classify clusters
     StrawHitFlagCollection chfcol(nch);
-    //classifyCluster(bkgccolFast, bkgccol, bkgqcol, chfcol,chcol);
-    classifyCluster(bkgccolFast, bkgccol, chfcol, chcol);
+    classifyCluster(bkgccol, chfcol, chcol);
 
     //produce BkgClusterHit info collection
-    if (savebkg_)
-    {
-      for (size_t ich=0;ich < chcol.size(); ++ich)
-      {
+    if (savebkg_) {
+      for (size_t ich=0;ich < chcol.size(); ++ich) {
         const ComboHit& ch = chcol[ich];
         int icl = findClusterIdx(bkgccol,ich);
         if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch),ch.flag()));
@@ -184,17 +173,14 @@ namespace mu2e
     }
 
     //produce filtered ComboHit collection
-    if (filter_)
-    {
+    if (filter_) {
       auto chcolFilter = std::make_unique<ComboHitCollection>();
       chcolFilter->reserve(nch);
       // same parent as the original collection
       chcolFilter->setParent(chcol.parent());
-      for(size_t ich=0;ich < nch; ++ich)
-      {
+      for (size_t ich=0;ich < nch; ++ich) {
         StrawHitFlag const& flag = chfcol[ich];
-        if (!flag.hasAnyProperty(bkgmsk_))
-        {
+        if (!flag.hasAnyProperty(bkgmsk_)) {
           chcolFilter->push_back(chcol[ich]);
           chcolFilter->back()._flag.merge(flag);
         }
@@ -204,8 +190,7 @@ namespace mu2e
 
     //produce StrawHit flags
     // Note: fillStrawHitIndices is quite slow and should be improved
-    if (flagsh_)
-    {
+    if (flagsh_) {
       auto shH = event.getValidHandle(shtoken_);
       const StrawHitCollection* shcol  = shH.product();
 
@@ -213,8 +198,7 @@ namespace mu2e
       auto shfcol  = std::make_unique<StrawHitFlagCollection>(nsh);
       std::vector<std::vector<StrawHitIndex> > shids;
       chcol.fillStrawHitIndices(event,shids);
-      for (size_t ich = 0;ich < nch;++ich)
-      {
+      for (size_t ich = 0;ich < nch;++ich) {
         StrawHitFlag flag = chfcol[ich];
         flag.merge(chcol[ich].flag());
         for(auto ish : shids[ich]) (*shfcol)[ish] = flag;
@@ -224,15 +208,13 @@ namespace mu2e
     }
 
     //produce ComboHit flags
-    if (flagch_)
-    {
+    if (flagch_) {
       for(size_t ich=0;ich < nch; ++ich) chfcol[ich].merge(chcol[ich].flag());
       event.put(std::make_unique<StrawHitFlagCollection>(std::move(chfcol)),"ComboHits");
     }
 
     //produce background collection
-    if (savebkg_)
-    {
+    if (savebkg_) {
       event.put(std::make_unique<BkgClusterHitCollection>(bkghitcol));
       event.put(std::make_unique<BkgClusterCollection>(bkgccol));
     }
@@ -243,19 +225,10 @@ namespace mu2e
 
 
   //------------------------------------------------------------------------------------------
-  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccolFast, BkgClusterCollection& bkgccol,
-      StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
+  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
 
-    for (auto& cluster : bkgccolFast)
-    {
-      StrawHitFlag flag(StrawHitFlag::bkgclust);
-      flag.merge(StrawHitFlag::bkg);
-      for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
-    }
-
-    for (auto& cluster : bkgccol)
-    {
+    for (auto& cluster : bkgccol) {
 
       unsigned nactive, nstereo;
       countHits(cluster, nactive, nstereo,chcol);
@@ -266,8 +239,7 @@ namespace mu2e
       kerasvars[6] = nhits;
       countPlanes(cluster,kerasvars,chcol);
 
-      if (kerasvars[4] >= minnp_)
-      {
+      if (kerasvars[4] >= minnp_) {
         std::vector<float> hz;
         for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
 
@@ -290,8 +262,7 @@ namespace mu2e
       double sqrSumDeltaTime(0.);
       double sqrSumDeltaX(0.);
       double sqrSumDeltaY(0.);
-      for (const auto& chit : cluster.hits())
-      {
+      for (const auto& chit : cluster.hits()) {
         sumEdep +=  chcol[chit].energyDep()/chcol[chit].nStrawHits();
         sqrSumDeltaX += std::pow(chcol[chit].pos().x() - cluster.pos().x(),2);
         sqrSumDeltaY += std::pow(chcol[chit].pos().y() - cluster.pos().y(),2);
@@ -305,46 +276,40 @@ namespace mu2e
 
       auto kerasout = sofiePtr->infer(kerasvars.data());
       cluster.setKerasQ(kerasout[0]);
+      if(debug_>0)std::cout << "kerasout = " << kerasout[0] << std::endl;
 
       StrawHitFlag flag(StrawHitFlag::bkgclust);
-      if (kerasout[0] > kerasQ_)
-      {
-        flag.merge(StrawHitFlag::bkg);
-        if (savebkg_)
-        {
-          cluster._flag.merge(BkgClusterFlag::bkg);
-          if(nstereo > 0) cluster._flag.merge(BkgClusterFlag::stereo);
-        }
+      if (cluster.getKerasQ()> kerasQ_) {
+        StrawHitFlag flag(StrawHitFlag::bkg);
+        flag.merge(flag);
+        for (const auto& chit : cluster.hits()) chfcol[chit].merge(flag);
       }
-
-      for (const auto& chit : cluster.hits()) chfcol[chit] = flag;
+      if(nstereo > 0) cluster._flag.merge(BkgClusterFlag::stereo);
     }
   }
 
   //-------------------------------------------------------------------------------------------------------------
-  void FlagBkgHits::countPlanes(const BkgCluster& cluster, std::array<float,11> & kerasvars, const ComboHitCollection& chcol) const
+  void FlagBkgHits::countPlanes(const BkgCluster& cluster, std::array<float,11>& kerasvars, const ComboHitCollection& chcol) const
   {
     std::array<int,StrawId::_nplanes> hitplanes{0};
-    for (const auto& chit : cluster.hits())
-    {
+    for (const auto& chit : cluster.hits()) {
       const ComboHit& ch = chcol[chit];
       hitplanes[ch.strawId().plane()] += ch.nStrawHits();
     }
 
     unsigned ipmin(0),ipmax(StrawId::_nplanes-1);
-    while (hitplanes[ipmin]==0) ++ipmin;
-    while (hitplanes[ipmax]==0) --ipmax;
+    while (hitplanes[ipmin]==0 && ipmin<StrawId::_nplanes) ++ipmin;
+    while (hitplanes[ipmax]==0 and ipmax>0)                --ipmax;
 
     unsigned npexp(0),np(0),nphits(0);
-    for(unsigned ip = ipmin; ip <= ipmax; ++ip)
-    {
+    for (unsigned ip = ipmin; ip <= ipmax; ++ip) {
       npexp++; // should use TTracker to see if plane is physically present FIXME!
       if (hitplanes[ip]> 0)++np;
       nphits += hitplanes[ip];
     }
 
-    kerasvars[4] = np;// # of planes
-    kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);// fraction of planes
+    kerasvars[4] = np;
+    kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);
 
   }
 
@@ -353,8 +318,7 @@ namespace mu2e
   void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const
   {
     nactive = nstereo = 0;
-    for (const auto& chit : cluster.hits())
-    {
+    for (const auto& chit : cluster.hits()) {
       const ComboHit& ch = chcol[chit];
       nactive += ch.nStrawHits();
       if (ch.flag().hasAllProperties(stereo_)) nstereo += ch.nStrawHits();

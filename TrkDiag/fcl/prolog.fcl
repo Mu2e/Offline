@@ -10,6 +10,7 @@ BD : {
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   BkgClusterCollection:"FlagBkgHits"
   BkgClusterHitCollection:"FlagBkgHits"
+  MCPrimary : compressDigiMCs
   useFlagCollection : true
 }
 

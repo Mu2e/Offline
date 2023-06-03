@@ -17,12 +17,13 @@ namespace mu2e
        BkgCluster()                              : _pos(),    _time(0.0),  _hits(), _flag(BkgClusterFlag::update) , _kerasQ(0.) {_hits.reserve(16);}
        BkgCluster(XYZVectorF const& pos, float time) : _pos(pos), _time(time), _hits(), _flag(BkgClusterFlag::update) , _kerasQ(0.)  {_hits.reserve(16);}
 
-       BkgClusterFlag const&        flag() const {return _flag; }
-       XYZVectorF const&            pos()  const {return _pos;  }
-       float                        time() const {return _time; }
-       std::vector<unsigned> const& hits() const {return _hits; }
-       std::vector<unsigned>&       hits()       {return _hits; }
+
        float                        getKerasQ() const {return _kerasQ; }
+       auto const&        flag() const {return _flag; }
+       auto const&                pos()  const {return _pos;  }
+       auto const& time() const {return _time; }
+       auto const& hits() const {return _hits; }
+       auto &       hits()       {return _hits; }
 
        void pos(XYZVectorF const& pos)               {_pos = pos;}
        void time(float time)                     {_time = time;}
