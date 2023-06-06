@@ -50,7 +50,7 @@ double Pipe.lengthType2 = 127.01; //radius of torus
 double Pipe.lengthType3 = 1700.0;  // Guess based on blueprint in doc-8048-v4
 
 
-double Pipe.lengthType4 = 2500.0;  //Guess based on TeamCenter
+double Pipe.lengthType4 = 3228.282;  //Guess based on TeamCenter
 
 double Pipe.lengthType5Pipe1 = 1000.0;
 double Pipe.lengthType5Pipe2 = 1500.0;
@@ -122,7 +122,7 @@ vector<double> Pipe.centerType3Pipe2 = { -2664.0,50.0,16000.0 };
 vector<double> Pipe.centerType3Pipe3 = { -5144.0,50.0,14600.0 };
 vector<double> Pipe.centerType3Pipe4 = { -5144.0,50.0,16000.0 };
 
-vector<double> Pipe.centerType4Pipe1 = {  6185.3,-47.0,-8180.0 };
+vector<double> Pipe.centerType4Pipe1 = {  6540.0,-47.0,-8097.619 };
 
 vector<double> Pipe.centerType5Pipe1 = { -2950.0, -500.0, 17420.0 };
 vector<double> Pipe.centerType5Pipe2 = { -3200.0, -250.0, 17420.0 };
@@ -275,8 +275,6 @@ string Pipe.materialType2Comp7   = "G4_Al";
 string Pipe.materialType2Comp8   = "G4_Al";
 string Pipe.materialType2Comp9   = "G4_Al";
 string Pipe.materialType2Comp10   = "G4_Al";
-
-//string Pipe.materialType3Comp2 = "DC704";
 
 string Pipe.materialType3Comp1 ="StainlessSteel";
 
