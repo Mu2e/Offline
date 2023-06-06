@@ -103,6 +103,7 @@ namespace mu2e
       float _avecedep = 0;
       float _mindt = 0;
       float _mindrho = 0;
+      bool _isinit = false;
       bool _isbkg = false;
       bool _isref = false;
       bool _isolated = false;
@@ -162,6 +163,7 @@ namespace mu2e
     _bcdiag->Branch("ctime",&_ctime,"ctime/F");
     _bcdiag->Branch("rmsctime",&_rmsctime,"rmsctime/F");
     _bcdiag->Branch("avecedep",&_avecedep,"avecedep/F");
+    _bcdiag->Branch("isinit",&_isinit,"isinit/B");
     _bcdiag->Branch("isbkg",&_isbkg,"isbkg/B");
     _bcdiag->Branch("isref",&_isref,"isref/B");
     _bcdiag->Branch("isolated",&_isolated,"isolated/B");
@@ -258,6 +260,7 @@ namespace mu2e
       _crho = sqrtf(cluster.pos().perp2());
       _cpos = cluster.pos();
       _ctime = cluster.time();
+      _isinit = cluster.flag().hasAllProperties(BkgClusterFlag::init);
       _isbkg = cluster.flag().hasAllProperties(BkgClusterFlag::bkg);
       _isref = cluster.flag().hasAllProperties(BkgClusterFlag::refined);
       _isolated = cluster.flag().hasAllProperties(BkgClusterFlag::iso);
@@ -571,6 +574,7 @@ namespace mu2e
     shinfo._elecxtalk = shf.hasAllProperties(StrawHitFlag::elecxtalk);
     shinfo._isolated = shf.hasAllProperties(StrawHitFlag::isolated);
     shinfo._bkg = shf.hasAllProperties(StrawHitFlag::bkg);
+    shinfo._bkgc = shf.hasAllProperties(StrawHitFlag::bkgclust);
 
     shinfo._pos = ch.pos();
     shinfo._time = ch.correctedTime();
