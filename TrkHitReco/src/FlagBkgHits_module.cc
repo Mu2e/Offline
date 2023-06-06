@@ -78,8 +78,6 @@ namespace mu2e
       std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr;
 
       void classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
-      void countHits(      const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const;
-      void countPlanes(    const BkgCluster& cluster, std::array<float,11>& kerasvars, const ComboHitCollection& chcol) const;
       int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
   };
 
@@ -156,7 +154,7 @@ namespace mu2e
 
     // find clusters, sort is needed for recovery algorithm. bkgccolFast has hits that are autmoatically marked as bkg.
     clusterer_->findClusters(bkgccol,chcol, iev_);
-    sort(bkgccol.begin(),bkgccol.end(),[](const BkgCluster& c1,const BkgCluster& c2) {return c1.time() < c2.time();});
+    std::sort(bkgccol.begin(),bkgccol.end(),[](const BkgCluster& c1,const BkgCluster& c2) {return c1.time() < c2.time();});
 
     // classify clusters
     StrawHitFlagCollection chfcol(nch);
@@ -227,101 +225,68 @@ namespace mu2e
   //------------------------------------------------------------------------------------------
   void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
-
     for (auto& cluster : bkgccol) {
-
-      unsigned nactive, nstereo;
-      countHits(cluster, nactive, nstereo,chcol);
-      unsigned nhits = nstereo > 0 ? nstereo : nactive;
-      if (nhits < minnhits_) return;
-      std::array<float,11> kerasvars;
-      kerasvars[0] = sqrtf(cluster.pos().Rho());
-      kerasvars[6] = nhits;
-      countPlanes(cluster,kerasvars,chcol);
-
-      if (kerasvars[4] >= minnp_) {
+      // count hits and planes
+      std::array<int,StrawId::_nplanes> hitplanes{0};
+      for (const auto& chit : cluster.hits()) {
+        const ComboHit& ch = chcol[chit];
+        hitplanes[ch.strawId().plane()] += ch.nStrawHits();
+      }
+      unsigned npexp(0),np(0),nhits(0);
+      unsigned ipmin(0),ipmax(StrawId::_nplanes-1);
+      while (hitplanes[ipmin]==0 && ipmin<StrawId::_nplanes) ++ipmin;
+      while (hitplanes[ipmax]==0 and ipmax>0)                --ipmax;
+      for (unsigned ip = ipmin; ip <= ipmax; ++ip) {
+        npexp++; // should use TTracker to see if plane is physically present FIXME!
+        if (hitplanes[ip]> 0)++np;
+        nhits += hitplanes[ip];
+      }
+      if(nhits >= minnhits_ && np >= minnp_){
+        // find min/max z: this should be replaced with plane variables FIXME
         std::vector<float> hz;
         for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
-
         // find the min, max and largest gap from the sorted Z positions
         std::sort(hz.begin(),hz.end());
         float zgap = 0.0;
         for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
+        // find averages
+        double sumEdep(0.);
+        double sqrSumDeltaTime(0.);
+        double sqrSumDeltaX(0.);
+        double sqrSumDeltaY(0.);
+        for (const auto& chit : cluster.hits()) {
+          sumEdep +=  chcol[chit].energyDep()/chcol[chit].nStrawHits();
+          sqrSumDeltaX += std::pow(chcol[chit].pos().x() - cluster.pos().x(),2);
+          sqrSumDeltaY += std::pow(chcol[chit].pos().y() - cluster.pos().y(),2);
+          sqrSumDeltaTime += std::pow(chcol[chit].time() - cluster.time(),2);
+        }
+        // fill mva input variables
+        std::array<float,11> kerasvars;
+        kerasvars[0] = cluster.pos().Rho();
         kerasvars[1] = hz.front(); // Z min
         kerasvars[2] = hz.back(); // Z max
         kerasvars[3] = zgap; // max Z gap
-      }
-      else
-      {
-        kerasvars[1] = -1.0;
-        kerasvars[2]  = -1.0;
-        kerasvars[3]  = -1.0;
-      }
+        kerasvars[4] = np;
+        kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);
+        kerasvars[6] = nhits;
+        kerasvars[7] = sumEdep/nhits;
+        kerasvars[8] = std::sqrt(sqrSumDeltaX/nhits);  // x and y RMS should be replaced with with rho rms FIXME
+        kerasvars[9] = std::sqrt(sqrSumDeltaY/nhits);
+        kerasvars[10] = std::sqrt(sqrSumDeltaTime/nhits);
 
-      double sumEdep(0.);
-      double sqrSumDeltaTime(0.);
-      double sqrSumDeltaX(0.);
-      double sqrSumDeltaY(0.);
-      for (const auto& chit : cluster.hits()) {
-        sumEdep +=  chcol[chit].energyDep()/chcol[chit].nStrawHits();
-        sqrSumDeltaX += std::pow(chcol[chit].pos().x() - cluster.pos().x(),2);
-        sqrSumDeltaY += std::pow(chcol[chit].pos().y() - cluster.pos().y(),2);
-        sqrSumDeltaTime += std::pow(chcol[chit].time() - cluster.time(),2);
-      }
+        auto kerasout = sofiePtr->infer(kerasvars.data());
+        cluster.setKerasQ(kerasout[0]);
+        if(debug_>0)std::cout << "kerasout = " << kerasout[0] << std::endl;
 
-      kerasvars[7] = sumEdep/nhits;
-      kerasvars[8] = std::sqrt(sqrSumDeltaX/nhits);
-      kerasvars[9] = std::sqrt(sqrSumDeltaY/nhits);
-      kerasvars[10] = std::sqrt(sqrSumDeltaTime/nhits);
-
-      auto kerasout = sofiePtr->infer(kerasvars.data());
-      cluster.setKerasQ(kerasout[0]);
-      if(debug_>0)std::cout << "kerasout = " << kerasout[0] << std::endl;
-
-      StrawHitFlag flag(StrawHitFlag::bkgclust);
-      if (cluster.getKerasQ()> kerasQ_) {
-        StrawHitFlag flag(StrawHitFlag::bkg);
-        flag.merge(flag);
+        StrawHitFlag flag(StrawHitFlag::bkgclust);
+        if (cluster.getKerasQ()> kerasQ_) {
+          StrawHitFlag flag(StrawHitFlag::bkg);
+          flag.merge(flag);
+          cluster._flag.merge(BkgClusterFlag::bkg);
+        }
         for (const auto& chit : cluster.hits()) chfcol[chit].merge(flag);
-      }
-      if(nstereo > 0) cluster._flag.merge(BkgClusterFlag::stereo);
-    }
-  }
-
-  //-------------------------------------------------------------------------------------------------------------
-  void FlagBkgHits::countPlanes(const BkgCluster& cluster, std::array<float,11>& kerasvars, const ComboHitCollection& chcol) const
-  {
-    std::array<int,StrawId::_nplanes> hitplanes{0};
-    for (const auto& chit : cluster.hits()) {
-      const ComboHit& ch = chcol[chit];
-      hitplanes[ch.strawId().plane()] += ch.nStrawHits();
-    }
-
-    unsigned ipmin(0),ipmax(StrawId::_nplanes-1);
-    while (hitplanes[ipmin]==0 && ipmin<StrawId::_nplanes) ++ipmin;
-    while (hitplanes[ipmax]==0 and ipmax>0)                --ipmax;
-
-    unsigned npexp(0),np(0),nphits(0);
-    for (unsigned ip = ipmin; ip <= ipmax; ++ip) {
-      npexp++; // should use TTracker to see if plane is physically present FIXME!
-      if (hitplanes[ip]> 0)++np;
-      nphits += hitplanes[ip];
-    }
-
-    kerasvars[4] = np;
-    kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);
-
-  }
-
-
-  //----------------------------------------------------------------------------------------------------------------------------------
-  void FlagBkgHits::countHits(const BkgCluster& cluster, unsigned& nactive, unsigned& nstereo, const ComboHitCollection& chcol) const
-  {
-    nactive = nstereo = 0;
-    for (const auto& chit : cluster.hits()) {
-      const ComboHit& ch = chcol[chit];
-      nactive += ch.nStrawHits();
-      if (ch.flag().hasAllProperties(stereo_)) nstereo += ch.nStrawHits();
+      } else
+        cluster.setKerasQ(-1.0);
     }
   }
 

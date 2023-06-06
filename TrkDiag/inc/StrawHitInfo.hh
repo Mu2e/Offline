@@ -20,6 +20,7 @@ namespace mu2e {
     int _layer = 0.0;
     int _straw = 0.0;
     bool _bkg = false;
+    bool _bkgc = false;
     bool _isolated = false;
     bool _tsel = false;
     bool _esel = false;
