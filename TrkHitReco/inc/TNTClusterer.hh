@@ -64,7 +64,7 @@ namespace mu2e {
 
 
     private:
-      static const int numBuckets_ = 256; //number of buckets to store the cluster ids vs time
+      static constexpr int numBuckets_ =256; //number of buckets to store the cluster ids vs time
 
       void     initClustering  (const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
       void     doClustering    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
