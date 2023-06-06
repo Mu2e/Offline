@@ -14,8 +14,8 @@ namespace mu2e
    struct BkgCluster
    {
        //Default hit count chosen for compuational efficiency
-       BkgCluster()                              : _pos(),    _time(0.0),  _hits(), _flag(BkgClusterFlag::update) , _kerasQ(0.) {_hits.reserve(16);}
-       BkgCluster(XYZVectorF const& pos, float time) : _pos(pos), _time(time), _hits(), _flag(BkgClusterFlag::update) , _kerasQ(0.)  {_hits.reserve(16);}
+       BkgCluster() {_hits.reserve(16);}
+       BkgCluster(XYZVectorF const& pos, float time) : _pos(pos), _time(time) {_hits.reserve(16);}
 
 
        float                        getKerasQ() const {return _kerasQ; }
@@ -31,11 +31,11 @@ namespace mu2e
        void clearHits()                          {_hits.clear();}
        void setKerasQ(float kerasQ)                  {_kerasQ = kerasQ;}
 
-       XYZVectorF                _pos;  // ideally should be a 2d vec - FIXME
-       float                 _time;
+       XYZVectorF            _pos;  // ideally should be a 2d vec - FIXME
+       float                 _time = 0.0;
        std::vector<unsigned> _hits;
-       BkgClusterFlag        _flag;
-       float                _kerasQ; //result of keras result for the cluster
+       BkgClusterFlag        _flag = BkgClusterFlag(BkgClusterFlag::update);
+       float                 _kerasQ = -0.5; //result of keras result for the cluster
    };
 
    typedef std::vector<mu2e::BkgCluster> BkgClusterCollection;
