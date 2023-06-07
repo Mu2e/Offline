@@ -22,7 +22,7 @@ namespace mu2e {
     bool isValid() const { return _id < CaloConst::_nCrystal; }
     bool isCaphri() const ;
     // this can be used to construct CaloSiPMId
-    CaloConst::CaloSiPMId_type SiPMId(uint16_t SiPM01) const
+    CaloConst::CaloSiPMId_type SiPMId(CaloConst::SiPMn SiPM01) const
         { return _id*CaloConst::_nSiPMPerCrystal + SiPM01; }
 
   private:

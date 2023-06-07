@@ -31,6 +31,8 @@ namespace mu2e {
 
     using CaloSiPMId_type = std::uint16_t;
 
+    enum SiPMn {SiPM0=0,SiPM1=1};
+
   };
 
 };
