@@ -17,7 +17,8 @@ namespace mu2e {
 
     using value_type = CaloConst::CaloSiPMId_type;
 
-    explicit CaloSiPMId(value_type id) { _id = id; }
+    CaloSiPMId():_id(CaloConst::_invalid) {}
+    explicit CaloSiPMId(value_type id):_id(id) {}
 
     value_type id() const { return _id; }
     value_type SiPM01() const { return _id%CaloConst::_nSiPMPerCrystal; }
