@@ -21,7 +21,7 @@ namespace mu2e {
     explicit CaloSiPMId(value_type id):_id(id) {}
 
     value_type id() const { return _id; }
-    value_type SiPM01() const { return _id%CaloConst::_nSiPMPerCrystal; }
+    value_type SiPMLocalId() const { return _id%CaloConst::_nSiPMPerCrystal; }
     CrystalId crystal() const
     { return CrystalId(CrystalId::value_type(_id/CaloConst::_nSiPMPerCrystal)); }
     value_type disk() const;
