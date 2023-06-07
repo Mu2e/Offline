@@ -16,7 +16,8 @@ namespace mu2e {
 
     using value_type=std::uint16_t;
 
-    explicit CaloRawSiPMId(value_type id) { _id = id; }
+    CaloRawSiPMId():_id(CaloConst::_invalid) {}
+    explicit CaloRawSiPMId(value_type id):_id(id) {}
 
     value_type id() const { return _id; }
     value_type dirac() const { return _id/CaloConst::_nChPerDIRAC; }

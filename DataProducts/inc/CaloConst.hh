@@ -27,7 +27,9 @@ namespace mu2e {
 
     constexpr static uint16_t _nDIRAC       = 136;
     constexpr static uint16_t _nChPerDIRAC  = 20;
-    constexpr static uint16_t _nRawChannel     = _nChPerDIRAC*_nDIRAC;
+    constexpr static uint16_t _nRawChannel  = _nChPerDIRAC*_nDIRAC;
+
+    constexpr static uint16_t _invalid      = 9999;
 
     using CaloSiPMId_type = std::uint16_t;
 

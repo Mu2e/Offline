@@ -15,7 +15,8 @@ namespace mu2e {
 
     using value_type=std::uint16_t;
 
-    explicit CrystalId(value_type id) { _id = id; }
+    CrystalId():_id(CaloConst::_invalid) {}
+    explicit CrystalId(value_type id):_id(id) {}
 
     value_type id() const { return _id; }
     value_type disk() const { return _id/CaloConst::_nCrystalPerDisk; };
