@@ -254,6 +254,7 @@ namespace mu2e
         double sqrSumDeltaTime(0.);
         double sqrSumDeltaX(0.);
         double sqrSumDeltaY(0.);
+        unsigned nchits = cluster.hits().size();
         for (const auto& chit : cluster.hits()) {
           sumEdep +=  chcol[chit].energyDep()/chcol[chit].nStrawHits();
           sqrSumDeltaX += std::pow(chcol[chit].pos().x() - cluster.pos().x(),2);
@@ -269,10 +270,10 @@ namespace mu2e
         kerasvars[4] = np;
         kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);
         kerasvars[6] = nhits;
-        kerasvars[7] = sumEdep/nhits;
-        kerasvars[8] = std::sqrt(sqrSumDeltaX/nhits);  // x and y RMS should be replaced with with rho rms FIXME
-        kerasvars[9] = std::sqrt(sqrSumDeltaY/nhits);
-        kerasvars[10] = std::sqrt(sqrSumDeltaTime/nhits);
+        kerasvars[7] = std::sqrt(sqrSumDeltaX/nchits);  // x and y RMS should be replaced with with rho rms FIXME
+        kerasvars[8] = std::sqrt(sqrSumDeltaY/nchits);
+        kerasvars[9] = std::sqrt(sqrSumDeltaTime/nchits);
+        kerasvars[10] = sumEdep/nchits;
 
         auto kerasout = sofiePtr->infer(kerasvars.data());
         cluster.setKerasQ(kerasout[0]);
