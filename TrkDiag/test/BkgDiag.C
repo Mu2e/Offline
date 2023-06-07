@@ -250,20 +250,31 @@ void BDiag(TTree* bdiag, const char* page="rho") {
     nchbkg->Draw();
     nchpri->Draw("same");
   } else if (spage=="mva") {
-    TH1F* mvapri = new TH1F("mvapri","Background MVA output;MVA Output",200,-0.05,1.05);
-    TH1F* mvabkg = new TH1F("mvabkg","Background MVA output;MVA Output",200,-0.05,1.05);
+    static const unsigned NBINS(500);
+    TH1F* mvapri = new TH1F("mvapri","Background MVA output;MVA Output",NBINS,0.0,1.0);
+    TH1F* mvabkg = new TH1F("mvabkg","Background MVA output;MVA Output",NBINS,0.0,1.0);
+    TH2F* roc = new TH2F("roc","Rejection vs Efficiency;Low-E e Cluster Efficiency;Primary Cluster Rejection",10,-0.01,1.01,10,-0.01,1.01);
     mvapri->SetLineColor(kRed);
     mvabkg->SetLineColor(kBlue);
     mvapri->SetStats(0);
     mvabkg->SetStats(0);
-
-
+    roc->SetStats(0);
     bdiag->Project("mvapri","kQ",pri+cluster);
     bdiag->Project("mvabkg","kQ",ebkg+cluster);
+    auto bkga = mvabkg->GetIntegral();
+    auto pria = mvapri->GetIntegral();
+    std::vector<double> pur(NBINS+2,0), eff(NBINS+2,0);
+    for(unsigned ibin=0;ibin < NBINS;++ibin){
+      eff[ibin] = 1.0-bkga[ibin];
+      pur[ibin] = pria[ibin];
+      std::cout << "ibin " << ibin << " eff " << eff[ibin] << " pur " << pur[ibin] << std::endl;
+    }
+    TGraph* rocg = new TGraph(NBINS,eff.data(),pur.data());
+
     Double_t factor(10.0);
     mvapri->Scale(factor);
-    TCanvas* mvacan = new TCanvas("mvacan","MVA output",800,400);
-    mvacan->Divide(1,1);
+    TCanvas* mvacan = new TCanvas("mvacan","MVA output",1200,600);
+    mvacan->Divide(2,1);
     mvacan->cd(1);
     gPad->SetLogy();
     mvabkg->Draw();
@@ -277,6 +288,10 @@ void BDiag(TTree* bdiag, const char* page="rho") {
     mcleg->AddEntry(mvapri,"Conversion electron (X10)","L");
     mcleg->AddEntry(sel,"Selection","F");
     mcleg->Draw();
+    mvacan->cd(2);
+    roc->Draw();
+    rocg->Draw("L");
+
 
   }  else if(spage=="bhits") {
     TH1F* drhobkgp = new TH1F("drhobkgp","Bkg Hit #rho difference;#Delta #rho (mm)",100,-100,100);
