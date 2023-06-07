@@ -1,15 +1,14 @@
-#ifndef DataProducts_CaloId_hh
-#define DataProducts_CaloId_hh
+#ifndef DataProducts_CaloConst_hh
+#define DataProducts_CaloConst_hh
 //
-// Offline identifier of one calorimeter SiPM channel
-// Online numbering is in CaloRawId
+// Constants describing the calorimeter
+// used in geometry, channel number ID classes, and database access
 //
 #include <array>
-#include <algorithm>
 
 namespace mu2e {
 
-  class CaloId{
+  class CaloConst{
 
     // define the bit field shifts and masks
   public:
@@ -25,19 +24,14 @@ namespace mu2e {
     constexpr static std::array<uint16_t,_nCaphriCrystal> _caphriId = {582,609,610,637};
     constexpr static uint16_t _nChannel        = _nCrystalChannel + _nPINDiodPerDisk*_nDisk;
 
-    explicit CaloId(uint16_t id) { _id = id; }
 
-    uint16_t channel() { return _id; }
-    uint16_t SiPM01() { return _id%_nSiPMPerCrystal; }
-    uint16_t crystal() { return _id/_nSiPMPerCrystal; }
-    uint16_t disk();
-    bool isValid() { return _id < _nChannel; }
-    bool isCrystal() { return _id < _nCrystal; }
-    bool isCaphri();
-    bool isPINDiode() { return _id >= _nCrystal; }
+    constexpr static uint16_t _nDIRAC       = 136;
+    constexpr static uint16_t _nChPerDIRAC  = 20;
+    constexpr static uint16_t _nRawChannel     = _nChPerDIRAC*_nDIRAC;
 
-    uint16_t _id;
+    using CaloSiPMId_type = std::uint16_t;
+
   };
 
 };
-#endif /* DataProducts_CaloId_hh */
+#endif /* DataProducts_CaloConst_hh */
