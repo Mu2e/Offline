@@ -253,7 +253,7 @@ void BkgDiag(TTree* bdiag, const char* page="rho") {
     static const unsigned NBINS(500);
     TH1F* mvapri = new TH1F("mvapri","Cluster MVA output;MVA Output",NBINS,0.0,1.0);
     TH1F* mvabkg = new TH1F("mvabkg","Cluster MVA output;MVA Output",NBINS,0.0,1.0);
-    TH2F* roc = new TH2F("roc","Cluster Rejection vs Efficiency;Low-E e Cluster Efficiency;Primary Cluster Rejection",10,-0.01,1.01,10,-0.01,1.01);
+    TH2F* roc = new TH2F("roc","Cluster Rejection vs Efficiency;Low-Energy e Cluster Efficiency;Primary Cluster Rejection",10,-0.01,1.01,10,-0.01,1.01);
     mvapri->SetLineColor(kRed);
     mvabkg->SetLineColor(kBlue);
     mvapri->SetStats(0);
@@ -265,30 +265,34 @@ void BkgDiag(TTree* bdiag, const char* page="rho") {
     auto pria = mvapri->GetIntegral();
     std::vector<double> pur(NBINS+2,0), eff(NBINS+2,0);
     double auc(0.0);
+    double selval  = 0.5;
+    int selbin(-1);
     for(unsigned ibin=0;ibin < NBINS;++ibin){
       eff[ibin] = 1.0-bkga[ibin];
       pur[ibin] = pria[ibin];
+      if(selbin < 0 && mvapri->GetBinLowEdge(ibin) > selval)selbin = ibin;
       if(ibin>0) auc += 0.5*(pur[ibin-1]+pur[ibin])*(eff[ibin-1]-eff[ibin]);
 //      std::cout << "ibin " << ibin << " eff " << eff[ibin] << " pur " << pur[ibin] << std::endl;
     }
     TGraph* rocg = new TGraph(NBINS,eff.data(),pur.data());
+    double prirej = pria[selbin];
+    double bkgeff = 1.0-bkga[selbin];
     std::cout << "AUC = " << auc << std::endl;
+    std::cout << "At cut " << selval << " primary rejection = " << prirej << " bkg efficiency " << bkgeff << std::endl;
 
-    Double_t factor(10.0);
-    mvapri->Scale(factor);
     TCanvas* mvacan = new TCanvas("mvacan","MVA output",1200,600);
     mvacan->Divide(2,1);
     mvacan->cd(1);
     gPad->SetLogy();
     mvabkg->Draw();
     mvapri->Draw("same");
-    TBox* sel = new TBox(0.5,mvabkg->GetMinimum(),1.0,mvabkg->GetMaximum());
+    TBox* sel = new TBox(selval,mvabkg->GetMinimum(),1.0,mvabkg->GetMaximum());
     sel->SetFillColor(kYellow);
     sel->SetFillStyle(3004);
     sel->Draw();
     TLegend* mcleg = new TLegend(0.5,0.7,0.8,0.9);
-    mcleg->AddEntry(mvabkg,"Background electron","L");
-    mcleg->AddEntry(mvapri,"Conversion electron (X10)","L");
+    mcleg->AddEntry(mvabkg,"Low-Energy electron","L");
+    mcleg->AddEntry(mvapri,"Primary particle","L");
     mcleg->AddEntry(sel,"Selection","F");
     mcleg->Draw();
     mvacan->cd(2);
@@ -297,6 +301,12 @@ void BkgDiag(TTree* bdiag, const char* page="rho") {
     TPaveText* txt = new TPaveText(0.3,0.3,0.7,0.7);
     char line[80];
     snprintf(line,80,"AUC = %5.4f",auc);
+    txt->AddText(line);
+    snprintf(line,80,"Selection Cut = %5.4f",selval);
+    txt->AddText(line);
+    snprintf(line,80,"Primary Rej. = %5.4f",prirej);
+    txt->AddText(line);
+    snprintf(line,80,"Low-E e Eff. = %5.4f",bkgeff);
     txt->AddText(line);
     txt->Draw();
 
