@@ -3,10 +3,11 @@
 //
 //
 // Online or raw data identifier of one calorimeter SiPM channel
-// Offline numbering is in CaloId
+// Offline number identifier is in CaloSiPMId
 //
 
 #include "Offline/DataProducts/inc/CaloConst.hh"
+#include <iosfwd>
 
 namespace mu2e {
 
