@@ -281,8 +281,7 @@ namespace mu2e
 
         StrawHitFlag flag(StrawHitFlag::bkgclust);
         if (cluster.getKerasQ()> kerasQ_) {
-          StrawHitFlag flag(StrawHitFlag::bkg);
-          flag.merge(flag);
+          flag.merge(StrawHitFlag(StrawHitFlag::bkg));
           cluster._flag.merge(BkgClusterFlag::bkg);
         }
         for (const auto& chit : cluster.hits()) chfcol[chit].merge(flag);
