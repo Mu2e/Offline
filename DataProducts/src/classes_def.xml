@@ -27,7 +27,9 @@
  <class name="mu2e::VirtualDetectorId"/>
 
 <!--  ******* calorimeter ******** -->
- <class name="mu2e::CaloId"/>
+ <class name="mu2e::CaloSiPMId"/>
+ <class name="mu2e::CaloRawSiPMId"/>
+ <class name="mu2e::CrystalId"/>
 
 <!--  ********* CRV  ********* -->
  <class name="mu2e::CRSScintillatorBarIndex"/>
