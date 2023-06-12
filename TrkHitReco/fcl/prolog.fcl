@@ -119,7 +119,7 @@ FlagBkgHits : {
   StereoSelection      : ["Stereo","PanelCombo"]
   SaveBkgClusters      : false
   KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
-  KerasQuality         : 0.5
+  KerasQuality         : 0.7
   DebugLevel           : 0
 }
 
