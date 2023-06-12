@@ -3,8 +3,6 @@
 #include "Offline/DbTables/inc/CRVBadChan.hh"
 #include "Offline/DbTables/inc/CRVSiPM.hh"
 #include "Offline/DbTables/inc/CRVTime.hh"
-#include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
-#include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 #include "Offline/DbTables/inc/STMEnergyPar.hh"
 #include "Offline/DbTables/inc/STMPedestals.hh"
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
@@ -55,10 +53,6 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies());
   } else if (name == "SimEfficiencies2") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::SimEfficiencies2());
-  } else if (name == "CalRoIDMapDIRACToOffline") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
-  } else if (name == "CalRoIDMapOfflineToDIRAC") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());
   } else if (name == "STMEnergyPar") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::STMEnergyPar());
   } else if (name == "STMPedestals") {
