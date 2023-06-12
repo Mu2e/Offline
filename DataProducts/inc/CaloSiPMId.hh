@@ -28,6 +28,7 @@ namespace mu2e {
     bool isValid() const { return _id < CaloConst::_nChannel; }
     bool isCrystal() const { return _id < CaloConst::_nCrystal; }
     bool isPINDiode() const { return _id >= CaloConst::_nCrystal; }
+    value_type detType() const;
 
   private:
 

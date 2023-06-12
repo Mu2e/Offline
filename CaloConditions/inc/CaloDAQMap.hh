@@ -2,15 +2,16 @@
 #define CaloConditions_CaloDAQMap_hh
 
 //
-// CaloDAQMap stores channel maps vs detector map
+// CaloDAQMap converts between offline and readout SiPM channel numbers
 //
 
-// C++ includes
-#include <vector>
-
-// Mu2e includes
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
+#include "Offline/DataProducts/inc/CaloRawSiPMId.hh"
 #include "fhiclcpp/ParameterSet.h"
+#include <array>
+#include <iostream>
 
 namespace mu2e {
 
@@ -20,36 +21,28 @@ namespace mu2e {
     typedef std::shared_ptr<CaloDAQMap> ptr_t;
     typedef std::shared_ptr<const CaloDAQMap> cptr_t;
 
+    typedef std::array<CaloSiPMId,CaloConst::_nRawChannel> RawArray;
+    typedef std::array<CaloRawSiPMId,CaloConst::_nChannel> OfflineArray;
+
     //CaloDAQMap():_name("CaloDAQMap") {}
     constexpr static const char* cxname = {"CaloDAQMap"};
 
     // construct with constants, then some values are computed and filled below
-    CaloDAQMap(std::vector<uint16_t> DIRAC2CaloMap, std::vector<uint16_t> Calo2DIRACMap) :
+    CaloDAQMap(const RawArray& raw2Offline, const OfflineArray& offline2Raw) :
        ProditionsEntity(cxname),
-       // _name("CaloDAQMap"),
-      _DIRAC2CaloMap(DIRAC2CaloMap), _Calo2DIRACMap(Calo2DIRACMap){}
+       _raw2Offline(raw2Offline),_offline2Raw(offline2Raw) {};
 
     virtual ~CaloDAQMap() {}
 
-    //ora ..    std::string const& name() const { return _name; }
-    void print(std::ostream& os) const;
+    CaloSiPMId offlineId(CaloRawSiPMId rawId) const;
+    CaloRawSiPMId rawId(CaloSiPMId offId) const;
 
-    uint16_t packetIdTocaloRoId(uint16_t packetId) const;
-    uint16_t caloRoIdToPacketId(uint16_t caloRoId) const;
-    //
-    // all of these must be called to fill this object ...
-    //
-    // From Dirac POinter to Calo Offline roID
-    void setDIRAC2CaloMap(std::vector<uint16_t> DIRAC2CaloMap) { _DIRAC2CaloMap = DIRAC2CaloMap; }
-    // From Calo Offline roID to Dirac Pointer
-    void setCalo2DIRACMap(std::vector<uint16_t> Calo2DIRACMap) { _Calo2DIRACMap = Calo2DIRACMap; }
+    void print(std::ostream& os) const;
 
   private:
 
-    //ora ... std::string _name;
-
-    std::vector<uint16_t> _DIRAC2CaloMap;
-    std::vector<uint16_t> _Calo2DIRACMap;
+    RawArray _raw2Offline;
+    OfflineArray _offline2Raw;
 
   };
 

@@ -259,7 +259,10 @@ void art::CaloRecoFromFragments::analyze_calorimeter_(
         // uint16_t roID = hits[hitIdx].first.DIRACB >> 12;
 
         uint16_t packetid = hits[hitIdx].first.DIRACA;
-        uint16_t roID = calodaqconds.packetIdTocaloRoId(packetid);
+        uint16_t dirac = packetid & 0xFF;
+        uint16_t diracChannel = (packetid >>8) & 0x1F;
+        mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
+        uint16_t roID = calodaqconds.offlineId(rawId).id();
         // uint16_t dettype = (packetId & 0x7000) >> 13;
 
         // FIXME: Can we match vector types here?

@@ -8,8 +8,6 @@
 
 #include "Offline/CaloConditions/inc/CaloDAQMap.hh"
 #include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
-#include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
-#include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 
 
 namespace mu2e {
@@ -20,8 +18,7 @@ namespace mu2e {
   public:
     CaloDAQMapMaker(CaloDAQMapConfig const& config):_config(config) {}
     ptr_t fromFcl();
-    ptr_t fromDb(CalRoIDMapDIRACToOffline::cptr_t tdtc,
-                 CalRoIDMapOfflineToDIRAC::cptr_t tctd );
+    ptr_t fromDb();
 
   private:
 
@@ -34,4 +31,3 @@ namespace mu2e {
 
 
 #endif
-
