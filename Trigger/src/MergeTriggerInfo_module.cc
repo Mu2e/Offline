@@ -46,11 +46,8 @@ namespace mu2e {
   void MergeTriggerInfo::produce(art::Event& event) {
     std::unique_ptr<TriggerInfoCollection> tiCol(new TriggerInfoCollection);
 
-    // create the selector
-    art::Selector selector(art::ProductInstanceNameSelector("") &&
-                           art::ProcessNameSelector("*"));
     std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo;
-    event.getMany<TriggerInfo>(selector);
+    event.getMany<TriggerInfo>();
 
     if(_debug > 0){
       std::cout << "["<<moduleDescription().moduleLabel() << "] number of TriggerInfo found in the is: "<< list_of_triggerInfo.size() << std::endl;

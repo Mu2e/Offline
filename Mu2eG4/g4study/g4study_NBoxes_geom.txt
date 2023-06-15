@@ -1,0 +1,65 @@
+//
+// config file to perform Geant4 studies using the Mu2e framework infrastructure
+//
+//
+// Original author K.L. Genser
+//
+
+// Units are mm, MeV
+
+
+// Change the name.
+string detector.name           = "g4study";
+
+bool g4.visible                = true;
+bool g4.solid                  = false;
+bool g4.forceAuxEdgeVisible    = true;    // make the volume mesh visible
+bool g4.doSurfaceCheck         = false;   // do not check for overlaps
+bool g4.placePV                = true;
+
+// the "World Box"
+
+// a very "thin" vacuum
+string world.materialName        = "G4_Galactic";
+
+// make the world boundaries visible
+bool   world.boxVisible          = true;
+// make the volume transparent
+bool   world.boxSolid            = false;
+
+double world.halfLength          = 11000.0;
+double world.outerLayerThickness = 0.001;// the world "outer layer" to force a step point
+
+
+bool           box.visible = true;
+bool           box.solid   = false;
+
+string         box.materialName = "G4_Al";
+
+// first box position in the world
+vector<double> box.centerInWorld = {0., 0., 0.};
+
+// vector<double> stoppingTarget.halfThicknesses  =
+//  { 0.0528 }; //0.1056 mm full thickness (docdb-31396 slide 24)
+
+vector<double> box.halfLengths = {10000., 10000., 0.05};
+
+// double length = (nfoils-1)*_deltaZ; //length of stopping target
+// box spacing
+double         box.spacing       = 20.; // along the z axis
+
+int            box.numberOfBoxes = 20;
+
+
+int            box.copyNumber = 2; // non 0 for volume tracking purposes
+                                   // 0 & 1 are World and an auxiliary
+                                   // volume almost filling up the world
+
+
+
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

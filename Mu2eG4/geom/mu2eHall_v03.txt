@@ -216,8 +216,13 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWall2.txt"
 #include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWall3.txt"
 #include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWall4.txt"
+#include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWall5.txt"
+#include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWall6.txt"
+#include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWall7.txt"
 #include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWallNotch1.txt"
 #include "Offline/Mu2eG4/geom/bldg/remoteHandlingInteriorWallNotch2.txt"
+#include "Offline/Mu2eG4/geom/bldg/remoteHandlingSteelDoor1.txt"
+#include "Offline/Mu2eG4/geom/bldg/remoteHandlingSteelDoor2.txt"
 #include "Offline/Mu2eG4/geom/bldg/tsAreaAlcoveLowerRoof.txt"
 #include "Offline/Mu2eG4/geom/bldg/tsAreaAlcoveVerticalN.txt"
 #include "Offline/Mu2eG4/geom/bldg/tsAreaAlcoveVerticalS.txt"
@@ -444,8 +449,13 @@ vector<string> bldg.prefix.list = {
    "building.remote.handling.Interior.Wall.2",
    "building.remote.handling.Interior.Wall.3",
    "building.remote.handling.Interior.Wall.4",
+   "building.remote.handling.Interior.Wall.5",
+   "building.remote.handling.Interior.Wall.6",
+   "building.remote.handling.Interior.Wall.7",
    "building.remote.handling.Interior.WallNotch.1",
    "building.remote.handling.Interior.WallNotch.2",
+   "building.remote.handling.SteelDoor.1",
+   "building.remote.handling.SteelDoor.2",
    "building.tsArea.W",
    "building.tsArea.alcove.lowerRoof",
    "building.tsArea.alcove.vertical.N",

@@ -65,7 +65,7 @@ vector<double> ExtShieldUpstream.dimsType16 = {6400.8,2743.2,25.4};
 vector<double> ExtShieldUpstream.dimsType17 = {6908.8,4876.6,25.4};
 vector<double> ExtShieldUpstream.dimsType18 = {5486.4,4978.6,25.4};
 vector<double> ExtShieldUpstream.dimsType19 = {1625.6,4978.6,25.4};
-vector<double> ExtShieldUpstream.dimsType20 = {609.6,4418,6090};
+vector<double> ExtShieldUpstream.dimsType20 = {609.6,4418,6426.2};
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
 // Tolerance here means the amount the size is changed from nominal, in mm.
@@ -156,7 +156,19 @@ vector<double> ExtShieldUpstream.centerType18Box1 = {-3620.6,2780.2,  213.6};
 vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,2952.0,  202.4};
 
 // Remote handling room door
-vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -11931};
+vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
+
+// To move the shielding door in two directions to allow a small gap during remote handling operations.
+// To move in Z-direction (East-West) : apply 'OpenDistance' (double) between 0.0 (fully closed) and 6248.4 (fully open).
+// OpenDistance = 0.0; default case (fully closed)
+// To move in X-direction (towards north) : apply 'FrameGap' (double) between 0.0 (closed) and 254.0 (10" open).
+// FrameGap = 0.0; default case (closed position)
+//NB: Neither OpenDistance nor FrameGap can be supplied a negative value.
+
+
+double ExtShieldUpstream.OpenDistance = 0.0;
+double ExtShieldUpstream.FrameGap = 0.0;
+
 
 // The orientation of each detector.  See docdb xxx for details.
 string ExtShieldUpstream.orientationType1Box1 = "000";

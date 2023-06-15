@@ -1,7 +1,7 @@
 #ifndef DbTables_CalRoIDMapDIRACToOffline_hh
 #define DbTables_CalRoIDMapDIRACToOffline_hh
 
-#include "Offline/DataProducts/inc/CaloId.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DbTables/inc/DbTable.hh"
 #include <iomanip>
 #include <map>
@@ -35,7 +35,7 @@ class CalRoIDMapDIRACToOffline : public DbTable {
   }
   std::vector<Row> const& rows() const { return _rows; }
   std::size_t nrow() const { return _rows.size(); };
-  virtual std::size_t nrowFix() const { return CaloId::_nTotChannel; };
+  virtual std::size_t nrowFix() const { return CaloConst::_nChannel; };
   size_t size() const { return baseSize() + nrow() * sizeof(Row); };
 
   void addRow(const std::vector<std::string>& columns) override {
