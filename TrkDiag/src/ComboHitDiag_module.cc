@@ -103,7 +103,7 @@ namespace mu2e
       // mc diag
       XYZVectorF _mcpos, _mcmom;
       float _mctime, _mcudist;
-      int _mcpdg, _mcproc, _mcndigi;
+      int _mcpdg, _mcproc, _mcgen, _mcndigi;
       int _prel;
 
       float _mcfrac;
@@ -191,6 +191,7 @@ namespace mu2e
       _chdiag->Branch("mcfrac",&_mcfrac,"mcfrac/F");
       _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
+      _chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
       _chdiag->Branch("prel",&_prel,"prel/I");
       _chdiag->Branch("mcndigi",&_mcndigi,"mcndigi/I");
       if(_diag > 0)
@@ -294,7 +295,7 @@ namespace mu2e
       }
       if(_mcdiag){
         _chinfomc.clear();
-        _mcpdg = _mcproc = 0;
+        _mcpdg = _mcgen = _mcproc = 0;
         _prel=-1;
         // get the StrawDigi indices associated with this ComboHit
         std::vector<StrawDigiIndex> shids;
@@ -324,6 +325,11 @@ namespace mu2e
         _mcpdg = spmax->pdgId();
         _mcproc = spmax->creationCode();
         _mcfrac = ispmax->second/static_cast<float>(shids.size());
+        auto upar = spmax;
+        while (upar->genParticle().isNull() && upar->parent().isNonnull()) {
+          upar = upar->parent();
+        }
+        if(upar->genParticle().isNonnull())_mcgen = upar->genParticle()->generatorId().id();
 // relationship to MCPrimary
         for(auto const& mcmptr : _mcprimary->primarySimParticles()){
           MCRelationship rel(mcmptr,spmax);
@@ -333,11 +339,6 @@ namespace mu2e
             else
               _prel = rel.relationship();
           }
-        }
-
-        auto upar = spmax;
-        while (upar->genParticle().isNull() && upar->parent().isNonnull()) {
-          upar = upar->parent();
         }
         // find the relation with each hit
         _mcpos = _mcmom = XYZVectorF();

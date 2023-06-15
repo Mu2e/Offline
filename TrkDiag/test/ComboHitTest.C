@@ -12,10 +12,8 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
   string spage(page);
   TCut pri("prel==0&&mcmom.R()>100");
   TCut prirel("prel>0");
-  TCut Had("abs(mcpdg)>=20");
+  TCut Had("prel<0&&abs(mcpdg)>=20");
   TCut lowEe("prel<0&&abs(mcpdg)==11&&mcmom.R()<10.0");
-  TCut crymu("abs(mcpdg)==13&&mcproc==56");
-  TCut crye("abs(mcpdg)==11&&mcproc==56");
   TCut other = TCut("prel<0")+(!Had)+(!lowEe);
   TCut multi("nch>1");
   TCut esel("esel");
@@ -205,12 +203,12 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
     sctimec->SetStats(0);
     sctimeh->SetStats(0);
     sctimeb->SetStats(0);
-    CHD->Project("hctimec","ctime",pri);
-    CHD->Project("hctimeb","ctime",lowEe);
-    CHD->Project("hctimeh","ctime",Had);
-    CHD->Project("sctimec","ctime",pri+tsel);
-    CHD->Project("sctimeb","ctime",lowEe+tsel);
-    CHD->Project("sctimeh","ctime",Had+tsel);
+    CHD->Project("hctimec","ctime","nsh"*pri);
+    CHD->Project("hctimeb","ctime","nsh"*lowEe);
+    CHD->Project("hctimeh","ctime","nsh"*Had);
+    CHD->Project("sctimec","ctime","nsh"*(pri+tsel));
+    CHD->Project("sctimeb","ctime","nsh"*(lowEe+tsel));
+    CHD->Project("sctimeh","ctime","nsh"*(Had+tsel));
     TH1F* hrhoc = new TH1F("hrhoc","Combo Hit Transverse Radius;Hit #rho (mm)",100,350.0,800.0);
     TH1F* hrhob = new TH1F("hrhob","Combo Hit Transverse Radius;Hit #rho (mm)",100,350.0,800.0);
     TH1F* hrhoh = new TH1F("hrhoh","Combo Hit Transverse Radius;Hit #rho (mm)",100,350.0,800.0);
@@ -229,12 +227,12 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
     srhoc->SetStats(0);
     srhoh->SetStats(0);
     srhob->SetStats(0);
-    CHD->Project("hrhoc","pos.Rho()",pri);
-    CHD->Project("hrhob","pos.Rho()",lowEe);
-    CHD->Project("hrhoh","pos.Rho()",Had);
-    CHD->Project("srhoc","pos.Rho()",pri+rsel);
-    CHD->Project("srhob","pos.Rho()",lowEe+rsel);
-    CHD->Project("srhoh","pos.Rho()",Had+rsel);
+    CHD->Project("hrhoc","pos.Rho()","nsh"*pri);
+    CHD->Project("hrhob","pos.Rho()","nsh"*lowEe);
+    CHD->Project("hrhoh","pos.Rho()","nsh"*Had);
+    CHD->Project("srhoc","pos.Rho()","nsh"*(pri+rsel));
+    CHD->Project("srhob","pos.Rho()","nsh"*(lowEe+rsel));
+    CHD->Project("srhoh","pos.Rho()","nsh"*(Had+rsel));
     TH1F* hedepc = new TH1F("hedepc","Combo Hit EDep;Hit EDep (KeV)",100,-0.1,6.0);
     TH1F* hedepb = new TH1F("hedepb","Combo Hit EDep;Hit EDep (KeV)",100,-0.1,6.0);
     TH1F* hedeph = new TH1F("hedeph","Combo Hit EDep;Hit EDep (KeV)",100,-0.1,6.0);
@@ -253,12 +251,12 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
     sedepc->SetStats(0);
     sedepb->SetStats(0);
     sedeph->SetStats(0);
-    CHD->Project("hedepc","1000.0*edep",pri);
-    CHD->Project("hedepb","1000.0*edep",lowEe);
-    CHD->Project("hedeph","1000.0*edep",Had);
-    CHD->Project("sedepc","1000.0*edep",pri+esel);
-    CHD->Project("sedepb","1000.0*edep",lowEe+esel);
-    CHD->Project("sedeph","1000.0*edep",Had+esel);
+    CHD->Project("hedepc","1000.0*edep","nsh"*pri);
+    CHD->Project("hedepb","1000.0*edep","nsh"*lowEe);
+    CHD->Project("hedeph","1000.0*edep","nsh"*Had);
+    CHD->Project("sedepc","1000.0*edep","nsh"*(pri+esel));
+    CHD->Project("sedepb","1000.0*edep","nsh"*(lowEe+esel));
+    CHD->Project("sedeph","1000.0*edep","nsh"*(Had+esel));
 
 //    double beff,heff,ceff;
 //    char legtxt[50];
@@ -308,9 +306,9 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
     hctimeb->SetMinimum(1);
     hctimeh->Draw("same");
     hctimec->Draw("same");
-    sctimeb->Draw("same");
-    sctimeh->Draw("same");
-    sctimec->Draw("same");
+    sctimeb->Draw("sameh");
+    sctimeh->Draw("sameh");
+    sctimec->Draw("sameh");
  //   ctimeleg->Draw();
     scan->cd(2);
     gPad->SetLogy();
@@ -318,9 +316,9 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
     hrhob->Draw();
     hrhoh->Draw("same");
     hrhoc->Draw("same");
-    srhob->Draw("same");
-    srhoh->Draw("same");
-    srhoc->Draw("same");
+    srhob->Draw("sameh");
+    srhoh->Draw("sameh");
+    srhoc->Draw("sameh");
  //   rholeg->Draw();
     scan->cd(3);
     gPad->SetLogy();
@@ -328,9 +326,9 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
     hedepb->Draw();
     hedeph->Draw("same");
     hedepc->Draw("same");
-    sedeph->Draw("same");
-    sedepb->Draw("same");
-    sedepc->Draw("same");
+    sedeph->Draw("sameh");
+    sedepb->Draw("sameh");
+    sedepc->Draw("sameh");
  //   edepleg->Draw();
     selleg->Draw();
   } else if(spage =="pres") {
@@ -619,8 +617,8 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
         snprintf(value,10,"%i:%i",isel,ipart);
 //        std::cout << "value " << value << std::endl;
 //        std::cout << "cut" << select[isel]+mcpart[ipart] << std::endl;
-        CHD->Project("+sel",value,select[isel]+mcpart[ipart]);
-        CHD->Project("+norm",value,mcpart[ipart]);
+        CHD->Project("+sel",value,"nsh"*(select[isel]+mcpart[ipart]));
+        CHD->Project("+norm",value,"nsh"*(mcpart[ipart]));
       }
     }
     selfrac->Divide(sel,norm);
