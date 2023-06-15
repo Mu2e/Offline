@@ -215,7 +215,7 @@ namespace mu2e {
           {9900, 22}          // Cherenkov gamma
       };
 
-      virtual bool generate(GenParticleCollection &, unsigned int &);
+      virtual bool generate(GenParticleCollection &, unsigned long long &);
       void openFile(ifstream *f, unsigned &run, float &lowE, float &highE);
 
     private:
@@ -252,7 +252,7 @@ namespace mu2e {
       unsigned _current_event_number = -1;
       unsigned _event_count = 0;
       unsigned _run_number = -1;
-      unsigned int _primaries = 0;
+      unsigned long long _primaries = 0;
 
       Format _infmt{Format::UNDEFINED};
 

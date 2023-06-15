@@ -4,16 +4,10 @@
 # services.DbService.purpose: MDC2020_perfect
 # services.DbService.version: v1_0
 #
+#include "Production/JobConfig/reco/prolog.fcl"
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
-#include "Production/JobConfig/reco/prolog.fcl"
 #include "Offline/Mu2eKinKal/fcl/prolog_trigger.fcl"
-#include "Offline/TrkHitReco/fcl/prolog_trigger.fcl"
-#include "Offline/TrkReco/fcl/prolog_trigger.fcl"
-#include "Offline/TrkPatRec/fcl/prolog_trigger.fcl"
-#include "Offline/TrkFilters/fcl/prolog_trigger.fcl"
-#include "Offline/CalPatRec/fcl/prolog.fcl"
-#include "Offline/CalPatRec/fcl/prolog_trigger.fcl"
 #include "Offline/Trigger/fcl/prolog_trigger.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 #include "Offline/CommonMC/fcl/prolog.fcl"
@@ -90,7 +84,7 @@ physics :
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTtimeClusterFinder, tprDeMHighPStopTargTCFilter, TThelixFinder,
     TTHelixMergerDeM, tprDeMHighPStopTargHSFilter,
-    TTKSFDeM, tprDeMHighPStopTargTSFilter ]
+    TTKSFDeM, tprDeMHighPStopTargTSFilter]
   cprDeM_highP_stopTarg           : [ @sequence::CaloHitRecoTrigger.prepareHits, @sequence::CaloClusterTrigger.Reco,
     @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
     TTCalTimePeakFinder, cprDeMHighPStopTargTCFilter, TTCalHelixFinderDe,

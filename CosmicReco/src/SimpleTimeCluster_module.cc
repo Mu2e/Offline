@@ -92,7 +92,9 @@ SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
     _minnpanels(conf().minnpanels()),
     _hasmaxnsh(false),
     _maxnsh(0),
+    _usetimeWindow(conf().usetimewindow()),
     _timeWindow(conf().timewindow()),
+    _usetimeStep(conf().usetimestep()),
     _timeStep(conf().timestep()),
     _testflag(conf().testflag()),
     _useonepanel(conf().useonepanel()),
@@ -163,7 +165,7 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
     if (startIndex > endIndex)
       endIndex = startIndex;
     double startTime = ordChCol[startIndex].correctedTime();
-    double endTime;
+    double endTime = -1;
     while (true) {
       endIndex++;
       if (endIndex >= ordChCol.size())

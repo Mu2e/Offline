@@ -1,6 +1,6 @@
 physics.filters.cprDePLowPStopTargTSFilter.fitparticle   : @local::Particle.eplus
 physics.filters.cprDePLowPStopTargTSFilter.fitdirection  : @local::FitDir.downstream
-physics.filters.cprDePLowPStopTargTSFilter.minNStrawHits : 15.0
+physics.filters.cprDePLowPStopTargTSFilter.minNStrawHits : 15
 physics.filters.cprDePLowPStopTargTSFilter.minMomentum   : 50.0
 physics.filters.cprDePLowPStopTargTSFilter.maxMomentum   : 70.0
 physics.filters.cprDePLowPStopTargTSFilter.maxChi2DOF    : 20.0

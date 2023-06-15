@@ -13,8 +13,8 @@ makeSH : {
   MaximumTime             : 1690.0 # ns
   MinimumEnergy           : 0.0001 # MeV
   MaximumEnergy           : 0.0035 # MeV
-  MinimumRadius           : 0.0 # mm
-  MaximumRadius           : 800.0 # mm
+  MinimumRadius           : 395.0 # mm
+  MaximumRadius           : 650.0 # mm
   FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
@@ -58,22 +58,24 @@ makePH : {
 # combine panel hits in a station
 makeSTH : {
   module_type           : MakeStereoHits
+  # input configuration
   TestFlag              : true
-  MVA                   : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
   ComboHitCollection    : "makePH"
   StrawHitSelectionBits : ["RadiusSelection","EnergySelection","TimeSelection"]
   StrawHitRejectionBits : []
+  # hit adding parameters
   MaxDt                 : 40 # ns
-  UseTOT                : true
-  MaxDPerp              : 500
-  MaxWdot               : 0.9
-  MaxChisquared         : 5.0
-  MinMVA                : 0.6
-  UVRes                 : 10.0 # mm
-  ZErrorFactor          : 1.0 # mm
-  MinRho                : 330 # mm
-  MaxRho                : 700 # mm
+  MaxDPerp              : 300 # mm
+  MaxChisquared         : 20.0
+  UVRes                 : 5.0 # intrinsic resolution mm
+  MinRho                : 300 # mm
+  MaxRho                : 800 # mm
+  # MVA parameters
   DoMVA                 : false
+  MinMVA                : 0.6
+  MVA                   : { MVAWeights : "Offline/TrkHitReco/test/StereoMVA.weights.xml" }
+  # parameters used to define overlapping panels
+  MaxWdot               : 0.9
   MaxFaceSeparation     : 3
   MaxDz                 : 100.0 # mm
   SelectionMask         : "station"

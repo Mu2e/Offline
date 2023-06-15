@@ -1,2 +1,2 @@
 physics.filters.tprHelixUePTCFilter.requireCaloCluster : false
-physics.filters.tprHelixUePTCFilter.minNStrawHits : 10.0
+physics.filters.tprHelixUePTCFilter.minNStrawHits      : 15
