@@ -318,8 +318,8 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
 
         // temporary hack, FIXME
         mu2e::EventWindowMarker ewm;
-        ewm._spillType = mu2e::EventWindowMarker::offspill;
-        ewm._eventLength = 1e5;
+        ewm._spillType = mu2e::EventWindowMarker::onspill;
+        ewm._eventLength = 1695.0;
         _shrUtils.createComboHit(ewm,-1,chCol, shCol, caloClusters, pbtOffset, sid, tdc, tot, pmp, trackerStatus,  srep, tt);
       }
 
