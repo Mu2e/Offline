@@ -73,6 +73,9 @@ DAQ : {
          nSigmaNoise   : 4
          # hitEDepMax    : 80.
          hitEDepMax    : 1000. # for testing
+         hitEDepMin    : 1.0
+         caphriEDepMax : 5.0 #MeV
+         caphriEDepMin : 1.0 #MeV
       }
 
       CrvDigi:

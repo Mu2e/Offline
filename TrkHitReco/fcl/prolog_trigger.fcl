@@ -19,6 +19,8 @@ TTmakeSH : {
 # combine hits in a panel
 TTmakePH : {
   @table::makePH
+  TestFlag   : false # not needed, since TTmakeSH is filtering
+  FilterHits : false
   ComboHitCollection    : "TTmakeSH"
   StrawHitSelectionBits : []
   StrawHitMask          : []
@@ -36,7 +38,6 @@ TTmakePHUCC : {
 # stereo version: defer the radius test
 TTSmakePH : {
   @table::TTmakePH
-  TestRadius : false
 }
 # combine panel hits in a station
 TTmakeSTH : {
