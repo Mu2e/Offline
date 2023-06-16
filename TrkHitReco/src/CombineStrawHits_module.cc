@@ -152,14 +152,14 @@ namespace mu2e {
   {
 
     // don't filter OffSpill
-    bool filter = _filter && ewm.spillType() == EventWindowMarker::offspill;
+    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
     std::vector<bool> isUsed(chcOrig.size(),false);
     for (size_t ich=0;ich<chcOrig.size();++ich) {
       if (isUsed[ich]) continue;
       isUsed[ich] = true;
 
       const ComboHit& hit1 = chcOrig[ich];
-      if ( _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask)) ) continue;
+      if ( _filter && _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
       combohit.init(hit1,ich);
       int panel1 = hit1.strawId().uniquePanel();
@@ -170,7 +170,7 @@ namespace mu2e {
 
         if (hit2.strawId().uniquePanel() != panel1) break;
         if (abs(hit2.strawId().straw()-hit1.strawId().straw())> _maxds ) continue; // hits are not sorted by straw number
-        if ( _testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
+        if ( _filter && _testflag && (!hit2.flag().hasAllProperties(_shsel) || hit2.flag().hasAnyProperty(_shmask)) ) continue;
 
         float dt = _useTOT ? fabs(hit1.correctedTime() - hit2.correctedTime()) : fabs(hit1.time() - hit2.time());
         if (dt > _maxdt) continue;
