@@ -404,9 +404,6 @@ namespace mu2e {
 
         mapContainer.emplace_back(dsmap);
 
-        if (config.writeBinaries()) {
-          writeG4BLBinary(*dsmap, key + ".bin");
-        }
     }
 
 

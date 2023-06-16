@@ -75,9 +75,9 @@ CprTrigger : { @table::CprTrigger
 
         TTDeltaFinder : { @table::CalPatRec.producers.DeltaFinder
             chCollTag                     : TTmakePH                # input coll
-            shCollTag                     : TTmakeSH                # input coll
-            writeStrawHitFlags           : 0
-            writeComboHits                : 1
+            sschCollTag                   : TTmakeSH                # input coll
+            writeStrawHitFlags            : 0
+            writeFilteredComboHits        : 1
         }
 
 #------------------------------------------------------------------------------
