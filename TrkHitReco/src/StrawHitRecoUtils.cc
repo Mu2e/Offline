@@ -81,7 +81,7 @@ namespace mu2e {
       TrackerStatus const& trackerStatus, StrawResponse const& srep, Tracker const& tt) const {
 
     // don't filter OffSpill.  But always flag if not filtering
-    bool filter = _filter && ewm.spillType() == EventWindowMarker::offspill;
+    bool filter = _filter && ewm.spillType() == EventWindowMarker::onspill;
 
     // flag digis that shouldn't be here or we don't want; true for both On and OffSpill
     StrawHitFlag flag;
