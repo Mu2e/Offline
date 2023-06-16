@@ -33,6 +33,7 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
@@ -314,7 +315,12 @@ void art::StrawHitRecoFromFragments::analyze_tracker_(
           ADCWFIter maxiter;
           pmp = _shrUtils.peakMinusPedWF(trkDataPair.second,srep,maxiter);
         }
-        _shrUtils.createComboHit(-1,chCol, shCol, caloClusters, pbtOffset, sid, tdc, tot, pmp, trackerStatus,  srep, tt);
+
+        // temporary hack, FIXME
+        mu2e::EventWindowMarker ewm;
+        ewm._spillType = mu2e::EventWindowMarker::offspill;
+        ewm._eventLength = 1e5;
+        _shrUtils.createComboHit(ewm,-1,chCol, shCol, caloClusters, pbtOffset, sid, tdc, tot, pmp, trackerStatus,  srep, tt);
       }
 
       //flag straw and electronic cross-talk
