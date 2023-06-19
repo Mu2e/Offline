@@ -4,8 +4,6 @@
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 //#include "DbTables/inc/DbIoV.hh"
 #include "Offline/DbService/inc/DbHandle.hh"
-#include "Offline/DbTables/inc/CalRoIDMapDIRACToOffline.hh"
-#include "Offline/DbTables/inc/CalRoIDMapOfflineToDIRAC.hh"
 
 #include "Offline/CaloConditions/inc/CaloDAQMapMaker.hh"
 
