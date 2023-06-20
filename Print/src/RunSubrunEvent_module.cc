@@ -175,15 +175,15 @@ void mu2e::RunSubrunEvent::endJob() {
   std::sort(_subruns.begin(), _subruns.end());
 
   std::cout << "start RunSubrunEvent::endJob summary" << std::endl;
-  std::cout << "  rs.first_run_subrun    " << _min_run_s  << std::endl;
+  std::cout << "  rs.first_run           " << _min_run_s  << std::endl;
   std::cout << "  rs.first_subrun        " << _min_sub  << std::endl;
-  std::cout << "  rs.last_run_subrun     " << _max_run_s  << std::endl;
+  std::cout << "  rs.last_run            " << _max_run_s  << std::endl;
   std::cout << "  rs.last_subrun         " << _max_sub  << std::endl;
-  std::cout << "  rse.first_run_event    " << _min_run_e  << std::endl;
-  std::cout << "  rse.first_subrun_event " << _min_sub_e  << std::endl;
+  std::cout << "  rse.first_run          " << _min_run_e  << std::endl;
+  std::cout << "  rse.first_subrun       " << _min_sub_e  << std::endl;
   std::cout << "  rse.first_event        " << _min_evt  << std::endl;
-  std::cout << "  rse.last_run_event     " << _max_run_e  << std::endl;
-  std::cout << "  rse.last_subrun_event  " << _max_sub_e  << std::endl;
+  std::cout << "  rse.last_run           " << _max_run_e  << std::endl;
+  std::cout << "  rse.last_subrun        " << _max_sub_e  << std::endl;
   std::cout << "  rse.last_event         " << _max_evt  << std::endl;
   std::cout << "  rse.nevent             " << _eventCount  << std::endl;
   std::cout << "end RunSubrunEvent::endJob summary" << std::endl;
