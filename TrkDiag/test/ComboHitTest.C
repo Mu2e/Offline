@@ -617,7 +617,9 @@ void ComboHitTest(TTree* CHD, const char* page="sel"){
         snprintf(value,10,"%i:%i",isel,ipart);
 //        std::cout << "value " << value << std::endl;
 //        std::cout << "cut" << select[isel]+mcpart[ipart] << std::endl;
-        CHD->Project("+sel",value,"nsh"*(select[isel]+mcpart[ipart]));
+        // using bkg==0 doesn't make sense for lowEe, flipping the sign
+        if(isel == 3 && ipart == 3) CHD->Project("+sel",value,"nsh"*("bkg"+mcpart[ipart]));
+        else CHD->Project("+sel",value,"nsh"*(select[isel]+mcpart[ipart]));
         CHD->Project("+norm",value,"nsh"*(mcpart[ipart]));
       }
     }

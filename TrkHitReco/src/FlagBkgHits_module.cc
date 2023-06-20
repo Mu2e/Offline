@@ -233,22 +233,22 @@ namespace mu2e
         hitplanes[ch.strawId().plane()] += ch.nStrawHits();
       }
       unsigned npexp(0),np(0),nhits(0);
-      unsigned ipmin(0),ipmax(StrawId::_nplanes-1);
+      int ipmin(0),ipmax(StrawId::_nplanes-1);
       while (hitplanes[ipmin]==0 && ipmin<StrawId::_nplanes) ++ipmin;
       while (hitplanes[ipmax]==0 and ipmax>0)                --ipmax;
-      for (unsigned ip = ipmin; ip <= ipmax; ++ip) {
+      int fp(ipmin),lp(ipmin-1),pgap(0);
+      for (int ip = ipmin; ip <= ipmax; ++ip) {
         npexp++; // should use TTracker to see if plane is physically present FIXME!
-        if (hitplanes[ip]> 0)++np;
+        if (hitplanes[ip]> 0){
+          ++np;
+          if(lp > 0 && ip - lp -1 > pgap)pgap = ip - lp -1;
+          if(ip > lp)lp = ip;
+          if(ip < fp)fp = ip;
+          lp = ip;
+        }
         nhits += hitplanes[ip];
       }
       if(nhits >= minnhits_ && np >= minnp_){
-        // find min/max z: this should be replaced with plane variables FIXME
-        std::vector<float> hz;
-        for (const auto& chit : cluster.hits()) hz.push_back(chcol[chit].pos().z());
-        // find the min, max and largest gap from the sorted Z positions
-        std::sort(hz.begin(),hz.end());
-        float zgap = 0.0;
-        for (unsigned iz=1;iz<hz.size();++iz) zgap=std::max(zgap,hz[iz]-hz[iz-1]);
         // find averages
         double sumEdep(0.);
         double sqrSumDeltaTime(0.);
@@ -262,18 +262,16 @@ namespace mu2e
           sqrSumDeltaTime += std::pow(chcol[chit].time() - cluster.time(),2);
         }
         // fill mva input variables
-        std::array<float,11> kerasvars;
-        kerasvars[0] = cluster.pos().Rho();
-        kerasvars[1] = hz.front(); // Z min
-        kerasvars[2] = hz.back(); // Z max
-        kerasvars[3] = zgap; // max Z gap
-        kerasvars[4] = np;
-        kerasvars[5] = static_cast<float>(np)/static_cast<float>(npexp);
-        kerasvars[6] = nhits;
-        kerasvars[7] = std::sqrt(sqrSumDeltaX/nchits);  // x and y RMS should be replaced with with rho rms FIXME
-        kerasvars[8] = std::sqrt(sqrSumDeltaY/nchits);
-        kerasvars[9] = std::sqrt(sqrSumDeltaTime/nchits);
-        kerasvars[10] = sumEdep/nchits;
+        std::array<float,9> kerasvars;
+        kerasvars[0] = cluster.pos().Rho(); // cluster rho, cyl coor
+        kerasvars[1] = fp;// first plane hit
+        kerasvars[2] = lp;// last plane hit
+        kerasvars[3] = pgap;// largest plane gap without hits between planes with hits
+        kerasvars[4] = np;// # of planes hit
+        kerasvars[5] =  static_cast<float>(np)/static_cast<float>(lp - fp);// fraction of planes hit between first and last plane
+        kerasvars[6] = nhits;// sum of straw hits
+        kerasvars[7] = std::sqrt((sqrSumDeltaX+sqrSumDeltaY)/nchits);  // RMS of cluster rho
+        kerasvars[8] = std::sqrt(sqrSumDeltaTime/nchits);// RMS of cluster time
 
         auto kerasout = sofiePtr->infer(kerasvars.data());
         cluster.setKerasQ(kerasout[0]);

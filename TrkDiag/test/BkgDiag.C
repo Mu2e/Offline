@@ -9,7 +9,7 @@
 
 void BkgDiag(TTree* bdiag, const char* page="rho",double mvacut=0.5) {
   TString spage(page);
-  TCut cluster("nsh>3&&np>1");
+  TCut cluster("nsh>=3&&np>1");
   TCut pri("prel==0&&mmom.R()>100");
   TCut prirel("prel>0");
   TCut ebkg("prel<0&&abs(mpdg)==11&&mmom.R()<10.0");
