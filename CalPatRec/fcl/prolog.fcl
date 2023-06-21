@@ -570,12 +570,12 @@ CalPatRec : { @table::CalPatRec
             saveProtCand               : 0
             useCCs                     : 1
             recoverCCs                 : 1
-            chCollLabel                : "makePH"
+            chCollLabel                : "FlagBkgHits"
             chCollLabel2               : "makeSH"
             tcCollLabel                : "TimeClusterFinderDe"
-            shfCollLabel               : "FlagBkgHits:ComboHits"
             ccCollLabel                : "CaloClusterMaker"
             hitBkgBits                 : ["Noisy","Dead","Background"]
+            radSelect                  : 1
             chunkSep                   : 5
             chunkWindow                : 20.0
             chunkThresh                : 3
