@@ -34,7 +34,7 @@ namespace mu2e {
 
       struct Config
       {
-        using Name = fhicl::Name;
+        using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
         fhicl::Atom<float>            hitDistance {     Name("HitDistance"),      Comment("Minimum cluster hit distance")  };
         fhicl::Atom<float>            seedDistance{     Name("SeedDistance"),     Comment("Minimum distance for cluster seed")  };
@@ -59,26 +59,23 @@ namespace mu2e {
       virtual ~TNTClusterer() {};
 
       void          init        ();
-      virtual void  findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters,
-          const ComboHitCollection& shcol, int iev);
-      virtual float distance    (const BkgCluster& cluster, const ComboHit& hit) const;
+      virtual void  findClusters(BkgClusterCollection& clusters, const ComboHitCollection& shcol, int iev);
+      virtual float distance    (const BkgCluster& cluster,      const ComboHit& hit) const;
 
 
     private:
-      static const int numBuckets = 256; //number of buckets to store the clusters vs time - optimized for speed
-      using arrayVecBkg = std::array<std::vector<int>,numBuckets>;
+      static constexpr int numBuckets_ =256; //number of buckets to store the cluster ids vs time
 
-      void     initClu      (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
-      void     clusterAlgo  (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo, float tbin);
-      unsigned formClusters (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, float tbin,
-          std::vector<BkgHit>& hinfo, arrayVecBkg& hitIndex);
-      void     mergeClusters(std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol,
-          std::vector<BkgHit>& hinfo, float dt, float dd2);
-      void     mergeTwoClu  (BkgCluster& clu1, BkgCluster& clu2 );
-      void     updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
-      void     dump         (const std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
+      void     initClustering  (const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
+      void     doClustering    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
+      unsigned formClusters    (const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& hinfo);
+      void     mergeClusters   (std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo,
+                                float dt, float dd2);
+      void     mergeTwoClusters(BkgCluster& clu1, BkgCluster& clu2);
+      void     updateCluster   (BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& hinfo);
+      void     dump            (const std::vector<BkgCluster>& clusters, const std::vector<BkgHit>& hinfo);
 
-      std::vector<int> hitDtIdx_;
+      float            tbin_;
       float            dhit_;
       float            dseed_;
       float            dd_;
@@ -96,7 +93,6 @@ namespace mu2e {
       StrawHitFlag     sigmask_;
       bool             testflag_;
       int              diag_;
-      int              ditime_;
   };
 }
 #endif
