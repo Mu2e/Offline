@@ -1,0 +1,33 @@
+// Small Steel door, East side
+// SimpleConfig geometry file automatically produced for original file:
+//
+
+
+string building.remote.handling.SteelDoor.1.name     = "remoteHandlingSteelDoor1";
+
+string building.remote.handling.SteelDoor.1.material = "G4_STAINLESS-STEEL";
+
+double building.remote.handling.SteelDoor.1.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.SteelDoor.1.offsetFromFloorSurface.y = 1120.775;
+double building.remote.handling.SteelDoor.1.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.SteelDoor.1.yHalfThickness           = 1120.775;
+
+// Steel door thickness assumed to be 1-3/4"
+vector<double> building.remote.handling.SteelDoor.1.xPositions = {
+  3663.95,   // P0
+  3708.4,    // P1
+  3708.4,    // P2
+  3663.95    // P3
+};
+
+vector<double> building.remote.handling.SteelDoor.1.yPositions = {
+  8674.1,   // P0
+  8674.1,   // P1
+  9702.8,   // P2
+  9702.8    // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:
