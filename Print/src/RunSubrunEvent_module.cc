@@ -23,7 +23,7 @@
 
 namespace mu2e {
 
-class RunEventSubRun : public art::EDAnalyzer {
+class RunSubrunEvent : public art::EDAnalyzer {
  public:
   struct Config {
     using Name = fhicl::Name;
@@ -41,7 +41,7 @@ class RunEventSubRun : public art::EDAnalyzer {
   // this line is required by art to allow the command line help print
   typedef art::EDAnalyzer::Table<Config> Parameters;
 
-  explicit RunEventSubRun(const Parameters& conf);
+  explicit RunSubrunEvent(const Parameters& conf);
   void beginRun(art::Run const& run) override;
   void beginSubRun(art::SubRun const& subRun) override;
   void analyze(art::Event const& event) override;
@@ -74,7 +74,7 @@ class RunEventSubRun : public art::EDAnalyzer {
 
 }  // namespace mu2e
 
-mu2e::RunEventSubRun::RunEventSubRun(const Parameters& conf) :
+mu2e::RunSubrunEvent::RunSubrunEvent(const Parameters& conf) :
     art::EDAnalyzer(conf), _printSam(conf().printSam()),
     _printRun(conf().printRun()), _printSubrun(conf().printSubrun()),
     _printEvent(conf().printEvent()), _max_run_s(0),
@@ -82,13 +82,13 @@ mu2e::RunEventSubRun::RunEventSubRun(const Parameters& conf) :
     _max_sub(0), _min_sub(-1), _max_run_e(0), _min_run_e(-1), _max_evt(0),
     _min_evt(-1), _runCount(0), _subrunCount(0), _eventCount(0) {}
 
-void mu2e::RunEventSubRun::beginRun(art::Run const& run) {
+void mu2e::RunSubrunEvent::beginRun(art::Run const& run) {
   _runCount++;
 
   if (_printRun) printf("Run    %10u\n", run.run());
 }
 
-void mu2e::RunEventSubRun::beginSubRun(art::SubRun const& subRun) {
+void mu2e::RunSubrunEvent::beginSubRun(art::SubRun const& subRun) {
   _subrunCount++;
 
   if (_printSubrun) printf("Subrun %10u %10u\n", subRun.run(), subRun.subRun());
@@ -122,7 +122,7 @@ void mu2e::RunEventSubRun::beginSubRun(art::SubRun const& subRun) {
   }
 }
 
-void mu2e::RunEventSubRun::analyze(art::Event const& event) {
+void mu2e::RunSubrunEvent::analyze(art::Event const& event) {
   _eventCount++;
 
   if (_printEvent)
@@ -164,7 +164,7 @@ void mu2e::RunEventSubRun::analyze(art::Event const& event) {
   }
 }
 
-void mu2e::RunEventSubRun::endJob() {
+void mu2e::RunSubrunEvent::endJob() {
   printf("%6d BeginRun records found\n", _runCount);
   printf("%6d Subrun records found\n", _subrunCount);
   printf("%6d Event records found\n", _eventCount);
@@ -174,30 +174,19 @@ void mu2e::RunEventSubRun::endJob() {
   // order the subruns
   std::sort(_subruns.begin(), _subruns.end());
 
-  std::cout << "start RunEventSubRun::endJob summary" << std::endl;
-  std::cout << "{" << std::endl;
-  std::cout << "  \"event_count\"      : " << _eventCount << "," << std::endl;
-  std::cout << "  \"dh.first_run_subrun\" : " << _min_run_s << "," << std::endl;
-  std::cout << "  \"dh.first_subrun\"     : " << _min_sub << "," << std::endl;
-  std::cout << "  \"dh.first_run_event\"  : " << _min_run_e << "," << std::endl;
-  std::cout << "  \"dh.first_subrun_event\" : " << _min_sub_e << ","
-            << std::endl;
-  std::cout << "  \"dh.first_event\"      : " << _min_evt << "," << std::endl;
-  std::cout << "  \"dh.last_run_subrun\"  : " << _max_run_s << "," << std::endl;
-  std::cout << "  \"dh.last_subrun\"      : " << _max_sub << "," << std::endl;
-  std::cout << "  \"dh.last_run_event\"   : " << _max_run_e << "," << std::endl;
-  std::cout << "  \"dh.last_subrun_event\"  : " << _max_sub_e << ","
-            << std::endl;
-  std::cout << "  \"dh.last_event\"       : " << _max_evt << "," << std::endl;
-  std::cout << "  \"runs\"             : [\n";
-  for (auto sr : _subruns) {
-    std::cout << "\t[";
-    std::cout << sr.run() << "," << sr.subRun() << ",\"unknown\"]";
-    if (sr != _subruns.back()) std::cout << ",\n";
-  }
-  std::cout << "\n\t\t]" << std::endl;
-  std::cout << "}" << std::endl;
-  std::cout << "end RunEventSubRun::endJob summary" << std::endl;
+  std::cout << "start RunSubrunEvent::endJob summary" << std::endl;
+  std::cout << "  rs.first_run           " << _min_run_s  << std::endl;
+  std::cout << "  rs.first_subrun        " << _min_sub  << std::endl;
+  std::cout << "  rs.last_run            " << _max_run_s  << std::endl;
+  std::cout << "  rs.last_subrun         " << _max_sub  << std::endl;
+  std::cout << "  rse.first_run          " << _min_run_e  << std::endl;
+  std::cout << "  rse.first_subrun       " << _min_sub_e  << std::endl;
+  std::cout << "  rse.first_event        " << _min_evt  << std::endl;
+  std::cout << "  rse.last_run           " << _max_run_e  << std::endl;
+  std::cout << "  rse.last_subrun        " << _max_sub_e  << std::endl;
+  std::cout << "  rse.last_event         " << _max_evt  << std::endl;
+  std::cout << "  rse.nevent             " << _eventCount  << std::endl;
+  std::cout << "end RunSubrunEvent::endJob summary" << std::endl;
 }
 
-DEFINE_ART_MODULE(mu2e::RunEventSubRun)
+DEFINE_ART_MODULE(mu2e::RunSubrunEvent)

@@ -1,0 +1,21 @@
+#
+# print run, event subrun summaries for a file
+#
+
+process_name : rse
+
+physics :{
+  analyzers: {
+      res : {
+         module_type : RunSubrunEvent
+      }
+      genCountPrint: {
+         module_type: GenEventCountReader
+         makeHistograms: false
+      }
+   }
+
+   e1        : [ res , genCountPrint ]
+   end_paths : [ e1 ]
+
+}
