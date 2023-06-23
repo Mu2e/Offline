@@ -14,6 +14,7 @@ S Middleton 2023
 #include <map>
 #include "cetlib_except/exception.h"
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 
 namespace mu2e {
 
