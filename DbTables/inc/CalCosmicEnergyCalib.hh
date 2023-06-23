@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 
 namespace mu2e {
 
@@ -15,8 +16,8 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(uint16_t roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
-      uint16_t  roid() const { return _roid;}
+      Row(std::uint16_t roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
+      std::uint16_t  roid() const { return _roid;}
       float EPeak() const { return _EPeak; }
       float ErrEPeak() const { return _ErrEPeak; }
       float Width() const { return _Width; }
@@ -24,7 +25,7 @@ namespace mu2e {
       float chisq() const { return _chisq; }
 
     private:
-      uint16_t  _roid;
+      std::uint16_t  _roid;
       float _EPeak;
       float _ErrEPeak;
       float _Width;
@@ -36,29 +37,27 @@ namespace mu2e {
 
     CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,EPeak,ErrEPeak,Width,ErrWidth,chisq"){}
 
-    const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    const Row& row(const int roid) const { return _rows.at(roid); }
+    const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
+    const Row& row(std::uint16_t roid) const { return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
-      int roid = std::stoi(columns[0]);
-      // enforce a strict sequential order - optional
-      if(roid!=int(_rows.size())) {
+      std::uint16_t index = std::stoul(columns[0]);
+    // enforce order, so channels can be looked up by index
+    if (index >= CaloConst::_nChannel  || index != _rows.size()) {
         throw cet::exception("CALOCOSMICCALIB_BAD_INDEX")
-        << "CalCosmicEnergyCalib::addRow found index out of order: "
-        <<roid << " != " << _rows.back().roid()+1 <<"\n";
+        << "CalCosmicEnergyCalib::addRow found index out of order: " <<"\n";
       }
-       _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
-      // add this channel to the map index - optional
-      //_chanIndex[_rows.back().roid()] = _rows.size()-1;
+       _rows.emplace_back(index,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
+
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
-      sstream << r.roid()<<",";
+      sstream << 0 <<","; //TODO
       sstream << r.EPeak()<<",";
       sstream << r.ErrEPeak()<<",";
       sstream << r.Width()<<",";
