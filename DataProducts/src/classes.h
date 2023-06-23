@@ -23,7 +23,9 @@
 #include "Offline/DataProducts/inc/Helicity.hh"
 
 // calorimeter
-#include "Offline/DataProducts/inc/CaloId.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
+#include "Offline/DataProducts/inc/CaloRawSiPMId.hh"
+#include "Offline/DataProducts/inc/CrystalId.hh"
 
 // CRV
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"

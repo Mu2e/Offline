@@ -1,5 +1,5 @@
 #include "Offline/CaloConditions/inc/CaloDAQMapMaker.hh"
-#include "Offline/DataProducts/inc/CaloId.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include <vector>
 
 
@@ -26,7 +26,7 @@ namespace mu2e {
     // For calorimeter local array#1: DIRAC2Calo
     // Loops over NumCaloDIRAC*NumChanDIRAC channels
     //
-    int NumDIRACTotChannel(CaloId::_nTotChannel);
+    int NumDIRACTotChannel(CaloConst::_nRawChannel);
     std::vector<uint16_t> dirac2calo(NumDIRACTotChannel);
     for (int i=0;i<NumDIRACTotChannel;i++){
       dirac2calo[i] = tdtc->rowAt(i).caloRoID();
@@ -35,7 +35,7 @@ namespace mu2e {
     //
     // For Calo crystals to DIRAC: 674*2*2 values
     //
-    int NumCaloTotChannel(CaloId::_nCrystalChannel);
+    int NumCaloTotChannel(CaloConst::_nChannel);
     std::vector<uint16_t> calo2dirac(NumCaloTotChannel);
 
     for (int i=0;i<NumCaloTotChannel;i++){
