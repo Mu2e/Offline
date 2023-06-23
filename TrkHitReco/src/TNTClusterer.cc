@@ -1,12 +1,11 @@
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
-#include <vector>
 #include <algorithm>
+#include <vector>
 #include <queue>
 
 namespace mu2e
 {
   TNTClusterer::TNTClusterer(const Config& config) :
-    hitDtIdx_(),
     dhit_       (config.hitDistance()),
     dseed_      (config.seedDistance()),
     dd_         (config.clusterDiameter()),
@@ -21,85 +20,70 @@ namespace mu2e
     testflag_   (config.testflag()),
     diag_       (config.diag())
   {
-    // cache some values
-    float minerr (config.minHitError());
-    float maxdist(config.maxDistance());
-    float trms   (config.timeRMS());
+     float minerr (config.minHitError());
+     float maxdist(config.maxDistance());
+     float trms   (config.timeRMS());
 
-    dd2_      = dd_*dd_;
-    maxwt_    = 1.0f/minerr;
-    md2_      = maxdist*maxdist;
-    trms2inv_ = 1.0f/trms/trms;
+     tbin_     =1.0;
+     dd2_      = dd_*dd_;
+     maxwt_    = 1.0f/minerr;
+     md2_      = maxdist*maxdist;
+     trms2inv_ = 1.0f/trms/trms;
   }
 
 
   //---------------------------------------------------------------------------------------
-  void TNTClusterer::init(){}
+  void TNTClusterer::init() {}
 
 
   //----------------------------------------------------------------------------------------------------------
-  void TNTClusterer::findClusters(BkgClusterCollection& preFilterClusters, BkgClusterCollection& postFilterClusters,
-      const ComboHitCollection& chcol, int iev)
+  void TNTClusterer::findClusters(BkgClusterCollection& clusters, const ComboHitCollection& chcol, int iev)
   {
     std::vector<BkgHit> BkgHits;
     BkgHits.reserve(chcol.size());
     if (chcol.empty()) return;
 
-    //Loop over hits to find max hit time and define the time binning to index clusters in the clustering algo
-    auto maxTime = std::max_element(chcol.begin(),chcol.end(),[](const auto a, const auto b){return a.correctedTime() <b.correctedTime();})->correctedTime()+1.0f;
-    float tbin   = maxTime/float(numBuckets);
-    int  ditime  = int(maxHitdt_/tbin);
-    hitDtIdx_.clear();
-    for (int i=0;i<=ditime;++i) {hitDtIdx_.push_back(i); if (i>0) hitDtIdx_.push_back(-i);}
+    initClustering(chcol, BkgHits);
+    doClustering(chcol, clusters, BkgHits);
 
-    //Two stage clustering
-    initClu(chcol, postFilterClusters, BkgHits);
-    clusterAlgo(chcol, postFilterClusters, BkgHits, tbin);
+    auto removePred = [](auto& cluster) {return cluster.hits().empty();};
+    clusters.erase(std::remove_if(clusters.begin(),clusters.end(),removePred),clusters.end());
 
-    //removing empty usters
-    auto removePred = [](auto& cluster){return cluster.hits().empty();};
-    postFilterClusters.erase(std::remove_if(postFilterClusters.begin(),postFilterClusters.end(),removePred),postFilterClusters.end());
-
-    //Transform BkgHits indices into ComboHit indices
-    auto transPred = [&BkgHits] (const int i){return BkgHits[i].chidx_;};
-    for (auto& cluster: postFilterClusters) std::transform(cluster.hits().begin(),cluster.hits().end(),cluster.hits().begin(),transPred);
+    auto transPred = [&BkgHits] (const int i) {return BkgHits[i].chidx_;};
+    for (auto& cluster: clusters) std::transform(cluster.hits().begin(),cluster.hits().end(),cluster.hits().begin(),transPred);
   }
 
 
   //----------------------------------------------------------------------------------------------------------------------
-  // CLUSTERING ALGORITHM
-  //
-  void TNTClusterer::initClu(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
+  void TNTClusterer::initClustering(const ComboHitCollection& chcol, std::vector<BkgHit>& BkgHits)
   {
-    for (size_t ich=0; ich<chcol.size(); ++ich)
-    {
-      if (testflag_ && (!chcol[ich].flag().hasAllProperties(sigmask_) || chcol[ich].flag().hasAnyProperty(bkgmask_))) continue;
-      BkgHits.emplace_back(BkgHit(ich));
-    }
+     float maxTime(0);
+     for (size_t ich=0;ich<chcol.size();++ich) {
+       if (testflag_ && (!chcol[ich].flag().hasAllProperties(sigmask_) || chcol[ich].flag().hasAnyProperty(bkgmask_))) continue;
+       BkgHits.emplace_back(BkgHit(ich));
+       maxTime = std::max(maxTime,chcol[ich].correctedTime());
+     }
+     tbin_ = (maxTime+1.0)/float(numBuckets_);
 
-    if (comboInit_) std::sort(BkgHits.begin(),BkgHits.end(),
-        [&chcol](const BkgHit& x, const BkgHit& y)
-        {return chcol[x.chidx_].wireRes() < chcol[y.chidx_].wireRes();});
+     auto resPred = [&chcol](const BkgHit& x, const BkgHit& y) {return chcol[x.chidx_].wireRes() < chcol[y.chidx_].wireRes();};
+     if (comboInit_) std::sort(BkgHits.begin(),BkgHits.end(),resPred);
   }
 
 
   //----------------------------------------------------------------------------------------------------------------------
-  void TNTClusterer::clusterAlgo(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits, float tbin)
+  void TNTClusterer::doClustering(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
   {
-    arrayVecBkg hitIndex;
-    for (auto& vec : hitIndex) vec.reserve(16);
-
     unsigned niter(0);
     float odist(2.0f*maxDistSum_),tdist(0.0f);
-    while (std::abs(odist - tdist) > maxDistSum_ && niter < maxNiter_)
-    {
+    while (std::abs(odist - tdist) > maxDistSum_ && niter < maxNiter_) {
       ++niter;
-      formClusters(chcol, clusters,tbin,  BkgHits, hitIndex);
+      formClusters(chcol, clusters, BkgHits);
 
       odist = tdist;
       tdist = 0.0f;
-      for (const auto& cluster: clusters)
+      for (const auto& cluster: clusters) {
         for (const auto& cidx : cluster.hits()) tdist += BkgHits[cidx].distance_;
+      }
     }
   }
 
@@ -107,75 +91,71 @@ namespace mu2e
   //-------------------------------------------------------------------------------------------------------------------
   // loop over hits, re-affect them to their original cluster if they are still within the radius, otherwise look at
   // candidate clusters to check if they could be added. If not, make a new cluster.
-  // to speed up, do not update clusters who haven't changed and keep a list of clusters within a given time window
+  // speed up: don't update clusters who haven't changed + cache cluster id in a given time window in clusterIndex (array if vectors)
   //
-  unsigned TNTClusterer::formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, float tbin,
-      std::vector<BkgHit>& BkgHits, arrayVecBkg& hitIndex)
+  unsigned TNTClusterer::formClusters(const ComboHitCollection& chcol, std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
   {
-    unsigned nchanged(0);
-    for (auto& cluster : clusters) cluster.clearHits();
+    std::array<std::vector<int>, numBuckets_> clusterIndices;
+    for (size_t ic=0;ic<clusters.size();++ic) {
+      int itime  = int(clusters[ic].time()/tbin_);
+      clusterIndices[itime].emplace_back(ic);
+      clusters[ic].clearHits();
+    }
 
-    for (size_t ihit=0; ihit<BkgHits.size(); ++ihit)
-    {
+    int ditime(int(maxHitdt_/tbin_));
+    unsigned nchanged(0);
+    for (size_t ihit=0;ihit<BkgHits.size();++ihit) {
+
+      auto& hit  = BkgHits[ihit];
+      const auto& chit = chcol[hit.chidx_];
+
       // -- if hit is ok, reassign it right away
-      auto& hit = BkgHits[ihit];
-      if (hit.distance_ < dhit_)
-      {
+      if (hit.distance_ < dhit_) {
         clusters[hit.clusterIdx_].addHit(ihit);
         continue;
       }
 
-      // -- Find cluster closest to hit
+      // -- find closest cluster. restrict search to clusters close in time using the clusterIndices structure
       int minc(-1);
-      float mindist(dseed_+1.0f);
-      int itime = int(chcol[hit.chidx_].correctedTime()/tbin);
+      float mindist(dseed_ + 1.0f);
+      int itime = int(chit.correctedTime()/tbin_);
+      int imin = std::max(0,itime-ditime);
+      int imax = std::min(numBuckets_,itime+ditime+1);
 
-      for (auto i : hitDtIdx_)
-      {
-        if (itime+i >= numBuckets || itime+i<0) continue;
-        for (const auto& ic : hitIndex[itime+i])
-        {
+      for (int i=imin;i<imax;++i) {
+        for (const auto& ic : clusterIndices[i]) {
           float dist = distance(clusters[ic],chcol[hit.chidx_]);
-          if (dist < mindist) {mindist = dist; minc = ic;}
-          if (mindist < dhit_) break;
+          if (dist < mindist) {mindist = dist;minc = ic;}
         }
-        if (mindist < dhit_) break;
       }
 
-      // -- Form new cluster, add hit to new cluster or do nothing
-      if (mindist < dhit_)
-      {
+      // -- either add hit to existing cluster, form new cluster, or do nothing if hit is "in between"
+      if (mindist < dhit_) {
         clusters[minc].addHit(ihit);
       }
-      else if (mindist > dseed_)
-      {
+      else if (mindist > dseed_) {
         minc = clusters.size();
-        clusters.emplace_back(BkgCluster(chcol[hit.chidx_].pos(),chcol[hit.chidx_].correctedTime()));
+        clusters.emplace_back(BkgCluster(chit.pos(),chit.correctedTime()));
         clusters[minc].addHit(ihit);
-        int itimeClu  = int(chcol[hit.chidx_].correctedTime()/tbin);
-        hitIndex[itimeClu].emplace_back(minc);
+        int itime = int(chit.correctedTime()/tbin_);
+        clusterIndices[itime].emplace_back(minc);
       }
-      else
-      {
+      else{
         BkgHits[ihit].distance_ = 10000.0f;
         minc = -1;
       }
 
-      // -- Update cluster flag and hit->cluster pointer if associated to new cluster or removed from previous cluster
-      if (minc != -1)
-      {
-        if (hit.clusterIdx_ != minc)
-        {
+      // -- update cluster flag and hit->cluster pointer if association has changed
+      if (minc != -1) {
+        if (hit.clusterIdx_ != minc) {
           ++nchanged;
           if (hit.clusterIdx_ != -1) clusters[hit.clusterIdx_]._flag = BkgClusterFlag::update;
           clusters[minc]._flag = BkgClusterFlag::update;
         }
         hit.clusterIdx_ = minc;
       }
-      else
-      {
-        if (hit.clusterIdx_ != -1)
-        {
+      else {
+        if (hit.clusterIdx_ != -1) {
           ++nchanged;
           clusters[hit.clusterIdx_]._flag = BkgClusterFlag::update;
         }
@@ -183,26 +163,16 @@ namespace mu2e
       }
     }
 
-
-    //update cluster, hit distance and maps
-    for (auto& vec: hitIndex) vec.clear();
-
-    for (unsigned ic=0;ic<clusters.size();++ic)
-    {
-      BkgCluster& cluster = clusters[ic];
-      if (cluster._flag == BkgClusterFlag::update)
-      {
+    // -- update cluster and hit distance if needed
+    for (auto& cluster : clusters) {
+      if (cluster._flag == BkgClusterFlag::update) {
         cluster._flag = BkgClusterFlag::unchanged;
         updateCluster(cluster, chcol, BkgHits);
-
-        if (cluster.hits().size()==1)
-          BkgHits[cluster.hits().at(0)].distance_ = 0.0f;
-        else
+        if (cluster.hits().size()==1) {BkgHits[cluster.hits().at(0)].distance_ = 0.0f;}
+        else {
           for (auto& hit : cluster.hits()) BkgHits[hit].distance_ = distance(cluster,chcol[BkgHits[hit].chidx_]);
+        }
       }
-
-      int itimeClu  = int(cluster.time()/tbin);
-      hitIndex[itimeClu].emplace_back(ic);
     }
 
     return nchanged;
@@ -211,38 +181,33 @@ namespace mu2e
 
   //-----------------------------------------------------------------------------------------------
   void TNTClusterer::mergeClusters(std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol,
-      std::vector<BkgHit>& BkgHits, float dt, float dd2)
+                                   std::vector<BkgHit>& BkgHits, float dt, float dd2)
   {
     unsigned niter(0);
-    while (niter < maxNiter_)
-    {
+    while (niter < maxNiter_) {
       int nchanged(0);
-      for (auto it1 = clusters.begin(); it1 != std::prev(clusters.end()); ++it1)
-      {
+      for (auto it1 = clusters.begin();it1 != std::prev(clusters.end());++it1) {
         if (it1->hits().empty()) continue;
-        for (auto it2 = std::next(it1); it2!=clusters.end(); ++it2)
-        {
+        for (auto it2 = std::next(it1);it2!=clusters.end();++it2) {
           if (it2->hits().empty()) continue;
           if (std::abs(it1->time() - it2->time()) > dt) continue;
           if ((it1->pos() - it2->pos()).perp2() > dd2)  continue;
-
           ++nchanged;
-          mergeTwoClu(*it1,*it2);
+          mergeTwoClusters(*it1,*it2);
         }
       }
 
       ++niter;
       if (diag_>0) std::cout<<"Merge "<<niter<<" "<<nchanged<<"  "<<clusters.size()<<std::endl;
-
       if (nchanged==0) break;
 
-      std::remove_if(clusters.begin(),clusters.end(),[](auto& cluster){return cluster.hits().empty();});
+      std::remove_if(clusters.begin(),clusters.end(),[](auto& cluster) {return cluster.hits().empty();});
       for (auto& cluster : clusters ) updateCluster(cluster, chcol, BkgHits);
     }
     return;
   }
 
-  void TNTClusterer::mergeTwoClu(BkgCluster& clu1, BkgCluster& clu2 )
+  void TNTClusterer::mergeTwoClusters(BkgCluster& clu1, BkgCluster& clu2 )
   {
     if (clu1.hits().empty() || clu2.hits().empty()) return;
     clu1.hits().insert(clu1.hits().end(),clu2.hits().begin(), clu2.hits().end());
@@ -265,13 +230,12 @@ namespace mu2e
 
 
     float retval(0.0f);
-    if (dt > dt_) {float tdist = dt -dt_;  retval = tdist*tdist*trms2inv_;}
-    if (d2 > dd2_)
-    {
-      //This is equivalent to but faster than - yes, that's nice
+    if (dt > dt_) {float tdist = dt -dt_;retval = tdist*tdist*trms2inv_;}
+    if (d2 > dd2_) {
+      //This is equivalent to but faster than the commented lines
       //XYZVectorF that(-hit.wdir().y(),hit.wdir().x(),0.0);
       //float dw = std::max(0.0f,hit.wdir().Dot(psep)-dd_)/hit.posRes(ComboHit::wire);
-      //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;  //maxwt = 1/minerr
+      //float dp = std::max(0.0f,that.Dot(psep)-dd_)*maxwt_;//maxwt = 1/minerr
       float hwx = hit.wdir().x();
       float hwy = hit.wdir().y();
       float dw  = std::max(0.0f,(psep_x*hwx+psep_y*hwy-dd_)/hit.posRes(ComboHit::wire));
@@ -286,10 +250,9 @@ namespace mu2e
   void TNTClusterer::updateCluster(BkgCluster& cluster, const ComboHitCollection& chcol, std::vector<BkgHit>& BkgHits)
   {
 
-    if (cluster.hits().empty()) {cluster.time(0.0f); cluster.pos(XYZVectorF(0.0f,0.0f,0.0f));return;}
+    if (cluster.hits().empty()) {cluster.time(0.0f);cluster.pos(XYZVectorF(0.0f,0.0f,0.0f));return;}
 
-    if (cluster.hits().size()==1)
-    {
+    if (cluster.hits().size()==1) {
       int idx = BkgHits[cluster.hits().at(0)].chidx_;
       cluster.time(chcol[idx].correctedTime());
       cluster.pos(XYZVectorF(chcol[idx].pos().x(),chcol[idx].pos().y(),0.0f));
@@ -300,11 +263,9 @@ namespace mu2e
     float cphi  = cluster.pos().phi();
     float ctime = cluster.time();
 
-    if (useMedian_)
-    {
+    if (useMedian_) {
       std::vector<float> racc,pacc,tacc;
-      for (auto& hit : cluster.hits())
-      {
+      for (auto& hit : cluster.hits()) {
         int idx  = BkgHits[hit].chidx_;
         float dt = chcol[idx].correctedTime() - ctime;
         float dr = sqrtf(chcol[idx].pos().perp2()) - crho;
@@ -313,8 +274,7 @@ namespace mu2e
         if (dp < -M_PI) dp += 2*M_PI;
 
         // weight according to the # of hits
-        for (int i=0;i<chcol[idx].nStrawHits();++i)
-        {
+        for (int i=0;i<chcol[idx].nStrawHits();++i) {
           racc.emplace_back(dr);
           pacc.emplace_back(dp);
           tacc.emplace_back(dt);
@@ -333,8 +293,7 @@ namespace mu2e
     else
     {
       float sumWeight(0), deltaT(0), deltaP(0), deltaR(0);
-      for (auto& hit : cluster.hits())
-      {
+      for (auto& hit : cluster.hits()) {
         int   idx    = BkgHits[hit].chidx_;
         float weight = chcol[idx].nStrawHits();
         float dt     = chcol[idx].correctedTime()-ctime;
@@ -361,11 +320,10 @@ namespace mu2e
 
 
   //-------------------------------------------------------------------------------------------
-  void TNTClusterer::dump(const std::vector<BkgCluster>& clusters, std::vector<BkgHit>& BkgHits)
+  void TNTClusterer::dump(const std::vector<BkgCluster>& clusters, const std::vector<BkgHit>& BkgHits)
   {
     int iclu(0);
-    for (auto& cluster: clusters)
-    {
+    for (auto& cluster: clusters) {
       std::cout<<"Cluster "<<iclu<<" "<<cluster.pos()<<" "<<cluster.time()<<"  "<<cluster.hits().size()<<"  - ";
       for (auto& hit : cluster.hits()) std::cout<<BkgHits[hit].chidx_<<" ";
       std::cout<<std::endl;
