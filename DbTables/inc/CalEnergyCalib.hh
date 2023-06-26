@@ -14,7 +14,7 @@ S Middleton 2023
 #include <map>
 #include "cetlib_except/exception.h"
 #include "Offline/DbTables/inc/DbTable.hh"
-#include "Offline/DataProducts/inc/CaloConst.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
 
@@ -50,14 +50,15 @@ namespace mu2e {
     size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
-      int roid = std::stoi(columns[0]);
-      // enforce a strict sequential order - optional
-      if(roid!=int(_rows.size())) {
-        throw cet::exception("CALOENERGYCALIB_BAD_INDEX")<<"CalEnergyCalib::addRow found index out of order:"<<roid << " != " << _rows.back().roid()+1 <<"\n";
+      std::uint16_t index = std::stoul(columns[0]);
+    // enforce order, so channels can be looked up by index
+    if (index!=int(_rows.size())) {
+        throw cet::exception("CALOENERGYCALIB_BAD_INDEX")<<"CalEnergyCalib::addRow found index out of order:"<<index << " != " << _rows.back().roid()+1 <<"\n";
       }
-       _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
+       _rows.emplace_back(index,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
 
     }
+
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
