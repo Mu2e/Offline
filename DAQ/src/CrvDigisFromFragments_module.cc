@@ -55,6 +55,7 @@ private:
   int diagLevel_;
 
   art::InputTag crvFragmentsTag_;
+  mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 
 }; // CrvDigisFromFragments
 
@@ -99,6 +100,7 @@ void CrvDigisFromFragments::produce(Event& event) {
 
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CrvDigiCollection> crv_digis(new mu2e::CrvDigiCollection);
+  auto const& channelMap = _channelMap_h.get(event.id());
 
   // Loop over the CRV fragments
   for (size_t idx = 0; idx < numCrvFrags; ++idx) {
@@ -149,15 +151,15 @@ void CrvDigisFromFragments::produce(Event& event) {
             // CrvDigis use a constant array size of 8 samples
             // waveforms with more than 8 samples need to be written to multiple CrvDigis
             // the TDC increases by 8 for every subsequent CrvDigi
-            crvDigis->emplace_back(adc, crvHitInfo.HitTime + i,
+            crv_digis->emplace_back(adc, crvHitInfo.HitTime + i,
                                    mu2e::CRSScintillatorBarIndex(crvBarIndex), SiPMNumber);
           }
         } // loop over all crvHits
 
-        if (_diagLevel > 0) {
+        if (diagLevel_ > 0) {
           for (auto const& crvHit : crvHits) {
-            std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-            if (_diagLevel > 1) {
+            std::cout << "iSubEvent/iDataBlock: " << idx << "/" << iDataBlock << std::endl;
+            if (diagLevel_ > 1) {
               std::cout << "EventWindowTag (TDC header): "
                         << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
               std::cout << "SubsystemID: " << (uint16_t)header->GetSubsystemID() << std::endl;
