@@ -4,10 +4,6 @@
 //
 // ======================================================================
 
-#include "Offline/DAQ/inc/FragmentType.hh"
-#include "Offline/DAQ/inc/DTCEventFragment.hh"
-#include "Offline/DAQ/inc/DTC_Packets.h"
-#include "Offline/DAQ/inc/CRVFragment.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -20,6 +16,9 @@
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "artdaq-core/Data/Fragment.hh"
+#include "artdaq-core-mu2e/Data/CRVFragment.hh"
+#include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
+#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include <iostream>
 #include <string>
@@ -88,10 +87,11 @@ void CrvDigisFromFragments::produce(Event& event)
       auto dtcEvent = dtcEventFragment.getData();
       dtcEvent.SetupEvent();
 
-      auto crvBlocks = dtcEvent.GetSubsystemDataBlocks(DTCLib::DTC_Subsystem_CRV);  //FIXME: removed check for DTC_Subsystem_CRV in DTC_Packets.h
-      for(size_t iCrvBlock=0; iCrvBlock<crvBlocks.size(); ++iCrvBlock)
+//      std::vector<DTC_SubEvent> crvSubEvents = dtcEvent.GetSubsystemData(DTCLib::DTC_Subsystem_CRV);  //FIXME: CRV Subevents don't have the correct subsystem encoded.
+      std::vector<DTCLib::DTC_SubEvent> crvSubEvents = dtcEvent.GetSubsystemData(DTCLib::DTC_Subsystem_Tracker);  //FIXME: CRV Subevents don't have the correct subsystem encoded.
+      for(size_t iSubEvent=0; iSubEvent<crvSubEvents.size(); ++iSubEvent)
       {
-        mu2e::CRVFragment crvFragment(crvBlocks.at(iCrvBlock).blockPointer, crvBlocks.at(iCrvBlock).byteSize);
+        mu2e::CRVFragment crvFragment(crvSubEvents.at(iSubEvent));
 
         for(size_t iDataBlock = 0; iDataBlock < crvFragment.block_count(); ++iDataBlock)
         {
@@ -147,7 +147,7 @@ void CrvDigisFromFragments::produce(Event& event)
             {
               for(auto const& crvHit : crvHits)
               {
-                std::cout << "iCrvBlock/iDataBlock: " << iCrvBlock<<"/"<<iDataBlock << std::endl;
+                std::cout << "iSubEvent/iDataBlock: " << iSubEvent<<"/"<<iDataBlock << std::endl;
                 if(_diagLevel > 1)
                 {
                   std::cout << "EventWindowTag (TDC header): " << header->GetEventWindowTag().GetEventWindowTag(true) << std::endl;
@@ -192,7 +192,7 @@ void CrvDigisFromFragments::produce(Event& event)
             } //debug output
           } //end parsing CRV DataBlocks
         } //loop over DataBlocks within CRVFragments
-      } //loop over SubsystemDataBlocks for the CRV
+      } //loop over subEvents
     } //fragment type: DTCEVT
   } //loop over fragments
 
