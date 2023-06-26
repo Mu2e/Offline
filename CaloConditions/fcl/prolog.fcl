@@ -1,11 +1,12 @@
 BEGIN_PROLOG
 
-calEnergyCalib : {
+calCalib : {
   roid : 0
   verbose: 0
   useDb: false
-  algorithm: 0
-
+  algorithm: 1
+  ADC2MeV: 0.0625
+  timeoffset: 0.0
 }
 
 CaloDAQConditions : {
