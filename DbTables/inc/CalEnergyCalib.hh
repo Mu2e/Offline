@@ -25,14 +25,14 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(uint16_t roid, float ADC2MeV, float ErrADC2MeV, int algName):_roid(roid),_ADC2MeV(ADC2MeV), _ErrADC2MeV(ErrADC2MeV),_algName(algName) {}
-      uint16_t  roid() const { return _roid;}
+      Row(CaloSiPMId  roid, float ADC2MeV, float ErrADC2MeV, int algName):_roid(roid),_ADC2MeV(ADC2MeV), _ErrADC2MeV(ErrADC2MeV),_algName(algName) {}
+      CaloSiPMId   roid() const { return _roid;}
       float ADC2MeV() const { return _ADC2MeV; }
       float ErrADC2MeV() const { return _ErrADC2MeV; }
       int algName() const { return _algName; }
 
     private:
-      uint16_t  _roid;
+      CaloSiPMId   _roid;
       float _ADC2MeV;
       float _ErrADC2MeV;
       int _algName;
@@ -55,7 +55,7 @@ namespace mu2e {
     if (index!=int(_rows.size())) {
         throw cet::exception("CALOENERGYCALIB_BAD_INDEX")<<"CalEnergyCalib::addRow found index out of order:"<<index << " != " << _rows.back().roid()+1 <<"\n";
       }
-       _rows.emplace_back(index,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
+       _rows.emplace_back(CaloSiPMId (index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
 
     }
 
