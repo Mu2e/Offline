@@ -78,7 +78,7 @@ class DataInterface
   std::vector<boost::shared_ptr<Cone> > _mecostylepastructures;
   CLHEP::Hep3Vector _detSysOrigin;
   timeminmax        _hitsTimeMinmax, _tracksTimeMinmax;
-  spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax;
+  spaceminmax       _trackerMinmax, _targetMinmax, _calorimeterMinmax, _tracksMinmax, _crvMinmax;
   int               _numberHits, _numberCrystalHits;
   bool              _showUnhitStraws, _showUnhitCrystals;
   unsigned int _minPoints;
@@ -154,7 +154,8 @@ class DataInterface
   spaceminmax getTargetBoundary() {return _targetMinmax;}
   spaceminmax getCalorimeterBoundary() {return _calorimeterMinmax;}
   spaceminmax getTracksBoundary() {return _tracksMinmax;}
-  spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks);
+  spaceminmax getCrvBoundary() {return _crvMinmax;}
+  spaceminmax getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV);
 
   const mu2e::CRVCalib  *_calib;
 };

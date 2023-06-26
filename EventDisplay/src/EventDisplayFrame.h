@@ -110,6 +110,7 @@ namespace mu2e_eventdisplay
     bool                _whiteBackground, _useHitColors, _useTrackColors;
     bool                _showSupportStructures, _showCRV, _showOtherStructures;
     bool                _showMuonBeamStop, _showProtonAbsorber;
+    bool                _wideband;
 
     //bare pointers needed since ROOT manages these objects
     TGHorizontalFrame   *_mainFrame, *_footLine;
