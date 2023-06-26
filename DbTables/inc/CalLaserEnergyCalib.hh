@@ -16,14 +16,14 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(uint16_t roid, float LAS, float ErrLAS, float chisq):_roid(roid),_LAS(LAS), _ErrLAS(ErrLAS), _chisq(chisq){}
-      uint16_t  roid() const { return _roid;}
+      Row(CaloSiPMId  roid, float LAS, float ErrLAS, float chisq):_roid(roid),_LAS(LAS), _ErrLAS(ErrLAS), _chisq(chisq){}
+      CaloSiPMId   roid() const { return _roid;}
       float LAS() const { return _LAS; }
       float ErrLAS() const { return _ErrLAS; }
       float chisq() const { return _chisq; }
 
     private:
-      uint16_t  _roid;
+      CaloSiPMId   _roid;
       float _LAS;
       float _ErrLAS;
       float _chisq;
@@ -47,9 +47,8 @@ namespace mu2e {
         << "CalLaserEnergyCalib::addRow found index out of order: "
         <<index<< " != " << _rows.back().roid()+1 <<"\n";
       }
-       _rows.emplace_back(index,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
-      // add this channel to the map index - optional
-      //_chanIndex[_rows.back().roid()] = _rows.size()-1;
+       _rows.emplace_back(CaloSiPMId(index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
+
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {

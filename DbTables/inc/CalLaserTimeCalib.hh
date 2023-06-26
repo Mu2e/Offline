@@ -16,9 +16,9 @@ namespace mu2e {
 
       class Row {
         public:
-        Row(std::uint16_t roid, double Peak, double ErrPeak, double Width, double ErrWidth, double Chi2):
+        Row(CaloSiPMId  roid, double Peak, double ErrPeak, double Width, double ErrWidth, double Chi2):
         _roid(roid),_Peak(Peak),_ErrPeak(ErrPeak),_Width(Width),_ErrWidth(ErrWidth),_Chi2(Chi2) {}
-        std::uint16_t      roid()     const { return _roid;} // Offline ID
+        CaloSiPMId       roid()     const { return _roid;} // Offline ID
         float     Peak()     const { return _Peak; }
         float     ErrPeak()  const { return _ErrPeak; }
         float     Width()    const { return _Width; }
@@ -26,7 +26,7 @@ namespace mu2e {
         float     Chi2()     const { return _Chi2; }
 
       private:
-        std::uint16_t   _roid;
+        CaloSiPMId    _roid;
         float _Peak;
         float _ErrPeak;
         float _Width;
@@ -53,14 +53,12 @@ namespace mu2e {
         << "CaloLaserTimeTable::addRow found index out of order: "
         <<index<< " != " << _rows.back().roid()+1 <<"\n";
       }
-      _rows.emplace_back(index,
+      _rows.emplace_back(CaloSiPMId(index),
       std::stoi(columns[1]),
       std::stof(columns[2]),
       std::stoi(columns[3]),
       std::stof(columns[4]),
       std::stof(columns[5]) );
-      // add this channel to the map index - optional
-      //_chanIndex[_rows.back().roid()] = _rows.size()-1;
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
