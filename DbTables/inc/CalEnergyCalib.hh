@@ -53,9 +53,9 @@ namespace mu2e {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
     if (index!=int(_rows.size())) {
-        throw cet::exception("CALOENERGYCALIB_BAD_INDEX")<<"CalEnergyCalib::addRow found index out of order:"<<index << " != " << _rows.back().roid()+1 <<"\n";
+        throw cet::exception("CALOENERGYCALIB_BAD_INDEX")<<"CalEnergyCalib::addRow found index out of order:"<<index << " != " << int(_rows.size()) <<"\n";
       }
-       _rows.emplace_back(CaloSiPMId (index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
+       _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
 
     }
 

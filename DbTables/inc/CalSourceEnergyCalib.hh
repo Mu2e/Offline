@@ -52,7 +52,7 @@ namespace mu2e {
       << "CalSourceEnergyCalib::addRow found index out of order: "
       <<index << " != " << _rows.size() <<"\n";
       }
-       _rows.emplace_back(CaloSiPMId(index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
+       _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
       // add this channel to the map index - optional
       //_chanIndex[_rows.back().roid()] = _rows.size()-1;
     }

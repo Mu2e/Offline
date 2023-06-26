@@ -48,9 +48,11 @@ namespace mu2e {
     // enforce order, so channels can be looked up by index
     if (index >= CaloConst::_nChannel  || index != _rows.size()) {
         throw cet::exception("CALOCOSMICCALIB_BAD_INDEX")
-        << "CalCosmicEnergyCalib::addRow found index out of order: " <<"\n";
+        << "CalCosmicEnergyCalib::addRow found index out of order: "
+        <<index<< " != " << _rows.size() <<"\n";
+
       }
-   _rows.emplace_back(CaloSiPMId(index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
+   _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
 
   }
 
