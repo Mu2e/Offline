@@ -16,8 +16,8 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(std::uint16_t roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
-      std::uint16_t  roid() const { return _roid;}
+      Row(CaloSiPMId  roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
+      CaloSiPMId   roid() const { return _roid;}
       float EPeak() const { return _EPeak; }
       float ErrEPeak() const { return _ErrEPeak; }
       float Width() const { return _Width; }
@@ -25,7 +25,7 @@ namespace mu2e {
       float chisq() const { return _chisq; }
 
     private:
-      std::uint16_t  _roid;
+      CaloSiPMId   _roid;
       float _EPeak;
       float _ErrEPeak;
       float _Width;
@@ -50,7 +50,7 @@ namespace mu2e {
         throw cet::exception("CALOCOSMICCALIB_BAD_INDEX")
         << "CalCosmicTimeCalib::addRow found index out of order: " <<"\n";
       }
- _rows.emplace_back(index,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
+ _rows.emplace_back(CaloSiPMId (index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
 
     }
 
