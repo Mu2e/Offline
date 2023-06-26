@@ -54,7 +54,8 @@ namespace mu2e
         fhicl::Atom<art::InputTag> StrawHitFlagCollection{   Name("StrawHitFlagCollection"),   Comment("StrawHitFlag collection name") };
         fhicl::Atom<art::InputTag> StrawDigiCollection{   Name("StrawDigiCollection"),   Comment("StrawDigi collection name") };
         fhicl::Atom<art::InputTag> StrawDigiMCCollection{   Name("StrawDigiMCCollection"),   Comment("StrawDigiMC collection name") };
-      };
+        fhicl::Atom<art::InputTag> MCPrimary{ Name("MCPrimary"),Comment("MC Primary Particle") };
+     };
 
       explicit ComboHitDiag(const art::EDAnalyzer::Table<Config>& config);
       virtual ~ComboHitDiag();
@@ -70,13 +71,15 @@ namespace mu2e
       art::ProductToken<StrawDigiMCCollection> _mcdigisToken;
       art::ProductToken<StrawDigiCollection> _digisToken;
       art::ProductToken<StrawDigiADCWaveformCollection> _digiadcsToken;
-      // event data cache
+      art::ProductToken<PrimaryParticle> _mcprimaryToken;
+     // event data cache
       const ComboHitCollection* _chcol;
       const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
       const StrawDigiCollection *_digis;
       const StrawDigiADCWaveformCollection *_digiadcs;
-      // diagnostics
+      const PrimaryParticle *_mcprimary;
+     // diagnostics
       TTree *_chdiag;
       int _evt; // add event id
       XYZVectorF _pos; // average position
@@ -98,10 +101,11 @@ namespace mu2e
       int _eend;
       int _esel,_rsel, _tsel, _nsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       // mc diag
-      XYZVectorF _mcpos; // average MC hit position
-      float _mcmom;
+      XYZVectorF _mcpos, _mcmom;
       float _mctime, _mcudist;
       int _mcpdg, _mcproc, _mcgen, _mcndigi;
+      int _prel;
+
       float _mcfrac;
 
       float _threshold[2], _adcgain;
@@ -129,8 +133,9 @@ namespace mu2e
     _shfToken{ consumes<StrawHitFlagCollection>(config().StrawHitFlagCollection() ) },
     _mcdigisToken{ consumes<StrawDigiMCCollection>(config().StrawDigiMCCollection() ) },
     _digisToken{ consumes<StrawDigiCollection>(config().StrawDigiCollection() ) },
-    _digiadcsToken{ consumes<StrawDigiADCWaveformCollection>(config().StrawDigiCollection() ) }
-  {}
+    _digiadcsToken{ consumes<StrawDigiADCWaveformCollection>(config().StrawDigiCollection() ) },
+    _mcprimaryToken{ consumes<PrimaryParticle>(config().MCPrimary() ) }
+ {}
 
   ComboHitDiag::~ComboHitDiag(){}
 
@@ -180,13 +185,14 @@ namespace mu2e
       _chdiag->Branch("chinfo",&_chinfo);
     if(_mcdiag){
       _chdiag->Branch("mcpos.",&_mcpos);
-      _chdiag->Branch("mcmom",&_mcmom,"mcmom/F");
+      _chdiag->Branch("mcmom",&_mcmom);
       _chdiag->Branch("mctime",&_mctime,"mctime/F");
       _chdiag->Branch("mcudist",&_mcudist,"mcudist/F");
       _chdiag->Branch("mcfrac",&_mcfrac,"mcfrac/F");
       _chdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _chdiag->Branch("mcproc",&_mcproc,"mcproc/I");
       _chdiag->Branch("mcgen",&_mcgen,"mcgen/I");
+      _chdiag->Branch("prel",&_prel,"prel/I");
       _chdiag->Branch("mcndigi",&_mcndigi,"mcndigi/I");
       if(_diag > 0)
         _chdiag->Branch("chinfomc",&_chinfomc);
@@ -289,6 +295,8 @@ namespace mu2e
       }
       if(_mcdiag){
         _chinfomc.clear();
+        _mcpdg = _mcgen = _mcproc = 0;
+        _prel=-1;
         // get the StrawDigi indices associated with this ComboHit
         std::vector<StrawDigiIndex> shids;
         _chcol->fillStrawDigiIndices(evt,ich,shids);
@@ -321,25 +329,32 @@ namespace mu2e
         while (upar->genParticle().isNull() && upar->parent().isNonnull()) {
           upar = upar->parent();
         }
-        if(upar->genParticle().isNonnull())
-          _mcgen = upar->genParticle()->generatorId().id();
-        else
-          _mcgen = -1;
+        if(upar->genParticle().isNonnull())_mcgen = upar->genParticle()->generatorId().id();
+// relationship to MCPrimary
+        for(auto const& mcmptr : _mcprimary->primarySimParticles()){
+          MCRelationship rel(mcmptr,spmax);
+          if(rel.relationship() > MCRelationship::none){
+            if(_prel > MCRelationship::none)
+              _prel = std::min(_prel,(int)rel.relationship());
+            else
+              _prel = rel.relationship();
+          }
+        }
         // find the relation with each hit
-        _mcpos = XYZVectorF();
-        _mcmom = _mctime = 0.0;
+        _mcpos = _mcmom = XYZVectorF();
+        _mctime = 0.0;
         for(auto shi : shids) {
           ComboHitInfoMC chimc;
           StrawDigiMC const& mcd = _mcdigis->at(shi);
           auto const& sgsp = mcd.earlyStrawGasStep();
-          chimc._mcpos = XYZVectorF(sgsp->position().x(),sgsp->position().y(), sgsp->position().z() );
+          chimc._mcpos = sgsp->startPosition();
           MCRelationship rel(mcd,spmax);
           chimc._rel = rel.relationship();
           _chinfomc.push_back(chimc);
           // find average MC properties
-          _mcpos += XYZVectorF(sgsp->position().x(), sgsp->position().y(), sgsp->position().z());
+          _mcpos += sgsp->startPosition();
           _mctime += sgsp->time();
-          _mcmom += sgsp->momentum().R();
+          _mcmom += sgsp->momentum();
         }
         _mcpos /= shids.size();
         _mctime /= shids.size();
@@ -395,7 +410,9 @@ namespace mu2e
     if(_mcdiag){
       auto mcdH = evt.getValidHandle(_mcdigisToken);
       _mcdigis = mcdH.product();
-    }
+       auto mcpH = evt.getValidHandle(_mcprimaryToken);
+      _mcprimary = mcpH.product();
+   }
     if(_useflagcol){
       auto shfH = evt.getValidHandle(_shfToken);
       _shfcol = shfH.product();
@@ -406,7 +423,8 @@ namespace mu2e
       auto daH = evt.getValidHandle(_digiadcsToken);
       _digiadcs = daH.product();
     }
-    return _chcol != 0 && (!_useflagcol || _shfcol != 0) && (_mcdigis != 0 || !_mcdiag) && ((_digis != 0 && _digiadcs != 0) || !_digidiag);
+    return _chcol != 0 && (!_useflagcol || _shfcol != 0) && ( (_mcdigis != 0 && _mcprimary != 0)  || !_mcdiag)
+      && ((_digis != 0 && _digiadcs != 0) || !_digidiag);
   }
 }
 // Part of the magic that makes this class a module.

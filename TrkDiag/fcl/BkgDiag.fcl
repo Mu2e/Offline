@@ -13,6 +13,7 @@
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/TrkDiag/fcl/prolog.fcl"
+#include "Offline/TrkHitReco/fcl/prolog.fcl"
 process_name : BkgDiag
 
 source :
@@ -32,18 +33,29 @@ producers :
 
 analyzers :
   {
-    BD: @local::BD
+    BD :
+    {
+      @table::BD
+      StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+      BkgClusterCollection:"FlagBkgHits"
+      BkgClusterHitCollection:"FlagBkgHits"
+    }
   }
 }
 
 physics.BkgEndPath : [BD]
 physics.BkgTriggerPath  : [
   @sequence::TrkHitReco.PrepareHits
+  # @sequence::TrkHitReco.SPrepareHits
 ]
+#include "no_preselection.fcl"
 
 physics.producers.FlagBkgHits.SaveBkgClusters : true
+# physics.producers.SFlagBkgHits.SaveBkgClusters : true
+
+# physics.producers.makeSTH.DebugLevel : 0
+
 # the following are needed for interactive running.  They will be overwritten if you submit this job
 # on the grid with mu2eart and do not need to be removed.
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
-# #include "Offline/EventMixing/fcl/epilog.fcl"
