@@ -7,7 +7,7 @@
 #include <sstream>
 #include <map>
 #include "Offline/DbTables/inc/DbTable.hh"
-#include "Offline/DataProducts/inc/CaloConst.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
 
@@ -16,8 +16,8 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(uint16_t roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
-      uint16_t  roid() const { return _roid;} 
+      Row(CaloSiPMId roid, float EPeak, float ErrEPeak, float Width, float ErrWidth, float chisq):_roid(roid),_EPeak(EPeak), _ErrEPeak(ErrEPeak), _Width(Width), _ErrWidth(ErrWidth), _chisq(chisq){}
+      CaloSiPMId  roid() const { return _roid;}
       float EPeak() const { return _EPeak; }
       float ErrEPeak() const { return _ErrEPeak; }
       float Width() const { return _Width; }
@@ -25,7 +25,7 @@ namespace mu2e {
       float chisq() const { return _chisq; }
 
     private:
-      uint16_t  _roid; 
+      CaloSiPMId  _roid;
       float _EPeak;
       float _ErrEPeak;
       float _Width;
@@ -45,14 +45,14 @@ namespace mu2e {
     size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
-      int roid = std::stoi(columns[0]);
-      // enforce a strict sequential order - optional
-      if(roid!=int(_rows.size())) {
-	      throw cet::exception("CALOSOURCECALIB_BAD_INDEX") 
-	        << "CalSourceEnergyCalib::addRow found index out of order: " 
-	        <<roid << " != " << _rows.back().roid()+1 <<"\n";
+      std::uint16_t index = std::stoul(columns[0]);
+    // enforce order, so channels can be looked up by index
+    if (index >= CaloConst::_nChannel  || index != _rows.size()) {
+      throw cet::exception("CALOSOURCECALIB_BAD_INDEX")
+      << "CalSourceEnergyCalib::addRow found index out of order: "
+      <<index << " != " << _rows.size() <<"\n";
       }
-       _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
+       _rows.emplace_back(CaloSiPMId(index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]),std::stof(columns[4]),std::stof(columns[5]));
       // add this channel to the map index - optional
       //_chanIndex[_rows.back().roid()] = _rows.size()-1;
     }

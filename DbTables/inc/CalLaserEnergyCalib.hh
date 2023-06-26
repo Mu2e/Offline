@@ -7,7 +7,7 @@
 #include <sstream>
 #include <map>
 #include "Offline/DbTables/inc/DbTable.hh"
-#include "Offline/DataProducts/inc/CaloConst.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
 
@@ -40,14 +40,14 @@ namespace mu2e {
     size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) override {
-      int roid = std::stoi(columns[0]);
-      // enforce a strict sequential order - optional
-      if(roid!=int(_rows.size())) {
+      std::uint16_t index = std::stoul(columns[0]);
+    // enforce order, so channels can be looked up by index
+    if (index >= CaloConst::_nChannel  || index != _rows.size()) {
         throw cet::exception("CALOLaserEnergyCALIB_BAD_INDEX")
         << "CalLaserEnergyCalib::addRow found index out of order: "
-        <<roid << " != " << _rows.back().roid()+1 <<"\n";
+        <<index<< " != " << _rows.back().roid()+1 <<"\n";
       }
-       _rows.emplace_back(roid,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
+       _rows.emplace_back(index,std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
       // add this channel to the map index - optional
       //_chanIndex[_rows.back().roid()] = _rows.size()-1;
     }
