@@ -51,10 +51,10 @@ namespace mu2e {
     if (index >= CaloConst::_nChannel  || index != _rows.size()) {
         throw cet::exception("CaloLaserTimeCalib_BAD_INDEX")
         << "CaloLaserTimeTable::addRow found index out of order: "
-        <<index<< " != " << _rows.back().roid()+1 <<"\n";
+        <<index<< " != " << _rows.size() <<"\n";
       }
       _rows.emplace_back(CaloSiPMId(index),
-      std::stoi(columns[1]),
+      std::stof(columns[1]),
       std::stof(columns[2]),
       std::stoi(columns[3]),
       std::stof(columns[4]),

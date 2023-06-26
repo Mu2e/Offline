@@ -45,9 +45,9 @@ namespace mu2e {
     if (index >= CaloConst::_nChannel  || index != _rows.size()) {
         throw cet::exception("CALOLaserEnergyCALIB_BAD_INDEX")
         << "CalLaserEnergyCalib::addRow found index out of order: "
-        <<index<< " != " << _rows.back().roid()+1 <<"\n";
+        <<index<< " != " <<  _rows.size() <<"\n";
       }
-       _rows.emplace_back(CaloSiPMId(index),std::stoi(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
+       _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]),std::stof(columns[2]),std::stof(columns[3]));
 
     }
 
