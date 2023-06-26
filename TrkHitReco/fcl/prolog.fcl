@@ -9,12 +9,12 @@ PBTFSD : {
 
 makeSH : {
   module_type             : StrawHitReco
-  MinimumTime             : 420.0 # ns configuration for OnSpill
-  MaximumTime             : 1690.0 # ns
+  MinimumTime             : 400.0 # ns configuration for OnSpill
+  MaximumTime             : 1710.0 # ns
   MinimumEnergy           : 0.0001 # MeV
-  MaximumEnergy           : 0.0035 # MeV
-  MinimumRadius           : 395.0 # mm
-  MaximumRadius           : 650.0 # mm
+  MaximumEnergy           : 0.005 # MeV
+  MinimumRadius           : 350.0 # mm
+  MaximumRadius           : 750.0 # mm
   FitType                 : 1
   FilterHits              : false
   WriteStrawHitCollection : true
@@ -40,20 +40,20 @@ makePH : {
   EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
   StrawHitMask          : ["Noisy"]
-  MaxDt                 : 40 # ns
+  MaxDt                 : 45 # ns
   UseTOT                : true
-  MaxWireDistDiffPull   : 4.0
+  MaxWireDistDiffPull   : 5.0
   MaxDS                 : 3
   UError                : 10.0 # mm
-  MinimumTime           : 420.0 # ns
-  MaximumTime           : 1690.0 # ns
-  MinimumEnergy         : 0.0 # MeV
-  MaximumEnergy         : 1.0 # MeV
-  MinimumRadius         : 395.0 # mm
-  MaximumRadius         : 650.0 # mm
+  MinimumTime           : 410.0 # ns
+  MaximumTime           : 1700.0 # ns
+  MinimumEnergy         : 0.0001 # MeV
+  MaximumEnergy         : 0.0045 # MeV
+  MinimumRadius         : 380.0 # mm
+  MaximumRadius         : 700.0 # mm
   MinimumNHits          : 1
-  MaximumNHits          : 3
-  CheckWres             : false
+  MaximumNHits          : 8
+  CheckWres             : true
   Unsorted              : false # sim data are sorted, VST currently not
 }
 
@@ -100,24 +100,9 @@ TNTClusterer : {
   ComboInit        : true
   TestFlag         : true
   BackgroundMask   : []
-  SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
+  SignalMask       : ["TimeSelection", "EnergySelection", "RadiusSelection"]
 }
 
-#FilterAlgo: 1 for next neighbor version, 2 for clustering version
-ScanClusterer: {
-  Pbin             : 0.08
-  Tbin             : 20
-  Rbin             : 50
-  Rmin             : 350
-  Rmax             : 650
-  MinPeakHit       : 3
-  MinSeedHit       : 2
-  MinRadHit        : 50
-  FilterAlgo       : 1
-  TestFlag         : true
-  BackgroundMask   : []
-  SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
-}
 
 # Now configure the module
 FlagBkgHits : {
@@ -125,19 +110,18 @@ FlagBkgHits : {
   ComboHitCollection   : "makePH"
   StrawHitCollection   : "makeSH"
   ClusterAlgorithm     : 1
-  TNTClustering        : { @table::TNTClusterer }
-  ScanClustering       : { @table::ScanClusterer }
+  TNTClustering        : {@table::TNTClusterer}
   MinActiveHits        : 3
   MinNPlanes           : 2
   ClusterPositionError : 10
-  BkgMVA               : { MVAWeights : "Offline/TrkHitReco/data/BkgMVAPanel.weights.xml" }
-  BkgMVACut            : 0.5
   FilterHits           : false
   FlagStrawHits        : true
   FlagComboHits        : true
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
   SaveBkgClusters      : false
+  KerasWeights         : "Offline/TrkHitReco/data/TrainBkgDiag.dat"
+  KerasQuality         : 0.5
   DebugLevel           : 0
 }
 

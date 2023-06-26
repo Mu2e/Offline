@@ -182,8 +182,11 @@ namespace mu2e {
         if (wdchi > _maxwdchi) continue;
 
         bool ok = combohit.addIndex(jch);
-        if (!ok) std::cout << "CombineStrawHits past limit" << std::endl;
-        isUsed[jch]= true;
+        if (!ok){
+          std::cout << "CombineStrawHits past limit" << std::endl;
+        } else {
+          isUsed[jch]= true;
+        }
       }
       // clear the flag bits; they are reset later
       const static StrawHitFlag initialFlag("TimeDivision");
