@@ -1,7 +1,6 @@
 BEGIN_PROLOG
 
 calCalib : {
-  roid : 0
   verbose: 0
   useDb: false
   algorithm: 1
