@@ -16,6 +16,8 @@
 
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
+#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 
@@ -91,7 +93,10 @@ public:
   virtual void produce(Event&);
 
 private:
-  void analyze_calorimeter_(const mu2e::CalorimeterFragment& cc,
+  mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
+
+  void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
+                            const mu2e::CalorimeterFragment& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
                             unsigned short& evtEnergy);
@@ -114,7 +119,7 @@ private:
 
   std::array<float, 674 * 4> peakADC2MeV_;
   std::array<float, 674 * 4> timeCalib_;
-  std::array<int, 4> caphriCrystalID_;
+
 };
 
 // ======================================================================
@@ -131,10 +136,6 @@ void art::CaloHitsFromFragments::beginRun(art::Run& Run) {
     timeCalib_[i] = 0.;
   }
 
-  // FIX ME!
-  // the list of the SiPM-IDs of the channels that are used for the
-  // calorimeter-lumi monitor should come from a pro-dition
-  caphriCrystalID_ = {623, 624, 595, 596};
 }
 
 void art::CaloHitsFromFragments::addPulse(
@@ -143,8 +144,7 @@ void art::CaloHitsFromFragments::addPulse(
     std::unique_ptr<mu2e::CaloHitCollection> const& hits_caphri) {
 
   bool addNewHit(true);
-  bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crystalID) !=
-                  caphriCrystalID_.end();
+  bool isCaphri = mu2e::CrystalId(crystalID).isCaphri();
   size_t counter(0);
   for (auto& pulse : pulseMap_[crystalID]) {
     ++counter;
@@ -201,6 +201,8 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 
   art::EventNumber_t eventNumber = event.event();
 
+  mu2e::CaloDAQMap const& calodaqconds = _calodaqconds_h.get(event.id());
+
   // Collection of CaloHits for the event
   std::unique_ptr<mu2e::CaloHitCollection> calo_hits(new mu2e::CaloHitCollection);
   std::unique_ptr<mu2e::CaloHitCollection> caphri_hits(new mu2e::CaloHitCollection);
@@ -227,7 +229,8 @@ void art::CaloHitsFromFragments::produce(Event& event) {
         for (size_t ii = 0; ii < mef.calorimeter_block_count(); ++ii) {
           auto pair = mef.calorimeterAtPtr(ii);
           mu2e::CalorimeterFragment cc(pair);
-          analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
+          analyze_calorimeter_(calodaqconds,cc, calo_hits,
+                               caphri_hits, evtEnergy);
 
           totalSize += pair.second;
           numCalFrags++;
@@ -237,7 +240,8 @@ void art::CaloHitsFromFragments::produce(Event& event) {
       if (handle->front().type() == mu2e::detail::FragmentType::CAL) {
         for (auto frag : *handle) {
           mu2e::CalorimeterFragment cc(frag.dataBegin(), frag.dataSizeBytes());
-          analyze_calorimeter_(cc, calo_hits, caphri_hits, evtEnergy);
+          analyze_calorimeter_(calodaqconds,cc, calo_hits,
+                               caphri_hits, evtEnergy);
 
           totalSize += frag.dataSizeBytes();
           numCalFrags++;
@@ -274,6 +278,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
 } // produce()
 
 void art::CaloHitsFromFragments::analyze_calorimeter_(
+    mu2e::CaloDAQMap const& calodaqconds,
     const mu2e::CalorimeterFragment& cc, std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits, unsigned short& evtEnergy) {
 
@@ -349,16 +354,14 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
         caloDAQUtil_.printCaloPulse(hits[hitIdx].first);
       }
 
-      // IMPORTANT NOTE: we don't have a final
-      // mapping yet so for the moment, the BoardID field (described in docdb 4914) is just a
-      // placeholder. Because we still need to know which crystal a hit belongs to, we are
-      // temporarily storing the 4-bit sipmID and 12-bit crystalID in the Reserved DIRAC A slot.
-      // Also, note that until we have an actual map, channel index does not actually correspond
-      // to the physical readout channel on a ROC.
-      uint16_t crystalID =
-          caloDAQUtil_.getCrystalID(hits[hitIdx].first); // hits[hitIdx].first.DIRACB & 0x0FFF;
-      uint16_t sipmID =
-          caloDAQUtil_.getSiPMID(hits[hitIdx].first); // hits[hitIdx].first.DIRACB >> 12;
+      uint16_t packetid = hits[hitIdx].first.DIRACA;
+      uint16_t dirac = packetid & 0xFF;
+      uint16_t diracChannel = (packetid >>8) & 0x1F;
+      mu2e::CaloRawSiPMId rawId(dirac,diracChannel);
+      mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
+
+      uint16_t crystalID = offlineId.crystal().id();
+      uint16_t sipmID = offlineId.SiPMLocalId();
 
       size_t peakIndex = hits[hitIdx].first.IndexOfMaxDigitizerSample;
       // float  eDep(0);
@@ -368,7 +371,7 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       //      }
       float time = hits[hitIdx].first.Time + peakIndex * digiSampling_ + timeCalib_[sipmID];
 
-      bool  isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crystalID) != caphriCrystalID_.end();
+      bool  isCaphri = offlineId.crystal().isCaphri();
       // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
       if ( ( (eDep >= hitEDepMin_) || (isCaphri && (eDep >= caphriEDepMin_))) &&
            ( (eDep <  hitEDepMax_) || (isCaphri && (eDep <  caphriEDepMax_))) ) {
