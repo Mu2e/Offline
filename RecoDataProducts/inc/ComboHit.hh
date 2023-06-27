@@ -28,7 +28,7 @@ namespace mu2e {
 
   struct ComboHit {
     enum edir{wire=0,trans,z}; // should switch to  UVW TODO
-    constexpr static size_t MaxNCombo = 8; // needs tuning TODO
+    constexpr static size_t MaxNCombo = 8;
     using PIArray = std::array<uint16_t,MaxNCombo>; // array of indices into parent collection
     // General accessors that apply to all kinds of combo hits
     auto const& pos() const { return _pos; }
