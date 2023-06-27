@@ -129,8 +129,8 @@ vector<double> Pipe.centerType5Pipe2 = { -3200.0, -250.0, 17420.0 };
 vector<double> Pipe.centerType5Pipe3 = { -4550.0, -250.0, 17420.0 };
 vector<double> Pipe.centerType5Pipe4 = { -4900.0, -500.0, 17420.0 };
 
-vector<double> Pipe.centerType6Pipe1 = { 8550.0, 0.0, -4500.0};
-vector<double> Pipe.centerType7Pipe1 = { 8500.0,50.0,-7642.4};
+vector<double> Pipe.centerType6Pipe1 = { 8550.0,    0.0, -4500.0};
+vector<double> Pipe.centerType7Pipe1 = { 8500.0, -825.0, -7642.4};
 
 // The orientation of the pipe.  See docdb xxxx for details.
 string Pipe.orientationType1Pipe1 = "100";
