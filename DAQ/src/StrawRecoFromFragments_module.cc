@@ -10,8 +10,8 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include "artdaq-core-mu2e/Data/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
@@ -98,15 +98,14 @@ void art::StrawRecoFromFragmnets::produce(Event& event) {
   size_t totalSize = 0;
   size_t numTrkFrags = 0;
   auto fragmentHandle = event.getValidHandle<std::vector<mu2e::TrackerFragment> >(trkFragmentsTag_);
-  
+
   for (auto frag : *fragmentHandle) {
     analyze_tracker_(frag, straw_digis, straw_digi_adcs);
-    for(size_t i=0;i<frag.block_count();++i){
+    for (size_t i = 0; i < frag.block_count(); ++i) {
       totalSize += frag.blockSizeBytes(i);
     }
     numTrkFrags++;
   }
-
 
   if (numTrkFrags == 0) {
     std::cout << "[StrawRecoFromFragmnets::produce] found no Tracker fragments!" << std::endl;

@@ -66,15 +66,12 @@ public:
     fhicl::Atom<float> hitEDepMax{
         fhicl::Name("hitEDepMax"),
         fhicl::Comment("Maximum hit energy in MeV (to reject saturated pulses)")};
-    fhicl::Atom<float> hitEDepMin{
-        fhicl::Name("hitEDepMin"),
-        fhicl::Comment("Minimum hit energy in MeV")};
-    fhicl::Atom<float> caphriEDepMax{
-        fhicl::Name("caphriEDepMax"),
-        fhicl::Comment("Maximum CAPHRI hit energy in MeV")};
-    fhicl::Atom<float> caphriEDepMin{
-        fhicl::Name("caphriEDepMin"),
-        fhicl::Comment("Minimum CAPHRI hit energy in MeV")};
+    fhicl::Atom<float> hitEDepMin{fhicl::Name("hitEDepMin"),
+                                  fhicl::Comment("Minimum hit energy in MeV")};
+    fhicl::Atom<float> caphriEDepMax{fhicl::Name("caphriEDepMax"),
+                                     fhicl::Comment("Maximum CAPHRI hit energy in MeV")};
+    fhicl::Atom<float> caphriEDepMin{fhicl::Name("caphriEDepMin"),
+                                     fhicl::Comment("Minimum CAPHRI hit energy in MeV")};
   };
 
   // --- C'tor/d'tor:
@@ -100,7 +97,8 @@ private:
 
   art::InputTag caloFragmentsTag_;
   float digiSampling_;
-  float deltaTPulses_,hitEDepMax_,hitEDepMin_,caphriEDepMax_,caphriEDepMin_,nPEperMeV_,noise2_,nSigmaNoise_;
+  float deltaTPulses_, hitEDepMax_, hitEDepMin_, caphriEDepMax_, caphriEDepMin_, nPEperMeV_,
+      noise2_, nSigmaNoise_;
 
   const int hexShiftPrint = 7;
 
@@ -179,10 +177,10 @@ void art::CaloHitsFromFragments::addPulse(
 art::CaloHitsFromFragments::CaloHitsFromFragments(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, diagLevel_(config().diagLevel()),
     caloFragmentsTag_(config().caloTag()), digiSampling_(config().digiSampling()),
-    deltaTPulses_(config().deltaTPulses()),
-    hitEDepMax_(config().hitEDepMax()), hitEDepMin_(config().hitEDepMin()),
-    caphriEDepMax_(config().caphriEDepMax()), caphriEDepMin_(config().caphriEDepMin()),
-    nPEperMeV_(config().nPEperMeV()), noise2_(config().noiseLevelMeV()*config().noiseLevelMeV()),
+    deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
+    hitEDepMin_(config().hitEDepMin()), caphriEDepMax_(config().caphriEDepMax()),
+    caphriEDepMin_(config().caphriEDepMin()), nPEperMeV_(config().nPEperMeV()),
+    noise2_(config().noiseLevelMeV() * config().noiseLevelMeV()),
     nSigmaNoise_(config().nSigmaNoise()), caloDAQUtil_("CaloHitsFromFragments") {
   pulseMap_.reserve(4000);
   produces<mu2e::CaloHitCollection>("calo");
@@ -207,16 +205,17 @@ void art::CaloHitsFromFragments::produce(Event& event) {
   size_t totalSize(0), numCalFrags(0);
   unsigned short evtEnergy(0);
 
-  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::CalorimeterFragment> > (caloFragmentsTag_);
+  auto fragmentHandle =
+      event.getValidHandle<std::vector<mu2e::CalorimeterFragment>>(caloFragmentsTag_);
 
   for (auto frag : *fragmentHandle) {
     analyze_calorimeter_(frag, calo_hits, caphri_hits, evtEnergy);
-    for(size_t i=0;i<frag.block_count();++i){
+    for (size_t i = 0; i < frag.block_count(); ++i) {
       totalSize += frag.blockSizeBytes(i);
     }
     numCalFrags++;
   }
-    
+
   if (numCalFrags == 0) {
     std::cout << "[CaloHitsFromFragments::produce] found no Calorimeter fragments!" << std::endl;
   }
@@ -339,10 +338,11 @@ void art::CaloHitsFromFragments::analyze_calorimeter_(
       //      }
       float time = hits[hitIdx].first.Time + peakIndex * digiSampling_ + timeCalib_[sipmID];
 
-      bool  isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crystalID) != caphriCrystalID_.end();
+      bool isCaphri = std::find(caphriCrystalID_.begin(), caphriCrystalID_.end(), crystalID) !=
+                      caphriCrystalID_.end();
       // FIX ME! WE NEED TO CHECK IF TEH PULSE IS SATURATED HERE
-      if ( ( (eDep >= hitEDepMin_) || (isCaphri && (eDep >= caphriEDepMin_))) &&
-           ( (eDep <  hitEDepMax_) || (isCaphri && (eDep <  caphriEDepMax_))) ) {
+      if (((eDep >= hitEDepMin_) || (isCaphri && (eDep >= caphriEDepMin_))) &&
+          ((eDep < hitEDepMax_) || (isCaphri && (eDep < caphriEDepMax_)))) {
         addPulse(crystalID, time, eDep, calo_hits, caphri_hits);
         evtEnergy += eDep;
       }

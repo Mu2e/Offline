@@ -95,8 +95,8 @@ DAQ : {
          clusterDt : 100
          minimumEnergy : 0.0
          maximumEnergy : 0.0035
-	  minimumRho   : 0.
-	  maximumRho   : 800.
+      minimumRho   : 0.
+      maximumRho   : 800.
          crossTalkEnergy : 0.007
          crossTalkMinimumTime : -1
          crossTalkMaximumTime : 100

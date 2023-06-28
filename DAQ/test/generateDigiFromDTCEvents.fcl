@@ -42,15 +42,15 @@ physics : {
       }
 
        genFrags : {
-	   module_type : ArtFragmentsFromDTCEvents
-	   diagLevel   : 10
-	   makeCaloFrag : 1
-	   makeTrkFrag  : 1
-	   makeCRVFrag  : 0
-	   makeSTMFrag  : 0
+       module_type : ArtFragmentsFromDTCEvents
+       diagLevel   : 10
+       makeCaloFrag : 1
+       makeTrkFrag  : 1
+       makeCRVFrag  : 0
+       makeSTMFrag  : 0
 
        }
-       
+
       makeSD:
       {
          @table::DAQ.producers.makeSD
@@ -58,8 +58,8 @@ physics : {
 
        makeSH:
        {
-	   @table::DAQ.producers.makeSH
-	   TrackerFragmentTag : ""
+       @table::DAQ.producers.makeSH
+       TrackerFragmentTag : ""
        }
 
        CaloDigiMaker:
@@ -77,8 +77,8 @@ physics : {
        }
 
        EWMProducer : { module_type : EventWindowMarkerProducer
-	   SpillType : 0
-       }	
+       SpillType : 0
+       }
 
    }
 
@@ -118,7 +118,7 @@ outputs:  {
    }
     dump: { module_type: FileDumperOutput
 wantProductFriendlyClassName: true
-	onlyIfPresent: true }
+    onlyIfPresent: true }
 }
 
 services.TFileService.fileName : "generateDigiFromDTCEvts_test.root"
