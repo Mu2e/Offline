@@ -8,6 +8,7 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Production/JobConfig/reco/prolog.fcl"
 #include "Offline/Mu2eKinKal/fcl/prolog.fcl"
+#include "Offline/CosmicReco/fcl/prolog.fcl"
 #include "TrkAna/fcl/prolog.fcl"
 
 process_name: KKDrift
@@ -25,13 +26,11 @@ physics :
     @table::CrvResponsePackage.producers
     @table::Reconstruction.producers
     @table::TrkAnaReco.producers
-    @table::Mu2eKinKal.producers
-    BestCrvLine : {
-      module_type : BestCrvHitDeltaT
-      crvCoincidenceTag : "SelectRecoMC"
-      kalSeedTag : "KKLine"
-    }
-  }
+    @table::CosmicTracking.producers
+    KKLine : @local::Reconstruction.producers.KKLine
+    BestCrvLine : @local::BestCrvLine
+    @table::MakeCrvCoincidenceClusterMCAssnsProducers
+ }
   filters : {
     RecoFilter : {
       module_type   : RecoMomFilter
@@ -42,7 +41,7 @@ physics :
   }
   RecoPath : [
     @sequence::Reconstruction.LineRecoMCPath,
-    BestCrvLine
+    MakeCrvCoincidenceClusterMCAssns, BestCrvLine
   ]
   analyzers : {
     TAKK : {
@@ -62,8 +61,8 @@ physics :
           bestCrvInstances : [ "first" ]
           bestCrvBranches : [ "bestcrv" ]
         }
-        segmentSuffixes : [ "ent", "mid", "xit" ]
-        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"] ]
+        segmentSuffixes : [ "ent", "mid", "xit", "out", "in" ]
+        segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"], ["TT_OutSurf"], ["TT_InSurf"] ]
       }
       diagLevel : 2
       FillMCInfo : true
@@ -88,7 +87,6 @@ physics :
 }
 
 #include "Production/JobConfig/reco/epilog.fcl"
-#include "Production/JobConfig/reco/offspill_epilog.fcl"
 #include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
 
 services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
