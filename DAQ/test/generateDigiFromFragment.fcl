@@ -60,7 +60,7 @@ physics : {
            @table::CaloClusterTrigger.producers.CaloClusterFast
        }
 
-       EWMProducer : { module_type : EventWindowMarkerProducer }	
+       EWMProducer : { module_type : EventWindowMarkerProducer }
    }
 
    analyzers  : {

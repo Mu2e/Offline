@@ -82,13 +82,14 @@ void art::CaloRecoFromFragments::produce(Event& event) {
 
   size_t totalSize = 0;
   size_t numCalFrags = 0;
-  auto fragmentHandle = event.getValidHandle<std::vector<mu2e::CalorimeterFragment> >(caloFragmentsTag_);
+  auto fragmentHandle =
+      event.getValidHandle<std::vector<mu2e::CalorimeterFragment> >(caloFragmentsTag_);
 
   for (auto frag : *fragmentHandle) {
     analyze_calorimeter_(calodaqconds, frag, calo_digis);
-    for(size_t i=0;i<frag.block_count();++i){
+    for (size_t i = 0; i < frag.block_count(); ++i) {
       totalSize += frag.blockSizeBytes(i);
-    }   
+    }
     numCalFrags++;
   }
 
