@@ -52,12 +52,12 @@ TTrobustHelixFinderUe : { @table::RobustHelixFinder
 # same for trigger
 TTKSF : {  @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
     ModuleSettings : { @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
-	ComboHitCollection     : "TTmakeSH"
-	HelixSeedCollections   : [ "TTHelixMergerDeM" ]
-	CaloClusterCollection  : "CaloClusterFast"
-	StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-	PrintLevel             : 0
-	SaveAllFits            : false
+        ComboHitCollection     : "TTmakeSH"
+        HelixSeedCollections   : [ "TTHelixMergerDeM" ]
+        CaloClusterCollection  : "CaloClusterFast"
+        StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+        PrintLevel             : 0
+        SaveAllFits            : false
     }
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
@@ -121,47 +121,47 @@ TprTrigger : {
     TTKSFDeP       : @local::TTKSFDeP
 
     TTKSFDmuM      : { @table::TTKSFDeM
-	ModuleSettings : { @table::TTKSFDeM.ModuleSettings
-	    HelixSeedCollections   : [ "TTHelixFinderMergerDmuM" ]
-	}
-	KKFitSettings  : { @table::TTKSFDeM.KKFitSettings
-	    FitParticle  : 13
-	    FitDirection : 0
-	}  
+        ModuleSettings : { @table::TTKSFDeM.ModuleSettings
+            HelixSeedCollections   : [ "TTHelixFinderMergerDmuM" ]
+        }
+        KKFitSettings  : { @table::TTKSFDeM.KKFitSettings
+            FitParticle  : 13
+            FitDirection : 0
+        }
     }
      
     TTKSFDmuP      : { @table::TTKSFDeP
-	ModuleSettings : { @table::TTKSFDeP.ModuleSettings
-	    HelixSeedCollections   : [ "TTHelixFinderMergerDmuP" ]
-	}
-	KKFitSettings  : { @table::TTKSFDeP.KKFitSettings
-	    FitParticle  : -13
-	    FitDirection : 0
-	}  
+        ModuleSettings : { @table::TTKSFDeP.ModuleSettings
+            HelixSeedCollections   : [ "TTHelixFinderMergerDmuP" ]
+        }
+        KKFitSettings  : { @table::TTKSFDeP.KKFitSettings
+            FitParticle  : -13
+            FitDirection : 0
+        }
     }
 
     TTKSFUCCDeM      : { @table::TTKSFDeM
-	ModuleSettings : { @table::TTKSFDeM.ModuleSettings
-	    ComboHitCollection     : "TTmakeSHUCC"
-	    HelixSeedCollections   : [ "TThelixFinderUCC:Positive" ]
-	}
+        ModuleSettings : { @table::TTKSFDeM.ModuleSettings
+            ComboHitCollection     : "TTmakeSHUCC"
+            HelixSeedCollections   : [ "TThelixFinderUCC:Positive" ]
+        }
     }
     TTKSFUCCDeP      : { @table::TTKSFDeP
-	ModuleSettings : { @table::TTKSFDeP.ModuleSettings
-	    ComboHitCollection     : "TTmakeSHUCC"
-	    HelixSeedCollections   : [ "TThelixFinderUCC:Negative" ]
-	}
+        ModuleSettings : { @table::TTKSFDeP.ModuleSettings
+            ComboHitCollection     : "TTmakeSHUCC"
+            HelixSeedCollections   : [ "TThelixFinderUCC:Negative" ]
+        }
     }
 
     TTFKSFDeM      : { @table::TTKSFDeM
-	ModuleSettings : { @table::TTKSFDeM.ModuleSettings
-	    HelixSeedCollections   : [ "TTfastHelixFinder:Positive" ]
-	}
+        ModuleSettings : { @table::TTKSFDeM.ModuleSettings
+            HelixSeedCollections   : [ "TTfastHelixFinder:Positive" ]
+        }
     }
     TTFKSFDeP      : { @table::TTKSFDeP
-	ModuleSettings : { @table::TTKSFDeP.ModuleSettings
-	    HelixSeedCollections   : [ "TTfastHelixFinder:Negative" ]
-	}
+        ModuleSettings : { @table::TTKSFDeP.ModuleSettings
+            HelixSeedCollections   : [ "TTfastHelixFinder:Negative" ]
+        }
     }
   }
 
