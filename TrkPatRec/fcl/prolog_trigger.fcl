@@ -129,7 +129,7 @@ TprTrigger : {
             FitDirection : 0
         }
     }
-     
+
     TTKSFDmuP      : { @table::TTKSFDeP
         ModuleSettings : { @table::TTKSFDeP.ModuleSettings
             HelixSeedCollections   : [ "TTHelixFinderMergerDmuP" ]
