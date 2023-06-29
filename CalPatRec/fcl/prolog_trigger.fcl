@@ -85,13 +85,13 @@ CprTrigger : { @table::CprTrigger
 #------------------------------------------------------------------------------
         TTCalSeedFit : { @table::TTMu2eKinKal.producers.TTKKDeMSeedFit
             ModuleSettings : { @table::TTMu2eKinKal.producers.TTKKDeMSeedFit.ModuleSettings
-		ComboHitCollection     : "TTmakeSH"
-		CaloClusterCollection  : "CaloClusterFast"
-		StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
-		PrintLevel             : 0
-		SaveAllFits            : false
-	    }
-	}
+                ComboHitCollection     : "TTmakeSH"
+                CaloClusterCollection  : "CaloClusterFast"
+                StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+                PrintLevel             : 0
+                SaveAllFits            : false
+            }
+        }
 
     }
 
@@ -189,60 +189,60 @@ CprTrigger: { @table::CprTrigger
     producers : { @table::CprTrigger.producers
 
         TTCalSeedFitDem                : { @table::CprTrigger.producers.TTCalSeedFit
-	    ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
-		HelixSeedCollections   : [ "TTCalHelixMergerDeM" ]
-	    }
-	    KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
-		FitParticle : 11
-		FitDirection : 0
-	    }  
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixMergerDeM" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : 11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitUCCDem             : { @table::CprTrigger.producers.TTCalSeedFit
-	    ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
-		ComboHitCollection     : "TTmakeSHUCC"
-		HelixSeedCollections   : [ "TTCalHelixUCCMergerDeM" ]
-	    }
-	    KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
-		FitParticle : 11
-		FitDirection : 0
-	    }  
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                ComboHitCollection     : "TTmakeSHUCC"
+                HelixSeedCollections   : [ "TTCalHelixUCCMergerDeM" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : 11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitDmm                  : { @table::CprTrigger.producers.TTCalSeedFit
-	    ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
-		HelixSeedCollections   : [ "TTCalHelixFinderDm:Positive" ]
-	    }
-	    KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
-		FitParticle : 13
-		FitDirection : 0
-	    }  
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixFinderDm:Positive" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : 13
+                FitDirection : 0
+            }
         }
         TTCalSeedFitDep                  : { @table::CprTrigger.producers.TTCalSeedFit
-	    ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
-		HelixSeedCollections   : [ "TTCalHelixMergerDeP" ]
-	    }
-	    KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
-		FitParticle : -11
-		FitDirection : 0
-	    }  
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixMergerDeP" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : -11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitUCCDep             : { @table::CprTrigger.producers.TTCalSeedFit
-	    ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
-		ComboHitCollection     : "TTmakeSHUCC"
-		HelixSeedCollections   : [ "TTCalHelixUCCMergerDeP" ]
-	    }
-	    KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
-		FitParticle : -11
-		FitDirection : 0
-	    }  
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                ComboHitCollection     : "TTmakeSHUCC"
+                HelixSeedCollections   : [ "TTCalHelixUCCMergerDeP" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : -11
+                FitDirection : 0
+            }
         }
         TTCalSeedFitDmp                  : { @table::CprTrigger.producers.TTCalSeedFit
-	    ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
-		HelixSeedCollections   : [ "TTCalHelixFinderDm:Negative" ]
-	    }
-	    KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
-		FitParticle : -13
-		FitDirection : 0
-	    }  
+            ModuleSettings : { @table::CprTrigger.producers.TTCalSeedFit.ModuleSettings
+                HelixSeedCollections   : [ "TTCalHelixFinderDm:Negative" ]
+            }
+            KKFitSettings  : { @table::CprTrigger.producers.TTCalSeedFit.KKFitSettings
+                FitParticle : -13
+                FitDirection : 0
+            }
         }
 
     }
