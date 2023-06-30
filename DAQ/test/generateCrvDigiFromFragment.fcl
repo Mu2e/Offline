@@ -6,29 +6,32 @@
 # Contact person G. Pezzullo, R. Ehrlich
 
 #include "Offline/DAQ/fcl/prolog_trigger.fcl"
+#include "Offline/fcl/standardServices.fcl"
 
 process_name : FragmentToDigi
 
-source : {
-  module_type : RootInput
-  fileNames   : @nil
-
-  # firstEvent  : 500
-  maxEvents   : -1
-#  inputCommands: ["keep *",
-#                  "drop *Mu2eEventHeader*_*_*_*"]
-
+services :
+{
+  @table::Services.Core
 }
 
-physics : {
+source :
+{
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
 
-  producers : {
+physics :
+{
+  producers :
+  {
     CrvDigi:
-      {
-         @table::DAQ.producers.CrvDigi
-         diagLevel: 0
-         crvTag: "daq:crv"
-      }
+    {
+      @table::DAQ.producers.CrvDigi
+      diagLevel: 2
+      fragmentsTag: "daq:DTCEVT"
+    }
   }
 
   t1 : [ CrvDigi ]
@@ -39,18 +42,12 @@ physics : {
 
 }
 
-outputs:  {
-  outfile :  {
+outputs:
+{
+  outfile :
+  {
     module_type   :   RootOutput
     fileName      :   "digis_from_frags_crv.art"
-
-#    outputCommands: [ "drop *",
-#                       "keep mu2e::StrawDigis_makeSD_*_*",
-#                       "keep mu2e::CaloDigis_CaloDigiMaker_*_*",
-#                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
-#                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
-#                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
-#                     ]
   }
 }
 

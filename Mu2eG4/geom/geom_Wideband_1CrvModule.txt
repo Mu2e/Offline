@@ -1,0 +1,137 @@
+string detector.name  = "g4geom_v00";
+
+bool hasHall            = false;
+bool hasTarget          = false;
+bool hasProtonAbsorber  = false;
+bool hasTSdA           = false;
+bool hasExternalShielding = false;
+bool hasDiskCalorimeter = false;
+bool hasBeamline        = false;
+bool hasVirtualDetector = false;
+bool hasCosmicRayShield = true;
+bool hasSTM             = false;
+bool hasMBS             = false;
+bool hasPTM             = false;
+
+
+//------------------------------------------
+// Which of the things below can be removed?
+//------------------------------------------
+
+
+#include "Offline/Mu2eG4/geom/g4_visOptions.txt"
+
+// X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
+// The origin of the detector coordinate system is on the DS axis at the specified z.
+double mu2e.solenoidOffset   =  3904.;   // mm
+double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
+
+#include "Offline/Mu2eG4/geom/mu2eWorld.txt"
+#include "Offline/Mu2eG4/geom/mu2eHall_v04.txt"
+#include "Offline/Mu2eG4/geom/DetectorSolenoid_v05.txt"
+#include "Offline/Mu2eG4/geom/DSShielding_v03.txt"
+#include "Offline/Mu2eG4/geom/ProductionSolenoid_v02.txt"
+#include "Offline/Mu2eG4/geom/psEnclosure_v05.txt"
+#include "Offline/Mu2eG4/geom/PSShield_v06.txt"
+#include "Offline/Mu2eG4/geom/PSExternalShielding_v01.txt"
+#include "Offline/Mu2eG4/geom/TransportSolenoid_v08.txt"
+#include "Offline/Mu2eG4/geom/stoppingTargetHoles_v02.txt" // 37 foil muon stopping target with holes and thicker foils (0.1 mm -> 0.1056 mm)
+#include "Offline/Mu2eG4/geom/ProductionTarget_Hayman_v2_1.txt"
+#include "Offline/Mu2eG4/geom/protonBeamDump_v03.txt"
+#include "Offline/Mu2eG4/geom/extmon_fnal_v02.txt"
+
+double vd.halfLength     = 0.01; //mm
+int    vd.verbosityLevel = 0;
+bool   vd.visible        = true;
+bool   vd.solid          = false;
+
+//---------------------------------------
+// CRV modules
+//---------------------------------------
+
+
+string          crs.name                         = "Wideband_1module";
+double          crs.scintillatorBarThickness     =  19.8; //mm
+double          crs.scintillatorBarWidth         =  51.3; //mm
+double          crs.layerOffset                  =  42;   //mm
+double          crs.gapLarge                     =   0.5; //mm
+double          crs.gapSmall                     =   0.0875; //mm
+double          crs.gapBetweenModules            =   3.0;    //mm
+vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
+double          crs.aluminumSheetThickness       =   3.175;  //mm
+double          crs.strongBackThickness          =  12.7;    //mm
+string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
+string          crs.absorberMaterialName         = "G4_Al";
+string          crs.aluminumSheetMaterialName    = "G4_Al";
+
+bool   crs.veto.visible    = true;
+bool   crs.veto.solid      = true;
+int    crs.verbosityLevel = 0;
+
+
+int   crs.nSectors = 1;
+int   crs.nLayers  = 4;
+
+vector<string> crs.sectorNames =
+                      {
+                       "L1"  //0
+                      };
+
+double          crs.scintillatorBarLengthL1      =  4550; //0
+
+int             crs.nModulesL1                   =  1;  //0
+
+int             crs.nCountersPerModuleL1         =   16;  //0 //per layer
+
+//distance between two modules (incl. gaps): 828mm
+vector<double>  crs.firstCounterL1     =  {-3904.0,    0.0,   10000.0}; //0 //in mu2e coordinates
+
+vector<double>  crs.layerDirectionL1   =  {0, 1,  0}; //0
+
+vector<double>  crs.offsetDirectionL1  =  {0, 0, -1}; //0
+
+vector<double>  crs.gapDirectionL1     =  {0, 0,  1}; //0
+
+// counter mother boards
+double crs.CMBOffset        = 15.0;
+double crs.CMBHalfThickness =  5.0;
+string crs.CMBMaterialName  = "ElectronicsCMB";
+
+// information about the SiPMs
+double crs.fiberSeparation = 26.0; //mm
+
+// side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
+bool crs.sipmsAtSide0L1  = true;  //0
+
+// side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
+bool crs.sipmsAtSide1L1  = true;  //0
+
+// information about the coincidence groups
+int crs.precedingSectorForL1  = -1;  //0   //no preceding sector
+
+int crs.sectorTypeL1  = 1;  //0
+
+//information about the FEBs
+int crs.FEBBoxesAtSide0L1  = 1; //0
+
+int crs.FEBBoxesAtSide1L1  = 2; //0
+
+string         crs.FEBMaterialName     = "ElectronicsFEB";
+double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
+double         crs.FEBDistanceToEdge   = 240.0;
+double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
+double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other
+vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
+
+// virtual detectors
+bool vd.crv.build = false;
+
+//simplified version of the top support structure
+int crs.nSupportStructures = 0;
+vector<string> crs.supportStructureNames = {};
+string crs.supportStructureMaterialName = "G4_Fe";
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

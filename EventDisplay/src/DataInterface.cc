@@ -225,6 +225,7 @@ void DataInterface::fillGeometry()
   resetBoundaryP(_targetMinmax);
   resetBoundaryP(_calorimeterMinmax);
   resetBoundaryP(_tracksMinmax);
+  resetBoundaryP(_crvMinmax);
 
   art::ServiceHandle<mu2e::GeometryService> geom;
 
@@ -544,6 +545,9 @@ void DataInterface::fillGeometry()
             double y=barOffset.y();
             double z=barOffset.z();
 
+            findBoundaryP(_crvMinmax, x+dx, y+dy, z+dz);
+            findBoundaryP(_crvMinmax, x-dx, y-dy, z-dz);
+
             boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
             std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %i)",shieldName.c_str(),im,il,ib, index);
             info->setName(c.c_str());
@@ -743,7 +747,7 @@ void DataInterface::resetBoundaryP(spaceminmax &m)
   m.maxz=NAN;
 }
 
-DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks)
+DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool useCalorimeter, bool useTracks, bool useCRV)
 {
   spaceminmax m;
   resetBoundaryP(m);
@@ -763,6 +767,11 @@ DataInterface::spaceminmax DataInterface::getSpaceBoundary(bool useTarget, bool 
   {
     findBoundaryP(m, _tracksMinmax.minx, _tracksMinmax.miny, _tracksMinmax.minz);
     findBoundaryP(m, _tracksMinmax.maxx, _tracksMinmax.maxy, _tracksMinmax.maxz);
+  }
+  if(useCRV)
+  {
+    findBoundaryP(m, _crvMinmax.minx, _crvMinmax.miny, _crvMinmax.minz);
+    findBoundaryP(m, _crvMinmax.maxx, _crvMinmax.maxy, _crvMinmax.maxz);
   }
 
   if(std::isnan(m.minx)) m.minx=-1000;
