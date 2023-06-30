@@ -59,7 +59,6 @@ namespace mu2e{
     CrvList2DXY->AddElement(sibar);
 
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(pointInMu2e.x(), pointInMu2e.y(), pointInMu2e.z());
     this->SetMarkerColor(mColor_);
     this->SetMarkerSize(mSize_);
@@ -81,7 +80,6 @@ namespace mu2e{
     CrvList2DYZ->AddElement(sibar);
 
     this->SetTitle((DataTitle(pstr, n)).c_str());
-    hep3vectormmTocm(pointInMu2e);
     this->SetNextPoint(0.0, pointInMu2e.y(), pointInMu2e.z());
     this->SetMarkerColor(mColor_);
     this->SetMarkerSize(mSize_);

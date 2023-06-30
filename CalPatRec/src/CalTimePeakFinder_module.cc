@@ -50,6 +50,7 @@ namespace mu2e {
     _printfreq       (pset.get<int>            ("printFrequency"                 )),
     _useAsFilter     (pset.get<int>            ("useAsFilter"                    )),
     _shLabel         (pset.get<string>         ("StrawHitCollectionLabel"        )),
+    _shfLabel        (pset.get<string>         ("StrawHitFlagCollectionLabel"    )),
     _ccmLabel        (pset.get<string>         ("caloClusterModuleLabel"         )),
     _hsel            (pset.get<vector<string> >("HitSelectionBits"               )),
     _bkgsel          (pset.get<vector<string> >("BackgroundSelectionBits"        )),
