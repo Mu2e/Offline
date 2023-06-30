@@ -19,9 +19,9 @@ process_name : TestFlagBkgHits
 # just cached locally. Input is configured for a quick test
 #------------------------------------------------------------------------------
 source: { module_type : RootInput
-#    firstRun    : 1210
-#    firstSubRun :    0
-#    firstEvent  :    1
+    firstRun    : 1210
+    firstSubRun :    0
+    firstEvent  :    1
     fileNames   : [ "/mu2e/data2/users/murat/datasets/mdc2020/CeEndpointMix2BBSignal/dig.mu2e.CeEndpointMix2BBSignal.MDC2020r_perfect_v1_0.001210_00000000.art" ]
     maxEvents   :  100
 }
@@ -53,12 +53,13 @@ physics : {
     analyzers : { @table::stntuple.analyzers
         DeltaFinderAna: { @table::CalPatRec.analyzers.DeltaFinderAna
             debugLevel                    : 0 ## 1
-            chCollTag                     : "makePH"
-            sschCollTag                   : "makePH:StrawHits"
             printElectrons                : 1
             printElectronsMinNHits        : 10
             printElectronsMaxFReco        : 1.1
             printElectronHits             : 1
+
+            chfCollTag                    : "FlagBkgHits:ComboHits"
+            shfCollTag                    : "FlagBkgHits:StrawHits"
         }
     }
 
@@ -68,10 +69,10 @@ physics : {
     end_paths     : [ e1             ]
 }
 
-physics.producers.FlagBkgHits.FilterHits : false     ## write out all hits
-
-# physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection", "EnergySelection" ]
-# physics.producers.makePH.MaxDS                     : 5
+physics.producers.makePH.StrawHitSelectionBits     : [ "TimeSelection" ] ##  , "EnergySelection" ]
+physics.producers.makePH.MaxDS                     : 5
+# physics.producers.FlagBkgHits.TNTClustering.SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]  ## default
+physics.producers.FlagBkgHits.TNTClustering.SignalMask : ["TimeSelection", "RadiusSelection"]  ## remove energy selection
 # physics.producers.makePH.CheckWres                 : true
 # physics.producers.makePH.MinimumRadius             : 370.
 # physics.producers.makePH.MaximumRadius             : 680.
@@ -81,7 +82,7 @@ physics.producers.FlagBkgHits.FilterHits : false     ## write out all hits
 #------------------------------------------------------------------------------
 # physics.out : [detectorOutput]
 # outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
-services.TFileService.fileName            : "flagBkgHits_diag.root"
+services.TFileService.fileName            : "flagBkgHits_diag.0003.root"
 #------------------------------------------------------------------------------
 # everything below is appended by murat/scripts/submit_mu2e_job
 #------------------------------------------------------------------------------
