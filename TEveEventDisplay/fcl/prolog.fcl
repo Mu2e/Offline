@@ -85,7 +85,7 @@ TEveEventDisplayCosmics : { # for stright cosmic for alignment (ordinary cosmics
       ComboHitCollection 		    : NULL
       TimeClusterCollection                  : "MHDeM"
       CrvRecoPulseCollection	  :  "SelectRecoMC"
-      CosmicTrackSeedCollection 	: NULL #"CosmicTrackFinderTimeFit"
+      CosmicTrackSeedCollection 	: NULL #"LineFit"
       CaloClusterCollection		  :  NULL
       CaloHitCollection  :  NULL
       HelixSeedCollection       :  NULL

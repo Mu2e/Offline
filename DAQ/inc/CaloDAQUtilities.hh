@@ -5,7 +5,7 @@
 //
 //
 
-#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
