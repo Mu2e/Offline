@@ -106,6 +106,12 @@ TTMu2eKinKal : {
     TTKKDeMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
     TTKKUePSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
     TTKKUeMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    #muon fitter instances
+    TTKKDmuPSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKDmuMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKUmuPSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+    TTKKUmuMSeedFit: @local::TTMu2eKinKal.TTKKSeedFit
+
     TTKKLineSeedFit: @local::TTMu2eKinKal.KKLineSeedFit
     # do we want other fits here?
 
@@ -116,15 +122,24 @@ TTMu2eKinKal : {
 }
 
 TTMu2eKinKal.producers.TTKKLineSeedFit.ExtensionSettings.BFieldCorrection : false
-TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitParticle : 13
+TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitParticle  : 13
 TTMu2eKinKal.producers.TTKKLineSeedFit.KKFitSettings.FitDirection : 1
-TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitParticle : 11
+#
+TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitParticle  : 11
 TTMu2eKinKal.producers.TTKKDeMSeedFit.KKFitSettings.FitDirection : 0
-TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitParticle  : -11
 TTMu2eKinKal.producers.TTKKDePSeedFit.KKFitSettings.FitDirection : 0
-TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitParticle : 11
+TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitParticle  : 11
 TTMu2eKinKal.producers.TTKKUeMSeedFit.KKFitSettings.FitDirection : 1
-TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitParticle : -11
+TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitParticle  : -11
 TTMu2eKinKal.producers.TTKKUePSeedFit.KKFitSettings.FitDirection : 1
-
+#
+TTMu2eKinKal.producers.TTKKDmuMSeedFit.KKFitSettings.FitParticle  : 13
+TTMu2eKinKal.producers.TTKKDmuMSeedFit.KKFitSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKDmuPSeedFit.KKFitSettings.FitParticle  : -13
+TTMu2eKinKal.producers.TTKKDmuPSeedFit.KKFitSettings.FitDirection : 0
+TTMu2eKinKal.producers.TTKKUmuMSeedFit.KKFitSettings.FitParticle  : 13
+TTMu2eKinKal.producers.TTKKUmuMSeedFit.KKFitSettings.FitDirection : 1
+TTMu2eKinKal.producers.TTKKUmuPSeedFit.KKFitSettings.FitParticle  : -13
+TTMu2eKinKal.producers.TTKKUmuPSeedFit.KKFitSettings.FitDirection : 1
 END_PROLOG
