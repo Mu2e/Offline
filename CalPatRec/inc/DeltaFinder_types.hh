@@ -165,13 +165,12 @@ namespace mu2e {
       const DiskCalorimeter*        calorimeter;
 
       art::InputTag                 chCollTag;
-      // art::InputTag                 chfCollTag;
+      art::InputTag                 chfCollTag;
       art::InputTag                 sdmcCollTag;
 
       const ComboHitCollection*     chcol;
-      ComboHitCollection*           outputChColl;
-
-      // const StrawHitFlagCollection* chfColl;                 // input  combohit flags
+      const StrawHitFlagCollection* chfColl;                 // input  combohit flags
+      StrawHitFlagCollection*       outputChfColl;           // output combohit flags
 
       DeltaFinderAlg*               _finder;
 

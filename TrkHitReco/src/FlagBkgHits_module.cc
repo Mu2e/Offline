@@ -107,7 +107,7 @@ namespace mu2e
 
       if (flagsh_) produces<StrawHitFlagCollection>("StrawHits");
       if (flagch_) produces<StrawHitFlagCollection>("ComboHits");
-      produces<ComboHitCollection>();
+      if (filter_) produces<ComboHitCollection>();
 
       if (savebkg_)
       {
@@ -170,28 +170,21 @@ namespace mu2e
       }
     }
 
-    // produce ComboHit collection, either filtered or not
-
-    auto chcolFilter = std::make_unique<ComboHitCollection>();
-    chcolFilter->reserve(nch);
-    // same parent as the original collection
-    chcolFilter->setParent(chcol.parent());
-    for(size_t ich=0;ich < nch; ++ich) {
-      StrawHitFlag const& flag = chfcol[ich];
-      if (! filter_) {
-        // write out all hits
-        chcolFilter->push_back(chcol[ich]);
-        chcolFilter->back()._flag.merge(flag);
-      }
-      else {
-        // in filter mode, write out only good hits
+    //produce filtered ComboHit collection
+    if (filter_) {
+      auto chcolFilter = std::make_unique<ComboHitCollection>();
+      chcolFilter->reserve(nch);
+      // same parent as the original collection
+      chcolFilter->setParent(chcol.parent());
+      for (size_t ich=0;ich < nch; ++ich) {
+        StrawHitFlag const& flag = chfcol[ich];
         if (!flag.hasAnyProperty(bkgmsk_)) {
           chcolFilter->push_back(chcol[ich]);
           chcolFilter->back()._flag.merge(flag);
         }
       }
+      event.put(std::move(chcolFilter));
     }
-    event.put(std::move(chcolFilter));
 
     //produce StrawHit flags
     // Note: fillStrawHitIndices is quite slow and should be improved
