@@ -1581,8 +1581,7 @@ namespace mu2e {
 
     for (int i=0; i<size; ++i) {
       loc = shIndices[i];
-      const ComboHit& ch  = Helix.chcol()->at(loc);
-      flag = ch.flag();
+      flag         = Helix.shfcol()->at(loc);
       //-----------------------------------------------------------------------------
       // select hits: don't reuse straw hits
       //-----------------------------------------------------------------------------
@@ -1591,6 +1590,7 @@ namespace mu2e {
       // int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
       // if (good_hit && (! bkg_hit) && (! used_hit)) {
       if (good_hit && (! bkg_hit) ) {
+        const ComboHit& ch  = Helix.chcol()->at(loc);
 
         if (ch.energyDep() > _maxHitEnergy)                 continue;
 
