@@ -69,8 +69,6 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapDIRACToOffline());
   } else if (name=="CalRoIDMapOfflineToDIRAC") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());    
-  } else if (name == "CalRoIDMapOfflineToDIRAC") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalRoIDMapOfflineToDIRAC());
   } else if (name == "STMEnergyPar") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::STMEnergyPar());
   } else if (name == "STMPedestals") {
