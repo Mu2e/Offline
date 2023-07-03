@@ -14,7 +14,7 @@ namespace mu2e {
   class CalCalibCache : public ProditionsCache {
   public: 
     CalCalibCache(CalCalibConfig const& config):
-      ProditionsCache(CalEnergyCalib::cxname,config.verbose()),
+      ProditionsCache(CalCalib::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
@@ -26,7 +26,7 @@ namespace mu2e {
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
       if(_useDb) {  
-        auto cal = _calenergycalib_p->get(eid);
+        //auto cal = _calenergycalib_p->get(eid);
         cids.insert(_calenergycalib_p->cid());
       }
       return cids;
@@ -43,10 +43,10 @@ namespace mu2e {
     }
     
     ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
-       if(_useDb) {
+      if(_useDb) {
         return _maker.fromDb( _calenergycalib_p->getPtr(eid)); 
       } else {
-	      return _maker.fromFcl();
+        return _maker.fromFcl();
       }
     }
 

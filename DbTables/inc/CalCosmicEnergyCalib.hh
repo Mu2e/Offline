@@ -59,7 +59,7 @@ namespace mu2e {
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
-      sstream << 0 <<","; //TODO
+      sstream << r.roid() <<","; //TODO
       sstream << r.EPeak()<<",";
       sstream << r.ErrEPeak()<<",";
       sstream << r.Width()<<",";
