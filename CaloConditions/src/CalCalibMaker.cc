@@ -10,7 +10,7 @@ namespace mu2e {
   ptr_t CalCalibMaker::fromFcl() {
   CalCalibPar nominal(_config.ADC2MeV(), _config.timeoffset(), _config.algID());
 
-  size_t nChan = 1; //FIXME
+  size_t nChan = CaloConst::_nChannel;
 
   CalCalib::CalibVec cvec(nChan, nominal);
   auto ptr = std::make_shared<CalCalib>(cvec);
