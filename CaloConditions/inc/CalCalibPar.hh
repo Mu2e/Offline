@@ -9,17 +9,17 @@ namespace mu2e {
 
 class CalCalibPar {
  public:
-  CalCalibPar(float ADC2MeV, int algName,
+  CalCalibPar(float ADC2MeV, int algID,
               float timeOffset) :
       _ADC2MeV(ADC2MeV),
-      _algName(algName),
+      _algID(algID),
       _timeOffset(timeOffset) {}
   float ADC2MeV() const { return _ADC2MeV; }
-  int algName() const { return _algName; }
+  int algID() const { return _algID; }
   float timeOffset() const { return _timeOffset; }
 
   float _ADC2MeV;
-  int  _algName;
+  int  _algID;
   float _timeOffset;
 };
 

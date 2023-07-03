@@ -39,12 +39,12 @@ namespace mu2e {
     CalLaserTimeCalib():DbTable(cxname,"calolasertimecalib",
     "roid,Peak,ErrPeak,Width,ErrWidth,Chi2") {}
 
-    const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const std::uint16_t roid) const { return _rows.at(roid); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
-    size_t size() const override { return baseSize() + nrow()*nrow()/2 + nrow()*sizeof(Row); };
-
+    size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
+    virtual std::size_t nrowFix() const override { return CaloConst::_nChannel; };
+    const std::string orderBy() const { return std::string("roid"); }
     void addRow(const std::vector<std::string>& columns) override {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
