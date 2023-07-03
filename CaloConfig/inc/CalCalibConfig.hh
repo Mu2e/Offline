@@ -18,7 +18,7 @@ namespace mu2e {
     //fhicl::Atom<uint16_t> roid {Name("roid"), Comment("unique offline readout ID")};
     fhicl::Atom<float> ADC2MeV {Name("ADC2MeV"), Comment("constant per SiPM")};
     fhicl::Atom<float> timeoffset {Name("timeoffset"), Comment("constant per SiPM")};
-    fhicl::Atom<int> algName{Name("algorithm"), Comment("codename of the combination alogrithm used for these results") };
+    fhicl::Atom<int> algID{Name("algorithm"), Comment("codename of the combination alogrithm used for these results") };
   };
 
 }

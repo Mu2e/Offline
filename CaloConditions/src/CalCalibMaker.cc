@@ -8,7 +8,7 @@ namespace mu2e {
   typedef std::shared_ptr<CalCalib> ptr_t;
 
   ptr_t CalCalibMaker::fromFcl() {
-  CalCalibPar nominal(_config.ADC2MeV(), _config.timeoffset(), _config.algName());
+  CalCalibPar nominal(_config.ADC2MeV(), _config.timeoffset(), _config.algID());
 
   size_t nChan = 1; //FIXME
 
