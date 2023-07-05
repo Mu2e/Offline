@@ -29,9 +29,9 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 
 // artdaq-core-mu2e includes
-#include "artdaq-core-mu2e/Overlays/CRVFragment.hh"
-#include "artdaq-core-mu2e/Overlays/CalorimeterFragment.hh"
-#include "artdaq-core-mu2e/Overlays/TrackerFragment.hh"
+#include "artdaq-core-mu2e/Data/CRVFragment.hh"
+#include "artdaq-core-mu2e/Data/CalorimeterFragment.hh"
+#include "artdaq-core-mu2e/Data/TrackerFragment.hh"
 
 // pci_linux_kernel_module includes
 #include "dtcInterfaceLib/DTC_Packets.h"
@@ -44,6 +44,7 @@
 //#include "Offline/DAQDataProducts/inc/DataBlockCollection.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 
 #include "Offline/SeedService/inc/SeedService.hh"
 
@@ -61,7 +62,9 @@ using CalorimeterDataPacket = mu2e::CalorimeterFragment::CalorimeterDataPacket;
 using CalorimeterBoardID = mu2e::CalorimeterFragment::CalorimeterBoardID;
 using CalorimeterHitReadoutPacket = mu2e::CalorimeterFragment::CalorimeterHitReadoutPacket;
 using CRVROCStatusPacket = mu2e::CRVFragment::CRVROCStatusPacket;
-using CRVHitReadoutPacket = mu2e::CRVFragment::CRVHitReadoutPacket;
+using CRVHitWaveformSample = mu2e::CRVFragment::CRVHitWaveformSample;
+using CRVHitInfo = mu2e::CRVFragment::CRVHitInfo;
+using CRVHit = mu2e::CRVFragment::CRVHit;
 
 // data struct for the calorimeter
 struct CaloDataPacket {
@@ -88,7 +91,7 @@ using calo_data_block_list_t = std::deque<calo_data_block_t>;
 struct CrvDataPacket {
   DataBlockHeader header;
   CRVROCStatusPacket rocStatus;
-  std::vector<CRVHitReadoutPacket> hits;
+  std::vector<CRVHit> hits;
 
   CrvDataPacket() : rocStatus(), hits() { bzero(&header, sizeof(header)); }
 };
@@ -158,6 +161,7 @@ private:
 
   // -- include proditions handling
   ProditionsHandle<CaloDAQMap> _calodaqconds_h;
+  ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
   // Set to 1 to save packet data to a binary file
   int    _generateBinaryFile;
 
@@ -189,11 +193,10 @@ private:
   const size_t number_of_calo_rocs_per_dtc = 6;
 
   //--------------------------------------------------------------------------------
-  // CRV ROC/DTC INFO
+  // CRV ROC INFO
   //--------------------------------------------------------------------------------
 
-  const size_t number_of_crv_rocs = 16;
-  const size_t number_of_crv_rocs_per_dtc = 8;
+  const size_t number_of_crv_rocs = 17;
 
   //--------------------------------------------------------------------------------
 
@@ -215,7 +218,6 @@ private:
   size_t _numEventsProcessed;
 
   const Calorimeter* _calorimeter; // cached pointer to the calorimeter geometry
-  const CosmicRayShield* _crv;     // cached pointer to the crv geometry
 
   void fillEmptyHeaderDataPacket(DataBlockHeader& HeaderData, uint64_t& EventNum, uint8_t& ROCId,
                                  uint8_t& DTCId, uint8_t Subsys);
@@ -284,8 +286,8 @@ private:
   void processCrvData(art::Event& evt, uint64_t& eventNum, crv_data_block_list_t& crvDataBlocks);
 //  uint8_t compressCrvDigi(int adc);
   int16_t compressCrvDigi(int16_t adc);
-  void fillCrvDataPacket(const CrvDigi& digi, CRVHitReadoutPacket& hit, int& globalRocID);
-  void fillCrvHeaderPacket(CrvDataPacket& crvData, uint8_t globalRocID, uint64_t eventNum);
+  void fillCrvDataPacket(const CRVOrdinal& crvChannelMap, const CrvDigi& digi, CRVHit& hit, int& rocID);
+  void fillCrvHeaderPacket(const CRVOrdinal& crvChannelMap, CrvDataPacket& crvData, uint8_t rocID, uint64_t eventNum);
   void fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent, const crv_data_block_list_t& crvData);
   void fillCrvDataStream(DTCLib::DTC_Event& currentEvent, const CrvDataPacket& crvData);
   void printCrvData(const CrvDataPacket& curDataBlock);
@@ -398,20 +400,18 @@ void ArtBinaryPacketsFromDigis::printCrvData(CrvDataPacket const& crvData) {
   printf("[ArtBinaryPacketsFromDigis::printCrvData] START crv-data print \n");
   printf("[ArtBinaryPacketsFromDigis::printCrvData] ROC controller ID   : %i \n",
          (int)crvData.rocStatus.ControllerID);
-  printf("[ArtBinaryPacketsFromDigis::printCrvData] Errors              : %i \n",
-         (int)crvData.rocStatus.Errors);
   printf("[ArtBinaryPacketsFromDigis::printCrvData] NHits               : %i \n", (int)nHits);
 
   for (size_t i = 0; i < nHits; ++i) {
     printf("[ArtBinaryPacketsFromDigis::printCrvData] hit : %i \n", (int)i);
     printf("[ArtBinaryPacketsFromDigis::printCrvData] Channel       : %i \n",
-           (int)(crvData.hits[i].SiPMID & 0x7F));
+           (int)crvData.hits[i].first.febChannel);
     printf("[ArtBinaryPacketsFromDigis::printCrvData] FEB           : %i \n",
-           (int)(crvData.hits[i].SiPMID >> 7));
+           (int)crvData.hits[i].first.portNumber);
     printf("[ArtBinaryPacketsFromDigis::printCrvData] Time          : %i \n",
-           (int)crvData.hits[i].HitTime);
+           (int)crvData.hits[i].first.HitTime);
     printf("[ArtBinaryPacketsFromDigis::printCrvData] NumOfSamples  : %i \n",
-           (int)crvData.hits[i].NumSamples);
+           (int)crvData.hits[i].first.NumSamples);
   }
 }
 
@@ -598,9 +598,6 @@ void ArtBinaryPacketsFromDigis::beginJob() {
 void ArtBinaryPacketsFromDigis::beginRun(art::Run&) {
   mu2e::GeomHandle<mu2e::Calorimeter> ch;
   _calorimeter = ch.get();
-
-  mu2e::GeomHandle<mu2e::CosmicRayShield> crvHandle;
-  _crv = crvHandle.get();
 }
 
 void ArtBinaryPacketsFromDigis::endJob() {
@@ -1071,14 +1068,16 @@ void ArtBinaryPacketsFromDigis::processCrvData(art::Event& evt, uint64_t& eventN
   auto const& crvdH = evt.getValidHandle(_crvtoken);
   const CrvDigiCollection& digis(*crvdH);
 
+  auto const& crvChannelMap = _crvChannelMap_h.get(evt.id());
+
   for (size_t i = 0; i < digis.size(); ++i) {
     CrvDigi const& digi = digis.at(i);
 
     // Fill struct with info for current hit
-    CRVHitReadoutPacket hit;
-    int globalRocID;
-    fillCrvDataPacket(digi, hit, globalRocID);
-    crvDataBlocks[globalRocID].hits.push_back(hit);
+    CRVHit hit;
+    int rocID;
+    fillCrvDataPacket(crvChannelMap, digi, hit, rocID);
+    crvDataBlocks[rocID].hits.push_back(hit);
   }
 
   if (_diagLevel > 1) {
@@ -1087,8 +1086,8 @@ void ArtBinaryPacketsFromDigis::processCrvData(art::Event& evt, uint64_t& eventN
   }
 
   // Loop over all ROCs, fill headers for each ROC - even for ROCs without hits
-  for (uint8_t globalRocID = 0; globalRocID < number_of_crv_rocs; globalRocID++) {
-    fillCrvHeaderPacket(crvDataBlocks[globalRocID], globalRocID,
+  for (uint8_t rocID = 1; rocID <= number_of_crv_rocs; ++rocID) {
+    fillCrvHeaderPacket(crvChannelMap, crvDataBlocks[rocID], rocID,
                         eventNum); // this will create a new entry for ROCs without hits
   }
 }
@@ -1105,44 +1104,43 @@ int16_t ArtBinaryPacketsFromDigis::compressCrvDigi(int16_t adc)
   return adc;
 }
 
-void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CrvDigi& digi, CRVHitReadoutPacket& hit,
-                                                  int& globalRocID) {
-  // TODO: This is a temporary implementation.
-  // There will be a major change on the barIndex+SiPMNumber system,
-  // which will be replaced by a channel ID system
+void ArtBinaryPacketsFromDigis::fillCrvDataPacket(const CRVOrdinal& crvChannelMap, const CrvDigi& digi, CRVHit& hit, int& rocID) {
   int crvSiPMNumber = digi.GetSiPMNumber();
-  mu2e::CRSScintillatorBarIndex crvBarIndex = digi.GetScintillatorBarIndex();
-  // Only a toy model is used here. The real implementation will follow.
-  int channel = (crvBarIndex.asUint() * 4 + crvSiPMNumber) % 64; // channel within an FEB
-  int FEB = (crvBarIndex.asUint() * 4 + crvSiPMNumber) / 64;     // globale FEBId
-  uint16_t SiPMID = (FEB << 7) | channel;
-  globalRocID = FEB / 24; // global ROCId
+  uint16_t crvBarIndex = digi.GetScintillatorBarIndex().asUint();
+  uint16_t offlineChannel = crvBarIndex*4 + crvSiPMNumber;
 
-  hit.SiPMID = SiPMID;
-  hit.HitTime = digi.GetStartTDC();
-  hit.NumSamples = 8;
-  for(int i=0; i<8; ++i) hit.WaveformSamples[i].ADC=compressCrvDigi(digi.GetADCs().at(i));  //TODO: needs to be changed
+  CRVROC onlineChannel = crvChannelMap.online(offlineChannel);
+  rocID                = onlineChannel.ROC();
+  uint16_t rocPort     = onlineChannel.FEB();
+  uint16_t febChannel  = onlineChannel.FEBchannel();
+
+  hit.first.febChannel = febChannel;
+  hit.first.portNumber = rocPort;
+  hit.first.controllerNumber = rocID;
+  hit.first.HitTime    = digi.GetStartTDC();
+  hit.first.NumSamples = CrvDigi::NSamples;
+  hit.second.resize(CrvDigi::NSamples);
+  for(size_t i=0; i<CrvDigi::NSamples; ++i) hit.second.at(i).ADC=compressCrvDigi(digi.GetADCs().at(i));
 }
 
 //--------------------------------------------------------------------------------
 // create the header for the crvPacket
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint8_t globalRocID,
-                                                    uint64_t eventNum) {
+void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(const CRVOrdinal& crvChannelMap, CrvDataPacket& crvData, uint8_t rocID, uint64_t eventNum) {
   size_t nHits = crvData.hits.size();
 
-  //--------------
-  // DataBlocHeader
-  //--------------
+  //----------------------------------------------
+  // DataBlockHeader //TODO: This may have changed
+  //----------------------------------------------
   // Word 0
   adc_t nBytes =
-      sizeof(DataBlockHeader) + sizeof(CRVROCStatusPacket) + sizeof(CRVHitReadoutPacket) * nHits;
+      sizeof(DataBlockHeader) + sizeof(CRVROCStatusPacket) + (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample)*CrvDigi::NSamples) * nHits;
   while (nBytes % 16 != 0) nBytes++;
   crvData.header.s.TransferByteCount = nBytes;
   // Word 1
   crvData.header.s.PacketType = DTCLib::DTC_PacketType_DataHeader;
 
-  crvData.header.s.LinkID = globalRocID % number_of_crv_rocs_per_dtc; // TODO: Is this correct?
+  crvData.header.s.LinkID = rocID;
   crvData.header.s.SubsystemID = DTCLib::DTC_Subsystem_CRV;
   crvData.header.s.Valid = 1;
   // Word 2
@@ -1150,7 +1148,7 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
   // interpretes it, but it seems redundant
   crvData.header.s.PacketCount = (crvData.header.s.TransferByteCount - 16) / 16;
   // Word 3
-  uint64_t timestamp = eventNum; // TODO: Is this correct?
+  uint64_t timestamp = eventNum; // TODO: seems to be identical to the microbunch number and EventWindowTag
   crvData.header.s.ts10 = static_cast<adc_t>(timestamp & 0xFFFF);
   // Word 4
   crvData.header.s.ts32 = static_cast<adc_t>((timestamp >> 16) & 0xFFFF);
@@ -1160,7 +1158,7 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
   crvData.header.s.Status = 0; // 0 corresponds to "TimeStamp had valid data"
   crvData.header.s.Version = format_version;
   // Word 7
-  crvData.header.s.DTCID = globalRocID / number_of_crv_rocs_per_dtc;
+  crvData.header.s.DTCID = (rocID-1) / 9;  //DTC0: ROCs 1...9, DTC1: ROCs 10...17
   uint8_t evbMode = 0; // ask Eric
   crvData.header.s.EventWindowMode = evbMode;
 
@@ -1170,35 +1168,25 @@ void ArtBinaryPacketsFromDigis::fillCrvHeaderPacket(CrvDataPacket& crvData, uint
   // Word 0
   crvData.rocStatus.unused1 = 0;
   crvData.rocStatus.PacketType = 0x06;
-  crvData.rocStatus.ControllerID =
-      globalRocID % number_of_crv_rocs_per_dtc; // TODO: Is this correct?
+  crvData.rocStatus.ControllerID = rocID;
   // Word 1
-  crvData.rocStatus.ControllerEventWordCount =
-      (sizeof(CRVROCStatusPacket) +
-       sizeof(CRVHitReadoutPacket) * nHits)/2;
+  crvData.rocStatus.ControllerEventWordCount = (sizeof(CRVROCStatusPacket) +
+      (sizeof(CRVHitInfo) + sizeof(CRVHitWaveformSample)*CrvDigi::NSamples) * nHits) / 2;
   // Word 2
   crvData.rocStatus.ActiveFEBFlags2 = 0xFF;
   crvData.rocStatus.unused2 = 0;
   // Word 3
   crvData.rocStatus.ActiveFEBFlags0 = 0xFF;
   crvData.rocStatus.ActiveFEBFlags1 = 0xFF;
-  // Word 3
-  crvData.rocStatus.TriggerCount = nHits; // TODO: Is this is what is meant by TriggerCount?
-                                          // Why isn't this number used in
-                                          // ArtFragmentReader::GetCRVHitCount()?
   // Word 4
-  crvData.rocStatus.Status = 0x0;
-  crvData.rocStatus.unused3 = 0;
+  static uint16_t triggerCount=0;
+  crvData.rocStatus.TriggerCount = ++triggerCount; // TODO: This seems to be a running number
   // Word 5
-  crvData.rocStatus.unused4 = 0;
-  crvData.rocStatus.unused5 = 0;
+  crvData.rocStatus.MicroBunchStatus = 0x0FFF;
   // Word 6
-  crvData.rocStatus.Errors = 0x0;
-  crvData.rocStatus.EventType = 0; // TODO: How is this defined?
+  crvData.rocStatus.EventWindowTag1 = (eventNum>>16);
   // Word 7
-  crvData.rocStatus.MicroBunchNumberLow = 0;
-  // Word 8
-  crvData.rocStatus.MicroBunchNumberHigh = 0;
+  crvData.rocStatus.EventWindowTag0 = eventNum;
 }
 
 //--------------------------------------------------------------------------------
@@ -1208,14 +1196,14 @@ void ArtBinaryPacketsFromDigis::fillCrvDMABlocks(DTCLib::DTC_Event& currentEvent
                                                  const crv_data_block_list_t& crvDataBlocks) {
   // Loop over all ROCs
   uint8_t currentDTCID = 0;
-  for (uint8_t globalRocID = 0; globalRocID < number_of_crv_rocs; globalRocID++) {
+  for (uint8_t rocID = 1; rocID <= number_of_crv_rocs; ++rocID) {
     // Add the current DataBlock to the current SuperBlock
     // curDataBlock.setTimestamp(ts); // Overwrite the timestamp
-    const CrvDataPacket& crvData = crvDataBlocks.at(globalRocID);
+    const CrvDataPacket& crvData = crvDataBlocks.at(rocID);
     fillCrvDataStream(currentEvent, crvData);
 
     if (_diagLevel > 1) {
-      if (globalRocID == 0 || currentDTCID != crvData.header.s.DTCID) {
+      if (rocID == 1 || currentDTCID != crvData.header.s.DTCID) {
         std::cout << "================================================" << std::endl;
         // std::cout << "\t\tTimestamp: " << ts << std::endl;
         std::cout << "\t\tDTCID: " << (int)crvData.header.s.DTCID << std::endl;
@@ -1258,8 +1246,10 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
   uint16_t hitCount = crvData.hits.size();
 
   for (size_t i = 0; i < hitCount; i++) {
-    memcpy(thisBlock.allocBytes->data() + pos, &(crvData.hits[i]), sizeof(CRVHitReadoutPacket));
-    pos += sizeof(CRVHitReadoutPacket);
+    memcpy(thisBlock.allocBytes->data() + pos, &crvData.hits[i].first, sizeof(CRVHitInfo));
+    pos += sizeof(CRVHitInfo);
+    memcpy(thisBlock.allocBytes->data() + pos, &crvData.hits[i].second[0], sizeof(CRVHitWaveformSample)*CrvDigi::NSamples);
+    pos += sizeof(CRVHitWaveformSample)*CrvDigi::NSamples;
   }
 
   if (hitCount > 0) {

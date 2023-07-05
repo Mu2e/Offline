@@ -206,8 +206,9 @@ Mu2eKinKal : {
     SeedMomentum : 2000.0
     SeedErrors : [15, 0.05, 10, 0.02, 2.0, 1.0] # //d0_ = 0, phi0_ = 1,z0_ = 2,theta_ = 3,t0_ = 4,mom_ = 5,
     ParameterConstraints : [0.0,0.0,0.0,0.0,0.0,1e-4]
+    CosmicTrackSeedCollections : ["LineFinder"]
     ComboHitCollection : "makeSH"
-    CaloClusterCollection : "CaloClusterFast"
+    CaloClusterCollection : "CaloClusterMaker"
     StrawHitFlagCollection : "FlagBkgHits:StrawHits"
     LineFlags : [ "HelixOK" ]
     SaveFullFit : true
