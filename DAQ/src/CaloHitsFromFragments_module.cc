@@ -211,7 +211,7 @@ void art::CaloHitsFromFragments::produce(Event& event) {
       event.getValidHandle<std::vector<mu2e::CalorimeterFragment>>(caloFragmentsTag_);
 
   for (auto frag : *fragmentHandle) {
-    analyze_calorimeter_(frag, calo_hits, caphri_hits, evtEnergy);
+    analyze_calorimeter_(calodaqconds, frag, calo_hits, caphri_hits, evtEnergy);
     for (size_t i = 0; i < frag.block_count(); ++i) {
       totalSize += frag.blockSizeBytes(i);
     }
