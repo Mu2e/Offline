@@ -94,7 +94,7 @@ TTMu2eKinKal : {
   }
 
   CosmicFilter : {
-    module_type : CosmicTrackFinderTimeFit
+    module_type : LineFit
   }
 }
 
