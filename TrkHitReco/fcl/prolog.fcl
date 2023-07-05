@@ -21,6 +21,7 @@ makeSH : {
   ProtonBunchTimeTag      : "EWMProducer"
   StrawDigiCollectionTag  : "makeSD"
   StrawDigiADCWaveformCollectionTag : "makeSD"
+  EventWindowMarker       : EWMProducer
   UseCalorimeter          : false
   clusterDt               : 100.0 # ns
   CaloClusterCollectionTag: "notUsed"
@@ -36,6 +37,7 @@ makePH : {
   TestFlag              : true
   FilterHits            : false
   ComboHitCollection    : makeSH
+  EventWindowMarker     : EWMProducer
   StrawHitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
   StrawHitMask          : ["Noisy"]
   MaxDt                 : 45 # ns

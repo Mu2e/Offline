@@ -217,8 +217,8 @@
 
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
- <class name="mu2e::TrkQualCollection"/>
  <class name="mu2e::TrkQualDetail"/>
+ <class name="mu2e::TrkQualCollection"/>
  <class name="art::Wrapper<mu2e::TrkQualCollection>"/>
 
  <class name="mu2e::TrkCaloHitPID"/>
