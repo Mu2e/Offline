@@ -14,7 +14,7 @@
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
-#include "KinKal/Trajectory/PiecewiseTrajectory.hh"
+#include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
 #include "KinKal/Trajectory/CentralHelix.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
@@ -26,9 +26,9 @@
 namespace mu2e {
   class CaloCluster;
   struct KalSeed {
-    using LHPT = KinKal::PiecewiseTrajectory<KinKal::LoopHelix>;
-    using CHPT = KinKal::PiecewiseTrajectory<KinKal::CentralHelix>;
-    using KLPT = KinKal::PiecewiseTrajectory<KinKal::KinematicLine>;
+    using LHPT = KinKal::ParticleTrajectory<KinKal::LoopHelix>;
+    using CHPT = KinKal::ParticleTrajectory<KinKal::CentralHelix>;
+    using KLPT = KinKal::ParticleTrajectory<KinKal::KinematicLine>;
     using LHPTPtr = std::unique_ptr<LHPT>;
     using CHPTPtr = std::unique_ptr<CHPT>;
     using KLPTPtr = std::unique_ptr<KLPT>;
