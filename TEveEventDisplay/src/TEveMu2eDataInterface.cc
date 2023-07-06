@@ -290,9 +290,9 @@ namespace mu2e{
   }
 
 
-using LHPT = KinKal::ParticleTrajectory<KinKal::LoopHelix>;
-using CHPT = KinKal::ParticleTrajectory<KinKal::CentralHelix>;
-using KLPT = KinKal::ParticleTrajectory<KinKal::KinematicLine>;
+using LHPT = KalSeed::LHPT;
+using CHPT = KalSeed::CHPT;
+using KLPT = KalSeed::KLPT;
 template<class KTRAJ> void TEveMu2eDataInterface::AddKinKalTrajectory( std::unique_ptr<KTRAJ> const& trajectory, TEveMu2eCustomHelix *line, TEveMu2eCustomHelix *line_twoDXY, TEveMu2eCustomHelix *line_twoDXZ){
   double t1=trajectory->range().begin();
   double t2=trajectory->range().end();
