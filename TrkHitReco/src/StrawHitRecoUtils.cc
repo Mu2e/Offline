@@ -88,8 +88,9 @@ namespace mu2e {
     if (trackerStatus.noSignal(sid) || trackerStatus.suppress(sid)) {
       if(_filter)
         return false;
-    } else
-      flag.merge(StrawHitFlag::dead);
+      else
+        flag.merge(StrawHitFlag::dead);
+    }
 
     if ( trackerStatus.noisy(sid))
       flag.merge(StrawHitFlag::noisy); // these hits may be used in track reconstruction but not pattern recognition; just flag them
