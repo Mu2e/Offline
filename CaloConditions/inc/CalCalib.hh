@@ -36,7 +36,6 @@ namespace mu2e {
   private:
 
       CalibVec _cvec;
-      std::unique_ptr<CalCalibPar> _calpar;
 
   };
 }
