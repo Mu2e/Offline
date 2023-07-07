@@ -30,7 +30,7 @@ namespace mu2e {
       const CalCalibPar& calib(std::uint16_t roid) const {
         return _cvec.at(roid);
       }
-      CalCalibPar const* calCalib() const { return _calpar.get(); }
+      //CalCalibPar const* calCalib() const { return _calpar.get(); }
       void print( std::ostream& ) const;
 
   private:
