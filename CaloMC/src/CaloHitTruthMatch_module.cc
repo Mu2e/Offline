@@ -304,7 +304,7 @@ namespace mu2e {
 }
 
 using mu2e::CaloHitTruthMatch;
-DEFINE_ART_MODULE(CaloHitTruthMatch);
+DEFINE_ART_MODULE(CaloHitTruthMatch)
 
 
 

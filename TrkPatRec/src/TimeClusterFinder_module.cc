@@ -597,4 +597,4 @@ namespace mu2e {
 }
 
 using mu2e::TimeClusterFinder;
-DEFINE_ART_MODULE(TimeClusterFinder);
+DEFINE_ART_MODULE(TimeClusterFinder)

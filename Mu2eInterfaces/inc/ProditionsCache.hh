@@ -34,7 +34,7 @@ namespace mu2e {
     // what is actually held in the cache
     // new iovs are added if the data is the same
     struct cacheItem {
-      ProditionsEntity::ptr _p;;
+      ProditionsEntity::ptr _p;
       std::vector<DbIoV> _iovs;
     };
 

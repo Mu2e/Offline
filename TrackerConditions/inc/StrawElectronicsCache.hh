@@ -87,6 +87,6 @@ namespace mu2e {
       std::unique_ptr<DbHandle<TrkPreampStraw>> _tps_p;
 
   };
-};
+}
 
 #endif

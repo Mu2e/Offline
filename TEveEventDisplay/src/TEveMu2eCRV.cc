@@ -2,7 +2,7 @@
 
 using namespace mu2e;
 namespace mu2e{
-        TEveMu2eCRV::TEveMu2eCRV(){};
+        TEveMu2eCRV::TEveMu2eCRV(){}
 
   /*------------Function to draw CRV geometry in 2D:-------------*/
   void TEveMu2eCRV::DrawCRVDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodetT1, TEveElementList *orthodetT2){

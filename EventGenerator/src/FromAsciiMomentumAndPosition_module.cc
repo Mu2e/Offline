@@ -249,4 +249,4 @@ namespace mu2e {
 
 } //end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FromAsciiMomentumAndPosition);
+DEFINE_ART_MODULE(mu2e::FromAsciiMomentumAndPosition)

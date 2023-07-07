@@ -141,4 +141,4 @@ namespace mu2e {
 }
 
 using mu2e::EventWindowMarkerProducer;
-DEFINE_ART_MODULE(EventWindowMarkerProducer);
+DEFINE_ART_MODULE(EventWindowMarkerProducer)

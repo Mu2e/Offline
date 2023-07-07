@@ -93,4 +93,4 @@ namespace mu2e
   }
 }
 using mu2e::CosmicSeedFilter;
-DEFINE_ART_MODULE(CosmicSeedFilter);
+DEFINE_ART_MODULE(CosmicSeedFilter)

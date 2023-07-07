@@ -153,5 +153,5 @@ namespace mu2e
 
 }
 using mu2e::TEveEventDisplay;
-DEFINE_ART_MODULE(TEveEventDisplay);
+DEFINE_ART_MODULE(TEveEventDisplay)
 

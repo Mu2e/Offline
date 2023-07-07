@@ -265,4 +265,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFCSimpleDumper);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFCSimpleDumper)

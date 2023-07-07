@@ -53,5 +53,5 @@ class ValTableLists : public DbTable {
   std::vector<Row> _rows;
 };
 
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

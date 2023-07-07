@@ -277,4 +277,4 @@ int LineFinder::findLine(const ComboHitCollection& shC, art::Event const& event,
 
 }//end mu2e namespace
 using mu2e::LineFinder;
-DEFINE_ART_MODULE(LineFinder);
+DEFINE_ART_MODULE(LineFinder)

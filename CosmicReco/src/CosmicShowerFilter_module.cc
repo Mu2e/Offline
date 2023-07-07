@@ -191,4 +191,4 @@ namespace mu2e {
 }
 
 using mu2e::CosmicShowerFilter;
-DEFINE_ART_MODULE(CosmicShowerFilter);
+DEFINE_ART_MODULE(CosmicShowerFilter)

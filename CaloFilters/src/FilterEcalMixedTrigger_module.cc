@@ -751,4 +751,4 @@ namespace mu2e {
 }
 
 using mu2e::FilterEcalMixedTrigger;
-DEFINE_ART_MODULE(FilterEcalMixedTrigger);
+DEFINE_ART_MODULE(FilterEcalMixedTrigger)

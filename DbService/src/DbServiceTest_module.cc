@@ -90,6 +90,6 @@ void DbServiceTest::analyze(const art::Event& event) {
     }
   }
 }
-};  // namespace mu2e
+}  // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::DbServiceTest);
+DEFINE_ART_MODULE(mu2e::DbServiceTest)

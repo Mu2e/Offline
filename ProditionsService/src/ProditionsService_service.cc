@@ -92,4 +92,4 @@ ProditionsService::ProditionsService(Parameters const& sTable,
 
 }  // namespace mu2e
 
-DEFINE_ART_SERVICE(mu2e::ProditionsService);
+DEFINE_ART_SERVICE(mu2e::ProditionsService)

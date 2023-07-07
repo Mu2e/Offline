@@ -278,5 +278,5 @@ namespace mu2e
 }
 
 using mu2e::GeomVis;
-DEFINE_ART_MODULE(GeomVis);
+DEFINE_ART_MODULE(GeomVis)
 

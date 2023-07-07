@@ -176,4 +176,4 @@ namespace mu2e {
 
 
 using mu2e::ReadTrkExtrapolMVA;
-DEFINE_ART_MODULE(ReadTrkExtrapolMVA);
+DEFINE_ART_MODULE(ReadTrkExtrapolMVA)

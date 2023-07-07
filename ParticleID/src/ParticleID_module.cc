@@ -445,4 +445,4 @@ int findlowhist(float d){
 } // end namespace mu2e
 
 using mu2e::ParticleID;
-DEFINE_ART_MODULE(ParticleID);
+DEFINE_ART_MODULE(ParticleID)
