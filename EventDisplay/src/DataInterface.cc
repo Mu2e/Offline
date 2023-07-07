@@ -799,9 +799,10 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
   if(std::isnan(m.maxz) || z>m.maxz) m.maxz=z;
 }
 
-using LHPT = KinKal::ParticleTrajectory<KinKal::LoopHelix>;
-using CHPT = KinKal::ParticleTrajectory<KinKal::CentralHelix>;
-using KLPT = KinKal::ParticleTrajectory<KinKal::KinematicLine>;
+using LHPT = mu2e::KalSeed::LHPT;
+using CHPT = mu2e::KalSeed::CHPT;
+using KLPT = mu2e::KalSeed::KLPT;
+
 template<class KTRAJ> void DataInterface::fillKalSeedTrajectory(std::unique_ptr<KTRAJ> &trajectory,
                                                                 int particleid, int trackclass, int trackclassindex, double p1,
                                                                 boost::shared_ptr<ComponentInfo> info)

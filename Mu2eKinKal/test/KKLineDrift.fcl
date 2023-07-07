@@ -26,18 +26,11 @@ physics :
     @table::CrvResponsePackage.producers
     @table::Reconstruction.producers
     @table::TrkAnaReco.producers
-    @table::Mu2eKinKal.producers
     @table::CosmicTracking.producers
-    BestCrvLine : {
-      module_type : BestCrvHitDeltaT
-      crvCoincidenceTag : "SelectRecoMC:CrvCoincidenceClusterFinder"
-      kalSeedTag : "KKLine"
-    }
-    MakeCrvCoincidenceClusterMCAssns : {
-      module_type : "MakeCrvCoincidenceClusterMCAssns"
-      crvCoincidenceTags : [ "SelectRecoMC:CrvCoincidenceClusterFinder" ]
-      crvCoincidenceMCTags : [ "compressRecoMCs:CrvCoincidenceClusterMatchMC" ]
-    }
+    KKLine : @local::Reconstruction.producers.KKLine
+    BestCrvLine : @local::BestCrvLine
+    @table::MakeCrvCoincidenceClusterMCAssnsProducers
+    @table::CosmicTracking.producers
   }
   filters : {
     RecoFilter : {
@@ -68,7 +61,7 @@ physics :
           bestCrvInstances : [ "first" ]
           bestCrvBranches : [ "bestcrv" ]
         }
-        segmentSuffixes : [  "ent", "mid", "xit", "out", "in" ]
+        segmentSuffixes : [ "ent", "mid", "xit", "out", "in" ]
         segmentVIDs : [ [ "TT_FrontHollow", "TT_FrontPA"], [ "TT_Mid", "TT_MidInner"], ["TT_Back"], ["TT_OutSurf"], ["TT_InSurf"] ]
       }
       diagLevel : 2
