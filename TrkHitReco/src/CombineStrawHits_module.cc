@@ -112,7 +112,6 @@ namespace mu2e {
 
   void CombineStrawHits::produce(art::Event& event)
   {
-    // I have to get a Handle, not a ValidHandle, as a literal handle is needed to find the productID
     auto chcH = event.getValidHandle(_chctoken);
     const ComboHitCollection& chcOrig(*chcH);
     auto ewmH = event.getValidHandle(_ewmtoken);
