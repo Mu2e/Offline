@@ -80,4 +80,4 @@ namespace mu2e {
 }
 
 using mu2e::GenParticleMomFilter;
-DEFINE_ART_MODULE(GenParticleMomFilter);
+DEFINE_ART_MODULE(GenParticleMomFilter)

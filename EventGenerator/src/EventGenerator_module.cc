@@ -231,4 +231,4 @@ namespace mu2e {
 
 
 using mu2e::EventGenerator;
-DEFINE_ART_MODULE(EventGenerator);
+DEFINE_ART_MODULE(EventGenerator)

@@ -33,6 +33,6 @@ namespace mu2e {
     bool _useDb;
     EventTimingMaker _maker;
   };
-};
+}
 
 #endif

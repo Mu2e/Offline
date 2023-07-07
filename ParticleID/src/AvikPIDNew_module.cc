@@ -1013,4 +1013,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::AvikPIDNew);
+DEFINE_ART_MODULE(mu2e::AvikPIDNew)

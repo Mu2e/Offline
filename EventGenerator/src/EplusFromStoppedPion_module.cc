@@ -222,4 +222,4 @@ namespace mu2e {
 }
 
 using mu2e::EplusFromStoppedPion;
-DEFINE_ART_MODULE(EplusFromStoppedPion);
+DEFINE_ART_MODULE(EplusFromStoppedPion)

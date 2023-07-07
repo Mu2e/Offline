@@ -37,5 +37,5 @@ namespace mu2e {
 
   };
 
-};
+}
 #endif /* DataProducts_CaloConst_hh */

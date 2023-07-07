@@ -78,6 +78,6 @@ namespace mu2e {
       std::unique_ptr<DbHandle<TrkAlignStraw>>   _tast_p;
 
   };
-};
+}
 
 #endif

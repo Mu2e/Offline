@@ -82,4 +82,4 @@ namespace mu2e {
 }
 
 using mu2e::WeightSamplingFilter;
-DEFINE_ART_MODULE(WeightSamplingFilter);
+DEFINE_ART_MODULE(WeightSamplingFilter)

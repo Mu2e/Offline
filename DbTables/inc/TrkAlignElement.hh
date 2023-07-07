@@ -95,5 +95,5 @@ class TrkAlignTracker : public TrkAlignElement {
   TrkAlignTracker() : TrkAlignElement(cxname, "trk.aligntracker", size_t(1)) {}
 };
 
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

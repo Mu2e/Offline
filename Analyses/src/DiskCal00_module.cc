@@ -283,4 +283,4 @@ namespace mu2e {
 
 // Part of the magic that makes this class a module.
 // create an instance of the module.  It also registers
-DEFINE_ART_MODULE(mu2e::DiskCal00);
+DEFINE_ART_MODULE(mu2e::DiskCal00)

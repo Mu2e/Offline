@@ -429,4 +429,4 @@ namespace mu2e
 }
 // Part of the magic that makes this class a module.
 using mu2e::ComboHitDiag;
-DEFINE_ART_MODULE(ComboHitDiag);
+DEFINE_ART_MODULE(ComboHitDiag)

@@ -225,4 +225,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloHitMaker);
+DEFINE_ART_MODULE(mu2e::CaloHitMaker)

@@ -105,5 +105,5 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-DEFINE_ART_SERVICE(mu2e::ConditionsService);
+DEFINE_ART_SERVICE(mu2e::ConditionsService)
 

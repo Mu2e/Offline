@@ -123,4 +123,4 @@ namespace mu2e
   }
 }
 using mu2e::DigiFilter;
-DEFINE_ART_MODULE(DigiFilter);
+DEFINE_ART_MODULE(DigiFilter)

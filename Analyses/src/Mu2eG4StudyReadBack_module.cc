@@ -586,4 +586,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::Mu2eG4StudyReadBack;
-DEFINE_ART_MODULE(Mu2eG4StudyReadBack);
+DEFINE_ART_MODULE(Mu2eG4StudyReadBack)

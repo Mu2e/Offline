@@ -46,4 +46,4 @@ namespace mu2e
   }
 }
 
-DEFINE_ART_MODULE(mu2e::TrackerStepPointFilter);
+DEFINE_ART_MODULE(mu2e::TrackerStepPointFilter)

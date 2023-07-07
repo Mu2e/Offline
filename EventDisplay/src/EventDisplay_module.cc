@@ -188,4 +188,4 @@ namespace mu2e
 }
 
 using mu2e::EventDisplay;
-DEFINE_ART_MODULE(EventDisplay);
+DEFINE_ART_MODULE(EventDisplay)

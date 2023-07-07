@@ -7,5 +7,5 @@
 
 namespace mu2e {
   StrawDigi::StrawDigi(StrawId sid, TrkTypes::TDCValues tdc, TrkTypes::TOTValues tot, TrkTypes::ADCValue pmp) :
-        _strawid(sid), _tdc(tdc), _tot(tot), _pmp(pmp) {};
-};
+        _strawid(sid), _tdc(tdc), _tot(tot), _pmp(pmp) {}
+}

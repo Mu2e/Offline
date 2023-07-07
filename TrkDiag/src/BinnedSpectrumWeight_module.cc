@@ -37,4 +37,4 @@
 namespace mu2e {
   typedef WeightModule<BinnedSpectrumWeightPhys> BinnedSpectrumWeight;
 }
-DEFINE_ART_MODULE(mu2e::BinnedSpectrumWeight);
+DEFINE_ART_MODULE(mu2e::BinnedSpectrumWeight)

@@ -5,4 +5,4 @@
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsService.hh"
 
-DEFINE_ART_SERVICE(mu2e::GlobalConstantsService);
+DEFINE_ART_SERVICE(mu2e::GlobalConstantsService)
