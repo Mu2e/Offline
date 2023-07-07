@@ -312,4 +312,4 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::PrintSTMGeom);
+DEFINE_ART_MODULE(mu2e::PrintSTMGeom)

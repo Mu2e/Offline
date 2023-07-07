@@ -317,4 +317,4 @@ namespace mu2e {
 
 
 using mu2e::TrackCaloMatchingExtend;
-DEFINE_ART_MODULE(TrackCaloMatchingExtend);
+DEFINE_ART_MODULE(TrackCaloMatchingExtend)

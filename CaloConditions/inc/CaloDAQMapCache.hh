@@ -70,6 +70,6 @@ namespace mu2e {
     std::unique_ptr<DbHandle<CalRoIDMapOfflineToDIRAC>> _tctd_p;
 
   };
-};
+}
 
 #endif

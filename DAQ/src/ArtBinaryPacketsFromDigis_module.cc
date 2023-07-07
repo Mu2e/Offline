@@ -1259,4 +1259,4 @@ void ArtBinaryPacketsFromDigis::fillCrvDataStream(DTCLib::DTC_Event& currentEven
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ArtBinaryPacketsFromDigis);
+DEFINE_ART_MODULE(mu2e::ArtBinaryPacketsFromDigis)

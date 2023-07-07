@@ -5,7 +5,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "TTree.h"
 
-namespace art {class Event;};
+namespace art {class Event;}
 
 namespace mu2e {
 

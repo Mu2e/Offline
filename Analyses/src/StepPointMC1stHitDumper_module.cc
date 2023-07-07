@@ -214,4 +214,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StepPointMC1stHitDumper);
+DEFINE_ART_MODULE(mu2e::StepPointMC1stHitDumper)

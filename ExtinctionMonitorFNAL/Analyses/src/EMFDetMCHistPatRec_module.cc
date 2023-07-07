@@ -393,4 +393,4 @@ namespace mu2e {
   } // namespace ExtMonFNAL
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetMCHistPatRec);
+DEFINE_ART_MODULE(mu2e::ExtMonFNAL::EMFDetMCHistPatRec)

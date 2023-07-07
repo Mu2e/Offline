@@ -237,4 +237,4 @@ namespace mu2e {
 }  // end namespace mu2e
 
 using mu2e::ReadTrackerSteps;
-DEFINE_ART_MODULE(ReadTrackerSteps);
+DEFINE_ART_MODULE(ReadTrackerSteps)

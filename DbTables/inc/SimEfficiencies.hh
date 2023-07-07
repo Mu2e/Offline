@@ -80,5 +80,5 @@ class SimEfficiencies : public DbTable {
  private:
   std::vector<Row> _rows;
 };
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

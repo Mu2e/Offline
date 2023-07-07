@@ -78,4 +78,4 @@ namespace mu2e
   }
 }
 using mu2e::BunchIntensityFilter;
-DEFINE_ART_MODULE(BunchIntensityFilter);
+DEFINE_ART_MODULE(BunchIntensityFilter)

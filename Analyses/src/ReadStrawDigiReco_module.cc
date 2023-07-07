@@ -164,4 +164,4 @@ void mu2e::ReadStrawDigiReco::analyze(art::Event const& evt) {
 
 } // end of ::analyze.
 
-DEFINE_ART_MODULE(mu2e::ReadStrawDigiReco);
+DEFINE_ART_MODULE(mu2e::ReadStrawDigiReco)

@@ -71,4 +71,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::Mu2eG4Helper;
-DEFINE_ART_SERVICE(Mu2eG4Helper);
+DEFINE_ART_SERVICE(Mu2eG4Helper)

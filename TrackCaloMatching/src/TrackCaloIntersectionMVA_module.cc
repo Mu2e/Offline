@@ -484,7 +484,7 @@ namespace mu2e {
 }
 
 using mu2e::TrackCaloIntersectionMVA;
-DEFINE_ART_MODULE(TrackCaloIntersectionMVA);
+DEFINE_ART_MODULE(TrackCaloIntersectionMVA)
 
 
 

@@ -213,4 +213,4 @@ namespace mu2e {
   } //end fillHistorgram
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::BFieldPlotter);
+DEFINE_ART_MODULE(mu2e::BFieldPlotter)

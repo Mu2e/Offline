@@ -179,4 +179,4 @@ namespace mu2e {
 } // namespace mu2e
 
 //using mu2e::ReadPTM;
-DEFINE_ART_MODULE(mu2e::ReadPTM);
+DEFINE_ART_MODULE(mu2e::ReadPTM)

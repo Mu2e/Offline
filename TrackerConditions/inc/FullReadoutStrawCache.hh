@@ -37,6 +37,6 @@ namespace mu2e {
       FullReadoutStrawMaker _maker;
 
   };
-};
+}
 
 #endif

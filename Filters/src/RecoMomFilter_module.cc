@@ -87,4 +87,4 @@ namespace mu2e {
 }
 
 using mu2e::RecoMomFilter;
-DEFINE_ART_MODULE(RecoMomFilter);
+DEFINE_ART_MODULE(RecoMomFilter)

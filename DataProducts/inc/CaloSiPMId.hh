@@ -38,5 +38,5 @@ namespace mu2e {
   std::ostream& operator<<(std::ostream& ost,
                            const CaloSiPMId& id );
 
-};
+}
 #endif /* DataProducts_CaloSiPMId_hh */

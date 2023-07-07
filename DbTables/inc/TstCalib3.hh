@@ -95,5 +95,5 @@ class TstCalib3 : public DbTable {
   std::map<int, std::size_t> _chanIndex;
 };
 
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

@@ -14,7 +14,7 @@
 
 namespace mu2e {
 
-  Polycone::Polycone() : Polycone(std::vector<double>(), std::vector<double>(), std::vector<double>(), CLHEP::Hep3Vector(), "", 0., CLHEP::twopi) {};
+  Polycone::Polycone() : Polycone(std::vector<double>(), std::vector<double>(), std::vector<double>(), CLHEP::Hep3Vector(), "", 0., CLHEP::twopi) {}
   Polycone::Polycone(const std::vector<double>& zPlanes,
                      const std::vector<double>& rInner,
                      const std::vector<double>& rOuter,
@@ -43,7 +43,7 @@ namespace mu2e {
                                   <<" does not match zPlanes.size() = "<<zPlanes.size()
                                   <<"\n";
     }
-  };
+  }
 
   std::ostream& operator<<(std::ostream& os, const Polycone& p) {
     os<<"Polycone(numZPlanes = "<<p.numZPlanes()<<", z={";

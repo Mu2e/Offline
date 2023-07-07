@@ -81,5 +81,5 @@ namespace mu2e {
 }
 
 using mu2e::ProtonBunchTimeDiag;
-DEFINE_ART_MODULE(ProtonBunchTimeDiag);
+DEFINE_ART_MODULE(ProtonBunchTimeDiag)
 

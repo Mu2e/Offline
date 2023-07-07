@@ -98,4 +98,4 @@ namespace mu2e {
 }
 
 using mu2e::CaloShowerSimFilter;
-DEFINE_ART_MODULE(CaloShowerSimFilter);
+DEFINE_ART_MODULE(CaloShowerSimFilter)

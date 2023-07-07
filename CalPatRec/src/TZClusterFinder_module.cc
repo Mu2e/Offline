@@ -1014,4 +1014,4 @@ namespace mu2e {
 }
 
 using mu2e::TZClusterFinder;
-DEFINE_ART_MODULE(TZClusterFinder);
+DEFINE_ART_MODULE(TZClusterFinder)

@@ -19,5 +19,5 @@ class AnaTrkQualDb : public MVAToolDb {
 
   AnaTrkQualDb() : MVAToolDb(cxname, "ana.trkqualdb") {}
 };
-};  // namespace mu2e
+}  // namespace mu2e
 #endif

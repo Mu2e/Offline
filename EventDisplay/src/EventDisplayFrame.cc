@@ -439,7 +439,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _rootFileManagerAnim = boost::shared_ptr<RootFileManager>(new RootFileManager);
 
 //syntax for Format from http://root.cern.ch/phpBB3/viewtopic.php?t=8700
-  gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",this));
+  gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",static_cast<void*>(this)));
 }
 
 void EventDisplayFrame::initSetup()
