@@ -56,4 +56,4 @@ namespace mu2e {
 }
 
 using mu2e::SelectEvents;
-DEFINE_ART_MODULE(SelectEvents);
+DEFINE_ART_MODULE(SelectEvents)

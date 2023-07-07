@@ -421,4 +421,4 @@ bool mu2e::CosmicMuonInfo::filter(art::Event& event) {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CosmicMuonInfo);
+DEFINE_ART_MODULE(mu2e::CosmicMuonInfo)

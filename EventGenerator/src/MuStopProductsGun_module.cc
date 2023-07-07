@@ -140,4 +140,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::MuStopProductsGun);
+DEFINE_ART_MODULE(mu2e::MuStopProductsGun)

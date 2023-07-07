@@ -648,4 +648,4 @@ namespace mu2e {
 }
 
 using mu2e::CalHelixFinder;
-DEFINE_ART_MODULE(CalHelixFinder);
+DEFINE_ART_MODULE(CalHelixFinder)

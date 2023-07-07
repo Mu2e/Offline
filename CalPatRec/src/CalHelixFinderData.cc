@@ -261,4 +261,4 @@ void CalHelixFinderData::clearHelixInfo() {
 
   }
 
-};
+}

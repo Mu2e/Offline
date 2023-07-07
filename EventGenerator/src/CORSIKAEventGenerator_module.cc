@@ -286,4 +286,4 @@ namespace mu2e {
 
 
 using mu2e::CorsikaEventGenerator;
-DEFINE_ART_MODULE(CorsikaEventGenerator);
+DEFINE_ART_MODULE(CorsikaEventGenerator)

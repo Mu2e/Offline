@@ -579,4 +579,4 @@ namespace mu2e {
 }
 
 using mu2e::TrkExtrapol;
-DEFINE_ART_MODULE(TrkExtrapol);
+DEFINE_ART_MODULE(TrkExtrapol)

@@ -174,4 +174,4 @@ namespace mu2e {
 // Part of the magic that makes this class a module.
 // create an instance of the module.  It also registers
 using mu2e::ReadBack0;
-DEFINE_ART_MODULE(ReadBack0);
+DEFINE_ART_MODULE(ReadBack0)

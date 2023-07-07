@@ -170,4 +170,4 @@ namespace mu2e {
   }
 }
 using mu2e::TrackerMC::MakeMCKalSeed;
-DEFINE_ART_MODULE(MakeMCKalSeed);
+DEFINE_ART_MODULE(MakeMCKalSeed)

@@ -81,5 +81,5 @@ namespace mu2e {
         return 2;
       }
     }
-  };
+  }
 }

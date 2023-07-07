@@ -200,4 +200,4 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
 
 } // end of ::analyze.
 
-DEFINE_ART_MODULE(mu2e::ReadStrawHitReco);
+DEFINE_ART_MODULE(mu2e::ReadStrawHitReco)

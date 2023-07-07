@@ -35,6 +35,6 @@ namespace mu2e {
     // so the db can be completely turned off
     std::unique_ptr<DbHandle<SimEfficiencies2> > _tqDb_p;
   };
-};
+}
 
 #endif

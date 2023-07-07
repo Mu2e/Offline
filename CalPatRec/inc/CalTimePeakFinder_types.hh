@@ -5,11 +5,11 @@
 
 namespace art {
   class Event;
-};
+}
 
 namespace fhicl {
   class ParameterSet;
-};
+}
 
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"

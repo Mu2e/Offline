@@ -148,4 +148,4 @@ namespace mu2e
 
 }
 using mu2e::TEveNonGDMLTest;
-DEFINE_ART_MODULE(TEveNonGDMLTest);
+DEFINE_ART_MODULE(TEveNonGDMLTest)

@@ -137,4 +137,4 @@ namespace mu2e {
 }
 
 using mu2e::CosmicFilter;
-DEFINE_ART_MODULE(CosmicFilter);
+DEFINE_ART_MODULE(CosmicFilter)

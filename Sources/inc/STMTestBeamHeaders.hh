@@ -82,7 +82,7 @@ namespace mu2e {
         return (this->getSliceSize())/ sizeof(int16_t);
       }
     };
-  };
+  }
 
   std::ostream& operator<<(std::ostream& os, const STMTestBeam::TriggerHeader& header);
   std::ostream& operator<<(std::ostream& os, const STMTestBeam::SliceHeader& header);

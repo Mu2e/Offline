@@ -23,7 +23,7 @@ namespace mu2e {
     const double MASS_MUON = 105.658367;
     const double MASS_PION = 139.57018;
     const double MASS_PROTON = 938.272013;
-  };
+  }
 
   class TrkExtInstanceNameEntry {
 

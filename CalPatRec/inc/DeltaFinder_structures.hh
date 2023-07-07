@@ -40,6 +40,6 @@ namespace mu2e {
       double     wd1;                      // distance btw the 1st hit and the intersection
       double     wd2;                      // distance btw the 2nd hit and the intersection
     };
-  };
+  }
 }
 #endif

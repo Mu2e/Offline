@@ -181,4 +181,4 @@ namespace mu2e
 }  // end namespace mu2e
 
 using mu2e::materailsPropStudy;
-DEFINE_ART_MODULE(materailsPropStudy);
+DEFINE_ART_MODULE(materailsPropStudy)

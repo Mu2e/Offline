@@ -388,4 +388,4 @@ namespace mu2e {
 }
 
 using mu2e::CaloShowerROMaker;
-DEFINE_ART_MODULE(CaloShowerROMaker);
+DEFINE_ART_MODULE(CaloShowerROMaker)

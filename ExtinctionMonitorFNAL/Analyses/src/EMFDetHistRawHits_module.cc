@@ -76,4 +76,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::EMFDetHistRawHits);
+DEFINE_ART_MODULE(mu2e::EMFDetHistRawHits)

@@ -100,4 +100,4 @@ namespace mu2e
   }
 }
 using mu2e::TimeClusterFilter;
-DEFINE_ART_MODULE(TimeClusterFilter);
+DEFINE_ART_MODULE(TimeClusterFilter)

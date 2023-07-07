@@ -279,4 +279,4 @@ namespace mu2e {
 }
 
 using mu2e::CaloTrigger;
-DEFINE_ART_MODULE(CaloTrigger);
+DEFINE_ART_MODULE(CaloTrigger)

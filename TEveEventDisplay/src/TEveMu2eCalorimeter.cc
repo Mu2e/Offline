@@ -3,7 +3,7 @@
 using namespace mu2e;
 namespace mu2e{
 
-    TEveMu2eCalorimeter::TEveMu2eCalorimeter(){};
+    TEveMu2eCalorimeter::TEveMu2eCalorimeter(){}
 
      /*------------Function to construct calorimeter (for 2D only):-------------*/
     void TEveMu2eCalorimeter::DrawCaloDetector(art::Run const& run, TGeoVolume* topvol, TEveElementList *orthodet0, TEveElementList *orthodet1){

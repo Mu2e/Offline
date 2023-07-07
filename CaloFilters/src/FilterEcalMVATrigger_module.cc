@@ -228,4 +228,4 @@ namespace mu2e {
 }
 
 using mu2e::FilterEcalMVATrigger;
-DEFINE_ART_MODULE(FilterEcalMVATrigger);
+DEFINE_ART_MODULE(FilterEcalMVATrigger)

@@ -364,4 +364,4 @@ namespace mu2e {
 }
 
 using mu2e::MergeHelixFinder;
-DEFINE_ART_MODULE(MergeHelixFinder);
+DEFINE_ART_MODULE(MergeHelixFinder)

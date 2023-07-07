@@ -174,4 +174,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::pbars1hist);
+DEFINE_ART_MODULE(mu2e::pbars1hist)

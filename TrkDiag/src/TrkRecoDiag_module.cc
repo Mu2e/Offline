@@ -687,4 +687,4 @@ namespace mu2e {
   }
 }
 using mu2e::TrkRecoDiag;
-DEFINE_ART_MODULE(TrkRecoDiag);
+DEFINE_ART_MODULE(TrkRecoDiag)

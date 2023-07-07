@@ -599,5 +599,5 @@ namespace mu2e
 
 // Part of the magic that makes this class a module.
 using mu2e::BkgDiag;
-DEFINE_ART_MODULE(BkgDiag);
+DEFINE_ART_MODULE(BkgDiag)
 

@@ -83,4 +83,4 @@ namespace mu2e {
 } // end namespace mu2e
 
 using mu2e::HelloWorld2;
-DEFINE_ART_MODULE(HelloWorld2);
+DEFINE_ART_MODULE(HelloWorld2)
