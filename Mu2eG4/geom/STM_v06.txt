@@ -6,7 +6,7 @@
 /////////////////////////////////////////////////////////////
 // Sweeper magnet parameters
 
-string stm.magnet.material             = "Steel";
+string stm.magnet.material             = "MildSteel";
 double stm.magnet.halfLength           =  584.2;
 double stm.magnet.halfWidth            =  149.45; //set to be the hole width + 1.75"
 double stm.magnet.halfHeight           =  247.45; //set to be the hole width + 1.75"
@@ -73,7 +73,7 @@ double stm.shield.rIn                  = 139.70;
 double stm.shield.rOut                 = 171.45;
 bool   stm.shield.hasLiner             = false; //don't build the poly liner in the CRV shield pipe
 double stm.shield.widthLiner           = 0.0;
-string stm.shield.material             = "Steel";
+string stm.shield.material             = "MildSteel";
 double stm.shield.pipe.halfLength      = 254.0;
 bool   stm.shield.matchPipeBlock       = true; //position the mating block based on the pipe position/length
 double stm.shield.DnStrWall.holeRadius = 184.21; //added 10um to prevent an overlap with the shield pipe
