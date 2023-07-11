@@ -18,52 +18,6 @@ ParticleID: {
             doDisplay         : false
         }
 
-        AvikPIDPar : { module_type:AvikPID
-            trkPatRecDemModuleLabel : KFFDeMMergeHelixPar
-            trkPatRecDmmModuleLabel : KFFDmuMMergeHelixPar
-            EleDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
-            MuoDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
-            diagLevel               : 0
-            debugLevel              : 0
-            DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
-        }
-
-        AvikPIDNew : { module_type:AvikPIDNew
-            trkRecModuleLabel       : MergePatRec
-            eleDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
-            muoDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
-            diagLevel               : 0
-            debugLevel              : 0
-            DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
-        }
-
-        AvikPIDNewPar : { module_type:AvikPIDNew
-            trkRecModuleLabel       : KFFDeMMergeHelixPar
-            eleDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
-            muoDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
-            diagLevel               : 0
-            debugLevel              : 0
-            DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
-        }
-
-        AvikPIDDar : { module_type:AvikPID
-            trkPatRecDemModuleLabel : KFFDeMMergeHelixDar
-            trkPatRecDmmModuleLabel : KFFDmuMMergeHelixDar
-            EleDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
-            MuoDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
-            diagLevel               : 0
-            debugLevel              : 0
-            DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
-        }
-
-        AvikPIDNewDar : { module_type:AvikPIDNew
-            trkRecModuleLabel       : KFFDeMMergeHelixDar
-            eleDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
-            muoDedxTemplateFile     : "Offline/ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
-            diagLevel               : 0
-            debugLevel              : 0
-            DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
-        }
     }
 }
 
@@ -71,24 +25,9 @@ ParticleID: { @table::ParticleID
 
     producers: {
 
-        AvikPID        : { @table::ParticleID.templates.AvikPIDPar }
-
         ParticleID     : { @table::ParticleID.templates.ParticleID }
         ParticleIDDeM  : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDem fitparticle:11 }
         ParticleIDDmuM : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDmm fitparticle:13 }
-
-        AvikPIDNew     : { @table::ParticleID.templates.AvikPIDNewPar }
-
-        AvikPIDNewDem : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDem }
-        AvikPIDNewDmm : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmm }
-        AvikPIDNewDep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDep }
-        AvikPIDNewDmp : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmp }
-
-        AvikPIDNewDeMHPar   : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDeMHPar   }
-        AvikPIDNewDmuMHPar  : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDmuMHPar  }
-
-        AvikPIDNewDeMHDar   : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDeMHDar   }
-        AvikPIDNewDmuMHDar  : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDmuMHDar  }
 
     }
 }
